@@ -11,7 +11,9 @@ TestSelfdocToolsMap map-tools: modules, classes, defs, methods and tests with fi
                    check_map, and every _tools file of this repository parses and holds.
 TestSelfdocInGit   (marker git) a throwaway repo with a map, two docs and the files they describe: a commit to a
                    described file makes its doc stale, editing or committing the doc clears it, --since compares a
-                   revision with the working tree, and check reports a missing doc, a dead pattern and an unmapped doc.
+                   revision with the working tree, and check reports a missing doc, a dead pattern and an unmapped doc;
+                   the gate judges the pushed range, so backlog-item and query-log commits need no Self-Reviewed
+                   trailer while code without its doc update still fails (`-k selfdoc_range_review`).
 """
 import functools, glob, os, re, shlex
 
@@ -497,6 +499,33 @@ class TestSelfdocInGit:
         repo.write("src/tool.py", "print(5)\n")
         repo.git("commit", "-qam", "change it again")
         assert [d for d, _, _ in selfdoc.stale(root)] == [f"{S}/tools.md"], "a later change needs a new review"
+
+    def test_selfdoc_range_review_over_the_pushed_range(self, repo):
+        """The gate runs `stale --since UP` over the pushed range: a commit that changes only backlog items or the
+        query log needs no Self-Reviewed trailer, a doc edit or review anywhere in the range clears the code change
+        before it, and a range whose code change lacks its doc update still fails."""
+        import kbgit
+        root, up = repo.path, repo.rev("HEAD")
+        items, store = [f"{S}/backlog/ST-00000000.json"], "kb/_querylog/2026-09/x.jsonl"
+        assert kbgit.gate_needs(items + [store])["selfdoc"] is None, "item and store paths skip the selfdoc check"
+        assert kbgit.gate_needs(items + ["src/tool.py"])["selfdoc"], "a code path runs it"
+        assert selfdoc.describing(selfdoc.load_map(), items + [store]) == {}, "this repository's map describes neither"
+        repo.write(items[0], "{}\n")
+        repo.write(store, "{}\n")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "claim the item")  # no trailer
+        assert selfdoc.stale(root, since=up) == []
+        repo.write("src/tool.py", "print(6)\n")
+        repo.git("commit", "-qam", "change the tool")  # the doc update comes in a later commit of the range
+        assert [d for d, _, _ in selfdoc.stale(root, since=up)] == [f"{S}/tools.md"], "planted: code without its doc"
+        repo.write(items[0], '{"status": "done"}\n')
+        repo.git("commit", "-qam", "done the item")  # item-only, no trailer: does not clear the code change
+        assert [d for d, _, _ in selfdoc.stale(root, since=up)] == [f"{S}/tools.md"]
+        repo.write(f"{S}/tools.md", "tools v6\n")
+        repo.git("commit", "-qam", "update the doc")
+        repo.write(store, '{"q": 1}\n')
+        repo.git("commit", "-qam", "log a query")  # item-only commits after the doc update, still no trailer
+        assert selfdoc.stale(root, since=up) == [], "the doc update anywhere in the range clears it"
 
     def test_check(self, repo):
         root = repo.path
