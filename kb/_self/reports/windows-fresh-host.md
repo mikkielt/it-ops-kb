@@ -2,7 +2,7 @@
 
 A clean Windows account going from no Python to every `/kb-setup` step that needs no Claude Code sign-in, run by the steps' own commands (`.claude/skills/kb-setup/SKILL.md`, steps 1 to 3). Re-run it with the same setup and replace the run sections when a new run supersedes them.
 
-**Setup.** The Windows 11 Pro 25H2 host `PL-LT-00123` (build 26200.8655, AMD64), with Git for Windows 2.55.0 installed machine-wide and only `C:\Program Files\Git\cmd` of it on PATH (Git's defaults: no `sh`, `test` or other `usr\bin` tools). A temporary local **standard** account (not an Administrators member, no Developer Mode, so no symbolic-link privilege), created for the run with a random in-memory password and deleted with its profile afterwards; its steps ran in Windows PowerShell 5.1 through `Start-Process -Credential`, not in Git Bash. The kb came from a git bundle of `origin/main`, cloned by that account (no git credentials). The operator's account (`jan.kowalski`) only drove the run. Not run, by the operator's decision for this unattended run: the Claude Code sign-in for that account and so `/kb-setup` step 4 (`kb_mcp.py --register-local` and the MCP calls) and step 5 (the query log question); the steps below are the same commands the skill runs.
+**Setup.** The Windows 11 Pro 25H2 host `PL-LT-00123` (build 26200.8655, AMD64), with Git for Windows 2.55.0 installed machine-wide and only `C:\Program Files\Git\cmd` of it on PATH (Git's defaults: no `sh`, `test` or other `usr\bin` tools). A temporary local **standard** account (not an Administrators member, no Developer Mode, so no symbolic-link privilege), created for the run with a random in-memory password and deleted with its profile afterwards; its steps ran in Windows PowerShell 5.1 through `Start-Process -Credential`, not in Git Bash. The kb came from a git bundle of `origin/main`, cloned by that account (no git credentials). The operator's account (`jan.kowalski`) only drove the run. Not run, by the operator's decision for this unattended run: the Claude Code sign-in for that account and what needs it, `/kb-setup` step 4's `kb_mcp.py --register-local` and MCP calls and step 5's question to the person; step 4's `kb_mcp.py --status` and step 5's `querylog.py where`, which need no sign-in, ran in run 3. The steps below are the same commands the skill runs.
 
 Before the install the account had no `python`, `python3`, `py` or `uv` on PATH (`python3` was not a command).
 
@@ -33,6 +33,15 @@ At `origin/main` ea85ddb, 2026-09-30, the same setup:
 | `stress_test.py` | 0 | 87 passed, 3 skipped (10:17) |
 | `tests.py` | 0 | 1288 passed, 19 skipped, 1 xfailed (28:39) |
 
-The skips are the tests that need `sh`, which the account did not have, and the OS-specific ones. Another session ran short test selections on the host during the run.
+The 19 `tests.py` skips are the tests that need `sh`, which the account did not have, and the OS-specific ones. Of the 3 `stress_test.py` skips, 2 are the symbolic-link mutations, which skip for a standard account (WinError 1314, no Developer Mode) since BG-2j5ba56h and run on an elevated one; the third skips on every Windows host. Another session ran short test selections on the host during the run.
+
+## Run 3: the step 4 and 5 commands without a sign-in
+
+At `origin/main` d10da8d, 2026-09-30, a new temporary standard account of the same setup (no test suites): `install-python.ps1` again (installer SHA-256 and the Python Software Foundation signature checked, uv 0.12.19 SHA-256 checked), then:
+
+| step | exit | result |
+|---|---|---|
+| `kb_mcp.py --status` | 0 | names the clone's commit, `upstream: origin/main`, `behind_upstream: 0 commits`, 292 topics, 2990 sources |
+| `querylog.py where` | 0 | `mode=auto`, `writes=yes`: no answer recorded, so the default applies |
 
 result: pass
