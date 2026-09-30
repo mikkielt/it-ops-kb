@@ -2,7 +2,7 @@
   "id": "TK-vzcpzdjf",
   "kind": "task",
   "title": "check reports touches naming a file git deleted",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-7atbtpz5",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "worker-vzcpzdjf"
 }
