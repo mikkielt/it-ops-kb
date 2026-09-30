@@ -20,7 +20,8 @@
   "touches": [
     "_tools/benchmarks.py",
     "_tools/test_benchmarks.py",
-    "kb/_self/reports/benchmarks.md"
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "worker-xhgrqrsm"
 }
