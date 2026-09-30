@@ -2,7 +2,7 @@
   "id": "TK-q6ca2zpp",
   "kind": "task",
   "title": "Run the post-split navigation benchmark and write the verdict",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-2nxdsro2",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
   "touches": [
     "kb/_self/reports/benchmarks.csv",
     "kb/_self/reports/benchmarks.md"
-  ]
+  ],
+  "claimed_by": "worker-q6ca2zpp"
 }
