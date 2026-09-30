@@ -2,7 +2,7 @@
   "id": "BG-4qjbbaei",
   "kind": "bug",
   "title": "backlog.py close leaves relates_to links to the items it deletes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4fbfzobr",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,29 @@
     "kb/_self/tools.md"
   ],
   "notes": "Closing SP-liemltg2 and SP-aikswrrl each left dangling relates_to links that failed backlog.check until removed by hand.",
-  "claimed_by": "sprint-4fbfzobr-w1"
+  "evidence": {
+    "commit": "febf22074e8915543c355e2d00985ccfa1c9da02",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_close_drops_relates_to"
+        ],
+        "exit": 0,
+        "sha256": "62b1bb45a8c01e44"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_close_drops_relates_to"
+        ],
+        "exit": 0,
+        "sha256": "8eea8517bb6b0aad"
+      }
+    ]
+  }
 }
