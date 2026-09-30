@@ -2,7 +2,7 @@
   "id": "TK-pwrigavm",
   "kind": "task",
   "title": "Move the harness and report tables to bench_core.py and bench_report.py",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-5d5ddbha",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
     "_tools/bench_core.py",
     "_tools/bench_report.py",
     "_tools/test_benchmarks.py"
-  ]
+  ],
+  "claimed_by": "worker-pwrigavm"
 }
