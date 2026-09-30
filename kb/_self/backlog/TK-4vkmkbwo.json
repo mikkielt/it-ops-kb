@@ -2,7 +2,7 @@
   "id": "TK-4vkmkbwo",
   "kind": "task",
   "title": "Move the scenario families to bench_* modules",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-5d5ddbha",
   "priority": "P2",
   "rank": 1,
@@ -41,5 +41,6 @@
   ],
   "depends_on": [
     "TK-pwrigavm"
-  ]
+  ],
+  "claimed_by": "worker-4vkmkbwo"
 }
