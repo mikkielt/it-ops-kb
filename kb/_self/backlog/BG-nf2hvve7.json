@@ -2,7 +2,7 @@
   "id": "BG-nf2hvve7",
   "kind": "bug",
   "title": "session_start.py still tells every cloud session to read kb/_self/maintaining.md whole",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P1",
@@ -30,5 +30,28 @@
     ".claude/hooks/session_start.py",
     "_tools/test_change_router.py"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "c822e2f53cb972ec782e82c2e345dfde550b9374",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "session_start_names_conduct_section"
+        ],
+        "exit": 0,
+        "sha256": "0edeb39a7e282abe"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run(['python3','.claude/hooks/session_start.py','--test'],capture_output=True,text=True).stdout; sys.exit('read kb/_self/maintaining.md' in o)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
