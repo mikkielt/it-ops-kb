@@ -105,6 +105,14 @@ def test_routes_to_sections_not_the_whole_maintaining_doc():
     assert 'python3 _tools/selfdoc.py section maintaining "Conduct for changes"' in text, text
 
 
+def test_session_start_names_conduct_section_not_whole_maintaining_doc():
+    """The cloud SessionStart text sends a change to the "Conduct for changes" section, not all of maintaining.md."""
+    out = subprocess.run([sys.executable, os.path.join(KB, ".claude", "hooks", "session_start.py"), "--test"],
+                         capture_output=True, text=True, encoding="utf-8", cwd=KB).stdout
+    assert "read kb/_self/maintaining.md" not in out, out
+    assert 'python3 _tools/selfdoc.py section maintaining "Conduct for changes"' in out, out
+
+
 def test_named_sections_exist():
     """The sections the router and AGENTS.md name resolve with selfdoc.py (a renamed heading breaks them)."""
     sys.path.insert(0, os.path.join(KB, "_tools"))
