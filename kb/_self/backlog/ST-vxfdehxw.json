@@ -2,7 +2,7 @@
   "id": "ST-vxfdehxw",
   "kind": "story",
   "title": "Review sprint: Codebase maintainability proven",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-rks3vx5g",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "beb63e739b621afd98eff95ed4e6508de7f7a112",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "fb7cb557cb4b0f66"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "8e759c2fd0d061de"
+      }
+    ]
+  }
 }
