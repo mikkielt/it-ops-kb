@@ -2,7 +2,7 @@
   "id": "BG-zxensn4o",
   "kind": "bug",
   "title": "A server limited to one small root answers coverage none although the root holds the answer",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "BG-wj2qijud",
   "kind": "bug",
   "title": "tools.md lacks the route-by-verdict scenario and the router-pinned config",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "BG-ed6ci57t",
   "kind": "bug",
   "title": "The kb: hook blocks a good pack routed split by a word nowhere in the kb",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",

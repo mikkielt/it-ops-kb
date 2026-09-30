@@ -2,7 +2,7 @@
   "id": "BG-ou6nahcx",
   "kind": "bug",
   "title": "A several-part split sends a covered part to neither the reader nor the researcher",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",

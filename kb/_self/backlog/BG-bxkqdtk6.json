@@ -2,7 +2,7 @@
   "id": "BG-bxkqdtk6",
   "kind": "bug",
   "title": "A near-miss none routed split still tells the reader not to answer from its hits",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",

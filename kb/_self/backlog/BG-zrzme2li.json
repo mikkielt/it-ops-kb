@@ -2,7 +2,7 @@
   "id": "BG-zrzme2li",
   "kind": "bug",
   "title": "kb_ask.py treats kb has: - and kb lacks: - as real parts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
