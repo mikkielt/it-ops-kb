@@ -1,0 +1,39 @@
+{
+  "id": "BG-477tasb3",
+  "kind": "bug",
+  "title": "Two item checks spell pieces of the Windows host's name and the operator's user name, and one of them reached the public home",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "No tracked file holds a piece of this host's computer name or of the operator's Windows user name: the checks of ST-jqa24js3 and TK-vrvthtny that guard the fresh-host report against those names read them from the environment (USERNAME, COMPUTERNAME) instead of spelling them. The planning commit of SP-hlfwfcx6 (7eda30c on the public home, 0f6a8df on origin) still holds them in history: rewriting either history is the operator's decision (gate history). Found by the SP-hlfwfcx6 review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,re,subprocess,sys\ncn=os.environ.get('COMPUTERNAME',''); un=os.environ.get('USERNAME','')\nps={p.lower() for n in (un, cn) for p in re.findall(r'[A-Z][a-z]+|[a-z]+|[A-Z0-9]+(?![a-z])', n) + [n] if len(p) >= 5}\nif '-' in cn:\n    a, b = cn.split('-', 1); ps.add((a + '-' + b[:2]).lower())\nps -= {'users', 'admin', 'public', 'windows'}\nfs=[f for f in subprocess.run(['git','ls-files','-z'],capture_output=True,text=True,encoding='utf-8').stdout.split(chr(0)) if f]\nhit=[f for f in fs if ps and any(p in open(f,encoding='utf-8',errors='ignore').read().lower() for p in ps)]\nprint(hit); sys.exit(1 if hit else 0)\n"
+    ]
+  },
+  "touches": [
+    "kb/_self/backlog/ST-jqa24js3.json",
+    "kb/_self/backlog/TK-vrvthtny.json"
+  ],
+  "gates": [
+    {
+      "id": "history",
+      "kind": "provisional",
+      "question": "Rewrite the public home's and origin's history to remove the host and user name pieces from the SP-hlfwfcx6 planning commit (7eda30c on GitHub, 0f6a8df on origin) and the done commit that recorded them?",
+      "options": [
+        "leave the history: fix the tree only",
+        "rewrite the public home with kbgit.py publish --rewrite (and origin by force)",
+        "make the GitHub repository private while deciding"
+      ],
+      "recommendation": "leave the history: fix the tree only (the pieces are an organisation name fragment and a host name prefix, no credential; a rewrite is irreversible and the operator's)",
+      "answer": "leave the history: fix the tree only (the pieces are an organisation name fragment and a host name prefix, no credential; a rewrite is irreversible and the operator's)",
+      "by": "agent"
+    }
+  ],
+  "claimed_by": "win-first"
+}
