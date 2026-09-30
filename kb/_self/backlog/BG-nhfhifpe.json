@@ -1,0 +1,31 @@
+{
+  "id": "BG-nhfhifpe",
+  "kind": "bug",
+  "title": "benchmarks.py nav_result parses claude stream-json tested only on synthetic streams",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "_tools/fixtures/ holds one recorded stream-json of a navigation run (paths, hosts and names replaced by placeholders), and a test in _tools/test_benchmarks.py runs nav_result and nav_files over it, as kb/_self/code.md asks for a check that parses a tool's output",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib;assert list(pathlib.Path('_tools/fixtures').rglob('*navigation*')),'no recorded navigation stream under _tools/fixtures'"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "navigation"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/fixtures/navigation",
+    "_tools/test_benchmarks.py"
+  ]
+}
