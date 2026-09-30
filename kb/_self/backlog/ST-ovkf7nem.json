@@ -2,7 +2,7 @@
   "id": "ST-ovkf7nem",
   "kind": "story",
   "title": "The horizon SessionStart hook prints sprint titles without goals",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P2",
@@ -22,5 +22,19 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py"
   ],
-  "claimed_by": "worker-ovkf7nem"
+  "evidence": {
+    "commit": "72f638396490475b4d0085d42e6ae974c6df3bd1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "horizon_hook"
+        ],
+        "exit": 0,
+        "sha256": "ca5ce324cded85bc"
+      }
+    ]
+  }
 }
