@@ -918,16 +918,29 @@ def out_of_scope(root, commits, globs):
     return [(sha, p) for p, sha in first.items() if blob_id(root, f"{sha}^", p) != blob_id(root, "HEAD", p)]
 
 
+ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")
+
+
+def colourless_env():
+    """The environment with colour off: FORCE_COLOR (3 in a Claude Code background session) makes Python 3.13+
+    colour its tracebacks and 3.14 argparse its usage errors, which would hide a repro's own error from own_failure
+    and a check's output from its match."""
+    env = {k: v for k, v in os.environ.items() if k not in ("FORCE_COLOR", "PYTHON_COLORS", "CLICOLOR_FORCE")}
+    env["NO_COLOR"] = "1"
+    return env
+
+
 def run_check(root, c):
-    """Run one check without a shell. A check that names python3 or python runs with the interpreter running this
-    tool: on a host whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
+    """Run one check, or a bug's repro, without a shell and with colour off; its output comes back with any colour
+    codes taken out. A check that names python3 or python runs with the interpreter running this tool: on a host
+    whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
     argv = list(c["run"])
     if argv and argv[0] in ("python3", "python"):
         argv[0] = sys.executable
     try:
         p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           timeout=CHECK_TIMEOUT_S)
-        code, out = p.returncode, (p.stdout or "") + (p.stderr or "")
+                           timeout=CHECK_TIMEOUT_S, env=colourless_env())
+        code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or ""))
     except OSError as e:
         code, out = None, f"cannot start: {e}"
     except subprocess.TimeoutExpired as e:
@@ -1526,7 +1539,6 @@ def run(argv, cwd=None):
     return run_cmd(argv, cwd=cwd, timeout=60)
 
 
-ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")
 # GitLab.com prefixes each log line with a timestamp and a stream marker: a 2-digit stream, O (stdout) or E
 # (stderr), and `+` on a line continued from the one before (`2026-09-29T01:06:40.889927Z 01O `, `00O+`)
 LOG_PREFIX_RE = re.compile(r"^\s*(?:\d{4}-\d\d-\d\dT[\d:.]+Z\s+(?:\d\d[OE]\+?\s)?\s*)?"

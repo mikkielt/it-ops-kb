@@ -133,6 +133,15 @@ def new_bug(repo, title, repro):
     return b(repo, "new", "bug", "--title", title, "--severity", "S4", "--repro", repro, "--goal", "x")
 
 
+@pytest.fixture
+def colour(monkeypatch):
+    """Colour forced on, as in a Claude Code background session (FORCE_COLOR=3): Python 3.13+ then colours its
+    tracebacks and 3.14 argparse its usage errors, so a repro's own error must be found whatever the host sets."""
+    monkeypatch.setenv("FORCE_COLOR", "3")
+    monkeypatch.setenv("PYTHON_COLORS", "1")
+    monkeypatch.delenv("NO_COLOR", raising=False)
+
+
 def refused_own_error(repo, repro, cause):
     code, out = new_bug(repo, "Own error", repro)
     assert code == 1 and "fails for its own error, not the defect" in out and cause in out, out
@@ -140,11 +149,11 @@ def refused_own_error(repo, repro, cause):
     assert not list((Path(repo) / backlog.REL_DIR).glob("*.json")), "a refused repro files nothing"
 
 
-def test_repro_fails_for_its_own_error_command_not_found(repo):
+def test_repro_fails_for_its_own_error_command_not_found(repo, colour):
     refused_own_error(repo, "no-such-command-pl-lt-00123 --status", "cannot start")
 
 
-def test_repro_fails_for_its_own_error_syntax_error(repo):
+def test_repro_fails_for_its_own_error_syntax_error(repo, colour):
     # a Windows path in a Python string (\x is a broken escape), and statements whose newlines --repro's split lost
     refused_own_error(repo, argstr(["python3", "-c", "import pathlib; pathlib.Path('kb\\public\\x.md')"]), "SyntaxError")
     refused_own_error(repo, argstr(["python3", "-c", "import sys sys.exit(1)"]), "SyntaxError")
@@ -152,18 +161,18 @@ def test_repro_fails_for_its_own_error_syntax_error(repo):
     refused_own_error(repo, "python3 broken.py", "cannot compile the repro's own code")
 
 
-def test_repro_fails_for_its_own_error_usage_error(repo):
+def test_repro_fails_for_its_own_error_usage_error(repo, colour):
     refused_own_error(repo, argstr(["python3", TOOL, "list", "--no-such-flag"]), "rejects the repro's arguments")
 
 
-def test_repro_fails_for_its_own_error_no_tests_selected(repo):
+def test_repro_fails_for_its_own_error_no_tests_selected(repo, colour):
     pytest.importorskip("pytest")
     (repo / "test_planted.py").write_text("def test_a():\n    assert False\n", encoding="utf-8")
     refused_own_error(repo, "python3 -m pytest -q -p no:cacheprovider test_planted.py -k no_such_test",
                       "selected no tests")
 
 
-def test_repro_fails_for_its_own_error_genuine_failures_accepted(repo):
+def test_repro_fails_for_its_own_error_genuine_failures_accepted(repo, colour):
     """A failure of the code under test is a reproduction: an exit 1, an assertion, a SyntaxError the tested code
     raises (not the repro's own), and a planted failing test that pytest selects."""
     (repo / "test_planted.py").write_text("def test_a():\n    assert False\n", encoding="utf-8")
@@ -175,6 +184,18 @@ def test_repro_fails_for_its_own_error_genuine_failures_accepted(repo):
         code, out = new_bug(repo, title, repro)
         assert code == 0 and "own error" not in out, (title, out)
         assert item(repo, title)["repro"]["run"] == shlex.split(repro)
+
+
+def test_repro_fails_for_its_own_error_runs_colour_off(repo, colour):
+    """run_check, the runner of new's repro and done's checks, runs the command with colour off and matches its
+    output with colour codes taken out: a check's match sees plain text even from a tool that colours anyway."""
+    env = ("import os, sys; print(os.environ.get('NO_COLOR'), os.environ.get('FORCE_COLOR'), "
+           "os.environ.get('PYTHON_COLORS'))")
+    ok, code, out = backlog.run_check(repo, {"run": ["python3", "-c", env], "match": r"^1 None None$"})
+    assert ok and code == 0, out
+    ok, code, out = backlog.run_check(repo, {"run": ["python3", "-c", "print('\\x1b[1;31mred\\x1b[0m')"],
+                                             "match": r"^red$"})
+    assert ok and "\x1b" not in out, repr(out)
 
 
 def test_repro_fails_for_its_own_error_classifier():
