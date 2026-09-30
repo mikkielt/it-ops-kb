@@ -2,7 +2,7 @@
   "id": "ST-rj55gtru",
   "kind": "story",
   "title": "backlog.py new refuses a repro that fails for its own error, not the defect",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-2agxqrrv",
   "priority": "P2",
@@ -27,5 +27,19 @@
   "depends_on": [
     "ST-sijsievb"
   ],
-  "claimed_by": "win-first-rj5"
+  "evidence": {
+    "commit": "76278a41c41327e670fc731970e7c0b8c4b790b9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "repro_fails_for_its_own_error"
+        ],
+        "exit": 0,
+        "sha256": "bebc5f86b8080dd4"
+      }
+    ]
+  }
 }

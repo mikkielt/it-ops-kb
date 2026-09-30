@@ -798,6 +798,22 @@ def test_item_holds_host_names_clean_item_passes(sprint, planted_names, capsys):
     assert b(sprint["repo"], "check")[0] == 0
 
 
+def test_name_check_exempts_project_path(sprint, planted_names, capsys):
+    """A namespace equal to the user's name: the repository path (read from the remotes) is no hit, the name
+    elsewhere still is."""
+    repo = sprint["repo"]
+    subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", "git@gitlab.com:jan.kowalski/it-ops-kb.git"], check=True)
+    subprocess.run(["git", "-C", str(repo), "remote", "add", "pub", "https://github.com/Jan.Kowalski/it-ops-kb"], check=True)
+    assert backlog.project_paths(repo) == {"jan.kowalski/it-ops-kb", "jan.kowalski%2fit-ops-kb"}
+    edit(repo, sprint["st"], goal="glab api projects/jan.kowalski%2Fit-ops-kb/runners, see Jan.Kowalski/it-ops-kb")
+    assert backlog.main(["--root", str(repo), "check"]) == 0, capsys.readouterr().out
+    edit(repo, sprint["st"], goal="projects/jan.kowalski%2Fit-ops-kb, ask jan.kowalski")
+    assert backlog.main(["--root", str(repo), "check"]) == 1
+    out = capsys.readouterr().out
+    assert "field goal holds a piece of this host's user name" in out and no_planted_piece(out)
+
+
 def test_item_holds_host_names_real_backlog_passes_on_this_host():
     """The names of the host running the tests, never spelled here: the real backlog holds no piece of them. (Not
     the planted ones: the backlog writes those placeholders on purpose.)"""

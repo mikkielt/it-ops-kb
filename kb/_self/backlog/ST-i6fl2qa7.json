@@ -2,7 +2,7 @@
   "id": "ST-i6fl2qa7",
   "kind": "story",
   "title": "backlog.py's host and user name check exempts the project's own repository path",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-2agxqrrv",
   "priority": "P2",
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "ST-rj55gtru"
-  ]
+  ],
+  "claimed_by": "win-first"
 }
