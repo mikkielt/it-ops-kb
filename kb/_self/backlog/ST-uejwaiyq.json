@@ -1,0 +1,20 @@
+{
+  "id": "ST-uejwaiyq",
+  "kind": "story",
+  "title": "The content rules say how an observed run is recorded as a fact",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/content-rules.md says how a fact that rests on a run (a probe, a measurement) is written: tag DER with the documented facts it rests on, the version and setup in the fact, what the run did not cover kept as an UNK or in the fact, never a general claim; the kb-verify lint flags a DER fact that says 'run' or 'probe' without a version. Failure it answers (SP-hlfwfcx6 retrospective): the job-object fact first turned one headless probe into a general claim and dropped the interactive caveat (BG-mheboypd, found by the review).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "observed_run_rule"
+      ]
+    }
+  ]
+}
