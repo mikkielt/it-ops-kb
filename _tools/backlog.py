@@ -30,7 +30,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py fire ID                      mark an item's external trigger as fired
   backlog.py done ID [--dry-run]          run the item's checks at a clean HEAD, check its commits' scope, record the
                                           evidence and set status done; exit 1 with the reasons otherwise
-  backlog.py drop ID --why TEXT           status dropped (an item outside any sprint is deleted: git keeps it)
+  backlog.py land ID [--branch B] [--trailer 'KEY: VALUE']...
+                                          land a finished item's branch (default work/ID) from a clean tree: fetch
+                                          and rebase it on the integration main, then a content item: done --commit,
+                                          stress_test.py, rag.py eval and the lint when the landing changes _tools/,
+                                          kbgit.py sync --push; an item with a code-lane commit not on that main:
+                                          those checks and sync --push (the code/<id> merge request), and a re-run
+                                          once it has merged ends as a content item does. Stops at the first failing
+                                          step, naming it (exit 1); a failed rebase is aborted
+  backlog.py drop ID --why TEXT          status dropped (an item outside any sprint is deleted: git keeps it)
   backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo
   backlog.py close SPRINT [--summary]     delete a finished sprint, its items and the epics they finished
                                           (--summary: first list each of them with its status and the commit done
@@ -1444,6 +1452,123 @@ def cmd_done(bl, a):
     return 0
 
 
+# land: the steps after a worker's branch comes back, each a command run from the clone's root with this interpreter
+LAND_HEAVY = (("stress_test.py", ["_tools/stress_test.py"]),  # run once, when the landing changes _tools/
+              ("rag.py eval", ["_tools/rag.py", "eval"]),
+              ("lint", [".claude/skills/kb-verify/lint.py"]))
+LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])
+LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
+
+
+def land_stop(step, why):
+    return Refused(f"land stopped at step {step}: {why}")
+
+
+def land_run(root, step, argv, whole=False):
+    """Run one landing step; its output (the tail of it, unless WHOLE or it failed) goes through say()."""
+    say(f"land: {step}")
+    try:
+        p = subprocess.run([sys.executable, *argv], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", env=colourless_env())
+        code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or "")).rstrip()
+    except OSError as e:
+        code, out = None, f"cannot start: {e}"
+    lines = out.splitlines()
+    shown = lines if whole or code else lines[-LAND_TAIL:]
+    if shown:
+        say("\n".join(shown))
+    if code != 0:
+        raise land_stop(step, f"python3 {shlex.join(argv)} exited {code}")
+
+
+def land_git(root, step, *args):
+    p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if p.returncode:
+        raise land_stop(step, f"git {' '.join(args)}: {(p.stderr or p.stdout).strip()}")
+    return p.stdout
+
+
+def has_ref(root, ref):
+    return subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode == 0
+
+
+def checked_out_elsewhere(root, branch):
+    """The path of another worktree that has BRANCH checked out, or None (git rebase cannot check it out here)."""
+    here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    path = None
+    for ln in git(root, "worktree", "list", "--porcelain").splitlines():
+        if ln.startswith("worktree "):
+            path = Path(ln[len("worktree "):]).resolve()
+        elif ln == f"branch refs/heads/{branch}" and path != here:
+            return path
+    return None
+
+
+def cmd_land(bl, a):
+    """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
+    heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the heavy checks, sync
+    --push (a code/<id> merge request; main does not move), and a re-run once it has merged finishes it as content
+    does. Stops at the first failing step, naming it."""
+    import kbpublic
+    iid = need(bl, a.id)
+    root = bl.root
+    remote = kbpublic.integration_remote(root)
+    branch = a.branch or f"work/{iid}"
+    upstream = f"refs/remotes/{remote}/main"
+    if git(root, "status", "--porcelain").strip():
+        raise land_stop("clean tree", "uncommitted changes: commit or stash them first (git status --short)")
+    if not has_ref(root, f"refs/heads/{branch}"):
+        raise land_stop("branch", f"no local branch {branch} (--branch names another)")
+    other = checked_out_elsewhere(root, branch)
+    if other:
+        raise land_stop("branch", f"{branch} is checked out in the worktree {other}: land it from there, or remove "
+                                  "that worktree first")
+    say(f"land: fetch {remote} main")
+    land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
+    say(f"land: rebase {branch} on {remote}/main")
+    p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    if p.returncode:
+        subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
+        raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "
+                                  f"changed): rebase it by hand, then run land again\n{(p.stderr or p.stdout).strip()}")
+    bl = Backlog(root)  # the item files as the rebased branch has them
+    need(bl, iid)
+    family = [iid] + bl.descendants(iid)
+    late, _, owners = unlanded_code(root, family)
+    if late == ["(no such ref)"]:
+        raise land_stop("fetch", f"{upstream} does not exist after the fetch")
+    if late:
+        code_branch = "code/" + (owners[0] if owners else iid)
+        tracking = f"refs/remotes/{remote}/{code_branch}"
+        fetched = subprocess.run(["git", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}"],
+                                 cwd=root, capture_output=True).returncode == 0
+        if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
+            say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
+                f"pushed with this content): merge it, then run backlog.py land {iid} again")
+            return 0
+    if not late:
+        if bl.items[iid].get("status") == "done":
+            say(f"land: done: {bl.label(iid)} is done already")
+        else:
+            say("land: done --commit")
+            try:
+                cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer))
+            except Refused as e:
+                raise land_stop("done", str(e)) from None
+    changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
+    if any(p.startswith("_tools/") for p in changed):
+        for step, argv in LAND_HEAVY:
+            land_run(root, step, argv)
+    land_run(root, *LAND_SYNC, whole=True)
+    if late:
+        say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
+            f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
+    else:
+        say(f"land: {bl.label(iid)} landed")
+    return 0
+
+
 def cmd_drop(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -2039,6 +2164,11 @@ def main(argv=None):
     p = sub.add_parser("done")
     p.add_argument("id")
     p.add_argument("--dry-run", action="store_true")
+    p = sub.add_parser("land")
+    p.add_argument("id")
+    p.add_argument("--branch", help="the local branch to land (default work/ID)")
+    p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
+                   help="a trailer of the session's own for the done --commit commit (repeatable)")
     p = sub.add_parser("drop")
     p.add_argument("id")
     p.add_argument("--why", required=True)
@@ -2080,8 +2210,8 @@ def main(argv=None):
             return 0
     bl = Backlog(a.root)
     try:
-        if a.cmd in COMMITS:  # before the command writes anything
-            if a.trailer and not a.commit:
+        if a.cmd in COMMITS + ("land",):  # before the command writes anything
+            if a.trailer and not getattr(a, "commit", True):
                 raise Refused("--trailer goes with --commit")
             why = next(filter(None, map(trailer_problem, a.trailer)), None)
             if why:

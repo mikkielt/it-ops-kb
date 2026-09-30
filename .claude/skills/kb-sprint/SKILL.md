@@ -51,12 +51,13 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    - "never write the operator's decisions into docs or code".
    An item with a single commit and a narrow `touches` may be done in this session instead.
 4. When a subagent returns, land its branch yourself, one at a time:
-   1. `git status --short` shows only your own changes (another session's files in your checkout: stop and move to your own clone or worktree); rebase the branch on `main`;
-   2. `/kb-verify` on the changed files, and `python3 _tools/stress_test.py` once, when the landing changed `_tools/` (workers never run it);
-   3. an item with a code-lane commit (`_tools/kblane.py`): `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops) sends the range, the claim commit riding along, as a `code/<id>` merge request; `main` does not move. Several items' code may ride one request. `done` waits for the merge: on the next pass check that the request merged, `git fetch`, rebase local `main` onto the integration `main` (the merged commits keep their hashes);
-   4. `python3 _tools/backlog.py done ID`;
-   5. commit the item file with the same trailer;
-   6. `python3 _tools/kbgit.py sync --push`: the item file, a content-lane commit, goes straight to `main`. A content-only item (its commits touch only kb roots and `kb/_self/*.md`) skips step 3 and lands here.
+   1. `git status --short` shows only your own changes (another session's files in your checkout: stop and move to your own clone or worktree); `land` refuses a branch checked out in another worktree, so `git worktree remove <path>` the worker's worktree first (its branch stays; never `--force`);
+   2. `/kb-verify` on the changed files;
+   3. `python3 _tools/backlog.py land ID --trailer 'Co-Authored-By: ...'`, never the steps by hand. It fetches and rebases `work/<id>` on the integration `main`, then:
+      - a content-only item (its commits touch only kb roots and `kb/_self/*.md`): `done --commit`, then `sync --push` straight to `main`;
+      - an item with a code-lane commit (`_tools/kblane.py`) not yet on the integration `main`: `sync --push` sends the range, the claim commit riding along, as a `code/<id>` merge request; `main` does not move and the item is not done. On the next pass, once the request has merged, run the same `land` again: it rebases onto the merged `main` (the merged commits keep their hashes), runs `done --commit` and pushes the item file;
+      - it runs `python3 _tools/stress_test.py` once, when the landing changed `_tools/`, with the lookup eval and the contract lint, before `sync --push` (workers never run them).
+   It stops at the first failing step and names it (`land stopped at step <step>`): `clean tree`, `branch`, `fetch`, `rebase` (aborted, nothing changed: rebase by hand as `/kb-git-sync` does), `done`, `stress_test.py`, `rag.py eval`, `lint` or `kbgit.py sync --push` (`/kb-git-sync`). Fix the cause and run it again.
    If `done` refuses, send the reasons back to the same subagent (SendMessage) or release the item (`python3 _tools/backlog.py release ID`) and file what blocks it; for an unmerged `code/<id>` request it names the request to merge.
    A bug filed while landing is committed on its own, then claimed, before the commit that fixes it (`kb/_self/backlog.md`, Working on items).
 5. A provisional gate: take the recommendation (`answer ID GATE --provisional`) and go on. A blocking gate: its items wait. In an interactive session ask the operator now, in one batch with the recommendations.

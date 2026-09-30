@@ -30,7 +30,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
 4. **Break down if needed.**
    - A story or bug with no tasks: add tasks (`new task --parent ID`, with `touches` and `checks`), one commit each.
    - A task with several distinct steps may get subtasks.
-   - Work the children first, each through steps 2 to 6.
+   - Work the children first, each through steps 2 to 7.
 5. **Work.**
    - Change only files matching `touches`. If the work needs another file, widen `touches` in the item and say so in the commit body.
    - A defect outside the item becomes a bug (`/kb-backlog bug`), not a fix.
@@ -38,14 +38,19 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
      - blocking: stop this item and pick the next;
      - provisional: `python3 _tools/backlog.py answer ID GATE --provisional` and go on.
      In an interactive session, ask the operator at once as well.
-6. **Prove.**
-   1. Commit the work with the trailer `KB-Work: ID` in the message's last paragraph, with `Co-Authored-By` and the other trailers (no blank line between them).
-   2. An item with a code-lane commit (`_tools/kblane.py`) is landed before it is proved: `/kb-verify` on the changed files (and `/kb-self` if tools, skills, hooks or rules changed), then `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops). It sends the range as a `code/<id>` merge request and `main` does not move. Report that and stop; on a later pass check that the request merged, `git fetch`, and rebase local `main` onto the integration `main`. A content-only item skips this step.
-   3. Run `python3 _tools/backlog.py done ID` and show its output. On refusal, fix what it names and run it again (for an unmerged `code/<id>` request, merge it first). Never edit `status` or `evidence` by hand.
-   4. Commit the item file with the same trailer.
-7. **Land.**
-   1. `/kb-verify` on the changed files (and `/kb-self` if tools, skills, hooks or rules changed).
-   2. `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops): the item file, a content-lane commit, goes straight to `main`. A bug filed while landing is committed on its own, then claimed, before the commit that fixes it (`kb/_self/backlog.md`, Working on items).
-   3. Report the item's id and title, the commit, the checks that passed and the new horizon (`python3 _tools/backlog.py horizon`).
+6. **Commit.** Commit the work with the trailer `KB-Work: ID` in the message's last paragraph, with `Co-Authored-By` and the other trailers (no blank line between them). Then `/kb-verify` on the changed files (and `/kb-self` if tools, skills, hooks or rules changed).
+7. **Prove and land** with one command, never the steps by hand: `python3 _tools/backlog.py land ID --branch <your branch> --trailer 'Co-Authored-By: ...'` (the branch defaults to `work/ID`; `main` if you worked there). Show its output. From a clean tree it fetches, rebases the branch on the integration `main`, then:
+   - a content-only item: `backlog.py done ID --commit` (never edit `status` or `evidence` by hand), `stress_test.py`, the lookup eval and the contract lint when the landing changed `_tools/`, and `kbgit.py sync --push`, straight to `main`;
+   - an item with a code-lane commit (`_tools/kblane.py`) not yet on the integration `main`: the same checks, then `sync --push`, which sends the range as a `code/<id>` merge request; `main` does not move and the item is not done yet. Report that and stop; on a later pass, once the request has merged, run the same `land` again: it rebases onto the merged `main`, runs `done --commit` and pushes the item file (a content-lane commit).
+
+   It stops at the first failing step and names it (`land stopped at step <step>`); fix the cause and run it again:
+   - `clean tree`: commit or stash your own changes (`git status --short`);
+   - `rebase` (aborted, nothing changed): rebase by hand, resolving by meaning as `/kb-git-sync` does;
+   - `done`: fix what it names (for an unmerged `code/<id>` request, merge it first) and commit;
+   - `stress_test.py`, `rag.py eval`, `lint`: fix the cause, never the baseline;
+   - `kbgit.py sync --push`: `/kb-git-sync`.
+
+   A bug filed while landing is committed on its own, then claimed, before the commit that fixes it (`kb/_self/backlog.md`, Working on items).
+8. **Report** the item's id and title, the commit, the checks that passed and the new horizon (`python3 _tools/backlog.py horizon`).
 
 When all its siblings are done, the parent story or bug is ready. Its own `done` runs its checks over the whole.

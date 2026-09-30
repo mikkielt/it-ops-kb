@@ -6,7 +6,7 @@ agent answers, a sprint started without the operator or with a work item without
 that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
 planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
 commit included), a --commit commit with KB-Work outside its trailer paragraph or a file the command did not write,
-a KB-* or malformed --trailer, and red pipelines that fail
+a KB-* or malformed --trailer, a landing whose step fails (land stops there, naming it), and red pipelines that fail
 the same way (one bug) or differently (a second), or the same way as a closed bug (a new one). The repository's
 own backlog must pass `backlog.py check`.
 """
@@ -1797,3 +1797,156 @@ class TestBacklogCommitFlag:
         code, out = b(repo, "claim", tk, "--by", "agent-1", "--commit")
         assert code == 0 and "nothing committed" in out, out
         assert self.out(repo, "rev-parse", "HEAD") == head
+
+
+STEP_STUB = """import os, sys
+NAME = {name!r}
+with open(os.environ["LAND_LOG"], "a", encoding="utf-8") as f:
+    f.write(NAME + "\\n")
+if os.environ.get("LAND_FAIL") == NAME:
+    print(NAME + ": planted failure")
+    sys.exit(1)
+print(NAME + ": ok")
+"""
+# sync's stand-in: pushes by lane as kbgit.py sync --push does (code/<first KB-Work id> when a path is outside kb/)
+SYNC_STUB = STEP_STUB.format(name="sync") + """import re, subprocess
+def git(*a):
+    return subprocess.run(["git", *a], capture_output=True, text=True, check=True).stdout
+git("fetch", "-q", "origin")
+if any(not p.startswith("kb/") for p in git("diff", "--name-only", "origin/main", "HEAD").split()):
+    ids = re.findall(r"(?:ST|TK|SB|BG)-[a-z2-7]{8}", git("log", "--reverse", "--format=%B", "origin/main..HEAD"))
+    git("push", "-q", "origin", "HEAD:refs/heads/code/" + ids[0])
+else:
+    git("push", "-q", "origin", "HEAD:refs/heads/main")
+"""
+
+
+class TestBacklogLand:
+    """backlog.py land ID in a throwaway clone with a local bare remote; the heavy steps (stress_test.py, rag.py eval,
+    the lint) and kbgit.py sync are stubs in the clone that log their names. A content item lands in one run; a code
+    item's first run gates and opens code/<id> without moving main, and a re-run after the merge finishes it. Planted
+    failures (a failing heavy step, a failing done check, a rebase conflict, a dirty tree) stop land at that step,
+    named, with nothing after it run."""
+
+    CO = "Co-Authored-By: A <a@example.com>"
+    HEAVY = ["stress_test.py", "rag.py eval", "lint"]
+
+    @staticmethod
+    def out(cwd, *a):
+        return subprocess.run(["git", *a], cwd=cwd, capture_output=True, text=True, encoding="utf-8",
+                              check=True).stdout
+
+    @pytest.fixture
+    def landing(self, sprint, monkeypatch):
+        repo, tk = sprint["repo"], sprint["tk"]
+        stubs = {"_tools/stress_test.py": STEP_STUB.format(name="stress_test.py"),
+                 "_tools/rag.py": STEP_STUB.format(name="rag.py eval"),
+                 ".claude/skills/kb-verify/lint.py": STEP_STUB.format(name="lint"), "_tools/kbgit.py": SYNC_STUB}
+        for rel, text in stubs.items():
+            (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+            (repo / rel).write_text(text, encoding="utf-8")
+        commit(repo, "plan and step stubs")
+        sh(repo, "git", "branch", "-M", "main")
+        remote = repo.parent / f"{repo.name}-remote.git"
+        sh(repo, "git", "init", "-q", "--bare", str(remote))
+        sh(repo, "git", "remote", "add", "origin", str(remote))
+        sh(repo, "git", "push", "-q", "origin", "main")
+        log = repo.parent / f"{repo.name}-land.log"
+        monkeypatch.setenv("LAND_LOG", str(log))
+        monkeypatch.delenv("LAND_FAIL", raising=False)
+        sh(repo, "git", "checkout", "-q", "-b", f"work/{tk}")
+        assert b(repo, "claim", tk, "--by", "worker", "--commit")[0] == 0
+        return {"repo": repo, "tk": tk, "remote": remote, "log": log,
+                "main": self.out(remote, "rev-parse", "main").strip()}
+
+    def work(self, ld, files, check):
+        repo, tk = ld["repo"], ld["tk"]
+        edit(repo, tk, touches=["src/**", "kb/public/**", "_tools/b.py"], checks=[{"run": is_file(check)}])
+        for rel in files:
+            (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+            (repo / rel).write_text("b\n", encoding="utf-8")
+        commit(repo, "work", tk)
+
+    @staticmethod
+    def steps(ld):
+        return ld["log"].read_text(encoding="utf-8").splitlines() if ld["log"].exists() else []
+
+    def remote_item(self, ld, ref="main"):
+        return json.loads(self.out(ld["remote"], "show", f"{ref}:{backlog.REL_DIR}/{ld['tk']}.json"))
+
+    def land(self, ld):
+        return b(ld["repo"], "land", ld["tk"], "--trailer", self.CO)
+
+    def test_backlog_land_content_item_in_one_run(self, landing):
+        ld = landing
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        sh(ld["repo"], "git", "checkout", "-q", "main")  # main moves on meanwhile: land rebases onto it
+        (ld["repo"] / "kb" / "public").mkdir(parents=True, exist_ok=True)
+        (ld["repo"] / "kb" / "public" / "y.md").write_text("y\n", encoding="utf-8")
+        commit(ld["repo"], "other work")
+        sh(ld["repo"], "git", "push", "-q", "origin", "main")
+        code, out = self.land(ld)
+        assert code == 0 and "landed" in out, out
+        assert self.steps(ld) == ["sync"], out  # no _tools/ change: no heavy step
+        assert self.remote_item(ld)["status"] == "done"
+        msg = self.out(ld["remote"], "log", "-1", "--format=%B", "main")
+        assert msg.startswith(f"chore(backlog): done {ld['tk']}") and self.CO in msg, msg
+        assert "kb/public/y.md" in self.out(ld["remote"], "ls-tree", "-r", "--name-only", "main")
+
+    def test_backlog_land_code_item_waits_for_its_merge_request_then_finishes(self, landing):
+        ld = landing
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        code, out = self.land(ld)
+        assert code == 0 and f"code/{ld['tk']}" in out and "not done yet" in out, out
+        assert self.steps(ld) == self.HEAVY + ["sync"], out
+        assert self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"]  # main did not move
+        assert self.remote_item(ld, f"code/{ld['tk']}")["status"] == "doing"
+        code, out = self.land(ld)  # before the merge: nothing re-run, nothing pushed
+        assert code == 0 and "waits for its merge request" in out, out
+        assert len(self.steps(ld)) == 4
+        sh(ld["remote"], "git", "update-ref", "refs/heads/main", f"refs/heads/code/{ld['tk']}")  # the merge
+        code, out = self.land(ld)
+        assert code == 0 and "landed" in out, out
+        assert self.steps(ld)[4:] == ["sync"], out  # the item file alone: the heavy steps ran once
+        assert self.remote_item(ld)["status"] == "done"
+
+    def test_backlog_land_stops_at_the_failing_step_and_names_it(self, landing, monkeypatch):
+        ld = landing
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        monkeypatch.setenv("LAND_FAIL", "rag.py eval")  # planted
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step rag.py eval" in out and "planted failure" in out, out
+        assert self.steps(ld) == self.HEAVY[:2], out  # neither the lint nor sync ran
+        assert not self.out(ld["remote"], "branch", "--list", "code/*").strip()
+
+    def test_backlog_land_stops_at_done(self, landing):
+        ld = landing
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/missing.md")  # planted: the item's check fails
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step done" in out, out
+        assert self.steps(ld) == [] and self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"]
+
+    def test_backlog_land_stops_at_rebase_and_aborts_it(self, landing):
+        ld = landing
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        sh(ld["repo"], "git", "checkout", "-q", "main")
+        (ld["repo"] / "kb" / "public" / "x").mkdir(parents=True, exist_ok=True)
+        (ld["repo"] / "kb" / "public" / "x" / "a.md").write_text("other\n", encoding="utf-8")  # planted conflict
+        commit(ld["repo"], "conflicting work")
+        sh(ld["repo"], "git", "push", "-q", "origin", "main")
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step rebase" in out, out
+        assert self.steps(ld) == [] and not self.out(ld["repo"], "status", "--porcelain")
+        assert not (ld["repo"] / ".git" / "rebase-merge").exists()
+
+    def test_backlog_land_refuses_a_dirty_tree(self, landing):
+        ld = landing
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        (ld["repo"] / "src" / "a.txt").write_text("dirty\n", encoding="utf-8")  # planted
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step clean tree" in out, out
+        assert self.steps(ld) == []
+
+    def test_backlog_land_refuses_kb_trailers(self, landing):
+        code, out = b(landing["repo"], "land", landing["tk"], "--trailer", f"KB-Work: {landing['tk']}")
+        assert code == 1 and "--trailer" in out, out
