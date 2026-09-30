@@ -2231,7 +2231,7 @@ _Agent: kb-research_
 - `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` ends every process of a job when its last handle closes; with `JOB_OBJECT_LIMIT_BREAKAWAY_OK`, a child created with `CREATE_BREAKAWAY_FROM_JOB` leaves the job. [DOC S-obrkrr52]
 - A process tests whether it runs in any job with `IsProcessInJob` and a NULL job handle, and reads that job's limits with `QueryInformationJobObject(NULL, ...)`. [DOC S-hjy5rcb2]
 - Conclusion: no. Under Claude Code 2.1.285 (`claude -p`, Windows 11 with Git for Windows), a shell-form hook (Git Bash) runs in no job and a `"shell": "powershell"` hook in a job with `BREAKAWAY_OK` only; detached children, with or without the breakaway flag, outlived the hook and Claude Code. The query log's SessionEnd launcher needs no breakaway there. [DER S-hjy5rcb2, S-obrkrr52, S743]
-- Open: an interactive session and other Claude Code versions were not probed. [UNK]
+- Open: other Claude Code versions were not probed (an interactive 2.1.285 session gave the same job flags). [UNK]
 - See python/stdlib-windows-portability.md, claude/hooks.md.
 
 _Agent: kb-research_
