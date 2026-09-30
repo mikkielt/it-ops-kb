@@ -2,7 +2,7 @@
   "id": "BG-eybmld6m",
   "kind": "bug",
   "title": "The gap step files an off-kb question as a gap under an unrelated article when its pack is weak",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -60,5 +60,29 @@
     "kb/_self/querylog.md (the gap step)"
   ],
   "notes": "gap_one guards only a none lead (more than half the key words); a weak lead passes whatever word it lacks. The pack gives weak with 3 of 4 key words (attachment, maximum, size) and lacks email, the question's subject. The rule that tells a subject word from a qualifier is the fix's design; it must not move any rag.py eval row.",
-  "claimed_by": "worker-eybmld6m"
+  "evidence": {
+    "commit": "29308a3f8b5248d26679d15c45db09e02f4afe9d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "gap_step"
+        ],
+        "exit": 0,
+        "sha256": "a2005dd5764540c6"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "gap_step_rejects_weak_off_domain"
+        ],
+        "exit": 0,
+        "sha256": "20b709fd52195047"
+      }
+    ]
+  }
 }

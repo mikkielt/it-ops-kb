@@ -2,7 +2,7 @@
   "id": "BG-x6rnulu7",
   "kind": "bug",
   "title": "tools.md's querylog.py apply row omits the gap step's weak-lead rule",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -20,5 +20,19 @@
   "touches": [
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orchestrator-SP-4slunkaj"
+  "evidence": {
+    "commit": "29308a3f8b5248d26679d15c45db09e02f4afe9d",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-q",
+          "weak. lead without the subject",
+          "kb/_self/tools.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
