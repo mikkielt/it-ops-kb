@@ -25,7 +25,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | ingest | 2026-09-28 | 1 | 6,947,437 | 26,909 | $2.06 |
 | kb-lookup-agent | 2026-09-28 | 3 | 74,652 | 845 | $0.12 |
 | models | 2026-09-28 | 28 | 2,788,545 | 26,211 | $4.01 |
-| navigation | 2026-09-30 | 9 | 1,023,066 | 8,280 | $0.70 |
+| navigation | 2026-09-30 | 18 | 2,092,986 | 17,421 | $1.44 |
 | new-model | 2026-09-28 | 60 | 6,125,840 | 59,832 | $6.62 |
 | partial | 2026-09-28 | 13 | 2,522,765 | 21,392 | $1.79 |
 | querylog-pipeline | 2026-09-28 | 1 | 7,250 | 2,608 | $0.03 |
@@ -34,7 +34,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | route-by-verdict | 2026-09-29 | 36 | 2,723,008 | 57,099 | $3.73 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 339 | 34,555,322 | 378,889 | $36.45 |
+| all | | 348 | 35,625,242 | 388,030 | $37.18 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -1018,6 +1018,10 @@ Each question asks for function and test names only, and an answer is checked by
 | N2 | before | 6.3 | 5.3 | 2.33333 | 140,379 | $0.076 | 15 s | 6/6 |
 | N3 | before | 4.3 | 3.3 | 1.66667 | 100,096 | $0.063 | 14 s | 6/6 |
 | N1-N3 | before | 15 | 12 | 5.66667 | 341,022 | - | - | - |
+| N1 | after | 4.7 | 3.7 | 2 | 112,620 | $0.100 | 12 s | 6/6 |
+| N2 | after | 6 | 5 | 2.66667 | 131,700 | $0.073 | 14 s | 6/6 |
+| N3 | after | 6 | 5 | 2 | 112,320 | $0.074 | 13 s | 6/6 |
+| N1-N3 | after | 16.7 | 13.7 | 6.66667 | 356,640 | - | - | - |
 <!-- /bench -->
 
 What it shows:
@@ -1025,3 +1029,18 @@ What it shows:
 - **Every answer was right:** all nine named the case's function and a test that pins the rule (6/6 checks in each case), so the arm has no room left on correctness and a later layout can differ only in what it costs to get there.
 - **What finding the code costs here:** N1 and N3 took 4.3 turns and 3.3 tool calls on average, N2 took 6.3 turns and 5.3 tool calls; the three questions together took 15 turns, 12 tool calls and 341k input tokens, at 12-15 s and $0.063-0.094 per run on average. Seven of the nine runs began with a `Grep` for a word of the question and two with a shell search, then read one to three files; the files read are a floor, since a search over a directory counts no file.
 - **Noise:** the cells are means of 3 runs, and the runs of one case differ by up to 3 turns (N1 3-6, N2 5-7, N3 3-5) and by a factor of 2-3 in cost, so a later arm that moves a mean by about that much has shown nothing.
+- **The split:** arm `after`, the same three questions, 3 runs each, Sonnet 5.5 with Claude Code 2.1.286, at commit `0c375fc`, the tip of `main` once the flat modules were split: `kbgit.py`'s merge into `kg_merge.py` and `kg_base.py`, `benchmarks.py` into the `bench_*.py` modules, `test_querylog.py` into `test_ql_*.py` and `ql_testkit.py`, and `test_kb.py` into `test_kb_cohesion.py`, `test_kb_lookup.py`, `test_kb_ids.py` and `test_kb_leaks.py`. The function and test names are unchanged, so the same answer checks apply. Nine runs cost $0.74.
+- **Every answer was right again:** 6/6 checks in each case, so the arms differ only in what the route cost.
+- **The change, after against before (means of 3 runs per case, the total is the sum of the three cases):**
+
+| case | turns | tool calls | files read | input tokens |
+|---|---|---|---|---|
+| N1 | 4.3 to 4.7 (+0.3) | 3.3 to 3.7 (+0.3) | 1.7 to 2 (+0.3) | 100,548 to 112,620 (+12%) |
+| N2 | 6.3 to 6 (-0.3) | 5.3 to 5 (-0.3) | 2.3 to 2.7 (+0.3) | 140,379 to 131,700 (-6%) |
+| N3 | 4.3 to 6 (+1.7) | 3.3 to 5 (+1.7) | 1.7 to 2 (+0.3) | 100,096 to 112,320 (+12%) |
+| N1-N3 | 15 to 16.7 (+1.7, +11%) | 12 to 13.7 (+1.7, +14%) | 5.7 to 6.7 (+1, +18%) | 341,022 to 356,640 (+15,618, +5%) |
+
+- **Noise:** the runs of one case differ by up to 3 turns in both arms (after: N1 4-5, N2 5-8, N3 5-7), and the input of one run by up to a factor of 2 (N2 after 105k-177k, before 81k-178k). Taking one run of each case together as a total, the three totals were 16, 16 and 13 turns before and 15, 15 and 20 after, so the spread between runs of one arm (a standard deviation of 1.7 turns before and 2.9 after) is as large as the difference between the arms, 1.7 turns; the standard error of that difference is about 1.9 turns, 0.75 files and 46k input tokens. No metric's difference exceeds its spread. All four means are higher after than before and N2 is lower on turns, tool calls and input, but with 3 runs per arm that direction is no evidence of a cost: the data show neither a gain nor a loss. Three runs of three questions cannot show a change below about 2 turns in the total.
+- **Files read:** the files read per run were 2 in every N1 and N3 run after (before: 1-3 and 1-2) and 2-3 in N2 (before 2-3), about a third of a file more per case on average but with less spread between runs. The count is a floor, since a search over a directory counts no file, and one file more per question is within what a single run's route changes.
+
+Verdict: stop splitting. The split did not make the code cheaper to find in these nine runs (16.7 turns, 13.7 tool calls, 6.7 files and 357k input tokens after, against 15, 12, 5.7 and 341k before, all within the run-to-run spread), and with every answer right in both arms there is no navigation cost left for a further split to remove, so splitting `kbfacts.py`, `factdiff.py` and `backlog.py` has no measured payoff to claim; split them only for a reason other than navigation.
