@@ -1,4 +1,4 @@
-"""The query log's research and quote check (kb/_self/querylog.md, Research), the add-only writers apply's gap step
+"""The query log's research and quote check (kb/_self/querylog.md, The research queue), the add-only writers apply's gap step
 shares with it, and the research queue. Research is opt-in per user, capped by the user's own daily count: one
 `claude -p` run per gap finding at stage `gap`, whose candidate facts are kept only when deterministic gates pass and
 their quote is on the page; nothing existing is edited. The queue (`queue`, `close`) lists the open gap findings with
