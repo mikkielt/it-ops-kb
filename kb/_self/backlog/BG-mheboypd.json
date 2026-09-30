@@ -2,7 +2,7 @@
   "id": "BG-mheboypd",
   "kind": "bug",
   "title": "The job-object fact in stdlib-windows-portability claims more than one headless probe shows",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P1",
@@ -22,5 +22,18 @@
     "kb/public/_coverage.*",
     "kb/public/_answers.md"
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "d7550af940651d1ab843b9e75ed2a7d7fb40f0b4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path('kb/public/python/stdlib-windows-portability.md').read_text(encoding='utf-8'); sys.exit(0 if 'interactive' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }

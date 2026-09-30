@@ -2,7 +2,7 @@
   "id": "ST-3goqpgvd",
   "kind": "story",
   "title": "Tests of Windows path handling plant a directory separator",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-hlfwfcx6",
   "priority": "P2",
@@ -17,5 +17,20 @@
         "RevisionReadsWithoutGitShow or kbingest_map or raw_read_nudge"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "d7550af940651d1ab843b9e75ed2a7d7fb40f0b4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "RevisionReadsWithoutGitShow or kbingest_map or raw_read_nudge"
+        ],
+        "exit": 0,
+        "sha256": "696faab7ca032b3e"
+      }
+    ]
+  }
 }
