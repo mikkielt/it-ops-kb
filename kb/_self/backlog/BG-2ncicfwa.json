@@ -2,7 +2,7 @@
   "id": "BG-2ncicfwa",
   "kind": "bug",
   "title": "Research closes a gap at claim without a Resolved note, so queue exits 1",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -35,5 +35,30 @@
     "_tools/test_querylog_e2e.py",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "worker-2ncicfwa"
+  "evidence": {
+    "commit": "01ebc76cb390275123272349f32f73d2c967c39c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "queue or research"
+        ],
+        "exit": 0,
+        "sha256": "97d704602588598b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "queue_exits_0_after_research",
+          "--runxfail"
+        ],
+        "exit": 0,
+        "sha256": "62af1784eedb7a3d"
+      }
+    ]
+  }
 }
