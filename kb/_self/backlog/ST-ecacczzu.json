@@ -21,8 +21,5 @@
   "depends_on": [
     "ST-6bi7oe6y"
   ],
-  "relates_to": [
-    "ST-wgymzw72"
-  ],
   "notes": "research true comes from ST-wgymzw72; until then only links to gap findings select an item. A /kb-research session that claims no item is not counted."
 }

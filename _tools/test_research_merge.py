@@ -1,7 +1,8 @@
 """Two parallel research branches with colliding ids, merged the documented way (`python3 _tools/tests.py -k research`).
 
 TestResearchMergeInGit (marker git) replays a two-researcher merge in a temp dir, never against the real origin:
-  - the kb as it is now (history plus the working tree) is committed; a fork commit before it narrows one article's
+  - the kb as it is now (the working tree, as one root commit: a blob:none partial clone lacks the older blobs a push
+    of its history would need) is committed; a fork commit before it narrows one article's
     `files:` line, and the working tree on top of it (the upstream edit made since the fork) is pushed as `main`
     to a throwaway bare remote;
   - research-a and research-b fork from that fork commit (today's _sources.csv layout and tools) and both take the
@@ -75,16 +76,20 @@ class TestResearchMergeInGit:
         top = Repo(cls.tmp, cls.env)
         src, cls.remote = Repo(os.path.join(cls.tmp, "src"), cls.env), os.path.join(cls.tmp, "remote.git")
         top.git("clone", "-q", "--no-hardlinks", KB, src.path)
-        src.git("checkout", "-q", "--detach")
+        src.git("checkout", "-q", "--orphan", "scenario")
         for name in os.listdir(src.path):  # the working tree as it is now (tools under test included), over HEAD
             if name != ".git":
                 p = src.file(name)
                 shutil.rmtree(p) if os.path.isdir(p) and not os.path.islink(p) else os.remove(p)
+        patterns, claude = shutil.ignore_patterns("__pycache__", "_fetch_state.csv"), os.path.normcase(os.path.join(KB, ".claude"))
+
+        def ignore(d, names):  # and Claude Code's worktrees (sprint subagents), as conftest.copy_kb: each is a second kb
+            return set(patterns(d, names)) | ({"worktrees"} if os.path.normcase(d) == claude else set())
         for name in os.listdir(KB):
             if name in (".git", "_cache", "_private", "__pycache__", "_fetch_state.csv"):
                 continue
             s, d = os.path.join(KB, name), src.file(name)
-            shutil.copytree(s, d, symlinks=True, ignore=shutil.ignore_patterns("__pycache__", "_fetch_state.csv")) if os.path.isdir(s) else shutil.copy2(s, d)
+            shutil.copytree(s, d, symlinks=True, ignore=ignore) if os.path.isdir(s) else shutil.copy2(s, d)
         src.git("add", "-A")
         if src.git("status", "--porcelain").strip():
             src.git("commit", "-q", "--no-verify", "-m", "the working tree under test")
