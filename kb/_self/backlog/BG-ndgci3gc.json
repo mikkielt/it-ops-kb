@@ -16,5 +16,10 @@
       "import shutil,sys,tempfile; sys.path.insert(0,'_tools'); import benchmarks as bm; d=bm.shim_dir(tempfile.mkdtemp()); sys.exit(0 if shutil.which('claude', path=str(d)) else 1)"
     ]
   },
+  "touches": [
+    "_tools/benchmarks.py",
+    "_tools/test_benchmarks.py",
+    "kb/_self/tools.md"
+  ],
   "claimed_by": "worker-shims"
 }

@@ -12,8 +12,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 read-only kb-lookup, kb-review-workspace and kb-gap skills, the kb-lookup and kb-reviewer agents listed by path
                 so the kb's agents/ articles never load, the kb: hook) and it-ops-kb-docs (the three documentation
                 servers and a PreToolUse hook blocking submit_feedback: one command, run in each of sh, bash, dash,
-                pwsh and Windows PowerShell present, exits 2 with its reason on stderr; planted: the old `>&2`
-                command, a parser error in PowerShell); no root .mcp.json (it would load into
+                pwsh and Windows PowerShell present (not WSL's bash launcher), exits 2 with its reason on stderr;
+                planted: the old `>&2` command, a parser error in PowerShell); no root .mcp.json (it would load into
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both. The clone-only
                 kb-worker agent (test_kb_worker_agent*): the sonnet alias, effort high, not in plugin.json. Its
@@ -55,9 +55,50 @@ REMOTE = "git@gitlab.com:mikkielt/it-ops-kb.git"
 DOCS_PLUGIN = ".claude-plugin/it-ops-kb-docs"
 # Every shell a shell-form command hook can reach (kb/public/claude/hooks.md): sh -c on macOS and Linux, Git Bash on
 # Windows, PowerShell (pwsh, else Windows PowerShell, with -Command) on Windows without Git Bash; each one present runs.
-HOOK_SHELLS = ([(n, [p, "-c"]) for n in ("sh", "bash", "dash") if (p := shutil.which(n))]
-               + [(n, [p, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command"])
-                  for n in ("pwsh", "powershell") if (p := shutil.which(n))])
+
+
+def wsl_dirs(env=None):
+    """Where Windows puts WSL's bash launcher: the Windows directory (System32\\bash.exe) and the app execution
+    aliases (%LOCALAPPDATA%\\Microsoft\\WindowsApps\\bash.exe); none off Windows."""
+    env = os.environ if env is None else env
+    windir = env.get("SystemRoot") or env.get("WINDIR")
+    local = env.get("LOCALAPPDATA")
+    return [d for d in (windir, local and os.path.join(local, "Microsoft", "WindowsApps")) if d]
+
+
+def is_wsl_launcher(path, dirs=None):
+    """Whether a POSIX shell found on PATH is WSL's launcher (a bash or sh under wsl_dirs): Claude Code never runs
+    hooks with it, and with no Linux distribution installed it prints a UTF-16 notice and exits 1."""
+    p = os.path.normcase(os.path.abspath(path))
+    for d in wsl_dirs() if dirs is None else dirs:
+        w = os.path.normcase(os.path.abspath(d))
+        try:
+            if os.path.commonpath([p, w]) == w:
+                return True
+        except ValueError:  # another drive
+            pass
+    return False
+
+
+def _starts(path):
+    """Whether `sh -c 'exit 0'` exits 0 in this shell (a launcher with nothing to launch does not)."""
+    try:
+        return subprocess.run([path, "-c", "exit 0"], capture_output=True, timeout=60).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def hook_shells(which=shutil.which, starts=_starts):
+    """[(name, argv before the command)] of the hook shells present: sh, bash and dash but WSL's launcher (and, on
+    Windows, any that fails `-c 'exit 0'`), then pwsh and Windows PowerShell."""
+    def real(p):
+        return not is_wsl_launcher(p) and (os.name != "nt" or starts(p))
+    return ([(n, [p, "-c"]) for n in ("sh", "bash", "dash") if (p := which(n)) and real(p)]
+            + [(n, [p, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command"])
+               for n in ("pwsh", "powershell") if (p := which(n))])
+
+
+HOOK_SHELLS = hook_shells()
 
 
 def block_offenders(cmd):
@@ -539,6 +580,24 @@ class TestPluginManifest:
         ps = [n for n, _ in HOOK_SHELLS if n in ("pwsh", "powershell")]
         assert [b.split(":")[0] for b in block_offenders(old)] == ps
         assert "PreToolUse" not in self.plugin["hooks"], "the kb plugin has no docs servers to guard"
+
+    def test_hook_shells_leave_out_the_wsl_launcher(self, tmp_path, monkeypatch):
+        # System32\bash.exe and the WindowsApps alias start WSL, which exits 1 with no distribution installed: no hook
+        # runs in either
+        windir, local = tmp_path / "Windows", tmp_path / "AppData" / "Local"
+        monkeypatch.setenv("SystemRoot", str(windir))
+        monkeypatch.setenv("LOCALAPPDATA", str(local))
+        git_sh = str(tmp_path / "Git" / "usr" / "bin" / "sh.exe")
+        ps = str(windir / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe")
+        for bash in (windir / "System32" / "bash.exe", local / "Microsoft" / "WindowsApps" / "bash.exe"):
+            found = {"sh": git_sh, "bash": str(bash), "powershell": ps}
+            got = hook_shells(found.get, starts=lambda p: True)
+            assert [(n, a[0]) for n, a in got] == [("sh", git_sh), ("powershell", ps)], bash
+        assert not is_wsl_launcher(str(tmp_path / "Windows-not" / "bash.exe"))
+        # on Windows a shell elsewhere that cannot run `exit 0` is left out too
+        found = {"bash": str(tmp_path / "other" / "bash.exe")}
+        assert [n for n, _ in hook_shells(found.get, starts=lambda p: False)] == ([] if os.name == "nt" else ["bash"])
+        assert not any(is_wsl_launcher(a[0]) for n, a in HOOK_SHELLS if n in ("sh", "bash", "dash"))
 
     def test_kb_prompt_hook_from_the_plugin_root(self):
         hooks = self.plugin["hooks"]["UserPromptSubmit"]
