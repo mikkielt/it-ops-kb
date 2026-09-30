@@ -1223,7 +1223,7 @@ def test_live_docs_cache_sse_splits_only_at_cr_and_lf():
     str.splitlines separator) unescaped is one data line and parses whole."""
     sys.path.insert(0, TOOLS)
     import kb_mcp
-    text = "a b c\u0085d\x0be\x0cf\x1cg\x1dh\x1ei"
+    text = "a\u2028b\u2029c\u0085d\x0be\x0cf\x1cg\x1dh\x1ei"
     reply = {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": text}]}}
     data = json.dumps(reply, ensure_ascii=False)
     assert kb_mcp.sse_messages("event: message\ndata: " + data + "\n\n") == [reply]
