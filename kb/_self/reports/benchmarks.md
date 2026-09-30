@@ -25,6 +25,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | ingest | 2026-09-28 | 1 | 6,947,437 | 26,909 | $2.06 |
 | kb-lookup-agent | 2026-09-28 | 3 | 74,652 | 845 | $0.12 |
 | models | 2026-09-28 | 28 | 2,788,545 | 26,211 | $4.01 |
+| navigation | 2026-09-30 | 9 | 1,023,066 | 8,280 | $0.70 |
 | new-model | 2026-09-28 | 60 | 6,125,840 | 59,832 | $6.62 |
 | partial | 2026-09-28 | 13 | 2,522,765 | 21,392 | $1.79 |
 | querylog-pipeline | 2026-09-28 | 1 | 7,250 | 2,608 | $0.03 |
@@ -33,7 +34,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | route-by-verdict | 2026-09-29 | 36 | 2,723,008 | 57,099 | $3.73 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 330 | 33,532,256 | 370,609 | $35.75 |
+| all | | 339 | 34,555,322 | 378,889 | $36.45 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -1003,3 +1004,24 @@ What it shows: `sh _tools/kbpy` adds 3.5 ms at the median to a Python start of 9
 Each question asks for function and test names only, and an answer is checked by those names, never by a file path: it is right when it names the case's function and at least one of the tests that pin the rule (`benchmarks.NAV`), so the same three questions score the code after a file moves or a module splits, and a test (`test_navigation_answers_name_code_that_exists_and_the_prompts_do_not_name_it`) fails when a name stops being defined anywhere under `_tools/` or a prompt gives it away. The scenario writes one row set per case and arm: `turns`, `tool_calls`, `files_read` and `input` (means over `--reps` runs), `checks` (the functions and the tests named right, two checks per run), and the sums of the three cases under `N1-N3`. `files_read` is counted from the run's own tool calls: the distinct files of its Read calls, of a Grep or Glob whose path is a file, and of the file names in its shell commands; a search over a directory or a wildcard reads no one file, so the count is a floor.
 
 `--arm` names the arm of the rows (default `current`); a run replaces only the rows of its own arm for the day, so two arms run on one date (a layout before and after a change) both stay in `kb/_self/reports/benchmarks.csv`, and their spend adds up in the spend table. To measure a layout, check out its commit and run the scenario there: the clone is of that checkout's `HEAD`. The scenario's tests run no model (`python3 _tools/tests.py -k navigation`); the stream they read is synthetic, like `agent_bench.py`'s.
+
+<!-- bench:records navigation -->
+| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
+|---|---|---|---|---|---|---|
+| 2026-09-30 | 2026-09-30 | f2509b1 | 2.1.286 | 292 | 3 | $0.70 |
+<!-- /bench -->
+
+<!-- bench:table navigation metrics=turns,tool_calls,files_read,input,cost,wall_s,checks -->
+| case | arm | turns | tool_calls | files_read | input | cost | wall_s | checks |
+|---|---|---|---|---|---|---|---|---|
+| N1 | before | 4.3 | 3.3 | 1.66667 | 100,548 | $0.094 | 12 s | 6/6 |
+| N2 | before | 6.3 | 5.3 | 2.33333 | 140,379 | $0.076 | 15 s | 6/6 |
+| N3 | before | 4.3 | 3.3 | 1.66667 | 100,096 | $0.063 | 14 s | 6/6 |
+| N1-N3 | before | 15 | 12 | 5.66667 | 341,022 | - | - | - |
+<!-- /bench -->
+
+What it shows:
+- **The baseline:** arm `before`, 3 runs per question on Sonnet 5.5 (`claude-sonnet-5-5`) with Claude Code 2.1.286, at commit `f2509b1`, the last commit of `main` before any file of the sprint "Codebase maintainability proven" moved, so the tools are still the flat modules the later arms are compared with. Nine runs cost $0.70.
+- **Every answer was right:** all nine named the case's function and a test that pins the rule (6/6 checks in each case), so the arm has no room left on correctness and a later layout can differ only in what it costs to get there.
+- **What finding the code costs here:** N1 and N3 took 4.3 turns and 3.3 tool calls on average, N2 took 6.3 turns and 5.3 tool calls; the three questions together took 15 turns, 12 tool calls and 341k input tokens, at 12-15 s and $0.063-0.094 per run on average. Seven of the nine runs began with a `Grep` for a word of the question and two with a shell search, then read one to three files; the files read are a floor, since a search over a directory counts no file.
+- **Noise:** the cells are means of 3 runs, and the runs of one case differ by up to 3 turns (N1 3-6, N2 5-7, N3 3-5) and by a factor of 2-3 in cost, so a later arm that moves a mean by about that much has shown nothing.
