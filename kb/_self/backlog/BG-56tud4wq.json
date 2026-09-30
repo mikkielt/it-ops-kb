@@ -2,7 +2,7 @@
   "id": "BG-56tud4wq",
   "kind": "bug",
   "title": "kb_http.py reads a chunked POST body as empty",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -31,5 +31,29 @@
     "_tools/kb_http.py",
     "_tools/test_kb_http.py"
   ],
-  "claimed_by": "worker-56tud4wq"
+  "evidence": {
+    "commit": "8f1693ea4e0304a8aa2faec5c0755d6c8ad3fcbb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http"
+        ],
+        "exit": 0,
+        "sha256": "cba11f9b36bf9cf9"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http_chunked_body"
+        ],
+        "exit": 0,
+        "sha256": "c39645bc398198fe"
+      }
+    ]
+  }
 }

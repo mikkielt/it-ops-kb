@@ -2,7 +2,7 @@
   "id": "BG-lebyyfoj",
   "kind": "bug",
   "title": "token-efficiency.md and tools.md say every good pack without a check: line is answered by the kb: hook, but a routed good pack now goes to the model",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -20,5 +20,18 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-second"
+  "evidence": {
+    "commit": "8f1693ea4e0304a8aa2faec5c0755d6c8ad3fcbb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;a=open('kb/_self/token-efficiency.md',encoding='utf-8').read();b=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(1 if 'no `check:` line blocks the prompt' in a or 'is `good` with no `check:` line;' in b else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
