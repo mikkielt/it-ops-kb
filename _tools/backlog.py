@@ -10,7 +10,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py check                        validate every item (fields, links, cycles, canonical form, a planned
                                           sprint's items still draft, and the kb references of its `knowledge`: a
                                           missing one is an error, a fact key no longer found is reported as stale
-                                          knowledge); exit 1 on errors
+                                          knowledge; no item may hold a piece of this host's computer or user
+                                          name, read from the environment and never printed); exit 1 on errors
   backlog.py fmt                          rewrite every item in canonical form
   backlog.py list [--kind K] [--status S] [--sprint ID]   one line per item: id, kind, status, priority, title
   backlog.py tree [ID] [--sprint ID]      the hierarchy under an item, a sprint or everything
@@ -60,9 +61,10 @@ fact key no longer in its file, or a source with `superseded_by` set that the re
 `_conflicts.md` entry on its article); stale, then conflicting, override the coverage. Derived on every call, never
 stored, and no part of readiness. An item without `knowledge` costs nothing: the pack is not loaded.
 
-Every line that names an item prints its id and its title together.
+Every line that names an item prints its id and its title together, except a title check found holding a piece of
+this host's computer or user name, which is withheld.
 """
-import argparse, base64, hashlib, json, re, secrets, shlex, subprocess, sys
+import argparse, base64, getpass, hashlib, json, os, re, secrets, shlex, socket, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -123,6 +125,7 @@ class Backlog:
         self.root = Path(root)
         self.dir = self.root / REL_DIR
         self.items, self.raw, self.load_errors = {}, {}, []
+        self.withheld = set()  # items holding a piece of a host or user name: label() never prints their title
         if self.dir.is_dir():
             for p in sorted(self.dir.glob("*.json")):
                 text = p.read_text(encoding="utf-8")
@@ -156,6 +159,8 @@ class Backlog:
 
     def label(self, iid):
         it = self.items.get(iid)
+        if iid in self.withheld:
+            return f"{iid} (title withheld: the item holds a host or user name)"
         return f"{iid} “{it.get('title', '')}”" if it else f"{iid} (no such item)"
 
     def children(self, iid):
@@ -207,6 +212,103 @@ def _check_ok(c):
     return (isinstance(c, dict) and isinstance(c.get("run"), list) and c["run"]
             and all(isinstance(x, str) for x in c["run"]) and set(c) <= {"run", "exit", "match"}
             and isinstance(c.get("exit", 0), int) and isinstance(c.get("match", ""), str))
+
+
+# ------------------------------------------------------------------ host and user names
+
+# A backlog item is published with the repository, so it must not hold this host's computer name or the user's
+# name (BG-477tasb3: checks written to keep the names out spelled pieces of them). The names are read from the
+# environment at run time and never spelled in code, tests or docs, and no output prints a name or a piece of one.
+HOST_ENV = ("COMPUTERNAME", "HOSTNAME")  # Windows, then the shells that export it
+USER_ENV = ("USERNAME", "USER", "LOGNAME")
+# Names a CI runner, container or fresh install gives every machine (a GitLab runner is
+# runner-<token>-project-<id>-concurrent-<n>, a Windows one DESKTOP-<serial>): a piece equal to one names no one
+# host or person, and matching it would refuse ordinary text.
+GENERIC_NAMES = frozenset("""
+    admin administrator agent build builder buildkite circleci codespace codespaces computer concurrent container
+    default desktop developer docker github gitlab guest instance jenkins laptop local localhost owner project public
+    runner runneradmin server service system tester travis ubuntu users vagrant vscode windows workstation
+""".split())
+NAME_PART = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z0-9]+|[A-Z0-9]+")  # CamelCase parts; digits stay on
+
+
+def host_user_names(env=None):
+    """[(kind, name)]: this host's computer name and the user's name, from the environment's variables, the socket
+    host name's first label, and getpass when no user variable is set."""
+    env = os.environ if env is None else env
+    out = [("host", env.get(k, "")) for k in HOST_ENV] + [("user", env.get(k, "")) for k in USER_ENV]
+    try:
+        out.append(("host", socket.gethostname().split(".")[0]))
+    except OSError:
+        pass
+    if not any(env.get(k) for k in USER_ENV):
+        try:
+            out.append(("user", getpass.getuser()))
+        except Exception:  # noqa: BLE001 - no user name found: nothing to guard
+            pass
+    return [(k, n.strip()) for k, n in out if n and n.strip()]
+
+
+def name_piece_ok(piece):
+    """A piece long enough to name one host or person rather than an ordinary word: a letter in it, not a generic
+    name, and at least 5 characters, or 4 with a digit (a host serial such as `pc01`)."""
+    return (re.search(r"[a-z]", piece) is not None and piece not in GENERIC_NAMES
+            and (len(piece) >= 5 or (len(piece) == 4 and re.search(r"[0-9]", piece) is not None)))
+
+
+def name_pieces(name):
+    """The pieces of one name, lower case, kept by name_piece_ok: the whole name, it without separators, each part
+    between non-alphanumerics and each CamelCase part of those (`JohnSmithCorp`: johnsmithcorp, john, smith;
+    `ABC-PC01`: abc-pc01, abcpc01, pc01)."""
+    cands = {name.lower(), re.sub(r"[^0-9A-Za-z]", "", name).lower()}
+    for tok in re.split(r"[^0-9A-Za-z]+", name):
+        cands.add(tok.lower())
+        cands.update(x.lower() for x in NAME_PART.findall(tok))
+    return {c for c in cands if name_piece_ok(c)}
+
+
+def host_user_pieces(env=None):
+    """{piece: kind} over host_user_names; a piece of both names counts as the host's."""
+    out = {}
+    for kind, name in reversed(host_user_names(env)):
+        for piece in name_pieces(name):
+            out[piece] = kind
+    return out
+
+
+def _strings(v, path):
+    """(field path, text) of every string in an item's JSON, keys included."""
+    if isinstance(v, str):
+        yield path, v
+    elif isinstance(v, dict):
+        for k, x in v.items():
+            yield path, k
+            yield from _strings(x, f"{path}.{k}" if path else k)
+    elif isinstance(v, list):
+        for n, x in enumerate(v):
+            yield from _strings(x, f"{path}[{n}]")
+
+
+def items_holding_names(bl, pieces=None):
+    """{id: [(field path, kind)]} of the items whose JSON holds a piece of this host's or user's name, matched
+    case-insensitively anywhere in a string."""
+    pieces = host_user_pieces() if pieces is None else pieces
+    found = {}
+    for iid, it in bl.items.items() if pieces else ():
+        for path, text in _strings(it, ""):
+            low = text.lower()
+            for kind in sorted({k for p, k in pieces.items() if p in low}):
+                hit = (path or "(a key)", kind)
+                if hit not in found.get(iid, []):
+                    found.setdefault(iid, []).append(hit)
+    return found
+
+
+def withhold_names(text, pieces):
+    """The text with every piece of a host or user name replaced, longest first."""
+    for p in sorted(pieces, key=len, reverse=True):
+        text = re.sub(re.escape(p), "<name withheld>", text, flags=re.I)
+    return text
 
 
 # ------------------------------------------------------------------ knowledge
@@ -506,8 +608,15 @@ def knowledge_lines(bl, iid, indent="  "):
     return out
 
 
-def validate(bl):
+def validate(bl, pieces=None):
     errs = list(bl.load_errors)
+    named = items_holding_names(bl, pieces)
+    bl.withheld |= set(named)
+    for iid, hits in named.items():
+        for path, kind in hits:
+            errs.append(f"{bl.label(iid)}: field {path} holds a piece of this host's "
+                        f"{'computer' if kind == 'host' else 'user'} name (read from the environment, not printed); "
+                        f"write a placeholder instead")
     for iid, it in bl.items.items():
         e = lambda msg, iid=iid: errs.append(f"{bl.label(iid)}: {msg}")  # noqa: E731
         if it.get("id") != iid:
@@ -853,10 +962,11 @@ def cmd_new(bl, a):
 
 
 def cmd_check(bl, a):
-    errs = validate(bl)
+    pieces = host_user_pieces()
+    errs = validate(bl, pieces)
     stale = stale_knowledge(bl)
     for x in errs + stale:
-        say(x)
+        say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)}")
     return 1 if errs else 0
 
