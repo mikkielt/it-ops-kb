@@ -1,0 +1,27 @@
+{
+  "id": "ST-w676qit6",
+  "kind": "story",
+  "title": "backlog.py start names the committed items whose code docs sit outside their touches",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py start SP prints the docs warnings of check (ST-rkirzt76) for the sprint's own items, and /kb-sprint start asks to move the named docs into those items' touches before work is claimed, so an item planned before the warning existed does not reach landing without its docs; a planted item in test_backlog.py shows the warning at start. Answers the SP-ar52y6fk failure: ST-rkirzt76 changed backlog.py without kb/_self/tools.md in its touches, and the orchestrator widened its touches at landing.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "start_names_docs_warnings"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

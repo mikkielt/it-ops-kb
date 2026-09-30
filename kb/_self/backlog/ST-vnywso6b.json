@@ -1,0 +1,25 @@
+{
+  "id": "ST-vnywso6b",
+  "kind": "story",
+  "title": "An item that adds a check runs it over the live repository at planning",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The /kb-backlog plan step and kb/_self/backlog.md's Plan say that an item adding a check or a gate rule runs it (or a draft of it) over the live repository before the item is committed to a sprint, and puts what it finds, and the files holding it, in the item's touches or in a bug the item depends on, so the check lands green. Answers the SP-ar52y6fk failure: ST-mklj46kq's section-reference check made selfdoc.py check red on main with three dead references, and BG-grwpxhsd was filed and joined to the sprint while landing.",
+  "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-e",
+        "over the live repository",
+        ".claude/skills/kb-backlog/SKILL.md"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/backlog.md"
+  ]
+}
