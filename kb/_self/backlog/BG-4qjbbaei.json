@@ -2,7 +2,7 @@
   "id": "BG-4qjbbaei",
   "kind": "bug",
   "title": "backlog.py close leaves relates_to links to the items it deletes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4fbfzobr",
   "priority": "P1",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py"
   ],
-  "notes": "Closing SP-liemltg2 and SP-aikswrrl each left dangling relates_to links that failed backlog.check until removed by hand."
+  "notes": "Closing SP-liemltg2 and SP-aikswrrl each left dangling relates_to links that failed backlog.check until removed by hand.",
+  "claimed_by": "sprint-4fbfzobr-w1"
 }
