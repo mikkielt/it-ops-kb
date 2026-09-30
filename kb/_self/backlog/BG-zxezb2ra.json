@@ -2,7 +2,7 @@
   "id": "BG-zxezb2ra",
   "kind": "bug",
   "title": "backlog.py close leaves depends_on links to the items it deletes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,29 @@
   "depends_on": [
     "BG-4qjbbaei"
   ],
-  "claimed_by": "sprint-4fbfzobr-w3"
+  "evidence": {
+    "commit": "db05ed4fcfc371013aebb965576908637d35f0e2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_close_drops_depends_on"
+        ],
+        "exit": 0,
+        "sha256": "5156e0fb31277c88"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_close_drops_depends_on"
+        ],
+        "exit": 0,
+        "sha256": "95d3e6a528dab120"
+      }
+    ]
+  }
 }
