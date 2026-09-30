@@ -2,7 +2,7 @@
   "id": "TK-uhu2ankm",
   "kind": "task",
   "title": "Move the capture, distill and store tests",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-klrcnysf",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,27 @@
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
   ],
-  "claimed_by": "worker-uhu2ankm"
+  "evidence": {
+    "commit": "d0696275545c626a37ab13edb967c3d94b4c3432",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a171f501b0574416"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestLearn or selfdoc or plugin or red_pipeline or change_router or files_a_bug"
+        ],
+        "exit": 0,
+        "sha256": "f668ee2b86c504ac"
+      }
+    ]
+  }
 }
