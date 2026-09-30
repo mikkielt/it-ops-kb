@@ -43,6 +43,8 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    Brief it with:
    - the item's JSON and its `/goal` text (`python3 _tools/backlog.py goal ID`);
    - the runbook's Working on items;
+   - the in-flight sibling items (id and title) and the files their `touches` change, so the worker leaves them alone and no test of its reads them;
+   - "run the item's checks and the fast tests, `python3 _tools/tests.py --changed origin/main`; never `python3 _tools/stress_test.py` or the full `tests.py`" (parallel full runs load the host into false timeouts);
    - "commit on a local branch `work/<id>` with `KB-Work: <id>` in the message's last paragraph, with `Co-Authored-By` and the other trailers; never push";
    - "file a bug for any defect outside the item, do not fix it";
    - "record a gate with a recommendation instead of guessing, and stop";
@@ -50,7 +52,7 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    An item with a single commit and a narrow `touches` may be done in this session instead.
 4. When a subagent returns, land its branch yourself, one at a time:
    1. `git status --short` shows only your own changes (another session's files in your checkout: stop and move to your own clone or worktree); rebase the branch on `main`;
-   2. `/kb-verify` on the changed files;
+   2. `/kb-verify` on the changed files, and `python3 _tools/stress_test.py` once, when the landing changed `_tools/` (workers never run it);
    3. an item with a code-lane commit (`_tools/kblane.py`): `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops) sends the range, the claim commit riding along, as a `code/<id>` merge request; `main` does not move. Several items' code may ride one request. `done` waits for the merge: on the next pass check that the request merged, `git fetch`, rebase local `main` onto the integration `main` (the merged commits keep their hashes);
    4. `python3 _tools/backlog.py done ID`;
    5. commit the item file with the same trailer;
