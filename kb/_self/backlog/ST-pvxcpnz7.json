@@ -2,7 +2,7 @@
   "id": "ST-pvxcpnz7",
   "kind": "story",
   "title": "kb-sprint falls back when kb-worker is not loaded in the session",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,

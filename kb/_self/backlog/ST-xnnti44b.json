@@ -2,7 +2,7 @@
   "id": "ST-xnnti44b",
   "kind": "story",
   "title": "/kb-sprint close removes the sprint's worktrees and work branches",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
@@ -30,5 +30,6 @@
   ],
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md"
-  ]
+  ],
+  "claimed_by": "worker-xnnti44b"
 }
