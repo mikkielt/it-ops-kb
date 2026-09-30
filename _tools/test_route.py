@@ -3,7 +3,8 @@
 TestRoute   kbfacts.pack and pack_many: a weak, a none and a check-flagged good pack print `route:`, `kb has:` and
             `kb lacks:` after the coverage, check:, freshness: and none-sentence lines and before the first article; a
             clean good pack prints none of them; `has` and `lacks` are the question's own words in question order;
-            a none whose only missing words are language or format names routes split; route_of names each flagged case; a several-part pack starts with one overall route line.
+            a none whose only missing words are language or format names routes split and prints its facts and source
+            footer with no none sentence, as a weak pack would; route_of names each flagged case; a several-part pack starts with one overall route line.
 TestRouteEvalSet   every lookup_eval.csv row expected good, read on HEAD (no stored pack text): a clean good pack
             prints no route, kb has or kb lacks line, a flagged one prints `route: split`, and every good pack routed
             split has a check: line or a word nowhere in the kb, so a rule that demotes clean goods fails; the
@@ -66,6 +67,24 @@ class TestRoute:
         off = kbfacts.pack(NONE_Q)
         assert off["missing"] == ["autoscaler", "eks"] and len(off["matched"]) == 4, (off["missing"], off["matched"])
         assert off["route"] == "web"
+
+    def test_near_miss_none_prints_what_a_weak_pack_would(self):
+        # the h2_applock question: the reader answers the sp_getapplock part, so no sentence forbids the hits, every
+        # picked line of the article prints (not the none pack's first two) and the source footer stays
+        res = kbfacts.pack(NEAR_MISS_Q)
+        lines = res["text"].splitlines()
+        assert kbfacts.NONE_SENTENCE not in lines and "Do not answer from the hits" not in res["text"], lines[:3]
+        assert res["paths"][0] == "public/sqlserver/sp-getapplock.md", res["paths"]
+        facts = [ln for ln in lines if ln.startswith("- public/sqlserver/sp-getapplock.md:")]
+        assert len(facts) > 2 and any("SNIPPET:" in ln and "@LockTimeout" in ln for ln in facts), facts
+        assert res["sources"] == ["S467"] and "sources:" in lines, res["sources"]
+        assert any(ln.startswith("  -> S467  https://") for ln in lines), lines[-3:]
+        # a none that routes web keeps its none behaviour: the sentence, two lines of one article, no footer
+        off = kbfacts.pack(NONE_Q)
+        off_lines = off["text"].splitlines()
+        assert kbfacts.NONE_SENTENCE in off_lines and off["sources"] == [] and "sources:" not in off_lines
+        assert sum(1 for ln in off_lines if ln.startswith("## ")) <= 1
+        assert sum(1 for ln in off_lines if ln.startswith("- ")) <= 2
 
     def test_several_parts_with_a_near_miss_route_split(self):
         res = kbfacts.pack_many([NEAR_MISS_Q, NONE_Q])
