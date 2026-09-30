@@ -2,7 +2,7 @@
   "id": "TK-u4f5ba7a",
   "kind": "task",
   "title": "Write kb/_self/code.md and map it",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ef2tkepv",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,28 @@
     "kb/_self/map.csv",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "worker-u4f5ba7a"
+  "evidence": {
+    "commit": "9bddfa41a7ebb4214073fb719b43425e90f14f68",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc"
+        ],
+        "exit": 0,
+        "sha256": "73b5a3fab2e72d82"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
