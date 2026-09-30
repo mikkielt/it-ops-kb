@@ -2,7 +2,7 @@
   "id": "TK-q6ca2zpp",
   "kind": "task",
   "title": "Run the post-split navigation benchmark and write the verdict",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-2nxdsro2",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,31 @@
     "kb/_self/reports/benchmarks.csv",
     "kb/_self/reports/benchmarks.md"
   ],
-  "claimed_by": "worker-q6ca2zpp"
+  "evidence": {
+    "commit": "de2fd1c6a8032d0a1321fa9d016dfcb273040467",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-c",
+          "^navigation,.*,after,",
+          "--",
+          "kb/_self/reports/benchmarks.csv"
+        ],
+        "exit": 0,
+        "sha256": "0bdfc2a5295a34eb"
+      }
+    ]
+  }
 }
