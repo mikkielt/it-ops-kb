@@ -2,7 +2,7 @@
   "id": "TK-2qnfbjsx",
   "kind": "task",
   "title": "Move the test_kb.py classes and retarget items and docs",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-hnbfoyap",
   "priority": "P2",
   "rank": 0,
@@ -59,5 +59,45 @@
     "kb/_self/querylog.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-2qnfbjsx"
+  "evidence": {
+    "commit": "226e8417eb25242a4005031ff5ed59a55ca72c13",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "1e584a7fcfd58059"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc or Leak or TestLookup"
+        ],
+        "exit": 0,
+        "sha256": "c34533efec5042ba"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "03692ff3d002da04"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
