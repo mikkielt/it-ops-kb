@@ -2,7 +2,7 @@
   "id": "ST-lzxb535b",
   "kind": "story",
   "title": "A started sprint has touches on every work item",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
@@ -21,6 +21,8 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "sprint-4fbfzobr-w7"
 }
