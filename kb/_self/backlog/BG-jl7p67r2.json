@@ -1,0 +1,22 @@
+{
+  "id": "BG-jl7p67r2",
+  "kind": "bug",
+  "title": "land and sync can name different code/<id> branches for one range",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py land derives the code/<id> branch name the way kbgit.py sync does (one shared helper, e.g. kbgit.lane_plan), so a range that begins with a content commit of another id (new task --parent --commit, new bug --commit) is recognised as waiting on its merge request on a re-run; a TestBacklogLand test lands such a story twice before the merge and asserts the second run prints waits for its merge request",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; s=pathlib.Path('_tools/backlog.py').read_text(encoding='utf-8'); b=s[s.index('def cmd_land'):]; b=b[:b.index(chr(10)+'def ',1)]; sys.exit(0 if 'lane_plan' in b else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "_tools/kbgit.py"
+  ]
+}
