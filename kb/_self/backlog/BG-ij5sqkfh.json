@@ -2,8 +2,9 @@
   "id": "BG-ij5sqkfh",
   "kind": "bug",
   "title": "querylog.md says a fixed-since gap finding counts a miss as fixed, also when an eval finding superseded it",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -18,5 +19,6 @@
   },
   "touches": [
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-4slunkaj"
 }
