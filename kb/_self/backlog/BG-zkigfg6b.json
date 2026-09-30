@@ -1,0 +1,33 @@
+{
+  "id": "BG-zkigfg6b",
+  "kind": "bug",
+  "title": "backlog check's stale-touches error fires on the item that deleted the file, which done requires to name it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py check does not report a stale touch on an open item whose own KB-Work commits deleted that path (the item that removes a file must name it, or done refuses the deletion as outside its scope, so TK-mose67gs and TK-2qnfbjsx had to use a glob), and still reports the path on any other open item; a planted test in _tools/test_backlog.py covers both, since this repro reads TK-mose67gs, which the sprint close deletes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import backlog as b;bl=b.Backlog('.');it=bl.items['TK-mose67gs'];it['status']='doing';it['touches']=['_tools/test_querylog.py'];e=[x for x in b.stale_touches(bl) if 'TK-mose67gs' in x];assert not e,'the item that deleted the file is reported: '+e[0][:160]"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_stale_touches"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
