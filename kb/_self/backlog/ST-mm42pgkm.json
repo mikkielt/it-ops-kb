@@ -2,7 +2,7 @@
   "id": "ST-mm42pgkm",
   "kind": "story",
   "title": "A task that runs a repository's programs plans its threat checks",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
@@ -31,5 +31,31 @@
   "touches": [
     ".claude/skills/kb-backlog/SKILL.md"
   ],
-  "claimed_by": "orchestrator-SP-ar52y6fk"
+  "evidence": {
+    "commit": "641c1620220624881f0b2723664422d7bbaa7775",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "response files",
+          ".claude/skills/kb-backlog/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "current-directory",
+          ".claude/skills/kb-backlog/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }
