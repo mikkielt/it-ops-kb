@@ -2,7 +2,7 @@
   "id": "BG-ec4raar2",
   "kind": "bug",
   "title": "done refuses a story or bug with touches whose work was committed under its tasks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,38 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "sprint-4fbfzobr-w4"
+  "evidence": {
+    "commit": "0074c1f53b7108ef1b83ccf3af716ac1b65630ca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_work_outside_trailers"
+        ],
+        "exit": 0,
+        "sha256": "89d56ba64c7b6abc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "done_counts_descendant_commits"
+        ],
+        "exit": 0,
+        "sha256": "14492d98d0e32557"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib; t=pathlib.Path('_tools/backlog.py').read_text(encoding='utf-8'); assert 'not item_commits(bl.root, [iid] + bl.descendants(iid))' in t"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
