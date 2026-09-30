@@ -2,7 +2,7 @@
   "id": "ST-cgzd655w",
   "kind": "story",
   "title": "backlog.py land ID lands a finished item in one command",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-bwlxievv",
   "priority": "P1",
@@ -28,5 +28,6 @@
   ],
   "depends_on": [
     "ST-axnnlsim"
-  ]
+  ],
+  "claimed_by": "worker-cgzd655w"
 }
