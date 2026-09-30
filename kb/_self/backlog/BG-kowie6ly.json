@@ -1,0 +1,21 @@
+{
+  "id": "BG-kowie6ly",
+  "kind": "bug",
+  "title": "land pushes an auto-merging code merge request before the item's own checks run",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "On the code lane, backlog.py land runs the item's checks (and a bug's repro) before sync --push opens the auto-merging code/<id> request, stopping at step checks when one fails; a TestBacklogLand test plants a failing check on a code item and asserts nothing was pushed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; s=pathlib.Path('_tools/backlog.py').read_text(encoding='utf-8'); b=s[s.index('def cmd_land'):]; b=b[:b.index(chr(10)+'def ',1)]; sys.exit(0 if 'run_check' in b else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}
