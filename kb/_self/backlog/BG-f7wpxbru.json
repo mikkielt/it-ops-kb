@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "A pack that picks a SNIPPET: line (public/sqlserver/sp-getapplock.md:44) gives the reader the snippet's code or the facts it rests on, so the near-miss T-SQL applock pack holds sp_getapplock with @LockTimeout = 0 and sp_releaseapplock within its budget; a pack that picks no snippet is unchanged.",
+  "goal": "A pack that picks a SNIPPET: line (public/sqlserver/sp-getapplock.md:44) gives the reader the snippet's code or the facts it rests on, so the near-miss T-SQL applock pack holds sp_getapplock with @LockTimeout = 0 and sp_releaseapplock within its budget; a pack that picks no snippet is unchanged; TestRoute.test_near_miss_none_prints_what_a_weak_pack_would asserts sp_releaseapplock and @LockTimeout = 0 on the pack's fact or code lines, not on a SNIPPET line's tag text (the SP-vpk5nrrc review found its @LockTimeout check matches the tag).",
   "repro": {
     "run": [
       "python3",

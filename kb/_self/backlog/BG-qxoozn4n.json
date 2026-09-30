@@ -1,0 +1,32 @@
+{
+  "id": "BG-qxoozn4n",
+  "kind": "bug",
+  "title": "kb_http read_chunked caps only chunk data at --max-body, so chunk extensions and trailers let one request make the server read far past the limit",
+  "status": "draft",
+  "parent": "EP-5sc7hr36",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_http.Handler.read_chunked stops reading once the bytes it has read for one request, chunk-size lines, extensions and trailers included, pass --max-body plus a small fixed allowance, and answers 413 then; the drain on a refusal or 404 is bounded the same way; a test plants long chunk extensions and trailers; found by the SP-vpk5nrrc review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,io;sys.path.insert(0,'_tools');import kb_http;h=object.__new__(kb_http.Handler);ext=b';'+b'x'*(60<<10);body=b''.join(b'1'+ext+b'\\r\\nA\\r\\n' for _ in range(200))+b'0\\r\\n'+b''.join(b'X-T: '+b'y'*(60<<10)+b'\\r\\n' for _ in range(99))+b'\\r\\n';h.rfile=io.BytesIO(body);r=h.read_chunked(1<<20);sys.exit(0 if h.rfile.tell()<=(1<<20)+(64<<10) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_http"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_http.py",
+    "_tools/test_kb_http.py"
+  ]
+}
