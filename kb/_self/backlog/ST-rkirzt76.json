@@ -2,7 +2,7 @@
   "id": "ST-rkirzt76",
   "kind": "story",
   "title": "A code task carries the kb/_self docs that describe it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,19 @@
     "kb/_self/tools.md"
   ],
   "notes": "Without it a tool item's push is refused by sync's selfdoc stale gate, its worker files a doc bug outside its touches, and the orchestrator joins that bug to the sprint and lands it in the same push.",
-  "claimed_by": "worker-rkirzt76"
+  "evidence": {
+    "commit": "e41fd1dae1195d8bcbd64baa108a89ae2b15f3f3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "docs_in_later_task or touches_miss_docs"
+        ],
+        "exit": 0,
+        "sha256": "73efc995168c9fe5"
+      }
+    ]
+  }
 }

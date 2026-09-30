@@ -2,7 +2,7 @@
   "id": "ST-qp5wsqab",
   "kind": "story",
   "title": "The Self-Reviewed trailer is judged over the pushed range, not per commit",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
@@ -27,5 +27,6 @@
   ],
   "relates_to": [
     "ST-76ftjodg"
-  ]
+  ],
+  "claimed_by": "worker-qp5wsqab"
 }

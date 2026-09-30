@@ -2,7 +2,7 @@
   "id": "ST-76ftjodg",
   "kind": "story",
   "title": "A tool task plans its tools.md row in the same task",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
@@ -21,5 +21,6 @@
   ],
   "touches": [
     ".claude/skills/kb-backlog/SKILL.md"
-  ]
+  ],
+  "claimed_by": "worker-76ftjodg"
 }
