@@ -2,7 +2,7 @@
   "id": "ST-hnbfoyap",
   "kind": "story",
   "title": "test_kb.py is split by its test classes",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-rks3vx5g",
   "priority": "P2",
@@ -44,5 +44,47 @@
   "depends_on": [
     "ST-7atbtpz5",
     "ST-qxyqfpoz"
-  ]
+  ],
+  "evidence": {
+    "commit": "f123694cb4606ed503155943fd8adfddafdce853",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "83c614f0b9ccb04a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc or Leak or TestLookup"
+        ],
+        "exit": 0,
+        "sha256": "f128321d0bedce61"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "03692ff3d002da04"
+      },
+      {
+        "run": [
+          "git",
+          "ls-files",
+          "--error-unmatch",
+          "_tools/test_kb.py"
+        ],
+        "exit": 1,
+        "sha256": "7f74877f9f543d3e"
+      }
+    ]
+  }
 }
