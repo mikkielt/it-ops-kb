@@ -2,7 +2,7 @@
   "id": "TK-qohv7zet",
   "kind": "task",
   "title": "held() raises when a git call it reads fails",
-  "status": "todo",
+  "status": "doing",
   "parent": "BG-alqja4se",
   "priority": "P2",
   "rank": 0,
@@ -22,7 +22,5 @@
     "_tools/test_querylog.py",
     "kb/_self/querylog.md"
   ],
-  "depends_on": [
-    "TK-zutzzklq"
-  ]
+  "claimed_by": "it-ops-kb-perf"
 }
