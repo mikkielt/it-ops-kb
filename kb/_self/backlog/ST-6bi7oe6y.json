@@ -21,9 +21,6 @@
   "depends_on": [
     "ST-mn4j4fis"
   ],
-  "relates_to": [
-    "ST-zptutwlf"
-  ],
   "gates": [
     {
       "id": "accounting-model",

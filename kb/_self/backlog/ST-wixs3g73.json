@@ -1,0 +1,25 @@
+{
+  "id": "ST-wixs3g73",
+  "kind": "story",
+  "title": "drop leaves no dropped item depending on another dropped item",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py drop removes the depends_on links between items that are both dropped (or check ignores them), so dropping a chain leaves check at errors=0; a test drops a three-item chain. Answers the SP-ufr3qnff failure where dropping a chain turned check red and was committed red",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "drop_chain"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}

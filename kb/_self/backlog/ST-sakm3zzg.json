@@ -1,0 +1,26 @@
+{
+  "id": "ST-sakm3zzg",
+  "kind": "story",
+  "title": "plan and start report a dependency on an item outside the sprint",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py horizon --sprint SP and start SP name each depends_on of a sprint item that points to an item in no sprint or in a sprint not started, before the operator approves; a test plants one. Answers the SP-ufr3qnff failure where ST-zptutwlf waited on ST-6bi7oe6y in an unstarted sprint and nobody saw it until run",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dependency_outside_sprint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
