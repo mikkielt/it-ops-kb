@@ -1,7 +1,7 @@
 """_tools/benchmarks.py without a paid run: the report's generated tables and README.md's numbers against the results
 file, the isolation of every run (hooks off, throwaway clones with a local origin, a plugin copy whose hooks write
 under the scratch directory), the transcript reader and the scenario list the report names."""
-import json, os, re, subprocess
+import json, os, re, shutil, subprocess
 from pathlib import Path
 
 import pytest
@@ -151,11 +151,14 @@ def test_transcript_requests_are_counted_once(tmp_path):
 
 
 def test_the_shims_are_executable_scripts(tmp_path):
-    d = bm.shim_dir(tmp_path / "fail")
-    start = ["sh"] if os.name == "nt" else []  # Windows cannot exec a #! script; Git for Windows' sh runs it
-    assert subprocess.run([*start, str(d / "claude"), "-p"]).returncode == 1
     d = bm.shim_dir(tmp_path / "log", tmp_path / "log.jsonl")
     assert "--output-format" in (d / "claude").read_text(encoding="utf-8")
+    d = bm.shim_dir(tmp_path / "fail")
+    assert (d / "claude").read_text(encoding="utf-8").startswith("#!/bin/sh\n")
+    if os.name == "nt" and not shutil.which("sh"):  # PowerShell or cmd: Git for Windows puts no usr/bin tool on PATH
+        pytest.skip("no sh on PATH (Windows without Git Bash) to run the failing shim")
+    start = ["sh"] if os.name == "nt" else []  # Windows cannot exec a #! script; Git for Windows' sh runs it
+    assert subprocess.run([*start, str(d / "claude"), "-p"]).returncode == 1
 
 
 # ---- route-by-verdict

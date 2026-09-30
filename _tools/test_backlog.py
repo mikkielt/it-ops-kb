@@ -8,7 +8,7 @@ commit included), and red pipelines that fail
 the same way (one bug) or differently (a second), or the same way as a closed bug (a new one). The repository's
 own backlog must pass `backlog.py check`.
 """
-import argparse, json, os, re, shutil, subprocess, sys
+import argparse, json, os, re, shlex, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
@@ -19,6 +19,20 @@ import ql_deliver
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 TOOL = os.path.join(TOOLS, "backlog.py")
+# Item checks and repros are Python commands, never test or true: those are Git Bash usr/bin tools, absent from a
+# Windows PATH outside Git Bash, where the check would fail to start and the item could never be done.
+IS_FILE = "import pathlib, sys; sys.exit(not pathlib.Path(sys.argv[1]).is_file())"
+PASS = ["python3", "-c", "pass"]
+
+
+def is_file(rel):
+    """A check that exits 0 when the file exists: an argv for an item's JSON."""
+    return ["python3", "-c", IS_FILE, rel]
+
+
+def argstr(argv):
+    """The same check as the one string --check and --repro take."""
+    return shlex.join(argv)
 
 
 def sh(root, *a):
@@ -91,11 +105,11 @@ def sprint(repo):
     b(repo, "new", "sprint", "--title", "Sprint", "--goal", "ship b")
     sp = item(repo, "Sprint")["id"]
     b(repo, "new", "story", "--title", "Story", "--parent", ep, "--sprint", sp, "--goal", "b exists",
-      "--check", "test -f src/b.txt")
+      "--check", argstr(is_file("src/b.txt")))
     st = item(repo, "Story")["id"]
     b(repo, "new", "task", "--title", "Task", "--parent", st, "--goal", "b written", "--touch", "src/**",
-      "--check", "test -f src/b.txt")
-    b(repo, "new", "bug", "--title", "Bug", "--sprint", sp, "--severity", "S3", "--repro", "test -f src/c.txt",
+      "--check", argstr(is_file("src/b.txt")))
+    b(repo, "new", "bug", "--title", "Bug", "--sprint", sp, "--severity", "S3", "--repro", argstr(is_file("src/c.txt")),
       "--goal", "c exists")
     assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
     code, out = b(repo, "start", sp)
@@ -110,7 +124,7 @@ def test_new_items_validate(sprint):
 
 
 def test_bug_repro_must_fail_now(repo):
-    code, out = b(repo, "new", "bug", "--title", "Not a bug", "--severity", "S4", "--repro", "true", "--goal", "x")
+    code, out = b(repo, "new", "bug", "--title", "Not a bug", "--severity", "S4", "--repro", argstr(PASS), "--goal", "x")
     assert code == 1 and "must fail" in out
 
 
@@ -253,7 +267,7 @@ def test_review_needs_confirmed_provisional_answers_and_close_deletes(sprint):
     for iid in (sprint["tk"], sprint["st"], bg):
         code, out = b(repo, "done", iid)
         assert code == 0, out
-    edit(repo, sprint["rv"], checks=[{"run": ["true"]}])
+    edit(repo, sprint["rv"], checks=[{"run": PASS}])
     commit(repo, "state")
     code, out = b(repo, "done", sprint["rv"])
     assert code == 1 and "provisional answer to confirm" in out
@@ -272,7 +286,7 @@ def test_close_refuses_open_items(sprint):
 
 def test_goal_condition_names_checks_and_scope(sprint):
     code, out = b(sprint["repo"], "goal", sprint["tk"])
-    assert "`test -f src/b.txt` exits 0" in out and "src/**" in out and f"backlog.py done {sprint['tk']}" in out
+    assert f"`{argstr(is_file('src/b.txt'))}` exits 0" in out and "src/**" in out and f"backlog.py done {sprint['tk']}" in out
 
 
 def test_glob_scope():
@@ -296,9 +310,9 @@ def test_started_sprint_check_refuses_worked_item_of_planned_sprint(repo):
     todo, doing or done item of it (planted: the story set to todo)."""
     b(repo, "new", "sprint", "--title", "Planned", "--goal", "g")
     sp = item(repo, "Planned")["id"]
-    b(repo, "new", "story", "--title", "S", "--sprint", sp, "--goal", "g", "--check", "true")
+    b(repo, "new", "story", "--title", "S", "--sprint", sp, "--goal", "g", "--check", argstr(PASS))
     st = item(repo, "S")["id"]
-    b(repo, "new", "task", "--title", "T", "--parent", st, "--goal", "g", "--touch", "src/**", "--check", "true")
+    b(repo, "new", "task", "--title", "T", "--parent", st, "--goal", "g", "--touch", "src/**", "--check", argstr(PASS))
     assert item(repo, "T")["status"] == "draft"
     assert b(repo, "check")[0] == 0
     edit(repo, st, status="todo")
@@ -994,7 +1008,7 @@ class TestDoneLane:
 
     def test_content_item_needs_no_integration_main(self, sprint):
         repo, tk = self.worked(sprint, "kb/public/x/a.md")
-        edit(repo, tk, checks=[{"run": ["test", "-f", "kb/public/x/a.md"]}], touches=["kb/public/**"])
+        edit(repo, tk, checks=[{"run": is_file("kb/public/x/a.md")}], touches=["kb/public/**"])
         commit(repo, "widen", tk)
         code, out = self.done(repo, tk)
         assert code == 0, out

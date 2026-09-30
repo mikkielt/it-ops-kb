@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import os,subprocess,sys; env=dict(os.environ); env['PATH']=os.pathsep.join(p for p in env['PATH'].split(os.pathsep) if 'usr' not in p.replace(chr(92),'/').lower().split('/')); sys.exit(subprocess.run([sys.executable,'_tools/tests.py','_tools/test_backlog.py','_tools/test_benchmarks.py'],env=env).returncode)"
+        "import os,subprocess,sys; env=dict(os.environ); env['PATH']=os.pathsep.join(p for p in env['PATH'].split(os.pathsep) if 'usr' not in p.replace(chr(92),'/').lower().split('/')); sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-k','test_backlog.py or test_benchmarks.py'],env=env).returncode)"
       ]
     }
   ],
