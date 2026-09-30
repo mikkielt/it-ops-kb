@@ -1,4 +1,4 @@
-"""Query log tests (kb/_self/querylog.md: Capture, Distill, Store, Learn and apply; `python3 _tools/tests.py -k querylog`).
+"""Query log tests (kb/_self/querylog.md: Capture, Distill, Store, Learn, Apply; `python3 _tools/tests.py -k querylog`).
 
   TestHookRows      the capture hook (`querylog.py capture`) with recorded hook events on stdin: one row per event
                     with a fresh UUID id; prompt, kb MCP, fetch and Stop rows; fetch rows keep host and path only,
