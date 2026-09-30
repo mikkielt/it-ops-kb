@@ -377,9 +377,8 @@ class TestFixes:
         (rc, said), st = self.first, self.st1
         assert rc == 0 and says(said, "entries=3 dropped=0 waiting=0"), said
         assert not says(said, "CI"), said  # no automatic commit on main yet: no CI to check
-        assert [v for _, v in self.commits1] == ["querylog", "alias, eval, expansion, gap, querylog"], self.commits1
-        assert self.commits1[0][0] == "chore(kb): query log store, 1 run file(s)", self.commits1
-        assert self.commits1[1][0].startswith("chore(kb): query log apply "), self.commits1
+        assert [v for _, v in self.commits1] == ["alias, eval, expansion, gap, querylog"], self.commits1
+        assert self.commits1[0][0].startswith("chore(kb): query log apply "), self.commits1
         assert self.refs1 == ["refs/heads/main"]
         assert sorted(st[EVAL]) == sorted([f"{kbid.eval_id(q)},{q},windows/laps.md,good," for q in (PARAPHRASE_Q, ALIAS_Q)])
         assert st[ALIASES] == ["zqxlapsor,laps"] and len(st[EXPANSIONS]) == 1 and PARAPHRASE_Q in st[EXPANSIONS][0]
@@ -396,6 +395,19 @@ class TestFixes:
         assert [p["to"] for p in g["promotions"]] == ["candidate-gap", "gap"]
         assert all(st[rel] == [] for rel in (CONFLICTS, SOURCES, ARTICLE))
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
+
+    def test_querylog_one_commit_per_run(self):
+        """One run makes one commit: the store's run file and findings file with learn and apply's changes, one
+        KB-Auto trailer naming querylog among its values, pushed once."""
+        w = self.w
+        assert len(self.commits1) == 1, self.commits1
+        ((subject, values),) = self.commits1
+        assert subject.startswith("chore(kb): query log apply ") and values == "alias, eval, expansion, gap, querylog"
+        files = w.remote.git("diff-tree", "--no-commit-id", "--name-only", "-r", self.main1).split()
+        assert {f"{ql_base.STORE_REL}/{p.relative_to(w.q / 'store').as_posix()}" for p in w.local_runs()} <= set(files)
+        assert any(f.startswith(f"{ql_base.STORE_REL}/{ql_store.FINDINGS}/") for f in files), files
+        assert {EVAL, ALIASES, EXPANSIONS, GAPS} <= set(files), files
+        assert len([s for s in self.first[1] if s.startswith("apply --push: pushed ")]) == 1, self.first[1]
 
     def test_a_second_run_changes_nothing(self):
         rc, said = self.again
@@ -462,7 +474,7 @@ class TestFixedSince:
         (e,) = st["entries"]
         assert (e["verdict"], e["judged"], e["best"]) == ("weak", "partly", LAPS)
         assert kinds(st["findings"]) == [("eval", "fixed-since", "miss")]
-        assert [v for _, v in w.commits()] == ["querylog", "querylog"]  # the run file, then learn's findings
+        assert [v for _, v in w.commits()] == ["querylog"]  # the run file and learn's findings, in one commit
         assert all(st[rel] == [] for rel in KB_FILES)
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
 
@@ -903,7 +915,7 @@ class TestResearch:
         assert (g["state"], g["stage"]) == ("applied", "claim")
         assert [p["to"] for p in g["promotions"]] == ["candidate-gap", "gap", "candidate-fact", "claim"]
         assert len(bullets(st[GAPS])) == 1 and "2012 R2 after a later update" not in self.w.show(ARTICLE)  # no quote
-        assert [v for _, v in self.commits[0]] == ["querylog", "gap, querylog, research"], self.commits[0]
+        assert [v for _, v in self.commits[0]] == ["gap, querylog, research"], self.commits[0]
         assert st["gate"] == [], st["gate"]
 
     def test_research_over_its_cap(self):
@@ -913,7 +925,7 @@ class TestResearch:
         assert (g["state"], g["stage"]) == ("applied", "gap") and g["article"] == "public/windows/gmsa.md"
         gaps = bullets(st[GAPS])
         assert len(gaps) == 2 and gaps[1].endswith("(topic: windows/gmsa)"), gaps
-        assert [v for _, v in self.commits[1]] == ["querylog", "gap, querylog"], self.commits[1]
+        assert [v for _, v in self.commits[1]] == ["gap, querylog"], self.commits[1]
         assert (st[ARTICLE], st[SOURCES], st[CONFLICTS]) == (before[ARTICLE], before[SOURCES], before[CONFLICTS])
         assert st["gate"] == [], st["gate"]
 

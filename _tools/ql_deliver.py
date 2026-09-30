@@ -1,8 +1,8 @@
 """The query log's delivery (kb/_self/querylog.md, Delivery): `apply --push`, and the push of mode `auto` after a
 distill. Under the distill lock, in the worktree beside the spool reset to origin/main: the CI check of the last
-automatic commit (a revert when red), the local store's new files gated and committed, the worktree's own learn and
-apply, and one `kbgit.py sync --push` to origin only. A conflict sync cannot resolve goes to a `querylog/<run-id>`
-branch with the merge-request push options. Plugin hosts push from a managed clone of their install source; cloud
+automatic commit (a revert when red), the local store's new files gated, the worktree's own learn and apply, one
+commit of all of them and one `kbgit.py sync --push` to origin only. A conflict sync cannot resolve goes to a
+`querylog/<run-id>` branch with the merge-request push options. Plugin hosts push from a managed clone of their install source; cloud
 sessions push to the branch they have checked out.
 """
 import json, os, re, shutil, sys, urllib.parse
@@ -507,8 +507,9 @@ class Pusher:
             self.say(f"deleted the spool rows of {n} entries whose run file is on {self.remote}/{self.branch}")
 
     def bring(self, new, kept):
-        """The local files `new` copied into the worktree's store, the worktree's `querylog.py check` and the leak
-        scan over them, then one commit with `KB-Auto: querylog`. 0, or 1 when a gate fails (nothing committed)."""
+        """The local files `new` copied into the worktree's store, then the worktree's `querylog.py check` and the
+        leak scan over them, before learn and apply run: the run's one commit holds them. 0, or 1 when a gate fails
+        (nothing committed or pushed)."""
         store = self.wt / STORE_REL
         for src, rel, _ in new:
             write_text(store / rel, Path(src).read_text(encoding="utf-8"))
@@ -524,15 +525,16 @@ class Pusher:
             self.say("refused: the store gates fail on the local store's files; nothing committed or pushed\n  " +
                      "\n  ".join(problems[:10]))
             return 1
+        return 0
+
+    @staticmethod
+    def brought(new):
+        """(what the local files `new` are, in words; the stems of their run files)."""
         runs = sorted(Path(rel).stem for _, rel, _ in new if not rel.startswith((FINDINGS + "/", USAGE + "/")))
         found = sum(1 for _, rel, _ in new if rel.startswith(FINDINGS + "/"))
         used = sum(1 for _, rel, _ in new if rel.startswith(USAGE + "/"))
-        what = (f"{len(runs)} run file(s)" + (f", {found} findings file(s)" if found else "")
-                + (f", {used} usage sidecar(s)" if used else ""))
-        body = (f"Automatic commit of querylog.py: the local store's {what} ({', '.join(runs) or 'no run file'}), "
-                "copied into kb/_querylog/ after querylog.py check and the leak scan (kb/_self/querylog.md, "
-                "Delivery).")
-        return self.commit(f"chore(kb): query log store, {what}", body, ["querylog"])
+        return (f"{len(runs)} run file(s)" + (f", {found} findings file(s)" if found else "")
+                + (f", {used} usage sidecar(s)" if used else "")), runs
 
     def edited(self, paths):
         """The existing lines the worktree's change removes or edits in an article, a ledger or a source row
@@ -755,27 +757,37 @@ class Pusher:
         if code:
             return code
         paths = self.changed()
-        if not paths and not new:
+        if not paths:
             self.say("nothing to push")
             return 0
-        runs = [Path(p).stem for p in paths if p.startswith(f"{STORE_REL}/{FINDINGS}/") and p.endswith(".jsonl")]
+        copied = {f"{STORE_REL}/{rel}" for _, rel, _ in new}
+        applied = [p for p in paths if p not in copied]
+        runs = [Path(p).stem for p in applied if p.startswith(f"{STORE_REL}/{FINDINGS}/") and p.endswith(".jsonl")]
         run_id = max(runs or [Path(rel).stem for _, rel, _ in new]
                      or [self.git("rev-parse", "--short=12", "HEAD")[1].strip()])
-        if paths:
-            try:
-                kinds = auto_kinds(paths)
-            except ValueError as e:
-                self.say(f"refused: apply changed {e}, which it never writes; nothing committed")
-                return 1
-            edits = self.edited(paths)
-            if edits:
-                self.say("refused: " + "; ".join(edits[:3]) + "; nothing committed")
-                return 1
-            body = (f"Automatic commit of querylog.py apply --push, findings run {run_id}: the findings learn wrote, "
-                    "the eval rows with their fixes, gap entries, opt-in research, and the findings file that "
-                    "records each outcome (kb/_self/querylog.md, Delivery).")
-            if self.commit(f"chore(kb): query log apply {run_id}", body, kinds):
-                return 1
+        try:
+            kinds = auto_kinds(paths)
+        except ValueError as e:
+            self.say(f"refused: apply changed {e}, which it never writes; nothing committed")
+            return 1
+        edits = self.edited(applied)
+        if edits:
+            self.say("refused: " + "; ".join(edits[:3]) + "; nothing committed")
+            return 1
+        what, stems = self.brought(new)
+        store_part = (f"the local store's {what} ({', '.join(stems) or 'no run file'}), copied into {STORE_REL}/ "
+                      "after querylog.py check and the leak scan" if new else "")
+        if applied:
+            subject = f"chore(kb): query log apply {run_id}"
+            body = (f"Automatic commit of querylog.py apply --push, findings run {run_id}: "
+                    + (store_part + "; " if store_part else "") +
+                    "the findings learn wrote, the eval rows with their fixes, gap entries, opt-in research, and the "
+                    "findings file that records each outcome, in one commit (kb/_self/querylog.md, Delivery).")
+        else:
+            subject = f"chore(kb): query log store, {what}"
+            body = f"Automatic commit of querylog.py: {store_part} (kb/_self/querylog.md, Delivery)."
+        if self.commit(subject, body, kinds):
+            return 1
         code = self.deliver(run_id)
         if self.landed:
             self.forget(set().union(*(ids for _, _, ids in new)))
@@ -784,7 +796,7 @@ class Pusher:
 
 def push(home=None, qdir=None, run=None, apply_step=None, out=print, now_dt=None, root=None):
     """`apply --push`: under the distill lock, the CI check of the last automatic commit (a revert when red), then in
-    the worktree beside the spool the local store's new files (a commit of their own), learn and apply, one commit
+    the worktree beside the spool the local store's new files (gated), learn and apply, one commit of all of them
     with its KB-Auto trailer, and kbgit.py sync --push to origin; the spool rows of pushed entries go after it. In a
     plugin host (no `home`, this copy running as the plugin) the push runs from the managed clone (host_push).
     0 done (pushed, nothing to push, CI pending, or a conflict branch pushed), 1 a step failed, 2 refused, 3 another
