@@ -2,7 +2,7 @@
   "id": "ST-pvxcpnz7",
   "kind": "story",
   "title": "kb-sprint falls back when kb-worker is not loaded in the session",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "_tools/test_kb_mcp.py"
-  ]
+  ],
+  "claimed_by": "worker-pvxcpnz7"
 }

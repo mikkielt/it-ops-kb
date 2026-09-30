@@ -2,7 +2,7 @@
   "id": "BG-brlya4vc",
   "kind": "bug",
   "title": "backlog.py new misses a repro's own error when FORCE_COLOR colours Python's traceback",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "worker-brlya4vc"
 }

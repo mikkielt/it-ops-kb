@@ -2,7 +2,7 @@
   "id": "ST-iwgsdrmt",
   "kind": "story",
   "title": "kb-worker runs the sync gate's own checks before it commits",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
@@ -31,5 +31,30 @@
     ".claude/agents/kb-worker.md",
     "_tools/test_kb_mcp.py"
   ],
-  "claimed_by": "worker-iwgsdrmt"
+  "evidence": {
+    "commit": "a34202f252181ce5c695df7d67721246f91be0e3",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "kbgit.py fix --check",
+          ".claude/agents/kb-worker.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_worker_agent"
+        ],
+        "exit": 0,
+        "sha256": "cee333964cb7327e"
+      }
+    ]
+  }
 }
