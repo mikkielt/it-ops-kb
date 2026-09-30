@@ -25,7 +25,7 @@ import json, os, re, shutil, subprocess, sys
 
 import pytest
 
-from conftest import querylog_env
+from conftest import querylog_env, timeout_s
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
@@ -269,7 +269,7 @@ class TestPowerShellLauncher:
     def run(self, cmd, env, stdin=""):
         """Run `cmd` as Claude Code runs a `shell: powershell` hook; (returncode, stdout, stderr)."""
         p = subprocess.run([PS, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", cmd],
-                           input=stdin.encode("utf-8"), capture_output=True, env=env, timeout=120)
+                           input=stdin.encode("utf-8"), capture_output=True, env=env, timeout=timeout_s(120))
         return p.returncode, p.stdout.decode("utf-8").strip(), p.stderr.decode("utf-8", "replace")
 
     def stubbed(self, tmp_path, stubs):

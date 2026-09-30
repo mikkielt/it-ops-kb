@@ -22,7 +22,7 @@ import csv, functools, glob, json, os, re, subprocess, sys
 import pytest
 
 import kb_hook, kbcommon, kbfacts, kbid
-from conftest import KB, P, SELF_REL, TOOLS, copy_kb, querylog_env
+from conftest import KB, P, SELF_REL, TOOLS, copy_kb, querylog_env, timeout_s
 
 PUBLIC = kbcommon.PUBLIC  # the public root: ledgers, articles, retrieval data (KB here is the repository)
 SELF = kbcommon.SELF
@@ -640,7 +640,7 @@ class TestLookup:
     def test_kb_ask_routes(self, tmp_path):
         def ask(q, *flags):
             p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), *flags, q], capture_output=True,
-                               text=True, encoding="utf-8", cwd=KB, timeout=60, env=querylog_env(tmp_path))
+                               text=True, encoding="utf-8", cwd=KB, timeout=timeout_s(60), env=querylog_env(tmp_path))
             return p.returncode, p.stdout, p.stderr
         bitlocker = "Does deleting an Entra device also delete its BitLocker recovery keys?"
         code, out, err = ask(bitlocker, "--route")
@@ -669,13 +669,13 @@ class TestLookup:
     def test_kb_ask_without_claude_prints_the_evidence(self, tmp_path):
         env = querylog_env(tmp_path, base={"PATH": os.path.dirname(sys.executable)})
         p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), "What is the default Windows LAPS password length?"],
-                           capture_output=True, text=True, encoding="utf-8", cwd=KB, timeout=60, env=env)
+                           capture_output=True, text=True, encoding="utf-8", cwd=KB, timeout=timeout_s(60), env=env)
         assert p.returncode == 2 and p.stdout.startswith("coverage: good") and "windows/laps.md:" in p.stdout, p.stdout + p.stderr
 
     def test_kb_hook(self, tmp_path):
         def hook(prompt):
             p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=json.dumps({"prompt": prompt}),
-                               capture_output=True, text=True, encoding="utf-8", cwd=KB, timeout=60,
+                               capture_output=True, text=True, encoding="utf-8", cwd=KB, timeout=timeout_s(60),
                                env=querylog_env(tmp_path))
             assert p.returncode == 0, p.stderr
             return json.loads(p.stdout) if p.stdout.strip() else None

@@ -4,9 +4,13 @@
                    `allow_failure: true`, so no push or merge request waits on a pipeline. Planted failures: a rule that
                    starts a job on its own, a rule that lets a manual job block the pipeline, and a job with no rule
                    each make the check report.
+  TestTimeoutFactor  kb-tests-windows sets KB_TEST_TIMEOUT_FACTOR (conftest.timeout_s scales the subprocess timeouts
+                   that ran out in that job); planted: a factor below 1 or not a number is refused and stops the run.
 """
-import re
+import os, re, subprocess, sys
 from pathlib import Path
+
+import pytest
 
 HERE = Path(__file__).resolve().parent
 CI = HERE.parent / ".gitlab-ci.yml"
@@ -89,3 +93,53 @@ class TestCiAllManual:
     def test_a_job_with_no_rules_is_reported(self):
         planted = self.text() + "\nextra-job:\n  stage: test\n  script:\n    - true\n"
         assert any("extra-job: no rules" in p for p in problems(planted))
+
+
+def job_variables(text, job):
+    """{name: value} of a job's `variables:` block in a .gitlab-ci.yml text (scalar values, quotes removed)."""
+    out, in_job, in_vars = {}, False, False
+    for line in text.splitlines():
+        if re.match(r"^[A-Za-z0-9_.-]+:", line):
+            in_job, in_vars = line.startswith(job + ":"), False
+            continue
+        if not in_job or not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if re.match(r"^  \S", line):
+            in_vars = line.strip() == "variables:"
+            continue
+        kv = re.match(r"^    ([A-Z0-9_]+):\s*(.*)$", line)
+        if in_vars and kv:
+            out[kv.group(1)] = kv.group(2).strip().strip("\"'")
+    return out
+
+
+class TestTimeoutFactor:
+    """KB_TEST_TIMEOUT_FACTOR scales the subprocess timeouts of the tests that ran out in kb-tests-windows
+    (conftest.timeout_s); the Windows job sets it, and a value that would shorten a timeout stops the run."""
+
+    def test_timeout_factor_the_windows_job_sets_it(self):
+        from conftest import TIMEOUT_FACTOR_VAR, timeout_factor
+        text = CI.read_text(encoding="utf-8")
+        found = job_variables(text, "kb-tests-windows")
+        assert timeout_factor({TIMEOUT_FACTOR_VAR: found.get(TIMEOUT_FACTOR_VAR, "")}) >= 3, found
+        assert found.get("GIT_DEPTH") == "0", "the parser reads the job's variables"
+        # the Linux jobs run at this host's speed and set none
+        assert TIMEOUT_FACTOR_VAR not in job_variables(text, "kb-tests")
+
+    def test_timeout_factor_scales_and_refuses_what_would_shorten(self, monkeypatch):
+        from conftest import TIMEOUT_FACTOR_VAR, timeout_factor, timeout_s
+        monkeypatch.delenv(TIMEOUT_FACTOR_VAR, raising=False)
+        assert timeout_s(60) == 60
+        monkeypatch.setenv(TIMEOUT_FACTOR_VAR, "2.5")
+        assert timeout_s(60) == 150
+        for bad in ("0.5", "0", "-3", "fast", "nan", "inf"):  # planted: each would shorten or break a timeout
+            with pytest.raises(ValueError, match=TIMEOUT_FACTOR_VAR):
+                timeout_factor({TIMEOUT_FACTOR_VAR: bad})
+
+    def test_timeout_factor_a_bad_value_stops_the_run(self):
+        """Planted: pytest started with a factor below 1 stops with the variable's message before any test runs."""
+        env = {**os.environ, "KB_TEST_TIMEOUT_FACTOR": "0.1"}
+        p = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:xdist",
+                            str(HERE / "test_ci_config.py"), "-k", "test_parser_reads_every_job"],
+                           capture_output=True, text=True, encoding="utf-8", env=env, cwd=str(HERE.parent), timeout=120)
+        assert p.returncode != 0 and "KB_TEST_TIMEOUT_FACTOR='0.1'" in p.stdout + p.stderr, p.stdout + p.stderr
