@@ -990,3 +990,16 @@ What it shows: the fork's server over stdio packs both roots with `coverage: goo
 <!-- /bench -->
 
 What it shows: `sh _tools/kbpy` adds 3.5 ms at the median to a Python start of 9.6 ms on macOS (13.1 ms against 9.6 ms). On Windows it probes each interpreter before running it, which this machine cannot measure.
+
+## The code
+
+### Finding the code
+
+**Setup:** `python3 _tools/benchmarks.py run navigation`, or `python3 _tools/benchmarks.py run navigation --arm ARM --reps 3`: what it costs an agent to find the code and the tests of a rule in this repository's tools. Three questions, each put to a fresh Sonnet session in a throwaway clone of `HEAD` (query log off, origin a local bare repository), hooks off, no MCP servers, no subagents, no web; Read, Grep, Glob, a few read-only shell commands (`git grep`, `grep`, `ls`, `cat`, `head`, `tail`, `sed -n`, `wc`) and the kb's own `rag.py` and `selfdoc.py` are allowed, and Edit and Write are not:
+- `N1`: the query log's automatic push reads a GitLab pipeline by its jobs, not its status, to decide whether the pushed commit is red; which function decides that and which tests pin it.
+- `N2`: `kbgit.py sync --push` sends a range that changes code to a merge-request branch named after a work id; which function plans that and which test pins the id.
+- `N3`: a benchmark scenario holds the router to a cost bar that depends on the verdict of the pack; which function decides whether the bar holds and which tests pin it.
+
+Each question asks for function and test names only, and an answer is checked by those names, never by a file path: it is right when it names the case's function and at least one of the tests that pin the rule (`benchmarks.NAV`), so the same three questions score the code after a file moves or a module splits, and a test (`test_navigation_answers_name_code_that_exists_and_the_prompts_do_not_name_it`) fails when a name stops being defined anywhere under `_tools/` or a prompt gives it away. The scenario writes one row set per case and arm: `turns`, `tool_calls`, `files_read` and `input` (means over `--reps` runs), `checks` (the functions and the tests named right, two checks per run), and the sums of the three cases under `N1-N3`. `files_read` is counted from the run's own tool calls: the distinct files of its Read calls, of a Grep or Glob whose path is a file, and of the file names in its shell commands; a search over a directory or a wildcard reads no one file, so the count is a floor.
+
+`--arm` names the arm of the rows (default `current`); a run replaces only the rows of its own arm for the day, so two arms run on one date (a layout before and after a change) both stay in `kb/_self/reports/benchmarks.csv`, and their spend adds up in the spend table. To measure a layout, check out its commit and run the scenario there: the clone is of that checkout's `HEAD`. The scenario's tests run no model (`python3 _tools/tests.py -k navigation`); the stream they read is synthetic, like `agent_bench.py`'s.

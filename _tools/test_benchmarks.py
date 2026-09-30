@@ -305,3 +305,190 @@ def test_the_routed_runs_have_hooks_off_and_pinned_models(monkeypatch):
                                                                 "model": "sonnet", "verdict": "none", "route": "web"})
     agent_bench.route("q", agent_bench.PIN)
     assert seen and all(_hooks_off(a) for a in seen) and "claude-sonnet-5-5" in seen[0]
+
+
+# ---- navigation
+
+RIGHT = {"N1": "Functions: ql_deliver.job_verdict\nTests: test_a_timed_out_or_stuck_job_is_red",
+         "N2": "Functions: kbgit.lane_plan\nTests: TestLanes::test_branch_id_is_the_first_work_id",
+         "N3": "Functions: verdict_bar\nTests: test_the_bar_on_a_split_pack_is_below_both_other_arms"}
+
+
+def _nav_stream(uses, answer, turns=3, **extra):
+    events = [{"type": "assistant", "message": {"content": [{"type": "tool_use", "id": str(i), "name": n, "input": inp}]}}
+              for i, (n, inp) in enumerate(uses)]
+    events.append({"type": "result", "is_error": False, "result": answer, "num_turns": turns, "total_cost_usd": 0.05,
+                   "duration_api_ms": 4000, "usage": {"input_tokens": 10, "cache_creation_input_tokens": 100,
+                                                      "cache_read_input_tokens": 1000, "output_tokens": 40},
+                   "modelUsage": {"claude-sonnet-5-5": {"costUSD": 0.05}}, **extra})
+    return "\n".join(json.dumps(e) for e in events) + "\n"
+
+
+def test_navigation_is_listed_and_the_report_gives_its_command(capsys):
+    assert bm.main(["list"]) == 0
+    assert re.search(r"^navigation\s+\S", capsys.readouterr().out, re.M)
+    assert "python3 _tools/benchmarks.py run navigation --arm" in bm.REPORT.read_text(encoding="utf-8")
+    assert "navigation" in bm.__doc__.split("Paid scenarios")[1].split("The rest run no")[0]
+
+
+def test_navigation_answers_are_checked_by_function_and_test_names():
+    assert {c: bm.nav_check(c, a) for c, a in RIGHT.items()} == {c: [True, True] for c in bm.NAV}
+    # planted wrong answers: a neighbouring function, a test of another rule, a path instead of names
+    wrong = "Functions: ql_deliver.pipeline_verdict\nTests: test_pipeline_verdict_is_red_on_failed"
+    assert bm.nav_check("N1", wrong) == [False, False]
+    assert bm.nav_check("N1", "Functions: job_verdict\nTests: test_job_ran_is_not_a_test_of_this") == [True, False]
+    assert bm.nav_check("N2", "Functions: push_branch\nTests: test_branch_id_is_the_first_work_id") == [False, True]
+    assert bm.nav_check("N3", "_tools/benchmarks.py and _tools/test_benchmarks.py") == [False, False]
+    assert bm.nav_check("N3", "") == [False, False] and bm.nav_check("N3", None) == [False, False]
+    assert bm.nav_check("N1", "Functions: job_verdicts\nTests: xtest_a_timed_out_or_stuck_job_is_red") == [False, False]  # whole names
+
+
+def test_navigation_answers_name_code_that_exists_and_the_prompts_do_not_name_it():
+    # no backlog tool file: an in-flight change to it is no concern of these names
+    text = "\n".join(p.read_text(encoding="utf-8") for p in sorted(bm.TOOLS.glob("*.py"))
+                     if p.name not in ("backlog.py", "test_backlog.py"))
+    for case, spec in bm.NAV.items():
+        assert spec["functions"] and spec["tests"], case
+        for name in spec["functions"] + spec["tests"]:
+            assert re.search(rf"^\s*def {name}\(", text, re.M), f"{case}: no def {name}"
+            assert not bm.nav_named(name, spec["prompt"] + bm.NAV_ASK), f"{case}: the prompt names {name}"
+        assert all(t.startswith("test_") for t in spec["tests"]) and not any(f.startswith("test_") for f in spec["functions"])
+
+
+def test_navigation_files_read_are_the_distinct_files_the_tool_calls_name(tmp_path):
+    root = tmp_path / "navigation"
+    uses = [("Read", {"file_path": str(root / "_tools" / "ql_deliver.py")}), ("Read", {"file_path": "_tools/ql_deliver.py"}),
+            ("Grep", {"pattern": "def x", "path": "_tools"}), ("Grep", {"pattern": "y", "path": "_tools/kbgit.py"}),
+            ("Glob", {"pattern": "**/*.py"}),
+            ("Bash", {"command": "grep -n \"def lane_plan\" _tools/kbgit.py _tools/test_sync.py"}),
+            ("Bash", {"command": "sed -n '10,20p' ./kb/_self/backlog.md"}),
+            ("Bash", {"command": "grep -rn x _tools/*.py"}), ("Bash", {"command": "echo \"unterminated _tools/x.csv"}),
+            ("Read", {"file_path": "_tools/kbgit.py:120"}), ("Read", {}), ("WebFetch", {"url": "https://example.com/a.md"}),
+            ("Bash", {}), ("Read", None)]
+    assert bm.nav_files(uses, root) == ["_tools/ql_deliver.py", "_tools/kbgit.py", "_tools/test_sync.py",
+                                        "kb/_self/backlog.md", "_tools/x.csv"]
+
+
+def test_navigation_result_reads_turns_tools_files_and_input_from_the_stream(tmp_path):
+    uses = [("Grep", {"pattern": "job_verdict"}), ("Read", {"file_path": "_tools/ql_deliver.py"}),
+            ("Read", {"file_path": "_tools/test_querylog.py"})]
+    r = bm.nav_result(_nav_stream(uses, RIGHT["N1"], turns=4), tmp_path / "navigation", 12.34)
+    assert (r["turns"], sum(r["tools"].values()), r["files_read"], r["wall_s"]) == (
+        4, 3, ["_tools/ql_deliver.py", "_tools/test_querylog.py"], 12.3)
+    assert r["in_uncached"] + r["cache_write"] + r["cache_read"] == 1110 and r["out"] == 40 and r["answer"] == RIGHT["N1"]
+    assert bm.nav_result("not json\n", tmp_path, 0) == {"error": "no result event"}
+    refused = _nav_stream([], "hit a limit", is_error=True)
+    assert bm.nav_result(refused, tmp_path, 0) == {"error": "hit a limit"}  # a refused run is void, not a cheap answer
+
+
+def test_navigation_runs_with_hooks_off_read_only_tools_and_no_servers():
+    argv = bm.nav_argv()
+    assert _hooks_off(argv) and "--strict-mcp-config" in argv and argv[argv.index("--model") + 1] == "sonnet"
+    allowed = argv[argv.index("--allowedTools") + 1:argv.index("--disallowedTools")]
+    denied = argv[argv.index("--disallowedTools") + 1:]
+    assert not {"Edit", "Write", "NotebookEdit", "Agent", "Task", "WebFetch", "WebSearch"} & set(allowed)
+    assert {"Edit", "Write", "Agent", "Task", "WebSearch"} <= set(denied)
+    assert not any(w in a for a in allowed for w in ("rm ", "mv ", "tee ", ">", "git commit", "git push"))
+
+
+def test_navigation_run_takes_the_answer_from_a_fake_claude(tmp_path, monkeypatch):
+    seen = {}
+
+    def fake(argv, **kw):
+        seen.update(argv=argv, **kw)
+        return subprocess.CompletedProcess(argv, 0, _nav_stream([("Read", {"file_path": "_tools/kbgit.py"})], RIGHT["N2"]), "")
+
+    monkeypatch.setattr(bm.subprocess, "run", fake)
+    monkeypatch.setattr(bm, "RAW", {})
+    for k in ("usd", "input", "out", "runs"):
+        monkeypatch.setitem(bm.SPEND, k, 0)
+    r = bm.nav_run(bm.nav_argv(), "question", tmp_path / "navigation")
+    assert r["answer"] == RIGHT["N2"] and r["files_read"] == ["_tools/kbgit.py"]
+    assert seen["input"] == "question" and seen["cwd"] == str(tmp_path / "navigation") and _hooks_off(seen["argv"])
+    assert "CLAUDE_PLUGIN_ROOT" not in seen["env"] and bm.SPEND["runs"] == 1
+    monkeypatch.setattr(bm.subprocess, "run", lambda argv, **kw: subprocess.CompletedProcess(argv, 1, "", "boom"))
+    assert bm.nav_run(bm.nav_argv(), "q", tmp_path)["error"] == "no result event: boom"
+
+
+def _nav_bench(tmp_path, arm="before", reps=1):
+    b = bm.Bench.__new__(bm.Bench)  # no claude call: the record's identity is planted
+    b.rows, b.reps, b.date, b.record, b.commit, b.cc, b.topics = [], reps, "2026-09-30", "2026-09-30", "abc1234", "2.1.290", "280"
+    b.arm = arm
+    b.clone = lambda name, mode="off", **kw: tmp_path / name
+    return b
+
+
+def test_navigation_records_each_cases_checks_files_turns_calls_and_input_under_its_arm(tmp_path, monkeypatch):
+    answers = dict(RIGHT, N2="Functions: push_branch\nTests: test_content_only_goes_to_main")  # planted: the wrong code
+    files = {"N1": ["_tools/ql_deliver.py", "_tools/test_querylog.py"], "N2": ["_tools/kbgit.py"], "N3": ["_tools/benchmarks.py"]}
+
+    def fake(argv, prompt, cwd):
+        case = next(c for c, s in bm.NAV.items() if prompt.startswith(s["prompt"]))
+        return {"wall_s": 5.0, "api_s": 4.0, "cost": 0.05, "turns": 3, "in_uncached": 10, "cache_write": 100,
+                "cache_read": 1000, "out": 40, "models": {"claude-sonnet-5-5": 0.05}, "tools": {"Read": len(files[case]) + 1},
+                "route": ["Grep"], "files_read": files[case], "answer": answers[case]}
+
+    monkeypatch.setattr(bm, "nav_run", fake)
+    b = _nav_bench(tmp_path)
+    bm.s_navigation(b)
+    got = {(r["case"], r["arm"], r["metric"]): r["value"] for r in b.rows}
+    assert {r["scenario"] for r in b.rows} == {"navigation"} and {r["arm"] for r in b.rows} == {"before"}
+    assert [got[(c, "before", "checks")] for c in ("N1", "N2", "N3")] == ["2/2", "0/2", "2/2"]  # the planted answer: none
+    assert [got[(c, "before", "files_read")] for c in ("N1", "N2", "N3")] == [2, 1, 1]
+    assert got[("N1", "before", "turns")] == 3 and got[("N1", "before", "tool_calls")] == 3
+    assert got[("N1", "before", "input")] == 1110 and got[("N1-N3", "before", "files_read")] == 4
+    assert got[("N1-N3", "before", "tool_calls")] == 3 + 2 + 2 and got[("N1-N3", "before", "turns")] == 9
+    monkeypatch.setattr(bm, "nav_run", lambda argv, prompt, cwd: {"error": "boom"})
+    b = _nav_bench(tmp_path, arm="after")
+    bm.s_navigation(b)
+    got = {(r["case"], r["arm"], r["metric"]): r["value"] for r in b.rows}
+    assert got[("N1", "after", "errors")] == 1 and ("N1-N3", "after", "turns") not in got  # no sum from a failed case
+
+
+def test_navigation_arm_defaults_and_three_runs_are_one_row_each(tmp_path, monkeypatch):
+    monkeypatch.setattr(bm, "nav_run", lambda argv, prompt, cwd: {
+        "wall_s": 1.0, "api_s": 1.0, "cost": 0.01, "turns": 2, "in_uncached": 1, "cache_write": 0, "cache_read": 9, "out": 1,
+        "models": {}, "tools": {"Read": 2}, "route": [], "files_read": ["a.py", "b.py"],
+        "answer": RIGHT[next(c for c, s in bm.NAV.items() if prompt.startswith(s["prompt"]))]})
+    b = _nav_bench(tmp_path, reps=3)
+    del b.arm  # a bench with no arm set, as the tests' fakes have
+    bm.s_navigation(b)
+    rows = [r for r in b.rows if r["case"] == "N1" and r["metric"] in ("checks", "files_read")]
+    assert {(r["arm"], r["metric"], r["value"], r["runs"]) for r in rows} == {("current", "checks", "6/6", 3),
+                                                                             ("current", "files_read", 2, 3)}
+
+
+class _FakeBench(bm.Bench):
+    def __init__(self, scratch, reps):
+        self.scratch, self.reps, self.rows, self.registered, self.arm = Path(scratch), reps, [], [], ""
+        self.date = self.record = "2026-09-30"
+        self.commit, self.cc, self.topics = "abc1234", "2.1.290", "280"
+
+
+def test_run_navigation_replaces_only_the_named_arms_rows(tmp_path, monkeypatch):
+    calls = []
+
+    def scenario(b):
+        calls.append(b.arm)
+        b.row("navigation", "N1", b.arm, "turns", len(calls), 1)
+        bm.spent(1.0, 100, 10)
+
+    monkeypatch.setattr(bm, "Bench", _FakeBench)
+    monkeypatch.setattr(bm, "RAW", {})
+    monkeypatch.setitem(bm.SCENARIOS, "navigation", ("Finding the code", scenario))
+    monkeypatch.setenv("BENCH_SCRATCH", str(tmp_path / "scratch"))
+    for k in ("usd", "input", "out", "runs"):
+        monkeypatch.setitem(bm.SPEND, k, 0)
+    out = tmp_path / "results.csv"
+    for arm in ("before", "after", "before"):
+        assert bm.main(["run", "navigation", "--arm", arm, "--out", str(out)]) == 0
+    assert bm.main(["run", "navigation", "--out", str(out)]) == 0
+    assert calls == ["before", "after", "before", "current"]  # the default arm is current
+    rows = bm.read_rows(out)
+    turns = {r["arm"]: r["value"] for r in rows if r["metric"] == "turns"}
+    assert turns == {"before": "3", "after": "2", "current": "4"}  # the second `before` replaced the first
+    assert sorted(r["arm"] for r in rows if r["metric"] == "spend_usd") == ["after", "before", "current"]
+    assert "| navigation | 2026-09-30 | 3 | 300 | 30 | $3.00 |" in bm.spend_table(rows)  # one record: every arm's spend
+    old = [dict(r, scenario="router") for r in rows if r["arm"] == "before"]
+    new = [dict(r, scenario="router", arm="after") for r in rows if r["arm"] == "before"]
+    assert bm.merge_rows(old, new) == new  # a scenario that is not ARMED is replaced whole, whatever its arms
