@@ -1,0 +1,24 @@
+{
+  "id": "TK-6wvrrngz",
+  "kind": "task",
+  "title": "Stress symlink mutations skip without the symlink privilege",
+  "status": "doing",
+  "parent": "BG-2j5ba56h",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "test_stress's symlink mutations skip with the reason when os.symlink raises WinError 1314 (a standard Windows user without Developer Mode), and a test that plants that error proves the skip; elsewhere they still run.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/stress_test.py",
+        "-k",
+        "symlink"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_stress.py"
+  ],
+  "claimed_by": "worker-stduser"
+}
