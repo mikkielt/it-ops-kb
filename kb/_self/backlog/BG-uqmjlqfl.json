@@ -2,7 +2,7 @@
   "id": "BG-uqmjlqfl",
   "kind": "bug",
   "title": "kbgit.py publish refuses test-fixture GUIDs that are already on the public home, so nothing publishes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-v5xagbyv",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/test_kbpublic.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "worker-uqmjlqfl"
+  "evidence": {
+    "commit": "fafe4ca9eebe459d058f79ea831091c7e755490f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/kbgit.py",
+          "publish",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "250988cec4f7c789"
+      }
+    ]
+  }
 }
