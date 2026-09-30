@@ -2,7 +2,7 @@
   "id": "BG-zxensn4o",
   "kind": "bug",
   "title": "A server limited to one small root answers coverage none although the root holds the answer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -38,5 +38,6 @@
   "touches": [
     "_tools/kbfacts.py",
     "_tools/test_kb_root.py"
-  ]
+  ],
+  "claimed_by": "worker-zxensn4o"
 }

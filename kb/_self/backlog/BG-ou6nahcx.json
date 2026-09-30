@@ -2,7 +2,7 @@
   "id": "BG-ou6nahcx",
   "kind": "bug",
   "title": "A several-part split sends a covered part to neither the reader nor the researcher",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -31,5 +31,6 @@
     "_tools/agent_bench.py",
     "_tools/test_kb_ask_route.py",
     "_tools/test_agent_bench.py"
-  ]
+  ],
+  "claimed_by": "worker-ou6nahcx"
 }
