@@ -2,7 +2,7 @@
   "id": "BG-rqgmjrq3",
   "kind": "bug",
   "title": "kbgit.py publish pushes history that carries an internal root, a _private path or a leak the final tree no longer holds",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-v5xagbyv",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/test_kbpublic.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "worker-rqgmjrq3"
+  "evidence": {
+    "commit": "eb0f42cbb6809e9e50a13a492041c513f510843e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestPublishHistory"
+        ],
+        "exit": 0,
+        "sha256": "409bbd7beef3d564"
+      }
+    ]
+  }
 }
