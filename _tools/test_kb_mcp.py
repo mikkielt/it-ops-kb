@@ -22,6 +22,9 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 override, S1 and S2 bugs and breakdowns on the session model; the review, /kb-census and the
                 runbook agree. Its fallback (test_kb_worker_fallback*): when the Agent tool does not list kb-worker,
                 the skill and the runbook start the task on general-purpose with model sonnet, pointed at its file.
+                Its load (test_kb_worker_load*): a worker runs its item's checks and the fast tests, never
+                stress_test.py or a second full run; the orchestrator runs stress_test.py once per landing that
+                changed _tools/; each brief names the in-flight sibling items and the files they change.
 test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
                 (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
                 goes with text; a planted ignored argument is caught.
@@ -214,6 +217,47 @@ def kb_worker_fallback_problems(sprint, runbook):
             problems.append(f"{where}'s kb-worker fallback does not pass `model: sonnet`")
         if "exception" not in line and "the one `model`" not in line:
             problems.append(f"{where}'s kb-worker fallback does not mark itself the exception to passing no model")
+    return problems
+
+
+FAST_TESTS = "python3 _tools/tests.py --changed origin/main"
+
+
+def kb_worker_load_problems(worker, sprint, runbook):
+    """What is wrong with the test load kb-worker (`worker`), /kb-sprint run (`sprint`) and the runbook (`runbook`)
+    put on a host that runs up to four workers at once: [] when nothing."""
+    problems = []
+    bar = re.search(r"(?ms)^3\. \*\*Done bar\.\*\*.*?(?=^\d+\. )", worker)
+    bar = bar.group(0) if bar else ""
+    if FAST_TESTS not in bar:
+        problems.append(f"kb-worker's done bar does not run the fast tests, `{FAST_TESTS}`")
+    for sentence in re.split(r"(?<=\.) ", bar):
+        full = re.search(r"`python3 _tools/tests\.py`", sentence)
+        mine = "never" not in sentence.lower() and "orchestrator" not in sentence.lower()
+        if (full or "stress_test.py" in sentence) and mine:
+            problems.append(f"kb-worker's done bar runs the full tests or the stress suite: {sentence.strip()!r}")
+    if not re.search(r"Never run `python3 _tools/stress_test\.py`", bar):
+        problems.append("kb-worker's done bar does not forbid stress_test.py")
+    if "never a second" not in bar:
+        problems.append("kb-worker's done bar does not forbid a second run")
+    if "sibling items in flight" not in bar:
+        problems.append("kb-worker's done bar does not keep off the in-flight siblings' files")
+    run = md_section(sprint, "## run [SP]")
+    step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", run)
+    brief = [l for l in (step3.group(0) if step3 else "").splitlines() if l.lstrip().startswith("- ")]
+    if not any("in-flight sibling items" in l and "id and title" in l and "files" in l for l in brief):
+        problems.append("/kb-sprint run's brief does not name the in-flight sibling items (id and title) and their files")
+    if not any(FAST_TESTS in l and "never `python3 _tools/stress_test.py`" in l for l in brief):
+        problems.append("/kb-sprint run's brief does not give the fast tests and forbid stress_test.py")
+    step4 = re.search(r"(?ms)^4\. When a subagent returns.*?(?=^\d+\. )", run)
+    land = [l for l in (step4.group(0) if step4 else "").splitlines() if "stress_test.py" in l]
+    if not any("`python3 _tools/stress_test.py` once" in l and "changed `_tools/`" in l for l in land):
+        problems.append("/kb-sprint run's landing does not run stress_test.py once for a change to _tools/")
+    work = md_section(runbook, "## Working on items")
+    line = next((l for l in work.splitlines() if FAST_TESTS in l), "")
+    for phrase in ("never `stress_test.py`", "sibling", "files", "once per landing", "`_tools/`"):
+        if phrase not in line:
+            problems.append(f"the runbook's Working on items does not say {phrase!r} with the fast tests")
     return problems
 
 
@@ -587,6 +631,40 @@ class TestPluginManifest:
             texts[i] = texts[i].replace(old, new, 1)
             assert texts[i] != [sprint, runbook][i], f"plant does not apply: {old!r}"
             assert kb_worker_fallback_problems(*texts), f"not caught: {old!r} -> {new!r}"
+
+    @staticmethod
+    def load_texts():
+        texts = []
+        for rel in (KB_WORKER, KB_SPRINT, RUNBOOK):
+            with open(os.path.join(KB, rel), encoding="utf-8") as f:
+                texts.append(f.read())
+        return texts
+
+    def test_kb_worker_load(self):
+        """Up to four workers share the host: each runs its item's checks and the fast tests (no stress_test.py, no
+        second full run), the orchestrator runs stress_test.py once per landing that changed _tools/, and each brief
+        names the in-flight sibling items and the files they change."""
+        assert kb_worker_load_problems(*self.load_texts()) == []
+
+    def test_kb_worker_load_planted_failures(self):
+        """Each rule fails on a planted copy of the agent, the skill or the runbook."""
+        worker, sprint, runbook = self.load_texts()
+        plants = [
+            (0, "then the fast tests, `python3 _tools/tests.py --changed origin/main`", "then `python3 _tools/tests.py`"),
+            (0, "Never run `python3 _tools/stress_test.py` or the full", "Also run `python3 _tools/stress_test.py` and the full"),
+            (0, "and never a second run", "and a second run"),
+            (0, "Your brief names the sibling items in flight", "Your brief names the items in flight"),
+            (1, "the in-flight sibling items (id and title)", "the items"),
+            (1, "; never `python3 _tools/stress_test.py` or the full `tests.py`", ", then `python3 _tools/stress_test.py`"),
+            (1, "`python3 _tools/stress_test.py` once, when the landing changed `_tools/`", "the full tests"),
+            (2, "never `stress_test.py` or the full `tests.py`", "then `stress_test.py`"),
+            (2, "The orchestrator runs `python3 _tools/stress_test.py` once per landing", "The orchestrator runs it"),
+        ]
+        for i, old, new in plants:
+            texts = [worker, sprint, runbook]
+            texts[i] = texts[i].replace(old, new, 1)
+            assert texts[i] != [worker, sprint, runbook][i], f"plant does not apply: {old!r}"
+            assert kb_worker_load_problems(*texts), f"not caught: {old!r} -> {new!r}"
 
     def test_shipped_texts_mark_rag_py_as_clone_only(self):
         """A host has no _tools/rag.py on its path: the server's texts and the agents never name it, and the skills
