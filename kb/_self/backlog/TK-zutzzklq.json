@@ -2,7 +2,7 @@
   "id": "TK-zutzzklq",
   "kind": "task",
   "title": "red-pipeline and the revert check read the newest main pipeline where a job ran",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-hddn7or2",
   "priority": "P1",
   "rank": 0,
@@ -43,5 +43,39 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb-perf"
+  "evidence": {
+    "commit": "00b674de57db97868ab41781c9a09c2fd40a0e4e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "red_pipeline_reads_a_pipeline_where_a_job_ran"
+        ],
+        "exit": 0,
+        "sha256": "ef167fe735fa4179"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestJobVerdict"
+        ],
+        "exit": 0,
+        "sha256": "2d0eaa3ac28a0c1e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestNoGateJobs"
+        ],
+        "exit": 0,
+        "sha256": "13a72f3193bf83b2"
+      }
+    ]
+  }
 }

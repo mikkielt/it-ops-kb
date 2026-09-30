@@ -2,7 +2,7 @@
   "id": "BG-alqja4se",
   "kind": "bug",
   "title": "ql_deliver.held() treats a failed for-each-ref, merge-base or diff as nothing held",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P2",
@@ -15,6 +15,21 @@
       "_tools/tests.py",
       "-k",
       "held_raises_on_git_failure"
+    ]
+  },
+  "evidence": {
+    "commit": "00b674de57db97868ab41781c9a09c2fd40a0e4e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "held_raises_on_git_failure"
+        ],
+        "exit": 0,
+        "sha256": "cb306387439249d2"
+      }
     ]
   }
 }
