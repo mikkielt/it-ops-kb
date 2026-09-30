@@ -1,0 +1,21 @@
+{
+  "id": "BG-fmdeqiy3",
+  "kind": "bug",
+  "title": "backlog.py land leaves the checkout on the landed work branch",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py land returns the checkout to the branch it started on after every run and every stop (git rebase UPSTREAM BRANCH switches to BRANCH), so a later claim --commit does not land on work/<id> and ride into its code/<id> merge request; a TestBacklogLand test asserts git symbolic-ref HEAD after land, content and code lanes and a planted stop",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,re,sys; s=pathlib.Path('_tools/backlog.py').read_text(encoding='utf-8'); b=s[s.index('def cmd_land'):]; b=b[:b.index(chr(10)+'def ',1)]; sys.exit(0 if re.search(r'\"(switch|checkout)\"', b) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}
