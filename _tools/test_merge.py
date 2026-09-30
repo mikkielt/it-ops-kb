@@ -1,6 +1,6 @@
 """Merge-rule tests: .gitattributes union merges plus `kbgit.py fix` give a clean kb (`python3 _tools/tests.py -k merge`).
 
-  TestMergeRules           kbgit.py functions on in-memory text (no git needed)
+  TestMergeRules           kg_merge.py functions on in-memory text (no git needed)
   TestMergeInGit           (marker git) a throwaway git repo (a copy of the kb without .git): two branches add sources, answers,
                            gaps and fetch state, both take the legacy id S9999 for different urls; merged with the
                            real .gitattributes, then `kbgit.py fix --base <merge-base>`. Skipped without git.
@@ -9,7 +9,7 @@ import csv, io, os, re, shutil
 
 import pytest
 
-import kbgit, kbid
+import kbgit, kbid, kg_merge
 import kbcommon
 from conftest import KB, SOURCES_HEADER as HEADER, P, Repo, copy_kb, requires_git
 # the generated coverage table's page, a repository path: one per root, or the one page an older build_index keeps
@@ -33,41 +33,41 @@ def rows(text):
 class TestMergeRules:
     def test_strip_markers_is_union(self):
         t = "a\n<<<<<<< HEAD\nb\n||||||| base\nold\n=======\nc\n>>>>>>> other\nd\n"
-        assert kbgit.strip_markers(t, "x") == ("a\nb\nc\nd\n", 1)
-        assert kbgit.strip_markers("Title\n=======\n", "x") == ("Title\n=======\n", 0)  # a setext heading stays
-        with pytest.raises(kbgit.Problem):
-            kbgit.strip_markers("<<<<<<< HEAD\nb\n", "x")
+        assert kg_merge.strip_markers(t, "x") == ("a\nb\nc\nd\n", 1)
+        assert kg_merge.strip_markers("Title\n=======\n", "x") == ("Title\n=======\n", 0)  # a setext heading stays
+        with pytest.raises(kg_merge.Problem):
+            kg_merge.strip_markers("<<<<<<< HEAD\nb\n", "x")
 
     def test_sources_duplicates_and_field_merge(self):
         u = "https://learn.microsoft.com/en-us/a"
         old = f"S100,{u},Old title,Microsoft,,copy,2026-01-01,v1,,,\n"
         new = f"S100,{u}/,New title,Microsoft,CC BY 4.0,copy,2026-02-01,v2,,x.md,\n"
         report = []
-        header, out, renames = kbgit.resolve_sources(HEADER + old + HEADER + new + old + "S2,https://e.example.com/,t,p,l,copy,d,v,,,S100\n",
+        header, out, renames = kg_merge.resolve_sources(HEADER + old + HEADER + new + old + "S2,https://e.example.com/,t,p,l,copy,d,v,,,S100\n",
                                                      None, {}, report)
         assert [r["id"] for r in out] == ["S2", "S100"]
         r = out[1]
         assert (r["title"], r["licence"], r["retrieved_utc"], r["version_or_date"]) == ("New title", "CC BY 4.0", "2026-02-01", "v2")
         assert not renames
         assert any("title" in x and x.startswith("WARN") for x in report), report
-        with pytest.raises(kbgit.Problem):  # same date, two titles: a human decides
-            kbgit.resolve_sources(HEADER + old + old.replace("Old title", "Other"), None, {}, [])
+        with pytest.raises(kg_merge.Problem):  # same date, two titles: a human decides
+            kg_merge.resolve_sources(HEADER + old + old.replace("Old title", "Other"), None, {}, [])
 
     def test_sources_base_copy_yields_to_edit(self):
         u = "https://learn.microsoft.com/en-us/a"
         base = f"S100,{u},Title,Microsoft,,copy,2026-01-01,v1,,,\n"
         edit = base.replace("Title", "Better title")
         base_rows = {r["id"]: r for r in rows(HEADER + base)}
-        _, out, _ = kbgit.resolve_sources(HEADER + base + edit, base_rows, {}, [])
+        _, out, _ = kg_merge.resolve_sources(HEADER + base + edit, base_rows, {}, [])
         assert [r["title"] for r in out] == ["Better title"]
 
     def test_collision_needs_base(self):
         t = HEADER + "S9999,https://a.example.com/x,a,p,l,copy,2026-01-01,v,,,\nS9999,https://b.example.com/y,b,p,l,copy,2026-01-01,v,,,\n"
-        with pytest.raises(kbgit.Problem) as e:
-            kbgit.resolve_sources(t, None, {}, [])
+        with pytest.raises(kg_merge.Problem) as e:
+            kg_merge.resolve_sources(t, None, {}, [])
         assert "--base" in str(e.value)
         side = {"a": {"S9999": {"url": "https://a.example.com/x"}}, "b": {"S9999": {"url": "https://b.example.com/y"}}}
-        _, out, renames = kbgit.resolve_sources(t, {}, side, [])
+        _, out, renames = kg_merge.resolve_sources(t, {}, side, [])
         assert sorted(r["id"] for r in out) == sorted([kbid.source_id("https://a.example.com/x"), kbid.source_id("https://b.example.com/y")])
         assert sorted(o for _, _, owners in renames["S9999"] for o in owners) == ["a", "b"]
 
@@ -75,11 +75,11 @@ class TestMergeRules:
         """A union merge repeats the header line (dropped); a row short by a column is an error, not padded."""
         u = "https://learn.microsoft.com/en-us/a"
         report = []
-        _, out, _ = kbgit.resolve_sources(HEADER + f"S100,{u},T,Microsoft,,copy,2026-01-01,v1,,x.md,\n" + HEADER, None, {}, report)
+        _, out, _ = kg_merge.resolve_sources(HEADER + f"S100,{u},T,Microsoft,,copy,2026-01-01,v1,,x.md,\n" + HEADER, None, {}, report)
         assert [r["id"] for r in out] == ["S100"]
         assert any("repeated header" in x for x in report), report
-        with pytest.raises(kbgit.Problem):
-            kbgit.resolve_sources(HEADER + "S102,https://c.example.com/,t,p,l,copy,d,v,,\n".replace(",,\n", ",\n"), None, {}, [])
+        with pytest.raises(kg_merge.Problem):
+            kg_merge.resolve_sources(HEADER + "S102,https://c.example.com/,t,p,l,copy,d,v,,\n".replace(",,\n", ",\n"), None, {}, [])
 
     def test_latest_row_wins_a_field_conflict(self):
         u = "https://github.com/o/r"
@@ -87,54 +87,54 @@ class TestMergeRules:
         newer = f"S100,{u},T,P,MIT,copy,2026-09-26,v2,,a.md,\n"
         for text in (HEADER + current + newer, HEADER + newer + current):
             report = []
-            _, out, _ = kbgit.resolve_sources(text, None, {}, report)
+            _, out, _ = kg_merge.resolve_sources(text, None, {}, report)
             assert (out[0]["licence"], out[0]["version_or_date"]) == ("MIT", "v2")
             assert any(x.startswith("WARN") and "licence" in x for x in report), report
-        with pytest.raises(kbgit.Problem):  # same date, different licence: a human decides
-            kbgit.resolve_sources(HEADER + current + current.replace("Apache-2.0", "MIT"), None, {}, [])
+        with pytest.raises(kg_merge.Problem):  # same date, different licence: a human decides
+            kg_merge.resolve_sources(HEADER + current + current.replace("Apache-2.0", "MIT"), None, {}, [])
 
     def test_pushed_side_keeps_a_colliding_id(self):
         a, b = "https://a.example.com/x", "https://b.example.com/y"
         t = HEADER + f"S9999,{a},a,p,l,copy,2026-01-01,v,,,\nS9999,{b},b,p,l,copy,2026-01-01,v,,,\n"
         side = {"up": {"S9999": {"url": a}}, "mine": {"S9999": {"url": b}}}
-        _, out, renames = kbgit.resolve_sources(t, {}, side, [], upstream="up")
+        _, out, renames = kg_merge.resolve_sources(t, {}, side, [], upstream="up")
         assert {r["id"]: r["url"] for r in out} == {"S9999": a, kbid.source_id(b): b}
         assert renames == {"S9999": [(b, kbid.source_id(b), ["mine"])]}
-        assert kbgit.source_plan(renames, out)["S9999"]["strict_base"] == False  # S9999 still names a's url
+        assert kg_merge.source_plan(renames, out)["S9999"]["strict_base"] == False  # S9999 still names a's url
 
     def test_colliding_answer_ids_are_renamed(self):
         up = "# A\n\n## QK-shared. What does clone a ask?\n\nA. [DOC S1]\n"
         mine = "# A\n\n## QK-shared. What does clone b ask about sync?\n\nB.\n"
         merged = up + "\n## QK-shared. What does clone b ask about sync?\n\nB.\n"
         report, problems = [], []
-        plan = kbgit.answer_plan(merged, "# A\n", up, {"up": up, "mine": mine}, report, problems)
+        plan = kg_merge.answer_plan(merged, "# A\n", up, {"up": up, "mine": mine}, report, problems)
         assert problems == []
         assert plan["QK-shared"]["by_side"] == {"mine": kbid.answer_id("What does clone b ask about sync?")}
         assert kbgit.renumbered("\n".join("  " + x for x in report)) == report
         # no base, no pushed side: the first heading keeps the id; a unique id is never touched
-        plan = kbgit.answer_plan(merged, None, None, {"up": up, "mine": mine}, [], [])
+        plan = kg_merge.answer_plan(merged, None, None, {"up": up, "mine": mine}, [], [])
         assert list(plan) == ["QK-shared"]
-        assert kbgit.answer_plan(up, None, None, {}, [], []) == {}
-        assert kbgit.answer_plan("## QK7. q\n", "## QK7. q\n", None, {}, [], []) == {}  # check.py's business
+        assert kg_merge.answer_plan(up, None, None, {}, [], []) == {}
+        assert kg_merge.answer_plan("## QK7. q\n", "## QK7. q\n", None, {}, [], []) == {}  # check.py's business
 
     def test_answer_mentions_follow_only_the_owning_side(self):
         """A renamed colliding id is rewritten on the owner's lines; the pushed side's own mention and docs stay."""
-        assert not {"README.md", "AGENTS.md", "CLAUDE.md"} & set(kbgit.id_files())
+        assert not {"README.md", "AGENTS.md", "CLAUDE.md"} & set(kg_merge.id_files())
         up = {P("x/a.md"): "# A\n- The other kb calls it QK-dup.\n", P("_answers.md"): "# A\n\n## QK-dup. Pushed question\n"}
         mine = {P("x/a.md"): "# A\n- Answer: `_answers.md` QK-dup.\n", P("_answers.md"): "# A\n\n## QK-dup. Local question\n"}
         merged = {P("x/a.md"): "# A\n- The other kb calls it QK-dup.\n- Answer: `_answers.md` QK-dup.\n",
                   P("_answers.md"): "# A\n\n## QK-dup. Pushed question\n\n## QK-dup. Local question\n"}
         revs = {"base": {P("x/a.md"): "# A\n", P("_answers.md"): "# A\n"}, "up": up, "mine": mine}
-        saved = kbgit.id_files, kbgit.read, kbgit.show
+        saved = kg_merge.id_files, kg_merge.read, kg_merge.show
         try:
-            kbgit.id_files, kbgit.read = (lambda: sorted(merged)), merged.get
-            kbgit.show = lambda rev, f: revs[rev].get(f)
+            kg_merge.id_files, kg_merge.read = (lambda: sorted(merged)), merged.get
+            kg_merge.show = lambda rev, f: revs[rev].get(f)
             ans = P("_answers.md")
-            plan = kbgit.answer_plan(merged[ans], revs["base"][ans], up[ans], {"up": up[ans], "mine": mine[ans]}, [], [])
+            plan = kg_merge.answer_plan(merged[ans], revs["base"][ans], up[ans], {"up": up[ans], "mine": mine[ans]}, [], [])
             texts, problems = {}, []
-            kbgit.rewrite_ids(plan, "base", {"up": "up", "mine": "mine"}, texts, set(), problems, [])
+            kg_merge.rewrite_ids(plan, "base", {"up": "up", "mine": "mine"}, texts, set(), problems, [])
         finally:
-            kbgit.id_files, kbgit.read, kbgit.show = saved
+            kg_merge.id_files, kg_merge.read, kg_merge.show = saved
         new = kbid.answer_id("Local question")
         assert problems == []
         assert texts[P("x/a.md")] == f"# A\n- The other kb calls it QK-dup.\n- Answer: `_answers.md` {new}.\n"
@@ -145,7 +145,7 @@ class TestMergeRules:
         a = "S100,https://x.example.com/,2026-03-01T00:00:00Z,2026-02-01T00:00:00Z,2026-01-01T00:00:00Z,old,old,1,timeout\n"
         b = "S100,https://x.example.com/,2026-02-15T00:00:00Z,2026-02-15T00:00:00Z,2026-02-15T00:00:00Z,new,new,2,\n"
         c = "S-aaaaaaaa,https://y.example.com/,2026-01-01T00:00:00Z,,,,,,\n"
-        out = rows(kbgit.resolve_state(h + c + a + h + b, {}, []))
+        out = rows(kg_merge.resolve_state(h + c + a + h + b, {}, []))
         assert [r["id"] for r in out] == ["S100", "S-aaaaaaaa"]
         r = out[0]
         assert (r["checked_utc"], r["error"]) == ("2026-03-01T00:00:00Z", "timeout")  # latest check
@@ -156,14 +156,14 @@ class TestMergeRules:
         item = "- **A gap that both branches recorded.** Tried S100 and S101. [UNK]"
         text = (f"# Gaps\n\n## auth\n\n{item}\n- none\n- none\n{item}\n\n| a | b |\n|---|---|\n| 1 | 2 |\n| 1 | 2 |\n\n"
                 f"| c |\n|---|\n```\n## not a heading\n## not a heading\n```\n\n## dsc\n\n- x\n\n## dsc\n\n- x\n")
-        out = kbgit.resolve_md(text, "_gaps.md", [], [])
+        out = kg_merge.resolve_md(text, "_gaps.md", [], [])
         assert out.count(item) == 1
         assert out.count("- none") == 2  # short items may repeat on purpose
         assert out.count("| 1 | 2 |") == 1
         assert out.count("|---|") == 2  # separators of two tables stay
         assert out.count("## dsc") == 1
         assert out.count("## not a heading") == 2  # code blocks are never deduplicated
-        assert kbgit.resolve_md(out, "_gaps.md", [], []) == out  # idempotent
+        assert kg_merge.resolve_md(out, "_gaps.md", [], []) == out  # idempotent
 
     def test_zealous_splice_is_repaired(self):
         """git keeps a footer both added blocks end with only once: the first answer loses it to the second."""
@@ -172,27 +172,27 @@ class TestMergeRules:
         spliced = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n## QK-b. qb\n- b1 [DOC S-aaaaaaaa]\n\n_Agent: kb-research_\n\n## R1. r\n"
         whole = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n\n_Agent: kb-research_\n\n## QK-b. qb\n- b1 [DOC S-aaaaaaaa]\n\n_Agent: kb-research_\n\n## R1. r\n"
         report = []
-        assert kbgit.resolve_md(spliced, kbgit.ANSWERS, report, [], [a, b]) == whole  # ids renamed since: ignored
+        assert kg_merge.resolve_md(spliced, kg_merge.ANSWERS, report, [], [a, b]) == whole  # ids renamed since: ignored
         assert any("restored 1 line(s)" in r for r in report), report
-        assert kbgit.resolve_md(whole, kbgit.ANSWERS, [], [], [a, b]) == whole  # idempotent
-        assert kbgit.resolve_md(spliced, kbgit.ANSWERS, [], []) == spliced  # sides unknown: left alone
+        assert kg_merge.resolve_md(whole, kg_merge.ANSWERS, [], [], [a, b]) == whole  # idempotent
+        assert kg_merge.resolve_md(spliced, kg_merge.ANSWERS, [], []) == spliced  # sides unknown: left alone
         cut = spliced.replace("\n\n_Agent: kb-research_\n\n## R1", "\n\n## R1")  # the tail is not where the merge puts it
-        assert kbgit.resolve_md(cut, kbgit.ANSWERS, [], [], [a, b]) == cut
+        assert kg_merge.resolve_md(cut, kg_merge.ANSWERS, [], [], [a, b]) == cut
 
     def test_answer_id_clash_is_a_problem(self):
         problems = []
-        kbgit.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\ntwo\n", kbgit.ANSWERS, [], problems)
+        kg_merge.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\ntwo\n", kg_merge.ANSWERS, [], problems)
         assert problems and "QK-x" in problems[0]
         problems = []
-        out = kbgit.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\none\n", kbgit.ANSWERS, [], problems)
+        out = kg_merge.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\none\n", kg_merge.ANSWERS, [], problems)
         assert (problems, out.count("## QK-x.")) == ([], 1)
 
     def test_gitattributes_pins_every_artifact(self):
         with open(os.path.join(KB, ".gitattributes"), encoding="utf-8") as f:
             attrs = f.read()
         with open(os.path.join(KB, P("_artifacts.csv")), encoding="utf-8") as f:
-            pinned = kbgit.pinned_paths(f.read())
-        assert kbgit.resolve_attrs(attrs, pinned) == attrs, ".gitattributes pinned block is stale; run python3 _tools/kbgit.py fix"
+            pinned = kg_merge.pinned_paths(f.read())
+        assert kg_merge.resolve_attrs(attrs, pinned) == attrs, ".gitattributes pinned block is stale; run python3 _tools/kbgit.py fix"
         for name in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_conflicts.md"):
             assert re.search(rf"(?m)^{re.escape(name)} merge=union$", attrs)
         assert not re.search(r"(?m)^README\.md .*merge=", attrs)
@@ -270,7 +270,7 @@ class TestMergeInGit:
     def test_attributes_keep_a_fresh_checkout_clean(self):
         assert self.dirty_after_init == "", "the committed tree is not stable under .gitattributes"
         with open(os.path.join(KB, P("_artifacts.csv")), encoding="utf-8") as f:
-            pinned = kbgit.pinned_paths(f.read())
+            pinned = kg_merge.pinned_paths(f.read())
         out = self.repo.git("check-attr", "text", "--", *pinned)
         assert [ln for ln in out.splitlines() if not ln.endswith(": text: unset")] == [], "pinned artifacts must be -text"
         assert f"{P('_sources.csv')}: merge: union" in self.repo.git("check-attr", "merge", "--", P("_sources.csv"))
@@ -284,7 +284,7 @@ class TestMergeInGit:
         assert self.fix.returncode == 0, self.fix.stdout + self.fix.stderr
         for rel in [P(f) for f in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_coverage.csv",
                                    "windows/merge-test-a.md", "windows/merge-test-b.md")] + [COVERAGE_PAGE]:
-            assert not kbgit.has_markers(self.repo.read(rel)), rel
+            assert not kg_merge.has_markers(self.repo.read(rel)), rel
 
     def test_collision_renumbered_and_citations_rewritten(self):
         src = {r["id"]: r for r in rows(self.repo.read(P("_sources.csv")))}
@@ -308,11 +308,11 @@ class TestMergeInGit:
     def test_second_root_ledgers_fixed(self):
         """The team root's union-merged _sources.csv: both branches' rows kept, the row both added once, sorted."""
         text = self.repo.read(team("_sources.csv"))
-        assert not kbgit.has_markers(text)
+        assert not kg_merge.has_markers(text)
         ids = [r["id"] for r in rows(text)]
         want = {tid(u) for u in ("https://t.example.com/base", "https://t.example.com/a", "https://t.example.com/b", self.T_BOTH)}
         assert set(ids) == want and len(ids) == len(want), ids
-        assert ids == sorted(ids, key=kbgit.id_key)
+        assert ids == sorted(ids, key=kg_merge.id_key)
         assert f"wrote {team('_sources.csv')}" in self.fix.stdout, self.fix.stdout  # fix, not the union, deduped it
 
     def test_second_root_topic_is_qualified(self):
