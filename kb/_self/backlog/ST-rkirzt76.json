@@ -23,5 +23,6 @@
     ".claude/skills/kb-backlog/SKILL.md",
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "notes": "Without it a tool item's push is refused by sync's selfdoc stale gate, its worker files a doc bug outside its touches, and the orchestrator joins that bug to the sprint and lands it in the same push."
 }

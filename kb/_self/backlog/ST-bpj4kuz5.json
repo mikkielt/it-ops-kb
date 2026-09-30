@@ -1,0 +1,26 @@
+{
+  "id": "ST-bpj4kuz5",
+  "kind": "story",
+  "title": "A gate's options name the command that carries each out",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A gate may give each option a do field (the argv that carries it out, or the id of the item whose work adds that command); backlog.py check warns on a blocking gate of an open item whose options have neither, naming the gate; a planted gate in test_backlog.py fails the warning; kb/_self/backlog.md and /kb-backlog describe the field, so an operator answer never waits on a command nobody planned",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "gate_option_names_its_command"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-backlog/SKILL.md"
+  ]
+}

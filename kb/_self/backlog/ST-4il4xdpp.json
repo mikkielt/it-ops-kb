@@ -22,5 +22,5 @@
     "kb/_self/backlog.md",
     ".claude/settings.json"
   ],
-  "notes": "The same refusal recurred in SP-fkyrld5h: three workers (TK-yuqgx56h, TK-yg4pe6fv, TK-53y3nhli) could not run their rag.py eval check and ran tests.py -k test_lookup_eval_passes instead. A third way out, besides allowing the command or documenting the wrapper: a second name for rag.py's eval command without the word eval."
+  "notes": "The same refusal recurred in SP-fkyrld5h: three workers (TK-yuqgx56h, TK-yg4pe6fv, TK-53y3nhli) could not run their rag.py eval check and ran tests.py -k test_lookup_eval_passes instead. A third way out, besides allowing the command or documenting the wrapper: a second name for rag.py's eval command without the word eval. The guard is Claude Code's worktree isolation check, not a repo or plugin hook: in a worktree-isolated session it refuses a Bash command containing eval as one that runs a string through eval and cannot be verified to stay in the worktree; the same command inside a script file the session runs passes it."
 }
