@@ -2,7 +2,7 @@
   "id": "BG-axnyomq3",
   "kind": "bug",
   "title": "kb_mcp sse_messages splits an SSE data line at U+2028, U+2029 and U+0085, so docs_search drops the reply",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -30,5 +30,28 @@
     "_tools/kb_mcp.py",
     "_tools/test_kb_mcp.py"
   ],
-  "claimed_by": "worker-axnyomq3"
+  "evidence": {
+    "commit": "08ffd201df41e17af6cdb61ee4cedf76dfea710c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "live_docs_cache"
+        ],
+        "exit": 0,
+        "sha256": "9ad6a031341fc537"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json; sys.path.insert(0,'_tools'); import kb_mcp; m={'jsonrpc':'2.0','id':1,'result':{'content':[{'type':'text','text':'a b'}]}}; sys.exit(0 if kb_mcp.sse_messages('event: message\\ndata: '+json.dumps(m,ensure_ascii=False)+'\\n\\n')==[m] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
