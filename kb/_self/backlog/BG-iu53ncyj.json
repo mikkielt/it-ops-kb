@@ -1,0 +1,33 @@
+{
+  "id": "BG-iu53ncyj",
+  "kind": "bug",
+  "title": "horizon and its hook do not show an approved planned sprint while another sprint is active",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "horizon and horizon --hook name each planned sprint whose start gate the operator approved as approved, not started, with backlog.py start as its next step, also while another sprint is active; test_backlog.py's test_horizon_hook_lists_approved_sprint_beside_active plants one active and one approved sprint.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "horizon_hook_lists_approved_sprint_beside_active"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "horizon_hook_lists_approved_sprint_beside_active"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}

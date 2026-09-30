@@ -1,0 +1,34 @@
+{
+  "id": "BG-vqivcbfr",
+  "kind": "bug",
+  "title": "An item filed into an active sprint without touches is done with no commit",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "An item that new writes as todo into an active sprint cannot reach done without scope: new refuses a work item into an active sprint without --touch (or done refuses a work item with no touches of its own or under it), matching the rule start enforces; test_backlog.py's test_done_refuses_active_sprint_item_without_touches files, claims and runs done on such a bug with no commit.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "done_refuses_active_sprint_item_without_touches"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_refuses_active_sprint_item_without_touches"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

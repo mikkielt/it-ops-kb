@@ -1,0 +1,32 @@
+{
+  "id": "BG-4tu6biaz",
+  "kind": "bug",
+  "title": "done names a code/<task> merge request that sync never opened when the range began with another item",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "done's refusal for unlanded code names the code/<id> branch kbgit.lane_plan chose for the pushed range (or says which commits to find), not the first family id in the late commit's trailer; test_backlog.py's test_done_names_the_code_branch_sync_opened plants a range whose first KB-Work is another item.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "done_names_the_code_branch_sync_opened"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_names_the_code_branch_sync_opened"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

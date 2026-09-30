@@ -1,0 +1,31 @@
+{
+  "id": "BG-ngwd6rhi",
+  "kind": "bug",
+  "title": "The fingerprint misses GitLab.com's stream marker on a continuation line (01O+ with no space)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "LOG_PREFIX_RE strips a stream marker with a + continuation whether or not a space follows it, so a test id or error line on a continuation line gives the same fingerprint as on a first line; the test fixture uses the real 00O+ form with no space.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import backlog as b; assert b.first_failure('2026-09-29T01:06:40.9Z 01O+FAILED a.py::t - x')=='a.py::t'"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "fingerprint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

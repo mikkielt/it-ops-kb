@@ -1,0 +1,31 @@
+{
+  "id": "BG-ftcxrl7j",
+  "kind": "bug",
+  "title": "The failure fingerprint cuts a pytest id at a space inside its parameter brackets",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "first_failure reads a pytest id up to its closing bracket when its parameters hold spaces, so two cases of one test that differ after the first word give two fingerprints.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import backlog as b; assert b.first_failure('FAILED t.py::f[a b] - x') != b.first_failure('FAILED t.py::f[a c] - x')"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "fingerprint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}
