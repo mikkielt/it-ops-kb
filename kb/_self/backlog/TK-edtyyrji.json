@@ -2,7 +2,7 @@
   "id": "TK-edtyyrji",
   "kind": "task",
   "title": "Record the pre-split navigation baseline",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-qxyqfpoz",
   "priority": "P2",
   "rank": 1,
@@ -34,5 +34,6 @@
   ],
   "depends_on": [
     "TK-xhgrqrsm"
-  ]
+  ],
+  "claimed_by": "worker-edtyyrji"
 }
