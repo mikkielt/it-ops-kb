@@ -2,7 +2,7 @@
   "id": "ST-3syrixq4",
   "kind": "story",
   "title": "One query-log run makes one commit",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -23,5 +23,6 @@
     "_tools/test_querylog.py",
     "_tools/test_querylog_e2e.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "worker-3syrixq4"
 }
