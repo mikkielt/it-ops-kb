@@ -2,7 +2,7 @@
   "id": "ST-uejwaiyq",
   "kind": "story",
   "title": "The content rules say how an observed run is recorded as a fact",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-2agxqrrv",
   "priority": "P3",
@@ -26,5 +26,19 @@
     "_tools/lint_baseline.txt",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "win-first-uej"
+  "evidence": {
+    "commit": "93f2ed64a17d803a406c75426f097da73eda119e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "observed_run_rule"
+        ],
+        "exit": 0,
+        "sha256": "11dd9bf5327c1585"
+      }
+    ]
+  }
 }
