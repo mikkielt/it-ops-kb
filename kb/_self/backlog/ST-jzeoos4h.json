@@ -2,7 +2,7 @@
   "id": "ST-jzeoos4h",
   "kind": "story",
   "title": "An item filed into an active sprint starts as todo",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-4fbfzobr",
   "priority": "P3",
   "rank": 0,
@@ -21,5 +21,20 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py"
   ],
-  "notes": "From the retrospective of SP-fep4fpsx “Windows ready”: all five bugs filed into that active sprint (BG-wrdjwayg, BG-vdqfhc3d, BG-bn5zvau7, BG-tlubx3fz, BG-xue7xm6y) came out of backlog.py new as draft and needed a hand edit of their JSON to todo before claim."
+  "notes": "From the retrospective of SP-fep4fpsx “Windows ready”: all five bugs filed into that active sprint (BG-wrdjwayg, BG-vdqfhc3d, BG-bn5zvau7, BG-tlubx3fz, BG-xue7xm6y) came out of backlog.py new as draft and needed a hand edit of their JSON to todo before claim.",
+  "evidence": {
+    "commit": "a24453cb6a9a2bad7b0fef3ec1d06f1642cb8d91",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "active_sprint_item_is_todo"
+        ],
+        "exit": 0,
+        "sha256": "e09edf2cd0c7734e"
+      }
+    ]
+  }
 }
