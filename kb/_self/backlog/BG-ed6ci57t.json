@@ -2,7 +2,7 @@
   "id": "BG-ed6ci57t",
   "kind": "bug",
   "title": "The kb: hook blocks a good pack routed split by a word nowhere in the kb",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -29,5 +29,6 @@
   "touches": [
     "_tools/kb_hook.py",
     "_tools/test_kb.py"
-  ]
+  ],
+  "claimed_by": "worker-ed6ci57t"
 }

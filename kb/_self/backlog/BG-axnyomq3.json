@@ -2,7 +2,7 @@
   "id": "BG-axnyomq3",
   "kind": "bug",
   "title": "kb_mcp sse_messages splits an SSE data line at U+2028, U+2029 and U+0085, so docs_search drops the reply",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -29,5 +29,6 @@
   "touches": [
     "_tools/kb_mcp.py",
     "_tools/test_kb_mcp.py"
-  ]
+  ],
+  "claimed_by": "worker-axnyomq3"
 }

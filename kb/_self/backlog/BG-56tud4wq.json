@@ -2,7 +2,7 @@
   "id": "BG-56tud4wq",
   "kind": "bug",
   "title": "kb_http.py reads a chunked POST body as empty",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -30,5 +30,6 @@
   "touches": [
     "_tools/kb_http.py",
     "_tools/test_kb_http.py"
-  ]
+  ],
+  "claimed_by": "worker-56tud4wq"
 }
