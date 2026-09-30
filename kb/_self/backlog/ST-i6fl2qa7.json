@@ -2,7 +2,7 @@
   "id": "ST-i6fl2qa7",
   "kind": "story",
   "title": "backlog.py's host and user name check exempts the project's own repository path",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-2agxqrrv",
   "priority": "P2",
@@ -26,5 +26,19 @@
   "depends_on": [
     "ST-rj55gtru"
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "9b9450aa6361681eb7228d59777377319d9ba1e0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "name_check_exempts_project_path"
+        ],
+        "exit": 0,
+        "sha256": "480dfe80b6a67683"
+      }
+    ]
+  }
 }

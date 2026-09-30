@@ -2,7 +2,7 @@
   "id": "ST-s3mkwytj",
   "kind": "story",
   "title": "Review sprint: Retrospective guards",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2agxqrrv",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "win-first"
 }
