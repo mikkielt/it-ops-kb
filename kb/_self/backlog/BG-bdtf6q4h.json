@@ -1,0 +1,23 @@
+{
+  "id": "BG-bdtf6q4h",
+  "kind": "bug",
+  "title": "runners.md says the docker-windows runner is not locked, but the operator locked it to the project",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/runners.md says both self-hosted runners are locked to the project (the operator locked docker-windows on 2026-09-30, through the API), and that the Windows one also carries the tag windows. A text repro: the doc's wording is the fix.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/_self/runners.md').read_text(encoding='utf-8'); sys.exit(1 if 'the Windows one is not locked' in t else 0)"
+    ]
+  },
+  "touches": [
+    "kb/_self/runners.md"
+  ],
+  "claimed_by": "win-first"
+}
