@@ -17,6 +17,7 @@ guid  3d333250-30e4-4a82-9edc-756c68afc529  # public MITRE ATT&CK STIX id of T15
 path  .claude/settings.local.json   # per-user, untracked settings file named in the kb-setup skill
 path  dsc/docs-conceptual/dsc-3.0/reference/schemas/config/document.md   # path inside the upstream PowerShell-Docs-DSC repo (_gaps.md)
 path  .github/copilot-instructions.md   # GitHub Copilot's instruction file in a consumer's repository, not this one (agents/docs-maintenance-agents.md, _gaps.md)
+path  _tools/test_querylog.py   # the query-log test file before it was split by stage, named in a dated _gaps.md entry (python/stdlib-windows-portability)
 guid  53ca6127-db72-4b80-b1b0-d745d6d5456d  # public Azure built-in role definition id quoted from Foundry RBAC docs (agents/foundry-agent-service.md)
 guid  c883944f-8b7b-4483-af10-35834be79c4a  # public Azure built-in role definition id quoted from Foundry RBAC docs (agents/foundry-agent-service.md)
 guid  e47c6f54-e4a2-4754-9501-8e0985b135e1  # public Azure built-in role definition id quoted from Foundry RBAC docs (agents/foundry-agent-service.md)

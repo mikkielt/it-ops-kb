@@ -17,7 +17,7 @@
   },
   "touches": [
     "_tools/ql_apply.py",
-    "_tools/test_querylog.py",
+    "_tools/test_ql_research.py",
     "kb/_self/querylog.md"
   ]
 }

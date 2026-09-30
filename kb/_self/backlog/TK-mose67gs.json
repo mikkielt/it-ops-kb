@@ -41,7 +41,7 @@
     }
   ],
   "touches": [
-    "_tools/test_querylog.py",
+    "_tools/test_querylog.*",
     "_tools/test_ql_*.py",
     "_tools/ql_testkit.py",
     "_tools/conftest.py",
@@ -50,6 +50,7 @@
     "_tools/test_sync.py",
     "_tools/test_layout.py",
     "_tools/tests.py",
+    "_tools/tests_allowlist.txt",
     "kb/_self/querylog.md",
     "kb/_self/tools.md",
     "kb/_self/map.csv",

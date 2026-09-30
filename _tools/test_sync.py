@@ -459,7 +459,7 @@ class FixtureOrigin:
     worktree with sync, the trailers and the store check as stubs, `glab` answering `ci` (default: signed out)."""
 
     def __init__(self, tmp, env):
-        from test_querylog import golden_store
+        from ql_testkit import golden_store
         self.tmp, self.env = Path(tmp), env
         seed = Repo(self.tmp / "seed", env)
         os.makedirs(seed.path)

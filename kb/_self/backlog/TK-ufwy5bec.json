@@ -21,7 +21,8 @@
     "_tools/ql_capture.py",
     "_tools/ql_distill.py",
     "_tools/test_kbusage.py",
-    "_tools/test_querylog.py",
+    "_tools/test_ql_capture.py",
+    "_tools/test_ql_distill.py",
     "_tools/fixtures/querylog/**",
     "kb/_self/usage.md"
   ]
