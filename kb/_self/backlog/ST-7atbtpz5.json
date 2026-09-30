@@ -2,7 +2,7 @@
   "id": "ST-7atbtpz5",
   "kind": "story",
   "title": "Backlog check catches touches that name a moved file",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-rks3vx5g",
   "priority": "P2",
@@ -26,5 +26,30 @@
       ]
     }
   ],
-  "notes": "Selectors in item checks are an interface a refactor can strand. Zero collected tests already fails a check (pytest exits 5), so the risk is scope, not false proof: many open items name _tools/test_querylog.py or _tools/test_kb.py in touches, and done refuses a commit outside touches. Most -k selectors in item checks name tests their items have yet to write, so selectors reports counts and never fails on zero."
+  "notes": "Selectors in item checks are an interface a refactor can strand. Zero collected tests already fails a check (pytest exits 5), so the risk is scope, not false proof: many open items name _tools/test_querylog.py or _tools/test_kb.py in touches, and done refuses a commit outside touches. Most -k selectors in item checks name tests their items have yet to write, so selectors reports counts and never fails on zero.",
+  "evidence": {
+    "commit": "799f558ec19dbdd20596fc1007515d7c62d38f08",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_stale_touches"
+        ],
+        "exit": 0,
+        "sha256": "6e471db197dd81ed"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_selectors"
+        ],
+        "exit": 0,
+        "sha256": "5211126d00e3b928"
+      }
+    ]
+  }
 }
