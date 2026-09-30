@@ -9,7 +9,17 @@ TestRouteEvalSet   every lookup_eval.csv row expected good, read on HEAD (no sto
             prints no route, kb has or kb lacks line, a flagged one prints `route: split`, and every good pack routed
             split has a check: line or a word nowhere in the kb, so a rule that demotes clean goods fails; the
             check on one pack is planted-failure tested.
+TestRouteEvalEndToEnd   route_eval_end_to_end: every lookup_eval.csv question, some planted several-part joins of
+            them ("(1) a covered one (2) an off-kb one") and the near misses above, through kbfacts.pack, the kb: hook
+            in process (kb_hook.answer, as `kb_hook.py --test` prints it) and kb_ask.plan with the prompts its run
+            would send (no model): the hook lets every routed pack through, no prompt names `kb has: -` or
+            `kb lacks: -` as a part, every part of a several-part split reaches the reader or the researcher, and a
+            pack that routes split carries no none sentence; each check is planted-failure tested.
 """
+import collections, re
+
+import kb_ask
+import kb_hook
 import kbfacts
 import rag
 
@@ -216,3 +226,156 @@ class TestRouteEvalSet:
         assert any("flagged" in p for p in good_pack_problems(lost)), good_pack_problems(lost)
         # planted: a word nowhere in the kb on an otherwise clean good pack must route it
         assert good_pack_problems(dict(clean, missing=["eks"])), "a missing word flags a good pack"
+
+
+# ---------------------------------------------------------------- the eval questions end to end (no model)
+
+# a `-` named as a part to answer or research, alone or in the `; ` list of parts
+DASH_PART = re.compile(r"(?:kb (?:has|lacks): |; )-(?=[.;]|\s*$)", re.I | re.M)
+MISSING_WORD_Q = "What is the default Windows LAPS password length for frobnicated devices?"  # good, routed by a word
+
+
+def hook_problems(res, out):
+    """What is wrong with the kb: hook's answer `out` for the pack `res` of the same question (empty: fine): a routed pack
+    is let through with its route in the context, a clean good pack is blocked (answered), any other goes through."""
+    blocked = isinstance(out, dict) and out.get("decision") == "block"
+    context = ((out or {}).get("hookSpecificOutput") or {}).get("additionalContext", "")
+    if res["route"]:
+        if blocked or not context:
+            return [f"routed {res['route']} ({res['verdict']}) but the hook {'blocks it' if blocked else 'adds nothing'}"]
+        if f"route: {res['route']}" not in context:
+            return [f"routed {res['route']} but the hook's context has no route line"]
+        return []
+    if res["verdict"] == "good" and not blocked:
+        return ["clean good but the hook does not answer it"]
+    return []
+
+
+def runs_of(q, p):
+    """{run: its input} kb_ask.run would send for plan `p` (no model): a web plan to the researcher, a split plan with
+    both sides to the reader and the researcher, any other to the reader whole."""
+    if p["kind"] == "web":
+        return {"researcher": kb_ask.web_prompt(q, p)}
+    if p["kind"] == "split" and p["has"] and p["lacks"]:
+        return {"reader": kb_ask.split_prompt(q, p), "researcher": kb_ask.web_prompt(q, p)}
+    return {"reader": kb_ask.prompt(q, p["text"])}
+
+
+def instructions(text):
+    """A prompt without its pack: what it tells the run to answer or research."""
+    return text.split("<kb_evidence>")[0]
+
+
+def plan_problems(q, p, results):
+    """What is wrong with the runs of plan `p` for question `q` (empty: fine); `results` are the packs of its parts
+    (kbfacts.pack_many(p["parts"])["results"]). No side reads `-` as a part and no prompt names one; in a split of two
+    runs every part reaches its run (a clean good part and a split part's kb has words the reader, a web part and a split
+    part's kb lacks words the researcher; a web part's kb has words never the reader); a part that routes split carries
+    no none sentence."""
+    out = []
+    for side in ("has", "lacks"):
+        if kb_ask.NONE_WORD in p[side]:
+            out.append(f"'kb {side}: -' read as a part")
+    runs = runs_of(q, p)
+    for name, text in runs.items():
+        dash = DASH_PART.search(instructions(text))
+        if dash:
+            out.append(f"the {name}'s prompt names a '-' part: {dash.group(0)!r}")
+    for r in results:
+        if r["route"] == "split" and (kbfacts.NONE_SENTENCE in r["text"] or "Do not answer from the hits" in r["text"]):
+            out.append(f"a pack routed split carries the none sentence: {r['text'][:80]!r}")
+    if len(runs) < 2:
+        return out  # one run gets the whole question, every part with it
+    reader, researcher = instructions(runs["reader"]), instructions(runs["researcher"])
+    several = len(p["parts"]) > 1
+    for n, (part, r) in enumerate(zip(p["parts"], results), start=1):
+        has, lacks = kb_ask.has_lacks(r["text"])
+        if r["route"] is None:
+            if part not in p["has"] or part not in reader:
+                out.append(f"part {n} (good) does not reach the reader")
+        elif r["route"] == "web":
+            if several and (part not in p["lacks"] or part not in researcher):
+                out.append(f"part {n} (web) does not reach the researcher")
+            if several and any(h in p["has"] for h in has):
+                out.append(f"part {n} (web) gives its kb has words to the reader")
+        else:
+            if not has and not lacks:
+                out.append(f"part {n} (split) has neither side")
+            if any(h not in p["has"] or h not in reader for h in has):
+                out.append(f"part {n} (split): its kb has words do not reach the reader")
+            if any(x not in p["lacks"] or x not in researcher for x in lacks):
+                out.append(f"part {n} (split): its kb lacks words do not reach the researcher")
+    return out
+
+
+def planted_joins(cases):
+    """Several-part questions made of eval questions: a covered (clean good) one beside an off-kb (web) one, a weak or
+    flagged (split) one beside both, and a near miss beside an off-kb one, numbered as a person would ask them."""
+    by = collections.defaultdict(list)
+    for q in cases:
+        res = kbfacts.pack(q)
+        kind = res["route"] or ("good" if res["verdict"] == "good" else "unrouted")
+        if len(by[kind]) < 2 and len(kb_ask.split_parts(q)) == 1:
+            by[kind].append(q)
+    good, web, split = by["good"], by["web"], by["split"]
+    assert len(good) == len(web) == len(split) == 2, {k: len(v) for k, v in by.items()}
+    groups = [(good[0], web[0]), (web[1], good[1]), (good[0], split[0], web[1]), (split[1], web[0]),
+              (good[1], split[1]), (NEAR_MISS_Q, web[0])]
+    return [" ".join(f"({n}) {q}" for n, q in enumerate(g, start=1)) for g in groups], [len(g) for g in groups]
+
+
+def end_to_end(q):
+    """(the route label, the problems) of one question through the pack, the hook and the plan."""
+    res = kbfacts.pack(q)
+    problems = hook_problems(res, kb_hook.answer("kb: " + q))
+    p = kb_ask.plan(q)
+    results = kbfacts.pack_many(p["parts"])["results"]
+    problems += plan_problems(q, p, results)
+    label = f"{p['kind']}/{'+'.join(sorted(runs_of(q, p)))}" + ("/parts" if len(p["parts"]) > 1 else "")
+    return label, problems
+
+
+class TestRouteEvalEndToEnd:
+    def test_route_eval_end_to_end(self):
+        cases = [c["question"] for _, c in rag.eval_cases()]
+        assert cases, "the eval set has no rows"
+        joins, sizes = planted_joins(cases)
+        for q, n in zip(joins, sizes):
+            assert len(kb_ask.split_parts(q)) == n, ("a planted join splits into its parts", q)
+        seen, bad = collections.Counter(), []
+        for q in cases + joins + [NEAR_MISS_Q, MISSING_WORD_Q]:
+            label, problems = end_to_end(q)
+            seen[label] += 1
+            bad += [f"[{label}] {q[:70]}: {x}" for x in problems]
+        assert not bad, "\n".join(bad)
+        want = ("good/reader", "split/reader+researcher", "web/researcher", "split/reader+researcher/parts")
+        assert all(seen[w] for w in want), f"every route is exercised: {dict(seen)}"
+
+    def test_route_eval_end_to_end_names_planted_defects(self):
+        clean, routed = kbfacts.pack(CLEAN_Q), kbfacts.pack(FLAGGED_Q)
+        assert hook_problems(clean, kb_hook.answer("kb: " + CLEAN_Q)) == []
+        assert hook_problems(routed, kb_hook.answer("kb: " + FLAGGED_Q)) == []
+        # planted: the hook blocks a routed good pack (BG-ed6ci57t), and lets a clean good one through
+        assert hook_problems(routed, {"decision": "block", "reason": routed["text"]}), "a blocked routed pack"
+        assert hook_problems(clean, {"hookSpecificOutput": {"additionalContext": "x"}}), "an unanswered clean good"
+        q = f"(1) {CLEAN_Q} (2) {NONE_Q}"
+        p = kb_ask.plan(q)
+        results = kbfacts.pack_many(p["parts"])["results"]
+        assert plan_problems(q, p, results) == [], plan_problems(q, p, results)
+        # planted: a `-` side read as a part (BG-zrzme2li)
+        dash = dict(p, lacks=p["lacks"] + ["-"])
+        assert any("'kb lacks: -'" in x for x in plan_problems(q, dash, results)), plan_problems(q, dash, results)
+        assert any("names a '-' part" in x for x in plan_problems(q, dash, results))
+        # planted: the covered part reaches neither run (BG-ou6nahcx)
+        lost = dict(p, has=[h for h in p["has"] if h != CLEAN_Q] or ["LAPS"])
+        assert any("part 1 (good) does not reach the reader" in x for x in plan_problems(q, lost, results))
+        # planted: the off-kb part's kb has words given to the reader
+        web_has = kb_ask.has_lacks(results[1]["text"])[0]
+        leak = dict(p, has=p["has"] + web_has)
+        assert web_has and any("(web) gives its kb has words" in x for x in plan_problems(q, leak, results))
+        # planted: a near-miss pack routed split that still carries the none sentence (BG-bxkqdtk6)
+        near = kbfacts.pack(NEAR_MISS_Q)
+        with_none = dict(near, text=near["text"].replace("\n", "\n" + kbfacts.NONE_SENTENCE + "\n", 1))
+        pn = kb_ask.plan(NEAR_MISS_Q)
+        assert plan_problems(NEAR_MISS_Q, pn, [near]) == []
+        assert any("none sentence" in x for x in plan_problems(NEAR_MISS_Q, pn, [with_none]))
