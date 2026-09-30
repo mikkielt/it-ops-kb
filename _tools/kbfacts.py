@@ -1204,7 +1204,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     characters each) and bounds the text. A `weak` or `none` pack, and a flagged `good` one (a `check:` line, or a
     word nowhere in the kb), also prints `route:` (`split`, or `web` for a `none` unless only language or format names are missing), `kb has:` (the question's own words
     the best article matches) and `kb lacks:` (its informative words it does not match), after the coverage, check:,
-    freshness: and none-sentence lines; `route` is None for a clean `good` pack, whose text has no such line. fmt
+    freshness: and none-sentence lines. A `none` that routes `split` (a near miss) prints no none sentence and keeps
+    the facts and source footer a `weak` pack prints; a `none` that routes `web` prints the sentence, two lines of one
+    article and no footer. `route` is None for a clean `good` pack, whose text has no such line. fmt
     `concise` drops the article flags and the source url footer; footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
     or qualified `public/intune`) and `root` narrow the units (scope()); paths print qualified (`public/intune/x.md`)."""
     st = store(scope(domain, root))
@@ -1339,15 +1341,19 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     fresh = freshness(question, missing, st.arts.get(paths[0] if paths else (order[0] if order else ""), {}))
     if fresh:
         out.append(fresh)
-    if verdict == "none":
-        out.append(NONE_SENTENCE)
     route = route_of(verdict, unmatched, spread, missing)
+    # a near miss (a `none` that routes split: only a language or format name is nowhere in the kb) prints what a
+    # `weak` pack would, its facts and source footer, and no none sentence, so the reader answers the part the kb has
+    # (sp_getapplock for the T-SQL question) and looks up only the rest
+    shut = verdict == "none" and route != "split"
+    if shut:
+        out.append(NONE_SENTENCE)
     has, lacks = own_words(question, hit), own_words(question, [t for t in informative if t not in hit])
     if route:
         out += [f"route: {route}", f"kb has: {', '.join(has) or '-'}", f"kb lacks: {', '.join(lacks) or '-'}"]
-    for h, items in groups if verdict != "none" else [(g[0], g[1][:2]) for g in groups[:1]]:
+    for h, items in groups if not shut else [(g[0], g[1][:2]) for g in groups[:1]]:
         out += ["", h] + items
-    if verdict == "none":
+    if shut:
         srcs = []
     if srcs and footer and not concise:
         out += ["", "sources:"] + format_sources(srcs)

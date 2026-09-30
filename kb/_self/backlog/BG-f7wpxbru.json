@@ -1,0 +1,32 @@
+{
+  "id": "BG-f7wpxbru",
+  "kind": "bug",
+  "title": "A pack never prints a SNIPPET's code, so the h2_applock pack lacks @LockTimeout = 0 and sp_releaseapplock",
+  "status": "draft",
+  "parent": "EP-c7fzjhge",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A pack that picks a SNIPPET: line (public/sqlserver/sp-getapplock.md:44) gives the reader the snippet's code or the facts it rests on, so the near-miss T-SQL applock pack holds sp_getapplock with @LockTimeout = 0 and sp_releaseapplock within its budget; a pack that picks no snippet is unchanged.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;t=kbfacts.pack('Show T-SQL that takes an exclusive session-owned application lock without waiting, fails if it is held, and releases it.')['text'];assert 'sp_releaseapplock' in t and '@LockTimeout = 0' in t,t[-600:]"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestRoute"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_route.py"
+  ]
+}
