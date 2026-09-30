@@ -2,7 +2,7 @@
   "id": "ST-h7j275pf",
   "kind": "story",
   "title": "Planning puts every consumer of a changed route in the item's touches",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,18 @@
     "kb/_self/backlog.md"
   ],
   "notes": "Failure it answers (SP-mqjeanq3 retrospective): TK-22gyfp2h converted the skills to read kb/_self by section but .claude/agents/kb-worker.md was in no item's touches (BG-jz2qyvn6), and TK-aos5k7mo moved kb-research and kb-refresh to the cached live-docs tools while the headless research run in ql_research.py kept the direct servers (BG-m4bpd4jm); the review found both.",
-  "claimed_by": "orchestrator-SP-ar52y6fk"
+  "evidence": {
+    "commit": "1592dfcf38d466aa769ffca8c9f9c0a0c4cccaf9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
