@@ -1,0 +1,26 @@
+{
+  "id": "BG-6u645atm",
+  "kind": "bug",
+  "title": "Only backlog.py check withholds a host or user name: list, tree, show, claim and done print it",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-2agxqrrv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "No backlog.py command prints a piece of this host's computer or user name: every output line (and a refusal on stderr) is masked, outside the project's repository paths, so a name in an item's title or a repro's output never reaches a terminal line an agent copies into a commit message. Found by the SP-2agxqrrv review.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "never_printed_by_any_command"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ],
+  "claimed_by": "win-first"
+}

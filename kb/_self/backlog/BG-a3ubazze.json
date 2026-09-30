@@ -1,0 +1,23 @@
+{
+  "id": "BG-a3ubazze",
+  "kind": "bug",
+  "title": "backlog.py new refuses a genuine repro whose tool under test has a SyntaxError or passes on exit 127",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "own_failure counts a SyntaxError as the repro's own only when it is in the -c code or a script the repro wrote for itself, not in a repository tool the repro runs (a portability defect such as a 3.12-only construct on 3.11 is a genuine repro); exit 127 or 9009 from a wrapper (bash script, hook) whose own output shows a tool inside it was not found is accepted; and python3 -u, -X, and sh -c forms are read for the script they run. Found by the SP-2agxqrrv review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import backlog as b; sys.exit(0 if b.own_failure(['python3', '_tools/rag.py', 'pack', 'x'], 1, '  File \"_tools/rag.py\", line 3\\n    x = (\\nSyntaxError: invalid syntax') is None else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}

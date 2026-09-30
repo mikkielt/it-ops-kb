@@ -66,7 +66,7 @@ stored, and no part of readiness. An item without `knowledge` costs nothing: the
 Every line that names an item prints its id and its title together, except a title check found holding a piece of
 this host's computer or user name, which is withheld.
 """
-import argparse, base64, getpass, hashlib, json, os, re, secrets, shlex, socket, subprocess, sys
+import argparse, base64, functools, getpass, hashlib, json, os, re, secrets, shlex, socket, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -223,6 +223,7 @@ def _check_ok(c):
 # environment at run time and never spelled in code, tests or docs, and no output prints a name or a piece of one.
 HOST_ENV = ("COMPUTERNAME", "HOSTNAME")  # Windows, then the shells that export it
 USER_ENV = ("USERNAME", "USER", "LOGNAME")
+PROFILE_ENV = ("USERPROFILE", "HOME")  # the profile folder's name is the user's too (TEMP paths carry it)
 # Names a CI runner, container or fresh install gives every machine (a GitLab runner is
 # runner-<token>-project-<id>-concurrent-<n>, a Windows one DESKTOP-<serial>): a piece equal to one names no one
 # host or person, and matching it would refuse ordinary text.
@@ -248,6 +249,7 @@ def host_user_names(env=None):
             out.append(("user", getpass.getuser()))
         except Exception:  # noqa: BLE001 - no user name found: nothing to guard
             pass
+    out += [("user", re.split(r"[\\/]", env.get(k, "").rstrip("\\/"))[-1]) for k in PROFILE_ENV]
     return [(k, n.strip()) for k, n in out if n and n.strip()]
 
 
@@ -261,8 +263,12 @@ def name_piece_ok(piece):
 def name_pieces(name):
     """The pieces of one name, lower case, kept by name_piece_ok: the whole name, it without separators, each part
     between non-alphanumerics and each CamelCase part of those (`JohnSmithCorp`: johnsmithcorp, john, smith;
-    `ABC-PC01`: abc-pc01, abcpc01, pc01)."""
-    cands = {name.lower(), re.sub(r"[^0-9A-Za-z]", "", name).lower()}
+    `ABC-PC01`: abc-pc01, abcpc01, pc01), and for a name of more than 8 letters and digits its Windows 8.3 short form
+    without the number (`johnsm~`: a TEMP path's `JOHNSM~1` profile folder)."""
+    bare = re.sub(r"[^0-9A-Za-z]", "", name).lower()
+    cands = {name.lower(), bare}
+    if len(bare) > 8 and not any(g.startswith(bare[:6]) for g in GENERIC_NAMES):
+        cands.add(bare[:6] + "~")
     for tok in re.split(r"[^0-9A-Za-z]+", name):
         cands.add(tok.lower())
         cands.update(x.lower() for x in NAME_PART.findall(tok))
@@ -326,8 +332,12 @@ def items_holding_names(bl, pieces=None, exempt=None):
     return found
 
 
-def withhold_names(text, pieces):
-    """The text with every piece of a host or user name replaced, longest first."""
+def withhold_names(text, pieces, exempt=()):
+    """The text with every piece of a host or user name replaced, longest first, outside the `exempt` paths."""
+    if exempt:
+        parts = re.split("(" + "|".join(re.escape(e) for e in sorted(exempt, key=len, reverse=True)) + ")", text,
+                         flags=re.I)
+        return "".join(x if n % 2 else withhold_names(x, pieces) for n, x in enumerate(parts))
     for p in sorted(pieces, key=len, reverse=True):
         text = re.sub(re.escape(p), "<name withheld>", text, flags=re.I)
     return text
@@ -982,8 +992,23 @@ def parse_cmd(s):
 
 # ------------------------------------------------------------------ commands
 
+OUTPUT_ROOT = [ROOT]  # the backlog main() reads: its remotes give the paths withhold() leaves alone
+
+
+@functools.lru_cache(maxsize=8)
+def _project_paths_cached(root):
+    return frozenset(project_paths(root))
+
+
+def withhold(text):
+    """Every line backlog.py prints goes through here: a piece of this host's or user's name, in an item's text or a
+    command's output, is never printed (BG-6u645atm), outside the project's repository paths."""
+    pieces = host_user_pieces()
+    return withhold_names(str(text), pieces, _project_paths_cached(str(OUTPUT_ROOT[0]))) if pieces else str(text)
+
+
 def say(line=""):
-    print(line)
+    print(withhold(line))
 
 
 def cmd_new(bl, a):
@@ -1478,7 +1503,7 @@ def cmd_horizon(bl, a):
             lines.append(f"  waiting on {c}")
             for i in ids[:5 if a.hook else 50]:
                 lines.append(f"    {bl.label(i)}")
-    text = "\n".join(lines)
+    text = withhold("\n".join(lines))
     if a.hook:
         print(json.dumps({"systemMessage": text, "hookSpecificOutput": {
             "hookEventName": "SessionStart",
@@ -1864,6 +1889,7 @@ def main(argv=None):
     p.add_argument("--job", help="read the newest pipeline of main in which this job ran (a red-main bug's repro)")
     p.add_argument("--hook", action="store_true")
     a = ap.parse_args(argv)
+    OUTPUT_ROOT[0] = a.root
     for s in (sys.stdout, sys.stderr):  # refusals go to stderr; on Windows a pipe defaults to the ANSI code page
         s.reconfigure(encoding="utf-8")
     if a.cmd == "red-pipeline" and a.hook:  # async SessionStart: files a bug at most, prints nothing, never fails
@@ -1881,10 +1907,10 @@ def main(argv=None):
     try:
         return globals()["cmd_" + a.cmd.replace("-", "_")](bl, a)
     except KeyError as e:
-        print(f"no item {e.args[0]}", file=sys.stderr)
+        print(withhold(f"no item {e.args[0]}"), file=sys.stderr)
         return 2
     except Refused as e:
-        print(str(e), file=sys.stderr)
+        print(withhold(str(e)), file=sys.stderr)
         return 1
 
 

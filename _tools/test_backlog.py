@@ -736,13 +736,13 @@ def test_repository_backlog_is_valid():
 # ---- host and user names: read from the environment, planted here as placeholders, never printed
 
 PLANTED_HOST, PLANTED_USER = "PL-LT-00123", "jan.kowalski"
-PLANTED_PIECES = ("pl-lt-00123", "pllt00123", "jan.kowalski", "jankowalski", "kowalski")
+PLANTED_PIECES = ("pl-lt-00123", "pllt00123", "pllt00~", "jan.kowalski", "jankowalski", "jankow~", "kowalski")
 
 
 @pytest.fixture
 def planted_names(monkeypatch):
     """This host is PL-LT-00123 and its user jan.kowalski, in this process and in the backlog.py it starts."""
-    for k in backlog.HOST_ENV + backlog.USER_ENV:
+    for k in backlog.HOST_ENV + backlog.USER_ENV + backlog.PROFILE_ENV:
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("COMPUTERNAME", PLANTED_HOST)
     monkeypatch.setenv("USERNAME", PLANTED_USER)
@@ -755,10 +755,10 @@ def no_planted_piece(out):
 
 
 def test_item_holds_host_names_pieces_of_a_name():
-    assert backlog.name_pieces(PLANTED_HOST) == {"pl-lt-00123", "pllt00123"}  # pl, lt: too short; 00123: no letter
-    assert backlog.name_pieces(PLANTED_USER) == {"jan.kowalski", "jankowalski", "kowalski"}
-    assert backlog.name_pieces("JanKowalskiCorp") == {"jankowalskicorp", "kowalski"}  # CamelCase parts
-    assert backlog.name_pieces("PL-SRV-0042") == {"pl-srv-0042", "plsrv0042"}
+    assert backlog.name_pieces(PLANTED_HOST) == {"pl-lt-00123", "pllt00123", "pllt00~"}  # pl, lt: too short; 00123: no letter
+    assert backlog.name_pieces(PLANTED_USER) == {"jan.kowalski", "jankowalski", "jankow~", "kowalski"}
+    assert backlog.name_pieces("JanKowalskiCorp") == {"jankowalskicorp", "jankow~", "kowalski"}  # CamelCase parts
+    assert backlog.name_pieces("PL-SRV-0042") == {"pl-srv-0042", "plsrv0042", "plsrv0~"}
     assert backlog.name_pieces("XYZ-PC01") == {"xyz-pc01", "xyzpc01", "pc01"}  # 4 characters with a digit
     for generic in ("runner", "root", "user", "admin", "container", "localhost", "DESKTOP"):
         assert backlog.name_pieces(generic) == set(), generic
@@ -772,7 +772,7 @@ def test_item_holds_host_names_read_from_the_environment(planted_names):
     assert set(pieces) == set(PLANTED_PIECES)
     assert pieces["kowalski"] == "user" and pieces["pllt00123"] == "host"
     assert backlog.host_user_pieces({"COMPUTERNAME": "runner", "USERNAME": "root"}) == {"pl-lt-00123": "host",
-                                                                                        "pllt00123": "host"}
+                                                                                        "pllt00123": "host", "pllt00~": "host"}
 
 
 def test_item_holds_host_names_refused_without_the_piece(sprint, planted_names, capsys):
@@ -796,6 +796,24 @@ def test_item_holds_host_names_clean_item_passes(sprint, planted_names, capsys):
     edit(sprint["repo"], sprint["st"], goal="b exists on \\\\PL-SRV-0042\\share for kowal")  # other names, a short one
     assert backlog.main(["--root", str(sprint["repo"]), "check"]) == 0, capsys.readouterr().out
     assert b(sprint["repo"], "check")[0] == 0
+
+
+def test_item_holds_host_names_short_form(planted_names):
+    """Windows' 8.3 form of a long profile name (a TEMP path's JANKOW~1 profile folder) is a piece too, and
+    the profile folder's name counts as the user's."""
+    assert "jankow~" in backlog.name_pieces("jan.kowalski") and "jankow~" in backlog.name_pieces("JanKowalskiCorp")
+    assert not any("~" in p for p in backlog.name_pieces("kowal12"))  # 8 characters or fewer: never shortened
+    pieces = backlog.host_user_pieces({"USERNAME": "x", "USERPROFILE": "C:/Users/<profile>/jan.kowalski"})
+    assert "kowalski" in pieces and any(p in "c:/users/jankow~1/appdata/local/temp" for p in pieces)
+
+
+def test_item_holds_host_names_never_printed_by_any_command(sprint, planted_names):
+    """list, tree, show and claim print a named item's title and fields with the name withheld, not only check."""
+    repo = sprint["repo"]
+    edit(repo, sprint["tk"], title="Task for Kowalski on PL-LT-00123")
+    for argv in (["list"], ["tree"], ["show", sprint["tk"]], ["claim", sprint["tk"], "--by", "w"]):
+        code, out = b(repo, *argv)
+        assert sprint["tk"] in out and no_planted_piece(out), (argv, out)
 
 
 def test_name_check_exempts_project_path(sprint, planted_names, capsys):

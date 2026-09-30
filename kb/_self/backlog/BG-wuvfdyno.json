@@ -1,0 +1,22 @@
+{
+  "id": "BG-wuvfdyno",
+  "kind": "bug",
+  "title": "The observed-run lint takes any dotted number for a version and flags 'in the long run'",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb-verify's unversioned_run warns on an observed-run DER fact whose only number is a measurement (2.5 s, TLS 1.2) and not on ordinary phrases such as 'in the long run' or 'in a pipeline run'. Found by the SP-2agxqrrv review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '.claude/skills/kb-verify'); import lint; sys.exit(0 if lint.unversioned_run('- Observed on PL-LT-00123: the wait took 2.5 s. [DER S1]', {'DER'}) and not lint.unversioned_run('- In the long run the cache wins. [DER S1]', {'DER'}) else 1)"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/test_kb.py"
+  ]
+}
