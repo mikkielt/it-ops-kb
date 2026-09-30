@@ -59,8 +59,11 @@
                     fetched pages (planted: an uncited source, an answer with no kb url, junk ids, an error result)
   TestSourceFindings  the staging triggers equal web-sources.md (planted: a changed number in the doc or the code); a
                     host's level comes from the provider registry (a root's _providers.csv too), else the routes
-                    table, and every registry host has a routes row (planted: a row without one); no stage finding
-                    for a host with the needed level; source findings read the registry and the routes table
+                    table, and every registry host has a routes row, in the planted pair and the clone's own
+                    (planted: a row without one); no stage finding for a host with the needed level; source findings
+                    read the registry and the routes table; the staging tests read a registry and a routes table they
+                    plant, so rows the clone gains for their hosts change no result (planted: the same rows unplanted
+                    turn them red)
   TestFindingsGates the findings gates of `check`, each with a planted failure
   TestApply         in a kb copy, `learn` then `apply` on the fixture store (a paraphrase and an unknown word): each
                     eval row lands with its expansion or alias, `rag.py eval` passes, the mean pack and off-kb `good`
@@ -1775,7 +1778,65 @@ MISS = {f"55555555-0000-4000-8000-0000000000{n}" for n in ("a1", "a2", "a3", "a4
 ANSWERED = "55555555-0000-4000-8000-0000000000a5"
 
 
-UNSTAGED = "docs.unstaged.example.com"  # the fixture store's level-0 host: no real registry or routes row serves it
+UNSTAGED = "docs.unstaged.example.com"  # a level-0 host of the fixture store, as arxiv.org is
+
+
+# ---------------------------------------------------------------- the staging tests' own registry and routes table
+
+REAL_REGISTRY = Path(TOOLS) / "providers.csv"  # the clone's registry and routes table: only the tests of the real
+REAL_WEB_SOURCES = ql_learn.WEB_SOURCES  # data itself read them (test_triggers_match_web_sources, ..._agree)
+# a host's level in these tests comes from these rows, so a provider row the clone gains changes no test result
+PLANTED_PROVIDERS = (("learn", "learn.microsoft.com/"), ("github-raw", "raw.githubusercontent.com/"), ("generic", "*"))
+PLANTED_ROUTES = """| family | find | read | avoid |
+|---|---|---|---|
+| `learn.microsoft.com` | `microsoft_docs_search` | `microsoft_docs_fetch` of the url you cite | WebFetch |
+| pinned files (`raw.githubusercontent.com`) | the repository | the file at a commit | a branch url |
+| sites that publish `llms.txt` or `.md` pages (`platform.claude.com`) | `llms.txt` | the page's `.md` form | the HTML page |
+| PyPI | `pypi.org/pypi/<name>/json` | the same JSON | the project page |
+"""
+
+
+def plant_registry(path):
+    """A provider registry holding PLANTED_PROVIDERS only."""
+    import provider
+    rows = [",".join([name, match] + [""] * (len(provider.COLS) - 2)) for name, match in PLANTED_PROVIDERS]
+    Path(path).write_text("\n".join([",".join(provider.COLS), *rows]) + "\n", encoding="utf-8", newline="\n")
+
+
+def plant_routes(text):
+    """web-sources.md `text` with PLANTED_ROUTES as its routes table; its other sections as they are."""
+    head, sep, rest = text.partition("## Routes by family\n")
+    nxt = re.search(r"^## ", rest, re.M)
+    assert sep and nxt, "web-sources.md has no routes table followed by a section"
+    return head + sep + "\n" + PLANTED_ROUTES + "\n" + rest[nxt.start():]
+
+
+def plant_staging(registry, doc, source_doc):
+    """Write the planted registry to `registry` and `source_doc` with the planted routes table to `doc`."""
+    text = Path(source_doc).read_text(encoding="utf-8")
+    plant_registry(registry)
+    Path(doc).write_text(plant_routes(text), encoding="utf-8", newline="\n")
+
+
+@contextlib.contextmanager
+def planted_staging(d):
+    """provider.py and ql_learn.py read a registry and a routes table planted under `d` (from the routes source they
+    read on entry), whatever the clone's _tools/providers.csv and web-sources.md serve."""
+    import provider
+    d = Path(d)
+    d.mkdir(parents=True, exist_ok=True)
+    plant_staging(d / "providers.csv", d / "web-sources.md", ql_learn.WEB_SOURCES)
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(provider, "SHARED", str(d / "providers.csv"))
+        mp.setattr(ql_learn, "WEB_SOURCES", d / "web-sources.md")
+        yield d
+
+
+@pytest.fixture(scope="module", autouse=True)
+def staging_planted(tmp_path_factory):
+    """Every test of this module, its module fixtures included, reads the planted registry and routes table."""
+    with planted_staging(tmp_path_factory.mktemp("staging")) as d:
+        yield d
 
 
 def learn_store(tmp_path, name="store"):
@@ -2178,8 +2239,8 @@ class TestLearnFalseNone:
 
 class TestSourceFindings:
     def test_triggers_match_web_sources(self, monkeypatch):
-        assert ql_learn.trigger_problems() == []
-        doc = ql_learn.WEB_SOURCES.read_text(encoding="utf-8")
+        doc = REAL_WEB_SOURCES.read_text(encoding="utf-8")
+        assert ql_learn.trigger_problems(doc) == []
         assert "at least 25 rows" in doc and "Three or more failures" in doc
         planted = doc.replace("at least 25 rows", "at least 30 rows")
         assert ql_learn.trigger_problems(planted) == ["trigger share_rows: ql_learn.py has 25, web-sources.md has 30"]
@@ -2204,17 +2265,19 @@ class TestSourceFindings:
         assert ql_learn.staging_level("wiki.corp.example.com") == (3, "registry")
 
     def test_the_registry_and_the_routes_table_agree(self):
-        assert ql_learn.registry_problems() == []
+        assert ql_learn.registry_problems() == []  # the planted pair
         import provider
-        rows = provider._read(provider.SHARED)
+        rows = provider._read(str(REAL_REGISTRY))
+        doc = REAL_WEB_SOURCES.read_text(encoding="utf-8")
+        real = ql_learn.routes_table(doc)
+        assert ql_learn.registry_problems(rows, real) == []  # the clone's own pair
         planted = rows + [{"provider": "vendor", "match": "docs.vendor.example.org/"}]
-        assert ql_learn.registry_problems(planted) == [
+        assert ql_learn.registry_problems(planted, real) == [
             "provider vendor: docs.vendor.example.org has a registry row but no row in the routes table"]
-        doc = ql_learn.WEB_SOURCES.read_text(encoding="utf-8")
         routes = ql_learn.routes_table(doc.replace("| `learn.microsoft.com` |", "| Learn |"))
         assert any("learn.microsoft.com" in p for p in ql_learn.registry_problems(rows, routes))
         team = [{"provider": "team-wiki", "match": "wiki.corp.example.com/", "_root": "team"}]
-        assert ql_learn.registry_problems(rows + team) == []  # a root's own providers are its team's
+        assert ql_learn.registry_problems(rows + team, real) == []  # a root's own providers are its team's
 
     def test_no_source_finding_for_a_host_with_the_needed_level(self, tmp_path):
         store = learn_store(tmp_path)
@@ -2240,6 +2303,58 @@ class TestSourceFindings:
         store = learn_store(tmp_path)
         run_learn(store, passing)
         assert not [r for r in by_id(store).values() if r.get("signal") == "stage"]
+
+
+STAGING_TESTS = (TestLearn.test_the_fixture_gives_findings_of_each_kind,
+                 TestLearn.test_two_runs_on_the_same_store_and_head_give_identical_files,
+                 TestLearn.test_a_head_change_is_one_new_file,
+                 TestSourceFindings.test_level_from_the_registry_else_the_routes_table,
+                 TestSourceFindings.test_no_source_finding_for_a_host_with_the_needed_level,
+                 TestSourceFindings.test_source_findings_read_the_registry_and_the_routes_table)
+
+
+def staging_results(tmp_path, head_pack):
+    """{test: "passed" or "failed"} of STAGING_TESTS run here, each in a directory of its own."""
+    import inspect
+    out = {}
+    for fn in STAGING_TESTS:
+        d = tmp_path / f"{fn.__name__}-{len(out)}"
+        d.mkdir(parents=True)
+        mp = pytest.MonkeyPatch()
+        args = {"tmp_path": d, "head_pack": head_pack, "monkeypatch": mp}
+        try:
+            fn(None, **{k: args[k] for k in list(inspect.signature(fn).parameters)[1:]})
+            out[fn.__name__] = "passed"
+        except AssertionError:
+            out[fn.__name__] = "failed"
+        finally:
+            mp.undo()
+    return out
+
+
+def test_querylog_tests_plant_their_registry(tmp_path, head_pack, monkeypatch):
+    """The clone gains provider and routes rows for the fixture store's level-0 hosts (as staging arxiv.org would
+    add): the staging tests, on a registry they plant, give the same results; without the plant they would not."""
+    import provider
+    grown = tmp_path / "grown"
+    grown.mkdir()
+    rows = [",".join([name, host + "/"] + [""] * (len(provider.COLS) - 2))
+            for name, host in (("arxiv", "arxiv.org"), ("unstaged", UNSTAGED))]
+    registry = REAL_REGISTRY.read_text(encoding="utf-8").rstrip("\n") + "\n" + "\n".join(rows) + "\n"
+    (grown / "providers.csv").write_text(registry, encoding="utf-8", newline="\n")
+    doc = REAL_WEB_SOURCES.read_text(encoding="utf-8")
+    assert "| PyPI |" in doc
+    doc = doc.replace("| PyPI |", "| `arxiv.org` | WebSearch | the abstract page | WebFetch |\n"
+                                  f"| `{UNSTAGED}` | the site's search | the page | - |\n| PyPI |", 1)
+    (grown / "web-sources.md").write_text(doc, encoding="utf-8", newline="\n")
+    monkeypatch.setattr(provider, "SHARED", str(grown / "providers.csv"))  # what the clone's files now serve
+    monkeypatch.setattr(ql_learn, "WEB_SOURCES", grown / "web-sources.md")
+    assert ql_learn.staging_level("arxiv.org") == (3, "registry") and ql_learn.registry_problems() == []
+    unplanted = staging_results(tmp_path / "unplanted", head_pack)
+    assert "failed" in unplanted.values(), unplanted  # the grown rows reach a test that reads them
+    with planted_staging(tmp_path / "planted"):
+        assert ql_learn.staging_level("arxiv.org") == (0, None)
+        assert staging_results(tmp_path / "planted-run", head_pack) == {fn.__name__: "passed" for fn in STAGING_TESTS}
 
 
 @pytest.fixture(scope="module")
@@ -2328,6 +2443,8 @@ def applied(tmp_path_factory):
     the copy's kb data files before)."""
     base = tmp_path_factory.mktemp("apply")
     home = Path(copy_kb(str(base / "kb")))
+    web_sources = home / "kb" / "_self" / "web-sources.md"
+    plant_staging(home / "_tools" / "providers.csv", web_sources, web_sources)  # findings=10 whatever the clone stages
     store = apply_store(base)
     env = querylog_env(base / "data", home=str(home), base={**os.environ, "KB_INDEX": str(home / "_cache")})
     before = {f: (home / f).read_bytes() for f in KB_DATA}
