@@ -2,7 +2,7 @@
   "id": "BG-uddfi7qz",
   "kind": "bug",
   "title": "Launch tests run the distill in mode auto, so on a host with the plugin installed they could push test entries",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P1",
@@ -22,5 +22,18 @@
     "kb/_self/tools.md",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "worker-qltests"
+  "evidence": {
+    "commit": "b447079a8c22e7f2810f5426e215dc1dd25fff56",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,re,sys; t=pathlib.Path('_tools/conftest.py').read_text(encoding='utf-8'); m=re.search(r'def querylog_env.*?(?=\\ndef )', t, re.S); sys.exit(0 if m and re.search(r'mode|deliver|local', m.group(0)) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
