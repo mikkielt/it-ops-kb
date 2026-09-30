@@ -2,7 +2,7 @@
   "id": "TK-gdwb7udj",
   "kind": "task",
   "title": "Move merge and ledger repair to kg_merge.py",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-3i3dl6xg",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,17 @@
     "_tools/conftest.py",
     "_tools/kg_base.py"
   ],
-  "claimed_by": "worker-gdwb7udj"
+  "evidence": {
+    "commit": "e8d8e60305c89b44060d135173bc0d9e24d6b363",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "89409cbfc6f5c5a6"
+      }
+    ]
+  }
 }
