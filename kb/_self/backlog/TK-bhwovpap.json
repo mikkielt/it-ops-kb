@@ -2,7 +2,7 @@
   "id": "TK-bhwovpap",
   "kind": "task",
   "title": "/kb-sprint plan adds research tasks and schedules them first",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-hzja7lj4",
   "priority": "P2",
   "rank": 1,
@@ -21,7 +21,5 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "_tools/test_change_router.py"
   ],
-  "depends_on": [
-    "TK-jperdxo6"
-  ]
+  "notes": "Dropped: verdict drop in kb/_self/reports/backlog-briefs.md; operator dropped ST-hzja7lj4"
 }

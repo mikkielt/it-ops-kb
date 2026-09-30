@@ -2,7 +2,7 @@
   "id": "TK-grjvo5w4",
   "kind": "task",
   "title": "/kb-item and /kb-sprint put the brief in the working agent's prompt",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-u7bliqzx",
   "priority": "P2",
   "rank": 1,
@@ -21,7 +21,5 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],
-  "depends_on": [
-    "TK-ysawmdua"
-  ]
+  "notes": "Dropped: verdict drop in kb/_self/reports/backlog-briefs.md, by ST-u7bliqzx's measured gate"
 }

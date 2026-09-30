@@ -2,7 +2,7 @@
   "id": "TK-ysawmdua",
   "kind": "task",
   "title": "backlog.py brief ID prints an item's packs and referenced facts",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-u7bliqzx",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "ST-zptutwlf"
-  ]
+  ],
+  "notes": "Dropped: verdict drop in kb/_self/reports/backlog-briefs.md, by ST-u7bliqzx's measured gate"
 }

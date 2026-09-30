@@ -2,7 +2,7 @@
   "id": "TK-epn3xui5",
   "kind": "task",
   "title": "Required asks hold an item until a research task covers them",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-wgymzw72",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "ST-zptutwlf"
-  ]
+  ],
+  "notes": "Dropped: verdict drop in kb/_self/reports/backlog-briefs.md, by ST-wgymzw72's measured gate"
 }

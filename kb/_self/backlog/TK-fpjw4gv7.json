@@ -2,7 +2,7 @@
   "id": "TK-fpjw4gv7",
   "kind": "task",
   "title": "backlog.py research ID creates the research task for an item",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-wgymzw72",
   "priority": "P2",
   "rank": 1,
@@ -21,7 +21,5 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py"
   ],
-  "depends_on": [
-    "TK-epn3xui5"
-  ]
+  "notes": "Dropped: verdict drop in kb/_self/reports/backlog-briefs.md, by ST-wgymzw72's measured gate"
 }
