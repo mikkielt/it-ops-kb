@@ -2,7 +2,7 @@
   "id": "BG-brlya4vc",
   "kind": "bug",
   "title": "backlog.py new misses a repro's own error when FORCE_COLOR colours Python's traceback",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,31 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py"
   ],
-  "claimed_by": "worker-brlya4vc"
+  "evidence": {
+    "commit": "40ffb127f198571b789c4e3ce43ce332a1012e47",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_backlog.py",
+          "-k",
+          "repro_fails_for_its_own_error"
+        ],
+        "exit": 0,
+        "sha256": "5c0943c564bb422a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_backlog.py",
+          "-k",
+          "repro_fails_for_its_own_error"
+        ],
+        "exit": 0,
+        "sha256": "6a6336ca1432565c"
+      }
+    ]
+  }
 }

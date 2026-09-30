@@ -45,7 +45,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    4. Commit the item file with the same trailer.
 7. **Land.**
    1. `/kb-verify` on the changed files (and `/kb-self` if tools, skills, hooks or rules changed).
-   2. `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops): the item file, a content-lane commit, goes straight to `main`.
+   2. `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops): the item file, a content-lane commit, goes straight to `main`. A bug filed while landing is committed on its own, then claimed, before the commit that fixes it (`kb/_self/backlog.md`, Working on items).
    3. Report the item's id and title, the commit, the checks that passed and the new horizon (`python3 _tools/backlog.py horizon`).
 
 When all its siblings are done, the parent story or bug is ready. Its own `done` runs its checks over the whole.
