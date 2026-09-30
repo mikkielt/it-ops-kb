@@ -1,0 +1,40 @@
+{
+  "id": "BG-xuluwj4g",
+  "kind": "bug",
+  "title": "benchmarks.py records table shows only the first arm of an armed scenario's record",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_report.py's records and records_table show every arm of a record of an ARMED scenario (navigation): each arm's commit and spend, so the before and after arms of one date both appear in benchmarks.md's navigation records table; a test in _tools/test_benchmarks.py plants two arms of one record and sees both",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read(); s=t.split('<!-- bench:records navigation -->')[1].split('<!-- /bench -->')[0]; sys.exit(0 if '0c375fc' in s else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "benchmark"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_report.py",
+    "_tools/test_benchmarks.py",
+    "kb/_self/reports/benchmarks.md"
+  ]
+}
