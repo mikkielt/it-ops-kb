@@ -2,7 +2,7 @@
   "id": "ST-lzxb535b",
   "kind": "story",
   "title": "A started sprint has touches on every work item",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
@@ -24,5 +24,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "sprint-4fbfzobr-w7"
+  "evidence": {
+    "commit": "c15515099e0e5872f626b37e07fadccd8467a887",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "start_refuses_work_items_without_touches"
+        ],
+        "exit": 0,
+        "sha256": "7e3f68ae1e12f148"
+      }
+    ]
+  }
 }
