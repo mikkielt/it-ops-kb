@@ -1,0 +1,31 @@
+{
+  "id": "BG-grwpxhsd",
+  "kind": "bug",
+  "title": "Three _tools docstrings and comments cite kb/_self/querylog.md sections that do not exist",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_capture.py:107 and :262 cite (querylog.md, Fetch outcomes), a bold label under Surfaces, and ql_research.py:1 cites (kb/_self/querylog.md, Research), which is no heading (research lives under Apply and The research queue); each names a heading querylog.md has, so python3 _tools/selfdoc.py check (with ST-mklj46kq's section-reference check) exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/selfdoc.py",
+      "check"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_research.py"
+  ]
+}
