@@ -2,7 +2,7 @@
   "id": "ST-mklj46kq",
   "kind": "story",
   "title": "selfdoc check flags a reference to a kb/_self section that no longer exists",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-ar52y6fk",
   "priority": "P3",
@@ -23,5 +23,19 @@
     "_tools/test_kb.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-mklj46kq"
+  "evidence": {
+    "commit": "86117e949dc43efd9378ea8e16732b79a3002e5a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc_flags_dead_section_reference"
+        ],
+        "exit": 0,
+        "sha256": "a5fa8b54b5812c88"
+      }
+    ]
+  }
 }

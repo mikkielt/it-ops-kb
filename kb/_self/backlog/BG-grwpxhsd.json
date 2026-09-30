@@ -2,7 +2,7 @@
   "id": "BG-grwpxhsd",
   "kind": "bug",
   "title": "Three _tools docstrings and comments cite kb/_self/querylog.md sections that do not exist",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
@@ -29,5 +29,27 @@
     "_tools/ql_capture.py",
     "_tools/ql_research.py"
   ],
-  "claimed_by": "orchestrator-SP-ar52y6fk"
+  "evidence": {
+    "commit": "86117e949dc43efd9378ea8e16732b79a3002e5a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
