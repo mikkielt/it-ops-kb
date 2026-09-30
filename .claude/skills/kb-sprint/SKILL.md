@@ -66,7 +66,7 @@ The review story is ready once every other item is done or dropped. Its work:
 4. `python3 _tools/backlog.py done <review id>`.
 
 ## close SP
-1. `python3 _tools/backlog.py close SP` deletes the sprint, its items and the epics they finished. It refuses while anything is open.
+1. `python3 _tools/backlog.py close SP --summary` prints one line per item it will delete (id, title, kind, status and the commit `done` recorded, or `no evidence commit`), then deletes the sprint, its items and the epics they finished. It refuses while anything is open, deleting nothing. Keep its `delivered by` list for the commit body.
 2. **Retrospective.** From this sprint's evidence, list what went wrong in the process, not in the product:
    - a `done` that refused;
    - a check that passed although the item did not work;
@@ -75,6 +75,6 @@ The review story is ready once every other item is done or dropped. Its work:
    - a rule in `kb/_self/backlog.md` or a skill that got in the way.
    Show the list to the operator. Each change they accept becomes a backlog story (`/kb-backlog`) naming the failure it answers. Write nothing into the docs directly.
 3. Commit with `KB-Work: SP-...` in the last trailer paragraph and a body that lists:
-   - each closed item's id and title and what it delivered;
+   - the `delivered by` list `close --summary` printed, as it is;
    - the retrospective's findings, each with the story it became or "no change".
 4. `python3 _tools/kbgit.py sync --push`.

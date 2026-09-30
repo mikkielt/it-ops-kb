@@ -29,7 +29,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           evidence and set status done; exit 1 with the reasons otherwise
   backlog.py drop ID --why TEXT           status dropped (an item outside any sprint is deleted: git keeps it)
   backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo
-  backlog.py close SPRINT                 delete a finished sprint, its items and the epics they finished
+  backlog.py close SPRINT [--summary]     delete a finished sprint, its items and the epics they finished
+                                          (--summary: first list each of them with its status and the commit done
+                                          recorded, for the close commit's body)
   backlog.py horizon [--sprint ID] [--hook]   how far each active sprint can go without the operator: reachable
                                           items, what waits on which gate or trigger, the critical path, the
                                           knowledge state of the next item's asks and refs (--hook runs no pack)
@@ -1123,6 +1125,20 @@ def cmd_start(bl, a):
     return 0
 
 
+def summary_key(bl, iid):
+    """Tree order: each item under its parent, the tops (epics, then the sprint's stories and bugs) in work order."""
+    return [bl.order_key(x) for x in reversed([iid] + bl.ancestors(iid))]
+
+
+def summary_line(bl, iid, gone):
+    """One commit-body line for an item close deletes: its id, title, kind, status and the commit done recorded."""
+    it = bl.items[iid]
+    depth = sum(1 for p in bl.ancestors(iid) if p in gone)
+    ev = (it.get("evidence") or {}).get("commit") if isinstance(it.get("evidence"), dict) else None
+    at = f" at {ev[:10]}" if ev else ", no evidence commit"
+    return f"{'  ' * depth}- {bl.label(iid)} ({it.get('kind', '')}): {it.get('status', '')}{at}"
+
+
 def cmd_close(bl, a):
     sid = need(bl, a.sprint)
     items = bl.sprint_items(sid)
@@ -1135,6 +1151,11 @@ def cmd_close(bl, a):
         rest = [c for c in bl.descendants(e) if c not in gone]
         if bl.items[e].get("status") == "done" and not rest:
             gone.add(e)
+    if a.summary:
+        say(f"delivered by {bl.label(sid)}:")
+        for i in sorted(gone, key=lambda i: summary_key(bl, i)):
+            say(summary_line(bl, i, gone))
+        say()
     for i in gone:
         say(f"deleted {line(bl, i)}")
     # a remaining item's relates_to is information only, and a depends_on on a deleted item that is not dropped is
@@ -1644,6 +1665,8 @@ def main(argv=None):
     p.add_argument("sprint")
     p = sub.add_parser("close")
     p.add_argument("sprint")
+    p.add_argument("--summary", action="store_true",
+                   help="first print each item close deletes with its status and evidence commit (the close commit's body)")
     p = sub.add_parser("horizon")
     p.add_argument("--sprint")
     p.add_argument("--hook", action="store_true")
