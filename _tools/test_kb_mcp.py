@@ -16,7 +16,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 planted: the old `>&2` command, a parser error in PowerShell); no root .mcp.json (it would load into
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both. The clone-only
-                kb-worker agent (test_kb_worker_agent*): the sonnet alias, effort high, not in plugin.json. Its
+                kb-worker agent (test_kb_worker_agent*): the sonnet alias, effort high, not in plugin.json, and it runs
+                `kbgit.py fix --check` and, for a change to _tools/, the ruff and tools_map tests before a commit. Its
                 dispatch (test_kb_worker_dispatch*): /kb-sprint run starts tasks and subtasks on it with no model
                 override, S1 and S2 bugs and breakdowns on the session model; the review, /kb-census and the
                 runbook agree.
@@ -489,6 +490,9 @@ class TestPluginManifest:
         body = text.split("\n---", 1)[1]
         for phrase in ("touches", "work/<id>", "KB-Work", "Never push", "new bug", "gate"):
             assert phrase in body, f"the worker brief names {phrase!r}"
+        # The sync gate's own checks run in the worktree before each commit, not first at the orchestrator's gate.
+        for phrase in ("kbgit.py fix --check", 'tests.py -k "ruff or tools_map"'):
+            assert phrase in body, f"the worker brief runs {phrase!r} before a commit"
 
     def test_kb_worker_agent_planted_failures(self):
         """Each rule fails on a planted copy: a pinned id, inherit, no model, another effort, a plugin listing."""
