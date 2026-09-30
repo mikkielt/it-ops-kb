@@ -2235,3 +2235,15 @@ _Agent: kb-research_
 - See python/stdlib-windows-portability.md, claude/hooks.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-sessions-message-each-other. Can Claude Code sessions message each other across sessions and machines?
+- Yes: Claude finds your other sessions with `ListAgents` (`/list-agents`, alias `/peers`) and sends plain text with `SendMessage`, on request or on its own; on by default from v2.1.224 on macOS, Linux and WSL 2, v2.1.234 on native Windows per the docs page. [DOC S-sdxhnx3i]
+- Same-machine messages travel over a per-session socket or named pipe, never through Anthropic servers; other machines and cloud sessions go through Anthropic servers and need this session connected to Remote Control with a claude.ai sign-in. [DOC S-sdxhnx3i]
+- The receiver is told the message is from another session, not the user: it cannot approve prompts, change configuration or run slash commands, and the receiver's own permission prompts still apply. [DOC S-sdxhnx3i]
+- `crossSessionInbound` (accept/hold/refuse) controls receiving; by default a bypass-mode receiver holds messages from prompting senders for approval; `isolatePeerMachines: true` asks before anything leaves the machine; deny rules on `SendMessage` and `ListAgents` stop sending and listing. [DOC S-sdxhnx3i]
+- Conclusion: cross-session messaging is a shipped, on-by-default feature, not an experiment like agent teams. An organization can keep it on-device with `isolatePeerMachines` or switch it off with managed deny rules plus `crossSessionInbound: "refuse"`, and a headless worker that must receive unattended needs `crossSessionInbound: "accept"` in its own `--settings`. [DER S-sdxhnx3i, S746]
+- Native Windows: the docs page states v2.1.234, while the changelog and the week 34 digest announce Windows support in v2.1.239, so v2.1.239+ is the safe floor. [DER S-sdxhnx3i, S746, S-d3ythwgb]
+- `crossSessionInbound` ranks `accept` < `hold` < `refuse`; a stricter project or local value beats managed, `--settings` and user values, and across managed sources the strictest applies. [DOC S2057, S2042]
+- See claude/cross-session-messaging.md, claude/skills-and-subagents.md.
+
+_Agent: kb-research_

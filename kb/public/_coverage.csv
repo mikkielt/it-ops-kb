@@ -96,6 +96,7 @@ claude/enterprise-admin,P2,complete,claude/enterprise-admin.md,8
 claude/plugins,P2,complete,claude/plugins.md;claude/plugins.csv,14
 claude/settings-and-scopes,P2,complete,claude/settings-and-scopes.md;claude/settings-keys.csv;claude/env-vars.csv,11
 claude/skills-and-subagents,P2,complete,claude/skills-and-subagents.md;claude/skills-and-subagents.csv,5
+claude/cross-session-messaging,P3,complete,claude/cross-session-messaging.md,8
 claude/large-codebases,P3,complete,claude/large-codebases.md,3
 claude/powershell-tool,P3,partial,claude/powershell-tool.md,6
 defender/machine-resource,P1,complete,defender/machine-resource.md;defender/machine-properties.csv,9

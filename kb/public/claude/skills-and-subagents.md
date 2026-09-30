@@ -172,6 +172,8 @@ Related kb articles:
 - `claude/plugins.md` — a plugin's `skills/` and `agents/` directories add the plugin-name prefix (`<plugin>:<name>`)
   to the frontmatter this article describes; `claude/plugins.csv` has the manifest's `skills`/`agents`/`commands`
   fields.
+- `claude/cross-session-messaging.md` — `SendMessage` and `ListAgents` beyond one session: messaging your other
+  Claude Code sessions on this machine, other machines and the cloud, with its inbound controls.
 
 ## Examples
 - SNIPPET: a `SKILL.md` frontmatter that forks the skill body into a subagent and never auto-invokes from a model match; context: Claude Code, `.claude/skills/<name>/SKILL.md`; checked: no [DOC S2158: `context: fork` and `disable-model-invocation: true` frontmatter fields]

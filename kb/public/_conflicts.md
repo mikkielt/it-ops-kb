@@ -729,3 +729,8 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/codebase-mapping
 
 - **`tsc` with files named on the command line and a `tsconfig.json` present.** The TypeScript handbook page on tsconfig (S-3e3kl7vi) says `tsconfig.json` is ignored when input files are named on the command line; the TypeScript 7.0.2 native compiler source (S-gfjnysog, tag typescript/v7.0.2) reports an error in that case and offers `--ignoreConfig` to skip it. Both read 2026-09-29; the handbook is not versioned by release, so this may be a 7.0 behaviour change rather than a doc error; a run of `tsc 5.x` and `tsc 7.x` in a lab settles it. (topic: agents/codebase-mapping)
+
+## claude/cross-session-messaging
+
+- Native Windows minimum version: the cross-session messaging page (S-sdxhnx3i) says native Windows needs Claude Code v2.1.234 or later, while the changelog (S746) lists "Windows: cross-session messaging is now available" under v2.1.239 (August 21, 2026). The v2.1.234 entry has no Windows line. Read 2026-09-30; a `/list-agents` check on native Windows with v2.1.234 settles it. [DOC S-sdxhnx3i vs S746, unresolved] (topic: claude/cross-session-messaging)
+  - Resolved 2026-09-30: the week 34 digest (S-d3ythwgb, releases v2.1.234 to v2.1.239) also announces native Windows support, agreeing with the changelog's v2.1.239 entry; no release note puts it in v2.1.234. The article keeps both DOC statements and recommends v2.1.239+ on native Windows (DER), which satisfies either reading; v2.1.234 to v2.1.238 on Windows stay unverified. (topic: claude/cross-session-messaging)

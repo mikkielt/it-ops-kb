@@ -405,3 +405,9 @@ PYTHON_CPU_COUNT,python/interpreter-startup
 fsutil devdrv,windows/dev-drive
 PerformanceModeStatus,windows/dev-drive
 New-MpPerformanceRecording,defender/asr-and-antivirus
+ListAgents,claude/cross-session-messaging
+crossSessionInbound,claude/cross-session-messaging
+isolatePeerMachines,claude/cross-session-messaging
+CLAUDE_CODE_MESSAGING_SOCKET,claude/cross-session-messaging
+CLAUDE_CODE_MESSAGING_TOKEN,claude/cross-session-messaging
+notify_when_idle,claude/cross-session-messaging
