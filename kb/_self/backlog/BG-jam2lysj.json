@@ -2,7 +2,7 @@
   "id": "BG-jam2lysj",
   "kind": "bug",
   "title": "The failure fingerprint misses the test id behind GitLab's stream marker, so different failures join one bug",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "sprint-4fbfzobr-w2"
 }
