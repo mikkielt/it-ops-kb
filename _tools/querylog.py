@@ -70,10 +70,11 @@ the ql_*.py modules beside it.
                         that keeps the store's files and records its findings `apply-failed`, an unfinished pipeline
                         stops the run; then, in the worktree beside the spool reset to origin/main: the local store's
                         run files that origin/main lacks, and its findings files that hold only learn's states for
-                        findings origin/main does not record yet, copied into kb/_querylog, gated by `check` and the
-                        leak scan, and committed (KB-Auto: querylog); the worktree's learn and apply on that store,
-                        one commit with its KB-Auto trailer; one `kbgit.py sync --push` (gate, rebase on origin/main,
-                        push to origin only). Once the run files are on origin/main, the spool rows of their entries
+                        findings origin/main does not record yet, copied into kb/_querylog and gated by `check` and
+                        the leak scan; the worktree's learn and apply on that store; one commit of the copied files
+                        and what learn and apply changed, with the KB-Auto values of its paths (querylog among
+                        them), pushed once by `kbgit.py sync --push` (gate, rebase on origin/main, push to origin
+                        only). Once the run files are on origin/main, the spool rows of their entries
                         are deleted (a failed push deletes nothing). A conflict sync cannot resolve pushes
                         querylog/<run-id> with `-o merge_request.create -o merge_request.target=main`, main unchanged,
                         and later runs leave that branch's findings alone until main holds them. In a plugin host the
