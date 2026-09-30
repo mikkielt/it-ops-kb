@@ -2,7 +2,7 @@
   "id": "ST-ra5qo4tn",
   "kind": "story",
   "title": "Review sprint: Delivery proven",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z7a5c76b",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "it-ops-kb-perf"
+  "evidence": {
+    "commit": "01612d65d442f7f03cc8cb6e67602a78b5ec10e2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "caa3e7a81e3d2b10"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "4dddd3ebbaa17792"
+      }
+    ]
+  }
 }
