@@ -108,7 +108,9 @@
                     record); a second queue after `close --claim` omits the closed gap and changes nothing; planted: a
                     later record reopening a closed gap (check and queue fail), a closed gap whose entry lost its
                     Resolved note, `--claim` without one; a tried note younger than QUEUE_TRIED_DAYS waits and an
-                    older one is queued; the close records pass `check`; close refuses what is no open gap
+                    older one is queued; the close records pass `check`; close refuses what is no open gap; `close
+                    --reject` refuses an entry still in the ledger, then records a gap whose entry was removed
+                    rejected at candidate-gap, no longer open, and the gap step and queue leave it
   TestQuoteCheck    quotecheck on a recorded page: entities, no-break spaces, curly quotes, links and emphasis
                     normalized; planted: a quote not on its page, page chrome, over 25 or under 5 words, a page that
                     cannot be fetched; the default fetcher is fetch.py's; the command line
@@ -3805,6 +3807,38 @@ class TestQueue:
         (root / "_gaps.md").write_text(GAPS_MD, encoding="utf-8", newline="\n")  # the entry is gone
         fid = next(r["id"] for r in by_id(store).values() if r["kind"] == "gap")
         assert run_close(store, gate, fid, tried="x") == (1, [f"close: no _gaps.md entry names {fid}"])
+
+    def test_reject_records_a_gap_whose_entry_was_removed(self, tmp_path):
+        """An open gap finding whose _gaps.md entry an operator removed as off the kb's domains: the queue skips it
+        (no entry), so without --reject it stays open for good. --reject refuses while the entry is there, then puts
+        the finding back to candidate-gap, rejected with the gap step's reason, and a second one is refused."""
+        root, store, gate = queued(tmp_path)
+        fid = listed(run_queue(store, gate)[1])[0]
+        _, line, _ = ql_research.ledger_entry(gate, by_id(store)[fid])
+        assert run_close(store, gate, fid, reject=True) == (1, [
+            f"close: {root.as_posix()}/_gaps.md:{line} still names {fid}; --reject records an entry already removed "
+            "as off the kb's domains (remove it first, or use --claim or --tried)"])
+        other = next(r["id"] for r in by_id(store).values() if r["kind"] == "eval")
+        assert run_close(store, gate, other, reject=True)[0] == 1  # no gap finding
+        p = root / "_gaps.md"
+        lines = p.read_text(encoding="utf-8").split("\n")
+        i, end = ql_research.entry_block(lines, fid)
+        p.write_text("\n".join(lines[:i] + lines[end:]), encoding="utf-8", newline="\n")  # the operator removes it
+        last = ql_store.finding_states(store)
+        assert fid in {g["id"] for g in ql_research.open_gaps(store, last)}  # open, though the queue skips it
+        rc, said = run_close(store, gate, fid, reject=True)
+        assert rc == 0 and said[0].startswith(f"close: {fid} rejected run="), said
+        rec = by_id(store)[fid]
+        assert (rec["state"], rec["stage"], rec["observed"]["gate"], rec["promotions"][-1]) == (
+            "rejected", "candidate-gap", ["off the kb's domains"],
+            {"from": "gap", "to": "candidate-gap", "by": "kb-research"})
+        assert rec["article"] == LAPS and querylog.main(["check", str(store)]) == 0
+        last = ql_store.finding_states(store)
+        assert fid not in {g["id"] for g in ql_research.open_gaps(store, last)}
+        before = tree(store)
+        assert run_close(store, gate, fid, reject=True)[0] == 1  # no longer open: no second record
+        run_gap_apply(store, gate)  # the gap step leaves a rejected candidate alone
+        assert run_queue(store, gate)[0] == 0 and tree(store) == before
 
     def test_cli(self, tmp_path):
         store = learn_store(tmp_path)

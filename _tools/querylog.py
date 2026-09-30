@@ -93,11 +93,13 @@ the ql_*.py modules beside it.
                         topic with the question and each of its finding ids with its entry's path:line. The same store
                         and HEAD print the same lines in any clone. Exit 0, 1 when a closed gap reappears (a later
                         record after its claim, or its entry without a Resolved note)
-  querylog.py close F-ID [F-ID ...] (--claim | --tried NOTE) [--store DIR]
+  querylog.py close F-ID [F-ID ...] (--claim | --tried NOTE | --reject) [--store DIR]
                         records what `/kb-research --queue` did with the gap findings of one queue item: --claim once
                         each _gaps.md entry carries a `Resolved <date>:` note (gap -> claim, by kb-research); --tried
-                        writes the note `Tried <date>: NOTE` under each entry and records the day. One findings file
-                        per finding; no older file is edited. Exit 0, 1 when one was refused
+                        writes the note `Tried <date>: NOTE` under each entry and records the day; --reject once each
+                        entry was removed as off the kb's domains (-> candidate-gap, `rejected`, as the gap step
+                        records one). One findings file per finding; no older file is edited. Exit 0, 1 when one was
+                        refused
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
@@ -227,10 +229,13 @@ def main(argv=None):
         how = ap.add_mutually_exclusive_group(required=True)
         how.add_argument("--claim", action="store_true", help="its _gaps.md entry is resolved: promote it to claim")
         how.add_argument("--tried", metavar="NOTE", help="not settled: add the dated note NOTE under its entry")
+        how.add_argument("--reject", action="store_true", help="its _gaps.md entry was removed as off the kb's "
+                         "domains: record it rejected at candidate-gap")
         ap.add_argument("--store", help="the store to record in (default: kb/_querylog, the committed store)")
         a = ap.parse_args(argv[1:])
         import ql_research
-        return max(ql_research.close(f, claim=a.claim, tried=a.tried, store=a.store) for f in a.finding)
+        return max(ql_research.close(f, claim=a.claim, tried=a.tried, store=a.store, reject=a.reject)
+                   for f in a.finding)
     if argv[:1] == ["digest"]:
         ap = argparse.ArgumentParser(prog="querylog.py digest")
         ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")

@@ -497,6 +497,8 @@ OPEN_GAP_STAGES = ("gap", "candidate-fact")  # a gap finding whose _gaps.md entr
 NOTE = re.compile(r"\s+- (Resolved|Superseded|Partly resolved|Tried) (\d{4}-\d{2}-\d{2})\b")
 SETTLED = ("Resolved", "Superseded")  # the notes that close an entry; `Tried` and `Partly resolved` leave it open
 TOPIC_MARK = re.compile(r"\s*\(topic: [^)]*\)\s*$")
+OFF_DOMAINS = "off the kb's domains"  # the reason the gap step records for a candidate no topic can take
+REJECTED_STAGE = "candidate-gap"  # where the gap step leaves a candidate off the kb's domains, and --reject puts one
 
 
 def head_day(cwd=HOME):
@@ -638,12 +640,15 @@ def queue(store=None, limit=None, gate=None, day=None, kb_commit=None, out=print
     return 1 if problems else 0
 
 
-def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_commit=None, out=print):
-    """`close F-ID --claim|--tried NOTE`: one findings record for an open gap finding worked by `/kb-research`.
-    --claim: its _gaps.md entry must carry a `Resolved <day>:` note (the content rules), and the finding is promoted
-    to claim (by kb-research, `applied`). --tried: the dated note `  - Tried <day>: NOTE (topic: ...)` goes under the
-    entry, and the record carries `tried` (the day). 0; 1 refused (not an open gap, no entry, no Resolved note for
-    --claim, a resolved entry or an empty note for --tried)."""
+def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_commit=None, out=print, reject=False):
+    """`close F-ID --claim|--tried NOTE|--reject`: one findings record for an open gap finding worked by
+    `/kb-research`. --claim: its _gaps.md entry must carry a `Resolved <day>:` note (the content rules), and the finding
+    is promoted to claim (by kb-research, `applied`). --tried: the dated note `  - Tried <day>: NOTE (topic: ...)` goes
+    under the entry, and the record carries `tried` (the day). --reject: its entry must be gone from the ledger (removed
+    as off the kb's domains), and the finding is put back from its stage to candidate-gap (by kb-research), `rejected`
+    with OFF_DOMAINS in `observed`: the record the gap step writes for a candidate no topic can take. 0; 1 refused (not
+    an open gap, no entry, no Resolved note for --claim, a resolved entry or an empty note for --tried, an entry still
+    in the ledger for --reject)."""
     from ql_apply import Gate  # imported here: ql_apply imports this module
     store = Path(store or STORE)
     gate = gate or Gate()
@@ -654,6 +659,19 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
         out(f"close: {fid} is no open gap finding of {shown(store)}")
         return 1
     loc = ledger_entry(gate, g)
+    if reject:
+        if loc is not None:
+            out(f"close: {shown(loc[0])}:{loc[1]} still names {fid}; --reject records an entry already removed as "
+                "off the kb's domains (remove it first, or use --claim or --tried)")
+            return 1
+        rec = {**{k: v for k, v in g.items() if k != "observed"}, "state": "rejected",
+               "stage": REJECTED_STAGE,
+               "promotions": [*(g.get("promotions") or []),
+                              {"from": g["stage"], "to": REJECTED_STAGE, "by": "kb-research"}],
+               "observed": {"gate": [OFF_DOMAINS], "entry": "removed"}}
+        run_id, _ = write_findings(store, store_entries(store), [rec], ("rejected",), kb_commit)
+        out(f"close: {fid} rejected run={run_id}")
+        return 0
     if loc is None:
         out(f"close: no _gaps.md entry names {fid}")
         return 1
