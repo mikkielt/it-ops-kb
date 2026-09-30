@@ -1033,6 +1033,29 @@ def test_fingerprint_names_the_first_failing_test_or_normalised_error_line():
     assert fp != backlog.failure_fingerprint("kb-tests", "_tools/test_b.py::test_two")  # another failure
 
 
+def _gitlab_com_log(failing):
+    """A kb-tests-windows log as GitLab.com writes it: every line behind a timestamp and a stream marker."""
+    return ("2026-09-29T01:06:30.100000Z 00O \x1b[0KRunning with gitlab-runner 18.4.0 (0123abcd)\n"
+            "2026-09-29T01:06:31.200000Z 00O section_start:1759107991:step_script\r\x1b[0K\x1b[0K\x1b[36;1mExecuting\n"
+            "2026-09-29T01:06:40.300000Z 01O _tools/test_a.py::test_ok PASSED\n"
+            f"2026-09-29T01:06:40.889927Z 01O FAILED {failing} - AssertionError: 1 != 2\n"
+            "2026-09-29T01:06:40.900000Z 01O+ continued output\n"
+            "2026-09-29T01:06:41.000000Z 01E ERROR: Job failed: exit code 1\n")
+
+
+def test_fingerprint_strips_gitlab_com_timestamp_and_stream_marker():
+    ids = ["_tools/test_a.py::test_x", "_tools/test_b.py::test_y", "_tools/test_c.py::test_z"]
+    assert [backlog.first_failure(_gitlab_com_log(t)) for t in ids] == ids
+    fps = {backlog.failure_fingerprint("kb-tests-windows", backlog.first_failure(_gitlab_com_log(t))) for t in ids}
+    assert len(fps) == 3  # three different failures, three fingerprints
+    # the error-line fallback strips the prefix too: the same error at another time and stream gives one line
+    a = backlog.first_failure("2026-09-29T01:06:41.000000Z 01E ERROR: Job failed: exit code 1\n")
+    b_ = backlog.first_failure("2026-09-30T08:00:00.5Z 02O+ ERROR: Job failed: exit code 1\n")
+    assert a == b_ == "ERROR: Job failed: exit code <n>"
+    # a line without the prefix keeps a leading stream-like token
+    assert backlog.first_failure("01E error: x\n") == "<n>E error: x"
+
+
 def test_fingerprint_same_failure_one_bug_different_failure_a_second(repo, monkeypatch, capsys):
     sha = head(repo)
     pipelines = [{"id": 901, "sha": sha, "status": "failed"}]
