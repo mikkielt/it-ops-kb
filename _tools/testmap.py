@@ -19,7 +19,8 @@ How a path maps (first rule that applies):
   `querylog.py check`).
 - kb content (`kb/**`, `AGENTS.md`, `README.md`, `CLAUDE.md`): the tests that read the live kb (CONTENT_TESTS).
 - a deleted test file or runner: nothing.
-Every selection short of all adds the repository-wide leak scan (LEAKS), and a tool module's adds ruff (TOOL_SCANS).
+Every selection short of all adds the repository-wide leak scan (LEAKS), and a tool module's adds the tests that read
+every tool module by glob, not by import, so no edge of the graph reaches them (TOOL_SCANS: ruff, the import layers).
 - other paths under `_tools/`, `.claude/`, `.githooks/`, `.claude-plugin/`, `.github/`, `.gitlab-ci.yml`: the test files
   and modules whose string constants name the path, its file name or its directory (SEARCH_TOKENS), and for
   `.claude/` and `.githooks/` also the content classes; all tests when nothing names it.
@@ -42,7 +43,9 @@ CONTENT_TESTS = ["_tools/test_kb.py::TestCohesion", "_tools/test_kb.py::TestSelf
                  "_tools/test_kb.py::TestIds", "_tools/test_kb.py::TestLeaks", "_tools/test_kb.py::TestToolChecks",
                  "_tools/test_route.py::TestRouteEvalSet", "_tools/test_kb_mcp.py::TestKbServer", "_tools/test_kbfacts_imports.py"]
 LEAKS = "_tools/test_kb.py::TestLeaks"  # the repository-wide leak scan: part of every selection short of all
-TOOL_SCANS = ["_tools/test_kb.py::TestCohesion"]  # ruff over every tool: part of every tool change's selection
+# the tests that read every _tools/*.py by glob, not by import: part of every tool change's selection; ruff over every
+# tool, and the import layers of kb/_self/code.md parsed over every module
+TOOL_SCANS = ["_tools/test_kb.py::TestCohesion", "_tools/test_layout.py"]
 SEARCHED = ("_tools/", ".claude/", ".githooks/", ".claude-plugin/", ".github/", ".gitlab-ci.yml")
 WITH_CONTENT = (".claude/", ".githooks/")
 # names too common to say which file a string means; a path under a directory also searches these directory tokens
