@@ -415,17 +415,27 @@ class Pusher:
 
     def held(self):
         """Finding ids pending on a conflict branch of origin that main does not hold yet: the records of the
-        findings files the branch adds. OSError when such a file cannot be read, so a held finding is never applied
-        for want of reading it."""
-        code, o, _ = self.git("for-each-ref", "--format=%(refname)", f"refs/remotes/{self.remote}/{CONFLICT_BRANCH_PREFIX}")
+        findings files the branch adds. OSError when a git call it reads fails (for-each-ref, merge-base, diff) or such
+        a file cannot be read, so a held finding is never applied for want of reading it."""
+        def failed(what, code, o, e):
+            return OSError(f"cannot {what} (git exit {code}): {(o + e).strip()[-300:]}")
+        code, o, e = self.git("for-each-ref", "--format=%(refname)", f"refs/remotes/{self.remote}/{CONFLICT_BRANCH_PREFIX}")
+        if code:
+            raise failed("list the conflict branches", code, o, e)
         ids = set()
-        for ref in o.split() if code == 0 else []:
-            if self.git("merge-base", "--is-ancestor", ref, self.up)[0] == 0:
+        for ref in o.split():
+            code, o2, e2 = self.git("merge-base", "--is-ancestor", ref, self.up)
+            if code == 0:
                 continue
-            base = self.git("merge-base", ref, self.up)[1].strip()
-            if not base:
-                continue
-            files = self.git("diff", "--name-only", "--diff-filter=A", base, ref, "--", f"{STORE_REL}/{FINDINGS}")[1]
+            if code != 1:  # 1: not an ancestor; anything else is an error
+                raise failed(f"tell whether {ref} is on {self.up}", code, o2, e2)
+            code, o2, e2 = self.git("merge-base", ref, self.up)
+            base = o2.strip()
+            if code or not base:
+                raise failed(f"find the merge base of {ref} and {self.up}", code, o2, e2)
+            code, files, e2 = self.git("diff", "--name-only", "--diff-filter=A", base, ref, "--", f"{STORE_REL}/{FINDINGS}")
+            if code:
+                raise failed(f"list the findings files {ref} adds", code, files, e2)
             for f in files.split():
                 code, text, err = self.blob(ref, f)
                 if code:

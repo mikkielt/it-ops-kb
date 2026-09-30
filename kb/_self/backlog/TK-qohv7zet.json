@@ -20,6 +20,7 @@
   "touches": [
     "_tools/ql_deliver.py",
     "_tools/test_querylog.py",
+    "_tools/test_querylog_e2e.py",
     "kb/_self/querylog.md"
   ],
   "claimed_by": "it-ops-kb-perf"
