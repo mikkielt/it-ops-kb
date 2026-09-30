@@ -2,8 +2,9 @@
   "id": "BG-grwpxhsd",
   "kind": "bug",
   "title": "Three _tools docstrings and comments cite kb/_self/querylog.md sections that do not exist",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
+  "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -27,5 +28,6 @@
   "touches": [
     "_tools/ql_capture.py",
     "_tools/ql_research.py"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-ar52y6fk"
 }
