@@ -24,11 +24,10 @@ RESEARCH_RUNS_PER_APPLY = 2  # research runs in one apply, whatever the daily ca
 RESEARCH_FACTS_MAX = 5  # candidate facts read from one research reply
 RESEARCH_RUNS_NAME = "research-runs.json"  # {"day", "runs"}: the research runs this user started today
 RESEARCH_TOOLS = ("WebSearch", "WebFetch")
-RESEARCH_MCP_TOOLS = ("mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch",
-                      "mcp__claude-code-docs__search_claude_code_docs",
-                      "mcp__claude-code-docs__query_docs_filesystem_claude_code_docs",
-                      "mcp__mcp-docs__search_model_context_protocol",
-                      "mcp__mcp-docs__query_docs_filesystem_model_context_protocol")
+# the kb server's live-docs tools (kb_mcp.py): they reach the three documentation servers through its 7-day cache, so
+# a search the queue repeats within the week calls no docs server; the kb server's other tools are not allowed
+RESEARCH_MCP_SERVER = "kb"
+RESEARCH_MCP_TOOLS = ("mcp__kb__docs_search", "mcp__kb__docs_fetch")
 RESEARCH_TAGS = ("DOC", "COMMUNITY")
 RESEARCH_FIELDS = ("text", "tag", "url", "title", "publisher", "licence", "reuse", "quote")
 RESEARCH_TASK = (
@@ -133,14 +132,22 @@ def research_budget(qdir, cfg, day):
     return max(0, daily - research_used(qdir, day))
 
 
+def research_mcp_config():
+    """The --mcp-config JSON of a research run: this copy's kb stdio server alone (no --roots, so it serves the live
+    docs), whose docs_search and docs_fetch keep each answer 7 days on disk; not the documentation servers
+    themselves, which cache nothing."""
+    import sys
+    server = {"command": sys.executable, "args": [str(HOME / "_tools" / "kb_mcp.py")]}
+    return json.dumps({"mcpServers": {RESEARCH_MCP_SERVER: server}}, separators=(",", ":"))
+
+
 def research_argv(model=RESEARCH_MODEL):
     """The `claude -p` argument list of one research run: hooks off (the pipeline never logs itself), no user plugins
-    or MCP servers but the kb's three documentation servers, web search and fetch as the only built-in tools, nothing
-    else allowed. The prompt goes on stdin."""
+    or MCP servers but the kb server (research_mcp_config), whose cached docs_search and docs_fetch are its only tools
+    allowed, web search and fetch as the only built-in tools, nothing else allowed. The prompt goes on stdin."""
     import shutil, kbcommon
-    docs = HOME / ".claude-plugin" / "it-ops-kb-docs" / ".mcp.json"
     return [shutil.which("claude") or "claude", "-p", "--model", model, "--no-session-persistence", *kbcommon.NO_HOOKS,
-            "--setting-sources", "project,local", "--strict-mcp-config", "--mcp-config", str(docs),
+            "--setting-sources", "project,local", "--strict-mcp-config", "--mcp-config", research_mcp_config(),
             "--tools", ",".join(RESEARCH_TOOLS), "--permission-mode", "dontAsk",
             "--allowedTools", *RESEARCH_TOOLS, *RESEARCH_MCP_TOOLS]
 

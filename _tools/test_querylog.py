@@ -10,7 +10,8 @@
                     unchanged
   TestNoHooks       every `claude -p` the pipeline starts carries --settings {"disableAllHooks": true} (planted: an
                     argument list without it, or with false), research's call included, and nothing is written
-                    unless a hook or a tool runs
+                    unless a hook or a tool runs; research's only MCP tools are the kb server's cached docs_search
+                    and docs_fetch (planted: the direct docs servers), and a repeated search calls the docs server once
   TestHookConfig    the capture hooks are async on UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop in
                     .claude/settings.json and the plugin, through kbpy, with matchers for the kb and fetch tools
                     (planted: a synchronous capture hook, a missing event); the shell form runs end to end; the
@@ -550,6 +551,61 @@ class TestNoHooks:
         assert argv[argv.index("--permission-mode") + 1] == "dontAsk" and "--strict-mcp-config" in argv
         assert seen["input"] == "prompt" and seen["timeout"] == ql_research.RESEARCH_TIMEOUT_S
         assert seen["cwd"] and not Path(seen["cwd"]).exists()  # a temporary directory, gone after the run
+
+    def test_research_docs_go_through_the_kb_servers_cache(self):
+        """research's only MCP server is this copy's kb stdio server (no --roots, so it serves the live docs), and its
+        only MCP tools allowed are the kb server's cached docs_search and docs_fetch: not the documentation servers
+        themselves, not any other kb tool (planted: the docs plugin's .mcp.json and a direct docs tool fail)."""
+        import kb_mcp
+
+        def mcp_of(argv):
+            servers = json.loads(argv[argv.index("--mcp-config") + 1])["mcpServers"]
+            allowed = argv[argv.index("--allowedTools") + 1:]
+            return servers, [t for t in allowed if t.startswith("mcp__")]
+
+        argv = ql_research.research_argv()
+        servers, tools = mcp_of(argv)
+        assert list(servers) == ["kb"] and "--strict-mcp-config" in argv, servers
+        kb = servers["kb"]
+        assert Path(kb["args"][0]) == Path(TOOLS, "kb_mcp.py") and "--roots" not in kb["args"], kb
+        live = {t["name"] for t in kb_mcp.LIVE_TOOL_LIST}
+        assert sorted(tools) == sorted(f"mcp__kb__{n}" for n in live) == ["mcp__kb__docs_fetch", "mcp__kb__docs_search"]
+        assert not live & {t["name"] for t in kb_mcp.TOOL_LIST}
+        assert not any(t.startswith(("mcp__microsoft-learn", "mcp__claude-code-docs", "mcp__mcp-docs")) for t in argv)
+        docs = json.loads(Path(kb_mcp.DOCS_MCP).read_text(encoding="utf-8"))  # planted: the old, direct servers
+        i = argv.index("--mcp-config") + 1
+        planted = [*argv[:i], json.dumps(docs), *argv[i + 1:], "mcp__microsoft-learn__microsoft_docs_search"]
+        servers, tools = mcp_of(planted)
+        assert list(servers) != ["kb"] and "mcp__microsoft-learn__microsoft_docs_search" in tools
+
+    def test_research_repeat_search_within_7_days_calls_no_docs_server(self, tmp_path, monkeypatch):
+        """The tool research is allowed, called through the kb server's handler twice with the same arguments within
+        7 days, reaches the documentation server once: the second answer comes from the disk cache."""
+        import kb_mcp
+        calls = []
+
+        class Remote:
+            def __init__(self, url):
+                self.url = url
+
+            def start(self):
+                pass
+
+            def call(self, tool, arguments):
+                calls.append((self.url, tool, arguments))
+                return "page text"
+        monkeypatch.setattr(kb_mcp, "RemoteMcp", Remote)
+        monkeypatch.setattr(kb_mcp, "LIVE_ON", [True])
+        monkeypatch.setenv("KB_DOCS_CACHE", str(tmp_path / "cache"))
+        monkeypatch.delenv("KB_LIVE_DOCS", raising=False)
+        name = next(t for t in ql_research.RESEARCH_MCP_TOOLS if t.endswith("docs_search")).split("__", 2)[2]
+        msg = {"jsonrpc": "2.0", "method": "tools/call",
+               "params": {"name": name, "arguments": {"server": "microsoft-learn", "query": "windows laps"}}}
+        first = kb_mcp.handle({**msg, "id": 1})["result"]
+        second = kb_mcp.handle({**msg, "id": 2})["result"]
+        assert not first["isError"] and not second["isError"], (first, second)
+        assert len(calls) == 1 and calls[0][1] == "microsoft_docs_search", calls
+        assert "from the cache" in second["content"][0]["text"]
 
     def test_planted_argument_lists_fail(self):
         assert not hooks_off(["claude", "-p", "--model", "haiku"])
