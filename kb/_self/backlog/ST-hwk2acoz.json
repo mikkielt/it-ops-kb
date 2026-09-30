@@ -2,7 +2,7 @@
   "id": "ST-hwk2acoz",
   "kind": "story",
   "title": "The gate runs only what a change can break",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-ddjk2p5l",
   "priority": "P1",
@@ -115,5 +115,61 @@
     "kb/_self/git.md (Workflow: sync's gate)"
   ],
   "notes": "The operator's direction (2026-09-30): the full suite on every small change makes development several times slower for little gain, worst with several agents gating in parallel on one host. Most agent commits change only content, ledgers or backlog items. Measured on the Windows host: a full tests.py run takes 18-20 minutes of wall time and 7,700-8,300 worker-seconds, stress_test.py about 8 minutes, while the content checks take seconds (check.py 0.9 s, build_index --check 0.5 s, fetch --offline 0.2 s, doc2query stale 0.4 s, kbgit fix --check 1.5 s, rag eval 5.3 s). The module-to-test map for tool changes is data (a table beside tests.py) with a test that fails when a test file names no module or a tool module maps to no test file. Changing AGENTS.md or maintaining.md's gate rule is a rule change, hence the blocking gates. The operator (2026-09-30) asked for this at critical priority, to be run and closed at once in sprint SP-ddjk2p5l “Focused gate”, and answered both gates in the session: map the touched code to its tests and run only them, and remove from the gate what is not required.",
-  "claimed_by": "win-second"
+  "evidence": {
+    "commit": "f16a697e283c351191728274db9702a8aef88c84",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "testmap"
+        ],
+        "exit": 0,
+        "sha256": "9d83e26c559be8f7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/testmap.py",
+          "select",
+          "--paths",
+          "_tools/backlog.py"
+        ],
+        "exit": 0,
+        "sha256": "b89d1c3eb781241b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/testmap.py",
+          "select",
+          "--paths",
+          "kb/public/python/pytest.md"
+        ],
+        "exit": 0,
+        "sha256": "90b12bd9712c873a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/testmap.py",
+          "select",
+          "--paths",
+          "_tools/conftest.py"
+        ],
+        "exit": 0,
+        "sha256": "722cdd399249d70c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/testmap.py",
+          "orphans"
+        ],
+        "exit": 0,
+        "sha256": "7d669d721ff95ee8"
+      }
+    ]
+  }
 }
