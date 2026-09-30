@@ -1,0 +1,22 @@
+{
+  "id": "BG-5rkmjsbr",
+  "kind": "bug",
+  "title": "backlog.py done misses a code-lane commit that renames a code path into a content path",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py done's item commit paths list both sides of a rename (no rename detection, as kblane.commit_paths does), so a commit that moves a code-lane path to a content-lane path is a code-lane commit for done's integration-main check as it is for sync and the pre-push hook; test_done_lane_rename in _tools/test_backlog.py plants it; found by the SP-v5xagbyv review",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_done_lane_rename"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "BG-ha4u5dxz",
+  "kind": "bug",
+  "title": "A new pinned artifact turns a content sync into a code merge request: kbgit.py fix rewrites .gitattributes, a code-lane path",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A sync whose only code-lane change is the pinned block of .gitattributes that kbgit.py fix regenerates (a new _artifacts.csv row) stays in the content lane and pushes to main; kblane's docstring claim that every path kbgit.py fix rewrites is content is true (test_gitattributes_fix_is_content in _tools/test_kblane.py asserts every path fix_texts writes is content); found by the SP-v5xagbyv review",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_gitattributes_fix_is_content"
+    ]
+  },
+  "touches": [
+    "_tools/kblane.py",
+    "_tools/test_kblane.py",
+    "kb/_self/git.md"
+  ]
+}

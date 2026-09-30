@@ -1,0 +1,24 @@
+{
+  "id": "BG-rqgmjrq3",
+  "kind": "bug",
+  "title": "kbgit.py publish pushes history that carries an internal root, a _private path or a leak the final tree no longer holds",
+  "status": "draft",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kbgit.py publish checks every commit it would push (tip..projection, or the whole projected history on a first publish): each commit's tree has no root whose _root.md says visibility: internal and no path under a _private or _cache directory, and each commit's own changes add no leak-scan hit its parent's version of the file does not hold; any such commit refuses the publish (exit 1, naming the commit and cause, nothing pushed); TestPublishHistory in _tools/test_kbpublic.py plants a commit that adds an internal root, a _private file and a leaked address and a later commit that deletes them, and asserts the refusal; found by the SP-v5xagbyv review (a scenario run against bare remotes published both commits)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "TestPublishHistory"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/git.md"
+  ]
+}
