@@ -1356,6 +1356,20 @@ def plant_program(folder, name, text):
         (folder / name).chmod(0o755)
 
 
+@pytest.mark.skipif(os.name != "nt", reason="PATHEXT is Windows only")
+def test_which_finds_a_pathext_tool_without_311_help(tmp_path, monkeypatch):
+    """Before Python 3.12 shutil.which applies no PATHEXT to a name with a folder part: given that behaviour, which()
+    still finds TOOL.CMD in a PATH folder (the floor is 3.11), and still takes nothing from the working folder."""
+    tools = tmp_path / "tools"
+    tools.mkdir()
+    (tools / "kbpext.CMD").write_text("@exit /b 0\r\n", encoding="utf-8")
+    monkeypatch.setattr(kbingest.shutil, "which",
+                        lambda cmd, mode=os.F_OK | os.X_OK, path=None: cmd if os.path.isfile(cmd) else None)
+    assert kbingest.which("kbpext", str(tools)) == str(tools / "kbpext.CMD")
+    monkeypatch.chdir(tools)
+    assert kbingest.which("kbpext", str(tmp_path / "empty")) is None
+
+
 @requires_git
 def test_kbingest_map_which_ignores_parent_cwd(tmp_path, monkeypatch):
     """Planted: a program of the mapper tool's name in this process's working folder, which is the source clone

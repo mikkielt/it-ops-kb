@@ -1,0 +1,25 @@
+{
+  "id": "BG-c42jgi75",
+  "kind": "bug",
+  "title": "kbingest.which() finds no mapper tool on Windows with Python 3.11, whose shutil.which ignores PATHEXT for a name with a folder",
+  "status": "doing",
+  "parent": "EP-g5hizdko",
+  "sprint": "SP-hlfwfcx6",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbingest.which(tool, path) finds TOOL.EXE, .CMD and the other PATHEXT forms in each PATH folder on Windows whatever the Python version: before 3.12, shutil.which(os.path.join(folder, tool)) checks only that exact name (docs.python.org shutil.which, Changed in 3.12), so on the supported floor 3.11 every mapper (dotnet, npm, cargo) was reported missing; POSIX unchanged; a Windows test gives shutil.which 3.11's behaviour and still finds a .CMD tool, and fails with the fallback removed. From the SP-hlfwfcx6 review (BG-a2a74kyb's which()).",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "which_finds_a_pathext_tool_without_311_help"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py"
+  ],
+  "claimed_by": "win-first"
+}

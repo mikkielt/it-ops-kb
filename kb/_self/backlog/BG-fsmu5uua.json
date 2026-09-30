@@ -1,0 +1,23 @@
+{
+  "id": "BG-fsmu5uua",
+  "kind": "bug",
+  "title": "The fresh-host report claims every step without a sign-in but left out kb_mcp.py --status and querylog.py where, and hides the symlink skips",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/reports/windows-fresh-host.md records kb_mcp.py --status and querylog.py where run as the clean account (the /kb-setup commands of steps 4 and 5 that need no sign-in), and says which skips were the symbolic-link mutations (WinError 1314 for a standard account). From the SP-hlfwfcx6 review. A text repro: the report's content is the fix.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8'); sys.exit(0 if 'kb_mcp.py --status' in t and 'querylog.py where' in t and '1314' in t else 1)"
+    ]
+  },
+  "touches": [
+    "kb/_self/reports/windows-fresh-host.md"
+  ],
+  "claimed_by": "win-first"
+}

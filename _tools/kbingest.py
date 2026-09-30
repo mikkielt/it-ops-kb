@@ -933,9 +933,20 @@ def which(tool, path):
         return os.path.abspath(exe) if exe else None
     for entry in (path or "").split(os.pathsep):
         if entry:
-            exe = shutil.which(os.path.join(entry, tool))
+            exe = shutil.which(os.path.join(entry, tool)) or _pathext(os.path.join(entry, tool))
             if exe is not None:
                 return os.path.abspath(exe)  # a relative entry is relative to this process, never to the child's CWD
+    return None
+
+
+def _pathext(base):
+    """BASE plus the first PATHEXT extension that names a file, on Windows; else None. shutil.which applies PATHEXT to
+    a name with a folder part only since Python 3.12, and the floor is 3.11."""
+    if os.name != "nt":
+        return None
+    for ext in os.environ.get("PATHEXT", ".COM;.EXE;.BAT;.CMD").split(os.pathsep):
+        if ext and os.path.isfile(base + ext):
+            return base + ext
     return None
 
 
