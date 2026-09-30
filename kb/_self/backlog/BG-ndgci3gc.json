@@ -1,0 +1,17 @@
+{
+  "id": "BG-ndgci3gc",
+  "kind": "bug",
+  "title": "benchmarks.py's claude shims are extensionless scripts that Windows never resolves, and two scenarios run sh",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "On Windows a benchmark scenario that puts shim_dir() first on PATH gets the shim when it starts claude: the fail shim (a #!/bin/sh file named claude) and the logging shim (a #!/usr/bin/env python3 file named claude) have no PATHEXT extension, so shutil.which and CreateProcess skip them and the real claude runs instead (querylog-hooks' detached distill can start a paid model call; the logging scenarios record nothing). s_querylog_hooks and s_kbpy also start ['sh', kbpy], which is FileNotFoundError from PowerShell or cmd without Git Bash: they should say so or skip with the reason. Found by BG-2j5ba56h's work (test_benchmarks' shim test runs the fail shim only through sh).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import shutil,sys,tempfile; sys.path.insert(0,'_tools'); import benchmarks as bm; d=bm.shim_dir(tempfile.mkdtemp()); sys.exit(0 if shutil.which('claude', path=str(d)) else 1)"
+    ]
+  }
+}
