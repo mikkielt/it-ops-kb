@@ -1,0 +1,51 @@
+{
+  "id": "ST-n3swrm57",
+  "kind": "story",
+  "title": "Throwaway test repositories run no automatic git maintenance",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P3",
+  "rank": 5,
+  "goal": "conftest.git_env gives every git child gc.auto=0 and maintenance.auto=false through GIT_CONFIG_COUNT, and a test shows a scenario commit in a git_env repository runs no maintenance.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "git_env_no_maintenance"
+      ],
+      "exit": 0
+    }
+  ],
+  "touches": [
+    "_tools/conftest.py",
+    "_tools/test_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-c35i7vjx"
+  ],
+  "links": [
+    "kb/_self/reports/test-suite-speed.md",
+    "kb/public/gitlab/git-test-repositories.md (gc.auto, maintenance.auto, GIT_CONFIG_COUNT)"
+  ],
+  "notes": "Measured: git commit --allow-empty in a full kb clone takes 0.14 s, 0.10 s with gc.auto=0 and maintenance.auto=false; tests.py runs about 262 git commits and 6,900 git calls. Expected saving: under a minute of worker time; it also removes detached background maintenance that can hold files while a test deletes its directory. The test has a planted failure: with the two settings removed from git_env it must fail."
+}

@@ -2,8 +2,8 @@
 topic: defender/asr-and-antivirus
 priority: P2
 applies_to: "Microsoft Defender Antivirus and Attack Surface Reduction (ASR) rules on Windows 10/11 and Windows Server, managed via Intune, Configuration Manager, Group Policy, MDM CSP or local PowerShell; docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-28
-sources: [S-oc7bghb6, S-jlx5q3eb, S-tn7i36es, S-4adqmykc, S-bmoruabr, S-mxlwzhw5, S-3odg3w3u, S-tateky4b, S-kp35fytq, S-sfs6hoqq, S-f4gw3rhj, S-3ed4q5kx, S1472, S-oeh7ui3h, S-wqwf7kt5, S-pfbl6p36, S1402, S-bzyxqg37]
+retrieved_utc: 2026-09-29
+sources: [S-oc7bghb6, S-jlx5q3eb, S-tn7i36es, S-4adqmykc, S-bmoruabr, S-mxlwzhw5, S-3odg3w3u, S-tateky4b, S-kp35fytq, S-sfs6hoqq, S-f4gw3rhj, S-3ed4q5kx, S1472, S-oeh7ui3h, S-wqwf7kt5, S-pfbl6p36, S1402, S-bzyxqg37, S-rxcgi365, S-lkbn5y6v, S-go2hxmtt]
 status: complete
 files: [defender/asr-rules.csv]
 ---
@@ -52,6 +52,16 @@ enables 15 of the 19 documented ASR rules in Block mode; the baseline's exact ro
 - PowerShell global ASR exclusion syntax: `<Add-MpPreference | Set-MpPreference | Remove-MpPreference> -AttackSurfaceReductionOnlyExclusions "<path1>","<path2>",...`; `Set-MpPreference` overwrites all existing exclusions, `Add-`/`Remove-MpPreference` modify without affecting other values; current exclusions are read with `(Get-MpPreference).AttackSurfaceReductionOnlyExclusions`. [DOC S-tn7i36es]
 - Exclusion path wildcards may use system environment variables (not user environment variables) and cannot define a drive letter; `\*\` matches nested folders (e.g. `c:\Folder\*\*\Test`) and `?` matches a single unknown character (e.g. for randomly generated filenames); Configuration Manager additionally supports `*`/`?` wildcards. Exclusions apply only when the excluded application/service starts — an already-running service keeps triggering detections until restarted. [DOC S-jlx5q3eb]
 
+### Antivirus exclusions (files, folders, processes)
+- Microsoft Defender Antivirus exclusions come as built-in exclusions (operating system files, kept current by security intelligence updates and not shown in the Windows Security app) and custom ones: file and folder (path) exclusions, file extension exclusions, process exclusions, and contextual exclusions that narrow a path exclusion to a context. Microsoft calls every exclusion a protection gap to use only for a specific problem such as performance or app compatibility. [DOC S-rxcgi365]
+- Exclusions apply to scheduled scans, on-demand scans, real-time protection and PUA detections, not to every Defender for Endpoint capability: excluded files can still raise EDR alerts and behavioral or heuristic detections. Process exclusions also stop network protection and ASR rules from inspecting or enforcing for that process. [DOC S-rxcgi365]
+- A folder exclusion covers every file and subfolder except reparse-point subfolders (each needs its own entry). Excluding an executable's path stops scanning of that file only; a process exclusion (image name like `MyProcess.exe`, or full path, preferred) instead skips the files the process opens, in scheduled scans and real-time protection. [DOC S-rxcgi365]
+- Contextual exclusions add restrictions to a path exclusion with the syntax `<path>\:{Keyword:value,...}`: `PathType` (`file`/`folder`), `ScanType` (`quick`/`full`), `ScanTrigger` (`OnDemand`/`OnAccess`/`BM`) and `Process` (a path; several allowed, with OR logic); keywords and values are case sensitive, they need platform 4.18.2205.7 and engine 1.1.19300.2 or later, work on Windows only, and cannot be set in the Windows Security app. [DOC S-rxcgi365]
+- The Defender service runs as LocalSystem, so environment variables in exclusions resolve for that account: `%TEMP%` and `%TMP%` resolve to `C:\Windows\TEMP`, and `%USERPROFILE%`, `%APPDATA%` and `%LOCALAPPDATA%` to the system profile, not a user's; an entry takes at most six wildcards, and none in place of a drive letter. [DOC S-rxcgi365, S-lkbn5y6v]
+- Microsoft's list of exclusions to avoid includes the folders `C:\Users\<UserProfileName>\AppData\Local\Temp\`, `C:\Temp`, `C:\Windows\Temp`, `C:\Users\*` and app program folders; the extensions `.py`, `.ps1`, `.bat`, `.cmd`, `.exe`, `.dll`, `.zip` and `.tmp` among others; and the Windows processes `bash.exe`, `cmd.exe`, `powershell.exe`, `dotnet.exe`, `msbuild.exe` and `java.exe` among others (`python` and `python3` are listed for Linux and macOS). [DOC S-lkbn5y6v]
+- The per-user temp folder is where Python's `tempfile.gettempdir()`, and with it pytest's default `tmp_path` root, usually points on Windows, and Microsoft lists that folder as one not to exclude; a test suite that needs its scratch files out of synchronous scanning moves the root instead (`--basetemp`, `PYTEST_DEBUG_TEMPROOT`) to a dedicated folder or a Dev Drive. [DER S-lkbn5y6v: the avoid-list folder; `python/pytest.md` for the temp root settings; `windows/dev-drive.md` for performance mode]
+- The performance analyzer measures what Defender's scans cost on one device: `New-MpPerformanceRecording -RecordTo <file.etl>` in an elevated PowerShell records while the workload runs (Enter stops it), and `Get-MpPerformanceReport -Path <file.etl>` with `-TopFiles`, `-TopScansPerFile` and similar options reports scan counts and durations by file, path, process and extension; it needs platform 4.18.2108.7 or later, and since 4.18.2206 reports a `SkipReason` (not skipped, optimization, user exclusion). [DOC S-go2hxmtt]
+
 ### PowerShell configuration
 - `<Add-MpPreference | Set-MpPreference | Remove-MpPreference> -AttackSurfaceReductionRules_Ids <Guid1>,<Guid2>,... -AttackSurfaceReductionRules_Actions <Mode1>,<Mode2>,...` sets/adds/removes one or more rules by GUID and mode in an elevated PowerShell session; `Set-MpPreference` overwrites all existing rule/mode pairs, `Add-`/`Remove-MpPreference` change only the specified rules. [DOC S-tn7i36es]
 - Valid values for `-AttackSurfaceReductionRules_Actions`: `0`/`Disabled`, `1`/`Enabled` (Block), `2`/`AuditMode`/`Audit`, `5`/`NotConfigured`, `6`/`Warn`. [DOC S-tn7i36es]
@@ -86,6 +96,7 @@ enables 15 of the 19 documented ASR rules in Block mode; the baseline's exact ro
 - Windows 11 24H2 baseline's ASR and core Defender AV registry rows: `security/settings-crosswalk.csv` (lines ~297-336) — cited above, not duplicated.
 - Advanced hunting `DeviceEvents` ASR `ActionType` values and query practice: `defender/advanced-hunting.md` (back-linked to this topic below).
 - App Control for Business (WDAC) policy rules, a separate code-integrity control layered under Smart App Control: `windows/app-control.md`.
+- Dev Drive and Defender performance mode (asynchronous scanning on a trusted developer volume, Microsoft's alternative to folder exclusions for developer files): `windows/dev-drive.md`.
 - Smart App Control states and management: `windows/smart-app-control.md`.
 - Intune Windows compliance policy's Defender/antivirus and Microsoft Defender for Endpoint risk-score settings: `intune/compliance-policies.md`.
 

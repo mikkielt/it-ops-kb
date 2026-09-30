@@ -2148,23 +2148,83 @@ def refresh_trailers(r, up):
     return True
 
 
+def gate_paths(up):
+    """The paths the gate judges: changed from UP's merge base to HEAD, plus the working tree (the pre-push hook
+    checks it too); None when there is no UP (a new branch), which runs every check."""
+    if not up:
+        return None
+    base = (git("merge-base", up, "HEAD") or "").strip()
+    if not base:
+        return None
+    staged, unstaged = dirty_paths()
+    return set(names("diff", "--name-only", base, "HEAD")) | set(staged) | set(unstaged)
+
+
+def artifact_paths():
+    """Every root's pinned artifact files (_artifacts.csv `path`), as repository paths."""
+    out = set()
+    for root in kbcommon.roots():
+        p = os.path.join(root.path, "_artifacts.csv")
+        if os.path.exists(p):
+            with open(p, encoding="utf-8", newline="") as f:
+                out |= {kbcommon.repo_rel(row["path"], root.path) for row in csv.DictReader(f) if row.get("path")}
+    return out
+
+
+def gate_needs(paths):
+    """{check: the reason it runs, or None to skip}. Each check runs only when a path it reads changed; with no
+    known paths (None) every check runs."""
+    if paths is None:
+        return {k: "no base to compare with" for k in ("check", "fetch", "doc2query", "selfdoc", "backlog", "querylog")}
+    ps = {p.replace("\\", "/") for p in paths}
+    kb = {p for p in ps if p.startswith("kb/")}
+    tools = {p for p in ps if p.startswith("_tools/")}
+    items = {p for p in kb if p.startswith(kbcommon.repo_rel(kbcommon.SELF) + "/backlog/")}
+    store = {p for p in kb if p.startswith("kb/_querylog/")}
+    content = kb - items - store
+    arts = artifact_paths()
+
+    def why(hit, what):
+        return f"{what} changed: {sorted(hit)[0]}" + (f" (+{len(hit) - 1})" if len(hit) > 1 else "") if hit else None
+    root = {p for p in ps if "/" not in p}  # README.md, AGENTS.md: check.py validates their citations too
+    return {"check": why(content | tools | root, "kb content, a root file or a tool"),
+            "fetch": why({p for p in ps if p in arts or p.endswith(("/_artifacts.csv", "/_sources.csv")) or p == "_tools/fetch.py"},
+                         "a pinned artifact or its row"),
+            "doc2query": why({p for p in content if p.endswith(".md") or "/doc2query/" in p} | ({"_tools/doc2query.py"} & ps),
+                             "an article or its expansions"),
+            "selfdoc": why(ps - content - items - store, "a file kb/_self describes"),
+            "backlog": why(items | ({"_tools/backlog.py"} & ps), "a backlog item"),
+            "querylog": why(store, "the query log store")}
+
+
 def gate(r, up, fix_check=False):
-    """build_index --check, check.py, fetch.py --offline, doc2query.py stale, selfdoc.py stale --since UP (the kb's
-    own docs behind the files they describe; a `Self-Reviewed:` trailer clears one), tests.py (KB_TESTS_FAST=1: no
-    git scenarios) and check-trailers on up..HEAD. `fix_check` (the pre-push hook) adds `fix --check` first: sync
-    runs fix itself before its gate."""
+    """The checks the changed paths (gate_paths) can break, then check-trailers on up..HEAD:
+    check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
+    article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
+    clears a doc), backlog.py check for backlog items, querylog.py check for the query log store, and tests.py
+    --changed UP (KB_TESTS_FAST=1: no git scenarios; testmap.py maps the paths to the test files they can break).
+    `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
+    rebuilds the generated files, so its gate has neither. A skipped check is listed with why."""
     results = []
-    checks = [("kbgit.py fix --check", "kbgit.py", ["fix", "--check"], None)] if fix_check else []
-    checks += [("build_index.py --check", "build_index.py", ["--check"], None),
-               ("check.py", "check.py", [], None),
-               ("fetch.py --offline", "fetch.py", ["--offline"], None),
-               ("doc2query.py stale", "doc2query.py", ["stale"], None)]
+    paths = gate_paths(up)
+    need = gate_needs(paths)
+    checks = [("kbgit.py fix --check", "kbgit.py", ["fix", "--check"], None, "pre-push"),
+              ("build_index.py --check", "build_index.py", ["--check"], None, "pre-push")] if fix_check else []
+    checks += [("check.py", "check.py", [], None, need["check"]),
+               ("fetch.py --offline", "fetch.py", ["--offline"], None, need["fetch"]),
+               ("doc2query.py stale", "doc2query.py", ["stale"], None, need["doc2query"]),
+               ("backlog.py check", "backlog.py", ["check"], None, need["backlog"]),
+               ("querylog.py check", "querylog.py", ["check"], None, need["querylog"])]
     if up:
-        checks.append((f"selfdoc.py stale --since {short(up)}", "selfdoc.py", ["stale", "--since", up], None))
-    checks.append(("tests.py (fast)", "tests.py", [], {"KB_TESTS_FAST": "1"}))
-    for label, name, args, env in checks:
+        checks.append((f"selfdoc.py stale --since {short(up)}", "selfdoc.py", ["stale", "--since", up], None, need["selfdoc"]))
+    checks.append(("tests.py (changed)" if up else "tests.py (fast)", "tests.py", ["--changed", up] if up else [],
+                   {"KB_TESTS_FAST": "1"}, "always"))
+    for label, name, args, env, reason in checks:
         if name == "tests.py" and os.environ.get("KB_SYNC_NO_TESTS") == "1":
             results.append((label, "skipped (KB_SYNC_NO_TESTS=1)", True))
+            continue
+        if not reason:
+            results.append((label, "skipped: no path it reads changed", True))
             continue
         code, out = tool(name, *args, env=env)
         tail = [ln for ln in out.strip().splitlines() if ln.strip()][-1:] or [""]

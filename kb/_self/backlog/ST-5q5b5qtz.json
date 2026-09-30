@@ -1,0 +1,55 @@
+{
+  "id": "ST-5q5b5qtz",
+  "kind": "story",
+  "title": "Workers start the longest test scopes first and match the host's cores",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 4,
+  "goal": "tests.py orders its loadscope units so the git scenario classes with long class fixtures are handed out first, and chooses its worker count from a measured default instead of one worker per logical CPU.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "time",
+        "tests",
+        "--max",
+        "900"
+      ],
+      "exit": 0
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/conftest.py",
+    "_tools/stress_test.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-c35i7vjx"
+  ],
+  "links": [
+    "kb/_self/reports/test-suite-speed.md",
+    "kb/public/python/pytest-xdist.md (loadscope reorder, worksteal, -n auto without psutil, PYTEST_XDIST_AUTO_NUM_WORKERS)"
+  ],
+  "notes": "Measured: under loadscope the git scenario classes (100-520 s of class setup each) start 500-1,050 s into the run, and 1,124-1,288 worker-seconds sit idle at the end; --no-loadscope-reorder (file order) gave 1,190 s against 1,106-1,203 s, no gain. Expected saving: 120-160 s of wall time from ordering the heaviest scopes first. -n auto starts 8 workers on this 4-core, 8-thread host because uv.lock has no psutil; the worker-count runs are in the report."
+}

@@ -69,7 +69,8 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 | Longest command line | not this limit | 32,767 characters (`CreateProcessW`); 8191 through `cmd.exe` | S-6bobcclf, S-e4zz24dq |
 
 Related: `python/windows-python-install.md` (installing Python and the Store `python3` shortcut); `python/stdlib-sqlite3-csv.md` (csv files open with `newline=''`); `claude/hooks.md` (how Claude Code runs
-hook commands on Windows); `gitlab/hosted-runners-windows.md` (a Windows CI job for these tools).
+hook commands on Windows); `gitlab/hosted-runners-windows.md` (a Windows CI job for these tools); `python/interpreter-startup.md`
+(what starting a child costs: `CreateProcess()` versus `vfork`/`posix_spawn`, and the start-up options).
 
 ## Examples
 - SNIPPET: start a detached child from a hook launcher on POSIX and Windows; context: Python 3.11+ stdlib; checked: syntax [DOC S-dabwnzz5: `start_new_session`, `DETACHED_PROCESS`, `CREATE_NEW_PROCESS_GROUP`]

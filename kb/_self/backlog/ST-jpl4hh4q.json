@@ -1,0 +1,52 @@
+{
+  "id": "ST-jpl4hh4q",
+  "kind": "story",
+  "title": "kb-tests-windows finishes within its job timeout",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 6,
+  "goal": "A manually started kb-tests-windows job runs tests.py and stress_test.py to the end inside its 1-hour timeout, with the worker count its container gets set on purpose.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "windows_job_cpus"
+      ],
+      "exit": 0
+    }
+  ],
+  "touches": [
+    ".gitlab-ci.yml",
+    "kb/_self/runners.md",
+    "kb/_self/git.md",
+    "_tools/test_kb.py"
+  ],
+  "depends_on": [
+    "ST-4mcoplex",
+    "ST-ykvho3zp",
+    "ST-5q5b5qtz"
+  ],
+  "gates": [
+    {
+      "id": "windows-runner-cpus",
+      "kind": "blocking",
+      "question": "kb-tests-windows gets 2 CPUs in its hypervisor-isolated container (log: created: 2/2 workers) and stops at the 1-hour timeout at about 92% of tests.py. The host has 4 cores and 8 threads, and the WSL runner is capped at 4. How many CPUs does the docker-windows runner give a job ([runners.docker] cpus)?",
+      "options": [
+        "leave it at the default (2) and rely on the suite speed-ups",
+        "4",
+        "6",
+        "raise the job timeout instead"
+      ],
+      "recommendation": "4"
+    }
+  ],
+  "links": [
+    "kb/_self/reports/test-suite-speed.md",
+    "kb/public/windows/gitlab-runner-windows.md ([runners.docker] cpus, ProcessorCount under hypervisor isolation)",
+    "kb/_self/runners.md"
+  ],
+  "notes": "Measured: manually started kb-tests-windows jobs of 2026-09-29 ran 60.6-60.9 min and failed with job_execution_timeout; the latest reached about 92% of tests.py and never started stress_test.py. Expected: with 4 CPUs and the suite changes of the other stories, both suites in about 30-40 minutes. Checks run locally; a manual kb-tests-windows run is evidence for the review, not a gate (the operator's CI-manual decision). windows_job_cpus is a test that reads .gitlab-ci.yml and runners.md and fails when the job's CPU count is not stated there (planted failure: the line removed)."
+}

@@ -204,7 +204,8 @@ class TestSyncInGit(SyncScenario):
         assert "commits rebased: 1" in r.stdout
         assert re.search(r"gate check.py: ok", r.stdout)
         assert re.search(r"gate check-trailers origin/main\.\.HEAD: ok", r.stdout)
-        assert "gate tests.py (fast): skipped" in r.stdout
+        assert "gate tests.py (changed): skipped" in r.stdout
+        assert "gate build_index.py --check" not in r.stdout  # sync's fix rebuilt the generated files already
         assert "pushed: yes" in r.stdout
         src = rows(self.remote_file(P("_sources.csv")))
         ha, hb = kbid.source_id(self.URL_A1), kbid.source_id(self.URL_B1)
@@ -589,9 +590,23 @@ class TestCodeLaneSync(SyncScenario):
 
     @staticmethod
     def item(d, i):
-        """A sprint item (exempt from the claim rule) so a commit may name it in KB-Work."""
-        d.write(f"kb/_self/backlog/{i}.json", json.dumps({"id": i, "kind": "sprint", "title": "Lane test", "status": "active",
-                                                          "goal": "Lane test"}, indent=2) + "\n")
+        """Task `i`, claimed, under a story of an active sprint with its review story, so a commit may name it in
+        KB-Work and the items pass the gate's backlog.py check (a backlog-planning commit)."""
+        check = [{"run": ["python3", "-c", "pass"], "exit": 0}]
+        sp, rv, st = "SP-aaaaaaaa", "ST-bbbbbbbb", "ST-aaaaaaaa"
+        items = [{"id": sp, "kind": "sprint", "title": "Lane test", "status": "active", "goal": "Lane test",
+                  "gates": [{"id": "start", "kind": "blocking", "question": "Approve this sprint's goal and committed items?",
+                             "options": ["approve", "change", "cancel"], "recommendation": "approve", "answer": "approve", "by": "operator"}]},
+                 {"id": rv, "kind": "story", "title": "Review sprint: Lane test", "status": "todo", "sprint": sp, "review": True,
+                  "priority": "P3", "rank": 0, "goal": "Lane test reviewed", "checks": check},
+                 {"id": st, "kind": "story", "title": "Lane test story", "status": "doing", "sprint": sp, "priority": "P3", "rank": 0,
+                  "goal": "Lane test", "checks": check, "claimed_by": "lane-test"},
+                 {"id": i, "kind": "task", "title": "Lane test", "status": "doing", "parent": st, "priority": "P3", "rank": 0,
+                  "goal": "Lane test", "checks": check, "touches": ["_tools/**"], "claimed_by": "lane-test"}]
+        for it in items:
+            d.write(f"kb/_self/backlog/{it['id']}.json", json.dumps(it, indent=2) + "\n")
+        fmt = d.tool("backlog.py", "fmt")
+        assert fmt.returncode == 0, fmt.stdout + fmt.stderr
         d.git("add", "-A")
         d.git("commit", "-q", "-m", f"chore(backlog): plan {i}")
 

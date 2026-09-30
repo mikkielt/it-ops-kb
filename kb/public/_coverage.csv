@@ -103,7 +103,7 @@ defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,23
 defender/permissions-limits,P1,complete,defender/permissions-limits.md,6
 defender/response-actions-api,P1,complete,defender/response-actions-api.md;defender/machine-actions.csv,18
 defender/advanced-hunting,P2,complete,defender/advanced-hunting.md;defender/advanced-hunting-tables.csv,25
-defender/asr-and-antivirus,P2,complete,defender/asr-and-antivirus.md;defender/asr-rules.csv,18
+defender/asr-and-antivirus,P2,complete,defender/asr-and-antivirus.md;defender/asr-rules.csv,21
 dsc/cli-reference,P0,complete,dsc/cli-reference.md;dsc/cli/,13
 dsc/directives,P0,complete,dsc/directives.md,11
 dsc/functions,P0,complete,dsc/functions.md;dsc/functions-3.3.0.csv,7
@@ -132,6 +132,7 @@ gitlab/variables,P0,complete,gitlab/variables.md,2
 gitlab/automated-merge-requests,P3,complete,gitlab/automated-merge-requests.md,35
 gitlab/detecting-mr-merges-in-ci,P3,complete,gitlab/detecting-mr-merges-in-ci.md,16
 gitlab/git-history-queries,P3,complete,gitlab/git-history-queries.md,7
+gitlab/git-test-repositories,P3,complete,gitlab/git-test-repositories.md,8
 gitlab/git-trailers-and-hooks,P3,complete,gitlab/git-trailers-and-hooks.md,11
 gitlab/github-branch-rules-and-auto-merge,P3,complete,gitlab/github-branch-rules-and-auto-merge.md,18
 gitlab/hosted-runners-windows,P3,complete,gitlab/hosted-runners-windows.md,5
@@ -229,13 +230,14 @@ privacy/presidio-evaluator,P0,complete,privacy/presidio-evaluator.md,4
 privacy/presidio-operators-deanonymize,P0,complete,privacy/presidio-operators-deanonymize.md,13
 privacy/presidio-recognizer-yaml,P0,complete,privacy/presidio-recognizer-yaml.md;privacy/presidio-recognizer-registry.schema.json;privacy/presidio-example_recognizers.yaml,9
 privacy/spacy-model-licence,P0,complete,privacy/spacy-model-licence.md,5
-python/pytest,P2,complete,python/pytest.md,10
-python/pytest-xdist,P2,complete,python/pytest-xdist.md,3
+python/pytest,P2,complete,python/pytest.md,14
+python/pytest-xdist,P2,complete,python/pytest-xdist.md,6
 python/ruff,P2,complete,python/ruff.md,13
 python/stdlib-sqlite3-csv,P2,complete,python/stdlib-sqlite3-csv.md,4
 python/uv-projects,P2,complete,python/uv-projects.md,11
 python/version-lifecycle,P2,complete,python/version-lifecycle.md;python/version-lifecycle.csv,8
 python/imports-and-modules,P3,complete,python/imports-and-modules.md,8
+python/interpreter-startup,P3,partial,python/interpreter-startup.md,3
 python/stdlib-argparse-json,P3,complete,python/stdlib-argparse-json.md,2
 python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,9
 python/uv-windows-install,P3,partial,python/uv-windows-install.md,3
@@ -268,7 +270,7 @@ sqlserver/sp-getapplock,P0,complete,sqlserver/sp-getapplock.md,1
 sqlserver/temporal-tables,P0,complete,sqlserver/temporal-tables.md,7
 standards/owasp,P2,complete,standards/owasp.md;standards/owasp.csv,8
 windows/execution-policy-signing,P0,complete,windows/execution-policy-signing.md,9
-windows/gitlab-runner-windows,P0,complete,windows/gitlab-runner-windows.md,18
+windows/gitlab-runner-windows,P0,complete,windows/gitlab-runner-windows.md,19
 windows/gmsa,P0,complete,windows/gmsa.md,7
 windows/openssh-server,P0,complete,windows/openssh-server.md,3
 windows/smart-app-control,P1,complete,windows/smart-app-control.md,11
@@ -285,5 +287,6 @@ windows/powershell-remoting-jea,P2,complete,windows/powershell-remoting-jea.md;w
 windows/windows-365,P2,complete,windows/windows-365.md,19
 windows/windows-update-management,P2,complete,windows/windows-update-management.md;windows/windows-update-management.csv,19
 windows/winget,P2,complete,windows/winget.md;windows/winget-policies.csv,14
+windows/dev-drive,P3,partial,windows/dev-drive.md,5
 windows/powershell-static-analysis,P3,complete,windows/powershell-static-analysis.md,21
 windows/windows-sandbox,P3,complete,windows/windows-sandbox.md,4

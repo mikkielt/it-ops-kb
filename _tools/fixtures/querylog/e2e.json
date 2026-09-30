@@ -1,23 +1,27 @@
 {
-  "about": "Recorded lookups for _tools/test_querylog_e2e.py. Each lookup is one prompt as a session sends it to the hooks: `prompt` (identifiers broken with ~, which the test removes), `calls` (kb MCP and fetch tool calls with their recorded responses, `error` for a failed call; `run` for a tool the session starts: kb_ask.py, fetch.py or census.py), `answer` (the Stop hook's last_assistant_message; none when the kb: hook answered and blocked the prompt), `asked` (the question the kb was asked, which the entry stores: the kb: hook's, the first kb MCP call's or kb_ask.py's, after the rules) and `haiku` (the recorded Haiku judgement for the entry, found by `match` in the rule-redacted prompt).",
+  "about": "Recorded lookups for _tools/test_querylog_e2e.py. Each lookup is one prompt as a session sends it to the hooks: `prompt` (identifiers broken with ~, which the test removes), `calls` (kb MCP and fetch tool calls with their recorded responses, `error` for a failed call; `run` for a tool the session starts: kb_ask.py, fetch.py or census.py), `answer` (the Stop hook's last_assistant_message; none when the kb: hook answered and blocked the prompt), `asked` (the question the kb was asked, which the entry stores: the kb: hook's, the first kb MCP call's or kb_ask.py's, after the rules) `haiku` (the recorded Haiku judgement for the entry, found by `match` in the rule-redacted prompt) and `pack` (the verdict and lead article the real kb gives `asked` today, which these scenarios rely on; test_kb.py's TestLookup fails when a kb content change moves one, so a content-only push catches it without running this file).",
   "lookups": {
     "win32": {
       "asked": "intune win32 app detection rule",
+      "pack": {"verdict": "good", "lead": "public/intune/win32-apps.md"},
       "prompt": "kb: intune win32 app detection rule",
       "haiku": {"judged": "answered", "best": "public/intune/win32-apps.md", "identifying": false}
     },
     "laps_length": {
       "asked": "windows laps password length",
+      "pack": {"verdict": "good", "lead": "public/windows/laps.csv"},
       "prompt": "kb: windows laps password length",
       "haiku": {"judged": "answered", "best": "public/windows/laps.md", "identifying": false}
     },
     "do_port": {
       "asked": "delivery optimization peer port",
+      "pack": {"verdict": "good", "lead": "public/windows/delivery-optimization.md"},
       "prompt": "kb: delivery optimization peer port",
       "haiku": {"judged": "answered", "best": "public/windows/delivery-optimization.md", "identifying": false}
     },
     "alias": {
       "asked": "Which zqxlapsor setting picks the backup directory?",
+      "pack": {"verdict": "weak", "lead": "public/gpo/gpo-export.md"},
       "prompt": "Which zqxlapsor setting picks the backup directory?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "Which zqxlapsor setting picks the backup directory?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 3 of 4 key words: backup, directory, set); not in the kb: zqxlapsor\n\n## public/gpo/gpo-export.md  Exporting GPOs as XML: Get-GPOReport and Backup-GPO\n- public/gpo/gpo-export.md:13 `Backup-GPO` writes a restorable backup of one or all GPOs into an existing directory. (no tag)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:20 The BackupDirectory policy setting picks where the password is backed up. (no tag)\n"}]}
@@ -27,6 +31,7 @@
     },
     "expansion": {
       "asked": "How long is the default password?",
+      "pack": {"verdict": "good", "lead": "public/intune/compliance-policies.md"},
       "prompt": "How long is the default password?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "How long is the default password?"}, "response": [{"type": "text", "text": "coverage: good (best article matches 3 of 3 key words: default, length, password)\n\n## public/intune/compliance-policies.md  Intune compliance policies\n- public/intune/compliance-policies.md:30 A compliance policy can require a minimum password length. (no tag)\n"}]},
@@ -37,6 +42,7 @@
     },
     "gap": {
       "asked": "Can Windows LAPS back up the password of a Windows Server 2016 member server to Azure?",
+      "pack": {"verdict": "weak", "lead": "public/windows/laps.md"},
       "prompt": "Can Windows LAPS back up the password of a Windows Server 2016 member server to Azure?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "Can Windows LAPS back up the password of a Windows Server 2016 member server to Azure?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 4 of 6 key words: backup, laps, server, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:18 Windows LAPS backs up the password to Microsoft Entra ID or Active Directory. (no tag)\n"}]}
@@ -46,6 +52,7 @@
     },
     "gap_gmsa": {
       "asked": "Does a gMSA password rotate on a Hyper-V replica host?",
+      "pack": {"verdict": "weak", "lead": "public/windows/gmsa.md"},
       "prompt": "Does a gMSA password rotate on a Hyper-V replica host?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "Does a gMSA password rotate on a Hyper-V replica host?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 2 of 5 key words: gmsa, password)\n\n## public/windows/gmsa.md  Group managed service accounts\n- public/windows/gmsa.md:15 The domain controllers rotate a gMSA password every 30 days by default. (no tag)\n"}]}
@@ -55,6 +62,7 @@
     },
     "gap_win32": {
       "asked": "Can Intune Win32 app detection rules read an MSIX package family name from a ZIP archive?",
+      "pack": {"verdict": "good", "lead": "public/intune/win32-apps.md"},
       "prompt": "Can Intune Win32 app detection rules read an MSIX package family name from a ZIP archive?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "Can Intune Win32 app detection rules read an MSIX package family name from a ZIP archive?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 3 of 6 key words: detection, rule, win32)\n\n## public/intune/win32-apps.md  Intune Win32 apps\n- public/intune/win32-apps.md:22 A detection rule checks an MSI product code, a file or folder, a registry value or a script. (no tag)\n"}]}
@@ -64,6 +72,7 @@
     },
     "fixed_since": {
       "asked": "default windows laps password length",
+      "pack": {"verdict": "good", "lead": "public/windows/laps.csv"},
       "prompt": "What is the default Windows LAPS password length?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "default windows laps password length"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 2 of 5 key words: laps, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:12 Windows LAPS manages the password of one local administrator account. (no tag)\n"}]}
@@ -73,6 +82,7 @@
     },
     "fetches": {
       "asked": "windows laps backup entra id",
+      "pack": {"verdict": "good", "lead": "public/windows/laps.md"},
       "prompt": "How do I turn on Windows LAPS backup to Entra ID?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "windows laps backup entra id"}, "response": [{"type": "text", "text": "coverage: good (best article matches 4 of 4 key words: backup, entra, laps, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:18 Windows LAPS backs up the password to Microsoft Entra ID or Active Directory. (no tag)\n"}]},
@@ -94,6 +104,7 @@
     },
     "tools": {
       "asked": "What is the default Windows LAPS password length?",
+      "pack": {"verdict": "good", "lead": "public/windows/laps.csv"},
       "prompt": "Check which route kb_ask takes for the LAPS password length, then read the source pages.",
       "calls": [
         {"run": "kb_ask.py", "args": ["--route", "What is the default Windows LAPS password length?"]},
@@ -105,6 +116,7 @@
     },
     "identifier": {
       "asked": "why does Windows LAPS fail on PL-LT-00123 at 192.0.2.10 for jan.kowalski@corp.example.com?",
+      "pack": {"verdict": "none", "lead": "public/privacy/presidio-entities.md"},
       "prompt": "kb+: why does Windows LAPS fail on PL~LAPTOP-7731 at 10.~1.20.33 for anna.nowak~@acme-corp.pl?",
       "match": "PL-LT-00123 at 192.0.2.10 for jan.kowalski@corp.example.com",
       "answer": "Check that the device can reach a domain controller and that the policy names the right backup directory.",
@@ -112,6 +124,7 @@
     },
     "identifying": {
       "asked": "why does Autopilot enrolment fail for the Nowakowski family business?",
+      "pack": {"verdict": "none", "lead": "public/windows/windows-365.md"},
       "prompt": "kb+: why does Autopilot enrolment fail for the Nowakowski family business?",
       "match": "Nowakowski family business",
       "answer": "The kb has the Autopilot enrolment steps; the business is not in it.",

@@ -2,8 +2,8 @@
 topic: windows/gitlab-runner-windows
 priority: P0
 applies_to: "GitLab Runner 19.5 (main @49138a48, 2026-09-23) on Windows"
-retrieved_utc: 2026-09-28
-sources: [S406, S407, S408, S409, S410, S411, S412, S413, S-xiyru25z, S414, S415, S400, S-dmxxlc75, S-5x5wqdjs, S-c7hn5f2e, S-z2riv2e3, S-wlt4mta2, S-kw4zko43]
+retrieved_utc: 2026-09-30
+sources: [S406, S407, S408, S409, S410, S411, S412, S413, S-xiyru25z, S414, S415, S400, S-dmxxlc75, S-5x5wqdjs, S-c7hn5f2e, S-z2riv2e3, S-wlt4mta2, S-kw4zko43, S-74r2p6k2]
 status: complete
 ---
 
@@ -40,8 +40,13 @@ status: complete
 - The delivered GitLab feature is gMSA for the `docker-windows` executor through a credential spec in `security_opt` (15.5, MR 2913). [COMMUNITY S414]
 - Issue 30963, "Update runner docs to capture details on gMSA support", is still open. [COMMUNITY S415]
 - Running the service under a gMSA is plausible: the runner is an SCM service (S406, S413), and SCM services support gMSA (S400). GitLab has not documented it. [DER S400,S406,S413]
+- The `docker` and `docker-windows` executors take a `cpus` setting under `[runners.docker]` ("Number of CPUs", also `--docker-cpus` or `DOCKER_CPUS`), beside `memory` and `cpuset_cpus`. [CODE S410: common/config.go#DockerConfig]
+- For a Windows container, Docker's `--cpus` maps to the host compute service's `ProcessorCount`; with hypervisor isolation it sets the number of virtual processors the container's utility VM exposes, and with process isolation it is simulated with a job-object CPU rate cap. [DOC S-74r2p6k2]
+- So the CPU count a `docker-windows` job's tests see (and with it `pytest -n auto` and `os.cpu_count()` inside the container) is set by the runner's `cpus` setting under hypervisor isolation; the default when it is unset is not stated on the Microsoft page, and a job of this repository's `kb-tests-windows` on 2026-09-29 reported `created: 2/2 workers`. [DER S410, S-74r2p6k2: the setting and its mapping above; the worker count from job 16821688871's log]
 
 ## Reference
+- Antivirus and Windows containers on a `docker-windows` runner host (what host scanning covers, what is unknown): `windows/dev-drive.md`.
+
 | Item | Value | Source |
 |---|---|---|
 | Service name / event provider | `gitlab-runner` | S406 |

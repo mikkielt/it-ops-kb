@@ -2,8 +2,8 @@
 topic: python/pytest-xdist
 priority: P2
 applies_to: [pytest-xdist, pytest]
-retrieved_utc: 2026-09-27
-sources: [S-t7c2nvll, S-lthpihsc, S-ng5lgn3p]
+retrieved_utc: 2026-09-29
+sources: [S-t7c2nvll, S-lthpihsc, S-ng5lgn3p, S-qejsavhl, S-ew7mucsg, S-d77lvlq4]
 status: complete
 ---
 
@@ -54,6 +54,15 @@ comment "a class's scenario is built once, on one worker") use in this repositor
 - Test order and count must be identical across workers (e.g. a `pytest.mark.parametrize` value list
   must not be produced from a `set` or other unordered iterable), or xdist raises an error; converting
   to a `list` or sorting the values fixes it. [DOC S-ng5lgn3p]
+
+### Worker count and scheduling
+- The default `pytest_xdist_auto_num_workers` hook resolves `-n auto` and `-n logical` in this order: the `PYTEST_XDIST_AUTO_NUM_WORKERS` environment variable (an integer); else `psutil.cpu_count()` (physical cores for `auto`, logical for `logical`) when `psutil` is importable; else the length of `os.sched_getaffinity(0)` where that exists; else `os.cpu_count()`. [CODE S-qejsavhl: src/xdist/plugin.py#pytest_xdist_auto_num_workers]
+- `os.cpu_count()` returns the number of logical CPUs in the system (`os.process_cpu_count()` the number usable by the current process), and on Python 3.13+ `-X cpu_count=N` or `PYTHON_CPU_COUNT` overrides both, which the docs suggest for limiting CPU use in a container. [DOC S-ew7mucsg, S-d77lvlq4]
+- So without `psutil` on Windows, where `os.sched_getaffinity` does not exist (`hasattr` is False on CPython 3.14.7 for Windows, checked 2026-09-29), `-n auto` starts one worker per logical CPU, not per physical core as the docs describe; this repository's `uv.lock` has no `psutil`, so `tests.py` and `stress_test.py` start one worker per logical CPU (8 on an 8-thread host) on Windows, and on Linux as many as the process's CPU affinity allows. `PYTEST_XDIST_AUTO_NUM_WORKERS` sets the count on every Python version the suite runs on (3.11 included), where `PYTHON_CPU_COUNT` works only from 3.13. [DER S-qejsavhl, S-ew7mucsg, S-d77lvlq4, S-t7c2nvll: the resolution order above, the lock file's package list, and the 3.13 floor of `PYTHON_CPU_COUNT`]
+- The environment variable and a `pytest_xdist_auto_num_workers(config)` hook in `conftest.py` both change what `auto` and `logical` mean; the hook wins when both are set and may return `None` to fall back to the default. [DOC S-t7c2nvll]
+- `--maxschedchunk` caps how many tests `--dist load` sends to a worker in one step: `1` sends them one by one (for a few slow tests), larger values let a worker reuse fixtures across consecutive tests, and at least 2 tests go to each worker at the start. [CODE S-qejsavhl: src/xdist/plugin.py#pytest_addoption]
+- With `--dist loadscope`, xdist by default reorders scopes by their number of tests (`--loadscope-reorder`) to improve parallelism, at the cost of the partial order of tests; `--no-loadscope-reorder` keeps the order for plugins that depend on it. [CODE S-qejsavhl: src/xdist/plugin.py#pytest_addoption]
+- Under `loadscope` one test class or module is the unit of work: a class whose tests take minutes keeps one worker busy for all of it while the others go idle at the end of the run, and `worksteal` or `load` can spread a class that holds no shared class-scoped state. [DER S-t7c2nvll: the grouping and `worksteal` rules above]
 
 ## Reference
 ```toml

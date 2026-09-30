@@ -1149,3 +1149,13 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## privacy/nist-sp800-38g
 
 - **architecture decision records ADR format status superseded** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-f3230e66064f). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: privacy/nist-sp800-38g)
+
+## python/interpreter-startup
+
+- **What creating one process costs on Windows compared with Linux, and how much of it Defender real-time scanning adds** (for a test suite that starts git, python and sh hundreds of times). Looked 2026-09-29 in CPython 3.14.7 `subprocess.rst` and `cmdline.rst`, the Microsoft Learn `CreateProcess` reference and "Creating processes", and a Microsoft Learn search for process creation cost: none gives a figure. The per-host number is measured in `kb/_self/reports/test-suite-speed.md`; an official statement is still missing. (topic: python/interpreter-startup)
+
+## windows/dev-drive
+
+- **How much a Dev Drive with Defender performance mode shortens a Python and git test suite** Looked 2026-09-29 in "Set up a Dev Drive on Windows 11" and "Protect Dev Drive using performance mode" (Microsoft Learn): both describe the mechanism, and the Dev Drive page links a Visual Studio blog for average measurements, with no figure for this workload on the page itself. Needs a measurement on the host with the operator's agreement (a Dev Drive is a machine change). (topic: windows/dev-drive)
+
+- **Whether the host's Defender real-time protection scans each file a test writes inside a Hyper-V isolated Windows container** (the `docker-windows` job's scratch disk), and so whether a host exclusion or Dev Drive can speed that job. Looked 2026-09-29 in "Anti-virus optimization for Windows Containers" and the Windows Server containers support policy (Microsoft Learn): they cover image layers read over SMB loop-back and scratch files for process-isolated containers, and say the running Hyper-V container "requires additional work". Needs a performance recording on the runner host during a job. (topic: windows/dev-drive)

@@ -1,0 +1,87 @@
+{
+  "id": "ST-7ihohi2u",
+  "kind": "story",
+  "title": "Query-log and git scenarios share their setup and drop proven duplicates",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 5,
+  "goal": "The single-lookup end-to-end scenarios (TestAnswered, TestFixedSince, TestFetches, TestToolRows, TestRedaction, TestSessions) and the mode scenarios run in a few shared clones split by pipeline stage, the in-git host refusal cases keep one refusal and one non-refusal run with the rest proven by TestHostRules, and test_kb_root, test_kb_mcp, test_kb and test_research_merge build on shared copies or the kb seed; every assertion they made is still made, except the tests the operator agreed to drop.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "time",
+        "tests",
+        "--max",
+        "900"
+      ],
+      "exit": 0
+    }
+  ],
+  "touches": [
+    "_tools/test_querylog_e2e.py",
+    "_tools/test_querylog.py",
+    "_tools/test_kb_root.py",
+    "_tools/test_kb_mcp.py",
+    "_tools/test_kb.py",
+    "_tools/test_research_merge.py",
+    "_tools/conftest.py",
+    "_tools/test_ids_dropped.txt",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-c35i7vjx"
+  ],
+  "relates_to": [
+    "BG-rrht7uts",
+    "ST-5q5b5qtz"
+  ],
+  "gates": [
+    {
+      "id": "drop-duplicates",
+      "kind": "blocking",
+      "question": "Some e2e tests repeat what a cheaper test already proves: TestCaps (test_querylog.py::test_over_the_caps_entries_wait), TestModesAuto[default] (TestAnswered runs without a config file), the cap and off runs of TestResearch (test_querylog.py research unit tests), and two of the three 'red CI revert files a bug' tests (TestFixes, TestAutonomousWrite, TestAutonomousConverge). None of the first three is tied to an incident in the history. Which may go?",
+      "options": [
+        "drop TestCaps, TestModesAuto[default] and the extra TestResearch runs; keep all three revert tests",
+        "drop those and keep only TestAutonomousWrite for the revert bug",
+        "drop nothing: only merge setup, keep every test id"
+      ],
+      "recommendation": "drop TestCaps, TestModesAuto[default] and the extra TestResearch runs; keep all three revert tests"
+    },
+    {
+      "id": "incident-replay-seed",
+      "kind": "provisional",
+      "question": "test_research_merge replays task 6b on a --no-hardlinks clone of the whole repository with history. Moving it onto the shared kb seed (no history) is 150-250 worker-seconds cheaper and fixes BG-rrht7uts, but the replay then no longer runs against the real history. Move it?",
+      "options": [
+        "move it onto the seed, keeping its fork commit",
+        "keep the full-history clone"
+      ],
+      "recommendation": "move it onto the seed, keeping its fork commit"
+    }
+  ],
+  "links": [
+    "kb/_self/reports/test-suite-speed.md"
+  ],
+  "notes": "Source: a read-only audit of the test files, their docstrings and git history (2026-09-30), checked against run 1 of the report. Measured under load on the Windows host: the single-lookup scenarios cost 92-199 worker-seconds each (TestRedaction 199, TestAnswered 121, TestToolRows 120, TestSessions 104, TestFixedSince 93, TestFetches 60), TestModesAuto 234 and TestModesOff 155, TestCaps 57, TestResearch 331, TestHostRefusalsInGit 293 plus TestHostNoRefusalInGit 143, test_research_merge 288, test_kb_root 226. Expected saving: 25-30% of tests.py worker time on its own, overlapping ST-4mcoplex. Kept as they are, since each caught a real defect or is the only proof of a property: TestConflict, TestAutonomousConverge, TestPushFailure, TestTwoClones, test_sync.py, TestApply. Merged scenarios are split by pipeline stage so no single loadscope unit grows past the longest one today (about 520 s). _tools/test_ids_dropped.txt lists exactly the ids the operator agreed to drop."
+}

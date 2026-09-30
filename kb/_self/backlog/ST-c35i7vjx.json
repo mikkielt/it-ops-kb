@@ -1,0 +1,43 @@
+{
+  "id": "ST-c35i7vjx",
+  "kind": "story",
+  "title": "A tool proves a test-suite speed-up lost no test",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "_tools/perfcheck.py compares the test ids tests.py and stress_test.py collect at HEAD with those at a base revision (a missing id fails it unless an --allow-removed file names it, added ones are listed) and times a suite run against a stated bound, and its own tests plant a dropped test id and an over-bound run that make it fail.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "perfcheck"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt"
+      ],
+      "exit": 0
+    }
+  ],
+  "touches": [
+    "_tools/perfcheck.py",
+    "_tools/test_perfcheck.py",
+    "_tools/test_ids_baseline.txt",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv"
+  ],
+  "links": [
+    "kb/_self/reports/test-suite-speed.md",
+    "kb/public/python/pytest.md (--collect-only -q, pytest @file, exit code 5)"
+  ],
+  "notes": "_tools/test_ids_baseline.txt is the id list of tests.py and stress_test.py at the commit before the epic's first change (1,223 ids: 1,134 by tests.py plus the 89 stress ids); a later story that adds tests appends their ids, and one that removes a test id needs the operator's word. A planted-failure test is one that plants a defect and asserts a check reports it; the id comparison proves each is still collected, tests.py proves each still passes."
+}

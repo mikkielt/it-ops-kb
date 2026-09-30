@@ -1,0 +1,15 @@
+{
+  "id": "EP-hlnsqx4f",
+  "kind": "epic",
+  "title": "The test suites run in minutes on Windows, with no lost coverage",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A change runs only the checks it can break, and on the project's Windows 11 host python3 _tools/tests.py finishes in 10 minutes or less and python3 _tools/stress_test.py in 5 minutes or less with nothing else running, kb-tests-windows finishes within its 1-hour job timeout, and every run collects the same test ids as before the epic, with every planted-failure test still present and passing.",
+  "links": [
+    "kb/_self/reports/test-suite-speed.md",
+    "kb/public/_answers.md#QK-subprocess-heavy-pytest-suite-run-faster",
+    "BG-rrht7uts"
+  ],
+  "notes": "Measured baseline on the project's Windows 11 host (i7-8665U, 4 cores/8 threads, NTFS C:, Defender real-time protection on, no exclusions), idle apart from what the report names: tests.py 1,106-1,203 s wall for 1,134 tests on 8 workers (7,678-8,298 worker-seconds, 55% of them fixture setup); stress_test.py 462 s for 89 tests (3,495 worker-seconds, 95% utilisation). kb/_self/reports/test-suite-speed.md holds every number with its command. Time sinks, largest first: (1) every fresh kb tree (clone, worktree, copy) pays about 15-19 s of first-open cost for its 1,841 new files on this host, most likely Defender's synchronous scan on open (a hard-linked copy pays 0.4 s); (2) every fresh clone rebuilds the pack index cold (12.8 s for the first rag.py pack, 14.5 s for the first check.py, idle), which the sync gate, apply, learn and kb_hook runs of every git scenario pay again; (3) loadscope hands out the long git scenario classes last, leaving 1,124-1,288 idle worker-seconds at the end; (4) kb-tests-windows gets 2 workers in its container and hits the 1-hour timeout at about 92% of tests.py, so stress_test.py never runs there. Measured and small, left out of stories: a python start costs 51 ms (36 ms with -S), git 19-23 ms, sh 33 ms, sh _tools/kbpy 110 ms, uv run 77 ms; tests.py starts about 1,044 python and 6,920 git children (from Python code), so process starts alone are about 2-3 minutes of worker time; gc.auto/maintenance.auto save about 40 ms per commit (ST-n3swrm57). TestLaunch::test_shell_form_launches asserts a 1.5 s launch bound and failed once under load (1.7 s); it passes on an idle host, so it is not filed as a bug with a repro yet; the load reduction of this epic should keep it green. The CI jobs are manual since the operator's CI-manual decision of 2026-09-29: a pipeline status is not a gate result, the local gate is; kb-tests-windows figures come from manually started jobs."
+}

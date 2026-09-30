@@ -1,0 +1,67 @@
+{
+  "id": "ST-4mcoplex",
+  "kind": "story",
+  "title": "Fresh scenario clones reuse the seed's pack index",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "A git scenario's clone or worktree of the kb seed starts with the pack index the session built once for the seed commit, so no tool run in it rebuilds the index for unchanged content; tests that test index building keep their own index directory.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "seed_index"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "time",
+        "tests",
+        "--max",
+        "900"
+      ],
+      "exit": 0
+    }
+  ],
+  "touches": [
+    "_tools/conftest.py",
+    "_tools/test_querylog_e2e.py",
+    "_tools/test_querylog.py",
+    "_tools/test_sync.py",
+    "_tools/test_research_merge.py",
+    "_tools/test_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-c35i7vjx"
+  ],
+  "links": [
+    "kb/_self/reports/test-suite-speed.md",
+    "kb/public/python/pytest.md (tmp_path_factory, session scope)",
+    "kb/public/python/pytest-xdist.md (session fixture once per worker, FileLock pattern)"
+  ],
+  "notes": "Measured: a fresh clone's first rag.py pack takes 12.8 s against 0.29 s warm, the first check.py 14.5 s against 1.1 s; in the full run 42 of 73 check.py runs, 36 of 52 kbgit.py fix runs and 40 of 47 kbgit.py sync runs took over 5 s, about 2,500-3,000 worker-seconds of the 7,700-8,300 total. Expected saving: 25-35% of tests.py worker time. kbfacts.index_path names the index by content fingerprint, and store() prunes the other indexes of its root in the same directory, so a shared KB_INDEX directory across scenarios could delete a file another test holds open on Windows; copying the seed's index file into each clone's _cache avoids that. A kb_seed fixture already builds the seed once per run (conftest.py); the index is built there after the commit and copied beside every clone. The seed_index test proves a clone's first pack builds nothing (for example an index file count and mtime unchanged) and has a planted failure: a clone without the copied index fails it."
+}
