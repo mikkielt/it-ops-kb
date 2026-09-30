@@ -2,7 +2,7 @@
   "id": "ST-qp5wsqab",
   "kind": "story",
   "title": "The Self-Reviewed trailer is judged over the pushed range, not per commit",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
@@ -28,5 +28,19 @@
   "relates_to": [
     "ST-76ftjodg"
   ],
-  "claimed_by": "worker-qp5wsqab"
+  "evidence": {
+    "commit": "0adc219a6f0e85d5eb6fae6f2d4d609c883660be",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc_range_review"
+        ],
+        "exit": 0,
+        "sha256": "358211fceeec5f82"
+      }
+    ]
+  }
 }
