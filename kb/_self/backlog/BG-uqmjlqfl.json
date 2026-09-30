@@ -18,7 +18,8 @@
   },
   "touches": [
     "_tools/kbpublic.py",
-    "_tools/test_kbpublic.py"
+    "_tools/test_kbpublic.py",
+    "kb/_self/git.md"
   ],
   "claimed_by": "worker-uqmjlqfl"
 }
