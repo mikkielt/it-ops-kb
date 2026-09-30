@@ -88,7 +88,17 @@ ALWAYS_IN_SCOPE = ("kb/_self/backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.
 CHECK_TIMEOUT_S = 1800
 TEXT_MAX = 2000  # one field's text; a longer one is an essay, not a work item
 START_GATE = "start"
+APPROVALS = ("approve", "approved", "yes")  # the start gate's answers that let backlog.py start run
+# horizon's cause for the items of a sprint the operator approved but nobody started: backlog.py start is what remains,
+# not a question for the operator (a "change" or "cancel" answer is no approval and stays the operator's question)
+STARTS = "the sprint's start: approved, not started; run python3 _tools/backlog.py start "
 REVIEW_CHECKS = [{"run": ["python3", "_tools/backlog.py", "check"]}, {"run": ["python3", "_tools/tests.py"]}]
+
+
+def start_approved(sp):
+    """True when the operator answered the sprint's start gate with an approval."""
+    g = next((g for g in sp.get("gates", []) if g.get("id") == START_GATE), {})
+    return g.get("by") == "operator" and str(g.get("answer", "")).strip().lower() in APPROVALS
 
 
 class Refused(Exception):
@@ -1082,7 +1092,7 @@ def cmd_start(bl, a):
     if sp.get("kind") != "sprint":
         raise Refused(f"{bl.label(sid)} is not a sprint")
     g = next(g for g in sp["gates"] if g["id"] == START_GATE)
-    if g.get("by") != "operator" or str(g.get("answer", "")).lower() not in ("approve", "approved", "yes"):
+    if not start_approved(sp):
         raise Refused(f"{bl.label(sid)}: the operator has not approved it (gate {START_GATE}: {g.get('answer', 'open')})")
     items = bl.sprint_items(sid)
     if len(items) < 2:
@@ -1149,7 +1159,9 @@ def horizon(bl, sid):
     cause = {}
     if bl.items[sid].get("status") != "active":
         g = next((g for g in bl.items[sid].get("gates", []) if g.get("id") == START_GATE), {})
-        cause = {i: f"the sprint's start gate: {g.get('question', 'not started')}" for i in items}
+        why = (STARTS + sid if start_approved(bl.items[sid])
+               else f"the sprint's start gate: {g.get('question', 'not started')}")
+        cause = {i: why for i in items}
     for i in items:
         for x in [i] + bl.ancestors(i):
             it = bl.items[x]
@@ -1207,17 +1219,20 @@ def cmd_horizon(bl, a):
         planned = [i for i, it in bl.items.items() if it.get("kind") == "sprint"]
         n = sum(1 for it in bl.items.values() if it.get("kind") != "sprint" and it.get("status") not in ("done", "dropped"))
         lines.append(f"backlog: no active sprint; {n} open item(s)"
-                     + (", planned: " + ", ".join(bl.label(s) for s in planned) if planned else "")
+                     + (", planned: " + ", ".join(bl.label(s) + (" (approved, not started)" if start_approved(bl.items[s])
+                                                                 else "") for s in planned) if planned else "")
                      + " (python3 _tools/backlog.py tree)")
     for sid in sprints:
         need(bl, sid)
         items = bl.sprint_items(sid)
         done = sum(1 for i in items if bl.items[i].get("status") in ("done", "dropped"))
         reach, stuck, path, widths = horizon(bl, sid)
+        starts = len(stuck.get(STARTS + sid, []))  # approved: they wait on backlog.py start, not on the operator
+        waiting = sum(map(len, stuck.values())) - starts
         if a.hook:  # every session reads it: id and title, counts and the next id; horizon without --hook has the rest
             nxt = ready(bl, sid)
-            waiting = sum(map(len, stuck.values()))
             lines.append(f"sprint {bl.label(sid)}: {done}/{len(items)} done, {len(reach)} reachable"
+                         + (f", {starts} wait on backlog.py start" if starts else "")
                          + (f", {waiting} wait on the operator or a trigger" if waiting else "")
                          + (f", next {nxt[0]}" if nxt else ""))
             for c, ids in stuck.items():
@@ -1225,7 +1240,8 @@ def cmd_horizon(bl, a):
             continue
         lines.append(f"sprint {bl.label(sid)} [{bl.items[sid].get('status')}]: goal {bl.items[sid].get('goal')}")
         lines.append(f"  {done}/{len(items)} done; {len(reach)} more reachable without the operator; "
-                     f"{sum(map(len, stuck.values()))} wait on the operator or a trigger")
+                     + (f"{starts} wait on backlog.py start {sid}; " if starts else "")
+                     + f"{waiting} wait on the operator or a trigger")
         nxt = ready(bl, sid)
         if nxt:
             lines.append(f"  next: {bl.label(nxt[0])}")
