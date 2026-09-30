@@ -42,7 +42,7 @@ the ql_*.py modules beside it.
                         `rejected`. The gap step: an open gap candidate whose miss the pack still reproduces, with an
                         article in the lead (for a `none` pack, only a lead that matches more than half of the
                         question's key words the kb knows; for a `weak` pack, only a lead that holds the question's
-                        subject: a matched word in its topic or title, or a lacked word in its facts), becomes a dated
+                        subject: one line of its topic holding more than half of those words), becomes a dated
                         entry under that article's topic in its root's _gaps.md (candidate-gap -> gap); one off the
                         kb's domains (no lead, a lead no article holds, a stray `none` lead, a `weak` lead without the
                         subject) is `rejected` at candidate-gap. Research, only when the user's
@@ -70,10 +70,11 @@ the ql_*.py modules beside it.
                         that keeps the store's files and records its findings `apply-failed`, an unfinished pipeline
                         stops the run; then, in the worktree beside the spool reset to origin/main: the local store's
                         run files that origin/main lacks, and its findings files that hold only learn's states for
-                        findings origin/main does not record yet, copied into kb/_querylog, gated by `check` and the
-                        leak scan, and committed (KB-Auto: querylog); the worktree's learn and apply on that store,
-                        one commit with its KB-Auto trailer; one `kbgit.py sync --push` (gate, rebase on origin/main,
-                        push to origin only). Once the run files are on origin/main, the spool rows of their entries
+                        findings origin/main does not record yet, copied into kb/_querylog and gated by `check` and
+                        the leak scan; the worktree's learn and apply on that store; one commit of the copied files
+                        and what learn and apply changed, with the KB-Auto values of its paths (querylog among
+                        them), pushed once by `kbgit.py sync --push` (gate, rebase on origin/main, push to origin
+                        only). Once the run files are on origin/main, the spool rows of their entries
                         are deleted (a failed push deletes nothing). A conflict sync cannot resolve pushes
                         querylog/<run-id> with `-o merge_request.create -o merge_request.target=main`, main unchanged,
                         and later runs leave that branch's findings alone until main holds them. In a plugin host the

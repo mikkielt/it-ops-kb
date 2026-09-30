@@ -3512,6 +3512,13 @@ class KbGate(ql_apply.Gate):
     def topic(self, article):
         return "windows/laps"
 
+    def unit_words(self, article, words):
+        """The words of `words` each fact of the stubbed `facts` holds, with the stubbed title in every one (as the
+        pack's units hold their article's file name and title)."""
+        import kbfacts
+        title = set(kbfacts.terms(self.title(article)))
+        return [(title | set(kbfacts.terms(text))) & set(words) for _, text in self.facts(article)]
+
     def ledger(self, article, name):
         return self.dir / name
 
@@ -3638,44 +3645,128 @@ class TestGapStep:
         assert (root_files(root), tree(store)) == before
         assert (by_id(store)[GAP_ID]["state"], by_id(store)[GAP_ID]["stage"]) == ("open", "candidate-gap")
 
-    def test_gap_step_rejects_weak_off_domain(self, tmp_path):
-        """F-bd7367a45f3a: 'What is the maximum email attachment size?' packs `weak` with 3 of 4 key words, led by
-        mecm/collect-client-logs; the words it matched are qualifiers that name nothing of the lead's topic, and the
-        word it lacks, the subject, is in none of the lead's facts: off the kb's domains, no _gaps.md entry."""
-        root = kb_root(tmp_path / "root")
-        store = gap_store(tmp_path)
-        res = {"verdict": "weak", "paths": [LAPS, GMSA], "matched": ["attachment", "maximum", "size"],
-               "known": ["attachment", "email", "maximum", "size"], "lacks": ["email"], "missing": []}
-        gate = KbGate(root, res=res)
-        gate.title = lambda article: "Windows LAPS"
-        gate.facts = lambda article: [(9, "Windows LAPS backs up the password to Active Directory. [DOC S100]")]
+    # The weak-lead rule on the lead articles' own lines as the pack's index holds them (file name and title in each):
+    # the pack result and the lines are those of the live kb when the SP-4slunkaj review found each case.
+
+    @staticmethod
+    def weak_gate(root, res, title, *lines):
+        gate = KbGate(root, res={**res, "paths": [LAPS, GMSA]})
+        gate.title = lambda article: title
+        gate.facts = lambda article: [(n, text) for n, text in enumerate(lines, 9)]
+        return gate
+
+    @staticmethod
+    def assert_weak_rejected(store, root, gate):
         before = root_files(root)
         rc, said = run_gap_apply(store, gate)
         assert rc == 0 and "applied=0 rejected=1 no-fix=0" in said[0] and "gaps=" not in said[0], said
-        assert root_files(root) == before
+        assert root_files(root) == before  # no topic takes its entry
         rec = by_id(store)[GAP_ID]
         assert (rec["state"], rec["stage"], rec["observed"]["gate"]) == ("rejected", "candidate-gap",
                                                                           ["off the kb's domains"])
         assert ql_store.store_problems(store) == []
 
-    @pytest.mark.parametrize("res,fact", [
-        ({"verdict": "weak", "paths": [LAPS], "matched": ["laps", "maximum", "password"],  # names the lead's topic
-          "known": ["azur", "laps", "maximum", "password"], "lacks": ["Azure"], "missing": []},
-         "Windows LAPS backs up the password to Active Directory. [DOC S100]"),
-        ({"verdict": "weak", "paths": [LAPS], "matched": ["backup", "maximum", "size"],  # the lead's facts hold `Azure`
-          "known": ["azur", "backup", "maximum", "size"], "lacks": ["Azure"], "missing": []},
-         "Windows LAPS backs up the password to Azure or AD. [DOC S100]"),
-    ])
-    def test_gap_step_takes_weak_on_domain(self, tmp_path, res, fact):
-        root = kb_root(tmp_path / "root")
-        store = gap_store(tmp_path)
-        gate = KbGate(root, res=res)
-        gate.title = lambda article: "Windows LAPS"
-        gate.facts = lambda article: [(9, fact)]
+    @staticmethod
+    def assert_weak_taken(store, root, gate):
         rc, said = run_gap_apply(store, gate)
         assert rc == 0 and "gaps=1" in said[0], said
         assert "gives `weak`, with this topic in the lead" in (root / "_gaps.md").read_text(encoding="utf-8")
         assert (by_id(store)[GAP_ID]["state"], by_id(store)[GAP_ID]["stage"]) == ("applied", "gap")
+
+    def test_gap_step_weak_rejects_qualifiers_only(self, tmp_path):
+        """F-bd7367a45f3a: 'What is the maximum email attachment size?' packs `weak` with 3 of 4 key words, led by
+        mecm/collect-client-logs, whose best line holds only `size` of attachment, email, maximum, size: off the kb's
+        domains, no _gaps.md entry."""
+        res = {"verdict": "weak", "matched": ["attachment", "maximum", "size"],
+               "known": ["attachment", "email", "maximum", "size"], "lacks": ["email"], "missing": []}
+        gate = self.weak_gate(kb_root(tmp_path / "root"), res, "collect-client-logs mecm/collect-client-logs",
+                              "Size limit for the compressed client logs: 100 MB. [DOC S100]",
+                              "Collected files in general: SMS Provider class `SMS_G_System_CollectedFile` (FileSize, "
+                              "FileName). [DOC S100]")
+        self.assert_weak_rejected(gap_store(tmp_path), tmp_path / "root", gate)
+
+    def test_gap_step_weak_keeps_subject_in_lead_body(self, tmp_path):
+        """F-68c59a20a679: the lead agents/codebase-mapping covers cargo metadata --no-deps in a Rust fact of its body,
+        not in its title: the fact holds 3 of the 5 key words the kb knows, the subject, so the gap is the lead's."""
+        res = {"verdict": "weak", "matched": ["cargo", "metadata", "no-dep"],
+               "known": ["cargo", "config.toml", "invok", "metadata", "no-dep"],
+               "lacks": ["invokes", "rustc", "config.toml", "build.rustc"], "missing": ["build.rustc", "rustc"]}
+        gate = self.weak_gate(kb_root(tmp_path / "root"), res,
+                              "codebase-mapping Mapping a codebase deterministically: toolchain pins and the "
+                              "language's own tools",
+                              "`cargo metadata --no-deps` reports only the workspace members, fetches no dependencies "
+                              "and sets `resolve` to null. [DOC S100]",
+                              "Maven's `help:evaluate` runs the plugin in the project. [DOC S100]")
+        self.assert_weak_taken(gap_store(tmp_path), tmp_path / "root", gate)
+
+    def test_gap_step_weak_rejects_qualifier_title_words(self, tmp_path):
+        """F-f3230e66064f: 'architecture decision records ADR format status superseded' led by privacy/nist-sp800-38g,
+        whose title holds the qualifiers format and status: its best line holds 3 of 7 key words, not the subject."""
+        res = {"verdict": "weak", "matched": ["format", "status", "supers"],
+               "known": ["adr", "architectur", "decision", "format", "record", "status", "supers"],
+               "lacks": ["architecture", "decision", "records", "ADR"], "missing": []}
+        gate = self.weak_gate(kb_root(tmp_path / "root"), res,
+                              "nist-sp800-38g NIST SP 800-38G (format-preserving encryption) status",
+                              "SP 800-38G (03/29/2016) is marked \"Withdrawn on August 04, 2016\" and superseded by "
+                              "SP 800-38G `upd1`. [DOC S100]")
+        self.assert_weak_rejected(gap_store(tmp_path), tmp_path / "root", gate)
+
+    def test_gap_step_weak_rejects_slug_stem(self, tmp_path):
+        """'How long do deleted emails stay in the recycle bin?' led by entra/bitlocker-key-deletion: the file name's
+        `deletion` stems to the matched `delet`, yet no line holds more than delet and stay of 5 key words."""
+        res = {"verdict": "weak", "matched": ["delet", "email", "recycl"],
+               "known": ["bin", "delet", "email", "recycl", "stay"], "lacks": ["stay", "bin"], "missing": []}
+        gate = self.weak_gate(kb_root(tmp_path / "root"), res,
+                              "bitlocker-key-deletion Deleting an Entra device deletes its BitLocker keys",
+                              "Soft-deleted devices are hidden from portal, Intune and Graph queries (HTTP 404); their "
+                              "DeviceId stays reserved. [DOC S100]")
+        self.assert_weak_rejected(gap_store(tmp_path), tmp_path / "root", gate)
+
+    def test_gap_step_weak_rejects_one_lacked_word_in_a_fact(self, tmp_path):
+        """'How long do deleted emails stay recoverable in Exchange Online?' led by entra/stale-devices: one fact holds
+        the lacked word `recoverable` (of devices), and no line holds more than 2 of the 6 key words."""
+        res = {"verdict": "weak", "matched": ["delet", "exchang", "onlin"],
+               "known": ["delet", "email", "exchang", "onlin", "recoverabl", "stay"],
+               "lacks": ["emails", "stay", "recoverable"], "missing": []}
+        gate = self.weak_gate(kb_root(tmp_path / "root"), res, "stale-devices Stale device guidance (Entra)",
+                              "Device soft delete (preview) keeps deleted devices recoverable for 30 days. [DOC S100]")
+        self.assert_weak_rejected(gap_store(tmp_path), tmp_path / "root", gate)
+
+    def test_gap_step_weak_takes_the_leads_subject(self, tmp_path):
+        """A `weak` lead with a line holding more than half the key words the kb knows is the question's topic."""
+        res = {"verdict": "weak", "matched": ["laps", "maximum", "password"],
+               "known": ["azur", "laps", "maximum", "password"], "lacks": ["Azure"], "missing": []}
+        gate = self.weak_gate(kb_root(tmp_path / "root"), res, "laps Windows LAPS",
+                              "The maximum password age is 365 days. [DOC S100]")
+        self.assert_weak_taken(gap_store(tmp_path), tmp_path / "root", gate)
+
+    @pytest.mark.parametrize("finding,lead,off", [
+        ("F-68c59a20a679", "public/agents/codebase-mapping.md", False),
+        ("F-f3230e66064f", "public/privacy/nist-sp800-38g.md", True),
+        ("F-bd7367a45f3a", "public/mecm/collect-client-logs.md", True),
+    ])
+    def test_gap_step_weak_live_findings(self, finding, lead, off):
+        """The rule on the live kb and the committed store's real gap questions: each named finding's question, packed
+        on the working tree, is kept or rejected as pinned. While the kb has moved on (its pack is no longer `weak`, or
+        another article leads), the case no longer reaches the rule and is skipped, not failed."""
+        store = Path(KB) / "kb" / "_querylog"
+        rec = ql_store.finding_states(store).get(finding)
+        entry = next((e for _, e in ql_store.store_entries(store) if rec and e.get("id") == rec.get("entry")), None)
+        if not entry or not entry.get("question"):
+            pytest.skip(f"{finding}: not in the committed store")
+        gate = ql_apply.Gate()
+        res = gate.pack(entry["question"])
+        article = ql_learn.domain_article(res, gate.article_of)
+        if res.get("verdict") != "weak" or article != lead:
+            pytest.skip(f"{finding}: the kb moved on ({res.get('verdict')}, lead {article})")
+        assert ql_apply.weak_off_topic(res, article, gate) is off, (entry["question"], res.get("known"),
+                                                                    gate.unit_words(article, res.get("known")))
+
+    def test_gap_step_weak_counts_product_aliases(self):
+        """A key word that is a product alias (sccm for ConfigMgr) is held where its product's other names are."""
+        gate = ql_apply.Gate()
+        held = set().union(*gate.unit_words("public/mecm/collect-client-logs.md", ["sccm", "zqxlapsor"]))
+        assert held == {"sccm"}
 
     def test_a_none_gap_under_its_article_becomes_an_entry(self, tmp_path):
         root = kb_root(tmp_path / "root")
