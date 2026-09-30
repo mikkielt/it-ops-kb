@@ -39,11 +39,12 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
      In an interactive session, ask the operator at once as well.
 6. **Prove.**
    1. Commit the work with the trailer `KB-Work: ID` in the message's last paragraph, with `Co-Authored-By` and the other trailers (no blank line between them).
-   2. Run `python3 _tools/backlog.py done ID` and show its output. On refusal, fix what it names and run it again. Never edit `status` or `evidence` by hand.
-   3. Commit the item file with the same trailer.
+   2. An item with a code-lane commit (`_tools/kblane.py`) is landed before it is proved: `/kb-verify` on the changed files (and `/kb-self` if tools, skills, hooks or rules changed), then `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops). It sends the range as a `code/<id>` merge request and `main` does not move. Report that and stop; on a later pass check that the request merged, `git fetch`, and rebase local `main` onto the integration `main`. A content-only item skips this step.
+   3. Run `python3 _tools/backlog.py done ID` and show its output. On refusal, fix what it names and run it again (for an unmerged `code/<id>` request, merge it first). Never edit `status` or `evidence` by hand.
+   4. Commit the item file with the same trailer.
 7. **Land.**
    1. `/kb-verify` on the changed files (and `/kb-self` if tools, skills, hooks or rules changed).
-   2. `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops).
+   2. `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops): the item file, a content-lane commit, goes straight to `main`.
    3. Report the item's id and title, the commit, the checks that passed and the new horizon (`python3 _tools/backlog.py horizon`).
 
 When all its siblings are done, the parent story or bug is ready. Its own `done` runs its checks over the whole.

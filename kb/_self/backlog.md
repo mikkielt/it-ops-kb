@@ -171,12 +171,13 @@ Several sprints may be active at once. Each has its own horizon.
   1. claim it: `backlog.py claim ID --by <session>`, then commit the item file on its own with `KB-Work: ID` (a backlog-planning commit) before any work commit, since `check-trailers` reads the item as each commit has it;
   2. print its `/goal` condition;
   3. do the work within `touches`, and commit with `KB-Work: ID`;
-  4. run `backlog.py done ID`;
-  5. commit the item file with the same trailer, then run `/kb-verify` and `kbgit.py sync --push`.
+  4. an item with a code-lane commit: run `/kb-verify` and `kbgit.py sync --push` first, which sends a `code/<id>` merge request; once it has merged, `git fetch` and rebase local `main` onto the integration `main`;
+  5. run `backlog.py done ID`;
+  6. commit the item file with the same trailer, then run `/kb-verify` and `kbgit.py sync --push` (a content-lane commit, straight to `main`). A content-only item skips the merge request.
 - **A sprint** (`/kb-sprint run SP`): one session is the orchestrator.
   - Ready items whose `touches` do not overlap run in parallel. Each goes to a subagent in its own git worktree (`isolation: "worktree"`) on a local branch `work/<id>`, never pushed.
   - A task or subtask goes to the `kb-worker` agent (`.claude/agents/kb-worker.md`: the newest Sonnet at high effort), started with no `model`, which would replace the agent's. An `S1` or `S2` bug with its tasks and subtasks, and a story or bug with no tasks yet (its breakdown), go to a subagent on the session model. The sprint review and every `/kb-census` subagent never use `kb-worker`.
-  - The orchestrator lands them one at a time: rebase on `main`, `backlog.py done`, the gate, `kbgit.py sync --push`.
+  - The orchestrator lands them one at a time: rebase on `main`, the gate, `kbgit.py sync --push` (code goes as a `code/<id>` merge request, several items' code may share one), and on a later pass, once the request has merged and been fetched, `backlog.py done` and a second `kbgit.py sync --push` for the item file. Content-only items go `done`, commit, `sync --push`.
   - Items that share a file run one after another.
   - A subagent that finds a defect outside its item files a bug and does not fix it.
 - **Finding a defect**: `backlog.py new bug --title T --severity S --repro "CMD" --goal G`. The repro command must fail now; `new` refuses one that passes. Bugs come from:
