@@ -2,7 +2,7 @@
   "id": "TK-6l2dzabr",
   "kind": "task",
   "title": "kb-sprint and kb-item land code items through merge requests",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-niikw55v",
   "priority": "P2",
   "rank": 1,
@@ -56,5 +56,6 @@
   "depends_on": [
     "TK-5mrfocpz"
   ],
-  "notes": "selfdoc.py stale passes today and is a regression guard; the grep checks fail today. AGENTS.md maps to every skill in kb/_self/map.csv: when it needs no edit the commit names it in Self-Reviewed."
+  "notes": "selfdoc.py stale passes today and is a regression guard; the grep checks fail today. AGENTS.md maps to every skill in kb/_self/map.csv: when it needs no edit the commit names it in Self-Reviewed.",
+  "claimed_by": "worker-6l2dzabr"
 }
