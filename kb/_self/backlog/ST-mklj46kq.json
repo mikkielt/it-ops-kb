@@ -2,7 +2,7 @@
   "id": "ST-mklj46kq",
   "kind": "story",
   "title": "selfdoc check flags a reference to a kb/_self section that no longer exists",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-ar52y6fk",
   "priority": "P3",
@@ -22,5 +22,6 @@
     "_tools/selfdoc.py",
     "_tools/test_kb.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-mklj46kq"
 }

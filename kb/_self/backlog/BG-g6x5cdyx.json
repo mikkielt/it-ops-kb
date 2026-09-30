@@ -2,7 +2,7 @@
   "id": "BG-g6x5cdyx",
   "kind": "bug",
   "title": "No test holds the headings the skills read with selfdoc.py section",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ar52y6fk",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,6 @@
   "touches": [
     "_tools/test_selfdoc.py"
   ],
-  "notes": "SP-qdq57zu3 retrospective: the kb-ingest section command escaped backticks and did not parse under PowerShell (BG-v2xwgr6m); no test parses the skills' commands for both shells."
+  "notes": "SP-qdq57zu3 retrospective: the kb-ingest section command escaped backticks and did not parse under PowerShell (BG-v2xwgr6m); no test parses the skills' commands for both shells.",
+  "claimed_by": "worker-g6x5cdyx"
 }
