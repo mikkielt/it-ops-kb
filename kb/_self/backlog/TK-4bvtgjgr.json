@@ -18,7 +18,8 @@
     }
   ],
   "touches": [
-    "_tools/test_layout.py"
+    "_tools/test_layout.py",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "TK-u4f5ba7a"
