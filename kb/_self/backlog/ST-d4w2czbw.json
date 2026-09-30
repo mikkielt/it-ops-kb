@@ -2,7 +2,7 @@
   "id": "ST-d4w2czbw",
   "kind": "story",
   "title": "Review sprint: Git regime on any host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-v5xagbyv",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "e251782e4387997fbdc9a7247c38e247298776d5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "e728856b9dd662df"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b5159d4803b25f56"
+      }
+    ]
+  }
 }
