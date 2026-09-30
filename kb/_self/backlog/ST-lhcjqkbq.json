@@ -2,7 +2,7 @@
   "id": "ST-lhcjqkbq",
   "kind": "story",
   "title": "The git rules state the regime",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
@@ -85,5 +85,71 @@
       "by": "operator"
     }
   ],
-  "notes": "Each code task documents its own command in git.md and tools.md (the sync gate runs selfdoc.py stale), so this story writes the overview, the host setup and the rules. The size test and selfdoc.py stale pass today and are regression guards."
+  "notes": "Each code task documents its own command in git.md and tools.md (the sync gate runs selfdoc.py stale), so this story writes the overview, the host setup and the rules. The size test and selfdoc.py stale pass today and are regression guards.",
+  "evidence": {
+    "commit": "97fc4429bcf2f04ce293624db3cacdb68866e472",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "github-branch-rules-and-auto-merge",
+          "kb/_self/git.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "repository-mirroring",
+          "kb/_self/git.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "a push anywhere but `origin`'s `main`",
+          "kb/_self/backlog.md"
+        ],
+        "exit": 1,
+        "sha256": "9a271f2a916b0b6e"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "code/<id>",
+          "AGENTS.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_agents_md_stays_small"
+        ],
+        "exit": 0,
+        "sha256": "143c9cd288d7b029"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
