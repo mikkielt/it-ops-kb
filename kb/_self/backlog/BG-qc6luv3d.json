@@ -2,7 +2,7 @@
   "id": "BG-qc6luv3d",
   "kind": "bug",
   "title": "backlog check warns on every tools item that code.md, mapped to _tools/*.py, is in no item's touches",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rks3vx5g",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "worker-qc6luv3d"
 }
