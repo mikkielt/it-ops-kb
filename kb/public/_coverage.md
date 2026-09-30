@@ -245,7 +245,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 8 |
 | `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 3 |
 | `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 2 |
-| `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 9 |
+| `python/stdlib-windows-portability` | P3 | complete | `python/stdlib-windows-portability.md` | 12 |
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |
 | `python/windows-python-install` | P3 | partial | `python/windows-python-install.md` | 6 |
 | `reuse/device-identity-correlation` | P2 | complete | `reuse/device-identity-correlation.md` | 7 |

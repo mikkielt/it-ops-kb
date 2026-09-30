@@ -2,9 +2,9 @@
 topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
-retrieved_utc: 2026-09-29
-sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl]
-status: partial
+retrieved_utc: 2026-09-30
+sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743]
+status: complete
 ---
 
 # Python stdlib on Windows: detached processes, locks, text files, interpreter names
@@ -26,7 +26,9 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 - `CREATE_NEW_PROCESS_GROUP` is a `creationflags` value that creates a new process group, needed for `os.kill` on the subprocess; it is ignored with `CREATE_NEW_CONSOLE`. [DOC S-dabwnzz5]
 - `creationflags` values are passed to `CreateProcess`; the documented list also includes `CREATE_NO_WINDOW` and `CREATE_BREAKAWAY_FROM_JOB`. [DOC S-dabwnzz5]
 - A launcher that must return at once and leave a child running uses `start_new_session=True` on POSIX and `creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP` on Windows, with stdin, stdout and stderr redirected (e.g. to `DEVNULL` or a log file) so the parent's pipes do not hold it. [DER S-dabwnzz5: the POSIX-only session parameter and the two Windows flags above]
-- Whether Claude Code puts hook processes in a Windows job object that ends their children when the hook exits (which `CREATE_BREAKAWAY_FROM_JOB` would address) is not stated in the Python or Claude Code docs. [UNK: not in the hooks reference or the subprocess docs; a Windows test of the launcher decides]
+- `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` (0x00002000) causes all processes associated with a job to terminate when the last handle to the job is closed; with `JOB_OBJECT_LIMIT_BREAKAWAY_OK` (0x00000800) in effect, a child created with `CREATE_BREAKAWAY_FROM_JOB` is not associated with the job. [DOC S-obrkrr52]
+- `IsProcessInJob` with a NULL job handle tests whether a process runs under any job; a process cannot open the job it runs in without its name, but `QueryInformationJobObject` with NULL returns that job's information. [DOC S-hjy5rcb2]
+- Claude Code does not end a Windows hook's detached children when the hook exits: in a run of Claude Code 2.1.285 (`claude -p`, Windows 11 with Git for Windows), a hook in shell form (run by Git Bash) was in no job, a hook with `"shell": "powershell"` was in a job whose only limit was `BREAKAWAY_OK` (no `KILL_ON_JOB_CLOSE`), and in both cases children started with `DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP`, with or without `CREATE_BREAKAWAY_FROM_JOB`, were alive 11 to 12 seconds after Claude Code exited. So the launcher's breakaway flag is allowed and not needed there, and another version may differ. [DER S-hjy5rcb2, S-obrkrr52, S743: the hook called IsProcessInJob and QueryInformationJobObject(NULL) on itself and read LimitFlags against the flags above; hook shells per S743; run 2026-09-30]
 
 ### File locks without fcntl
 - The `fcntl` module is available on Unix only (not WASI). [DOC S-oavxfpsn]
