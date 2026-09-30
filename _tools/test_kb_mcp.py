@@ -46,7 +46,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import KB, P, Q, TOOLS, git_env
+from conftest import KB, P, Q, TOOLS, git_env, timeout_s
 
 import kb_mcp  # noqa: E402  (conftest puts _tools on sys.path)
 
@@ -583,7 +583,7 @@ def test_status_of_a_plugin_copy_from_a_directory_marketplace(short_tmp):
 def _status(home, cwd):
     env = {k: v for k, v in git_env().items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
     p = subprocess.run([sys.executable, os.path.join(home, "_tools", "kb_mcp.py"), "--status"], capture_output=True,
-                       text=True, encoding="utf-8", timeout=120, env=env, cwd=str(cwd))
+                       text=True, encoding="utf-8", timeout=timeout_s(120), env=env, cwd=str(cwd))
     assert p.returncode == 0, p.stdout + p.stderr
     return p.stdout
 
@@ -763,7 +763,7 @@ def _embedded(roots_dir, *args, calls=()):
     msgs += [{"jsonrpc": "2.0", "id": i, "method": "tools/call", "params": {"name": n, "arguments": a}}
              for i, (n, a) in enumerate(calls, start=1)]
     p = subprocess.run([sys.executable, SERVER, *args], input="".join(json.dumps(m) + "\n" for m in msgs),
-                       capture_output=True, text=True, encoding="utf-8", timeout=180, env=env, cwd=os.sep)
+                       capture_output=True, text=True, encoding="utf-8", timeout=timeout_s(180), env=env, cwd=os.sep)
     out = {}
     for ln in p.stdout.splitlines():
         r = json.loads(ln)

@@ -22,6 +22,8 @@ from pyproject.toml's dev group) or `uv run pytest`.
   D(rel)                P() of a retrieval data file (signals.csv, lookup_eval.csv, doc2query/expansions.csv, ...)
   Q(rel)                the qualified path of a public-root file (`public/<rel>`): what the read tools print
   SELF_REL              the kb's own docs directory relative to the repository (`_self`)
+  timeout_s(seconds)    a subprocess timeout set on the project's Windows host, times KB_TEST_TIMEOUT_FACTOR (default
+                        1, at least 1; kb-tests-windows sets 3): the limit follows a slower host
 """
 import json, os, shutil, subprocess, sys, time
 from pathlib import Path
@@ -66,7 +68,33 @@ SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_
 LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", *GIT_LOCATION)
 
 
+TIMEOUT_FACTOR_VAR = "KB_TEST_TIMEOUT_FACTOR"
+
+
+def timeout_factor(env=None):
+    """KB_TEST_TIMEOUT_FACTOR (default 1): how many times slower than the project's Windows host the run's host is,
+    for the subprocess timeouts set there. A number of at least 1, else ValueError: a smaller one would shorten them."""
+    raw = (os.environ if env is None else env).get(TIMEOUT_FACTOR_VAR, "").strip() or "1"
+    try:
+        factor = float(raw)
+    except ValueError:
+        factor = None
+    if factor is None or not factor >= 1 or factor == float("inf"):
+        raise ValueError(f"{TIMEOUT_FACTOR_VAR}={raw!r}: need a number of at least 1")
+    return factor
+
+
+def timeout_s(seconds):
+    """A test's subprocess timeout, set on the project's Windows host, times KB_TEST_TIMEOUT_FACTOR: kb-tests-windows
+    (a Hyper-V container, about 3 times slower) sets it, so the limit follows the host instead of being raised for all."""
+    return seconds * timeout_factor()
+
+
 def pytest_configure(config):
+    try:
+        timeout_factor()
+    except ValueError as e:
+        raise pytest.UsageError(str(e)) from None
     config.addinivalue_line("markers", "git: a scenario in throwaway git repositories (left out by -m 'not git')")
     config.addinivalue_line("markers", "stress: the stress suite, test_stress.py (stress_test.py runs it; tests.py leaves it out)")
 

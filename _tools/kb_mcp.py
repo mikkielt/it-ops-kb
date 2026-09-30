@@ -362,9 +362,16 @@ def kb_source(args):
     return "\n".join(out)
 
 
+# A local git call (no remote is contacted) that outlasts this is taken as failed. 10 s was too short on a loaded
+# Windows host: a marketplace clone's rev-parse timed out and kb_status reported the version as the commit.
+GIT_TIMEOUT_S = 60
+
+
 def git(*args, cwd=kbcommon.HOME):
+    """git's stripped stdout, or None when it fails, is missing or outlasts GIT_TIMEOUT_S."""
     try:
-        p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", timeout=10)
+        p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8",
+                           timeout=GIT_TIMEOUT_S)
     except (OSError, subprocess.SubprocessError):
         return None
     return p.stdout.strip() if p.returncode == 0 else None

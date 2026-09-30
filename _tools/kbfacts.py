@@ -263,14 +263,43 @@ def showable(full):
 
 def kb_files(exts=(".md", ".csv")):
     """Domain files of every root (not the root-level ledgers), by qualified path, root by root, sorted."""
+    for rel, _entry in kb_entries(exts):
+        yield rel
+
+
+def kb_entries(exts=(".md", ".csv")):
+    """(qualified path, os.DirEntry) of kb_files(), in its order: a top-down walk, each directory's files by name,
+    then its subdirectories by name (SKIP_DIRS and dot directories left out, a symlinked directory not entered, as
+    os.walk does). On Windows the entry's stat() comes from the directory listing, with no call per file."""
     for r in kbcommon.roots():
-        for root, dirs, files in os.walk(r.path):
-            dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith("."))
-            if root == r.path:
+        yield from _walk_entries(r, r.path, "", exts)
+
+
+def _walk_entries(r, path, rel, exts):
+    try:
+        with os.scandir(path) as it:
+            entries = list(it)
+    except OSError:
+        return
+    dirs, files = [], []
+    for e in entries:
+        try:
+            (dirs if e.is_dir() else files).append(e)
+        except OSError:
+            files.append(e)
+    if rel:  # the root's own files are its ledgers, not domain files
+        for e in sorted(files, key=lambda e: e.name):
+            if e.name.endswith(exts):
+                yield kbcommon.qualify(r, rel + e.name), e
+    for e in sorted(dirs, key=lambda e: e.name):
+        if e.name in SKIP_DIRS or e.name.startswith("."):
+            continue
+        try:
+            if e.is_symlink():
                 continue
-            for f in sorted(files):
-                if f.endswith(exts):
-                    yield kbcommon.qualify(r, os.path.relpath(os.path.join(root, f), r.path))
+        except OSError:
+            continue
+        yield from _walk_entries(r, e.path, rel + e.name + "/", exts)
 
 
 _CACHE = {}
@@ -281,21 +310,25 @@ _FP = [0.0, None]
 def fingerprint():
     """sha1 over (path, mtime_ns, size) of every file the tools read (domain .md/.csv, _sources.csv, the ledgers,
     aliases.csv, signals.csv, doc2query/expansions.csv, this module and kbid.py) and KB_DOC2QUERY: any edit gives a
-    new value. Replaces a time-to-live cache: nothing is rebuilt while no file changed, however long a server idles."""
-    now = time.monotonic()
-    if _FP[1] is not None and now - _FP[0] < FP_MEMO:
+    new value. Replaces a time-to-live cache: nothing is rebuilt while no file changed, however long a server idles.
+    The domain files' times and sizes come from the directory listing (kb_entries): an os.stat per file costs about
+    0.7 ms in a Hyper-V container, most of a warm pack there, and on a loaded host each pack outlasted FP_MEMO and
+    paid it again. The memo counts from the end of the computation."""
+    if _FP[1] is not None and time.monotonic() - _FP[0] < FP_MEMO:
         return _FP[1]
     h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
     extra = [*root_files((kbcommon.SOURCES,)), *index_files(), *alias_files(), *data_files("signals.csv"),
              *data_files("doc2query/expansions.csv"), os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py"),
              os.pathsep.join(r.path for r in kbcommon.roots())]  # the set of roots: a root added or removed
-    for rel in list(kb_files()) + extra:
+    stats = [*((rel, e.stat) for rel, e in kb_entries()),
+             *((rel, functools.partial(os.stat, kbcommon.path_of(rel))) for rel in extra)]
+    for rel, stat in stats:
         try:
-            st = os.stat(kbcommon.path_of(rel))
+            st = stat()
             h.update(f"{rel}\0{st.st_mtime_ns}\0{st.st_size}\n".encode())
         except OSError:
             h.update(f"{rel}\0-\n".encode())
-    _FP[:] = [now, h.hexdigest()]
+    _FP[:] = [time.monotonic(), h.hexdigest()]
     return _FP[1]
 
 

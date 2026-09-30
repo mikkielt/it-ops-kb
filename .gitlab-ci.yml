@@ -83,6 +83,9 @@ kb-tests-windows:
     GIT_CONFIG_COUNT: "1"
     GIT_CONFIG_KEY_0: safe.directory
     GIT_CONFIG_VALUE_0: "*"
+    # The container runs the suite about 3 times slower than the project's Windows host, where the tests' subprocess
+    # timeouts were set; the tests that ran out here scale theirs by this (conftest.timeout_s).
+    KB_TEST_TIMEOUT_FACTOR: "3"
   script:
     - |
       $ProgressPreference = 'SilentlyContinue'

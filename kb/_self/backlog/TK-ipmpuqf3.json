@@ -1,0 +1,24 @@
+{
+  "id": "TK-ipmpuqf3",
+  "kind": "task",
+  "title": "test_session_start_picks_up_closed_sessions_only proves the launcher does not wait without a wall-clock bound",
+  "status": "doing",
+  "parent": "BG-iug3utgu",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "test_session_start_picks_up_closed_sessions_only asserts that the SessionStart launch returned before the distill wrote its run file (the distill settles LAUNCH_SETTLE_S first), not that it returned within 1.5 s of wall clock, which a loaded 6-vCPU container missed (6.0 s, exit 0); the launcher's own budget stays held by test_launch_itself_fits_its_share_of_the_budget, and a planted launch that runs the distill itself fails the new check.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestLaunch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_querylog.py"
+  ],
+  "claimed_by": "worker-winci"
+}

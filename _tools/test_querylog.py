@@ -1449,7 +1449,10 @@ class TestLaunch:
                            env=env, timeout=120)
         return p.returncode, p.stdout, p.stderr, time.time()
 
-    def test_session_start_picks_up_closed_sessions_only(self, tmp_path):
+    @staticmethod
+    def two_sessions(tmp_path):
+        """A spool with a closed session (idle past SESSION_IDLE_CLOSED_S) and an active one, each one kb_show row;
+        (spool, closed id, active id, the active file's bytes)."""
         sp = spool(tmp_path)
         sp.mkdir(parents=True)
         auto_config(tmp_path / "querylog", "local")  # the rows of what it wrote go at once
@@ -1462,14 +1465,33 @@ class TestLaunch:
             (sp / f"{sid}.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
         old = time.time() - ql_distill.SESSION_IDLE_CLOSED_S - 60
         os.utime(sp / f"{closed}.jsonl", (old, old))
-        before = (sp / f"{active}.jsonl").read_bytes()
-        rc, out, took, _ = launch_proc(tmp_path, session_start())
-        assert (rc, out) == (0, b"") and took < 1.5
+        return sp, closed, active, (sp / f"{active}.jsonl").read_bytes()
+
+    def test_session_start_picks_up_closed_sessions_only(self, tmp_path):
+        """SessionStart starts a distill of the closed session alone and returns without waiting for it: the run file
+        is written after the launcher exited (the distill settles LAUNCH_SETTLE_S first). No wall-clock bound: the
+        interpreter's start costs what the host's load makes it cost, and the budget of launch() itself is held by
+        test_launch_itself_fits_its_share_of_the_budget."""
+        sp, closed, active, before = self.two_sessions(tmp_path)
+        rc, out, _took, exited = launch_proc(tmp_path, session_start())
+        assert (rc, out) == (0, b"")
         (run,) = wait_for_run(tmp_path)
+        assert run.stat().st_mtime > exited  # written after the launcher was gone
         (entry,) = jsonl(run)[1:]
         assert (entry["surface"], entry["articles"]) == ("mcp", ["public/windows/laps.md"])
         assert sorted(p.name for p in sp.iterdir()) == [f"{active}.jsonl"]
         assert (sp / f"{active}.jsonl").read_bytes() == before
+
+    def test_session_start_check_catches_a_waiting_launcher(self, tmp_path):
+        """Planted: a hook that runs the distill itself returns only after the run file exists, so the check
+        test_session_start_picks_up_closed_sessions_only makes fails on it."""
+        self.two_sessions(tmp_path)
+        p = subprocess.run([sys.executable, QL, "distill", "--settle", "0"], capture_output=True,
+                           env=querylog_env(tmp_path), timeout=120)
+        exited = time.time()
+        files = wait_for_run(tmp_path)
+        assert files, p.stdout + p.stderr
+        assert not files[0].stat().st_mtime > exited
 
     def test_session_start_starts_nothing_when_no_session_is_closed(self, tmp_path):
         sp = spool(tmp_path)
