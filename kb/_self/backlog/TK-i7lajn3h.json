@@ -2,7 +2,7 @@
   "id": "TK-i7lajn3h",
   "kind": "task",
   "title": "Docs name the query-log test files",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-klrcnysf",
   "priority": "P2",
   "rank": 2,
@@ -32,5 +32,6 @@
   ],
   "depends_on": [
     "TK-mose67gs"
-  ]
+  ],
+  "notes": "Dropped: its docs land with the move they describe, in TK-mose67gs: deleting test_querylog.py leaves querylog.md, tools.md and tests.py naming a missing file, which the sync gate's selfdoc stale and the self-doc pointer test refuse in a later range"
 }
