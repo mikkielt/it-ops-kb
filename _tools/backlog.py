@@ -353,7 +353,8 @@ def stale_knowledge(bl):
 # ------------------------------------------------------------------ knowledge state
 
 STATES = ("sufficient", "partial", "unknown", "stale", "conflicting")
-SETTLED_NOTE = re.compile(r"(?:^|\s)- (?:Resolved|Superseded) \d{4}-\d{2}-\d{2}\b")  # the notes that close an entry
+SETTLED_NOTE = re.compile(r"(?:^|\s)- (?:(?:Resolved|Superseded) \d{4}-\d{2}-\d{2}\b"
+                          r"|Reviewed \d{4}-\d{2}-\d{2}, not a source disagreement\b)")  # the notes that close an entry
 
 
 class KnowledgeState:
@@ -364,7 +365,8 @@ class KnowledgeState:
       stale        a fact key no longer found in its file, or a source that the ref is, that the fact cites or that
                    the pack cites has `superseded_by` set in _sources.csv;
       conflicting  the ref's article (a source ref: any entry naming it), or the pack's lead article, has an open
-                   entry in _conflicts.md: an entry with no `- Resolved <date>` or `- Superseded <date>` note;
+                   entry in _conflicts.md: an entry with no `- Resolved <date>`, `- Superseded <date>` or
+                   `- Reviewed <date>, not a source disagreement` note (`Reviewed <date>, still open` keeps it open);
       partial      coverage `weak`, or `good` with a `check:` line (a possible false good);
       sufficient   coverage `good` with no `check:` line.
     A pack whose coverage is `none` shows no article or source, so only what the ref itself is (its own fact, source
@@ -382,8 +384,8 @@ class KnowledgeState:
         return self._packs[question]
 
     def open_conflicts(self):
-        """([(entry, linked topics)]) of the entries of every root's _conflicts.md that no Resolved or Superseded
-        note closes."""
+        """([(entry, linked topics)]) of the entries of every root's _conflicts.md that no Resolved, Superseded or
+        "Reviewed <date>, not a source disagreement" note closes."""
         if self._open is None:
             kf = self.kf
             entries = kf.link_entries(kf.ledger_entries(self.kc.CONFLICTS))
