@@ -2,7 +2,7 @@
   "id": "ST-ne4njtgc",
   "kind": "story",
   "title": "backlog.py close prints what the sprint delivered for the close commit",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
@@ -25,5 +25,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "sprint-4fbfzobr-w8"
+  "evidence": {
+    "commit": "c0e1904097cd3b35b8f7e5d68027b5a2540d13f5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "close_summary"
+        ],
+        "exit": 0,
+        "sha256": "8ab8750c6c044f49"
+      }
+    ]
+  }
 }
