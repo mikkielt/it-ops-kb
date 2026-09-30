@@ -1,0 +1,17 @@
+{
+  "id": "BG-4cm4e7d5",
+  "kind": "bug",
+  "title": "The PowerShell raw-read hook spends about 2 s in module auto-loading when an interpreter name is missing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The shell: powershell PreToolUse hook in .claude/settings.json starts with $PSModuleAutoLoadingPreference = 'None', so a name it tries that is not on PATH (python3, python, py) fails without PowerShell searching every module for it: in python:3.14-windowsservercore-ltsc2025 the no-interpreter command took 2.9-3.5 s against 1.15 s with auto-loading off and 1.1 s for an empty command (0.6 s against 0.45 s on the Windows host), on every PowerShell call of a session on a host missing one of those names; test_portability's PS_HEAD follows. Changing Claude Code's hook configuration needs the operator's word, which is why BG-iug3utgu only scaled test_no_interpreter_exits_127's timeout.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys; s=open('.claude/settings.json',encoding='utf-8').read(); sys.exit(0 if 'PSModuleAutoLoadingPreference' in s else 1)"
+    ]
+  }
+}
