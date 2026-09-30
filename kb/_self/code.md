@@ -54,3 +54,4 @@ The same code runs on Linux, macOS and Windows.
 - **A module imports the modules below it.** The facade imports its helpers; a helper never imports its facade. Inside a prefix, the shared ground (`ql_base.py`) imports no sibling, and a stage imports the stages it builds on, never one that builds on it.
 - **No cycles at the top level.** A reach back up the order is an import inside the function that needs it.
 - **A leading underscore means the module's own.** Another module does not import or call a name that starts with `_`; a name two modules need is public, without the underscore.
+- **A test holds the first and third rules.** `_tools/test_layout.py` parses every `_tools/*.py` with `ast` and fails when a `ql_*`, `kg_*` or `bench_*` module imports its facade, or a module imports an underscore name from another one (`from x import _y` or `x._y`); the exceptions the tree had are listed by name in the test, and a new one fails.
