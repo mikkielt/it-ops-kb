@@ -7,7 +7,8 @@
                    refusal when the public branch is not an ancestor, and --rewrite.
   TestPublishSafety (marker git) publish refuses, exit 1 and pushes nothing (a dry run reports the same), on a red, a
                    pending, an unreadable or a missing CI verdict of the source commit (a stubbed run), an internal
-                   root, a _private path and a leaked address in a changed file.
+                   root, a _private path and a leaked address in a changed file; a value the public tip holds in
+                   another file passes, a value new to the public home is refused.
   TestPublishHistory (marker git) the same refusals for a commit of the range that adds what a later commit deletes,
                    named by its hash, on a first publish too; a clean range and a value the parent's version holds pass.
   TestGuard        (marker git) guard_push and sync refuse a history with kb/_querylog only when the remote is the
@@ -263,6 +264,28 @@ class TestPublishSafety:
             assert kbpublic.cmd_publish(ns(dry_run=dry), r.path) == 1
             text = capsys.readouterr().out
             assert "_tools/test_x.py has a leak-scan hit (guid)" in text and "nothing pushed" in text
+            assert pub.rev("main") == tip
+
+    def test_value_public_elsewhere_passes(self, src, tmp_path, capsys):
+        r, pub, guid = self.published_leak(src, tmp_path)
+        commit(r, {"kb/_self/backlog/BG-x.json": f'{{"repro": "{guid}"}}\n'}, "quote the id elsewhere")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        assert kbpublic.cmd_publish(ns(), r.path) == 0, capsys.readouterr().out  # _tools/test_x.py holds it publicly
+        assert list(Path(r.path, *kbpublic.CACHE_DIR).glob("public-*.json"))
+        assert not r.git("status", "--porcelain").strip()  # the cache ignores itself
+
+    def test_value_new_to_public_home_refused(self, src, tmp_path, capsys):
+        r, pub, guid = self.published_leak(src, tmp_path)
+        tip = pub.rev("main")
+        new = ".".join(("192", "168", "4", "9"))
+        commit(r, {"kb/_self/backlog/BG-x.json": f'{{"repro": "{guid} {new}"}}\n'}, "quote a new address")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        Path(r.path, *kbpublic.CACHE_DIR).mkdir(parents=True, exist_ok=True)
+        Path(r.path, *kbpublic.CACHE_DIR, f"public-{tip}.json").write_text("{corrupt", encoding="utf-8")  # recomputed
+        for dry in (True, False):
+            assert kbpublic.cmd_publish(ns(dry_run=dry), r.path) == 1
+            text = capsys.readouterr().out
+            assert "kb/_self/backlog/BG-x.json has a leak-scan hit (ip)" in text and "nothing pushed" in text  # not guid
             assert pub.rev("main") == tip
 
     def test_leak_without_tip_refused(self, src, tmp_path, capsys):
