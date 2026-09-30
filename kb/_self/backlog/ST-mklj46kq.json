@@ -2,7 +2,7 @@
   "id": "ST-mklj46kq",
   "kind": "story",
   "title": "selfdoc check flags a reference to a kb/_self section that no longer exists",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-ar52y6fk",
   "priority": "P3",
