@@ -2,7 +2,7 @@
   "id": "ST-rjagiw6f",
   "kind": "story",
   "title": "A bug filed while landing is committed before its fix",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,28 @@
     ".claude/skills/kb-item/SKILL.md"
   ],
   "notes": "From the SP-4udo5jmw retrospective: two review bugs were committed after their fix commits and check-trailers refused the push.",
-  "claimed_by": "worker-rjagiw6f"
+  "evidence": {
+    "commit": "dd064bd23b8a1c6cf4624b4e8e5e16bd3843fd3d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc"
+        ],
+        "exit": 0,
+        "sha256": "1005027283b1a920"
+      }
+    ]
+  }
 }

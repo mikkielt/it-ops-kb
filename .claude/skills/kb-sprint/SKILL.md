@@ -32,7 +32,7 @@ Only on the operator's approval in this conversation:
 Never answer the start gate yourself.
 
 ## run [SP]
-You are the orchestrator. Loop:
+You are the orchestrator. Run from your own clone or git worktree, never a checkout another session works in: a second orchestrator starts its own (`kb/_self/backlog.md`, Working on items). Loop:
 1. Run `python3 _tools/backlog.py horizon --sprint SP` and `python3 _tools/backlog.py next --sprint SP --all`.
 2. From the ready list, take up to four items whose `touches` do not overlap each other or any item in flight. Claim each: `python3 _tools/backlog.py claim ID --by <subagent name>`.
 3. Start one subagent per item with `isolation: "worktree"`, on the agent its kind takes:
@@ -49,7 +49,7 @@ You are the orchestrator. Loop:
    - "never write the operator's decisions into docs or code".
    An item with a single commit and a narrow `touches` may be done in this session instead.
 4. When a subagent returns, land its branch yourself, one at a time:
-   1. rebase it on `main`;
+   1. `git status --short` shows only your own changes (another session's files in your checkout: stop and move to your own clone or worktree); rebase the branch on `main`;
    2. `/kb-verify` on the changed files;
    3. an item with a code-lane commit (`_tools/kblane.py`): `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops) sends the range, the claim commit riding along, as a `code/<id>` merge request; `main` does not move. Several items' code may ride one request. `done` waits for the merge: on the next pass check that the request merged, `git fetch`, rebase local `main` onto the integration `main` (the merged commits keep their hashes);
    4. `python3 _tools/backlog.py done ID`;
