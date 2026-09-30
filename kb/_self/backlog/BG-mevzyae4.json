@@ -2,7 +2,7 @@
   "id": "BG-mevzyae4",
   "kind": "bug",
   "title": "kbgit.py publish recomputes the whole projection on every run, most of the hook's 60 s on a long history",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/test_kbpublic.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "worker-mevzyae4"
+  "evidence": {
+    "commit": "b0dffea238fa13f23e38d54fa9e39bb1fa1425f5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestProjectionReuse"
+        ],
+        "exit": 0,
+        "sha256": "a1baec529c210306"
+      }
+    ]
+  }
 }
