@@ -21,6 +21,6 @@
     "_tools/querylog.py",
     "_tools/ql_store.py",
     "_tools/ql_report.py",
-    "_tools/test_querylog.py"
+    "_tools/test_ql_report.py"
   ]
 }

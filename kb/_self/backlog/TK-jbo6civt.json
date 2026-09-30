@@ -19,7 +19,7 @@
   ],
   "touches": [
     "_tools/ql_capture.py",
-    "_tools/test_querylog.py",
+    "_tools/test_ql_capture.py",
     "_tools/fixtures/querylog/**",
     "kb/_self/querylog.md"
   ]

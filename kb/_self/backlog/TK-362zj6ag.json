@@ -23,7 +23,7 @@
     "_tools/backlog.py",
     "_tools/ql_report.py",
     "_tools/test_intake.py",
-    "_tools/test_querylog.py",
+    "_tools/test_ql_report.py",
     ".claude/skills/kb-backlog/SKILL.md"
   ]
 }

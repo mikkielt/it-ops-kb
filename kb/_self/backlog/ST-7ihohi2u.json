@@ -41,7 +41,9 @@
   ],
   "touches": [
     "_tools/test_querylog_e2e.py",
-    "_tools/test_querylog.py",
+    "_tools/test_ql_distill.py",
+    "_tools/test_ql_research.py",
+    "_tools/test_ql_deliver.py",
     "_tools/test_kb_root.py",
     "_tools/test_kb_mcp.py",
     "_tools/test_kb.py",

@@ -47,7 +47,7 @@ remote, the findings, the eval file, the ledgers, the spool and the gate (the st
 The SessionEnd hook runs while the test holds the distill lock, so the launcher marks the session closed and starts
 no distill of its own: distill runs in this process with the recorded Haiku and with `glab` and `gh` as stubs. The
 worktree's research answers from a recorded reply and page, and its `querylog.py check` runs in this process
-(test_querylog.run_here). Nothing reaches the network or the real `claude`, and
+(ql_testkit.run_here). Nothing reaches the network or the real `claude`, and
 nothing is written to this clone's own spool. Every scenario is marked `git` (tests.py runs them; KB_TESTS_FAST=1,
 kbgit.py sync's gate, leaves them out).
 """
@@ -58,9 +58,9 @@ import pytest
 
 import ql_base, ql_deliver, ql_distill, ql_research, ql_store
 from conftest import GIT, Repo, git_env, querylog_env
-from test_querylog import (ALIAS_Q, BAD_QUOTE, E, FIXTURES, LAPS, LAPS_GAP_Q, LEGACY_QUOTE, PAGE, PAGE_URL,
-                           PARAPHRASE_Q, PASSED, PUSH_OPTIONS_HOOK, QUOTA, REJECT_HOOK, SH, apply_store, c, cand,
-                           golden_store, jsonl, pipeline, prompt, reply, run_here, serve, signed_out, stop, tool)
+from ql_testkit import (ALIAS_Q, BAD_QUOTE, E, FIXTURES, LAPS, LAPS_GAP_Q, LEGACY_QUOTE, PAGE, PAGE_URL,
+                        PARAPHRASE_Q, PASSED, PUSH_OPTIONS_HOOK, QUOTA, REJECT_HOOK, SH, apply_store, c, cand,
+                        golden_store, jsonl, pipeline, prompt, reply, run_here, serve, signed_out, stop, tool)
 
 pytestmark = [pytest.mark.skipif(not GIT, reason="git is not installed"), pytest.mark.git]
 
@@ -1078,7 +1078,7 @@ QUEUED = re.compile(r"\bqueued=(\d+)")
 
 
 def converge_store(tmp, home):
-    """The fixture store of test_querylog.apply_store (an alias, an expansion, a fix that fails its gates, a gap off
+    """The fixture store of ql_testkit.apply_store (an alias, an expansion, a fix that fails its gates, a gap off
     the kb's domains, source findings) plus a gap under the LAPS article, written as the clone's kb/_querylog."""
     src = apply_store(tmp, "converge-store")
     (p,) = ql_store.run_files(src)
