@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-import agent_bench, benchmarks as bm, kb_ask
+import agent_bench, bench_core, bench_report, benchmarks as bm, kb_ask
 from conftest import GIT, Repo, git_env
 from kbcommon import NO_HOOKS
 
@@ -25,18 +25,18 @@ REPORT = "intro\n<!-- bench:table demo metrics=cost,wall_s -->\nold\n<!-- /bench
 
 
 def test_tables_are_generated_from_the_results_and_a_typed_cell_fails_the_check():
-    text = bm.render(REPORT, ROWS)
+    text = bench_report.render(REPORT, ROWS)
     assert "| s1 | kb-haiku | $0.030 / $0.032 -> $0.029 (-8%) | 10 s |" in text
     assert "| 2026-09-28 | 2026-09-28 | e4f5a6b | 2.1.290 | 271 | 1 | $0.03 |" in text
-    assert bm.render(text, ROWS) == text  # a second render changes nothing
+    assert bench_report.render(text, ROWS) == text  # a second render changes nothing
     planted = text.replace("$0.029 (-8%)", "$0.019 (-37%)")
-    assert bm.render(planted, ROWS) != planted  # what `report --check` compares
+    assert bench_report.render(planted, ROWS) != planted  # what `report --check` compares
 
 
 def test_check_fails_on_a_table_that_disagrees(tmp_path, monkeypatch, capsys):
     results, report, readme = tmp_path / "r.csv", tmp_path / "b.md", tmp_path / "README.md"
-    bm.write_rows(ROWS, results)
-    report.write_text(bm.render(REPORT, ROWS), encoding="utf-8")
+    bench_core.write_rows(ROWS, results)
+    report.write_text(bench_report.render(REPORT, ROWS), encoding="utf-8")
     readme.write_text("Haiku with the kb: $0.029 and 10 s per question (Claude Code 2.1.290, 271 topics).\n", encoding="utf-8")
     monkeypatch.setattr(bm, "RESULTS", results)
     monkeypatch.setattr(bm, "REPORT", report)
@@ -49,31 +49,31 @@ def test_check_fails_on_a_table_that_disagrees(tmp_path, monkeypatch, capsys):
 
 
 def test_every_readme_number_must_match_a_row():
-    assert bm.readme_misses("costs $0.029 and 10 s, 271 topics, on 2.1.290; Haiku 4.5, Apache-2.0", ROWS) == []
-    assert bm.readme_misses("costs $0.29 per question", ROWS) == ["$0.29"]
-    assert bm.readme_misses("about 28k tokens", ROWS) == ["28k"]
-    assert bm.readme_misses("3.8M characters", ROWS) == ["3.8M"]  # a row of 9.8 is not 3.8M
+    assert bench_report.readme_misses("costs $0.029 and 10 s, 271 topics, on 2.1.290; Haiku 4.5, Apache-2.0", ROWS) == []
+    assert bench_report.readme_misses("costs $0.29 per question", ROWS) == ["$0.29"]
+    assert bench_report.readme_misses("about 28k tokens", ROWS) == ["28k"]
+    assert bench_report.readme_misses("3.8M characters", ROWS) == ["3.8M"]  # a row of 9.8 is not 3.8M
 
 
 def test_the_committed_report_and_readme_agree_with_the_results():
-    rows = bm.read_rows()
+    rows = bench_core.read_rows()
     assert rows, "kb/_self/reports/benchmarks.csv is empty"
     text = bm.REPORT.read_text(encoding="utf-8")
-    assert bm.render(text, rows) == text, "python3 _tools/benchmarks.py report rewrites the tables"
-    assert bm.readme_misses(bm.README.read_text(encoding="utf-8"), rows) == []
+    assert bench_report.render(text, rows) == text, "python3 _tools/benchmarks.py report rewrites the tables"
+    assert bench_report.readme_misses(bm.README.read_text(encoding="utf-8"), rows) == []
 
 
 def test_the_report_names_every_scenario_and_its_command():
     text = bm.REPORT.read_text(encoding="utf-8")
     for name, (section, _) in bm.SCENARIOS.items():
         assert f"python3 _tools/benchmarks.py run {name}`" in text, name
-    for m in bm.BLOCK.finditer(text):
+    for m in bench_report.BLOCK.finditer(text):
         scen = m.group(3).split()[0] if m.group(3).strip() else ""
-        assert m.group(2) == "spend" or scen in bm.SCENARIOS or any(r["scenario"] == scen for r in bm.read_rows()), scen
+        assert m.group(2) == "spend" or scen in bm.SCENARIOS or any(r["scenario"] == scen for r in bench_core.read_rows()), scen
 
 
 def test_results_rows_are_complete():
-    for r in bm.read_rows():
+    for r in bench_core.read_rows():
         assert r["scenario"] and r["record"] and r["metric"], r
         assert re.fullmatch(r"\d{4}-\d{2}-\d{2}|", r["date"]), r
 
@@ -93,7 +93,7 @@ def test_every_claude_run_turns_hooks_off():
 
 def test_merge_replaces_a_scenario_record():
     new = [dict(ROWS[1], value="0.03")]
-    merged = bm.merge_rows(ROWS, new)
+    merged = bench_core.merge_rows(ROWS, new)
     assert [r["value"] for r in merged if r["record"] == "2026-09-28"] == ["0.03"]
     assert merged[0] == ROWS[0]
 
@@ -108,7 +108,7 @@ def test_isolate_turns_the_query_log_down_and_points_origin_at_a_local_bare_repo
     repo.git("init", "-q", "-b", "main")
     repo.git("remote", "add", "origin", "git@gitlab.example.com:team/kb.git")
     bare = tmp_path / "o.git"
-    bm.isolate(repo.path, "local", bare)
+    bench_core.isolate(repo.path, "local", bare)
     assert json.loads((Path(repo.path) / "_private" / "querylog.json").read_text(encoding="utf-8"))["mode"] == "local"
     assert repo.git("remote", "get-url", "origin").strip() == str(bare)
 
@@ -120,7 +120,7 @@ def test_plugin_copy_sends_every_hook_to_the_scratch_data_directory(tmp_path):
         "Stop": [{"hooks": [{"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/querylog.py capture"}]}],
         "SessionEnd": [{"hooks": [{"type": "command", "command": "sh x launch"}]}]}}), encoding="utf-8")
     data = tmp_path / "data"
-    dest = bm.plugin_copy(src, tmp_path / "copy", data)
+    dest = bench_core.plugin_copy(src, tmp_path / "copy", data)
     spec = json.loads((dest / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     cmds = [h["command"] for g in spec["hooks"].values() for x in g for h in x["hooks"]]
     assert cmds and all(c.startswith(f"CLAUDE_PLUGIN_DATA='{data}' ") for c in cmds)
@@ -143,17 +143,17 @@ def test_transcript_requests_are_counted_once(tmp_path):
     ]
     f = tmp_path / "agent-1.jsonl"
     f.write_text("\n".join(json.dumps(x) for x in lines) + "\nnot json\n", encoding="utf-8")
-    reqs = bm._requests(f)
-    s = bm.usage_sum(reqs)
+    reqs = bench_core.read_requests(f)
+    s = bench_core.usage_sum(reqs)
     assert (s["requests"], s["start_ctx"], s["input"], s["out"]) == (2, 3903, 3903 + 4010, 100)
-    assert [t for r in reqs for t in r["tools"]] == ["mcp__kb__kb_pack"] and bm.span_s(reqs) == 6.0
-    assert round(bm.est_cost("haiku", s), 6) == round((13 * 1 + 4000 * 1.25 + 3900 * 0.1 + 100 * 5) / 1e6, 6)
+    assert [t for r in reqs for t in r["tools"]] == ["mcp__kb__kb_pack"] and bench_core.span_s(reqs) == 6.0
+    assert round(bench_core.est_cost("haiku", s), 6) == round((13 * 1 + 4000 * 1.25 + 3900 * 0.1 + 100 * 5) / 1e6, 6)
 
 
 def test_the_shims_are_executable_scripts(tmp_path):
-    d = bm.shim_dir(tmp_path / "log", tmp_path / "log.jsonl")
+    d = bench_core.shim_dir(tmp_path / "log", tmp_path / "log.jsonl")
     assert "--output-format" in (d / "claude").read_text(encoding="utf-8")
-    d = bm.shim_dir(tmp_path / "fail")
+    d = bench_core.shim_dir(tmp_path / "fail")
     assert (d / "claude").read_text(encoding="utf-8").startswith("#!/bin/sh\n")
     if os.name == "nt" and not shutil.which("sh"):  # PowerShell or cmd: Git for Windows puts no usr/bin tool on PATH
         pytest.skip("no sh on PATH (Windows without Git Bash) to run the failing shim")
@@ -178,12 +178,12 @@ def _fake_real(where):
 def test_the_shim_is_the_claude_that_path_resolves_and_runs(tmp_path):
     # Windows resolves a command only by a PATHEXT extension: an extensionless shim is skipped and the real claude
     # further down PATH runs instead, so which() must find the shim itself, and running what it found runs the shim
-    fail = bm.shim_dir(tmp_path / "fail")
+    fail = bench_core.shim_dir(tmp_path / "fail")
     found = shutil.which("claude", path=str(fail))
     assert found and Path(found).parent == fail
     assert subprocess.run([found, "-p"], input="", capture_output=True).returncode == 1
     log = tmp_path / "log.jsonl"
-    sd = bm.shim_dir(tmp_path / "log", log, real=str(_fake_real(tmp_path / "real")))
+    sd = bench_core.shim_dir(tmp_path / "log", log, real=str(_fake_real(tmp_path / "real")))
     found = shutil.which("claude", path=str(sd))
     assert found and Path(found).parent == sd
     p = subprocess.run([found, "-p", "--model", "haiku", "--output-format", "text"], input='{"i": 1}',
@@ -196,7 +196,7 @@ def test_the_shim_is_the_claude_that_path_resolves_and_runs(tmp_path):
 def test_a_scenario_without_sh_is_skipped_with_the_reason(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(bm.shutil, "which", lambda *a, **k: None)
     for scenario in (bm.s_kbpy, bm.s_querylog_hooks):
-        with pytest.raises(bm.Skip, match="no sh on PATH"):
+        with pytest.raises(bench_core.Skip, match="no sh on PATH"):
             scenario(None)
 
     class FakeBench:  # no Bench: its start asks the real claude for its version
@@ -207,12 +207,12 @@ def test_a_scenario_without_sh_is_skipped_with_the_reason(tmp_path, monkeypatch,
             pass
 
     monkeypatch.setattr(bm, "Bench", FakeBench)
-    monkeypatch.setattr(bm, "RAW", {})
+    monkeypatch.setitem(bench_core.RAW, "path", None)
     monkeypatch.setenv("BENCH_SCRATCH", str(tmp_path / "scratch"))
     out = tmp_path / "results.csv"
     assert bm.main(["run", "kbpy", "--out", str(out)]) == 0
     assert "kbpy: skipped: no sh on PATH" in capsys.readouterr().out
-    assert bm.read_rows(out) == []
+    assert bench_core.read_rows(out) == []
 
 
 # ---- route-by-verdict
@@ -262,7 +262,7 @@ def _run(cfg, scen, cost, route=(), wall=10.0):
 
 
 def _bench(runs):
-    b = bm.Bench.__new__(bm.Bench)  # no claude call: the record's identity is planted
+    b = bench_core.Bench.__new__(bench_core.Bench)  # no claude call: the record's identity is planted
     b.rows, b.reps, b.date, b.record, b.commit, b.cc, b.topics = [], 1, "2026-09-29", "2026-09-29", "abc1234", "2.1.290", "280"
     seen = []
     b.bench = lambda cfgs, scens, reps, tag, parallel=False: seen.append((cfgs, scens, reps, tag, parallel)) or runs
@@ -285,7 +285,7 @@ def test_the_scenario_records_each_cases_route_arms_and_bar():
     assert got[("s1_fact", "router-pinned", "bar")] == "holds" and ("s1_fact", "router-pinned", "limit_ratio") not in got
     assert got[("s5_none", "web-sonnet-5-5", "cost")] == 0.05
     assert {r["scenario"] for r in b.rows} == {"route-by-verdict"}
-    assert "0.91x" in bm.table(b.rows, "route-by-verdict", ["limit_ratio"], cases=["s5_none"])
+    assert "0.91x" in bench_report.table(b.rows, "route-by-verdict", ["limit_ratio"], cases=["s5_none"])
 
 
 def test_the_scenario_says_no_data_when_an_arm_failed():
@@ -399,19 +399,19 @@ def test_navigation_run_takes_the_answer_from_a_fake_claude(tmp_path, monkeypatc
         return subprocess.CompletedProcess(argv, 0, _nav_stream([("Read", {"file_path": "_tools/kbgit.py"})], RIGHT["N2"]), "")
 
     monkeypatch.setattr(bm.subprocess, "run", fake)
-    monkeypatch.setattr(bm, "RAW", {})
+    monkeypatch.setitem(bench_core.RAW, "path", None)
     for k in ("usd", "input", "out", "runs"):
-        monkeypatch.setitem(bm.SPEND, k, 0)
+        monkeypatch.setitem(bench_core.SPEND, k, 0)
     r = bm.nav_run(bm.nav_argv(), "question", tmp_path / "navigation")
     assert r["answer"] == RIGHT["N2"] and r["files_read"] == ["_tools/kbgit.py"]
     assert seen["input"] == "question" and seen["cwd"] == str(tmp_path / "navigation") and _hooks_off(seen["argv"])
-    assert "CLAUDE_PLUGIN_ROOT" not in seen["env"] and bm.SPEND["runs"] == 1
+    assert "CLAUDE_PLUGIN_ROOT" not in seen["env"] and bench_core.SPEND["runs"] == 1
     monkeypatch.setattr(bm.subprocess, "run", lambda argv, **kw: subprocess.CompletedProcess(argv, 1, "", "boom"))
     assert bm.nav_run(bm.nav_argv(), "q", tmp_path)["error"] == "no result event: boom"
 
 
 def _nav_bench(tmp_path, arm="before", reps=1):
-    b = bm.Bench.__new__(bm.Bench)  # no claude call: the record's identity is planted
+    b = bench_core.Bench.__new__(bench_core.Bench)  # no claude call: the record's identity is planted
     b.rows, b.reps, b.date, b.record, b.commit, b.cc, b.topics = [], reps, "2026-09-30", "2026-09-30", "abc1234", "2.1.290", "280"
     b.arm = arm
     b.clone = lambda name, mode="off", **kw: tmp_path / name
@@ -458,7 +458,7 @@ def test_navigation_arm_defaults_and_three_runs_are_one_row_each(tmp_path, monke
                                                                              ("current", "files_read", 2, 3)}
 
 
-class _FakeBench(bm.Bench):
+class _FakeBench(bench_core.Bench):
     def __init__(self, scratch, reps):
         self.scratch, self.reps, self.rows, self.registered, self.arm = Path(scratch), reps, [], [], ""
         self.date = self.record = "2026-09-30"
@@ -471,24 +471,24 @@ def test_run_navigation_replaces_only_the_named_arms_rows(tmp_path, monkeypatch)
     def scenario(b):
         calls.append(b.arm)
         b.row("navigation", "N1", b.arm, "turns", len(calls), 1)
-        bm.spent(1.0, 100, 10)
+        bench_core.spent(1.0, 100, 10)
 
     monkeypatch.setattr(bm, "Bench", _FakeBench)
-    monkeypatch.setattr(bm, "RAW", {})
+    monkeypatch.setitem(bench_core.RAW, "path", None)
     monkeypatch.setitem(bm.SCENARIOS, "navigation", ("Finding the code", scenario))
     monkeypatch.setenv("BENCH_SCRATCH", str(tmp_path / "scratch"))
     for k in ("usd", "input", "out", "runs"):
-        monkeypatch.setitem(bm.SPEND, k, 0)
+        monkeypatch.setitem(bench_core.SPEND, k, 0)
     out = tmp_path / "results.csv"
     for arm in ("before", "after", "before"):
         assert bm.main(["run", "navigation", "--arm", arm, "--out", str(out)]) == 0
     assert bm.main(["run", "navigation", "--out", str(out)]) == 0
     assert calls == ["before", "after", "before", "current"]  # the default arm is current
-    rows = bm.read_rows(out)
+    rows = bench_core.read_rows(out)
     turns = {r["arm"]: r["value"] for r in rows if r["metric"] == "turns"}
     assert turns == {"before": "3", "after": "2", "current": "4"}  # the second `before` replaced the first
     assert sorted(r["arm"] for r in rows if r["metric"] == "spend_usd") == ["after", "before", "current"]
-    assert "| navigation | 2026-09-30 | 3 | 300 | 30 | $3.00 |" in bm.spend_table(rows)  # one record: every arm's spend
+    assert "| navigation | 2026-09-30 | 3 | 300 | 30 | $3.00 |" in bench_report.spend_table(rows)  # one record: every arm's spend
     old = [dict(r, scenario="router") for r in rows if r["arm"] == "before"]
     new = [dict(r, scenario="router", arm="after") for r in rows if r["arm"] == "before"]
-    assert bm.merge_rows(old, new) == new  # a scenario that is not ARMED is replaced whole, whatever its arms
+    assert bench_core.merge_rows(old, new) == new  # a scenario that is not ARMED is replaced whole, whatever its arms
