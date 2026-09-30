@@ -1,0 +1,17 @@
+{
+  "id": "BG-prx3jw34",
+  "kind": "bug",
+  "title": "kb_ask.py's headless researcher calls the docs servers directly and bypasses the 7-day live-docs cache",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_ask.py's researcher run (claude_argv with tools) gets the kb server's cached docs_search and docs_fetch instead of the direct docs-server tools of the docs plugin's .mcp.json, as ql_research.research_argv does, so a repeated live-docs search within 7 days makes no call to the docs server",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'mcp__kb__docs_search' in open('_tools/kb_ask.py',encoding='utf-8').read() else 1)"
+    ]
+  }
+}
