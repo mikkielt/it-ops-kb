@@ -291,14 +291,34 @@ def _strings(v, path):
             yield from _strings(x, f"{path}[{n}]")
 
 
-def items_holding_names(bl, pieces=None):
+def project_paths(root):
+    """The project's own repository paths, lower case, from the git remotes' URLs: `namespace/project` and its
+    URL-encoded `namespace%2fproject`. An item may spell them although the namespace can be a user's name."""
+    try:
+        r = subprocess.run(["git", "-C", str(root), "remote", "-v"], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return set()
+    out = set()
+    for url in {line.split()[1] for line in r.stdout.splitlines() if len(line.split()) >= 2}:
+        m = re.match(r"(?:[a-z+]+://(?:[^@/]+@)?[^/]+/|[^@/:]+@[^:/]+:)(.+?)(?:\.git)?/?$", url, re.I)
+        if m and "/" in m.group(1):
+            path = m.group(1).lower()
+            out |= {path, path.replace("/", "%2f")}
+    return out
+
+
+def items_holding_names(bl, pieces=None, exempt=None):
     """{id: [(field path, kind)]} of the items whose JSON holds a piece of this host's or user's name, matched
-    case-insensitively anywhere in a string."""
+    case-insensitively anywhere in a string outside the project's own repository paths (`exempt`, by default
+    project_paths)."""
     pieces = host_user_pieces() if pieces is None else pieces
+    exempt = sorted(project_paths(bl.root) if exempt is None and pieces else exempt or (), key=len, reverse=True)
     found = {}
     for iid, it in bl.items.items() if pieces else ():
         for path, text in _strings(it, ""):
             low = text.lower()
+            for e in exempt:
+                low = low.replace(e, " ")
             for kind in sorted({k for p, k in pieces.items() if p in low}):
                 hit = (path or "(a key)", kind)
                 if hit not in found.get(iid, []):
