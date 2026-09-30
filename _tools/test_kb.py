@@ -894,13 +894,19 @@ class TestRawReadNudge:
              "tail -20 kb/public/x/y.md", "grep -n LAPS kb/public/windows/laps.md", "grep -in laps kb/public/windows/laps.md",
              "cat kb/public/_gaps.md", "cat kb/acme/_gaps.md", "cat kb/acme/net/vpn.md",
              "cd /work/it-ops-kb && cat /work/it-ops-kb/kb/public/x/y.md | head -5", "FOO=1 cat kb/public/x/y.md",
-             "git status\ncat kb/public/x/y.md"]
+             "git status\ncat kb/public/x/y.md", "sed -ne 20,30p kb/public/x/y.md", "sed --quiet 5p kb/public/x/y.md",
+             "sed -E -n '/i/p' kb/public/x/y.md", "sed -n -e 1p kb/public/x/y.md", "sed -e i -n kb/public/x/y.md"]
     SILENT = ["ls kb/public/claude", "cat README.md", "cat _tools/kb_hook.py", "cat kb/_self/backlog.md",
               "cat kb/public/_sources.csv", "grep -rn LAPS kb/public", "grep LAPS kb/public/windows/laps.md",
               "sed -i s/a/b/ kb/public/x/y.md", "sed s/a/b/ kb/public/x/y.md", "cat notes > kb/public/x/y.md",
               "cat notes >> kb/public/x/y.md", "python3 _tools/rag.py show kb/public/claude/hooks.md:23 -n 30",
               "python3 _tools/rag.py search \"laps\" --index", "git add kb/public/x/y.md", "wc -l kb/public/x/y.md",
-              "echo cat kb/public/x/y.md", "cat \"kb/public/x/y.md", "", "   "]
+              "echo cat kb/public/x/y.md", "cat \"kb/public/x/y.md", "", "   ",
+             "sed -in s/a/b/p kb/public/x/y.md", "sed -i -n 's/a/b/p' kb/public/x.md", "sed -n -i s/a/b/p kb/public/x/y.md",
+             "sed -ni s/a/b/p kb/public/x/y.md", "sed -n -i.bak s/a/b/p kb/public/x/y.md",
+             "sed -n --in-place s/a/b/p kb/public/x/y.md", "sed --in-place=.bak -n s/a/b/p kb/public/x/y.md",
+             "sed --quiet --in-place s/a/b/p kb/public/x/y.md", "sed -n -I '' s/a/b/p kb/public/x/y.md",
+             "sed -Eni s/a/b/p kb/public/x/y.md"]
 
     @staticmethod
     def event(command, **extra):
