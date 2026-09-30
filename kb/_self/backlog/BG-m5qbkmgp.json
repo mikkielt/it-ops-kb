@@ -1,0 +1,22 @@
+{
+  "id": "BG-m5qbkmgp",
+  "kind": "bug",
+  "title": "project_paths misses an scp-style remote without a user and can crash on a non-ASCII remote",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "backlog.project_paths reads host:group/project remotes (no user) and decodes git's output as UTF-8 with replacement, so a non-ASCII remote never crashes backlog.py check. Found by the SP-2agxqrrv review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import backlog as b; d = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', d]); subprocess.run(['git', '-C', d, 'remote', 'add', 'o', 'gitlab.example.com:grp/proj.git']); sys.exit(0 if 'grp/proj' in b.project_paths(d) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

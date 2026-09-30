@@ -1,0 +1,23 @@
+{
+  "id": "BG-72dbkic3",
+  "kind": "bug",
+  "title": "The name check refuses ordinary kb text on a CI shell runner or a Windows container account",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The account and host names CI gives every machine (gitlab-runner on a shell executor, ContainerAdministrator and ContainerUser in Windows containers, a Kubernetes pod's random 5-character suffix) give no name piece, so backlog.py check and the push gate never refuse kb text such as a gitlab-runner path there. Found by the SP-2agxqrrv review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import backlog as b; sys.exit(0 if not b.name_pieces('gitlab-runner') and not b.name_pieces('ContainerAdministrator') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}
