@@ -2,7 +2,7 @@
   "id": "TK-vzcpzdjf",
   "kind": "task",
   "title": "check reports touches naming a file git deleted",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-7atbtpz5",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-vzcpzdjf"
+  "evidence": {
+    "commit": "0f983bbfc2b92b5aa41336f0b3793a3597c9d66e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_stale_touches"
+        ],
+        "exit": 0,
+        "sha256": "cc8044ffc5cbf0ad"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "6351e1f331153263"
+      }
+    ]
+  }
 }
