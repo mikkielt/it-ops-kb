@@ -2,7 +2,7 @@
   "id": "TK-vrvthtny",
   "kind": "task",
   "title": "Run the environment setup on a temporary clean local account and write the report",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-jqa24js3",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,27 @@
     "kb/_self/map.csv",
     "kb/_self/README.md"
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "53b8052c3f9eca524ac402b552ee8d59812f1c83",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t);assert not re.search(r'(?i)stowarzyszenie|avanga|ANW-PC', t)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }

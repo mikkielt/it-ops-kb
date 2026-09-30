@@ -2,7 +2,7 @@
   "id": "ST-jqa24js3",
   "kind": "story",
   "title": "A clean Windows 11 host goes from no Python to a passing /kb-setup, on record",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-hlfwfcx6",
   "priority": "P2",
@@ -57,5 +57,27 @@
     "python/windows-python-install",
     "windows/windows-sandbox"
   ],
-  "notes": "Windows Sandbox (the earlier gate answer) is off on this host and needs a reboot; a temporary local standard account is the clean profile an unattended session can make. The Claude Code sign-in, MCP registration and calls, and the query log question stay out of the run."
+  "notes": "Windows Sandbox (the earlier gate answer) is off on this host and needs a reboot; a temporary local standard account is the clean profile an unattended session can make. The Claude Code sign-in, MCP registration and calls, and the query log question stay out of the run.",
+  "evidence": {
+    "commit": "53b8052c3f9eca524ac402b552ee8d59812f1c83",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t);assert not re.search(r'(?i)stowarzyszenie|avanga|ANW-PC', t)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "58b50a0f34d098b9"
+      }
+    ]
+  }
 }
