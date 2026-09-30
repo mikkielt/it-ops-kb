@@ -104,7 +104,7 @@ def host_path(url):
 
 
 def request_outcome(status=None, error=None, body_len=None, url=None, final_url=None, limit=None):
-    """The outcome class of one HTTP request made by a tool: facts only (querylog.md, Fetch outcomes)."""
+    """The outcome class of one HTTP request made by a tool: facts only (querylog.md, Surfaces)."""
     if error is not None:
         return "error"
     if final_url and url and host_path(final_url)[0] != host_path(url)[0]:
@@ -259,7 +259,7 @@ def fetch_target(tool, args):
 
 
 def fetch_outcome(tool, ok, event, host):
-    """The outcome class of a hook-seen fetch: facts only, else `unknown` (querylog.md, Fetch outcomes)."""
+    """The outcome class of a hook-seen fetch: facts only, else `unknown` (querylog.md, Surfaces)."""
     if not ok:
         m = STATUS.search(str(event.get("error") or ""))
         return f"http-{m.group(1)}" if m else "error"
