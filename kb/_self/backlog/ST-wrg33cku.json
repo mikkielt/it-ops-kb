@@ -2,7 +2,7 @@
   "id": "ST-wrg33cku",
   "kind": "story",
   "title": "kb-research and kb-refresh cite content-rules sections, not whole files",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P1",
@@ -21,5 +21,18 @@
     ".claude/skills/kb-research/SKILL.md",
     ".claude/skills/kb-refresh/SKILL.md"
   ],
-  "claimed_by": "worker-wrg33cku"
+  "evidence": {
+    "commit": "e1f5b2f3d349619601dbb4df57c82e3631793354",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }

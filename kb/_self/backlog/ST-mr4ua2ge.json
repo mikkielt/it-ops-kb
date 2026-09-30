@@ -2,7 +2,7 @@
   "id": "ST-mr4ua2ge",
   "kind": "story",
   "title": "kb-backlog names the runbook sections it needs, not the whole runbook",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P1",
@@ -20,5 +20,18 @@
   "touches": [
     ".claude/skills/kb-backlog/SKILL.md"
   ],
-  "claimed_by": "worker-mr4ua2ge"
+  "evidence": {
+    "commit": "e1f5b2f3d349619601dbb4df57c82e3631793354",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
