@@ -1,0 +1,47 @@
+{
+  "id": "TK-zutzzklq",
+  "kind": "task",
+  "title": "red-pipeline and the revert check read the newest main pipeline where a job ran",
+  "status": "doing",
+  "parent": "BG-hddn7or2",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "ql_deliver.job_ran and RAN_AND_FAILED (script_failure, job_execution_timeout, stuck_or_timeout_failure) decide which jobs ran and which failed; backlog.py red-pipeline reads the newest finished pipeline of main in which a job ran (the newest finished one only when none did), and --job NAME reads the newest one in which that job ran; a filed bug's repro is red-pipeline --status --job <its first failed job>, so it fails until that job passes again, not until any later push; ql_deliver.ci_pipeline reads the newest pipeline of the commit where a job ran; kb/_self/backlog.md and querylog.md say so; tests plant a red started pipeline followed by newer unstarted ones and a timed-out job",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "red_pipeline_reads_a_pipeline_where_a_job_ran"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestJobVerdict"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestNoGateJobs"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/ql_deliver.py",
+    "_tools/test_backlog.py",
+    "_tools/test_querylog.py",
+    "_tools/test_querylog_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "it-ops-kb-perf"
+}
