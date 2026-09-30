@@ -2,7 +2,7 @@
   "id": "TK-u4f5ba7a",
   "kind": "task",
   "title": "Write kb/_self/code.md and map it",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ef2tkepv",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     "kb/_self/README.md",
     "kb/_self/map.csv",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "worker-u4f5ba7a"
 }
