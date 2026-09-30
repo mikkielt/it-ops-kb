@@ -338,6 +338,23 @@ def test_check_warns_docs_in_later_task(mapped):
     assert code == 0 and "warnings=0" in out, out
 
 
+def test_backlog_docs_skip_standard_doc(mapped):
+    """A standard doc, mapped by a pattern that covers every _tools/*.py (code.md), is no item's to carry: a tools task
+    with no code.md in any touches gets no code.md warning. Planted: its narrow doc (tools.md) missing still warns."""
+    repo, tk = mapped["repo"], mapped["tk"]
+    (repo / "kb" / "_self" / "map.csv").write_text(DOC_MAP + "kb/_self/code.md,_tools/*.py\n", encoding="utf-8",
+                                                   newline="\n")
+    commit(repo, "code map")
+    edit(repo, tk, touches=["_tools/x.py", "kb/_self/tools.md"])
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out and "kb/_self/code.md" not in out, out
+    edit(repo, tk, touches=["_tools/x.py"])
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=1" in out, out
+    assert f"{tk} “Task”: touches code whose kb/_self/map.csv docs are in no item's touches: kb/_self/tools.md " in out, out
+    assert "kb/_self/code.md" not in out, out
+
+
 def test_task_needs_parent_and_touches(repo):
     b(repo, "new", "epic", "--title", "E", "--goal", "g")
     code, out = b(repo, "new", "task", "--title", "Orphan", "--goal", "g")
