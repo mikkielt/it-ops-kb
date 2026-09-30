@@ -2,7 +2,7 @@
   "id": "BG-kcnlmw4j",
   "kind": "bug",
   "title": "Knowledge state counts a conflict entry closed as not a source disagreement as open",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ufr3qnff",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-kcnlmw4j"
 }
