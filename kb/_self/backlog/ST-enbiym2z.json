@@ -5,5 +5,15 @@
   "status": "draft",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py start (and check for a planned sprint) refuses a task whose touches are only kb/_self docs that kb/_self/map.csv maps to the code of a task it depends on, naming both, since the sync gate's selfdoc stale needs code and its docs in one range; it answers SP-rks3vx5g, where TK-63t2p7ix, TK-tmkbhvez and TK-i7lajn3h were planned that way and dropped, and check warned for one of them (BG-iafrnmc3 is the sibling blind spot)"
+  "goal": "backlog.py start (and check for a planned sprint) refuses a task whose touches are only kb/_self docs that kb/_self/map.csv maps to the code of a task it depends on, naming both, since the sync gate's selfdoc stale needs code and its docs in one range; it answers SP-rks3vx5g, where TK-63t2p7ix, TK-tmkbhvez and TK-i7lajn3h were planned that way and dropped, and check warned for one of them (BG-iafrnmc3 is the sibling blind spot)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_docs_after_code"
+      ]
+    }
+  ]
 }
