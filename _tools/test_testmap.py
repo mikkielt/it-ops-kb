@@ -145,6 +145,17 @@ def test_testmap_review_gaps_repository_scans_reach_every_change():
     assert set(testmap.TOOL_SCANS) <= set(testmap.select(["_tools/kbroot.py"])[0])
 
 
+def test_a_tool_change_selects_the_tests_that_read_every_module_by_glob(monkeypatch):
+    """Planted: a module one test imports, and test_layout.py, which globs every module and so reaches none by the graph;
+    the declared glob readers (TOOL_SCANS) select it, and without that declaration the graph alone misses it."""
+    layout, name = "_tools/test_layout.py", "zz_" + "planted"  # built at run time: a literal would make this file reach it
+    assert layout in testmap.TOOL_SCANS and layout in testmap.select(["_tools/kbfacts.py"])[0]
+    monkeypatch.setattr(testmap, "graph", lambda: ({"test_x.py": {name}, "test_layout.py": set()}, {name: set()}))
+    assert layout in testmap.select([f"_tools/{name}.py"])[0]
+    monkeypatch.setattr(testmap, "TOOL_SCANS", [n for n in testmap.TOOL_SCANS if n != layout])
+    assert layout not in testmap.select([f"_tools/{name}.py"])[0]
+
+
 def test_testmap_review_gaps_a_deleted_test_file_selects_no_missing_path(tmp_path):
     gone = "_tools/test_" + "long_gone.py"  # built at run time, as a deleted file's name would arrive from git
     sel, why = testmap.select([gone])
