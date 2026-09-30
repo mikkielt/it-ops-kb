@@ -2,7 +2,7 @@
   "id": "BG-zxezb2ra",
   "kind": "bug",
   "title": "backlog.py close leaves depends_on links to the items it deletes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   ],
   "depends_on": [
     "BG-4qjbbaei"
-  ]
+  ],
+  "claimed_by": "sprint-4fbfzobr-w3"
 }
