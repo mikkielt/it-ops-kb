@@ -5,6 +5,9 @@
                    keeps authors and messages, and is the same when computed twice.
   TestPublish      (marker git) publish to a bare public remote: a note without one, a first push, a fast-forward, a
                    refusal when the public branch is not an ancestor, and --rewrite.
+  TestPublishHookLongRange (marker git) publish --hook prints one line and checks and pushes nothing when more than
+                   HOOK_BOUND commits have no cached verdict; a second run scans only the uncached commits; a corrupt
+                   cache is recomputed.
   TestPublishSafety (marker git) publish refuses, exit 1 and pushes nothing (a dry run reports the same), on a red, a
                    pending, an unreadable or a missing CI verdict of the source commit (a stubbed run), an internal
                    root, a _private path and a leaked address in a changed file; a value the public tip holds in
@@ -169,6 +172,54 @@ class TestPublishHook:
         (hooks / "pre-receive").chmod(0o755)
         assert self.hook(r) == 0
         assert "push failed:" in capsys.readouterr().out
+
+
+class TestPublishHookLongRange:
+    """The hook leaves a range with more uncached commits than kbpublic.HOOK_BOUND to a publish by hand; a publish
+    caches each commit's leak verdict, so a range is scanned once."""
+
+    def long_range(self, src, tmp_path, monkeypatch, n=6):
+        r, pub = TestPublishSafety().prepare(src, tmp_path)
+        for i in range(n):
+            commit(r, {f"kb/public/n{i}.md": f"n {i}\n"}, f"n{i}")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        monkeypatch.setattr(kbpublic, "HOOK_BOUND", 3)
+        return r, pub
+
+    def test_hook_leaves_a_long_range_to_a_publish_by_hand(self, src, tmp_path, monkeypatch, capsys):
+        r, pub = self.long_range(src, tmp_path, monkeypatch)
+        n = len(r.git("rev-list", kbpublic.project(r.rev("HEAD"), r.path)).split())  # no tip: every projected commit
+        scanned = []
+        monkeypatch.setattr(kbpublic, "leak_verdicts", lambda written, *a: scanned.append(written) or {})
+        assert kbpublic.cmd_publish_hook(ns(hook=True), r.path) == 0
+        assert capsys.readouterr().out == f"kb publish: publish by hand: {n} commits to check (python3 _tools/kbgit.py publish)\n"
+        assert pub.run_git("rev-parse", "main").returncode and not scanned  # nothing checked, nothing pushed
+        assert kbpublic.cmd_publish(ns(), r.path) == 0 and pub.rev("main")  # by hand: no bound
+
+    def test_second_run_uses_the_cache(self, src, tmp_path, monkeypatch, capsys):
+        r, pub = self.long_range(src, tmp_path, monkeypatch)
+        real, scanned = kbpublic.leak_verdicts, []
+        monkeypatch.setattr(kbpublic, "leak_verdicts", lambda written, *a: scanned.append({w[0] for w in written}) or real(written, *a))
+        assert kbpublic.cmd_publish(ns(dry_run=True), r.path) == 0 and len(scanned) == 1 and len(scanned[0]) > 3
+        capsys.readouterr()
+        assert kbpublic.cmd_publish_hook(ns(hook=True), r.path) == 0  # every verdict cached: under the bound, pushed
+        assert capsys.readouterr().out == "" and pub.rev("main") and len(scanned) == 1
+        tip = pub.rev("main")
+        head = commit(r, {"kb/public/late.md": "late\n"}, "late")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        assert kbpublic.cmd_publish(ns(), r.path) == 0 and scanned[1] == {kbpublic.project(head, r.path)}
+        names = sorted(x.name for x in Path(r.path, *kbpublic.CACHE_DIR).glob("verdicts-*.json"))
+        assert len(names) == 1 and names[0].startswith(f"verdicts-{tip}-"), names  # the file of no tip went
+
+    def test_corrupt_cache_is_recomputed(self, src, tmp_path, monkeypatch):
+        r, pub = self.long_range(src, tmp_path, monkeypatch)
+        leak = ".".join(("192", "168", "4", "9"))
+        commit(r, {"kb/public/leak.md": f"host at {leak}\n"}, "leak")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        assert kbpublic.cmd_publish(ns(dry_run=True), r.path) == 1
+        for f in Path(r.path, *kbpublic.CACHE_DIR).glob("verdicts-*.json"):
+            f.write_text("{corrupt", encoding="utf-8")
+        assert kbpublic.cmd_publish(ns(), r.path) == 1 and pub.run_git("rev-parse", "main").returncode
 
 
 class TestPublishSafety:
