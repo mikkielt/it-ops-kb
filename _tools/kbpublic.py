@@ -26,7 +26,8 @@ the same `main`, so the public home gets a projection of it:
               cause is reported, exit 1, in this order: the projection's tree holds a root whose `_root.md` says
               `visibility: internal`, or a path under a `_private` or `_cache` directory (any depth); a file the
               projection changes against the public tip (every file when there is none) has a leak-scan hit
-              (kbcommon.leak_hits, allowing _tools/tests_allowlist.txt of the projection); the integration CI verdict of
+              (kbcommon.leak_hits, allowing _tools/tests_allowlist.txt of the projection) that the tip's version of the
+              file does not already hold; the integration CI verdict of
               the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
               unverified, none, or skip when glab or gh cannot read it. Content is refused, never filtered.
   guard       a push to a public remote of a ref whose history touches a PRIVATE path is refused: the pre-push hook
@@ -283,10 +284,19 @@ def tree_refusals(proj, files, cwd):
     return res
 
 
+def file_hits(path, text, allow):
+    """[(kind, value)] of the leak scan of the file PATH with TEXT: urls are stripped except for secrets, and vendor
+    exports and snapshots (`/artifacts/`, `/_snapshots/`) are scanned for secrets only, as the tracked-file scan does."""
+    import kbcommon
+    vendored = "/artifacts/" in path or f"/{kbcommon.SNAPSHOTS}/" in path
+    hits = kbcommon.leak_hits(URL_RX.sub("", text), allow)
+    hits += [h for h in kbcommon.leak_hits(text, allow) if h[0] == "secret" and h not in hits]
+    return [h for h in hits if h[0] == "secret" or not vendored]
+
+
 def leak_refusals(proj, tip, files, cwd):
     """Causes: a leak-scan hit in a file the projection changes against the public tip TIP (every file when None).
-    Vendor exports and snapshots (`/artifacts/`, `/_snapshots/`) are scanned for secrets only, as the tracked-file scan does."""
-    import kbcommon
+    A hit whose kind and value the tip's version of the same file already holds is public already: no cause."""
     if tip is None:
         changed = files
     else:
@@ -295,11 +305,10 @@ def leak_refusals(proj, tip, files, cwd):
             return [f"git diff {tip[:12]} {proj[:12]} failed"]
         changed = [x for x in o.decode("utf-8", "replace").split("\0") if x]
     allow, res = allowlist(proj, cwd), []
+    public = blobs(tip, changed, cwd) if tip is not None else {}
     for x, text in sorted(blobs(proj, changed, cwd).items()):
-        vendored = "/artifacts/" in x or f"/{kbcommon.SNAPSHOTS}/" in x
-        hits = kbcommon.leak_hits(URL_RX.sub("", text), allow)
-        hits += [h for h in kbcommon.leak_hits(text, allow) if h[0] == "secret" and h not in hits]
-        kinds = sorted({k for k, _ in hits if k == "secret" or not vendored})
+        known = set(file_hits(x, public[x], allow)) if x in public else set()
+        kinds = sorted({k for k, v in file_hits(x, text, allow) if (k, v) not in known})
         if kinds:
             res.append(f"{x} has a leak-scan hit ({', '.join(kinds)})")
     return res

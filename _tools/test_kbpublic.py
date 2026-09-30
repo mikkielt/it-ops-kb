@@ -234,6 +234,40 @@ class TestPublishSafety:
         r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
         assert kbpublic.cmd_publish(ns(), r.path) == 0  # leak.md is not changed against the public tip: not scanned
 
+    def published_leak(self, src, tmp_path):
+        """A public tip whose _tools/test_x.py holds a GUID, published under an allowlist that is then dropped."""
+        guid = "-".join(("3f2a4c1e", "0000", "4000", "8000", "00000000abcd"))  # built here so this file has none
+        r, pub = self.prepare(src, tmp_path, {"_tools/test_x.py": f"QID = '{guid}'\n",
+                                              "_tools/tests_allowlist.txt": f"guid {guid}  # reviewed\n"})
+        assert kbpublic.cmd_publish(ns(), r.path) == 0
+        r.git("rm", "-q", "_tools/tests_allowlist.txt")
+        r.git("commit", "-q", "-m", "drop allowlist")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        return r, pub, guid
+
+    def test_leak_already_public_passes(self, src, tmp_path):
+        r, pub, guid = self.published_leak(src, tmp_path)
+        commit(r, {"_tools/test_x.py": f"QID = '{guid}'\nOTHER = 1\n"}, "change the file", remove=[])
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        assert kbpublic.cmd_publish(ns(), r.path) == 0  # the tip's version of the file holds the GUID already
+
+    def test_new_leak_in_public_file_refused(self, src, tmp_path, capsys):
+        r, pub, guid = self.published_leak(src, tmp_path)
+        tip = pub.rev("main")
+        new = "-".join(("5b1d7e2a", "0000", "4000", "8000", "00000000abcd"))
+        commit(r, {"_tools/test_x.py": f"QID = '{guid}'\nNEW = '{new}'\n"}, "add a GUID", remove=[])
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        for dry in (True, False):
+            assert kbpublic.cmd_publish(ns(dry_run=dry), r.path) == 1
+            text = capsys.readouterr().out
+            assert "_tools/test_x.py has a leak-scan hit (guid)" in text and "nothing pushed" in text
+            assert pub.rev("main") == tip
+
+    def test_leak_without_tip_refused(self, src, tmp_path, capsys):
+        guid = "-".join(("3f2a4c1e", "0000", "4000", "8000", "00000000abcd"))
+        r, pub = self.prepare(src, tmp_path, {"_tools/test_x.py": f"QID = '{guid}'\n"})
+        self.refused(r, pub, capsys, "_tools/test_x.py has a leak-scan hit (guid)")
+
 
 class TestGuard:
     def test_guard_push(self, src, tmp_path):
