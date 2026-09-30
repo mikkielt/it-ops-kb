@@ -118,7 +118,9 @@ An `S1` bug joins the active sprint when it is filed and goes to the front of `n
   - which items wait on which gate or trigger (with its question and recommendation);
   - the next item;
   - the critical path, with the number of items that can run in parallel at each step.
-  A `SessionStart` hook (`horizon --hook`) prints a short form of it, each active sprint's id, title, counts and next item id without its goal or critical path, plus what waits on a gate or trigger, at the start of every session in a clone except one `/clear` starts (matcher `startup|resume|compact|fork`).
+
+  For a planned sprint (`horizon --sprint SP`), an unanswered start gate, or one answered with anything but an approval (`approve`, `approved`, `yes`), is the operator's question, and every item waits on it. Once the operator approved it, the sprint is reported as approved, not started, with `backlog.py start SP` as the step that remains, and its items are counted as waiting on that start, not on the operator or a trigger.
+  A `SessionStart` hook (`horizon --hook`) prints a short form of it, each active sprint's id, title, counts and next item id without its goal or critical path, plus what waits on a gate, a trigger or a start (with no active sprint, the planned ones, each approved one marked approved, not started), at the start of every session in a clone except one `/clear` starts (matcher `startup|resume|compact|fork`).
 
 ## Definition of done
 

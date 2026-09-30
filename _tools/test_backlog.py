@@ -308,6 +308,52 @@ def test_horizon_splits_reachable_from_gated(sprint):
     assert "Fix or drop?" in hook["hookSpecificOutput"]["additionalContext"]
 
 
+def planned_sprint(repo):
+    """A planned sprint with a bug besides its review; its start gate is unanswered."""
+    b(repo, "new", "sprint", "--title", "Planned", "--goal", "ship c")
+    sp = item(repo, "Planned")["id"]
+    b(repo, "new", "bug", "--title", "Planned bug", "--sprint", sp, "--severity", "S3",
+      "--repro", argstr(is_file("src/c.txt")), "--goal", "c exists")
+    return sp
+
+
+def test_horizon_start_unanswered_is_the_operators_question(repo):
+    sp = planned_sprint(repo)
+    code, out = b(repo, "horizon", "--sprint", sp)
+    assert code == 0, out
+    assert "the sprint's start gate:" in out and "2 wait on the operator or a trigger" in out, out
+    assert "approved, not started" not in out and "wait on backlog.py start" not in out, out
+    # a change answer is no approval: still the operator's question (planted: an answer read as approval)
+    edit(repo, sp, gates=[dict(g, answer="change: drop the bug", by="operator") if g["id"] == "start" else g
+                          for g in item(repo, "Planned")["gates"]])
+    code, out = b(repo, "horizon", "--sprint", sp)
+    assert "the sprint's start gate:" in out and "approved, not started" not in out, out
+    code, out = b(repo, "horizon", "--sprint", sp, "--hook")
+    ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+    assert "2 wait on the operator" in ctx and "backlog.py start" not in ctx.split("Goals and")[0], ctx
+
+
+def test_horizon_start_approved_waits_on_backlog_start_not_the_operator(repo):
+    sp = planned_sprint(repo)
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    code, out = b(repo, "horizon", "--sprint", sp)
+    assert code == 0, out
+    assert f"approved, not started; run python3 _tools/backlog.py start {sp}" in out, out
+    assert f"2 wait on backlog.py start {sp}; 0 wait on the operator or a trigger" in out, out
+    assert "Approve this sprint" not in out, out
+    code, out = b(repo, "horizon", "--sprint", sp, "--hook")
+    ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+    assert "2 wait on backlog.py start" in ctx and "wait on the operator" not in ctx, ctx
+    assert "approved, not started" in ctx and "Approve this sprint" not in ctx, ctx
+    code, out = b(repo, "horizon", "--hook")  # no active sprint: the planned list names the approval
+    assert "(approved, not started)" in json.loads(out)["systemMessage"], out
+    # an item's own gate is still the operator's, inside an approved sprint
+    bg = item(repo, "Planned bug")["id"]
+    edit(repo, bg, gates=[{"id": "G1", "kind": "blocking", "question": "Fix or drop?", "recommendation": "fix"}])
+    code, out = b(repo, "horizon", "--sprint", sp)
+    assert "1 wait on backlog.py start" in out and "1 wait on the operator or a trigger" in out, out
+
+
 HOOK_LIMIT = 1000  # characters of the SessionStart hook's whole stdout, which every session in a clone reads
 
 
