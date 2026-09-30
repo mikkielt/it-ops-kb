@@ -2,7 +2,7 @@
   "id": "TK-pwrigavm",
   "kind": "task",
   "title": "Move the harness and report tables to bench_core.py and bench_report.py",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-5d5ddbha",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,27 @@
     "_tools/test_kbpublic.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-pwrigavm"
+  "evidence": {
+    "commit": "579696bb9740a80f17a62cd55ce2a671e8579f92",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "fc36551b867e9026"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
