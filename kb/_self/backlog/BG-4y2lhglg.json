@@ -1,0 +1,25 @@
+{
+  "id": "BG-4y2lhglg",
+  "kind": "bug",
+  "title": "kb-sprint run and kb-item claim without --commit, so land stops at clean tree",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "/kb-sprint run step 2 and /kb-item step 1 claim with backlog.py claim --commit --trailer (and push the claim before the worker starts), matching kb/_self/backlog.md Working on items, so land does not stop at clean tree on uncommitted claims; review and close steps use done --commit and close --commit where they fit",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-e",
+      "claim ID --by <subagent name> --commit",
+      "--",
+      ".claude/skills/kb-sprint/SKILL.md"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md"
+  ]
+}
