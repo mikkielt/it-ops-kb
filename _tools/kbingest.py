@@ -1457,7 +1457,8 @@ class DotnetMapper(Mapper):
         """A note when a global.json in a project's folder or above it (to the worktree root, where the version probe
         runs) sets sdk.paths: the .NET 10+ host then loads an SDK from the folders it names, relative to the global.json,
         which would be the repository's own code (https://learn.microsoft.com/dotnet/core/tools/global-json, `paths`).
-        One that is not a regular file or cannot be read declines too."""
+        One that is not a regular file (a symbolic link on disk or in git's mode, as MapCtx.readable) or cannot be read
+        declines too."""
         folders = {"."}
         for proj in files:
             if proj.endswith(PROJECT_EXTS):
@@ -1468,10 +1469,11 @@ class DotnetMapper(Mapper):
         for folder in sorted(folders):
             rel = within(folder, "global.json")
             path = ctx.root / rel
-            if not path.is_symlink() and not path.exists():
+            link = rel in ctx.links or path.is_symlink()  # git's mode too: core.symlinks=false writes a plain file
+            if not link and not path.exists():
                 continue
             why = None
-            if path.is_symlink() or not path.is_file():
+            if link or not path.is_file():
                 why = "not a regular file"
             else:
                 try:

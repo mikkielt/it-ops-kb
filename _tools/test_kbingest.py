@@ -535,6 +535,30 @@ def test_kbingest_map_git_symlink_checked_out_as_file_is_not_read(tmp_path):
 
 
 @requires_git
+def test_kbingest_map_dotnet_global_json_git_symlink_is_not_a_regular_file(tmp_path):
+    """Planted: a global.json git stores as a symbolic link (mode 120000), checked out as a plain file whose text is
+    valid JSON (core.symlinks=false, as on Windows): the .NET preflight declines it from git's mode, never reads it."""
+    r = Repo(tmp_path / "sdklink")
+    Path(r.path).mkdir()
+    r.git("init", "-q", "-b", "main")
+    r.git("config", "core.symlinks", "false")
+    r.write("app/app.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\" />\n")
+    (tmp_path / "target.txt").write_text('{"sdk": {"version": "10.0.100"}}', encoding="utf-8")
+    blob = r.git("hash-object", "-w", str(tmp_path / "target.txt")).strip()
+    r.git("update-index", "--add", "--cacheinfo", f"120000,{blob},global.json")
+    r.git("add", "app/app.csproj")
+    r.git("commit", "-q", "-m", "init")
+    links = kbingest.symlinks(r.path, "HEAD")
+    assert links == {"global.json"}
+    tree = tmp_path / "tree"
+    (tree / "app").mkdir(parents=True)
+    (tree / "global.json").write_text('{"sdk": {"version": "10.0.100"}}', encoding="utf-8")  # as the checkout writes it
+    ctx = kbingest.MapCtx(tree, {}, 1, "dotnet", links)
+    assert kbingest.DotnetMapper().preflight(ctx, ["app/app.csproj"]) == \
+        "global.json: not a regular file, .NET not mapped and no dotnet command run"
+
+
+@requires_git
 def test_kbingest_map_refusals(pyrepo, tmp_path):
     kb = Path(kbingest.kbcommon.KB_DIR)
     code, text = map_run(pyrepo, kb / "public" / "map.json")
