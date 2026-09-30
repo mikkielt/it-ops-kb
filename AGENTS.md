@@ -1,6 +1,6 @@
 # AGENTS.md
 
-An offline knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: Markdown articles and CSV data in roots under `kb/` (`kb/public`, plus any a team adds), searched and checked by the stdlib Python tools in `_tools/`. This file covers lookups. **Before any change** (edit, research, refresh, census, commit, push), read `kb/_self/maintaining.md`.
+An offline knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: Markdown articles and CSV data in roots under `kb/` (`kb/public`, plus a team's own), searched and checked by stdlib Python tools in `_tools/`. **Before any change** (edit, research, refresh, census, commit, push), run `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (section "Skills that change the kb" only to pick a skill).
 
 ## Look things up: deterministic tools first
 
@@ -25,7 +25,7 @@ Three remote servers, no authentication, urls in `.claude-plugin/it-ops-kb-docs/
 
 ## Skills
 
-`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only: another project's code against the kb, and what the kb lacks). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-ingest`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`; planned work: `/kb-backlog`, `/kb-sprint`, `/kb-item`.
+`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-ingest`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`; planned work: `/kb-backlog`, `/kb-sprint`, `/kb-item`.
 
 ## Agent conduct
 

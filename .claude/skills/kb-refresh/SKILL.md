@@ -11,6 +11,7 @@ Target: $ARGUMENTS. If empty, ask which topic, directory or file. Never refresh 
 Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers). The commands are spelled out in the steps below:
 - `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
 - `python3 _tools/selfdoc.py section content-rules "Facts and tags"`
+- `python3 _tools/selfdoc.py section content-rules "Ids"` (source ids, replaced sources, CSV writing)
 - `python3 _tools/selfdoc.py section content-rules "Ledgers and retrieval data"`
 - `python3 _tools/selfdoc.py section content-rules "Licensing and privacy"`
 - `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
@@ -48,7 +49,7 @@ For every changed source, find the facts citing it: `python3 _tools/rag.py src S
 - Update the article's `retrieved_utc`, and its `status` if it changed. Then run `python3 _tools/build_index.py`: it regenerates `_coverage.csv`, the `_coverage.md` row and `used_in` (never edit those by hand).
 - A reworded or new fact needs its anchor: `python3 _tools/factdiff.py anchor --file <path>` for each file you edited (`python3 _tools/factdiff.py anchors --stale` must print `stale=0`).
 - Rewording a fact changes its doc2query key: `python3 _tools/doc2query.py stale` lists the orphaned keys; `python3 _tools/doc2query.py prune` removes their rows (regenerate only where real lookups miss, `kb/_self/doc2query.md`).
-Follow the licensing rules in `kb/_self/content-rules.md`: each source row's `reuse` class says what its text allows (quotes of 25 words or fewer from `quote`, verbatim copies only from `copy`); a new row carries `licence` and `reuse` as `/kb-add-topic` step 3 describes.
+Follow the "Licensing and privacy" section: each source row's `reuse` class says what its text allows (quotes of 25 words or fewer from `quote`, verbatim copies only from `copy`). A new row carries `licence` and `reuse`: copy an existing row's pair for the same host or repository (`python3 _tools/rag.py src <id>`), else read the licence where it is stated (the repository's LICENSE, the page footer, the terms page) and pick the class by that section. Write rows with Python's `csv` module; a new row's `used_in` and `superseded_by` are empty.
 
 ## 4. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Run `python3 .claude/skills/kb-verify/lint.py <paths you edited>`.

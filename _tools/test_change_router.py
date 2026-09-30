@@ -95,3 +95,26 @@ def test_hook_protocol():
     for data in (json.dumps({"prompt": "What is LAPS?"}), "not json"):
         p = run(data)
         assert (p.returncode, p.stdout) == (0, ""), p.stderr
+
+
+@pytest.mark.parametrize("prompt", ["add a new topic on Intune scope tags", "please improve things"])
+def test_routes_to_sections_not_the_whole_maintaining_doc(prompt):
+    """A change is sent to the "Conduct for changes" section, and the skill list only to pick a skill: never to
+    kb/_self/maintaining.md as a whole file."""
+    text = router.answer(prompt)["hookSpecificOutput"]["additionalContext"]
+    assert "maintaining.md" not in text, text
+    assert 'python3 _tools/selfdoc.py section maintaining "Conduct for changes"' in text, text
+    if "none named by the wording" in text:
+        assert 'section maintaining "Skills that change the kb"' in text, text
+
+
+def test_named_sections_exist():
+    """The sections the router and AGENTS.md name resolve with selfdoc.py (a renamed heading breaks them)."""
+    sys.path.insert(0, os.path.join(KB, "_tools"))
+    import selfdoc
+    agents = open(os.path.join(KB, "AGENTS.md"), encoding="utf-8").read()
+    assert "`kb/_self/maintaining.md`" not in agents, "AGENTS.md sends a change to the whole of maintaining.md"
+    for cmd in (router.CONDUCT, router.SKILLS):
+        heading = re.search(r'"([^"]+)"', cmd).group(1)
+        assert selfdoc.section("maintaining", heading)[0], f"no section {heading!r} in kb/_self/maintaining.md"
+        assert cmd.strip("`") in agents or heading in agents, f"AGENTS.md does not name the section {heading!r}"
