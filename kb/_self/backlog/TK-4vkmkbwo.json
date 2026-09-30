@@ -34,7 +34,10 @@
   "touches": [
     "_tools/benchmarks.py",
     "_tools/bench_*.py",
-    "_tools/test_benchmarks.py"
+    "_tools/test_benchmarks.py",
+    "_tools/test_layout.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "TK-pwrigavm"
