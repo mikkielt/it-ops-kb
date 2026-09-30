@@ -1,0 +1,19 @@
+{
+  "id": "BG-vsqfchgz",
+  "kind": "bug",
+  "title": "A red main whose only failed job never ran gets a --job repro that passes, so red-pipeline files nothing",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "red-pipeline and ql_deliver.pipeline_failure name a job in the repro (--job) only when that job ran and failed; otherwise the repro is plain --status, so a pipeline red by status with a job failed without running (ci_quota_exceeded, runner_system_failure) is still filed; a test plants it with an older pipeline where the same job passed. From the SP-z7a5c76b review.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "red_pipeline_files_a_red_status_whose_job_never_ran"
+    ]
+  }
+}

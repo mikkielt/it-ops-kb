@@ -1,0 +1,19 @@
+{
+  "id": "BG-sim2fdaa",
+  "kind": "bug",
+  "title": "red-pipeline --job reads a started-then-canceled job as passed, so a red-main bug's repro turns green",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "ql_deliver.job_ran leaves out a canceled job, and red-pipeline --job reads only a pipeline where the job ended success or failed on its own account, so a bug's repro stays failing when someone starts and cancels the job; a test plants a canceled kb-tests with started_at newer than a red one. From the SP-z7a5c76b review.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "red_pipeline_job_skips_a_canceled_run"
+    ]
+  }
+}

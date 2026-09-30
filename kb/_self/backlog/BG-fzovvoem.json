@@ -1,0 +1,19 @@
+{
+  "id": "BG-fzovvoem",
+  "kind": "bug",
+  "title": "A revert's bug can name a job whose retry passed, so its --job repro is green at once",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_deliver.pipeline_failure and backlog.red_detail pick the failed job from each job's newest attempt (ql_deliver.latest_jobs), so a job retried to success is not named in a bug's repro; a test plants a failed attempt followed by a passing retry. From the SP-z7a5c76b review.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "pipeline_failure_skips_a_retried_job"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "BG-2gpsaosi",
+  "kind": "bug",
+  "title": "red-pipeline --job on GitHub skips a run whose job list it cannot read",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "On GitHub, red-pipeline --job reads a run whose gh run view fails as unverified (exit 1 under --status), as GitLab does, instead of going on to an older run; a test fails run view for the newest run only. From the SP-z7a5c76b review.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "red_pipeline_job_github_unreadable_is_unverified"
+    ]
+  }
+}

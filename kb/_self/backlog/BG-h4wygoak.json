@@ -1,0 +1,19 @@
+{
+  "id": "BG-h4wygoak",
+  "kind": "bug",
+  "title": "red-pipeline makes up to 100 job-list calls in a row when no recent main pipeline was started",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "red-pipeline (--status, --hook and every red-main bug's repro) bounds the job-list calls it makes while looking for the newest pipeline where a job ran (a smaller page, or GitLab's jobs-per-project list filtered by ref), and a test counts the calls with 100 unstarted pipelines. From the SP-z7a5c76b review.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "red_pipeline_bounds_job_list_calls"
+    ]
+  }
+}
