@@ -1,0 +1,41 @@
+{
+  "id": "BG-nzzmq6o2",
+  "kind": "bug",
+  "title": "test_kb_mcp.py holds a literal U+2028 and U+2029, so selfdoc's tools map puts its tests at the wrong lines and test_tools_map_this_repository_parses_and_holds fails",
+  "status": "doing",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-vpk5nrrc",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "_tools/test_kb_mcp.py writes the SSE separators as escapes, so no _tools file holds a literal U+2028 or U+2029, selfdoc.check_map finds every test_kb_mcp.py test at its def line, and test_live_docs_cache_sse_splits_only_at_cr_and_lf still plants each separator",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import selfdoc;p=selfdoc.check_map(selfdoc.map_tools());sys.exit(1 if p else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "live_docs_cache"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_tools_map_this_repository_parses_and_holds"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_kb_mcp.py"
+  ],
+  "claimed_by": "mac-second"
+}
