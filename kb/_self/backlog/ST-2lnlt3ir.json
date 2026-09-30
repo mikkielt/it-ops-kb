@@ -5,5 +5,15 @@
   "status": "draft",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py new bug accepts a repro that only matches text in a file (grep, a regex over source) only with a stated reason in the item, and kb/_self/backlog.md says a repro runs the behaviour when it can. Failure it answers: SP-76inhw33's BG-qtphqxt2 repro rejected the literal '>&2', which the fix met by writing '>& 2', and BG-g6qpxe5x's repro was a regex over the test's text; neither proved the behaviour, the tests did."
+  "goal": "backlog.py new bug accepts a repro that only matches text in a file (grep, a regex over source) only with a stated reason in the item, and kb/_self/backlog.md says a repro runs the behaviour when it can. Failure it answers: SP-76inhw33's BG-qtphqxt2 repro rejected the literal '>&2', which the fix met by writing '>& 2', and BG-g6qpxe5x's repro was a regex over the test's text; neither proved the behaviour, the tests did.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "repro_needs_behaviour_or_reason"
+      ]
+    }
+  ]
 }
