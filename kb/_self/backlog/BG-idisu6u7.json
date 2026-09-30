@@ -2,7 +2,7 @@
   "id": "BG-idisu6u7",
   "kind": "bug",
   "title": "provider.request leaves gzip-encoded bodies undecoded (python.org pages anchor as not-text)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",

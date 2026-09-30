@@ -2,7 +2,7 @@
   "id": "BG-okwigoto",
   "kind": "bug",
   "title": "The digest counts a miss as fixed when its gap candidate was superseded by a no-fix eval finding",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",

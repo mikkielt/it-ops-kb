@@ -2,7 +2,7 @@
   "id": "BG-m4bpd4jm",
   "kind": "bug",
   "title": "The headless research-queue run calls the docs servers directly and bypasses the 7-day live-docs cache",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",

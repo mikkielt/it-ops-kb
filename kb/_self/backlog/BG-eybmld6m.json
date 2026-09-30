@@ -2,7 +2,7 @@
   "id": "BG-eybmld6m",
   "kind": "bug",
   "title": "The gap step files an off-kb question as a gap under an unrelated article when its pack is weak",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",

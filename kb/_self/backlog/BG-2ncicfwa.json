@@ -2,7 +2,7 @@
   "id": "BG-2ncicfwa",
   "kind": "bug",
   "title": "Research closes a gap at claim without a Resolved note, so queue exits 1",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "BG-t3fig7n4",
   "kind": "bug",
   "title": "querylog.py apply help and tools.md describe the old gap step and name a Learn and apply section that no longer exists",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P3",
