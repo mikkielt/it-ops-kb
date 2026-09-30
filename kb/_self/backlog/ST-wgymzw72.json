@@ -2,7 +2,7 @@
   "id": "ST-wgymzw72",
   "kind": "story",
   "title": "Research tasks are scheduled before the work that needs them",
-  "status": "todo",
+  "status": "dropped",
   "parent": "EP-vpb7u3us",
   "sprint": "SP-ufr3qnff",
   "priority": "P2",
@@ -48,5 +48,5 @@
   "links": [
     ".claude/skills/kb-research/SKILL.md"
   ],
-  "notes": "With 'Verdict: drop' in the report this item's check cannot pass: drop it (backlog.py drop)."
+  "notes": "With 'Verdict: drop' in the report this item's check cannot pass: drop it (backlog.py drop). Dropped: verdict drop in kb/_self/reports/backlog-briefs.md, by its measured gate: asks stay informational"
 }

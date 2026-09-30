@@ -2,7 +2,7 @@
   "id": "ST-hzja7lj4",
   "kind": "story",
   "title": "Planning skills write knowledge and order research first",
-  "status": "todo",
+  "status": "dropped",
   "parent": "EP-vpb7u3us",
   "sprint": "SP-ufr3qnff",
   "priority": "P2",
@@ -26,8 +26,5 @@
       ]
     }
   ],
-  "depends_on": [
-    "ST-u7bliqzx",
-    "ST-wgymzw72"
-  ]
+  "notes": "Dropped: verdict drop in kb/_self/reports/backlog-briefs.md; operator dropped it with its tasks"
 }

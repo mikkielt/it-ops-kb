@@ -2,7 +2,7 @@
   "id": "TK-6f5r6vyf",
   "kind": "task",
   "title": "The runbook describes knowledge, research tasks and briefs",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-hzja7lj4",
   "priority": "P2",
   "rank": 2,
@@ -27,7 +27,5 @@
   "touches": [
     "kb/_self/backlog.md"
   ],
-  "depends_on": [
-    "TK-bhwovpap"
-  ]
+  "notes": "Dropped: verdict drop in kb/_self/reports/backlog-briefs.md; operator dropped ST-hzja7lj4"
 }
