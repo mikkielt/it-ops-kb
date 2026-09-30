@@ -2,7 +2,7 @@
   "id": "ST-umxr5q32",
   "kind": "story",
   "title": "The change router is silent without a match and names a skill set once per session",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P2",
@@ -22,5 +22,6 @@
     ".claude/hooks/kb_change_router.py",
     "_tools/test_change_router.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-umxr5q32"
 }
