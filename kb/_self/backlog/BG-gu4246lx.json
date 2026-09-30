@@ -1,0 +1,20 @@
+{
+  "id": "BG-gu4246lx",
+  "kind": "bug",
+  "title": "tools.md apply --push row still describes a separate store commit",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/tools.md's querylog.py apply --push row says the run's store files, learn and apply's changes land in one commit with KB-Auto: querylog among its values, pushed once, as kb/_self/querylog.md Delivery says",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit('and committed (`KB-Auto: querylog`)' in open('kb/_self/tools.md', encoding='utf-8').read())"
+    ]
+  },
+  "touches": [
+    "kb/_self/tools.md"
+  ]
+}
