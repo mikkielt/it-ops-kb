@@ -3,6 +3,9 @@
   TestProjection   (marker git) a small repository whose history adds, edits and removes kb/_querylog: the projection
                    drops it from every tree, keeps the commits before it and their hashes, drops store-only commits,
                    keeps authors and messages, and is the same when computed twice.
+  TestProjectionReuse (marker git) the projection cache: a second projection of a longer source rewrites only the
+                   new commits and gives the shas a projection from scratch gives; a corrupt cache is the full walk; a
+                   cached projected commit missing from the object store is computed again.
   TestPublish      (marker git) publish to a bare public remote: a note without one, a first push, a fast-forward, a
                    refusal when the public branch is not an ancestor, and --rewrite.
   TestPublishHookLongRange (marker git) publish --hook prints one line and checks and pushes nothing when more than
@@ -18,7 +21,7 @@
                    public home (git config kb.publishRemote); a clone without one pushes it; the pre-push hook of a kb
                    clone refuses a plain push to the public home.
 """
-import argparse, ast, json, os, shutil
+import argparse, ast, hashlib, json, os, shutil
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -92,6 +95,58 @@ class TestProjection:
     def test_clean_history_is_its_own(self, src):
         r, shas = src
         assert kbpublic.project(shas[1], r.path) == shas[1]
+
+
+class TestProjectionReuse:
+    @staticmethod
+    def spy(monkeypatch):
+        """The source commits Projector.rewrite projects, in order."""
+        done, rewrite = [], kbpublic.Projector.rewrite
+        monkeypatch.setattr(kbpublic.Projector, "rewrite", lambda self, sha, parents: (done.append(sha), rewrite(self, sha, parents))[1])
+        return done
+
+    @staticmethod
+    def full(tip, cwd):
+        """The projection of TIP computed from scratch, without the cache."""
+        p = kbpublic.Projector(cwd)
+        try:
+            return p.project(tip)
+        finally:
+            p.close()
+
+    @staticmethod
+    def cache_file(r):
+        return Path(r.path, *kbpublic.CACHE_DIR, kbpublic.projection_cache(len(r.rev("HEAD"))))
+
+    def test_longer_source_projects_only_new_commits(self, src, monkeypatch):
+        r, shas = src
+        kbpublic.project(shas[3], r.path)
+        assert self.cache_file(r).exists()
+        done, sources = self.spy(monkeypatch), {}
+        res = kbpublic.project(shas[-1], r.path, sources)
+        assert done == shas[4:]
+        assert res == self.full(shas[-1], r.path) and kbpublic.private_commits(res, r.path) == []
+        assert sources[res] == shas[-1] and sources[shas[1]] == shas[1]
+        done.clear()
+        assert kbpublic.project(shas[-1], r.path) == res and done == []
+
+    def test_corrupt_cache_is_the_full_walk(self, src, monkeypatch):
+        r, shas = src
+        kbpublic.project(shas[-1], r.path)
+        self.cache_file(r).write_text("{corrupt", encoding="utf-8")
+        want, done = self.full(shas[-1], r.path), self.spy(monkeypatch)
+        assert kbpublic.project(shas[-1], r.path) == want and done == shas
+
+    def test_missing_projected_commit_is_recomputed(self, src, monkeypatch):
+        r, shas = src
+        res = kbpublic.project(shas[-1], r.path)
+        f = self.cache_file(r)
+        cached = json.loads(f.read_text(encoding="utf-8"))
+        cached[shas[3]] = hashlib.new("sha1" if len(shas[3]) == 40 else "sha256", b"no such commit").hexdigest()
+        f.write_text(json.dumps(cached), encoding="utf-8")
+        done = self.spy(monkeypatch)
+        assert kbpublic.project(shas[-1], r.path) == res and done == [shas[3]]
+        assert json.loads(f.read_text(encoding="utf-8"))[shas[3]] != cached[shas[3]]
 
 
 class TestPublish:
