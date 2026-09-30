@@ -343,6 +343,32 @@ def test_close_drops_relates_to(sprint):
     assert code == 0 and "errors=0" in out, out
 
 
+def test_close_drops_depends_on(sprint):
+    """An open item outside the sprint depends on a done one close deletes: the dependency is satisfied, so close
+    drops it (and the key once empty), check still passes and horizon does not count the item as waiting."""
+    repo = sprint["repo"]
+    b(repo, "new", "bug", "--title", "Later", "--severity", "S4", "--repro", argstr(is_file("src/z.txt")),
+      "--goal", "z exists")
+    later = item(repo, "Later")["id"]
+    b(repo, "new", "bug", "--title", "Other", "--severity", "S4", "--repro", argstr(is_file("src/y.txt")),
+      "--goal", "y exists")
+    other = item(repo, "Other")["id"]
+    edit(repo, later, depends_on=[sprint["bg"]], relates_to=[sprint["tk"]])
+    edit(repo, other, depends_on=[sprint["bg"], later])
+    edit(repo, sprint["bg"], status="done")
+    for iid in (sprint["st"], sprint["tk"], sprint["rv"]):
+        edit(repo, iid, status="dropped")
+    code, out = b(repo, "close", sprint["sp"])
+    assert code == 0, out
+    assert "depends_on" not in item(repo, "Later") and "relates_to" not in item(repo, "Later")
+    assert item(repo, "Other")["depends_on"] == [later]  # an open dependency stays
+    assert out.count(f"from {later} ") == 1 and f"from {other} " in out  # one line per changed item
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+    code, out = b(repo, "horizon")
+    assert code == 0 and sprint["bg"] not in out, out
+
+
 def test_goal_condition_names_checks_and_scope(sprint):
     code, out = b(sprint["repo"], "goal", sprint["tk"])
     assert f"`{argstr(is_file('src/b.txt'))}` exits 0" in out and "src/**" in out and f"backlog.py done {sprint['tk']}" in out
