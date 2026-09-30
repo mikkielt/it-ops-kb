@@ -2,7 +2,7 @@
   "id": "TK-zzfiw2od",
   "kind": "task",
   "title": "Research deterministic checks before model judgement with /kb-research",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ltkvptsz",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,17 @@
     "kb/_querylog/findings/**",
     "_tools/aliases.csv"
   ],
-  "claimed_by": "worker-zzfiw2od"
+  "evidence": {
+    "commit": "4cf5e9f642ee3aa52847456dbf02587b75b92b92",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "5bf76a1caaff223d"
+      }
+    ]
+  }
 }

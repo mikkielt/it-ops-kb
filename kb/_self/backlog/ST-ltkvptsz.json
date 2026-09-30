@@ -2,7 +2,7 @@
   "id": "ST-ltkvptsz",
   "kind": "story",
   "title": "The kb covers deterministic checks before model judgement in self-improving pipelines",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -30,5 +30,28 @@
     "query log finding F-26d83d5f6e31",
     "kb/public/_gaps.md entry under agents/agent-caching"
   ],
-  "notes": "The intake epic's detectors are deterministic rules that run before a model review; this story gives them their kb facts. The gap was filed under agents/agent-caching only because that article led the weak pack."
+  "notes": "The intake epic's detectors are deterministic rules that run before a model review; this story gives them their kb facts. The gap was filed under agents/agent-caching only because that article led the weak pack.",
+  "evidence": {
+    "commit": "4cf5e9f642ee3aa52847456dbf02587b75b92b92",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "self-improving lookup pipeline findings deterministic rules before model judgement"
+        ],
+        "exit": 0,
+        "sha256": "f032c698923a2113"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "5bf76a1caaff223d"
+      }
+    ]
+  }
 }
