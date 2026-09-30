@@ -2,7 +2,7 @@
   "id": "TK-gtdj2ixg",
   "kind": "task",
   "title": "backlog.py selectors counts the tests each -k check collects",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-7atbtpz5",
   "priority": "P2",
   "rank": 1,
@@ -26,5 +26,19 @@
   "depends_on": [
     "TK-vzcpzdjf"
   ],
-  "claimed_by": "worker-gtdj2ixg"
+  "evidence": {
+    "commit": "adafb189c2f992074f0c234dbdf9bc9c74261be7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_selectors"
+        ],
+        "exit": 0,
+        "sha256": "387c93d229d017da"
+      }
+    ]
+  }
 }
