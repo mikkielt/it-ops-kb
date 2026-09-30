@@ -387,9 +387,25 @@ def write_research(g, article, accepted, conflicts, gate, day):
         write_text(src, insert_rows(old, buf.getvalue().splitlines()))
     if accepted:
         write_text(path, text)
+        resolve_entry(g, gate, day, len(accepted), sorted({c["sid"] for c in accepted}))
     if conflicts:
         write_text(ledger, ltext)
     return sorted(set(ids))
+
+
+def resolve_entry(g, gate, day, n, sids):
+    """The `  - Resolved <day>:` note (content rules, Ledgers) under the _gaps.md entry naming gap finding `g`, once
+    research wrote facts for it: the finding goes to claim, and the queue reads a claim without that note as a closed
+    gap reappearing. Nothing when no entry names it or a note already settled it."""
+    loc = ledger_entry(gate, g)
+    if loc is None or settled(loc[2]):
+        return
+    path = loc[0]
+    lines = path.read_text(encoding="utf-8").split("\n")
+    _, end = entry_block(lines, g["id"])
+    lines[end:end] = [f"  - Resolved {day}: the query log's research added {n} fact{'s' if n != 1 else ''} from "
+                      f"{', '.join(sids)} (finding {g['id']}) (topic: {gate.topic(g['article'])})"]
+    write_text(path, "\n".join(lines))
 
 
 def research_one(g, entry, gate, research, day):

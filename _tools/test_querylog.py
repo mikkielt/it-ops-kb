@@ -3852,6 +3852,10 @@ class TestResearch:
             ("candidate-gap", "learn"), ("gap", "apply"), ("candidate-fact", "research"), ("claim", "research")]
         assert rec["observed"] == {"facts": 1, "conflicts": 1, "sources": [sid],
                                    "gate": ["fact 1: quote is not on the page"]}
+        gaps = (root / "_gaps.md").read_text(encoding="utf-8")  # the claim closes its entry by the content rules
+        (note,) = [ln for ln in gaps.split("\n") if ln.startswith("  - Resolved ")]
+        assert f"added 1 fact from {sid} (finding {GAP_ID}) (topic: windows/laps)" in note, note
+        assert ql_research.settled(ql_research.ledger_entry(gate, rec)[2])
         assert gate.indexed == 1 and ql_store.store_problems(store) == []
         first = tree(store), root_files(root)
         assert run_gap_apply(store, gate, ql_research.Researcher(1, call=calls.append, fetcher=pages)) == \

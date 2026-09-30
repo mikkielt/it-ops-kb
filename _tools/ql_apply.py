@@ -103,8 +103,8 @@ class Gate:
 
     def research_files(self, article):
         """Every file research may write for `article`, so a failed gate can put each back: the article, its root's
-        sources, conflicts and the coverage files build_index regenerates."""
-        return [self.file(article)] + [self.ledger(article, n) for n in ("_sources.csv", "_conflicts.md",
+        sources, gaps (the Resolved note), conflicts and the coverage files build_index regenerates."""
+        return [self.file(article)] + [self.ledger(article, n) for n in ("_sources.csv", "_gaps.md", "_conflicts.md",
                                                                           "_coverage.csv", "_coverage.md")]
 
     def index_and_check(self):

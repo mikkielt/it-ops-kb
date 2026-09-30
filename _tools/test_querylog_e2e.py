@@ -1180,15 +1180,8 @@ class TestAutonomousConverge:
 
     @staticmethod
     def exited(got, step):
-        """The step ran: exit 0, or for `queue` exit 1 whose only problem is a gap research closed at claim without
-        a Resolved note on its _gaps.md entry (test_autonomous_converge_queue_exits_0_after_research)."""
-        code, said = got[step]
-        if step == "queue" and code == 1:
-            problems = [ln.strip() for ln in said.splitlines() if ln.strip().startswith("problem:")]
-            known = re.compile(rf"problem: {ql_store.finding_id('gap', CONVERGE_GAP)}: closed at claim, but its entry "
-                               rf"{re.escape(GAPS)}:\d+ has no Resolved note")
-            return len(problems) == 1 and known.fullmatch(problems[0]) is not None
-        return code == 0
+        """The step ran and exited 0."""
+        return got[step][0] == 0
 
     def test_autonomous_converge_the_first_run_changes_the_kb(self):
         first = self.first
@@ -1219,8 +1212,6 @@ class TestAutonomousConverge:
         assert diff == [], diff  # the survey writes nothing and reads the pinned commit alike
         assert ql_store.store_problems(self.w.home / ql_base.STORE_REL) == []
 
-    @pytest.mark.xfail(strict=True, reason="BG-2ncicfwa: research closes a gap at claim without a Resolved note, "
-                                           "so queue reports it as a closed gap that reappears")
     def test_autonomous_converge_queue_exits_0_after_research(self):
         assert (self.first["queue"][0], self.second["queue"][0]) == (0, 0), (self.first["queue"], self.second["queue"])
 
