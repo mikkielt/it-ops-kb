@@ -6,13 +6,13 @@ argument-hint: "[epic \"<outcome>\" | \"<what to plan>\" | bug \"<defect>\" | tr
 
 # Plan the backlog
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers):
-- `python3 _tools/selfdoc.py section backlog "Levels"` (the kinds and what each needs)
-- `python3 _tools/selfdoc.py section backlog "The item file"` (the fields)
-- `python3 _tools/selfdoc.py section backlog "Priority and severity"`
-- `python3 _tools/selfdoc.py section backlog "Dependencies, gates and triggers"` (the always-blocking gates)
-- `python3 _tools/selfdoc.py section backlog "Definition of done"` (the shared minimum; goal, checks and touches)
-- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
+Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers):
+
+```
+python3 _tools/selfdoc.py section backlog "Levels" backlog "The item file" backlog "Priority and severity" backlog "Dependencies, gates and triggers" backlog "Definition of done" maintaining "Conduct for changes"
+```
+
+What each gives: `backlog "Levels"` the kinds and what each needs; `backlog "The item file"` the fields; `backlog "Dependencies, gates and triggers"` the always-blocking gates; `backlog "Definition of done"` the shared minimum; goal, checks and touches; `maintaining "Conduct for changes"` the gate, commit messages.
 
 `python3 _tools/backlog.py` with `-h` is the command reference.
 

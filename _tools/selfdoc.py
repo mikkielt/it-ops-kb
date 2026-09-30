@@ -9,8 +9,10 @@
   selfdoc.py map PATH [PATH ...]   the docs that describe these paths
   selfdoc.py check                 map rows naming a missing doc or matching no file, and kb/_self/*.md docs with no row;
                                    exit 1 when any
-  selfdoc.py section DOC HEADING   the section under that heading, down to the next heading of the same or a higher
-                                   level, each line with its line number; exit 1 naming the headings when none matches
+  selfdoc.py section DOC HEADING [DOC HEADING ...]
+                                   the section under each heading, down to the next heading of the same or a higher
+                                   level, each line with its line number; exit 1 when a heading matches none, naming
+                                   it and its doc's headings (the other pairs still print)
 
 kb/_self/map.csv (doc,pattern) says what each doc describes: one row per doc and glob, repository-relative paths; `*` stays within a
 directory, `**` crosses directories. A pattern of `-` marks a doc that describes no file: it is never
@@ -24,7 +26,8 @@ Exit 0 nothing to do, 1 stale docs or map problems, 2 bad arguments, no git, or 
 repository root or an absolute path, else a name under kb/_self (`maintaining` or `maintaining.md`). HEADING is the
 heading's text, matched without regard to case or repeated spaces; a leading `##` also pins the level. Lines in fenced
 code blocks and a YAML front matter are never headings. A subsection belongs to its section; a heading that occurs more
-than once prints every section with that text. It needs no git.
+than once prints every section with that text. Several DOC HEADING pairs print their sections in one call, in the
+order given, so a skill that reads several sections names them in one command. It needs no git.
 
   selfdoc.py map-tools [FILE]      every module, class, function and method of _tools/*.py, one line each:
                                    `path:line kind name — first docstring line`; FILE (a path, or a name such as `rag`)
@@ -250,6 +253,27 @@ def section(doc, heading, root=KB):
     return found, [f"{'#' * lvl} {text}" for _, lvl, text in headings(text_lines)]
 
 
+def print_sections(pairs, root=KB):
+    """Print the sections of each (doc, heading) pair in order, a blank line between pairs; a heading that matches
+    none prints `NO SECTION` with its doc's headings. 0 when every heading matched, else 1."""
+    missing = 0
+    for n, (doc, heading) in enumerate(pairs):
+        if n:
+            print()
+        found, heads = section(doc, heading, root)
+        if not found:
+            missing += 1
+            print(f"NO SECTION {heading!r} in {doc}; headings:")
+            for h in heads:
+                print(f"  {h}")
+            continue
+        for block in found:
+            print(f"{doc}:{block[0][0]}-{block[-1][0]}")
+            for no, ln in block:
+                print(f"{no}: {ln}")
+    return 1 if missing else 0
+
+
 TOOLS_REL = "_tools"
 DOC_MAX = 100  # a docstring's first line is cut here in the map
 DEFS = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
@@ -389,12 +413,15 @@ def main(argv=None):
     m = sub.add_parser("map", help="the docs that describe these paths")
     m.add_argument("paths", nargs="+")
     sub.add_parser("check", help="map rows naming a missing doc or matching no file; _self docs with no row")
-    c = sub.add_parser("section", help="one section of a doc, with line numbers")
-    c.add_argument("doc", metavar="DOC", help="path from the repository root, or a name under kb/_self")
-    c.add_argument("heading", metavar="HEADING", help="the heading's text (case-insensitive); `## text` pins the level")
+    c = sub.add_parser("section", help="sections of docs, with line numbers: one or more DOC HEADING pairs")
+    c.add_argument("pairs", nargs="+", metavar="DOC HEADING",
+                   help="DOC: path from the repository root, or a name under kb/_self; HEADING: the heading's text "
+                        "(case-insensitive), `## text` pins the level")
     t = sub.add_parser("map-tools", help="the symbols and tests of _tools/*.py, with file:line")
     t.add_argument("file", metavar="FILE", nargs="?", help="one file: a path, or a name under _tools (`rag`)")
     a = ap.parse_args(argv)
+    if a.cmd == "section" and len(a.pairs) % 2:
+        c.error(f"section takes DOC HEADING pairs; {a.pairs[-1]!r} has no HEADING")
     try:
         if a.cmd == "map-tools":
             out = map_tools(a.file)
@@ -403,17 +430,7 @@ def main(argv=None):
             print(f"files={kinds.count('module') + kinds.count('unparsed')} symbols={len(kinds) - kinds.count('module') - kinds.count('unparsed')}")
             return 0
         if a.cmd == "section":
-            found, heads = section(a.doc, a.heading)
-            if not found:
-                print(f"NO SECTION {a.heading!r} in {a.doc}; headings:")
-                for h in heads:
-                    print(f"  {h}")
-                return 1
-            for block in found:
-                print(f"{a.doc}:{block[0][0]}-{block[-1][0]}")
-                for no, ln in block:
-                    print(f"{no}: {ln}")
-            return 0
+            return print_sections(list(zip(a.pairs[::2], a.pairs[1::2])))
         if a.cmd == "map":
             found = describing(load_map(), [os.path.normpath(p).replace(os.sep, "/") for p in a.paths])
             for doc, hit in found.items():

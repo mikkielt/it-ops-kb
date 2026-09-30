@@ -8,11 +8,13 @@ argument-hint: "<provider name | new provider name and a sample url> [--root NAM
 
 Provider: $ARGUMENTS. If empty, run `python3 _tools/provider.py list` and ask which one.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers). The commands are spelled out in the steps below:
-- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
-- `python3 _tools/selfdoc.py section web-sources "Routes by family"`
-- `python3 _tools/selfdoc.py section web-sources "When a family needs staging"`
-- `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
+Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
+
+```
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" web-sources "Routes by family" web-sources "When a family needs staging" git "Workflow"
+```
+
+What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` commits and pushes.
 
 The registry's columns are in the docstring of `_tools/provider.py`.
 

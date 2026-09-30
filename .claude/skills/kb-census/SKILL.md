@@ -8,13 +8,13 @@ argument-hint: "[YYYY-MM-DD, default today] [--resume]"
 
 Census date: the argument, else today (`YYYY-MM-DD`). `--resume`: continue from the existing `kb/public/_census/<date>.csv` (skip phases done: its `outcome` column shows what phase 2 already read).
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers). The commands are spelled out in the phases below:
-- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
-- `python3 _tools/selfdoc.py section content-rules "Facts and tags"`
-- `python3 _tools/selfdoc.py section content-rules "Ledgers and retrieval data"`
-- `python3 _tools/selfdoc.py section content-rules "Licensing and privacy"`
-- `python3 _tools/selfdoc.py section git "Workflow"` (the gate, the census tag)
-- `python3 _tools/selfdoc.py section git "Commit trailers"` (`KB-Verified`)
+Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the phases below:
+
+```
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git "Workflow" git "Commit trailers"
+```
+
+What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` the gate, the census tag; `git "Commit trailers"` `KB-Verified`.
 
 `AGENTS.md` covers lookups only.
 
