@@ -771,8 +771,9 @@ def test_knowledge_state_judge_maps_every_verdict(monkeypatch):
 # ---- red-pipeline: a planted red and a green pipeline on origin's main, glab and gh replaced (no network)
 
 def forge(monkeypatch, repo, pipelines, jobs=(), signed_in=True, logs=None):
-    """origin is a GitLab project; `glab` answers the given pipelines (newest first), failed jobs and job logs
-    (`logs`: job id -> trace text). The lists and the dict are read on every call: a test changes them in place."""
+    """origin is a GitLab project; `glab` answers the given pipelines (newest first), their jobs (one list for every
+    pipeline, or a dict pipeline id -> list) and job logs (`logs`: job id -> trace text). The lists and the dicts are
+    read on every call: a test changes them in place."""
     sh(repo, "git", "remote", "add", "origin", "https://gitlab.example.com/team/kb.git")
     sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
     real = backlog.run
@@ -788,6 +789,8 @@ def forge(monkeypatch, repo, pipelines, jobs=(), signed_in=True, logs=None):
                 return (0, logs[jid], "") if logs and jid in logs else (1, "", "404 Not Found")
             if "/jobs?" in argv[-1] and jobs is None:
                 return 1, "", "500 Internal Server Error"
+            if "/jobs?" in argv[-1] and isinstance(jobs, dict):
+                return 0, json.dumps(jobs.get(int(argv[-1].split("/pipelines/")[1].split("/")[0]), [])), ""
             return 0, json.dumps(jobs if "/jobs?" in argv[-1] else pipelines), ""
         return real(argv, cwd=cwd)
 
@@ -816,7 +819,7 @@ def test_red_pipeline_files_one_s2_bug_per_pipeline(repo, monkeypatch, capsys):
     assert red_pipeline(repo) == 0
     (bug,) = bugs(repo)
     assert bug["severity"] == "S2" and bug["status"] == "draft" and "pipeline 901" in bug["title"]
-    assert bug["repro"]["run"] == backlog.STATUS_REPRO
+    assert bug["repro"]["run"] == backlog.STATUS_REPRO + ["--job", "kb-tests-windows"]
     assert backlog.validate(backlog.Backlog(repo)) == []
     capsys.readouterr()
     assert red_pipeline(repo) == 0  # the same pipeline again: named by the bug, nothing filed
@@ -908,6 +911,51 @@ def test_red_pipeline_failed_script_under_allow_failure_is_red(sprint, monkeypat
     (bug,) = [x for x in bugs(repo) if "pipeline 62" in x["title"]]
     assert bug["severity"] == "S1" and bug["title"].endswith(": kb-tests"), bug["title"]
     assert f"fingerprint {backlog.failure_fingerprint('kb-tests', '_tools/test_x.py::test_a')}" in bug["links"]
+
+
+def test_red_pipeline_reads_a_pipeline_where_a_job_ran(sprint, monkeypatch, capsys):
+    """Every job is manual, so most pipelines of main are ones nobody started. Planted: a red started pipeline, then
+    newer ones where no job ran; the red one is read, its bug's repro names its failed job and fails until that job
+    passes again, not when another job passes or a push starts nothing; a timed-out or stuck job is red too."""
+    repo = sprint["repo"]
+    monkeypatch.setattr(ql_deliver, "GATE_JOBS", ())  # the default: no job is a gate
+    manual = [{"id": 30, "name": "kb-tests", "status": "manual"}, {"id": 31, "name": "kb-trailers", "status": "manual"},
+              {"id": 32, "name": "kb-lint", "status": "failed", "failure_reason": "ci_quota_exceeded"}]
+    pipelines = [{"id": 73, "sha": head(repo), "status": "manual"}, {"id": 72, "sha": head(repo), "status": "skipped"},
+                 {"id": 71, "sha": head(repo), "status": "success"}]
+    jobs = {73: manual, 72: [],
+            71: [{"id": 11, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure",
+                  "started_at": "2026-09-30T08:00:00Z"}, {"id": 12, "name": "kb-trailers", "status": "manual"}]}
+    forge(monkeypatch, repo, pipelines, jobs=jobs, logs={11: "FAILED _tools/test_x.py::test_a - assert 1 == 2\n"})
+    capsys.readouterr()
+    assert red_pipeline(repo, "--status") == 1
+    assert "pipeline 71 of main is red" in capsys.readouterr().out
+    assert red_pipeline(repo) == 0
+    (bug,) = [x for x in bugs(repo) if "pipeline 71" in x["title"]]
+    assert bug["severity"] == "S1" and bug["repro"]["run"] == backlog.STATUS_REPRO + ["--job", "kb-tests"], bug
+    # a newer pipeline where only another job ran and passed: main reads green, the bug's job is still red
+    pipelines.insert(0, {"id": 74, "sha": head(repo), "status": "manual"})
+    jobs[74] = [{"id": 40, "name": "kb-trailers", "status": "success"}, {"id": 41, "name": "kb-tests", "status": "manual"}]
+    assert red_pipeline(repo, "--status") == 0
+    assert red_pipeline(repo, "--status", "--job", "kb-tests") == 1
+    assert "the newest kb-tests pipeline 71 of main is red" in capsys.readouterr().out
+    # kb-tests runs again and passes: the bug's repro passes
+    pipelines.insert(0, {"id": 75, "sha": head(repo), "status": "manual"})
+    jobs[75] = [{"id": 50, "name": "kb-tests", "status": "success"}]
+    assert red_pipeline(repo, "--status", "--job", "kb-tests") == 0
+    # a job that ran past its timeout, or got stuck, is red
+    for reason in ("job_execution_timeout", "stuck_or_timeout_failure"):
+        pipelines.insert(0, {"id": 76, "sha": head(repo), "status": "success"})
+        jobs[76] = [{"id": 60, "name": "kb-tests-windows", "status": "failed", "failure_reason": reason}]
+        assert red_pipeline(repo, "--status") == 1, reason
+        assert red_pipeline(repo, "--status", "--job", "kb-tests-windows") == 1, reason
+        pipelines.pop(0)
+    # no job ran in any pipeline: the newest finished one is read, and is green
+    pipelines[:] = [{"id": 73, "sha": head(repo), "status": "manual"}, {"id": 72, "sha": head(repo), "status": "skipped"}]
+    capsys.readouterr()
+    assert red_pipeline(repo, "--status") == 0
+    assert "no job ran in the last" in capsys.readouterr().out
+    assert red_pipeline(repo, "--status", "--job", "kb-tests") == 1  # the job never ran: not checked
 
 
 def test_red_pipeline_status_is_the_repro_of_a_red_main(repo, monkeypatch):

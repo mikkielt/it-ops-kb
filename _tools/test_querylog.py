@@ -2597,6 +2597,38 @@ class TestNoGateJobs:
             "red", ["kb-tests-windows"], [])
         assert ql_deliver.job_verdict(None)[0] == "unverified"
 
+    @pytest.mark.parametrize("reason", ["job_execution_timeout", "stuck_or_timeout_failure"])
+    def test_a_timed_out_or_stuck_job_is_red(self, reason):
+        job = {"name": "kb-tests-windows", "status": "failed", "failure_reason": reason}
+        assert ql_deliver.job_ran(job)
+        assert ql_deliver.job_verdict([job]) == ("red", ["kb-tests-windows"], [])
+
+    @pytest.mark.parametrize("job,ran", [
+        ({"status": "manual"}, False), ({"status": "skipped"}, False), ({"status": "created"}, False),
+        ({"status": "canceled"}, False), ({**QUOTA}, False), ({"status": "canceled", "started_at": "t"}, True),
+        ({"status": "success"}, True), ({"status": "running"}, True),
+        ({"status": "failed", "failure_reason": "script_failure"}, True),
+    ])
+    def test_job_ran(self, job, ran):
+        assert ql_deliver.job_ran(job) is ran
+
+    def test_the_revert_check_reads_the_newest_pipeline_of_the_commit_where_a_job_ran(self):
+        """Planted: a red started pipeline of the commit, then newer ones where no job ran."""
+        jobs = {9: [{"name": "kb-tests", "status": "manual"}], 8: [],
+                7: [{"name": "kb-tests", "status": "failed", "failure_reason": "script_failure"}]}
+
+        def run(argv, cwd=None):
+            if argv[1:3] == ["auth", "status"]:
+                return 0, "", ""
+            if "/jobs?" in argv[-1]:
+                return 0, json.dumps(jobs[int(argv[-1].split("/pipelines/")[1].split("/")[0])]), ""
+            return 0, json.dumps([{"id": i, "status": "manual"} for i in (9, 8, 7)]), ""
+        verdict, detail, pipe = ql_deliver.ci_pipeline("https://gitlab.example.com/team/kb.git", "d" * 40, run)
+        assert (verdict, pipe["id"]) == ("red", 7) and "the newest where a job ran" in detail, detail
+        jobs[7] = [{"name": "kb-tests", "status": "manual"}]  # no job ran in any: the newest is read, and is ok
+        verdict, _, pipe = ql_deliver.ci_pipeline("https://gitlab.example.com/team/kb.git", "d" * 40, run)
+        assert (verdict, pipe["id"]) == ("ok", 9)
+
 
 @pytest.fixture
 def gate_jobs(monkeypatch):
