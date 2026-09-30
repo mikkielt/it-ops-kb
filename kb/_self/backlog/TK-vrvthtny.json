@@ -1,0 +1,31 @@
+{
+  "id": "TK-vrvthtny",
+  "kind": "task",
+  "title": "Run the environment setup on a temporary clean local account and write the report",
+  "status": "todo",
+  "parent": "ST-jqa24js3",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/reports/windows-fresh-host.md records one run on a temporary local standard account on the Windows 11 host (Git for Windows machine-wide, no Python for that account): install-python.ps1's preflight and install output, then every /kb-setup step that needs no Claude Code sign-in, run by its command as that account (python3 version, check.py, fetch.py --offline, stress_test.py, tests.py, rag.py eval, rag.py pack, kbgit.py install-hooks), each with its exit code and last line, what was not run and why (the sign-in, MCP registration and calls, the query log question), placeholders for host and user names, and a final line result: pass only if every step run passed; the account is deleted afterwards.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t);assert not re.search(r'(?i)stowarzyszenie|avanga|ANW-PC', t)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/windows-fresh-host.md",
+    "kb/_self/map.csv",
+    "kb/_self/README.md"
+  ]
+}

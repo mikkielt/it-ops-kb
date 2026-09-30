@@ -2,17 +2,18 @@
   "id": "ST-jqa24js3",
   "kind": "story",
   "title": "A clean Windows 11 host goes from no Python to a passing /kb-setup, on record",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
   "priority": "P2",
   "rank": 30,
-  "goal": "kb/_self/reports/windows-fresh-host.md records one run on a clean Windows 11 host with Git for Windows and no Python: install-python.ps1's preflight and install output, the /kb-setup pass/fail report, and a final line result: pass; every failure found on the way is filed as a bug.",
+  "goal": "kb/_self/reports/windows-fresh-host.md records one run on a temporary clean local account on the Windows 11 host (Git for Windows, no Python for that account): install-python.ps1's preflight and install output and every /kb-setup step that needs no Claude Code sign-in, run by its command as that account, with a final line result: pass; every failure found on the way is filed as a bug.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t)"
+        "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t);assert not re.search(r'(?i)stowarzyszenie|avanga|ANW-PC', t)"
       ]
     },
     {
@@ -36,6 +37,19 @@
       "recommendation": "Windows Sandbox on a Windows 11 Pro machine",
       "answer": "Windows Sandbox on a Windows 11 Pro machine",
       "by": "operator"
+    },
+    {
+      "id": "scope",
+      "kind": "blocking",
+      "question": "How far should the unattended clean-host run go, given Claude Code must be signed in as the new account for /kb-setup and credentials are never copied?",
+      "options": [
+        "all but the sign-in, on a temporary local account",
+        "keep for a live host",
+        "operator signs in once"
+      ],
+      "recommendation": "all but the sign-in, on a temporary local account",
+      "answer": "everything for environment setup, but not the Claude part; no manual action by the operator",
+      "by": "operator"
     }
   ],
   "links": [
@@ -43,5 +57,5 @@
     "python/windows-python-install",
     "windows/windows-sandbox"
   ],
-  "notes": "Windows Sandbox starts clean each time and is available on Windows 11 Pro with virtualization enabled (windows/windows-sandbox, DOC S-yexfxr4v); since 24H2 inbox Store apps are missing inside it, so the Store python3 alias is absent too. Claude Code must be installed inside the host for /kb-setup. The report uses placeholders (PL-LT-00123, jan.kowalski) for host and user names. 2026-09-29: out of SP-76inhw33 “Windows clone complete”; its task TK-hjqm7l7y was dropped when the operator chose not to run it in this sprint (to be tried on a live host later). A later sprint needs a new task."
+  "notes": "Windows Sandbox (the earlier gate answer) is off on this host and needs a reboot; a temporary local standard account is the clean profile an unattended session can make. The Claude Code sign-in, MCP registration and calls, and the query log question stay out of the run."
 }

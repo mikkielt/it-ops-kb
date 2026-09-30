@@ -1,0 +1,23 @@
+{
+  "id": "TK-rpwhmmxv",
+  "kind": "task",
+  "title": "Audit Windows path tests and plant a directory separator where one is missing",
+  "status": "todo",
+  "parent": "ST-3goqpgvd",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each test of a Windows path fix in _tools/test_*.py (git revision reads in factdiff and kbgit, kbingest masking and link checks, the raw-read hint's path parsing, launcher paths) plants its path at least one directory below the root; the commit lists every test audited and what changed; a planted native-separator bug in each covered function fails its test.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "RevisionReadsWithoutGitShow or kbingest_map or raw_read_nudge"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_*.py"
+  ]
+}

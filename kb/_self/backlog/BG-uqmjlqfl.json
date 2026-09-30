@@ -1,0 +1,22 @@
+{
+  "id": "BG-uqmjlqfl",
+  "kind": "bug",
+  "title": "kbgit.py publish refuses test-fixture GUIDs that are already on the public home, so nothing publishes",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbgit.py publish refuses a leak-scan hit only when the projection adds it: a value already in the public tip's version of the same file (such as the synthetic query-log ids 3f2a4c1e-0000-4000-8000-00000000abcd in _tools/test_querylog.py and 22222222-0000-4000-8000-0000000000a1 in _tools/test_sync.py, public since 2026-09-28) is no refusal, while a new hit still refuses; test_kbpublic.py plants both; publish --dry-run on main reports no refusal.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/kbgit.py",
+      "publish",
+      "--dry-run"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/test_kbpublic.py"
+  ]
+}

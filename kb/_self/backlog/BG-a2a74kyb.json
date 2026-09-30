@@ -2,7 +2,9 @@
   "id": "BG-a2a74kyb",
   "kind": "bug",
   "title": "kbingest map resolves a mapper tool from the Python process's working folder on Windows",
-  "status": "draft",
+  "status": "todo",
+  "parent": "EP-g5hizdko",
+  "sprint": "SP-hlfwfcx6",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,5 +16,9 @@
       "-k",
       "kbingest_map_which_ignores_parent_cwd"
     ]
-  }
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py"
+  ]
 }

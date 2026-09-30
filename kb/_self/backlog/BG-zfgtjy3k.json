@@ -2,7 +2,9 @@
   "id": "BG-zfgtjy3k",
   "kind": "bug",
   "title": "kb-tests-windows exceeds the 1 h job timeout, so its failures are never named",
-  "status": "draft",
+  "status": "todo",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -13,5 +15,11 @@
       "-c",
       "import re,sys;t=open('.gitlab-ci.yml',encoding='utf-8').read();b=re.search(r'^kb-tests-windows:\\n((?:[ \\t].*\\n|\\n)*)',t,re.M).group(1);sys.exit(0 if re.search(r'^  timeout:',b,re.M) else 1)"
     ]
-  }
+  },
+  "touches": [
+    ".gitlab-ci.yml",
+    "kb/_self/runners.md",
+    "kb/_self/git.md"
+  ],
+  "notes": "The job ran pytest with 2 xdist workers: a Hyper-V container gets 2 vCPUs by default. The operator chose 6 CPUs and 12 GB per container for the docker-windows runner (config.toml, outside the repository; runners.md records it) and a longer job timeout; the job is started by hand."
 }
