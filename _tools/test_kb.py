@@ -564,6 +564,24 @@ class TestLookup:
         assert c.returncode == 0 and "code_candidates=" in c.stdout, c.stdout + c.stderr
         assert "Unpinned." not in c.stdout, "a CODE fact is no longer a candidate"
 
+    def test_lint_observed_run_rule(self, tmp_path):
+        """A DER fact resting on a run or probe names the version that ran (kb/_self/content-rules.md, Facts and tags)."""
+        d = copy_kb(str(tmp_path / "kb"))
+        path = os.path.join(d, P("auth/kerberos.md"))
+        text = open(path, encoding="utf-8").read()
+        assert "\n## Facts\n" in text
+        body = ("- Probe A: observed on PL-LT-00123 in a headless session, the hook was in no job. [DER S-zzzzzzz3: the run]\n"
+                "- Probe B: observed on Claude Code 2.1.285 on PL-LT-00123, headless, the hook was in no job. [DER S-zzzzzzz3: the run]\n"
+                "- Probe C: in the headless runs of version 3 the child outlived the parent. [DER S-zzzzzzz3: the run]\n"
+                "- Probe D: a run without an observed failure needs no new mechanism. [DER S-zzzzzzz3: policy]\n"
+                "- Probe E: a `-c` probe tells the runtime from an alias. [DER S-zzzzzzz3: command names]\n")
+        with open(path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text.replace("\n## Facts\n", "\n## Facts\n" + body, 1))
+        p = subprocess.run([sys.executable, os.path.join(d, ".claude", "skills", "kb-verify", "lint.py"), "auth/kerberos"],
+                           capture_output=True, text=True, encoding="utf-8", timeout=timeout_s(120))
+        hits = [ln for ln in p.stdout.splitlines() if "rests on a run or probe but names no version" in ln]
+        assert len(hits) == 1 and hits[0].startswith("WARN") and "Probe A" in hits[0], p.stdout
+
     def test_ledger_topic_markers_link_entries(self):
         import kbfacts
         from conftest import Q

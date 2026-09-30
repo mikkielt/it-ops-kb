@@ -25,6 +25,12 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 - Canonical forms: `[DOC <id>, <id>]`, `[CODE <id>: path#symbol]` (or `path#L10-L20`), `[DER <id>: how]`, `[COMMUNITY <id>]`, `[UNK]` or `[UNK: why]`. `_tools/kbfacts.py` parses them for every tool (grammar in its docstring); the kb-verify lint reports a DOC or COMMUNITY tag without an id.
 - Numbers, dates, versions and table rows come from the source's own text or image, never from a fetch tool's summary of it: a summary can invent rows that the page does not have.
 - `UNK` and `COMMUNITY` facts are leads to verify, not a basis to build on.
+- A fact that rests on a run of our own (a probe, a measurement, a command we ran and watched) records one observation, not a rule:
+  - tag it `DER` with the ids of the documented facts it rests on and say in the note what was run and read;
+  - state in the fact the version of what ran (`Claude Code 2.1.285`, `dsc 3.3.0`, `git 2.47.1`) and the setup (OS, shell, headless or interactive, the date);
+  - what the run did not cover (another mode, OS or version) is said in the fact or kept as an `UNK` fact, never folded into a general claim.
+
+  The failure it answers: a job-object fact (`kb/public/python/stdlib-windows-portability.md`) first turned one headless probe into a claim about every session; it now names Claude Code 2.1.285, headless and interactive. The kb-verify lint warns on a `DER` Facts bullet (not a `SNIPPET:`) that says it rests on a run (`observed` or `measured` followed by `on`, `in`, `by`, `with`, `against`, `at`, `when`, `running` or `:`; `probed`; `the same probe against`, `a probe of`; `in the headless runs`, `in two runs`) and names no version (a dotted number such as `2.1.285`, `version N` or `vN`). A live service with no version still warns: name the date and endpoint and judge the warning.
 
 ## CODE: what the implementation does
 
