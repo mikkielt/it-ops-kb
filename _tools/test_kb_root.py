@@ -5,7 +5,8 @@ KB_ROOTS from a temporary directory, never committed).
 The second root's article is found by pack with its qualified path and its own source's url, and left out by
 --root public; its ledger entries, signals and eval set are read and qualified in that root; kb_status and kb_show
 know it; the server's always-on texts do not change; a root that reuses a taken id prefix is refused; and its index
-shares CLAUDE_PLUGIN_DATA with this repository's without either pruning the other's file.
+shares CLAUDE_PLUGIN_DATA with this repository's without either pruning the other's file; and a server limited to
+that root alone (kb_mcp.py --roots) still answers its question `good`.
 """
 import csv, glob, json, os, subprocess, sys
 
@@ -154,3 +155,17 @@ def test_index_files_of_two_root_sets_share_a_directory(tmp_path):
     run("rag.py", "pack", q, roots=root, data=data)
     after = sorted(os.path.basename(p) for p in glob.glob(os.path.join(data, "kbindex-*.sqlite")))
     assert len(after) == 2 and [n for n in names if not n.startswith("kbindex-r")][0] in after, (names, after)
+
+
+def test_embed_roots_small_root_is_good(tmp_path):
+    """kb_mcp.py --roots fixture serves a root of one article: its own question is `good`, since the informative-word
+    cut of a small index does not empty the question's key words (kbfacts.pack); another product's stays `none`."""
+    from test_kb_mcp import _embedded
+    root = str(tmp_path / "team-kb")
+    make_root(root)
+    p, out = _embedded(root, "--roots", "fixture", calls=[
+        ("kb_pack", {"question": QUESTION}),
+        ("kb_pack", {"question": "What is the default Windows LAPS password length?"})])
+    assert p.returncode == 0, p.stderr
+    assert out[1][1].startswith("coverage: good") and "fixture/print/queues.md:" in out[1][1], out[1][1][:600]
+    assert out[2][1].startswith("coverage: none"), out[2][1][:300]
