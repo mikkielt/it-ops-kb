@@ -2,7 +2,7 @@
   "id": "ST-4sd7s6h5",
   "kind": "story",
   "title": "Review sprint: Focused gate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ddjk2p5l",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "win-second"
 }
