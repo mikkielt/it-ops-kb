@@ -224,6 +224,28 @@ def test_check_finds_planted_errors(sprint):
     assert f"{sprint['tk']} “Task”" in out  # an id is never printed without its title
 
 
+def test_backlog_stale_touches_names_a_file_git_deleted(sprint):
+    """Planted: an open task whose touches name a committed file that a later commit moved away; check exits 1 and
+    names the item and the path. A path no commit had (still to be created), a glob and a path the tree has again
+    are no error, and neither is a done item's."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    edit(repo, tk, touches=["src/a.txt", "src/never.txt", "src/*.txt", "src/gone/"])
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out and "working tree lacks" not in out, out
+    sh(repo, "git", "mv", "src/a.txt", "src/moved.txt")
+    commit(repo, "move a")
+    code, out = b(repo, "check")
+    assert code == 1 and "errors=1" in out, out
+    assert f"{tk} “Task”: touches names src/a.txt, which git history has and the working tree lacks" in out, out
+    assert "src/never.txt" not in out and "src/*.txt" not in out and "src/gone/" not in out, out
+    edit(repo, tk, touches=["src/moved.txt"])
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+    edit(repo, tk, touches=["src/a.txt"], status="dropped")
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out and "working tree lacks" not in out, out
+
+
 DOC_MAP = "doc,pattern\nkb/_self/tools.md,_tools/x.py\nkb/_self/plugin.md,.claude-plugin/**\n"
 
 
