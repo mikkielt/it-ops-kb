@@ -1088,6 +1088,16 @@ def cmd_drop(bl, a):
     return 0
 
 
+def has_scope(bl, iid):
+    """An item's work has a scope: it is dropped, has touches of its own, or has tasks or subtasks that are not
+    dropped and every one of which has a scope (a story broken down into tasks is covered by them)."""
+    it = bl.items[iid]
+    if it.get("status") == "dropped" or it.get("touches"):
+        return True
+    kids = [c for c in bl.children(iid) if bl.items[c].get("status") != "dropped"]
+    return bool(kids) and all(has_scope(bl, c) for c in kids)
+
+
 def cmd_start(bl, a):
     sid = need(bl, a.sprint)
     sp = bl.items[sid]
@@ -1099,6 +1109,10 @@ def cmd_start(bl, a):
     items = bl.sprint_items(sid)
     if len(items) < 2:
         raise Refused(f"{bl.label(sid)} commits to no item besides its review")
+    bare = [i for i in items if not bl.items[i].get("review") and not has_scope(bl, i)]
+    if bare:
+        raise Refused(f"{bl.label(sid)} has work items without touches (give each its own touches, or tasks that "
+                      "all have them):\n  " + "\n  ".join(bl.label(i) for i in bare))
     for i in items:
         if bl.items[i].get("status") == "draft":
             bl.items[i]["status"] = "todo"

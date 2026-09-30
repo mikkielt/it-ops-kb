@@ -1,7 +1,7 @@
 """backlog.py in a throwaway git repository: items are created, validated, scheduled, finished and deleted.
 
 Each refusal has a planted failure: a bug whose repro passes, a non-canonical file, a cycle, a blocking gate an
-agent answers, a sprint started without the operator, a failing check, a commit outside `touches` (and the revert
+agent answers, a sprint started without the operator or with a work item without touches, a failing check, a commit outside `touches` (and the revert
 that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
 planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
 commit included), and red pipelines that fail
@@ -110,7 +110,7 @@ def sprint(repo):
     b(repo, "new", "task", "--title", "Task", "--parent", st, "--goal", "b written", "--touch", "src/**",
       "--check", argstr(is_file("src/b.txt")))
     b(repo, "new", "bug", "--title", "Bug", "--sprint", sp, "--severity", "S3", "--repro", argstr(is_file("src/c.txt")),
-      "--goal", "c exists")
+      "--goal", "c exists", "--touch", "src/**")
     assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
     code, out = b(repo, "start", sp)
     assert code == 0, out
@@ -153,6 +153,38 @@ def test_only_operator_answers_blocking_gates_and_starts_sprints(repo):
     code, out = b(repo, "answer", sp, "start", "--answer", "approve", "--by", "agent")
     assert code == 1 and "only the operator" in out
     assert b(repo, "answer", sp, "start", "--provisional")[0] == 1
+
+
+def test_start_refuses_work_items_without_touches(repo):
+    """start names every story, task or bug (not the review) without a scope, changes nothing, and starts once each
+    has one: touches of its own, or tasks that all have them. A dropped item is exempt."""
+    b(repo, "new", "epic", "--title", "E", "--goal", "g")
+    ep = item(repo, "E")["id"]
+    b(repo, "new", "sprint", "--title", "S", "--goal", "g")
+    sp = item(repo, "S")["id"]
+    b(repo, "new", "story", "--title", "Split story", "--parent", ep, "--sprint", sp, "--goal", "g")
+    st = item(repo, "Split story")["id"]
+    b(repo, "new", "task", "--title", "Its task", "--parent", st, "--goal", "g", "--touch", "src/**")
+    b(repo, "new", "story", "--title", "Bare story", "--parent", ep, "--sprint", sp, "--goal", "g")
+    bare = item(repo, "Bare story")["id"]
+    b(repo, "new", "bug", "--title", "Bare bug", "--sprint", sp, "--severity", "S3",
+      "--repro", argstr(is_file("src/c.txt")), "--goal", "c exists")
+    bug = item(repo, "Bare bug")["id"]
+    b(repo, "new", "bug", "--title", "Dropped bug", "--sprint", sp, "--severity", "S4",
+      "--repro", argstr(is_file("src/d.txt")), "--goal", "d exists")
+    edit(repo, item(repo, "Dropped bug")["id"], status="dropped", notes="not this sprint")
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    files = {f.name: f.read_bytes() for f in (Path(repo) / backlog.REL_DIR).glob("*.json")}
+    code, out = b(repo, "start", sp)
+    assert code == 1, out
+    assert f"{bare} “Bare story”" in out and f"{bug} “Bare bug”" in out, out
+    assert "Split story" not in out and "Its task" not in out and "Dropped bug" not in out and "Review" not in out
+    assert {f.name: f.read_bytes() for f in (Path(repo) / backlog.REL_DIR).glob("*.json")} == files
+    edit(repo, bare, touches=["src/b.txt"])
+    edit(repo, bug, touches=["src/c.txt"])
+    code, out = b(repo, "start", sp)
+    assert code == 0, out
+    assert item(repo, "S")["status"] == "active" and item(repo, "Bare bug")["status"] == "todo"
 
 
 def test_next_orders_s1_bugs_first(sprint):
@@ -366,7 +398,7 @@ def test_horizon_hook_prints_sprint_ids_and_titles_without_goals(sprint):
         b(repo, "new", "sprint", "--title", title, "--goal", goals[title])
         sp = item(repo, title)["id"]
         b(repo, "new", "bug", "--title", f"Bug {n}", "--sprint", sp, "--severity", "S3",
-          "--repro", argstr(is_file("src/c.txt")), "--goal", "c exists")
+          "--repro", argstr(is_file("src/c.txt")), "--goal", "c exists", "--touch", "src/**")
         assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
         code, out = b(repo, "start", sp)
         assert code == 0, out
