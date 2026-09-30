@@ -2,7 +2,7 @@
   "id": "BG-aq7kncng",
   "kind": "bug",
   "title": "Tests still inherit GIT_DIR, GIT_WORK_TREE and GIT_INDEX_FILE, so census tests can fetch into the real repository under a pre-push hook",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P1",
@@ -21,5 +21,18 @@
     "_tools/test_census.py",
     "_tools/test_backlog.py"
   ],
-  "claimed_by": "worker-gitenv"
+  "evidence": {
+    "commit": "44fde2c0aa78fd7de563de3bef0319deadca1682",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,re,sys; t=pathlib.Path('_tools/conftest.py').read_text(encoding='utf-8'); head=t.split('def ',1)[0]; sys.exit(0 if all(v in head for v in ('GIT_DIR','GIT_WORK_TREE','GIT_INDEX_FILE')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
