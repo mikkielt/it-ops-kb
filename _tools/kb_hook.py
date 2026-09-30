@@ -103,12 +103,29 @@ RAW_NUDGE = ("This command reads a kb article as a whole file. For a lookup the 
 
 
 PS_READS = ("get-content", "gc", "cat", "type", "select-string", "sls")  # PowerShell verbs (any case) that read a file
+# a PowerShell assignment target, `$t`, `[string]$t` or `$env:X`, alone or glued to its operator and value (`$t=gc`)
+PS_TARGET = re.compile(r"^(?:\[[^\s$=]*\])?\$[\w:{}]+(?:([-+*/%?]?=)(?!=)(.*))?$")
+PS_OP = re.compile(r"^[-+*/%?]?=(?!=)(.*)$")  # the operator as a token of its own, perhaps glued to the value (`=gc`)
+
+
+def _ps_unassign(seg):
+    """The segment without a leading PowerShell assignment (`$t = gc x`, `[string]$t=gc x`): the command is what
+    follows, so its verb is found. A `$t` alone or compared (`$t -eq 1`) is left as it is."""
+    m = PS_TARGET.match(seg[0])
+    if not m:
+        return seg
+    if m.group(1):  # `$t=value`: the value starts the command
+        return ([m.group(2)] if m.group(2) else []) + seg[1:]
+    op = PS_OP.match(seg[1]) if len(seg) > 1 else None
+    if not op:
+        return seg
+    return ([op.group(1)] if op.group(1) else []) + seg[2:]
 
 
 def is_raw_read(command, powershell=False):
     """True when one command of a shell line reads a kb article or a root's _gaps.md with cat, head, tail, sed -n or
-    grep -n; with `powershell` (a PowerShell tool event) with Get-Content, gc, cat, type, Select-String or sls, and a
-    backslash in a path is a separator. A path after `>` (a write), a command that merely names the path
+    grep -n; with `powershell` (a PowerShell tool event) with Get-Content, gc, cat, type, Select-String or sls, also
+    after an assignment (`$t = gc ...`) or as `-Path:value`, and a backslash in a path is a separator. A path after `>` (a write), a command that merely names the path
     (rag.py show ...), sed -i and Set-Content are not."""
     if not isinstance(command, str):
         return False
@@ -134,12 +151,14 @@ def is_raw_read(command, powershell=False):
     for seg in segments:
         while seg and not powershell and (re.match(r"^\w+=", seg[0]) or seg[0] in ("sudo", "command", "time", "env")):
             seg = seg[1:]
+        if seg and powershell:
+            seg = _ps_unassign(seg)
         if not seg:
             continue
         verb, args, paths, skip = os.path.basename(seg[0]), seg[1:], [], False
-        if powershell:  # quotes stay in the tokens; `a.md,b.md` is a list; the verb's case and module prefix do not matter
-            verb = verb.strip("'\"").lower()
-            args = [x.strip("'\"") for a in args for x in a.split(",")]
+        if powershell:  # quotes stay in the tokens; `a.md,b.md` is a list; the verb's case and module prefix do not matter;
+            verb = verb.strip("'\"").lower()  # `-Path:value` is `-Path value`
+            args = [re.sub(r"^-\w+:", "", x.strip("'\"")).strip("'\"") for a in args for x in a.split(",")]
         for a in args:
             if skip:  # the target of a redirect
                 skip = False

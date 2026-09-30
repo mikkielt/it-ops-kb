@@ -2,7 +2,7 @@
   "id": "BG-zktxqgdb",
   "kind": "bug",
   "title": "kbingest's .NET global.json preflight checks only is_symlink, not git's link mode",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-hlfwfcx6",
   "priority": "P3",
@@ -20,5 +20,18 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"
   ],
-  "claimed_by": "worker-kbingest"
+  "evidence": {
+    "commit": "9c8e988c40094ed18c294e957efc05d0d6ab3820",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,pathlib,sys; t=pathlib.Path('_tools/kbingest.py').read_text(encoding='utf-8'); i=t.find('within(folder, \"global.json\")'); b=t[i:i+600]; sys.exit(0 if i<0 or 'ctx.links' in b or 'ctx.readable' in b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
