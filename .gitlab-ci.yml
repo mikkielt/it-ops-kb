@@ -71,6 +71,9 @@ kb-tests-windows:
   # The run takes longer than the gap between the query log's automatic pushes: once started, a newer pipeline on
   # main does not cancel it (auto_cancel on_new_commit conservative, the default).
   interruptible: false
+  # tests.py then stress_test.py in a Hyper-V container (6 vCPUs, 12 GB: the runner's config.toml, kb/_self/runners.md)
+  # outlast the project's 1 h default; a job-level timeout takes precedence over the project's.
+  timeout: 3h
   variables:
     GIT_DEPTH: "0"
     MINGIT_URL: https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.1/MinGit-2.56.0-64-bit.zip
