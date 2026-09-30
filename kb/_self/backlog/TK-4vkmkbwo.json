@@ -37,7 +37,9 @@
     "_tools/test_benchmarks.py",
     "_tools/test_layout.py",
     "_tools/test_kbpublic.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/map.csv"
   ],
   "depends_on": [
     "TK-pwrigavm"

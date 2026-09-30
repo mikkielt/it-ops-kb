@@ -2,7 +2,7 @@
   "id": "TK-tmkbhvez",
   "kind": "task",
   "title": "Docs name the bench_* modules",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-5d5ddbha",
   "priority": "P2",
   "rank": 2,
@@ -31,5 +31,6 @@
   ],
   "depends_on": [
     "TK-4vkmkbwo"
-  ]
+  ],
+  "notes": "Dropped: its docs land with the code they describe, in TK-4vkmkbwo: backlog.py check warns of docs held only by a later task, and the sync gate's selfdoc stale needs them in one range"
 }
