@@ -1,0 +1,19 @@
+{
+  "id": "BG-hddn7or2",
+  "kind": "bug",
+  "title": "red-pipeline reads the newest finished pipeline, which with every job manual is almost always one where nothing ran",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py red-pipeline and the query log's revert check read the newest pipeline of main in which a job actually ran (not one where every job is manual or skipped), count a job that timed out or got stuck (job_execution_timeout, stuck_or_timeout_failure) as red, and a filed bug's repro stays failing until that failure is fixed rather than until any later push; tests plant a red started pipeline followed by newer unstarted ones. From the SP-z7a5c76b review, after b8c95fc made every job manual.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "red_pipeline_reads_a_pipeline_where_a_job_ran"
+    ]
+  }
+}

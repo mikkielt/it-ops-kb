@@ -1,0 +1,19 @@
+{
+  "id": "BG-alqja4se",
+  "kind": "bug",
+  "title": "ql_deliver.held() treats a failed for-each-ref, merge-base or diff as nothing held",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_deliver.held() raises (so nothing is pushed) when git for-each-ref, merge-base or diff --name-only fails, as it already does for an unreadable file; a test fails each call in turn and asserts the push is held. From the SP-z7a5c76b review (TK-ubcrwu7t).",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "held_raises_on_git_failure"
+    ]
+  }
+}

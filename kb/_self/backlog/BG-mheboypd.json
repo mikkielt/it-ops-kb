@@ -1,0 +1,25 @@
+{
+  "id": "BG-mheboypd",
+  "kind": "bug",
+  "title": "The job-object fact in stdlib-windows-portability claims more than one headless probe shows",
+  "status": "doing",
+  "parent": "EP-mzzucemv",
+  "sprint": "SP-z7a5c76b",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python/stdlib-windows-portability states the probe's result for what it covered (headless claude -p, Claude Code 2.1.285, one run) and keeps interactive sessions and other versions as an open UNK, with a _gaps.md entry, so the article is partial again and the kb does not answer the general question as good. The repro is a text check: the fact's wording is the fix. From the SP-z7a5c76b review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/python/stdlib-windows-portability.md').read_text(encoding='utf-8'); sys.exit(0 if 'interactive' in t else 1)"
+    ]
+  },
+  "touches": [
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/_gaps.md",
+    "kb/public/_coverage.*"
+  ],
+  "claimed_by": "win-first"
+}
