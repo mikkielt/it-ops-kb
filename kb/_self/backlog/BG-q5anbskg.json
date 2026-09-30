@@ -2,7 +2,7 @@
   "id": "BG-q5anbskg",
   "kind": "bug",
   "title": "querylog.py close cannot record a gap finding rejected when its _gaps.md entry is removed",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -27,5 +27,20 @@
     "kb/_querylog/findings/**"
   ],
   "notes": "Once the command exists, use it to record F-bd7367a45f3a rejected: BG-eybmld6m removed its _gaps.md entry on the operator's answer to its entry gate (remove the entry and record the finding rejected).",
-  "claimed_by": "worker-q5anbskg"
+  "evidence": {
+    "commit": "e01ea25ca787d57aa5f97186dc8d67f5323a258a",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-q",
+          "--",
+          "--reject",
+          "_tools/querylog.py"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
