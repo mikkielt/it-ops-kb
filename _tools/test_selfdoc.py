@@ -2,7 +2,8 @@
 
 TestSelfdocRules   map globs (`*` within a directory, `**` across, `-` never), the map reader, describing().
 TestSelfdocSection section DOC HEADING: the section down to the next heading of its level, subsections kept, fenced
-                   code and front matter never headings, case-insensitive, `##` pins the level, no match exits 1.
+                   code and front matter never headings, case-insensitive, `##` pins the level, no match exits 1;
+                   several DOC HEADING pairs print in order in one call, a missing one exits 1, the rest still print.
 TestSelfdocToolsMap map-tools: modules, classes, defs, methods and tests with file:line and the first docstring line,
                    FILE narrows it, a mapped name missing from the code (or a def missing from the map) fails
                    check_map, and every _tools file of this repository parses and holds.
@@ -10,7 +11,7 @@ TestSelfdocInGit   (marker git) a throwaway repo with a map, two docs and the fi
                    described file makes its doc stale, editing or committing the doc clears it, --since compares a
                    revision with the working tree, and check reports a missing doc, a dead pattern and an unmapped doc.
 """
-import functools, os
+import functools, glob, os, re, shlex
 
 import pytest
 
@@ -143,6 +144,52 @@ class TestSelfdocSection:
         assert out[0].startswith("backlog:") and out[1].endswith(": ## Definition of done") and out[1].split(":")[0].isdigit()
         assert not any("## Working on items" in ln for ln in out)
         assert selfdoc.main(["section", "nope", "x"]) == 2
+
+    def test_selfdoc_sections_several_pairs_print_in_order(self, root, capsys):
+        assert selfdoc.print_sections([("demo", "Beta Section"), (f"{S}/demo.md", "### alpha detail")], root) == 0
+        out = capsys.readouterr().out.splitlines()
+        assert out[0] == "demo:22-29" and out[1] == "22: ## Beta  Section" and out[8] == "29: ~~~"
+        assert out[9] == "" and out[10] == f"{S}/demo.md:18-20", "a blank line, then the next pair's section"
+        assert out[11] == "18: ### Alpha detail   ##" and len(out) == 14
+
+    def test_selfdoc_sections_a_missing_heading_exits_1_and_the_others_still_print(self, root, capsys):
+        """The planted failure: one heading of three matches nothing."""
+        pairs = [("demo", "Beta Section"), ("demo", "Gamma"), ("demo", "### alpha detail")]
+        assert selfdoc.print_sections(pairs, root) == 1
+        out = capsys.readouterr().out
+        assert "NO SECTION 'Gamma' in demo; headings:" in out and "  ## Beta  Section" in out
+        assert "22: ## Beta  Section" in out and "18: ### Alpha detail   ##" in out, "the matched pairs still print"
+
+    def test_selfdoc_sections_cli_pairs(self, capsys):
+        assert selfdoc.main(["section", "backlog", "Definition of done", "maintaining", "Conduct for changes"]) == 0
+        out = capsys.readouterr().out.splitlines()
+        assert out[0].startswith("backlog:") and out[1].endswith(": ## Definition of done")
+        assert any(ln.startswith("maintaining:") for ln in out) and any(ln.endswith(": ## Conduct for changes") for ln in out)
+        assert selfdoc.main(["section", "backlog", "Definition of done", "maintaining", "No Such Heading"]) == 1
+        assert "NO SECTION 'No Such Heading' in maintaining" in capsys.readouterr().out
+        with pytest.raises(SystemExit) as e:
+            selfdoc.main(["section", "backlog", "Definition of done", "maintaining"])
+        assert e.value.code == 2 and "has no HEADING" in capsys.readouterr().err, "an odd count is a usage error"
+
+    def test_selfdoc_sections_the_skills_name_resolve(self, capsys):
+        """Each `selfdoc.py section` command in a skill or in kb-worker.md is well formed and every pair it names
+        resolves (a renamed heading breaks it); a skill that reads several sections names them in one command."""
+        files = sorted(glob.glob(os.path.join(selfdoc.KB, ".claude", "skills", "*", "SKILL.md")))
+        files.append(os.path.join(selfdoc.KB, ".claude", "agents", "kb-worker.md"))
+        seen = 0
+        for f in files:
+            with open(f, encoding="utf-8") as fh:
+                text = fh.read()
+            rel = os.path.relpath(f, selfdoc.KB)
+            assert not re.search(r"^- `python3 _tools/selfdoc\.py section [^`]+`.*\n- `python3 _tools/selfdoc\.py section ",
+                                 text, re.M), f"{rel} lists several section reads as separate commands"
+            for cmd in re.findall(r"python3 _tools/selfdoc\.py section ([^`\n]+)", text):
+                args = shlex.split(cmd)
+                assert args and len(args) % 2 == 0, f"{rel}: {cmd!r} is not DOC HEADING pairs"
+                assert selfdoc.main(["section", *args]) == 0, f"{rel}: {cmd!r}: {capsys.readouterr().out[-300:]}"
+                capsys.readouterr()
+                seen += 1
+        assert seen, "no section command found in the skills"
 
 SAMPLE = '''\
 """Sample tool: does one thing.

@@ -8,13 +8,13 @@ argument-hint: "[--push]"
 
 Arguments: $ARGUMENTS. Push only if they contain `--push` or the user asked to push; otherwise sync without pushing.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers). The commands are spelled out in the steps below:
-- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
-- `python3 _tools/selfdoc.py section content-rules "Facts and tags"` (resolving articles)
-- `python3 _tools/selfdoc.py section content-rules "Ledgers and retrieval data"` (resolving ledgers and tool data)
-- `python3 _tools/selfdoc.py section git "Workflow"` (sync, the gate, exit codes)
-- `python3 _tools/selfdoc.py section git "Merging (what sync automates)"`
-- `python3 _tools/selfdoc.py section git "Commit trailers"`
+Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
+
+```
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ledgers and retrieval data" git "Workflow" git "Merging (what sync automates)" git "Commit trailers"
+```
+
+What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Facts and tags"` resolving articles; `content-rules "Ledgers and retrieval data"` resolving ledgers and tool data; `git "Workflow"` sync, the gate, exit codes.
 
 `AGENTS.md` covers lookups only.
 

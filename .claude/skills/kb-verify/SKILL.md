@@ -8,10 +8,13 @@ argument-hint: "[path prefixes to limit the contract checks, e.g. auth dsc/what-
 
 Report only: change no file, even to fix a finding.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers). This skill only reports, so it needs the gate and the fact rules; the commands are spelled out in the steps below:
-- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate)
-- `python3 _tools/selfdoc.py section content-rules "Facts and tags"`
-- `python3 _tools/selfdoc.py section content-rules "Ledgers and retrieval data"`
+Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). This skill only reports, so it needs the gate and the fact rules; the commands are spelled out in the steps below:
+
+```
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ledgers and retrieval data"
+```
+
+What each gives: `maintaining "Conduct for changes"` the gate.
 
 `AGENTS.md` covers lookups only.
 

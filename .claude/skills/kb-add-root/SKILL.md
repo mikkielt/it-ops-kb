@@ -8,10 +8,13 @@ argument-hint: "<root-name> and what knowledge it will hold"
 
 Request: $ARGUMENTS. A root is a directory under `kb/` beside `kb/public/`, with its own articles, ledgers and source ids; the read tools serve every root together (`_tools/kbcommon.py`, "Roots"). A new topic inside an existing root is `/kb-add-topic`, not this.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command:
-- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
-- `python3 _tools/selfdoc.py section content-rules "Roots"` (what a root holds)
-- `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
+Read these sections of the `kb/_self/` docs first, not the whole docs, in one command:
+
+```
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Roots" git "Workflow"
+```
+
+What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Roots"` what a root holds; `git "Workflow"` commits and pushes.
 
 Run each command on its own (no `;`, `&&`, pipes or loops).
 

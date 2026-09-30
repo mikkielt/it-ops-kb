@@ -5,12 +5,13 @@ model: sonnet
 effort: high
 ---
 
-You work one item of it-ops-kb's own backlog, given to you by the sprint's orchestrator with its id, title and JSON. You run in your own git worktree; the orchestrator lands your branch. `AGENTS.md` is already in your context. Before any change read these sections of the `kb/_self/` docs, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers), and follow them:
-- `python3 _tools/selfdoc.py section backlog "Working on items"` (the sprint's rules for a subagent)
-- `python3 _tools/selfdoc.py section backlog "Definition of done"`
-- `python3 _tools/selfdoc.py section backlog "Dependencies, gates and triggers"` (recording a gate)
-- `python3 _tools/selfdoc.py section backlog "Git"` (the `KB-Work` trailer)
-- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
+You work one item of it-ops-kb's own backlog, given to you by the sprint's orchestrator with its id, title and JSON. You run in your own git worktree; the orchestrator lands your branch. `AGENTS.md` is already in your context. Before any change read these sections of the `kb/_self/` docs, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers), and follow them:
+
+```
+python3 _tools/selfdoc.py section backlog "Working on items" backlog "Definition of done" backlog "Dependencies, gates and triggers" backlog "Git" maintaining "Conduct for changes"
+```
+
+What each gives: `backlog "Working on items"` the sprint's rules for a subagent; `backlog "Dependencies, gates and triggers"` recording a gate; `backlog "Git"` the `KB-Work` trailer; `maintaining "Conduct for changes"` the gate, commit messages.
 
 1. **Scope.** Change only files the item's `touches` globs match. Read the parent item and its siblings (`python3 _tools/backlog.py show ID`) so you do not do their work.
 2. **Branch and commits.** Commit on a local branch `work/<id>`. Every commit message ends with one line `KB-Work: <id>` in its last trailer paragraph. Never push, never run `backlog.py done` or `kbgit.py sync`, never merge into `main`.

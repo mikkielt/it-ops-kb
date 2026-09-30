@@ -8,13 +8,13 @@ argument-hint: "<repository path or url> [root name] [what the facts should answ
 
 Request: $ARGUMENTS. The facts come from one repository at one pinned commit: its code as `CODE`, its own docs (README, `docs/`, ADRs, runbooks) as `DOC`, so the kb answers questions across a team's services beside `kb/public`. This is a conversation, not a script: at each **Ask** below, propose what you would do and why, and wait for the user.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers):
-- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
-- `python3 _tools/selfdoc.py section content-rules "Roots"`
-- `python3 _tools/selfdoc.py section content-rules "CODE: what the implementation does"`
-- `python3 _tools/selfdoc.py section content-rules "Licensing and privacy"`
-- `python3 _tools/selfdoc.py section plugin "6. A team's own knowledge: roots beside kb/public"` (a team's own roots; `section` matches headings without their backticks)
-- `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
+Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers):
+
+```
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Roots" content-rules "CODE: what the implementation does" content-rules "Licensing and privacy" plugin "6. A team's own knowledge: roots beside kb/public" git "Workflow"
+```
+
+What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `plugin "6. A team's own knowledge: roots beside kb/public"` a team's own roots; `section` matches headings without their backticks; `git "Workflow"` commits and pushes.
 
 Facts on the signals used below: `agents/repository-ingestion.md`; on the mapping tools (ctags JSON, language servers, each language's own read-only commands, toolchain pins) `agents/codebase-mapping.md`; on reading PowerShell without running it (`#Requires`, manifests, the AST) `windows/powershell-static-analysis.md`. Run each command on its own (no `;`, `&&`, pipes or loops).
 
