@@ -608,6 +608,18 @@ def test_knowledge_state_open_conflict_entry_makes_the_article_conflicting_until
     assert set(ks_states(ks.show()).values()) == {"sufficient"}
 
 
+def test_knowledge_state_reviewed_note_closes_only_when_not_a_source_disagreement(ks):
+    """A `Reviewed <date>, not a source disagreement` note closes an entry like `Resolved`; a `Reviewed <date>, still
+    open` note leaves it open (both planted)."""
+    ks.know(refs=["demo/tool"])
+    entry = "- The two pages disagree on the retry count (S100). (topic: demo/tool)\n"
+    ks.write("_conflicts.md", "# Conflicts\n\n" + entry + "  - Reviewed 2026-09-28, still open: not re-read.\n")
+    assert ks_states(ks.show()) == {"demo/tool": "conflicting"}
+    ks.write("_conflicts.md", "# Conflicts\n\n" + entry
+             + "  - Reviewed 2026-09-28, not a source disagreement: two quantities; closed.\n")
+    assert ks_states(ks.show()) == {"demo/tool": "sufficient"}
+
+
 def test_knowledge_state_stale_wins_over_conflicting_and_both_over_coverage(ks):
     ks.know(refs=["demo/tool", ks_fact(0)])
     ks.write("_conflicts.md", "# Conflicts\n\n- Disagreement. (topic: demo/tool)\n")

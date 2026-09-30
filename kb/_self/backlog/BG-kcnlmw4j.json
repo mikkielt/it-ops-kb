@@ -1,0 +1,58 @@
+{
+  "id": "BG-kcnlmw4j",
+  "kind": "bug",
+  "title": "Knowledge state counts a conflict entry closed as not a source disagreement as open",
+  "status": "done",
+  "sprint": "SP-ufr3qnff",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "KnowledgeState.open_conflicts treats a _conflicts.md entry with a '- Reviewed <date>, not a source disagreement' note as closed, as it does '- Resolved <date>' and '- Superseded <date>', while a '- Reviewed <date>, still open' note leaves the entry open; a test plants each note, and kb/_self/backlog.md and tools.md name the closing notes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types;sys.path.insert(0,'_tools');import backlog;o=backlog.KnowledgeState(types.SimpleNamespace(kb=None)).open_conflicts();b=[e['file']+':'+str(e['line']) for e in o if 'not a source disagreement' in e['text']];print(len(b),b[:3]);sys.exit(1 if b else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "knowledge_state"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "evidence": {
+    "commit": "ead60375fd062db1085b4bc9b335af376c08c438",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "knowledge_state"
+        ],
+        "exit": 0,
+        "sha256": "e2f9bf08308a9185"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,'_tools');import backlog;o=backlog.KnowledgeState(types.SimpleNamespace(kb=None)).open_conflicts();b=[e['file']+':'+str(e['line']) for e in o if 'not a source disagreement' in e['text']];print(len(b),b[:3]);sys.exit(1 if b else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e628d1e0eca4d8c7"
+      }
+    ]
+  }
+}
