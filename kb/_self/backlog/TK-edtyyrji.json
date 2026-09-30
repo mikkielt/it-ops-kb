@@ -2,7 +2,7 @@
   "id": "TK-edtyyrji",
   "kind": "task",
   "title": "Record the pre-split navigation baseline",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-qxyqfpoz",
   "priority": "P2",
   "rank": 1,
@@ -35,5 +35,31 @@
   "depends_on": [
     "TK-xhgrqrsm"
   ],
-  "claimed_by": "worker-edtyyrji"
+  "evidence": {
+    "commit": "35564886bd1c754fd4b4ec86401a39f817b6bbf8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-c",
+          "^navigation,.*,before,",
+          "--",
+          "kb/_self/reports/benchmarks.csv"
+        ],
+        "exit": 0,
+        "sha256": "0bdfc2a5295a34eb"
+      }
+    ]
+  }
 }
