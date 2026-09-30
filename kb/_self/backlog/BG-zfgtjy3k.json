@@ -2,7 +2,7 @@
   "id": "BG-zfgtjy3k",
   "kind": "bug",
   "title": "kb-tests-windows exceeds the 1 h job timeout, so its failures are never named",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-hlfwfcx6",
   "priority": "P2",
@@ -21,6 +21,19 @@
     "kb/_self/runners.md",
     "kb/_self/git.md"
   ],
-  "notes": "The job ran pytest with 2 xdist workers: a Hyper-V container gets 2 vCPUs by default. The operator chose 6 CPUs and 12 GB per container for the docker-windows runner (config.toml, outside the repository; runners.md records it) and a longer job timeout; the job is started by hand.",
-  "claimed_by": "win-first"
+  "notes": "The job ran pytest with 2 xdist workers: a Hyper-V container gets 2 vCPUs by default. The operator chose 6 CPUs and 12 GB per container for the docker-windows runner (config.toml, outside the repository; runners.md records it) and a longer job timeout; the job is started by hand. Proven by job 16825890140 (pipeline 2895739154, main at 74da696, started by the orchestrator on 2026-09-30): pytest ran 6 workers, finished in 61 min within the 3 h limit and named its result: 9 failed, 1268 passed, 3 skipped, 1 xfailed; the failures are filed as their own bugs.",
+  "evidence": {
+    "commit": "030663dedbbf124d00b8dde7d710a52660d707ca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open('.gitlab-ci.yml',encoding='utf-8').read();b=re.search(r'^kb-tests-windows:\\n((?:[ \\t].*\\n|\\n)*)',t,re.M).group(1);sys.exit(0 if re.search(r'^  timeout:',b,re.M) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }

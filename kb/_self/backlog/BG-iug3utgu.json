@@ -1,0 +1,20 @@
+{
+  "id": "BG-iug3utgu",
+  "kind": "bug",
+  "title": "kb-tests-windows fails 9 tests in the Windows container: six timeouts, a clock bound, a network call and the plugin-status commit line",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The newest kb-tests-windows job on main passes: tests.py and then stress_test.py succeed in the Windows Server 2025 Hyper-V container (6 vCPUs, 12 GB). Job 16825890140 (main at 74da696) failed 9 tests: six subprocess timeouts (test_kb TestLookup test_kb_ask_routes, test_kb_ask_without_claude_prints_the_evidence, test_kb_hook; test_kbingest test_kbingest_drift_reports_each_kind_of_moved_evidence; test_kb_mcp test_embed_roots_names_several_roots_and_status_follows; test_portability TestPowerShellLauncher test_no_interpreter_exits_127: limits of 60, 120 and 180 s), a 1.5 s wall-clock bound (test_querylog TestLaunch test_session_start_picks_up_closed_sessions_only, like BG-g6qpxe5x), an SSL certificate error where test_kblane TestCheckLanes test_an_api_error_exits_2_and_never_passes expects its API-error message (a real network call?), and test_kb_mcp test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace (its commit line). The stress suite did not run. The fixes keep every test's proof; they reproduce in a local container of the same image on the Windows host (docker, Hyper-V isolation) before the job is re-run.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,subprocess,sys; j=json.loads(subprocess.run(['glab','api','projects/86893494/jobs?scope[]=success&scope[]=failed&per_page=100'],capture_output=True,text=True).stdout); w=[x for x in j if x['name']=='kb-tests-windows' and x['ref']=='main']; sys.exit(0 if w and w[0]['status']=='success' else 1)"
+    ]
+  },
+  "claimed_by": "worker-winci"
+}
