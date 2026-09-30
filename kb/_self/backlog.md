@@ -161,7 +161,7 @@ A sprint is a goal and the stories and bugs committed to it. It ends when its go
    - every gap becomes a bug, in this sprint if it is `S1`, else in the backlog;
    - `backlog.py check` and `tests.py` pass.
 5. **Retrospective**: from the sprint's evidence, list the process failures: refused `done`s, checks that passed on broken work, late gates, briefs that missed something, rules that got in the way. The operator picks which to act on. Each accepted change becomes a backlog story naming its failure (Changing this process, below). The findings go in the close commit's body, never into the docs.
-6. **Close**: `backlog.py close SP` refuses while anything is open. Otherwise it deletes the sprint, its items and the epics they finished, and the commit carries `KB-Work: SP-...`. The git history keeps all of it (The item file, above).
+6. **Close**: `backlog.py close SP` refuses while anything is open. Otherwise it deletes the sprint, its items and the epics they finished, drops their ids from every remaining item's `relates_to`, and the commit carries `KB-Work: SP-...`. The git history keeps all of it (The item file, above).
 
 Several sprints may be active at once. Each has its own horizon.
 

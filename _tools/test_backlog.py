@@ -321,6 +321,28 @@ def test_close_refuses_open_items(sprint):
     assert code == 1 and "not finished" in out
 
 
+def test_close_drops_relates_to(sprint):
+    """An open item outside the sprint relates to one close deletes: close drops the link, and check still passes."""
+    repo = sprint["repo"]
+    b(repo, "new", "bug", "--title", "Later", "--severity", "S4", "--repro", argstr(is_file("src/z.txt")),
+      "--goal", "z exists")
+    later = item(repo, "Later")["id"]
+    edit(repo, later, relates_to=[sprint["bg"], sprint["ep"]])
+    b(repo, "new", "bug", "--title", "Only", "--severity", "S4", "--repro", argstr(is_file("src/y.txt")),
+      "--goal", "y exists")
+    only = item(repo, "Only")["id"]
+    edit(repo, only, relates_to=[sprint["tk"]])
+    for iid in (sprint["st"], sprint["tk"], sprint["bg"], sprint["rv"]):
+        edit(repo, iid, status="dropped")
+    code, out = b(repo, "close", sprint["sp"])
+    assert code == 0, out
+    assert item(repo, "Later")["relates_to"] == [sprint["ep"]]  # the epic stays open, so its link stays
+    assert "relates_to" not in item(repo, "Only")
+    assert later in out and only in out  # close names the items it edited
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+
+
 def test_goal_condition_names_checks_and_scope(sprint):
     code, out = b(sprint["repo"], "goal", sprint["tk"])
     assert f"`{argstr(is_file('src/b.txt'))}` exits 0" in out and "src/**" in out and f"backlog.py done {sprint['tk']}" in out
