@@ -16,5 +16,8 @@
       "import os,subprocess,sys; env=dict(os.environ); env['PATH']=os.pathsep.join(p for p in env['PATH'].split(os.pathsep) if not {'usr','mingw64'} & set(p.replace(chr(92),'/').lower().split('/'))); sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-k','test_submit_feedback_blocked_on_every_docs_server'],env=env).returncode)"
     ]
   },
-  "claimed_by": "worker-shims"
+  "claimed_by": "worker-shims",
+  "touches": [
+    "_tools/test_kb_mcp.py"
+  ]
 }
