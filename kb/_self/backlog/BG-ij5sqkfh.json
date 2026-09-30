@@ -1,0 +1,22 @@
+{
+  "id": "BG-ij5sqkfh",
+  "kind": "bug",
+  "title": "querylog.md says a fixed-since gap finding counts a miss as fixed, also when an eval finding superseded it",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/querylog.md Reporting says the digest counts a miss as fixed only by the finding that stands for it (its eval finding when it has one, else its gap finding), so a gap candidate learn superseded with an eval finding apply recorded no-fix is not fixed",
+  "repro": {
+    "run": [
+      "grep",
+      "-q",
+      "the finding that stands for it",
+      "kb/_self/querylog.md"
+    ]
+  },
+  "touches": [
+    "kb/_self/querylog.md"
+  ]
+}
