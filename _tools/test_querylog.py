@@ -2553,7 +2553,7 @@ class TestPushRules:
         sha = "b" * 40
         assert ql_deliver.ci_status("git@gitlab.corp.example.com:grp/sub/proj.git", sha, run)[0] == "ok"
         assert calls[-2:] == [["glab", "api", "--hostname", "gitlab.corp.example.com",
-                               f"projects/grp%2Fsub%2Fproj/pipelines?sha={sha}&per_page=1"],
+                               f"projects/grp%2Fsub%2Fproj/pipelines?sha={sha}&per_page={ql_deliver.SHA_PIPELINES}"],
                               ["glab", "api", "--hostname", "gitlab.corp.example.com",
                                "projects/grp%2Fsub%2Fproj/pipelines/7/jobs?per_page=100"]]
         assert ql_deliver.ci_status("https://github.com/o/r.git", sha, run)[0] == "red"
