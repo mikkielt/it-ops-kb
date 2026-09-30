@@ -2,8 +2,9 @@
   "id": "BG-7xdn4bur",
   "kind": "bug",
   "title": "The gap step's weak-lead rule admits off-subject gaps through a qualifier title word, a slug stem or one lacked word in a fact",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -21,5 +22,6 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md",
     "_tools/querylog.py"
-  ]
+  ],
+  "claimed_by": "worker-weaklead"
 }
