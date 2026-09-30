@@ -721,6 +721,24 @@ def item_commits(root, ids):
     return out
 
 
+def unlanded_code(root, iid):
+    """(short hashes, remote) of the item's code-lane KB-Work commits on HEAD that are not ancestors of
+    refs/remotes/<integration>/main as last fetched; the hashes are [] when all are, and ["(no such ref)"] when the ref
+    is missing and there is a code-lane commit. Content-lane commits never count."""
+    import kblane, kbpublic
+    remote = kbpublic.integration_remote(root)
+    code = [sha for sha, paths in item_commits(root, [iid]).items()
+            if kblane.paths_lane(paths)[0] == kblane.CODE]
+    if not code:
+        return [], remote
+    ref = f"refs/remotes/{remote}/main"
+    if subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode:
+        return ["(no such ref)"], remote
+    return [sha[:10] for sha in code
+            if subprocess.run(["git", "merge-base", "--is-ancestor", sha, ref], cwd=root,
+                              capture_output=True).returncode], remote
+
+
 def blob_id(root, rev, path):
     p = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{rev}:{path}"], cwd=root, capture_output=True,
                        text=True, encoding="utf-8", errors="replace")
@@ -988,6 +1006,13 @@ def cmd_done(bl, a):
         if it.get("touches") and not item_commits(bl.root, [iid]):
             problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} "
                             "(git reads a trailer only in the message's last paragraph, with the others)")
+        late, remote = unlanded_code(bl.root, iid)
+        if late == ["(no such ref)"]:
+            problems.append(f"code commits of the item, and refs/remotes/{remote}/main is not fetched: fetch {remote}, "
+                            "then run done again")
+        elif late:
+            problems.append(f"code commit(s) {', '.join(late)} are not on {remote}/main: merge the merge request sync "
+                            f"opened for them (branch code/{iid}), fetch {remote} and run done again")
         for sha, path in out_of_scope(bl.root, item_commits(bl.root, [iid] + bl.descendants(iid)), globs):
             problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
     if problems:
