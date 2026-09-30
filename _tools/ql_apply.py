@@ -8,7 +8,7 @@ import csv, datetime, re, sys
 from pathlib import Path
 
 from ql_base import HOME, one_line, places, restore, run_cmd, write_text
-from ql_learn import article_facts, article_of, domain_article, held_article, holds_word, passes, unknown_words
+from ql_learn import article_facts, article_of, domain_article, held_article, passes, unknown_words
 from ql_research import add_under, research_one
 from ql_store import (APPLY_STATES, FIX_KINDS, failed_counts, finding_states, store_entries, write_findings)
 
@@ -80,6 +80,32 @@ class Gate:
         """The qualified article (.md) whose topic holds the qualified `path` (the article itself, a same-stem data
         file or a file its `files:` lists), or None."""
         return article_of(path)
+
+    def unit_words(self, article, words):
+        """[the key words of `words` one unit holds] for each unit of the article's topic (the article, its same-stem
+        data file and the files its `files:` lists) that holds any: its own words as the pack counts them (file name,
+        title, section and text), a product alias held where the product's other names are (`kbfacts.expand`'s
+        variants, from the alias forms the words make up)."""
+        import kbfacts
+        st = kbfacts.store()
+        topic = (kbfacts.articles().get(article) or {}).get("topic")
+        files = set(kbfacts.topic_files().get(topic) or ()) | {article}
+        words, variants = set(words), {}
+        for forms in kbfacts.aliases().values():
+            stems = [s for s in (tuple(kbfacts.stem(w) for w in f if w not in kbfacts.STOP) for f in forms) if s]
+            for s in stems:
+                if set(s) <= words:  # the question used this name of the product
+                    for t in s:
+                        variants.setdefault(t, set()).update(stems)
+        per = {}
+        for t in sorted(words):
+            ids = set(st.own(t))
+            for v in variants.get(t, ()):
+                ids |= set.intersection(*(set(st.own(x)) for x in v))
+            for i in ids:
+                if st.paths[i] in files:
+                    per.setdefault(i, set()).add(t)
+        return [per[i] for i in sorted(per)]
 
     def topic(self, article):
         """The topic of a qualified article, as its root's ledgers name it: `<domain>/<slug>`."""
@@ -267,25 +293,26 @@ def apply_one(ev, fix, entry, gate, base):
 # ---------------------------------------------------------------- the gap step
 
 def weak_off_topic(res, article, gate):
-    """Whether a `weak` pack led by `article` lacks the question's subject: the pack names words it lacks, no word it
-    matched is a word of the lead's topic or title (the matched words are qualifiers such as maximum or size, not the
-    lead's subject), and none of the lead's tagged facts holds a lacked word as written (`holds_word`). 'What is the
-    maximum email attachment size?' led by mecm/collect-client-logs: matched attachment, maximum, size; lacks email."""
-    lacks = [w for w in res.get("lacks") or [] if isinstance(w, str) and w.strip()]
-    if res.get("verdict") != "weak" or not lacks:
+    """Whether a `weak` pack led by `article` lacks the question's subject: no single line of the lead's topic (a fact,
+    an untagged line or a data row, each with its file name and title, as the pack's index holds them) holds more than
+    half of the question's key words the kb knows (`known`, `Gate.unit_words`). The subject is words that stand
+    together in one line; words scattered over the article, or only its title's or file name's, are qualifiers or
+    chance. 'cargo metadata --no-deps invokes rustc ...' led by agents/codebase-mapping: a Rust fact holds cargo,
+    metadata and no-dep, 3 of 5, so it is the lead's gap; 'What is the maximum email attachment size?' led by
+    mecm/collect-client-logs: its best line holds size, 1 of 4."""
+    known = [w for w in res.get("known") or [] if isinstance(w, str) and w.strip()]
+    if res.get("verdict") != "weak" or not known:
         return False
-    import kbfacts
-    names = {kbfacts.stem(w) for w in re.findall(r"[a-z0-9]+", f"{gate.topic(article)} {gate.title(article)}".lower())}
-    if names & set(res.get("matched") or []):
-        return False
-    return not any(holds_word(w, text) for _, text in gate.facts(article) for w in lacks)
+    best = max((len(set(ws) & set(known)) for ws in gate.unit_words(article, known)), default=0)
+    return best * 2 <= len(known)
 
 
 def gap_one(g, entry, gate, day):
     """The record of one open gap candidate (kind gap, stage candidate-gap), re-run with pack on the working tree: it
     reproduces when it still fails (`passes` without a best article), and it lies in a kb domain when the pack's lead
     path belongs to an article, for a `none` verdict only with more than half the key words in that lead
-    (`domain_article`), for a `weak` verdict only when that lead holds the question's subject (`weak_off_topic`). Then
+    (`domain_article`), for a `weak` verdict only when one line of that lead holds more than half of them, the
+    question's subject (`weak_off_topic`). Then
     a _gaps.md entry under the article's topic, in the article's root, dated `day`, and the finding promoted from
     candidate-gap to gap (`applied`). Off the kb's domains (no lead, a lead no article holds, a `none` lead with half
     the key words or fewer, a `weak` lead without the subject) it is `rejected` at candidate-gap: no topic can take its

@@ -42,7 +42,7 @@ the ql_*.py modules beside it.
                         `rejected`. The gap step: an open gap candidate whose miss the pack still reproduces, with an
                         article in the lead (for a `none` pack, only a lead that matches more than half of the
                         question's key words the kb knows; for a `weak` pack, only a lead that holds the question's
-                        subject: a matched word in its topic or title, or a lacked word in its facts), becomes a dated
+                        subject: one line of its topic holding more than half of those words), becomes a dated
                         entry under that article's topic in its root's _gaps.md (candidate-gap -> gap); one off the
                         kb's domains (no lead, a lead no article holds, a stray `none` lead, a `weak` lead without the
                         subject) is `rejected` at candidate-gap. Research, only when the user's
