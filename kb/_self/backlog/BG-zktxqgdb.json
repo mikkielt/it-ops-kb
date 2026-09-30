@@ -2,7 +2,7 @@
   "id": "BG-zktxqgdb",
   "kind": "bug",
   "title": "kbingest's .NET global.json preflight checks only is_symlink, not git's link mode",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-g5hizdko",
   "sprint": "SP-hlfwfcx6",
   "priority": "P3",
@@ -19,5 +19,6 @@
   "touches": [
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"
-  ]
+  ],
+  "claimed_by": "worker-kbingest"
 }

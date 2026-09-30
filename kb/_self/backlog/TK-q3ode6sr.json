@@ -2,7 +2,7 @@
   "id": "TK-q3ode6sr",
   "kind": "task",
   "title": "Find the job object Claude Code gives hook processes on Windows",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-vtlw7fsu",
   "priority": "P2",
   "rank": 1,
@@ -42,5 +42,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Needs a Windows machine: work it in a Windows session of this clone. The Windows laptops with Claude Code and this clone are the machine the gate asks for."
+  "notes": "Needs a Windows machine: work it in a Windows session of this clone. The Windows laptops with Claude Code and this clone are the machine the gate asks for.",
+  "claimed_by": "win-first"
 }

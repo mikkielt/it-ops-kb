@@ -2,7 +2,7 @@
   "id": "BG-uddfi7qz",
   "kind": "bug",
   "title": "Launch tests run the distill in mode auto, so on a host with the plugin installed they could push test entries",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P1",
@@ -19,5 +19,6 @@
   "touches": [
     "_tools/conftest.py",
     "_tools/test_querylog.py"
-  ]
+  ],
+  "claimed_by": "worker-qltests"
 }
