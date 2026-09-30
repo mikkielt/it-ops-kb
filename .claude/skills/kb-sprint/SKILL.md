@@ -56,6 +56,7 @@ You are the orchestrator. Loop:
    5. commit the item file with the same trailer;
    6. `python3 _tools/kbgit.py sync --push`: the item file, a content-lane commit, goes straight to `main`. A content-only item (its commits touch only kb roots and `kb/_self/*.md`) skips step 3 and lands here.
    If `done` refuses, send the reasons back to the same subagent (SendMessage) or release the item (`python3 _tools/backlog.py release ID`) and file what blocks it; for an unmerged `code/<id>` request it names the request to merge.
+   A bug filed while landing is committed on its own, then claimed, before the commit that fixes it (`kb/_self/backlog.md`, Working on items).
 5. A provisional gate: take the recommendation (`answer ID GATE --provisional`) and go on. A blocking gate: its items wait. In an interactive session ask the operator now, in one batch with the recommendations.
 6. Stop when `next` prints nothing ready. Report the horizon: what landed, and what waits on which gate or trigger (each with its question).
 
