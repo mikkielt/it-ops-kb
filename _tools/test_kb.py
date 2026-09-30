@@ -7,7 +7,8 @@ backtick paths and used_in paths resolve; every CLI flag the docs mention exists
 skills are well-formed; of the plugin skills only /kb-lookup is model-invocable, and the clone-only change skills all are
 (a change request must reach them); the change router hook routes change prompts; AGENTS.md stays under 4 KB (every session and subagent
 loads it; maintainer rules live in kb/_self/maintaining.md) and README.md under 8 KB (people read it); kb/_self/map.csv names
-every _self doc and matches files (selfdoc.py check); `ruff check` is clean (pyproject.toml).
+every _self doc and matches files, and no (kb/_self doc, Section) reference names a missing heading (selfdoc.py check;
+a planted dead reference fails it); `ruff check` is clean (pyproject.toml).
 TestSelfDocs: kb/_self/ stays out of the pack and the default search, and a search with index finds it.
 TestLookup (deterministic retrieval): kbfacts.py parses tag variants and ledger topic markers one way; `rag.py eval` passes
 every question of kb/public/_retrieval/lookup_eval.csv (expected article in the pack, right coverage verdict); the kb: hook blocks
@@ -376,6 +377,41 @@ class TestCohesion:
     def test_self_map_is_complete(self):
         code, out = run(os.path.join(TOOLS, "selfdoc.py"), "check")
         assert code == 0, out[-3000:]
+
+    def test_selfdoc_flags_dead_section_reference(self, tmp_path):
+        """selfdoc.py check names a `(kb/_self/<doc>.md, <Section>)` or `(<doc>.md, <Section>)` reference whose heading
+        is not in that doc, in kb/_self docs, AGENTS.md, SKILL.md files and _tools/ docstrings and comments; a heading
+        named whole, by its first words, or as `A and B`, and a file list such as `(README.md, AGENTS.md)`, pass. On the
+        live repository the query log's Learn and Apply references resolve."""
+        import selfdoc
+        self_dir = tmp_path / SELF_REL
+        (self_dir).mkdir(parents=True)
+        (tmp_path / "_tools").mkdir()
+        (tmp_path / ".claude" / "skills" / "kb-x").mkdir(parents=True)
+        w = lambda p, s: p.write_text(s, encoding="utf-8", newline="\n")  # noqa: E731
+        w(self_dir / "map.csv", f"doc,pattern\n{SELF_REL}/querylog.md,-\n{SELF_REL}/rules.md,-\n")
+        w(self_dir / "querylog.md", "# Query log\n\n## Learn\n\n## Apply\n\n## Capture (`querylog.py capture`)\n\n"
+                                    "```\n## Fenced\n```\n")
+        w(self_dir / "rules.md", "# Rules\n\n## Ledgers and retrieval data\n\nSee (`kb/_self/querylog.md`, Learn and Apply)"
+                                 " and (querylog.md, Capture).\n")
+        w(tmp_path / "AGENTS.md", "Rules (`kb/_self/rules.md`, Ledgers); files (README.md, AGENTS.md).\n")
+        w(tmp_path / ".claude" / "skills" / "kb-x" / "SKILL.md", "Read (kb/_self/querylog.md, Delivery) first.\n")
+        w(tmp_path / "_tools" / "t.py", '"""Tool (kb/_self/querylog.md,\n    Fenced)."""\n'
+                                        'X = "(querylog.md, Planted string)"  # (rules.md, Gone)\n'
+                                        'def f():\n    """Uses (querylog.md, Apply)."""\n')
+        subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+        got = sorted(p for p in selfdoc.check(str(tmp_path)) if "names" in p)
+        assert got == [
+            f".claude/skills/kb-x/SKILL.md:1: (kb/_self/querylog.md, Delivery) names no heading of {SELF_REL}/querylog.md",
+            f"_tools/t.py:1: (kb/_self/querylog.md, Fenced) names no heading of {SELF_REL}/querylog.md",
+            f"_tools/t.py:3: (rules.md, Gone) names no heading of {SELF_REL}/rules.md",
+        ], got
+        live = selfdoc.dead_section_refs()
+        found = [p for p in live if re.search(r"querylog\.md, (Learn|Apply)\b", p)]
+        assert not found, found
+        n = sum(1 for f, parts in selfdoc.ref_sources(KB, set(tracked())) for _, t in parts for m in selfdoc.SECTION_REF_RX.finditer(t)
+                if m["sec"].split()[0] in ("Learn", "Apply"))
+        assert n >= 2, "the query log's Learn and Apply references are no longer read as section references"
 
 
 class TestSelfDocs:

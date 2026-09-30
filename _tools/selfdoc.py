@@ -7,8 +7,8 @@
                                    included) while the doc does not: the check before a commit or a push
                                    (`--since @{upstream}`); exit 1 when any
   selfdoc.py map PATH [PATH ...]   the docs that describe these paths
-  selfdoc.py check                 map rows naming a missing doc or matching no file, and kb/_self/*.md docs with no row;
-                                   exit 1 when any
+  selfdoc.py check                 map rows naming a missing doc or matching no file, kb/_self/*.md docs with no row,
+                                   and dead section references; exit 1 when any
   selfdoc.py section DOC HEADING [DOC HEADING ...]
                                    the section under each heading, down to the next heading of the same or a higher
                                    level, each line with its line number; exit 1 when a heading matches none, naming
@@ -21,6 +21,11 @@ runbook that updates what `stale` lists. A doc that was checked against a change
 with a commit trailer, `Self-Reviewed: kb/_self/plugin.md, AGENTS.md`: from that commit on, `stale` counts it as up to
 date for everything before. A repository tool like kbgit.py: it reads this clone, never KB_ROOT.
 Exit 0 nothing to do, 1 stale docs or map problems, 2 bad arguments, no git, or an unreadable map.
+
+A section reference is `(kb/_self/<doc>.md, <Section>)` or `(<doc>.md, <Section>)`, the doc in backticks or not, in
+kb/_self/*.md, AGENTS.md, .claude/skills/*/SKILL.md and the docstrings and comments of _tools/*.py. `check` names each
+whose kb/_self doc has no heading of that text (`path:line: (doc, Section) names no heading of ...`); the text may be a
+heading's first words (`Ledgers` for `Ledgers and retrieval data`) or `A and B` / `A, B` for several sections.
 
 `section` reads one file, so a skill or an agent takes the part of a doc it needs, not the whole. DOC is a path from the
 repository root or an absolute path, else a name under kb/_self (`maintaining` or `maintaining.md`). HEADING is the
@@ -179,6 +184,97 @@ def check(root=KB):
     for f in sorted(files):
         if f.startswith(SELF_REL + "/") and "/" not in f[len(SELF_REL) + 1:] and f.endswith(".md") and f not in docs:
             problems.append(f"{f}: no row in {MAP} (pattern - if it describes no file)")
+    problems += dead_section_refs(root, files)
+    return problems
+
+
+# A section reference: `(kb/_self/querylog.md, Delivery)` or `(querylog.md, Spool and Distill)`, the doc in backticks
+# or not, the section a capitalised heading text up to the closing parenthesis (a `;` before the doc is allowed).
+SECTION_REF_RX = re.compile(r"(?<![\w/.-])`?(?P<doc>(?:kb/_self/)?[\w-]+\.md)`?,\s+(?P<sec>[A-Z][^()`;:\n]{0,60}?)\)")
+
+
+def ref_sources(root, files):
+    """[(path, [(first line no, text)])]: where section references are read. kb/_self/*.md, AGENTS.md and the skills'
+    SKILL.md whole; _tools/*.py only in docstrings and comments, so a test's planted string is not a reference."""
+    out = []
+    for f in sorted(files):
+        path = pathlib.Path(root, f)
+        is_doc = (f.startswith(SELF_REL + "/") and "/" not in f[len(SELF_REL) + 1:] and f.endswith(".md")) \
+            or f == "AGENTS.md" or (f.startswith(".claude/skills/") and f.endswith("/SKILL.md"))
+        is_tool = f.startswith(TOOLS_REL + "/") and "/" not in f[len(TOOLS_REL) + 1:] and f.endswith(".py")
+        if not (is_doc or is_tool) or not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if is_doc:
+            out.append((f, [(1, text)]))
+            continue
+        parts = []
+        try:
+            tree = ast.parse(text)
+        except (SyntaxError, ValueError):
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Module, *DEFS)) and node.body and isinstance(node.body[0], ast.Expr) \
+                    and isinstance(node.body[0].value, ast.Constant) and isinstance(node.body[0].value.value, str):
+                parts.append((node.body[0].lineno, node.body[0].value.value))
+        try:
+            for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+                if tok.type == tokenize.COMMENT:
+                    parts.append((tok.start[0], tok.string))
+        except (tokenize.TokenError, SyntaxError):
+            pass
+        out.append((f, sorted(parts)))
+    return out
+
+
+def heading_keys(text_lines):
+    """The names a reference may give a doc's heading: its text, and its text without a trailing `(...)` note."""
+    keys = set()
+    for _, _, text in headings(text_lines):
+        keys.add(norm_heading(text))
+        keys.add(norm_heading(re.sub(r"\s*\([^()]*\)\s*\Z", "", text)))
+    return keys
+
+
+def names_heading(sec, keys):
+    """Whether SEC names one of the heading KEYS: the whole text, or its first words up to a word boundary
+    (`Ledgers` for `Ledgers and retrieval data`, `Staging levels` for `Staging levels: what you must know at each`)."""
+    s = norm_heading(sec)
+    return bool(s) and any(k == s or (k.startswith(s) and not k[len(s)].isalnum()) for k in keys)
+
+
+def dead_section_refs(root=KB, files=None):
+    """`path:line: (doc, Section)` problems for each section reference whose doc under kb/_self has no heading of that
+    text. `Spool and Distill` or `Routing, Packs` name several sections: each must exist when the whole does not."""
+    if files is None:
+        files = set(lines(git(root, "ls-files"))) | set(lines(git(root, "ls-files", "--others", "--exclude-standard")))
+    cache, problems = {}, []
+    for f, parts in ref_sources(root, files):
+        for first, text in parts:
+            for m in SECTION_REF_RX.finditer(text):
+                doc = m["doc"]
+                name = doc if doc.startswith(SELF_REL + "/") else f"{SELF_REL}/{doc}"
+                if name not in cache:
+                    p = pathlib.Path(root, name)
+                    try:
+                        cache[name] = heading_keys(p.read_text(encoding="utf-8").splitlines()) if p.is_file() else None
+                    except (OSError, UnicodeDecodeError):
+                        cache[name] = None
+                keys = cache[name]
+                sec = " ".join(m["sec"].split())
+                line = first + text.count("\n", 0, m.start())
+                if keys is None:
+                    if doc.startswith(SELF_REL + "/"):
+                        problems.append(f"{f}:{line}: ({doc}, {sec}) names a doc that does not exist")
+                    continue  # a bare name that is no kb/_self doc (README.md of the repository, say) is not ours
+                if re.search(r"\.\w", sec):
+                    continue  # `(README.md, AGENTS.md)`: a list of files, not a section
+                if names_heading(sec, keys) or all(names_heading(p, keys) for p in re.split(r",\s*|\s+and\s+", sec) if p.strip()):
+                    continue
+                problems.append(f"{f}:{line}: ({doc}, {sec}) names no heading of {name}")
     return problems
 
 
@@ -412,7 +508,8 @@ def main(argv=None):
     s.add_argument("--since", metavar="REV", help="compare REV with the working tree instead of each doc's last commit")
     m = sub.add_parser("map", help="the docs that describe these paths")
     m.add_argument("paths", nargs="+")
-    sub.add_parser("check", help="map rows naming a missing doc or matching no file; _self docs with no row")
+    sub.add_parser("check", help="map rows naming a missing doc or matching no file; _self docs with no row; "
+                                   "(doc, Section) references to a missing heading")
     c = sub.add_parser("section", help="sections of docs, with line numbers: one or more DOC HEADING pairs")
     c.add_argument("pairs", nargs="+", metavar="DOC HEADING",
                    help="DOC: path from the repository root, or a name under kb/_self; HEADING: the heading's text "
