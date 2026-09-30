@@ -20,8 +20,8 @@
                                         `--output-format json`; one answer is printed, the kb part first, then the live
                                         part under "Live docs, not in the kb:"; -v prints each run's total_cost_usd and
                                         their sum. A reader INSUFFICIENT sends the whole question to the researcher
-                                        (`escalated`). A split pack that lacks its `kb has:` or `kb lacks:` line cannot be
-                                        divided: the reader answers the whole question from the pack, as in step 3.
+                                        (`escalated`). A split pack that lacks its `kb has:` or `kb lacks:` line, or whose
+                                        line is `-` (empty), cannot be divided: the reader answers the whole question from the pack, as in step 3.
                                         In a pack of several parts each part goes where its own route sends it: a
                                         part with no `route:` line to the reader whole, a `web` part to the
                                         researcher whole (its `kb has:` words never to the reader), a `split` part's
@@ -154,9 +154,14 @@ PART_HEAD = re.compile(r"^# Q\d+: (.*\S)\s*$", re.M)
 MAX_LEADS = 3
 
 
+NONE_WORD = "-"  # kbfacts' `kb has: -` / `kb lacks: -`: that side is empty
+
+
 def has_lacks(text):
-    """The `kb has:` and `kb lacks:` lines of one pack (or one part of a pack), one entry per line."""
-    return HAS_LINE.findall(text), LACKS_LINE.findall(text)
+    """The `kb has:` and `kb lacks:` lines of one pack (or one part of a pack), one entry per line; a `-` line (the
+    pack's empty side) is no entry, so a split with an empty side is read whole and no prompt says `The kb lacks: -`."""
+    return ([h for h in HAS_LINE.findall(text) if h != NONE_WORD],
+            [x for x in LACKS_LINE.findall(text) if x != NONE_WORD])
 
 
 def part_routes(text):

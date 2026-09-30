@@ -4,7 +4,7 @@
                    and reader; each part of several where its own route sends it (a covered part beside an
                    uncovered one, planted and in the real kb); a web run's prompt, its printed result and error result; --route's lines; a split run's
                    reader and researcher, its one answer, the costs -v prints and sums, the reader's INSUFFICIENT and
-                   the error results; a clean good plan, argv and run stay as they were
+                   the error results; a `kb has: -` or `kb lacks: -` line read as empty (one part and several); a clean good plan, argv and run stay as they were
 """
 import json, subprocess, sys
 
@@ -363,6 +363,51 @@ class TestKbAskRoute:
         code, out, _, row = ask(monkeypatch, capsys, Q)
         assert code == 0 and out == "the answer\n" and row["escalated"] is True and row["route"] == "split"
         assert [flag(argv, "--model") for argv, _ in claude.calls] == ["haiku", "sonnet"]
+
+    def test_a_dash_has_or_lacks_line_is_empty_and_the_split_pack_is_read_whole(self, monkeypatch, capsys):
+        for side in ("has", "lacks"):
+            text = SPLIT_PACK.replace(f"kb {side}: " + ("LAPS, password" if side == "has" else "Okta, rotation"),
+                                      f"kb {side}: -")
+            assert f"kb {side}: -" in text
+            plant(monkeypatch, text, "weak")
+            p = kb_ask.plan(Q)
+            assert p["kind"] == "split" and "-" not in p["has"] + p["lacks"], p
+            assert p[side] == [] and p["lacks" if side == "has" else "has"] != [], p
+            claude = Claude(monkeypatch, "The default length is 14.\n")
+            code, out, _, row = ask(monkeypatch, capsys, Q)
+            (argv, stdin), = claude.calls
+            assert code == 0 and out == "The default length is 14.\n" and row["route"] == "split"
+            assert argv == kb_ask.claude_argv("haiku", False) + ["--append-system-prompt", kb_ask.READER], \
+                "read whole, not divided"
+            assert stdin == kb_ask.prompt(Q, text)
+            route = ask(monkeypatch, capsys, "--route", Q)[1]
+            assert f"kb {side}: -" not in route and "kb has: -" not in route and "kb lacks: -" not in route, route
+
+    def test_a_web_pack_with_a_dash_lacks_line_never_tells_the_researcher_the_kb_lacks_dash(self, monkeypatch):
+        text = WEB_PACK.replace("kb has: Wi-Fi, setting", "kb has: -").replace("kb lacks: Roaming, Aggressiveness",
+                                                                               "kb lacks: -")
+        plant(monkeypatch, text, "none")
+        p = kb_ask.plan(Q)
+        assert (p["kind"], p["has"], p["lacks"]) == ("web", [], []), p
+        prompt = kb_ask.web_prompt(Q, p)
+        assert "The kb lacks" not in prompt and prompt.startswith(f"Question: {Q}\n\nNearest kb articles"), prompt
+
+    def test_a_split_part_of_several_with_a_dash_side_gives_only_its_other_side(self, monkeypatch, capsys):
+        text = MIXED_PACK.replace("kb has: LAPS, password\nkb lacks: Okta\n", "kb has: LAPS, password\nkb lacks: -\n")
+        text += ("\n\n# Q4: Okta rotation\ncoverage: weak\nroute: split\nkb has: -\nkb lacks: Okta, rotation\n"
+                 "## public/auth/scim.md  SCIM provisioning  [partial, x]\n- public/auth/scim.md:4 A line (DOC S5)")
+        plant(monkeypatch, text, "none")
+        p = kb_ask.plan("(1) a (2) b (3) c (4) d")
+        assert p["has"] == ["default LAPS password length", "LAPS, password"], p
+        assert p["lacks"] == ["Kubernetes autoscaler on EKS", "Okta, rotation"], p
+        sp = kb_ask.split_prompt("q", p).split("<kb_evidence>")[0]
+        assert "The kb lacks: Kubernetes autoscaler on EKS; Okta, rotation." in sp and "; -" not in sp and ": -" not in sp
+        assert "The kb lacks: -" not in kb_ask.web_prompt("q", p)
+        claude = Claude(monkeypatch, result(result="kb part"), result(result="live part"))
+        code, out, _, _ = ask(monkeypatch, capsys, "(1) a (2) b (3) c (4) d")
+        (_, r_in), (_, w_in) = claude.calls
+        assert code == 0 and "kb part" in out and "live part" in out
+        assert "The kb lacks: -" not in r_in.split("<kb_evidence>")[0] and "The kb lacks: -" not in w_in
 
     def test_a_clean_good_run_still_reads_and_escalates_on_insufficient(self, monkeypatch, capsys):
         plant(monkeypatch, GOOD_PACK, "good")
