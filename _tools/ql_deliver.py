@@ -33,7 +33,10 @@ GITHUB_RED = ("failure", "timed_out", "startup_failure")  # conclusions of a com
 # the jobs did. A job whose script ran and failed makes it red (whichever job, kb-tests-windows included). Naming jobs
 # here makes a pipeline in which one did not succeed `unverified`.
 GATE_JOBS = ()
-RAN_AND_FAILED = ("script_failure",)  # a failed job's failure_reason when its script ran and exited non-zero
+# A failed job's failure_reason when someone started it and it failed for its own sake: its script exited non-zero,
+# ran past the job timeout, or got stuck (no runner took it in time).
+RAN_AND_FAILED = ("script_failure", "job_execution_timeout", "stuck_or_timeout_failure")
+SHA_PIPELINES = 20  # pipelines of one commit read to find the newest one in which a job ran
 LOOKBACK = 200  # first-parent commits of origin/main searched for the last automatic commit
 REFUSALS = (  # a push refused for want of rights, as the remote words it (kb: gitlab/automated-merge-requests.md)
     ("gitlab", re.compile(r"You are not allowed to (?:push code|force push code|upload code)\b[^\n]*")),
@@ -104,6 +107,29 @@ def pipeline_verdict(forge, statuses):
     return "pending" if any(s in GITLAB_UNFINISHED for s in statuses) else "ok"
 
 
+def latest_jobs(jobs):
+    """{name: the newest entry of that job} of a GitLab job list (newest first); {} for no list."""
+    latest = {}
+    for j in jobs if isinstance(jobs, list) else []:
+        if isinstance(j, dict) and j.get("name") and j["name"] not in latest:
+            latest[j["name"]] = j
+    return latest
+
+
+def job_ran(j):
+    """Whether a GitLab job ran: it has a start time, succeeded, is running, or failed for a reason in
+    RAN_AND_FAILED. A manual, skipped or created job, one canceled before it started and one that failed without
+    running (such as ci_quota_exceeded) did not."""
+    s = j.get("status")
+    return bool(j.get("started_at")) or s in ("success", "running") or (
+        s == "failed" and j.get("failure_reason") in RAN_AND_FAILED)
+
+
+def any_ran(jobs):
+    """Whether a job of a GitLab job list ran (its newest entry by name, `job_ran`)."""
+    return any(job_ran(j) for j in latest_jobs(jobs).values())
+
+
 def job_verdict(jobs, gate=None):
     """(verdict, failed, unpassed) of a GitLab pipeline read by its jobs (the list `pipelines/<id>/jobs` answers,
     newest first; None when it could not be read), not by its status:
@@ -117,10 +143,7 @@ def job_verdict(jobs, gate=None):
     gate = GATE_JOBS if gate is None else gate
     if not isinstance(jobs, list):
         return "unverified", [], ["the pipeline's jobs could not be read"]
-    latest = {}  # a job name's newest entry
-    for j in jobs:
-        if isinstance(j, dict) and j.get("name") and j["name"] not in latest:
-            latest[j["name"]] = j
+    latest = latest_jobs(jobs)
     failed = sorted(n for n, j in latest.items()
                     if j.get("status") == "failed" and j.get("failure_reason") in RAN_AND_FAILED)
     unpassed, waiting = [], False
@@ -156,16 +179,18 @@ def gitlab_jobs(host, quoted, pid, run):
 def ci_pipeline(url, sha, run):
     """(verdict, detail, pipeline) of the CI of commit `sha` on origin's forge: verdict `red`, `pending`, `ok`,
     `unverified` (GitLab: a gate job did not succeed, `job_verdict`), `none` (no pipeline) or `skip` (no signed-in
-    glab or gh, or the call failed: the check is skipped). On GitLab a pipeline whose status is no failure and not
-    unfinished is read by its jobs. `pipeline` is {id, url, status} of the newest pipeline (GitHub: the first red
-    run), or None."""
+    glab or gh, or the call failed: the check is skipped). On GitLab it reads the commit's newest pipeline that failed,
+    is unfinished or in which a job ran (`job_ran`), else its newest one: every job is manual, so a newer pipeline no
+    one started hides nothing. One whose status is no failure and not unfinished is read by its jobs. `pipeline` is
+    {id, url, status} of the pipeline read (GitHub: the first red run), or None."""
     forge = origin_forge(url)[0]
     data, cli, note = forge_list(
         url, run, lambda repo: ["gh", "run", "list", "--commit", sha, "-R", repo, "--json",
                                 "status,conclusion,databaseId,url", "-L", "100"],
-        lambda project: f"projects/{project}/pipelines?sha={sha}&per_page=1")
+        lambda project: f"projects/{project}/pipelines?sha={sha}&per_page={SHA_PIPELINES}")
     if data is None:
         return "skip", note, None
+    jobs = None
     if forge == "github":
         runs = [r for r in data if isinstance(r, dict)]
         states = [(r.get("status"), r.get("conclusion")) for r in runs]
@@ -174,16 +199,30 @@ def ci_pipeline(url, sha, run):
         pipe = {"id": pick.get("databaseId"), "url": pick.get("url"),
                 "status": f"{pick.get('status')}/{pick.get('conclusion')}"}
     else:
-        runs = [r for r in data[:1] if isinstance(r, dict)]  # the newest pipeline of the commit
+        _, host, project = origin_forge(url)
+        quoted = urllib.parse.quote(project, safe="")
+        runs, newest = [], None
+        for r in (r for r in data if isinstance(r, dict)):  # newest first
+            if r.get("status") in GITLAB_RED + GITLAB_UNFINISHED:  # decided by its status, no job list needed
+                runs, jobs = [r], None
+                break
+            js = gitlab_jobs(host, quoted, r.get("id"), run)
+            newest = newest or (r, js)
+            if js is None or any_ran(js):  # an unreadable list is no proof that nothing ran
+                runs, jobs = [r], js
+                break
+        if not runs and newest:
+            runs, jobs = [newest[0]], newest[1]
         states = [r.get("status") for r in runs]
         shown = ", ".join(map(str, states))
         pipe = {"id": runs[0].get("id"), "url": runs[0].get("web_url"), "status": runs[0].get("status")} if runs else {}
+        first = next((r for r in data if isinstance(r, dict)), None)
+        if runs and first is not None and first is not runs[0]:
+            shown = f"pipeline {pipe['id']}, the newest where a job ran: {shown}"
     if not states:
         return "none", f"no pipeline for {sha[:9]} on {origin_forge(url)[1]}", None
     verdict = pipeline_verdict(forge, states)
-    if forge == "gitlab" and verdict == "ok":  # a status that is no failure is read by the pipeline's gate jobs
-        _, host, project = origin_forge(url)
-        jobs = gitlab_jobs(host, urllib.parse.quote(project, safe=""), pipe.get("id"), run)
+    if forge == "gitlab" and verdict == "ok":  # a status that is no failure is read by the pipeline's jobs
         verdict, failed, unpassed = job_verdict(jobs)
         if failed:
             shown += f"; script failed in {', '.join(failed)}"
@@ -196,7 +235,8 @@ def pipeline_failure(url, pipe, run):
     """(failure, fingerprint) of the red pipeline `pipe` ({id, ...}) on origin's forge, computed as backlog.py does
     for main's pipeline: the first failed job by name (among the jobs whose script ran and failed, when there are
     any), what failed first in its log (`backlog.first_failure`), and
-    `backlog.failure_fingerprint` of the two. ('', None) when no failed job can be read (no id, a failed call)."""
+    `backlog.failure_fingerprint` of the two. ('', None) when no failed job can be read (no id, a failed call).
+    The first failed job's name goes into `pipe["job"]`, which the bug's repro names."""
     import backlog
     pid = pipe.get("id")
     if pid is None:
@@ -220,6 +260,7 @@ def pipeline_failure(url, pipe, run):
     if not failed:
         return "", None
     first = min(failed, key=lambda j: str(j["name"]))
+    pipe["job"] = str(first["name"])
     log, jid = "", first.get(idkey)
     if jid is not None:
         argv = (["gh", "api", "--hostname", host, f"repos/{project}/actions/jobs/{jid}/logs"] if forge == "github" else
@@ -374,17 +415,27 @@ class Pusher:
 
     def held(self):
         """Finding ids pending on a conflict branch of origin that main does not hold yet: the records of the
-        findings files the branch adds. OSError when such a file cannot be read, so a held finding is never applied
-        for want of reading it."""
-        code, o, _ = self.git("for-each-ref", "--format=%(refname)", f"refs/remotes/{self.remote}/{CONFLICT_BRANCH_PREFIX}")
+        findings files the branch adds. OSError when a git call it reads fails (for-each-ref, merge-base, diff) or such
+        a file cannot be read, so a held finding is never applied for want of reading it."""
+        def failed(what, code, o, e):
+            return OSError(f"cannot {what} (git exit {code}): {(o + e).strip()[-300:]}")
+        code, o, e = self.git("for-each-ref", "--format=%(refname)", f"refs/remotes/{self.remote}/{CONFLICT_BRANCH_PREFIX}")
+        if code:
+            raise failed("list the conflict branches", code, o, e)
         ids = set()
-        for ref in o.split() if code == 0 else []:
-            if self.git("merge-base", "--is-ancestor", ref, self.up)[0] == 0:
+        for ref in o.split():
+            code, o2, e2 = self.git("merge-base", "--is-ancestor", ref, self.up)
+            if code == 0:
                 continue
-            base = self.git("merge-base", ref, self.up)[1].strip()
-            if not base:
-                continue
-            files = self.git("diff", "--name-only", "--diff-filter=A", base, ref, "--", f"{STORE_REL}/{FINDINGS}")[1]
+            if code != 1:  # 1: not an ancestor; anything else is an error
+                raise failed(f"tell whether {ref} is on {self.up}", code, o2, e2)
+            code, o2, e2 = self.git("merge-base", ref, self.up)
+            base = o2.strip()
+            if code or not base:
+                raise failed(f"find the merge base of {ref} and {self.up}", code, o2, e2)
+            code, files, e2 = self.git("diff", "--name-only", "--diff-filter=A", base, ref, "--", f"{STORE_REL}/{FINDINGS}")
+            if code:
+                raise failed(f"list the findings files {ref} adds", code, files, e2)
             for f in files.split():
                 code, text, err = self.blob(ref, f)
                 if code:
@@ -590,14 +641,15 @@ class Pusher:
             return True
         if verdict == "red":
             self.say(f"CI of the last automatic commit {sha[:9]} is red ({detail}): reverting it")
-            failure, fp = pipeline_failure(url, pipe or {}, self.run)
-            return self.revert(sha, commits, detail, {**(pipe or {}), "failure": failure, "fingerprint": fp})
+            pipe = dict(pipe or {})
+            failure, fp = pipeline_failure(url, pipe, self.run)
+            return self.revert(sha, commits, detail, {**pipe, "failure": failure, "fingerprint": fp})
         return True
 
     def file_bug(self, sha, applied, pipe):
         """One bug item (severity S2) in the worktree for the red pipeline of the reverted push, unless the
-        backlog already names that pipeline; its id, or None. Its repro is backlog.py red-pipeline --status: it fails
-        while main's latest finished pipeline is red."""
+        backlog already names that pipeline; its id, or None. Its repro is backlog.py red-pipeline --status --job
+        <the first failed job> (plain --status when none was read): it fails until that job passes on main again."""
         import backlog
         bl = backlog.Backlog(self.wt)
         pid = pipe.get("id") if pipe.get("id") is not None else f"of commit {sha[:12]}"
@@ -614,7 +666,7 @@ class Pusher:
                  f"{', '.join(ids) or 'none applied'}; the pipeline's status was "
                  f"{pipe.get('status') or 'failed'}."
                  + (f" It failed first on: {pipe['failure']}." if pipe.get("failure") else ""))
-        it = backlog.red_bug(pid, sha, "S2", (), pipe.get("url"), extra, fingerprint=fp)
+        it = backlog.red_bug(pid, sha, "S2", (), pipe.get("url"), extra, fingerprint=fp, job=pipe.get("job"))
         it["title"] = f"Red main {marker}: query log push {sha[:9]} reverted"
         bl.save(it)
         return it["id"]

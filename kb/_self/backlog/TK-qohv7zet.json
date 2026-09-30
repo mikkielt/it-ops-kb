@@ -1,0 +1,27 @@
+{
+  "id": "TK-qohv7zet",
+  "kind": "task",
+  "title": "held() raises when a git call it reads fails",
+  "status": "doing",
+  "parent": "BG-alqja4se",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ql_deliver.Pusher.held() raises OSError (so apply --push holds the push) when git for-each-ref, merge-base (an exit other than 0 or 1 for --is-ancestor, or no base) or diff --name-only fails, as it does for an unreadable file; test held_raises_on_git_failure fails each call in turn and asserts the push is held; kb/_self/querylog.md says so",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "held_raises_on_git_failure"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/test_querylog.py",
+    "_tools/test_querylog_e2e.py",
+    "kb/_self/querylog.md"
+  ],
+  "claimed_by": "it-ops-kb-perf"
+}

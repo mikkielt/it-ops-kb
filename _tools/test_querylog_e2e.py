@@ -705,6 +705,31 @@ class TestHeldOnLongPaths:
         windows = lambda argv: argv[1:2] == ["show"] and ":" in argv[-1]  # every git show REV:PATH fails
         assert self.pusher(repo, qdir, windows).held() == {"F-000000000001"}
 
+    FAILS = {"for-each-ref": lambda argv: argv[1] == "for-each-ref",
+             "merge-base --is-ancestor": lambda argv: argv[1:3] == ["merge-base", "--is-ancestor"],
+             "merge-base": lambda argv: argv[1] == "merge-base" and argv[2] != "--is-ancestor",
+             "diff --name-only": lambda argv: argv[1:3] == ["diff", "--name-only"]}
+
+    @pytest.mark.parametrize("call", sorted(FAILS))
+    def test_held_raises_on_git_failure(self, tmp_path, call):
+        """Planted: each git call held() reads fails in turn; held() raises instead of holding nothing, and apply
+        --push stops there: nothing is applied or pushed."""
+        repo, qdir = self.world(tmp_path)
+        repo.git("remote", "add", "origin", "https://gitlab.example.com/team/kb.git")
+        fail = self.FAILS[call]
+        with pytest.raises(OSError, match="cannot "):
+            self.pusher(repo, qdir, fail).held()
+        said, applied = [], []
+        p = self.pusher(repo, qdir, fail)
+        p.out = said.append
+        p.apply_step = lambda *a: applied.append(a) or 0
+        p.fetch = p.reset = lambda: (0, "", "")
+        p.local_files = lambda: ([], [], [])
+        p.forget = lambda delivered: None
+        p.check_ci = lambda url: True
+        assert p() == 1, said
+        assert applied == [] and not p.landed and any("could not be read; nothing pushed" in s for s in said), said
+
     def test_a_held_file_it_cannot_read_raises(self, tmp_path):
         repo, qdir = self.world(tmp_path)
         unreadable = lambda argv: argv[1:2] in (["show"], ["cat-file"])
