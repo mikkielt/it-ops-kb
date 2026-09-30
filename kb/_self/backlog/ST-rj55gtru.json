@@ -1,0 +1,20 @@
+{
+  "id": "ST-rj55gtru",
+  "kind": "story",
+  "title": "backlog.py new refuses a repro that fails for its own error, not the defect",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py new bug refuses a repro whose failure is its own: a python -c that raises SyntaxError or another traceback before it tests anything, or a command that is not found, and says why. Failure it answers (SP-hlfwfcx6 retrospective): BG-rgvfn5aa's repro put kb\\public\\x.md in a Python string and BG-477tasb3's lost its newlines through --repro; both failed with a SyntaxError whatever the code did, new took that as reproduced, and the first could never pass.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "repro_fails_for_its_own_error"
+      ]
+    }
+  ]
+}

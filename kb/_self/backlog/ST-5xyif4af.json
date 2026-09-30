@@ -1,0 +1,22 @@
+{
+  "id": "ST-5xyif4af",
+  "kind": "story",
+  "title": "The clean-account setup run is a repository script, so the fresh-host report can be re-run",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A PowerShell script in _tools/ (run elevated on a Windows host) creates a temporary local standard account with a random in-memory password, runs install-python.ps1 and the /kb-setup commands that need no sign-in as that account from a bundle of origin/main, writes each step's exit code and last line, and deletes the account, its profile and its work folder; a -Short switch leaves out the test suites; kb/_self/tools.md and kb/_self/reports/windows-fresh-host.md name it; a test parses it with the PowerShell parser on Windows and checks it prints no password. Failure it answers (SP-hlfwfcx6 retrospective): the three runs behind the report came from scripts in a session's scratchpad, so no one else could re-run them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "clean_account_script"
+      ]
+    }
+  ],
+  "claimed_by": "win-first"
+}
