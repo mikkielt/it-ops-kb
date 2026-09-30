@@ -2,7 +2,7 @@
   "id": "BG-rgvfn5aa",
   "kind": "bug",
   "title": "The PowerShell raw-read hint misses assignments and -Path:value reads of a kb article",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-hlfwfcx6",
   "priority": "P3",
@@ -20,5 +20,18 @@
     "_tools/kb_hook.py",
     "_tools/test_kb.py"
   ],
-  "claimed_by": "worker-hook"
+  "evidence": {
+    "commit": "abd7573b5713034d923fe52cb3c02d84d1084d99",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import kb_hook; b = chr(92); a = '$t = Get-Content kb' + b + 'public' + b + 'x.md'; c = 'Get-Content -Path:kb' + b + 'public' + b + 'x.md'; sys.exit(0 if kb_hook.is_raw_read(a, powershell=True) and kb_hook.is_raw_read(c, powershell=True) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }

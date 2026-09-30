@@ -3,7 +3,8 @@ from pyproject.toml's dev group) or `uv run pytest`.
 
   Repo(path, env)       one throwaway directory: git(), run_git(), rev(), tool(), kbgit(), read(), write(), append()
   querylog_env(data)    the environment of a kb_hook.py or kb_ask.py run on this clone: its query log rows go under
-                        `data`, never into the clone's own spool
+                        `data`, never into the clone's own spool, in mode `local` (a config.json it writes unless one
+                        is there; `mode=None` writes none), so a distill it starts never delivers to a real remote
   git_env(**extra)      the environment of a git scenario: no global or system git config, a fixed author, and none
                         of the variables that would leak the outer repository, a CI run or a verification date into it
   copy_kb(dst, skip)    a copy of the kb's working tree without .git, _cache, _private, __pycache__ (and `skip`)
@@ -58,10 +59,21 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "stress: the stress suite, test_stress.py (stress_test.py runs it; tests.py leaves it out)")
 
 
-def querylog_env(data, home=KB, base=None):
+def querylog_env(data, home=KB, base=None, mode="local"):
     """The environment of a tool run whose query log rows must not reach the spool of the clone at `home`: capture
     writes as the plugin at `home` would, under `data` (querylog/spool/), while KB_INDEX keeps the pack index in
-    `home`'s _cache, where it lives without the plugin variables."""
+    `home`'s _cache, where it lives without the plugin variables.
+
+    The plugin's config file (data/querylog/config.json) pins `mode` unless the test wrote one first: with none the
+    mode is `auto`, whose distill delivers from a plugin host (ql_deliver.host_push), and on a host with the plugin
+    installed it would clone the install source and push the test's entries. `mode=None` writes no file, for a test
+    of the default itself that starts no distill; a test of delivery writes its own config and points the install
+    source at a local bare repository."""
+    if mode is not None:
+        cfg = Path(data) / "querylog" / "config.json"
+        if not cfg.exists():
+            cfg.parent.mkdir(parents=True, exist_ok=True)
+            cfg.write_text(json.dumps({"mode": mode}), encoding="utf-8", newline="\n")
     env = dict(os.environ if base is None else base)
     env.update(CLAUDE_PLUGIN_ROOT=str(home), CLAUDE_PLUGIN_DATA=str(data),
                KB_INDEX=env.get("KB_INDEX") or os.path.join(str(home), "_cache"))

@@ -343,14 +343,15 @@ class TestSwitches:
         d.mkdir(parents=True, exist_ok=True)
         (d / "config.json").write_text(text, encoding="utf-8", newline="\n")
 
-    def run_all(self, data):
+    def run_all(self, data, mode="local"):
         for ev in self.EVENTS:
-            assert hook(data, ev) == (0, b"")
+            assert hook(data, ev, querylog_env(data, mode=mode)) == (0, b"")
         return lines(data)
 
     def test_default_mode_is_auto_and_writes(self, tmp_path):
         assert ql_base.DEFAULT_MODE == "auto"
-        rows = self.run_all(tmp_path)  # planted: the same events with no config file do write
+        rows = self.run_all(tmp_path, mode=None)  # planted: the same events with no config file do write
+        assert not (tmp_path / "querylog" / "config.json").exists()
         assert [r["surface"] for r in rows] == ["prompt", "mcp", "fetch", "stop"]
         self.write_config(tmp_path / "x", '{"mode": "local"}')
         assert [r["surface"] for r in self.run_all(tmp_path / "x")] == ["prompt", "mcp", "fetch", "stop"]
@@ -384,8 +385,8 @@ class TestSwitches:
         assert ql_base.places() == (tmp_path / "querylog", tmp_path / "querylog" / "config.json")
 
     def test_where(self, tmp_path):
-        p = subprocess.run([sys.executable, QL, "where"], env=querylog_env(tmp_path), capture_output=True, text=True,
-                           encoding="utf-8", timeout=60)
+        p = subprocess.run([sys.executable, QL, "where"], env=querylog_env(tmp_path, mode=None), capture_output=True,
+                           text=True, encoding="utf-8", timeout=60)
         assert p.returncode == 0 and p.stdout.startswith("mode=auto ") and "writes=yes" in p.stdout
         assert lines(tmp_path) == []
 
@@ -564,7 +565,7 @@ class TestNoHooks:
     def test_nothing_is_written_when_no_hook_runs(self, tmp_path):
         """With hooks disabled Claude Code never starts the capture hook: importing the module, its help and `where`
         write nothing, and neither does a plain prompt through kb_hook.py."""
-        env = querylog_env(tmp_path)
+        env = querylog_env(tmp_path, mode=None)  # no config file, so the directory is the tools' to make; no distill
         for argv in ([QL, "-h"], [QL, "where"], [QL], ["-c", "import querylog, kb_hook"]):
             subprocess.run([sys.executable, *argv], cwd=TOOLS, env=env, capture_output=True, timeout=60)
         assert not (tmp_path / "querylog").exists()
@@ -1410,6 +1411,36 @@ class TestLaunch:
         assert files, err
         assert not files[0].stat().st_mtime > returned  # the check above would fail on this command
 
+    @pytest.mark.skipif(not GIT, reason="git is not installed")
+    def test_the_real_distill_under_querylog_env_delivers_nothing(self, tmp_path):
+        """A plugin host whose install source is recorded: the plugin copy (the tools, at cache/mkt/it-ops-kb/<version>)
+        whose known_marketplaces.json names a local bare repository. The real distill under querylog_env, as the tests
+        above start it, writes its run file and clones and pushes nothing. Planted: without the mode querylog_env pins
+        (mode=None), mode `auto` takes host_push, which clones the install source to push the test's entries."""
+        env = git_env()
+        bare = tmp_path / "remote.git"
+        subprocess.run([GIT, "init", "-q", "--bare", str(bare)], env=env, check=True, capture_output=True, timeout=60)
+        root = plugins_dir(tmp_path, {"source": "git", "url": str(bare)})
+        shutil.copytree(TOOLS, root / "_tools", ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
+        assert ql_deliver.install_url(root) == str(bare)
+
+        def distill(data, **kw):
+            plant_fetch_day(data)
+            p = subprocess.run([sys.executable, str(root / "_tools" / "querylog.py"), "distill", "--settle", "0"],
+                               capture_output=True, text=True, encoding="utf-8", timeout=120,
+                               env=querylog_env(data, home=str(root), base={**env, "KB_INDEX": str(root / "_cache")},
+                                                **kw))
+            q = Path(data) / "querylog"
+            return p, q, sorted((q / "store").rglob("*.jsonl")), (q / ql_deliver.CLONE_NAME).exists()
+
+        p, q, files, cloned = distill(tmp_path / "data")
+        assert p.returncode == 0 and files and not cloned, p.stdout + p.stderr
+        assert "apply --push" not in p.stdout + p.stderr and not (q / ql_deliver.WORKTREE_NAME).exists()
+        refs = subprocess.run([GIT, "for-each-ref"], cwd=bare, env=env, capture_output=True, text=True, timeout=60)
+        assert (refs.returncode, refs.stdout) == (0, "")  # nothing pushed
+        p, q, files, cloned = distill(tmp_path / "planted", mode=None)
+        assert files and cloned, p.stdout + p.stderr  # planted: mode auto reaches the install source
+
     @staticmethod
     def shell_run(data, cmd, var):
         """(exit code, stdout, stderr, time it returned) of CMD under sh with the hook's input and environment."""
@@ -1822,7 +1853,7 @@ class TestLearn:
         p = subprocess.run([sys.executable, QL, "learn", "--store", str(store)], capture_output=True, text=True,
                            encoding="utf-8", env=querylog_env(tmp_path / "data"), timeout=300)
         assert p.returncode == 0 and p.stdout.startswith("learn: run="), p.stdout + p.stderr
-        (tmp_path / "data" / "querylog").mkdir(parents=True)
+        (tmp_path / "data" / "querylog").mkdir(parents=True, exist_ok=True)  # querylog_env made it
         (tmp_path / "data" / "querylog" / "config.json").write_text('{"mode": "off"}', encoding="utf-8")
         p = subprocess.run([sys.executable, QL, "learn"], capture_output=True, text=True, encoding="utf-8",
                            env=querylog_env(tmp_path / "data"), timeout=120)

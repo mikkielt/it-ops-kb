@@ -18,7 +18,9 @@
   },
   "touches": [
     "_tools/conftest.py",
-    "_tools/test_querylog.py"
+    "_tools/test_querylog.py",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md"
   ],
   "claimed_by": "worker-qltests"
 }
