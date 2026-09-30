@@ -880,6 +880,28 @@ class TestRawReadNudge:
                 "Get-Content kb\\acme\\_gaps.md", "Microsoft.PowerShell.Management\\Get-Content kb\\public\\x\\y.md",
                 "& cat kb\\public\\x\\y.md", "Get-ChildItem kb\\public; Get-Content kb\\public\\x\\y.md",
                 "Get-Location\nGet-Content kb\\public\\x\\y.md"]
+    # a read whose result is assigned, and a parameter written as -Name:value (BG-rgvfn5aa)
+    PS_READS_ASSIGNED = ["$t = Get-Content kb\\public\\x.md", "Get-Content -Path:kb\\public\\x.md",
+                         "$t = gc -LiteralPath:'kb\\public\\x.md'", "$t=gc -LiteralPath:'kb\\public\\x.md'",
+                         "[string]$t = Get-Content kb\\public\\x.md -Raw", "[string[]]$lines=Get-Content kb/public/x.md",
+                         "$t += Get-Content kb\\public\\x.md", "$env:T =Get-Content kb\\public\\x.md",
+                         "$t = Select-String -Path:\"kb\\public\\a.md\",kb\\public\\b.md -Pattern LAPS",
+                         "Get-ChildItem kb; $t = Get-Content -Path:kb\\public\\x.md -TotalCount:40"]
+    PS_SILENT_ASSIGNED = ["$t = Set-Content kb\\public\\x.md -Value notes", "$p = 'kb\\public\\x.md'",
+                          "$p = \"kb\\public\\x.md\"; Remove-Item $p", "$t = Get-Content notes.txt > kb\\public\\x.md",
+                          "Set-Content -Path:kb\\public\\x.md -Value:notes", "Out-File -FilePath:kb\\public\\x.md",
+                          "$t = Get-Content -Path:kb\\_self\\tools.md", "$t -eq 'Get-Content kb\\public\\x.md'",
+                          "git commit -m \"type kb/public/x.md\"", "$m = git commit -m \"type kb/public/x.md\"",
+                          "$t == Get-Content kb\\public\\x.md"]
+
+    def test_raw_read_nudge_recognises_assigned_and_colon_parameter_powershell_reads(self):
+        for command in self.PS_READS_ASSIGNED:
+            assert kb_hook.is_raw_read(command, powershell=True), f"no hint for: {command!r}"
+            assert kb_hook.raw_read_nudge(self.event(command, tool_name="PowerShell")) is not None, command
+        for command in self.PS_SILENT_ASSIGNED:
+            assert not kb_hook.is_raw_read(command, powershell=True), f"hint for: {command!r}"
+        # Bash has no `$t = cmd` assignment; its mode is unchanged
+        assert not kb_hook.is_raw_read("$t = cat kb/public/x.md")
     PS_SILENT = ["Get-ChildItem kb\\public\\claude", "Get-Content README.md", "Get-Content kb\\_self\\maintaining.md",
                  "Get-Content kb\\public\\_sources.csv", "Get-Content _tools\\kb_hook.py",
                  "Select-String -Path _tools\\*.py -Pattern kb", "Set-Content kb\\public\\x\\y.md -Value notes",
