@@ -5,5 +5,22 @@
   "status": "draft",
   "priority": "P2",
   "rank": 0,
-  "goal": "testmap.py maps a change to any _tools/*.py file to test_selfdoc's TestSelfdocToolsMap, and selfdoc.map_tools and check_map number a source's lines by LF alone, so a file holding a literal U+2028, U+2029 or U+0085 neither shifts the map nor reaches main unchecked. Failure it answers: in SP-vpk5nrrc the BG-axnyomq3 test put a literal U+2028 into test_kb_mcp.py, the gate ran 7 of 32 test files without test_selfdoc, and the map test failed on main until BG-nzzmq6o2."
+  "goal": "testmap.py maps a change to any _tools/*.py file to test_selfdoc's TestSelfdocToolsMap, and selfdoc.map_tools and check_map number a source's lines by LF alone, so a file holding a literal U+2028, U+2029 or U+0085 neither shifts the map nor reaches main unchecked. Failure it answers: in SP-vpk5nrrc the BG-axnyomq3 test put a literal U+2028 into test_kb_mcp.py, the gate ran 7 of 32 test files without test_selfdoc, and the map test failed on main until BG-nzzmq6o2.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/testmap.py','select','--paths','_tools/test_kb_mcp.py'],capture_output=True,text=True).stdout;sys.exit(0 if 'test_selfdoc.py' in o else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestSelfdocToolsMap"
+      ]
+    }
+  ]
 }
