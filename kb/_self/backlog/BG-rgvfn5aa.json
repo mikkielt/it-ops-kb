@@ -13,7 +13,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0, \"_tools\"); import kb_hook; sys.exit(0 if kb_hook.is_raw_read(\"$t = Get-Content kb\\public\\x.md\", powershell=True) and kb_hook.is_raw_read(\"Get-Content -Path:kb\\public\\x.md\", powershell=True) else 1)"
+      "import sys; sys.path.insert(0, '_tools'); import kb_hook; b = chr(92); a = '$t = Get-Content kb' + b + 'public' + b + 'x.md'; c = 'Get-Content -Path:kb' + b + 'public' + b + 'x.md'; sys.exit(0 if kb_hook.is_raw_read(a, powershell=True) and kb_hook.is_raw_read(c, powershell=True) else 1)"
     ]
   },
   "touches": [
