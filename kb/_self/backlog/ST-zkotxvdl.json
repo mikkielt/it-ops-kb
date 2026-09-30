@@ -1,0 +1,20 @@
+{
+  "id": "ST-zkotxvdl",
+  "kind": "story",
+  "title": "A full tests.py, stress_test.py or 8-worker gate waits for another one running on the same host",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "tests.py (full and --changed with more than one worker) and stress_test.py take a host-wide lock (a lock file under the user-independent temp or public directory, holding the pid, clone and start time; a stale holder is cleared) and print who holds it and wait, so sessions sharing a host never run two at once without messaging each other; a test starts two runs and asserts the second waits. Retrospective of SP-z7a5c76b: gates here waited about 40 minutes on cross-session messages for a peer's clean-account run, since parallel full runs had caused random timeouts earlier the same day.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "host_test_lock_waits"
+      ]
+    }
+  ]
+}

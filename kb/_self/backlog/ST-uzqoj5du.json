@@ -19,10 +19,6 @@
     }
   ],
   "depends_on": [
-    "ST-tngq6z2j",
-    "BG-meuqnbjg"
-  ],
-  "relates_to": [
-    "ST-fcirbjny"
+    "ST-tngq6z2j"
   ]
 }

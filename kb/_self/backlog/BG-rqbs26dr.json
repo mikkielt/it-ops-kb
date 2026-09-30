@@ -1,0 +1,19 @@
+{
+  "id": "BG-rqbs26dr",
+  "kind": "bug",
+  "title": "backlog.py close leaves other items' depends_on and relates_to naming the items it deleted, so check fails",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py close SP drops, from every item it keeps, the depends_on and relates_to entries that name an item it deletes (a done dependency is met), and says which it changed, so backlog.py check passes right after a close; a test closes a sprint whose items other items name. Retrospective of SP-z7a5c76b: its close left four such links in EP-5p4ahbnq, ST-tngq6z2j and ST-uzqoj5du, fixed by hand.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "close_drops_links_to_deleted_items"
+    ]
+  }
+}
