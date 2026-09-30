@@ -1,0 +1,31 @@
+{
+  "id": "BG-xicqvm4t",
+  "kind": "bug",
+  "title": "Knowledge refs are resolved against the working tree, not HEAD",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "KbAtHead reads kb files at HEAD (git cat-file), so on a dirty tree check neither reports stale knowledge for a fact HEAD still holds nor accepts a ref to an uncommitted article; a test plants each",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();sys.exit(1 if 'Files are read from the checkout' in t else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "knowledge_refs"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

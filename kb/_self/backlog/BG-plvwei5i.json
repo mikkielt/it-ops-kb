@@ -1,0 +1,20 @@
+{
+  "id": "BG-plvwei5i",
+  "kind": "bug",
+  "title": "EP-vpb7u3us still plans the dropped brief and research-first scheduling",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "EP-vpb7u3us's goal and notes describe what it delivered (the knowledge field and its derived state, the brief measured and dropped) and name no dropped story as planned, so it can close",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys;d=json.load(open('kb/_self/backlog/EP-vpb7u3us.json',encoding='utf-8'));sys.exit(1 if 'ST-u7bliqzx' in json.dumps(d) or 'scheduled before' in d['goal'] else 0)"
+    ]
+  },
+  "touches": [
+    "kb/_self/backlog/EP-vpb7u3us.json"
+  ]
+}

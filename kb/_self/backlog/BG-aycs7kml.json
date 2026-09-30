@@ -1,0 +1,32 @@
+{
+  "id": "BG-aycs7kml",
+  "kind": "bug",
+  "title": "Knowledge state with --root mixes the other clone's refs with this clone's pack and conflicts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "With --root DIR, show, next and horizon derive every knowledge state from DIR's kb (pack, _conflicts.md, articles and refs alike), or refuse knowledge state for another clone and say so; a test plants a conflict closed only in DIR",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();sys.exit(1 if 'self.kf.pack(question)' in t else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "knowledge_state"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/tools.md"
+  ]
+}

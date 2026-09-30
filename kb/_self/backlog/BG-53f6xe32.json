@@ -1,0 +1,33 @@
+{
+  "id": "BG-53f6xe32",
+  "kind": "bug",
+  "title": "backlog.py check fails on knowledge refs of items nobody is working on",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py check validates knowledge refs only on items that are todo or doing in an active sprint, so a kb refresh that renames an article a draft, done or dropped item cites does not turn the gate red, and stale knowledge is counted for those items only; a test plants a missing ref on a dropped item",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import backlog as b;bl=b.Backlog('.');i=next(k for k,v in bl.items.items() if v.get('status')=='dropped');bl.items[i]['knowledge']={'refs':['public/no/such-topic']};errs=b.validate(bl);sys.exit(1 if any('such-topic' in str(x) for x in errs) else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "knowledge_refs"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
