@@ -2,7 +2,7 @@
   "id": "BG-vubkpech",
   "kind": "bug",
   "title": "intake on the repository backlog runs for minutes: the drift detector runs every eligible item's checks, full tests.py included",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -20,5 +20,6 @@
     "_tools/bl_intake.py",
     "_tools/test_intake.py"
   ],
-  "notes": "A plain intake on the repository ran over 10 minutes on 2026-10-01 with tests.py as its child process: the drift detector runs the checks of every draft or todo item whose touches changed since its file did, and some items check with the full tests.py."
+  "notes": "A plain intake on the repository ran over 10 minutes on 2026-10-01 with tests.py as its child process: the drift detector runs the checks of every draft or todo item whose touches changed since its file did, and some items check with the full tests.py.",
+  "claimed_by": "worker-vubkpech"
 }
