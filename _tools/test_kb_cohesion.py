@@ -58,11 +58,14 @@ class TestToolChecks:
         p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, encoding="utf-8", timeout=120)
         assert "cites unknown source S-zzzzzzzz" in p.stdout and "S3" not in p.stdout.split("cites unknown source")[-1], p.stdout[-2000:]
 
-    def test_decisions_store_self_files_exist_empty_in_the_format(self):
-        """kb/_self keeps the central register and its own decisions: both files exist, with their headers, and no row."""
+    def test_decisions_store_self_files_exist_in_the_format_with_roles_only(self):
+        """kb/_self keeps the central register and its own decisions: both files exist, with their headers, and the
+        register holds roles only: no maker row has a name, and none is a storage policy."""
         for name, cols in ((kbcommon.DECISIONS, kbcommon.DECISION_COLS), (kbcommon.DECISION_MAKERS, kbcommon.MAKER_COLS)):
             header, rows = kbcommon.load_csv(os.path.join(SELF, name))
-            assert header == cols and rows == [], (name, header, rows)
+            assert header == cols, (name, header)
+            if name == kbcommon.DECISION_MAKERS:
+                assert all(r["role"] and not r["name"] and r["id"] != kbcommon.POLICY_ROW for r in rows), (name, rows)
 
     def test_decisions_store_checks_kb_self_and_resolves_the_central_register(self, tmp_path):
         """A planted failure in kb/_self's files is reported by its path; a root's by_ref names a maker of the central

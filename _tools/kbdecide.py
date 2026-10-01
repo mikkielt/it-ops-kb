@@ -5,6 +5,10 @@
                                          add a decision with status `proposed` and print its id
   kbdecide.py confirm ID --root R --by operator [--maker M] [--name NAME] [--date DATE]
                                          make a proposed decision `active`; refused without `--by operator`
+  kbdecide.py record --root R TEXT --source S --context C --by operator [--maker M] [--name NAME] [--review-by DATE]
+                     [--links TEXT] [--date DATE]
+                                         propose and confirm in one write: an `active` decision, with the maker as
+                                         `confirm` records it; refused without `--by operator`
   kbdecide.py supersede OLD NEW --root R --by operator
                                          the active decision NEW takes the place of the active decision OLD; refused
                                          without `--by operator`
@@ -45,7 +49,7 @@ lands in a root by omission. The rows go to the root's `_decisions.csv`; its for
     `superseded` and lists it in the new one's `supersedes`.
   - What an agent may do and what is the operator's: `propose`, `invalidate`, `relink` and `sweep` are open to agents
     (the sweep invalidates a decision whose subject is gone, and a proposal nobody should confirm is rejected the same
-    way, with no maker named); `confirm`, `supersede`, `restore` and `makers --policy` need `--by operator`, which an agent passes
+    way, with no maker named); `confirm`, `record`, `supersede`, `restore` and `makers --policy` need `--by operator`, which an agent passes
     only after the operator said so, because each makes or brings back a decision that holds.
   - A root saves its decision makers by a policy (kbcommon.POLICIES), one reserved row of its decision-makers.csv.
     There is no default: `propose` in a root with none is refused with the question and the options until the
@@ -303,6 +307,32 @@ def cmd_confirm(a):
     row.update(status="active", by=by, by_ref=by_ref, date=day(a.date))
     save(store, rows)
     print(f"{a.id}\tactive\t{store.name}")
+    return 0
+
+
+def cmd_record(a):
+    """Write an operator's decision as `active` in one step (propose and confirm in one write, so a refusal leaves no
+    proposed row behind)."""
+    need_operator(a, "records a decision")
+    store = Store(a.root)
+    rows = load(store)
+    why = policy_refusal(store, rows)
+    if why:
+        raise Refused(why)
+    text, source = " ".join(a.text.split()), " ".join(a.source.split())
+    context = "; ".join(kbcommon.split_list(a.context))
+    for what, value in (("text", text), ("--source (where the decision was made)", source), ("--context", context)):
+        if not value:
+            raise Refused(f"a decision needs {what}")
+    did = decision_id(text, context)
+    if any(field(r, "id") == did for r in rows):
+        raise Refused(f"{did} is already in {store.label}: the same text and context")
+    by, by_ref = maker_fields(store, a.maker, a.name)
+    row = dict.fromkeys(kbcommon.DECISION_COLS, "")
+    row.update(id=did, text=text, by=by, by_ref=by_ref, source=source, date=day(a.date), context=context,
+               status="active", review_by=(a.review_by or "").strip(), links=" ".join((a.links or "").split()))
+    save(store, rows + [row])
+    print(f"{did}\tactive\t{store.name}")
     return 0
 
 
@@ -719,6 +749,16 @@ def parser():
     p.add_argument("--maker", help="the id of a decision maker of the root's decision-makers.csv or the central register")
     p.add_argument("--name", help="the maker's name, in a root that keeps names")
     p.add_argument("--date", help="YYYY-MM-DD (default: today)")
+    p = add("record", "the operator's decision, written as active in one step")
+    p.add_argument("text", help="the decision")
+    p.add_argument("--by", help=f"must be {OPERATOR}")
+    p.add_argument("--source", required=True, help="where it was made: a source id of the root, or free text")
+    p.add_argument("--context", required=True, help="`;`-separated kind:value references (item, fact, source, article, domain)")
+    p.add_argument("--maker", help="the id of a decision maker of the root's decision-makers.csv or the central register")
+    p.add_argument("--name", help="the maker's name, in a root that keeps names")
+    p.add_argument("--review-by", help="YYYY-MM-DD, when to look at it again")
+    p.add_argument("--links", help="free text")
+    p.add_argument("--date", help="YYYY-MM-DD (default: today)")
     p = add("supersede", "an active decision takes the place of another")
     p.add_argument("old")
     p.add_argument("new")
@@ -748,7 +788,7 @@ def parser():
     return ap
 
 
-COMMANDS = {"propose": cmd_propose, "confirm": cmd_confirm, "makers": cmd_makers, "supersede": cmd_supersede, "invalidate": cmd_invalidate,
+COMMANDS = {"propose": cmd_propose, "confirm": cmd_confirm, "record": cmd_record, "makers": cmd_makers, "supersede": cmd_supersede, "invalidate": cmd_invalidate,
             "restore": cmd_restore, "relink": cmd_relink, "sweep": cmd_sweep, "list": cmd_list}
 
 
