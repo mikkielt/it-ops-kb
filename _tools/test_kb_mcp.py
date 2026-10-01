@@ -29,6 +29,10 @@ test_worker_provisional_gate*  kb-worker records a choice its item's goal leaves
                 --kind provisional, answer --provisional) committed with the work, never report prose only; /kb-sprint
                 run lands an item only after its gates are answered or provisional, read on its branch before
                 `backlog.py land`, and its review confirms them; the runbook agrees. Planted: each rule taken out.
+test_sprint_worker_starts_from_orchestrator_tip*  .claude/settings.json sets worktree.baseRef to "head", so an
+                isolation worktree branches from the orchestrator's HEAD; /kb-sprint run commits and pushes the claims
+                and dispatches only after that claim sync; kb-worker checks its base against origin/main and rebases
+                only if behind, with no checkout by hand; the runbook agrees. Planted: each rule taken out.
 test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
                 (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
                 goes with text; a planted ignored argument is caught.
@@ -355,6 +359,84 @@ def test_worker_provisional_gate_planted_failures(i, old, new):
     assert planted != texts[i], f"plant does not apply: {old!r}"
     texts[i] = planted
     assert worker_provisional_gate_problems(*texts), f"not caught: {old!r} -> {new!r}"
+
+
+SETTINGS = ".claude/settings.json"
+BASE_REF = "`worktree.baseRef`"
+
+
+def sprint_worker_base_problems(settings, worker, sprint, runbook):
+    """What is wrong with where a /kb-sprint worker's worktree starts: the project settings (`settings`, JSON text)
+    branch isolation worktrees from the orchestrator's HEAD; /kb-sprint run (`sprint`) dispatches only after the claim
+    sync; kb-worker (`worker`) checks its base against origin/main and rebases only if behind, with no checkout by
+    hand; the runbook (`runbook`) agrees. [] when nothing."""
+    problems = []
+    try:
+        base = (json.loads(settings).get("worktree") or {}).get("baseRef")
+    except (ValueError, AttributeError):
+        base = None
+    if base != "head":
+        problems.append(f"{SETTINGS} sets worktree.baseRef to {base!r}, not \"head\"")
+    run = md_section(sprint, "## run [SP]")
+    step2 = re.search(r"(?ms)^2\. From the ready list.*?(?=^\d+\. )", run)
+    step2 = step2.group(0) if step2 else ""
+    if "--commit" not in step2 or "kbgit.py sync --push" not in step2 or "claim sync" not in step2:
+        problems.append("/kb-sprint run step 2 does not commit the claims and push them (the claim sync)")
+    step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", run)
+    line = next((l for l in (step3.group(0) if step3 else "").splitlines() if BASE_REF in l), "")
+    for phrase in ('`"head"`', "`HEAD`", "pushed claim commits", "dispatch only after the claim sync",
+                   "by hand", "rebases only if behind"):
+        if phrase not in line:
+            problems.append(f"/kb-sprint run step 3 does not say {phrase!r} with {BASE_REF}")
+    rule = re.search(r"(?ms)^2\. \*\*Branch and commits\.\*\*.*?(?=^\d+\. )", worker)
+    rule = rule.group(0) if rule else ""
+    for phrase in (BASE_REF, '`"head"`', "orchestrator's branch tip", "no checkout by hand",
+                   "git merge-base --is-ancestor origin/main HEAD", "git rebase origin/main", "only if behind"):
+        if phrase not in rule:
+            problems.append(f"kb-worker's rule 2 does not say {phrase!r}")
+    work = md_section(runbook, "## Working on items")
+    bullet = next((l for l in work.splitlines() if BASE_REF in l), "")
+    for phrase in ('`"head"`', "orchestrator's branch tip", "pushed claim commits", "only after its claim sync",
+                   "rebases only if behind", "no checkout by hand"):
+        if phrase not in bullet:
+            problems.append(f"the runbook's Working on items does not say {phrase!r} with {BASE_REF}")
+    return problems
+
+
+def sprint_worker_base_texts():
+    texts = []
+    for rel in (SETTINGS, KB_WORKER, KB_SPRINT, RUNBOOK):
+        with open(os.path.join(KB, rel), encoding="utf-8") as f:
+            texts.append(f.read())
+    return texts
+
+
+def test_sprint_worker_starts_from_orchestrator_tip():
+    """A /kb-sprint worker's worktree branches from the orchestrator's HEAD (worktree.baseRef "head"), claim commits
+    included, so its work lands without a cherry-pick (SP-4fbfzobr, where every worker began on a stale base)."""
+    assert sprint_worker_base_problems(*sprint_worker_base_texts()) == []
+
+
+@pytest.mark.parametrize("i, old, new", [
+    (0, '"baseRef": "head"', '"baseRef": "fresh"'),
+    (0, '"worktree": {\n    "baseRef": "head"\n  },\n', ""),
+    (1, "no checkout by hand", "check out `origin/main`"),
+    (1, "rebase (`git rebase origin/main`) only if behind", "always rebase (`git rebase origin/main`)"),
+    (1, "`git merge-base --is-ancestor origin/main HEAD`", "`git status`"),
+    (2, "then push the claims once, the claim sync: `python3 _tools/kbgit.py sync --push`", ""),
+    (2, "so dispatch only after the claim sync of step 2", "so dispatch at once"),
+    (2, "`worktree.baseRef` to `\"head\"`", "`worktree.baseRef` to `\"fresh\"`"),
+    (2, "The brief names no base to check out by hand", "The brief names the base to check out"),
+    (3, "only after its claim sync", "at once"),
+    (3, "rebases only if behind, with no checkout by hand", "checks out the orchestrator's branch"),
+])
+def test_sprint_worker_starts_from_orchestrator_tip_planted_failures(i, old, new):
+    """Each rule fails on a planted copy of the settings, the agent, the skill or the runbook without it."""
+    texts = sprint_worker_base_texts()
+    planted = texts[i].replace(old, new, 1)
+    assert planted != texts[i], f"plant does not apply: {old!r}"
+    texts[i] = planted
+    assert sprint_worker_base_problems(*texts), f"not caught: {old!r} -> {new!r}"
 
 
 class TestKbServer:
