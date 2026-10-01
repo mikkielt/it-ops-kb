@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""kbdecide.py: propose, confirm, supersede, invalidate, restore, sweep, makers and list, over a small repository of its own.
+"""kbdecide.py: propose, confirm, supersede, invalidate, restore, relink, sweep, makers and list, over a small repository of its own.
 
-The repository is a copy of the four modules the tool imports with three stores: the public root (not internal: it
+The repository is a copy of the five modules the tool imports with three stores: the public root (not internal: it
 keeps no names), an internal root `team`, and kb/_self with its central register of decision makers. Every command
 runs as a process; every success is followed by check.py over the whole repository, and every refusal plants the
 failure it names and finds the file as it was.
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-import kbcommon, kbid
+import kbcommon, kbfacts, kbid
 from conftest import git_env, requires_git
 
 TOOLS = Path(__file__).resolve().parent
@@ -52,7 +52,7 @@ def make_root(base, name, prefix, visibility):
 def template(tmp_path_factory):
     """The repository every test starts from."""
     repo = tmp_path_factory.mktemp("kbdecide") / "repo"
-    for name in ("kbdecide.py", "check.py", "kbcommon.py", "kbid.py"):
+    for name in ("kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py"):
         (repo / "_tools").mkdir(parents=True, exist_ok=True)
         shutil.copy(TOOLS / name, repo / "_tools" / name)
     make_root(repo / "kb" / "public", "public", "S", "public")
@@ -837,3 +837,246 @@ def test_decision_sweep_takes_a_root_and_refuses_what_it_cannot_sweep(repo):
     assert (repo.row(one)["status"], repo.row(two, "team")["status"]) == ("proposed", "invalidated")
     refused(repo, "public", "sweep", "--root", "nowhere", says="no root 'nowhere'")
     refused(repo, "public", "sweep", "--date", "2026-13-40", says="is not YYYY-MM-DD")
+
+
+# ---- relink: sweep flags a decision whose fact is gone with the likeliest current fact; relink repoints it
+
+OLD_FACT, NEW_FACT = "Servers patch on the second Tuesday.", "Servers are patched on the second Tuesday of each month."
+OTHER_FACT = "Laptops reboot after the Friday maintenance window."
+GONE_TOO = "Another fact that is gone."
+ARTICLE = "public/ops/patching.md"
+
+
+def set_facts(repo, *facts, store="public"):
+    """Replace the facts of the store's article with these sentences, each cited to the store's source."""
+    path = repo.path / "kb" / store / "ops" / "patching.md"
+    head, _, rest = path.read_text(encoding="utf-8").partition("## Facts\n\n")
+    cite = sid("T" if store == "team" else "S")
+    write(path, head + "## Facts\n\n" + "".join(f"- {f} [DOC {cite}]\n" for f in facts) + rest[rest.index("\n## Reference"):])
+
+
+def key_of(sentence, store="public"):
+    return kbfacts.fact_key(f"{sentence} [DOC {sid('T' if store == 'team' else 'S')}]")
+
+
+def relink_lines(out):
+    return [ln.split("\t") for ln in out.splitlines() if "\trelink\t" in ln]
+
+
+def flagged_decision(repo, old=OLD_FACT, store="public", context=None, text=OLD_FACT, confirm=False):
+    """A decision about the fact `old`, which the caller then rewrites out of the article."""
+    return sweep_propose(repo, context or f"fact:{key_of(old, store)}; article:ops/patching", store, text=text, confirm=confirm)
+
+
+def suggested(out):
+    """[(decision id, suggested PATH:LINE)] of the relink lines of a sweep."""
+    return [(ln[0], ln[4]) for ln in relink_lines(out)]
+
+
+@requires_git
+def test_decision_sweep_relink_flags_a_reworded_fact_with_the_likeliest_current_one(repo):
+    """The old text is read back from git history, and the reworded fact beats the unrelated one on its wording."""
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    did = flagged_decision(repo, confirm=True)
+    git(repo, "init", "-q")
+    commit_all(repo, "the facts as decided")
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    before = repo.file().read_bytes()
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=0" in out and "relink=1" in out, out
+    assert relink_lines(out) == [[did, "relink", "public", f"fact:{key_of(OLD_FACT)}", f"{ARTICLE}:18",
+                                  f"{NEW_FACT} [DOC {sid()}]"]], out
+    assert repo.file().read_bytes() == before and repo.row(did)["status"] == "active"  # the flag changes no row
+    repo.check()
+
+
+@requires_git
+def test_decision_sweep_relink_finds_a_fact_that_moved_to_another_article(repo):
+    """The files the fact was in hold nothing near it any more, so the facts of the whole root are scored."""
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    did = flagged_decision(repo)
+    git(repo, "init", "-q")
+    commit_all(repo, "the facts as decided")
+    set_facts(repo, OTHER_FACT)
+    moved = article(sid()).replace(OLD_FACT, NEW_FACT).replace("topic: ops/patching", "topic: ops/schedule")
+    write(repo.path / "kb" / "public" / "ops" / "schedule.md", moved)
+    code, out = swept(repo)
+    assert code == 0 and suggested(out) == [(did, "public/ops/schedule.md:17")], out
+
+
+def test_decision_sweep_relink_scores_by_the_key_terms_its_anchors_kept_when_git_has_no_history(repo):
+    anchor = dict.fromkeys(kbcommon.ANCHOR_COLS, "")
+    anchor.update(fact=key_of(OLD_FACT), path="ops/patching.md", source_id=sid(), status="located", heading="Facts",
+                  terms="server;patch;second;tuesday", sha="0123456789abcdef", verified_utc=DAY)
+    kbcommon.write_csv(str(repo.path / "kb" / "public" / kbcommon.ANCHORS), kbcommon.ANCHOR_COLS, [anchor])
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    did = flagged_decision(repo, text="Decided without the words of the fact.")
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    repo.check()
+    code, out = swept(repo)
+    assert code == 0 and suggested(out) == [(did, f"{ARTICLE}:18")], out
+
+
+def test_decision_sweep_relink_scores_by_the_questions_doc2query_generated_for_the_fact(repo):
+    write(repo.path / "kb" / "public" / kbcommon.DATA_DIR / "doc2query" / "expansions.csv",
+          f"key,question\n{key_of(OLD_FACT)},When do servers get patched on Tuesday?\n")
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    did = flagged_decision(repo, text="Decided without the words of the fact.")
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    code, out = swept(repo)
+    assert code == 0 and suggested(out) == [(did, f"{ARTICLE}:18")], out
+
+
+def test_decision_sweep_relink_falls_back_to_the_words_of_the_decision(repo):
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    did = flagged_decision(repo)
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    code, out = swept(repo)
+    assert code == 0 and suggested(out) == [(did, f"{ARTICLE}:18")], out
+
+
+def test_decision_sweep_relink_names_no_fact_when_none_is_likely_enough(repo):
+    """Nothing is guessed: below the cut the line says so, and the decision is flagged all the same."""
+    set_facts(repo, OLD_FACT)
+    did = flagged_decision(repo)
+    set_facts(repo, OTHER_FACT)
+    code, out = swept(repo)
+    assert code == 0 and "relink=1" in out, out
+    assert relink_lines(out) == [[did, "relink", "public", f"fact:{key_of(OLD_FACT)}", "-", "(no current fact is likely enough)"]], out
+
+
+def test_decision_sweep_relink_says_nothing_of_a_fact_that_is_there(repo):
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    flagged_decision(repo, confirm=True)
+    before = repo.file().read_bytes()
+    code, out = swept(repo)
+    assert code == 0 and "relink=0" in out and not relink_lines(out), out
+    set_facts(repo, OTHER_FACT)
+    code, out = swept(repo)  # gone: flagged, and no row changes
+    assert code == 0 and "relink=1" in out and "invalidated=0" in out and repo.file().read_bytes() == before, out
+
+
+def test_decision_sweep_relink_leaves_a_decision_that_is_invalidated_to_the_invalidation(repo):
+    """A decision whose other context broke is invalidated, and not flagged for its fact as well."""
+    put_item(repo, "TK-dropped1", "dropped")
+    did = flagged_decision(repo, context=f"fact:{key_of(OLD_FACT)}; item:TK-dropped1")
+    code, out = swept(repo)
+    assert code == 0 and "relink=0" in out and not relink_lines(out), out
+    assert invalidated(repo, did) == "item:TK-dropped1 dropped"
+    code, out = swept(repo)  # an invalidated decision is not flagged either
+    assert code == 0 and "relink=0" in out, out
+
+
+def test_decision_sweep_relink_dry_run_prints_the_same_flag_and_writes_nothing(repo):
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    did = flagged_decision(repo)
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    before = repo.file().read_bytes()
+    dry, real = swept(repo, "--dry-run"), swept(repo)
+    assert dry[0] == real[0] == 0 and suggested(dry[1]) == suggested(real[1]) == [(did, f"{ARTICLE}:18")], (dry, real)
+    assert repo.file().read_bytes() == before
+
+
+def test_decision_sweep_relink_covers_every_root_and_kb_self(repo):
+    set_facts(repo, OTHER_FACT, OLD_FACT, store="team")
+    team = flagged_decision(repo, store="team")
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    mine = sweep_propose(repo, f"fact:{key_of(OLD_FACT)}", "_self", text=OLD_FACT)  # kb/_self scores the facts of every root
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    set_facts(repo, OTHER_FACT, NEW_FACT, store="team")
+    code, out = swept(repo)
+    assert code == 0 and "relink=2" in out, out
+    assert sorted((ln[0], ln[2], ln[4]) for ln in relink_lines(out)) == sorted(
+        [(team, "team", "team/ops/patching.md:18"), (mine, "_self", f"{ARTICLE}:18")]), out
+
+
+def relink(repo, did, store, line, *extra):
+    return repo.decide("relink", did, "--root", store, "--fact", line, "--date", SWEEP_DAY, *extra)
+
+
+def test_decision_sweep_relink_repoints_the_gone_fact_and_keeps_the_row(repo):
+    set_facts(repo, OTHER_FACT, OLD_FACT)
+    did = flagged_decision(repo, confirm=True)
+    before = repo.row(did)
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    new = key_of(NEW_FACT)
+    code, out = relink(repo, did, "public", f"{ARTICLE}:18")  # no --by: open to agents
+    assert code == 0 and out.split("\t")[:2] == [did, "relinked"], out
+    row = repo.row(did)
+    assert row["context"] == f"fact:{new}; article:ops/patching", row
+    assert row["links"] == f"relinked fact:{key_of(OLD_FACT)} to fact:{new} ({ARTICLE}:18) on {SWEEP_DAY}", row
+    assert {k: v for k, v in row.items() if k not in ("context", "links")} == {k: v for k, v in before.items() if k not in ("context", "links")}
+    assert row["status"] == "active" and row["by_ref"] == "public-lead" and len(repo.rows()) == 1  # nothing else changes
+    repo.check()
+    code, out = swept(repo)  # the flag is gone
+    assert code == 0 and "relink=0" in out, out
+
+
+def test_decision_sweep_relink_takes_a_path_inside_the_root_and_drops_a_reference_the_decision_has_twice(repo):
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    did = flagged_decision(repo, context=f"fact:{key_of(OLD_FACT)}; fact:{key_of(NEW_FACT)}; domain:ops")
+    code, out = relink(repo, did, "public", "ops/patching.md:18")
+    assert code == 0, out
+    assert repo.row(did)["context"] == f"fact:{key_of(NEW_FACT)}; domain:ops"
+    repo.check()
+
+
+def test_decision_sweep_relink_in_kb_self_takes_a_qualified_path_only(repo):
+    set_facts(repo, NEW_FACT)
+    did = sweep_propose(repo, f"fact:{key_of(OLD_FACT)}", "_self", text="Of kb/_self, about public.")
+    refused(repo, "_self", "relink", did, "--root", "_self", "--fact", "ops/patching.md:17", says="is no fact")
+    code, out = relink(repo, did, "_self", f"{ARTICLE}:17")
+    assert code == 0 and repo.row(did, "_self")["context"] == f"fact:{key_of(NEW_FACT)}", out
+    repo.check()
+
+
+def test_decision_sweep_relink_refusals(repo):
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    set_facts(repo, OTHER_FACT, NEW_FACT, store="team")
+    other = key_of(OTHER_FACT)
+    did = flagged_decision(repo)
+    two = flagged_decision(repo, context=f"fact:{key_of(OLD_FACT)}; fact:{key_of(GONE_TOO)}", text="About two.")
+    live = flagged_decision(repo, context=f"fact:{other}", text="About a fact that is there.")
+    nofact = flagged_decision(repo, context="domain:ops", text="About no fact.")
+    team = flagged_decision(repo, store="team")
+    for line, says in ((f"{ARTICLE}:11", "is no fact"),  # a heading, not a fact
+                       (f"{ARTICLE}:1", "is no fact"), (f"{ARTICLE}:99", "is no fact"), ("public/ops/nowhere.md:3", "is no fact"),
+                       ("patching.md", "is not PATH:LINE"), (f"{ARTICLE}:x", "is not PATH:LINE"), (":18", "is not PATH:LINE"),
+                       ("team/ops/patching.md:18", "points only at its own facts")):
+        refused(repo, "public", "relink", did, "--root", "public", "--fact", line, says=says)
+    at = f"{ARTICLE}:18"
+    refused(repo, "public", "relink", live, "--root", "public", "--fact", at, says="nothing to relink")
+    refused(repo, "public", "relink", nofact, "--root", "public", "--fact", at, says="nothing to relink")
+    refused(repo, "public", "relink", two, "--root", "public", "--fact", at, says="name the one to repoint with --old")
+    refused(repo, "public", "relink", two, "--root", "public", "--fact", at, "--old", "0" * 12, says="has no context fact:")
+    refused(repo, "public", "relink", live, "--root", "public", "--fact", at, "--old", other, says="still exists")
+    refused(repo, "public", "relink", "nosuchid", "--root", "public", "--fact", at, says="is not a decision id")
+    refused(repo, "public", "relink", "D-aaaaaaaa", "--root", "public", "--fact", at, says="no decision D-aaaaaaaa")
+    refused(repo, "public", "relink", team, "--root", "team", "--fact", at, says="points only at its own facts")
+    refused(repo, "public", "relink", did, "--root", "nowhere", "--fact", at, says="no root 'nowhere'")
+    refused(repo, "public", "relink", did, "--root", "public", "--fact", at, "--date", "2026-13-40", says="is not YYYY-MM-DD")
+    code, out = relink(repo, two, "public", at, "--old", key_of(OLD_FACT))  # the one named is repointed, the other stays
+    assert code == 0 and repo.row(two)["context"] == f"fact:{key_of(NEW_FACT)}; fact:{key_of(GONE_TOO)}", out
+
+
+def test_decision_sweep_relink_refuses_a_decision_that_is_no_longer_proposed_or_active(repo):
+    set_facts(repo, OTHER_FACT, NEW_FACT)
+    did = flagged_decision(repo)
+    assert repo.decide("invalidate", did, "--root", "public", "--reason", "by hand", "--date", DAY)[0] == 0
+    refused(repo, "public", "relink", did, "--root", "public", "--fact", f"{ARTICLE}:18", says="only proposed or active")
+
+
+def test_decision_sweep_relink_finds_a_reworded_fact_of_the_kb_itself():
+    """Real inputs: a fact of the public root, reworded (a word changed, one dropped), is the likeliest of its own
+    article's facts and of the root's, and nothing is offered for a text that is none of them."""
+    import kbdecide
+    facts = [u for u in kbfacts.units("public") if u["tags"] and u["path"].endswith(".md")]
+    texts = [u["text"] for u in facts]
+    target = next(u for u in facts if len(u["text"].split()) >= 14 and texts.count(u["text"]) == 1)
+    words = target["text"].split()
+    reworded = " ".join(words[:2] + ["indeed"] + words[3:6] + words[7:])
+    score = kbdecide.text_scorer(target["text"])
+    assert score(reworded) >= 0.8, reworded
+    assert kbdecide.closest([u for u in facts if u["path"] == target["path"]], kbdecide.text_scorer(reworded)) is target
+    assert kbdecide.closest(facts, kbdecide.text_scorer(reworded)) is target
+    assert kbdecide.closest(facts, kbdecide.text_scorer("zzqx wvvk plorp")) is None

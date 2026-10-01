@@ -15,6 +15,10 @@
                                          bring an invalidated decision back, `active` when a maker confirmed it,
                                          else (a rejected proposal) `proposed`; its row stays and `links` keeps what
                                          was invalidated; refused without `--by operator`
+  kbdecide.py relink ID --root R --fact PATH:LINE [--old KEY] [--date DATE]
+                                         repoint a proposed or active decision's `fact:` reference whose fact is gone to
+                                         the fact at PATH:LINE (refused when no fact starts there); its row stays and
+                                         `links` keeps the old key. Open to agents, like the sweep that flags it
   kbdecide.py makers R [--policy P --by operator]
                                          show how root R saves its decision makers, or (the operator's) set the policy:
                                          role-only, role-and-name or central-register
@@ -39,9 +43,9 @@ lands in a root by omission. The rows go to the root's `_decisions.csv`; its for
     kb/_self/decision-makers.csv; a root that keeps names (an internal one) may leave it out and may take `--name`.
   - Nothing is ever deleted: `invalidate` sets the status and the reason, `supersede` marks the old decision
     `superseded` and lists it in the new one's `supersedes`.
-  - What an agent may do and what is the operator's: `propose`, `invalidate` and `sweep` are open to agents (the sweep
-    invalidates a decision whose subject is gone, and a proposal nobody should confirm is rejected the same way, with no
-    maker named); `confirm`, `supersede`, `restore` and `makers --policy` need `--by operator`, which an agent passes
+  - What an agent may do and what is the operator's: `propose`, `invalidate`, `relink` and `sweep` are open to agents
+    (the sweep invalidates a decision whose subject is gone, and a proposal nobody should confirm is rejected the same
+    way, with no maker named); `confirm`, `supersede`, `restore` and `makers --policy` need `--by operator`, which an agent passes
     only after the operator said so, because each makes or brings back a decision that holds.
   - A root saves its decision makers by a policy (kbcommon.POLICIES), one reserved row of its decision-makers.csv.
     There is no default: `propose` in a root with none is refused with the question and the options until the
@@ -53,18 +57,30 @@ lands in a root by omission. The rows go to the root's `_decisions.csv`; its for
     close deleted the file, as its last version in git history says (an item that is done, or was deleted at close
     done, does not invalidate; one with no history says nothing); (2) a `source:` has a `superseded_by` in its
     _sources.csv; (3) an `article:` or a `domain:` is gone, a root's removal included; (4) its `review_by` is before
-    the date. The reason names the reference (`item:TK-x dropped`), several joined by `; `. A `fact:` that no longer
-    exists invalidates nothing: that is the relink flag, not a withdrawal. `--dry-run` prints what it would
-    invalidate and writes nothing; `--date` is the day taken as today (default: today). No row is deleted.
+    the date. The reason names the reference (`item:TK-x dropped`), several joined by `; `. A `fact:` whose key no
+    fact has any more (the fact was reworded or removed) invalidates nothing: the decision is flagged with a line
+    `ID<TAB>relink<TAB>root<TAB>fact:KEY<TAB>PATH:LINE<TAB>text` naming the current fact likeliest to be it (`-` when
+    none is likely enough) and no row changes; `relink` repoints it. `--dry-run` prints what it would invalidate and
+    writes nothing; `--date` is the day taken as today (default: today). No row is deleted.
+  - The likeliest fact (`suggest`): a key is a hash, so the old text is read back from the git history of the files the
+    fact was in (its `_anchors.csv` rows, the context's articles), and the facts of those files (else of the root;
+    kb/_self: of every root) are scored by difflib's ratio of the two texts' terms, at least MIN_SIMILAR; with no
+    history, by the share of the key terms the anchors kept, the questions doc2query generated for the fact, or the
+    decision's own text that a fact holds. A root points only at its own facts.
+  - `relink` replaces the one gone `fact:` of a proposed or active decision with the key of the fact at PATH:LINE
+    (`--old KEY` when several are gone), refused when no fact starts at that line, the fact is another root's, or
+    none of the context's facts is gone; the row stays and `links` records the old key, the new fact and the day.
+    It is open to agents: a decision's text and maker do not change, the pointer is what it is about, and the sweep
+    that flags it may invalidate a decision as well.
   - Every row written passes `check.py`: after each write the files are checked, and a change that would add an
     error is undone and refused. Refusals before a root's first decision go through `policy_refusal`.
 
 Exit: 0 done, 2 refused (a rule above, an unknown root or id, or a file that cannot be read) or bad arguments.
 """
-import argparse, base64, datetime, hashlib, json, re, subprocess, sys
+import argparse, base64, datetime, difflib, hashlib, json, re, subprocess, sys
 from pathlib import Path
 
-import check, kbcommon
+import check, kbcommon, kbfacts
 
 SELF_ROOT = "_self"  # the name that stands for kb/_self, which is no root
 OPERATOR = "operator"  # what `confirm --by` must be, and the maker of an internal root's decision that names none
@@ -365,6 +381,16 @@ def cmd_restore(a):
     return 0
 
 
+def git_out(*args):
+    """The output of `git ARGS` run in this repository, '' when it fails (no git, no repository, no such revision)."""
+    try:
+        p = subprocess.run(["git", *args], cwd=kbcommon.HOME, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
+    except OSError:
+        return ""
+    return p.stdout if p.returncode == 0 else ""
+
+
 class Context:
     """What the context references of decisions are checked against, read once per sweep: backlog items (the file, or
     the last version git history keeps of a deleted one) and the sources' `superseded_by`."""
@@ -389,15 +415,8 @@ class Context:
     @staticmethod
     def deleted_version(rel):
         """The text of `rel` as it was just before the newest commit that deleted it, '' when git holds none."""
-        def git(*args):
-            try:
-                p = subprocess.run(["git", *args], cwd=kbcommon.HOME, capture_output=True, text=True, encoding="utf-8",
-                                   errors="replace")
-            except OSError:
-                return ""
-            return p.stdout if p.returncode == 0 else ""
-        last = git("log", "-1", "--diff-filter=D", "--format=%H", "--", rel).strip()
-        return git("show", f"{last}^:{rel}") if last else ""
+        last = git_out("log", "-1", "--diff-filter=D", "--format=%H", "--", rel).strip()
+        return git_out("show", f"{last}^:{rel}") if last else ""
 
     def superseded_by(self, store, sid):
         """What `superseded_by` says of source `sid` in the store's root (kb/_self: in any root), '' when nothing."""
@@ -441,13 +460,172 @@ def broken(store, row, ctx, today):
     return out
 
 
+MIN_SIMILAR = 0.5  # the least similarity (0 to 1) a current fact needs to be offered for a gone one
+HISTORY = 40  # the commits of a file read back for the text of a fact that is gone
+CLIP = 200  # characters of a suggested fact's text that sweep prints
+
+
+class Facts:
+    """The facts the kb has now (tagged units of every root), read on first use, so a sweep of decisions that name no
+    fact reads none. A fact is known by its key (kbfacts.fact_key) and found by `PATH:LINE`."""
+
+    def __init__(self):
+        self._units = self._keys = self._at = None
+
+    def load(self):
+        if self._units is None:
+            self._units, self._keys, self._at = [u for u in kbfacts.units() if u["tags"]], {}, {}
+            for u in self._units:
+                u["key"] = kbfacts.fact_key(u["text"])
+                self._keys.setdefault(u["key"], u)
+                self._at[(u["path"], u["line"])] = u
+        return self._units
+
+    def live(self, key):
+        self.load()
+        return key in self._keys
+
+    def allowed(self, store):
+        """The facts a decision of `store` may point at: its root's own (kb/_self: any root's), as a root cites only
+        its own sources."""
+        return [u for u in self.load() if store.root is None or kbfacts.root_name(u["path"]) == store.name]
+
+    def at(self, store, spec):
+        """The fact `spec` (`PATH:LINE`, as rag.py pack prints it: qualified, or inside the root of `store`) names;
+        Refused when no fact starts at that line or it is another root's."""
+        path, _, line = spec.strip().rpartition(":")
+        if not path or not line.isdigit():
+            raise Refused(f"--fact {spec!r} is not PATH:LINE (as rag.py pack prints it, such as public/auth/kerberos.md:12)")
+        path = path.replace("\\", "/")
+        if kbcommon.split(path)[0] is None and store.root is not None:
+            path = kbcommon.qualify(store.root, path)
+        self.load()
+        u = self._at.get((path, int(line)))
+        if u is None:
+            raise Refused(f"{spec} is no fact: no tagged bullet, table row or data row starts at that line (python3 "
+                          f"_tools/rag.py show {spec}); in {SELF_ROOT} a path is written <root>/<path>")
+        if store.root is not None and kbfacts.root_name(u["path"]) != store.name:
+            raise Refused(f"{spec} is a fact of root {kbfacts.root_name(u['path'])}: {store.name} points only at its own facts")
+        return u
+
+
+def gone_facts(row, facts):
+    """The keys of the `fact:` references of decision `row` that no fact has any more, in order."""
+    return list(dict.fromkeys(v for k, v in kbcommon.context_refs(row.get("context")) if k == "fact" and not facts.live(v)))
+
+
+def old_text(key, qpaths):
+    """The text fact `key` had: its tagged unit in the newest of the last HISTORY versions git holds of the files
+    `qpaths` (qualified) that has it; '' when none does or git has no history to ask."""
+    for q in qpaths:
+        root, rel = kbcommon.split(q)
+        if root is None:
+            continue
+        repo = kbcommon.repo_rel(str(Path(root.path) / rel))
+        for sha in git_out("log", f"-n{HISTORY}", "--format=%H", "--", repo).split():
+            text = git_out("show", f"{sha}:{repo}")
+            for u in (kbfacts.md_units(q, text) if rel.endswith(".md") else kbfacts.csv_units(q, text)):
+                if u.get("tags") and kbfacts.fact_key(u["text"]) == key:
+                    return u["text"]
+    return ""
+
+
+def anchor_rows(key):
+    """[(Root, row)] of every root's _anchors.csv for fact `key`: where the fact was and its key terms."""
+    out = []
+    for r in kbcommon.roots():
+        try:
+            rows = kbcommon.load_csv(str(Path(r.path) / kbcommon.ANCHORS))[1]
+        except kbcommon.CsvError:
+            continue
+        out += [(r, x) for x in rows if field(x, "fact") == key]
+    return out
+
+
+def suggest(store, row, key, facts):
+    """The current fact likeliest to be fact `key` reworded, or None. Where it was: the files of its _anchors.csv rows
+    and the context's articles; those facts first, then every fact the store may point at.
+      - the old text is read back from git history of those files when a version holds it, and a fact scores by
+        difflib's ratio of the two texts' terms (kbfacts.terms: stems), in order;
+      - else the hint is what the kb kept of it: the key terms of its anchors and the words of the questions doc2query
+        generated for it, else the decision's own text, and a fact scores by the share of the hint it holds.
+    A fact scores at least MIN_SIMILAR or is not offered; the best wins, the first of equals; another fact the
+    decision names is never offered."""
+    refs = kbcommon.context_refs(row.get("context"))
+    anchors = anchor_rows(key)
+    paths = [kbcommon.qualify(r, x["path"]) for r, x in anchors]
+    paths += [(v if store.root is None else kbcommon.qualify(store.root, v)) + ".md" for k, v in refs if k == "article"]
+    paths = list(dict.fromkeys(paths))
+    old = old_text(key, paths)
+    if kbfacts.terms(old):
+        score = text_scorer(old)
+    else:
+        hint = {t.strip() for _, x in anchors for t in field(x, "terms").split(";") if t.strip()}
+        for q in kbfacts.expansions().get(key, ()):
+            hint |= set(kbfacts.terms(q))
+        score = hint_scorer(hint or set(kbfacts.terms(field(row, "text"))))
+    named = {v for k, v in refs if k == "fact"}
+    pool = [u for u in facts.allowed(store) if u["key"] not in named]
+    near = [u for u in pool if u["path"] in paths]
+    for group in ([near, pool] if near else [pool]):
+        if top := closest(group, score):
+            return top
+    return None
+
+
+def text_scorer(old):
+    """score(text): how like the text `old` another text is, 0 to 1: difflib's ratio of the two terms in order."""
+    sm = difflib.SequenceMatcher(autojunk=False)
+    sm.set_seq2(kbfacts.terms(old))
+
+    def score(text):
+        sm.set_seq1(kbfacts.terms(text))
+        if sm.real_quick_ratio() < MIN_SIMILAR or sm.quick_ratio() < MIN_SIMILAR:  # the cheap bounds first
+            return 0.0
+        return sm.ratio()
+    return score
+
+
+def hint_scorer(hint):
+    """score(text): the share of the terms in `hint` (a set) that the text holds, 0 to 1."""
+    def score(text):
+        return len(hint & set(kbfacts.terms(text))) / len(hint) if hint else 0.0
+    return score
+
+
+def closest(units, score):
+    """The unit whose text scores highest, at least MIN_SIMILAR, the first of equals; None when none does."""
+    top, top_score = None, MIN_SIMILAR
+    for u in units:
+        s = score(u["text"])
+        if s >= top_score and (top is None or s > top_score):
+            top, top_score = u, s
+    return top
+
+
+def relink_line(store, row, key, hit):
+    """What sweep prints of a decision whose fact is gone: id, relink, root, the old key, the suggested PATH:LINE (`-`
+    when none) and its text."""
+    text = " ".join(hit["text"].split()) if hit else "(no current fact is likely enough)"
+    if len(text) > CLIP:
+        text = text[:CLIP - 3] + "..."
+    return "\t".join([field(row, "id"), "relink", store.name, f"fact:{key}", f"{hit['path']}:{hit['line']}" if hit else "-", text])
+
+
 def cmd_sweep(a):
-    today, ctx, refused, n = day(a.date), Context(), [], 0
+    today, ctx, facts, refused, n, flagged = day(a.date), Context(), Facts(), [], 0, 0
     for store in stores(a.root):
-        rows, hit = load(store), []
+        rows, hit, flag = load(store), [], []
         for r in rows:
-            if field(r, "status") in ("proposed", "active") and (why := broken(store, r, ctx, today)):
+            if field(r, "status") not in ("proposed", "active"):
+                continue
+            if why := broken(store, r, ctx, today):
                 hit.append((r, "; ".join(why)))
+            else:  # a context that holds apart from a fact that is gone is flagged, its row left as it is
+                flag += [(r, key) for key in gone_facts(r, facts)]
+        for r, key in flag:
+            print(relink_line(store, r, key, suggest(store, r, key, facts)))
+        flagged += len(flag)
         if not hit:
             continue
         for r, why in hit:
@@ -461,9 +639,41 @@ def cmd_sweep(a):
                 continue
         n += len(hit)
     print(f"{'would_invalidate' if a.dry_run else 'invalidated'}={n}")
+    print(f"relink={flagged}")
     for why in refused:
         print(f"refused: {why}")
     return 2 if refused else 0
+
+
+def cmd_relink(a):
+    store = Store(a.root)
+    rows = load(store)
+    row = find(rows, a.id, store)
+    need(row, ("proposed", "active"), a.id, "relinked")
+    facts, when = Facts(), day(a.date)
+    target = facts.at(store, a.fact)
+    named = [v for k, v in kbcommon.context_refs(row.get("context")) if k == "fact"]
+    gone = gone_facts(row, facts)
+    if a.old:
+        if a.old not in named:
+            raise Refused(f"{a.id} has no context fact:{a.old} (its facts: {', '.join(named) or 'none'})")
+        if a.old not in gone:
+            raise Refused(f"fact:{a.old} of {a.id} still exists: relink repoints a fact that is gone")
+        old = a.old
+    elif len(gone) == 1:
+        old = gone[0]
+    elif not gone:
+        raise Refused(f"no fact of the context of {a.id} is gone: nothing to relink")
+    else:
+        raise Refused(f"{a.id} has several facts that are gone ({', '.join(gone)}): name the one to repoint with --old KEY")
+    new = target["key"]
+    parts = kbcommon.split_list(row.get("context"))
+    parts = [p for p in parts if p != f"fact:{old}"] if f"fact:{new}" in parts else [f"fact:{new}" if p == f"fact:{old}" else p for p in parts]
+    row["context"] = "; ".join(parts)
+    row["links"] = "; ".join(filter(None, [field(row, "links"), f"relinked fact:{old} to fact:{new} ({target['path']}:{target['line']}) on {when}"]))
+    save(store, rows)
+    print(f"{a.id}\trelinked\t{store.name}\tfact:{old}\tfact:{new}\t{target['path']}:{target['line']}")
+    return 0
 
 
 def cmd_list(a):
@@ -524,6 +734,11 @@ def parser():
     p.add_argument("root", help="a root's name")
     p.add_argument("--policy", help=f"{'|'.join(kbcommon.POLICIES)}; the operator's")
     p.add_argument("--by", help=f"must be {OPERATOR} with --policy")
+    p = add("relink", "repoint a decision's gone fact reference to the fact at PATH:LINE")
+    p.add_argument("id")
+    p.add_argument("--fact", required=True, help="PATH:LINE of the fact it is about now, as rag.py pack prints it")
+    p.add_argument("--old", help="the key of the gone fact to repoint, when the context has several that are gone")
+    p.add_argument("--date", help="YYYY-MM-DD, noted in links (default: today)")
     p = add("sweep", "invalidate the decisions whose context is broken", root_required=False)
     p.add_argument("--dry-run", action="store_true", help="print what would be invalidated and write nothing")
     p.add_argument("--date", help="YYYY-MM-DD, the day taken as today (default: today)")
@@ -534,7 +749,7 @@ def parser():
 
 
 COMMANDS = {"propose": cmd_propose, "confirm": cmd_confirm, "makers": cmd_makers, "supersede": cmd_supersede, "invalidate": cmd_invalidate,
-            "restore": cmd_restore, "sweep": cmd_sweep, "list": cmd_list}
+            "restore": cmd_restore, "relink": cmd_relink, "sweep": cmd_sweep, "list": cmd_list}
 
 
 def main(argv=None):
