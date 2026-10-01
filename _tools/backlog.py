@@ -15,10 +15,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           goal: the share of the query's words found (stop words left out), the
                                           shared count, `near` from 0.60 and 2 words; the first 10; exit 0
   backlog.py check                        validate every item (fields, links, cycles, canonical form, a planned
-                                          sprint's items still draft, and the kb references of its `knowledge`: a
-                                          missing one is an error, a fact key no longer found is reported as stale
-                                          knowledge; no item may hold a piece of this host's computer or user
-                                          name, read from the environment and never printed); exit 1 on errors
+                                          sprint's items still draft but a claimed research item, and the kb
+                                          references of its `knowledge`: a missing one is an error, a fact key no
+                                          longer found is reported as stale knowledge; no item may hold a piece of
+                                          this host's computer or user name, read from the environment and never
+                                          printed); exit 1 on errors
   backlog.py fmt                          rewrite every item in canonical form
   backlog.py selectors                    one line per `tests.py -k` selector in the checks of open items: how many
                                           tests pytest --collect-only finds for it now (NONE marks zero, error a
@@ -33,6 +34,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           order; --any: items outside an active sprint too, for single-item work),
                                           with the knowledge state of each of its asks and refs
   backlog.py claim ID --by NAME           status doing, claimed by NAME;  backlog.py release ID  back to todo
+                                          (a research item of a planned sprint, one whose touches are all inside kb
+                                          roots: claimed from draft, released to draft; check accepts it doing or
+                                          done, and done proves it before the sprint starts)
   backlog.py answer ID GATE (--answer TEXT --by operator|agent | --provisional | --confirm)
                                           record a gate's answer: --provisional takes the recommendation as the
                                           agent's answer (provisional gates only); --confirm makes an agent's answer
@@ -113,6 +117,11 @@ ID_RE = re.compile(r"\b(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}\b")
 STATUSES = ("draft", "todo", "doing", "done", "dropped")
 WORKED = ("todo", "doing", "done")  # statuses an item of a planned sprint cannot have: it stays draft until start
 SPRINT_STATUSES = ("planned", "active")
+# a research item: a story, task or subtask whose touches (its own and its descendants') all lie inside one named kb
+# root each (kb/public/**; never kb/_self/, _tools/, .claude/, .githooks/ or CI). In a planned sprint it may be claimed
+# from draft, worked and done before the sprint starts (kb/_self/backlog.md, Sprints)
+RESEARCH_KINDS = ("story", "task", "subtask")
+KB_CONTENT_RE = re.compile(r"kb/[^/_*?\[\]][^/*?\[\]]*/.+")  # the root's name spelled out, no `..` (research_touches)
 PRIORITIES = ("P1", "P2", "P3")
 SEVERITIES = ("S1", "S2", "S3", "S4")
 GATE_KINDS = ("blocking", "provisional")
@@ -993,7 +1002,8 @@ def validate(bl, pieces=None):
         if st == "doing" and not it.get("claimed_by"):
             e("status doing needs claimed_by")
         sp = bl.sprint_of(iid) if kind != "sprint" else None
-        if st in WORKED and sp in bl.items and bl.items[sp].get("status") == "planned":
+        if st in WORKED and sp in bl.items and bl.items[sp].get("status") == "planned" \
+                and not (st in ("doing", "done") and research_in_planned(bl, iid)):
             e(f"status {st} while its sprint {bl.label(sp)} is planned: not in a started sprint "
               f"(a planned sprint's items stay draft until backlog.py start)")
         if st == "done" and kind in NEEDS_CHECKS + ("bug",) and not it.get("evidence"):
@@ -1129,6 +1139,22 @@ def scope(bl, iid):
     for d in bl.descendants(iid):
         out += bl.items[d].get("touches", [])
     return out
+
+
+def research_touches(touches):
+    """True for touches that are kb content only: at least one, each a path or glob inside a named kb root
+    (KB_CONTENT_RE). kbgit.py check-trailers reads an item's own touches with it."""
+    return bool(touches) and all(isinstance(t, str) and KB_CONTENT_RE.fullmatch(t) and ".." not in t.split("/")
+                                 for t in touches)
+
+
+def research_in_planned(bl, iid):
+    """True for a research item (RESEARCH_KINDS, its scope all kb content) whose sprint is planned: claim takes it
+    from draft, check accepts it doing or done, and done proves it, all before the sprint starts."""
+    it = bl.items[iid]
+    sp = bl.sprint_of(iid)
+    return (it.get("kind") in RESEARCH_KINDS and research_touches(scope(bl, iid))
+            and bl.items.get(sp, {}).get("status") == "planned")
 
 
 def item_commits(root, ids):
@@ -1522,7 +1548,9 @@ def cmd_next(bl, a):
 def cmd_claim(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
-    w = [x for x in waits(bl, iid, any_sprint=True) if not x.startswith("status doing")]
+    # a research item of a planned sprint is claimed from draft: its kb content lands before the sprint starts
+    ok = ("status doing", "status draft") if research_in_planned(bl, iid) else ("status doing",)
+    w = [x for x in waits(bl, iid, any_sprint=True) if not x.startswith(ok)]
     if w:
         raise Refused(f"{bl.label(iid)} is not ready:\n  " + "\n  ".join(w))
     if it.get("status") == "doing" and it.get("claimed_by") != a.by:
@@ -1539,7 +1567,7 @@ def cmd_release(bl, a):
     it = bl.items[iid]
     if it.get("status") != "doing":
         raise Refused(f"{bl.label(iid)} is {it.get('status')}, not doing")
-    it["status"] = "todo"
+    it["status"] = "draft" if research_in_planned(bl, iid) else "todo"  # a planned sprint's items stay draft
     it.pop("claimed_by", None)
     bl.save(it)
     say(f"released {bl.label(iid)}")
