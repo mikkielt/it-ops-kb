@@ -2,7 +2,7 @@
   "id": "ST-enbiym2z",
   "kind": "story",
   "title": "Sprint start refuses a docs-only task that depends on the code it describes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orch-fourth-w6"
+  "evidence": {
+    "commit": "eb4612fd5fa01cba427e44305768994d0066a427",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_docs_after_code"
+        ],
+        "exit": 0,
+        "sha256": "0f1793d2b1a52105"
+      }
+    ]
+  }
 }
