@@ -2,7 +2,7 @@
   "id": "BG-xumzxfkw",
   "kind": "bug",
   "title": "A KB-Work line outside the trailer block passes check-trailers, and done counts the claim commit as the work",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -26,5 +26,19 @@
     "kb/_self/tools.md"
   ],
   "notes": "Work commits with KB-Work in a paragraph before Co-Authored-By: 7219acbb, ac03d1b3, 9cb820ec, 8da30157. Their items passed done through the claim commit alone, which carries the trailer and changes only kb/_self/backlog/.",
-  "claimed_by": "worker-xumzxfkw"
+  "evidence": {
+    "commit": "1c09b6ef781d8a6be8b4554778359a0231a60f57",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "check_trailers_flags_kb_work_outside_trailers"
+        ],
+        "exit": 0,
+        "sha256": "dae8383b5e4c9e3a"
+      }
+    ]
+  }
 }
