@@ -41,6 +41,22 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           record a gate's answer: --provisional takes the recommendation as the
                                           agent's answer (provisional gates only); --confirm makes an agent's answer
                                           the operator's
+  backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
+                 [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--add] [--clear FIELD]...
+                                          change an item after new: each list option replaces its list (--add:
+                                          appends what is missing, so a second run changes nothing; for --notes,
+                                          appends the text unless the notes hold it), --clear FIELD removes one.
+                                          The result is validated as check does and written only when it adds no
+                                          error; status, claimed_by, evidence, id, kind, parent, title and the
+                                          fields set does not name are refused, a sprint takes notes and links
+                                          only, and a done item keeps its checks and touches (its evidence proves
+                                          them); exit 2 for each refusal, the item file unchanged
+  backlog.py gate add ID --question Q --option O... --recommendation R [--kind blocking|provisional] [--id GATE]
+                                          add a gate (kind blocking unless given; two or more options, the
+                                          recommendation one of them; the id defaults to g1, g2, ...), validated as
+                                          check does; the same gate again changes nothing, a different gate with an
+                                          existing question or id is refused, as is one on a done or dropped item
+                                          (exit 2); `answer` answers it
   backlog.py fire ID                      mark an item's external trigger as fired
   backlog.py done ID [--dry-run]          run the item's checks at a clean HEAD, check its commits' scope, record the
                                           evidence and set status done; exit 1 with the reasons otherwise
@@ -94,7 +110,7 @@ a new sprint and its review story), then each --trailer (the session's own, e.g.
 refused). close's commit body is its --summary list.
 
 --root DIR (before the command) runs against another clone. Exit: 0 ok, 1 a refused command or check errors,
-2 bad arguments or an unknown id.
+2 bad arguments, an unknown id, or a refused `set` or `gate add`.
 
 Knowledge state (show, next, horizon): one line `knowledge <state> ask|ref: <text>` per ask and per ref of an item's
 `knowledge`, each run through kbfacts.pack (no network, no model) and reported as one of sufficient (coverage good, no
@@ -106,7 +122,7 @@ stored, and no part of readiness. An item without `knowledge` costs nothing: the
 Every line that names an item prints its id and its title together, except a title check found holding a piece of
 this host's computer or user name, which is withheld.
 """
-import argparse, base64, functools, getpass, hashlib, json, os, re, secrets, shlex, socket, subprocess, sys
+import argparse, base64, copy, functools, getpass, hashlib, json, os, re, secrets, shlex, socket, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -164,6 +180,10 @@ def start_approved(sp):
 
 class Refused(Exception):
     pass
+
+
+class Rejected(Refused):
+    """A refusal that exits 2: `set` and `gate add` could not do what was asked."""
 
 
 # ------------------------------------------------------------------ storage
@@ -905,6 +925,8 @@ def validate(bl, pieces=None):
         for f in ("goal", "notes"):
             if f in it and not _text_ok(it[f]):
                 e(f"{f} empty or longer than TEXT_MAX")
+        if "links" in it and not (isinstance(it["links"], list) and all(_text_ok(x) for x in it["links"])):
+            e("links must be a list of texts (each non-empty, at most TEXT_MAX)")
         if bl.raw.get(iid) != canonical(it):
             e("not in canonical form (python3 _tools/backlog.py fmt)")
         if kind == "sprint":
@@ -1596,6 +1618,146 @@ def cmd_answer(bl, a):
         g.update(answer=a.answer, by=a.by)
     bl.save(it)
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
+    return 0
+
+
+def changed_item(bl, iid, edit):
+    """Apply `edit` to a copy of the item and write it when the copy differs and validates as `check` does: no error
+    that was not there before (this item's, or another's that a dependency cycle or a review story's sprint would
+    add). Returns True when it wrote the file, False when the edit leaves the item as it is; raises Rejected with the
+    new errors and the item untouched."""
+    old = bl.items[iid]
+    new = copy.deepcopy(old)
+    edit(new)
+    if canonical(new) == canonical(old):
+        return False
+    before = set(validate(bl) + stale_touches(bl))
+    raw = bl.raw[iid]
+    bl.items[iid], bl.raw[iid] = new, canonical(new)
+    try:
+        fresh = [x for x in validate(bl) + stale_touches(bl) if x not in before]
+    finally:
+        bl.items[iid], bl.raw[iid] = old, raw
+    if fresh:
+        raise Rejected(f"{bl.label(iid)} unchanged: the change would make `check` fail:\n  " + "\n  ".join(fresh))
+    bl.save(new)
+    return True
+
+
+SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to")
+SET_FIELDS = ("notes", "priority", "rank", "sprint") + SET_LISTS  # what set changes; the others are refused
+SET_REFUSED = {  # a field set refuses, with the rule it states
+    "status": "changes only through claim, release, start, close, drop and done",
+    "claimed_by": "changes only through claim and release",
+    "evidence": "is written only by done",
+    "id": "is the item's identity",
+    "kind": "is the item's identity",
+    "parent": "is the item's identity",
+    "title": "is the item's identity",
+    "gates": "changes through gate add and answer",
+}
+
+
+def set_refusal(field):
+    """The rule that refuses `set` the field, or None when set changes it."""
+    if field in SET_FIELDS:
+        return None
+    return f"set refuses {field}: it {SET_REFUSED.get(field, 'is not a field set changes')}"
+
+
+def appended(old, values):
+    """`old` with each of `values` it lacks added at the end, in order."""
+    return old + [v for i, v in enumerate(values) if v not in old and v not in values[:i]]
+
+
+def cmd_set(bl, a):
+    iid = need(bl, a.id)
+    it = bl.items[iid]
+    for f in SET_REFUSED:
+        if getattr(a, "no_" + f, None) is not None:
+            raise Rejected(set_refusal(f))
+    for f in a.clear:
+        if set_refusal(f):
+            raise Rejected(set_refusal(f))
+    given = {"notes": a.notes, "priority": a.priority, "rank": a.rank, "sprint": a.sprint}
+    given.update({f: getattr(a, f) for f in SET_LISTS})
+    given = {f: v for f, v in given.items() if v is not None}
+    both = sorted(set(given) & set(a.clear))
+    if both:
+        raise Rejected(f"set: {', '.join(both)} given a value and --clear together")
+    if not given and not a.clear:
+        raise Rejected("set: nothing to change: name a field (" + ", ".join(SET_FIELDS) + ")")
+    named = sorted(set(given) | set(a.clear))
+    if it.get("kind") == "sprint" and set(named) - {"notes", "links"}:
+        raise Rejected(f"set refuses {', '.join(sorted(set(named) - {'notes', 'links'}))} on a sprint: "
+                       "a sprint takes notes and links only")
+    if it.get("status") == "done" and {"checks", "touches"} & set(named):
+        raise Rejected(f"set refuses checks and touches on {bl.label(iid)}: it is done, and its evidence proves the "
+                       "checks and touches it had")
+    if a.sprint is not None and bl.items.get(a.sprint, {}).get("status") == "active" and it.get("status") == "draft":
+        raise Rejected(f"set refuses sprint {a.sprint} for {bl.label(iid)}: the sprint is active and the item is "
+                       "draft, so it would never be ready")
+    if "checks" in given:
+        try:
+            given["checks"] = [{"run": parse_cmd(c)} for c in given["checks"]]
+        except ValueError as e:
+            raise Rejected(f"set: --check is not a command line ({e})") from e
+
+    def edit(new):
+        for f, v in given.items():
+            if f in SET_LISTS and a.add:
+                new[f] = appended(new.get(f, []) if isinstance(new.get(f, []), list) else [], v)
+            elif f == "notes" and a.add:
+                old = new.get("notes", "")
+                new[f] = old if v in old else f"{old} {v}".strip()
+            else:
+                new[f] = v
+        for f in a.clear:
+            new.pop(f, None)
+
+    if changed_item(bl, iid, edit):
+        say(f"set {bl.label(iid)}: {', '.join(named)}")
+    else:
+        say(f"set {bl.label(iid)}: unchanged")
+    return 0
+
+
+GATE_ID_RE = re.compile(r"[a-z0-9][a-z0-9-]{0,39}")
+
+
+def cmd_gate(bl, a):
+    """gate add: a gate with its question, options and recommendation."""
+    iid = need(bl, a.id)
+    it = bl.items[iid]
+    if it.get("status") in ("done", "dropped"):
+        raise Rejected(f"gate add refuses {bl.label(iid)}: it is {it['status']}, so a gate would wait on nothing")
+    options = [o.strip() for o in a.option]
+    if len(options) < 2 or len(set(options)) != len(options) or not all(options):
+        raise Rejected("gate add: --option twice or more, each different and not empty")
+    if a.recommendation.strip() not in options:
+        raise Rejected("gate add: --recommendation must be one of the --option values")
+    gates = it.get("gates", [])
+    gid = a.gate_id or next(f"g{n}" for n in range(1, len(gates) + 2) if f"g{n}" not in {g.get("id") for g in gates})
+    if not GATE_ID_RE.fullmatch(gid) or gid == START_GATE:
+        raise Rejected(f"gate add: the gate id {gid!r} must be lowercase letters, digits and hyphens (at most 40), "
+                       f"and not {START_GATE!r}, the sprint's own")
+    gate = {"id": gid, "kind": a.kind, "question": a.question.strip(), "options": options,
+            "recommendation": a.recommendation.strip()}
+    same = [g for g in gates if g.get("question") == gate["question"] or g.get("id") == gid]
+    if same:
+        known = same[0]
+        if len(same) > 1 or any(known.get(k) != v for k, v in gate.items() if k != "id") \
+                or (a.gate_id and known.get("id") != gid):  # an answer it already has does not make it different
+            raise Rejected(f"gate add refuses a different gate with the question or id of gate {known.get('id')} "
+                           f"of {bl.label(iid)}: it already has one (its answer is not overwritten)")
+        say(f"gate {known.get('id')} of {bl.label(iid)}: unchanged")
+        return 0
+
+    def edit(new):
+        new["gates"] = list(new.get("gates", [])) + [gate]
+
+    changed_item(bl, iid, edit)
+    say(f"gate {gid} ({gate['kind']}) added to {bl.label(iid)}: {gate['question']}")
     return 0
 
 
@@ -2458,6 +2620,30 @@ def main(argv=None):
     p.add_argument("--by", choices=("operator", "agent"))
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
+    p = sub.add_parser("set")
+    p.add_argument("id")
+    p.add_argument("--notes")
+    p.add_argument("--link", dest="links", action="append")
+    p.add_argument("--touch", dest="touches", action="append")
+    p.add_argument("--check", dest="checks", action="append")
+    p.add_argument("--depends", dest="depends_on", action="append")
+    p.add_argument("--relates", dest="relates_to", action="append")
+    p.add_argument("--priority")
+    p.add_argument("--rank", type=int)
+    p.add_argument("--sprint")
+    p.add_argument("--add", action="store_true", help="append to a list (or to the notes) instead of replacing it")
+    p.add_argument("--clear", action="append", default=[], metavar="FIELD", help="remove a field (repeatable)")
+    for f in SET_REFUSED:  # accepted only to be refused with the rule that applies
+        p.add_argument("--" + f.replace("_", "-"), dest="no_" + f, help=argparse.SUPPRESS)
+    p = sub.add_parser("gate")
+    gsub = p.add_subparsers(dest="verb", required=True)
+    p = gsub.add_parser("add")
+    p.add_argument("id")
+    p.add_argument("--question", required=True)
+    p.add_argument("--option", action="append", required=True, help="an answer the operator may give (repeatable)")
+    p.add_argument("--recommendation", required=True, help="the option the agent recommends")
+    p.add_argument("--kind", default="blocking", help="blocking (default) or provisional")
+    p.add_argument("--id", dest="gate_id", help="the gate's id (default g1, g2, ...)")
     p = sub.add_parser("fire")
     p.add_argument("id")
     p = sub.add_parser("done")
@@ -2522,6 +2708,9 @@ def main(argv=None):
         return globals()["cmd_" + a.cmd.replace("-", "_")](bl, a)
     except KeyError as e:
         print(withhold(f"no item {e.args[0]}"), file=sys.stderr)
+        return 2
+    except Rejected as e:
+        print(withhold(str(e)), file=sys.stderr)
         return 2
     except Refused as e:
         print(withhold(str(e)), file=sys.stderr)

@@ -2298,3 +2298,237 @@ class TestBacklogLand:
     def test_backlog_land_refuses_kb_trailers(self, landing):
         code, out = b(landing["repo"], "land", landing["tk"], "--trailer", f"KB-Work: {landing['tk']}")
         assert code == 1 and "--trailer" in out, out
+
+
+# ------------------------------------------------------------------ set and gate add
+
+def item_text(repo, iid):
+    return (Path(repo) / backlog.REL_DIR / f"{iid}.json").read_text(encoding="utf-8")
+
+
+def item_json(repo, iid):
+    return json.loads(item_text(repo, iid))
+
+
+def refused_unchanged(repo, iid, *args, rule):
+    """The command exits 2 with the rule in its message and leaves the item file as it was."""
+    before = item_text(repo, iid)
+    code, out = b(repo, *args)
+    assert code == 2 and rule in out, (code, out)
+    assert item_text(repo, iid) == before
+
+
+def test_backlog_set_changes_each_field_and_check_passes(sprint):
+    repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+    code, out = b(repo, "set", tk, "--notes", "why", "--link", "pipeline 1", "--touch", "src/a.txt", "--touch", "kb/x/**",
+                  "--check", argstr(PASS), "--depends", bg, "--relates", sprint["st"], "--priority", "P1", "--rank", "3")
+    assert code == 0 and "set " in out, out
+    it = item_json(repo, tk)
+    assert it["notes"] == "why" and it["links"] == ["pipeline 1"] and it["touches"] == ["src/a.txt", "kb/x/**"]
+    assert it["checks"] == [{"run": PASS}] and it["depends_on"] == [bg] and it["relates_to"] == [sprint["st"]]
+    assert it["priority"] == "P1" and it["rank"] == 3
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+
+
+def test_backlog_set_moves_a_draft_story_to_another_sprint(repo):
+    b(repo, "new", "sprint", "--title", "One", "--goal", "g")
+    b(repo, "new", "sprint", "--title", "Two", "--goal", "g")
+    one, two = item(repo, "One")["id"], item(repo, "Two")["id"]
+    b(repo, "new", "story", "--title", "S", "--sprint", one, "--goal", "g", "--check", argstr(PASS))
+    st = item(repo, "S")["id"]
+    assert b(repo, "set", st, "--sprint", two)[0] == 0
+    assert item_json(repo, st)["sprint"] == two
+    assert b(repo, "set", st, "--clear", "sprint")[0] == 0
+    assert "sprint" not in item_json(repo, st)
+    assert b(repo, "check")[0] == 0
+
+
+def test_backlog_set_second_run_changes_nothing(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    args = ("set", tk, "--notes", "why", "--link", "a", "--touch", "src/**", "--priority", "P3")
+    assert b(repo, *args)[0] == 0
+    after = item_text(repo, tk)
+    code, out = b(repo, *args)
+    assert code == 0 and "unchanged" in out and item_text(repo, tk) == after
+    add = ("set", tk, "--add", "--link", "b", "--link", "a", "--notes", "more", "--touch", "kb/y/**")
+    assert b(repo, *add)[0] == 0
+    it = item_json(repo, tk)
+    assert it["links"] == ["a", "b"] and it["notes"] == "why more" and it["touches"] == ["src/**", "kb/y/**"]
+    after = item_text(repo, tk)
+    code, out = b(repo, *add)
+    assert code == 0 and "unchanged" in out and item_text(repo, tk) == after
+
+
+def test_backlog_set_add_keeps_existing_checks(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    assert b(repo, "set", tk, "--add", "--check", argstr(PASS))[0] == 0
+    assert item_json(repo, tk)["checks"] == [{"run": is_file("src/b.txt")}, {"run": PASS}]
+    assert b(repo, "set", tk, "--check", argstr(PASS))[0] == 0  # without --add the list is replaced
+    assert item_json(repo, tk)["checks"] == [{"run": PASS}]
+
+
+@pytest.mark.parametrize("flag, value, rule", [
+    ("--status", "done", "set refuses status"),
+    ("--claimed-by", "me", "set refuses claimed_by"),
+    ("--evidence", "x", "set refuses evidence"),
+    ("--id", "TK-aaaaaaaa", "set refuses id"),
+    ("--kind", "bug", "set refuses kind"),
+    ("--parent", "ST-aaaaaaaa", "set refuses parent"),
+    ("--title", "Other", "set refuses title"),
+    ("--gates", "[]", "set refuses gates"),
+])
+def test_backlog_set_refuses_status_claim_evidence_and_identity(sprint, flag, value, rule):
+    refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], flag, value, rule=rule)
+
+
+@pytest.mark.parametrize("field, rule", [
+    ("status", "changes only through claim, release, start, close, drop and done"),
+    ("claimed_by", "changes only through claim and release"),
+    ("evidence", "is written only by done"),
+    ("title", "identity"),
+    ("goal", "is not a field set changes"),
+    ("repro", "is not a field set changes"),
+])
+def test_backlog_set_clear_refuses_the_same_fields(sprint, field, rule):
+    refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], "--clear", field, rule=rule)
+
+
+def test_backlog_set_refuses_nothing_to_change_and_a_value_with_its_clear(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    refused_unchanged(repo, tk, "set", tk, rule="nothing to change")
+    refused_unchanged(repo, tk, "set", tk, "--notes", "x", "--clear", "notes", rule="given a value and --clear")
+
+
+@pytest.mark.parametrize("args, rule", [
+    (["--priority", "P9"], "priority must be one of"),
+    (["--notes", " "], "notes empty or longer than TEXT_MAX"),
+    (["--notes", "x" * 2001], "notes empty or longer than TEXT_MAX"),
+    (["--link", ""], "links must be a list of texts"),
+    (["--depends", "TK-zzzzzzzz"], "depends_on names TK-zzzzzzzz, which does not exist"),
+    (["--relates", "TK-zzzzzzzz"], "relates_to names TK-zzzzzzzz, which does not exist"),
+    (["--sprint", "SP-zzzzzzzz"], "only stories and bugs name a sprint"),
+    (["--check", ""], "checks must be a list of"),
+    (["--clear", "touches"], "touches missing"),
+    (["--clear", "priority"], "priority must be one of"),
+    (["--clear", "checks"], "checks missing"),
+    (["--touch", "src/**", "--clear", "touches"], "given a value and --clear"),
+])
+def test_backlog_set_refuses_what_check_would_flag(sprint, args, rule):
+    refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], *args, rule=rule)
+
+
+def test_backlog_set_refuses_a_check_that_is_not_a_command_line(sprint):
+    refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], "--check", "python3 -c 'unclosed",
+                      rule="not a command line")
+
+
+def test_backlog_set_refuses_itself_and_a_dependency_cycle(sprint):
+    repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+    refused_unchanged(repo, tk, "set", tk, "--depends", tk, rule="names the item itself")
+    assert b(repo, "set", bg, "--depends", tk)[0] == 0
+    refused_unchanged(repo, tk, "set", tk, "--depends", bg, rule="cycle")
+
+
+def test_backlog_set_refuses_a_missing_sprint_of_a_story_and_a_draft_item_in_an_active_sprint(sprint):
+    repo, st = sprint["repo"], sprint["st"]
+    refused_unchanged(repo, st, "set", st, "--sprint", "SP-zzzzzzzz", rule="sprint SP-zzzzzzzz does not exist")
+    b(repo, "new", "story", "--title", "Loose", "--goal", "g", "--check", argstr(PASS))
+    loose = item(repo, "Loose")["id"]
+    refused_unchanged(repo, loose, "set", loose, "--sprint", sprint["sp"], rule="would never be ready")
+
+
+def test_backlog_set_refuses_moving_the_review_story_out_of_its_sprint(sprint):
+    repo, rv = sprint["repo"], sprint["rv"]
+    b(repo, "new", "sprint", "--title", "Other", "--goal", "g")
+    refused_unchanged(repo, rv, "set", rv, "--sprint", item(repo, "Other")["id"], rule="exactly one review story")
+
+
+def test_backlog_set_refuses_a_sprint_except_notes_and_links(sprint):
+    repo, sp = sprint["repo"], sprint["sp"]
+    refused_unchanged(repo, sp, "set", sp, "--priority", "P1", rule="a sprint takes notes and links only")
+    assert b(repo, "set", sp, "--notes", "n", "--link", "l")[0] == 0
+
+
+def test_backlog_set_refuses_checks_and_touches_of_a_done_item(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    edit(repo, tk, status="done", evidence={"commit": "abc", "checks": []})
+    refused_unchanged(repo, tk, "set", tk, "--check", argstr(PASS), rule="its evidence proves")
+    refused_unchanged(repo, tk, "set", tk, "--clear", "touches", rule="its evidence proves")
+    assert b(repo, "set", tk, "--notes", "after")[0] == 0
+
+
+def test_backlog_set_refuses_a_name_of_this_host_in_notes(sprint, monkeypatch):
+    monkeypatch.setenv("COMPUTERNAME", "ZyxwvuHost")
+    refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], "--notes", "built on zyxwvuhost",
+                      rule="holds a piece of this host's computer name")
+
+
+def test_backlog_set_unknown_id_exits_2(sprint):
+    code, out = b(sprint["repo"], "set", "TK-zzzzzzzz", "--notes", "x")
+    assert code == 2 and "no item TK-zzzzzzzz" in out
+
+
+def test_backlog_set_check_flags_malformed_links(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    edit(repo, tk, links="pipeline 1")  # planted: a string, not a list
+    code, out = b(repo, "check")
+    assert code == 1 and "links must be a list of texts" in out, out
+
+
+GATE = ("--question", "Which way?", "--option", "left", "--option", "right", "--recommendation", "left")
+
+
+def test_backlog_set_gate_add_blocks_until_answered(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    code, out = b(repo, "gate", "add", tk, *GATE)
+    assert code == 0 and "g1 (blocking) added" in out, out
+    assert item_json(repo, tk)["gates"] == [{"id": "g1", "kind": "blocking", "question": "Which way?",
+                                              "options": ["left", "right"], "recommendation": "left"}]
+    assert b(repo, "check")[0] == 0
+    assert "waits on" in b(repo, "show", tk)[1]
+    assert b(repo, "answer", tk, "g1", "--answer", "left", "--by", "operator")[0] == 0
+    assert b(repo, "gate", "add", tk, "--question", "Second?", "--option", "a", "--option", "b",
+             "--recommendation", "b", "--kind", "provisional")[0] == 0
+    assert [g["id"] for g in item_json(repo, tk)["gates"]] == ["g1", "g2"]
+    assert b(repo, "answer", tk, "g2", "--provisional")[0] == 0
+
+
+def test_backlog_set_gate_add_second_run_changes_nothing(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    assert b(repo, "gate", "add", tk, *GATE, "--id", "way")[0] == 0
+    assert b(repo, "answer", tk, "way", "--answer", "right", "--by", "operator")[0] == 0
+    after = item_text(repo, tk)
+    for extra in ((), ("--id", "way")):  # an answered gate is not reopened or duplicated
+        code, out = b(repo, "gate", "add", tk, *GATE, *extra)
+        assert code == 0 and "unchanged" in out and item_text(repo, tk) == after, out
+
+
+@pytest.mark.parametrize("args, rule", [
+    (["--question", "Which way?", "--option", "up", "--option", "down", "--recommendation", "up"],
+     "refuses a different gate with the question or id of gate way"),
+    (["--question", "Other?", "--option", "left", "--option", "right", "--recommendation", "left", "--id", "way"],
+     "refuses a different gate with the question or id of gate way"),
+    (list(GATE) + ["--id", "other"], "refuses a different gate with the question or id of gate way"),
+    (["--question", "Q?", "--option", "a", "--recommendation", "a"], "--option twice or more"),
+    (["--question", "Q?", "--option", "a", "--option", "a", "--recommendation", "a"], "each different"),
+    (["--question", "Q?", "--option", "a", "--option", "b", "--recommendation", "c"], "must be one of the --option"),
+    (["--question", "Q?", "--option", "a", "--option", "b", "--recommendation", "a", "--id", "start"], "not 'start'"),
+    (["--question", "Q?", "--option", "a", "--option", "b", "--recommendation", "a", "--id", "Bad Id"],
+     "lowercase letters, digits and hyphens"),
+    (["--question", "Q?", "--option", "a", "--option", "b", "--recommendation", "a", "--kind", "maybe"],
+     "a gate needs id, kind"),
+    (["--question", " ", "--option", "a", "--option", "b", "--recommendation", "a"], "a gate needs id, kind"),
+])
+def test_backlog_set_gate_add_refuses(sprint, args, rule):
+    repo, tk = sprint["repo"], sprint["tk"]
+    assert b(repo, "gate", "add", tk, *GATE, "--id", "way")[0] == 0
+    refused_unchanged(repo, tk, "gate", "add", tk, *args, rule=rule)
+
+
+def test_backlog_set_gate_add_refuses_a_done_item_and_an_unknown_one(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    edit(repo, tk, status="done", evidence={"commit": "abc", "checks": []})
+    refused_unchanged(repo, tk, "gate", "add", tk, *GATE, rule="it is done")
+    code, out = b(repo, "gate", "add", "TK-zzzzzzzz", *GATE)
+    assert code == 2 and "no item TK-zzzzzzzz" in out
