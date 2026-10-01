@@ -308,7 +308,7 @@ def mapped(sprint):
     return sprint
 
 
-def test_check_warns_touches_miss_docs(mapped):
+def test_backlog_docs_touches_miss_check_warns(mapped):
     """Planted: a task whose touches name mapped code (a literal path and a glob) and none of its docs; check warns,
     naming them, and exits 0. Its docs in the task's own touches clear the warning."""
     repo, tk = mapped["repo"], mapped["tk"]
@@ -339,6 +339,7 @@ def test_check_warns_docs_in_later_task(mapped):
     assert "in no item's touches" not in out, out
     edit(repo, docs, depends_on=[])
     code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out, out
     assert code == 0 and "warnings=0" in out, out
 
 
@@ -438,6 +439,45 @@ def test_backlog_docs_after_code_start_refuses_and_check_errors(repo):
     edit(repo, docs, depends_on=[])
     code, out = b(repo, "start", sp)
     assert code == 0, out
+
+
+def test_start_names_docs_warnings(repo):
+    """Planted: a sprint task whose touches name mapped code, its doc in no item's touches; start prints the docs warning for it, exit 0, and starts. The doc in its own
+    touches gives no warning."""
+    (repo / "kb" / "_self").mkdir(parents=True, exist_ok=True)
+    (repo / "kb" / "_self" / "map.csv").write_text(DOC_MAP, encoding="utf-8", newline="\n")
+    commit(repo, "map")
+    b(repo, "new", "epic", "--title", "E", "--goal", "g")
+    ep = item(repo, "E")["id"]
+    b(repo, "new", "sprint", "--title", "S", "--goal", "g")
+    sp = item(repo, "S")["id"]
+    b(repo, "new", "story", "--title", "Story", "--parent", ep, "--sprint", sp, "--goal", "g", "--check", argstr(PASS))
+    st = item(repo, "Story")["id"]
+    b(repo, "new", "task", "--title", "Code", "--parent", st, "--goal", "g", "--touch", "_tools/x.py",
+      "--check", argstr(PASS))
+    tk = item(repo, "Code")["id"]
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    code, out = b(repo, "start", sp)
+    assert code == 0 and item(repo, "S")["status"] == "active", out
+    assert (f"  warning: {tk} “Code”: touches code whose kb/_self/map.csv docs are in no item's touches: "
+            "kb/_self/tools.md") in out, out
+    assert out.count("warning:") == 1, out
+
+
+def test_start_without_docs_warnings_is_quiet(repo):
+    """The same sprint with the doc in the code task's own touches prints no warning."""
+    (repo / "kb" / "_self").mkdir(parents=True, exist_ok=True)
+    (repo / "kb" / "_self" / "map.csv").write_text(DOC_MAP, encoding="utf-8", newline="\n")
+    commit(repo, "map")
+    b(repo, "new", "epic", "--title", "E", "--goal", "g")
+    ep = item(repo, "E")["id"]
+    b(repo, "new", "sprint", "--title", "S", "--goal", "g")
+    sp = item(repo, "S")["id"]
+    b(repo, "new", "story", "--title", "Story", "--parent", ep, "--sprint", sp, "--goal", "g",
+      "--touch", "_tools/x.py", "--touch", "kb/_self/tools.md", "--check", argstr(PASS))
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    code, out = b(repo, "start", sp)
+    assert code == 0 and "warning:" not in out, out
 
 
 def test_backlog_similar_ranks_open_items_and_new_warns_of_a_near_duplicate(sprint):

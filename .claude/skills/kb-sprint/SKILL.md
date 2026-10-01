@@ -30,7 +30,7 @@ Whenever you name an item (in chat, a question, a subagent brief, a commit), giv
 ## start SP
 Only on the operator's approval in this conversation:
 1. `python3 _tools/backlog.py answer SP start --answer approve --by operator`.
-2. `python3 _tools/backlog.py start SP`.
+2. `python3 _tools/backlog.py start SP`. It prints `warning:` lines for a sprint item whose mapped docs sit outside its `touches` (an item planned before `check` warned of it): before any claim, ask the operator to move each named doc into that item's `touches` (`set ID --touch G --add`), and rerun `backlog.py check`.
 
 Never answer the start gate yourself.
 
