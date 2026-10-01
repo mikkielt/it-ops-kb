@@ -4225,8 +4225,9 @@ def test_backlog_cost_shared_text_prints_shared_and_the_session_total(shared, ca
 def test_backlog_cost_shared_json_shape_and_runs(shared, capsys):
     w = shared
     rep = cost_json(w["repo"], capsys, w["sp"])
-    assert sorted(rep) == ["attributed", "by_item", "direct", "id", "items", "prompts", "restored", "runs",
-                           "session_total", "shared", "shared_prompts", "skipped", "unresolved"], sorted(rep)
+    assert sorted(rep) == ["attributed", "by_item", "direct", "id", "items", "overhead", "prompts", "research",
+                           "restored", "runs", "session_total", "shared", "shared_prompts", "skipped",
+                           "unresolved"], sorted(rep)  # a sprint's report also has research and overhead
     assert all(set(x) == {"prompts", "direct", "attributed"} for x in rep["by_item"].values())  # none holds shared
     runs = cost_json(w["repo"], capsys, w["sp"], "--runs")
     assert [(x["run"], x["items"], x["prompts"]) for x in runs["shared_lines"]] == [
@@ -4404,3 +4405,313 @@ def test_host_setup_gate_checked_refuses_a_malformed_host_check(repo):
     code, out = b(repo, "gate", "add", st, "--question", "Other?", "--option", "a", "--option", "b",
                   "--recommendation", "a", "--host-check", "  ")
     assert code == 2 and "--host-check needs a command" in out, out
+
+
+# --- backlog.py cost SP: item work, research and system overhead printed apart ---
+
+HAIKU = "claude-haiku-4-5"
+OV_START, OV_CLOSE = "2026-09-01T09:00:00+00:00", "2026-09-05T09:00:00+00:00"
+OV_BEFORE, OV_RES, OV_MORE = "20260901T085959Z-00000001", "20260901T090000Z-00000002", "20260902T100000Z-00000003"
+OV_ON_CLOSE, OV_AFTER = "20260905T090000Z-00000004", "20260905T090001Z-00000005"
+
+
+def overhead_sidecar(repo, run, lines):
+    """A work sidecar in its month directory: item lines and overhead lines, the header counting each."""
+    d = Path(repo) / "kb" / "_querylog" / "work" / f"{run[:4]}-{run[4:6]}"
+    d.mkdir(parents=True, exist_ok=True)
+    n = {k: sum(1 for w in lines if k in w) for k in ("item", "items", "overhead")}
+    counts = {"items": n["item"], "shared": n["items"], "missing": 0}
+    if n["overhead"]:
+        counts["overhead"] = n["overhead"]
+    head = {"run": run, "reader": 1, "counts": counts}
+    (d / f"{run}.jsonl").write_text("".join(json.dumps(o) + "\n" for o in [head, *lines]), encoding="utf-8",
+                                    newline="\n")
+
+
+def commit_at(root, msg, when):
+    """A commit whose author and committer time is `when`: the window rule reads the commit time."""
+    sh(root, "git", "add", "-A")
+    env = {**os.environ, "GIT_COMMITTER_DATE": when, "GIT_AUTHOR_DATE": when}
+    subprocess.run(["git", "commit", "-qm", msg], cwd=root, check=True, capture_output=True, env=env)
+
+
+def ov_line(kind, calls, models):
+    return {"overhead": kind, "calls": calls, "main": models}
+
+
+@pytest.fixture
+def overheaded(costed):
+    """The costed sprint, started in a commit of OV_START, with a research task (its line in the run of an overhead
+    line) and overhead runs before the start, on it and after it."""
+    w = costed
+    repo = w["repo"]
+    assert b(repo, "new", "task", "--title", "Research task", "--parent", w["st"], "--goal", "x",
+             "--touch", "kb/public/**")[0] == 0
+    w["rt"] = item(repo, "Research task")["id"]
+    overhead_sidecar(repo, OV_BEFORE, [ov_line("distill", 1, {HAIKU: cc(1, 1000, 0, 1000, 1000)})])
+    overhead_sidecar(repo, OV_RES, [
+        {"item": w["rt"], "prompts": 2, "main": {OPUS: cc(2, 30, 3, 300, 20)},
+         "sub": {"Explore": {OPUS: cc(1, 4, 1, 40, 2)}}},
+        ov_line("distill", 2, {HAIKU: cc(2, 10, 4, 100, 5)})])
+    overhead_sidecar(repo, OV_MORE, [ov_line("distill", 3, {HAIKU: cc(3, 30, 0, 300, 15)}),
+                                     ov_line("eval", 1, {SONNET: cc(1, 5, 0, 50, 2)})])
+    overhead_sidecar(repo, OV_ON_CLOSE, [ov_line("digest", 1, {HAIKU: cc(1, 7, 0, 70, 3)})])
+    commit_at(repo, "start the sprint", OV_START)
+    return w
+
+
+@pytest.fixture
+def overhead_closed(overheaded):
+    """The same sprint finished and closed in a commit of OV_CLOSE, with one more overhead run a second later."""
+    w = overheaded
+    repo = w["repo"]
+    for k in ("st", "tk", "bg", "rv", "rt"):
+        edit(repo, w[k], status="done")
+    commit_at(repo, "the sprint, finished", "2026-09-04T09:00:00+00:00")
+    code, out = b(repo, "close", w["sp"])
+    assert code == 0, out
+    commit_at(repo, "close the sprint", OV_CLOSE)
+    overhead_sidecar(repo, OV_AFTER, [ov_line("eval", 1, {SONNET: cc(99, 99, 0, 99, 99)})])
+    return w
+
+
+def check_overhead_work_and_research(rep, w):
+    """Item work as the costed fixture sums it, the research task's lines apart from it."""
+    assert rep["items"] == sorted([w["sp"], w["st"], w["tk"], w["bg"]]) and rep["prompts"] == 9, rep["items"]
+    assert rep["direct"][OPUS] == cc(19, 162, 25, 1513, 95, cw1h=2)
+    assert "research" in rep, sorted(rep)
+    res = rep["research"]
+    assert res["items"] == [w["rt"]] and res["prompts"] == 2 and w["rt"] not in rep["by_item"]
+    assert res["direct"] == {OPUS: cc(2, 30, 3, 300, 20)} and res["attributed"] == {OPUS: cc(1, 4, 1, 40, 2)}
+    assert res["total"] == {OPUS: cc(3, 34, 4, 340, 22)}
+
+
+def check_overhead_totals(rep, closed):
+    """The overhead lines of the runs in the window, a kind apart, and none outside it."""
+    assert "overhead" in rep, sorted(rep)
+    ov = rep["overhead"]
+    assert ov["resolved"] is True and ov["reason"] is None and ov["start"] == "2026-09-01T09:00:00Z", ov
+    assert ov["end"] == ("2026-09-05T09:00:00Z" if closed else None), ov
+    assert ov["runs"] == 3 and ov["calls"] == 7, ov  # not the run before the start, nor the one after the close
+    assert sorted(ov["kinds"]) == ["digest", "distill", "eval"], ov
+    assert ov["kinds"]["distill"] == {"calls": 5, "main": {HAIKU: cc(5, 40, 4, 400, 20)}}, ov
+    assert ov["kinds"]["eval"] == {"calls": 1, "main": {SONNET: cc(1, 5, 0, 50, 2)}}, ov
+    assert ov["kinds"]["digest"] == {"calls": 1, "main": {HAIKU: cc(1, 7, 0, 70, 3)}}, ov
+    assert ov["total"] == {HAIKU: cc(6, 47, 4, 470, 23), SONNET: cc(1, 5, 0, 50, 2)}, ov
+
+
+def check_overhead_apart(rep):
+    """No overhead count in any item figure, the sprint's included, and the session total stays the item work's."""
+    for key in ("direct", "attributed", "shared", "session_total"):
+        assert HAIKU not in rep[key] and SONNET not in rep["shared"], key
+    for one in rep["by_item"].values():
+        assert HAIKU not in one["direct"] and HAIKU not in one["attributed"]
+    assert HAIKU not in rep["research"]["total"]
+    for model in (OPUS, SONNET):
+        for k in backlog.COST_KEYS:
+            parts = (rep[g].get(model, {}).get(k, 0) for g in ("direct", "attributed", "shared"))
+            assert rep["session_total"].get(model, {}).get(k, 0) == sum(parts), (model, k)
+    assert rep["shared"] == {OPUS: cc(7, 7, 7, 7, 7)}  # the one shared line of the fixture, research not in it
+
+
+def check_overhead_open(w, capsys):
+    rep = cost_json(w["repo"], capsys, w["sp"])
+    check_overhead_work_and_research(rep, w)
+    check_overhead_totals(rep, closed=False)
+    check_overhead_apart(rep)
+
+
+def check_overhead_closed(w, capsys):
+    rep = cost_json(w["repo"], capsys, w["sp"])
+    check_overhead_work_and_research(rep, w)
+    check_overhead_totals(rep, closed=True)
+    check_overhead_apart(rep)
+
+
+def test_backlog_cost_overhead_sprint_prints_item_work_research_and_overhead_apart(overheaded, capsys):
+    check_overhead_open(overheaded, capsys)
+
+
+def test_backlog_cost_overhead_closed_sprint_window_ends_at_its_close_commit(overhead_closed, capsys):
+    check_overhead_closed(overhead_closed, capsys)
+
+
+def check_overhead_text(w, capsys):
+    """The text prints the three totals one after the other, the overhead naming its window."""
+    code, out, _ = cost_run(w["repo"], capsys, w["sp"])
+    assert code == 0, out
+    assert "research (" in out and "system overhead (" in out, out
+    work, rest = out.split("research (", 1)
+    research, overhead = rest.split("system overhead (", 1)
+    overhead = overhead.split("by item:")[0]
+    assert "session total" in work and HAIKU not in work and "1 item(s), 2 prompt(s)" in research, out
+    assert f"{OPUS}  requests 3  in 34  cr 340  out 22 | cw 4" in research and HAIKU not in research, out
+    assert overhead.startswith("2026-09-01T09:00:00Z to now, 3 run(s), 7 call(s);"), out
+    assert f"{HAIKU}  requests 6  in 47  cr 470  out 23 | cw 4" in overhead.split("all kinds:")[1], out
+    assert "distill (5 call(s)):" in overhead and "eval (1 call(s)):" in overhead and OPUS not in overhead, out
+
+
+def test_backlog_cost_overhead_text_prints_the_three_totals(overheaded, capsys):
+    check_overhead_text(overheaded, capsys)
+
+
+def check_overhead_other_ids(w, capsys):
+    """An item, a story, a bug and an epic print as before: no research, no overhead, in the text or the json."""
+    for k in ("tk", "st", "ep", "bg"):
+        one = cost_json(w["repo"], capsys, w[k])
+        assert "research" not in one and "overhead" not in one, (k, sorted(one))
+        out = cost_run(w["repo"], capsys, w[k])[1]
+        assert "overhead" not in out and "research (" not in out, out
+    st = cost_json(w["repo"], capsys, w["st"])  # a story holds its research task's lines in its own totals, as before
+    assert w["rt"] in st["items"] and st["direct"][OPUS]["requests"] == 6 + 2
+
+
+def test_backlog_cost_overhead_only_a_sprint_prints_research_and_overhead(overheaded, capsys):
+    check_overhead_other_ids(overheaded, capsys)
+
+
+def check_overhead_runs_listing(w, capsys):
+    """--runs lists every item line, the research task's too, and no overhead line."""
+    one = cost_json(w["repo"], capsys, w["sp"], "--runs")
+    assert [(x["run"], x["item"]) for x in one["run_lines"]] == [
+        (OV_RES, w["rt"]), (COST_RUN_A, w["tk"]), (COST_RUN_A, w["st"]), (COST_RUN_A, w["bg"]), (COST_RUN_A, w["sp"]),
+        (COST_RUN_B, w["tk"]), (COST_RUN_B, w["st"])]
+
+
+def test_backlog_cost_overhead_runs_lists_every_item_line_and_no_overhead_line(overheaded, capsys):
+    check_overhead_runs_listing(overheaded, capsys)
+
+
+def check_overhead_shallow(repo, w, capsys):
+    """A shallow clone cannot say when the sprint started: unresolved, said so, the item work still printed."""
+    rep = cost_json(repo, capsys, w["sp"])
+    ov = rep["overhead"]
+    assert ov["resolved"] is False and "shallow" in ov["reason"] and "runs" not in ov and "total" not in ov, ov
+    assert rep["direct"][OPUS] == cc(19, 162, 25, 1513, 95, cw1h=2)
+    out = cost_run(repo, capsys, w["sp"])[1]
+    assert "system overhead: unresolved (shallow clone" in out and HAIKU not in out, out
+
+
+def test_backlog_cost_overhead_is_unresolved_in_a_shallow_clone(overheaded, capsys, tmp_path):
+    check_overhead_shallow(clone_shallow(overheaded, tmp_path), overheaded, capsys)
+
+
+def test_backlog_cost_overhead_is_unresolved_for_a_sprint_never_started_in_history(planned, capsys):
+    ov = cost_json(planned["repo"], capsys, planned["later"])["overhead"]
+    assert ov["resolved"] is False and "sets the sprint active" in ov["reason"], ov
+
+
+def test_backlog_cost_overhead_git_missing_is_unresolved_not_a_crash(overheaded, capsys, monkeypatch):
+    real = subprocess.run
+
+    def no_git(argv, *a, **kw):
+        if argv[:1] == ["git"]:
+            raise FileNotFoundError("git")
+        return real(argv, *a, **kw)
+
+    monkeypatch.setattr(subprocess, "run", no_git)
+    ov = cost_json(overheaded["repo"], capsys, overheaded["sp"])["overhead"]
+    assert ov["resolved"] is False and "git" in ov["reason"], ov
+
+
+def test_backlog_cost_overhead_a_sidecar_that_breaks_the_gates_is_left_out(overheaded, capsys):
+    repo = overheaded["repo"]
+    overhead_sidecar(repo, "20260903T100000Z-00000006", [ov_line("distill", 0, {HAIKU: cc(99, 99, 0, 99, 99)})])
+    ov = cost_json(repo, capsys, overheaded["sp"])["overhead"]
+    assert ov["runs"] == 3 and ov["calls"] == 7 and "99" not in json.dumps(ov["total"])
+
+
+# a planted failure per rule: a check that does not fail when its rule is broken proves nothing
+real_sprint_window = backlog.sprint_window
+real_cost_report = backlog.cost_report
+
+
+def planted_window(**shift):
+    """The real window with its start or end moved: `start=0` the beginning of time, `end=None` open, `start=1`..."""
+    def window(root, sid):
+        start, end, reason = real_sprint_window(root, sid)
+        if reason:
+            return start, end, reason
+        return shift.get("start", lambda t: t)(start), shift.get("end", lambda t: t)(end), reason
+    return window
+
+
+def planted_report(change):
+    def report(bl, iid):
+        rep = real_cost_report(bl, iid)
+        change(rep)
+        return rep
+    return report
+
+
+def add_overhead_to(key):
+    def change(rep):
+        if "overhead" in rep and rep["overhead"]["resolved"]:
+            backlog.cost_add(rep[key], rep["overhead"]["total"])
+    return change
+
+
+def keep_research_in_work(rep):
+    if "research" in rep:
+        for key in ("direct", "attributed"):
+            backlog.cost_add(rep[key], rep["research"][key])
+
+
+def drop(key):
+    return lambda rep: rep.pop(key, None)
+
+
+@pytest.mark.parametrize("name,planted", [
+    ("sprint_window", planted_window(start=lambda t: 0)),
+    ("sprint_window", planted_window(start=lambda t: t + 1)),
+    ("cost_report", planted_report(add_overhead_to("direct"))),
+    ("cost_report", planted_report(add_overhead_to("session_total"))),
+    ("cost_report", planted_report(keep_research_in_work)),
+    ("cost_report", planted_report(drop("overhead"))),
+    ("cost_report", planted_report(drop("research"))),
+    ("cost_is_research", lambda view, iid: False),
+    ("cost_is_research", lambda view, iid: True),
+])
+def test_backlog_cost_overhead_planted_failure_of_each_rule_is_caught(overheaded, capsys, monkeypatch, name, planted):
+    monkeypatch.setattr(backlog, name, planted)
+    with pytest.raises(AssertionError):
+        check_overhead_open(overheaded, capsys)
+
+
+@pytest.mark.parametrize("planted", [planted_window(end=lambda t: None), planted_window(end=lambda t: t - 1),
+                                     planted_window(start=lambda t: 0)])
+def test_backlog_cost_overhead_planted_failure_of_the_close_bound_is_caught(overhead_closed, capsys, monkeypatch, planted):
+    monkeypatch.setattr(backlog, "sprint_window", planted)
+    with pytest.raises(AssertionError):
+        check_overhead_closed(overhead_closed, capsys)
+
+
+def test_backlog_cost_overhead_planted_failure_of_a_guessed_window_in_a_shallow_clone_is_caught(
+        overheaded, capsys, monkeypatch, tmp_path):
+    clone = clone_shallow(overheaded, tmp_path)
+    monkeypatch.setattr(backlog, "sprint_window", lambda root, sid: (0, None, None))
+    with pytest.raises(AssertionError):
+        check_overhead_shallow(clone, overheaded, capsys)
+
+
+def test_backlog_cost_overhead_planted_failure_of_the_text_is_caught(overheaded, capsys, monkeypatch):
+    monkeypatch.setattr(backlog, "cost_apart", lambda rep, view: [])
+    with pytest.raises(AssertionError):
+        check_overhead_text(overheaded, capsys)
+
+
+@pytest.mark.parametrize("planted", [
+    lambda rep, view: ["system overhead: x"],
+    lambda rep, view: ["research (x"],
+])
+def test_backlog_cost_overhead_planted_failure_of_a_non_sprint_report_printing_them_is_caught(
+        overheaded, capsys, monkeypatch, planted):
+    monkeypatch.setattr(backlog, "cost_apart", planted)
+    with pytest.raises(AssertionError):
+        check_overhead_other_ids(overheaded, capsys)
+
+
+def test_backlog_cost_overhead_planted_failure_of_the_runs_listing_is_caught(overheaded, capsys, monkeypatch):
+    monkeypatch.setattr(backlog, "cost_report", planted_report(lambda rep: rep.update(run_lines=rep["run_lines"][1:])))
+    with pytest.raises(AssertionError):
+        check_overhead_runs_listing(overheaded, capsys)
