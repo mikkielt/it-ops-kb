@@ -29,6 +29,19 @@
   "relates_to": [
     "ST-fria7ro7"
   ],
+  "gates": [
+    {
+      "id": "touches",
+      "kind": "blocking",
+      "question": "The goal needs backlog.py done to prove a research item of a planned sprint, but _tools/backlog.py is not in touches. Today claim and done refuse a draft item (done TK-nytjligk --dry-run: status draft), and check rejects status todo, doing or done while the item's sprint is planned (backlog.py check, WORKED). Widen touches to _tools/backlog.py?",
+      "options": [
+        "widen touches to _tools/backlog.py: claim, done and check accept a research item of a planned sprint",
+        "narrow the goal: done proves such an item only once its sprint starts; check-trailers and the docs change alone",
+        "drop the story"
+      ],
+      "recommendation": "Widen touches to _tools/backlog.py, and run it after the in-flight TK-cjoc2gm4 (which changes backlog.py) lands. TK-nytjligk's three checks give coverage: good on main now (b6baa207), so it can then be closed naming that commit."
+    }
+  ],
   "notes": "Research landed ahead of planned sprints without KB-Work, because check-trailers refuses work for items outside a started sprint: 7d1175f7 (meets ST-rjxacpdh's goal), b6baa207 (TK-nytjligk), d0db1b38 (the ST-mmmn42ks tasks). Changing check-trailers is a rule change: the runbook and git.md change with it. ST-rjxacpdh is closed: it landed under KB-Work in SP-fkyrld5h (git log --grep \"KB-Work: ST-rjxacpdh\").",
   "claimed_by": "worker-nesccqgl"
 }
