@@ -2,7 +2,7 @@
   "id": "TK-skhq4sef",
   "kind": "task",
   "title": "Record refused dones as work rows",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-2w2bqtjf",
   "priority": "P2",
   "rank": 0,

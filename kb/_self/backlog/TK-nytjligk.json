@@ -2,7 +2,7 @@
   "id": "TK-nytjligk",
   "kind": "task",
   "title": "Research hook identity of subagents, session id and failed Bash exits",
-  "status": "draft",
+  "status": "doing",
   "parent": "ST-fria7ro7",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,6 @@
     "kb/public/_gaps.md",
     "kb/public/_retrieval/**"
   ],
-  "notes": "Through /kb-research; S743 (code.claude.com/docs/en/hooks.md) and S2157 (sub-agents) are the likely sources."
+  "notes": "Through /kb-research; S743 (code.claude.com/docs/en/hooks.md) and S2157 (sub-agents) are the likely sources.",
+  "claimed_by": "worker-nytjligk"
 }
