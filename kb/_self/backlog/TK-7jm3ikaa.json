@@ -2,7 +2,7 @@
   "id": "TK-7jm3ikaa",
   "kind": "task",
   "title": "backlog.py set and gate add",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-wgzgijlw",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "worker-7jm3ikaa"
 }
