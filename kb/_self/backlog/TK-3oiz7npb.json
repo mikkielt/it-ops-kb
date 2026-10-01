@@ -2,7 +2,7 @@
   "id": "TK-3oiz7npb",
   "kind": "task",
   "title": "Move the main-pipeline check into an intake detector",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-uzqoj5du",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-3oiz7npb"
+  "evidence": {
+    "commit": "570e0e6f4e989c7e4847a2450d92e710d0af1a3a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_ci or red_pipeline"
+        ],
+        "exit": 0,
+        "sha256": "4ab946155faabf39"
+      }
+    ]
+  }
 }
