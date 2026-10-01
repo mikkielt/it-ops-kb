@@ -1,0 +1,24 @@
+{
+  "id": "ST-2zl2od7q",
+  "kind": "story",
+  "title": "Tests over the repository's live data do not depend on its size",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A test that runs a tool over the repository's own live data (such as test_backlog_prompt_end_to_end_without_loading_the_kb over the live backlog) asserts properties that hold at any size of that data, or runs over a fixture, so another session growing the backlog or the kb cannot turn main red; the tests that read live data are listed and each is checked. Answers SP-x2pvljz6: main went red when seven sprints started and horizon alone filled the hook's limit (BG-o3cjsgmm).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "live_data_size_independent"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_kb_lookup.py",
+    "_tools/test_backlog.py",
+    "kb/_self/code.md"
+  ]
+}
