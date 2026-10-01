@@ -2,7 +2,7 @@
   "id": "ST-wr2l6siv",
   "kind": "story",
   "title": "backlog.py warns of a near-duplicate at new and of a recurring process item left out of a sprint",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -39,5 +39,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-wr2l6siv"
+  "evidence": {
+    "commit": "a20bf9e1f59c7f260525b46f8d6608926284014f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_similar or start_warns_recurring"
+        ],
+        "exit": 0,
+        "sha256": "19dec099f075c231"
+      }
+    ]
+  }
 }
