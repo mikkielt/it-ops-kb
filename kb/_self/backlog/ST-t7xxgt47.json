@@ -59,7 +59,9 @@
         "Only an item that selects all",
         "Every fifth landing of a _tools/ item"
       ],
-      "recommendation": "An item that selects all, or landed impact past half of all test files"
+      "recommendation": "An item that selects all, or landed impact past half of all test files",
+      "answer": "An item that selects all, or landed impact past half of all test files",
+      "by": "operator"
     }
   ],
   "notes": "testmap.py already builds the import graph in-process with ast (reach, deps, explain, select), so the impact measure extends it. kbingest map's PythonMapper runs python -m ast in a subprocess per file, isolated for untrusted repositories; it is not reused, since this repository is trusted and its maps are slower; other languages are out of scope. Impact inputs: the test files a path selects (all for conftest.py, tests.py, pyproject.toml and unknown paths), a module's fan-in (the test files that reach it), and per-test-file durations written by a full tests.py run. A heavy run due mid-sprint replaces a fixed cadence: ST-tbi3rras's bisect then spans only the landings since that run."

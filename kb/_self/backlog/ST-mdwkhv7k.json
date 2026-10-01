@@ -56,7 +56,9 @@
         "interactive /loop session first, generational ticks if rot metrics show drift",
         "generational ticks from the start"
       ],
-      "recommendation": "interactive /loop session first, generational ticks if rot metrics show drift"
+      "recommendation": "interactive /loop session first, generational ticks if rot metrics show drift",
+      "answer": "interactive /loop session first, generational ticks if rot metrics show drift",
+      "by": "operator"
     }
   ]
 }
