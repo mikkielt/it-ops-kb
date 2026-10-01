@@ -2,7 +2,7 @@
   "id": "TK-7njojoad",
   "kind": "task",
   "title": "Reworded facts flag decisions for relink",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-cumapb4s",
   "priority": "P2",
   "rank": 1,
@@ -24,5 +24,19 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
-  "claimed_by": "worker-decision-relink"
+  "evidence": {
+    "commit": "64e86530b7665eea8d756e843478fa97301c6765",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "decision_sweep_relink"
+        ],
+        "exit": 0,
+        "sha256": "56279f6a45561ff6"
+      }
+    ]
+  }
 }
