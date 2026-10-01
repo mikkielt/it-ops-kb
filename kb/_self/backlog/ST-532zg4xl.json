@@ -2,7 +2,7 @@
   "id": "ST-532zg4xl",
   "kind": "story",
   "title": "Review sprint: Sprint workers land clean",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "3b1995fa7e70128401bb0d922987fd00fef0b15d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "5ad263069d59f653"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "d64b3b86ff846896"
+      }
+    ]
+  }
 }
