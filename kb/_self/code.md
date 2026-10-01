@@ -37,7 +37,7 @@ The same code runs on Linux, macOS and Windows.
 
 ## Checks and their tests
 
-- **Every check and gate has a test with a planted failure** that makes it fail: a wrong wording, a missing part, a dead reference. A check that no planted input can fail proves nothing (`kb/_self/backlog.md`, Definition of done).
+- **Every check and gate has a test with a planted failure** that makes it fail: a wrong wording, a missing part, a dead reference. A check that no planted input can fail proves nothing (`kb/_self/backlog.md`, Definition of done). The totals check of `kbusage.py tree` fails on a planted group whose rows do not add up.
 - **A check that parses a tool's or a forge's output** also has a test over a recorded real sample under `_tools/fixtures/`, besides its synthetic ones.
 - **A test's name survives a refactor.** A split of a module or a test file keeps the test names, so a check that selects by `-k` still selects it.
 - **Every tool module is reached by a test.** `python3 _tools/testmap.py orphans` lists any that none reaches.

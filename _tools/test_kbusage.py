@@ -19,6 +19,12 @@
                     unknown field (text), a model id, agent group or tool group outside its shape, a count that is
                     not a count, cw1h above cw, a step without tools
   TestDigest        the digest's usage lines from a store with a sidecar, the same in two copies; none without one
+  TestTree          `kbusage.py tree`: the rollup of tool results of a transcript with its subagents or of a project
+                    directory, by tool, Bash command head, file path and agent group; a tool use answered twice counts
+                    once, a result without its tool use and a tool use without a result are counted; the totals checked
+                    against the usage, each check with a planted failure (a group whose rows do not add up, result
+                    characters no fresh input could hold); the text and `--format json` forms, `--top`, exit codes;
+                    no text of the transcript in the output
 """
 import copy, datetime, json, shutil, subprocess, sys
 from pathlib import Path
@@ -338,3 +344,187 @@ class TestDigest:
         plant(q, usage_rows=False)
         distill(q)
         assert "usage: 0 of 2 lookups" in ql_report.digest(q / "store", "2026-W40")[1]
+
+
+def tool_use(rid, uid, name, inp, inp_tokens=100, cwd=None, side=False):
+    r = {"type": "assistant", "requestId": rid, "message": {
+        "model": "claude-sonnet-5", "usage": {"input_tokens": 1, "cache_creation_input_tokens": inp_tokens,
+                                              "cache_read_input_tokens": 50, "output_tokens": 5},
+        "content": [{"type": "tool_use", "id": uid, "name": name, "input": inp}]}}
+    if cwd:
+        r["cwd"] = cwd
+    if side:
+        r["isSidechain"] = True
+    return r
+
+
+def tool_result(uid, content, error=False, side=False):
+    b = {"type": "tool_result", "tool_use_id": uid, "content": content}
+    if error:
+        b["is_error"] = True
+    r = {"type": "user", "message": {"role": "user", "content": [b]}}
+    if side:
+        r["isSidechain"] = True
+    return r
+
+
+def rows_of(rep, group):
+    return {r["key"]: (r["calls"], r["chars"], r["errors"]) for r in rep["rows"] if r["group"] == group}
+
+
+def run_tree(path, *args):
+    return subprocess.run([sys.executable, str(Path(TOOLS) / "kbusage.py"), "tree", str(path), *args],
+                          capture_output=True, text=True, encoding="utf-8")
+
+
+def tree_session(tmp_path, name="s1"):
+    """A main transcript of placeholder tools with one subagent transcript beside it."""
+    wt = "/home/jan.kowalski/proj/.claude/worktrees/agent-1"
+    main = write_jsonl(tmp_path / f"{name}.jsonl", [
+        {"type": "user", "promptId": "q", "message": {"content": "PRIVATE-TEXT"}},
+        tool_use("r1", "u1", "Bash", {"command": "cd /x && python3 _tools/rag.py pack PRIVATE-TEXT"}, cwd=wt),
+        tool_result("u1", "a" * 40),
+        tool_use("r2", "u2", "Read", {"file_path": wt + "/kb/_self/a.md"}, cwd=wt),
+        tool_result("u2", [{"type": "text", "text": "b" * 30}]),
+        tool_use("r3", "u3", "Read", {"file_path": "/home/jan.kowalski/proj/kb/_self/a.md"}, cwd=wt),
+        tool_result("u3", "c" * 20, error=True),
+        tool_use("r4", "u4", "mcp__acme__lookup", {"q": "PRIVATE-TEXT"}),
+        tool_result("u4", "d" * 5),
+        tool_use("r5", "u5", "Grep", {"pattern": "PRIVATE-TEXT"}),
+        tool_result("u5", "e" * 7)])
+    sub = tmp_path / name / "subagents"
+    write_jsonl(sub / "agent-a1.jsonl", [
+        tool_use("s1", "v1", "Bash", {"command": "git -C /x status --short"}, side=True),
+        tool_result("v1", "f" * 12, side=True),
+        tool_use("s2", "v2", "Write", {"file_path": "/x/out.txt", "content": "PRIVATE-TEXT"}, side=True),
+        tool_result("v2", "ok", side=True)])
+    (sub / "agent-a1.meta.json").write_text(json.dumps({"agentType": "Explore"}), encoding="utf-8", newline="\n")
+    return main
+
+
+def tree_report(path):
+    t = kbusage.Tree()
+    for scope, f in kbusage.tree_files(path):
+        t.scan(scope, f)
+    return t.report()
+
+
+class TestTree:
+    def test_kbusage_tree_fixture(self):
+        assert [s for s, _ in kbusage.tree_files(SESSION)] == ["main", "kb-lookup", "other"]
+        rep = tree_report(SESSION)
+        assert rep["totals"] == {"transcripts": 1, "subagent_transcripts": 2, "calls": 3, "chars": 107, "errors": 1,
+                                 "unmatched": 0, "no_result": 0, "result_tokens_est": 26, "fresh_input": 1615 + 3011}
+        assert rows_of(rep, "tool") == {"kb_pack": (1, 100, 0), "Agent": (1, 4, 0),
+                                        "mcp__claude_ai_Gmail__search_threads": (1, 3, 1)}
+        assert rows_of(rep, "agent") == {"main": (3, 107, 1)}
+        assert rep["usage"]["main"] == {"requests": 5, "in": 15, "cw": 1600, "cw1h": 1200, "cr": 25100, "out": 260}
+        assert rep["usage"]["sub"]["requests"] == 2 and rep["usage"]["all"]["requests"] == 7
+        assert rep["check"] == {"ok": True, "problems": []}
+
+    def test_kbusage_tree_groups(self, tmp_path):
+        rep = tree_report(tree_session(tmp_path))
+        assert rows_of(rep, "tool") == {"Bash": (2, 52, 0), "Read": (2, 50, 1), "mcp__acme__lookup": (1, 5, 0),
+                                        "Grep": (1, 7, 0), "Write": (1, 2, 0)}
+        assert rows_of(rep, "bash") == {"python3 _tools/rag.py pack": (1, 40, 0), "git status": (1, 12, 0)}
+        # the worktree's file and the project's own are one file
+        assert rows_of(rep, "file") == {"kb/_self/a.md": (2, 50, 1), "/x/out.txt": (1, 2, 0)}
+        assert rows_of(rep, "agent") == {"main": (5, 102, 1), "Explore": (2, 14, 0)}
+        assert [r["chars"] for r in rep["rows"] if r["group"] == "tool"] == [52, 50, 7, 5, 2]
+        assert rep["usage"]["main"]["requests"] == 5 and rep["usage"]["sub"]["requests"] == 2
+        assert rep["check"]["ok"], rep["check"]
+
+    def test_kbusage_tree_directory(self, tmp_path):
+        tree_session(tmp_path, "s1")
+        tree_session(tmp_path, "s2")
+        (tmp_path / "notes.txt").write_text("not a transcript", encoding="utf-8")
+        files = kbusage.tree_files(tmp_path)
+        assert [(s, f.name) for s, f in files] == [("main", "s1.jsonl"), ("Explore", "agent-a1.jsonl"),
+                                                   ("main", "s2.jsonl"), ("Explore", "agent-a1.jsonl")]
+        a = json.loads(run_tree(tmp_path, "--format", "json").stdout)
+        b = json.loads(run_tree(tmp_path / "s1.jsonl", "--format", "json").stdout)
+        # the second session repeats every id of the first: each tool use and request counts once
+        assert a["totals"]["calls"] == b["totals"]["calls"] == 7 and a["totals"]["transcripts"] == 2
+        assert a["rows"] == b["rows"] and a["usage"] == b["usage"]
+
+    def test_kbusage_tree_counts_a_result_once(self, tmp_path):
+        recs = [tool_use("r1", "u1", "Bash", {"command": "ls"}, inp_tokens=1000), tool_result("u1", "x" * 10),
+                tool_result("u1", "x" * 10), tool_result("zz", "y" * 3, error=True),
+                tool_use("r2", "u2", "Bash", {"command": "ls"}, inp_tokens=1000)]
+        rep = tree_report(write_jsonl(tmp_path / "t.jsonl", recs))
+        assert rows_of(rep, "tool") == {"Bash": (1, 10, 0), "other": (1, 3, 1)}
+        assert (rep["totals"]["calls"], rep["totals"]["unmatched"], rep["totals"]["no_result"]) == (2, 1, 1)
+        assert rep["check"]["ok"]
+
+    @pytest.mark.parametrize("command,head", [
+        ("ls -la /x", "ls"), ("cd /x && git status --short", "git status"), ("git -C /x diff HEAD", "git diff"),
+        ("git -c a=b log -3", "git log"), ("FOO=1 BAR=2 python3 _tools/rag.py pack 'q'", "python3 _tools/rag.py pack"),
+        ("python3 /home/jan.kowalski/p/_tools/tests.py -k x", "python3 _tools/tests.py"),
+        ("python3 _tools/selfdoc.py section a b", "python3 _tools/selfdoc.py section"),
+        ("python3 _tools/backlog.py show TK-1", "python3 _tools/backlog.py show"),
+        ("python3 -m pytest -q", "python3 -m pytest"), ("python3 -c 'print(1)'", "python3 -c"),
+        ("python3 - <<'EOF'\nprint(1)\nEOF", "python3"), ("python3", "python3"),
+        ("sudo /usr/bin/env gh pr list", "gh pr"), ("export A=1\n# note\ncat a | head", "cat"),
+        ("cd x; pushd y\n\nsed -n 1p f", "sed"), ("echo 'unclosed", "echo"), ("", "(none)"), ("cd x", "(none)"),
+        (None, "(none)"), ("glab api projects", "glab api")])
+    def test_kbusage_tree_command_head(self, command, head):
+        assert kbusage.command_head(command) == head
+
+    @pytest.mark.parametrize("path,cwd,key", [
+        ("/p/.claude/worktrees/w1/kb/a.md", "/p/.claude/worktrees/w1", "kb/a.md"),
+        ("/p/kb/a.md", "/p/.claude/worktrees/w1", "kb/a.md"), ("/p/kb/a.md", "/p", "kb/a.md"),
+        ("/q/kb/a.md", "/p", "/q/kb/a.md"), ("C:\\p\\kb\\a.md", "C:\\p", "kb/a.md"), ("kb/a.md", None, "kb/a.md")])
+    def test_kbusage_tree_file_key(self, path, cwd, key):
+        assert kbusage.file_key(path, cwd) == key
+
+    @pytest.mark.parametrize("group", ["tool", "agent", "bash", "file"])
+    def test_kbusage_tree_planted_rows_that_do_not_add_up(self, tmp_path, group):
+        rep = tree_report(tree_session(tmp_path))
+        assert kbusage.tree_problems(rep) == []
+        next(r for r in rep["rows"] if r["group"] == group)["chars"] += 1
+        problems = kbusage.tree_problems(rep)
+        assert any(p.startswith(f"{group} rows hold") for p in problems), problems
+
+    def test_kbusage_tree_planted_a_dropped_row(self, tmp_path):
+        rep = tree_report(tree_session(tmp_path))
+        rep["rows"] = [r for r in rep["rows"] if r["key"] != "Grep"]
+        assert any(p.startswith("tool rows hold") for p in kbusage.tree_problems(rep))
+
+    def test_kbusage_tree_planted_results_no_usage_could_hold(self, tmp_path):
+        span = kbusage.TOKEN_SPAN_MAX
+        main = write_jsonl(tmp_path / "t.jsonl", [
+            tool_use("r1", "u1", "Read", {"file_path": "/x/a"}, inp_tokens=1), tool_result("u1", "z" * (span * 2 + 1))])
+        p = run_tree(main)
+        assert p.returncode == 1 and "check: FAILED" in p.stdout and "cannot come from 2 fresh input tokens" in p.stdout
+        ok = write_jsonl(tmp_path / "u.jsonl", [
+            tool_use("r1", "u1", "Read", {"file_path": "/x/a"}, inp_tokens=1), tool_result("u1", "z" * span * 2)])
+        assert run_tree(ok).returncode == 0
+
+    def test_kbusage_tree_command_line(self, tmp_path):
+        main = tree_session(tmp_path)
+        p = run_tree(main, "--top", "1")
+        assert p.returncode == 0, p.stderr
+        lines = p.stdout.splitlines()
+        assert lines[0].startswith("tree: 1 transcripts, 1 subagent transcripts; 7 tool results, 116 characters (~29 ")
+        assert "by bash:" in p.stdout and "  ... 1 more rows (--top 0 shows all)" in p.stdout
+        assert lines[-1] == "check: ok"
+        full = run_tree(main, "--top", "0").stdout
+        assert "git status" in full and "python3 _tools/rag.py pack" in full and "more rows" not in full
+        out = run_tree(main, "--format", "json").stdout
+        j = json.loads(out)
+        assert sorted(j) == ["check", "rows", "totals", "usage"]
+        assert all(sorted(r) == ["calls", "chars", "errors", "group", "key"] for r in j["rows"])
+        assert out == run_tree(main, "--format", "json").stdout
+        for text in (p.stdout, full, out):
+            assert "PRIVATE-TEXT" not in text
+
+    def test_kbusage_tree_no_input(self, tmp_path):
+        p = run_tree(tmp_path / "missing.jsonl")
+        assert p.returncode == 2 and "no such file or directory" in p.stderr
+        p = run_tree(tmp_path)
+        assert p.returncode == 2 and "no transcripts" in p.stderr
+
+    def test_kbusage_tree_leaves_the_prompt_form_alone(self):
+        p = subprocess.run([sys.executable, str(Path(TOOLS) / "kbusage.py"), str(SESSION), "--prompt", "p2"],
+                           capture_output=True, text=True, encoding="utf-8", check=True)
+        assert json.loads(p.stdout) == {"prompt": 1, **P2}
