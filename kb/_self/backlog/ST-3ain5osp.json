@@ -35,5 +35,19 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When a worker's branch has an unanswered provisional gate, who answers it before landing? (answering on main changes the item file and risks a conflict when land rebases the branch)",
+      "options": [
+        "send the branch back to the worker",
+        "the orchestrator answers it on main"
+      ],
+      "recommendation": "send the branch back to the worker",
+      "answer": "send the branch back to the worker",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-3ain5osp"
 }
