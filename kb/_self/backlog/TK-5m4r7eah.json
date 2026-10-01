@@ -2,7 +2,7 @@
   "id": "TK-5m4r7eah",
   "kind": "task",
   "title": "Split work and rework in the sidecar, cost and review",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-2w2bqtjf",
   "priority": "P2",
   "rank": 1,
@@ -73,5 +73,19 @@
     }
   ],
   "notes": "Touches carry the cost row of tools.md (new flag) and usage.md (work line shape); the push gate refuses the code without them.",
-  "claimed_by": "worker-5m4r7eah"
+  "evidence": {
+    "commit": "0c8f987a49386da824fef60b656f19021157e9f4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_rework"
+        ],
+        "exit": 0,
+        "sha256": "f5b27443ad5af65b"
+      }
+    ]
+  }
 }
