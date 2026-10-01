@@ -34,7 +34,9 @@
         "an item under a process epic the operator names",
         "a new boolean item field, process: true"
       ],
-      "recommendation": "an item that carries a recurs list: recurs is set only on recurring process work, so no new field"
+      "recommendation": "an item that carries a recurs list: recurs is set only on recurring process work, so no new field",
+      "answer": "an item carrying a recurs list is a process item",
+      "by": "operator"
     }
   ],
   "claimed_by": "worker-wr2l6siv"
