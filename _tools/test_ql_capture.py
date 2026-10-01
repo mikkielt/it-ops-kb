@@ -4,6 +4,10 @@
                     with a fresh UUID id; prompt, kb MCP, fetch and Stop rows; fetch rows keep host and path only,
                     Bash and PowerShell only for curl and wget, never command text or results; fetches and answers
                     only in a prompt that used the kb; the row size cap; stale spool files pruned
+  TestWorkRows      a successful `backlog.py claim|done|release ID` in Bash or PowerShell writes one `work` row
+                    {item, action} (and the subagent's `agent_id`), keyed like every hook row, never the command's
+                    text; a failed run, a dry run, another command and a mention in quoted text write none
+                    (planted: the same command succeeding writes one)
   TestSwitches      mode `off`, the DISABLED marker and an unreadable config file write nothing (planted: the same
                     events with the default mode write); where rows go in a clone and in a plugin host
   TestToolRows      kb_hook.py, kb_ask.py, fetch.py and census.py write their own rows; the kb: hook's answer is
@@ -209,8 +213,117 @@ class TestHookRows:
         assert lines(tmp_path) == []
 
 
+CLAIM = "python3 _tools/backlog.py claim TK-aaaaaaaa --by worker-aaaaaaaa --commit --trailer 'Co-Authored-By: Claude <noreply@example.com>'"
+
+
+class TestWorkRows:
+    """A successful `backlog.py claim|done|release ID` run through Bash or PowerShell writes one `work` row
+    {item, action}, keyed like every hook row; the command's text and output never reach it."""
+
+    def test_work_row_for_claim_done_and_release(self, tmp_path):
+        cmds = [("Bash", CLAIM),
+                ("Bash", "python3 _tools/backlog.py done TK-aaaaaaaa --commit --trailer 'Co-Authored-By: Claude <x>'"),
+                ("Bash", "python3 _tools/backlog.py release ST-bbbbbbbb"),
+                ("PowerShell", "python3 .\\_tools\\backlog.py claim BG-cccccccc --by worker-cccccccc"),
+                ("PowerShell", "& \"C:\\Program Files\\Python311\\python.exe\" .\\_tools\\backlog.py done SB-dddddddd --commit")]
+        for n, (name, cmd) in enumerate(cmds):
+            assert hook(tmp_path, tool(name, {"command": cmd}, {"stdout": "OUTPUT-SECRET", "stderr": ""},
+                                       pid=f"p{n}")) == (0, b"")
+        rows = lines(tmp_path)
+        assert [(r["surface"], r["item"], r["action"], r["prompt_id"]) for r in rows] == [
+            ("work", "TK-aaaaaaaa", "claim", "p0"), ("work", "TK-aaaaaaaa", "done", "p1"),
+            ("work", "ST-bbbbbbbb", "release", "p2"), ("work", "BG-cccccccc", "claim", "p3"),
+            ("work", "SB-dddddddd", "done", "p4")]
+        assert all(r["session_id"] == SID and r["v"] == ql_capture.ROW_FORMAT and is_uuid4(r["id"]) for r in rows)
+        assert len({r["id"] for r in rows}) == 5 and not any("agent_id" in r for r in rows)
+        assert [f.name for f in spool(tmp_path).iterdir()] == [f"{SID}.jsonl"]  # keyed like every hook row
+        text = raw(tmp_path).decode("utf-8")
+        for secret in ("OUTPUT-SECRET", "worker-", "--by", "--commit", "Co-Authored", "backlog.py", "python"):
+            assert secret not in text, secret  # no command text, flag value or result
+
+    def test_work_row_keeps_the_subagent_id_when_present(self, tmp_path):
+        ev = tool("Bash", {"command": CLAIM}, {"stdout": ""})
+        hook(tmp_path, ev)
+        hook(tmp_path, dict(ev, agent_id="agent-0000000000000001", agent_type="kb-worker"))
+        hook(tmp_path, dict(ev, agent_id=7))  # not a string: left out
+        a, b, c = lines(tmp_path)
+        assert "agent_id" not in a and b["agent_id"] == "agent-0000000000000001" and "agent_id" not in c
+        assert "kb-worker" not in raw(tmp_path).decode("utf-8")
+
+    def test_work_row_failed_run_writes_none(self, tmp_path):
+        """PostToolUse fires only after a successful call, a non-zero exit fires PostToolUseFailure
+        (claude/hooks.md): a refused claim or done writes none. Planted: the same command succeeding writes one."""
+        for name in ("Bash", "PowerShell"):
+            hook(tmp_path, tool(name, {"command": CLAIM}, ok=False, error="Exit code 1\nrefused: already claimed"))
+        assert lines(tmp_path) == []
+        hook(tmp_path, tool("Bash", {"command": CLAIM}, {"stdout": "claimed"}))
+        assert [r["surface"] for r in lines(tmp_path)] == ["work"]
+
+    def test_work_row_non_backlog_command_writes_none(self, tmp_path):
+        cmds = ["echo done", "git status", "python3 _tools/backlog.py show TK-aaaaaaaa",
+                "python3 _tools/backlog.py next --any", "python3 _tools/backlog.py done TK-aaaaaaaa --dry-run",
+                "python3 _tools/backlog.py claim --help", "python3 _tools/backlog.py claim",
+                "python3 _tools/backlog.py claim not-an-id --by x", "python3 _tools/other.py claim TK-aaaaaaaa",
+                "python3 _tools/backlog.py land TK-aaaaaaaa", "python3 _tools/backlog.py new task --title claim",
+                "git commit -m 'run backlog.py claim TK-aaaaaaaa; then done'",
+                "echo \"python3 _tools/backlog.py done TK-aaaaaaaa\"",
+                "grep -n 'backlog.py done TK-aaaaaaaa' kb/_self/backlog.md",
+                "cat _tools/backlog.py claim TK-aaaaaaaa", "python3 -c \"print('backlog.py done TK-aaaaaaaa')\""]
+        for name in ("Bash", "PowerShell"):
+            for n, cmd in enumerate(cmds):
+                assert hook(tmp_path, tool(name, {"command": cmd}, {"stdout": ""}, pid=f"p{n}")) == (0, b"")
+        for ev in (tool("Bash", {}, {}), tool("Bash", {"command": 7}, {}),
+                   tool("Read", {"command": CLAIM}, {}), tool("mcp__kb__kb_pack", {"command": CLAIM}, "")):
+            hook(tmp_path, ev)
+        assert [r for r in lines(tmp_path) if r["surface"] == "work"] == []
+
+    @pytest.mark.parametrize("command,expected", [
+        ("python3 _tools/backlog.py claim TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
+        ("cd /repo && python3 _tools/backlog.py done TK-aaaaaaaa --commit", ("TK-aaaaaaaa", "done")),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa --commit 2>&1 | tail -3", ("TK-aaaaaaaa", "done")),
+        ("python3 /home/jan.kowalski/it-ops-kb/_tools/backlog.py release EP-eeeeeeee", ("EP-eeeeeeee", "release")),
+        ("python3 _tools/backlog.py --root /repo claim TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
+        ("python3 _tools/backlog.py claim --by worker-x TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
+        ("python3 _tools/backlog.py claim --by=worker-x TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
+        ("py -3 _tools\\backlog.py done SP-ffffffff", ("SP-ffffffff", "done")),
+        ("sh _tools/kbpy _tools/backlog.py claim TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
+        ("KB_X=1 python _tools/backlog.py claim TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
+        ("/usr/bin/python3.12 -B _tools/backlog.py claim TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
+        ("& 'C:\\Python311\\python.exe' '.\\_tools\\backlog.py' done TK-aaaaaaaa", ("TK-aaaaaaaa", "done")),
+        ("python3 _tools/backlog.py show TK-aaaaaaaa; python3 _tools/backlog.py done TK-bbbbbbbb", ("TK-bbbbbbbb", "done")),
+        ("python3 _tools/backlog.py claim TK-aaaaaaaa; python3 _tools/backlog.py claim TK-bbbbbbbb", ("TK-aaaaaaaa", "claim")),
+        ("python3 _tools/backlog.py claim TK-AAAAAAAA", None),  # an id has lower-case base32 characters
+        ("python3 _tools/backlog.py done TK-aaaaaaaa --dry-run", None),
+        ("python3 _tools/backlog.py land TK-aaaaaaaa", None),
+        ("pip install backlog.py claim TK-aaaaaaaa", None),
+        ("", None)])
+    def test_work_row_command_forms(self, command, expected):
+        assert ql_capture.work_action(command) == expected
+
+    def test_work_row_documented_events(self, tmp_path):
+        """The hook events of `fixtures/querylog/work_events.json` (the documented shapes: Bash, PowerShell, a
+        subagent's call, a failure, a dry run) write the row each lists, or none."""
+        events = load("_tools/fixtures/querylog/work_events.json")["events"]
+        assert len(events) >= 6 and any(e["row"] is None for e in events) and any(e["row"] for e in events)
+        for n, e in enumerate(events):
+            assert hook(tmp_path / str(n), e["event"]) == (0, b""), e["name"]
+            (row,) = lines(tmp_path / str(n)) or [None]
+            got = None if row is None else {k: row[k] for k in ("item", "action", "agent_id") if k in row}
+            assert got == e["row"], e["name"]
+            if row:
+                assert (row["surface"], row["session_id"], row["prompt_id"]) == \
+                       ("work", e["event"]["session_id"], e["event"]["prompt_id"])
+
+    def test_work_row_off_writes_nothing(self, tmp_path):
+        d = Path(tmp_path) / "querylog"
+        d.mkdir()
+        (d / "config.json").write_text('{"mode": "off"}', encoding="utf-8", newline="\n")
+        assert hook(tmp_path, tool("Bash", {"command": CLAIM}, {"stdout": ""})) == (0, b"")
+        assert lines(tmp_path) == [] and not spool(tmp_path).exists()
+
+
 class TestSwitches:
-    EVENTS = [prompt("kb: laps"), tool("mcp__kb__kb_pack", {"question": "laps"}, PACK),
+    EVENTS =[prompt("kb: laps"), tool("mcp__kb__kb_pack", {"question": "laps"}, PACK),
               tool("WebFetch", {"url": "https://example.com/x"}, "t"), stop("answer")]
 
     def write_config(self, data, text):

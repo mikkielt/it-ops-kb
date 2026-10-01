@@ -25,6 +25,11 @@ KB_PREFIX = re.compile(r"\s*kb\+?\s*:", re.I)
 SKILL = re.compile(r"\s*/(?:it-ops-kb:)?kb-[\w-]+")  # a kb skill typed as a slash command
 SAFE_SESSION = re.compile(r"[A-Za-z0-9_-]{1,80}")  # a session id that is safe as a file name
 STATUS = re.compile(r"\b(?:HTTP(?:/[\d.]+)?|status(?: code)?)\D{0,3}([1-5]\d\d)\b", re.I)
+WORK_ACTIONS = ("claim", "done", "release")  # the backlog.py commands that open or end a window of work on an item
+WORK_ITEM = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")  # backlog.py's ID_RE
+WORK_LAUNCHER = re.compile(r"(?:sh|bash|python[\d.]*|py)(?:\.exe)?|kbpy|-[\w.-]+|[A-Za-z_]\w*=\S*", re.I)  # beside backlog.py
+WORK_VALUE_FLAGS = ("--by", "--trailer", "--root", "--branch", "--why")  # backlog.py options that take a value
+SHELL_TOKEN = re.compile(r"\"[^\"]*\"|'[^']*'|[^\s\"']+")
 CUT = " [...]"
 ARG_MAX_CHARS = 1000
 VERDICTS = ("none", "weak", "good")  # worst first
@@ -258,6 +263,64 @@ def fetch_target(tool, args):
     return None
 
 
+def shell_segments(command):
+    """The pieces of a shell command between unquoted `;`, `&`, `|` and newlines: a separator inside quotes stays in
+    its piece, so a quoted sentence that mentions a command is no command."""
+    out, cur, quote = [], [], None
+    for ch in command:
+        if quote:
+            cur.append(ch)
+            if ch == quote:
+                quote = None
+        elif ch in "\"'":
+            quote = ch
+            cur.append(ch)
+        elif ch in ";&|\n":
+            out.append("".join(cur))
+            cur = []
+        else:
+            cur.append(ch)
+    return [*out, "".join(cur)]
+
+
+def work_action(command):
+    """(item, action) of the first piece of a shell command that runs `backlog.py claim|done|release ID`, or None.
+    Only the command's own shape counts: the script's name after nothing but an interpreter, a launcher, its flags
+    and environment assignments (a path, `python3`, `py -3`, `sh .../kbpy`, a PowerShell `&` call), then an optional
+    `--root DIR`, the action and the item id, with any `--by`, `--commit` or `--trailer` after it. `done --dry-run`
+    changes nothing and is none; so is a mention in a quoted text, in `echo`, `git commit -m` or a search. Never
+    the command's other text."""
+    def unquote(t):
+        return t[1:-1] if len(t) > 1 and t[0] == t[-1] and t[0] in "\"'" else t
+
+    def base(t):
+        return re.split(r"[/\\]", t)[-1]
+
+    for piece in shell_segments(command):
+        toks = [unquote(t) for t in SHELL_TOKEN.findall(piece)]
+        at = next((n for n, t in enumerate(toks) if base(t) == "backlog.py"), None)
+        if at is None or not all(WORK_LAUNCHER.fullmatch(t) or WORK_LAUNCHER.fullmatch(base(t)) for t in toks[:at]):
+            continue
+        rest = toks[at + 1:]
+        if rest[:1] == ["--root"]:
+            rest = rest[2:]
+        elif rest and rest[0].startswith("--root="):
+            rest = rest[1:]
+        if not rest or rest[0] not in WORK_ACTIONS:
+            continue
+        flags, item, skip = rest[1:], None, False
+        for t in flags:
+            if skip:
+                skip = False
+            elif t in WORK_VALUE_FLAGS:
+                skip = True
+            elif not t.startswith("-") and item is None:
+                item = t
+        if item and WORK_ITEM.fullmatch(item) and not {"--dry-run", "-h", "--help"} & set(flags):
+            return item, rest[0]
+    return None
+
+
 def fetch_outcome(tool, ok, event, host):
     """The outcome class of a hook-seen fetch: facts only, else `unknown` (querylog.md, Surfaces)."""
     if not ok:
@@ -317,6 +380,11 @@ def capture(event):
             summary = pack_summary(text_of(event.get("tool_response"))) if ok else {"outcome": "error"}
             return record("mcp", sid, prompt_id=pid, tool=m.group(1),
                           args={k: clip(args[k]) for k in KB_ARGS if k in args} or None, **summary)
+        work = work_action(args.get("command")) if ok and tool in SHELL_TOOLS and isinstance(args.get("command"), str) else None
+        if work:  # a successful claim, done or release: only the item and the action, never the command
+            agent = event.get("agent_id")
+            return record("work", sid, prompt_id=pid, agent_id=agent if isinstance(agent, str) and agent else None,
+                          item=work[0], action=work[1])
         target = fetch_target(tool, args)
         if target is None or not used_kb(spool, sid, pid):
             return None  # a fetch counts only in a prompt that also used the kb (querylog.md, Surfaces)
