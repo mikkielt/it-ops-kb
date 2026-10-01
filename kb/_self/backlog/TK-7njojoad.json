@@ -2,7 +2,7 @@
   "id": "TK-7njojoad",
   "kind": "task",
   "title": "Reworded facts flag decisions for relink",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-cumapb4s",
   "priority": "P2",
   "rank": 1,
@@ -23,5 +23,6 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
-  ]
+  ],
+  "claimed_by": "worker-decision-relink"
 }
