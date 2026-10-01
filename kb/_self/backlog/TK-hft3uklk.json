@@ -2,7 +2,7 @@
   "id": "TK-hft3uklk",
   "kind": "task",
   "title": "Reduce the 2026-09-29 state to a fixture and replay it",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-igaxxamb",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-hft3uklk"
+  "evidence": {
+    "commit": "51f1261285ea9729940454c16134d1e6c4b4f081",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_replay"
+        ],
+        "exit": 0,
+        "sha256": "90b70dff7974a99b"
+      }
+    ]
+  }
 }
