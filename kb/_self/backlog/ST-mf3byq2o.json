@@ -1,0 +1,25 @@
+{
+  "id": "ST-mf3byq2o",
+  "kind": "story",
+  "title": "Each commit of a stacked branch carries its own Self-Reviewed trailer",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-worker.md and the kb-sprint brief for stacked items say each item's commit names in its own Self-Reviewed trailer every doc selfdoc stale lists for its change (checked with selfdoc stale --since the item's base, not the stack's), since an item below it lands first and its trailer then stops covering the ones above. Answers SP-x2pvljz6: two stacked commits had to be amended at landing for kb/_self/code.md.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stacked_self_reviewed"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/test_kb_mcp.py"
+  ]
+}
