@@ -2,7 +2,7 @@
   "id": "TK-32vchs3i",
   "kind": "task",
   "title": "kbid.py add writes a converging _sources.csv row",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-fmtszrey",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   "touches": [
     "_tools/kbid.py",
     "_tools/test_kb_ids.py"
-  ]
+  ],
+  "claimed_by": "worker-32vchs3i"
 }
