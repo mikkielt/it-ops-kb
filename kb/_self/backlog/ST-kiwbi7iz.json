@@ -6,5 +6,22 @@
   "parent": "EP-v56iwyry",
   "priority": "P3",
   "rank": 0,
-  "goal": "Once the kb holds real decisions, the pack's decision match (60% of the question's informative words plus every name, at most 3 lines and a third of the budget) and kbdecide sweep's relink cut (difflib 0.5) are measured over them and lookup_eval rows, and each threshold is kept or changed on that evidence."
+  "goal": "Once the kb holds real decisions, the pack's decision match (60% of the question's informative words plus every name, at most 3 lines and a third of the budget) and kbdecide sweep's relink cut (difflib 0.5) are measured over them and lookup_eval rows, and each threshold is kept or changed on that evidence.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decision_lookup"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ]
 }
