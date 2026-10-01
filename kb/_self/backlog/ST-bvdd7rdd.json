@@ -2,7 +2,7 @@
   "id": "ST-bvdd7rdd",
   "kind": "story",
   "title": "A kb/_self doc left stale by another change does not fail an unrelated item's done",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5cwekumc",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,19 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "c-bvdd7rdd"
+  "evidence": {
+    "commit": "0d08cc8598fb5100925395789d28c27e6f06aa6f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_foreign_stale_doc_does_not_fail_done"
+        ],
+        "exit": 0,
+        "sha256": "8f7921f095d12a68"
+      }
+    ]
+  }
 }
