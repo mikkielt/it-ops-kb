@@ -1,0 +1,25 @@
+{
+  "id": "ST-kt7bxv7t",
+  "kind": "story",
+  "title": "land runs selfdoc stale over the range before the stress run",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land runs selfdoc.py stale --since <integration main> over the rebased range right after the rebase, before stress_test.py, the lookup eval and the lint, and stops at a step named stale, so a missing Self-Reviewed trailer fails in seconds; a stacked item whose lower item has landed loses that item's Self-Reviewed coverage and is caught the same way. Answers SP-5cwekumc's retrospective: six lands reached sync's stale gate only after a five-minute stress run (ST-g3w7v3el, ST-vfct2532 and four stacked branches).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_checks_stale_before_stress"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
