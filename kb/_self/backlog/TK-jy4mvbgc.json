@@ -2,7 +2,7 @@
   "id": "TK-jy4mvbgc",
   "kind": "task",
   "title": "testmap selects test_selfdoc's tools-map test for a change to any _tools Python file",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-uymi3axm",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
     "_tools/testmap.py",
     "_tools/test_testmap.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "c-jy4mvbgc"
 }
