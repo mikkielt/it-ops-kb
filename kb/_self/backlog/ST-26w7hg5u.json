@@ -2,7 +2,7 @@
   "id": "ST-26w7hg5u",
   "kind": "story",
   "title": "A gate that names a host setup is checked on that host before the sprint starts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,19 @@
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-backlog/SKILL.md"
   ],
-  "claimed_by": "orch-fourth-w11"
+  "evidence": {
+    "commit": "e8153ce0c9c96ac7b50fe514b58e1a35332573af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "host_setup_gate_checked"
+        ],
+        "exit": 0,
+        "sha256": "fedef5f8d48ca7a8"
+      }
+    ]
+  }
 }
