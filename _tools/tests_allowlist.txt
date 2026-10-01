@@ -58,3 +58,11 @@ secret  password='different_user_password'  # ldap3 bind documentation sample (S
 secret  password="password"  # ldap3 bind documentation sample (S1208)
 secret  password="E52CAC67419A9A224A3B108F3FA6CB6D:8846F7EAEE8FB117AD06BDD830B7586C"  # ldap3 NTLM sample: the well-known LM:NT hash of the word "password" (S1208)
 secret  secret: "kq4gihvszzgn1p0r"  # Kubernetes Secret documentation sample value (S1729)
+
+# synthetic ids in the query-log usage code and its tests (all-zero or repeated-digit stand-ins, not real sessions or entries)
+guid  00000000-0000-4000-8000-000000000000  # stand-in entry id to read a usage record with usage_line (_tools/ql_store.py)
+guid  3f2a4c1e-0000-4000-8000-00000000abcd  # made-up session id in the usage tests (_tools/test_kbusage.py)
+guid  11111111-0000-4000-8000-0000000000b1  # repeated-digit entry id in the usage tests (_tools/test_kbusage.py)
+guid  11111111-0000-4000-8000-0000000000b2  # repeated-digit entry id in the usage tests (_tools/test_kbusage.py)
+guid  11111111-0000-4000-8000-0000000000e1  # repeated-digit entry id in the usage tests (_tools/test_kbusage.py)
+guid  9a9a9a9a-0000-4000-8000-00000000dcba  # repeated-digit session id in the usage tests (_tools/test_kbusage.py)
