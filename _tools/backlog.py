@@ -2706,6 +2706,8 @@ def cmd_start(bl, a):
     say(f"started {bl.label(sid)}: {sp['goal']}")
     for w in docs_warnings(bl, set(items)):
         say(f"  warning: {w}")
+    for i, d, where in outside_deps(bl, sid):
+        say(f"  warning: {bl.label(i)} depends on {bl.label(d)}, outside this sprint ({where})")
     for i in recurring_left_out(bl, sid):
         say(f"  warning: recurring P1 item {bl.label(i)} (recurs in {len(set(bl.items[i]['recurs']))} sprints) "
             "is not in this sprint")
@@ -2784,6 +2786,31 @@ def cmd_close(bl, a):
     return 0
 
 
+def where_outside(bl, d):
+    """Where a dependency outside a sprint stands: in no sprint, or in a sprint (started or not)."""
+    sp = bl.sprint_of(d)
+    if not sp or sp not in bl.items:
+        return "in no sprint"
+    return f"in sprint {bl.label(sp)}" + ("" if bl.items[sp].get("status") == "active" else ", not started")
+
+
+def outside_deps(bl, sid):
+    """[(item id, dependency id, where)] for each undone depends_on, own or an ancestor's, of an open item of sprint
+    sid that points outside it, into no sprint or a sprint not started."""
+    items = set(bl.sprint_items(sid))
+    out = []
+    for i in sorted(items):
+        if bl.items[i].get("status") in ("done", "dropped"):
+            continue
+        for d in dict.fromkeys(d for x in [i] + bl.ancestors(i) for d in bl.items[x].get("depends_on", [])):
+            sp = bl.sprint_of(d) if d in bl.items else None
+            if d in items or d not in bl.items or bl.items[d].get("status") == "done" or (
+                    sp and bl.items[sp].get("status") == "active"):
+                continue
+            out.append((i, d, where_outside(bl, d)))
+    return out
+
+
 def horizon(bl, sid):
     """(reachable open ids, {cause: [stuck ids]}, critical path [ids], level widths) for a sprint."""
     items = [i for i in bl.sprint_items(sid) if bl.items[i].get("status") not in ("done", "dropped")]
@@ -2794,6 +2821,7 @@ def horizon(bl, sid):
                else f"the sprint's start gate: {g.get('question', 'not started')}")
         cause = {i: why for i in items}
     for i in items:
+        outside = []
         for x in [i] + bl.ancestors(i):
             it = bl.items[x]
             for g in open_gates(it):
@@ -2802,8 +2830,11 @@ def horizon(bl, sid):
             if it.get("trigger") and not it["trigger"].get("fired"):
                 cause[i] = f"trigger on {bl.label(x)}: {it['trigger']['when']}"
             for d in it.get("depends_on", []):
-                if d not in items and bl.items.get(d, {}).get("status") != "done":
-                    cause[i] = f"outside this sprint: {bl.label(d)}"
+                if d not in items and bl.items.get(d, {}).get("status") != "done" and d not in outside:
+                    outside.append(d)
+        if outside:
+            cause[i] = "outside this sprint: " + ", ".join(
+                f"{bl.label(d)} ({where_outside(bl, d) if d in bl.items else 'not found'})" for d in outside)
     # propagate: an item waits on what its own and its ancestors' dependencies, its children
     # and (for the review) the sprint wait on
     edges = {i: list(dict.fromkeys(d for x in [i] + bl.ancestors(i) for d in bl.items[x].get("depends_on", [])
