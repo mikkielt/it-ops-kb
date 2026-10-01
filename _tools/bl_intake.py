@@ -19,7 +19,9 @@ the part that does not touch the backlog's files:
   candidate;
 - `lines(candidate)`: the lines the command prints for one candidate;
 - the `drift` detector (`scan_drift`, `drift_detector`): items whose state disagrees with their commits. Its item
-  checks run within a total budget (DRIFT_BUDGET_S, each check at most CHECK_TIMEOUT_S), each as a process group of
+  checks run within a total budget (DRIFT_BUDGET_S, each check at most CHECK_TIMEOUT_S), the items taken in id order
+  rotated by the commit count of main's tip (`rotation`), so each new tip starts from the next item and every
+  eligible item is reached within as many runs as there are, each check as a process group of
   its own that a timeout or this process's exit ends whole (`end_tree`, `end_live`), and a check that runs the whole
   test suite (`heavy_check`: `_tools/tests.py` or pytest with no narrowing `-k`, `stress_test.py`, a wrapper such as
   `perfcheck.py`, also inside `sh -c '...'`) never runs; the items those leave unchecked are counted in the story's
@@ -490,18 +492,52 @@ def check_result(root, check, timeout):
     return "pass" if ok else "fail"
 
 
-def passing_open(root, items, timeout, drift, budget):
-    """Run the checks of each draft or todo item that has touches and checks and whose touches changed since its file
-    did; an item is reported when all its checks pass, left out when one fails, left out and counted when one
-    exceeds `timeout` (or the budget left), when one is a heavy check (not run), or when the `budget` seconds for all
-    the checks were spent before its turn (not run)."""
-    start = time.monotonic()
+def rotation(root):
+    """The rotation index of the drift checks: the number of commits on the tip of main (HEAD without one). It is a
+    function of the tip, so the same inputs give the same order, and it moves by one per commit, so successive runs on
+    successive tips start from successive eligible items."""
+    ref = main_ref(root)
+    try:
+        return int(git_out(root, "rev-list", "--count", ref if ref_exists(root, ref) else "HEAD").strip() or 0)
+    except (RuntimeError, ValueError):
+        return 0
+
+
+def rotated(ids, index):
+    """`ids` (sorted) started at position `index` modulo their number and wrapped round: every id leads within
+    len(ids) successive indexes."""
+    if not ids:
+        return []
+    k = index % len(ids)
+    return ids[k:] + ids[:k]
+
+
+def eligible(root, items):
+    """[(id, checks)] of the draft or todo items with touches and checks whose touches changed since their file did,
+    in id order: the items whose checks the drift detector runs."""
+    out = []
     for iid, it in sorted(items.items()):
         checks = [c for c in it.get("checks", []) if isinstance(c, dict) and c.get("run")]
         if it.get("status") not in ("draft", "todo") or not it.get("touches") or not checks:
             continue
-        if not touches_changed_since_file(root, iid, it["touches"]):
-            continue
+        if touches_changed_since_file(root, iid, it["touches"]):
+            out.append((iid, checks))
+    return out
+
+
+def passing_open(root, items, timeout, drift, budget):
+    """Run the checks of each draft or todo item that has touches and checks and whose touches changed since its file
+    did; an item is reported when all its checks pass, left out when one fails, left out and counted when one
+    exceeds `timeout` (or the budget left), when one is a heavy check (not run), or when the `budget` seconds for all
+    the checks were spent before its turn (not run). The items are taken in id order rotated by `rotation(root)`, so
+    a budget that covers only some of them reaches a different first item on each new tip of main and every eligible
+    item within as many runs as there are eligible items."""
+    start = time.monotonic()
+    found = eligible(root, items)
+    order = rotated([iid for iid, _ in found], rotation(root))
+    checks_of = dict(found)
+    for iid in order:
+        checks = checks_of[iid]
         if any(heavy_check(c) for c in checks):
             drift.heavy.append(iid)
             continue
@@ -519,6 +555,8 @@ def passing_open(root, items, timeout, drift, budget):
             drift.timed_out.append(iid)
         elif results[-1] == "pass":
             drift.passing[iid] = len(checks)
+    for ids in (drift.timed_out, drift.heavy, drift.over_budget):
+        ids.sort()
 
 
 def scan_drift(root, hours=None, timeout=None, budget=None):

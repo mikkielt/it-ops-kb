@@ -586,7 +586,8 @@ def test_intake_drift_a_heavy_check_never_runs_and_is_counted(world):
     assert not marker.exists()  # no check of a heavy item ran, not even its light one
 
 
-def test_intake_drift_a_check_sleeping_past_the_budget_stops_the_scan_and_the_rest_are_counted(world):
+def test_intake_drift_a_check_sleeping_past_the_budget_stops_the_scan_and_the_rest_are_counted(world, monkeypatch):
+    monkeypatch.setattr(bl_intake, "rotation", lambda root: 0)  # id order: the sleeping check runs first
     world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[SLOW_CHECK])
     world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[PASS_CHECK])
     world.item(1, "TK-cccccccc", "todo", touches=["src/**"], checks=[PASS_CHECK])
@@ -608,6 +609,7 @@ def test_intake_drift_finished_checks_report_the_same_set_on_every_run(world):
 
 def test_intake_drift_skipped_items_are_counted_in_the_story(world, monkeypatch):
     monkeypatch.setattr(bl_intake, "DRIFT_BUDGET_S", 3)
+    monkeypatch.setattr(bl_intake, "rotation", lambda root: 0)  # id order: the sleeping check spends the budget
     world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[PASS_CHECK])
     world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[{"run": ["python3", "_tools/tests.py"]}])
     world.item(1, "TK-cccccccc", "todo", touches=["src/**"], checks=[SLOW_CHECK])
@@ -618,6 +620,80 @@ def test_intake_drift_skipped_items_are_counted_in_the_story(world, monkeypatch)
     assert "1 item(s) had a check that runs the whole test suite or the stress tests" in c.notes
     assert "1 item(s) had a check that exceeded" in c.notes
     assert "1 item(s) were not checked: the 3 s budget for checks was spent" in c.notes
+
+
+class FakeClock:
+    """A planted budget: each check run advances the clock one second, and `checked` lists the items whose checks ran
+    (no process starts, no real time passes)."""
+
+    def __init__(self):
+        self.now = 0.0
+        self.checked = []
+
+    def monotonic(self):
+        return self.now
+
+    def check_result(self, root, check, timeout):
+        self.checked.append(check["run"][-1])
+        self.now += 1
+        return "pass"
+
+
+def rotation_runs(world, monkeypatch, runs, ids):
+    """The items checked on each of `runs` successive tips of main, with a budget of two checks per run."""
+    clock = FakeClock()
+    monkeypatch.setattr(bl_intake, "time", clock)
+    monkeypatch.setattr(bl_intake, "check_result", clock.check_result)
+    out = []
+    for n in range(runs):
+        world.commit(3 + n, f"feat: work {n}", {"src/a.txt": f"{n}\n"})
+        world.publish()
+        clock.checked, clock.now = [], 0.0
+        d = bl_intake.scan_drift(world.root, budget=2)
+        assert d.ran == 2 and len(d.over_budget) == len(ids) - 2  # the budget covers two of the eligible items
+        out.append(list(clock.checked))
+    return out
+
+
+def test_intake_drift_rotates_every_eligible_item_is_checked_within_n_runs(world, monkeypatch):
+    ids = [f"TK-{c * 8}" for c in "abcdefg"]
+    for iid in ids:
+        world.item(1, iid, "todo", touches=["src/**"], checks=[{"run": ["python3", "-c", "pass", iid]}])
+    runs = rotation_runs(world, monkeypatch, len(ids), ids)
+    assert len({r[0] for r in runs}) == len(runs)  # a different first item on each run
+    assert {i for r in runs for i in r} == set(ids)  # every eligible item checked within N (= len(ids)) runs
+
+
+def test_intake_drift_rotates_the_same_tip_gives_the_same_order(world, monkeypatch):
+    ids = [f"TK-{c * 8}" for c in "abcde"]
+    for iid in ids:
+        world.item(1, iid, "todo", touches=["src/**"], checks=[{"run": ["python3", "-c", "pass", iid]}])
+    world.commit(2, "feat: work", {"src/a.txt": "b\n"})
+    world.publish()
+    clock = FakeClock()
+    monkeypatch.setattr(bl_intake, "time", clock)
+    monkeypatch.setattr(bl_intake, "check_result", clock.check_result)
+    orders = []
+    for _ in range(2):
+        clock.checked, clock.now = [], 0.0
+        bl_intake.scan_drift(world.root, budget=2)
+        orders.append(list(clock.checked))
+    assert orders[0] == orders[1] and len(orders[0]) == 2
+
+
+def test_intake_drift_rotates_planted_fixed_start_misses_items(world, monkeypatch):
+    """The planted failure: with the rotation pinned (id order every run) the same first items are checked and the
+    rest never are, which the coverage assertion above would catch."""
+    monkeypatch.setattr(bl_intake, "rotation", lambda root: 0)
+    ids = [f"TK-{c * 8}" for c in "abcdefg"]
+    for iid in ids:
+        world.item(1, iid, "todo", touches=["src/**"], checks=[{"run": ["python3", "-c", "pass", iid]}])
+    runs = rotation_runs(world, monkeypatch, len(ids), ids)
+    assert {i for r in runs for i in r} == set(ids[:2])
+
+
+def test_intake_drift_rotates_wraps_round():
+    assert bl_intake.rotated(["a", "b", "c"], 4) == ["b", "c", "a"] and bl_intake.rotated([], 3) == []
 
 
 def test_intake_drift_nothing_drifted_reports_no_candidate(world):
