@@ -2,7 +2,7 @@
   "id": "SP-3brmvlnh",
   "kind": "sprint",
   "title": "Backlog intake finds what a review finds",
-  "status": "planned",
+  "status": "active",
   "goal": "backlog.py intake runs at session start with deterministic detectors for stranded query-log findings, unread KB-Work trailers, drifted items and unverified CI, files each candidate once as an uncommitted draft, and a replay of the 2026-09-29 state finds what the manual review found; KB-Work outside the trailer block is refused, and research for a planned sprint lands under its item.",
   "gates": [
     {

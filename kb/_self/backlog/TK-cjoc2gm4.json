@@ -2,7 +2,7 @@
   "id": "TK-cjoc2gm4",
   "kind": "task",
   "title": "bl_intake.py registry, fingerprints, dedup and the intake command",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-tngq6z2j",
   "priority": "P2",
   "rank": 0,

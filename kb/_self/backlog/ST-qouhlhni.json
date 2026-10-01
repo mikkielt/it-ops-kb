@@ -2,7 +2,7 @@
   "id": "ST-qouhlhni",
   "kind": "story",
   "title": "Intake detector: work commits whose KB-Work git does not read",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
