@@ -7,6 +7,8 @@ other classes below).
                     (no lead, a lead no article holds, a stray none lead) it is rejected; a pass now, or a none lead
                     that holds the words the pack lacks, is left to learn, which makes the second an eval finding, so
                     no gap candidate is stranded and the digest's open gaps are what the queue reaches
+  TestGapReplay     `gap-replay` prints the gap step's decision for every gap finding of a planted store (applied ones
+                    too) and writes nothing; a planted stricter weak-lead rule flips the decision in its output
   TestQueue         the research queue on the gap step's entries (two topics): one item per question, ranked by the
                     logged lookups that asked it, then by age, grouped by topic, the top N; two copies of one store print the
                     same queue; a gap the pack answers now is recorded `fixed-since` and leaves it (learn leaves that
@@ -456,6 +458,64 @@ class TestGapStep:
 GMSA = "public/windows/gmsa.md"
 VMWARE_Q = "How do I configure VMware Horizon instant clone pools?"  # a4's question
 LATER = "2026-10-28"  # QUEUE_TRIED_DAYS after DAY
+
+
+class TestGapReplay:
+    """`gap-replay` re-runs the gap step's decision over every gap finding of a store and writes nothing: a planted
+    rule change flips a planted finding's decision and the output shows it."""
+
+    RES = {"verdict": "weak", "matched": ["laps", "maximum", "password"],
+           "known": ["azur", "laps", "maximum", "password"], "lacks": ["Azure"], "missing": []}
+
+    @staticmethod
+    def gate(root):
+        return TestGapStep.weak_gate(root, TestGapReplay.RES, "laps Windows LAPS",
+                                     "The maximum password age is 365 days. [DOC S100]")
+
+    @staticmethod
+    def replay(store, gate):
+        said = []
+        assert ql_apply.gap_replay(store, gate=gate, out=said.append) == 0
+        return said
+
+    def test_gap_replay_over_store_shows_a_rule_change(self, tmp_path, monkeypatch):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        gate = self.gate(root)
+        before = tree(store), root_files(root)
+        said = self.replay(store, gate)
+        assert said == ["\t".join((GAP_ID, "How do I configure VMware Horizon instant clone pools?", LAPS, "weak",
+                                   "keep"))], said
+        assert (tree(store), root_files(root)) == before  # nothing written
+
+        def strict(res, article, g):  # a stricter weak-lead rule: one line holds every key word the kb knows
+            known = res["known"]
+            return max((len(set(ws) & set(known)) for ws in g.unit_words(article, known)), default=0) < len(known)
+
+        monkeypatch.setattr(ql_apply, "weak_off_topic", strict)
+        flipped = self.replay(store, gate)
+        assert flipped == [said[0].rsplit("\t", 1)[0] + "\treject"], flipped
+        assert (tree(store), root_files(root)) == before
+
+    def test_gap_replay_over_store_lists_every_gap_finding(self, tmp_path):
+        """Findings the gap step already applied are replayed too, in id order."""
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path, extra=["a9"])
+        gate = self.gate(root)
+        run_gap_apply(store, gate)
+        gaps = sorted(r["id"] for r in by_id(store).values() if r["kind"] == "gap")
+        assert len(gaps) == 2 and {by_id(store)[i]["state"] for i in gaps} == {"applied"}
+        said = self.replay(store, gate)
+        assert [line.split("\t")[0] for line in said] == gaps and all(line.endswith("\tkeep") for line in said), said
+        gate.res = {"verdict": "good", "paths": [LAPS], "missing": []}
+        assert all(line.endswith("\tgood\tpasses") for line in self.replay(store, gate))
+
+    def test_gap_replay_over_store_cli(self, tmp_path, capsys):
+        store = gap_store(tmp_path)
+        assert querylog.main(["gap-replay", "--store", str(store)]) == 0
+        lines = capsys.readouterr().out.splitlines()
+        assert len(lines) == 1 and len(lines[0].split("\t")) == 5, lines
+        assert lines[0].split("\t")[0] == GAP_ID and lines[0].split("\t")[4] in ("keep", "reject", "passes", "held")
 
 
 class TwoTopicGate(KbGate):

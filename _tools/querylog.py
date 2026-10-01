@@ -103,6 +103,13 @@ the ql_*.py modules beside it.
                         findings files alone (git commit --only) with the --trailer lines and never a KB-Work trailer:
                         the record is not the answering work item's (a KB-* key is refused). Exit 0, 1 when one was
                         refused or the commit failed
+  querylog.py gap-replay [--store DIR]
+                        the gap step's keep or reject decision re-run on the working tree over every gap finding of
+                        the committed store (default kb/_querylog) or DIR, whatever its state: one line per finding,
+                        tab-separated: id, question, the pack's lead path, verdict and decision (keep: a _gaps.md entry
+                        under the lead's topic; reject: off the kb's domains; passes; held: an eval finding;
+                        no-entry). Read-only: nothing is written, so its output before and after a change to a
+                        gap-step rule (domain_article, weak_off_topic) shows the real findings the change flips. Exit 0
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
@@ -274,6 +281,12 @@ def main(argv=None):
         a = ap.parse_args(argv[1:])
         import ql_research
         return ql_research.queue(a.store, a.n if a.n and a.n > 0 else None)
+    if argv[:1] == ["gap-replay"]:
+        ap = argparse.ArgumentParser(prog="querylog.py gap-replay")
+        ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")
+        a = ap.parse_args(argv[1:])
+        import ql_apply
+        return ql_apply.gap_replay(a.store)
     if argv[:1] == ["close"]:
         ap = argparse.ArgumentParser(prog="querylog.py close")
         ap.add_argument("finding", nargs="+", help="the gap findings' ids (F-<12 hex>) of one queue item")

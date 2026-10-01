@@ -307,6 +307,46 @@ def weak_off_topic(res, article, gate):
     return best * 2 <= len(known)
 
 
+def gap_decision(question, gate):
+    """(pack result, article, decision) of the gap step for one question, packed on the working tree, writing
+    nothing: `passes` (it passes now), `held` (a `none` lead holds the words the pack lacks: an eval finding, the
+    article is that lead), `reject` (off the kb's domains: no lead article, a stray `none` lead, a `weak` lead
+    without the subject) or `keep` (a _gaps.md entry under the article's topic). `gap_one` acts on it and
+    `gap_replay` prints it."""
+    res = gate.pack(question)
+    if passes(res, None):
+        return res, None, "passes"
+    held = held_article(res, gate.article_of, gate.facts)
+    if held:
+        return res, held, "held"
+    article = domain_article(res, gate.article_of)
+    if not article or weak_off_topic(res, article, gate):
+        return res, article, "reject"
+    return res, article, "keep"
+
+
+def gap_replay(store=None, gate=None, out=print):
+    """`gap-replay [--store DIR]`: the gap step's decision (`gap_decision`) re-run on the working tree over every gap
+    finding of `store` (default kb/_querylog, the committed store), whatever its state, in id order: one line per
+    finding, tab-separated, with its id, question, the pack's lead path, verdict and decision (`no-entry` when its
+    entry has no question). Nothing is written, so the output before and after a change to a gap-step rule shows
+    which real findings the change flips. 0."""
+    from ql_base import STORE
+    store = Path(store or STORE)
+    gate = gate or Gate()
+    by_entry = {e["id"]: e for _, e in store_entries(store)}
+    gaps = sorted((r for r in finding_states(store).values() if r.get("kind") == "gap"), key=lambda r: r["id"])
+    for g in gaps:
+        e = by_entry.get(g.get("entry")) or {}
+        q = e.get("question")
+        if not isinstance(q, str):
+            out("\t".join((g["id"], "-", "-", "-", "no-entry")))
+            continue
+        res, _, decision = gap_decision(q, gate)
+        out("\t".join((g["id"], one_line(q), (res.get("paths") or ["-"])[0], str(res.get("verdict")), decision)))
+    return 0
+
+
 def gap_one(g, entry, gate, day):
     """The record of one open gap candidate (kind gap, stage candidate-gap), re-run with pack on the working tree: it
     reproduces when it still fails (`passes` without a best article), and it lies in a kb domain when the pack's lead
@@ -319,11 +359,10 @@ def gap_one(g, entry, gate, day):
     entry. []
     when it passes now or a `none` pack's lead article holds the words it lacks (`held_article`): learn records both,
     the second as an eval finding."""
-    res = gate.pack(entry["question"])
-    if passes(res, None) or held_article(res, gate.article_of, gate.facts):
+    res, article, decision = gap_decision(entry["question"], gate)
+    if decision in ("passes", "held"):
         return []
-    article = domain_article(res, gate.article_of)
-    if not article or weak_off_topic(res, article, gate):
+    if decision == "reject":
         return [{**without_observed(g), "state": "rejected",
                  "observed": {"verdict": res.get("verdict"), "gate": ["off the kb's domains"]}}]
     topic = gate.topic(article)
