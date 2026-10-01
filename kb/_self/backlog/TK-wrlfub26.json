@@ -2,7 +2,7 @@
   "id": "TK-wrlfub26",
   "kind": "task",
   "title": "backlog: prompt prefix answered by the hook without the model",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-3cofh4hv",
   "priority": "P2",
   "rank": 0,

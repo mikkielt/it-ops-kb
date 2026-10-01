@@ -2,7 +2,7 @@
   "id": "TK-j6zvcfgf",
   "kind": "task",
   "title": "querylog.py show with run, entry, findings, usage and spool filters",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-ppxck77t",
   "priority": "P2",
   "rank": 0,

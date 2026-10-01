@@ -2,7 +2,7 @@
   "id": "TK-3iwrdvp4",
   "kind": "task",
   "title": "AGENTS.md routes plain-words backlog questions to backlog.py",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-3cofh4hv",
   "priority": "P2",
   "rank": 0,

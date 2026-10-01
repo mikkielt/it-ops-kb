@@ -2,7 +2,7 @@
   "id": "ST-rqzdkb5l",
   "kind": "story",
   "title": "backlog.py move sets an item's sprint and status; reopen returns a done item to work",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-xb45i7t4",
   "priority": "P2",
