@@ -12,6 +12,11 @@
   TestSyncConflictInGit    (marker git) the same set-up, apart so the two run in parallel: A pushes an article and B pulls
                            it, then A and B edit the same line: B's sync stops with exit 3, the rebase in progress.
                            The gate skips tests.py here (KB_SYNC_NO_TESTS=1: no recursive test run). Skipped without git.
+  TestSyncSessionRules     (`tests.py -k sync_foreign_session`, with the next) the session sync runs in and a trailer's
+                           comparable form, no git needed
+  TestSyncForeignSessionInGit  (marker git) a planted local commit whose Claude-Session trailer names another session:
+                           `sync --push` refuses it (exit 1, naming it, nothing pushed); a same-session commit, one
+                           already on the remote and an unknown current session pass (`--dry-run`)
   TestPrePushInGit         (marker git) the pre-push hook blocks a plain push when the gate fails; tags and sync pushes pass.
   TestAutonomousWrite      (marker git; `tests.py -k autonomous_write`) the writers that run without a person reach
                            origin's main only through `kbgit.py sync --push` (kb/_self/querylog.md, Delivery): the
@@ -301,6 +306,101 @@ class TestSyncConflictInGit(SyncScenario):
         assert "rebase is in progress" in self.b3_again.stdout
         assert self.b3_after_abort == self.b3_head
         assert "clone b words it" not in self.remote_file(P("windows/sync-test-a.md"))
+
+
+SESSION_A, SESSION_B = "session_01AAAAAAAAAAAAAAAAAAAAAAAA", "session_01BBBBBBBBBBBBBBBBBBBBBBBB"
+
+
+def session_url(s):
+    return f"https://claude.ai/code/{s}"
+
+
+class TestSyncSessionRules:
+    """Which session sync runs in (kbgit.current_session) and how a trailer value compares (kbgit.session_key)."""
+
+    def test_sync_foreign_session_key_forms(self):
+        assert kbgit.session_key(session_url(SESSION_A)) == SESSION_A
+        assert kbgit.session_key(SESSION_A + "\n") == SESSION_A
+        assert kbgit.session_key("cse_01AAAAAAAAAAAAAAAAAAAAAAAA") == SESSION_A  # a cloud session's variable
+        assert kbgit.session_key("") == kbgit.session_key(None) == ""
+
+    def test_sync_foreign_session_current_order(self):
+        cloud, bridge = {"CLAUDE_CODE_REMOTE_SESSION_ID": "cse_01BBBBBBBBBBBBBBBBBBBBBBBB"}, {"CLAUDE_CODE_BRIDGE_SESSION_ID": SESSION_A}
+        assert kbgit.current_session(None, {}) == ""
+        assert kbgit.current_session(None, bridge) == SESSION_A
+        assert kbgit.current_session(None, {**bridge, **cloud}) == SESSION_B
+        assert kbgit.current_session(None, {**bridge, "KB_SESSION": session_url(SESSION_B)}) == SESSION_B
+        assert kbgit.current_session(None, {**bridge, "KB_SESSION": ""}) == ""  # set empty: unknown
+        assert kbgit.current_session(session_url(SESSION_B), bridge) == SESSION_B
+        assert kbgit.current_session("", bridge) == ""
+
+
+@requires_git
+@pytest.mark.git
+class TestSyncForeignSessionInGit:
+    """`sync --push` refuses (exit 1, naming them) local commits whose Claude-Session trailer names another session:
+    one session's sync must not push another's commits from a shared checkout. A commit already on the remote, a commit
+    of the same session and an unknown current session refuse nothing (`tests.py -k sync_foreign_session`)."""
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory, kb_seed):
+        tmp = str(tmp_path_factory.mktemp("kb-sync-session"))
+        env = git_env(KB_SYNC_NO_TESTS="1")
+        for k in ("KB_SESSION", *kbgit.SESSION_ENV):  # this run's own session must not reach the scenario
+            env.pop(k, None)
+        remote, (c,), cls.base = clones(kb_seed, tmp, env, ("c",))
+        cls.remote, cls.c = Repo(remote, env), c
+
+        def commit(subject, session):
+            c.git("commit", "-q", "--allow-empty", "-m", subject, "-m", f"{kbgit.SESSION_TRAILER}: {session_url(session)}")
+            return c.rev("HEAD")
+
+        def sync(*args, **extra):
+            return c.tool("kbgit.py", "sync", *args, env=extra)
+
+        # a commit of session B already on the remote is not a local commit: it never counts
+        commit("chore: pushed earlier by session b", SESSION_B)
+        c.git("push", "-q", "origin", "HEAD:main", env={"KB_GATE_DONE": "1"})
+        cls.pushed_before = cls.remote.rev("main")
+        cls.own = commit("chore: session a's own commit", SESSION_A)
+        cls.same = sync("--push", "--dry-run", KB_SESSION=session_url(SESSION_A))
+        cls.foreign = commit("chore: session b's local commit", SESSION_B)
+        cls.refused = sync("--push", KB_SESSION=session_url(SESSION_A))
+        cls.refused_dry = sync("--push", "--dry-run", CLAUDE_CODE_BRIDGE_SESSION_ID=SESSION_A)
+        cls.refused_arg = sync("--push", "--dry-run", "--session", SESSION_A, KB_SESSION=SESSION_B)
+        cls.unknown = sync("--push", "--dry-run")
+        cls.unknown_empty = sync("--push", "--dry-run", KB_SESSION="", CLAUDE_CODE_BRIDGE_SESSION_ID=SESSION_A)
+        cls.no_push = sync("--dry-run", KB_SESSION=SESSION_A)
+        cls.after = (cls.remote.rev("main"), c.rev("HEAD"))
+        yield
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_sync_foreign_session_commit_is_refused(self):
+        r = self.refused
+        assert r.returncode == 1, r.stdout + r.stderr
+        assert "refused: 1 local commit(s) were made by another Claude session" in r.stdout
+        assert f"  {self.foreign[:7]}" in r.stdout and "session b's local commit" in r.stdout
+        assert SESSION_B in r.stdout
+        assert "session a's own commit" not in r.stdout and "pushed earlier" not in r.stdout
+        assert "pushed: no (another session's commits)" in r.stdout
+        assert self.after == (self.pushed_before, self.foreign)  # nothing pushed, nothing rebased
+
+    def test_sync_foreign_session_found_from_env_and_argument(self):
+        for r in (self.refused_dry, self.refused_arg):
+            assert r.returncode == 1, r.stdout + r.stderr
+            assert "session b's local commit" in r.stdout
+
+    def test_sync_foreign_session_same_session_passes(self):
+        r = self.same
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "refused" not in r.stdout
+        assert "would push 1 commit(s)" in r.stdout
+
+    def test_sync_foreign_session_unknown_session_passes(self):
+        for r in (self.unknown, self.unknown_empty, self.no_push):
+            assert r.returncode == 0, r.stdout + r.stderr
+            assert "refused" not in r.stdout
 
 
 @requires_git
