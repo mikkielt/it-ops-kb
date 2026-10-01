@@ -76,9 +76,10 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
 ## review SP
 The review story is ready once every other item is done or dropped. Its work:
 1. Confirm or change each provisional answer with the operator (`answer ID GATE --confirm`, or a new answer plus a task or bug for the change), the ones workers recorded for choices their goals left open (run step 4.1) among them.
-2. Start a fresh-context reviewer subagent on the session model (`subagent_type: "general-purpose"`, no `model`) on the sprint's diff (`git log --grep "KB-Work"` over the sprint's items). Give it each item's goal. It reports only gaps that affect correctness or a goal.
-3. File each gap as a bug (`/kb-backlog bug`): `S1` into this sprint, others to the backlog.
-4. `python3 _tools/backlog.py done <review id>`.
+2. Print what the work cost, one command per id, each on its own: `python3 _tools/backlog.py cost SP`, then the same for each story and each bug of the sprint (`python3 _tools/backlog.py tree --sprint SP` lists them). Keep each output for step 3 and the close retrospective, and show the operator what the sprint's work cost, and where rework or shared tokens stand out. It reports tokens only, no prices, and a figure whose output names an unresolved id (`no item file and no git history for ...` on stderr) is incomplete: say so with the figure.
+3. Start a fresh-context reviewer subagent on the session model (`subagent_type: "general-purpose"`, no `model`) on the sprint's diff (`git log --grep "KB-Work"` over the sprint's items). Give it each item's goal and the cost outputs of step 2. It reports only gaps that affect correctness or a goal; the cost is context for them, not a gap to report.
+4. File each gap as a bug (`/kb-backlog bug`): `S1` into this sprint, others to the backlog.
+5. `python3 _tools/backlog.py done <review id>`.
 
 ## close SP
 1. `python3 _tools/backlog.py close SP --summary` prints one line per item close will delete (id, title, kind, status and the commit `done` recorded, or `no evidence commit`) and changes nothing. It refuses while anything is open. Keep its `delivered by` list for the commit body.
@@ -87,7 +88,8 @@ The review story is ready once every other item is done or dropped. Its work:
    - a check that passed although the item did not work;
    - a gate that should have been asked earlier;
    - a subagent brief that missed something;
-   - a rule in `kb/_self/backlog.md` or a skill that got in the way.
+   - a rule in `kb/_self/backlog.md` or a skill that got in the way;
+   - what cost more than its size suggested, from the review's `backlog.py cost` outputs (tokens only; rerun one if the review is not in this session).
    Show the list to the operator. Each change they accept becomes a backlog story (`/kb-backlog`) naming the failure it answers. Write nothing into the docs directly.
 3. `python3 _tools/backlog.py close SP --commit --trailer 'Co-Authored-By: ...'` deletes the sprint, its items and the epics they finished, and commits that with `KB-Work: SP-...` in the last trailer paragraph and a body that lists:
    - the `delivered by` list `close --summary` printed, as it is;
