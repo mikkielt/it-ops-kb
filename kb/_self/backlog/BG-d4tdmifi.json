@@ -1,0 +1,22 @@
+{
+  "id": "BG-d4tdmifi",
+  "kind": "bug",
+  "title": "A backlog.py done piped into another command is recorded as a done work row although a refused done exits non-zero inside the pipe",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "ql_capture.work_action returns no action for a command that pipes backlog.py done into another command (done ID | tail), because the success event carries the last command's exit code and a refused done would be recorded as done; the rule is written in the Failures part of kb/_self/querylog.md; found in the review of SP-fvztfmtm",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import ql_capture; sys.exit(0 if ql_capture.work_action('python3 _tools/backlog.py done TK-aaaaaaaa | tail -3') is None else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/test_ql_capture.py",
+    "kb/_self/querylog.md"
+  ]
+}
