@@ -1,0 +1,27 @@
+{
+  "id": "ST-zjsmb6ni",
+  "kind": "story",
+  "title": "check and start warn when a code item's mapped doc sits only in an unrelated item's touches",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check and start warn when a doc that kb/_self/map.csv maps to an item's code is held only by the touches of an unrelated item (not the item's own scope, a descendant, or a dependency), naming the doc and the holder, without warning for shared docs that many items hold (backlog.md, tools.md, maintaining.md, AGENTS.md); a planted pair in test_backlog.py shows the warning, and the real backlog gains far fewer new warnings than the naive version's 872",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "docs_unrelated_holder_warns"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Left from ST-w676qit6 \"backlog.py start names the committed items whose code docs sit outside their touches\" (merged from the dropped ST-ei6xrp7n): its worker built this clause and removed it after measuring 872 new warnings on the real backlog, because shared docs such as kb/_self/backlog.md are held by many items. Premise, run before a sprint commits this story: add a code item whose mapped doc is held only by an unrelated item's touches to a temp backlog and run python3 _tools/backlog.py check: it prints no warning today (docs_warnings counts every open item as a holder). Open design: how to exclude shared docs (a holder-count cap or a named list). The backlog.py split sprint SP-tpulmoxh moves cmd_start, cmd_check and docs_warnings into bl_plan: rebase this story's touches onto that module before claiming it."
+}

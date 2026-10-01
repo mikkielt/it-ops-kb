@@ -1,0 +1,28 @@
+{
+  "id": "ST-q4sgzlz6",
+  "kind": "story",
+  "title": "A gate that names a host setup in its question is checked on that host or says why not",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py gate add refuses or start warns for a gate whose question or option text names a host setup (a runner, a signed-in CLI, a Windows host, an installed tool) and that carries no --host-check command and no recorded reason it cannot be checked, so the host-check of ST-26w7hg5u covers gates filed as free text too; a planted gate in test_backlog.py shows the refusal or warning and a gate with --host-check or a reason passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "host_setup_gate_free_text"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-backlog/SKILL.md"
+  ],
+  "notes": "Left from ST-26w7hg5u \"A gate that names a host setup is checked on that host before the sprint starts\": gate add --host-check CMD and backlog.py host-check SP cover only gates that carry the command, and a gate whose host setup is named only in free text is not flagged. Premise, run before a sprint commits this story: python3 _tools/backlog.py gate add on an item with a question naming a host setup and no --host-check exits 0 and python3 _tools/backlog.py start accepts the sprint (run in a temp backlog). Open design: which words count as naming a host setup, and whether the answer is a refusal or a warning. Needs the operator's call on that heuristic, so record it as a gate when the story is planned into a sprint. The backlog.py split sprint SP-tpulmoxh moves the code: rebase this story's touches onto the new modules before claiming it."
+}
