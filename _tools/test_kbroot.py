@@ -79,6 +79,25 @@ def test_new_root_passes_the_checks(kb):
     assert code == 0 and "errors=0" in out, out
 
 
+def test_decisions_store_kbroot(kb):
+    """kbroot.py add writes both decision files with their headers only, and check.py reads the new root's copy."""
+    import kbcommon
+    for rel, cols in ((kbcommon.DECISIONS, kbcommon.DECISION_COLS), (kbcommon.DECISION_MAKERS, kbcommon.MAKER_COLS)):
+        with open(os.path.join(kb, "kb", "team", rel), encoding="utf-8") as f:
+            assert f.read() == ",".join(cols) + "\n", rel
+    path = os.path.join(kb, "kb", "team", kbcommon.DECISION_MAKERS)
+    with open(path, encoding="utf-8") as f:
+        clean = f.read()
+    try:
+        with open(path, "a", encoding="utf-8", newline="") as f:
+            f.write("Bad Id,owner,,\n")
+        code, out = run(kb, "check.py")
+        assert code != 0 and "team/" + kbcommon.DECISION_MAKERS in out.replace(os.sep, "/"), out
+    finally:
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            f.write(clean)
+
+
 def test_cross_root_citation_is_an_error(kb):
     sid = SID
     with open(os.path.join(kb, "kb", "public", "_sources.csv"), encoding="utf-8") as f:

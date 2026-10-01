@@ -4,7 +4,8 @@
   kbroot.py list                         name, id prefix, visibility, articles, sources and path of every root
   kbroot.py add NAME --prefix P [--visibility internal|public] [--description TEXT]
                                          create kb/NAME/: its _root.md, empty ledgers with their headers, a coverage
-                                         page with the table markers and _retrieval/ with empty data tables
+                                         page with the table markers, _retrieval/ with empty data tables, and empty
+                                         _decisions.csv and decision-makers.csv
 
 A root is a directory of knowledge with its own sources and id prefix (kbcommon.py, "Roots"): kb/public holds the
 upstream facts, and a team adds its own roots (its systems, its repositories, its internal runbooks) beside it.
@@ -32,6 +33,8 @@ FILES = {
     kbcommon.DATA_DIR + "/lookup_eval.csv": "id,question,expect_paths,expect_verdict,allow_weak\n",
     kbcommon.DATA_DIR + "/signals.csv": "signal,topic\n",
     kbcommon.DATA_DIR + "/index_extra.csv": "topic,priority,status,files\n",
+    kbcommon.DECISIONS: ",".join(kbcommon.DECISION_COLS) + "\n",
+    kbcommon.DECISION_MAKERS: ",".join(kbcommon.MAKER_COLS) + "\n",
 }
 
 
