@@ -22,5 +22,19 @@
     "_tools/test_sync.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When the range's first code-lane commit has no KB-Work but a later code-lane commit has one, which id names code/<id>?",
+      "options": [
+        "the first KB-Work id among the range's code-lane commits, then the range's first id, then HEAD's short hash",
+        "only the first code-lane commit's id, then the range's first id, then HEAD's short hash"
+      ],
+      "recommendation": "the first KB-Work id among the range's code-lane commits, then the range's first id, then HEAD's short hash",
+      "answer": "the first KB-Work id among the range's code-lane commits, then the range's first id, then HEAD's short hash",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-eyp2ubji"
 }

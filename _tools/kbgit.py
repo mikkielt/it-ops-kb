@@ -99,7 +99,9 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
      in the test files a changed tool or other code path selects; KB_SYNC_NO_TESTS=1 skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1,
      nothing pushed.
   e. --push: git push REMOTE HEAD:BRANCH, never --force. Rejected because the remote moved: fetch and rebase once more,
-     then give up (exit 1).
+     then give up (exit 1). A push to main whose range has a code-lane commit (kblane.py) goes instead as the branch
+     code/<id> with merge-request push options, main not moving (lane_plan); code_branch picks <id>: the first KB-Work
+     id of the range's first code-lane commit that has one, else the range's first KB-Work id, else HEAD's short hash.
   f. a report: commits rebased, conflicts resolved, fix, ids renumbered, trailers refreshed, gate, pushed or not.
   --dry-run fetches and reports ahead/behind, the incoming commits and the files both sides changed; nothing else.
 Exit (sync): 0 done, 1 gate failed, push rejected/failed or another session's commits, 2 refused (dirty tree, operation in progress, bad
@@ -1591,18 +1593,38 @@ def push_options(target):
             "merge_request.remove_source_branch"]
 
 
+def code_branch(up, rev):
+    """code/<id> of the commits up..REV (all of REV's history without UP) when any of them is code-lane, else None
+    (None too when git fails). <id> names the item whose code the range carries: the first KB-Work id of the first
+    code-lane commit that has one, so a content commit of another item riding along (its claim, an item file) does not
+    name the branch; else the first KB-Work id of the range; else REV's short hash. The one place the name is chosen:
+    sync and bridge (lane_plan) and backlog.py land call it."""
+    spec = [f"{up}..{rev}"] if up else [rev]
+    lanes = kblane.commit_lanes(KB, spec)
+    if not lanes or not any(lane == kblane.CODE for _, lane, _ in lanes):
+        return None
+    out = git("log", "--reverse", f"--format=%h%x00%(trailers:key={WORK},valueonly,unfold)%x1e", *spec) or ""
+    work = {}
+    for rec in out.split("\x1e"):
+        h, _, ids = rec.strip("\n").partition("\0")
+        if h:
+            work[h] = [x for x in re.split(r"[,\s]+", ids) if x]
+    in_code = [i for h, lane, _ in lanes if lane == kblane.CODE for i in work.get(h, [])]
+    in_range = [i for h, _, _ in lanes for i in work.get(h, [])]
+    ids = in_code or in_range
+    return CODE_BRANCH_PREFIX + (ids[0] if ids else short(rev_parse(rev)))
+
+
 def lane_plan(up, rev, target=LANE_BRANCH):
-    """(lane, branch) of the commits up..REV (all of REV's history without UP): the branch is code/<id> for a range
-    with a code-lane commit, else None. <id> is the first KB-Work id in the range, else REV's short hash. A push to a
-    TARGET branch other than LANE_BRANCH is not routed: (None, None)."""
+    """(lane, branch) of the commits up..REV (all of REV's history without UP): the branch is code_branch's code/<id>
+    for a range with a code-lane commit, else None. A push to a TARGET branch other than LANE_BRANCH is not routed:
+    (None, None)."""
     if target != LANE_BRANCH:
         return None, None
-    lanes = kblane.commit_lanes(KB, [f"{up}..{rev}"] if up else [rev])
-    if lanes is None or not any(lane == kblane.CODE for _, lane, _ in lanes):
+    branch = code_branch(up, rev)
+    if branch is None:
         return kblane.CONTENT, None
-    out = git("log", "--reverse", "--format=%(trailers:key=KB-Work,valueonly,unfold)", *([f"{up}..{rev}"] if up else [rev])) or ""
-    ids = [x for ln in out.splitlines() for x in re.split(r"[,\s]+", ln.strip()) if x]
-    return kblane.CODE, CODE_BRANCH_PREFIX + (ids[0] if ids else short(rev_parse(rev)))
+    return kblane.CODE, branch
 
 
 def push_branch(a, r, branch, target):
