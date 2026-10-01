@@ -2,7 +2,7 @@
   "id": "ST-eyp2ubji",
   "kind": "story",
   "title": "A code/<id> branch is named after the item whose code it carries",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-eyp2ubji"
+  "evidence": {
+    "commit": "1e9c8bfa673bbecbb82ab1680b77aedaee6cbf5a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_code_branch_named_after_code_commit"
+        ],
+        "exit": 0,
+        "sha256": "a46b716f1599239c"
+      }
+    ]
+  }
 }
