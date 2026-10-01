@@ -1,6 +1,6 @@
 """The import rules of kb/_self/code.md (Imports), held over every _tools/*.py parsed with ast (never run):
 
-- a prefixed helper (`ql_*`, `kg_*`, `bench_*`) never imports its facade (`querylog`, `kbgit`, `benchmarks`), at any depth;
+- a prefixed helper (`ql_*`, `kg_*`, `bench_*`, `bl_*`) never imports its facade (`querylog`, `kbgit`, `benchmarks`, `backlog`), at any depth;
 - no module imports a name that starts with `_` from another _tools module (`from x import _y`) or reaches one through
   the module (`x._y`, also through `import x as z`): a leading underscore means the module's own.
 
@@ -12,7 +12,7 @@ from pathlib import Path
 
 from conftest import TOOLS
 
-FACADES = {"ql_": "querylog", "kg_": "kbgit", "bench_": "benchmarks"}
+FACADES = {"ql_": "querylog", "kg_": "kbgit", "bench_": "benchmarks", "bl_": "backlog"}
 
 # (importing module, module it reaches into, the underscore name): what kind of reach it is. One entry per pair,
 # however many uses.
@@ -95,6 +95,12 @@ def test_import_layers_helper_importing_its_facade_fails():
                      f"def late():\n    import {facade}\n"):
             src = {facade: "", helper: body, prefix + "base": ""}
             assert unexcused(src) == [("facade", helper, facade, facade)], (helper, body)
+
+
+def test_import_layers_bl_helper_imports_backlog_fails():
+    for body in ("import backlog\n", "from backlog import main\n", "def late():\n    import backlog\n"):
+        src = {"backlog": "", "bl_intake": body}
+        assert unexcused(src) == [("facade", "bl_intake", "backlog", "backlog")], body
 
 
 def test_import_layers_facade_and_siblings_may_import_below():
