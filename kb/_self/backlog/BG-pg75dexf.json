@@ -1,0 +1,22 @@
+{
+  "id": "BG-pg75dexf",
+  "kind": "bug",
+  "title": "text_only_repro misses a grep through a pipe, awk or sed over a source file and a test -z of grep",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py text_only_repro also flags a shell pipeline whose only reader of a file is cat or another text filter feeding grep, awk or sed run over a source file, and test -z/-n over a grep's output, so new refuses them without --repro-reason and check warns of them; ST-2lnlt3ir caught only plain grep, rg, findstr, Select-String and python -c text reads. From the SP-5cwekumc review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import backlog; miss=[a for a in (['sh','-c','cat _tools/x.py | grep -q foo'], ['awk','/foo/{f=1} END{exit !f}','_tools/x.py'], ['sh','-c','test -z \"\\$(grep -n foo _tools/x.py)\"']) if not backlog.text_only_repro(a)]; assert not miss, miss"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}
