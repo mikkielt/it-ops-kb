@@ -45,6 +45,7 @@ For every changed source, find the facts citing it: `python3 _tools/rag.py src S
 - Replaced source (new commit or moved page): new row as above, old row's `superseded_by` = the new id, citations re-pointed. `check.py` rejects an unknown `superseded_by` id or a cycle.
 - Sources now disagree: record both sides in `_conflicts.md`, ending `(topic: <domain>/<slug>)`.
 - Page gone (404) or content withdrawn: mark the fact `[UNK]`, and log what was tried in `_gaps.md`, ending `(topic: <domain>/<slug>)`.
+- Decisions whose context this broke (a superseded source, a removed article, a reworded fact): `python3 _tools/kbdecide.py sweep --dry-run`, then `sweep` without `--dry-run`. It invalidates them and prints `ID relink ROOT fact:KEY PATH:LINE text` for a fact that was reworded; report each invalidation and relink line (`kbdecide.py relink ID --fact PATH:LINE` repoints a decision once the fact is the right one).
 - Update the article's `retrieved_utc`, and its `status` if it changed. Then run `python3 _tools/build_index.py`: it regenerates `_coverage.csv`, the `_coverage.md` row and `used_in` (never edit those by hand).
 - A reworded or new fact needs its anchor: `python3 _tools/factdiff.py anchor --file <path>` for each file you edited (`python3 _tools/factdiff.py anchors --stale` must print `stale=0`).
 - Rewording a fact changes its doc2query key: `python3 _tools/doc2query.py stale` lists the orphaned keys; `python3 _tools/doc2query.py prune` removes their rows (regenerate only where real lookups miss, `kb/_self/doc2query.md`).

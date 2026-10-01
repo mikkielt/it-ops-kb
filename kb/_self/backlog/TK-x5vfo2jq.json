@@ -31,7 +31,8 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/code.md",
     "_tools/fixtures/kb_mcp_contract.json",
-    "_tools/test_kb_mcp.py"
+    "_tools/test_kb_mcp.py",
+    "kb/_self/alternatives.md"
   ],
   "gates": [
     {

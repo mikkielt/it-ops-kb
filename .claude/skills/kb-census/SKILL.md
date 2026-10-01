@@ -58,7 +58,8 @@ Scope: every row whose bucket is not OK and whose note is not `blocked`.
 
 ## Phase 3: dates, by script
 1. `python3 _tools/census.py confirm kb/public/_census/<date>.csv --date <date> --dry-run`, then without `--dry-run`. It sets `retrieved_utc` and a `confirmed <date>: <proof>` suffix in `version_or_date` for confirmed sources (bucket OK, or outcome confirmed/updated), `checked_utc` in `_fetch_state.csv`, and `retrieved_utc` of every article whose sources all carry the date.
-2. `python3 _tools/build_index.py`, the gate, and commit `docs(kb): census <date>: confirmed dates` with `git commit --trailer "KB-Verified: <date>"`.
+2. Decisions whose context the census broke: `python3 _tools/kbdecide.py sweep --dry-run --date <date>`, then `sweep --date <date>` without `--dry-run`. It invalidates them and prints `ID relink ROOT fact:KEY PATH:LINE text` for a reworded fact; report each invalidation and relink line in the census report (`kbdecide.py relink ID --fact PATH:LINE` repoints a decision once the fact is the right one).
+3. `python3 _tools/build_index.py`, the gate, and commit `docs(kb): census <date>: confirmed dates` with `git commit --trailer "KB-Verified: <date>"`.
 
 ## Phase 4: independent check, then the tag
 1. `python3 _tools/census.py sample kb/public/_census/<date>.csv --changed 0.10 --ok 0.05 --seed <any>`.
@@ -68,4 +69,4 @@ Scope: every row whose bucket is not OK and whose note is not `blocked`.
 5. The tag means "the kb was confirmed current as of <date>". Create it only when no source that a fact cites is left unconfirmed (summary: no `blocked`, no `unconfirmed`, no unread NEEDS-READING, except rows `python3 _tools/rag.py src <id> --cited` shows cited by no article or data line, only in front matter or ledger notes; file those as one backlog story with `/kb-backlog`): `python3 _tools/kbgit.py tag-census <date>`, then `git push origin census-<date>` if the user asked to push. Otherwise do not tag: report what is left and why, and file it as backlog items with `/kb-backlog`.
 
 ## Report
-The bucket counts, the phase 2 outcomes per group (confirmed, updated, superseded with old -> new ids, gone, unconfirmed), the sample result, the hosts that were blocked, the commits, and whether the tag was created.
+The bucket counts, the phase 2 outcomes per group (confirmed, updated, superseded with old -> new ids, gone, unconfirmed), the decisions the sweep invalidated and its relink lines, the sample result, the hosts that were blocked, the commits, and whether the tag was created.

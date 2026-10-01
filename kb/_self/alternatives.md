@@ -4,7 +4,7 @@ Tools that do part of what this kb does, what each overlaps with, how it differs
 
 ## What this project is, for the comparison
 
-- **Stored, cited facts, not live pages.** One fact per line with a tag (`DOC`, `CODE`, `DER`, `COMMUNITY`, `UNK`) and source ids from a `_sources.csv` row that records url, publisher, licence and date (`kb/_self/content-rules.md`).
+- **Stored, cited facts, not live pages.** One fact per line with a tag (`DOC`, `CODE`, `DER`, `COMMUNITY`, `UNK`) and source ids from a `_sources.csv` row that records url, publisher, licence and date, or a `DECISION` tag naming an operator decision of the root's `_decisions.csv` (`kb/_self/content-rules.md`).
 - **Deterministic retrieval with a stop rule.** `pack` is BM25 over a persisted index; it returns `good`, `weak` or `none` plus the lines and one url footer, and on `none` the agent states what the kb has and lacks, answers the part it has and takes the rest from the live docs, labelled, never from memory (`kb/_self/tools.md`, "How the lookup tools decide"). No embeddings, no reranker, no model in the lookup path.
 - **Exact structural answers.** Counts, lists and "which lines cite this source" are tool calls (`audit`, `facts`, `src --cited`), not reading.
 - **Upkeep by agents with evidence of freshness.** Skills research, refresh and census the sources; the fact diff settles unchanged facts without a model; a census tag marks a commit whose sources were all confirmed (`kb/_self/design.md`).
