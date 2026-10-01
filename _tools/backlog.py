@@ -763,6 +763,66 @@ def selector_rows(bl, cmd):
     return sorted(rows, key=lambda r: (-1 if r[0] is None else r[0], r[2], r[3]))
 
 
+def touch_paths(item, files, literal):
+    """The paths an item's touches name: each path as written, each glob expanded over FILES (tracked paths) and
+    LITERAL (the paths a doc map names, which may not exist yet)."""
+    paths = set()
+    for t in item.get("touches", []) or []:
+        if not isinstance(t, str) or not t:
+            continue
+        if not re.search(r"[*?]", t):
+            paths.add(t)
+            continue
+        rx = glob_re(t)
+        paths |= {p for p in list(files) + literal if rx.match(p)}
+    return paths
+
+
+def dependencies(bl, iid):
+    """The items iid depends on, directly or through another item (earlier work)."""
+    out, todo = set(), [iid]
+    while todo:
+        for d in bl.items.get(todo.pop(), {}).get("depends_on", []) or []:
+            if d in bl.items and d not in out and d != iid:
+                out.add(d)
+                todo.append(d)
+    return out
+
+
+def docs_after_code(bl, ids):
+    """One refusal for each open task or bug among IDS whose touches are only kb/_self docs that kb/_self/map.csv maps
+    to the code another item touches, which it depends on: the sync gate's `selfdoc stale` reads the code and its docs
+    in one range, and a task that waits for the code lands them apart. A standard doc (a map pattern that covers every
+    _tools/*.py) describes no one change and is left out; a missing or unreadable map gives none."""
+    import selfdoc
+    try:
+        docmap = selfdoc.load_map(str(bl.root))
+    except selfdoc.SelfdocError:
+        return []
+    docmap = {d: pats for d, pats in docmap.items() if not any(selfdoc.matches(p, EVERY_TOOL) for p in pats)}
+    literal = [p for pats in docmap.values() for p in pats if not re.search(r"[*?]", p)]
+    files, out = None, []
+    for iid in sorted(ids):
+        it = bl.items[iid]
+        touches = it.get("touches", []) or []
+        if it.get("status") not in OPEN_STATUSES or it.get("kind") == "sprint" or not touches or \
+                not all(isinstance(t, str) and t.startswith("kb/_self/") for t in touches):
+            continue
+        if files is None:
+            files = tracked_files(bl.root)
+        docs = touch_paths(it, files, literal)
+        for dep in sorted(dependencies(bl, iid)):
+            if bl.items[dep].get("status") not in OPEN_STATUSES:
+                continue
+            code = sorted(p for p in touch_paths(bl.items[dep], files, literal) if is_code(p))
+            held = sorted(d for d in selfdoc.describing(docmap, code) if d in docs)
+            if held:
+                out.append(f"{bl.label(iid)}: touches only docs of code that {bl.label(dep)}, which it depends on, "
+                           f"touches: {', '.join(held)} (put them in {bl.label(dep)}'s touches: the sync gate's "
+                           "selfdoc stale needs code and its docs in one range)")
+    return out
+
+
 def docs_warnings(bl):
     """An open item whose own touches name code (CODE_DIRS, CODE_FILES) whose kb/_self/map.csv docs are in no open
     item's touches, or only in the touches of items that depend on it (a later task): kb/_self/git.md asks for a code
@@ -781,17 +841,10 @@ def docs_warnings(bl):
     open_ids = [i for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") in OPEN_STATUSES]
     out = []
     for iid in open_ids:
-        paths = set()
-        for t in bl.items[iid].get("touches", []) or []:
-            if not isinstance(t, str) or not t:
-                continue
-            if not re.search(r"[*?]", t):
-                paths.add(t)
-                continue
-            if files is None:
-                files = tracked_files(bl.root)
-            rx = glob_re(t)
-            paths |= {p for p in list(files) + literal if rx.match(p)}
+        if files is None and any(re.search(r"[*?]", t) for t in bl.items[iid].get("touches", []) or []
+                                 if isinstance(t, str)):
+            files = tracked_files(bl.root)
+        paths = touch_paths(bl.items[iid], files or [], literal)
         code = sorted(p for p in paths if is_code(p))
         if not code:
             continue
@@ -1687,7 +1740,9 @@ def cmd_similar(bl, a):
 
 def cmd_check(bl, a):
     pieces = host_user_pieces()
-    errs = validate(bl, pieces) + stale_touches(bl)
+    planned = [i for sid, sp in bl.items.items() if sp.get("kind") == "sprint" and sp.get("status") == "planned"
+               for i in bl.sprint_items(sid)]
+    errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned)
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl)
     for x in errs + stale + warns:
@@ -2636,6 +2691,9 @@ def cmd_start(bl, a):
     if bare:
         raise Refused(f"{bl.label(sid)} has work items without touches (give each its own touches, or tasks that "
                       "all have them):\n  " + "\n  ".join(bl.label(i) for i in bare))
+    later = docs_after_code(bl, items)
+    if later:
+        raise Refused(f"{bl.label(sid)} has a task whose docs wait for the code they describe:\n  " + "\n  ".join(later))
     for i in items:
         if bl.items[i].get("status") == "draft":
             bl.items[i]["status"] = "todo"
