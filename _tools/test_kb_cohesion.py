@@ -73,7 +73,7 @@ class TestToolChecks:
                 "date": "2026-10-01", "context": "article:public/auth/kerberos; domain:public/auth; item:TK-abcd2345",
                 "status": "active", "invalidated_reason": "", "invalidated_date": "", "supersedes": "", "review_by": "",
                 "links": ""}
-        makers = [{"id": "maint", "role": "maintainer", "name": "Jan Kowalski", "source": ""}]
+        makers = [{"id": "maint", "role": "maintainer", "name": "", "source": ""}]  # kb/_self is published: roles only
         env = {k: v for k, v in os.environ.items() if k != "KB_ROOTS"}
 
         def check(*decisions, roots=""):
@@ -90,9 +90,19 @@ class TestToolChecks:
                            ("context article:public/auth/nope names no article public/auth/nope",
                             {"context": "article:public/auth/nope"}),
                            ("context domain:public/nope names no domain public/nope", {"context": "domain:public/nope"}),
-                           ("cites unknown source S-zzzzzzzz", {"source": "S-zzzzzzzz"})):
+                           ("cites unknown source S-zzzzzzzz", {"source": "S-zzzzzzzz"}),
+                           ("by 'Jan Kowalski' is not the role 'maintainer' of maint: kb/_self, which is published",
+                            {"by": "Jan Kowalski"}),
+                           ("by_ref is empty: kb/_self, which is published, not an internal root, keeps no names",
+                            {"by_ref": ""})):
             code, out = check({**good, **over})
             assert code == 1 and f"ERROR kb/_self/_decisions.csv:2 {rule}" in out, (rule, out[-800:])
+        # a name in the central register is an error: kb/_self is published, so it is not an internal root
+        makers[0]["name"] = "Jan Kowalski"
+        code, out = check(good)
+        assert code == 1 and ("ERROR kb/_self/decision-makers.csv:2 a name in kb/_self, which is published, "
+                              "not an internal root: keep the role only") in out, out[-800:]
+        makers[0]["name"] = ""
         # a root that is not internal references the central register: its by is the register's role, never the name
         root = str(tmp_path / "team-kb")
         make_root(root)

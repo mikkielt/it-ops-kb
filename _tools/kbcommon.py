@@ -129,9 +129,12 @@ def context_refs(text):
 
 def maker_names_allowed(root):
     """Whether a decision maker's name may be stored in `root`'s files (None: kb/_self, the central register). Only an
-    internal root and kb/_self may; the storage policy per root (a root keeping roles only, or referencing the central
-    register) narrows this later, and every check of names asks this one function."""
-    return root is None or root.visibility == "internal"
+    internal root may: kb/_self is published, so its register holds roles only. The storage policy per root (a root
+    keeping roles only, or referencing the central register) may change this later, and every check of names asks
+    this one function."""
+    return root is not None and root.visibility == "internal"
+
+
 # Secret shapes: the leak scan over tracked files (test_kb_leaks.py, TestLeaks) and kbingest.py's survey of a repository.
 SECRETS = (
     r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----",

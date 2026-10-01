@@ -305,12 +305,12 @@ def test_decisions_store_a_root_that_is_not_internal_keeps_no_names(tmp_path):
     makers = [{"id": "owner", "role": "print owner", "name": "", "source": ""},
               {"id": "named", "role": "lead", "name": "Jan Kowalski", "source": ""}]
     cases = [("by 'Jan Kowalski' is not the role 'print owner' of owner", {"by": "Jan Kowalski", "by_ref": "owner"}),
-             ("by_ref is empty: a root that is public, not internal, keeps no names", {"by": "print owner"}),
-             ("by_ref is empty: a root that is public, not internal, keeps no names", {"by": "jan.kowalski"})]
+             ("by_ref is empty: a root that is public, not an internal root, keeps no names", {"by": "print owner"}),
+             ("by_ref is empty: a root that is public, not an internal root, keeps no names", {"by": "jan.kowalski"})]
     rows = [decision(0, by="print owner", by_ref="owner")] + [decision(i, **over) for i, (_, over) in enumerate(cases, start=1)]
     code, found, out = checked_root(tmp_path, rows, makers, visibility="public")
     assert code == 1
-    assert found.pop(f"{MAK}:3") == ["a name in a root that is public, not internal: keep the role only"], found
+    assert found.pop(f"{MAK}:3") == ["a name in a root that is public, not an internal root: keep the role only"], found
     assert_planted(found, DEC, cases, 3)
     # the same names in an internal root are clean
     rows = [decision(0, by="print owner", by_ref="owner"), decision(1, by="Jan Kowalski", by_ref="named")]

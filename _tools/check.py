@@ -27,8 +27,8 @@
   article, domain: the source, article or domain of a decision not invalidated must exist), a `by_ref` that names a maker of
   the root's file or of kb/_self's central register, `invalidated_reason` and `invalidated_date` exactly when the status
   is invalidated, `supersedes` naming other decisions of the file (and every superseded one named by another), an empty or
-  valid review_by; a maker with a slug id (unique) and a role; and no name in a row of a root that is not internal
-  (kbcommon.maker_names_allowed: its makers' `name` is empty, and a decision's `by` is its maker's role);
+  valid review_by; a maker with a slug id (unique) and a role; and no name in a row of a root that is not internal or
+  of kb/_self (kbcommon.maker_names_allowed: the makers' `name` is empty, and a decision's `by` is its maker's role);
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
 - every `topic: <domain>/<slug>` marker in a root's _gaps.md and _conflicts.md names a topic of that root.
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
@@ -242,6 +242,7 @@ def check_decisions(root, owner, known):
     name = (lambda n: f"kb/_self/{n}") if root is None else (lambda n: kbcommon.qualify(root, n))
     field = lambda r, k: (r.get(k) or "").strip()  # noqa: E731
     mname = name(kbcommon.DECISION_MAKERS)
+    who = "kb/_self, which is published" if root is None else f"a root that is {root.visibility}"
     own, seen = {}, set()
     for n, r in enumerate(read_table(base / kbcommon.DECISION_MAKERS, mname, kbcommon.MAKER_COLS) or [], start=2):
         mid, bad = field(r, "id"), []
@@ -254,7 +255,7 @@ def check_decisions(root, owner, known):
         if not own[mid]:
             bad.append("no role")
         if field(r, "name") and not kbcommon.maker_names_allowed(root):
-            bad.append(f"a name in a root that is {root.visibility}, not internal: keep the role only")
+            bad.append(f"a name in {who}, not an internal root: keep the role only")
         errors.extend(f"{mname}:{n} {b}" for b in bad)
     central = own if root is None else central_makers()
     dname = name(kbcommon.DECISIONS)
@@ -284,11 +285,10 @@ def check_decisions(root, owner, known):
         if not kbcommon.maker_names_allowed(root) and (by or ref):  # no names: `by` is the role of a maker it references
             role = own.get(ref, central.get(ref)) if ref else None
             if not ref:
-                bad.append(f"by_ref is empty: a root that is {root.visibility}, not internal, keeps no names, so by "
+                bad.append(f"by_ref is empty: {who}, not an internal root, keeps no names, so by "
                            f"is the role of a maker it references")
             elif role is not None and by != role:
-                bad.append(f"by {by!r} is not the role {role!r} of {ref}: a root that is {root.visibility}, not "
-                           f"internal, keeps no names")
+                bad.append(f"by {by!r} is not the role {role!r} of {ref}: {who}, not an internal root, keeps no names")
         refs = kbcommon.context_refs(r.get("context"))
         if not refs:
             bad.append("no context (kind:value references to the item, fact, source, article or domain it is about)")
