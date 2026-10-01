@@ -2,7 +2,7 @@
   "id": "TK-bt4twvk3",
   "kind": "task",
   "title": "Document querylog.py show",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ppxck77t",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,18 @@
   "depends_on": [
     "TK-j6zvcfgf"
   ],
-  "claimed_by": "worker-bt4twvk3"
+  "evidence": {
+    "commit": "a03590943035b29f1268983cc2d9a0cc711b237b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
