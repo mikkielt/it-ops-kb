@@ -346,6 +346,27 @@ class TestCohesion:
             assert self.new_check_live_problems(backlog_skill.replace(need, "x"), runbook), need
             assert self.new_check_live_problems(backlog_skill, runbook.replace(need, "x")), need
 
+    @staticmethod
+    def push_check_problems(backlog_skill, runbook):
+        """Problems with how planning treats a check that guards a push: each text asks what the push carries,
+        every commit of the range and not only the final tree."""
+        plan = backlog_skill.split("## Plan", 1)[-1]
+        steps = runbook.split("## Sprints", 1)[-1].split("\n## Working on items", 1)[0]
+        problems = []
+        for name, part in (("kb-backlog Plan", plan), ("backlog.md Sprints", steps)):
+            for need in ("guarding a push", "what the push carries", "every commit of the pushed range", "not only the final tree"):
+                if need not in part:
+                    problems.append(f"{name}: no `{need}`")
+        return problems
+
+    def test_plan_push_check_names_what_push_carries(self):
+        backlog_skill, runbook = text(".claude/skills/kb-backlog/SKILL.md"), text("kb/_self/backlog.md")
+        assert self.push_check_problems(backlog_skill, runbook) == []
+        # planted failures: each part removed from each text
+        for need in ("guarding a push", "what the push carries", "every commit of the pushed range", "not only the final tree"):
+            assert self.push_check_problems(backlog_skill.replace(need, "x"), runbook), need
+            assert self.push_check_problems(backlog_skill, runbook.replace(need, "x")), need
+
     def test_python_passes_ruff_when_installed(self):
         """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""
         try:
