@@ -21,5 +21,20 @@
     "_tools/fixtures/intake/**",
     "_tools/test_intake.py"
   ],
+  "gates": [
+    {
+      "id": "replay-expectations",
+      "kind": "provisional",
+      "question": "On the faithful state drift reports BG-jam2lysj, not ST-rjxacpdh or TK-if7de5pb, and stranded needs HEAD 3+ days later. Reword the story, or change the detectors?",
+      "options": [
+        "Reword ST-igaxxamb: drift lists what its rules report, and the replay runs on 2026-10-03",
+        "Add a drift rule for a draft item with no touches whose goal a commit met, and one for a done item",
+        "Drop the drift and stranded expectations from the story"
+      ],
+      "recommendation": "Reword ST-igaxxamb: the detectors' rules are tested and the story's list came from a manual review",
+      "answer": "Reword ST-igaxxamb: the detectors' rules are tested and the story's list came from a manual review",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-hft3uklk"
 }
