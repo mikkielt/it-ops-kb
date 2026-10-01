@@ -18,6 +18,11 @@
                            `sync --push` refuses it (exit 1, naming it, nothing pushed); a same-session commit, one
                            already on the remote and an unknown current session pass (`--dry-run`)
   TestPrePushInGit         (marker git) the pre-push hook blocks a plain push when the gate fails; tags and sync pushes pass.
+  TestSprintWorktreeHooks  (marker git; `tests.py -k sprint_worktree_has_commit_hooks`) a `git worktree` of a clone with
+                           the hooks installed, relative or as an absolute path to the main clone's .githooks, runs them:
+                           its commit gets KB-* trailers and install-hooks there says installed; planted: unset hooks
+                           (no trailers, check-trailers exit 1), a .githooks outside the clone's worktrees or one
+                           without the scripts (not installed).
   TestSyncReexec           (marker git; `tests.py -k sync_reexec_after_kbgit_rebase`) an incoming commit changes kbgit.py's
                            push decision: sync re-runs itself with the rebased code, which decides the push; with the
                            re-run disabled (KB_SYNC_REEXEC=1) the planted failure: it stops, exit 3, nothing pushed.
@@ -452,6 +457,71 @@ class TestPrePushInGit:
         assert self.good.returncode == 0, self.good.stdout + self.good.stderr
         assert "kb pre-push selfdoc.py stale" in self.good.stderr and "kb pre-push kbgit.py fix --check: ok" in self.good.stderr
         assert self.after_good == self.head
+
+
+@requires_git
+@pytest.mark.git
+class TestSprintWorktreeHooks(SyncScenario):
+    """A sprint worker's `git worktree` of a clone with the hooks installed runs them (`tests.py -k
+    sprint_worktree_has_commit_hooks`): core.hooksPath lives in the config the worktrees share, and git runs a commit
+    hook in the worktree's top level. With install-hooks' relative `.githooks` and with an absolute path to the main
+    clone's .githooks (a clone set up by hand), a commit in the worktree gets its KB-* trailers and install-hooks there
+    says `already installed`, the check sync's note uses. Planted: with core.hooksPath unset the worktree's commit
+    lacks them and check-trailers refuses it; an absolute path to a .githooks of no worktree of the clone, or to the
+    main clone's .githooks without the scripts, is not counted as installed."""
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory, kb_seed):
+        tmp = str(tmp_path_factory.mktemp("kb-wthooks"))
+        env = git_env(KB_SYNC_NO_TESTS="1")
+        _, (c,), _ = clones(kb_seed, tmp, env, ("c",))
+        wt = Repo(os.path.join(c.path, ".claude", "worktrees", "w1"), env)
+        c.git("worktree", "add", "-q", wt.path, "-b", "work/w1")
+        cls.c, cls.wt, cls.got = c, wt, {}
+        absolute = os.path.join(c.path, kbgit.HOOKS_DIR)
+        stray = os.path.join(tmp, "stray")
+        shutil.copytree(absolute, os.path.join(stray, kbgit.HOOKS_DIR))
+        for case, value in (("relative", None), ("absolute", absolute), ("unset", ""),
+                            ("stray", os.path.join(stray, kbgit.HOOKS_DIR))):
+            if value == "":
+                c.git("config", "--unset", "core.hooksPath")
+            elif value:
+                c.git("config", "core.hooksPath", value)
+            committed = cls.commit_article(wt, case)  # before install-hooks, which installs them when unset
+            cls.got[case] = (wt.kbgit("install-hooks"), committed)
+        c.git("config", "core.hooksPath", absolute)
+        os.rename(absolute, absolute + "-gone")
+        cls.got["absolute-empty"] = (wt.kbgit("install-hooks"), None)
+        os.rename(absolute + "-gone", absolute)
+
+    @classmethod
+    def commit_article(cls, d, name):
+        """Commit a new article in D (no index rebuild: an article outside _coverage.csv counts under its own path):
+        (its KB-Topics trailer, check-trailers on it)."""
+        cls.article(d, f"wt-{name}", ["S0001"], [f"Worktree hook test {name}."])
+        d.git("add", "-A")
+        d.git("commit", "-q", "-m", f"docs(kb): worktree hook test {name}")
+        return (d.git("log", "-1", "--format=%(trailers:key=KB-Topics,valueonly)").strip(),
+                d.kbgit("check-trailers", "HEAD"))
+
+    def test_sprint_worktree_has_commit_hooks(self):
+        for case in ("relative", "absolute"):
+            install, (topics, check) = self.got[case]
+            assert install.returncode == 0 and "already installed" in install.stdout, (case, install.stdout)
+            assert topics.endswith(f"windows/sync-test-wt-{case}"), (case, topics)
+            assert check.returncode == 0, (case, check.stdout + check.stderr)
+
+    def test_sprint_worktree_has_commit_hooks_planted_unset(self):
+        install, (topics, check) = self.got["unset"]
+        assert topics == ""
+        assert check.returncode == 1, check.stdout + check.stderr
+        assert install.returncode == 0 and "installed: core.hooksPath=.githooks" in install.stdout, install.stdout
+
+    def test_sprint_worktree_has_commit_hooks_planted_not_ours(self):
+        for case in ("stray", "absolute-empty"):
+            install = self.got[case][0]
+            assert install.returncode == 2 and "not changed" in install.stdout, (case, install.stdout)
 
 
 # ---------------------------------------------------------------- autonomous writers

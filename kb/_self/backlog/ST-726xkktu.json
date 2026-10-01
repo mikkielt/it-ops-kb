@@ -30,5 +30,20 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A clone whose shared core.hooksPath is an absolute path to the main clone's .githooks (git runs those scripts in every worktree, and they start the worktree's own kbgit.py): how do install-hooks and sync judge it in a worktree?",
+      "options": [
+        "count it as installed when the path is the .githooks of a worktree of the clone holding the hook scripts, and leave the value alone",
+        "have install-hooks rewrite it to the relative .githooks, so each worktree runs its own scripts",
+        "keep counting only this checkout's .githooks, and add a worktree hint to sync's note"
+      ],
+      "recommendation": "count it as installed when the path is the .githooks of a worktree of the clone holding the hook scripts, and leave the value alone",
+      "answer": "count it as installed when the path is the .githooks of a worktree of the clone holding the hook scripts, and leave the value alone",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-726xkktu"
 }

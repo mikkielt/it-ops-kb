@@ -55,7 +55,10 @@ A commit is diffed against its first parent (the empty tree for a root commit). 
 are not checked: their content is attributed to the commits they merge. Commits up to TRAILERS_SINCE (the last
 commit before trailers existed) are exempt; history is never rewritten.
 
-Hooks (`install-hooks`, once per clone): sets `git config core.hooksPath .githooks` (versioned scripts). commit-msg
+Hooks (`install-hooks`, once per clone): sets `git config core.hooksPath .githooks` (versioned scripts) in the config
+every `git worktree` of the clone shares; git resolves the relative value against each worktree's top level, so each
+runs its own .githooks. A clone whose value is an absolute path to the main clone's .githooks (set by hand) runs those
+scripts in every worktree, and install-hooks and sync count it as installed there too (hooks_path_is_ours). commit-msg
 replaces any KB-Topics/KB-Sources-*/KB-Answers lines with the computed ones via `git interpret-trailers` (so
 re-running, `-m`, editor commits and --amend never duplicate them), skips merges, skips a rebase re-application whose
 message already has KB-* trailers, and never blocks a commit (any error is a warning). prepare-commit-msg only
@@ -240,14 +243,28 @@ HOOKS = ("prepare-commit-msg", "commit-msg", "pre-push")
 ZERO = "0" * 40
 
 
+def worktree_tops():
+    """The top level of every worktree of this clone (`git worktree list --porcelain`), this checkout's included."""
+    out = git("worktree", "list", "--porcelain") or ""
+    return [ln[len("worktree "):] for ln in out.splitlines() if ln.startswith("worktree ")]
+
+
 def hooks_path_is_ours(cur):
-    """core.hooksPath names this clone's .githooks, relative or absolute (a clone set up by hand may use either)."""
+    """core.hooksPath CUR runs the kb's hooks in this checkout. git runs a commit hook in the worktree's top level and
+    reads core.hooksPath from the config every `git worktree` of a clone shares, so a relative `.githooks` (what
+    install-hooks sets) names each worktree's own scripts, and an absolute path (a clone set up by hand) names one
+    directory for all of them. Ours: this checkout's .githooks, by either form, or the .githooks of another worktree
+    of the clone that holds the hook scripts (a sprint worker's worktree under the main clone's absolute value)."""
     cur = (cur or "").strip()
     if not cur:
         return False
     if cur.rstrip("/") == HOOKS_DIR:
         return True
-    return os.path.realpath(os.path.join(KB, os.path.expanduser(cur))) == os.path.realpath(os.path.join(KB, HOOKS_DIR))
+    d = (Path(KB) / Path(cur).expanduser()).resolve()
+    if d == (Path(KB) / HOOKS_DIR).resolve():
+        return True
+    others = {(Path(t) / HOOKS_DIR).resolve() for t in worktree_tops()}
+    return d in others and all((d / h).is_file() for h in HOOKS)
 AMEND_MARK = "kb-trailers-base"
 
 
@@ -1807,7 +1824,8 @@ def cmd_sync(a, r=None):
             print(refuse)
             return 2
     if not hooks_path_is_ours(git("config", "--get", "core.hooksPath")):
-        print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks); sync repairs trailers of what it rebases")
+        print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks, once for the clone and every "
+              "worktree of it); sync repairs trailers of what it rebases")
     r = r if r is not None else new_report(a.push)
     code = sync_once(a, r)
     if code == "retry":
