@@ -2,7 +2,7 @@
   "id": "ST-utvdg3zo",
   "kind": "story",
   "title": "A sprint worker ends every background process and monitor before it returns",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
@@ -46,5 +46,19 @@
     }
   ],
   "notes": "SP-3brmvlnh retrospective: a worker left a ten-minute intake run with tests.py under it, and another left monitors that woke the orchestrator a dozen times.",
-  "claimed_by": "worker-blstack2"
+  "evidence": {
+    "commit": "0f18b2439a345cabd56dac0aa6f58410cadeece4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_refuses_live_worker_process"
+        ],
+        "exit": 0,
+        "sha256": "ddbec2f18d90d11f"
+      }
+    ]
+  }
 }
