@@ -2,7 +2,7 @@
   "id": "BG-q6ngmxdu",
   "kind": "bug",
   "title": "intake's drift and trailers fingerprints hash their whole finding set, so a changed set or a budget-dependent drift scan files the same findings again",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -32,5 +32,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Sprint review of SP-3brmvlnh: three drift runs a minute apart gave two fingerprints as the budget reached different items; the trailers key is the sorted short shas, so a window that slides past one commit files a second bug while the first stays open and its repro passes."
+  "notes": "Sprint review of SP-3brmvlnh: three drift runs a minute apart gave two fingerprints as the budget reached different items; the trailers key is the sorted short shas, so a window that slides past one commit files a second bug while the first stays open and its repro passes.",
+  "claimed_by": "worker-q6ngmxdu"
 }
