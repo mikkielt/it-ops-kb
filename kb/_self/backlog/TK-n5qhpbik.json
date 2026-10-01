@@ -2,7 +2,7 @@
   "id": "TK-n5qhpbik",
   "kind": "task",
   "title": "kbdecide.py sweep invalidates on broken context",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-cumapb4s",
   "priority": "P2",
   "rank": 0,

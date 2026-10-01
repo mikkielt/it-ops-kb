@@ -2,7 +2,7 @@
   "id": "TK-fm6kcv2f",
   "kind": "task",
   "title": "Parse and check the DECISION tag in every tool",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-trjsnvos",
   "priority": "P2",
   "rank": 0,
