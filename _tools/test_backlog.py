@@ -767,7 +767,7 @@ def test_horizon_hook_stays_under_the_limit_with_many_sprints_and_a_long_gate(sp
     assert len(out) < HOOK_LIMIT, (len(out), out)
     context = json.loads(out)["hookSpecificOutput"]["additionalContext"]
     assert "Why? " * 30 not in out and "more line(s): python3 _tools/backlog.py horizon" in context, context
-    assert sprint["sp"] in context or ids[0] in context, context
+    assert context.startswith("sprint SP-") and any(sp in context for sp in ids + [sprint["sp"]]), context
     code, out = b(repo, "horizon")  # without --hook: every sprint and the whole question
     assert code == 0 and all(sp in out for sp in ids) and "Why? " * 300 in out.replace("\n", "")
 
