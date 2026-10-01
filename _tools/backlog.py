@@ -2270,7 +2270,13 @@ def cmd_land(bl, a):
         if late == ["(no such ref)"]:
             raise land_stop("fetch", f"{upstream} does not exist after the fetch")
         if late:
-            code_branch = "code/" + (owners[0] if owners else iid)
+            import kbgit  # the branch sync --push opens for this range, named by the one helper sync uses
+            kb, kbgit.KB = kbgit.KB, str(root)
+            try:
+                _, code_branch = kbgit.lane_plan(upstream, "HEAD")
+            finally:
+                kbgit.KB = kb
+            code_branch = code_branch or "code/" + (owners[0] if owners else iid)  # git failed: the item's own id
             tracking = f"refs/remotes/{remote}/{code_branch}"
             fetched = subprocess.run(["git", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}"],
                                      cwd=root, capture_output=True).returncode == 0
