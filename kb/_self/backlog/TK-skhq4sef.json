@@ -2,7 +2,7 @@
   "id": "TK-skhq4sef",
   "kind": "task",
   "title": "Record refused dones as work rows",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-2w2bqtjf",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-skhq4sef"
+  "evidence": {
+    "commit": "3d08c22075b9b7ae4dcaf02892d5d3cfd79927b8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_refused"
+        ],
+        "exit": 0,
+        "sha256": "a47ecc4f525f7cc9"
+      }
+    ]
+  }
 }
