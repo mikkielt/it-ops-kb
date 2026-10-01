@@ -2,7 +2,7 @@
   "id": "TK-7jm3ikaa",
   "kind": "task",
   "title": "backlog.py set and gate add",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-wgzgijlw",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-7jm3ikaa"
+  "evidence": {
+    "commit": "6800744e2a9605ad5fc522a81015f4906195cde2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_set"
+        ],
+        "exit": 0,
+        "sha256": "72abb1e8dcf752c9"
+      }
+    ]
+  }
 }
