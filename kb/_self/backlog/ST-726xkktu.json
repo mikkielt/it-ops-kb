@@ -2,7 +2,7 @@
   "id": "ST-726xkktu",
   "kind": "story",
   "title": "Worktrees for sprint workers have the commit hooks",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
@@ -45,5 +45,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-726xkktu"
+  "evidence": {
+    "commit": "216a738dec92c6da49725e097c68802f7e4df9ce",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_worktree_has_commit_hooks"
+        ],
+        "exit": 0,
+        "sha256": "7c03ef74cd45ff9c"
+      }
+    ]
+  }
 }
