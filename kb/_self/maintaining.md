@@ -34,7 +34,7 @@ The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPr
 |---|---|---|
 | `/kb-setup` | the setup above, with a pass/fail report | this file |
 | `/kb-research <question>` / `--queue [N]` | research a question in the context of the topics the kb has, then extend them; `--queue` works the top N gaps of `querylog.py queue` the same way and closes each `_gaps.md` entry (`querylog.py close`) | content rules, tools, git, query log |
-| `/kb-add-topic <domain>/<slug>` | research and write a new topic | content rules, tools, git |
+| `/kb-add-topic <domain>/<slug>` | research and write a new topic (source rows through `kbid.py add`, as in `/kb-research`, `/kb-ingest` and `/kb-census`) | content rules, tools, git |
 | `/kb-add-root <name>` | a new knowledge root beside `kb/public` (name, id prefix, visibility), created with `kbroot.py` and checked | content rules, git |
 | `/kb-ingest <repo> [root]` | a team's repository into a root, from this clone ("source `<repo>` and put it here") or from a host project where the kb is a plugin (the facts land in a clone of the team's fork, or a `KB_ROOTS` directory): the root and its visibility, a survey at a pushed commit with `kbingest.py` (secrets, generated and vendored files left out; `--pins` for the toolchain pins) and, when the plan needs interfaces or dependencies, its opt-in read-only `map`, a topic plan agreed with the user, then `CODE` and `DOC` facts | content rules, plugin, git |
 | `/kb-refresh <topic\|dir\|file\|S-id>` | diff sources and update the facts: the fact diff first, then only the facts whose passage changed | content rules, tools, git |

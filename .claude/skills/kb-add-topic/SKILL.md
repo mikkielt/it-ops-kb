@@ -34,19 +34,17 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - A code example is a `SNIPPET:` bullet right above its fenced block: `- SNIPPET: <what it does>; context: <versions, prerequisites>; checked: no|syntax|run [DER S1: parameters from ...]`. It needs an evidence tag (not `UNK`), placeholders only, and `checked: syntax` only when you parsed it (json, toml and python blocks are parsed by the lint).
 
 ## 3. Add sources first
-Append rows to `_sources.csv`: `id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`.
-- Id: run `python3 _tools/kbid.py url <URL>` (several urls at once are fine) and use the `S-xxxxxxxx` it prints. Never invent an id or take "the next number": the id is a hash of the url, so parallel writers do not collide. If it says the url is already in `_sources.csv`, reuse that id (legacy `S<number>` ids stay valid).
-- `superseded_by` is empty for a new row.
-- `retrieved_utc` is today (`YYYY-MM-DD`). Leave `used_in` empty: `build_index.py` fills it (step 5).
-- `licence` and `reuse` are required (`check.py` rejects an empty licence or a `reuse` outside `copy`, `quote`, `paraphrase`, `unknown`; meanings in `kb/_self/content-rules.md`). Copy an existing row's pair for the same host or repository (`python3 _tools/rag.py src <id>`); else read the licence where it is stated (the repository's LICENSE, the page footer, the site's terms page), not a fetch tool's summary of it:
+Add one row per source to `_sources.csv` (`id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`) with `python3 _tools/kbid.py add <URL> --title T --publisher P --licence L --reuse R [--version V] [--sha256 H] [--root NAME]`. Never append a row with a CSV writer or by hand.
+- `add` computes the id, writes the row through a CSV writer (quoting commas), sets `retrieved_utc` to today (`YYYY-MM-DD`), leaves `used_in` (`build_index.py` fills it, step 5) and `superseded_by` empty, and prints the `S-xxxxxxxx` id to cite. Never invent an id or take "the next number": the id is a hash of the url, so parallel writers do not collide. A url already in the root with the same fields changes nothing and prints its id; one with different fields exits 2 (legacy `S<number>` ids stay valid): reuse the existing row's id.
+- `python3 _tools/kbid.py url <URL>` only prints the id, and says if the url has a row; use it to look an id up before writing.
+- `--licence` and `--reuse` are required (`check.py` rejects an empty licence or a `reuse` outside `copy`, `quote`, `paraphrase`, `unknown`; meanings in `kb/_self/content-rules.md`). Copy an existing row's pair for the same host or repository (`python3 _tools/rag.py src <id>`); else read the licence where it is stated (the repository's LICENSE, the page footer, the site's terms page), not a fetch tool's summary of it:
   - Microsoft Learn page (incl. fetched through the MCP server): the page's `github_feedback_content_git_url` meta tag names its public mirror. A live mirror with a LICENSE: `CC BY 4.0 (public mirror MicrosoftDocs/<repo>)` (or its licence), `copy`. None, private or archived: `Microsoft Learn terms of use (...why...)`, `quote`.
   - MicrosoftDocs GitHub file at a commit: `CC BY 4.0 (MicrosoftDocs/<repo> LICENSE; code MIT)` (entra-docs: `MIT`), `copy`.
   - Anthropic docs and site: `Anthropic terms (no open licence)`, `quote`.
   - Open-source repository or spec: its SPDX id (`MIT`, `Apache-2.0`, ...), `copy`; NC, ND or source-available licences (BUSL-1.1): `quote`.
   - Vendor pages, blogs, forums, registries with no open licence: the terms' name, `quote`. CIS and ISO: `paraphrase`.
   - Terms you could not read (blocked, JS-only, no statement found and no default applies): say so in `licence`, `unknown`.
-- `version_or_date`: the page's own version or date when shown (`ms.date`, release tag), else `retrieved <date>`.
-- Write the CSV with Python's `csv` module (or quote every field that contains a comma). An unquoted comma breaks the row and `check.py` rejects it.
+- `--version` is the row's `version_or_date`: the page's own version or date when shown (`ms.date`, release tag), else `retrieved <date>`. `--sha256` is `artifact_sha256`, for a pinned artifact.
 
 ## 4. Write `<domain>/<slug>.md`
 ```

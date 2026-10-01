@@ -64,7 +64,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 4. Write
 The contract in brief (the sections read above hold the rest):
-- Source rows first, in `_sources.csv` (`id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`), written with Python's `csv` module: `retrieved_utc` today, `version_or_date` the page's own version or date (else `retrieved <date>`), `used_in` and `superseded_by` empty.
+- Source rows first, in `_sources.csv` (`id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`), each written with `python3 _tools/kbid.py add <URL> --title T --publisher P --licence L --reuse R [--version V] [--sha256 H] [--root NAME]`, never appended with a CSV writer: it sets `retrieved_utc` to today and leaves `used_in` and `superseded_by` empty; `--version` is the page's own version or date (else `retrieved <date>`).
 - `licence` and `reuse` on every row: copy an existing row's pair for the same host or repository (`python3 _tools/rag.py src <id>`), else read the licence where it is stated (the repository's LICENSE, the page footer, the terms page). Microsoft Learn by the "Licensing and privacy" section; Anthropic docs `Anthropic terms (no open licence)`, `quote`; an open-source repository or spec its SPDX id, `copy` (NC, ND or source-available: `quote`); vendor pages, blogs and forums with no open licence the terms' name, `quote`; terms you could not read: say so, `unknown`.
 - Each Facts bullet ends in exactly one tag; our own words, quotes of 25 words or fewer; placeholders only; `status: partial` when anything is `UNK`.
 - Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the root's `_coverage.md` table or `used_in`: step 5 regenerates them.
@@ -82,7 +82,7 @@ The contract in brief (the sections read above hold the rest):
   _Agent: kb-research_
   ```
   `QK-<slug>`: a short lowercase hyphenated slug of the question (e.g. `QK-dataverse-onprem-sync`); `python3 _tools/kbid.py answer "<question>"` suggests one and says if it is taken. Never number answers: parallel writers would pick the same number. `check.py` rejects a duplicate answer id.
-- New source rows take their id from `python3 _tools/kbid.py url <URL>`; never invent one.
+- New source rows take their id from `python3 _tools/kbid.py add` (it prints it); `kbid.py url <URL>` looks one up; never invent one.
 - Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where, ending `(topic: <domain>/<slug>)`.
 - Retrieval data (the "Ledgers and retrieval data" section): `kb/public/_retrieval/signals.csv` rows for a new topic's code names, `_tools/aliases.csv` rows for a product's other names, and a `kb/public/_retrieval/lookup_eval.csv` row for each step-1 pack that missed an article the kb already had (`none` or `weak` although an article answered it).
 

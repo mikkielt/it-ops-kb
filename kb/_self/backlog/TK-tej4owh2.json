@@ -22,7 +22,10 @@
     ".claude/skills/kb-ingest/SKILL.md",
     ".claude/skills/kb-research/SKILL.md",
     "kb/_self/content-rules.md",
-    "kb/_self/tools.md"
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
   ],
   "depends_on": [
     "TK-32vchs3i"
