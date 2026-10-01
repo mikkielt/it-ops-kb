@@ -101,8 +101,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           a warning (exit 0) for each open P1 item whose `recurs` names 2 or more
                                           sprint ids and that is not in the sprint
   backlog.py close SPRINT [--summary]     delete a finished sprint, its items and the epics they finished
-                                          (--summary: first list each of them with its status and the commit done
-                                          recorded, for the close commit's body)
+                                          (--summary: only list each of them with its status and the commit done
+                                          recorded, the close commit's body, and change nothing; with --commit
+                                          refused)
   backlog.py horizon [--sprint ID] [--hook]   how far each active sprint can go without the operator: reachable
                                           items, what waits on which gate or trigger, the critical path, the
                                           knowledge state of the next item's asks and refs (--hook runs no pack)
@@ -2521,6 +2522,8 @@ def summary_line(bl, iid, gone):
 
 
 def cmd_close(bl, a):
+    if a.summary and a.commit:
+        raise Refused("close --summary only prints and commits nothing: run close --commit without --summary")
     sid = need(bl, a.sprint)
     items = bl.sprint_items(sid)
     left = [i for i in items if bl.items[i].get("status") not in ("done", "dropped")]
@@ -2534,10 +2537,10 @@ def cmd_close(bl, a):
             gone.add(e)
     summary = [f"delivered by {bl.label(sid)}:"] + [summary_line(bl, i, gone)
                                                   for i in sorted(gone, key=lambda i: summary_key(bl, i))]
-    if a.summary:
+    if a.summary:  # the runbook prints the list, writes the retrospective, then closes: --summary changes nothing
         for x in summary:
             say(x)
-        say()
+        return 0
     title = bl.items[sid].get("title", "")
     for i in gone:
         say(f"deleted {line(bl, i)}")
@@ -3225,7 +3228,8 @@ def main(argv=None):
     p = sub.add_parser("close")
     p.add_argument("sprint")
     p.add_argument("--summary", action="store_true",
-                   help="first print each item close deletes with its status and evidence commit (the close commit's body)")
+                   help="only print each item close would delete with its status and evidence commit (the close "
+                        "commit's body); changes nothing")
     p = sub.add_parser("horizon")
     p.add_argument("--sprint")
     p.add_argument("--hook", action="store_true")

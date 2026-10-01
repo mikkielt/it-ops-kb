@@ -1007,8 +1007,8 @@ def test_review_needs_confirmed_provisional_answers_and_close_deletes(sprint):
 
 
 def test_close_summary_lists_every_item_with_its_evidence_commit(sprint):
-    """close --summary prints, before the deletions, one line per item it deletes (the task, the review, a dropped
-    subtask and the finished epic included) with the commit done recorded, and then closes as usual."""
+    """close --summary prints one line per item close deletes (the task, the review, a dropped subtask and the
+    finished epic included) with the commit done recorded, and nothing else."""
     repo, tk, st, bg, rv, ep = (sprint[k] for k in ("repo", "tk", "st", "bg", "rv", "ep"))
     b(repo, "new", "subtask", "--title", "Sub", "--parent", tk, "--goal", "x", "--touch", "src/**",
       "--check", argstr(PASS))
@@ -1029,7 +1029,7 @@ def test_close_summary_lists_every_item_with_its_evidence_commit(sprint):
     assert code == 0, out
     lines = out.splitlines()
     assert lines[0] == f"delivered by {sprint['sp']} “Sprint”:", out
-    body = lines[1:lines.index("")]
+    body = lines[1:]
     assert any(x.startswith(f"- {ep} “Epic” (epic): done at ") for x in body)  # the finished epic goes too
     assert f"  - {st} “Story” (story): done at {work[:10]}" in body
     assert f"    - {tk} “Task” (task): done at {work[:10]}" in body
@@ -1039,8 +1039,72 @@ def test_close_summary_lists_every_item_with_its_evidence_commit(sprint):
     assert len(body) == 6, body  # one line per deleted item, no more
     assert body.index(f"  - {st} “Story” (story): done at {work[:10]}") < body.index(
         f"    - {tk} “Task” (task): done at {work[:10]}")  # a child under its parent
-    assert out.index("delivered by") < out.index("deleted ")  # printed before anything goes
-    assert not list((Path(repo) / backlog.REL_DIR).glob("*.json"))
+
+
+def finish(sprint):
+    """Every item of the sprint fixture done (the epic too), committed: close may delete them."""
+    repo, tk, st, bg, rv, ep = (sprint[k] for k in ("repo", "tk", "st", "bg", "rv", "ep"))
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+    commit(repo, "b and c", f"{tk}, {bg}")
+    for iid in (tk, st, bg):
+        assert b(repo, "done", iid)[0] == 0
+    edit(repo, rv, checks=[{"run": PASS}])
+    commit(repo, "state")
+    assert b(repo, "done", rv)[0] == 0
+    assert b(repo, "done", ep)[0] == 0
+    commit(repo, "done all")
+
+
+def item_files(repo):
+    return {f.name: f.read_bytes() for f in (Path(repo) / backlog.REL_DIR).glob("*.json")}
+
+
+def check_summary_changed_nothing(repo, before, out):
+    """What close --summary must leave: every item file as it was, nothing named deleted or closed."""
+    after = item_files(repo)
+    assert after == before, f"close --summary changed {sorted(set(before) ^ set(after)) or 'an item file'}"
+    assert "deleted " not in out and "closed " not in out, out
+
+
+def test_backlog_close_summary_leaves_every_item_file_and_close_deletes(sprint):
+    repo, sp = sprint["repo"], sprint["sp"]
+    finish(sprint)
+    before = item_files(repo)
+    assert len(before) == 6
+    code, out = b(repo, "close", sp, "--summary")
+    assert code == 0 and out.startswith(f"delivered by {sp} “Sprint”:"), out
+    check_summary_changed_nothing(repo, before, out)
+    assert not subprocess.run(["git", "status", "--porcelain"], cwd=repo, capture_output=True,
+                              text=True).stdout  # nothing written, nothing deleted
+    code, out = b(repo, "close", sp)  # plain close deletes them all
+    assert code == 0 and "closed " in out, out
+    assert item_files(repo) == {}
+
+
+def test_backlog_close_summary_planted_failure_of_a_deleting_summary_is_caught(sprint):
+    """The check is not vacuous: a summary run that deleted an item file (planted: one removed by hand after it), or
+    printed the deletions, fails it."""
+    repo, sp = sprint["repo"], sprint["sp"]
+    finish(sprint)
+    before = item_files(repo)
+    code, out = b(repo, "close", sp, "--summary")
+    (Path(repo) / backlog.REL_DIR / f"{sprint['tk']}.json").unlink()  # planted
+    with pytest.raises(AssertionError, match=sprint["tk"]):
+        check_summary_changed_nothing(repo, before, out)
+    with pytest.raises(AssertionError):
+        check_summary_changed_nothing(repo, item_files(repo), out + f"deleted {sprint['tk']}\n")  # planted
+
+
+def test_backlog_close_summary_with_commit_is_refused_and_commits_nothing(sprint):
+    repo, sp = sprint["repo"], sprint["sp"]
+    finish(sprint)
+    before = item_files(repo)
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout
+    code, out = b(repo, "close", sp, "--summary", "--commit")
+    assert code == 1 and "only prints" in out, out
+    check_summary_changed_nothing(repo, before, out)
+    assert subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout == head
 
 
 def test_close_summary_refuses_open_items_and_deletes_nothing(sprint):
