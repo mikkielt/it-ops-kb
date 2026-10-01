@@ -2,7 +2,7 @@
   "id": "ST-hoykzjvw",
   "kind": "story",
   "title": "close --summary only prints",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -41,5 +41,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-blstack2"
+  "evidence": {
+    "commit": "13f78e1e91d3bb5ae0e7d6f7ace70157c5a34b61",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_close_summary"
+        ],
+        "exit": 0,
+        "sha256": "e64376158fbfe31e"
+      }
+    ]
+  }
 }
