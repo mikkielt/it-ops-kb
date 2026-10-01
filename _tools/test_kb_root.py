@@ -10,7 +10,7 @@ that root alone (kb_mcp.py --roots) still answers its question `good`.
 """
 import csv, glob, json, os, subprocess, sys
 
-import kbid
+import kbcommon, kbid
 from conftest import KB, TOOLS
 
 URL = "https://docs.example.com/print/queue-retention"
@@ -169,3 +169,157 @@ def test_embed_roots_small_root_is_good(tmp_path):
     assert p.returncode == 0, p.stderr
     assert out[1][1].startswith("coverage: good") and "fixture/print/queues.md:" in out[1][1], out[1][1][:600]
     assert out[2][1].startswith("coverage: none"), out[2][1][:300]
+
+
+# --- decisions_store: a root's _decisions.csv and decision-makers.csv (kbcommon.DECISION_COLS, MAKER_COLS) ---
+ALPHA = "abcdefghijklmnopqrstuvwxyz234567"
+DEC, MAK = "_decisions.csv", "decision-makers.csv"
+
+
+def did(i):
+    return "D-aaaaaa" + ALPHA[i // 32] + ALPHA[i % 32]
+
+
+def decision(i, **over):
+    """A valid decision row of the fixture root, with the fields in `over` replaced."""
+    row = {"id": did(i), "text": "Keep finished print jobs for 14 days.", "by": "operator", "by_ref": "", "source": SID,
+           "date": "2026-10-01", "context": f"source:{SID}; article:print/queues; domain:print; item:TK-abcd2345; "
+           "fact:0123456789ab", "status": "active", "invalidated_reason": "", "invalidated_date": "", "supersedes": "",
+           "review_by": "2027-01-01", "links": ""}
+    row.update(over)
+    return row
+
+
+def checked_root(tmp_path, decisions=None, makers=None, visibility="internal", header=None):
+    """check.py over a fixture root holding these decision rows and maker rows (dicts; None: no such file):
+    (exit code, {"<file>:<line>": [errors]} of the errors naming a decision file, the whole output)."""
+    root = tmp_path / "team-kb"
+    make_root(str(root))
+    meta = root / "_root.md"
+    meta.write_text(meta.read_text(encoding="utf-8").replace("visibility: internal", f"visibility: {visibility}"),
+                    encoding="utf-8", newline="\n")
+    (root / "_artifacts.csv").write_text("path,source_id,sha256\n", encoding="utf-8", newline="\n")  # check.py wants the ledger
+    if decisions is not None:
+        kbcommon.write_csv(str(root / DEC), header or kbcommon.DECISION_COLS, decisions)
+    if makers is not None:
+        kbcommon.write_csv(str(root / MAK), kbcommon.MAKER_COLS, makers)
+    code, out = run("check.py", "--root", "fixture", roots=str(root))
+    found = {}
+    for ln in out.splitlines():
+        name, _, msg = ln[len("ERROR fixture/"):].partition(" ")
+        if ln.startswith("ERROR fixture/") and name.startswith((DEC, MAK)):
+            found.setdefault(name, []).append(msg)
+    assert "Traceback" not in out, out[-800:]
+    return code, found, out
+
+
+def assert_planted(found, file, cases, first_line):
+    """Each planted case is the row at its line and has exactly one error, which names its rule."""
+    for n, (rule, _) in enumerate(cases, start=first_line):
+        msgs = found.get(f"{file}:{n}", [])
+        assert len(msgs) == 1 and rule in msgs[0], (n, rule, msgs)
+    assert len(found) == len(cases), sorted(found)  # no other row has an error
+
+
+def test_decisions_store_valid_files_pass(tmp_path):
+    """Every shape the format allows is clean: every kind of context, a superseded decision named by its successor, an
+    invalidated one whose article is gone, a proposed one with no maker yet, and a maker kept with its name."""
+    rows = [decision(0, by_ref="owner"),
+            decision(1, status="superseded"),
+            decision(2, supersedes=did(1) + "; " + did(0), links="https://corp.example.com/notes"),
+            decision(3, status="invalidated", invalidated_reason="the article was removed",
+                     invalidated_date="2026-10-02", context="article:print/gone; domain:gone"),
+            decision(4, status="proposed", by="", review_by="")]
+    makers = [{"id": "owner", "role": "print owner", "name": "Jan Kowalski", "source": SID}]
+    code, found, out = checked_root(tmp_path, rows, makers)
+    assert code == 0 and not found and "errors=0" in out, out[-1500:]
+
+
+def test_decisions_store_a_root_without_the_files_passes(tmp_path):
+    code, found, out = checked_root(tmp_path)
+    assert code == 0 and "errors=0" in out, out[-800:]
+
+
+def test_decisions_store_plants_one_failure_per_decision_rule(tmp_path):
+    cases = [  # (the error's rule, the replaced fields of a valid row or a function of its index)
+        ("is not D-<8 base32>", {"id": "D-AAAA"}),
+        ("no text", {"text": ""}),
+        ("is not one of proposed|active|invalidated|superseded", {"status": "accepted"}),
+        ("date '2026-13-40' is not YYYY-MM-DD", {"date": "2026-13-40"}),
+        ("date '' is not YYYY-MM-DD", {"date": ""}),
+        ("no source", {"source": ""}),
+        ("cites unknown source FXT-zzzzzzzz", {"source": "FXT-zzzzzzzz"}),
+        ("names no decision maker (by or by_ref)", {"by": ""}),
+        ("by_ref 'nobody' names no decision maker", {"by_ref": "nobody"}),
+        ("no context", {"context": ""}),
+        ("context part 'print/queues' is not <kind>:<value>", {"context": "print/queues"}),
+        ("context part 'table:print' is not <kind>:<value>", {"context": "table:print"}),
+        ("context fact:xyz is not a valid fact reference", {"context": "fact:xyz"}),
+        ("context item:tk-1 is not a valid item reference", {"context": "item:tk-1"}),
+        ("context article:print/nope names no article print/nope", {"context": "article:print/nope"}),
+        ("context article:../x/y is not a valid article reference", {"context": "article:../x/y"}),
+        ("context domain:nope names no domain nope", {"context": "domain:nope"}),
+        ("context source:FXT-zzzzzzzz cites unknown source FXT-zzzzzzzz", {"context": "source:FXT-zzzzzzzz"}),
+        ("invalidated without an invalidated_reason", {"status": "invalidated", "invalidated_date": "2026-10-02"}),
+        ("invalidated_date '' is not YYYY-MM-DD", {"status": "invalidated", "invalidated_reason": "gone"}),
+        ("on a decision that is active, not invalidated", {"invalidated_reason": "gone"}),
+        ("supersedes 'D-zzzzzzzz': not another decision", {"supersedes": "D-zzzzzzzz"}),
+        ("not another decision", lambda i: {"supersedes": did(i)}),
+        ("no decision names it in supersedes", {"status": "superseded"}),
+        ("review_by 'soon' is not YYYY-MM-DD", {"review_by": "soon"}),
+    ]
+    rows = [decision(0)] + [decision(i, **(over(i) if callable(over) else over)) for i, (_, over) in enumerate(cases, start=1)]
+    code, found, out = checked_root(tmp_path, rows, [])
+    assert code == 1
+    assert_planted(found, DEC, cases, 3)
+
+
+def test_decisions_store_refuses_a_duplicate_decision_id(tmp_path):
+    code, found, out = checked_root(tmp_path, [decision(0), decision(0)])
+    assert code == 1 and found == {f"{DEC}:2": [f"duplicate decision id {did(0)}"],
+                                   f"{DEC}:3": [f"duplicate decision id {did(0)}"]}, found
+
+
+def test_decisions_store_refuses_a_header_that_is_not_the_format(tmp_path):
+    code, found, out = checked_root(tmp_path, [{"id": "D-aaaaaaaa", "text": "x"}], header=["id", "text"])
+    assert code == 1 and "_decisions.csv: header is 'id,text', not 'id,text,by," in out, out[-800:]
+
+
+def test_decisions_store_plants_one_failure_per_maker_rule(tmp_path):
+    cases = [("id 'Owner 2' is not a lowercase slug", {"id": "Owner 2"}),
+             ("duplicate decision maker id owner", {"id": "owner"}),
+             ("no role", {"id": "lead", "role": ""})]
+    makers = [{"id": "owner", "role": "print owner", "name": "", "source": ""}]
+    makers += [{"id": "x", "role": "x", "name": "", "source": "", **over} for _, over in cases]
+    code, found, out = checked_root(tmp_path, [], makers)
+    assert code == 1
+    assert_planted(found, MAK, cases, 3)
+
+
+def test_decisions_store_a_maker_source_must_be_a_known_source(tmp_path):
+    code, found, out = checked_root(tmp_path, [], [{"id": "owner", "role": "x", "name": "", "source": "FXT-zzzzzzzz"}])
+    assert code == 1 and "ERROR fixture/decision-makers.csv:2 cites unknown source FXT-zzzzzzzz" in out, out[-800:]
+
+
+def test_decisions_store_a_root_that_is_not_internal_keeps_no_names(tmp_path):
+    makers = [{"id": "owner", "role": "print owner", "name": "", "source": ""},
+              {"id": "named", "role": "lead", "name": "Jan Kowalski", "source": ""}]
+    cases = [("by 'Jan Kowalski' is not the role 'print owner' of owner", {"by": "Jan Kowalski", "by_ref": "owner"}),
+             ("by_ref is empty: a root that is public, not internal, keeps no names", {"by": "print owner"}),
+             ("by_ref is empty: a root that is public, not internal, keeps no names", {"by": "jan.kowalski"})]
+    rows = [decision(0, by="print owner", by_ref="owner")] + [decision(i, **over) for i, (_, over) in enumerate(cases, start=1)]
+    code, found, out = checked_root(tmp_path, rows, makers, visibility="public")
+    assert code == 1
+    assert found.pop(f"{MAK}:3") == ["a name in a root that is public, not internal: keep the role only"], found
+    assert_planted(found, DEC, cases, 3)
+    # the same names in an internal root are clean
+    rows = [decision(0, by="print owner", by_ref="owner"), decision(1, by="Jan Kowalski", by_ref="named")]
+    code, found, out = checked_root(tmp_path / "again", rows, makers)
+    assert code == 0 and not found, out[-800:]
+
+
+def test_decisions_store_d_is_a_reserved_id_prefix(tmp_path):
+    root = str(tmp_path / "clash")
+    make_root(root, prefix="D")
+    code, out = run("check.py", roots=root)
+    assert code == 1 and "id_prefix" in out and "not one of" in out and "Traceback" not in out, out[-400:]

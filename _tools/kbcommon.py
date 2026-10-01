@@ -11,6 +11,10 @@ source ledger. One copy, so every tool reads and writes these files the same way
   read_sources()              the rows of _sources.csv, in file order
   REUSE                       the classes of the `reuse` column of _sources.csv and what each allows
   source_rows()               {id: row} of _sources.csv
+  DECISIONS, DECISION_MAKERS  the decision files a root and kb/_self may hold; DECISION_COLS, MAKER_COLS their columns,
+                              DECISION_ID the `D-<8 base32>` id (D is reserved), DECISION_STATUS, CONTEXT_KINDS
+  context_refs(text)          [(kind, value)] of a decision's context; split_list(text) any `;`-separated field
+  maker_names_allowed(root)   whether a root's decision-makers file may hold a name (the one place a policy refines)
   data_path(rel, shared)      a file of the kb's own retrieval data under <kb>/DATA_DIR/
   repo_rel(rel)               a path relative to the kb root as a path relative to this repository (git pathspecs)
   kb_rel(path)                the inverse: a repository path (or absolute path) relative to the kb root, or None
@@ -87,7 +91,47 @@ REUSE = {
     "unknown": "the terms could not be read or determined: treated as paraphrase",
 }
 PREFIX = re.compile(r"[A-Z]{1,4}")  # a root's source id prefix: its ids are <prefix>-<8 base32 chars>
-RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL"}  # tag kinds, answer and eval ids, placeholders
+RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL", "D"}  # tag kinds, answer, eval and decision ids, placeholders
+# Decisions. Any root, and kb/_self, may keep two files (check.py checks them; kb/_self/content-rules.md, Decisions):
+# _decisions.csv holds the operator's decisions, one row each, and decision-makers.csv who may make them; the file in
+# kb/_self is the central register that a root's `by_ref` may name when the root keeps no row for the maker itself.
+DECISIONS, DECISION_MAKERS = "_decisions.csv", "decision-makers.csv"
+DECISION_COLS = ["id", "text", "by", "by_ref", "source", "date", "context", "status", "invalidated_reason",
+                 "invalidated_date", "supersedes", "review_by", "links"]
+MAKER_COLS = ["id", "role", "name", "source"]
+DECISION_PREFIX = "D"  # a decision id is D-<8 base32 characters> like a source id, and `D` is a reserved root prefix
+DECISION_ID = re.compile(r"D-[a-z2-7]{8}")
+MAKER_ID = re.compile(r"[a-z][a-z0-9-]{0,39}")  # a decision maker's id in decision-makers.csv: a short lowercase slug
+DECISION_STATUS = ("proposed", "active", "invalidated", "superseded")
+# What a decision's `context` may name: `;`-separated `kind:value` references to the things it is scoped to
+CONTEXT_KINDS = {
+    "item": re.compile(r"[A-Z]{2}-[a-z0-9]{8}"),  # a backlog item
+    "fact": re.compile(r"[0-9a-f]{12}"),  # a fact's key (kbfacts.fact_key)
+    "source": re.compile(r"(?:[A-Z]{1,4}-[a-z2-7]{8}|S\d+)"),  # a source id of the root
+    "article": re.compile(r"[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9._-]*)+"),  # <domain>/<slug> in the root (<root>/<domain>/<slug> in kb/_self)
+    "domain": re.compile(r"[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9-]*)?"),  # a domain directory of the root (<root>/<domain> in kb/_self)
+}
+
+
+def split_list(text):
+    """The `;`-separated parts of a decision field (context, supersedes, links), trimmed, without empty parts."""
+    return [p.strip() for p in (text or "").split(";") if p.strip()]
+
+
+def context_refs(text):
+    """[(kind, value)] of a decision's `context`; a part that names no kind of CONTEXT_KINDS has kind ''."""
+    out = []
+    for part in split_list(text):
+        kind, sep, value = part.partition(":")
+        out.append((kind.strip(), value.strip()) if sep and kind.strip() in CONTEXT_KINDS else ("", part))
+    return out
+
+
+def maker_names_allowed(root):
+    """Whether a decision maker's name may be stored in `root`'s files (None: kb/_self, the central register). Only an
+    internal root and kb/_self may; the storage policy per root (a root keeping roles only, or referencing the central
+    register) narrows this later, and every check of names asks this one function."""
+    return root is None or root.visibility == "internal"
 # Secret shapes: the leak scan over tracked files (test_kb_leaks.py, TestLeaks) and kbingest.py's survey of a repository.
 SECRETS = (
     r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----",

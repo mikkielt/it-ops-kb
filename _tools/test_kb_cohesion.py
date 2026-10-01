@@ -16,6 +16,7 @@ import pytest
 
 import kbcommon, kbfacts
 from conftest import KB, P, SELF_REL, TOOLS, allowlist, authored, copy_kb, fmt, run, text, tracked
+from test_kb_root import SID, make_root
 
 PUBLIC = kbcommon.PUBLIC  # the public root: ledgers, articles, retrieval data (KB here is the repository)
 SELF = kbcommon.SELF
@@ -56,6 +57,58 @@ class TestToolChecks:
             f.write("X,y,z,S3 bucket and S-1-5-18 are not ids here,S-zzzzzzzz\n")
         p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, encoding="utf-8", timeout=120)
         assert "cites unknown source S-zzzzzzzz" in p.stdout and "S3" not in p.stdout.split("cites unknown source")[-1], p.stdout[-2000:]
+
+    def test_decisions_store_self_files_exist_empty_in_the_format(self):
+        """kb/_self keeps the central register and its own decisions: both files exist, with their headers, and no row."""
+        for name, cols in ((kbcommon.DECISIONS, kbcommon.DECISION_COLS), (kbcommon.DECISION_MAKERS, kbcommon.MAKER_COLS)):
+            header, rows = kbcommon.load_csv(os.path.join(SELF, name))
+            assert header == cols and rows == [], (name, header, rows)
+
+    def test_decisions_store_checks_kb_self_and_resolves_the_central_register(self, tmp_path):
+        """A planted failure in kb/_self's files is reported by its path; a root's by_ref names a maker of the central
+        register; kb/_self writes an article or domain as <root>/<path>."""
+        d = copy_kb(str(tmp_path / "kb"))
+        self_dir = os.path.join(d, "kb", "_self")
+        good = {"id": "D-aaaaaaaa", "text": "A rule of the kb's own docs.", "by": "maintainer", "by_ref": "maint", "source": "S100",
+                "date": "2026-10-01", "context": "article:public/auth/kerberos; domain:public/auth; item:TK-abcd2345",
+                "status": "active", "invalidated_reason": "", "invalidated_date": "", "supersedes": "", "review_by": "",
+                "links": ""}
+        makers = [{"id": "maint", "role": "maintainer", "name": "Jan Kowalski", "source": ""}]
+        env = {k: v for k, v in os.environ.items() if k != "KB_ROOTS"}
+
+        def check(*decisions, roots=""):
+            kbcommon.write_csv(os.path.join(self_dir, kbcommon.DECISIONS), kbcommon.DECISION_COLS, list(decisions))
+            kbcommon.write_csv(os.path.join(self_dir, kbcommon.DECISION_MAKERS), kbcommon.MAKER_COLS, makers)
+            p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True,
+                               encoding="utf-8", timeout=120, env={**env, "KB_ROOTS": roots})
+            return p.returncode, p.stdout
+        code, out = check(good)
+        assert code == 0 and "errors=0" in out, out[-1500:]
+        for rule, over in (("id 'x' is not D-<8 base32>", {"id": "x"}),
+                           ("by_ref 'nobody' names no decision maker", {"by_ref": "nobody"}),
+                           ("context article:auth/kerberos names no root", {"context": "article:auth/kerberos"}),
+                           ("context article:public/auth/nope names no article public/auth/nope",
+                            {"context": "article:public/auth/nope"}),
+                           ("context domain:public/nope names no domain public/nope", {"context": "domain:public/nope"}),
+                           ("cites unknown source S-zzzzzzzz", {"source": "S-zzzzzzzz"})):
+            code, out = check({**good, **over})
+            assert code == 1 and f"ERROR kb/_self/_decisions.csv:2 {rule}" in out, (rule, out[-800:])
+        # a root that is not internal references the central register: its by is the register's role, never the name
+        root = str(tmp_path / "team-kb")
+        make_root(root)
+        with open(os.path.join(root, "_root.md"), encoding="utf-8") as f:
+            meta = f.read().replace("visibility: internal", "visibility: public")
+        with open(os.path.join(root, "_root.md"), "w", encoding="utf-8", newline="\n") as f:
+            f.write(meta)
+        with open(os.path.join(root, "_artifacts.csv"), "w", encoding="utf-8", newline="\n") as f:
+            f.write("path,source_id,sha256\n")
+        row = {**good, "by": "maintainer", "by_ref": "maint", "source": SID, "context": "article:print/queues"}
+        kbcommon.write_csv(os.path.join(root, kbcommon.DECISIONS), kbcommon.DECISION_COLS, [row])
+        code, out = check(good, roots=root)
+        assert code == 0 and "errors=0" in out, out[-1500:]
+        kbcommon.write_csv(os.path.join(root, kbcommon.DECISIONS), kbcommon.DECISION_COLS, [{**row, "by": "Jan Kowalski"}])
+        code, out = check(good, roots=root)
+        assert code == 1 and "ERROR fixture/_decisions.csv:2 by 'Jan Kowalski' is not the role 'maintainer' of maint" in out, out[-800:]
 
     def test_pinned_artifacts_match(self):
         code, out = run(os.path.join(TOOLS, "fetch.py"), "--offline")

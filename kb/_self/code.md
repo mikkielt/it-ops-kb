@@ -41,6 +41,7 @@ The same code runs on Linux, macOS and Windows.
 - **A check that parses a tool's or a forge's output** also has a test over a recorded real sample under `_tools/fixtures/`, besides its synthetic ones.
 - **A test's name survives a refactor.** A split of a module or a test file keeps the test names, so a check that selects by `-k` still selects it.
 - **Every tool module is reached by a test.** `python3 _tools/testmap.py orphans` lists any that none reaches.
+- **A file format is named in `kbcommon` and checked in `check.py`.** The decision files (`kbcommon.DECISION_COLS`, `MAKER_COLS`, `DECISION_ID`, `context_refs`) are checked by `check.py`'s `check_decisions`, which reports each broken rule by file and line; the tests named `decisions_store` (`test_kb_root.py`, `test_kb_cohesion.py`) plant one failure per rule.
 
 ## Layout
 
