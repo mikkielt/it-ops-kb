@@ -1,0 +1,49 @@
+{
+  "id": "ST-vdb4tkrb",
+  "kind": "story",
+  "title": "A sprint starts only once its research is done",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 3,
+  "goal": "backlog.py new sprint also creates a goal research story (touches inside kb roots) that answers the goal's open questions with kb tools first and live docs for gaps; backlog.py start, after a start gate answered by autopilot, refuses, naming each cause, while that research story is not done or a committed story or bug has no knowledge asks or refs or any of them reads unknown, stale or conflicting; an operator-approved start keeps today's behaviour",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_gated_start"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-6sujnopr"
+  ],
+  "gates": [
+    {
+      "id": "research",
+      "kind": "blocking",
+      "question": "What research must a sprint finish before it starts?",
+      "options": [
+        "a goal research story and knowledge refs on every committed item, all sufficient",
+        "goal research story only",
+        "knowledge refs only"
+      ],
+      "recommendation": "a goal research story and knowledge refs on every committed item, all sufficient",
+      "answer": "a goal research story and knowledge refs on every committed item, all sufficient, using kb tools first",
+      "by": "operator"
+    }
+  ]
+}

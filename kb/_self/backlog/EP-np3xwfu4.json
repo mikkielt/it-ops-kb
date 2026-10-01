@@ -1,0 +1,16 @@
+{
+  "id": "EP-np3xwfu4",
+  "kind": "epic",
+  "title": "Backlog autopilot: a manager session runs sprints headless within its authority",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "A local manager session (/kb-autopilot) plans, researches, starts, runs (as up to two headless claude -p sprint runners, each dispatching kb-worker subagents), reviews, retros and closes sprints without the operator, answering every gate class but secrets and pushes off main or publish as recorded autopilot decisions the operator ratifies or reverts from a digest; its state lives in capped commands and files, not its conversation, so compaction and fresh sessions lose nothing",
+  "relates_to": [
+    "EP-v56iwyry",
+    "BG-blote7g5",
+    "BG-qks4ikyr",
+    "BG-6a7jiylf"
+  ],
+  "notes": "Not yet stories: an optional generational outer loop (autopilot.py loop launching a fresh claude -p tick every N minutes), chosen by the gate on ST-mdwkhv7k “/kb-autopilot runs the backlog as a manager loop” once rot metrics exist. Prerequisites in active sprints: BG-blote7g5 (the change router after compaction), BG-qks4ikyr (the kbdecide sweep), BG-6a7jiylf (close and worktree-agent branches); raised to P1: ST-6fb6kzoa (claude -p loads settings and plugins), ST-7wyfn2eh (land heavy-check lock). Research first: the start gate's research requirement grounds decisions; the earlier research-first scheduling was dropped on a token-saving measure, so this one is measured by the share of reverted decisions (ST-wxhe6jci). Live docs, not in the kb (code.claude.com/docs/en/hooks, context-window, read 2026-10-01): PreCompact matchers manual and auto, exit 2 blocks a proactive compaction; SessionStart compact matcher re-injects context; /autocompact sets the window; the sprint's research adds these facts."
+}
