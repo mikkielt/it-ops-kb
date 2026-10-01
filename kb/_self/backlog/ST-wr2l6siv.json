@@ -2,7 +2,7 @@
   "id": "ST-wr2l6siv",
   "kind": "story",
   "title": "backlog.py warns of a near-duplicate at new and of a recurring process item left out of a sprint",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -23,5 +23,6 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-wr2l6siv"
 }
