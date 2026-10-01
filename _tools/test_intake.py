@@ -7,6 +7,7 @@ nothing, a done or dropped item skips nothing), a `--status` that exits 1 while 
 still print, exit 1), a malformed fingerprint (exit 2), and the same inputs giving the same lines in any registration
 order.
 """
+import datetime
 import json
 import time
 from pathlib import Path
@@ -649,3 +650,195 @@ def test_intake_trailers_status_is_the_bug_repro_and_passes_once_the_commit_leav
     world.publish()
     assert intake(world.root, capsys, *argv[3:])[0] == 0  # the commit is older than the window
 
+
+
+# ------------------------------------------------------------------ the stranded-findings detector (intake_stranded)
+#
+# The same throwaway repositories, each with a committed store `kb/_querylog/findings/`. HEAD's commit day is the
+# "today" (T0 is 2026-01-01). Planted: a candidate-gap, an open source finding, a no-fix and an apply-failed record
+# older than the limit (reported) beside a candidate-gap of the limit's own day and one of HEAD's day (fresh: not
+# reported); a stage source finding (a story) beside a route one (a bug); a finding whose newest record moved on (not
+# reported); a terminal state, a miss-stage open finding and a fixed-since one (not reported); a store edit that is not
+# committed (not read); no commit, no store or a damaged file (nothing).
+
+def run_id(days_before, n=0):
+    """A run id `days_before` days before T0's day."""
+    d = datetime.date(2026, 1, 1) - datetime.timedelta(days=days_before)
+    return f"{d:%Y%m%d}T10{n:02d}00Z-{n:08x}"
+
+
+def finding(fid, kind="gap", state="open", stage="candidate-gap", **kw):
+    rec = {"id": fid, "kind": kind, "state": state}
+    if stage:
+        rec["stage"] = stage
+    return {**rec, **kw}
+
+
+def store_file(run, *records):
+    """{path: text} of one findings file: a header line, then the records."""
+    header = {"run": run, "pipeline": 5, "retrieval": 5, "kb_commit": "0" * 40,
+              "counts": {"findings": len(records), "open": 0, "fixed-since": 0}}
+    text = "".join(json.dumps(r, separators=(",", ":")) + "\n" for r in (header, *records))
+    return {f"{bl_intake.STORE_REL}/findings/{run[:4]}-{run[4:6]}/{run}.jsonl": text}
+
+
+def stranded(root):
+    bl_intake.detector("stranded")(bl_intake.stranded_detector)
+    return bl_intake.collect(root)
+
+
+def stranded_ids(world):
+    found, failures = stranded(world.root)
+    assert failures == []
+    return sorted(c.key.split()[0] for c in found)
+
+
+def test_intake_stranded_days_is_three():
+    assert bl_intake.STRANDED_DAYS == 3
+
+
+def test_intake_stranded_candidate_gap_older_than_the_limit_is_reported_and_a_fresh_one_is_not(world):
+    files = {}
+    files.update(store_file(run_id(10), finding("F-000000000001")))  # stranded
+    files.update(store_file(run_id(4), finding("F-000000000002")))  # one day over the limit
+    files.update(store_file(run_id(3), finding("F-000000000003")))  # exactly the limit: not older
+    files.update(store_file(run_id(0), finding("F-000000000004")))  # HEAD's own day: fresh
+    world.commit(1, "chore: store", files)
+    found, failures = stranded(world.root)
+    assert failures == []
+    assert [c.key for c in found] == sorted(["F-000000000001 candidate-gap", "F-000000000002 candidate-gap"],
+                                             key=lambda k: bl_intake.fingerprint("stranded", k))
+    assert {c.kind for c in found} == {"bug"}
+    assert all("F-00000000000" in c.title and "candidate-gap" in c.title for c in found)
+
+
+def test_intake_stranded_today_is_the_day_of_heads_commit_not_the_clock(world):
+    world.commit(1, "chore: store", store_file(run_id(0), finding("F-000000000001")))
+    assert stranded_ids(world) == []
+    world.commit(1 + 4 * 24, "chore: later")  # four days on: the same record is now stranded
+    assert stranded_ids(world) == ["F-000000000001"]
+
+
+def test_intake_stranded_every_non_terminal_state_is_reported(world):
+    files = {}
+    files.update(store_file(run_id(9, 1), finding("F-00000000000a")))
+    files.update(store_file(run_id(9, 2), finding("F-00000000000b", kind="source", stage=None, signal="route",
+                                                   host="docs.example.com")))
+    files.update(store_file(run_id(9, 3), finding("F-00000000000c", kind="eval", state="no-fix")))
+    files.update(store_file(run_id(9, 4), finding("F-00000000000d", kind="expansion", state="apply-failed",
+                                                   stage="miss")))
+    world.commit(1, "chore: store", files)
+    found, _ = stranded(world.root)
+    assert sorted(c.key for c in found) == ["F-00000000000a candidate-gap", "F-00000000000b open",
+                                             "F-00000000000c no-fix", "F-00000000000d apply-failed"]
+    assert {c.kind for c in found} == {"bug"}
+
+
+def test_intake_stranded_terminal_and_early_stage_findings_are_not_reported(world):
+    files = {}
+    files.update(store_file(run_id(9, 1), finding("F-000000000001", state="fixed-since")))
+    files.update(store_file(run_id(9, 2), finding("F-000000000002", state="applied", stage="gap")))
+    files.update(store_file(run_id(9, 3), finding("F-000000000003", state="rejected")))
+    files.update(store_file(run_id(9, 4), finding("F-000000000004", kind="eval", stage="miss")))  # open, at miss
+    files.update(store_file(run_id(9, 5), finding("F-000000000005", state="applied", stage="claim")))
+    files.update(store_file(run_id(9, 6), finding("F-000000000006", kind="source", stage=None, state="fixed-since",
+                                                   signal="stage", host="docs.example.com")))
+    world.commit(1, "chore: store", files)
+    assert stranded_ids(world) == []
+
+
+def test_intake_stranded_only_the_newest_record_of_a_finding_counts(world):
+    files = {}
+    files.update(store_file(run_id(10), finding("F-000000000001"), finding("F-000000000002")))
+    files.update(store_file(run_id(8), finding("F-000000000001", state="fixed-since")))  # moved on
+    files.update(store_file(run_id(0), finding("F-000000000002", state="no-fix")))  # moved to no-fix, but fresh
+    world.commit(1, "chore: store", files)
+    assert stranded_ids(world) == []
+    world.commit(1 + 5 * 24, "chore: later")
+    found, _ = stranded(world.root)
+    assert [c.key for c in found] == ["F-000000000002 no-fix"]  # a new state is a new finding, and now stranded
+
+
+def test_intake_stranded_a_stage_source_finding_is_a_story_and_the_others_bugs(world):
+    files = {}
+    files.update(store_file(run_id(7, 1), finding("F-0000000000aa", kind="source", stage=None, signal="stage",
+                                                   host="wiki.example.com", level=0, needs=["share"])))
+    files.update(store_file(run_id(7, 2), finding("F-0000000000bb", kind="source", stage=None, signal="route",
+                                                   host="docs.example.com", tool="WebFetch")))
+    world.commit(1, "chore: store", files)
+    found, failures = stranded(world.root)
+    assert failures == []
+    by_key = {c.key: c for c in found}
+    s, b = by_key["F-0000000000aa open"], by_key["F-0000000000bb open"]
+    assert (s.kind, b.kind) == ("story", "bug")
+    assert "wiki.example.com" in s.title and "wiki.example.com" in s.goal and "provider" in s.goal
+    assert s.checks == [bl_intake.STATUS_REPRO + [s.fp]]  # the story is done once intake no longer reports it
+    assert b.severity == "S3" and "F-0000000000bb" in b.title and "open" in b.title
+
+
+def test_intake_stranded_the_fingerprint_is_the_finding_id_and_its_state(world):
+    world.commit(1, "chore: store", store_file(run_id(9), finding("F-000000000001")))
+    (c,), _ = stranded(world.root)
+    assert c.fp == bl_intake.fingerprint("stranded", "F-000000000001 candidate-gap")
+    assert stranded(world.root)[0][0].fp == c.fp  # stable between runs
+
+
+def test_intake_stranded_a_store_edit_not_committed_is_not_read(world):
+    world.commit(1, "chore: store", store_file(run_id(9), finding("F-000000000001")))
+    for rel, text in store_file(run_id(8), finding("F-000000000002")).items():
+        (world.root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (world.root / rel).write_text(text, encoding="utf-8", newline="\n")
+    assert stranded_ids(world) == ["F-000000000001"]
+
+
+def test_intake_stranded_no_store_no_commit_or_a_damaged_file_reports_nothing(world, tmp_path_factory):
+    assert stranded_ids(world) == []  # a repository without a store
+    damaged = {f"{bl_intake.STORE_REL}/findings/2025-12/20251201T100000Z-00000001.jsonl":
+               'not json\n[1]\n{"id": 5}\n'}
+    world.commit(1, "chore: store", damaged)
+    assert stranded_ids(world) == []
+    found, failures = stranded(tmp_path_factory.mktemp("nogit"))  # no repository at all
+    assert found == [] and failures == []
+
+
+def test_intake_stranded_a_run_id_without_a_day_is_left_out(world):
+    files = {f"{bl_intake.STORE_REL}/findings/2025-12/odd-name.jsonl": json.dumps(finding("F-000000000001")) + "\n"}
+    world.commit(1, "chore: store", files)
+    assert stranded_ids(world) == []
+
+
+def test_intake_stranded_same_store_same_candidates_in_any_run(world):
+    files = {}
+    for i in range(1, 5):
+        files.update(store_file(run_id(9, i), finding(f"F-00000000000{i}")))
+    world.commit(1, "chore: store", files)
+    first = [(c.fp, c.title) for c in stranded(world.root)[0]]
+    assert len(first) == 4 and first == sorted(first)
+    assert [(c.fp, c.title) for c in stranded(world.root)[0]] == first
+
+
+def test_intake_stranded_reads_a_large_store_quickly(world):
+    files = {}
+    for i in range(1, 60):
+        files.update(store_file(run_id(9, i % 50), *[finding(f"F-{i:04x}{j:08x}") for j in range(20)]))
+    world.commit(1, "chore: store", files)
+    start = time.monotonic()
+    found, _ = stranded(world.root)
+    assert len(found) > 100 and time.monotonic() - start < 5
+
+
+def test_intake_stranded_the_real_store_is_read_without_failure():
+    found, failures = stranded(Path(__file__).resolve().parent.parent)
+    assert failures == [] and all(c.detector == "stranded" for c in found)
+
+
+def test_intake_stranded_status_is_the_repro_and_passes_once_the_finding_moves_on(world, capsys):
+    world.commit(1, "chore: store", store_file(run_id(9), finding("F-000000000001")))
+    bl_intake.detector("stranded")(bl_intake.stranded_detector)
+    code, out, _ = intake(world.root, capsys, "--file")
+    assert code == 0 and out[-1] == "intake: 1 candidate(s), 1 new filed, 0 skipped"
+    (bug_item,) = [it for it in load(world.root) if it["kind"] == "bug"]
+    argv = bug_item["repro"]["run"]
+    assert intake(world.root, capsys, *argv[3:])[0] == 1  # still stranded
+    world.commit(2, "chore: learn", store_file(run_id(0, 7), finding("F-000000000001", state="fixed-since")))
+    assert intake(world.root, capsys, *argv[3:])[0] == 0  # it moved on

@@ -23,11 +23,16 @@ the part that does not touch the backlog's files:
   counted in the story's notes, never reported as passing. The budget is the detector's one reading of time, so an
   intake stays short enough for a SessionStart hook;
 - the `trailers` detector (`trailer_findings`, `trailers_detector`, at the end): commits of main whose KB-Work line git
-  does not read, or that change code with no KB-Work and no KB-Auto trailer.
+  does not read, or that change code with no KB-Work and no KB-Auto trailer;
+- the `stranded` detector (`stranded_findings`, `stranded_detector`, at the end): query-log findings of the committed
+  store whose newest record is a candidate-gap, an open source finding, no-fix or apply-failed and older than
+  STRANDED_DAYS on HEAD's commit day (`kb/_self/querylog.md`, Store and Learn). It reads the findings files at HEAD
+  directly, with no ql_ module.
 
 This module imports no tool module but `kbpublic` (the integration remote's name, inside the function that needs it);
 it is below backlog.py.
 """
+import datetime
 import hashlib
 import json
 import os
@@ -472,3 +477,107 @@ def trailers_detector(root):
         goal=f"No commit of the last {TRAILER_WINDOW_DAYS} days on {main_ref(root)} has a KB-Work line git reads as no "
              "trailer, or changes code with no KB-Work and no KB-Auto trailer.",
         key=",".join(shas), severity="S3", notes="; ".join(notes))]
+
+
+# ------------------------------------------------------------------ the stranded-findings detector
+
+STORE_REL = "kb/_querylog"  # the committed query-log store; its findings files are findings/<yyyy-mm>/<run-id>.jsonl
+STRANDED_DAYS = 3  # a finding in a non-terminal state whose newest record is older than this many days is stranded
+RUN_DAY = re.compile(r"(\d{4})(\d{2})(\d{2})T\d{6}Z-")  # a run id starts with the UTC day of the run
+STUCK_STATES = ("no-fix", "apply-failed")  # states no stage moves on its own
+STAGE_SIGNAL = "stage"  # a source finding with this signal asks for the host's provider to be probed
+
+
+def head_day(root):
+    """The UTC date of HEAD's commit, or None without a commit: the day that stands for "today"."""
+    p = subprocess.run(["git", "log", "-1", "--format=%ct", "HEAD"], cwd=root, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    if p.returncode or not p.stdout.strip().isdigit():
+        return None
+    return datetime.datetime.fromtimestamp(int(p.stdout), datetime.timezone.utc).date()
+
+
+def committed_findings(root):
+    """[(run id, record)] of the findings files of the store at HEAD, oldest run first and in file order: the records
+    that carry an `id` (a header carries none). `git grep` reads HEAD's tree, so a working tree edit changes nothing."""
+    p = subprocess.run(["git", "grep", "-I", "-e", '"id"', "HEAD", "--", f"{STORE_REL}/findings/"], cwd=root,
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    out = []
+    for n, line in enumerate(p.stdout.splitlines()):
+        path, sep, text = line.partition(".jsonl:")  # `HEAD:<path>.jsonl:<line>`
+        if not sep:
+            continue
+        run = path.rsplit("/", 1)[-1]
+        try:
+            rec = json.loads(text)
+        except ValueError:
+            continue
+        if isinstance(rec, dict) and isinstance(rec.get("id"), str):
+            out.append((run, n, rec))
+    out.sort(key=lambda t: (t[0], t[1]))
+    return [(run, rec) for run, _, rec in out]
+
+
+def stranded_label(rec):
+    """Why the newest record `rec` of a finding is non-terminal, or None: its state (`no-fix`, `apply-failed`), `open`
+    for a source finding, or the stage `candidate-gap` of an open gap finding."""
+    state = rec.get("state")
+    if state in STUCK_STATES:
+        return state
+    if state == "open" and rec.get("kind") == "source":
+        return "open"
+    if state == "open" and rec.get("stage") == "candidate-gap":
+        return "candidate-gap"
+    return None
+
+
+def stranded_findings(root, days=None):
+    """[(record, label, run id, age in days)] sorted by finding id: each finding of the committed store whose newest
+    record is non-terminal (`stranded_label`) and more than `days` (default STRANDED_DAYS) days older than HEAD's commit
+    day, the run id's day being the record's. No commit, no store or a run id without a day gives none."""
+    days = STRANDED_DAYS if days is None else days
+    today = head_day(root)
+    if today is None:
+        return []
+    last = {}
+    for run, rec in committed_findings(root):
+        last[rec["id"]] = (rec, run)
+    out = []
+    for fid, (rec, run) in sorted(last.items()):
+        label, m = stranded_label(rec), RUN_DAY.match(run)
+        if not label or not m:
+            continue
+        try:
+            age = (today - datetime.date(*(int(g) for g in m.groups()))).days
+        except ValueError:
+            continue
+        if age > days:
+            out.append((rec, label, run, age))
+    return out
+
+
+@detector("stranded")
+def stranded_detector(root):
+    """One candidate per finding of the committed query-log store whose newest record is a candidate-gap, an open
+    source finding, no-fix or apply-failed and older than STRANDED_DAYS on HEAD's commit day (`stranded_findings`): a
+    story to probe its host's provider for a `stage` source finding, a bug for any other. The fingerprint is the finding
+    id and its label, so a finding that moves on to another state is a new finding."""
+    out = []
+    for rec, label, run, age in stranded_findings(root):
+        fid, key = rec["id"], f"{rec['id']} {label}"
+        notes = (f"{rec.get('kind')} finding {fid}, {label}, newest record in run {run}, {age} day(s) before HEAD's "
+                 f"commit; the limit is {STRANDED_DAYS}")
+        if rec.get("kind") == "source" and rec.get("signal") == STAGE_SIGNAL:
+            host = str(rec.get("host") or "an unnamed host")
+            out.append(Candidate(
+                kind="story", title=f"Probe the provider of {host}: source finding {fid} is stranded",
+                goal=f"The provider of {host} is probed (a row in the provider registry, `/kb-probe`), so the stage "
+                     f"source finding {fid} is no longer open and the stranded-findings detector does not report it.",
+                key=key, checks=[STATUS_REPRO + [fingerprint("stranded", key)]], notes=notes))
+        else:
+            out.append(Candidate(
+                kind="bug", title=f"Query-log finding {fid} is stranded in {label}",
+                goal=f"The finding {fid} left the state {label}: learn, apply or research moved it on, or it was "
+                     "closed by hand, so the stranded-findings detector does not report it.",
+                key=key, severity="S3", notes=notes))
+    return out
