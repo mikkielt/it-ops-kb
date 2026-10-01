@@ -17,5 +17,13 @@
       "check_trailers_flags_kb_work_outside_trailers"
     ]
   },
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/git.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
   "notes": "Work commits with KB-Work in a paragraph before Co-Authored-By: 7219acbb, ac03d1b3, 9cb820ec, 8da30157. Their items passed done through the claim commit alone, which carries the trailer and changes only kb/_self/backlog/."
 }
