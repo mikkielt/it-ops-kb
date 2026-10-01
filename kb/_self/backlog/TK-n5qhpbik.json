@@ -2,7 +2,7 @@
   "id": "TK-n5qhpbik",
   "kind": "task",
   "title": "kbdecide.py sweep invalidates on broken context",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-cumapb4s",
   "priority": "P2",
   "rank": 0,
@@ -20,6 +20,9 @@
   "touches": [
     "_tools/kbdecide.py",
     "_tools/test_kbdecide.py",
-    "kb/_self/code.md"
-  ]
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "claimed_by": "worker-decision-sweep"
 }
