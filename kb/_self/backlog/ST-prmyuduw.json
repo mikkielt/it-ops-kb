@@ -2,7 +2,7 @@
   "id": "ST-prmyuduw",
   "kind": "story",
   "title": "done flags a repro or check that passes without doing its work",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "c-prmyuduw"
 }
