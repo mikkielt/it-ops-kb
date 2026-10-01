@@ -2,7 +2,7 @@
   "id": "ST-ltuy6qn2",
   "kind": "story",
   "title": "Sprint workers start from the orchestrator's branch tip",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
@@ -29,5 +29,6 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Planning lead (live docs, not in the kb, code.claude.com/docs/en/settings-reference#worktree, 2026-10-01): the worktree setting's baseRef \"head\" branches isolated subagent worktrees from the current HEAD instead of the default branch."
+  "notes": "Planning lead (live docs, not in the kb, code.claude.com/docs/en/settings-reference#worktree, 2026-10-01): the worktree setting's baseRef \"head\" branches isolated subagent worktrees from the current HEAD instead of the default branch.",
+  "claimed_by": "worker-ltuy6qn2"
 }
