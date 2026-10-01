@@ -2,7 +2,7 @@
   "id": "ST-wrm3t2gv",
   "kind": "story",
   "title": "A finished worker's worktree is not left locked",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -40,5 +40,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-blstack"
+  "evidence": {
+    "commit": "81e447401fa67d9e00a0f1b5b8d84ec8070b5253",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "worker_worktree_unlocked"
+        ],
+        "exit": 0,
+        "sha256": "2996fb28b6f1634b"
+      }
+    ]
+  }
 }
