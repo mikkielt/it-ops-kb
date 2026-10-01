@@ -10,6 +10,7 @@ order.
 import argparse
 import datetime
 import json
+import re
 import threading
 import time
 from pathlib import Path
@@ -395,7 +396,7 @@ def test_intake_drift_items_without_touches_checks_or_an_open_status_run_nothing
     assert d.passing == {} and d.ran == 0
 
 
-def test_intake_drift_one_story_lists_the_items_and_its_fingerprint_is_the_sorted_ids(world):
+def test_intake_drift_one_story_lists_the_items_and_its_fingerprint_is_the_detectors_own(world):
     world.item(1, "TK-bbbbbbbb", "doing", touches=["src/**"])
     world.commit(2, "feat: work", {"src/a.txt": "b\n"}, trailer="TK-bbbbbbbb")
     world.item(3, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[PASS_CHECK])
@@ -405,8 +406,8 @@ def test_intake_drift_one_story_lists_the_items_and_its_fingerprint_is_the_sorte
     found, failures = drift_candidates(world)
     assert failures == [] and len(found) == 1
     (c,) = found
-    assert c.kind == "story" and c.detector == "drift" and c.key == "TK-aaaaaaaa,TK-bbbbbbbb"
-    assert c.fp == bl_intake.fingerprint("drift", "TK-aaaaaaaa,TK-bbbbbbbb")
+    assert c.kind == "story" and c.detector == "drift" and c.key == bl_intake.WHOLE_KEY
+    assert c.fp == bl_intake.fingerprint("drift", bl_intake.WHOLE_KEY)
     assert "TK-aaaaaaaa" in c.goal and "TK-bbbbbbbb" in c.goal and c.title.startswith("Drift: 2 ")
     assert "TK-bbbbbbbb: doing" in c.notes and "TK-aaaaaaaa: its 1 check(s) already pass" in c.notes
     assert c.checks == [bl_intake.STATUS_REPRO + [c.fp]]
@@ -418,7 +419,8 @@ def test_intake_drift_the_timeouts_are_counted_in_the_story(world, monkeypatch):
     world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[PASS_CHECK])
     world.commit(2, "feat: work", {"src/a.txt": "b\n"})
     (c,), _ = drift_candidates(world)
-    assert c.key == "TK-bbbbbbbb" and "1 item(s) had a check that exceeded 1 s" in c.notes
+    assert "TK-bbbbbbbb" in c.goal and "TK-aaaaaaaa" not in c.goal
+    assert "1 item(s) had a check that exceeded 1 s" in c.notes
 
 
 def test_intake_drift_a_timeout_alone_files_nothing(world, monkeypatch):
@@ -488,7 +490,7 @@ def test_intake_drift_skipped_items_are_counted_in_the_story(world, monkeypatch)
     world.item(1, "TK-dddddddd", "todo", touches=["src/**"], checks=[PASS_CHECK])
     world.commit(2, "feat: work", {"src/a.txt": "b\n"})
     (c,), _ = drift_candidates(world)
-    assert c.key == "TK-aaaaaaaa"
+    assert "TK-aaaaaaaa" in c.goal and not any(i in c.goal for i in ("TK-bbbbbbbb", "TK-cccccccc", "TK-dddddddd"))
     assert "1 item(s) had a check that runs the whole test suite or the stress tests" in c.notes
     assert "1 item(s) had a check that exceeded" in c.notes
     assert "1 item(s) were not checked: the 3 s budget for checks was spent" in c.notes
@@ -609,27 +611,27 @@ def test_intake_trailers_without_origin_main_nothing_is_reported(world):
     assert bl_intake.trailer_findings(world.root) == []
 
 
-def test_intake_trailers_one_bug_lists_the_commits_and_its_fingerprint_is_the_sorted_short_shas(world):
+def test_intake_trailers_one_bug_lists_the_commits_and_its_fingerprint_is_the_detectors_own(world):
     a = world.commit(1, BAD_MSG, {"kb/x.md": "x\n"})
     b = world.commit(2, "fix: tool", {"_tools/x.py": "x\n"})
     world.commit(3, GOOD_MSG, {"_tools/y.py": "y\n"})
     world.publish()
     (c,), failures = trailer_candidates(world)
     assert failures == []
-    key = ",".join(sorted([a[:10], b[:10]]))
-    assert c.kind == "bug" and c.detector == "trailers" and c.key == key
-    assert c.fp == bl_intake.fingerprint("trailers", key)
+    assert c.kind == "bug" and c.detector == "trailers" and c.key == bl_intake.WHOLE_KEY
+    assert c.fp == bl_intake.fingerprint("trailers", bl_intake.WHOLE_KEY)
     assert a[:10] in c.notes and b[:10] in c.notes and "2 commit(s)" in c.title
 
 
-def test_intake_trailers_the_fingerprint_is_stable_and_changes_with_the_set(world):
+def test_intake_trailers_the_fingerprint_is_stable_and_stays_when_the_set_changes(world):
     world.commit(1, BAD_MSG, {"kb/x.md": "x\n"})
     world.publish()
     first = trailer_candidates(world)[0][0].fp
     assert trailer_candidates(world)[0][0].fp == first
     world.commit(2, "fix: tool", {"_tools/x.py": "x\n"})
     world.publish()
-    assert trailer_candidates(world)[0][0].fp != first
+    (c,), _ = trailer_candidates(world)
+    assert c.fp == first and "2 commit(s)" in c.title
 
 
 def test_intake_trailers_clean_history_reports_no_candidate(world):
@@ -652,6 +654,68 @@ def test_intake_trailers_status_is_the_bug_repro_and_passes_once_the_commit_leav
     world.publish()
     assert intake(world.root, capsys, *argv[3:])[0] == 0  # the commit is older than the window
 
+
+
+# ------------------------------------------------------------------ one fingerprint per detector (intake_stable_fingerprint)
+#
+# The drift and trailers detectors each report their whole finding set as one candidate keyed WHOLE_KEY. Planted: a
+# trailers window that drops one of its two commits as main's tip advances (same fingerprint, the bug still open, its
+# repro still failing); a drift scan whose budget reaches a passing item on one run and not on the next (same
+# fingerprint); a second `--file` run after the set changed (files nothing).
+
+def test_intake_stable_fingerprint_a_window_that_drops_a_commit_keeps_the_fingerprint(world, capsys):
+    old = world.commit(1, "fix: tool", {"_tools/x.py": "x\n"})
+    new = world.commit(30, BAD_MSG, {"kb/x.md": "x\n"})
+    world.publish()
+    bl_intake.detector("trailers")(bl_intake.trailers_detector)
+    (first,), _ = bl_intake.collect(world.root)
+    assert old[:10] in first.notes and new[:10] in first.notes
+    assert intake(world.root, capsys, "--file")[0] == 0
+    world.commit(1 + 7 * 24 + 1, "docs: later", {"kb/y.md": "y\n"})  # the first commit leaves the window
+    world.publish()
+    (second,), _ = bl_intake.collect(world.root)
+    assert old[:10] not in second.notes and new[:10] in second.notes
+    assert second.fp == first.fp
+    code, out, _ = intake(world.root, capsys, "--file")
+    assert code == 0 and out[-1] == "intake: 1 candidate(s), 0 new filed, 1 skipped"
+    assert intake(world.root, capsys, "--status", first.fp)[0] == 1  # the detector still reports a commit
+
+
+def test_intake_stable_fingerprint_a_drift_scan_whose_budget_reaches_different_items(world, monkeypatch):
+    world.item(1, "TK-cccccccc", "doing", touches=["src/**"])
+    world.commit(2, "feat: work", {"src/a.txt": "b\n"}, trailer="TK-cccccccc")
+    world.item(3, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[SLOW_CHECK])
+    world.item(3, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.commit(60, "feat: other", {"src/z.txt": "z\n"})
+    world.publish()
+    monkeypatch.setattr(bl_intake, "CHECK_TIMEOUT_S", 1)
+    (reached,), _ = drift_candidates(world)
+    assert "TK-bbbbbbbb" in reached.goal and "TK-cccccccc" in reached.goal
+    monkeypatch.setattr(bl_intake, "DRIFT_BUDGET_S", 1)  # the slow check spends it: TK-bbbbbbbb is not reached
+    (cut,), _ = drift_candidates(world)
+    assert "TK-bbbbbbbb" not in cut.goal and "TK-cccccccc" in cut.goal
+    assert cut.fp == reached.fp == bl_intake.fingerprint("drift", bl_intake.WHOLE_KEY)
+    assert cut.checks == reached.checks == [bl_intake.STATUS_REPRO + [reached.fp]]
+
+
+def test_intake_stable_fingerprint_a_second_file_run_after_the_set_changed_files_nothing(world, capsys):
+    world.commit(1, BAD_MSG, {"kb/x.md": "x\n"})
+    world.publish()
+    bl_intake.detector("trailers")(bl_intake.trailers_detector)
+    code, out, _ = intake(world.root, capsys, "--file")
+    assert code == 0 and out[-1] == "intake: 1 candidate(s), 1 new filed, 0 skipped"
+    before = files(world.root)
+    world.commit(2, "fix: tool", {"_tools/x.py": "x\n"})
+    world.publish()
+    code, out, _ = intake(world.root, capsys, "--file")
+    assert code == 0 and out[-1] == "intake: 1 candidate(s), 0 new filed, 1 skipped"
+    assert files(world.root) == before
+    (bug_item,) = [it for it in load(world.root) if it["kind"] == "bug"]
+    argv = bug_item["repro"]["run"]
+    assert intake(world.root, capsys, *argv[3:])[0] == 1  # reports a finding: the repro fails
+    world.commit(2 + 8 * 24, "docs: later", {"kb/y.md": "y\n"})
+    world.publish()
+    assert intake(world.root, capsys, *argv[3:])[0] == 0  # reports none: the repro passes
 
 
 # ------------------------------------------------------------------ the stranded-findings detector (intake_stranded)
@@ -942,17 +1006,19 @@ def test_intake_replay_reports_the_four_commits_with_an_unread_kb_work(replay):
     root, ids = replay
     (c,) = by_detector(root)["trailers"]
     assert c.kind == "bug"
-    assert c.key.split(",") == sorted(ids[o][:bl_intake.SHORT_SHA] for o in STORY_UNREAD)
+    assert c.key == bl_intake.WHOLE_KEY and c.fp == bl_intake.fingerprint("trailers", bl_intake.WHOLE_KEY)
+    listed = re.findall(r"\b[0-9a-f]{%d}\b" % bl_intake.SHORT_SHA, c.notes)
+    assert listed == sorted(ids[o][:bl_intake.SHORT_SHA] for o in STORY_UNREAD)
     assert "a KB-Work line git does not read as a trailer" in c.notes and "no KB-Work or KB-Auto" not in c.notes
     # the replay's other commits (a trailer git reads, content only, a backlog commit) are not in the set
     for orig in ("379939b4", "96ec6fa2", "1c0e9c34", "79c56e62", "7d1175f7"):
-        assert ids[orig][:bl_intake.SHORT_SHA] not in c.key
+        assert ids[orig][:bl_intake.SHORT_SHA] not in listed
 
 
 def test_intake_replay_drift_reports_the_item_whose_check_passes(replay):
     root, _ = replay
     (c,) = by_detector(root)["drift"]
-    assert c.kind == "story" and c.key == "BG-jam2lysj"
+    assert c.kind == "story" and c.key == bl_intake.WHOLE_KEY and "BG-jam2lysj" in c.goal
     assert "BG-jam2lysj: its 1 check(s) already pass on HEAD" in c.notes
 
 
@@ -965,7 +1031,7 @@ def test_intake_replay_drift_does_not_report_the_reviews_two_items(replay):
     assert items["ST-rjxacpdh"]["status"] == "draft" and not items["ST-rjxacpdh"].get("touches")
     assert items["TK-if7de5pb"]["status"] == "done"
     (c,) = by_detector(root)["drift"]
-    assert "ST-rjxacpdh" not in c.key and "TK-if7de5pb" not in c.key
+    assert "ST-rjxacpdh" not in c.goal + c.notes and "TK-if7de5pb" not in c.goal + c.notes
 
 
 def test_intake_replay_plain_run_prints_the_candidates_and_writes_nothing(replay, capsys):
@@ -1024,7 +1090,9 @@ def test_intake_replay_planted_trailers_in_one_block_leave_three_commits(tmp_pat
 
     repo, ids = build_replay(tmp_path, edit=join)
     (c,) = by_detector(Path(repo.path))["trailers"]
-    assert c.key.split(",") == sorted(ids[o][:bl_intake.SHORT_SHA] for o in STORY_UNREAD if o != "7219acbb")
+    listed = re.findall(r"\b[0-9a-f]{%d}\b" % bl_intake.SHORT_SHA, c.notes)
+    assert listed == sorted(ids[o][:bl_intake.SHORT_SHA] for o in STORY_UNREAD if o != "7219acbb")
+    assert c.fp == bl_intake.fingerprint("trailers", bl_intake.WHOLE_KEY)  # the same bug as with four commits
 
 
 # ------------------------------------------------------------------ the CI detector (intake_ci)
