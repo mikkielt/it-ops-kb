@@ -29,7 +29,8 @@
     "kb/_self/content-rules.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/embedding.md"
+    "kb/_self/embedding.md",
+    "_tools/fixtures/kb_mcp_contract.json"
   ],
   "claimed_by": "worker-decision-lookup"
 }

@@ -8,6 +8,7 @@ TestKbHookRoute, TestRawReadNudge: the kb: hook's routes on planted packs, and t
 test_freshness_note_for_latest_or_unnamed_versions: the `freshness:` line of a pack.
 """
 import csv, json, os, re, subprocess, sys
+from pathlib import Path
 
 import kb_hook, kbcommon, kbfacts, kbid
 from conftest import KB, P, TOOLS, copy_kb, querylog_env, run, text, timeout_s
@@ -785,3 +786,221 @@ def test_freshness_note_for_latest_or_unnamed_versions():
     assert kbfacts.freshness("q v1.2 25H2 CMPivot", ["25h2", "v1.2", "cmpivot"], {}) == (
         "freshness: the kb never names v1.2. A newer release may exist: check the cited source live and "
         "say which version your answer is for.")
+
+
+# ---------------------------------------------------------------- decisions beside the facts (decision_lookup)
+
+DECISION_QUESTION = "Who approves an early purge of the print queues?"  # the fixture article says nothing of approval
+DECISION_TEXT = "Print owner approves an early purge of print queues."
+DECISION_PATTERN_QUESTION = "What pattern do print queue names follow?"  # answered by the article's own fact
+DECISION_CONTEXT = "article:print/queues"
+
+
+def decision_lookup_root(tmp_path, rows=None, article_extra=""):
+    """A fixture root (test_kb_root.make_root) with its decisions (decision_lookup_set) and `article_extra` appended
+    to its article. The tests rewrite its decision file between calls: it is not in the pack index, so one index
+    (decision_lookup_run keeps it beside the root) serves a whole test."""
+    from test_kb_root import make_root
+    root = tmp_path / "team-kb"
+    make_root(str(root))
+    if article_extra:
+        art = root / "print" / "queues.md"
+        art.write_text(art.read_text(encoding="utf-8") + article_extra, encoding="utf-8", newline="\n")
+    decision_lookup_set(str(root), rows)
+    return str(root)
+
+
+def decision_lookup_set(root, rows):
+    """The root's _decisions.csv holds these rows (None: no file; []: a header only)."""
+    from test_kb_root import DEC
+    path = Path(root) / DEC
+    if rows is None:
+        path.unlink(missing_ok=True)
+    else:
+        kbcommon.write_csv(str(path), kbcommon.DECISION_COLS, rows)
+
+
+def decision_lookup_run(root, *args):
+    from test_kb_root import run as run_tool
+    code, out = run_tool("rag.py", *args, roots=root, data=str(Path(root).parent / "index"))
+    assert code == 0 and "Traceback" not in out, out[-600:]
+    return out
+
+
+def decision_lookup_pack(root, question, *extra, rows=...):
+    """The pack of `question` in the fixture root, after `rows` are written when given (decision_lookup_set)."""
+    if rows is not ...:
+        decision_lookup_set(root, rows)
+    return decision_lookup_run(root, "pack", question, "--root", "fixture", *extra)
+
+
+def decision_lookup_rows():
+    from test_kb_root import decision
+    return [decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT),
+            decision(1, text="Print queue names move to the pattern PQ-site-floor-room.", context=DECISION_CONTEXT,
+                     status="proposed", by="", by_ref=""),
+            decision(2, text="Finished print jobs stay for 30 days.", context=DECISION_CONTEXT, status="invalidated",
+                     invalidated_reason="article:print/queues is gone", invalidated_date="2026-10-02"),
+            decision(3, text="Print queues are purged every hour.", context=DECISION_CONTEXT, status="superseded")]
+
+
+def test_decision_lookup_labels_and_the_invalidated_flag(tmp_path):
+    """A pack prints the active decision as `decided`, the proposed one as `proposed (not confirmed)`, each with its
+    id and the row's path:line (which `rag.py show` prints); an invalidated one only with --invalidated, as
+    `invalidated because <reason>`; a superseded one never."""
+    from test_kb_root import did
+    root = decision_lookup_root(tmp_path, decision_lookup_rows())
+    out = decision_lookup_pack(root, DECISION_QUESTION)
+    assert f"\n## decisions\n- fixture/_decisions.csv:2 decided by operator on 2026-10-01: {DECISION_TEXT} [DECISION {did(0)}]" in out, out
+    out = decision_lookup_pack(root, DECISION_PATTERN_QUESTION)
+    assert (f"- fixture/_decisions.csv:3 proposed (not confirmed): Print queue names move to the pattern "
+            f"PQ-site-floor-room. [DECISION {did(1)}]") in out, out
+    assert "decided by" not in out and "30 days" not in out and "every hour" not in out, out
+    shown = decision_lookup_pack(root, DECISION_PATTERN_QUESTION, "--invalidated")
+    assert (f"- fixture/_decisions.csv:4 invalidated because article:print/queues is gone: Finished print jobs stay for "
+            f"30 days. [DECISION {did(2)}]") in shown and "every hour" not in shown, shown
+    row = decision_lookup_run(root, "show", "fixture/_decisions.csv:3", "-n", "1")
+    assert did(1) in row and "PQ-site-floor-room" in row, row
+    # planted: the same two rows both active print as decided, so the labels come from the status
+    rows = [{**r, "status": "active", "invalidated_reason": "", "invalidated_date": ""} for r in decision_lookup_rows()[:2]]
+    out = decision_lookup_pack(root, DECISION_PATTERN_QUESTION, rows=rows)
+    assert "proposed" not in out and "decided on 2026-10-01: Print queue names move" in out, out
+
+
+def test_decision_lookup_coverage_counts_only_active_decisions(tmp_path):
+    """The fixture article does not answer who approves an early purge, so the pack is `none`. An active decision whose
+    text holds the question's words lifts it to `good` (no route lines, its words not reported missing); a proposed,
+    an invalidated (with --invalidated) or a superseded one leaves the verdict as it was, and so does an active one
+    that holds too few of the words or lacks a name the question uses."""
+    from test_kb_root import decision
+    root = decision_lookup_root(tmp_path)
+    base = decision_lookup_pack(root, DECISION_QUESTION)
+    assert base.startswith("coverage: none"), base
+    lifted = decision_lookup_pack(root, DECISION_QUESTION, rows=[decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT)])
+    assert lifted.startswith("coverage: good (an active decision answers it;"), lifted
+    assert "route:" not in lifted and "not in the kb" not in lifted and "decided by operator" in lifted, lifted
+    # tied to no article, the words alone answer
+    item = [decision(0, text=DECISION_TEXT, context="item:TK-abcd2345")]
+    assert decision_lookup_pack(root, DECISION_QUESTION, rows=item).startswith("coverage: good (an active decision answers it;")
+    proposed = dict(status="proposed", by="", by_ref="")
+    invalid = dict(status="invalidated", invalidated_reason="item:TK-abcd2345 dropped", invalidated_date="2026-10-02")
+    for name, row, extra in (("proposed", decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT, **proposed), ()),
+                             ("invalid", decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT, **invalid), ("--invalidated",)),
+                             ("super", decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT, status="superseded"), ("--invalidated",)),
+                             ("few", decision(0, text="Print queues are purged nightly.", context=DECISION_CONTEXT), ())):
+        out = decision_lookup_pack(root, DECISION_QUESTION, *extra, rows=[row])
+        assert out.splitlines()[0] == base.splitlines()[0], (name, out[:300])
+    out = decision_lookup_pack(root, DECISION_QUESTION, rows=[decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT, **proposed)])
+    assert "proposed (not confirmed)" in out, out
+    out = decision_lookup_pack(root, DECISION_QUESTION, "--invalidated",
+                               rows=[decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT, **invalid)])
+    assert "invalidated because item:TK-abcd2345 dropped" in out, out
+    # a name the decision does not hold (the question is about another product) keeps it from answering
+    other = decision_lookup_pack(root, "Who approves an early purge of the Contoso print queues?", rows=item)
+    assert "an active decision answers it" not in other, other[:300]
+
+
+def test_decision_lookup_no_decision_rows_leave_the_pack_unchanged(tmp_path):
+    """A kb with no decision row packs byte for byte as before: no file, a header only, and only rows nothing prints
+    (superseded; invalidated without --invalidated) give the same text, whichever format."""
+    from test_kb_root import QUESTION, decision
+    sup = [decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT, status="superseded")]
+    inv = [decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT, status="invalidated",
+                    invalidated_reason="item:TK-abcd2345 dropped", invalidated_date="2026-10-02")]
+    root = decision_lookup_root(tmp_path)
+    questions = (QUESTION, DECISION_QUESTION, DECISION_PATTERN_QUESTION, "What is the default Windows LAPS password length?")
+    for q in questions:
+        for fmt in ("detailed", "concise"):
+            texts = {name: decision_lookup_pack(root, q, "--format", fmt, rows=rows)
+                     for name, rows in (("none", None), ("header", []), ("superseded", sup), ("invalidated", inv))}
+            assert len(set(texts.values())) == 1 and "## decisions" not in texts["none"], (q, texts)
+    for q in ("What is the default Windows LAPS password length?", "When does NTLMv1 become disabled by default?"):
+        res = kbfacts.pack(q)  # the real kb: the invariant, whatever rows it holds
+        assert ("## decisions" in res["text"]) == bool(res["decisions"]), q
+    # planted: a printable row does change the pack, so the equality above can fail
+    planted = decision_lookup_pack(root, DECISION_QUESTION, rows=[decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT)])
+    assert planted != decision_lookup_pack(root, DECISION_QUESTION, rows=None)
+
+
+def test_decision_lookup_lines_count_inside_the_budget(tmp_path):
+    """The decision lines are paid from the pack's budget: at most MAX_DECISIONS lines and a third of the budget,
+    and the facts printed with them are never more than without them (a large budget keeps them all)."""
+    from test_kb_root import decision
+    long_text = "Spooler notes say that quokka reports go to the print owner every week. " * 4
+    rows = [decision(i, text=f"{long_text}Rule {i}.", context=DECISION_CONTEXT) for i in range(6)]
+    extra = "".join(f"- Spooler note {n}: the quokka report of the finished print jobs is filed on Friday. [DOC FXT-3iumfjqd]\n"
+                    for n in range(1, 6))  # the words the question uses are not common: few of many facts hold them
+    extra += "".join(f"- Filler fact {n} about xylophone calibration. [DOC FXT-3iumfjqd]\n" for n in range(40))
+    root = decision_lookup_root(tmp_path, None, extra)
+    question = "What do the spooler notes say about quokka?"
+
+    def lines(out, decisions):
+        return [ln for ln in out.splitlines() if ln.startswith("- ") and ("_decisions.csv" in ln) == decisions]
+
+    for budget in (200, 400, 6000):
+        without = decision_lookup_pack(root, question, "--budget", str(budget), rows=None)
+        with_ = decision_lookup_pack(root, question, "--budget", str(budget), rows=rows)
+        decided = lines(with_, True)
+        assert 1 <= len(decided) <= kbfacts.MAX_DECISIONS, (budget, with_)
+        assert set(lines(with_, False)) <= set(lines(without, False)), budget
+        if len(decided) > 1:
+            assert sum(map(len, decided[:-1])) <= int(budget * 3.5) // kbfacts.DECISION_BUDGET_SHARE, (budget, decided)
+        if budget == 6000:
+            assert lines(with_, False) == lines(without, False), "a large budget keeps every fact line"
+        if budget == 200:
+            assert len(lines(with_, False)) < len(lines(without, False)), "the facts gave way to the decisions"
+
+
+def test_decision_lookup_cited_and_named_facts_bring_their_decision(tmp_path):
+    """A fact that cites `[DECISION id]`, or that a decision names (`fact:`), brings the decision beside it in a pack
+    and in `show` whatever words it holds; the short tag of `facts` prints the id, not a bare DECISION."""
+    from test_kb_root import ARTICLE, SID, decision, did
+    cited = f"- The nightly purge runs at 02:00 on the spooler. [DOC {SID}; DECISION {did(0)}]\n"
+    named = f"- Spooler logs are kept for 3 days. [DOC {SID}]\n"
+    key = kbfacts.fact_key(f"Spooler logs are kept for 3 days. [DOC {SID}]")
+    rows = [decision(0, text="Retention is the team's choice, not the vendor's.", context="item:TK-abcd2345"),
+            decision(1, text="Logs follow the audit schedule.", context=f"fact:{key}")]
+    root = decision_lookup_root(tmp_path, rows, cited + named)
+    out = decision_lookup_pack(root, "When does the nightly purge run on the spooler?")
+    assert f"decided by operator on 2026-10-01: Retention is the team's choice, not the vendor's. [DECISION {did(0)}]" in out, out
+    assert "Logs follow the audit schedule" not in out, out
+    out = decision_lookup_pack(root, "How many days are spooler logs kept?")
+    assert f"Logs follow the audit schedule. [DECISION {did(1)}]" in out, out
+    first = next(n for n, ln in enumerate((ARTICLE + cited).splitlines(), start=1) if "nightly purge runs" in ln)
+    shown = decision_lookup_run(root, "show", f"fixture/print/queues.md:{first}", "-n", "1")
+    assert f"DECISION {did(0)}]\ndecisions:\n- fixture/_decisions.csv:2 decided" in shown and did(1) not in shown, shown
+    shown = decision_lookup_run(root, "show", f"fixture/print/queues.md:{first + 1}", "-n", "1")
+    assert did(1) in shown and did(0) not in shown, shown  # the fact the second decision names
+    assert "decisions:" not in decision_lookup_run(root, "show", "fixture/print/queues.md:16", "-n", "1")
+    facts = decision_lookup_run(root, "facts", "fixture", "--tag", "DECISION")
+    assert f"[DOC {SID}; DECISION {did(0)}]" in facts, facts
+    import rag
+    part = kbfacts.parse_tag(f"[DOC S1208; DECISION {did(0)}, DECISION {did(1)}]")
+    assert rag.short_tag(part) == f"DOC S1208; DECISION {did(0)},{did(1)}"
+    assert rag.short_tag(kbfacts.parse_tag("[DECISION]")) == "DECISION"  # a tag naming none stays bare (check.py reports it)
+
+
+def test_decision_lookup_audit_lists_shared_contexts_without_blocking(tmp_path):
+    """audit lists the active decisions that share a context reference as a possible contradiction, once per
+    reference; a proposed, an invalidated or a lone decision is not listed, and check.py still passes."""
+    from test_kb_root import checked_root, decision, did
+    rows = [decision(0, text="Keep jobs 14 days.", context="article:print/queues; item:TK-abcd2345"),
+            decision(1, text="Keep jobs 30 days.", context="domain:print; article:print/queues"),
+            decision(2, text="Keep jobs 7 days.", context="article:print/queues", status="proposed", by="", by_ref=""),
+            decision(3, text="Purge nightly.", context="item:TK-wxyz2345")]
+    root = decision_lookup_root(tmp_path, rows)
+    out = decision_lookup_run(root, "audit", "--root", "fixture")
+    assert out.count("possible contradiction") == 1, out
+    block = out[out.index("possible contradiction"):]
+    assert block.startswith("possible contradiction: 2 active decisions share article:fixture/print/queues (read them; "
+                            "nothing is blocked)\n"), block
+    assert f"  {did(0)} fixture/_decisions.csv:2 Keep jobs 14 days." in block and did(1) in block, block
+    assert did(2) not in block and did(3) not in block, block
+    assert decision_lookup_run(root, "audit", "fixture/print").count("possible contradiction") == 1
+    assert "possible contradiction" not in decision_lookup_run(root, "audit", "--root", "public"), "narrowed away"
+    # planted: the sharing decision only proposed (or alone) lists nothing
+    decision_lookup_set(root, rows[:1] + rows[2:])
+    assert "possible contradiction" not in decision_lookup_run(root, "audit", "--root", "fixture")
+    # nothing is blocked: check.py reports no decision error for the sharing rows
+    code, found, text = checked_root(tmp_path / "chk", rows[:2] + [rows[3]])
+    assert found == {}, text[-800:]

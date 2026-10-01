@@ -16,6 +16,11 @@
             "description": "one domain, e.g. 'auth'",
             "type": "string"
           },
+          "include_invalidated": {
+            "default": false,
+            "description": "also invalidated decisions, with why",
+            "type": "boolean"
+          },
           "question": {
             "description": "the question, or 3-10 keywords",
             "type": "string"
@@ -96,6 +101,11 @@
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
+          "include_invalidated": {
+            "default": false,
+            "description": "also invalidated decisions, with why",
+            "type": "boolean"
+          },
           "line": {
             "description": "first line (overrides :LINE)",
             "minimum": 1,
@@ -121,5 +131,5 @@
       "name": "kb_show"
     }
   },
-  "version": "1.3.0"
+  "version": "1.4.0"
 }

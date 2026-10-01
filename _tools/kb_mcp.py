@@ -12,13 +12,16 @@
 Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network):
   kb_pack    the evidence pack for a question, like `rag.py pack`: a coverage verdict (good, weak, none), the best fact
              lines grouped by article with path:line and tag, and one footer of the cited sources' urls. Call it first.
+             Operator decisions come beside the facts, labelled decided or proposed (`include_invalidated` adds the
+             withdrawn ones, with why); an active decision that answers the question counts toward `good`.
              `questions` (1-6) batches the parts of a multi-part question: a section per part, one shared footer.
              Always loaded (`anthropic/alwaysLoad`): the first lookup needs no tool-search round trip.
   kb_search  line search on the pack index, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
              source ids and their urls, and rag.py's notes ("not found anywhere", "weak match")
   kb_facts   fact lines under a path prefix, optionally only some tag kinds, like `rag.py facts`
-  kb_audit   per article: status, retrieved_utc, fact counts by tag kind, linked gap/conflict entries, like `rag.py audit`
-  kb_show    lines of a kb file, like `rag.py show PATH:LINE -n N`
+  kb_audit   per article: status, retrieved_utc, fact counts by tag kind, linked gap/conflict entries, like `rag.py audit`;
+             then the possible contradictions: active decisions that share a context
+  kb_show    lines of a kb file, like `rag.py show PATH:LINE -n N`, then the decisions tied to those lines
   kb_source  source rows by id (legacy S123 or hash S-xxxxxxxx), with superseded_by, like `rag.py src`; `cited`
              adds every file line that names each id
   kb_status  how current this copy is: its commit and date, the latest census-* tag (or _census/ log), source and
@@ -61,7 +64,7 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
 import rag, kbcommon, kbfacts  # noqa: E402
 
-NAME, VERSION = "kb", "1.3.0"
+NAME, VERSION = "kb", "1.4.0"
 MODERN = "2026-07-28"
 LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 SUPPORTED = [MODERN, *LEGACY]
@@ -95,6 +98,8 @@ TOOL_LIST = [
          "budget": {"type": "integer", "minimum": 200, "maximum": 6000, "default": 1200, "description": "tokens per part"},
          "domain": {"type": "string", "description": "one domain, e.g. 'auth'"},
          "root": ROOT,
+         "include_invalidated": {"type": "boolean", "default": False,
+                                 "description": "also invalidated decisions, with why"},
          "response_format": {**FORMAT, "default": "detailed"}},
          "additionalProperties": False},
      "annotations": READ_ONLY,
@@ -139,7 +144,9 @@ TOOL_LIST = [
      "inputSchema": {"type": "object", "properties": {
          "path": {"type": "string", "description": "a path as the tools print it, optionally with :LINE (e.g. 'public/auth/kerberos.md:42')"},
          "line": {"type": "integer", "minimum": 1, "description": "first line (overrides :LINE)"},
-         "n": {"type": "integer", "minimum": 1, "maximum": MAX_LINES, "default": 40, "description": "number of lines"}},
+         "n": {"type": "integer", "minimum": 1, "maximum": MAX_LINES, "default": 40, "description": "number of lines"},
+         "include_invalidated": {"type": "boolean", "default": False,
+                                 "description": "also invalidated decisions, with why"}},
          "required": ["path"], "additionalProperties": False},
      "annotations": {"title": "Show kb lines", **READ_ONLY}},
     {"name": "kb_source", "title": "Resolve source ids",
@@ -244,7 +251,8 @@ def kb_pack(args):
         raise ToolError(f"at most {kbfacts.MAX_QUESTIONS} questions per call")
     budget = min(max(int(args.get("budget") or 1200), 200), 6000)
     with guarded():
-        text = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root_of(args))["text"]
+        text = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root_of(args),
+                                  args.get("include_invalidated") is True)["text"]
     note = behind_note()
     return f"{note}\n\n{text}" if note else text
 
@@ -302,7 +310,9 @@ def kb_audit(args):
         rows = kbfacts.audit(args.get("prefix") or None, args.get("status") or None, root_of(args))
     if not rows:
         raise ToolError("no article matches")
-    return rag.format_audit(rows, bool(args.get("entries")), fmt_of(args, "concise"))
+    with guarded():
+        conflicts = rag.format_decision_conflicts(kbfacts.decision_conflicts(args.get("prefix") or None, root_of(args)))
+    return rag.format_audit(rows, bool(args.get("entries")), fmt_of(args, "concise")) + (f"\n{conflicts}" if conflicts else "")
 
 
 def kb_show(args):
@@ -328,7 +338,11 @@ def kb_show(args):
     if start > len(lines):
         raise ToolError(f"{path} has {len(lines)} lines")
     body = [f"{i:>5}  {lines[i - 1]}" for i in range(start, min(start + n, len(lines) + 1))]
-    return f"# {rel} lines {start}-{start + len(body) - 1} of {len(lines)}\n" + "\n".join(body)
+    with guarded():
+        decisions = kbfacts.show_decisions(kbfacts.qpath_of(full), start, start + len(body) - 1,
+                                           args.get("include_invalidated") is True)
+    return (f"# {rel} lines {start}-{start + len(body) - 1} of {len(lines)}\n" + "\n".join(body)
+            + ("\ndecisions:\n" + "\n".join(decisions) if decisions else ""))
 
 
 def shown_path(full):

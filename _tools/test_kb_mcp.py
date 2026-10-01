@@ -28,6 +28,9 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
 test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
                 (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
                 goes with text; a planted ignored argument is caught.
+test_decision_lookup_mcp_*  kb_pack, kb_show and kb_audit with a root's decisions (`include_invalidated` on kb_pack and
+                kb_show): the labels, the coverage an active decision gives, the decisions of the lines kb_show prints, the
+                possible contradictions in kb_audit; planted: no decision file, and a string where the boolean true goes.
 test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only the named roots in every tool and
                 kb_status, every root without it, and an unknown or missing name refused at the start on stderr.
 test_status_*   how far a clone or an installed plugin is behind the kb it follows, from local refs: the update
@@ -992,6 +995,61 @@ def test_embed_roots_serves_only_the_named_root(tmp_path):
     assert "census_log: none" in status and "sources: 1 (0 superseded)" in status, status
     assert out[9][0] and "no root 'public'; roots: fixture" in out[9][1], out[9]
     assert "fixture/print/queues" in out[10][1] and "public/" not in out[10][1], out[10][1]
+
+
+def test_decision_lookup_mcp_pack_show_and_audit(tmp_path):
+    """kb_pack prints the decisions beside the facts (decided, proposed; `include_invalidated: true` adds the invalidated
+    with why; only the boolean true does), an active decision that answers lifts the coverage, kb_show lists the
+    decisions of the lines it shows, and kb_audit the active decisions that share a context. The two tools' schemas
+    carry the argument."""
+    from test_kb_lookup import (DECISION_CONTEXT, DECISION_PATTERN_QUESTION, DECISION_QUESTION, DECISION_TEXT,
+                                decision_lookup_root, decision_lookup_rows)
+    from test_kb_root import ARTICLE, SID, decision, did
+    cited = f"- The nightly purge runs at 02:00 on the spooler. [DOC {SID}; DECISION {did(5)}]\n"
+    rows = decision_lookup_rows() + [
+        decision(5, text="Retention is the team's choice.", context="item:TK-abcd2345"),
+        decision(6, text="Print owner is named by the team.", context=DECISION_CONTEXT)]
+    root = decision_lookup_root(tmp_path, rows, cited)
+    first = next(n for n, ln in enumerate((ARTICLE + cited).splitlines(), start=1) if "nightly purge runs" in ln)
+    p, out = _embedded(root, "--roots", "fixture", calls=[
+        ("kb_pack", {"question": DECISION_QUESTION}),
+        ("kb_pack", {"question": DECISION_PATTERN_QUESTION}),
+        ("kb_pack", {"question": DECISION_PATTERN_QUESTION, "include_invalidated": True}),
+        ("kb_pack", {"question": DECISION_PATTERN_QUESTION, "include_invalidated": "yes"}),
+        ("kb_show", {"path": f"fixture/print/queues.md:{first}", "n": 1}),
+        ("kb_show", {"path": "fixture/print/queues.md:16", "n": 1, "include_invalidated": True}),
+        ("kb_audit", {"prefix": "fixture"}),
+        ("kb_pack", {"questions": [DECISION_QUESTION, DECISION_PATTERN_QUESTION], "include_invalidated": True}),
+    ])
+    assert p.returncode == 0, p.stderr
+    answered, proposed, with_invalid, string_flag, shown, plain_show, audit, batch = (out[i][1] for i in range(1, 9))
+    assert answered.startswith("coverage: good (an active decision answers it") and (
+        f"decided by operator on 2026-10-01: {DECISION_TEXT} [DECISION {did(0)}]") in answered, answered
+    assert f"proposed (not confirmed): Print queue names move to the pattern PQ-site-floor-room. [DECISION {did(1)}]" in proposed, proposed
+    assert "invalidated because" not in proposed and did(2) not in proposed and did(3) not in proposed, proposed
+    assert f"invalidated because article:print/queues is gone: Finished print jobs stay for 30 days. [DECISION {did(2)}]" in with_invalid, with_invalid
+    assert did(3) not in with_invalid, "a superseded decision is never shown"
+    assert "invalidated because" not in string_flag, "only the boolean true adds the invalidated decisions"
+    assert "\ndecisions:\n" in shown and f"- fixture/_decisions.csv:6 decided by operator on 2026-10-01: Retention is the team's choice. [DECISION {did(5)}]" in shown, shown
+    assert f"[DECISION {did(0)}]" in shown and "invalidated because" not in shown, "the article's decisions come with its lines: " + shown
+    assert "\ndecisions:\n" in plain_show and did(5) not in plain_show.split("decisions:")[1], plain_show  # not cited on line 16
+    assert f"invalidated because article:print/queues is gone: Finished print jobs stay for 30 days. [DECISION {did(2)}]" in plain_show \
+        and did(3) not in plain_show, plain_show
+    assert "possible contradiction: 2 active decisions share article:fixture/print/queues" in audit and did(0) in audit and did(6) in audit, audit
+    assert did(1) not in audit.split("possible contradiction")[1], audit
+    assert "# Q1:" in batch and "invalidated because" in batch, batch
+    tools = {t["name"]: t for t in kb_mcp.TOOL_LIST}
+    for name in ("kb_pack", "kb_show"):
+        prop = tools[name]["inputSchema"]["properties"]["include_invalidated"]
+        assert prop["type"] == "boolean" and prop["default"] is False, (name, prop)
+    assert "include_invalidated" not in tools["kb_audit"]["inputSchema"]["properties"]
+    # planted: with no decision file the same calls print no decision section and no contradiction
+    from test_kb_lookup import decision_lookup_set
+    decision_lookup_set(root, None)
+    p, out = _embedded(root, "--roots", "fixture", calls=[("kb_pack", {"question": DECISION_QUESTION}),
+                                                          ("kb_audit", {"prefix": "fixture"})])
+    assert "## decisions" not in out[1][1] and out[1][1].startswith("coverage: none"), out[1][1]
+    assert "possible contradiction" not in out[2][1], out[2][1]
 
 
 MSAL_TOPIC = "public/auth/msal-public-client"

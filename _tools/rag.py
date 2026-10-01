@@ -144,11 +144,12 @@ FORMATS = ("concise", "detailed")
 
 
 def short_tag(parts):
-    """`[DOC S1, S2; DOC S3; UNK]` parsed -> `DOC S1,S2,S3; UNK` (one entry per kind, ids deduplicated)."""
+    """`[DOC S1, S2; DOC S3; UNK]` parsed -> `DOC S1,S2,S3; UNK` (one entry per kind, ids deduplicated); a DECISION
+    part prints its decision's id (`DECISION D-k3f7q2zd`), which its `decision` holds, not its `ids`."""
     by = {}
     for p in parts:
         ids = by.setdefault(p["kind"], [])
-        ids += [i for i in p["ids"] if i not in ids]
+        ids += [i for i in p["ids"] + [p.get("decision") or ""] if i and i not in ids]
     return "; ".join(k + (" " + ",".join(v) if v else "") for k, v in by.items())
 
 
@@ -225,6 +226,16 @@ def format_audit(rows, entries=False, fmt="detailed"):
     return "\n".join(out)
 
 
+def format_decision_conflicts(items):
+    """The possible contradictions of kbfacts.decision_conflicts: per shared context, its active decisions. Text for a
+    person to read; a kb with none prints nothing."""
+    out = []
+    for ref, ds in items:
+        out.append(f"possible contradiction: {len(ds)} active decisions share {ref} (read them; nothing is blocked)")
+        out += [f"  {d['id']} {d['path']}:{d['line']} {kbfacts.clip(d['text'], 200)}" for d in ds]
+    return "\n".join(out)
+
+
 def eval_cases(path=None):
     """[(root name, case)] of every root's lookup_eval.csv (under DATA_DIR), or of one file: `path` as given (else
     as a qualified or repository path), its cases belonging to the root that holds it (else the public root)."""
@@ -277,6 +288,7 @@ def main():
     pk.add_argument("-q", dest="parts", action="append", default=[], help="one part of a multi-part question (repeat, up to 6)")
     pk.add_argument("-d", "--domain"); pk.add_argument("--format", choices=FORMATS, default="detailed")
     pk.add_argument("--root", help="one root only")
+    pk.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
     fa = sub.add_parser("facts"); fa.add_argument("prefix"); fa.add_argument("--tag", help="comma-separated kinds, e.g. UNK,COMMUNITY")
     fa.add_argument("--format", choices=FORMATS, default="concise"); fa.add_argument("--root", help="one root only")
     au = sub.add_parser("audit"); au.add_argument("prefix", nargs="?"); au.add_argument("--status")
@@ -289,6 +301,7 @@ def main():
     tf.add_argument("--imports", action="store_true", help="match the signals against the packages the files declare (imports, manifests), not their text")
     ev = sub.add_parser("eval"); ev.add_argument("--file", help="one eval file (default: every root's lookup_eval.csv)")
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
+    w.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
     a = ap.parse_args()
 
     if a.cmd == "topics":
@@ -341,7 +354,7 @@ def main():
             sys.exit("pack: give a question, or -q PART for each part")
         if len(parts) > kbfacts.MAX_QUESTIONS:
             sys.exit(f"pack: at most {kbfacts.MAX_QUESTIONS} parts")
-        res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root)
+        res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated)
         if a.json:
             return print(json.dumps(res, indent=1))
         print(res["text"])
@@ -373,6 +386,8 @@ def main():
         if a.json:
             return print(json.dumps(rows, indent=1))
         print(format_audit(rows, a.entries, a.format))
+        if conflicts := format_decision_conflicts(kbfacts.decision_conflicts(a.prefix, a.root)):
+            print(conflicts)
     elif a.cmd == "topics-for":
         if not a.paths and not a.keywords:
             sys.exit("topics-for: give files or directories, or --keywords TEXT")
@@ -406,8 +421,13 @@ def main():
             sys.exit(1)
         lines = text.splitlines()
         start = max(int(line or 1), 1)
-        for n in range(start, min(start + a.n, len(lines) + 1)):
+        end = min(start + a.n, len(lines) + 1)
+        for n in range(start, end):
             print(f"{n:>5}  {lines[n - 1]}")
+        decisions = kbfacts.show_decisions(kbfacts.qpath_of(full), start, end - 1, a.invalidated)
+        if decisions:
+            print("decisions:")
+            print("\n".join(decisions))
 
 
 if __name__ == "__main__":
