@@ -2,7 +2,7 @@
   "id": "TK-mrlsbx4e",
   "kind": "task",
   "title": "Sprint review prints the sprint's cost",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-zjw6ugq6",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,19 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "worker-mrlsbx4e"
+  "evidence": {
+    "commit": "c0dd689b84e1b41cb2fc9b812906fd2713c410cf",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "backlog.py cost",
+          ".claude/skills/kb-sprint/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      }
+    ]
+  }
 }
