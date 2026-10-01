@@ -2,7 +2,7 @@
   "id": "ST-ecacczzu",
   "kind": "story",
   "title": "Research cost against the gaps it closed",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-fvztfmtm",
   "priority": "P3",
@@ -21,5 +21,20 @@
   "depends_on": [
     "ST-6bi7oe6y"
   ],
-  "notes": "research true comes from ST-wgymzw72; until then only links to gap findings select an item. A /kb-research session that claims no item is not counted."
+  "notes": "research true comes from ST-wgymzw72; until then only links to gap findings select an item. A /kb-research session that claims no item is not counted.",
+  "evidence": {
+    "commit": "e6daecf4fb039842b09e317ccc5942a0efe77e0b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cost_research"
+        ],
+        "exit": 0,
+        "sha256": "e3519d9b81e5df84"
+      }
+    ]
+  }
 }
