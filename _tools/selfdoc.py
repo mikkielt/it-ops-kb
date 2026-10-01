@@ -396,9 +396,18 @@ def resolve_tool(name, root=KB):
     raise SelfdocError(f"no such tool file: {name} (a .py file under {TOOLS_REL}/)")
 
 
+def lf_lines(text):
+    """The lines of TEXT split on LF alone, as the tokenizer and `ast` count them: `str.splitlines` also breaks at U+2028,
+    U+2029, U+0085, form feed and the other separators, which would shift every line number after one in a string."""
+    lines_ = text.split("\n")
+    if lines_[-1] == "":
+        lines_.pop()
+    return lines_
+
+
 def first_line(doc):
     """The first line of a docstring, cut to DOC_MAX characters; empty for none."""
-    lines_ = (doc or "").strip().splitlines()
+    lines_ = lf_lines((doc or "").strip())
     text = " ".join(lines_[0].split()) if lines_ else ""
     return text if len(text) <= DOC_MAX else text[:DOC_MAX - 1].rstrip() + "…"
 
@@ -477,7 +486,7 @@ def check_map(map_lines, root=KB):
         path, no, kind, name = m["path"], int(m["line"]), m["kind"], m["name"]
         if path not in src:
             try:
-                src[path] = (base / path).read_text(encoding="utf-8").splitlines()
+                src[path] = lf_lines((base / path).read_text(encoding="utf-8"))
             except (OSError, UnicodeDecodeError):
                 src[path] = None
         text = src[path]
