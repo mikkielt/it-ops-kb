@@ -17,7 +17,11 @@ the part that does not touch the backlog's files:
 - `open_with_fingerprint(items, fp)`: the open item whose links already carry the fingerprint, which skips the
   candidate;
 - `lines(candidate)`: the lines the command prints for one candidate;
-- the `drift` detector (`scan_drift`, `drift_detector`): items whose state disagrees with their commits;
+- the `drift` detector (`scan_drift`, `drift_detector`): items whose state disagrees with their commits. Its item
+  checks run within a total budget (DRIFT_BUDGET_S, each check at most CHECK_TIMEOUT_S), and a check that runs the
+  whole test suite (`_tools/tests.py` with no `-k`) or `stress_test.py` never runs; the items those leave unchecked are
+  counted in the story's notes, never reported as passing. The budget is the detector's one reading of time, so an
+  intake stays short enough for a SessionStart hook;
 - the `trailers` detector (`trailer_findings`, `trailers_detector`, at the end): commits of main whose KB-Work line git
   does not read, or that change code with no KB-Work and no KB-Auto trailer.
 
@@ -30,6 +34,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -173,7 +178,10 @@ def lines(c, filed=None):
 
 BACKLOG_DIR = "kb/_self/backlog"  # backlog.py's REL_DIR: the item files, one `<id>.json` each
 DRIFT_HOURS = 24  # a doing item whose newest work commit is older than this drifted
-CHECK_TIMEOUT_S = 120  # one check run by the detector; a check that exceeds it is counted and says nothing
+CHECK_TIMEOUT_S = 15  # one check run by the detector; a check that exceeds it is counted and says nothing
+DRIFT_BUDGET_S = 30  # all the checks of one scan; once spent, no further check starts and the rest are counted
+HEAVY_SCRIPTS = ("stress_test.py",)  # a check that runs one of these never runs from intake
+SUITE = "_tools/tests.py"  # a check that runs it with no `-k` selector (the whole suite) never runs from intake
 WORK_KEY = "KB-Work"
 ID_RE = re.compile(r"[A-Z]{2}-[0-9a-z]{8}")
 
@@ -182,10 +190,14 @@ ID_RE = re.compile(r"[A-Z]{2}-[0-9a-z]{8}")
 class Drift:
     """What `scan_drift` found: `stale` {doing item id: (work commit, hours it is older than the tip of main)},
     `passing` {draft or todo item id: how many checks it has} (all of its checks pass on HEAD), `timed_out` the ids of
-    items with a check that exceeded the timeout, `ran` how many items had their checks run."""
+    items with a check that exceeded the timeout, `heavy` the ids of items left unchecked because a check runs the
+    whole test suite or the stress tests, `over_budget` the ids of items left unchecked once the budget was spent,
+    `ran` how many items had their checks run."""
     stale: dict = field(default_factory=dict)
     passing: dict = field(default_factory=dict)
     timed_out: list = field(default_factory=list)
+    heavy: list = field(default_factory=list)
+    over_budget: list = field(default_factory=list)
     ran: int = 0
 
 
@@ -289,6 +301,19 @@ def check_env():
     return env
 
 
+def heavy_check(check):
+    """True when the check's argv runs `stress_test.py`, or `_tools/tests.py` with no `-k` selector after it."""
+    argv = [str(a).replace("\\", "/") for a in check.get("run", [])]
+    for i, a in enumerate(argv):
+        name = a.rsplit("/", 1)[-1]
+        if name in HEAVY_SCRIPTS:
+            return True
+        if a == SUITE or a.endswith("/" + SUITE) or a == "tests.py":
+            if not any(x == "-k" or x.startswith("-k") for x in argv[i + 1:]):
+                return True
+    return False
+
+
 def check_result(root, check, timeout):
     """"pass", "fail" or "timeout" for one item check (`run` argv, optional `exit` and `match`), run in `root` without a
     shell; a check that cannot start fails. python3 runs with the interpreter running this tool."""
@@ -308,20 +333,29 @@ def check_result(root, check, timeout):
     return "pass" if ok else "fail"
 
 
-def passing_open(root, items, timeout, drift):
+def passing_open(root, items, timeout, drift, budget):
     """Run the checks of each draft or todo item that has touches and checks and whose touches changed since its file
     did; an item is reported when all its checks pass, left out when one fails, left out and counted when one
-    exceeds `timeout`."""
+    exceeds `timeout` (or the budget left), when one is a heavy check (not run), or when the `budget` seconds for all
+    the checks were spent before its turn (not run)."""
+    start = time.monotonic()
     for iid, it in sorted(items.items()):
         checks = [c for c in it.get("checks", []) if isinstance(c, dict) and c.get("run")]
         if it.get("status") not in ("draft", "todo") or not it.get("touches") or not checks:
             continue
         if not touches_changed_since_file(root, iid, it["touches"]):
             continue
+        if any(heavy_check(c) for c in checks):
+            drift.heavy.append(iid)
+            continue
+        if time.monotonic() - start >= budget:
+            drift.over_budget.append(iid)
+            continue
         drift.ran += 1
         results = []
         for c in checks:
-            results.append(check_result(root, c, timeout))
+            left = budget - (time.monotonic() - start)
+            results.append(check_result(root, c, min(timeout, left)) if left > 0 else "timeout")
             if results[-1] != "pass":
                 break
         if results[-1] == "timeout":
@@ -330,13 +364,15 @@ def passing_open(root, items, timeout, drift):
             drift.passing[iid] = len(checks)
 
 
-def scan_drift(root, hours=None, timeout=None):
-    """The `Drift` of the repository under `root`; `hours` and `timeout` default to DRIFT_HOURS and CHECK_TIMEOUT_S."""
+def scan_drift(root, hours=None, timeout=None, budget=None):
+    """The `Drift` of the repository under `root`; `hours`, `timeout` and `budget` default to DRIFT_HOURS,
+    CHECK_TIMEOUT_S and DRIFT_BUDGET_S."""
     hours = DRIFT_HOURS if hours is None else hours
     timeout = CHECK_TIMEOUT_S if timeout is None else timeout
+    budget = DRIFT_BUDGET_S if budget is None else budget
     items = load_items(root)
     drift = Drift(stale=stale_doing(root, items, hours))
-    passing_open(root, items, timeout, drift)
+    passing_open(root, items, timeout, drift, budget)
     return drift
 
 
@@ -344,7 +380,8 @@ def scan_drift(root, hours=None, timeout=None):
 def drift_detector(root):
     """One story listing the items that disagree with their commits: each doing item whose newest work commit on main
     is older than DRIFT_HOURS (no done followed it), and each draft or todo item with touches whose own checks already
-    pass on HEAD. The fingerprint is the sorted item ids."""
+    pass on HEAD. The fingerprint is the sorted item ids. Items left unchecked (a timeout, a heavy check, the spent
+    budget) are counted in the notes and never reported."""
     d = scan_drift(root)
     ids = sorted(set(d.stale) | set(d.passing))
     if not ids:
@@ -354,7 +391,14 @@ def drift_detector(root):
              f"{main_ref(root)}, and no done followed it" for i in sorted(d.stale)]
     notes += [f"{i}: its {d.passing[i]} check(s) already pass on HEAD" for i in sorted(d.passing)]
     if d.timed_out:
-        notes.append(f"{len(d.timed_out)} item(s) had a check that exceeded {CHECK_TIMEOUT_S} s and were left out")
+        notes.append(f"{len(d.timed_out)} item(s) had a check that exceeded {CHECK_TIMEOUT_S} s (or the budget left) and were "
+                     "left out")
+    if d.heavy:
+        notes.append(f"{len(d.heavy)} item(s) had a check that runs the whole test suite or the stress tests, "
+                     "not run, and were left out")
+    if d.over_budget:
+        notes.append(f"{len(d.over_budget)} item(s) were not checked: the {DRIFT_BUDGET_S} s budget for checks was "
+                     "spent, and were left out")
     return [Candidate(
         kind="story", title=f"Drift: {len(ids)} backlog item(s) disagree with their commits",
         goal=f"Each of {', '.join(ids)} is finished with done, dropped, or has its status corrected, so no detector "
