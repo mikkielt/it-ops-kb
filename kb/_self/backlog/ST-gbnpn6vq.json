@@ -2,7 +2,7 @@
   "id": "ST-gbnpn6vq",
   "kind": "story",
   "title": "Cost reports separate system overhead from item work",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-fvztfmtm",
   "priority": "P3",
@@ -46,5 +46,20 @@
       "answer": "approve: counts of the kb's own background runs only, no text",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "f2d7b9b8337e3dfdfd3f7360c78b195b29773f5a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cost_overhead"
+        ],
+        "exit": 0,
+        "sha256": "a097e791158adb2b"
+      }
+    ]
+  }
 }
