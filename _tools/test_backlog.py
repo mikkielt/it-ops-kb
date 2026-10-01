@@ -732,6 +732,21 @@ def test_repro_needs_behaviour_or_reason_classifier():
         assert t(argv) is None, argv
 
 
+def test_new_task_refuses_sprint(repo):
+    """new task|subtask --sprint exits 2 naming the rule and writes nothing; a story may still name a sprint."""
+    _, out = b(repo, "new", "sprint", "--title", "Sp")
+    sp = item(repo, "Sp")["id"]
+    _, out = b(repo, "new", "story", "--title", "St", "--goal", "g", "--sprint", sp)
+    st = item(repo, "St")["id"]
+    before = sorted((Path(repo) / backlog.REL_DIR).glob("*.json"))
+    for kind, parent in (("task", st), ("subtask", st)):
+        code, out = b(repo, "new", kind, "--title", "Child", "--parent", parent, "--sprint", sp)
+        assert code == 2 and "only stories and bugs name a sprint" in out, out
+    assert sorted((Path(repo) / backlog.REL_DIR).glob("*.json")) == before, "a refused new writes nothing"
+    code, out = b(repo, "new", "task", "--title", "Child", "--parent", st)
+    assert code == 0, out
+
+
 def test_repro_needs_behaviour_or_reason_new_refuses_then_files(repo):
     """new refuses a text-only repro with no reason (exit 2, nothing written), files one with --repro-reason and
     keeps the reason; a repro that runs the behaviour needs none, and --repro-reason without a bug's repro is refused."""

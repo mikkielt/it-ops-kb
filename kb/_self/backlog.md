@@ -33,7 +33,7 @@ A story or bug too big for one push is split into two. A task too big for one co
 |---|---|
 | `id`, `kind`, `title` | identity; the title is a short name that is always printed with the id |
 | `status` | `draft`, `todo`, `doing`, `done`, `dropped` (a sprint: `planned`, `active`) |
-| `parent`, `sprint` | the hierarchy; only stories and bugs name a sprint, and their tasks and subtasks follow it |
+| `parent`, `sprint` | the hierarchy; only stories and bugs name a sprint, and their tasks and subtasks follow it (`new` refuses `--sprint` on a task or subtask) |
 | `review` | true on the sprint's review story |
 | `priority`, `rank` | `P1` to `P3`, then an integer order within the priority |
 | `severity`, `repro` | bugs: `S1` to `S4`, and the check that fails until the fix lands |
