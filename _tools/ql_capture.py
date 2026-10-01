@@ -399,29 +399,53 @@ def capture(event):
     return None
 
 
+def usage_targets(rs, skip=None):
+    """(prompt ids that need a usage row, (prompt id, reader) pairs that have one) of one session's spool rows, the
+    targets in the order the prompts began. A prompt needs one when it used the kb (a kb_hook or mcp row, or a kb
+    intent) or lies inside a work window: from a `claim` row of an item to the `done` or `release` row of the same
+    item, the prompts of both rows included, a window still open at the end of the rows running to it. A `done` or
+    `release` with no open claim in these rows opens and closes nothing. `skip` (the running prompt) is never a
+    target."""
+    order, kb, inside, have, open_items = [], set(), set(), set(), set()
+    for r in rs:
+        pid = r.get("prompt_id") if isinstance(r, dict) else None
+        if not isinstance(pid, str):
+            continue
+        if r.get("surface") == "usage":
+            have.add((pid, r.get("reader")))
+            continue
+        if pid not in order:
+            order.append(pid)
+            if open_items:
+                inside.add(pid)
+        if r.get("surface") in ("kb_hook", "mcp") or r.get("kb_intent"):
+            kb.add(pid)
+        elif r.get("surface") == "work" and isinstance(r.get("item"), str):
+            if r.get("action") == "claim":
+                open_items.add(r["item"])
+                inside.add(pid)
+            elif r.get("action") in ("done", "release") and r["item"] in open_items:
+                open_items.discard(r["item"])
+                inside.add(pid)
+    return [pid for pid in order if pid != skip and (pid in kb or pid in inside)], have
+
+
 def add_usage(spool, session_id, transcript_path, skip=None):
     """Append a `usage` row (kbusage.prompt_usage) to the spool file of `session_id` for each of its prompts but
-    `skip` that used the kb (a kb_hook or mcp row, or a prompt with a kb intent) and has no usage row of this reader
-    yet. The number of rows written; the transcript path is never written."""
+    `skip` that used the kb (a kb_hook or mcp row, or a prompt with a kb intent) or lies inside a work window of the
+    session (usage_targets), kb or not, and has no usage row of this reader yet. The number of rows written; the
+    transcript path is never written."""
     if not (isinstance(session_id, str) and SAFE_SESSION.fullmatch(session_id)
             and isinstance(transcript_path, str) and transcript_path):
         return 0
     path = Path(spool) / f"{session_id}.jsonl"
-    kb, done = [], set()
-    for r in rows(path):
-        pid = r.get("prompt_id") if isinstance(r, dict) else None
-        if not isinstance(pid, str) or pid == skip:
-            continue
-        if r.get("surface") == "usage":
-            done.add((pid, r.get("reader")))
-        elif (r.get("surface") in ("kb_hook", "mcp") or r.get("kb_intent")) and pid not in kb:
-            kb.append(pid)
-    if not kb:
+    targets, have = usage_targets(list(rows(path)), skip)
+    if not targets:
         return 0
     import kbusage
     out = []
-    for pid in kb:
-        rec = None if (pid, kbusage.READER_VERSION) in done else kbusage.prompt_usage(transcript_path, pid)
+    for pid in targets:
+        rec = None if (pid, kbusage.READER_VERSION) in have else kbusage.prompt_usage(transcript_path, pid)
         if rec is not None:
             out.append({"id": str(uuid.uuid4()), "ts": now(), "surface": "usage", "v": ROW_FORMAT,
                         "session_id": session_id, "prompt_id": pid, "reader": kbusage.READER_VERSION, "usage": rec})

@@ -8,6 +8,7 @@
                     {item, action} (and the subagent's `agent_id`), keyed like every hook row, never the command's
                     text; a failed run, a dry run, another command and a mention in quoted text write none
                     (planted: the same command succeeding writes one)
+                    `usage_targets` picks the prompts that need a usage row: the kb's and every prompt of a work window
   TestSwitches      mode `off`, the DISABLED marker and an unreadable config file write nothing (planted: the same
                     events with the default mode write); where rows go in a clone and in a plugin host
   TestToolRows      kb_hook.py, kb_ask.py, fetch.py and census.py write their own rows; the kb: hook's answer is
@@ -320,6 +321,28 @@ class TestWorkRows:
         (d / "config.json").write_text('{"mode": "off"}', encoding="utf-8", newline="\n")
         assert hook(tmp_path, tool("Bash", {"command": CLAIM}, {"stdout": ""})) == (0, b"")
         assert lines(tmp_path) == [] and not spool(tmp_path).exists()
+
+
+    @pytest.mark.parametrize("plan,skip,want", [
+        ([("p0", "prompt"), ("p1", "prompt")], None, []),
+        ([("p0", "kb"), ("p1", "prompt")], None, ["p0"]),
+        ([("p0", "claim"), ("p1", "prompt"), ("p2", "done"), ("p3", "prompt")], None, ["p0", "p1", "p2"]),
+        ([("p0", "prompt"), ("p1", "claim"), ("p2", "prompt")], None, ["p1", "p2"]),  # open: runs to the end
+        ([("p0", "claim"), ("p1", "prompt"), ("p2", "prompt")], "p2", ["p0", "p1"]),
+        ([("p0", "done"), ("p1", "prompt")], None, []),  # no claim in these rows: no window
+        ([("p0", "claim"), ("p1", "release"), ("p2", "kb"), ("p3", "prompt")], None, ["p0", "p1", "p2"])])
+    def test_work_usage_targets(self, plan, skip, want):
+        """Which prompts of a spool file need a usage row (planted: a done with no claim opens nothing, a prompt
+        after the window closes is a target only when it used the kb)."""
+        rs = []
+        for pid, kind in plan:
+            rs.append({"surface": "prompt", "prompt_id": pid})
+            if kind == "kb":
+                rs.append({"surface": "mcp", "prompt_id": pid})
+            elif kind != "prompt":
+                rs.append({"surface": "work", "prompt_id": pid, "item": "TK-aaaaaaaa", "action": kind})
+        rs.append({"surface": "usage", "prompt_id": "p9", "reader": 1})
+        assert ql_capture.usage_targets(rs, skip) == (want, {("p9", 1)})
 
 
 class TestSwitches:
