@@ -15,6 +15,7 @@
       "import sys; sys.exit(0 if 'mcp__kb__docs_search' in open('_tools/kb_ask.py',encoding='utf-8').read() else 1)"
     ]
   },
+  "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
   "touches": [
     "_tools/kb_ask.py",
     "_tools/test_kb_ask_route.py",

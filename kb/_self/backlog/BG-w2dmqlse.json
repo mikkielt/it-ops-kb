@@ -16,6 +16,7 @@
       "import sys; sys.exit('Read `kb/_self/maintaining.md` before the change itself' in open('kb/_self/backlog.md').read())"
     ]
   },
+  "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/_self/backlog.md"
   ]

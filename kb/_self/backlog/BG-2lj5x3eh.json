@@ -15,6 +15,7 @@
       "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();p=next(l for l in t.splitlines() if l.startswith('- **A bug filed while landing**'));sys.exit(0 if '--sprint' in p else 1)"
     ]
   },
+  "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/_self/backlog.md",
     ".claude/skills/kb-sprint/SKILL.md",

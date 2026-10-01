@@ -15,6 +15,7 @@
       "import pathlib, sys; sys.exit('read-only forms are `GOTOOLCHAIN=local`, `--no-restore`' in pathlib.Path('kb/public/agents/codebase-mapping.md').read_text(encoding='utf-8'))"
     ]
   },
+  "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/public/agents/codebase-mapping.md",
     "kb/public/agents/codebase-mapping.csv"

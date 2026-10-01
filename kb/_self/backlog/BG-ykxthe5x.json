@@ -16,6 +16,7 @@
       ".claude/skills/kb-sprint/SKILL.md"
     ]
   },
+  "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-backlog/SKILL.md"

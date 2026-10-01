@@ -15,6 +15,7 @@
       "import sys; from pathlib import Path; sys.exit(1 if 'test_kb.py' in Path('_tools/fixtures/querylog/e2e.json').read_text(encoding='utf-8') else 0)"
     ]
   },
+  "repro_reason": "the defect is descriptive text in a test fixture; there is no behaviour to run",
   "touches": [
     "_tools/fixtures/querylog/e2e.json"
   ]

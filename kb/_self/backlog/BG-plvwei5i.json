@@ -15,6 +15,7 @@
       "import json,sys;d=json.load(open('kb/_self/backlog/EP-vpb7u3us.json',encoding='utf-8'));sys.exit(1 if 'ST-u7bliqzx' in json.dumps(d) or 'scheduled before' in d['goal'] else 0)"
     ]
   },
+  "repro_reason": "the defect is text in an epic's item file; no program behaviour is involved",
   "touches": [
     "kb/_self/backlog/EP-vpb7u3us.json"
   ]

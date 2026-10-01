@@ -16,6 +16,7 @@
       "import json,sys; s=json.load(open('.claude/settings.json'))['hooks'].get('SessionStart',[]); sys.exit(not any('change_router' in h.get('command','') for m in s for h in m.get('hooks',[])))"
     ]
   },
+  "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
   "touches": [
     ".claude/hooks/kb_change_router.py",
     ".claude/settings.json",

@@ -15,6 +15,7 @@
       "import pathlib,sys; t=pathlib.Path('kb/_self/git.md').read_text(encoding='utf-8'); sys.exit(1 if any('run by hand on the runners' in l and 'kb.yml' in l.split('run by hand on the runners',1)[1][:120] for l in t.splitlines()) else 0)"
     ]
   },
+  "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/_self/git.md"
   ]

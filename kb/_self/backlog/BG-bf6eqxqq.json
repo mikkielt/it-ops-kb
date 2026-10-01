@@ -15,6 +15,7 @@
       "import sys;sys.exit(1 if 'saved none' in open('kb/_self/token-efficiency.md',encoding='utf-8').read() else 0)"
     ]
   },
+  "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/_self/token-efficiency.md"
   ]

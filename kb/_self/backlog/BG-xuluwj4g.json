@@ -15,6 +15,7 @@
       "import sys; t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read(); s=t.split('<!-- bench:records navigation -->')[1].split('<!-- /bench -->')[0]; sys.exit(0 if '0c375fc' in s else 1)"
     ]
   },
+  "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
   "checks": [
     {
       "run": [

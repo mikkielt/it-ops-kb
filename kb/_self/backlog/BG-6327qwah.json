@@ -15,6 +15,7 @@
       "import json,sys;t=json.dumps([json.load(open(f'kb/_self/backlog/{i}.json',encoding='utf-8')) for i in ('ST-ecacczzu','TK-nb6gbc3x')]);sys.exit(1 if 'ST-wgymzw72' in t or 'research true' in t else 0)"
     ]
   },
+  "repro_reason": "the defect is text in two item files; no program behaviour is involved",
   "touches": [
     "kb/_self/backlog/ST-ecacczzu.json",
     "kb/_self/backlog/TK-nb6gbc3x.json"

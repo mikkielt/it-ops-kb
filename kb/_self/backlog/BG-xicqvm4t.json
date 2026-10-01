@@ -15,6 +15,7 @@
       "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();sys.exit(1 if 'Files are read from the checkout' in t else 0)"
     ]
   },
+  "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
   "checks": [
     {
       "run": [
