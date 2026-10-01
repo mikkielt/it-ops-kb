@@ -2,7 +2,7 @@
   "id": "ST-w5gs2sas",
   "kind": "story",
   "title": "backlog.py find and tree --open answer does an item already cover this in a few lines",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-xb45i7t4",
   "priority": "P2",
@@ -26,5 +26,19 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "worker-w5gs2sas"
+  "evidence": {
+    "commit": "20b2ee2f53e88c1d94735fa8a2c59bf63fa2aae7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_find"
+        ],
+        "exit": 0,
+        "sha256": "206d28f922903150"
+      }
+    ]
+  }
 }
