@@ -406,6 +406,40 @@ def test_start_refuses_work_items_without_touches(repo):
     assert item(repo, "S")["status"] == "active" and item(repo, "Bare bug")["status"] == "todo"
 
 
+def test_backlog_docs_after_code_start_refuses_and_check_errors(repo):
+    """Planted: a planned sprint's docs-only task (touches only kb/_self docs) that depends on a code task whose code
+    kb/_self/map.csv maps to those docs; start refuses, changing nothing, and check errors, each naming both. The doc
+    in the code task's touches (the docs task then holds another doc) or no dependency clears both."""
+    (repo / "kb" / "_self").mkdir(parents=True, exist_ok=True)
+    (repo / "kb" / "_self" / "map.csv").write_text(DOC_MAP, encoding="utf-8", newline="\n")
+    commit(repo, "map")
+    b(repo, "new", "epic", "--title", "E", "--goal", "g")
+    ep = item(repo, "E")["id"]
+    b(repo, "new", "sprint", "--title", "S", "--goal", "g")
+    sp = item(repo, "S")["id"]
+    b(repo, "new", "story", "--title", "Story", "--parent", ep, "--sprint", sp, "--goal", "g",
+      "--check", argstr(PASS))
+    st = item(repo, "Story")["id"]
+    b(repo, "new", "task", "--title", "Code", "--parent", st, "--goal", "g", "--touch", "_tools/x.py",
+      "--check", argstr(PASS))
+    tk = item(repo, "Code")["id"]
+    b(repo, "new", "task", "--title", "Docs", "--parent", st, "--goal", "g", "--touch", "kb/_self/tools.md",
+      "--depends", tk, "--check", argstr(PASS))
+    docs = item(repo, "Docs")["id"]
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    files = {f.name: f.read_bytes() for f in (Path(repo) / backlog.REL_DIR).glob("*.json")}
+    want = (f"{docs} “Docs”: touches only docs of code that {tk} “Code”, which it depends on, touches: "
+            "kb/_self/tools.md")
+    code, out = b(repo, "check")
+    assert code == 1 and want in out and "errors=1" in out, out
+    code, out = b(repo, "start", sp)
+    assert code == 1 and want in out, out
+    assert {f.name: f.read_bytes() for f in (Path(repo) / backlog.REL_DIR).glob("*.json")} == files
+    edit(repo, docs, depends_on=[])
+    code, out = b(repo, "start", sp)
+    assert code == 0, out
+
+
 def test_backlog_similar_ranks_open_items_and_new_warns_of_a_near_duplicate(sprint):
     """A planted duplicate: similar ranks it first as near, new names it in a warning and still writes the item with
     exit 0; a unique title gets no warning, and a dropped item is no longer compared."""
