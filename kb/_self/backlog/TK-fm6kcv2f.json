@@ -2,7 +2,7 @@
   "id": "TK-fm6kcv2f",
   "kind": "task",
   "title": "Parse and check the DECISION tag in every tool",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-trjsnvos",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,6 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md",
     "kb/_self/embedding.md"
-  ]
+  ],
+  "claimed_by": "worker-decision-tag"
 }
