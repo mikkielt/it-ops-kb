@@ -2,7 +2,7 @@
   "id": "TK-bt4twvk3",
   "kind": "task",
   "title": "Document querylog.py show",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ppxck77t",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "TK-j6zvcfgf"
-  ]
+  ],
+  "claimed_by": "worker-bt4twvk3"
 }
