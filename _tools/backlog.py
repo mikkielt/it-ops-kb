@@ -1076,15 +1076,23 @@ def scope(bl, iid):
 
 
 def item_commits(root, ids):
-    """{commit: [paths]} of the commits on HEAD whose KB-Work trailer names any of the ids, oldest first."""
+    """{commit: [paths]} of the commits on HEAD whose KB-Work trailer names any of the ids, oldest first. Only work
+    counts: a commit that changes nothing but item files (a claim, a gate, a sprint's plan) is not the item's work."""
     log = git(root, "log", "HEAD", "--reverse", "--no-merges",
               "--format=%H%x00%(trailers:key=KB-Work,valueonly,separator=%x2C)%x1e")
     out = {}
     for rec in log.split("\x1e"):
         sha, _, vals = rec.strip().partition("\x00")
         if sha and set(ID_RE.findall(vals)) & set(ids):
-            out[sha] = [p for p in git(root, "show", "--name-only", "--format=", sha).splitlines() if p]
+            paths = [p for p in git(root, "show", "--name-only", "--format=", sha).splitlines() if p]
+            if any(not item_file(p) for p in paths):
+                out[sha] = paths
     return out
+
+
+def item_file(path):
+    """True for a backlog item file (kb/_self/backlog/<id>.json): what a planning commit changes."""
+    return path.startswith(REL_DIR + "/") and path.endswith(".json") and "/" not in path[len(REL_DIR) + 1:]
 
 
 def unlanded_code(root, ids):
@@ -1533,7 +1541,8 @@ def cmd_done(bl, a):
         family = [iid] + bl.descendants(iid)
         if it.get("touches") and not item_commits(bl.root, [iid] + bl.descendants(iid)):
             problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} or one of its descendants' ids "
-                            "(git reads a trailer only in the message's last paragraph, with the others)")
+                            "and changes a file other than item files (git reads a trailer only in the message's last "
+                            "paragraph, with the others; a claim or planning commit is not the work)")
         late, remote, owners = unlanded_code(bl.root, family)
         if late == ["(no such ref)"]:
             problems.append(f"code commits of the item, and refs/remotes/{remote}/main is not fetched: fetch {remote}, "

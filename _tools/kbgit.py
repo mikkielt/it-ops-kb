@@ -42,8 +42,10 @@ changed topic X / source S / answer QK-..." without reading diffs:
                           whose item file is in neither the commit nor its parent, and, on a commit not yet on
                           origin/main, an id whose item is not claimed (doing or done at the commit) or is not in a
                           started sprint (its sprint active at the commit). Exempt from that: a backlog-planning commit
-                          (only kb/_self/backlog/*.json changed), a sprint and a sprint's review story. The commit-msg
-                          hook warns about it; the pre-push hook and sync's gate refuse it.
+                          (only kb/_self/backlog/*.json changed), a sprint and a sprint's review story. On a commit
+                          not yet on origin/main it also flags a KB-Work line git does not read as a trailer (outside
+                          the message's last paragraph, e.g. a blank line before Co-Authored-By). The commit-msg
+                          hook warns about these; the pre-push hook and sync's gate refuse them.
 One line per key, values sorted and joined by ", ". A key with more than MAX_IDS (40) values is written as a count,
 e.g. `KB-Sources-Added: 312 ids (see diff)`: trailers cannot wrap, and `log` finds such commits by their diff anyway.
 A commit is diffed against its first parent (the empty tree for a root commit). Merge commits carry no trailers and
@@ -547,8 +549,11 @@ def hook_commit_msg(args):
     if new != msg:
         with open(args[0], "w", encoding="utf-8", newline="") as f:
             f.write(new)
-    work = [m.group(1) for m in (WORK_LINE.match(ln) for ln in new.splitlines()) if m]
-    if len(work) == 1:  # a warning only: the commit goes through, and check-trailers refuses it before a push
+    if stray_work(new):  # warnings only: the commit goes through, and check-trailers refuses it before a push
+        print(f"kbgit.py commit-msg: {STRAY_WORK}; check-trailers (the pre-push hook, sync's gate) refuses this "
+              "commit", file=sys.stderr)
+    work = message_trailers(new)[1].get(WORK, [])
+    if len(work) == 1:
         staged = lambda rel: blob(INDEX, rel) if blob(INDEX, rel) is not None else blob(base, rel)  # noqa: E731
         for why in work_state(work, changed_paths(base, INDEX), staged):
             print(f"kbgit.py commit-msg: {WORK}: {why}; check-trailers (the pre-push hook, sync's gate) refuses this "
@@ -794,6 +799,7 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
     if recs is None:
         return None
     changes = commit_changes(spec) or {}
+    bodies = work_lines(spec)
     blobs = BlobReader()
     bad, kb = [], 0
     try:
@@ -819,11 +825,13 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
             wrong.append(AUTO)
         work = have.get(WORK)
         state = []
+        if bodies.get(sha, 0) > len(work or []) and not on_origin_main(sha):
+            state.append(STRAY_WORK)
         if work and not work_ok(sha, work):
             wrong.append(WORK)
         elif work and work_state_on and not on_origin_main(sha):
             paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
-            state = work_state(work, paths, lambda rel: at_or_parent(sha, rel))
+            state += work_state(work, paths, lambda rel: at_or_parent(sha, rel))
         kb += bool(want)
         if wrong or state:
             lines = [f"BAD {short} {date} {subject[:70]}"]
@@ -832,9 +840,47 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
                                                                                                  WORK: "once, backlog item ids that exist at the commit or its parent"}.get(k, f"(no {k})"))
                 lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
             for why in state:
-                lines.append(f"    {WORK}: {why}; work lands only for a claimed item of a started sprint")
+                lines.append(f"    {WORK}: {why}" + ("" if why == STRAY_WORK else
+                                                     "; work lands only for a claimed item of a started sprint"))
             bad.append((sha, lines))
     return len(recs), kb, bad
+
+
+STRAY_WORK = ("a KB-Work line outside the trailer block, which git does not read as a trailer (a blank line before "
+              "Co-Authored-By?): put it in the message's last paragraph, with the other trailers")
+
+
+def work_lines(spec):
+    """{sha: number of KB-Work lines anywhere in the message} for the non-merge commits of `git log SPEC`, from one git
+    call: more of them than git reads as trailers is a KB-Work line outside the trailer block."""
+    out = git("log", "--no-merges", "--format=%x1e%H%x1f%B", *spec) or ""
+    res = {}
+    for rec in out.split("\x1e")[1:]:
+        sha, _, body = rec.partition("\x1f")
+        n = sum(1 for ln in body.splitlines() if WORK_LINE.match(ln))
+        if n:
+            res[sha.strip()] = n
+    return res
+
+
+def message_trailers(message):
+    """(the message's lines as the commit will keep them: comment lines and anything below a scissors line left out,
+    {key: [values]} of the KB-* trailers git reads in them)."""
+    cc = comment_char()
+    kept = []
+    for ln in message.splitlines():
+        if ln.startswith(cc + " ------------------------ >8 ------------------------"):
+            break
+        if not ln.startswith(cc):
+            kept.append(ln)
+    parsed = git("interpret-trailers", "--parse", stdin=("\n".join(kept) + "\n").encode("utf-8"))
+    return kept, parse_trailers(parsed)
+
+
+def stray_work(message):
+    """True when a commit message has a KB-Work line that `git interpret-trailers --parse` does not read as a trailer."""
+    kept, have = message_trailers(message)
+    return sum(1 for ln in kept if WORK_LINE.match(ln)) > len(have.get(WORK, []))
 
 
 def work_ok(sha, values):
