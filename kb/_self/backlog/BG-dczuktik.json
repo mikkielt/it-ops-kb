@@ -2,7 +2,7 @@
   "id": "BG-dczuktik",
   "kind": "bug",
   "title": "horizon --hook passes its 1000-character limit with four active sprints, failing the sync gate of any change that runs test_backlog",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -33,5 +33,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orchestrator-4slunkaj"
+  "evidence": {
+    "commit": "7d2e608f9c4f00364ac38f3f3bd46fce369764e7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "horizon_hook"
+        ],
+        "exit": 0,
+        "sha256": "08120008c45a3953"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_horizon_hook_of_the_repository_backlog_stays_under_the_limit"
+        ],
+        "exit": 0,
+        "sha256": "347144bc1170b432"
+      }
+    ]
+  }
 }
