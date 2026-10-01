@@ -1,0 +1,30 @@
+{
+  "id": "TK-2doxt2xx",
+  "kind": "task",
+  "title": "kg_sync.py holds the sync run, its gate and its push",
+  "status": "todo",
+  "parent": "ST-pkprc4oy",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kg_sync.py holds sync_once, cmd_sync, gate, push_branch and do_rebase with their helpers; kbgit.py imports them and keeps the command; the sync tests keep their names and patch targets are repointed at kg_sync.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kg_split_sync"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    "_tools/test_layout.py",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "TK-vekgp5gc"
+  ]
+}

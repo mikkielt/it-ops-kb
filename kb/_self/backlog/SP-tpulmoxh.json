@@ -1,0 +1,22 @@
+{
+  "id": "SP-tpulmoxh",
+  "kind": "sprint",
+  "title": "Large tools split along their change boundaries without blocking work",
+  "status": "active",
+  "goal": "kbgit.py and backlog.py keep only their command line, usage text and dispatch, with their code in kg_ and bl_ modules, their tests and fixtures split to match and every test name kept; a task that moves code out of a shared file is announced, waits for no claimed item on the file and lands as one atomic commit; each bl_ module owns its tools.md row and backlog.md section, and each registers its own parsers",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

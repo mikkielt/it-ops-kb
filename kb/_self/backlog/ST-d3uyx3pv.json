@@ -1,0 +1,27 @@
+{
+  "id": "ST-d3uyx3pv",
+  "kind": "story",
+  "title": "backlog.py splits along its change boundaries behind the unchanged CLI",
+  "status": "todo",
+  "parent": "EP-uzf2w6ym",
+  "sprint": "SP-tpulmoxh",
+  "priority": "P1",
+  "rank": 3,
+  "goal": "backlog.py holds the command line, the usage text and the dispatch, and its code lives in bl_base.py, bl_cli.py, bl_cost.py, bl_check.py, bl_plan.py, bl_land.py, bl_ci.py and bl_view.py beside bl_intake.py; every command, its output, its exit codes and every test name are as before; each module has its own tools.md row and backlog.md section, and test_backlog.py's fixtures live in one kit the moved tests share.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_facade_only"
+      ]
+    }
+  ],
+  "relates_to": [
+    "TK-plrpnzon",
+    "TK-nb6gbc3x",
+    "TK-5m4r7eah"
+  ],
+  "notes": "Lessons from the sessions that worked these files. Tests: test_backlog.py patches module names with monkeypatch.setattr(backlog, NAME) (history_items, run_check, run, live_processes, the cost_ names, touches_overlap, LOG_PREFIX_RE), so each moved test file repoints its patches at the new module, and test names stay: item checks select tests by -k. Shared fixtures move first (A1). Tangles: cmd_start, cmd_check and docs_warnings share touch_paths, dependencies and docs_after_code (A6 moves them together); cmd_done and cmd_land share the landing and evidence logic (A7); land swaps kbgit.KB around lane_plan, so the branch-name helper takes a root (KG1); the cost block is the cleanest and imports ql_store lazily by public names. Layers: a bl_ module never imports backlog, at any depth; moved code exposes public names. Merge magnets: main()'s argparse block and the one tools.md row per subcommand and backlog.md section, so each module registers its own parsers (A3) and owns its tools.md row and backlog.md section. Mechanics: git add new modules, map them in kb/_self/map.csv, testmap and the tools map, update the docs in the same commit, and put every Self-Reviewed trailer in one last paragraph. Order: TK-plrpnzon, TK-nb6gbc3x and TK-5m4r7eah edit the cost block and test_backlog.py first, so A1 waits for them; the kbgit.py story needs none of that and goes first."
+}

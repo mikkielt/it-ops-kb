@@ -1,0 +1,32 @@
+{
+  "id": "TK-jnijg64s",
+  "kind": "task",
+  "title": "bl_base.py holds the backlog's shared ground",
+  "status": "todo",
+  "parent": "ST-d3uyx3pv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "bl_base.py holds the constants, Refused and Rejected, the Backlog class, git, run, need, say, the commit helpers and the scope helpers, under public names; backlog.py and bl_intake.py import them, so no bl_ module imports backlog; test_layout holds it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_base"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/backlog.py",
+    "_tools/bl_intake.py",
+    "_tools/test_backlog.py",
+    "_tools/test_layout.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-k5harfxm"
+  ]
+}

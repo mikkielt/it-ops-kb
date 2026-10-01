@@ -1,0 +1,29 @@
+{
+  "id": "TK-ovw53u4u",
+  "kind": "task",
+  "title": "kbgit.py is the facade: its commands, usage and dispatch only",
+  "status": "todo",
+  "parent": "ST-pkprc4oy",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kbgit.py defines no function whose body belongs to a kg_ module, a test fails when it defines more than its dispatch and parsers, and a keep-whole verdict is written in git.md for any block that stays; kb/_self/code.md names the kg_ modules.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_kbgit_facade_only"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_layout.py",
+    "kb/_self/code.md",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "TK-5sjw6qpg"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "TK-f5swu7tm",
+  "kind": "task",
+  "title": "Each bl_ module registers its own parsers",
+  "status": "todo",
+  "parent": "ST-d3uyx3pv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "bl_cli.py holds a registry in which each bl_ module adds its subcommands' parsers and handlers, and main() in backlog.py only builds the parser from the registry and dispatches; the usage text and every subcommand's arguments are as before, so a new subcommand no longer edits main().",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_parser_registry"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_cli.py",
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "_tools/test_layout.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-jnijg64s"
+  ]
+}

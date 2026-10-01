@@ -1,0 +1,35 @@
+{
+  "id": "TK-xs5zfyo5",
+  "kind": "task",
+  "title": "backlog.py is the facade: its commands, usage and dispatch only",
+  "status": "todo",
+  "parent": "ST-d3uyx3pv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "backlog.py defines no function whose body belongs to a bl_ module, a test fails when it defines more than its dispatch, and a keep-whole verdict is written in backlog.md for any block that stays; kb/_self/code.md names the bl_ modules and the Layout section says each has its own tools.md row.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_facade_only"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_layout.py",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-qbdgkdpy",
+    "TK-ldhzhsc2",
+    "TK-gefod47d",
+    "TK-ajwqcbpm",
+    "TK-dtybnlcg",
+    "TK-urxtzpya"
+  ]
+}

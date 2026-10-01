@@ -1,0 +1,21 @@
+{
+  "id": "ST-e4nkkkm2",
+  "kind": "story",
+  "title": "A split of a shared file lands without blocking other work",
+  "status": "todo",
+  "parent": "EP-uzf2w6ym",
+  "sprint": "SP-tpulmoxh",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "kb-sprint names how a task that moves code out of a file other items edit runs: it is announced to the sessions first, waits until backlog.py held --overlaps --ref origin/main shows no claimed item on the file, no new item on the file is claimed while it is ready, it lands as one atomic commit per file with the docs it makes stale, and the sessions are told to rebase when it is on main.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sprint_shared_file_move_rule"
+      ]
+    }
+  ]
+}

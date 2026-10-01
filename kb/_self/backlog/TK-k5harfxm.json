@@ -1,0 +1,32 @@
+{
+  "id": "TK-k5harfxm",
+  "kind": "task",
+  "title": "bl_testkit.py holds test_backlog.py's shared fixtures",
+  "status": "todo",
+  "parent": "ST-d3uyx3pv",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "bl_testkit.py holds the temp-backlog builders and fixtures test_backlog.py's tests share, and test_backlog.py imports them; every test keeps its name and a test fails when a moved test file needs its own copy of a builder.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_testkit"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_testkit.py",
+    "_tools/test_backlog.py",
+    "_tools/test_layout.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-cilkikzk",
+    "TK-plrpnzon",
+    "TK-nb6gbc3x",
+    "TK-5m4r7eah"
+  ]
+}

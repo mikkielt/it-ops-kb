@@ -1,0 +1,26 @@
+{
+  "id": "TK-cilkikzk",
+  "kind": "task",
+  "title": "kb-sprint states the rule for a task that moves code out of a shared file",
+  "status": "todo",
+  "parent": "ST-e4nkkkm2",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb-sprint's run step and kb/_self/backlog.md state the announce, drain and atomic-commit rule for a task that moves code out of a file other items edit, and name backlog.py held --overlaps --ref origin/main as the check; a test fails when either text lacks the rule.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sprint_shared_file_move_rule"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/maintaining.md"
+  ]
+}

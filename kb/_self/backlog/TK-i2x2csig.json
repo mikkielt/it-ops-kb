@@ -1,0 +1,30 @@
+{
+  "id": "TK-i2x2csig",
+  "kind": "task",
+  "title": "kg_trailers.py holds the trailer audit and the work state",
+  "status": "todo",
+  "parent": "ST-pkprc4oy",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kg_trailers.py holds trailer_audit, trailers_from, work_state and the check-trailers command; kbgit.py imports them; their tests keep their names.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kg_split_trailers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_trailers.py",
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    "_tools/test_layout.py",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "TK-2doxt2xx"
+  ]
+}
