@@ -2,7 +2,7 @@
   "id": "ST-g3w7v3el",
   "kind": "story",
   "title": "intake's drift checks end their whole process tree on a timeout and catch whole-suite runs behind a wrapper",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -25,5 +25,19 @@
     "kb/_self/tools.md"
   ],
   "notes": "Sprint review of SP-3brmvlnh: check_result kills only its direct child, so a timed-out tests.py leaves uv run pytest -n auto with parent pid 1.",
-  "claimed_by": "c-g3w7v3el"
+  "evidence": {
+    "commit": "c3d1b711fcb381fed8a293d81aabe361c9e1690f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_drift_process_tree"
+        ],
+        "exit": 0,
+        "sha256": "c9166a620728f56c"
+      }
+    ]
+  }
 }
