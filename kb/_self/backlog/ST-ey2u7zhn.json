@@ -2,7 +2,7 @@
   "id": "ST-ey2u7zhn",
   "kind": "story",
   "title": "A session reads which paths other sessions hold from the backlog, not from messages",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -52,5 +52,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-blstack2"
+  "evidence": {
+    "commit": "a40402cde722f41fbe7f42dce3d7ea22be0f85ef",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "held_paths"
+        ],
+        "exit": 0,
+        "sha256": "0bb6116810ce0200"
+      }
+    ]
+  }
 }
