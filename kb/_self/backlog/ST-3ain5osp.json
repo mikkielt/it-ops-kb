@@ -2,7 +2,7 @@
   "id": "ST-3ain5osp",
   "kind": "story",
   "title": "A sprint worker's flagged choices become gates before landing",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
@@ -34,5 +34,6 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "worker-3ain5osp"
 }
