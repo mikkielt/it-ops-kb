@@ -34,7 +34,7 @@
       ],
       "recommendation": "only what the sidecar holds: tokens, main share and subagent share; no kb-tool figure, stated in the querylog.md digest passage",
       "answer": "only what the sidecar holds: tokens, main share and subagent share; no kb-tool figure, stated in the querylog.md digest passage",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -47,7 +47,7 @@
       ],
       "recommendation": "uncached input + cache writes + cache reads + output, main and subagents together; item lines only (a sprint line included, shared and overhead lines left out); top 5",
       "answer": "uncached input + cache writes + cache reads + output, main and subagents together; item lines only (a sprint line included, shared and overhead lines left out); top 5",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

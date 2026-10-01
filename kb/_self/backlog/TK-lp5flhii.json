@@ -43,7 +43,7 @@
       ],
       "recommendation": "yes: only the distill's own calls, counts only, written as its overhead line",
       "answer": "yes: only the distill's own calls, counts only, written as its overhead line",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "overhead-shape",
@@ -55,7 +55,7 @@
       ],
       "recommendation": "overhead: <kind> with calls and main per model; kinds distill, digest, eval, census (only distill written)",
       "answer": "overhead: <kind> with calls and main per model; kinds distill, digest, eval, census (only distill written)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Scope widened: querylog.md Distill steps, Haiku batch, Store work-sidecar and Gates bullets describe the overhead line.",

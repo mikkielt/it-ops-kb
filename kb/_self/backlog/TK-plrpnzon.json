@@ -37,7 +37,7 @@
       ],
       "recommendation": "apart: taken out of item work; research is its own total (no figure counted twice)",
       "answer": "apart: taken out of item work; research is its own total (no figure counted twice)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -49,7 +49,7 @@
       ],
       "recommendation": "git: oldest commit adding status active to the sprint file (start) to the newest commit deleting it (close, open while the file exists); run time from its run id, both bounds inclusive; unresolved in a shallow clone or without git",
       "answer": "git: oldest commit adding status active to the sprint file (start) to the newest commit deleting it (close, open while the file exists); run time from its run id, both bounds inclusive; unresolved in a shallow clone or without git",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Scope widened: the cost row of tools.md and the Cost of work section of backlog.md describe the sprint's three totals; the push gate refuses the code without them.",

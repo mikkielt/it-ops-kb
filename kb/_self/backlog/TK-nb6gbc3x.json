@@ -35,7 +35,7 @@
       ],
       "recommendation": "in + cw + cr + out of its direct + attributed counts (requests and cw1h not added)",
       "answer": "in + cw + cr + out of its direct + attributed counts (requests and cw1h not added)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "closed-gap-rule",
@@ -48,7 +48,7 @@
       ],
       "recommendation": "a commit with the item's KB-Work trailer whose _gaps.md gains a Resolved or Superseded note under the entry naming the finding",
       "answer": "a commit with the item's KB-Work trailer whose _gaps.md gains a Resolved or Superseded note under the entry naming the finding",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "tokens-scope",
@@ -60,7 +60,7 @@
       ],
       "recommendation": "own lines and own trailer only; a qualifying descendant has its own row",
       "answer": "own lines and own trailer only; a qualifying descendant has its own row",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

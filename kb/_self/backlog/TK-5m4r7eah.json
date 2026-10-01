@@ -45,7 +45,7 @@
       ],
       "recommendation": "A part of the line's counts: the line keeps the whole window total, rework is a subset, work is computed",
       "answer": "A part of the line's counts: the line keeps the whole window total, rework is a subset, work is computed",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -57,7 +57,7 @@
       ],
       "recommendation": "The prompt that ran the first refused done: from that prompt on counts as rework",
       "answer": "The prompt that ran the first refused done: from that prompt on counts as rework",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -69,7 +69,7 @@
       ],
       "recommendation": "On top: the usual report unchanged, then a work and rework block (json: an added rework_split key)",
       "answer": "On top: the usual report unchanged, then a work and rework block (json: an added rework_split key)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Touches carry the cost row of tools.md (new flag) and usage.md (work line shape); the push gate refuses the code without them.",

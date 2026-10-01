@@ -34,7 +34,7 @@
       ],
       "recommendation": "exit 1 only",
       "answer": "exit 1 only",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -46,7 +46,7 @@
       ],
       "recommendation": "write refused for any piece position",
       "answer": "write refused for any piece position",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {
