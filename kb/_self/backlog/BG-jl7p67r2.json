@@ -2,7 +2,8 @@
   "id": "BG-jl7p67r2",
   "kind": "bug",
   "title": "land and sync can name different code/<id> branches for one range",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -14,9 +15,22 @@
       "import pathlib,sys; s=pathlib.Path('_tools/backlog.py').read_text(encoding='utf-8'); b=s[s.index('def cmd_land'):]; b=b[:b.index(chr(10)+'def ',1)]; sys.exit(0 if 'lane_plan' in b else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_names_sync_branch"
+      ]
+    }
+  ],
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py",
-    "_tools/kbgit.py"
+    "_tools/kbgit.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
   ]
 }
