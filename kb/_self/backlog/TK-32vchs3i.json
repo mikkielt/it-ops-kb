@@ -25,7 +25,10 @@
   ],
   "touches": [
     "_tools/kbid.py",
-    "_tools/test_kb_ids.py"
+    "_tools/test_kb_ids.py",
+    "kb/_self/code.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "worker-32vchs3i"
 }
