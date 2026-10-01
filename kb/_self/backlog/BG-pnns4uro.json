@@ -1,0 +1,21 @@
+{
+  "id": "BG-pnns4uro",
+  "kind": "bug",
+  "title": "querylog.py distill help text does not mention the work sidecar",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The help text of querylog.py distill names the work sidecar (item, shared and overhead lines) among what a distill run writes; found in the review of SP-fvztfmtm",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "python3 _tools/querylog.py distill --help | grep -qi 'work sidecar'"
+    ]
+  },
+  "touches": [
+    "_tools/querylog.py",
+    "_tools/test_querylog.py"
+  ]
+}
