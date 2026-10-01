@@ -408,7 +408,7 @@ class TestNoGateJobs:
 
     @pytest.mark.parametrize("job,ran", [
         ({"status": "manual"}, False), ({"status": "skipped"}, False), ({"status": "created"}, False),
-        ({"status": "canceled"}, False), ({**QUOTA}, False), ({"status": "canceled", "started_at": "t"}, True),
+        ({"status": "canceled"}, False), ({**QUOTA}, False), ({"status": "canceled", "started_at": "t"}, False),
         ({"status": "success"}, True), ({"status": "running"}, True),
         ({"status": "failed", "failure_reason": "script_failure"}, True),
     ])
@@ -473,11 +473,8 @@ def ran_rows():
     rows = []
     for st in job_states():
         status, started, reason = st
-        if status == "canceled" and started:
-            rows.append(pytest.param(st, False, id=state_id(st), marks=pytest.mark.xfail(strict=True, reason="BG-sim2fdaa")))
-            continue
-        rows.append(pytest.param(st, started or status in ("success", "running") or own_failure(status, reason),
-                                 id=state_id(st)))
+        rows.append(pytest.param(st, status != "canceled" and (
+            started or status in ("success", "running") or own_failure(status, reason)), id=state_id(st)))
     return rows
 
 

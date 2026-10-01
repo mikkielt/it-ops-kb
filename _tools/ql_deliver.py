@@ -118,11 +118,14 @@ def latest_jobs(jobs):
 
 def job_ran(j):
     """Whether a GitLab job ran: it has a start time, succeeded, is running, or failed for a reason in
-    RAN_AND_FAILED. A manual, skipped or created job, one canceled before it started and one that failed without
-    running (such as ci_quota_exceeded) did not."""
+    RAN_AND_FAILED, and was not canceled. A manual, skipped or created job, a canceled one (started or not: someone
+    stopped it, so it holds no verdict) and one that failed without running (such as ci_quota_exceeded) did not."""
     s = j.get("status")
+    if s == "canceled":
+        return False
     return bool(j.get("started_at")) or s in ("success", "running") or (
         s == "failed" and j.get("failure_reason") in RAN_AND_FAILED)
+
 
 
 def any_ran(jobs):

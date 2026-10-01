@@ -1938,8 +1938,7 @@ PIPELINE_OF = {"failed": "success"}
 def job_repro_rows():
     """`--status --job kb-tests` passes only when the newest pipeline in which kb-tests reached a verdict passed it:
     a canceled, manual or skipped job someone started is no verdict (BG-sim2fdaa), so the older red run decides."""
-    return [pytest.param(st, id=state_id(st), marks=[pytest.mark.xfail(strict=True, reason="BG-sim2fdaa")]
-                         if st[1] and st[0] in ("canceled", "manual", "skipped") else []) for st in job_states()]
+    return [pytest.param(st, id=state_id(st)) for st in job_states()]
 
 
 @pytest.mark.parametrize("st", job_repro_rows())
@@ -1950,6 +1949,25 @@ def test_job_state_table_red_pipeline_job_repro(repo, monkeypatch, st):
                               {"id": 80, "sha": sha, "status": "success"}],
           jobs={81: [job_of(*st)], 80: [job_of("failed", True, "script_failure")]})
     assert red_pipeline(repo, "--status", "--job", "kb-tests") == (0 if st[0] == "success" else 1)
+
+
+def test_red_pipeline_job_skips_a_canceled_run(repo, monkeypatch):
+    """BG-sim2fdaa: someone starts kb-tests on main and cancels it; the newer pipeline holds no verdict on kb-tests,
+    so a red-main bug's repro (`--status --job kb-tests`) still reads the older red run and fails."""
+    sha = head(repo)
+    pipelines = [{"id": 83, "sha": sha, "status": "canceled"}, {"id": 82, "sha": sha, "status": "success"}]
+    jobs = {83: [{"id": 31, "name": "kb-tests", "status": "canceled", "started_at": "2026-09-30T09:00:00Z"}],
+            82: [{"id": 30, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure",
+                  "started_at": "2026-09-30T08:00:00Z"}]}
+    forge(monkeypatch, repo, pipelines, jobs=jobs)
+    assert red_pipeline(repo, "--status", "--job", "kb-tests") == 1
+    assert red_pipeline(repo, "--status") == 1  # without --job the canceled run hides nothing either
+    jobs[83][0]["status"] = "manual"  # started, then left waiting: no verdict either
+    pipelines[0]["status"] = "manual"
+    assert red_pipeline(repo, "--status", "--job", "kb-tests") == 1
+    jobs[83][0]["status"] = "success"  # a run that passed is the verdict
+    pipelines[0]["status"] = "success"
+    assert red_pipeline(repo, "--status", "--job", "kb-tests") == 0
 
 
 def file_rows():

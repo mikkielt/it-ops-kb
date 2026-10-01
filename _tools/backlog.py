@@ -113,7 +113,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (deleted at sprint close, a closed sprint included) is read from its last
                                           version in git history; an id with none is named on stderr, left out
   backlog.py red-pipeline [--status [--job J]|--hook]   the newest pipeline of origin's main in which a job ran
-                                          (--job: in which job J ran; the newest finished one when none did; glab
+                                          (--job: in which job J ran and ended success or failed, never canceled,
+                                          manual or skipped; the newest finished one when none did; glab
                                           api, gh on GitHub; a note when neither is signed in), on GitLab read by its
                                           jobs: red when a job someone started failed (its script, a timeout, stuck),
                                           unverified when the job list is unreadable or a job
@@ -3148,7 +3149,7 @@ def main(argv=None):
     p.add_argument("--format", choices=("text", "json"), default="text")
     p = sub.add_parser("red-pipeline")
     p.add_argument("--status", action="store_true")
-    p.add_argument("--job", help="read the newest pipeline of main in which this job ran (a red-main bug's repro)")
+    p.add_argument("--job", help="read the newest pipeline of main in which this job ran and ended success or failed (a red-main bug's repro)")
     p.add_argument("--hook", action="store_true")
     p = sub.add_parser("intake")
     p.add_argument("--file", action="store_true", help="write each new candidate as a draft item outside any sprint")
