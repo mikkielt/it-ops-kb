@@ -1,0 +1,26 @@
+{
+  "id": "BG-juqwx7nf",
+  "kind": "bug",
+  "title": "check.py does not resolve DECISION tags in CSV data rows",
+  "status": "draft",
+  "parent": "EP-v56iwyry",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "check.py resolves every [DECISION <id>] tag in a root's CSV data rows as it does in Markdown, and reports an unknown id, with a test named decision_tag that plants one.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; python3 -c 'import csv,io;p='\"'\"'kb/public/auth/flows.csv'\"'\"';L=open(p,encoding='\"'\"'utf-8'\"'\"').read().split(chr(10));r=next(csv.reader([L[1]]));r[-1]+='\"'\"' [DECISION D-zzzzzzzz]'\"'\"';b=io.StringIO();csv.writer(b,lineterminator='\"'\"''\"'\"').writerow(r);L[1]=b.getvalue();open(p,'\"'\"'w'\"'\"',encoding='\"'\"'utf-8'\"'\"',newline='\"'\"''\"'\"').write(chr(10).join(L))'; if python3 _tools/check.py >/dev/null; then exit 1; fi"
+    ]
+  },
+  "touches": [
+    "_tools/check.py",
+    "_tools/test_kb_lookup.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/plugin.md"
+  ]
+}
