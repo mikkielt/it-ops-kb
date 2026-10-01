@@ -25,6 +25,10 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 Its load (test_kb_worker_load*): a worker runs its item's checks and the fast tests, never
                 stress_test.py or a second full run; the orchestrator runs stress_test.py once per landing that
                 changed _tools/; each brief names the in-flight sibling items and the files they change.
+test_worker_provisional_gate*  kb-worker records a choice its item's goal leaves open as a provisional gate (gate add
+                --kind provisional, answer --provisional) committed with the work, never report prose only; /kb-sprint
+                run lands an item only after its gates are answered or provisional, read on its branch before
+                `backlog.py land`, and its review confirms them; the runbook agrees. Planted: each rule taken out.
 test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
                 (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
                 goes with text; a planted ignored argument is caught.
@@ -265,6 +269,92 @@ def kb_worker_load_problems(worker, sprint, runbook):
         if phrase not in line:
             problems.append(f"the runbook's Working on items does not say {phrase!r} with the fast tests")
     return problems
+
+
+GATE_ADD = "gate add ID --kind provisional"
+GATE_ANSWER = "answer ID GATE --provisional"
+LANDED_BY_GATES = "answered or provisional"
+
+
+def worker_provisional_gate_problems(worker, sprint, runbook):
+    """What is wrong with how kb-worker (`worker`), /kb-sprint (`sprint`) and the runbook (`runbook`) turn a choice an
+    item's goal leaves open into a provisional gate, land the item only after its gates are answered or provisional,
+    and have the review confirm them: [] when nothing."""
+    problems = []
+    rule = re.search(r"(?ms)^6\. \*\*Choices.*?(?=^\d+\. )", worker)
+    rule = rule.group(0) if rule else ""
+    for phrase, what in ((GATE_ADD, "record a provisional gate"), (GATE_ANSWER, "answer it --provisional"),
+                         ("with the work", "commit it with the work"), ("prose", "rule out report prose"),
+                         (LANDED_BY_GATES, "say the item lands only once its gates are answered or provisional"),
+                         ("confirm", "say the review confirms the answers")):
+        if phrase not in rule:
+            problems.append(f"kb-worker's rule 6 does not {what} ({phrase!r})")
+    run = md_section(sprint, "## run [SP]")
+    step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", run)
+    brief = [l for l in (step3.group(0) if step3 else "").splitlines() if l.lstrip().startswith("- ")]
+    if not any("provisional gate" in l and "`--provisional`" in l and "with the work" in l and "prose" in l
+               for l in brief):
+        problems.append("/kb-sprint run's brief does not ask for a provisional gate, answered and committed with the "
+                        "work, instead of report prose")
+    step4 = re.search(r"(?ms)^4\. When a subagent returns.*?(?=^\d+\. )", run)
+    step4 = step4.group(0) if step4 else ""
+    gates = re.search(rf"(?m)^\s*1\. Land an item only after its gates are {LANDED_BY_GATES}\..*$", step4)
+    land = step4.find("backlog.py land ID")
+    if not gates or land < 0 or gates.start() > land:
+        problems.append("/kb-sprint run step 4 does not land an item only after its gates are answered or "
+                        "provisional, before `backlog.py land`")
+    elif "git show work/<id>:kb/_self/backlog/<id>.json" not in gates.group(0) or "review" not in gates.group(0):
+        problems.append("/kb-sprint run step 4.1 does not read the gates on the branch and hand them to the review")
+    review = md_section(sprint, "## review SP")
+    first = next((l for l in review.splitlines() if l.startswith("1. ")), "")
+    if "provisional answer" not in first or "run step 4.1" not in first:
+        problems.append("/kb-sprint review step 1 does not confirm the provisional answers of run step 4.1")
+    work = md_section(runbook, "## Working on items")
+    if not any(LANDED_BY_GATES in l and "`.claude/agents/kb-worker.md`" in l and "provisional gate" in l
+               for l in work.splitlines()):
+        problems.append("the runbook's Working on items does not land an item only after its gates are answered "
+                        "or provisional")
+    gates_doc = md_section(runbook, "## Dependencies, gates and triggers")
+    if not any("goal leaves open" in l and GATE_ADD in l and f"`{GATE_ANSWER}`" in l
+               and "with the work" in l for l in gates_doc.splitlines()):
+        problems.append("the runbook's gates section does not make a choice the goal leaves open a provisional gate")
+    return problems
+
+
+def worker_provisional_gate_texts():
+    texts = []
+    for rel in (KB_WORKER, KB_SPRINT, RUNBOOK):
+        with open(os.path.join(KB, rel), encoding="utf-8") as f:
+            texts.append(f.read())
+    return texts
+
+
+def test_worker_provisional_gate():
+    """A worker records a choice its goal leaves open as a provisional gate, answered and committed with the work, not
+    report prose; /kb-sprint run lands an item only after its gates are answered or provisional; the review confirms
+    them (SP-ufr3qnff)."""
+    assert worker_provisional_gate_problems(*worker_provisional_gate_texts()) == []
+
+
+@pytest.mark.parametrize("i, old, new", [
+    (0, "--kind provisional --question", "--question"),
+    (0, "answer ID GATE --provisional", "answer ID GATE"),
+    (0, "Commit the item file with the work", "Commit the item file later"),
+    (0, "never leave a choice in your report's prose only", "name each choice in your report"),
+    (0, "only once each of its gates is answered or provisional", "as it is"),
+    (1, "never prose in the report only", "or describe it in the report"),
+    (1, "1. Land an item only after its gates are answered or provisional.", "1. Land the item."),
+    (1, "(run step 4.1) among them", "among them"),
+    (2, "lands it only after each gate is answered or provisional", "lands it"),
+    (2, "commits with the work, never only a line in its report", "may name it in its report"),
+])
+def test_worker_provisional_gate_planted_failures(i, old, new):
+    """Each rule fails on a planted copy of the agent, the skill or the runbook without it."""
+    texts = worker_provisional_gate_texts()
+    planted = texts[i].replace(old, new, 1)
+    assert planted != texts[i], f"plant does not apply: {old!r}"
+    texts[i] = planted
+    assert worker_provisional_gate_problems(*texts), f"not caught: {old!r} -> {new!r}"
 
 
 class TestKbServer:

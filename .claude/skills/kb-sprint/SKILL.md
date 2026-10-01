@@ -49,13 +49,14 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    - "commit on a local branch `work/<id>` with `KB-Work: <id>` in the message's last paragraph, with `Co-Authored-By` and the other trailers; never push";
    - "file a bug for any defect outside the item, do not fix it";
   - "a doc that needs an edit outside the touches stops the work with a report; `Self-Reviewed:` names only docs read and found still correct";
-   - "record a gate with a recommendation instead of guessing, and stop";
+   - "a choice the goal leaves open: record a provisional gate with a recommendation (`gate add ID --kind provisional ...`), answer it `--provisional` and commit it with the work, never prose in the report only; a choice only the operator can make: a blocking gate, and stop";
    - "never write the operator's decisions into docs or code".
    An item with a single commit and a narrow `touches` may be done in this session instead.
 4. When a subagent returns, land its branch yourself, one at a time:
-   1. `git status --short` shows only your own changes (another session's files in your checkout: stop and move to your own clone or worktree); `land` refuses a branch checked out in another worktree, so `git worktree remove <path>` the worker's worktree first (its branch stays; never `--force`);
-   2. `/kb-verify` on the changed files;
-   3. `python3 _tools/backlog.py land ID --trailer 'Co-Authored-By: ...'`, never the steps by hand. It fetches and rebases `work/<id>` on the integration `main`, then:
+   1. Land an item only after its gates are answered or provisional. Read them on its branch (`git show work/<id>:kb/_self/backlog/<id>.json`, its `gates`): an unanswered provisional gate, or a choice the report names that no gate records, goes back to the same subagent (SendMessage) to record and answer on its branch; an open blocking gate keeps the item waiting (step 5). Each provisional answer is the review's to confirm (review step 1).
+   2. `git status --short` shows only your own changes (another session's files in your checkout: stop and move to your own clone or worktree); `land` refuses a branch checked out in another worktree, so `git worktree remove <path>` the worker's worktree first (its branch stays; never `--force`);
+   3. `/kb-verify` on the changed files;
+   4. `python3 _tools/backlog.py land ID --trailer 'Co-Authored-By: ...'`, never the steps by hand. It fetches and rebases `work/<id>` on the integration `main`, then:
       - a content-only item (its commits touch only kb roots and `kb/_self/*.md`): `done --commit`, then `sync --push` straight to `main`;
       - an item with a code-lane commit (`_tools/kblane.py`) not yet on the integration `main`: `sync --push` sends the range, the claim commit riding along, as a `code/<id>` merge request; `main` does not move and the item is not done. On the next pass, once the request has merged, run the same `land` again: it rebases onto the merged `main` (the merged commits keep their hashes), runs `done --commit` and pushes the item file;
       - it runs `python3 _tools/stress_test.py` once, when the landing changed `_tools/`, with the lookup eval and the contract lint, before `sync --push` (workers never run them).
@@ -67,7 +68,7 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
 
 ## review SP
 The review story is ready once every other item is done or dropped. Its work:
-1. Confirm or change each provisional answer with the operator (`answer ID GATE --confirm`, or a new answer plus a task or bug for the change).
+1. Confirm or change each provisional answer with the operator (`answer ID GATE --confirm`, or a new answer plus a task or bug for the change), the ones workers recorded for choices their goals left open (run step 4.1) among them.
 2. Start a fresh-context reviewer subagent on the session model (`subagent_type: "general-purpose"`, no `model`) on the sprint's diff (`git log --grep "KB-Work"` over the sprint's items). Give it each item's goal. It reports only gaps that affect correctness or a goal.
 3. File each gap as a bug (`/kb-backlog bug`): `S1` into this sprint, others to the backlog.
 4. `python3 _tools/backlog.py done <review id>`.
