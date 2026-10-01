@@ -2,7 +2,7 @@
   "id": "ST-ds6bjpdw",
   "kind": "story",
   "title": "Sprint planning checks a goal's step order against the lane rules",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -27,5 +27,19 @@
     "_tools/test_kb_cohesion.py"
   ],
   "notes": "Planning 2026-10-01: a planner's reading of goal text, so the change is skill and backlog.md prose; plan_goal_lane_order is a test in _tools/test_kb_cohesion.py asserting the rule in kb-sprint SKILL.md, kb-backlog SKILL.md and kb/_self/backlog.md (as test_none_rule_texts does).",
-  "claimed_by": "orch-fourth-w4"
+  "evidence": {
+    "commit": "1ad063f6e62c90830d5996cac699fca149f8efe2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "plan_goal_lane_order"
+        ],
+        "exit": 0,
+        "sha256": "840f55faf5b68209"
+      }
+    ]
+  }
 }
