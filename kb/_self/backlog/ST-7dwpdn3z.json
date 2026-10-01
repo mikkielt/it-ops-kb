@@ -2,7 +2,7 @@
   "id": "ST-7dwpdn3z",
   "kind": "story",
   "title": "A failed auto-merge of a code merge request is retried once and named",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
     "kb/_self/backlog.md",
     "AGENTS.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "worker-skillstack"
 }
