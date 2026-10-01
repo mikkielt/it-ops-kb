@@ -2,7 +2,7 @@
   "id": "ST-bpj4kuz5",
   "kind": "story",
   "title": "A gate's options name the command that carries each out",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -24,5 +24,6 @@
     "kb/_self/backlog.md",
     ".claude/skills/kb-backlog/SKILL.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-w15"
 }
