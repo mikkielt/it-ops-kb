@@ -1,0 +1,25 @@
+{
+  "id": "BG-qks4ikyr",
+  "kind": "bug",
+  "title": "kbdecide sweep leaves a decision active when its item was dropped outside a sprint",
+  "status": "draft",
+  "parent": "EP-v56iwyry",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbdecide.py sweep invalidates a decision whose context item backlog.py drop deleted outside a sprint (its last version in git history is not done), and content-rules.md and tools.md describe that case.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; python3 _tools/kbdecide.py record --root _self --source \"backlog item BG-3i46pccw gate g1\" --context item:BG-3i46pccw --by operator --maker operator -- \"Keep the rustc check\" >/dev/null; python3 _tools/backlog.py drop BG-3i46pccw --why test >/dev/null; git -c user.name=t -c user.email=t@example.com commit -qam drop --no-verify; python3 _tools/kbdecide.py sweep --root _self --dry-run | grep -q \"would_invalidate=1\""
+    ]
+  },
+  "touches": [
+    "_tools/kbdecide.py",
+    "_tools/test_kbdecide.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
