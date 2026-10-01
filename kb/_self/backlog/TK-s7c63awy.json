@@ -27,7 +27,8 @@
     "kb/public/_coverage.csv",
     "kb/public/_coverage.md",
     "kb/public/_retrieval/signals.csv",
-    "_tools/aliases.csv"
+    "_tools/aliases.csv",
+    "kb/_querylog/findings/2026-09/20260930T173738Z-64cf3fcc.jsonl"
   ],
   "evidence": {
     "commit": "d64301e4e80a9f1d9a30e9c14e9cb83ef51ad9f3",
