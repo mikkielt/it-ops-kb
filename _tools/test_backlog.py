@@ -1344,6 +1344,28 @@ def test_close_drops_depends_on(sprint):
     assert code == 0 and sprint["bg"] not in out, out
 
 
+def test_drop_chain_leaves_check_green(sprint):
+    """Dropping a three-item chain, dependants first, leaves no dropped item depending on a dropped one: check
+    stays at errors=0 (planted: the links stay and check reports a dependency on a dropped item)."""
+    repo = sprint["repo"]
+    ids = []
+    for n in "abc":
+        b(repo, "new", "bug", "--title", f"Chain {n}", "--sprint", sprint["sp"], "--severity", "S4", "--repro",
+          argstr(is_file("src/y.txt")), "--goal", "y exists", "--touch", "src/**")
+        ids.append(item(repo, f"Chain {n}")["id"])
+    first, second, third = ids
+    edit(repo, second, depends_on=[first])
+    edit(repo, third, depends_on=[second, first])
+    assert b(repo, "drop", first, "--why", "x")[0] == 1  # still a dependency of open items
+    for iid in (third, second, first):
+        code, out = b(repo, "drop", iid, "--why", "chain not needed")
+        assert code == 0, out
+    assert all(item_json(repo, i)["status"] == "dropped" for i in ids)
+    assert not any(item_json(repo, i).get("depends_on") for i in ids)
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+
+
 def test_goal_condition_names_checks_and_scope(sprint):
     code, out = b(sprint["repo"], "goal", sprint["tk"])
     assert f"`{argstr(is_file('src/b.txt'))}` exits 0" in out and "src/**" in out and f"backlog.py done {sprint['tk']}" in out
