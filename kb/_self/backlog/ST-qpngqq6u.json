@@ -2,7 +2,7 @@
   "id": "ST-qpngqq6u",
   "kind": "story",
   "title": "intake --hook runs its fast detectors before drift so the budget never starves them",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -25,5 +25,19 @@
     "kb/_self/tools.md"
   ],
   "notes": "Sprint review of SP-3brmvlnh: hook_intake runs drift, stranded, trailers in name order; drift alone takes about 32 s, so past the 50 s budget the fast detectors never run.",
-  "claimed_by": "c-qpngqq6u"
+  "evidence": {
+    "commit": "db3d12cdb912e83f832caa39dcc93af29603cef9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_hook_order"
+        ],
+        "exit": 0,
+        "sha256": "31725648f423ff0c"
+      }
+    ]
+  }
 }
