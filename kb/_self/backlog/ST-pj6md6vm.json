@@ -2,7 +2,7 @@
   "id": "ST-pj6md6vm",
   "kind": "story",
   "title": "test_layout's facade map covers bl_ modules",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P3",
@@ -30,5 +30,29 @@
     "_tools/test_layout.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "orch-fourth-w2"
+  "evidence": {
+    "commit": "89d6823952383140b18352153446c381eac17f90",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "import_layers"
+        ],
+        "exit": 0,
+        "sha256": "a53b45a1a73121af"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_helper_imports_backlog_fails"
+        ],
+        "exit": 0,
+        "sha256": "71ce00b1a933adf7"
+      }
+    ]
+  }
 }
