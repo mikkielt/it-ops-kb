@@ -444,3 +444,139 @@ def test_intake_drift_status_is_the_story_check_and_passes_once_the_item_is_done
     world.commit(3, "chore(backlog): done")
     assert intake(world.root, capsys, *argv[3:])[0] == 0  # the item is done: no longer reported
 
+
+# ------------------------------------------------------------------ the trailer detector (intake_trailers)
+#
+# Same throwaway repositories as the drift tests. Planted: a KB-Work line before a blank line and Co-Authored-By (git
+# reads no trailer: reported) beside a correct trailer (not reported); a commit changing each of `_tools/`, `.claude/`,
+# `.githooks/` and `.gitlab-ci.yml` without KB-Work (reported) beside one with a KB-Work trailer, one with a KB-Auto
+# trailer and one changing only content (not reported); a commit older than the window (not reported).
+
+CO = "Co-Authored-By: Claude <noreply@example.com>"
+BAD_MSG = f"fix: work\n\nKB-Work: TK-aaaaaaaa\n\n{CO}"  # a blank line before Co-Authored-By: no trailer
+GOOD_MSG = f"fix: work\n\nKB-Work: TK-aaaaaaaa\n{CO}"
+
+
+def trailer_candidates(world):
+    bl_intake.detector("trailers")(bl_intake.trailers_detector)
+    return bl_intake.collect(world.root)
+
+
+def test_intake_trailers_window_is_a_week():
+    assert bl_intake.TRAILER_WINDOW_DAYS == 7
+
+
+def test_intake_trailers_kb_work_before_a_blank_line_and_coauthored_by_is_reported(world):
+    sha = world.commit(1, BAD_MSG, {"kb/x.md": "x\n"})
+    world.publish()
+    assert bl_intake.trailer_findings(world.root) == [(sha[:10], "stray")]
+
+
+def test_intake_trailers_a_correct_trailer_is_not_reported(world):
+    world.commit(1, GOOD_MSG, {"_tools/x.py": "x = 1\n"})
+    world.publish()
+    assert bl_intake.trailer_findings(world.root) == []
+
+
+def test_intake_trailers_a_stray_line_beside_a_real_trailer_is_reported(world):
+    sha = world.commit(1, f"fix: work\n\nKB-Work: TK-aaaaaaaa\n\nmore text\n\nKB-Work: TK-bbbbbbbb\n{CO}")
+    world.publish()
+    assert bl_intake.trailer_findings(world.root) == [(sha[:10], "stray")]
+
+
+def test_intake_trailers_a_tools_commit_without_kb_work_is_reported(world):
+    sha = world.commit(1, "fix: tool", {"_tools/x.py": "x = 1\n"})
+    world.publish()
+    assert bl_intake.trailer_findings(world.root) == [(sha[:10], "missing")]
+
+
+@pytest.mark.parametrize("path", ["_tools/sub/x.py", ".claude/skills/x.md", ".githooks/pre-push", ".gitlab-ci.yml"])
+def test_intake_trailers_each_code_path_needs_a_trailer(world, path):
+    sha = world.commit(1, "fix: change", {path: "x\n"})
+    world.publish()
+    assert bl_intake.trailer_findings(world.root) == [(sha[:10], "missing")]
+
+
+@pytest.mark.parametrize("path", ["kb/x.md", "src/a.txt", "_toolsx/a.py", "docs/_tools/a.py", ".gitlab-ci.yml.bak"])
+def test_intake_trailers_other_paths_need_no_trailer(world, path):
+    world.commit(1, "docs: change", {path: "x\n"})
+    world.publish()
+    assert bl_intake.trailer_findings(world.root) == []
+
+
+def test_intake_trailers_a_kb_auto_commit_is_not_reported(world):
+    world.commit(1, "chore: auto\n\nKB-Auto: eval", {"_tools/x.py": "x = 1\n"})
+    world.publish()
+    assert bl_intake.trailer_findings(world.root) == []
+
+
+def test_intake_trailers_a_commit_with_one_trailer_among_many_files_is_not_reported(world):
+    world.commit(1, GOOD_MSG, {"_tools/x.py": "x\n", ".githooks/h": "x\n", "kb/y.md": "y\n"})
+    world.publish()
+    assert bl_intake.trailer_findings(world.root) == []
+
+
+def test_intake_trailers_the_window_is_measured_from_the_tip_of_main(world):
+    old = world.commit(24, "fix: old", {"_tools/x.py": "1\n"})
+    edge = world.commit(25, "fix: edge", {"_tools/x.py": "2\n"})
+    world.commit(25 + 7 * 24, "fix: tip", {"src/a.txt": "t\n"})
+    world.publish()
+    found = bl_intake.trailer_findings(world.root)
+    assert found == [(edge[:10], "missing")] and old[:10] not in dict(found)  # exactly 7 days older: in; older: out
+
+
+def test_intake_trailers_a_commit_not_on_main_is_not_read(world):
+    world.commit(1, "fix: ok", {"src/a.txt": "b\n"})
+    world.publish()
+    world.commit(2, "fix: local", {"_tools/x.py": "x\n"})
+    assert bl_intake.trailer_findings(world.root) == []
+
+
+def test_intake_trailers_without_origin_main_nothing_is_reported(world):
+    world.commit(1, "fix: tool", {"_tools/x.py": "x\n"})
+    assert bl_intake.trailer_findings(world.root) == []
+
+
+def test_intake_trailers_one_bug_lists_the_commits_and_its_fingerprint_is_the_sorted_short_shas(world):
+    a = world.commit(1, BAD_MSG, {"kb/x.md": "x\n"})
+    b = world.commit(2, "fix: tool", {"_tools/x.py": "x\n"})
+    world.commit(3, GOOD_MSG, {"_tools/y.py": "y\n"})
+    world.publish()
+    (c,), failures = trailer_candidates(world)
+    assert failures == []
+    key = ",".join(sorted([a[:10], b[:10]]))
+    assert c.kind == "bug" and c.detector == "trailers" and c.key == key
+    assert c.fp == bl_intake.fingerprint("trailers", key)
+    assert a[:10] in c.notes and b[:10] in c.notes and "2 commit(s)" in c.title
+
+
+def test_intake_trailers_the_fingerprint_is_stable_and_changes_with_the_set(world):
+    world.commit(1, BAD_MSG, {"kb/x.md": "x\n"})
+    world.publish()
+    first = trailer_candidates(world)[0][0].fp
+    assert trailer_candidates(world)[0][0].fp == first
+    world.commit(2, "fix: tool", {"_tools/x.py": "x\n"})
+    world.publish()
+    assert trailer_candidates(world)[0][0].fp != first
+
+
+def test_intake_trailers_clean_history_reports_no_candidate(world):
+    world.commit(1, GOOD_MSG, {"_tools/x.py": "x\n"})
+    world.commit(2, "docs: note", {"kb/x.md": "x\n"})
+    world.publish()
+    assert trailer_candidates(world) == ([], [])
+
+
+def test_intake_trailers_status_is_the_bug_repro_and_passes_once_the_commit_leaves_the_window(world, capsys):
+    world.commit(1, "fix: tool", {"_tools/x.py": "x\n"})
+    world.publish()
+    bl_intake.detector("trailers")(bl_intake.trailers_detector)
+    code, out, _ = intake(world.root, capsys, "--file")
+    assert code == 0 and out[-1] == "intake: 1 candidate(s), 1 new filed, 0 skipped"
+    (bug_item,) = [it for it in load(world.root) if it["kind"] == "bug"]
+    argv = bug_item["repro"]["run"]
+    assert intake(world.root, capsys, *argv[3:])[0] == 1  # still reported
+    world.commit(1 + 8 * 24, "docs: later", {"kb/x.md": "x\n"})
+    world.publish()
+    assert intake(world.root, capsys, *argv[3:])[0] == 0  # the commit is older than the window
+

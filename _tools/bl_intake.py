@@ -17,7 +17,9 @@ the part that does not touch the backlog's files:
 - `open_with_fingerprint(items, fp)`: the open item whose links already carry the fingerprint, which skips the
   candidate;
 - `lines(candidate)`: the lines the command prints for one candidate;
-- the `drift` detector (`scan_drift`, `drift`, at the end): items whose state disagrees with their commits.
+- the `drift` detector (`scan_drift`, `drift_detector`): items whose state disagrees with their commits;
+- the `trailers` detector (`trailer_findings`, `trailers_detector`, at the end): commits of main whose KB-Work line git
+  does not read, or that change code with no KB-Work and no KB-Auto trailer.
 
 This module imports no tool module but `kbpublic` (the integration remote's name, inside the function that needs it);
 it is below backlog.py.
@@ -358,3 +360,71 @@ def drift_detector(root):
         goal=f"Each of {', '.join(ids)} is finished with done, dropped, or has its status corrected, so no detector "
              "reports it as drifted.",
         key=key, checks=[STATUS_REPRO + [fingerprint("drift", key)]], notes="; ".join(notes))]
+
+
+# ------------------------------------------------------------------ the trailer detector
+
+TRAILER_WINDOW_DAYS = 7  # the commits of main this much newer than its tip are read
+AUTO_KEY = "KB-Auto"  # querylog.py's automatic commits carry no KB-Work
+WORK_LINE = re.compile(r"KB-Work\s*:\s*(.*\S)\s*$", re.I)  # kbgit.py's WORK_LINE
+WORK_PATHS = ("_tools/", ".claude/", ".githooks/", ".gitlab-ci.yml")  # a change to these is work: it needs a KB-Work
+SHORT_SHA = 10
+
+
+def code_path(path):
+    return any(path == p or (p.endswith("/") and path.startswith(p)) for p in WORK_PATHS)
+
+
+def trailer_findings(root, days=None):
+    """[(short sha, why)] sorted by sha, for the non-merge commits on the integration main whose committer time is at
+    most `days` (default TRAILER_WINDOW_DAYS) older than the tip's: `stray` when the message has more KB-Work lines than
+    git reads as trailers (a blank line before Co-Authored-By?), `missing` when the commit changes a path of
+    WORK_PATHS and carries neither a KB-Work nor a KB-Auto trailer. The tip's time stands for "now", as in the drift
+    detector: no clock."""
+    days = TRAILER_WINDOW_DAYS if days is None else days
+    ref = main_ref(root)
+    if not ref_exists(root, ref):
+        return []
+    tip = int(git_out(root, "log", "-1", "--format=%ct", ref).strip() or 0)
+    since = tip - days * 86400
+    log = git_out(root, "log", ref, "--no-merges", "--name-only", f"--since={since}",
+                  f"--format=%x1e%H%x1f%ct%x1f%(trailers:key={WORK_KEY},valueonly,unfold)%x1f"
+                  f"%(trailers:key={AUTO_KEY},valueonly,unfold)%x1f%B%x1f")
+    out = []
+    for rec in log.split("\x1e")[1:]:
+        parts = rec.split("\x1f")
+        if len(parts) < 6 or int(parts[1]) < since:
+            continue
+        sha, work, auto, body, paths = parts[0].strip(), parts[2], parts[3], parts[4], parts[5]
+        trailers = sum(1 for ln in work.splitlines() if ln.strip())
+        lines = sum(1 for ln in body.splitlines() if WORK_LINE.match(ln))
+        if lines > trailers:
+            out.append((sha[:SHORT_SHA], "stray"))
+        elif not trailers and not auto.strip() and any(code_path(p.strip()) for p in paths.split("\n")):
+            out.append((sha[:SHORT_SHA], "missing"))
+    return sorted(out)
+
+
+@detector("trailers")
+def trailers_detector(root):
+    """One bug listing the commits of the last TRAILER_WINDOW_DAYS on the integration main whose KB-Work line git
+    reads as no trailer, or that change `_tools/`, `.claude/`, `.githooks/` or `.gitlab-ci.yml` with neither a KB-Work
+    nor a KB-Auto trailer. The fingerprint is the sorted short shas."""
+    found = trailer_findings(root)
+    if not found:
+        return []
+    shas = [s for s, _ in found]
+    stray = [s for s, why in found if why == "stray"]
+    missing = [s for s, why in found if why == "missing"]
+    notes = []
+    if stray:
+        notes.append("a KB-Work line git does not read as a trailer (a blank line before Co-Authored-By?): "
+                     + ", ".join(stray))
+    if missing:
+        notes.append("changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work or KB-Auto trailer: "
+                     + ", ".join(missing))
+    return [Candidate(
+        kind="bug", title=f"Trailers: {len(shas)} commit(s) on main without a KB-Work trailer git reads",
+        goal=f"No commit of the last {TRAILER_WINDOW_DAYS} days on {main_ref(root)} has a KB-Work line git reads as no "
+             "trailer, or changes code with no KB-Work and no KB-Auto trailer.",
+        key=",".join(shas), severity="S3", notes="; ".join(notes))]
