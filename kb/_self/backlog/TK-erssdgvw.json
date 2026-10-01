@@ -2,7 +2,7 @@
   "id": "TK-erssdgvw",
   "kind": "task",
   "title": "Drift detector",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-f2ravix7",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/bl_intake.py",
     "_tools/test_intake.py"
   ],
-  "claimed_by": "worker-erssdgvw"
+  "evidence": {
+    "commit": "2e6d2d799f4050b777323d93bf2f4a8454cf3164",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_drift"
+        ],
+        "exit": 0,
+        "sha256": "64bcd71f196f01e8"
+      }
+    ]
+  }
 }
