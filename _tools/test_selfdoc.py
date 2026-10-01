@@ -384,6 +384,20 @@ class TestSelfdocToolsMap:
         line = selfdoc.map_tools("long", tmp_path)[1]
         assert line.endswith("…") and len(line.split(" — ", 1)[1]) == selfdoc.DOC_MAX
 
+    @pytest.mark.parametrize("sep", ["\u2028", "\u2029", "\u0085", "\x0c"])
+    def test_selfdoc_map_lines_by_lf(self, tmp_path, sep):
+        """A line separator other than LF inside a string or a docstring moves no line number: map_tools and check_map agree
+        with the LF numbering, and a docstring keeps its first line whole; the planted failure is `str.splitlines`, which does break there."""
+        src = f'def a():\n    s = "x{sep}y"\n    return s\n\n\ndef b():\n    """Doc{sep}more."""\n\n\ndef c():\n    pass\n'
+        assert len(src.splitlines()) > len(selfdoc.lf_lines(src)), "the planted character is a splitlines break"
+        os.makedirs(tmp_path / "_tools")
+        (tmp_path / "_tools" / "sep.py").write_text(src, encoding="utf-8", newline="\n")
+        lines = selfdoc.map_tools("sep", tmp_path)
+        assert lines == ["_tools/sep.py:1 module sep", "_tools/sep.py:1 def a", "_tools/sep.py:6 def b — Doc more.",
+                         "_tools/sep.py:10 def c"]
+        assert selfdoc.check_map(lines, tmp_path) == []
+        assert selfdoc.check_map(["_tools/sep.py:11 def c"], tmp_path) == ["_tools/sep.py:11: `c` (def) is not at that line"]
+
     def test_tools_map_every_mapped_name_is_in_the_code(self, root):
         lines = selfdoc.map_tools(root=root)
         assert selfdoc.check_map(lines, root) == []
