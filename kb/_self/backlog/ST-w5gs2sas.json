@@ -23,7 +23,8 @@
     "_tools/test_backlog.py",
     ".claude/skills/kb-backlog/SKILL.md",
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ],
   "claimed_by": "worker-w5gs2sas"
 }
