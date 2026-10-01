@@ -2,7 +2,7 @@
   "id": "ST-jn7qeb2b",
   "kind": "story",
   "title": "Attribute sprint subagents to the item they work",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-fvztfmtm",
   "priority": "P2",
@@ -40,5 +40,20 @@
     "kb/_self/backlog.md",
     "kb/_self/usage.md",
     "_tools/kbusage.py"
-  ]
+  ],
+  "evidence": {
+    "commit": "83896600ed8e3b004fd07b1f4ea4a5b8ee530801",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_subagent"
+        ],
+        "exit": 0,
+        "sha256": "b781b792bb0f149f"
+      }
+    ]
+  }
 }
