@@ -2,7 +2,7 @@
   "id": "ST-weieuayk",
   "kind": "story",
   "title": "A sprint brief names known failing tests and the bug filed for them",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "kb/_self/backlog.md",
     "AGENTS.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "worker-skillstack"
 }
