@@ -2,7 +2,7 @@
   "id": "ST-7dwpdn3z",
   "kind": "story",
   "title": "A failed auto-merge of a code merge request is retried once and named",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,28 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "worker-skillstack"
+  "evidence": {
+    "commit": "f419892336c0a8ed065ed6432e920e0dfdb40071",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "code_mr_merge_retry"
+        ],
+        "exit": 0,
+        "sha256": "edf6227888d98d42"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
