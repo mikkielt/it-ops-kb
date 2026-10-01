@@ -5,11 +5,16 @@
                                          add a decision with status `proposed` and print its id
   kbdecide.py confirm ID --root R --by operator [--maker M] [--name NAME] [--date DATE]
                                          make a proposed decision `active`; refused without `--by operator`
-  kbdecide.py supersede OLD NEW --root R   the active decision NEW takes the place of the active decision OLD
+  kbdecide.py supersede OLD NEW --root R --by operator
+                                         the active decision NEW takes the place of the active decision OLD; refused
+                                         without `--by operator`
   kbdecide.py invalidate ID --root R --reason TEXT [--date DATE]
-                                         withdraw an active decision; its row stays
-  kbdecide.py restore ID --root R          bring an invalidated decision back, `active` when a maker confirmed it,
-                                         else `proposed`; its row stays and `links` keeps what was invalidated
+                                         withdraw a proposed or an active decision; its row stays. Open to agents:
+                                         it names no maker, so it rejects a proposal as well
+  kbdecide.py restore ID --root R --by operator
+                                         bring an invalidated decision back, `active` when a maker confirmed it,
+                                         else (a rejected proposal) `proposed`; its row stays and `links` keeps what
+                                         was invalidated; refused without `--by operator`
   kbdecide.py makers R [--policy P --by operator]
                                          show how root R saves its decision makers, or (the operator's) set the policy:
                                          role-only, role-and-name or central-register
@@ -31,6 +36,10 @@ lands in a root by omission. The rows go to the root's `_decisions.csv`; its for
     kb/_self/decision-makers.csv; a root that keeps names (an internal one) may leave it out and may take `--name`.
   - Nothing is ever deleted: `invalidate` sets the status and the reason, `supersede` marks the old decision
     `superseded` and lists it in the new one's `supersedes`.
+  - What an agent may do and what is the operator's: `propose` and `invalidate` are open to agents (the context sweep
+    invalidates a decision whose subject is gone, and a proposal nobody should confirm is rejected the same way, with no
+    maker named); `confirm`, `supersede`, `restore` and `makers --policy` need `--by operator`, which an agent passes
+    only after the operator said so, because each makes or brings back a decision that holds.
   - A root saves its decision makers by a policy (kbcommon.POLICIES), one reserved row of its decision-makers.csv.
     There is no default: `propose` in a root with none is refused with the question and the options until the
     operator runs `makers R --policy P --by operator`. role-and-name is refused where kbcommon.maker_names_allowed
@@ -302,6 +311,7 @@ def cmd_makers(a):
 
 
 def cmd_supersede(a):
+    need_operator(a, "supersedes a decision")
     store = Store(a.root)
     rows = load(store)
     if a.old == a.new:
@@ -320,7 +330,7 @@ def cmd_invalidate(a):
     store = Store(a.root)
     rows = load(store)
     row = find(rows, a.id, store)
-    need(row, ("active",), a.id, "invalidated")  # a proposed one names no maker, which check.py asks of an invalidated one
+    need(row, ("proposed", "active"), a.id, "invalidated")  # a rejected proposal names no maker: check.py takes that of an invalidated row
     reason = " ".join(a.reason.split())
     if not reason:
         raise Refused("--reason is empty: say why the decision no longer holds")
@@ -331,6 +341,7 @@ def cmd_invalidate(a):
 
 
 def cmd_restore(a):
+    need_operator(a, "restores a decision")
     store = Store(a.root)
     rows = load(store)
     row = find(rows, a.id, store)
@@ -389,12 +400,14 @@ def parser():
     p = add("supersede", "an active decision takes the place of another")
     p.add_argument("old")
     p.add_argument("new")
-    p = add("invalidate", "withdraw a decision, keeping its row")
+    p.add_argument("--by", help=f"must be {OPERATOR}")
+    p = add("invalidate", "withdraw a proposed or active decision, keeping its row")
     p.add_argument("id")
     p.add_argument("--reason", required=True)
     p.add_argument("--date", help="YYYY-MM-DD (default: today)")
-    p = add("restore", "bring an invalidated decision back")
+    p = add("restore", "the operator brings an invalidated decision back")
     p.add_argument("id")
+    p.add_argument("--by", help=f"must be {OPERATOR}")
     p = sub.add_parser("makers", help="show or set how a root saves its decision makers")
     p.add_argument("root", help="a root's name")
     p.add_argument("--policy", help=f"{'|'.join(kbcommon.POLICIES)}; the operator's")
