@@ -823,13 +823,14 @@ def docs_after_code(bl, ids):
     return out
 
 
-def docs_warnings(bl):
+def docs_warnings(bl, only=None):
     """An open item whose own touches name code (CODE_DIRS, CODE_FILES) whose kb/_self/map.csv docs are in no open
     item's touches, or only in the touches of items that depend on it (a later task): kb/_self/git.md asks for a code
     change's doc lines in the same commit, and sync's selfdoc stale gate refuses the push without them. The item's own
     scope (its touches and its descendants') covers a doc; a missing or unreadable map gives no warning. A standard
     doc, one with a map pattern that covers every _tools/*.py (EVERY_TOOL), describes no one change: selfdoc stale
-    still lists it, and a Self-Reviewed trailer clears it there, so it is no item's to carry."""
+    still lists it, and a Self-Reviewed trailer clears it there, so it is no item's to carry. ONLY limits the items
+    reported to those ids; the holders of a doc are still every open item."""
     import selfdoc
     try:
         docmap = selfdoc.load_map(str(bl.root))
@@ -841,6 +842,8 @@ def docs_warnings(bl):
     open_ids = [i for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") in OPEN_STATUSES]
     out = []
     for iid in open_ids:
+        if only is not None and iid not in only:
+            continue
         if files is None and any(re.search(r"[*?]", t) for t in bl.items[iid].get("touches", []) or []
                                  if isinstance(t, str)):
             files = tracked_files(bl.root)
@@ -2701,6 +2704,8 @@ def cmd_start(bl, a):
     sp["status"] = "active"
     bl.save(sp)
     say(f"started {bl.label(sid)}: {sp['goal']}")
+    for w in docs_warnings(bl, set(items)):
+        say(f"  warning: {w}")
     for i in recurring_left_out(bl, sid):
         say(f"  warning: recurring P1 item {bl.label(i)} (recurs in {len(set(bl.items[i]['recurs']))} sprints) "
             "is not in this sprint")
