@@ -2453,6 +2453,69 @@ class TestBacklogLand:
         assert code == 1 and "land stopped at step clean tree" in out, out
         assert self.steps(ld) == []
 
+    # land returns the checkout to where it started: `git rebase UPSTREAM BRANCH` switches to BRANCH, and an
+    # orchestrator's later claim --commit must not land on work/<id> and ride into its code/<id> merge request. The
+    # names differ in their first 30 characters: pytest cuts tmp_path's name there, and the fixture's remote sits
+    # beside it, so two tests on one worker would share it.
+    def head_ref(self, ld):
+        p = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=ld["repo"], capture_output=True, text=True,
+                           encoding="utf-8")
+        return p.stdout.strip() or None
+
+    def orchestrate(self, ld, files, check):
+        """The worker's commit on work/<id>, then the orchestrator's own branch checked out, as land finds it."""
+        self.work(ld, files, check)
+        sh(ld["repo"], "git", "checkout", "-q", "-b", "orch", "main")
+
+    def test_content_lane_land_returns_to_start_branch(self, landing):
+        ld = landing
+        self.orchestrate(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        code, out = self.land(ld)
+        assert code == 0 and "landed" in out, out
+        assert self.head_ref(ld) == "refs/heads/orch", out
+        assert self.remote_item(ld)["status"] == "done"
+        assert not self.out(ld["repo"], "status", "--porcelain")
+
+    def test_code_lane_land_returns_to_start_branch(self, landing):
+        ld = landing
+        self.orchestrate(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        code, out = self.land(ld)
+        assert code == 0 and "not done yet" in out, out
+        assert self.head_ref(ld) == "refs/heads/orch", out
+        code, out = self.land(ld)  # the re-run that waits for the merge request
+        assert code == 0 and "waits for its merge request" in out, out
+        assert self.head_ref(ld) == "refs/heads/orch", out
+
+    def test_stopped_land_returns_to_start_branch(self, landing, monkeypatch):
+        ld = landing
+        self.orchestrate(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        monkeypatch.setenv("LAND_FAIL", "lint")  # planted: a stop after the rebase switched to work/<id>
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step lint" in out, out
+        assert self.head_ref(ld) == "refs/heads/orch", out
+
+    def test_conflicted_land_returns_to_start_branch(self, landing):
+        ld = landing
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        sh(ld["repo"], "git", "checkout", "-q", "main")
+        (ld["repo"] / "kb" / "public" / "x").mkdir(parents=True, exist_ok=True)
+        (ld["repo"] / "kb" / "public" / "x" / "a.md").write_text("other\n", encoding="utf-8")  # planted conflict
+        commit(ld["repo"], "conflicting work")
+        sh(ld["repo"], "git", "push", "-q", "origin", "main")
+        sh(ld["repo"], "git", "checkout", "-q", "-b", "orch")
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step rebase" in out, out
+        assert self.head_ref(ld) == "refs/heads/orch", out
+
+    def test_detached_land_returns_to_start_branch(self, landing):
+        ld = landing
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        sh(ld["repo"], "git", "checkout", "-q", "--detach", "main")
+        start = self.out(ld["repo"], "rev-parse", "HEAD").strip()
+        code, out = self.land(ld)
+        assert code == 0 and "landed" in out, out
+        assert self.head_ref(ld) is None and self.out(ld["repo"], "rev-parse", "HEAD").strip() == start, out
+
     def test_backlog_land_refuses_kb_trailers(self, landing):
         code, out = b(landing["repo"], "land", landing["tk"], "--trailer", f"KB-Work: {landing['tk']}")
         assert code == 1 and "--trailer" in out, out
