@@ -2,7 +2,7 @@
   "id": "BG-o3cjsgmm",
   "kind": "bug",
   "title": "The backlog+ hook drops the next --all --any output when horizon fills its context limit",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,39 @@
     "kb/_self/token-efficiency.md",
     "AGENTS.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "989f9cd07a99d778ea24f673f34ca89a0061503e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_backlog_prompt_end_to_end_without_loading_the_kb"
+        ],
+        "exit": 0,
+        "sha256": "9b9f006d664b7bdf"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_hook_keeps_every_part"
+        ],
+        "exit": 0,
+        "sha256": "552540a71f4eda38"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_backlog_prompt_end_to_end_without_loading_the_kb"
+        ],
+        "exit": 0,
+        "sha256": "e28f6024df73f814"
+      }
+    ]
+  }
 }
