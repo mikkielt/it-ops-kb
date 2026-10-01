@@ -2,7 +2,7 @@
   "id": "TK-ufwy5bec",
   "kind": "task",
   "title": "Usage rows for every prompt of a work window",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-mn4j4fis",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
     "_tools/test_ql_distill.py",
     "_tools/fixtures/querylog/**",
     "kb/_self/usage.md"
-  ]
+  ],
+  "claimed_by": "worker-ufwy5bec"
 }
