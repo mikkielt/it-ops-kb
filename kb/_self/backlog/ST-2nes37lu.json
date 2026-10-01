@@ -2,7 +2,7 @@
   "id": "ST-2nes37lu",
   "kind": "story",
   "title": "An item whose code reads backlog state checks every path that changes it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -24,5 +24,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     ".claude/skills/kb-backlog/SKILL.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-w14"
 }
