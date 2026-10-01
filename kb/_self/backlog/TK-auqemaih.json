@@ -2,7 +2,7 @@
   "id": "TK-auqemaih",
   "kind": "task",
   "title": "Decision and decision-maker file formats in kbcommon and check.py",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-rmabmiaq",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,6 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "claimed_by": "worker-decision-formats"
 }
