@@ -2,7 +2,7 @@
   "id": "TK-3kj5dh3r",
   "kind": "task",
   "title": "Resolve items deleted at sprint close from git history",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-6bi7oe6y",
   "priority": "P2",
   "rank": 1,
@@ -27,5 +27,19 @@
     "TK-gnxbjdxc"
   ],
   "notes": "Scope widened: the cost row of tools.md says an unknown id exits 2 and omits items deleted at sprint close.",
-  "claimed_by": "worker-3kj5dh3r"
+  "evidence": {
+    "commit": "c983ade3ef502c609960f682b56b1f9ade67b820",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_cost_closed"
+        ],
+        "exit": 0,
+        "sha256": "887cddfe9d30f5e8"
+      }
+    ]
+  }
 }
