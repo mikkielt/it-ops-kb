@@ -1,0 +1,19 @@
+{
+  "id": "ST-t6dc2pz7",
+  "kind": "story",
+  "title": "Self-Reviewed is never a way past the stale gate",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The kb-worker brief, the kb-sprint skill and maintaining.md say a doc that needs an edit outside the item's touches stops the work with a report, and Self-Reviewed names only docs checked and found correct. Answers SP-jtfo4ael's retrospective: two workers added Self-Reviewed to clear the gate on docs that still needed an edit (AGENTS.md, alternatives.md).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ]
+}
