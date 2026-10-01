@@ -2,7 +2,7 @@
   "id": "ST-fria7ro7",
   "kind": "story",
   "title": "The kb says how hooks identify a subagent and its session",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-fvztfmtm",
   "priority": "P2",
@@ -41,5 +41,40 @@
     "kb/public/claude/hooks.md",
     "kb/public/claude/skills-and-subagents.csv"
   ],
-  "notes": "Research item (kb change through /kb-research). pack gives weak for agent_id in hook input (not in the kb) and no fact on a session id variable; the attribution design of ST-n77nrtv7 and ST-jn7qeb2b rests on the answer."
+  "notes": "Research item (kb change through /kb-research). pack gives weak for agent_id in hook input (not in the kb) and no fact on a session id variable; the attribution design of ST-n77nrtv7 and ST-jn7qeb2b rests on the answer.",
+  "evidence": {
+    "commit": "cea7bc934a0524a83b0aaad0d959d9b556468687",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "hook input agent_id agent_type subagent PostToolUse"
+        ],
+        "exit": 0,
+        "sha256": "07541a161155caf7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Does Claude Code expose the session id to a Bash command as an environment variable?"
+        ],
+        "exit": 0,
+        "sha256": "770d8182cdaae51b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Does a Bash command that exits non-zero fire PostToolUseFailure?"
+        ],
+        "exit": 0,
+        "sha256": "f3d44bdf6ee019d4"
+      }
+    ]
+  }
 }
