@@ -2,7 +2,7 @@
   "id": "ST-dmflypww",
   "kind": "story",
   "title": "Docs and skills describe decisions",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-v56iwyry",
   "sprint": "SP-jtfo4ael",
   "priority": "P2",
@@ -42,5 +42,28 @@
       "answer": "approve the wording",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "60f47d4d67f0fb7a9886bfcd86746add20104e25",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
