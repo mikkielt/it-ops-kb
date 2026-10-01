@@ -4,7 +4,8 @@ scan, the path:line citations of the kb lines it returned (never the reply), and
 no text of Haiku's is stored. Started by SessionEnd with the session's transcript, distill first writes a `usage` row
 per kb prompt of that session and per prompt inside one of its work windows (ql_capture.add_usage), and the usage rows
 of the written entries become the run's usage sidecar, and the prompts of the closed sessions' work windows, summed per
-item, become its work sidecar. Also the SessionEnd and SessionStart launcher that starts a detached distill.
+item (a prompt in several windows once, on their sprint; a work-branch subagent on its item), become its work sidecar.
+Also the SessionEnd and SessionStart launcher that starts a detached distill.
 
 Distill reads every row format capture has written (ROW_FORMAT, format 0 for a row without `v`) and skips and counts a
 row it cannot read.
@@ -36,6 +37,7 @@ LOG_MAX_BYTES = 1_000_000  # the launcher starts a fresh log above it
 CALLS_NAME = "haiku-calls.json"  # {"day", "calls"}: the Haiku calls this machine made today
 CONSUMED_NAME = "consumed.json"  # {tools file: [row ids]}: tools rows already distilled into an entry
 WORKED_NAME = "worked.json"  # {session id: [prompt ids]}: prompts whose usage a work sidecar already holds
+BACKLOG_REL = "kb/_self/backlog"  # the item files that name each item's sprint (sprint_finder)
 KB_SURFACES = ("kb_hook", "mcp", "kb_ask", "tool_fetch")
 REPLY_CITE = re.compile(r"(?<![\w./-])(?:kb/)?((?:[\w-]+/)+[\w.-]+:[1-9]\d*)")  # a path:line a reply names
 DISTILL_TASK = (
@@ -340,7 +342,24 @@ def usage_of(rs):
     last = rows_[-1] if rows_ else None
     if last is None or last.get("reader") != kbusage.READER_VERSION or not isinstance(last.get("usage"), dict):
         return None
-    return last["usage"]
+    return {k: v for k, v in last["usage"].items() if k != "routed"}
+
+
+def routed_of(rs):
+    """{item id: sub counts} the last usage row of this reader routes to items (`routed`: the subagents of the prompt
+    that worked on a `work/<id>` branch, kbusage.prompt_usage); {} when it routes none, None when `routed` is outside
+    the closed shape (an item id, and the `sub` shape the store keeps)."""
+    rows_ = [r for r in sorted(rs, key=ts_of) if r.get("surface") == "usage"]
+    last = rows_[-1] if rows_ else None
+    if last is None or last.get("reader") != kbusage.READER_VERSION or not isinstance(last.get("usage"), dict):
+        return {}
+    routed = last["usage"].get("routed", {})
+    zero = {"other": dict.fromkeys(store_.USAGE_COUNTS, 0)}
+    if not (isinstance(routed, dict) and all(isinstance(i, str) and WORK_ITEM.fullmatch(i) and isinstance(sub, dict)
+                                             and sub and store_.usage_counts({"main": zero, "sub": sub, "start": 0}) is not None
+                                             for i, sub in routed.items())):
+        return None
+    return routed
 
 
 # ---------------------------------------------------------------- work windows
@@ -369,11 +388,53 @@ def work_windows(rows):
     return inside, worked
 
 
-def session_work(rows, done, items):
+def sprint_finder(directory=None):
+    """sprint_of(item id): the sprint of a backlog item read from its file in `directory` (default: the clone's
+    kb/_self/backlog): its own `sprint`, else that of the nearest item above it with one (the story or bug of a task),
+    a sprint being its own; None when no file names one (a clone without the backlog, an item whose sprint was closed
+    and its files deleted). Reads the files only; a sprint is stored as its id alone."""
+    d = Path(directory) if directory else HOME / BACKLOG_REL
+
+    def sprint_of(item):
+        cur, seen = item, set()
+        while isinstance(cur, str) and WORK_ITEM.fullmatch(cur) and cur not in seen:
+            seen.add(cur)
+            if cur.startswith("SP-"):
+                return cur
+            obj = read_json(d / f"{cur}.json", None)
+            if not isinstance(obj, dict):
+                return None
+            sprint = obj.get("sprint")
+            if isinstance(sprint, str) and WORK_ITEM.fullmatch(sprint) and sprint.startswith("SP-"):
+                return sprint
+            cur = obj.get("parent")
+        return None
+    return sprint_of
+
+
+def work_lines_of(windows, sprint_of=None):
+    """The lines one prompt's counts go to, once: the item of its one window; for several windows (a session holding
+    several claims) the sprint they all belong to, never one item of them; the session's shared line, here the empty
+    set, for no window or when the items do not all belong to one sprint (`sprint_of(item)`, None: unknown)."""
+    if len(windows) <= 1:
+        return set(windows)
+    sprints = {sprint_of(i) if sprint_of else None for i in windows}
+    return sprints if len(sprints) == 1 and None not in sprints else set()
+
+
+def add_sub(tally, sub):
+    """The `sub` counts of a subagent routed to an item, added into `tally` without a prompt (the subagent is no
+    prompt of the item's window)."""
+    store_.tally_add(tally, ({}, sub))
+    tally["prompts"] -= 1
+
+
+def session_work(rows, done, items, sprint_of=None):
     """One closed session's work: (its shared line or None, the window prompts without usage, the prompt ids
     counted). Each prompt not in `done` with a usage record of this reader (usage_of) adds its counts to the tally of
-    every item whose window holds it (`items`: {item: tally}, which the run's sessions share), and a prompt outside
-    every window to the session's shared tally. A session that claimed no item is unrecorded."""
+    the line work_lines_of names (`items`: {item or sprint: tally}, which the run's sessions share), or to the
+    session's shared tally when that is none; the subagents the record routes to items (routed_of) add their counts
+    to those items' tallies. A session that claimed no item is unrecorded."""
     inside, worked = work_windows(rows)
     if not worked:
         return None, 0, set()
@@ -387,26 +448,31 @@ def session_work(rows, done, items):
             continue
         usage = usage_of(by_prompt[pid])
         counts = store_.usage_counts(usage) if usage else None
-        if counts is None:
+        routed = routed_of(by_prompt[pid]) if counts else None
+        if counts is None or routed is None:
             missing += 1 if windows else 0
             continue
         counted.add(pid)
-        for item in windows:
-            store_.tally_add(items.setdefault(item, store_.new_tally()), counts)
-        if not windows:
+        lines = work_lines_of(windows, sprint_of)
+        for key in lines:
+            store_.tally_add(items.setdefault(key, store_.new_tally()), counts)
+        if not lines:
             store_.tally_add(shared, counts)
+        for item, sub in routed.items():
+            add_sub(items.setdefault(item, store_.new_tally()), sub)
     return (store_.work_line("items", sorted(worked), shared) if shared["prompts"] else None), missing, counted
 
 
-def plan_work(sessions, worked):
+def plan_work(sessions, worked, sprint_of=None):
     """(the work sidecar's lines, the window prompts without usage, {session id: prompt ids counted}) of the closed
     sessions: the items' lines in id order, then the sessions' shared lines. `worked` ({session id: prompt ids}) holds
-    the prompts an earlier run counted, so a session whose rows stayed in the spool is never counted twice."""
+    the prompts an earlier run counted, so a session whose rows stayed in the spool is never counted twice;
+    `sprint_of` (sprint_finder) names the sprint of an item."""
     items, shared, missing, counted = {}, [], 0, {}
     for sid in sorted(sessions):
         if not sessions[sid]["closed"]:
             continue
-        line, m, pids = session_work(sessions[sid]["rows"], set(worked.get(sid, ())), items)
+        line, m, pids = session_work(sessions[sid]["rows"], set(worked.get(sid, ())), items, sprint_of)
         missing += m
         if pids:
             counted[sid] = pids
@@ -600,7 +666,7 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
     worked = read_json(qdir / WORKED_NAME, {})
     worked = {sid: ids for sid, ids in worked.items() if sid in sessions and isinstance(ids, list)} \
         if isinstance(worked, dict) else {}
-    work_lines, work_missing, work_counted = plan_work(sessions, worked)
+    work_lines, work_missing, work_counted = plan_work(sessions, worked, sprint_finder())
     if written or dropped or skipped or work_lines:
         run_id = run_id or f"{now_dt.strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
         written.sort(key=lambda t: (t["ts"], t["entry"]["id"]))

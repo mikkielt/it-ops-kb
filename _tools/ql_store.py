@@ -729,8 +729,10 @@ def usage_problems(store):
 
 def work_line_problems(w, where):
     """The gates on one work sidecar line: an item line (`item`, `prompts`, `main`, `sub`) or a shared line (`items`,
-    `prompts`, `main`, `sub`), with an item id, a positive prompt count and counts in the usage record's closed
-    shapes, and nothing else: no session, prompt, transcript, command or text."""
+    `prompts`, `main`, `sub`), with an item id, a prompt count and counts in the usage record's closed shapes, and
+    nothing else: no session, prompt, transcript, command or text. A shared line has a positive prompt count and a
+    `main`; an item line has them too, or no prompt (`prompts` 0) and an empty `main` with a `sub`: the counts of
+    subagents routed to the item, none of its prompts counted on its own line."""
     out = []
     shared = "items" in w
     if shared == ("item" in w):
@@ -747,9 +749,13 @@ def work_line_problems(w, where):
             out.append(f"{where}: items are not sorted, each once")
     elif not (isinstance(w["item"], str) and WORK_ITEM.fullmatch(w["item"])):
         out.append(f"{where}: item is not an item id")
-    if not (_count(w.get("prompts")) and w["prompts"] > 0):
-        out.append(f"{where}: prompts is not a positive count")
-    out += _models_problems(w.get("main"), f"{where}: main")
+    if not shared and type(w.get("prompts")) is int and w["prompts"] == 0:
+        if w.get("main") != {} or "sub" not in w:
+            out.append(f"{where}: an item line with no prompt holds an empty main and a sub")
+    else:
+        if not (_count(w.get("prompts")) and w["prompts"] > 0):
+            out.append(f"{where}: prompts is not a positive count")
+        out += _models_problems(w.get("main"), f"{where}: main")
     if "sub" in w:
         out += _sub_problems(w["sub"], where)
     return out

@@ -15,13 +15,20 @@
                     (`cited: pack`), and an entry with no citation keeps no articles; a planted row of each shape;
                     an unknown future `v` and malformed rows are skipped and counted; a second distill writes nothing
   TestWorkSidecar   distill writes the work sidecar beside the run file (`-k work_sidecar`): one line per item with the
-                    prompts of its claim-to-done-or-release window summed (kb prompts or not, overlapping windows
-                    each counting the prompt) and one shared line per session that worked an item with its prompts
-                    outside any window, a run file of no entry when nothing else was written, none for a session that
+                    prompts of its claim-to-done-or-release window summed (kb prompts or not; a prompt in several
+                    windows counts once, on the line of their sprint) and one shared line per session that worked an
+                    item with its prompts outside any window, a run file of no entry when nothing else was written,
+                    none for a session that
                     worked no item, a done with no claim or a session still open; `missing` counts window prompts
                     without usage of this reader; a usage record outside the closed shape is not counted; the
                     windows are `ql_capture.usage_targets`'; a prompt counted by an earlier run is not counted again
                     (planted: without the record of counted prompts it is); no session, prompt or text in the file
+  TestWorkSubagent  a subagent that worked on a work/<id> branch counts on that item's line (`-k work_subagent`), not on
+                    the prompt it started under, with no prompt of its own; a prompt in two windows counts once, on
+                    the line of their sprint (the sprint of the items' files: sprint_finder), on the session's shared
+                    line when the items do not share one or no sprint is known; no duplicate on a second run; routing
+                    outside the closed shape (a branch for an id, an unknown group or model) is not counted; the
+                    routing is no part of an entry's usage line
   TestLock         a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
                     of several processes taking the lock at once exactly one gets it
   TestLaunch        SessionEnd marks its session closed; the launcher returns within the 1.5-second budget with its
@@ -511,7 +518,10 @@ class TestSpoolFormats:
         assert ql_distill.citations([old], f"see {LAPS}:24")[1] == "pack"
 
 
-WA, WB = "TK-aaaaaaaa", "TK-bbbbbbbb"  # item ids as backlog.py writes them
+WA, WB, WC = "TK-aaaaaaaa", "TK-bbbbbbbb", "TK-cccccccc"  # item ids as backlog.py writes them
+SA, SB = "SP-aaaaaaaa", "SP-bbbbbbbb"  # sprint ids: WA and WB belong to SA, WC to SB
+SPRINTS = {WA: SA, WB: SA, WC: SB}
+REAL_SPRINT_FINDER = ql_distill.sprint_finder
 W1, W2, W3, W4, W5 = (f"bbbbbbbb-0000-4000-8000-00000000000{i}" for i in range(1, 6))
 
 
@@ -527,8 +537,8 @@ def total_of(ns):
 
 def work_rows(sid, plan, reader=None):
     """A session's spool rows. `plan` lists per prompt p0, p1, ...: (its work rows as "claim:ID", "done:ID" or
-    "release:ID", the number n of its usage record or None, whether that record has a subagent, whether the prompt
-    used the kb)."""
+    "release:ID", the number n of its usage record or None, whether that record has a subagent (True: one counted
+    under `sub`; an item id: one routed to that item), whether the prompt used the kb)."""
     rows, n = [], 0
     for i, (work, usage, sub, kb) in enumerate(plan):
         base = {"session_id": sid, "v": 1, "prompt_id": f"p{i}"}
@@ -540,7 +550,9 @@ def work_rows(sid, plan, reader=None):
                                   "lines": [{"line": f"{LAPS}:5", "tag": "DOC", "verdict": "good"}]}))
         if usage is not None:
             rec = {"main": {"claude-opus-5-5": counts_of(usage)}, "start": 1000 + usage}
-            if sub:
+            if isinstance(sub, str):
+                rec["routed"] = {sub: {"Explore": {"claude-haiku-4-5-20251001": counts_of(usage)}}}
+            elif sub:
                 rec["sub"] = {"Explore": {"claude-haiku-4-5-20251001": counts_of(usage)}}
             kinds.append(("usage", {"reader": reader or kbusage.READER_VERSION, "usage": rec}))
         for surface, extra in kinds:
@@ -577,10 +589,15 @@ def work_main(*ns):
 
 
 class TestWorkSidecar:
+    @pytest.fixture(autouse=True)
+    def sprints(self, monkeypatch):
+        """The backlog's sprint of each item, WA and WB in SA and WC in SB, instead of the clone's item files."""
+        monkeypatch.setattr(ql_distill, "sprint_finder", lambda directory=None: SPRINTS.get)
+
     def test_work_sidecar_written_beside_the_run_file(self, tmp_path):
-        """A holds prompts p1 p2 p3 of the first session and both of the second, B holds p2 p3 p4 (the prompts of its
-        claim, of A's done and of its release), and the prompts outside every window with usage, p0 and p5 and the
-        second session's third, are shared."""
+        """A holds p1 of the first session and both prompts of the second, B holds p4 (the prompt of its release),
+        p2 and p3 (B's claim, A's done) lie in both windows, so SA, their sprint, holds them once, and the prompts
+        outside every window with usage, p0 and p5 and the second session's third, are shared."""
         q = tmp_path / "querylog"
         plant_work(q, W1, PLAN_ONE)
         plant_work(q, W2, PLAN_TWO)
@@ -588,12 +605,13 @@ class TestWorkSidecar:
         plant_work(q, W4, [((), 3, False, True), ((), 4, False, True)])  # kb prompts, no item worked: none
         plant_work(q, W5, [(("claim:" + WA,), 5, False, False)], closed=False)  # still open: not yet
         rc, said = run_distill(q, echo)
-        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=2 dropped=0 waiting=0 usage=2 work=4"], said
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=2 dropped=0 waiting=0 usage=2 work=5"], said
         sub = {"Explore": {"claude-haiku-4-5-20251001": counts_of(3)}}
         assert jsonl(work_sidecar_of(q)) == [
-            {"run": RUN_ID, "reader": kbusage.READER_VERSION, "counts": {"items": 2, "shared": 2, "missing": 0}},
-            {"item": WA, "prompts": 5, "main": work_main(2, 3, 4, 7, 8), "sub": sub},
-            {"item": WB, "prompts": 3, "main": work_main(3, 4, 5), "sub": sub},
+            {"run": RUN_ID, "reader": kbusage.READER_VERSION, "counts": {"items": 3, "shared": 2, "missing": 0}},
+            {"item": SA, "prompts": 2, "main": work_main(3, 4), "sub": sub},
+            {"item": WA, "prompts": 3, "main": work_main(2, 7, 8)},
+            {"item": WB, "prompts": 1, "main": work_main(5)},
             {"items": [WA, WB], "prompts": 2, "main": work_main(1, 6)},
             {"items": [WA], "prompts": 1, "main": work_main(9)}]
         assert ql_store.store_problems(q / "store") == []
@@ -693,6 +711,157 @@ class TestWorkSidecar:
         run_distill(q, echo)
         assert json.loads((q / ql_distill.WORKED_NAME).read_text(encoding="utf-8")) == \
             {W1: ["p0", "p1", "p2", "p3", "p4", "p5", "p9"]}
+
+
+def work_sessions(plan, sid=W1):
+    """plan_work's `sessions` for one closed session of `plan` (work_rows)."""
+    return {sid: {"closed": True, "rows": work_rows(sid, plan)}}
+
+
+def prompts_in(lines):
+    return sum(ln["prompts"] for ln in lines)
+
+
+class TestWorkSubagent:
+    """A subagent that worked on a work/<id> branch counts on that item's line (`-k work_subagent`); a prompt in two
+    windows counts once, on the line of their sprint."""
+
+    @pytest.fixture(autouse=True)
+    def sprints(self, monkeypatch):
+        monkeypatch.setattr(ql_distill, "sprint_finder", lambda directory=None: SPRINTS.get)
+
+    def test_work_subagent_counts_on_the_items_line_and_not_on_the_prompts(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_work(q, W1, [(("claim:" + WA,), 2, False, False), ((), 3, WA, False), (("done:" + WA,), 4, False, False)])
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 work=1"], said
+        sub = {"Explore": {"claude-haiku-4-5-20251001": counts_of(3)}}
+        assert jsonl(work_sidecar_of(q))[1:] == [{"item": WA, "prompts": 3, "main": work_main(2, 3, 4), "sub": sub}]
+        assert ql_store.store_problems(q / "store") == []
+        text = work_sidecar_of(q).read_text(encoding="utf-8")
+        assert "routed" not in text and "work/" not in text  # the item id alone
+
+    def test_work_subagent_of_another_item_is_that_items_counts(self, tmp_path):
+        """The subagent of p1 worked WB, which this session never claimed: WB's line gets its counts, with no prompt
+        of its own, and the store's gate takes that line."""
+        plan = [(("claim:" + WA,), 2, False, False), ((), 3, WB, False), (("done:" + WA,), 4, False, False)]
+        lines, missing, counted = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        sub = {"Explore": {"claude-haiku-4-5-20251001": counts_of(3)}}
+        assert lines == [{"item": WA, "prompts": 3, "main": work_main(2, 3, 4)},
+                         {"item": WB, "prompts": 0, "main": {}, "sub": sub}], lines
+        assert missing == 0 and counted == {W1: {"p0", "p1", "p2"}}
+        q = tmp_path / "querylog"
+        plant_work(q, W1, plan)
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 work=2"], said
+        assert jsonl(work_sidecar_of(q))[2] == lines[1] and ql_store.store_problems(q / "store") == []
+
+    def test_work_subagent_a_prompt_in_two_windows_counts_once_on_the_sprint(self):
+        """WA and WB are in SA: p1, p2 and p3 lie in both windows (B's claim, A's done and the prompt between) and
+        are SA's, never WA's and WB's."""
+        plan = [(("claim:" + WA,), 2, False, False), (("claim:" + WB,), 3, False, False), ((), 5, False, False),
+                (("done:" + WA,), 4, False, False), (("done:" + WB,), 6, False, False)]
+        lines, missing, counted = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        assert lines == [{"item": SA, "prompts": 3, "main": work_main(3, 5, 4)},
+                         {"item": WA, "prompts": 1, "main": work_main(2)},
+                         {"item": WB, "prompts": 1, "main": work_main(6)}], lines
+        assert prompts_in(lines) == len(counted[W1]) == 5  # planted: counted for each item, they would add to 8
+        assert ql_store.work_line_problems(lines[0], "x") == []
+
+    @pytest.mark.parametrize("sprint_of", [None, {WA: SA}.get, {WA: SA, WB: SB}.get, {WA: None, WB: SA}.get])
+    def test_work_subagent_overlap_with_no_one_sprint_is_shared(self, sprint_of):
+        """Items of different sprints, one of unknown sprint or no resolver: the prompts in both windows count once
+        on the session's shared line, which names the items the session claimed."""
+        plan = [(("claim:" + WA,), 2, False, False), (("claim:" + WB,), 3, False, False),
+                (("done:" + WA,), 4, False, False), (("done:" + WB,), 5, False, False)]
+        lines, _, counted = ql_distill.plan_work(work_sessions(plan), {}, sprint_of)
+        assert lines == [{"item": WA, "prompts": 1, "main": work_main(2)},
+                         {"item": WB, "prompts": 1, "main": work_main(5)},
+                         {"items": [WA, WB], "prompts": 2, "main": work_main(3, 4)}], lines
+        assert prompts_in(lines) == len(counted[W1]) == 4
+
+    def test_work_subagent_overlap_in_one_sprint_is_the_sprints(self):
+        plan = [(("claim:" + WA,), 2, False, False), (("claim:" + WB,), 3, False, False),
+                (("done:" + WA,), 4, False, False), (("done:" + WB,), 5, False, False)]
+        lines, _, counted = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        assert lines == [{"item": SA, "prompts": 2, "main": work_main(3, 4)},
+                         {"item": WA, "prompts": 1, "main": work_main(2)},
+                         {"item": WB, "prompts": 1, "main": work_main(5)}], lines
+        assert prompts_in(lines) == len(counted[W1]) == 4
+
+    def test_work_subagent_one_window_is_the_item_even_when_the_sprint_is_known(self):
+        plan = [(("claim:" + WA,), 2, False, False), ((), 3, False, False), (("done:" + WA,), 4, False, False)]
+        lines, _, _ = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        assert lines == [{"item": WA, "prompts": 3, "main": work_main(2, 3, 4)}]
+
+    def test_work_subagent_no_duplicates_on_a_second_run(self, tmp_path):
+        """Mode `auto` keeps the rows of a written entry: the subagent counts of its prompts are not added again."""
+        q = tmp_path / "querylog"
+        plant_work(q, W1, [(("claim:" + WA,), 2, WA, True), ((), 3, False, False), (("done:" + WA,), 4, False, False)])
+        cfg = auto_config(q, "auto")
+
+        def run(run_id):
+            said = []
+            rc = ql_distill.distill(qdir=q, cfg=cfg, haiku=echo, now_dt=NOW, run_id=run_id, kb_commit="0" * 40,
+                                    out=said.append, deliver=lambda qdir, out: 0)
+            return rc, said
+        rc, said = run(RUN_ID)
+        assert said[0] == f"distill: run={RUN_ID} entries=1 dropped=0 waiting=0 usage=1 work=1", said
+        sub = {"Explore": {"claude-haiku-4-5-20251001": counts_of(2)}}
+        assert jsonl(work_sidecar_of(q))[1] == {"item": WA, "prompts": 3, "main": work_main(2, 3, 4), "sub": sub}
+        before = {p: p.read_bytes() for p in store_files(q)}
+        rc, said = run("20260928T130000Z-0000abcd")
+        assert said[0] == "distill: nothing to write (waiting=0)", said
+        assert {p: p.read_bytes() for p in store_files(q)} == before
+        # planted: without the record of counted prompts the subagent is counted a second time
+        (q / ql_distill.WORKED_NAME).unlink()
+        run("20260928T130000Z-0000abce")
+        again = jsonl(work_sidecar_of(q, "20260928T130000Z-0000abce"))[1]
+        assert again == {"item": WA, "prompts": 1, "main": work_main(2), "sub": sub}  # the kept claim prompt again
+
+    @pytest.mark.parametrize("routed", [
+        {"work/" + WA: {"Explore": {"claude-haiku-4-5-20251001": counts_of(3)}}},  # a branch, not an item id
+        {WA: {"jan.kowalski": {"claude-haiku-4-5-20251001": counts_of(3)}}},  # not an agent group
+        {WA: {"Explore": {"jan.kowalski@corp.example.com": counts_of(3)}}},  # not a model id
+        {WA: {"Explore": {"claude-haiku-4-5-20251001": {"in": 3}}}},  # counts of another shape
+        {WA: {}}, ["routed"]])
+    def test_work_subagent_planted_routing_outside_the_closed_shape_is_not_counted(self, routed):
+        plan = [(("claim:" + WA,), 2, False, False), ((), 3, False, False), (("done:" + WA,), 4, False, False)]
+        rows = work_rows(W1, plan)
+        for r in rows:
+            if r["surface"] == "usage" and r["prompt_id"] == "p1":
+                r["usage"]["routed"] = routed
+        sessions = {W1: {"closed": True, "rows": rows}}
+        lines, missing, counted = ql_distill.plan_work(sessions, {}, SPRINTS.get)
+        assert missing == 1 and counted == {W1: {"p0", "p2"}}
+        assert lines == [{"item": WA, "prompts": 2, "main": work_main(2, 4)}]
+        assert "work/" not in json.dumps(lines)
+
+    def test_work_subagent_the_routing_is_no_part_of_an_entrys_usage(self, tmp_path):
+        """A kb prompt whose subagent was routed keeps the closed usage shape in the usage sidecar."""
+        q = tmp_path / "querylog"
+        plant_work(q, W1, [(("claim:" + WA,), 2, WA, True), (("done:" + WA,), 3, False, False)])
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=1 dropped=0 waiting=0 usage=1 work=1"], said
+        (usage,) = [p for p in store_files(q) if p.parent.parent.name == "usage"]
+        assert "routed" not in usage.read_text(encoding="utf-8")
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_work_subagent_sprint_of_an_item_from_its_files(self, tmp_path):
+        d = tmp_path / "backlog"
+        d.mkdir()
+        files = {WA: {"parent": "ST-aaaaaaaa"}, "ST-aaaaaaaa": {"parent": "EP-aaaaaaaa", "sprint": SA},
+                 "EP-aaaaaaaa": {}, WB: {"sprint": SB, "parent": "ST-aaaaaaaa"}, WC: {"parent": "EP-aaaaaaaa"},
+                 "TK-dddddddd": {"parent": "TK-eeeeeeee"}, "TK-eeeeeeee": {"parent": "TK-dddddddd"}}
+        for name, obj in files.items():
+            (d / f"{name}.json").write_text(json.dumps(obj), encoding="utf-8")
+        (d / "TK-ffffffff.json").write_text("not json", encoding="utf-8")
+        sprint_of = REAL_SPRINT_FINDER(d)
+        assert sprint_of(WA) == SA and sprint_of(WB) == SB  # the story's sprint, an item's own first
+        assert sprint_of(SB) == SB  # a sprint is its own
+        for none in (WC, "TK-dddddddd", "TK-ffffffff", "TK-gggggggg", "not an id", None):
+            assert sprint_of(none) is None, none
+        assert REAL_SPRINT_FINDER(tmp_path / "missing")(WA) is None  # a clone without the backlog
 
 
 def distill_cli(data, *args):
