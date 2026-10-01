@@ -3087,3 +3087,170 @@ def test_backlog_move_reopen_refuses_a_missing_or_blank_reason_and_a_sprint(plan
     refused_unchanged(repo, sp, "reopen", sp, "--why", "x", rule="a sprint has no done status")
     code, out = b(repo, "reopen", "ST-zzzzzzzz", "--why", "x")
     assert code == 2 and "no item" in out, out
+
+
+# --- backlog.py cost: the work sidecars summed over an item and its descendants ---
+
+OPUS, SONNET = "claude-opus-4-7", "claude-sonnet-4-6"
+COST_RUN_A, COST_RUN_B = "20261001T100000Z-aaaaaaaa", "20261002T100000Z-bbbbbbbb"
+
+
+def cc(requests, inp, cw, cr, out, cw1h=0):
+    return {"requests": requests, "in": inp, "cw": cw, "cw1h": cw1h, "cr": cr, "out": out}
+
+
+def cost_sidecar(repo, run, lines):
+    d = Path(repo) / "kb" / "_querylog" / "work" / "2026-10"
+    d.mkdir(parents=True, exist_ok=True)
+    items = sum(1 for w in lines if "item" in w)
+    head = {"run": run, "reader": 1, "counts": {"items": items, "shared": len(lines) - items, "missing": 0}}
+    (d / f"{run}.jsonl").write_text("".join(json.dumps(o) + "\n" for o in [head, *lines]), encoding="utf-8",
+                                    newline="\n")
+
+
+@pytest.fixture
+def costed(sprint):
+    """The sprint fixture with two work sidecars: run A holds the task, its story, an unrelated bug, the sprint's own
+    line and a shared line of the session; run B the task again and the story with only a routed subagent."""
+    repo, st, tk, bg, sp = sprint["repo"], sprint["st"], sprint["tk"], sprint["bg"], sprint["sp"]
+    cost_sidecar(repo, COST_RUN_A, [
+        {"item": tk, "prompts": 2, "main": {OPUS: cc(3, 10, 5, 100, 7, cw1h=2), SONNET: cc(1, 1, 0, 2, 3)},
+         "sub": {"general-purpose": {OPUS: cc(2, 20, 4, 50, 9)},
+                 "Explore": {OPUS: cc(1, 5, 1, 10, 1), SONNET: cc(1, 1, 1, 1, 1)}}},
+        {"item": st, "prompts": 1, "main": {OPUS: cc(1, 100, 10, 1000, 70)}},
+        {"item": bg, "prompts": 1, "main": {OPUS: cc(9, 9, 9, 9, 9)}},
+        {"item": sp, "prompts": 4, "main": {OPUS: cc(4, 40, 0, 400, 4)}},
+        {"items": [tk], "prompts": 1, "main": {OPUS: cc(7, 7, 7, 7, 7)}},
+    ])
+    cost_sidecar(repo, COST_RUN_B, [
+        {"item": tk, "prompts": 1, "main": {OPUS: cc(2, 3, 1, 4, 5)},
+         "sub": {"general-purpose": {OPUS: cc(1, 1, 1, 1, 1)}}},
+        {"item": st, "prompts": 0, "main": {}, "sub": {"Plan": {OPUS: cc(2, 2, 2, 2, 2)}}},
+    ])
+    return sprint
+
+
+def check_cost_numbers(w):
+    """Every rule of the sum, proved on the report of the story, of its task and of the sprint."""
+    bl = backlog.Backlog(w["repo"])
+    story, task, sprint_rep = (backlog.cost_report(bl, w[k]) for k in ("st", "tk", "sp"))
+    # descendants sum: the story holds its own lines and its task's, not the shared line, the bug or the sprint's
+    assert story["items"] == sorted([w["st"], w["tk"]]) and story["runs"] == 2 and story["prompts"] == 4
+    assert task["items"] == [w["tk"]] and task["prompts"] == 3
+    # per model, main (direct) apart from sub (attributed, summed over agent groups), cw a figure of its own
+    assert story["direct"] == {OPUS: cc(6, 113, 16, 1104, 82, cw1h=2), SONNET: cc(1, 1, 0, 2, 3)}
+    assert story["attributed"] == {OPUS: cc(6, 28, 8, 63, 13), SONNET: cc(1, 1, 1, 1, 1)}
+    assert task["direct"] == {OPUS: cc(5, 13, 6, 104, 12, cw1h=2), SONNET: cc(1, 1, 0, 2, 3)}
+    assert task["attributed"] == {OPUS: cc(4, 26, 6, 61, 11), SONNET: cc(1, 1, 1, 1, 1)}
+    assert story["by_item"][w["tk"]]["direct"] == task["direct"] and story["by_item"][w["st"]]["prompts"] == 1
+    # a sprint holds its own line and its items' (story, task, bug), still no shared line
+    assert sprint_rep["direct"][OPUS] == cc(19, 162, 25, 1513, 95, cw1h=2) and sprint_rep["prompts"] == 9
+
+
+def cost_out(repo, capsys, *a):
+    assert backlog.main(["--root", str(repo), "cost", *a]) == 0
+    return capsys.readouterr().out
+
+
+def check_cost_cli(w, capsys):
+    """Text rows print cw apart, --runs lists each run's line apart, --format json gives the numbers."""
+    repo, st, tk = w["repo"], w["st"], w["tk"]
+    out = cost_out(repo, capsys, st, "--runs")
+    head = out.split("by item:")[0]
+    direct = head.split("direct (main):")[1].split("attributed (sub):")[0]
+    assert f"{OPUS}  requests 6  in 113  cr 1104  out 82 | cw 16" in direct, out
+    assert f"{SONNET}  requests 1  in 1  cr 2  out 3 | cw 0" in direct and "all models  requests 7" in direct, out
+    assert f"{OPUS}  requests 6  in 28  cr 63  out 13 | cw 8" in head.split("attributed (sub):")[1], out
+    ran = [x.split()[0] for x in out.split("runs:")[1].splitlines() if x.startswith("  2026")]
+    assert ran == [COST_RUN_A, COST_RUN_A, COST_RUN_B, COST_RUN_B], out
+    one = json.loads(cost_out(repo, capsys, st, "--runs", "--format", "json"))
+    assert [(x["run"], x["item"]) for x in one["run_lines"]] == [(COST_RUN_A, tk), (COST_RUN_A, st),
+                                                                (COST_RUN_B, tk), (COST_RUN_B, st)]
+    assert one["direct"][OPUS] == cc(6, 113, 16, 1104, 82, cw1h=2) and one["attributed"][SONNET] == cc(1, 1, 1, 1, 1)
+    assert "run_lines" not in json.loads(cost_out(repo, capsys, st, "--format", "json"))
+
+
+def test_backlog_cost_sums_descendants_per_model_main_sub_and_cw_apart(costed):
+    check_cost_numbers(costed)
+
+
+def test_backlog_cost_runs_and_json(costed, capsys):
+    check_cost_cli(costed, capsys)
+
+
+def planted_scope(bl, iid):
+    return {iid}  # no descendants
+
+
+def planted_models_merged(total, models):
+    for c in models.values():
+        t = total.setdefault(OPUS, dict.fromkeys(backlog.COST_KEYS, 0))
+        for k in backlog.COST_KEYS:
+            t[k] += c.get(k, 0)
+
+
+def planted_cw_into_in(total, models):
+    for m, c in models.items():
+        t = total.setdefault(m, dict.fromkeys(backlog.COST_KEYS, 0))
+        for k in backlog.COST_KEYS:
+            t[k] += {"in": c["in"] + c["cw"], "cw": 0}.get(k, c[k])
+
+
+@pytest.mark.parametrize("name,planted", [
+    ("cost_scope", planted_scope),
+    ("cost_add", planted_models_merged),
+    ("cost_add", planted_cw_into_in),
+    ("COST_GROUPS", (("direct", "sub", "direct (main)"), ("attributed", "main", "attributed (sub)"))),
+], ids=["no descendants", "models merged", "cw folded into in", "main and sub swapped"])
+def test_backlog_cost_planted_failure_of_each_sum_rule_is_caught(costed, monkeypatch, name, planted):
+    monkeypatch.setattr(backlog, name, planted)
+    with pytest.raises(AssertionError):
+        check_cost_numbers(costed)
+
+
+def test_backlog_cost_planted_failure_of_the_runs_listing_is_caught(costed, capsys, monkeypatch):
+    """The lines of both runs given one run id: the check no longer sees the two attempts apart."""
+    real = backlog.cost_lines
+
+    def one_run(root, ids):
+        lines, skipped = real(root, ids)
+        return [{**x, "run": COST_RUN_A} for x in lines], skipped
+
+    monkeypatch.setattr(backlog, "cost_lines", one_run)
+    with pytest.raises(AssertionError):
+        check_cost_cli(costed, capsys)
+
+
+def test_backlog_cost_planted_failure_of_the_json_is_caught(costed, capsys, monkeypatch):
+    """A json report whose attributed figures are empty differs from the numbers the check expects."""
+    real = backlog.cost_report
+
+    def no_sub(bl, iid):
+        return {**real(bl, iid), "attributed": {}}
+
+    monkeypatch.setattr(backlog, "cost_report", no_sub)
+    with pytest.raises(AssertionError):
+        check_cost_cli(costed, capsys)
+
+
+def test_backlog_cost_skips_a_sidecar_that_breaks_the_store_gates(costed):
+    repo, tk = costed["repo"], costed["tk"]
+    cost_sidecar(repo, "20261003T100000Z-cccccccc", [{"item": tk, "prompts": 1, "main": {OPUS: cc(99, 99, 99, 99, 99)},
+                                                      "session": "s1"}])
+    code, out = b(repo, "cost", tk)
+    assert code == 0 and "skipped sidecars that break the store's gates: 20261003T100000Z-cccccccc" in out, out
+    assert "requests 99" not in out and f"{OPUS}  requests 5  in 13  cr 104  out 12 | cw 6" in out, out
+
+
+def test_backlog_cost_unknown_id_exits_2(costed):
+    code, out = b(costed["repo"], "cost", "TK-zzzzzzzz")
+    assert code == 2 and "no item TK-zzzzzzzz" in out, out
+
+
+def test_backlog_cost_without_sidecars_prints_zeros_and_exits_0(sprint, capsys):
+    repo, tk = sprint["repo"], sprint["tk"]
+    code, out = b(repo, "cost", tk)
+    assert code == 0 and "0 run(s)" in out, out
+    assert out.count("all models  requests 0  in 0  cr 0  out 0 | cw 0") == 2, out
+    one = json.loads(cost_out(repo, capsys, tk, "--format", "json"))
+    assert one["direct"] == {} and one["attributed"] == {} and one["runs"] == 0 and one["prompts"] == 0
