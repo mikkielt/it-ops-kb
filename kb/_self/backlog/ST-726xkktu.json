@@ -2,7 +2,7 @@
   "id": "ST-726xkktu",
   "kind": "story",
   "title": "Worktrees for sprint workers have the commit hooks",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
@@ -29,5 +29,6 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "worker-726xkktu"
 }
