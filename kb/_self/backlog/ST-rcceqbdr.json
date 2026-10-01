@@ -2,7 +2,7 @@
   "id": "ST-rcceqbdr",
   "kind": "story",
   "title": "kbdecide.py records decisions: agents propose, the operator confirms",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-v56iwyry",
   "sprint": "SP-jtfo4ael",
   "priority": "P2",
@@ -35,5 +35,20 @@
       "answer": "no default: every root must set one before its first decision",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "06f6768250f683c9500e52ff47790b0c69627094",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbdecide"
+        ],
+        "exit": 0,
+        "sha256": "81ed9c92cd0c5f04"
+      }
+    ]
+  }
 }
