@@ -26,6 +26,14 @@
     "_tools/test_kb_lookup.py",
     "_tools/test_kb_mcp.py",
     "_tools/test_ql_capture.py",
-    "_tools/test_ql_research.py"
+    "_tools/test_ql_research.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md",
+    "kb/_self/embedding.md"
   ]
 }

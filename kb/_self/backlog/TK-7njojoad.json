@@ -19,6 +19,7 @@
   ],
   "touches": [
     "_tools/kbdecide.py",
-    "_tools/test_kbdecide.py"
+    "_tools/test_kbdecide.py",
+    "kb/_self/code.md"
   ]
 }

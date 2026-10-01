@@ -19,6 +19,7 @@
   ],
   "touches": [
     "_tools/kbroot.py",
-    "_tools/test_kbroot.py"
+    "_tools/test_kbroot.py",
+    "kb/_self/code.md"
   ]
 }

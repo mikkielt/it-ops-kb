@@ -30,6 +30,10 @@
     "_tools/test_kb_cohesion.py",
     "_tools/test_kb_root.py",
     "kb/_self/_decisions.csv",
-    "kb/_self/decision-makers.csv"
+    "kb/_self/decision-makers.csv",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/plugin.md"
   ]
 }
