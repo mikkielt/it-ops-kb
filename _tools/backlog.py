@@ -56,6 +56,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           fields set does not name are refused, a sprint takes notes and links
                                           only, and a done item keeps its checks and touches (its evidence proves
                                           them); exit 2 for each refusal, the item file unchanged
+  backlog.py move ID --sprint SP|none     set a story's or bug's sprint (none: no sprint) and write the status that
+                                          sprint's state gives: todo in an active sprint, draft in a planned one or
+                                          in none; its draft and todo tasks and subtasks follow. Refused (exit 2, the
+                                          file unchanged): a task, subtask or review story, a doing, done or dropped
+                                          item or one with a doing task, a missing sprint, an item without touches
+                                          into an active sprint; a second run changes nothing
+  backlog.py reopen ID --why TEXT         a done item back to work: evidence and claimed_by cleared, status todo (draft
+                                          while its sprint is planned); any other status is refused (exit 2). The
+                                          reason is printed, never written to the item
   backlog.py gate add ID --question Q --option O... --recommendation R [--kind blocking|provisional] [--id GATE]
                                           add a gate (kind blocking unless given; two or more options, the
                                           recommendation one of them; the id defaults to g1, g2, ...), validated as
@@ -1681,21 +1690,34 @@ def changed_item(bl, iid, edit):
     that was not there before (this item's, or another's that a dependency cycle or a review story's sprint would
     add). Returns True when it wrote the file, False when the edit leaves the item as it is; raises Rejected with the
     new errors and the item untouched."""
-    old = bl.items[iid]
-    new = copy.deepcopy(old)
-    edit(new)
-    if canonical(new) == canonical(old):
+    return changed_items(bl, {iid: edit})
+
+
+def changed_items(bl, edits):
+    """`changed_item` for several items at once ({id: edit}): the copies are validated together, so either every
+    changed item is written or none is. Returns True when it wrote any file."""
+    olds = {i: bl.items[i] for i in edits}
+    news = {}
+    for i, edit in edits.items():
+        news[i] = copy.deepcopy(olds[i])
+        edit(news[i])
+    news = {i: n for i, n in news.items() if canonical(n) != canonical(olds[i])}
+    if not news:
         return False
     before = set(validate(bl) + stale_touches(bl))
-    raw = bl.raw[iid]
-    bl.items[iid], bl.raw[iid] = new, canonical(new)
+    raws = {i: bl.raw[i] for i in news}
+    for i, n in news.items():
+        bl.items[i], bl.raw[i] = n, canonical(n)
     try:
         fresh = [x for x in validate(bl) + stale_touches(bl) if x not in before]
     finally:
-        bl.items[iid], bl.raw[iid] = old, raw
+        for i in news:
+            bl.items[i], bl.raw[i] = olds[i], raws[i]
     if fresh:
-        raise Rejected(f"{bl.label(iid)} unchanged: the change would make `check` fail:\n  " + "\n  ".join(fresh))
-    bl.save(new)
+        raise Rejected(f"{', '.join(bl.label(i) for i in news)} unchanged: the change would make `check` fail:\n  "
+                       + "\n  ".join(fresh))
+    for n in news.values():
+        bl.save(n)
     return True
 
 
@@ -1774,6 +1796,83 @@ def cmd_set(bl, a):
         say(f"set {bl.label(iid)}: {', '.join(named)}")
     else:
         say(f"set {bl.label(iid)}: unchanged")
+    return 0
+
+
+def cmd_move(bl, a):
+    """move: a story's or bug's sprint, with the status that sprint's state gives it and its tasks."""
+    iid = need(bl, a.id)
+    it = bl.items[iid]
+    label = bl.label(iid)
+    target = None if a.sprint == "none" else a.sprint
+    if it.get("kind") not in IN_SPRINT:
+        raise Rejected(f"move refuses {label}: only a story or a bug names a sprint; its tasks and subtasks follow it, "
+                       "so move the story or bug above it")
+    if it.get("review"):
+        raise Rejected(f"move refuses {label}: a sprint needs exactly one review story, and this is its own")
+    st = it.get("status")
+    if st == "done":
+        raise Rejected(f"move refuses {label}: it is done; reopen it first (backlog.py reopen ID --why TEXT)")
+    if st == "dropped":
+        raise Rejected(f"move refuses {label}: it is dropped, and a dropped item has no sprint to change")
+    kids = bl.descendants(iid)
+    claimed = [i for i in [iid] + kids if bl.items[i].get("status") == "doing"]
+    if claimed:
+        raise Rejected(f"move refuses {label}: {', '.join(bl.label(i) for i in claimed[:5])} is doing (claimed); "
+                       "release it first, since a claimed item is in the middle of work")
+    if target is not None:
+        sp = bl.items.get(target)
+        if sp is None:
+            raise Rejected(f"move refuses sprint {target} for {label}: sprint {target} does not exist")
+        if sp.get("kind") != "sprint":
+            raise Rejected(f"move refuses {target} for {label}: it is not a sprint")
+    state = "todo" if target is not None and bl.items[target].get("status") == "active" else "draft"
+    if state == "todo" and not has_scope(bl, iid):
+        raise Rejected(f"move refuses sprint {target} for {label}: the sprint is active and the item has no touches "
+                       "(and no tasks that all have them), which start requires of every work item")
+
+    def edit_story(new):
+        if target is None:
+            new.pop("sprint", None)
+        else:
+            new["sprint"] = target
+        new["status"] = state
+
+    def edit_child(new):
+        new["status"] = state
+
+    edits = {iid: edit_story}
+    edits.update({c: edit_child for c in kids if bl.items[c].get("status") in ("draft", "todo")})
+    if changed_items(bl, edits):
+        say(f"moved {label} to {bl.label(target) if target else 'no sprint'}: status {state}"
+            + (f", {len(edits) - 1} task(s) and subtask(s) follow" if len(edits) > 1 else ""))
+    else:
+        say(f"move {label}: unchanged")
+    return 0
+
+
+def cmd_reopen(bl, a):
+    """reopen: a done item back to work, its evidence and claim cleared; the reason is printed, never stored."""
+    iid = need(bl, a.id)
+    it = bl.items[iid]
+    label = bl.label(iid)
+    if not a.why.strip():
+        raise Rejected("reopen: --why TEXT must not be empty")
+    if it.get("kind") == "sprint":
+        raise Rejected(f"reopen refuses {label}: a sprint has no done status")
+    if it.get("status") != "done":
+        raise Rejected(f"reopen refuses {label}: it is {it.get('status')}; reopen takes only a done item back to work "
+                       "(a draft, todo or doing item is open already, and a dropped one is not reopened: file a new item)")
+    sp = bl.sprint_of(iid)
+    state = "draft" if sp in bl.items and bl.items[sp].get("status") == "planned" else "todo"
+
+    def edit(new):
+        new["status"] = state
+        new.pop("evidence", None)
+        new.pop("claimed_by", None)
+
+    changed_item(bl, iid, edit)
+    say(f"reopened {label}: status {state}, evidence and claim cleared. Why: {a.why.strip()}")
     return 0
 
 
@@ -2549,6 +2648,12 @@ def main(argv=None):
     p.add_argument("--clear", action="append", default=[], metavar="FIELD", help="remove a field (repeatable)")
     for f in SET_REFUSED:  # accepted only to be refused with the rule that applies
         p.add_argument("--" + f.replace("_", "-"), dest="no_" + f, help=argparse.SUPPRESS)
+    p = sub.add_parser("move")
+    p.add_argument("id")
+    p.add_argument("--sprint", required=True, metavar="SP|none")
+    p = sub.add_parser("reopen")
+    p.add_argument("id")
+    p.add_argument("--why", required=True)
     p = sub.add_parser("gate")
     gsub = p.add_subparsers(dest="verb", required=True)
     p = gsub.add_parser("add")
