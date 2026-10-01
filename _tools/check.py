@@ -21,12 +21,21 @@
   another root is an error that says so (a root cites only its own sources; add the source to its _sources.csv);
   files outside the roots (kb/_self, _tools/ data, README.md) may cite any root's ids;
 - no answer id (`## <ID>. ` heading) appears twice in a root's _answers.md; QK answers use QK-<slug>;
+- a root's and kb/_self's _decisions.csv and decision-makers.csv (kbcommon.DECISION_COLS, MAKER_COLS), when present: the
+  exact header; a decision with a `D-<8 base32>` id (unique), text, a source (its ids known), a YYYY-MM-DD date, a status
+  of proposed|active|invalidated|superseded, a `;`-separated context of `kind:value` references (item, fact, source,
+  article, domain: the source, article or domain of a decision not invalidated must exist), a `by_ref` that names a maker of
+  the root's file or of kb/_self's central register, `invalidated_reason` and `invalidated_date` exactly when the status
+  is invalidated, `supersedes` naming other decisions of the file (and every superseded one named by another), an empty or
+  valid review_by; a maker with a slug id (unique) and a role; and no name in a row of a root that is not internal or
+  of kb/_self (kbcommon.maker_names_allowed: the makers' `name` is empty, and a decision's `by` is its maker's role);
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
 - every `topic: <domain>/<slug>` marker in a root's _gaps.md and _conflicts.md names a topic of that root.
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
 """
-import argparse, csv, os, re, sys
+import argparse, csv, datetime, os, re, sys
 from collections import Counter
+from pathlib import Path
 import kbcommon, kbid
 
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
@@ -173,6 +182,141 @@ def check_snapshots(root, sources):
             errors.append(f"{name}: licence differs from {sid}'s row in {kbcommon.SOURCES}")
 
 
+def is_date(s):
+    """Whether s is a real YYYY-MM-DD date."""
+    try:
+        datetime.date.fromisoformat(s)
+    except ValueError:
+        return False
+    return re.fullmatch(r"\d{4}-\d{2}-\d{2}", s) is not None
+
+
+def read_table(path, label, cols):
+    """The rows of an optional decision file: None when there is none, or (with an error) when it cannot be read or
+    its header is not exactly `cols`."""
+    if not path.is_file():
+        return None
+    try:
+        header, rows = kbcommon.load_csv(str(path))
+    except kbcommon.CsvError as e:
+        errors.append(f"{label}: {e}".replace(str(path), label))
+        return None
+    if header != cols:
+        errors.append(f"{label}: header is {','.join(header or [])!r}, not {','.join(cols)!r}")
+        return None
+    return rows
+
+
+def central_makers():
+    """{id: role} of the central register, kb/_self/decision-makers.csv; {} when it is absent or unreadable (check.py
+    reports that on the file itself)."""
+    try:
+        rows = kbcommon.load_csv(str(Path(kbcommon.SELF) / kbcommon.DECISION_MAKERS))[1]
+    except kbcommon.CsvError:
+        return {}
+    return {(r.get("id") or "").strip(): (r.get("role") or "").strip() for r in rows}
+
+
+def context_error(kind, value, root, base, owner, known):
+    """Why a context reference names nothing (an existing source, article or domain), or None. kb/_self (root None)
+    qualifies an article or a domain as <root>/<path>."""
+    if kind == "source":
+        return cite_error(value, root, owner, known)
+    if kind not in ("article", "domain"):  # an item or a fact may be gone: kbdecide.py sweep invalidates or relinks
+        return None
+    where, rel = base, value
+    if root is None:
+        owner_root, rel = kbcommon.split(value)
+        if owner_root is None:
+            return f"names no root; kb/_self decisions write {kind}:<root>/<path>"
+        where = Path(owner_root.path)
+    if kind == "article":
+        return None if rel and (where / f"{rel}.md").is_file() else f"names no article {value}"
+    return None if rel and (where / rel).is_dir() else f"names no domain {value}"
+
+
+def check_decisions(root, owner, known):
+    """The format of a root's decision files, or of kb/_self's when `root` is None (kbcommon.DECISION_COLS, MAKER_COLS):
+    each is optional, and a root's by_ref names a maker of its own file or of the central register."""
+    base = Path(kbcommon.SELF) if root is None else Path(root.path)
+    name = (lambda n: f"kb/_self/{n}") if root is None else (lambda n: kbcommon.qualify(root, n))
+    field = lambda r, k: (r.get(k) or "").strip()  # noqa: E731
+    mname = name(kbcommon.DECISION_MAKERS)
+    who = "kb/_self, which is published" if root is None else f"a root that is {root.visibility}"
+    own, seen = {}, set()
+    for n, r in enumerate(read_table(base / kbcommon.DECISION_MAKERS, mname, kbcommon.MAKER_COLS) or [], start=2):
+        mid, bad = field(r, "id"), []
+        if not kbcommon.MAKER_ID.fullmatch(mid):
+            bad.append(f"id {mid!r} is not a lowercase slug (a-z, 0-9, -)")
+        elif mid in seen:
+            bad.append(f"duplicate decision maker id {mid}")
+        seen.add(mid)
+        own[mid] = field(r, "role")
+        if not own[mid]:
+            bad.append("no role")
+        if field(r, "name") and not kbcommon.maker_names_allowed(root):
+            bad.append(f"a name in {who}, not an internal root: keep the role only")
+        errors.extend(f"{mname}:{n} {b}" for b in bad)
+    central = own if root is None else central_makers()
+    dname = name(kbcommon.DECISIONS)
+    rows = read_table(base / kbcommon.DECISIONS, dname, kbcommon.DECISION_COLS) or []
+    ids = [field(r, "id") for r in rows]
+    superseding = {s for r in rows for s in kbcommon.split_list(r.get("supersedes"))}
+    for n, r in enumerate(rows, start=2):
+        did, status, by, ref, bad = field(r, "id"), field(r, "status"), field(r, "by"), field(r, "by_ref"), []
+        if not kbcommon.DECISION_ID.fullmatch(did):
+            bad.append(f"id {did!r} is not D-<8 base32>")
+        elif ids.count(did) > 1:
+            bad.append(f"duplicate decision id {did}")
+        if not field(r, "text"):
+            bad.append("no text")
+        if status not in kbcommon.DECISION_STATUS:
+            bad.append(f"status {status!r} is not one of {'|'.join(kbcommon.DECISION_STATUS)}")
+        if not is_date(field(r, "date")):
+            bad.append(f"date {field(r, 'date')!r} is not YYYY-MM-DD")
+        src = field(r, "source")
+        if not src:
+            bad.append("no source")
+        bad.extend(e for e in (cite_error(s, root, owner, known) for s in kbid.SOURCE_ID.findall(src)) if e)
+        if ref and ref not in own and ref not in central:
+            bad.append(f"by_ref {ref!r} names no decision maker in {mname} or the central register")
+        elif status != "proposed" and not (by or ref):
+            bad.append("names no decision maker (by or by_ref) though it is not proposed")
+        if not kbcommon.maker_names_allowed(root) and (by or ref):  # no names: `by` is the role of a maker it references
+            role = own.get(ref, central.get(ref)) if ref else None
+            if not ref:
+                bad.append(f"by_ref is empty: {who}, not an internal root, keeps no names, so by "
+                           f"is the role of a maker it references")
+            elif role is not None and by != role:
+                bad.append(f"by {by!r} is not the role {role!r} of {ref}: {who}, not an internal root, keeps no names")
+        refs = kbcommon.context_refs(r.get("context"))
+        if not refs:
+            bad.append("no context (kind:value references to the item, fact, source, article or domain it is about)")
+        for kind, value in refs:
+            if not kind:
+                bad.append(f"context part {value!r} is not <kind>:<value> with kind {'|'.join(kbcommon.CONTEXT_KINDS)}")
+            elif not kbcommon.CONTEXT_KINDS[kind].fullmatch(value):
+                bad.append(f"context {kind}:{value} is not a valid {kind} reference")
+            elif status != "invalidated" and (e := context_error(kind, value, root, base, owner, known)):
+                bad.append(f"context {kind}:{value} {e}")
+        reason, when = field(r, "invalidated_reason"), field(r, "invalidated_date")
+        if status == "invalidated":
+            if not reason:
+                bad.append("invalidated without an invalidated_reason")
+            if not is_date(when):
+                bad.append(f"invalidated_date {when!r} is not YYYY-MM-DD")
+        elif reason or when:
+            bad.append(f"invalidated_reason or invalidated_date on a decision that is {status or 'without a status'}, not invalidated")
+        for old in kbcommon.split_list(r.get("supersedes")):
+            if old == did or old not in ids:
+                bad.append(f"supersedes {old!r}: not another decision of {dname}")
+        if status == "superseded" and did not in superseding:
+            bad.append("superseded, but no decision names it in supersedes")
+        if field(r, "review_by") and not is_date(field(r, "review_by")):
+            bad.append(f"review_by {field(r, 'review_by')!r} is not YYYY-MM-DD")
+        errors.extend(f"{dname}:{n} {b}" for b in bad)
+
+
 def cite_error(sid, root, owner, known):
     """The error for citing sid from a file of root (None: outside the roots), or None when the id is fine."""
     if root is None:
@@ -219,6 +363,7 @@ def main():
         return kbcommon.qualify(root, os.path.relpath(p, root.path)) if root else os.path.relpath(p, kbcommon.HOME).replace(os.sep, "/")
 
     for root, base in scans:
+        check_decisions(root, owner, known)  # a root's own files, or kb/_self's (root None: the repository outside the roots)
         skip = root_dirs - {os.path.abspath(base)}
         for p in walk(base, (".csv",), skip):
             rel = name_of(root, p)
