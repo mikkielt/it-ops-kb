@@ -54,7 +54,7 @@ An outcome that takes several pushes. Plan it as below, with these steps first:
 6. `fmt`, `check`, then `python3 _tools/backlog.py tree EP-...`. Report the epic's id and title, its stories, and the gates waiting on the operator.
 
 ## Bug ("<defect>")
-1. Reproduce it with one command that fails now and will pass once it is fixed (a test with `-k`, a tool call with `match`).
+1. Reproduce it with one command that fails now and will pass once it is fixed, running the failing behaviour: a test with `-k`, a tool call with `match`, a command on a planted input. A repro that only matches text in a file (a grep, a `python -c` reading source) proves the text, not the fix; `new` refuses one without `--repro-reason TEXT` saying why the behaviour cannot run (such as a defect in a doc's wording).
 2. Pick a severity by the table in "Priority and severity" and a priority. An `S1` goes into the active sprint (`--sprint`), and you tell the operator at once.
 3. `python3 _tools/backlog.py new bug --title T --severity S --repro "CMD" --goal G [--parent EP] [--sprint SP]`. `new` refuses a repro that passes: then the defect is not reproduced yet.
 4. Add tasks only if the fix is known. Otherwise the bug stays one item, and `/kb-item` breaks it down.

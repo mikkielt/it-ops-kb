@@ -4,11 +4,14 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
 
   backlog.py new KIND --title T [--parent ID] [--sprint ID] [--priority P1|P2|P3] [--rank N] [--goal TEXT]
                  [--severity S1..S4] [--check CMD]... [--touch GLOB]... [--depends ID]... [--repro CMD]
+                 [--repro-reason TEXT]
                                           a new item (KIND: epic, story, task, subtask, bug, sprint); prints its id
                                           and title. A bug's --repro must fail now, and for the defect: one that
                                           cannot start, dies of a SyntaxError in its own code, gets a usage error
                                           (argparse exit 2) or runs no tests (pytest exit 5) is refused with the
-                                          cause; a warning names a check or repro that runs no test or tool code,
+                                          cause; one that only matches text in a file (grep, a python -c that
+                                          reads a file) is refused (exit 2, nothing written) without
+                                          --repro-reason, kept as repro_reason; a warning names a check or repro that runs no test or tool code,
                                           a repro whose output says it did nothing here, and a bug whose repro
                                           runs a tool with no check that runs tests; a sprint gets its start gate and its review story. A new item that
                                           is a near-duplicate of an open one (similar, below) gets a warning naming
@@ -21,7 +24,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           references of its `knowledge`: a missing one is an error, a fact key no
                                           longer found is reported as stale knowledge; no item may hold a piece of
                                           this host's computer or user name, read from the environment and never
-                                          printed); exit 1 on errors
+                                          printed); warns of an open bug whose repro only matches text in a
+                                          file (a grep of _tools/ source among them) with no repro_reason; exit 1
+                                          on errors
   backlog.py fmt                          rewrite every item in canonical form
   backlog.py selectors                    one line per `tests.py -k` selector in the checks of open items: how many
                                           tests pytest --collect-only finds for it now (NONE marks zero, error a
@@ -192,8 +197,8 @@ IN_SPRINT = ("story", "bug")  # the kinds a sprint commits to; their tasks and s
 NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
 ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "priority", "rank", "severity", "goal",
-         "repro", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "knowledge", "links", "notes",
-         "recurs", "claimed_by", "evidence")
+         "repro", "repro_reason", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "knowledge",
+         "links", "notes", "recurs", "claimed_by", "evidence")
 FIELDS = set(ORDER)
 # files any item's commits may change besides its `touches`: the tracker itself and what build_index.py regenerates
 ALWAYS_IN_SCOPE = ("kb/_self/backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.md")
@@ -228,7 +233,8 @@ class Refused(Exception):
 
 
 class Rejected(Refused):
-    """A refusal that exits 2: `set` and `gate add` could not do what was asked."""
+    """A refusal that exits 2: `set`, `gate add` and `new` (a text-only repro with no reason) could not do what was
+    asked."""
 
 
 # ------------------------------------------------------------------ storage
@@ -1014,7 +1020,9 @@ def validate(bl, pieces=None):
                 e(f"a bug needs a severity {SEVERITIES}")
             if not _check_ok(it.get("repro")):
                 e("a bug needs a repro check (a command that fails until it is fixed)")
-        elif "severity" in it or "repro" in it:
+            if "repro_reason" in it and not _text_ok(it["repro_reason"]):
+                e("repro_reason must be text: why the repro can only match text in a file")
+        elif "severity" in it or "repro" in it or "repro_reason" in it:
             e("severity and repro are for bugs only")
         checks = it.get("checks", [])
         if not isinstance(checks, list) or not all(_check_ok(c) for c in checks):
@@ -1401,14 +1409,82 @@ def trivial_command(argv):
     shell -c string of statements that only pass, print or exit 0. It passes whatever the code does."""
     if not argv:
         return None
-    base = re.sub(r"\.exe$", "", Path(argv[0]).name.lower())
+    base, code = _command_code(argv)
     if base in TRIVIAL_CMDS:
         return f"it runs {base}, no test or tool"
-    code = argv[2] if len(argv) > 2 and argv[1].lower() in ("-c", "/c", "-command") else None
     if code is not None and (base.startswith("python") or base in SHELLS):
         if all(TRIVIAL_CODE.fullmatch(s.strip()) for s in re.split(r"[;\n]", code)):
             return f"its code ({code.strip()[:60]!r}) only passes, prints or exits 0"
     return None
+
+
+# A repro that only matches text in a file proves the text, not the behaviour: BG-qtphqxt2's rejected the literal
+# '>&2', which the fix met by writing '>& 2'; BG-g6qpxe5x's was a regex over a test's text; BG-rrht7uts's grepped
+# _tools/ for 'worktrees' and passed on a fix that did not work. `new` refuses one without a stated reason
+# (--repro-reason, kept as the item's repro_reason) and `check` warns of an open bug's.
+GREP_CMDS = {"grep", "egrep", "fgrep", "rg", "ag", "findstr", "select-string", "sls"}
+READS_FILE = re.compile(r"\bopen\(|\.read_text\(|\.read_bytes\(")
+TEXT_MODULES = {"sys", "re", "json", "csv", "pathlib", "os", "io", "fnmatch", "glob", "ast", "tomllib", "itertools",
+                "functools", "collections", "string"}
+IMPORTS = re.compile(r"(?:^|[;\n])\s*(?:from\s+([\w.]+)\s+import\b|import\s+([\w.]+(?:\s*,\s*[\w.]+)*))")
+RUNS_CODE = re.compile(r"\b(?:subprocess|runpy|importlib|exec|eval|compile|__import__|system|popen|spawn\w*"
+                       r"|sys\.path)\b")
+TOOL_SOURCE = re.compile(r"_tools/[\w./-]+\.py\b")
+
+
+def _command_code(argv):
+    """(base command name, the -c / /c / -Command string or None) of a check's argv."""
+    base = re.sub(r"\.exe$", "", Path(argv[0]).name.lower()) if argv else ""
+    code = argv[2] if len(argv) > 2 and argv[1].lower() in ("-c", "/c", "-command") else None
+    return base, code
+
+
+def _is_grep(words):
+    """True when a command's words (a leading ! dropped) run a grep: GREP_CMDS or git grep."""
+    words = words[1:] if words[:1] == ["!"] else words
+    base = re.sub(r"\.exe$", "", Path(words[0]).name.lower()) if words else ""
+    return base in GREP_CMDS or (base == "git" and words[1:2] == ["grep"])
+
+
+def text_only_repro(argv):
+    """Why a repro only matches text in a file and runs no behaviour, or None: grep (git grep, rg, findstr,
+    Select-String), a shell -c of nothing but greps, or a python -c that reads a file and imports only text modules
+    (TEXT_MODULES), running no other code. It names a _tools/ source file it reads. A script repro is not judged."""
+    if not argv:
+        return None
+    base, code = _command_code(argv)
+    if _is_grep(argv[:2]):
+        what = "it greps a file"
+    elif code is not None and base in SHELLS:
+        segs = [s.split() for s in re.split(r"&&|\|\||[;|\n]", code)]
+        segs = [w for w in segs if w and w[0] not in ("set", "exit")]
+        what = "its shell code only greps files" if segs and all(map(_is_grep, segs)) else None
+    elif code is not None and base.startswith("python"):
+        mods = {m.split(".")[0].strip() for pair in IMPORTS.findall(code) for g in pair if g for m in g.split(",")}
+        ok = READS_FILE.search(code) and mods <= TEXT_MODULES and not RUNS_CODE.search(code)
+        what = "its python code only reads a file and tests its text" if ok else None
+    else:
+        what = None
+    if not what:
+        return None
+    src = sorted(set(TOOL_SOURCE.findall(" ".join(argv))))
+    return f"{what}{', reading source of ' + ', '.join(src) + ' for a string' if src else ''}"
+
+
+def repro_text_warnings(bl):
+    """check's warnings: an open bug whose repro only matches text in a file (text_only_repro) with no repro_reason."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        rp = it.get("repro")
+        if it.get("kind") != "bug" or it.get("status") not in OPEN_STATUSES or it.get("repro_reason") \
+                or not _check_ok(rp):
+            continue
+        why = text_only_repro(rp["run"])
+        if why:
+            out.append(f"{bl.label(iid)}: the repro only matches text in a file ({why}), so it can pass on a fix that "
+                       "does not work or fail on one that does: run the behaviour (a test, a command on a planted "
+                       "input), or state why it cannot in repro_reason")
+    return out
 
 
 def is_test_run(argv):
@@ -1557,6 +1633,15 @@ def cmd_new(bl, a):
         why = own_failure(it["repro"]["run"], code, out)
         if why:
             raise Refused(f"--repro fails for its own error, not the defect: {why}")
+        why = text_only_repro(it["repro"]["run"])
+        if why and not (a.repro_reason or "").strip():
+            raise Rejected(f"--repro only matches text in a file ({why}): it proves the text, not the behaviour, and "
+                           "can pass on a fix that does not work; run the behaviour (a test, a command on a planted "
+                           "input), or state why it cannot with --repro-reason TEXT")
+        if (a.repro_reason or "").strip():
+            it["repro_reason"] = a.repro_reason.strip()
+    elif a.repro_reason:
+        raise Rejected("--repro-reason is for a bug's --repro")
     if a.check:
         it["checks"] = [{"run": parse_cmd(c)} for c in a.check]
     warns = noop_warnings(it, out if kind == "bug" else "")
@@ -1593,7 +1678,7 @@ def cmd_check(bl, a):
     pieces = host_user_pieces()
     errs = validate(bl, pieces) + stale_touches(bl)
     stale = stale_knowledge(bl)
-    warns = docs_warnings(bl)
+    warns = docs_warnings(bl) + repro_text_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
@@ -3056,6 +3141,7 @@ def main(argv=None):
     p.add_argument("--touch", action="append")
     p.add_argument("--depends", action="append")
     p.add_argument("--repro")
+    p.add_argument("--repro-reason", help="why a repro that only matches text in a file cannot run the behaviour")
     p = sub.add_parser("similar")
     p.add_argument("title")
     p.add_argument("--goal")
