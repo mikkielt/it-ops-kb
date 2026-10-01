@@ -1,0 +1,26 @@
+{
+  "id": "ST-6vciuxux",
+  "kind": "story",
+  "title": "Sprint planning flags a file most of a sprint's items share",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "/kb-sprint plan (and backlog.py start) reports a file in the touches of more than half the sprint's items, naming them, so the planner splits the edits by section into separate items or orders them up front instead of finding at run time that they run one after another; backlog.py held --overlaps is the tool. Answers SP-x2pvljz6: most of its items touched .claude/skills/kb-sprint/SKILL.md and ran serially.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_flags_shared_file"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
