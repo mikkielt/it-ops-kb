@@ -26,6 +26,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Then close its `_gaps.md` entry by the content rules and record it (the queue's rules: `python3 _tools/selfdoc.py section querylog "The research queue"`):
   - settled: a `  - Resolved <date>: <what settles it, with source ids> (topic: <domain>/<slug>)` line under the entry, then `python3 _tools/querylog.py close F-... --claim`;
   - not settled by official sources: `python3 _tools/querylog.py close F-... --tried "<what was tried, where, and what it still needs>"`, which writes the dated `Tried` note under the entry; the gap stays out of the queue until the note is older than `QUEUE_TRIED_DAYS`.
+  - when the work is committed (a backlog item's research), add `--commit --trailer '<your Co-Authored-By>'` (one `--trailer` per line): the findings record goes in a commit of its own with no `KB-Work` trailer. Never commit the record yourself or under the task's `KB-Work`: its touches never name `kb/_querylog/` (a research task's touches are kb content only), so `backlog.py done` would refuse the story. The `_gaps.md` note and the topic go in the task's commit.
 - `python3 _tools/querylog.py check` must print `problems=0`. The report lists each gap's finding id and how it closed.
 
 ## 1. Map what the kb already knows (before any web search)

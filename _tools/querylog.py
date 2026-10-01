@@ -94,13 +94,15 @@ the ql_*.py modules beside it.
                         topic with the question and each of its finding ids with its entry's path:line. The same store
                         and HEAD print the same lines in any clone. Exit 0, 1 when a closed gap reappears (a later
                         record after its claim, or its entry without a Resolved note)
-  querylog.py close F-ID [F-ID ...] (--claim | --tried NOTE | --reject) [--store DIR]
+  querylog.py close F-ID [F-ID ...] (--claim | --tried NOTE | --reject) [--store DIR] [--commit [--trailer 'K: V']]
                         records what `/kb-research --queue` did with the gap findings of one queue item: --claim once
                         each _gaps.md entry carries a `Resolved <date>:` note (gap -> claim, by kb-research); --tried
                         writes the note `Tried <date>: NOTE` under each entry and records the day; --reject once each
                         entry was removed as off the kb's domains (-> candidate-gap, `rejected`, as the gap step
-                        records one). One findings file per finding; no older file is edited. Exit 0, 1 when one was
-                        refused
+                        records one). One findings file per finding; no older file is edited. --commit commits the
+                        findings files alone (git commit --only) with the --trailer lines and never a KB-Work trailer:
+                        the record is not the answering work item's (a KB-* key is refused). Exit 0, 1 when one was
+                        refused or the commit failed
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
@@ -146,7 +148,44 @@ written when the mode is `off` (or the config file cannot be read: fail closed),
 when Claude Code does not run the hooks (`--settings '{"disableAllHooks": true}'`, which every `claude -p` the pipeline
 starts carries).
 """
-import argparse, datetime, sys
+import argparse, datetime, re, sys
+
+TRAILER = re.compile(r"[A-Za-z][A-Za-z0-9-]*: *\S.*")
+
+
+def close(fids, claim=False, tried=None, reject=False, store=None, gate=None, day=None, kb_commit=None, out=print,
+          commit=False, trailers=()):
+    """`close F-ID ... [--commit [--trailer 'KEY: VALUE' ...]]`: ql_research.close for each finding of one queue item.
+    With `commit`, the findings files written go in a commit of their own (`git commit --only`: what was staged before
+    stays staged and out of it), subject `chore(querylog): close IDS (claim|tried|rejected)`, the session's `trailers`
+    its last paragraph and never a KB-Work trailer: the record is the query log's, not the work item's that answered
+    the gap, so `backlog.py done` never finds it among that item's commits, outside its touches. The _gaps.md note
+    stays for the research commit. Here, not in ql_research, whose writers hold no git commit. A KB-* key or a line
+    that is no trailer, or trailers without `commit`, is refused before anything is written. 0; 1 when a finding was
+    refused or the commit failed."""
+    import ql_research
+    from ql_base import STORE, run_cmd
+    trailers = [t.strip() for t in trailers]
+    bad = [t for t in trailers if not TRAILER.fullmatch(t) or t.lower().startswith("kb-")]
+    if bad or (trailers and not commit):
+        out(f"close: refused --trailer {bad[0]!r}: a 'KEY: VALUE' line whose key is not KB-* (the record never "
+            "carries KB-Work)" if bad else "close: --trailer needs --commit")
+        return 1
+    written = []
+    rc = max(ql_research.close(f, claim=claim, tried=tried, store=store, gate=gate, day=day, kb_commit=kb_commit,
+                               out=out, reject=reject, written=written) for f in fids)
+    if not commit or not written:
+        return rc
+    how = "claim" if claim else "rejected" if reject else "tried"
+    msg = ["-m", f"chore(querylog): close {', '.join(fids)} ({how})"] + (["-m", "\n".join(trailers)] if trailers else [])
+    paths = [str(p) for p in written]
+    for argv in (["git", "add", "--", *paths], ["git", "commit", "-q", *msg, "--only", "--", *paths]):
+        code, so, se = run_cmd(argv, cwd=store or STORE, timeout=120)
+        if code != 0:
+            out(f"close: the records are written, but {' '.join(argv[:2])} failed: {(se or so).strip()}")
+            return 1
+    out(f"close: committed {len(paths)} findings file(s), with no KB-Work trailer")
+    return rc
 
 
 def off(verb):
@@ -244,10 +283,13 @@ def main(argv=None):
         how.add_argument("--reject", action="store_true", help="its _gaps.md entry was removed as off the kb's "
                          "domains: record it rejected at candidate-gap")
         ap.add_argument("--store", help="the store to record in (default: kb/_querylog, the committed store)")
+        ap.add_argument("--commit", action="store_true", help="commit the findings files written, alone and with no "
+                        "KB-Work trailer")
+        ap.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
+                        help="with --commit: a trailer of the session (Co-Authored-By, ...); a KB-* key is refused")
         a = ap.parse_args(argv[1:])
-        import ql_research
-        return max(ql_research.close(f, claim=a.claim, tried=a.tried, store=a.store, reject=a.reject)
-                   for f in a.finding)
+        return close(a.finding, claim=a.claim, tried=a.tried, reject=a.reject, store=a.store, commit=a.commit,
+                     trailers=a.trailer)
     if argv[:1] == ["digest"]:
         ap = argparse.ArgumentParser(prog="querylog.py digest")
         ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")
