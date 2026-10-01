@@ -448,6 +448,23 @@ def test_done_refuses_kb_work_outside_trailers(sprint):
     assert code == 0, out
 
 
+def test_done_claim_commit_alone_is_not_the_work(sprint):
+    """Planted: the claim commit carries KB-Work but changes only item files, and the work commit's KB-Work sits in a
+    paragraph before Co-Authored-By: done does not count the claim commit as the work, so it refuses."""
+    repo, bg = sprint["repo"], sprint["bg"]
+    assert b(repo, "claim", bg, "--by", "agent-1")[0] == 0
+    commit(repo, "claim", bg)
+    (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+    sh(repo, "git", "add", "-A")
+    sh(repo, "git", "commit", "-qm", f"write c\n\nKB-Work: {bg}\n\nCo-Authored-By: A <a@example.com>")
+    code, out = b(repo, "done", bg)
+    assert code == 1 and "no commit on HEAD carries the trailer" in out, out
+    (repo / "src" / "d.txt").write_text("d\n", encoding="utf-8")
+    commit(repo, "write d", bg)
+    code, out = b(repo, "done", bg)
+    assert code == 0, out
+
+
 def story_with_touches(sprint):
     """The fixture's story given touches of its own, as a story whose tasks carry its work has."""
     repo, st = sprint["repo"], sprint["st"]
@@ -871,6 +888,41 @@ def test_started_sprint_check_trailers_refuses_unclaimed_work(sprint, monkeypatc
     commit(repo, "claim", tk)  # a backlog-planning commit
     (repo / "src" / "b.txt").write_text("b2\n", encoding="utf-8")
     commit(repo, "write b again", tk)
+    assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
+
+
+def test_check_trailers_flags_kb_work_outside_trailers(sprint, monkeypatch, capsys):
+    """Planted: a work commit whose KB-Work line sits in a paragraph before Co-Authored-By, so git reads no KB-Work
+    trailer: check-trailers refuses it, the commit-msg hook warns (and still lets the commit through), and the same
+    commit already on origin/main is history, left alone. The trailer in the last paragraph passes."""
+    repo, bg = sprint["repo"], sprint["bg"]
+    commit(repo, "plan")
+    assert b(repo, "claim", bg, "--by", "agent-1")[0] == 0
+    commit(repo, "claim", bg)
+    sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+    monkeypatch.setattr(kbgit, "KB", str(repo))
+    kbgit._WANT.clear()
+    stray = f"write c\n\nKB-Work: {bg}\n\nCo-Authored-By: A <a@example.com>\n"
+    (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+    sh(repo, "git", "add", "-A")
+    sh(repo, "git", "commit", "-qm", stray)
+    _, _, bad = kbgit.trailer_audit("origin/main..HEAD", quiet=True)
+    assert len(bad) == 1 and any("outside the trailer block" in ln for ln in bad[0][1]), bad
+    assert kbgit.stray_work(stray)
+    assert not kbgit.stray_work(f"write c\n\nCo-Authored-By: A <a@example.com>\nKB-Work: {bg}\n")
+    assert not kbgit.stray_work("write c\n\nno work here\n")
+    msg = repo / "MSG"
+    msg.write_text(stray, encoding="utf-8")
+    sh(repo, "git", "reset", "-q", "--soft", "HEAD^")
+    kbgit.hook_commit_msg([str(msg)])
+    assert "outside the trailer block" in capsys.readouterr().err
+    sh(repo, "git", "commit", "-qm", stray)
+    sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+    kbgit._WANT.clear()
+    assert kbgit.trailer_audit("HEAD", quiet=True)[2] == []  # history stays as it is
+    (repo / "src" / "d.txt").write_text("d\n", encoding="utf-8")
+    sh(repo, "git", "add", "-A")
+    sh(repo, "git", "commit", "-qm", f"write d\n\nCo-Authored-By: A <a@example.com>\nKB-Work: {bg}")
     assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
 
 
