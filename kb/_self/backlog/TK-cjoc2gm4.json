@@ -2,7 +2,7 @@
   "id": "TK-cjoc2gm4",
   "kind": "task",
   "title": "bl_intake.py registry, fingerprints, dedup and the intake command",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-tngq6z2j",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,19 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-cjoc2gm4"
+  "evidence": {
+    "commit": "ebb7b0c74dd6768362be7543176444c0eae0485b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_core"
+        ],
+        "exit": 0,
+        "sha256": "d6b1390b745a0db7"
+      }
+    ]
+  }
 }
