@@ -2,7 +2,7 @@
   "id": "ST-6bi7oe6y",
   "kind": "story",
   "title": "backlog.py cost: tokens per item, rolled up",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-fvztfmtm",
   "priority": "P2",
@@ -40,5 +40,20 @@
     "kb/_self/backlog.md",
     "_tools/backlog.py"
   ],
-  "notes": "Resolving deleted items: git log --all -- kb/_self/backlog/<id>.json, then git show <commit>^:kb/_self/backlog/<id>.json (backlog.md, The item file). Tokens only, no price table. A task's sprint is its story's or bug's."
+  "notes": "Resolving deleted items: git log --all -- kb/_self/backlog/<id>.json, then git show <commit>^:kb/_self/backlog/<id>.json (backlog.md, The item file). Tokens only, no price table. A task's sprint is its story's or bug's.",
+  "evidence": {
+    "commit": "662b21dcadc9e55766432035cf5585e82dfb9e6c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_cost"
+        ],
+        "exit": 0,
+        "sha256": "7b042f0859fc3732"
+      }
+    ]
+  }
 }
