@@ -18,8 +18,16 @@
     }
   ],
   "touches": [
+    "AGENTS.md",
+    "README.md",
     "_tools/kb_hook.py",
-    "_tools/test_kb_lookup.py"
+    "_tools/test_kb_lookup.py",
+    "kb/_self/alternatives.md",
+    "kb/_self/code.md",
+    "kb/_self/design.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "worker-wrlfub26"
 }

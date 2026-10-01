@@ -32,7 +32,7 @@ The same code runs on Linux, macOS and Windows.
 
 - **Each tool documents its own codes** in its docstring and in `kb/_self/tools.md`; a change to them changes both. A code is never renumbered.
 - **The pattern the tools share:** 0 done or nothing to do; 1 the tool found what it looks for (a failed check, stale docs, a change `--check` would make, a failed step); 2 it could not do what was asked (bad arguments, not a git clone, an unreadable input, a refusal); 3 a human or another process must act first (a conflict, a held lock). A tool states where it differs.
-- **A hook that only logs or informs exits 0 whatever happens**, so it never blocks a prompt or a tool call by failing; only a gate blocks, with exit 1.
+- **A hook that only logs or informs exits 0 whatever happens**, so it never blocks a prompt or a tool call by failing; only a gate blocks, with exit 1. A hook that answers by running another tool (`backlog:` runs `backlog.py`) lets the prompt through with a note when that tool fails or times out.
 - **A usage error is not a finding.** An argument error exits 2, so a caller cannot mistake it for exit 1.
 
 ## Checks and their tests
