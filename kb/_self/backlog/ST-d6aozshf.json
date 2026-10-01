@@ -100,7 +100,9 @@
         "The operator sets the numbers in each sprint's start gate",
         "No numbers: only the evidence and duplicate rules"
       ],
-      "recommendation": "5 findings per sprint, 3 refusals per item, inflow within the last 3 sprints' outflow, 60 open drafts"
+      "recommendation": "5 findings per sprint, 3 refusals per item, inflow within the last 3 sprints' outflow, 60 open drafts",
+      "answer": "5 findings per sprint, 3 refusals per item, inflow within the last 3 sprints' outflow, 60 open drafts",
+      "by": "operator"
     }
   ],
   "notes": "The failure it answers: closing a sprint turns every accepted review or retro finding into a story, so one sprint's close filed ten drafts (SP-x2pvljz6) and another six (SP-5cwekumc), with the operator as the only brake; an autopilot that answers for the operator has no brake. The existing process rule (backlog.md, Changing this process: a new mechanism only for a failure that happened) becomes a check. The limits gate holds the numbers. The story is large: /kb-item splits it into tasks (what a sprint gains and what findings file; the caps and the inflow guard; the manager's stop conditions and the docs)."
