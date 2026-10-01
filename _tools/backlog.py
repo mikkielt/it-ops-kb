@@ -65,6 +65,16 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           unverified (naming any gate jobs) or unreadable; a bug's repro is --status
                                           --job <its first failed job>. --hook:
                                           the async SessionStart form, silent
+  backlog.py intake [--file | --status FINGERPRINT]
+                                          the candidates of every detector in bl_intake.DETECTORS (deterministic: the
+                                          repository's files, no network, no model), one block each: detector, kind,
+                                          fingerprint (12 hex), title, then goal, repro (a bug's: intake --status
+                                          FINGERPRINT) and links (`fingerprint <12 hex>` first). Writes nothing; a
+                                          candidate whose fingerprint an open item's links already carry is marked
+                                          skipped. --file writes each new one as a draft item outside any sprint, so a
+                                          second run files nothing. --status FP: exit 1 while a detector still reports
+                                          that fingerprint (or one cannot run), 0 once none does; the repro of every bug
+                                          intake files. Exit 1 also when a detector failed, 2 for a bad fingerprint
 
 claim, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit the
 item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
@@ -2206,6 +2216,45 @@ def cmd_red_pipeline(bl, a):
     return 0
 
 
+def cmd_intake(bl, a):
+    import bl_intake
+    if a.status is not None and not bl_intake.FP_RE.fullmatch(a.status):
+        print(f"intake: {a.status!r} is not a fingerprint (12 hex characters)", file=sys.stderr)
+        return 2
+    if a.status is not None and a.file:
+        print("intake: --status and --file do not go together", file=sys.stderr)
+        return 2
+    found, failures = bl_intake.collect(bl.root)
+    for why in failures:
+        print(withhold(f"intake: detector failed: {why}"), file=sys.stderr)
+    if a.status is not None:
+        hit = next((c for c in found if c.fp == a.status), None)
+        if hit:
+            say(f"intake: {a.status} is still reported by {hit.detector}: {bl_intake.one(hit.title)}")
+            return 1
+        if failures:
+            say(f"intake: {a.status} is not reported, but a detector failed to run")
+            return 1
+        say(f"intake: {a.status} is no longer reported")
+        return 0
+    new = skipped = 0
+    for c in found:
+        dup = bl_intake.open_with_fingerprint(bl.items, c.fp)
+        for ln in bl_intake.lines(c, bl.label(dup) if dup else None):
+            say(ln)
+        if dup:
+            skipped += 1
+            continue
+        new += 1
+        if a.file:
+            it = bl_intake.item_of(c, new_id(c.kind))
+            bl.save(it)
+            say(f"  filed {bl.label(it['id'])}")
+    say(f"intake: {len(found)} candidate(s), {new} new{' filed' if a.file else ''}, {skipped} skipped" if found
+        else "intake: no candidates")
+    return 1 if failures else 0
+
+
 def cmd_goal(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -2300,6 +2349,10 @@ def main(argv=None):
     p.add_argument("--status", action="store_true")
     p.add_argument("--job", help="read the newest pipeline of main in which this job ran (a red-main bug's repro)")
     p.add_argument("--hook", action="store_true")
+    p = sub.add_parser("intake")
+    p.add_argument("--file", action="store_true", help="write each new candidate as a draft item outside any sprint")
+    p.add_argument("--status", metavar="FINGERPRINT",
+                   help="exit 1 while a detector still reports this fingerprint (a filed bug's repro)")
     for name in COMMITS:
         p = sub.choices[name]
         p.add_argument("--commit", action="store_true",
