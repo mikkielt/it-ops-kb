@@ -25,7 +25,7 @@ The same code runs on Linux, macOS and Windows.
 ## Output
 
 - **Output is deterministic.** The same inputs give the same bytes: sorted iteration where order is not data, `\n` line endings, no BOM, and a clock or an environment value only where recording it is the tool's purpose.
-- **Derived state converges.** A second run on unchanged inputs writes nothing and changes nothing (`build_index.py` twice, `querylog.py learn` and `apply` twice). A `--check` form writes nothing and exits 1 when a run would change a file.
+- **Derived state converges.** A second run on unchanged inputs writes nothing and changes nothing (`build_index.py` twice, `querylog.py learn` and `apply` twice, `kbid.py add` with the same row). A `--check` form writes nothing and exits 1 when a run would change a file.
 - **A file another process reads while a run writes it** (the query log's) is written whole or not at all: to a temporary name, then replaced.
 
 ## Exit codes

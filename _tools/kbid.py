@@ -6,6 +6,8 @@
   kbid.py answer "QUESTION" [--root NAME]   suggest a QK-<slug> answer id for the root's _answers.md (and say if it
                                             is taken)
   kbid.py eval "QUESTION" [--root NAME]     the EV-<slug> id for a row of the root's _retrieval/lookup_eval.csv
+  kbid.py add URL --title T --publisher P --licence L --reuse CLASS [--version V] [--sha256 HEX] [--root NAME]
+                                            append the url's row to the root's _sources.csv and print its id
   kbid.py check                             every root's _sources.csv: hash-id collisions, ids that do not match
                                             their url or do not carry the root's prefix
 
@@ -23,10 +25,18 @@ URL normalization (conservative; nothing that could point at a different resourc
   - an empty path becomes "/"; a trailing "/" on a non-root path is dropped;
   - an empty query ("?" with nothing after it) is dropped.
 
+Adding a source. `add` writes the row through the csv module, in id order (the order `kbgit.py fix` keeps), with
+today's UTC date as `retrieved_utc`, and prints the id on stdout. It converges: a url already in the root with the
+same title, publisher, licence and reuse class (and the version and hash, when given) changes nothing and prints
+the existing id; a url in the root with other values, or another url under the same hash id, is refused and the
+message names the differing fields. Exit 0 written or unchanged; 2 refused or a bad argument (an empty title,
+publisher or licence, a reuse class outside kbcommon.REUSE, a url that is not http(s), a hash that is not 64 hex
+characters).
+
 Answer ids. New research answers in _answers.md are headed `## QK-<slug>. <question>`: lowercase words
 joined by hyphens. Existing Q/QA/QS/QR/QG/R headings stay.
 """
-import argparse, base64, csv, functools, hashlib, os, re, sys, urllib.parse
+import argparse, base64, csv, datetime, functools, hashlib, os, re, sys, urllib.parse
 import kbcommon
 from kbcommon import read_sources  # noqa: F401  (kbgit and the tests call kbid.read_sources)
 
@@ -162,6 +172,14 @@ def main():
     e = sub.add_parser("eval", help="the EV-<slug> id for a lookup_eval.csv row"); e.add_argument("question", nargs="+")
     for p in (u, q, e):
         p.add_argument("--root", default="public", help="the root the id is for (default public)")
+    d = sub.add_parser("add", help="append a source row for a url (changes nothing when it is there)")
+    d.add_argument("url")
+    for flag in ("title", "publisher", "licence"):
+        d.add_argument(f"--{flag}", required=True)
+    d.add_argument("--reuse", required=True, choices=sorted(kbcommon.REUSE), help="what the licence allows with the text")
+    d.add_argument("--version", default="", help="the row's version_or_date")
+    d.add_argument("--sha256", default="", help="the row's artifact_sha256")
+    d.add_argument("--root", default="public", help="the root the row is for (default public)")
     sub.add_parser("check", help="every root: hash-id collisions, ids that do not match their url or their root's prefix")
     a = ap.parse_args()
     if a.cmd == "check":
@@ -172,6 +190,8 @@ def main():
         sys.exit(f"no root {a.root!r} (python3 _tools/kbroot.py list)")
     except kbcommon.RootError as e:
         sys.exit(str(e))
+    if a.cmd == "add":
+        sys.exit(cmd_add(a, root))
     try:
         rows = read_rows(root)
     except (OSError, csv.Error):
@@ -211,6 +231,72 @@ def read_rows(root):
     """The rows of one root's _sources.csv, in file order."""
     with open(os.path.join(root.path, kbcommon.SOURCES), encoding="utf-8-sig", newline="") as f:
         return list(csv.DictReader(f))
+
+
+ADD_COLS = ("id", "url", "title", "publisher", "licence", "reuse")  # the columns a _sources.csv needs to take a row
+
+
+def _one_line(text):
+    return " ".join((text or "").split())
+
+
+def _row_key(sid):
+    """The order of _sources.csv rows, as `kbgit.py fix` keeps it: legacy ids by number, then hash ids."""
+    return sort_key(sid) if is_source_id(sid) else (2, 0, sid)
+
+
+def add_source(root, url, title, publisher, licence, reuse, version="", sha256="", today=None):
+    """Add the url's row to the root's _sources.csv and return (id, written). ValueError, naming the problem, when
+    the row is refused: a bad field, another row for the url, or a row with another url under the same hash id."""
+    url = url.strip()
+    p = urllib.parse.urlsplit(url)
+    if p.scheme not in ("http", "https") or not p.hostname or re.search(r"\s", url):
+        raise ValueError(f"not an http(s) url: {url!r}")
+    fields = {"title": _one_line(title), "publisher": _one_line(publisher), "licence": _one_line(licence),
+              "reuse": reuse.strip()}
+    for k in ("title", "publisher", "licence"):
+        if not fields[k]:
+            raise ValueError(f"--{k} is empty")
+    if fields["reuse"] not in kbcommon.REUSE:
+        raise ValueError(f"reuse {reuse!r} is not one of {', '.join(kbcommon.REUSE)}")
+    optional = {"version_or_date": _one_line(version), "artifact_sha256": sha256.strip().lower()}
+    if optional["artifact_sha256"] and not re.fullmatch(r"[0-9a-f]{64}", optional["artifact_sha256"]):
+        raise ValueError(f"--sha256 is not 64 hexadecimal characters: {sha256!r}")
+    path = os.path.join(root.path, kbcommon.SOURCES)
+    try:
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            header, rows = kbcommon.parse_csv(f"{root.name}/{kbcommon.SOURCES}", f.read(), ADD_COLS)
+    except (OSError, kbcommon.CsvError) as e:
+        raise ValueError(str(e))
+    given = {**fields, **{k: v for k, v in optional.items() if v and k in header}}
+    norm, sid = normalize_url(url), source_id(url, root.id_prefix)
+    for r in rows:
+        if normalize_url(r.get("url") or "") == norm:
+            diff = [k for k, v in given.items() if _one_line(r.get(k)) != v]
+            if diff:
+                raise ValueError(f"{r['id']} is already in {root.name}/{kbcommon.SOURCES} with other "
+                                 f"{', '.join(diff)}: change the row, or give its values")
+            return r["id"], False
+        if r.get("id") == sid:
+            raise ValueError(f"hash id {sid} is taken by {r.get('url')}")
+    new = {c: "" for c in header}
+    new.update(given, id=sid, url=url, retrieved_utc=today or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d"))
+    rows.insert(next((i for i, r in enumerate(rows) if _row_key(r["id"]) > _row_key(sid)), len(rows)), new)
+    kbcommon.write_csv(path, header, rows, atomic=True)
+    return sid, True
+
+
+def cmd_add(a, root):
+    """kbid.py add: the exit code (0 written or unchanged, 2 refused)."""
+    try:
+        sid, written = add_source(root, a.url, a.title, a.publisher, a.licence, a.reuse, a.version, a.sha256)
+    except ValueError as e:
+        print(f"refused: {e}", file=sys.stderr)
+        return 2
+    print(sid)
+    if not written:
+        print(f"{a.url.strip()} is already in {root.name}/{kbcommon.SOURCES} as {sid}: unchanged", file=sys.stderr)
+    return 0
 
 
 def cmd_check():
