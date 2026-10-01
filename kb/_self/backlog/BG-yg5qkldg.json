@@ -1,0 +1,18 @@
+{
+  "id": "BG-yg5qkldg",
+  "kind": "bug",
+  "title": "horizon --hook output of the repository backlog exceeds its length limit",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the SessionStart horizon hook's message for the repository's own backlog stays under the limit test_horizon_hook_of_the_repository_backlog_stays_under_the_limit sets, with several active sprints and waiting items",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_horizon_hook_of_the_repository_backlog_stays_under_the_limit"
+    ]
+  }
+}
