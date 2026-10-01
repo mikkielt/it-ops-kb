@@ -2,7 +2,7 @@
   "id": "ST-t6dc2pz7",
   "kind": "story",
   "title": "Self-Reviewed is never a way past the stale gate",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -32,5 +32,6 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/backlog.md",
     "AGENTS.md"
-  ]
+  ],
+  "claimed_by": "c-t6dc2pz7"
 }
