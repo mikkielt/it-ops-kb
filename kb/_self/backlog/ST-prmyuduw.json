@@ -2,7 +2,7 @@
   "id": "ST-prmyuduw",
   "kind": "story",
   "title": "done flags a repro or check that passes without doing its work",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "c-prmyuduw"
+  "evidence": {
+    "commit": "86aaf47504f3908fd1ebfd7bfaa595e8760044a1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_done_flags_noop_check"
+        ],
+        "exit": 0,
+        "sha256": "6c755033bf771b65"
+      }
+    ]
+  }
 }
