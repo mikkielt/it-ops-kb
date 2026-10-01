@@ -2,7 +2,7 @@
   "id": "ST-vnywso6b",
   "kind": "story",
   "title": "An item that adds a check runs it over the live repository at planning",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -24,5 +24,6 @@
     "kb/_self/maintaining.md",
     "AGENTS.md",
     "_tools/test_kb_cohesion.py"
-  ]
+  ],
+  "claimed_by": "orch-fourth-w9"
 }
