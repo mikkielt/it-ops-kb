@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""kbdecide.py: propose, confirm, supersede, invalidate, restore and list, over a small repository of its own.
+"""kbdecide.py: propose, confirm, supersede, invalidate, restore, sweep, makers and list, over a small repository of its own.
 
 The repository is a copy of the four modules the tool imports with three stores: the public root (not internal: it
 keeps no names), an internal root `team`, and kb/_self with its central register of decision makers. Every command
 runs as a process; every success is followed by check.py over the whole repository, and every refusal plants the
 failure it names and finds the file as it was.
 """
-import base64, hashlib, os, shutil, subprocess, sys
+import base64, hashlib, json, os, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
 
 import kbcommon, kbid
+from conftest import git_env, requires_git
 
 TOOLS = Path(__file__).resolve().parent
 URL = "https://docs.example.com/runbooks/patching"
@@ -636,3 +637,203 @@ def test_kbdecide_makers_kb_self_holds_no_policy_row(repo):
     write(makers_file(repo, "_self"), ",".join(kbcommon.MAKER_COLS) + f"\n{kbcommon.POLICY_ROW},role-only,,\nowner,operations owner,,\n")
     code, out = repo.run("check.py")
     assert code == 1 and "ERROR kb/_self/decision-makers.csv:2 a storage policy in kb/_self" in out, out[-600:]
+
+
+# ---- sweep: a decision whose context no longer holds is invalidated, with the context named in the reason
+
+NEW_URL = "https://docs.example.com/runbooks/patching-v2"
+SWEEP_DAY = "2026-10-05"
+MAKER = {"public": ["--maker", "public-lead"], "team": [], "_self": ["--maker", "owner"]}
+
+
+def swept(repo, *args):
+    """sweep as of SWEEP_DAY: (exit code, output)."""
+    return repo.decide("sweep", "--date", SWEEP_DAY, *args)
+
+
+def sweep_propose(repo, context, store="public", text="Servers patch on the second Tuesday.", review_by=None, confirm=False):
+    args = ["propose", "--root", store, text, "--source", sid("T" if store == "team" else "S"), "--context", context, "--date", DAY]
+    if review_by:
+        args += ["--review-by", review_by]
+    code, out = repo.decide(*args)
+    assert code == 0, out
+    did = out.split("\t")[0]
+    if confirm:
+        code, out = repo.decide("confirm", did, "--root", store, "--by", "operator", *MAKER[store])
+        assert code == 0, out
+    return did
+
+
+def put_item(repo, iid, status):
+    write(repo.path / "kb" / "_self" / "backlog" / f"{iid}.json", json.dumps({"id": iid, "status": status}) + "\n")
+
+
+def git(repo, *args):
+    p = subprocess.run(["git", *args], cwd=repo.path, env=git_env(), capture_output=True, text=True, encoding="utf-8")
+    assert p.returncode == 0, p.stderr
+    return p.stdout
+
+
+def commit_all(repo, message):
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", message)
+
+
+def invalidated(repo, did, store="public"):
+    row = repo.row(did, store)
+    assert row["status"] == "invalidated" and row["invalidated_date"] == SWEEP_DAY, row
+    return row["invalidated_reason"]
+
+
+def test_decision_sweep_invalidates_on_a_dropped_item(repo):
+    put_item(repo, "TK-dropped1", "dropped")
+    proposed = sweep_propose(repo, "item:TK-dropped1")
+    active = sweep_propose(repo, "item:TK-dropped1; domain:ops", "team", confirm=True)
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=2" in out, out
+    assert invalidated(repo, proposed) == "item:TK-dropped1 dropped"
+    assert invalidated(repo, active, "team") == "item:TK-dropped1 dropped"
+    row = repo.row(active, "team")
+    assert (row["by"], row["text"]) == ("operator", "Servers patch on the second Tuesday."), row  # the maker stays
+    assert len(repo.rows()) == 1 and len(repo.rows("team")) == 1  # nothing is deleted
+    repo.check()
+
+
+def test_decision_sweep_keeps_a_decision_of_a_done_or_an_open_item(repo):
+    put_item(repo, "TK-donedone", "done")
+    put_item(repo, "TK-stilldoi", "doing")
+    ids = [sweep_propose(repo, f"item:{i}", text=f"About {i}.") for i in ("TK-donedone", "TK-stilldoi")]
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=0" in out, out
+    assert [repo.row(d)["status"] for d in ids] == ["proposed", "proposed"]
+
+
+@requires_git
+def test_decision_sweep_tells_a_dropped_item_from_one_deleted_at_close_by_its_last_version(repo):
+    """Sprint close deletes the item files: git history keeps the last version, which says dropped or done."""
+    history = (("TK-closedrp", ("todo", "dropped")), ("TK-closedon", ("todo", "done")), ("TK-flipflop", ("dropped", "done")))
+    for iid, statuses in history:
+        put_item(repo, iid, statuses[0])
+    git(repo, "init", "-q")
+    commit_all(repo, "files")
+    for iid, statuses in history:
+        put_item(repo, iid, statuses[1])
+    commit_all(repo, "last versions")
+    for iid, _ in history:
+        (repo.path / "kb" / "_self" / "backlog" / f"{iid}.json").unlink()
+    commit_all(repo, "close the sprint")
+    dropped, done, flip, never = (sweep_propose(repo, f"item:{i}", text=f"About {i}.")
+                                  for i in ("TK-closedrp", "TK-closedon", "TK-flipflop", "TK-neverhad"))
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=1" in out, out
+    assert invalidated(repo, dropped) == "item:TK-closedrp dropped"
+    assert [repo.row(d)["status"] for d in (done, flip, never)] == ["proposed"] * 3  # done at close, done last, no history
+    repo.check()
+
+
+def test_decision_sweep_says_nothing_of_an_item_with_no_git_history(repo):
+    """Outside a git repository a missing item file proves nothing: the decision stays."""
+    did = sweep_propose(repo, "item:TK-neverhad")
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=0" in out and repo.row(did)["status"] == "proposed", out
+
+
+def add_superseding_source(repo):
+    path = repo.path / "kb" / "public" / kbcommon.SOURCES
+    header, rows = kbcommon.load_csv(str(path))
+    new = dict(rows[0], id=kbid.source_id(NEW_URL, "S"), url=NEW_URL, title="Patching runbook v2")
+    rows[0]["superseded_by"] = new["id"]
+    kbcommon.write_csv(str(path), header, rows + [new])
+    return new["id"]
+
+
+def test_decision_sweep_invalidates_on_a_superseded_source(repo):
+    kept = sweep_propose(repo, "domain:ops", text="No source of this one is replaced.")
+    did = sweep_propose(repo, f"source:{sid()}")
+    repo.check()
+    newer = add_superseding_source(repo)
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=1" in out, out
+    assert invalidated(repo, did) == f"source:{sid()} superseded by {newer}"
+    assert repo.row(kept)["status"] == "proposed"
+    repo.check()
+
+
+def test_decision_sweep_invalidates_on_a_gone_article_or_domain(repo):
+    article_d = sweep_propose(repo, "article:ops/patching", text="About the article.")
+    domain_d = sweep_propose(repo, "domain:ops", text="About the domain.")
+    other = sweep_propose(repo, "article:ops/patching", "team", text="Another root's.")
+    self_d = sweep_propose(repo, "article:public/ops/patching", "_self", text="Of kb/_self, about public.")
+    (repo.path / "kb" / "public" / "ops" / "patching.md").unlink()
+    code, out = swept(repo, "--root", "public")
+    assert code == 0 and "invalidated=1" in out, out  # the domain still has its directory
+    assert invalidated(repo, article_d) == "article:ops/patching is gone"
+    assert repo.row(domain_d)["status"] == "proposed"
+    shutil.rmtree(repo.path / "kb" / "public" / "ops")
+    code, out = swept(repo)  # every root and kb/_self
+    assert code == 0 and "invalidated=2" in out, out
+    assert invalidated(repo, domain_d) == "domain:ops is gone"
+    assert invalidated(repo, self_d, "_self") == "article:public/ops/patching is gone"
+    assert repo.row(other, "team")["status"] == "proposed"
+    repo.check()
+
+
+def test_decision_sweep_invalidates_on_a_review_by_that_passed(repo):
+    late = sweep_propose(repo, "domain:ops", text="Late.", review_by="2026-10-04")
+    today = sweep_propose(repo, "domain:ops", text="Today.", review_by=SWEEP_DAY)
+    none = sweep_propose(repo, "domain:ops", text="No review date.")
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=1" in out, out
+    assert invalidated(repo, late) == "review_by 2026-10-04 passed"
+    assert [repo.row(d)["status"] for d in (today, none)] == ["proposed", "proposed"]  # due today is not yet passed
+    repo.check()
+
+
+def test_decision_sweep_does_not_invalidate_on_a_fact_that_is_gone(repo):
+    """A missing fact is for relink to flag, not for sweep to withdraw."""
+    did = sweep_propose(repo, "fact:0123456789ab", confirm=True)
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=0" in out, out
+    assert repo.row(did)["status"] == "active"
+
+
+def test_decision_sweep_names_every_broken_reference(repo):
+    put_item(repo, "TK-dropped1", "dropped")
+    did = sweep_propose(repo, "item:TK-dropped1; domain:ops", review_by="2026-10-01")
+    code, out = swept(repo)
+    assert code == 0, out
+    assert invalidated(repo, did) == "item:TK-dropped1 dropped; review_by 2026-10-01 passed"
+
+
+def test_decision_sweep_leaves_invalidated_and_superseded_decisions_as_they_are(repo):
+    old = sweep_propose(repo, "domain:ops", text="Old.", review_by="2026-10-01", confirm=True)
+    new = sweep_propose(repo, "domain:ops", text="New.", confirm=True)
+    assert repo.decide("supersede", old, new, "--root", "public", "--by", "operator")[0] == 0
+    withdrawn = sweep_propose(repo, "domain:ops", text="Withdrawn.", review_by="2026-10-01")
+    assert repo.decide("invalidate", withdrawn, "--root", "public", "--reason", "by hand", "--date", DAY)[0] == 0
+    before = repo.file().read_bytes()
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=0" in out and repo.file().read_bytes() == before, out
+
+
+def test_decision_sweep_dry_run_prints_and_writes_nothing(repo):
+    put_item(repo, "TK-dropped1", "dropped")
+    did = sweep_propose(repo, "item:TK-dropped1")
+    before = repo.file().read_bytes()
+    code, out = swept(repo, "--dry-run")
+    assert code == 0 and f"{did}\twould invalidate\tpublic\titem:TK-dropped1 dropped" in out and "would_invalidate=1" in out, out
+    assert repo.file().read_bytes() == before
+    code, out = swept(repo)  # a run that is not a dry one does it, and the next finds nothing left
+    assert code == 0 and f"{did}\tinvalidated\tpublic\titem:TK-dropped1 dropped" in out, out
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=0" in out, out
+
+
+def test_decision_sweep_takes_a_root_and_refuses_what_it_cannot_sweep(repo):
+    put_item(repo, "TK-dropped1", "dropped")
+    one = sweep_propose(repo, "item:TK-dropped1")
+    two = sweep_propose(repo, "item:TK-dropped1", "team")
+    assert swept(repo, "--root", "team")[0] == 0
+    assert (repo.row(one)["status"], repo.row(two, "team")["status"]) == ("proposed", "invalidated")
+    refused(repo, "public", "sweep", "--root", "nowhere", says="no root 'nowhere'")
+    refused(repo, "public", "sweep", "--date", "2026-13-40", says="is not YYYY-MM-DD")

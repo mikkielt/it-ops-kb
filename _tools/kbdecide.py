@@ -18,6 +18,9 @@
   kbdecide.py makers R [--policy P --by operator]
                                          show how root R saves its decision makers, or (the operator's) set the policy:
                                          role-only, role-and-name or central-register
+  kbdecide.py sweep [--root R] [--dry-run] [--date DATE]
+                                         invalidate every proposed or active decision whose context is broken (rules
+                                         below), naming the context in the reason; open to agents
   kbdecide.py list [--root R] [--status S] [--context REF]
                                          the decisions of one root, or of every root and kb/_self, one per line:
                                          root, id, status, date, by, context, text (tab-separated)
@@ -36,7 +39,7 @@ lands in a root by omission. The rows go to the root's `_decisions.csv`; its for
     kb/_self/decision-makers.csv; a root that keeps names (an internal one) may leave it out and may take `--name`.
   - Nothing is ever deleted: `invalidate` sets the status and the reason, `supersede` marks the old decision
     `superseded` and lists it in the new one's `supersedes`.
-  - What an agent may do and what is the operator's: `propose` and `invalidate` are open to agents (the context sweep
+  - What an agent may do and what is the operator's: `propose`, `invalidate` and `sweep` are open to agents (the sweep
     invalidates a decision whose subject is gone, and a proposal nobody should confirm is rejected the same way, with no
     maker named); `confirm`, `supersede`, `restore` and `makers --policy` need `--by operator`, which an agent passes
     only after the operator said so, because each makes or brings back a decision that holds.
@@ -45,12 +48,20 @@ lands in a root by omission. The rows go to the root's `_decisions.csv`; its for
     operator runs `makers R --policy P --by operator`. role-and-name is refused where kbcommon.maker_names_allowed
     says no names may be kept (a root that is not internal); kb/_self is the central register, holds roles only and
     has no policy to set.
+  - `sweep` covers every root and kb/_self, or the one `--root`, and invalidates a proposed or an active decision
+    when one of its context references no longer holds: (1) an `item:` is dropped, as its file says or, when sprint
+    close deleted the file, as its last version in git history says (an item that is done, or was deleted at close
+    done, does not invalidate; one with no history says nothing); (2) a `source:` has a `superseded_by` in its
+    _sources.csv; (3) an `article:` or a `domain:` is gone, a root's removal included; (4) its `review_by` is before
+    the date. The reason names the reference (`item:TK-x dropped`), several joined by `; `. A `fact:` that no longer
+    exists invalidates nothing: that is the relink flag, not a withdrawal. `--dry-run` prints what it would
+    invalidate and writes nothing; `--date` is the day taken as today (default: today). No row is deleted.
   - Every row written passes `check.py`: after each write the files are checked, and a change that would add an
     error is undone and refused. Refusals before a root's first decision go through `policy_refusal`.
 
 Exit: 0 done, 2 refused (a rule above, an unknown root or id, or a file that cannot be read) or bad arguments.
 """
-import argparse, base64, datetime, hashlib, re, sys
+import argparse, base64, datetime, hashlib, json, re, subprocess, sys
 from pathlib import Path
 
 import check, kbcommon
@@ -354,6 +365,107 @@ def cmd_restore(a):
     return 0
 
 
+class Context:
+    """What the context references of decisions are checked against, read once per sweep: backlog items (the file, or
+    the last version git history keeps of a deleted one) and the sources' `superseded_by`."""
+
+    def __init__(self):
+        self.items, self.sources = {}, None
+
+    def item_status(self, iid):
+        """The status of backlog item `iid`: its file's, else that of the last version git history holds of the file
+        sprint close deleted, else '' (never seen, or no git history to ask)."""
+        if iid not in self.items:
+            rel = f"kb/_self/backlog/{iid}.json"
+            path = Path(kbcommon.HOME) / rel
+            text = path.read_text(encoding="utf-8") if path.is_file() else self.deleted_version(rel)
+            try:
+                data = json.loads(text) if text else None
+            except ValueError:
+                data = None
+            self.items[iid] = (data.get("status") or "") if isinstance(data, dict) else ""
+        return self.items[iid]
+
+    @staticmethod
+    def deleted_version(rel):
+        """The text of `rel` as it was just before the newest commit that deleted it, '' when git holds none."""
+        def git(*args):
+            try:
+                p = subprocess.run(["git", *args], cwd=kbcommon.HOME, capture_output=True, text=True, encoding="utf-8",
+                                   errors="replace")
+            except OSError:
+                return ""
+            return p.stdout if p.returncode == 0 else ""
+        last = git("log", "-1", "--diff-filter=D", "--format=%H", "--", rel).strip()
+        return git("show", f"{last}^:{rel}") if last else ""
+
+    def superseded_by(self, store, sid):
+        """What `superseded_by` says of source `sid` in the store's root (kb/_self: in any root), '' when nothing."""
+        if self.sources is None:
+            self.sources = {}
+            for r in kbcommon.roots():
+                try:
+                    rows = kbcommon.load_csv(str(Path(r.path) / kbcommon.SOURCES), ("id",))[1]
+                except kbcommon.CsvError:
+                    continue
+                self.sources[r.name] = {field(x, "id"): " ".join(field(x, "superseded_by").split()) for x in rows}
+        pools = list(self.sources.values()) if store.root is None else [self.sources.get(store.name, {})]
+        return next((p[sid] for p in pools if p.get(sid)), "")
+
+
+def gone(store, kind, value):
+    """Whether the article or domain `value` of a context reference no longer exists: in the store's root, or, in
+    kb/_self, in the root its `<root>/<path>` names (a root that is gone too)."""
+    where, rel = (Path(store.root.path), value) if store.root else (None, value)
+    if store.root is None:
+        owner, rel = kbcommon.split(value)
+        where = Path(owner.path) if owner else None
+    if where is None or not rel:
+        return True
+    return not ((where / f"{rel}.md").is_file() if kind == "article" else (where / rel).is_dir())
+
+
+def broken(store, row, ctx, today):
+    """The reasons, `<ref> <what>`, why the context of decision `row` no longer holds; [] when it holds."""
+    out = []
+    for kind, value in kbcommon.context_refs(row.get("context")):
+        if kind == "item" and ctx.item_status(value) == "dropped":
+            out.append(f"item:{value} dropped")
+        elif kind == "source" and ctx.superseded_by(store, value):
+            out.append(f"source:{value} superseded by {ctx.superseded_by(store, value)}")
+        elif kind in ("article", "domain") and gone(store, kind, value):
+            out.append(f"{kind}:{value} is gone")
+    review = field(row, "review_by")
+    if review and review < today:  # ISO dates compare as text; a malformed review_by is check.py's to report
+        out.append(f"review_by {review} passed")
+    return out
+
+
+def cmd_sweep(a):
+    today, ctx, refused, n = day(a.date), Context(), [], 0
+    for store in stores(a.root):
+        rows, hit = load(store), []
+        for r in rows:
+            if field(r, "status") in ("proposed", "active") and (why := broken(store, r, ctx, today)):
+                hit.append((r, "; ".join(why)))
+        if not hit:
+            continue
+        for r, why in hit:
+            print(f"{field(r, 'id')}\t{'would invalidate' if a.dry_run else 'invalidated'}\t{store.name}\t{why}")
+            r.update(status="invalidated", invalidated_reason=why, invalidated_date=today)
+        if not a.dry_run:
+            try:
+                save(store, rows)
+            except Refused as e:  # one store's refusal leaves its file as it was; the others are still swept
+                refused.append(f"{store.name}: {e}")
+                continue
+        n += len(hit)
+    print(f"{'would_invalidate' if a.dry_run else 'invalidated'}={n}")
+    for why in refused:
+        print(f"refused: {why}")
+    return 2 if refused else 0
+
+
 def cmd_list(a):
     n = 0
     for store in stores(a.root):
@@ -412,6 +524,9 @@ def parser():
     p.add_argument("root", help="a root's name")
     p.add_argument("--policy", help=f"{'|'.join(kbcommon.POLICIES)}; the operator's")
     p.add_argument("--by", help=f"must be {OPERATOR} with --policy")
+    p = add("sweep", "invalidate the decisions whose context is broken", root_required=False)
+    p.add_argument("--dry-run", action="store_true", help="print what would be invalidated and write nothing")
+    p.add_argument("--date", help="YYYY-MM-DD, the day taken as today (default: today)")
     p = add("list", "the decisions of one root or of all", root_required=False)
     p.add_argument("--status", choices=kbcommon.DECISION_STATUS)
     p.add_argument("--context", help="only the decisions whose context names this kind:value (or bare value)")
@@ -419,7 +534,7 @@ def parser():
 
 
 COMMANDS = {"propose": cmd_propose, "confirm": cmd_confirm, "makers": cmd_makers, "supersede": cmd_supersede, "invalidate": cmd_invalidate,
-            "restore": cmd_restore, "list": cmd_list}
+            "restore": cmd_restore, "sweep": cmd_sweep, "list": cmd_list}
 
 
 def main(argv=None):
