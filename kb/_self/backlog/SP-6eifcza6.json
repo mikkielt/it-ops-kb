@@ -2,7 +2,7 @@
   "id": "SP-6eifcza6",
   "kind": "sprint",
   "title": "Plans hold before work starts",
-  "status": "planned",
+  "status": "active",
   "goal": "plan and start refuse or name what used to surface only mid-sprint: a code task's docs outside its touches, a docs task waiting on its code, an unmapped goal clause, a step order the lanes forbid, an unreproduced premise, a check never run on the live repository, a dependency outside the sprint, a moved file's other names, a host gate not checked on its host, a planning commit without its item file; gates name each option's command and measured result, and new, drop and the tools doc keep the backlog valid under two sessions.",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

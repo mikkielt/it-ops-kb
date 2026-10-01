@@ -2,7 +2,7 @@
   "id": "ST-xg6wxzhf",
   "kind": "story",
   "title": "backlog.py new refuses --sprint on a task instead of saving an item check rejects",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P3",

@@ -2,7 +2,7 @@
   "id": "ST-2ceybba2",
   "kind": "story",
   "title": "Order tasks that share a file without a depends_on that blocks one session from claiming both",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P3",
