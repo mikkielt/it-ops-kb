@@ -2532,3 +2532,30 @@ def test_backlog_set_gate_add_refuses_a_done_item_and_an_unknown_one(sprint):
     refused_unchanged(repo, tk, "gate", "add", tk, *GATE, rule="it is done")
     code, out = b(repo, "gate", "add", "TK-zzzzzzzz", *GATE)
     assert code == 2 and "no item TK-zzzzzzzz" in out
+
+
+def test_backlog_find_prints_open_matches_with_parent_chain_and_tree_open_hides_finished(sprint):
+    """Planted: a done and a dropped item that match are not found and not in tree --open; a miss exits 1 with one
+    line; words are case-insensitive and all must match."""
+    repo, ep = sprint["repo"], sprint["ep"]
+    story = item(repo, "Story")["id"]
+    b(repo, "new", "task", "--title", "Rotate BitLocker keys", "--parent", story, "--goal", "keys rotated",
+      "--touch", "src/**")
+    live = item(repo, "Rotate BitLocker keys")["id"]
+    b(repo, "new", "story", "--title", "Old BitLocker report", "--parent", ep, "--goal", "report")
+    gone = item(repo, "Old BitLocker report")["id"]
+    edit(repo, gone, status="dropped", notes="planted")
+    code, out = b(repo, "find", "bitlocker", "ROTATED")
+    assert code == 0, out
+    lines = out.splitlines()
+    assert live in lines[0] and gone not in out, out
+    assert f"parent: {story} “Story”" in lines[1] and f"parent: {ep} “Epic”" in lines[2], out
+    assert b(repo, "find", "bitlocker", "ROTATED") == (code, out)  # deterministic
+    code, out = b(repo, "find", "bitlocker", "report")  # all words must match: only the dropped item has both
+    assert code == 1 and len(out.splitlines()) == 1 and gone not in out, out
+    assert b(repo, "find", "nonexistentword")[0] == 1
+    assert b(repo, "find", " ")[0] == 1
+    code, out = b(repo, "tree")
+    assert gone in out
+    code, out = b(repo, "tree", "--open")
+    assert code == 0 and gone not in out and live in out, out

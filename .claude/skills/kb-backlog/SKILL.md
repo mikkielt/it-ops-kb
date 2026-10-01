@@ -21,7 +21,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Whenever you name an item (in chat, a question, a commit), give its id and its title together, never a bare id.
 
 ## Plan ("<what to plan>")
-1. See what exists: `python3 _tools/backlog.py tree` and `python3 _tools/backlog.py horizon`. Extend an epic or story that already covers the request rather than adding a parallel one.
+1. See what exists: `python3 _tools/backlog.py find WORDS` first (open items whose title or goal hold every word, with parent chains; exit 1 when none), then `python3 _tools/backlog.py tree --open` and `python3 _tools/backlog.py horizon`. Extend an epic or story that already covers the request rather than adding a parallel one.
 2. Find the facts the work rests on: `python3 _tools/rag.py pack -q "<part>" -q "<part>"` for the product side, and `kb/_self/` for how the kb works. Name them in the items' `links` or `notes`.
 3. Interview the operator on anything the request leaves open: scope, what must not change, the checks that prove it, and gates. Ask with AskUserQuestion, a recommendation first, before writing items. Do not invent requirements.
 4. Write the items top down with `python3 _tools/backlog.py new KIND --title ...`, then edit their JSON:
@@ -40,7 +40,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
 
 ## Epic ("<outcome>")
 An outcome that takes several pushes. Plan it as below, with these steps first:
-1. `python3 _tools/backlog.py tree` shows whether an epic already covers the outcome. If one does, extend it and say so.
+1. `python3 _tools/backlog.py find WORDS` and `python3 _tools/backlog.py tree --open` show whether an epic already covers the outcome. If one does, extend it and say so.
 2. Interview the operator before writing anything, in one AskUserQuestion batch, a recommendation first:
    - the outcome as a fact about the repository once done;
    - what is out of scope, and what must not change;

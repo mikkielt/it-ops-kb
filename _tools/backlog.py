@@ -27,7 +27,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           counts (a selector often names a test its item has yet to write), 1
                                           without pytest
   backlog.py list [--kind K] [--status S] [--sprint ID]   one line per item: id, kind, status, priority, title
-  backlog.py tree [ID] [--sprint ID]      the hierarchy under an item, a sprint or everything
+  backlog.py tree [ID] [--sprint ID] [--open]  the hierarchy under an item, a sprint or everything (--open: no done or
+                                          dropped item)
+  backlog.py find WORD...                 the open items whose title or goal holds every word (case-insensitive), each
+                                          with its parent chain; no match prints one line and exits 1
   backlog.py show ID                      one item, its parent chain, children, the knowledge state of each ask and
                                           ref of its `knowledge` and what it waits on
   backlog.py next [--sprint ID] [--any] [--all]   the ready item to work on first (--all: every ready item in
@@ -1517,11 +1520,32 @@ def cmd_list(bl, a):
     return 0
 
 
+def cmd_find(bl, a):
+    want = [w.lower() for w in a.words if w.strip()]
+    if not want:
+        raise Refused("find: give at least one word")
+    hits = sorted((i for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") in OPEN
+                   and all(w in f"{it.get('title', '')} {it.get('goal', '')}".lower() for w in want)),
+                  key=bl.order_key)
+    if not hits:
+        say(f"find: no open item holds {' '.join(want)}")
+        return 1
+    for i in hits:
+        say(line(bl, i))
+        for p in bl.ancestors(i):
+            say(f"  parent: {bl.label(p)}")
+    return 0
+
+
 def cmd_tree(bl, a):
+    def shown(i):
+        return not a.open or bl.items[i].get("status") not in ("done", "dropped")
+
     def walk(i, depth):
         say("  " * depth + line(bl, i))
         for c in sorted(bl.children(i), key=bl.order_key):
-            walk(c, depth + 1)
+            if shown(c):
+                walk(c, depth + 1)
 
     if a.id:
         walk(need(bl, a.id), 0)
@@ -1529,11 +1553,12 @@ def cmd_tree(bl, a):
     if a.sprint:
         need(bl, a.sprint)
         say(line(bl, a.sprint))
-        for i in sorted((i for i in bl.sprint_items(a.sprint) if bl.items[i].get("sprint")), key=bl.order_key):
+        for i in sorted((i for i in bl.sprint_items(a.sprint) if bl.items[i].get("sprint") and shown(i)),
+                        key=bl.order_key):
             walk(i, 1)
         return 0
-    for i in sorted((i for i, it in bl.items.items() if not it.get("parent") and it.get("kind") != "sprint"),
-                    key=bl.order_key):
+    for i in sorted((i for i, it in bl.items.items() if not it.get("parent") and it.get("kind") != "sprint"
+                     and shown(i)), key=bl.order_key):
         walk(i, 0)
     return 0
 
@@ -2602,6 +2627,9 @@ def main(argv=None):
     p = sub.add_parser("tree")
     p.add_argument("id", nargs="?")
     p.add_argument("--sprint")
+    p.add_argument("--open", action="store_true")
+    p = sub.add_parser("find")
+    p.add_argument("words", nargs="+")
     p = sub.add_parser("show")
     p.add_argument("id")
     p = sub.add_parser("next")
