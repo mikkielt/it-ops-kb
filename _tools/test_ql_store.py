@@ -7,6 +7,13 @@
                     entries, dropped, waiting and a positive skipped, a fetch with a
                     query string, a non-public host or command
                     text; `pack` and `search` never return a kb/_querylog/ line; _cache/ stays ignored
+  TestWorkGates     the work sidecar gates (`-k work_sidecar`), each with a planted failure: a header other than run,
+                    reader and counts, a run id that names another file or month, no run file beside it, counts that do
+                    not match the lines, an unknown field (a session, a prompt, a command, a usage record's `start`),
+                    an item that is not an item id, items unsorted, repeated or not a list, a prompt count that is not
+                    a positive count, a model id, agent group or count outside its shape, `cw1h` above `cw`, an item
+                    twice in a file (the same item in two runs is fine), an empty file or one that is not JSON lines;
+                    `querylog.py check` and the leak scan run over it
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub. The helpers the classes share are in
 ql_testkit.py.
@@ -206,3 +213,149 @@ class TestStore:
         assert ignored("_cache/querylog/spool/x.jsonl") and ignored("_cache/querylog/store/2026-09/x.jsonl")
         assert ignored("_private/querylog.json")
         assert not ignored("kb/_querylog/2026-09/x.jsonl")  # planted: the store itself is committed
+
+
+WORK_RUN = RUN_ID
+WORK_A, WORK_B = "TK-aaaaaaaa", "TK-bbbbbbbb"
+OPUS = {"requests": 2, "in": 5, "cw": 1200, "cw1h": 1200, "cr": 11000, "out": 170}
+HAIKU = {"requests": 1, "in": 10, "cw": 3000, "cw1h": 0, "cr": 0, "out": 80}
+
+
+def work_lines():
+    """An item line with a subagent, an item line without, and a shared line."""
+    return [{"item": WORK_A, "prompts": 3, "main": {"claude-opus-5-5": OPUS},
+             "sub": {"kb-lookup": {"claude-haiku-4-5-20251001": HAIKU}}},
+            {"item": WORK_B, "prompts": 1, "main": {"claude-opus-5-5": OPUS}},
+            {"items": [WORK_A, WORK_B], "prompts": 2, "main": {"claude-opus-5-5": OPUS}}]
+
+
+def work_store(tmp_path, change=None, lines=None, layout=None):
+    """The golden run file with a work sidecar of `lines` (default: work_lines, written by write_work): `change(objects)`
+    edits its header and lines, `layout(store)` the files. The store's work problems."""
+    store = golden_store(tmp_path / "store")
+    ql_store.write_work(store, WORK_RUN, lines or work_lines(), 0, 1)
+    path = ql_store.work_files(store)[0]
+    objs = jsonl(path)
+    if change:
+        change(objs)
+    path.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
+    if layout:
+        layout(store)
+    return store, ql_store.work_problems(store)
+
+
+def at(path, value):
+    """A change setting the item of `path` (an index, then keys) to `value`."""
+    def f(objs):
+        target = objs
+        for k in path[:-1]:
+            target = target[k]
+        target[path[-1]] = value
+    return f
+
+
+class TestWorkGates:
+    """The work sidecar gates (`-k work_sidecar`), each with a planted failure."""
+
+    def test_work_sidecar_gates_pass_on_a_written_sidecar(self, tmp_path):
+        store, problems = work_store(tmp_path)
+        assert problems == [] and ql_store.store_problems(store) == []
+        assert [p.relative_to(store).as_posix() for p in ql_store.work_files(store)] == [f"work/2026-09/{WORK_RUN}.jsonl"]
+        assert ql_store.run_ids(store) == [WORK_RUN]
+        head = jsonl(ql_store.work_files(store)[0])[0]
+        assert head == {"run": WORK_RUN, "reader": 1, "counts": {"items": 2, "shared": 1, "missing": 0}}
+
+    def test_work_sidecar_not_written_without_a_line(self, tmp_path):
+        assert ql_store.write_work(tmp_path / "store", WORK_RUN, [], 0, 1) is None
+        assert not (tmp_path / "store").exists()
+
+    @pytest.mark.parametrize("change,needle", [
+        (at([0, "session_id"], "3f2a4c1e-0000-4000-8000-00000000abcd"), "a work header is exactly"),
+        (at([0, "run"], "20260928T120000Z-0000ffff"), "run id does not name this file"),
+        (at([0, "reader"], 0), "reader is not a version number"),
+        (at([0, "reader"], "1"), "reader is not a version number"),
+        (at([0, "counts"], {"items": 2, "shared": 1}), "counts are not items, shared, missing"),
+        (at([0, "counts", "missing"], -1), "counts are not items, shared, missing"),
+        (at([0, "counts", "items"], 3), "counts.items is 3, the file has 2"),
+        (at([0, "counts", "shared"], 0), "counts.shared is 0, the file has 1"),
+        (at([1, "session_id"], "3f2a4c1e-0000-4000-8000-00000000abcd"), "fields a work line never has: session_id"),
+        (at([1, "prompt_id"], "p1"), "fields a work line never has: prompt_id"),
+        (at([1, "command"], "backlog.py claim TK-aaaaaaaa --by me"), "fields a work line never has: command"),
+        (at([1, "start"], 5), "fields a work line never has: start"),
+        (at([1, "steps"], []), "fields a work line never has: steps"),
+        (at([1, "item"], "build the report for the payroll team"), "item is not an item id"),
+        (at([1, "item"], "TK-AAAAAAAA"), "item is not an item id"),
+        (at([3, "items"], [WORK_B, WORK_A]), "items are not sorted, each once"),
+        (at([3, "items"], [WORK_A, WORK_A]), "items are not sorted, each once"),
+        (at([3, "items"], []), "items are not a list of item ids"),
+        (at([3, "items"], WORK_A), "items are not a list of item ids"),
+        (at([3, "items"], ["TK-aaaaaaaa; rm -rf /"]), "items are not a list of item ids"),
+        (at([1, "prompts"], 0), "prompts is not a positive count"),
+        (at([1, "prompts"], True), "prompts is not a positive count"),
+        (at([1, "prompts"], "3"), "prompts is not a positive count"),
+        (at([1, "main"], {}), "not a map of model ids to counts"),
+        (at([1, "main"], {"jan.kowalski@corp.example.com": OPUS}), "is not a model id"),
+        (at([1, "main", "claude-opus-5-5", "in"], -1), "as counts"),
+        (at([1, "main", "claude-opus-5-5", "note"], 1), "as counts"),
+        (at([1, "main", "claude-opus-5-5", "cw1h"], 999999), "cw1h of 'claude-opus-5-5' exceeds cw"),
+        (at([1, "sub"], {"payroll-agent": {"claude-opus-5-5": OPUS}}), "is not an agent group"),
+        (at([1, "sub"], {}), "sub is not a map of agent groups"),
+        (lambda o: o[1].pop("main"), "not a map of model ids to counts"),
+        (lambda o: o[1].pop("prompts"), "prompts is not a positive count"),
+        (lambda o: o[1].pop("item"), "a work line has an `item` or an `items`"),
+        (lambda o: o[1].update(items=[WORK_A]), "a work line has an `item` or an `items`"),
+    ])
+    def test_work_sidecar_planted(self, tmp_path, change, needle):
+        problems = work_store(tmp_path, change)[1]
+        assert any(needle in p for p in problems), problems
+
+    def test_work_sidecar_an_item_twice_in_a_file(self, tmp_path):
+        def twice(objs):
+            objs[2]["item"] = WORK_A
+        problems = work_store(tmp_path, twice)[1]
+        assert any(f"duplicate item {WORK_A} (also work/2026-09/{WORK_RUN}.jsonl:2)" in p for p in problems), problems
+
+    def test_work_sidecar_the_same_item_in_two_runs_is_fine(self, tmp_path):
+        store, _ = work_store(tmp_path)
+        other = "20260929T120000Z-0000abcd"
+        golden_store(store, [{**jsonl(FIXTURES / "golden.jsonl")[0], "run": other,
+                              "counts": {"entries": 0, "dropped": 0, "waiting": 0}}], name=other)
+        ql_store.write_work(store, other, work_lines()[:1], 0, 1)
+        assert ql_store.store_problems(store) == []
+
+    def test_work_sidecar_no_run_file_beside_it(self, tmp_path):
+        problems = work_store(tmp_path, layout=lambda s: (s / "2026-09" / f"{WORK_RUN}.jsonl").unlink())[1]
+        assert any(f"no run file {WORK_RUN} beside it" in p for p in problems), problems
+
+    def test_work_sidecar_in_the_wrong_month_directory(self, tmp_path):
+        def move(store):
+            src = store / "work" / "2026-09" / f"{WORK_RUN}.jsonl"
+            (store / "work" / "2026-10").mkdir()
+            src.rename(store / "work" / "2026-10" / src.name)
+        problems = work_store(tmp_path, layout=move)[1]
+        assert any("run id does not name this file" in p for p in problems), problems
+
+    def test_work_sidecar_empty_and_not_json(self, tmp_path):
+        problems = work_store(tmp_path, layout=lambda s: (s / "work" / "2026-09" / f"{WORK_RUN}.jsonl").write_text(
+            "", encoding="utf-8"))[1]
+        assert any("empty work sidecar" in p for p in problems), problems
+        problems = work_store(tmp_path / "b", layout=lambda s: (s / "work" / "2026-09" / f"{WORK_RUN}.jsonl").write_text(
+            "not json\n", encoding="utf-8"))[1]
+        assert any("not a work sidecar" in p for p in problems), problems
+
+    def test_work_sidecar_check_runs_the_gates_and_the_leak_scan(self, tmp_path):
+        store, _ = work_store(tmp_path)
+        p = subprocess.run([sys.executable, QL, "check", str(store)], capture_output=True, text=True, encoding="utf-8",
+                            timeout=120)
+        assert (p.returncode, p.stdout) == (0, "querylog check: problems=0\n"), p.stdout
+        assert ql_store.leak_problems(store, [f"work/2026-09/{WORK_RUN}.jsonl"]) == []
+        bad, _ = work_store(tmp_path / "bad", at([1, "session_id"], "x"))
+        p = subprocess.run([sys.executable, QL, "check", str(bad)], capture_output=True, text=True, encoding="utf-8",
+                           timeout=120)
+        assert p.returncode == 1 and "fields a work line never has: session_id" in p.stdout, p.stdout
+        # planted: an address in a field the gates do not read is still found by the leak scan
+        objs = jsonl(ql_store.work_files(bad)[0])
+        objs[1]["note"] = "anna.nowak" + "@" + "acme-corp.pl"
+        ql_store.work_files(bad)[0].write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8")
+        (hit,) = ql_store.leak_problems(bad, [f"work/2026-09/{WORK_RUN}.jsonl"])
+        assert hit == f"work/2026-09/{WORK_RUN}.jsonl:2: the leak scan flags an identifier (email)", hit

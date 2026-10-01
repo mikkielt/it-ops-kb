@@ -14,6 +14,14 @@
                     dropped; format 0 kb rows without `lines` get pack's lines of their recorded articles only
                     (`cited: pack`), and an entry with no citation keeps no articles; a planted row of each shape;
                     an unknown future `v` and malformed rows are skipped and counted; a second distill writes nothing
+  TestWorkSidecar   distill writes the work sidecar beside the run file (`-k work_sidecar`): one line per item with the
+                    prompts of its claim-to-done-or-release window summed (kb prompts or not, overlapping windows
+                    each counting the prompt) and one shared line per session that worked an item with its prompts
+                    outside any window, a run file of no entry when nothing else was written, none for a session that
+                    worked no item, a done with no claim or a session still open; `missing` counts window prompts
+                    without usage of this reader; a usage record outside the closed shape is not counted; the
+                    windows are `ql_capture.usage_targets`'; a prompt counted by an earlier run is not counted again
+                    (planted: without the record of counted prompts it is); no session, prompt or text in the file
   TestLock         a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
                     of several processes taking the lock at once exactly one gets it
   TestLaunch        SessionEnd marks its session closed; the launcher returns within the 1.5-second budget with its
@@ -30,7 +38,7 @@ from pathlib import Path
 
 import pytest
 
-import ql_base, ql_capture, ql_deliver, ql_distill, ql_learn, ql_store
+import kbusage, ql_base, ql_capture, ql_deliver, ql_distill, ql_learn, ql_store
 from conftest import GIT, KB, TOOLS, git_env, querylog_env
 from ql_testkit import (auto_config, E, FIXTURES, jsonl, LAPS, load, NOW, plant_spool, plugins_dir, QL, RUN_ID,
                         S_ENDED, S_IDLE, S_OPEN, session_start, SH, SID, spool, store_files)
@@ -501,6 +509,190 @@ class TestSpoolFormats:
         assert asked == ["laps length", "laps age"]  # only the row whose articles pack could not back
         # planted: an entry whose re-run lines name the reply's line is still `pack`, never `reply`
         assert ql_distill.citations([old], f"see {LAPS}:24")[1] == "pack"
+
+
+WA, WB = "TK-aaaaaaaa", "TK-bbbbbbbb"  # item ids as backlog.py writes them
+W1, W2, W3, W4, W5 = (f"bbbbbbbb-0000-4000-8000-00000000000{i}" for i in range(1, 6))
+
+
+def counts_of(n):
+    return {"requests": 1, "in": n, "cw": 10 * n, "cw1h": n, "cr": 100 * n, "out": n}
+
+
+def total_of(ns):
+    """The counts of the prompts whose `counts_of` numbers are `ns`, added."""
+    return {"requests": len(ns), "in": sum(ns), "cw": 10 * sum(ns), "cw1h": sum(ns), "cr": 100 * sum(ns),
+            "out": sum(ns)}
+
+
+def work_rows(sid, plan, reader=None):
+    """A session's spool rows. `plan` lists per prompt p0, p1, ...: (its work rows as "claim:ID", "done:ID" or
+    "release:ID", the number n of its usage record or None, whether that record has a subagent, whether the prompt
+    used the kb)."""
+    rows, n = [], 0
+    for i, (work, usage, sub, kb) in enumerate(plan):
+        base = {"session_id": sid, "v": 1, "prompt_id": f"p{i}"}
+        kinds = [("prompt", {"prompt": "PRIVATE-WORK-TEXT"})]
+        kinds += [("work", dict(zip(("action", "item"), w.split(":")))) for w in work]
+        if kb:
+            kinds.append(("mcp", {"tool": "kb_pack", "args": {"question": "windows laps password length"},
+                                  "verdict": "good", "articles": [LAPS],
+                                  "lines": [{"line": f"{LAPS}:5", "tag": "DOC", "verdict": "good"}]}))
+        if usage is not None:
+            rec = {"main": {"claude-opus-5-5": counts_of(usage)}, "start": 1000 + usage}
+            if sub:
+                rec["sub"] = {"Explore": {"claude-haiku-4-5-20251001": counts_of(usage)}}
+            kinds.append(("usage", {"reader": reader or kbusage.READER_VERSION, "usage": rec}))
+        for surface, extra in kinds:
+            n += 1
+            rows.append(dict(base, id=f"{sid[:23]}-{n:012x}", ts=f"2026-09-28T09:{n // 60:02d}:{n % 60:02d}.000Z",
+                             surface=surface, **extra))
+    return rows
+
+
+def plant_work(qdir, sid, plan, closed=True, reader=None):
+    sp = Path(qdir) / "spool"
+    sp.mkdir(parents=True, exist_ok=True)
+    (sp / f"{sid}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in work_rows(sid, plan, reader)),
+                                     encoding="utf-8", newline="\n")
+    if closed:
+        (sp / f"{sid}.end").touch()
+    return sp
+
+
+NO = ((), None, False, False)
+# A is claimed in p1, B in p2, A is done in p3 and B released in p4: p0 and p5 lie outside both windows, p6 has no usage
+PLAN_ONE = [((), 1, False, False), (("claim:" + WA,), 2, False, False), (("claim:" + WB,), 3, True, False),
+            (("done:" + WA,), 4, False, False), (("release:" + WB,), 5, False, False), ((), 6, False, False), NO]
+# the same item A again in a second session, with a prompt outside its window
+PLAN_TWO = [(("claim:" + WA,), 7, False, False), (("done:" + WA,), 8, False, False), ((), 9, False, False)]
+
+
+def work_sidecar_of(q, run_id=RUN_ID):
+    return Path(q) / "store" / "work" / f"{run_id[:4]}-{run_id[4:6]}" / f"{run_id}.jsonl"
+
+
+def work_main(*ns):
+    return {"claude-opus-5-5": total_of(list(ns))}
+
+
+class TestWorkSidecar:
+    def test_work_sidecar_written_beside_the_run_file(self, tmp_path):
+        """A holds prompts p1 p2 p3 of the first session and both of the second, B holds p2 p3 p4 (the prompts of its
+        claim, of A's done and of its release), and the prompts outside every window with usage, p0 and p5 and the
+        second session's third, are shared."""
+        q = tmp_path / "querylog"
+        plant_work(q, W1, PLAN_ONE)
+        plant_work(q, W2, PLAN_TWO)
+        plant_work(q, W3, [(("done:" + WB,), 1, False, False), ((), 2, False, False)])  # a done with no claim: none
+        plant_work(q, W4, [((), 3, False, True), ((), 4, False, True)])  # kb prompts, no item worked: none
+        plant_work(q, W5, [(("claim:" + WA,), 5, False, False)], closed=False)  # still open: not yet
+        rc, said = run_distill(q, echo)
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=2 dropped=0 waiting=0 usage=2 work=4"], said
+        sub = {"Explore": {"claude-haiku-4-5-20251001": counts_of(3)}}
+        assert jsonl(work_sidecar_of(q)) == [
+            {"run": RUN_ID, "reader": kbusage.READER_VERSION, "counts": {"items": 2, "shared": 2, "missing": 0}},
+            {"item": WA, "prompts": 5, "main": work_main(2, 3, 4, 7, 8), "sub": sub},
+            {"item": WB, "prompts": 3, "main": work_main(3, 4, 5), "sub": sub},
+            {"items": [WA, WB], "prompts": 2, "main": work_main(1, 6)},
+            {"items": [WA], "prompts": 1, "main": work_main(9)}]
+        assert ql_store.store_problems(q / "store") == []
+        text = work_sidecar_of(q).read_text(encoding="utf-8")
+        assert text.endswith("\n") and "\r" not in text
+        for raw in (W1, W2, W3, "p1", "session_id", "prompt_id", "PRIVATE-WORK-TEXT", "transcript"):
+            assert raw not in text, raw
+        assert sorted(p.name for p in (q / "spool").iterdir()) == [f"{W5}.jsonl"]  # the open session's rows stay
+
+    def test_work_sidecar_a_run_file_of_no_entry_holds_it(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_work(q, W1, PLAN_TWO)
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 work=2"], said
+        (run,) = [p for p in store_files(q) if p.parent.parent.name != "work"]
+        assert jsonl(run)[0]["counts"] == {"entries": 0, "dropped": 0, "waiting": 0} and len(jsonl(run)) == 1
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_work_sidecar_none_when_no_session_worked_an_item(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_work(q, W3, [(("done:" + WB,), 1, False, False), ((), 2, False, False)])
+        plant_work(q, W4, [((), 3, False, True)])
+        rc, said = run_distill(q, echo)
+        assert rc == 0 and said[0].startswith("distill: run=") and "work=" not in said[0], said
+        assert not (q / "store" / "work").exists()
+
+    def test_work_sidecar_missing_counts_window_prompts_without_usage(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_work(q, W1, [(("claim:" + WA,), 2, False, False), ((), 3, False, False),
+                           (("done:" + WA,), 4, False, False)], reader=kbusage.READER_VERSION + 1)
+        rc, said = run_distill(q, echo)  # usage rows of another reader count as none
+        assert rc == 0 and said == ["distill: nothing to write (waiting=0)"], said
+        plant_work(q, W2, [(("claim:" + WA,), 2, False, False), ((), None, False, False),
+                           (("done:" + WA,), 4, False, False)])
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 work=1"], said
+        got = jsonl(work_sidecar_of(q))
+        assert got[0]["counts"] == {"items": 1, "shared": 0, "missing": 1}
+        assert got[1] == {"item": WA, "prompts": 2, "main": work_main(2, 4)}
+
+    def test_work_sidecar_a_usage_record_outside_the_closed_shape_is_not_counted(self, tmp_path):
+        q = tmp_path / "querylog"
+        sp = plant_work(q, W1, [(("claim:" + WA,), 2, False, False), (("done:" + WA,), 4, False, False)])
+        rows = jsonl(sp / f"{W1}.jsonl")
+        for r in rows:
+            if r["surface"] == "usage" and r["prompt_id"] == "p1":
+                r["usage"]["main"] = {"jan.kowalski@corp.example.com": counts_of(4)}  # planted: not a model id
+        (sp / f"{W1}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 work=1"], said
+        got = jsonl(work_sidecar_of(q))
+        assert got[0]["counts"]["missing"] == 1 and got[1]["prompts"] == 1
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_work_sidecar_windows_are_the_usage_windows(self):
+        """work_windows holds the prompts ql_capture.usage_targets asks usage rows for."""
+        plans = [PLAN_ONE, PLAN_TWO, [(("done:" + WA,), 1, False, False), (("claim:" + WA,), 2, False, False), NO],
+                 [(("claim:" + WA,), 1, False, False), NO, (("release:" + WA,), 1, False, False), NO]]
+        for plan in plans:
+            rows = work_rows(W1, plan)
+            inside, _ = ql_distill.work_windows(rows)
+            targets, _ = ql_capture.usage_targets(rows)
+            assert [p for p, items in inside.items() if items] == targets, plan
+        inside, worked = ql_distill.work_windows(work_rows(W1, PLAN_ONE))
+        assert worked == {WA, WB} and inside["p3"] == {WA, WB} and inside["p4"] == {WB} and inside["p5"] == set()
+
+    def test_work_sidecar_a_prompt_is_never_counted_twice(self, tmp_path):
+        """Mode `auto` keeps the rows of a written entry until its run file is on origin/main: the prompts of the
+        first run's sidecar are not counted again by the next."""
+        q = tmp_path / "querylog"
+        plant_work(q, W1, [(("claim:" + WA,), 2, False, True), ((), 3, False, False), (("done:" + WA,), 4, False, False)])
+        cfg = auto_config(q, "auto")
+
+        def run(run_id):
+            said = []
+            rc = ql_distill.distill(qdir=q, cfg=cfg, haiku=echo, now_dt=NOW, run_id=run_id, kb_commit="0" * 40,
+                                    out=said.append, deliver=lambda qdir, out: 0)
+            return rc, said
+        rc, said = run(RUN_ID)
+        assert rc == 0 and said[0] == f"distill: run={RUN_ID} entries=1 dropped=0 waiting=0 usage=1 work=1", said
+        assert jsonl(work_sidecar_of(q))[1] == {"item": WA, "prompts": 3, "main": work_main(2, 3, 4)}
+        assert (q / "spool" / f"{W1}.jsonl").exists()  # the entry's rows stay until it is delivered
+        before = {p: p.read_bytes() for p in store_files(q)}
+        rc, said = run("20260928T130000Z-0000abcd")
+        assert rc == 0 and said[0] == "distill: nothing to write (waiting=0)", said
+        assert {p: p.read_bytes() for p in store_files(q)} == before
+        # planted: without the record of the counted prompts the kept claim prompt is counted a second time
+        (q / ql_distill.WORKED_NAME).unlink()
+        rc, said = run("20260928T130000Z-0000abce")
+        assert said[0].endswith("work=1"), said
+        assert jsonl(work_sidecar_of(q, "20260928T130000Z-0000abce"))[1]["prompts"] == 1
+
+    def test_work_sidecar_the_record_of_counted_prompts_drops_sessions_that_left_the_spool(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_work(q, W1, PLAN_ONE)
+        (q / ql_distill.WORKED_NAME).write_text(json.dumps({"gone-session": ["p1"], W1: ["p9"]}), encoding="utf-8")
+        run_distill(q, echo)
+        assert json.loads((q / ql_distill.WORKED_NAME).read_text(encoding="utf-8")) == \
+            {W1: ["p0", "p1", "p2", "p3", "p4", "p5", "p9"]}
 
 
 def distill_cli(data, *args):

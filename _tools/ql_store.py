@@ -5,12 +5,14 @@ local store laid out the same way), their readers and writers, and the gates `qu
   findings/<yyyy-mm>/<run-id>.jsonl   the same header, then one record per finding whose state the run changed
   usage/<yyyy-mm>/<run-id>.jsonl      the usage sidecar of a run file: a header (USAGE_HEADER_KEYS), then one line per
                                       entry with token counts (USAGE_KEYS)
+  work/<yyyy-mm>/<run-id>.jsonl       the work sidecar of a run file: a header (WORK_HEADER_KEYS), then one line per
+                                      item worked (WORK_ITEM_KEYS) and one per session that worked one (WORK_SHARED_KEYS)
 """
 import datetime, hashlib, json, re, subprocess
 from pathlib import Path
 
 from ql_base import HOME, PIPELINE_VERSION, STORE, json_lines, write_text
-from ql_capture import ARG_MAX_CHARS, TAGS, VERDICTS
+from ql_capture import ARG_MAX_CHARS, TAGS, VERDICTS, WORK_ITEM
 
 HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
@@ -25,7 +27,7 @@ FETCH_KEYS = ("tool", "fetcher", "host", "path", "outcome", "n", "chars")
 RAW_KEYS = ("prompt", "answer", "session_id", "prompt_id", "transcript_path", "cwd", "user", "hostname", "command",
             "args", "ts")  # spool fields a run file never holds
 SURFACES = ("prompt", "kb_hook", "mcp", "kb_ask", "tool_fetch", "fetch", "stop")
-ROW_SURFACES = SURFACES + ("usage",)  # spool rows; a `usage` row goes to the usage sidecar, never an entry
+ROW_SURFACES = SURFACES + ("usage", "work")  # spool rows; `usage` and `work` rows go to the sidecars, never an entry
 TEXT_KEYS = ("question",)
 JUDGED = ("answered", "partly", "missed")
 QUESTION_MAX_CHARS = 500
@@ -67,6 +69,13 @@ USAGE_COUNTS = ("requests", "in", "cw", "cw1h", "cr", "out")
 USAGE_STEP_KEYS = ("tools", "grow")
 USAGE_TOOL_KEYS = ("tool", "ok", "chars")
 
+WORK = "work"
+WORK_HEADER_KEYS = ("run", "reader", "counts")
+WORK_COUNT_KEYS = ("items", "shared", "missing")
+WORK_ITEM_KEYS = ("item", "prompts", "main", "sub")  # one item worked: its window prompts' summed counts
+WORK_SHARED_KEYS = ("items", "prompts", "main", "sub")  # one session that worked items: its prompts outside any window
+SAMPLE_ENTRY_ID = "00000000-0000-4000-8000-000000000000"  # a stand-in id, to read a usage record with usage_line
+
 
 # ---------------------------------------------------------------- reading
 
@@ -85,6 +94,12 @@ def findings_files(store):
 def usage_files(store):
     """The usage sidecars of a store, oldest run first: usage/<yyyy-mm>/<run-id>.jsonl."""
     d = Path(store) / USAGE
+    return sorted(d.glob("*/*.jsonl"), key=lambda p: p.stem) if d.is_dir() else []
+
+
+def work_files(store):
+    """The work sidecars of a store, oldest run first: work/<yyyy-mm>/<run-id>.jsonl."""
+    d = Path(store) / WORK
     return sorted(d.glob("*/*.jsonl"), key=lambda p: p.stem) if d.is_dir() else []
 
 
@@ -135,8 +150,8 @@ def store_entries(store):
 
 
 def run_ids(store):
-    """The run ids of a store, oldest first: those of its run files and of its usage sidecars."""
-    return sorted({p.stem for p in run_files(store) + usage_files(store)})
+    """The run ids of a store, oldest first: those of its run files and of its usage and work sidecars."""
+    return sorted({p.stem for p in run_files(store) + usage_files(store) + work_files(store)})
 
 
 def resolve_id(names, given):
@@ -195,8 +210,8 @@ def header(run_id, counts, kb_commit=None):
             "kb_commit": kb_commit or head_commit(), "counts": counts}
 
 
-def run_path(store, run_id, findings=False, usage=False):
-    sub = FINDINGS if findings else USAGE if usage else ""
+def run_path(store, run_id, findings=False, usage=False, work=False):
+    sub = FINDINGS if findings else USAGE if usage else WORK if work else ""
     return Path(store) / sub / f"{run_id[:4]}-{run_id[4:6]}" / f"{run_id}.jsonl"
 
 
@@ -217,6 +232,55 @@ def write_usage(store, run_id, lines, missing, reader):
     path = run_path(store, run_id, usage=True)
     write_text(path, json_lines([{"run": run_id, "reader": reader,
                                   "counts": {"entries": len(lines), "missing": missing}}] + lines))
+    return path
+
+
+def usage_counts(usage):
+    """(main, sub) of a usage record that is the closed shape the store keeps, else None."""
+    line = usage_line(SAMPLE_ENTRY_ID, usage)
+    return None if line is None else (line["main"], line.get("sub", {}))
+
+
+def _add_models(into, models):
+    for m, c in models.items():
+        t = into.setdefault(m, dict.fromkeys(USAGE_COUNTS, 0))
+        for k in USAGE_COUNTS:
+            t[k] += c[k]
+
+
+def new_tally():
+    """An empty tally of prompts and their counts (work_line)."""
+    return {"prompts": 0, "main": {}, "sub": {}}
+
+
+def tally_add(tally, counts):
+    """One prompt's (main, sub) counts (usage_counts) added into `tally`."""
+    main, sub = counts
+    tally["prompts"] += 1
+    _add_models(tally["main"], main)
+    for g, models in sub.items():
+        _add_models(tally["sub"].setdefault(g, {}), models)
+
+
+def work_line(key, value, tally):
+    """The work sidecar line of a tally: `item` (an id) for one item's line, `items` (ids) for a session's shared
+    line; the summed counts in their sorted order, `sub` only when a subagent ran."""
+    sort = lambda models: {m: models[m] for m in sorted(models)}  # noqa: E731
+    line = {key: value, "prompts": tally["prompts"], "main": sort(tally["main"])}
+    if tally["sub"]:
+        line["sub"] = {g: sort(tally["sub"][g]) for g in sorted(tally["sub"])}
+    return line
+
+
+def write_work(store, run_id, lines, missing, reader):
+    """The work sidecar of run `run_id`: a header (the run, the transcript reader's version, counts), then the lines
+    (item lines, then shared lines). Nothing is written without a line."""
+    if not lines:
+        return None
+    path = run_path(store, run_id, work=True)
+    counts = {"items": sum(1 for ln in lines if "item" in ln), "shared": sum(1 for ln in lines if "items" in ln),
+              "missing": missing}
+    write_text(path, json_lines([{"run": run_id, "reader": reader, "counts": counts}] + lines))
     return path
 
 
@@ -413,7 +477,7 @@ def store_problems(store=None, k=None):
             out.append(f"{rel}:{hn}: header fields a header never has: {', '.join(extra)}")
         for n, e in entries:
             out += entry_problems(e, f"{rel}:{n}", k)
-    return out + duplicate_ids(store) + findings_problems(store, k) + usage_problems(store)
+    return out + duplicate_ids(store) + findings_problems(store, k) + usage_problems(store) + work_problems(store)
 
 
 def findings_problems(store, k=None):
@@ -563,6 +627,20 @@ def _models_problems(models, where):
     return out
 
 
+def _sub_problems(sub, where):
+    """A `sub` field's gates: a map of agent groups (kbusage.AGENTS, else `other`) to model counts."""
+    import kbusage
+    groups = set(kbusage.AGENTS.values()) | {kbusage.OTHER_AGENT}
+    if not (isinstance(sub, dict) and sub):
+        return [f"{where}: sub is not a map of agent groups"]
+    out = []
+    for g, models in sub.items():
+        if g not in groups:
+            out.append(f"{where}: {g!r:.60} is not an agent group")
+        out += _models_problems(models, f"{where}: sub {g!r:.40}")
+    return out
+
+
 def usage_line_problems(u, where):
     """The gates on one usage line: an entry id, only numbers, model ids, agent groups and tool groups in their
     closed shapes."""
@@ -575,14 +653,7 @@ def usage_line_problems(u, where):
         out.append(f"{where}: usage id is not an entry id")
     out += _models_problems(u.get("main"), f"{where}: main")
     if "sub" in u:
-        groups = set(kbusage.AGENTS.values()) | {kbusage.OTHER_AGENT}
-        if not (isinstance(u["sub"], dict) and u["sub"]):
-            out.append(f"{where}: sub is not a map of agent groups")
-        else:
-            for g, models in u["sub"].items():
-                if g not in groups:
-                    out.append(f"{where}: {g!r:.60} is not an agent group")
-                out += _models_problems(models, f"{where}: sub {g!r:.40}")
+        out += _sub_problems(u["sub"], where)
     if not _count(u.get("start")):
         out.append(f"{where}: start is not a count")
     if "cut" in u and not (_count(u["cut"]) and u["cut"] > 0):
@@ -651,6 +722,81 @@ def usage_problems(store):
             if isinstance(i, str):
                 if i in seen:
                     out.append(f"{where}: duplicate usage id {i} (also {seen[i]})")
+                else:
+                    seen[i] = where
+    return out
+
+
+def work_line_problems(w, where):
+    """The gates on one work sidecar line: an item line (`item`, `prompts`, `main`, `sub`) or a shared line (`items`,
+    `prompts`, `main`, `sub`), with an item id, a positive prompt count and counts in the usage record's closed
+    shapes, and nothing else: no session, prompt, transcript, command or text."""
+    out = []
+    shared = "items" in w
+    if shared == ("item" in w):
+        return [f"{where}: a work line has an `item` or an `items`, not both or neither"]
+    keys = WORK_SHARED_KEYS if shared else WORK_ITEM_KEYS
+    other = sorted(set(w) - set(keys))
+    if other:
+        out.append(f"{where}: fields a work line never has: {', '.join(other)}")
+    if shared:
+        ids = w["items"]
+        if not (isinstance(ids, list) and ids and all(isinstance(i, str) and WORK_ITEM.fullmatch(i) for i in ids)):
+            out.append(f"{where}: items are not a list of item ids")
+        elif ids != sorted(set(ids)):
+            out.append(f"{where}: items are not sorted, each once")
+    elif not (isinstance(w["item"], str) and WORK_ITEM.fullmatch(w["item"])):
+        out.append(f"{where}: item is not an item id")
+    if not (_count(w.get("prompts")) and w["prompts"] > 0):
+        out.append(f"{where}: prompts is not a positive count")
+    out += _models_problems(w.get("main"), f"{where}: main")
+    if "sub" in w:
+        out += _sub_problems(w["sub"], where)
+    return out
+
+
+def work_problems(store):
+    """The work sidecar gates: a header (run, reader, counts) naming its file beside a run file of the same run, line
+    counts that match, the line gates, and each item once in a file."""
+    store = Path(store)
+    out = []
+    runs = {p.stem for p in run_files(store)}
+    for p in work_files(store):
+        rel = p.relative_to(store).as_posix()
+        try:
+            objs = load_run(p)
+        except (OSError, ValueError) as e:
+            out.append(f"{rel}: not a work sidecar ({e})")
+            continue
+        if not objs:
+            out.append(f"{rel}: empty work sidecar")
+            continue
+        (hn, h), lines = objs[0], objs[1:]
+        m = RUN_ID.fullmatch(str(h.get("run", "")))
+        if not (m and h["run"] == p.stem and p.parent.name == f"{m.group(1)}-{m.group(2)}"):
+            out.append(f"{rel}:{hn}: run id does not name this file")
+        if set(h) != set(WORK_HEADER_KEYS):
+            out.append(f"{rel}:{hn}: a work header is exactly {', '.join(WORK_HEADER_KEYS)}")
+        if not (_count(h.get("reader")) and h.get("reader")):
+            out.append(f"{rel}:{hn}: reader is not a version number")
+        c = h.get("counts")
+        if not (isinstance(c, dict) and set(c) == set(WORK_COUNT_KEYS) and all(_count(v) for v in c.values())):
+            out.append(f"{rel}:{hn}: counts are not {', '.join(WORK_COUNT_KEYS)} as counts")
+        else:
+            for key, name in (("items", "item"), ("shared", "items")):
+                n = sum(1 for _, w in lines if name in w)
+                if c[key] != n:
+                    out.append(f"{rel}:{hn}: counts.{key} is {c[key]}, the file has {n}")
+        if p.stem not in runs:
+            out.append(f"{rel}: no run file {p.stem} beside it")
+        seen = {}
+        for n, w in lines:
+            where = f"{rel}:{n}"
+            out += work_line_problems(w, where)
+            i = w.get("item")
+            if isinstance(i, str):
+                if i in seen:
+                    out.append(f"{where}: duplicate item {i} (also {seen[i]})")
                 else:
                     seen[i] = where
     return out
