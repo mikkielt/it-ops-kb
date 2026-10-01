@@ -25,7 +25,8 @@
   exact header; a decision with a `D-<8 base32>` id (unique), text, a source (its ids known), a YYYY-MM-DD date, a status
   of proposed|active|invalidated|superseded, a `;`-separated context of `kind:value` references (item, fact, source,
   article, domain: the source, article or domain of a decision not invalidated must exist), a `by_ref` that names a maker of
-  the root's file or of kb/_self's central register, `invalidated_reason` and `invalidated_date` exactly when the status
+  the root's file or of kb/_self's central register (a maker, by or by_ref, for every row but a proposed one and an invalidated
+  one that was never active: a row with a `by` still resolves its `by_ref`), `invalidated_reason` and `invalidated_date` exactly when the status
   is invalidated, `supersedes` naming other decisions of the file (and every superseded one named by another), an empty or
   valid review_by; a maker with a slug id (unique) and a role; and no name in a row of a root that is not internal or
   of kb/_self (kbcommon.maker_names_allowed: the makers' `name` is empty, and a decision's `by` is its maker's role);
@@ -306,8 +307,8 @@ def check_decisions(root, owner, known):
         bad.extend(e for e in (cite_error(s, root, owner, known) for s in kbid.SOURCE_ID.findall(src)) if e)
         if ref and ref not in own and ref not in central:
             bad.append(f"by_ref {ref!r} names no decision maker in {mname} or the central register")
-        elif status != "proposed" and not (by or ref):
-            bad.append("names no decision maker (by or by_ref) though it is not proposed")
+        elif status not in ("proposed", "invalidated") and not (by or ref):
+            bad.append("names no decision maker (by or by_ref) though it is not proposed or invalidated")
         if not names_ok and (by or ref):  # no names: `by` is the role of a maker it references
             role = own.get(ref, central.get(ref)) if ref else None
             if not ref:

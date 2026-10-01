@@ -296,6 +296,28 @@ def test_decisions_store_plants_one_failure_per_maker_rule(tmp_path):
     assert_planted(found, MAK, cases, 3)
 
 
+def test_decisions_store_kbdecide_withdraw_an_invalidated_row_that_was_never_active_names_no_maker(tmp_path):
+    """A rejected proposal (invalidated, no by, no by_ref) is clean, as one that was active and later invalidated; every
+    other row but a proposed one still names a maker, and a row with a `by` still resolves its `by_ref`."""
+    never = dict(status="invalidated", by="", invalidated_reason="rejected", invalidated_date="2026-10-02")
+    makers = [{"id": "owner", "role": "print owner", "name": "", "source": ""}]
+    rows = [decision(0, by="print owner", by_ref="owner"),
+            decision(1, **never),
+            decision(2, **{**never, "by": "print owner", "by_ref": "owner"})]
+    code, found, out = checked_root(tmp_path, rows, makers, visibility="public")
+    assert code == 0 and not found and "errors=0" in out, out[-800:]
+    cases = [("names no decision maker (by or by_ref) though it is not proposed or invalidated", {"by": ""}),
+             ("names no decision maker (by or by_ref) though it is not proposed or invalidated", {"by": "", "status": "superseded"}),
+             ("by_ref 'nobody' names no decision maker", {**never, "by_ref": "nobody"}),
+             ("by_ref is empty: a root that is public, not an internal root, keeps no names", {**never, "by": "print owner"}),
+             ("by 'x' is not the role 'print owner' of owner", {**never, "by": "x", "by_ref": "owner"})]
+    rows = [decision(0, by="print owner", by_ref="owner")] + [decision(i, **over) for i, (_, over) in enumerate(cases, start=1)]
+    rows[0]["supersedes"] = did(2)  # the superseded case is named by another decision, so only its missing maker is an error
+    code, found, out = checked_root(tmp_path / "planted", rows, makers, visibility="public")
+    assert code == 1
+    assert_planted(found, DEC, cases, 3)
+
+
 def test_decisions_store_a_maker_source_must_be_a_known_source(tmp_path):
     code, found, out = checked_root(tmp_path, [], [{"id": "owner", "role": "x", "name": "", "source": "FXT-zzzzzzzz"}])
     assert code == 1 and "ERROR fixture/decision-makers.csv:2 cites unknown source FXT-zzzzzzzz" in out, out[-800:]

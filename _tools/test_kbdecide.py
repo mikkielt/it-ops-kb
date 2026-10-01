@@ -282,13 +282,13 @@ def active(repo, store="team", text="Servers patch on the second Tuesday."):
 
 def test_kbdecide_supersede_marks_the_old_one_and_lists_it_in_the_new(repo):
     old, new = active(repo, "team", "Old."), active(repo, "team", "New.")
-    code, out = repo.decide("supersede", old, new, "--root", "team")
+    code, out = repo.decide("supersede", old, new, "--root", "team", "--by", "operator")
     assert code == 0 and f"superseded by {new}" in out, out
     assert repo.row(old, "team")["status"] == "superseded"
     assert repo.row(new, "team")["supersedes"] == old and repo.row(new, "team")["status"] == "active"
     assert len(repo.rows("team")) == 2
     third = active(repo, "team", "Third.")
-    assert repo.decide("supersede", new, third, "--root", "team")[0] == 0
+    assert repo.decide("supersede", new, third, "--root", "team", "--by", "operator")[0] == 0
     assert repo.row(third, "team")["supersedes"] == new
     repo.check()
 
@@ -296,12 +296,12 @@ def test_kbdecide_supersede_marks_the_old_one_and_lists_it_in_the_new(repo):
 def test_kbdecide_supersede_refusals(repo):
     one, two = active(repo, "team", "One."), active(repo, "team", "Two.")
     proposed = propose(repo, "team", "Proposed.")
-    refused(repo, "team", "supersede", one, one, "--root", "team", says="cannot supersede itself")
-    refused(repo, "team", "supersede", one, proposed, "--root", "team", says=f"{proposed} is proposed")
-    refused(repo, "team", "supersede", proposed, one, "--root", "team", says=f"{proposed} is proposed")
-    refused(repo, "team", "supersede", one, "D-aaaaaaaa", "--root", "team", says="no decision D-aaaaaaaa")
-    assert repo.decide("supersede", one, two, "--root", "team")[0] == 0
-    refused(repo, "team", "supersede", one, two, "--root", "team", says=f"{one} is superseded")
+    refused(repo, "team", "supersede", one, one, "--root", "team", "--by", "operator", says="cannot supersede itself")
+    refused(repo, "team", "supersede", one, proposed, "--root", "team", "--by", "operator", says=f"{proposed} is proposed")
+    refused(repo, "team", "supersede", proposed, one, "--root", "team", "--by", "operator", says=f"{proposed} is proposed")
+    refused(repo, "team", "supersede", one, "D-aaaaaaaa", "--root", "team", "--by", "operator", says="no decision D-aaaaaaaa")
+    assert repo.decide("supersede", one, two, "--root", "team", "--by", "operator")[0] == 0
+    refused(repo, "team", "supersede", one, two, "--root", "team", "--by", "operator", says=f"{one} is superseded")
 
 
 def test_kbdecide_invalidate_keeps_the_row_and_records_why(repo):
@@ -321,20 +321,18 @@ def test_kbdecide_invalidate_refusals(repo):
     assert code == 2 and "--reason" in out and repo.row(did, "team")["status"] == "active"
     refused(repo, "team", "invalidate", did, "--root", "team", "--reason", "  ", says="--reason is empty")
     refused(repo, "team", "invalidate", "D-aaaaaaaa", "--root", "team", "--reason", "x", says="no decision D-aaaaaaaa")
-    proposed = propose(repo, "team", "Never confirmed.")
-    refused(repo, "team", "invalidate", proposed, "--root", "team", "--reason", "x", says="is proposed: only active decisions")
     refused(repo, "team", "invalidate", did, "--root", "team", "--reason", "x", "--date", "tomorrow", says="is not YYYY-MM-DD")
     assert repo.decide("invalidate", did, "--root", "team", "--reason", "x")[0] == 0
-    refused(repo, "team", "invalidate", did, "--root", "team", "--reason", "again", says="is invalidated: only active decisions")
+    refused(repo, "team", "invalidate", did, "--root", "team", "--reason", "again", says="is invalidated: only proposed or active decisions")
     other, newer = active(repo, "team", "Other."), active(repo, "team", "Newer.")
-    assert repo.decide("supersede", other, newer, "--root", "team")[0] == 0
-    refused(repo, "team", "invalidate", other, "--root", "team", "--reason", "x", says="is superseded: only active decisions")
+    assert repo.decide("supersede", other, newer, "--root", "team", "--by", "operator")[0] == 0
+    refused(repo, "team", "invalidate", other, "--root", "team", "--reason", "x", says="is superseded: only proposed or active decisions")
 
 
 def test_kbdecide_restore_brings_back_what_it_was_and_keeps_the_row(repo):
     confirmed = active(repo, "team")
     assert repo.decide("invalidate", confirmed, "--root", "team", "--reason", "by mistake", "--date", "2026-10-03")[0] == 0
-    code, out = repo.decide("restore", confirmed, "--root", "team")
+    code, out = repo.decide("restore", confirmed, "--root", "team", "--by", "operator")
     assert code == 0 and out.startswith(f"{confirmed}\tactive"), out
     row = repo.row(confirmed, "team")
     assert (row["status"], row["invalidated_reason"], row["invalidated_date"], row["by"]) == ("active", "", "", "operator")
@@ -349,15 +347,80 @@ def test_kbdecide_restore_never_confirms_a_decision_that_names_no_maker(repo):
     rows = repo.rows("team")
     rows[0].update(status="invalidated", invalidated_reason="x", invalidated_date=DAY)
     kbcommon.write_csv(str(repo.file("team")), kbcommon.DECISION_COLS, rows)
-    assert repo.decide("restore", did, "--root", "team")[0] == 0
+    assert repo.decide("restore", did, "--root", "team", "--by", "operator")[0] == 0
     assert repo.row(did, "team")["status"] == "proposed"
 
 
 def test_kbdecide_restore_refuses_what_is_not_invalidated(repo):
     did = active(repo, "team")
-    refused(repo, "team", "restore", did, "--root", "team", says="is active: only invalidated decisions")
-    refused(repo, "team", "restore", "D-aaaaaaaa", "--root", "team", says="no decision D-aaaaaaaa")
-    refused(repo, "team", "restore", "nope", "--root", "team", says="is not a decision id")
+    refused(repo, "team", "restore", did, "--root", "team", "--by", "operator", says="is active: only invalidated decisions")
+    refused(repo, "team", "restore", "D-aaaaaaaa", "--root", "team", "--by", "operator", says="no decision D-aaaaaaaa")
+    refused(repo, "team", "restore", "nope", "--root", "team", "--by", "operator", says="is not a decision id")
+
+
+def test_kbdecide_withdraw_invalidate_rejects_a_proposal_and_needs_no_maker(repo):
+    """An agent may invalidate a proposal nobody should confirm: the row stays, names no maker, and passes check.py."""
+    did = propose(repo, "team", "Nobody should confirm this.")
+    code, out = repo.decide("invalidate", did, "--root", "team", "--reason", "the operator declined it", "--date", "2026-10-03")
+    assert code == 0 and out.startswith(f"{did}\tinvalidated"), out
+    row = repo.row(did, "team")
+    assert (row["status"], row["invalidated_reason"], row["invalidated_date"]) == ("invalidated", "the operator declined it", "2026-10-03")
+    assert (row["by"], row["by_ref"]) == ("", "")
+    assert len(repo.rows("team")) == 1
+    repo.check()
+    refused(repo, "team", "invalidate", did, "--root", "team", "--reason", "again", says="is invalidated: only proposed or active")
+    refused(repo, "team", "confirm", did, "--root", "team", "--by", "operator", says="is invalidated: only proposed decisions")
+    did2 = propose(repo, "team", "Asked for no reason.")
+    refused(repo, "team", "invalidate", did2, "--root", "team", "--reason", " ", says="--reason is empty")
+    assert repo.row(did2, "team")["status"] == "proposed"
+
+
+def test_kbdecide_withdraw_invalidate_is_open_to_an_agent_for_a_proposal_in_every_store(repo):
+    for store in ("public", "team", "_self"):
+        did = propose(repo, store, f"Rejected in {store}.")
+        assert repo.decide("invalidate", did, "--root", store, "--reason", "swept")[0] == 0
+        assert repo.row(did, store)["status"] == "invalidated"
+    repo.check()
+
+
+def test_kbdecide_withdraw_supersede_and_restore_refuse_without_by_operator(repo):
+    old, new = active(repo, "team", "Old."), active(repo, "team", "New.")
+    for by in ((), ("--by", "agent"), ("--by", "")):
+        refused(repo, "team", "supersede", old, new, "--root", "team", *by, says="only the operator supersedes a decision")
+    assert repo.row(old, "team")["status"] == "active" and repo.row(new, "team")["supersedes"] == ""
+    assert repo.decide("invalidate", old, "--root", "team", "--reason", "x")[0] == 0
+    rejected = propose(repo, "team", "Rejected.")
+    assert repo.decide("invalidate", rejected, "--root", "team", "--reason", "x")[0] == 0
+    for did in (old, rejected):
+        for by in ((), ("--by", "agent")):
+            refused(repo, "team", "restore", did, "--root", "team", *by, says="only the operator restores a decision")
+        assert repo.row(did, "team")["status"] == "invalidated"
+    # the same refusals hold in the other stores, and an unknown id is not what is refused first
+    refused(repo, "team", "restore", "D-aaaaaaaa", "--root", "team", says="only the operator restores a decision")
+    refused(repo, "team", "supersede", "D-aaaaaaaa", "D-bbbbbbbb", "--root", "team", says="only the operator supersedes")
+
+
+def test_kbdecide_withdraw_restore_returns_a_rejected_proposal_to_proposed_not_active(repo):
+    """A proposal that was rejected comes back as the proposal it was: restoring is not the operator's yes to it."""
+    did = propose(repo, "team", "Rejected once.")
+    assert repo.decide("invalidate", did, "--root", "team", "--reason", "too early", "--date", "2026-10-03")[0] == 0
+    code, out = repo.decide("restore", did, "--root", "team", "--by", "operator")
+    assert code == 0 and out.startswith(f"{did}\tproposed"), out
+    row = repo.row(did, "team")
+    assert (row["status"], row["by"], row["by_ref"], row["invalidated_reason"], row["invalidated_date"]) == ("proposed", "", "", "", "")
+    assert row["links"] == "was invalidated 2026-10-03: too early"
+    repo.check()
+    assert repo.decide("confirm", did, "--root", "team", "--by", "operator")[0] == 0  # only a confirm makes it active
+    assert repo.row(did, "team")["status"] == "active"
+
+
+def test_kbdecide_withdraw_restore_returns_a_confirmed_decision_to_active(repo):
+    did = active(repo, "team")
+    assert repo.decide("invalidate", did, "--root", "team", "--reason", "x")[0] == 0
+    assert repo.decide("restore", did, "--root", "team", "--by", "operator")[0] == 0
+    row = repo.row(did, "team")
+    assert (row["status"], row["by"]) == ("active", "operator")
+    repo.check()
 
 
 def test_kbdecide_list_reads_one_root_or_all_and_filters(repo):
@@ -398,7 +461,7 @@ def test_kbdecide_refuses_a_file_that_is_not_the_format_for_every_command(repo):
     for args in (("propose", "--root", "team", "Text.", "--source", "a talk", "--context", "domain:ops"),
                  ("confirm", did, "--root", "team", "--by", "operator"),
                  ("invalidate", did, "--root", "team", "--reason", "x"),
-                 ("restore", did, "--root", "team")):
+                 ("restore", did, "--root", "team", "--by", "operator")):
         code, out = repo.decide(*args)
         assert code == 2 and "header is 'id,text'" in out, (args, out)
 
