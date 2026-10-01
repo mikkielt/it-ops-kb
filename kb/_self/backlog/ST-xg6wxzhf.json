@@ -2,7 +2,7 @@
   "id": "ST-xg6wxzhf",
   "kind": "story",
   "title": "backlog.py new refuses --sprint on a task instead of saving an item check rejects",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P3",
@@ -24,5 +24,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orch-fourth-w12"
+  "evidence": {
+    "commit": "49b8966c47823c0c4946b342b9120d373c3977c5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "new_task_refuses_sprint"
+        ],
+        "exit": 0,
+        "sha256": "3a9458c4da3a2569"
+      }
+    ]
+  }
 }
