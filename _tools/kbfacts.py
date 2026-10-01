@@ -24,6 +24,9 @@ and a CODE part a pointer and a pinned source (kb-verify lint reports those that
 DECISION cites an operator decision of the root's `_decisions.csv`, not a source: `[DECISION D-k3f7q2zd]` or
 `[DECISION D-k3f7q2zd: note]`. Its id is `kbcommon.DECISION_ID`; the part carries it as `part["decision"]` (empty when
 the tag names none) and `part["ids"]` stays empty, so no tool reads a decision id as a source id. check.py resolves it.
+Decisions are rows, not facts: decision_rows() reads every `_decisions.csv`; pack() and show_decisions() print the
+active and proposed ones beside the facts they are tied to (decision_link) or that their text answers, and
+decision_conflicts() lists active decisions that share a context (audit).
 
 Snippets. A bullet that starts `SNIPPET:` introduces the fenced code block right below it: `- SNIPPET: <what it does>;
 context: <versions, prerequisites>; checked: no|syntax|run [DER S1: ...]`. It is an ordinary fact unit (the pack
@@ -258,6 +261,15 @@ def locate(path):
     if not os.path.exists(full) and kbcommon.split(path)[0] is None and not os.path.isabs(path):
         full = os.path.join(kbcommon.public().path, path)
     return os.path.realpath(full)
+
+
+def qpath_of(full):
+    """The qualified path (`public/intune/x.md`) of an absolute real path inside a root, '' for any other file."""
+    for r in kbcommon.roots():
+        base = os.path.realpath(r.path)
+        if os.path.commonpath([full, base]) == base:
+            return kbcommon.qualify(r, os.path.relpath(full, base))
+    return ""
 
 
 def showable(full):
@@ -606,9 +618,187 @@ def audit(prefix=None, status=None, root=None):
     return rows
 
 
+# ---------------------------------------------------------------- decisions (beside the facts of a pack and a show)
+
+DECISION_ANSWER_SHARE = 0.6  # an active decision whose text holds this share of a question's informative words answers it
+MAX_DECISIONS = 3  # decision lines one pack prints
+DECISION_CLIP = 300  # characters of a decision's text a line shows
+DECISION_BUDGET_SHARE = 3  # a pack's decision lines cost at most 1/3 of its budget, and count inside it
+DECISION_RANK = {"active": 0, "proposed": 1, "invalidated": 2}  # `superseded` is never shown
+
+
+_DECISIONS = [None, []]  # [signature of the decision files, their rows]
+
+
+def decision_rows():
+    """Every decision row of the served roots and, unless the server is limited to named roots, of kb/_self, as dicts
+    `id, text, status, by, date, context, reason` (its invalidated_reason) plus `root` (its store's name, `_self`),
+    `path` and `line` (where the row starts, as `rag.py show` takes it) and `refs`, the context as [(kind, value)]
+    with an article's or a domain's value qualified (`public/auth/kerberos`). Rows of every status; a file that cannot
+    be read gives none (check.py reports it); [] for a kb that keeps no decision. Read again when a decision file's
+    time or size changes, so a decision edit costs no index rebuild (these files are not in the pack index)."""
+    stores = [(r.name, r.name, os.path.join(r.path, kbcommon.DECISIONS), kbcommon.qualify(r, kbcommon.DECISIONS))
+              for r in kbcommon.roots()]
+    if not kbcommon.serving():
+        stores.append(("_self", "", os.path.join(SELF_DIR, kbcommon.DECISIONS), "kb/_self/" + kbcommon.DECISIONS))
+    sig = []
+    for _, _, full, _ in stores:
+        try:
+            st = os.stat(full)
+            sig.append((full, st.st_mtime_ns, st.st_size))
+        except OSError:
+            continue
+    if _DECISIONS[0] != sig:
+        _DECISIONS[:] = [sig, _decision_rows(stores) if sig else []]
+    return _DECISIONS[1]
+
+
+def _decision_rows(stores):
+    out = []
+    for name, prefix, full, label in stores:
+        if not os.path.isfile(full):
+            continue
+        try:
+            with open(full, encoding="utf-8-sig", newline="") as f:
+                rd = csv.reader(f)
+                header = next(rd, [])
+                last = rd.line_num
+                if not {"id", "text", "status"} <= set(header):
+                    continue
+                for cells in rd:
+                    first, last = last + 1, rd.line_num
+                    row = dict(zip(header, cells))
+                    if not row.get("id"):
+                        continue
+                    refs = [(k, f"{prefix}/{v}" if prefix and k in ("article", "domain") else v)
+                            for k, v in kbcommon.context_refs(row.get("context"))]
+                    out.append({"id": row["id"], "text": " ".join((row.get("text") or "").split()),
+                                "status": row.get("status", ""), "by": row.get("by", ""), "date": row.get("date", ""),
+                                "context": row.get("context", ""), "reason": row.get("invalidated_reason", ""),
+                                "root": name, "path": label, "line": first, "refs": refs})
+        except (OSError, UnicodeDecodeError, csv.Error):
+            continue
+    return out
+
+
+def decision_places(d):
+    """The qualified paths a decision is about: its context's articles and domains, and its own root."""
+    return [v for k, v in d["refs"] if k in ("article", "domain")] + ([d["root"]] if d["root"] != "_self" else [])
+
+
+def decision_in_scope(d, prefix):
+    """Whether a decision belongs to a pack or audit narrowed to `prefix` (scope(): a root, a domain): its root or
+    one of its context's articles or domains is under it."""
+    return any(in_prefix(p, prefix) for p in decision_places(d))
+
+
+def decision_link(d, arts, keys, srcs, cited):
+    """How decision `d` is tied to what is being shown: `cited` (a shown fact carries its `[DECISION id]` tag, or the
+    decision's `fact:` is a shown fact: strong), `context` (its `article:` is a shown article, its `domain:` holds
+    one, or its `source:` is cited by a shown fact), else ''. `arts` are qualified article paths, `keys` fact keys,
+    `srcs` source ids, `cited` decision ids."""
+    if d["id"] in cited:
+        return "cited"
+    link = ""
+    for kind, v in d["refs"]:
+        if kind == "fact" and v in keys:
+            return "cited"
+        if (kind == "article" and f"{v}.md" in arts) or (kind == "domain" and any(in_prefix(a, v) for a in arts)) \
+                or (kind == "source" and v in srcs):
+            link = "context"
+    return link
+
+
+def _shown_ties(us):
+    """(fact keys, cited source ids, cited decision ids) of fact units; the keys are hashed only when a decision names
+    a fact, so a kb with no decision pays nothing."""
+    srcs = {i for u in us for p in u["tags"] for i in p["ids"]}
+    cited = {p["decision"] for u in us for p in u["tags"] if p.get("decision")}
+    keys = {fact_key(u["text"]) for u in us} if any(k == "fact" for d in decision_rows() for k, _ in d["refs"]) else set()
+    return keys, srcs, cited
+
+
+def decision_label(d):
+    """What a decision line says it is: `decided by <by> on <date>` (active), `proposed (not confirmed)`, or
+    `invalidated because <reason>`."""
+    if d["status"] == "active":
+        return "decided" + (f" by {d['by']}" if d["by"] else "") + (f" on {d['date']}" if d["date"] else "")
+    if d["status"] == "proposed":
+        return "proposed (not confirmed)"
+    return f"invalidated because {d['reason'] or 'no reason recorded'}"
+
+
+def decision_line(d):
+    """`- PATH:LINE <label>: <text> [DECISION id]`; PATH:LINE is the row, which `rag.py show` prints."""
+    return f"- {d['path']}:{d['line']} {decision_label(d)}: {clip(d['text'], DECISION_CLIP)} [DECISION {d['id']}]"
+
+
+def _shown(invalidated):
+    return [d for d in decision_rows()
+            if d["status"] in ("active", "proposed") or (invalidated and d["status"] == "invalidated")]
+
+
+def decisions_for(informative, named, arts, cand, prefix=None, invalidated=False):
+    """The decisions a pack prints beside its facts, best first (active, then proposed, then invalidated when
+    `invalidated`; a `superseded` one never), each the row plus `hit` (the question's informative words its text
+    holds) and `answers`. A decision is printed when it answers the question or is tied to a shown fact or article
+    (decision_link) and holds a word of the question (one cited by a shown fact, or naming it, needs none; nor does an
+    invalidated one, which is shown only when asked for).
+    It answers when its text holds DECISION_ANSWER_SHARE of the informative words and every name the question uses.
+    Only an active one that answers lifts the pack's coverage (pack): a proposed or an invalidated one never does.
+    `arts` are the shown articles and `cand` the fact units the pack may print; `prefix` is the pack's scope()."""
+    rows = _shown(invalidated)
+    if not rows:
+        return []
+    keys, srcs, cited = _shown_ties(cand)
+    want, out = set(informative), []
+    for d in rows:
+        link = decision_link(d, arts, keys, srcs, cited)
+        if prefix and not link and not decision_in_scope(d, prefix):
+            continue
+        dterms = set(key_terms(d["text"]))
+        hit = sorted(want & dterms)
+        answers = bool(want) and len(hit) >= DECISION_ANSWER_SHARE * len(want) and named <= dterms
+        if answers or link == "cited" or (link and (hit or d["status"] == "invalidated")):
+            out.append({**d, "hit": hit, "answers": answers})
+    out.sort(key=lambda d: (DECISION_RANK[d["status"]], not d["answers"], -len(d["hit"]), d["id"]))
+    return out
+
+
+def show_decisions(qpath, first, last, invalidated=False):
+    """Decision lines for lines `first`..`last` of the kb file `qpath` (`rag.py show`, `kb_show`): the decisions a
+    fact starting in that range cites (`[DECISION id]`) or names (`fact:`), and those whose `article:` is the file
+    or whose `domain:` holds it, labelled as a pack's; [] when none, or the file is no article or data file."""
+    rows = _shown(invalidated)
+    if not rows or not qpath.endswith((".md", ".csv")):
+        return []
+    text = read(qpath)
+    if text is None:
+        return []
+    us = md_units(qpath, text) if qpath.endswith(".md") else csv_units(qpath, text)
+    keys, srcs, cited = _shown_ties([u for u in us if first <= u["line"] <= last])
+    found = [d for d in rows if decision_link(d, {qpath}, keys, srcs, cited)]
+    found.sort(key=lambda d: (DECISION_RANK[d["status"]], d["id"]))
+    return [decision_line(d) for d in found]
+
+
+def decision_conflicts(prefix=None, root=None):
+    """[(context ref, [decision rows])] of every context reference (`kind:value`, an article's or a domain's value
+    qualified) that two or more active decisions share, sorted: possible contradictions, for a person to read; no
+    check fails on them and nothing is blocked. Narrowed to a prefix or root as audit() is."""
+    want = scope(prefix, root)
+    by = defaultdict(list)
+    for d in decision_rows():
+        if d["status"] != "active" or (want and not decision_in_scope(d, want)):
+            continue
+        for ref in dict.fromkeys(f"{k}:{v}" for k, v in d["refs"] if k):
+            by[ref].append(d)
+    return sorted(((ref, ds) for ref, ds in by.items() if len(ds) > 1), key=lambda x: x[0])
+
+
 # ---------------------------------------------------------------- pack (fact-level retrieval)
 
-STOP = kbid.STOP | {"about", "after", "all", "any", "also", "been", "but", "did", "has", "have", "into", "kb", "much",
+STOP =kbid.STOP | {"about", "after", "all", "any", "also", "been", "but", "did", "has", "have", "into", "kb", "much",
                     "long", "more", "not", "only", "same", "than", "that", "their", "then", "there", "these", "they",
                     "this", "those", "was", "were", "will", "would", "you", "your", "who", "whom", "whose", "why",
                     "there", "does", "doing", "get", "set", "use", "used", "using", "via", "per", "say", "says",
@@ -1198,7 +1388,7 @@ def specific(st, question, named, known, keys, holders):
     return False
 
 
-def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None):
+def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False):
     """Rank fact units for a question and return {verdict, route, has, lacks, missing, matched, sources, text, ...}.
 
     The corpus is every fact unit plus the untagged bullets, table rows and data rows (Summary, Reference, Examples,
@@ -1223,7 +1413,13 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     the best article matches) and `kb lacks:` (its informative words it does not match), after the coverage, check:,
     freshness: and none-sentence lines. A `none` that routes `split` (a near miss) prints no none sentence and keeps
     the facts and source footer a `weak` pack prints; a `none` that routes `web` prints the sentence, two lines of one
-    article and no footer. `route` is None for a clean `good` pack, whose text has no such line. fmt
+    article and no footer. `route` is None for a clean `good` pack, whose text has no such line.
+    Decisions: a kb that keeps `_decisions.csv` rows adds a `## decisions` section after the articles (decisions_for:
+    at most MAX_DECISIONS lines, `decided`, `proposed (not confirmed)`, or with `invalidated` also `invalidated because
+    <reason>`), counted inside `budget`. An active decision whose text holds 60% of the informative words and every
+    name of the question makes the verdict `good` (its words leave `missing` and the route lines, and no `check:` line
+    follows from the facts); a proposed or invalidated one never changes it. A kb with none prints what it always did,
+    byte for byte. fmt
     `concise` drops the article flags and the source url footer; footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
     or qualified `public/intune`) and `root` narrow the units (scope()); paths print qualified (`public/intune/x.md`)."""
     st = store(scope(domain, root))
@@ -1287,9 +1483,30 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         cand = [u for a in order for _, u in sorted((x for x in by_art[a] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]]
         if any(len(t) > 2 and kdf[t] < RARE_NAME * n and not any(has(u, t) for u in cand) for t in named & set(known)):
             verdict = "none"
+    # operator decisions beside the facts (decisions_for): an active one that answers the question lifts the coverage
+    # to `good` and its words count as held; their lines count inside the budget, so the facts get what is left
+    dec, dheld, lifted = [], set(), False
+    if decision_rows():
+        cand = [u for a in order for _, u in sorted((x for x in by_art[a] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]]
+        dec = decisions_for(informative, named, set(order), cand, scope(domain, root), invalidated)
+        answering = [d for d in dec if d["answers"] and d["status"] == "active"]
+        if answering:
+            dheld = set().union(*(d["hit"] for d in answering))
+            lifted = verdict != "good"
+            verdict = "good"
+            missing = [t for t in missing if t not in dheld]
+    dlines, dused = [], 0
+    for d in dec[:MAX_DECISIONS]:
+        line = decision_line(d)
+        if dlines and dused + len(line) > int(budget * 3.5) // DECISION_BUDGET_SHARE:
+            break
+        dlines.append(line)
+        dused += len(line)
+    dec = dec[:len(dlines)]
+    dused += 40 if dlines else 0  # the section's heading
     concise = fmt == "concise"
     url_cost = 0 if concise else 110  # a source footer line is about 110 characters
-    limit, used, groups, cited, paths = int(budget * 3.5), 0, [], [], []
+    limit, used, groups, cited, paths = int(budget * 3.5), dused, [], [], []
     for art in order:
         items, picked = [], sorted(sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6],
                                    key=lambda x: x[1]["line"])
@@ -1329,7 +1546,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     # verdict change: the name alone does not tell a related pack from a right one (the NTLMv1 row's
     # LmCompatibilityLevel sits in a second article). Names of two letters (AV, PC) are left out.
     unmatched = []
-    if verdict != "none" and paths:
+    if verdict != "none" and paths and not lifted:
         lead, meta = paths[0], st.arts.get(paths[0], {})
         own = set(key_terms(f"{meta.get('title', '')} {meta.get('applies_to', '')}"))
         unmatched = sorted(t for t in named & set(known) if len(t) > 2 and t not in own
@@ -1338,13 +1555,16 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     # contacts between tenants, matched by a tenant fact and a mailbox fact) though the question names something
     # specific (Graph): the other sign of a false `good`. No true `good` in the eval set falls under half; a note only.
     spread = None
-    if verdict == "good" and len(known) >= 4:
+    if verdict == "good" and len(known) >= 4 and not lifted:
         top = max((sum(1 for t in known if has(u, t)) for _, u in scored if u["tags"]), default=0)
         if top * 2 < len(known):
             spread = (top, len(known))
     head = f"coverage: {verdict}"
     if known:
-        head += f" (best article matches {len(hit)} of {len(known)} key words: {', '.join(sorted(hit)) or '-'})"
+        head += (f" ({'an active decision answers it; ' if lifted else ''}best article matches {len(hit)} of "
+                 f"{len(known)} key words: {', '.join(sorted(hit)) or '-'})")
+    elif lifted:
+        head += " (an active decision answers it)"
     if missing:
         head += f"; not in the kb: {', '.join(missing)}"
     out = [head]
@@ -1365,18 +1585,23 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     shut = verdict == "none" and route != "split"
     if shut:
         out.append(NONE_SENTENCE)
-    has, lacks = own_words(question, hit), own_words(question, [t for t in informative if t not in hit])
+    has = own_words(question, set(hit) | dheld)
+    lacks = own_words(question, [t for t in informative if t not in hit and t not in dheld])
     if route:
         out += [f"route: {route}", f"kb has: {', '.join(has) or '-'}", f"kb lacks: {', '.join(lacks) or '-'}"]
     for h, items in groups if not shut else [(g[0], g[1][:2]) for g in groups[:1]]:
         out += ["", h] + items
+    if dlines:
+        out += ["", "## decisions"] + dlines
     if shut:
         srcs = []
     if srcs and footer and not concise:
         out += ["", "sources:"] + format_sources(srcs)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
             "unmatched": unmatched, "spread": spread, "route": route, "has": has, "lacks": lacks, "paths": paths,
-            "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out)}
+            "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),
+            "decisions": [{"id": d["id"], "status": d["status"], "label": decision_label(d), "path": d["path"],
+                           "line": d["line"], "text": d["text"], "answers": d["answers"]} for d in dec]}
 
 
 # language and format names: a question asking for a topic the kb covers in one of them (T-SQL for sp_getapplock) is a
@@ -1443,7 +1668,7 @@ MAX_QUESTIONS = 6
 PART_BUDGET_MIN = 800  # tokens per part of a 3+ part pack
 
 
-def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None):
+def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
     {verdict (the worst), results, text}. A single question gives exactly pack()'s text. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
@@ -1452,10 +1677,10 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None):
     else `split` when any part routes; None (no line) when none does. One question gives its pack's route."""
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     if len(qs) == 1:
-        res = pack(qs[0], budget, domain, fmt=fmt, root=root)
+        res = pack(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated)
         return {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
-    results = [pack(q, part, domain, fmt=fmt, footer=False, root=root) for q in qs]
+    results = [pack(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated) for q in qs]
     routes = [r["route"] for r in results if r["route"]]
     route = None if not routes else "web" if all(r["route"] == "web" for r in results) else "split"
     out, seen, srcs = ([f"route: {route}"] if route else []), set(), []
