@@ -2,7 +2,7 @@
   "id": "TK-gnxbjdxc",
   "kind": "task",
   "title": "backlog.py cost over the work sidecars",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-6bi7oe6y",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-gnxbjdxc"
 }
