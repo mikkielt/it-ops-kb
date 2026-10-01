@@ -1,0 +1,26 @@
+{
+  "id": "ST-zi2qmlkr",
+  "kind": "story",
+  "title": "horizon --hook stays under its limit whatever a gate's question length",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py horizon --hook shortens each waiting gate's question and recommendation so the hook output stays under test_backlog's HOOK_LIMIT for any gate text; a test plants a gate with a 1500-character question and the hook output stays under the limit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "horizon_hook_long_gate"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ],
+  "notes": "On 2026-10-01 a worker gate on ST-nesccqgl with a long question made the repository hook output 1912 characters and test_horizon_hook_of_the_repository_backlog_stays_under_the_limit failed in the sync gate of TK-cjoc2gm4 until the gate was answered."
+}
