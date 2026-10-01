@@ -2,7 +2,7 @@
   "id": "TK-62hyopvl",
   "kind": "task",
   "title": "selfdoc numbers a source's lines by LF alone in map_tools and check_map",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-uymi3axm",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,29 @@
     "kb/_self/README.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "c-62hyopvl"
+  "evidence": {
+    "commit": "d171a78883b7e9d82421233f56c6ad27eda1127b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc_map_lines_by_lf"
+        ],
+        "exit": 0,
+        "sha256": "1caf8af727e21c22"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestSelfdocToolsMap"
+        ],
+        "exit": 0,
+        "sha256": "32c3669edd9cffd0"
+      }
+    ]
+  }
 }
