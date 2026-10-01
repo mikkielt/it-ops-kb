@@ -28,7 +28,7 @@ The kb's lookup rules travel in the server's `instructions` (the `initialize` re
 
 - puts the kb's `instructions` text into its `kb_pack` description (or its server description), leaving out only sentences that name tools it does not re-expose;
 - puts the none rule into the description of every tool it re-exposes: when a pack says `coverage: none` or prints a `route:` line, state what the kb has and lacks, answer the part it has, research only the rest in the live docs (the web when the host has no docs servers), label it "live docs, not in the kb", and never fill it from memory;
-- keeps the rest of the coverage rules with the none rule: `good` answers from the pack, and under a `check:` line only if a cited line answers the question itself; `weak` gets one reworded `kb_pack` or one `kb_show`; `UNK` and `COMMUNITY` facts are leads, not answers; answers cite `path:line` and the source url.
+- keeps the rest of the coverage rules with the none rule: `good` answers from the pack, and under a `check:` line only if a cited line answers the question itself; `weak` gets one reworded `kb_pack` or one `kb_show`; `UNK` and `COMMUNITY` facts are leads, not answers; a `decided` decision line is the operator's call and a `proposed` one is no answer; answers cite `path:line` and the source url.
 
 ## 5. Updates: restart on a census tag
 

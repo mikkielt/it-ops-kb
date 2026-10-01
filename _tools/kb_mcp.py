@@ -64,7 +64,7 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
 import rag, kbcommon, kbfacts  # noqa: E402
 
-NAME, VERSION = "kb", "1.4.0"
+NAME, VERSION = "kb", "1.5.0"
 MODERN = "2026-07-28"
 LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 SUPPORTED = [MODERN, *LEGACY]
@@ -77,10 +77,10 @@ INSTRUCTIONS = (
     "coverage good: answer from the pack (with a check: line, only if a cited line answers it); weak: one reworded "
     "kb_pack or one kb_show; none or a route: line: state what the kb has and lacks, research the rest in the live "
     "docs, label it live docs, not in the kb; never from memory. Tags: DOC official, CODE source code at a pinned "
-    "commit (implementation, not a promise), DER derived; COMMUNITY and UNK are leads, not answers. Cite path:line "
-    "and the footer url. Counts, lists, who cites X: kb_audit, kb_facts, kb_source cited=true. Never start a "
-    "general-purpose agent for a lookup; the kb-lookup agent only for long research. Documentation facts, not live "
-    "device or directory data.")
+    "commit (implementation, not a promise), DER derived, DECISION operator's call if decided (proposed is no "
+    "answer); COMMUNITY and UNK are leads, not answers. Cite path:line and the footer url. Counts, lists, who cites "
+    "X: kb_audit, kb_facts, kb_source cited=true. Never start a general-purpose agent for one; the kb-lookup agent "
+    "only for long research.")
 DOCS = "Documentation facts from it-ops-kb (not live device or directory data). "
 ROOT = {"type": "string", "description": "one root, e.g. 'public'"}
 FORMAT = {"type": "string", "enum": ["concise", "detailed"],
