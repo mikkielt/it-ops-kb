@@ -1,0 +1,22 @@
+{
+  "id": "BG-ykxthe5x",
+  "kind": "bug",
+  "title": "kb-sprint and kb-backlog skills do not name backlog.py move and reopen",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb-sprint and kb-backlog name backlog.py move ID --sprint SP|none and reopen ID --why where they tell an agent to move a story between sprints or return a done item to work, instead of only set --sprint, which refuses a draft item in an active sprint",
+  "repro": {
+    "run": [
+      "grep",
+      "-q",
+      "reopen",
+      ".claude/skills/kb-sprint/SKILL.md"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md"
+  ]
+}
