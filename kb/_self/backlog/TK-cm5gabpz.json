@@ -2,7 +2,7 @@
   "id": "TK-cm5gabpz",
   "kind": "task",
   "title": "backlog.py cost prints shared and the session total beside direct and attributed",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-6bi7oe6y",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "TK-3kj5dh3r"
-  ]
+  ],
+  "claimed_by": "worker-cm5gabpz"
 }
