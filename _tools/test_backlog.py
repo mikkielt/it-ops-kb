@@ -2,7 +2,8 @@
 
 Each refusal has a planted failure: a bug whose repro passes or fails for its own error (not found, a SyntaxError in
 its own code, a usage error, no tests selected), a repro that passes doing nothing in this clone (no public remote;
-refused by done until a check runs tests or the operator accepts), a check that runs no code (warned of), a non-canonical file, a cycle, a blocking gate an
+refused by done until a check runs tests or the operator accepts), a check that runs no code (warned of), a repro that
+only matches text in a file with no stated reason (refused by new; warned of by check, a read of _tools/ source named), a non-canonical file, a cycle, a blocking gate an
 agent answers, a sprint started without the operator or with a work item without touches, a failing check, a commit outside `touches` (and the revert
 that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
 planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
@@ -594,6 +595,103 @@ def test_done_flags_noop_check_new_and_done_warn_of_a_trivial_check(sprint):
     commit(repo, "write b", tk)
     code, out = b(repo, "done", tk)
     assert code == 0 and "passed without doing its work" in out and "only passes" in out, out
+
+
+# BG-qtphqxt2's repro planted: it read a script's text for the literal '>&2', which a fix met by writing '>& 2'.
+TEXT_REPRO = "import sys; sys.exit(1 if '>&2' in open('tool.sh', encoding='utf-8').read() else 0)"
+SOURCE_REPRO = ("import pathlib, re, sys; s = pathlib.Path('_tools/tool.py').read_text(encoding='utf-8'); "
+                "sys.exit(0 if re.search(r'worktrees', s) else 1)")  # BG-rrht7uts's grep for 'worktrees'
+
+
+def test_repro_needs_behaviour_or_reason_classifier():
+    """text_only_repro flags a grep, a shell of greps and a python -c that only reads a file and tests its text
+    (BG-qtphqxt2's literal, BG-g6qpxe5x's regex over a test's text); a test run, a tool, a script, a planted-input
+    command and python code that runs other code are behaviour."""
+    t = backlog.text_only_repro
+    for argv in (["grep", "-q", "worktrees", "_tools/backlog.py"], ["git", "grep", "-q", "-e", "x", "--", "f.md"],
+                 ["/usr/bin/git", "grep", "x"], ["rg", "x"], ["findstr", "x", "f"],
+                 ["sh", "-c", "set -e; grep -q x f && ! grep -q y g"], ["python3", "-c", TEXT_REPRO],
+                 ["python3", "-c", SOURCE_REPRO],
+                 ["python3", "-c", "import re,sys; sys.exit(not re.search(r'>\\s*&2', open('_tools/test_x.py').read()))"]):
+        assert t(argv), argv
+    assert "reading source of _tools/tool.py" in t(["python3", "-c", SOURCE_REPRO])
+    assert "reading source of _tools/backlog.py" in t(["grep", "-q", "worktrees", "_tools/backlog.py"])
+    assert "reading source" not in t(["python3", "-c", TEXT_REPRO])
+    for argv in ([], PASS, is_file("x"), ["python3", "_tools/tests.py", "-k", "x"], ["python3", "_tools/backlog.py",
+                 "red-pipeline", "--status"], ["python3", "repro.py"], ["sh", "-c", "set -e; python3 t.py"],
+                 ["sh", "-c", "grep -q x f; python3 t.py"],
+                 ["python3", "-c", "import subprocess, sys; sys.exit(subprocess.call(['x'], stdin=open('in.txt')))"],
+                 ["python3", "-c", "import sys; sys.path.insert(0, '_tools'); import backlog; open('x')"],
+                 ["python3", "-c", "import backlog, sys; sys.exit(backlog.main(['check']) or 'x' in open('f').read())"]):
+        assert t(argv) is None, argv
+
+
+def test_repro_needs_behaviour_or_reason_new_refuses_then_files(repo):
+    """new refuses a text-only repro with no reason (exit 2, nothing written), files one with --repro-reason and
+    keeps the reason; a repro that runs the behaviour needs none, and --repro-reason without a bug's repro is refused."""
+    (repo / "tool.sh").write_text("echo refused >&2\n", encoding="utf-8")
+    code, out = new_bug(repo, "Text only", argstr(["python3", "-c", TEXT_REPRO]))
+    assert code == 2 and "only matches text in a file" in out and "--repro-reason" in out, out
+    assert not list((Path(repo) / backlog.REL_DIR).glob("*.json")), "a refused repro files nothing"
+    code, out = b(repo, "new", "bug", "--title", "Text only", "--severity", "S4", "--goal", "x",
+                  "--repro", argstr(["python3", "-c", TEXT_REPRO]), "--repro-reason", "the defect is the doc's wording")
+    assert code == 0, out
+    assert item(repo, "Text only")["repro_reason"] == "the defect is the doc's wording"
+    code, out = new_bug(repo, "Behaviour", argstr(is_file("src/c.txt")))
+    assert code == 0 and "repro_reason" not in item(repo, "Behaviour"), out
+    code, out = b(repo, "new", "story", "--title", "Story", "--goal", "g", "--check", argstr(is_file("src/a.txt")),
+                  "--repro-reason", "why")
+    assert code == 2 and "for a bug's --repro" in out, out
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out and "only matches text" not in out, out
+
+
+def test_repro_reads_source_check_warns(repo):
+    """check warns of an open bug whose repro only reads a _tools/ source file for a string and states no reason
+    (BG-rrht7uts planted); a reason, or the bug done, clears it; a malformed reason, or one on a story, is an error."""
+    (repo / "_tools").mkdir()
+    (repo / "_tools" / "tool.py").write_text("ROOT = 'checkout'\n", encoding="utf-8")
+    code, out = b(repo, "new", "bug", "--title", "Grep fix", "--severity", "S3", "--goal", "x",
+                  "--repro", argstr(["python3", "-c", SOURCE_REPRO]), "--repro-reason", "planted")
+    assert code == 0, out
+    bg = item(repo, "Grep fix")["id"]
+    it = item(repo, "Grep fix")
+    del it["repro_reason"]
+    (Path(repo) / backlog.REL_DIR / f"{bg}.json").write_text(backlog.canonical(it), encoding="utf-8", newline="\n")
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=1" in out and bg in out and "reading source of _tools/tool.py" in out, out
+    assert "repro_reason" in out, out
+    edit(repo, bg, repro_reason="the defect is a constant's spelling, read by no test")
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out, out
+    edit(repo, bg, repro_reason=" ")
+    code, out = b(repo, "check")
+    assert code == 1 and "repro_reason must be text" in out, out
+    it = item(repo, "Grep fix")
+    del it["repro_reason"]
+    it["status"] = "done"
+    (Path(repo) / backlog.REL_DIR / f"{bg}.json").write_text(backlog.canonical(it), encoding="utf-8", newline="\n")
+    code, out = b(repo, "check")
+    assert "warnings=0" in out, out  # a done bug's repro is history
+    assert b(repo, "new", "story", "--title", "Story", "--goal", "g", "--check", argstr(is_file("src/a.txt")))[0] == 0
+    edit(repo, item(repo, "Story")["id"], repro_reason="x")
+    code, out = b(repo, "check")
+    assert code == 1 and "for bugs only" in out, out
+
+
+def test_repro_reads_source_real_backlog():
+    """Real inputs: no repro or check of the repository's own items that runs tests or a tool script is read as
+    text-only, and every warning check gives names an open bug with no repro_reason."""
+    real = backlog.Backlog(Path(TOOLS).parent)
+    for f in (Path(TOOLS).parent / backlog.REL_DIR).glob("*.json"):
+        it = json.loads(f.read_text(encoding="utf-8"))
+        for c in it.get("checks", []) + ([it["repro"]] if it.get("repro") else []):
+            run = c["run"]
+            if backlog.is_test_run(run) or (len(run) > 1 and run[1].endswith(".py")):
+                assert backlog.text_only_repro(run) is None, (it["id"], run)
+    for w in backlog.repro_text_warnings(real):
+        it = real.items[w.split()[0]]
+        assert it["kind"] == "bug" and it.get("status") in backlog.OPEN_STATUSES and not it.get("repro_reason"), w
 
 
 def test_done_refuses_failing_check_and_scope_then_passes(sprint):
