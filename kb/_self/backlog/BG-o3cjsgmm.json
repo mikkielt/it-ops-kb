@@ -2,7 +2,7 @@
   "id": "BG-o3cjsgmm",
   "kind": "bug",
   "title": "The backlog+ hook drops the next --all --any output when horizon fills its context limit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -41,5 +41,6 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
     "AGENTS.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
