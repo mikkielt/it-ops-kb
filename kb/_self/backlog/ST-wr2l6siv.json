@@ -24,5 +24,18 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "process-item",
+      "kind": "blocking",
+      "question": "Which items count as process items for start's recurring warning? The backlog has no process epic, field or label.",
+      "options": [
+        "an item that carries a recurs list: recurs is set only on recurring process work, so no new field",
+        "an item under a process epic the operator names",
+        "a new boolean item field, process: true"
+      ],
+      "recommendation": "an item that carries a recurs list: recurs is set only on recurring process work, so no new field"
+    }
+  ],
   "claimed_by": "worker-wr2l6siv"
 }
