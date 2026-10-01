@@ -53,6 +53,24 @@ def test_kb_content_selects_the_content_classes_only():
     assert all(r == "kb content: the content checks" for _, r in why)
 
 
+def test_testmap_selects_skill_section_headings_for_a_self_doc(monkeypatch):
+    """Planted (BG-rskbmulj): a kb/_self doc change, where a skill's `selfdoc.py section` heading lives, selects the
+    class holding the skill_section_headings tests, not test_selfdoc.py whole and not all; an article or a backlog
+    item does not; without the declaration the doc change misses it."""
+    assert testmap.SELF_SECTIONS == "_tools/test_selfdoc.py::TestSelfdocSection"
+    with open(os.path.join(testmap.TOOLS, "test_selfdoc.py"), encoding="utf-8") as f:
+        src = f.read()
+    assert "class TestSelfdocSection:" in src and "def test_skill_section_headings_resolve" in src
+    for path in ("kb/_self/backlog.md", "kb/_self/maintaining.md", "kb/_self/reports/test-suite-speed.md"):
+        sel, _ = testmap.select([path])
+        assert sel != testmap.ALL and testmap.SELF_SECTIONS in sel and "_tools/test_selfdoc.py" not in sel, (path, sel)
+        assert set(testmap.CONTENT_TESTS) <= set(sel), (path, sel)
+    for path in ("kb/public/python/pytest.md", "kb/_self/backlog/ST-x.json", "AGENTS.md"):
+        assert testmap.SELF_SECTIONS not in testmap.select([path])[0], path
+    monkeypatch.setattr(testmap, "SELF_SECTIONS", "_tools/test_none.py::Gone")
+    assert "_tools/test_selfdoc.py::TestSelfdocSection" not in testmap.select(["kb/_self/backlog.md"])[0]
+
+
 def test_a_whole_file_absorbs_its_classes():
     sel, _ = testmap.select(["kb/public/python/pytest.md", "_tools/test_kb_cohesion.py"])
     assert "_tools/test_kb_cohesion.py" in sel and not any(n.startswith("_tools/test_kb_cohesion.py::") for n in sel), sel

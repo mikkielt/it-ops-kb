@@ -17,7 +17,9 @@ How a path maps (first rule that applies):
   the modules it reaches the same way. It adds selfdoc's tools-map test (TOOLS_MAP, `TestSelfdocToolsMap`).
 - `kb/_self/backlog/**`, `kb/_querylog/**`: no tests of their own (kbgit.py's gate runs `backlog.py check` and
   `querylog.py check`).
-- kb content (`kb/**`, `AGENTS.md`, `README.md`, `CLAUDE.md`): the tests that read the live kb (CONTENT_TESTS).
+- kb content (`kb/**`, `AGENTS.md`, `README.md`, `CLAUDE.md`): the tests that read the live kb (CONTENT_TESTS); a
+  `kb/_self/**.md` doc adds the test of the `selfdoc.py section` commands the skills run (SELF_SECTIONS), so renaming a
+  heading a skill reads fails the change that renames it.
 - a deleted test file or runner: nothing.
 Every selection short of all adds the repository-wide leak scan (LEAKS), and a tool module's adds the tests that read
 every tool module by glob, not by import, so no edge of the graph reaches them (TOOL_SCANS: ruff, the import layers).
@@ -51,6 +53,10 @@ TOOL_SCANS = ["_tools/test_kb_cohesion.py::TestCohesion", "_tools/test_layout.py
 # selfdoc's map of every _tools/*.py symbol and its test over this repository: any change to a tool, a test file or a
 # suite's runner can move a line or a name, so each selects it (the class, not test_selfdoc.py whole)
 TOOLS_MAP = "_tools/test_selfdoc.py::TestSelfdocToolsMap"
+# the `selfdoc.py section DOC HEADING` commands of the skills and kb-worker.md, run against the kb/_self docs as they are:
+# a kb/_self doc change can rename a heading one reads, so each selects it (the class, not test_selfdoc.py whole)
+SELF_DOCS = "kb/_self/"
+SELF_SECTIONS = "_tools/test_selfdoc.py::TestSelfdocSection"
 SEARCHED = ("_tools/", ".claude/", ".githooks/", ".claude-plugin/", ".github/", ".gitlab-ci.yml")
 WITH_CONTENT = (".claude/", ".githooks/")
 # names too common to say which file a string means; a path under a directory also searches these directory tokens
@@ -172,6 +178,8 @@ def place(path):
         if rel.startswith(WITH_CONTENT):
             tests |= set(CONTENT_TESTS)
         return (tests, "test files and tools that name it") if tests else (ALL, "nothing names it: every test")
+    if rel.startswith(SELF_DOCS) and rel.endswith(".md"):
+        return set(CONTENT_TESTS) | {SELF_SECTIONS}, "a kb/_self doc: the content checks and the skills' section commands"
     if rel.startswith(CONTENT):
         return set(CONTENT_TESTS), "kb content: the content checks"
     return ALL, "no rule places it: every test"
