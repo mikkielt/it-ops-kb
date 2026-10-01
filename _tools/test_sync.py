@@ -845,6 +845,50 @@ class TestCodeLaneSync(SyncScenario):
         assert kbgit.lane_plan(w.base, "HEAD") == ("code", "code/TK-aaaaaaaa")
         assert kbgit.lane_plan(w.a.rev("HEAD"), "HEAD") == ("content", None)
 
+    @staticmethod
+    def claim(d, i):
+        """A content-lane claim of item `i`: its item file alone, KB-Work naming it."""
+        d.write(f"kb/_self/backlog/{i}.json", json.dumps({"id": i, "status": "doing"}) + "\n")
+        d.git("add", "-A")
+        d.git("commit", "-q", "-m", f"chore(backlog): claim {i}\n\nKB-Work: {i}")
+
+    def test_code_branch_named_after_code_commit(self, world, monkeypatch):
+        """Item A's content-lane claim, then item B's code commit: the branch is code/B, named after the item whose
+        code it carries (SP-v5xagbyv's code/TK-5mrfocpz carried TK-opkxumeu's code). Planted failures: the old rule
+        (the range's first KB-Work id) and a code_branch that reads every commit as code-lane name code/A."""
+        w = world
+        self.claim(w.a, "TK-aaaaaaaa")
+        self.code(w.a, 9, work="TK-bbbbbbbb")
+        monkeypatch.setattr(kbgit, "KB", w.a.path)
+        rng = [f"{w.base}..HEAD"]
+        assert [lane for _, lane, _ in kbgit.kblane.commit_lanes(w.a.path, rng)] == ["content", "code"]
+
+        def names_code_item(branch):
+            assert branch == "code/TK-bbbbbbbb", branch
+
+        names_code_item(kbgit.code_branch(w.base, "HEAD"))
+        assert kbgit.lane_plan(w.base, "HEAD") == ("code", "code/TK-bbbbbbbb")
+        out = kbgit.git("log", "--reverse", "--format=%(trailers:key=KB-Work,valueonly,unfold)", *rng)
+        old_rule = kbgit.CODE_BRANCH_PREFIX + re.split(r"[,\s]+", out.strip())[0]
+        with pytest.raises(AssertionError):
+            names_code_item(old_rule)
+        real = kbgit.kblane.commit_lanes
+        with monkeypatch.context() as m:
+            m.setattr(kbgit.kblane, "commit_lanes", lambda repo, spec: [(h, "code", c) for h, _, c in real(repo, spec)])
+            with pytest.raises(AssertionError):
+                names_code_item(kbgit.code_branch(w.base, "HEAD"))
+
+    def test_code_branch_falls_back_to_the_range(self, world, monkeypatch):
+        """A code commit without KB-Work: the range's first KB-Work id (the claim's), and with none, HEAD's short hash."""
+        w = world
+        monkeypatch.setattr(kbgit, "KB", w.a.path)
+        self.code(w.a, 10)
+        assert kbgit.code_branch(w.base, "HEAD") == f"code/{w.a.rev('HEAD')[:9]}"
+        self.claim(w.a, "TK-aaaaaaaa")
+        self.code(w.a, 11)
+        assert kbgit.code_branch(w.base, "HEAD") == "code/TK-aaaaaaaa"
+        assert kbgit.code_branch(w.a.rev("HEAD~1"), "HEAD~1") is None  # an empty range has no code-lane commit
+
     def test_only_code_branches_are_pushed_this_way(self, world, monkeypatch, capsys):
         w = world
         monkeypatch.setattr(kbgit, "KB", w.a.path)
