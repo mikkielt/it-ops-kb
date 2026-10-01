@@ -16,6 +16,10 @@
                     spool), kb prompts or not; a prompt outside any window keeps the kb rule; none twice, none for the
                     running prompt, none for a window that was closed, never opened or another item's; the next
                     prompt's capture and the distill write them
+  TestWorkSubagent  a subagent transcript whose records name one `work/<id>` branch (in `gitBranch`) is counted under
+                    `routed` by that item id and left out of `sub`; a worker's earlier branches are ignored; none,
+                    two work branches or a name only like one (an id's shape, extra path parts) leave it in `sub`;
+                    no branch string reaches the record or the command line's output (`-k work_subagent`)
   TestSidecar       distill writes the usage sidecar beside the run file: one line per written entry with usage,
                     `missing` counting the rest, the store gates pass; a row of another reader version is left out;
                     a second distill writes nothing; delivery copies the sidecar with its run file
@@ -316,6 +320,80 @@ class TestWorkUsage:
                                 kb_commit="0" * 40, out=said.append, usage_from=(SID, work_transcript(tmp_path, 4)))
         assert said[0] == "distill: usage rows written: 3", said
         assert usage_pids(q / "spool") == ["p1", "p2", "p3"]
+
+
+def subagent_transcript(tmp_path, branches, agent="a1", agent_type="Explore", out=7):
+    """A main transcript of one prompt p0 (one request) with a subagent transcript whose records name the git branches
+    `branches` in order (None: no `gitBranch`), each with one request of `out` output tokens; the main file's path."""
+    main = write_jsonl(tmp_path / "t.jsonl", [
+        {"type": "user", "promptId": "p0", "message": {"content": "x"}, "gitBranch": "main"},
+        {"type": "assistant", "requestId": "q0", "gitBranch": "main", "message": {
+            "model": "claude-sonnet-5", "usage": {"input_tokens": 10, "output_tokens": 1}, "content": []}}])
+    recs = [{"type": "user", "promptId": "p0", "isSidechain": True, "message": {"content": "x"}}]
+    for i, b in enumerate(branches):
+        rec = {"type": "assistant", "requestId": f"s{agent}{i}", "isSidechain": True, "message": {
+            "model": "claude-haiku-4-5", "usage": {"input_tokens": 2, "output_tokens": out}, "content": []}}
+        if b is not None:
+            rec["gitBranch"] = b
+        recs.append(rec)
+    d = tmp_path / "t" / "subagents"
+    write_jsonl(d / f"agent-{agent}.jsonl", recs)
+    (d / f"agent-{agent}.meta.json").write_text(json.dumps({"agentType": agent_type}), encoding="utf-8")
+    return str(main)
+
+
+def haiku_counts(n, out):
+    return {"claude-haiku-4-5": {"requests": n, "in": 2 * n, "cw": 0, "cw1h": 0, "cr": 0, "out": out}}
+
+
+class TestWorkSubagent:
+    """A subagent transcript's `work/<id>` branch routes its counts to that item (`-k work_subagent`)."""
+
+    def test_work_subagent_branch_routing(self, tmp_path):
+        """The worker starts on the branch its worktree was made on and moves to its work branch: the item is the one
+        work branch, the counts are `routed` and no longer `sub`, and no branch string is in the record."""
+        t = subagent_transcript(tmp_path, ["main", "worktree-agent-a1", "work/" + A, "work/" + A])
+        rec = kbusage.prompt_usage(t, "p0")
+        assert rec["routed"] == {A: {"Explore": haiku_counts(4, 28)}} and "sub" not in rec
+        assert rec["main"] == {"claude-sonnet-5": {"requests": 1, "in": 10, "cw": 0, "cw1h": 0, "cr": 0, "out": 1}}
+        text = json.dumps(rec)
+        assert "work/" not in text and "worktree" not in text and "gitBranch" not in text
+
+    def test_work_subagent_work_item(self):
+        rs = lambda *bs: [{"gitBranch": b} if b is not None else {} for b in bs]  # noqa: E731
+        assert kbusage.work_item(rs("main", "work/" + A)) == A
+        assert kbusage.work_item(rs("work/SP-aaaaaaaa", "work/SP-aaaaaaaa")) == "SP-aaaaaaaa"
+        for none in (rs(), rs("main"), rs("work/" + A, "work/" + B), rs("work/" + A + "x"), rs("work/ST-AAAAAAAA"),
+                     rs("feature/work/" + A), rs("work/" + A + "/sub"), rs("work/XX-aaaaaaaa"), rs("work/TK-aaaaaaa1"),
+                     [{"gitBranch": 5}, {"gitBranch": None}, {"gitBranch": ["work/" + A]}]):
+            assert kbusage.work_item(none) is None, none
+
+    @pytest.mark.parametrize("branches", [["main"], ["worktree-agent-a1", "main"], [None, None], ["work/TK-short"],
+                                          ["work/" + A, "work/" + B], ["feature/x/work/" + A]])
+    def test_work_subagent_non_work_branch_ignored(self, tmp_path, branches):
+        """A subagent on no work branch, on two of them or on a name that is only like one stays in `sub`."""
+        rec = kbusage.prompt_usage(subagent_transcript(tmp_path, branches), "p0")
+        assert rec["sub"] == {"Explore": haiku_counts(len(branches), 7 * len(branches))} and "routed" not in rec
+
+    def test_work_subagent_routed_and_unrouted_apart(self, tmp_path):
+        """Two subagents of the prompt, one on a work branch: `sub` holds the other, `routed` the first, by its
+        agent group."""
+        t = subagent_transcript(tmp_path, ["work/" + A], agent="a1", agent_type="it-ops-kb:kb-lookup")
+        subagent_transcript(tmp_path, ["main"], agent="a2", out=9)
+        rec = kbusage.prompt_usage(t, "p0")
+        assert rec["routed"] == {A: {"kb-lookup": haiku_counts(1, 7)}}
+        assert rec["sub"] == {"Explore": haiku_counts(1, 9)}
+
+    def test_work_subagent_no_row_changes_without_a_work_branch(self):
+        """The fixture's subagents record no branch: the records are the ones the sidecar always kept."""
+        assert "routed" not in kbusage.prompt_usage(str(SESSION), "p1")
+        assert kbusage.prompt_usage(str(SESSION), "p1") == P1
+
+    def test_work_subagent_command_line_prints_the_item_only(self, tmp_path):
+        t = subagent_transcript(tmp_path, ["work/" + A])
+        p = subprocess.run([sys.executable, str(Path(TOOLS) / "kbusage.py"), t], capture_output=True, text=True,
+                           encoding="utf-8", timeout=60)
+        assert p.returncode == 0 and A in p.stdout and "work/" not in p.stdout, p.stdout
 
 
 def plant(qdir, usage_rows=True, reader=None):

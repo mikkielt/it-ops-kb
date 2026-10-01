@@ -11,8 +11,9 @@
                     reader and counts, a run id that names another file or month, no run file beside it, counts that do
                     not match the lines, an unknown field (a session, a prompt, a command, a usage record's `start`),
                     an item that is not an item id, items unsorted, repeated or not a list, a prompt count that is not
-                    a positive count, a model id, agent group or count outside its shape, `cw1h` above `cw`, an item
-                    twice in a file (the same item in two runs is fine), an empty file or one that is not JSON lines;
+                    a positive count (an item line may have none, with an empty `main` and a `sub`, for subagent counts
+                    routed to it, never otherwise), a model id, agent group or count outside its shape, `cw1h`
+                    above `cw`, an item twice in a file (the same item in two runs is fine), an empty file or one that is not JSON lines;
                     `querylog.py check` and the leak scan run over it
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub. The helpers the classes share are in
@@ -265,6 +266,13 @@ class TestWorkGates:
         head = jsonl(ql_store.work_files(store)[0])[0]
         assert head == {"run": WORK_RUN, "reader": 1, "counts": {"items": 2, "shared": 1, "missing": 0}}
 
+    def test_work_sidecar_an_item_line_of_routed_subagent_counts_only_passes(self, tmp_path):
+        """An item no prompt of its own reached, only a subagent routed to it: prompts 0, an empty main, a sub."""
+        sub = {"kb-lookup": {"claude-haiku-4-5-20251001": HAIKU}}
+        lines = work_lines()[:1] + [{"item": WORK_B, "prompts": 0, "main": {}, "sub": sub}]
+        store, problems = work_store(tmp_path, lines=lines)
+        assert problems == [] and ql_store.store_problems(store) == []
+
     def test_work_sidecar_not_written_without_a_line(self, tmp_path):
         assert ql_store.write_work(tmp_path / "store", WORK_RUN, [], 0, 1) is None
         assert not (tmp_path / "store").exists()
@@ -290,7 +298,17 @@ class TestWorkGates:
         (at([3, "items"], []), "items are not a list of item ids"),
         (at([3, "items"], WORK_A), "items are not a list of item ids"),
         (at([3, "items"], ["TK-aaaaaaaa; rm -rf /"]), "items are not a list of item ids"),
-        (at([1, "prompts"], 0), "prompts is not a positive count"),
+        (at([1, "prompts"], 0), "an item line with no prompt holds an empty main and a sub"),
+        (at([2, "prompts"], 0), "an item line with no prompt holds an empty main and a sub"),
+        (at([2], {"item": WORK_B, "prompts": 0, "main": {}}), "an item line with no prompt holds an empty main and a sub"),
+        (at([2], {"item": WORK_B, "prompts": 0, "main": {}, "sub": {"payroll-agent": {"claude-opus-5-5": OPUS}}}),
+         "is not an agent group"),
+        (at([2], {"item": WORK_B, "prompts": 0, "main": {}, "sub": {}}), "sub is not a map of agent groups"),
+        (at([2], {"item": WORK_B, "prompts": 0.0, "main": {}, "sub": {"kb-lookup": {"claude-haiku-4-5-20251001": HAIKU}}}),
+         "prompts is not a positive count"),
+        (at([3, "prompts"], 0), "prompts is not a positive count"),
+        (at([3, "main"], {}), "not a map of model ids to counts"),
+        (at([1, "prompts"], -1), "prompts is not a positive count"),
         (at([1, "prompts"], True), "prompts is not a positive count"),
         (at([1, "prompts"], "3"), "prompts is not a positive count"),
         (at([1, "main"], {}), "not a map of model ids to counts"),

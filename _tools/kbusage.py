@@ -11,7 +11,8 @@ only; no model and no network.
                                                transcripts' usage (exit 1 when they do not add up, 2 for no input)
 
 prompt_usage(transcript_path, prompt_id) is what the query log's distill calls: a dict of counts, tool groups and
-model ids, or None when the transcript cannot be read or holds no request of the prompt.
+model ids, or None when the transcript cannot be read or holds no request of the prompt. A subagent that worked on a
+`work/<id>` branch is counted under `routed`, by that item id, not under `sub`.
 """
 import argparse, json, os, re, shlex, sys
 from pathlib import Path
@@ -42,6 +43,7 @@ PYTHON = re.compile(r"py(?:thon[\d.]*)?(?:\.exe)?")
 SUBCOMMANDS = ("git", "gh", "glab", "docker", "kubectl", "npm", "pip", "pip3", "uv", "cargo", "go", "claude")
 SUBWORD = re.compile(r"[a-z][a-z-]*")
 WORKTREE = re.compile(r"/\.claude/worktrees/[^/]+")
+WORK_BRANCH = re.compile(r"work/((?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8})")  # a worker's branch: `work/` and backlog.py's id
 TOOL_GROUP = re.compile(r"kb_\w{1,40}|docs:(?:microsoft-learn|claude-code-docs|mcp-docs)|mcp:other|other|"
                         + "|".join(BUILTIN))
 
@@ -259,10 +261,24 @@ def read_all(path):
     return out
 
 
+def work_item(records):
+    """The item id of a subagent transcript's records: the one `work/<id>` branch they name in `gitBranch` (the
+    branch a worker's worktree is on; a worker's earlier records name the branch it started on, which is no work
+    branch). None when they name none or two different ones. The branch is read in memory; only the id leaves."""
+    ids = set()
+    for r in records:
+        b = r.get("gitBranch")
+        m = WORK_BRANCH.fullmatch(b) if isinstance(b, str) else None
+        if m:
+            ids.add(m.group(1))
+    return next(iter(ids)) if len(ids) == 1 else None
+
+
 def prompt_usage(transcript_path, prompt_id):
-    """The usage record of one prompt: `main` and `sub` ({model: counts}, `sub` by agent group), `start` (the input of
-    the prompt's first request), `steps` (at most STEPS_MAX, with `cut` counting the rest); None when the transcript
-    cannot be read or holds no request of the prompt."""
+    """The usage record of one prompt: `main` and `sub` ({model: counts}, `sub` by agent group), `routed` ({item id:
+    the `sub` shape}, for the subagents that worked on a `work/<id>` branch, work_item, which `sub` then leaves out),
+    `start` (the input of the prompt's first request), `steps` (at most STEPS_MAX, with `cut` counting the rest);
+    None when the transcript cannot be read or holds no request of the prompt."""
     if not (isinstance(transcript_path, str) and transcript_path and isinstance(prompt_id, str) and prompt_id):
         return None
     try:
@@ -275,14 +291,18 @@ def prompt_usage(transcript_path, prompt_id):
     main = {}
     for _, model, c in reqs:
         add(main, model, c)
-    sub = {}
+    sub, routed = {}, {}
     for group, f in subagent_files(transcript_path, prompt_id):
-        for _, model, c in requests(read_all(f), sidechain=True):
-            add(sub.setdefault(group, {}), model, c)
+        records = read_all(f)
+        item = work_item(records)
+        for _, model, c in requests(records, sidechain=True):
+            add((routed.setdefault(item, {}) if item else sub).setdefault(group, {}), model, c)
     st = steps(mine)
     rec = {"main": main, "start": total_input(reqs[0][2])}
     if sub:
         rec["sub"] = sub
+    if routed:
+        rec["routed"] = routed
     if st:
         rec["steps"] = st[:STEPS_MAX]
     if len(st) > STEPS_MAX:
