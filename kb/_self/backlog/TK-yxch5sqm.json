@@ -2,7 +2,7 @@
   "id": "TK-yxch5sqm",
   "kind": "task",
   "title": "kbusage.py tree: tool-result rollup over a transcript and its subagents",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-exu6fdy6",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,19 @@
     "kb/_self/tools.md",
     "kb/_self/usage.md"
   ],
-  "claimed_by": "worker-yxch5sqm"
+  "evidence": {
+    "commit": "6cd74dce453e550b66f6798b8e9c59e5851fe751",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbusage_tree"
+        ],
+        "exit": 0,
+        "sha256": "9b8dfe356ac1351d"
+      }
+    ]
+  }
 }
