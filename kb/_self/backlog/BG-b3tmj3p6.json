@@ -1,0 +1,21 @@
+{
+  "id": "BG-b3tmj3p6",
+  "kind": "bug",
+  "title": "The sprint cost report's shared figure and session total include the sessions of research items although research lines are left out",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/backlog.md, Cost of work, says that in a sprint report the shared figure and the session total still count the shared counts of the sessions that worked research items, whose own item lines are excluded from direct, attributed and the session total (backlog.py cost_report keeps research in the shared selection); found in the review of SP-fvztfmtm",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -qi 'sessions that worked research' kb/_self/backlog.md"
+    ]
+  },
+  "repro_reason": "documentation wording only: the code behaves as designed and the defect is a sentence the docs lack, which no behaviour test can show",
+  "touches": [
+    "kb/_self/backlog.md"
+  ]
+}
