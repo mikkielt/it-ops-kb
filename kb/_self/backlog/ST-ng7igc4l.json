@@ -1,0 +1,34 @@
+{
+  "id": "ST-ng7igc4l",
+  "kind": "story",
+  "title": "kb-sprint runs headless as a restartable sprint runner",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 4,
+  "goal": "python3 _tools/autopilot.py runner start SP launches claude -p running /kb-sprint run SP in its own worktree, with settings and plugins passed explicitly and its stream logged under _cache/autopilot/; the skill's headless path never calls AskUserQuestion, records each gate with its recommendation and goes on, and exits after K landed items or its first compaction with a status file the manager reads; autopilot.py runner-status SP prints landed items, gates, bugs filed and the exit cause in under 1000 characters; a relaunched runner continues from horizon",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_runner"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/settings.json",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-6fb6kzoa"
+  ]
+}

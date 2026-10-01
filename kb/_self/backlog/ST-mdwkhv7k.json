@@ -1,0 +1,61 @@
+{
+  "id": "ST-mdwkhv7k",
+  "kind": "story",
+  "title": "/kb-autopilot runs the backlog as a manager loop",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 7,
+  "goal": "The /kb-autopilot skill, run in its own clone under /loop, does one tick from autopilot.py status: intake --file --network and triage of its drafts, review, retrospective and close of each runner that exited (provisional answers confirmed and retro stories picked as autopilot decisions), refill to two runners (plan, research, start, runner start), the digest, and a PushNotification only for gates the operator keeps; judgment steps run in subagents that return a short JSON, the skill holds Compact Instructions, and it never writes auto-memory",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_skill"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-autopilot/**",
+    "_tools/autopilot.py",
+    "_tools/test_autopilot.py",
+    ".claude/settings.json",
+    "AGENTS.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-7bnhmnja",
+    "ST-vdb4tkrb",
+    "ST-nrhwbodb"
+  ],
+  "gates": [
+    {
+      "id": "notify",
+      "kind": "blocking",
+      "question": "How does the manager reach the operator?",
+      "options": [
+        "push notification for kept gates plus the committed digest",
+        "backlog horizon only",
+        "a GitLab issue per batch"
+      ],
+      "recommendation": "push notification for kept gates plus the committed digest",
+      "answer": "push notification for kept gates plus the committed digest; the manager runs as a local loop session in its own clone",
+      "by": "operator"
+    },
+    {
+      "id": "loop-form",
+      "kind": "provisional",
+      "question": "Does the manager run as one interactive /loop session with compaction hooks, or as a Python outer loop launching a fresh claude -p per tick?",
+      "options": [
+        "interactive /loop session first, generational ticks if rot metrics show drift",
+        "generational ticks from the start"
+      ],
+      "recommendation": "interactive /loop session first, generational ticks if rot metrics show drift"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "ST-nrhwbodb",
+  "kind": "story",
+  "title": "The manager's state is one capped command and survives compaction",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 6,
+  "goal": "autopilot.py status prints runners (sprint, worktree, pid, alive or exit cause), each active sprint's counts and next item, the operator's pending gates, unratified decisions and the last tick's actions from _cache/autopilot/state.json and ticks.jsonl, with --hook under 1000 characters; a SessionStart hook with the compact matcher prints status --hook, and a PreCompact hook blocks compaction (exit 2) while the land or sync lock is held",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_status"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot.py",
+    ".claude/settings.json",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-ng7igc4l",
+    "ST-2jojzufm"
+  ]
+}

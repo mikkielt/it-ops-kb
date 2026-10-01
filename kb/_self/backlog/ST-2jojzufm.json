@@ -1,0 +1,51 @@
+{
+  "id": "ST-2jojzufm",
+  "kind": "story",
+  "title": "Two sprint runners share one host without stepping on each other",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 5,
+  "goal": "autopilot.py runs at most two sprint runners at once and refuses a third; backlog.py plan or start refuses a sprint whose committed touches overlap those of another sprint a runner holds, naming the paths; landing and kbgit.py sync --push take a host-wide lock so two runners never rebase or push main at once, the holder named while the other waits",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_two_runners"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot.py",
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "_tools/test_backlog.py",
+    "_tools/kbgit.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-7wyfn2eh",
+    "ST-zkotxvdl"
+  ],
+  "gates": [
+    {
+      "id": "parallel",
+      "kind": "blocking",
+      "question": "How many sprint runners may run at once?",
+      "options": [
+        "2, each with up to 4 workers",
+        "1",
+        "3"
+      ],
+      "recommendation": "2, each with up to 4 workers",
+      "answer": "2, each with up to 4 workers",
+      "by": "operator"
+    }
+  ]
+}

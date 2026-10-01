@@ -1,0 +1,35 @@
+{
+  "id": "ST-wxhe6jci",
+  "kind": "story",
+  "title": "The digest reports context rot and decision disagreement",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 8,
+  "goal": "kbusage.py tree reports, per manager tick and per runner, the compactions (compact_boundary events with preTokens), tokens per tick and reads repeated within one tick; the autopilot digest adds the share of autopilot decisions the operator reverted and those contradicting an earlier decision of the same class",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_rot_metrics"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbusage.py",
+    "_tools/test_kbusage.py",
+    "_tools/kbdecide.py",
+    "_tools/test_kbdecide.py",
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-mdwkhv7k",
+    "ST-6bi7oe6y"
+  ]
+}
