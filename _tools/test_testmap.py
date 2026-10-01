@@ -20,11 +20,31 @@ def test_a_tool_change_selects_the_test_files_that_reach_it():
     sel, _ = testmap.select(["_tools/backlog.py"])
     assert "_tools/test_backlog.py" in sel and "_tools/test_kb_http.py" not in sel, sel
     own = "_tools/test_testmap.py"  # names every tool it plants, so it reaches them too
-    assert [f for f in testmap.select(["_tools/kb_http.py"])[0] if f != own] ==         sorted(["_tools/test_kb_http.py", testmap.LEAKS] + testmap.TOOL_SCANS)
+    assert [f for f in testmap.select(["_tools/kb_http.py"])[0] if f != own] ==         sorted(["_tools/test_kb_http.py", testmap.LEAKS, testmap.TOOLS_MAP] + testmap.TOOL_SCANS)
 
 
 def test_a_test_file_change_selects_itself():
-    assert testmap.select(["_tools/test_redact.py"])[0] == [testmap.LEAKS, "_tools/test_redact.py"]
+    assert testmap.select(["_tools/test_redact.py"])[0] == [testmap.LEAKS, "_tools/test_redact.py", testmap.TOOLS_MAP]
+
+
+def test_testmap_selects_tools_map_for_any_tool(monkeypatch):
+    """Planted: a change to a tool module no test imports, a test file and a runner each select the class that checks
+    selfdoc's tools map, and not the whole of test_selfdoc.py; without the declaration the tool and the runner miss it."""
+    assert testmap.TOOLS_MAP == "_tools/test_selfdoc.py::TestSelfdocToolsMap"
+    assert testmap.TOOLS_MAP in testmap.select(["_tools/kbroot.py"])[0]
+    name = "zz_" + "planted"  # built at run time: a literal would make this file reach it
+    monkeypatch.setattr(testmap, "graph", lambda: ({"test_x.py": {name}}, {name: set()}))
+    for path in ("_tools/test_kb_mcp.py", "_tools/stress_test.py", f"_tools/{name}.py"):
+        sel, _ = testmap.select([path])
+        assert testmap.TOOLS_MAP in sel and "_tools/test_selfdoc.py" not in sel, (path, sel)
+    monkeypatch.setattr(testmap, "TOOLS_MAP", "_tools/test_none.py::Gone")
+    for path in ("_tools/test_kb_mcp.py", "_tools/stress_test.py", f"_tools/{name}.py"):
+        assert "_tools/test_selfdoc.py::TestSelfdocToolsMap" not in testmap.select([path])[0], path
+
+
+def test_a_changed_selfdoc_test_file_runs_the_whole_file():
+    sel, _ = testmap.select(["_tools/test_selfdoc.py"])
+    assert "_tools/test_selfdoc.py" in sel and testmap.TOOLS_MAP not in sel, sel
 
 
 def test_kb_content_selects_the_content_classes_only():
