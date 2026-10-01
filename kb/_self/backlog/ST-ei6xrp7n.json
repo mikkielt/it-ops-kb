@@ -1,0 +1,9 @@
+{
+  "id": "ST-ei6xrp7n",
+  "kind": "story",
+  "title": "Planning puts a code task's docs in its own touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A sprint plan gives each code task the kb/_self docs kb/_self/map.csv maps to it, so the push gate's selfdoc stale check does not force every item to widen its touches or add a Self-Reviewed trailer at landing; backlog.py check or start reports a code task whose mapped docs are in no item's touches"
+}
