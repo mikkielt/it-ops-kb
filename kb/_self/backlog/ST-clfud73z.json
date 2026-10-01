@@ -2,7 +2,7 @@
   "id": "ST-clfud73z",
   "kind": "story",
   "title": "Review sprint: Operator decisions kept and cited",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jtfo4ael",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "mac-second"
 }
