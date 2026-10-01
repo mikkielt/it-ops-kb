@@ -411,3 +411,5 @@ isolatePeerMachines,claude/cross-session-messaging
 CLAUDE_CODE_MESSAGING_SOCKET,claude/cross-session-messaging
 CLAUDE_CODE_MESSAGING_TOKEN,claude/cross-session-messaging
 notify_when_idle,claude/cross-session-messaging
+adr-tools,agents/decision-records
+adr-template.md,agents/decision-records

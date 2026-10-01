@@ -2260,3 +2260,15 @@ _Agent: kb-research_
 - See agents/agent-evaluation.md, agents/docs-maintenance-agents.md, agents/agent-planning-and-done.md.
 
 _Agent: kb-research_
+
+## QK-official-sources-say-about-architecture-decision. What do official sources say about architecture decision records, their status lifecycle and who decides?
+- An ADR records one architecturally significant decision with its context, the options and the consequences; the collection is the decision log; Nygard's 2011 format has title, context, decision, status and consequences, with numbers never reused. [DOC S-neg7qqfq, S-jqks66nz]
+- Status values: proposed, accepted and superseded appear in every source that lists values; rejected (AWS, MADR) and deprecated (Nygard, MADR) in some; MADR makes the superseding record's id part of the status. [DOC S-neg7qqfq, S-jqks66nz, S-efm54uef, S-cs7vd6kx]
+- An accepted record is not edited: a changed decision is a new record that supersedes the old one, linked both ways, and the old one stays in the log. Google's overview instead lets the team adjust an ADR and keep the previous decision in it. [DOC S-jqks66nz, S-efm54uef, S-l52pzhgp]
+- Who decides: AWS has the team, owner included, accept a Proposed ADR and the owner record the outcome; MADR names decision-makers, consulted and informed people in the record; the UK government framework picks the deciding body by the decision's scope (team lead, programme forum, departmental board, Technical Design Council). [DOC S-jqks66nz, S-cs7vd6kx, S-6ek6kqhq]
+- Context change: Nygard says the time to change an old decision shows in the context, Azure records a confidence level for later reconsideration, MADR can state when to revisit a decision, and the UK framework asks for regular review. [DOC S-neg7qqfq, S-efm54uef, S-cs7vd6kx, S-6ek6kqhq]
+- Conclusion: a store of decisions kept as data can follow the shared core: never reused ids, an append-only history where a change is a new superseding record, a small status set, and fields for decision-makers, consulted, informed and date; none of the sources defines a status for a record whose context changed but which nothing replaced. [DER S-neg7qqfq, S-jqks66nz, S-efm54uef, S-cs7vd6kx, S-lrsbmzgx: the practices combined]
+- Open: no status for a record whose context changed; no approver role; no first-party GitHub or GitLab ADR page found. [UNK]
+- See agents/decision-records.md, agents/agent-planning-and-done.md.
+
+_Agent: kb-research_

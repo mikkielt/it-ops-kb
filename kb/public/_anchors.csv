@@ -807,6 +807,92 @@ fcb0c1c9d1da,agents/copilot-studio-mcp-client.md,S1964,unlocated:no-match,,,,,20
 fcb0c1c9d1da,agents/copilot-studio-mcp-client.md,S-nt2bmgtl,unlocated:no-match,,,,,2026-09-29
 fd5dbfbeb753,agents/copilot-studio-mcp-client.md,S1964,unlocated:no-match,,,,,2026-09-29
 fd93479f5a6b,agents/copilot-studio-mcp-client.md,S-gcbkqdo3,unlocated:no-match,,,,,2026-09-29
+213139835800,agents/decision-records.csv,S-jqks66nz,located,Architectural decision record process > ADR adoption process,stay;action;propo;owner;review;team;adr,5dd9781b2c388276,"After the review phase, the ADR owner reads out and discusses each comment with the team. If the team finds action points to improve the",2026-10-01
+23d0bf848c14,agents/decision-records.csv,S-lrsbmzgx,unlocated:no-match,,,,,2026-10-01
+2b7c05881c00,agents/decision-records.csv,S-jqks66nz,unlocated:no-match,,,,,2026-10-01
+360e788ac663,agents/decision-records.csv,S-jqks66nz,located,Architectural decision record process > ADR review process,old;supers;new;approv;stat;chang;owner;adr,a358c08706922719,"If the team approves the new ADR, the owner should change the state of the old ADR to Superseded.",2026-10-01
+42031999e4e8,agents/decision-records.csv,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+43daa1f54937,agents/decision-records.csv,S-6ek6kqhq,located,Introduction > How to use this ADR framework > Decision levels and escalation criteria,head;other;local;lead;platform;group;impact;shar,92f6c51027e7e8b6,Local to a single team or working group Head of team or working group lead No impact on other teams or shared platforms,2026-10-01
+51e40d0fb9db,agents/decision-records.csv,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+543c8521c87d,agents/decision-records.csv,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-01
+6226b5dcc22a,agents/decision-records.csv,S-efm54uef,unlocated:no-match,,,,,2026-10-01
+6610ab06c4c8,agents/decision-records.csv,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+6677f2f3b486,agents/decision-records.csv,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-01
+68904d11781c,agents/decision-records.csv,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+6ea7f13ed8b2,agents/decision-records.csv,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+776d9327ebbc,agents/decision-records.csv,S-jqks66nz,located,Architectural decision record process > ADR adoption process,list;stakeholder;timestamp;version;adds;approv;accept;owner,5028fa23ad5ef4da,"If the team approves the ADR, the owner adds a timestamp, version, and list of stakeholders. The owner then updates the state to Accepted.",2026-10-01
+79ea6f4ada7d,agents/decision-records.csv,S-6ek6kqhq,located,Introduction > How to use this ADR framework > Decision levels and escalation criteria,department-wid;equivalent;wide;board;strategic;departmental;department;architectur,f11fbddb928a636c,Department-wide and Strategic Impacts multiple programmes and products groups or sets a precedent for future work Departmental architecture board or equivalent,2026-10-01
+86ca4516d747,agents/decision-records.csv,S-jqks66nz,located,Architectural decision record process > ADR adoption process,rework;decid;includ;reject;accept;owner;team,a966d3a83ad94d1b,"The goal of the ADR review process is to decide whether the team accepts the ADR, determines that it needs rework, or rejects the ADR.",2026-10-01
+9fc5ba7a3c0c,agents/decision-records.csv,S-efm54uef,unlocated:no-match,,,,,2026-10-01
+a25bcca6cc2f,agents/decision-records.csv,S-cs7vd6kx,located,"{short title, representative of solved problem and found solution} > Decision Outcome > Confirmation",decid;element;decision,2d0e228cebdfd8c8,"Are the design that was decided for and its implementation in line with the decision made? E.g., a design/code review or a test with a",2026-10-01
+ad9b7b11635c,agents/decision-records.csv,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+b0c9a52bee46,agents/decision-records.csv,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+b4cabd601118,agents/decision-records.csv,S-6ek6kqhq,located,Introduction > Contact,council;cross-government;national;technical;cross;design;government;framework,a8c3a4b08fdda23f,implementing the ADR framework in your team or organisation bringing a cross-government or national decision to the Technical Design Council,2026-10-01
+bbb78c3f4ea1,agents/decision-records.csv,S-efm54uef,unlocated:no-match,,,,,2026-10-01
+bc84abb8969e,agents/decision-records.csv,S-l52pzhgp,unlocated:no-match,,,,,2026-10-01
+c3606d16b794,agents/decision-records.csv,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+d2916b3557b5,agents/decision-records.csv,S-gb6pcwtm,located,,adr;aws;exampl;complianc;consequenc;context;date;note,0ccd143bb4c259af,DocumentationAWS Prescriptive GuidanceUsing architectural decision records to streamline decision-making during development TitleStatusDateContextDecisionConsequencesComplianceNotes Appendix: Example ADR,2026-10-01
+d7dbe8261330,agents/decision-records.csv,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+d9d0856a9ab2,agents/decision-records.csv,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+dc585275692b,agents/decision-records.csv,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+ddb5e424c2de,agents/decision-records.csv,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+e168b135ea80,agents/decision-records.csv,S-efm54uef,located,Maintain an architecture decision record (ADR) - Microsoft Azure Well-Architected Framework | Microsoft Learn > Implement an ADR,new;two;link;original;supers;record,c08777e8a6ecc2d9,"If a decision changes, write a new record that supersedes the original and link the two together.",2026-10-01
+eca6f3239e84,agents/decision-records.csv,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+f4fc31d620c6,agents/decision-records.csv,S-6ek6kqhq,located,Introduction > How to use this ADR framework > Decision levels and escalation criteria,cross-team;such;sync;forum;cross;program;architectur;architectural,74ba1bbb807f0a81,"Cross-team and programme Affects multiple teams or shared services within a programme Architectural sync, such as the programme architecture forum",2026-10-01
+06c5a51d2d4b,agents/decision-records.md,S-2u3gjgpw,unlocated:no-match,,,,,2026-10-01
+0a35a44f0372,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+0d01e2603d3b,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+13c9f7ff486c,agents/decision-records.md,S-jqks66nz,located,Architectural decision record process > ADR review process,old;treat;immutabl;supers;new;approv;adrs;chang,2c737e7e0571b3ef,"The team should treat ADRs as immutable documents after the team accepts or rejects them. Changes to an existing ADR requires creating a new ADR,",2026-10-01
+1b06fd5c3de7,agents/decision-records.md,S-ebr4i7g5,unlocated:no-match,,,,,2026-10-01
+25644606b8c4,agents/decision-records.md,S-efm54uef,located,Maintain an architecture decision record (ADR) - Microsoft Azure Well-Architected Framework | Microsoft Learn > Implement an ADR,append;append-only;edit;new;two;accept;link;original,7d2d36e419c093f6,"The ADR serves as an append-only log. Don't go back and edit accepted records. If a decision changes, write a new record that supersedes the",2026-10-01
+27d563600fb6,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+2ee8e39650a6,agents/decision-records.md,S-jqks66nz,located,Architectural decision record process > ADR adoption process,asks;link;shar;violat;find;reviewer;author;updat,69bb4cc304c44edb,"During the code review, a code reviewer might find changes that violate one or more ADRs. In this case, the reviewer asks the author of",2026-10-01
+36b6e079476f,agents/decision-records.md,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-01
+36d9ae4195f0,agents/decision-records.md,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-01
+36d9ae4195f0,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+36d9ae4195f0,agents/decision-records.md,S-jqks66nz,unlocated:no-match,,,,,2026-10-01
+3d886e94b809,agents/decision-records.md,S-efm54uef,unlocated:no-match,,,,,2026-10-01
+41aeab400533,agents/decision-records.md,S-ebr4i7g5,unlocated:no-match,,,,,2026-10-01
+4efa0d456a57,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+4efa0d456a57,agents/decision-records.md,S-efm54uef,unlocated:no-match,,,,,2026-10-01
+4efa0d456a57,agents/decision-records.md,S-jqks66nz,unlocated:no-match,,,,,2026-10-01
+4efa0d456a57,agents/decision-records.md,S-lrsbmzgx,unlocated:no-match,,,,,2026-10-01
+4efa0d456a57,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+53dc76ebc614,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+58877d3412b3,agents/decision-records.md,S-jqks66nz,located,Architectural decision record process > ADR contents,adopt;architect;implement;overrul;understand;consequenc;other;reason,925f3f22607ca036,"At a minimum, each ADR should define the context of the decision, the decision itself, and the consequences of the decision for the project and",2026-10-01
+5ccb88ef7294,agents/decision-records.md,S-6ek6kqhq,located,Introduction,escalat;overhead;themselv;unnecessary;without;adoption;approval;cross-government,cb0ae4feb31f55fd,"Adoption of the ADR framework will empower teams and organisations to make architectural decisions themselves by following agile service delivery governance principles, without unnecessary overhead",2026-10-01
+5ef654785762,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+652a4ef27332,agents/decision-records.md,S-jqks66nz,located,Architectural decision record process,different;insight;immutabl;supers;new;propo;accept;decision,09aedd65830b3f80,"When the team accepts an ADR, it becomes immutable. If new insights require a different decision, the team proposes a new ADR. When the team",2026-10-01
+669ec95baa16,agents/decision-records.md,S-lrsbmzgx,unlocated:no-match,,,,,2026-10-01
+6faabbdc0e27,agents/decision-records.md,S-l52pzhgp,located,When to use ADRs > Format of an ADR,critical;functional;journey;non;non-functional;context;problem;user,409db84cb55778b1,Context and problem you want to solve Functional and non-functional requirements you want to address Potential critical user journey (CUJ) the decision impacts,2026-10-01
+7e13c051349b,agents/decision-records.md,S-gb6pcwtm,located,,adr;aws;exampl;complianc;consequenc;context;date;note,0ccd143bb4c259af,DocumentationAWS Prescriptive GuidanceUsing architectural decision records to streamline decision-making during development TitleStatusDateContextDecisionConsequencesComplianceNotes Appendix: Example ADR,2026-10-01
+7f4ecfa9b6ff,agents/decision-records.md,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-01
+945dc9a07261,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+970b3f204153,agents/decision-records.md,S-efm54uef,located,Maintain an architecture decision record (ADR) - Microsoft Azure Well-Architected Framework | Microsoft Learn,affect;alternativ;attribut;choic;entry;implication;out;quality,630f8d6b3a6d2ba4,"The ADR documents all key decisions, including alternatives that you ruled out, for architecturally significant requirements. Only include choices that affect the system's structure, key",2026-10-01
+9764631ad993,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+9d1051816724,agents/decision-records.md,S-cs7vd6kx,located,"{short title, representative of solved problem and found solution} > Decision Outcome > Confirmation",arch;archunit;code;complianc;library;review;such;test,dd7e1646cd672ef2,{Describe how the implementation of/compliance with the ADR can/will be confirmed. Are the design that was decided for and its implementation in line with the,2026-10-01
+a0a506c2c685,agents/decision-records.md,S-l52pzhgp,unlocated:no-match,,,,,2026-10-01
+a375d9ba3e41,agents/decision-records.md,S-efm54uef,unlocated:no-match,,,,,2026-10-01
+a713e9929287,agents/decision-records.md,S-jqks66nz,unlocated:no-match,,,,,2026-10-01
+a94773a413a1,agents/decision-records.md,S-l52pzhgp,unlocated:no-match,,,,,2026-10-01
+bcc1d76b5d41,agents/decision-records.md,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-01
+bcc1d76b5d41,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+bcc1d76b5d41,agents/decision-records.md,S-efm54uef,unlocated:no-match,,,,,2026-10-01
+bcc1d76b5d41,agents/decision-records.md,S-jqks66nz,unlocated:no-match,,,,,2026-10-01
+bcc1d76b5d41,agents/decision-records.md,S-lrsbmzgx,unlocated:no-match,,,,,2026-10-01
+bcc1d76b5d41,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+c5ccc340b833,agents/decision-records.md,S-jqks66nz,located,Architectural decision record process > ADR adoption process,befor;ownership;author;content;approv;chang;member;owner,f8e344a0790c1dc7,"To clarify this ownership, this guide refers to ADR authors as ADR owners in the following sections. Other team members can always contribute to an",2026-10-01
+cbdfb9983995,agents/decision-records.md,S-jqks66nz,located,Architectural decision record process > Scope of the ADR process,architecturally;ford;richard;every;functional;non;non-functional;requirement,ba70d8e2645beb43,"Project members should create an ADR for every architecturally significant decision that affects the software project or product, including the following (Richards and Ford 2020):",2026-10-01
+cf29efabe640,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+d65c1161fead,agents/decision-records.md,S-efm54uef,located,Maintain an architecture decision record (ADR) - Microsoft Azure Well-Architected Framework | Microsoft Learn > Workload documentation repository,contradict;debat;forgotten;intent;never;openly;repeat;stor,bf07d3c1815d5547,"This log should be readily available and stored openly with the workload's documentation. A decision that's made but never recorded will likely be forgotten, leading",2026-10-01
+d77b5012bfac,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+d821972af0ea,agents/decision-records.md,S-6ek6kqhq,located,Introduction > How to use this ADR framework,approv;chang;regularly;updat;consequenc;context;review;decision-mak,394cf25295817678,Share the approved ADR with all relevant stakeholders and ensure that it is accessible for future reference. This helps to maintain transparency and provides a,2026-10-01
+ddd70df4d58d,agents/decision-records.md,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-01
+ddd70df4d58d,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
+ddd70df4d58d,agents/decision-records.md,S-efm54uef,unlocated:no-match,,,,,2026-10-01
+ddd70df4d58d,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-01
+eaec62e652c4,agents/decision-records.md,S-jqks66nz,located,Architectural decision record process,architectur;lifecycl;plan;aspect;choic;consequenc;significant;context,648681b74477d52c,An architectural decision record (ADR) is a document that describes a choice the team makes about a significant aspect of the software architecture they're planning,2026-10-01
+eeb4ce4eec49,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-01
 0e1e6e4b7863,agents/declarative-agent-manifest.csv,S-nztel442,unlocated:no-match,,,,,2026-09-28
 10ba32232dc9,agents/declarative-agent-manifest.csv,S1840,unlocated:no-match,,,,,2026-09-28
 113c6c450913,agents/declarative-agent-manifest.csv,S1840,unlocated:no-match,,,,,2026-09-28

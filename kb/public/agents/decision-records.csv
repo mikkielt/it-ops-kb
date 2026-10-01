@@ -1,0 +1,33 @@
+framework,element,value,meaning,source
+Nygard 2011,status,proposed,stakeholders have not yet agreed,S-neg7qqfq
+Nygard 2011,status,accepted,agreed,S-neg7qqfq
+Nygard 2011,status,deprecated,a later ADR changes or reverses the decision; reference to the replacement,S-neg7qqfq
+Nygard 2011,status,superseded,a later ADR replaces the decision; reference to the replacement; the old record is kept,S-neg7qqfq
+AWS,status,Proposed,owner presents the ADR for team review; stays Proposed while actions are open,S-jqks66nz
+AWS,status,Accepted,"team approved; owner adds timestamp, version and stakeholder list; record becomes immutable",S-jqks66nz
+AWS,status,Rejected,team rejected; owner records the reason; record becomes immutable,S-jqks66nz
+AWS,status,Superseded,a new ADR was approved; owner changes the old record's state; old record stays in the log,S-jqks66nz
+Azure WAF,status,Proposed,named as an example status,S-efm54uef
+Azure WAF,status,Accepted,named as an example status; accepted records are not edited,S-efm54uef
+Azure WAF,status,Superseded,named as an example status; a new record supersedes the original and the two are linked,S-efm54uef
+MADR 4.0.0,status,proposed,value in the template's status placeholder,S-cs7vd6kx
+MADR 4.0.0,status,rejected,value in the template's status placeholder,S-cs7vd6kx
+MADR 4.0.0,status,accepted,value in the template's status placeholder,S-cs7vd6kx
+MADR 4.0.0,status,deprecated,value in the template's status placeholder,S-cs7vd6kx
+MADR 4.0.0,status,superseded by ADR-0123,value carries the id of the superseding record; the list is open-ended,S-cs7vd6kx
+UK GDS,status,(field only),the template has a status field and lists no values,S-6ek6kqhq
+adr-tools,status,superseded (link),"adr new -s changes the old record's status to say it is superseded by the new one, and links the new record back",S-lrsbmzgx
+MADR 4.0.0,who decides,decision-makers,everyone involved in the decision,S-cs7vd6kx
+MADR 4.0.0,who decides,consulted,"people whose opinions are sought, two-way communication",S-cs7vd6kx
+MADR 4.0.0,who decides,informed,"people kept up to date, one-way communication",S-cs7vd6kx
+AWS,who decides,owner and team,"owner proposes and records; the team including the owner accepts, reworks or rejects",S-jqks66nz
+UK GDS,who decides,team and working group level,"head of team or working group lead; local to one team, no impact on other teams or shared platforms",S-6ek6kqhq
+UK GDS,who decides,cross-team and programme level,architectural sync such as a programme architecture forum,S-6ek6kqhq
+UK GDS,who decides,department-wide and strategic level,departmental architecture board or equivalent,S-6ek6kqhq
+UK GDS,who decides,cross-government and national level,Technical Design Council,S-6ek6kqhq
+Nygard 2011,field,Title; Context; Decision; Status; Consequences,"five parts; ids numbered sequentially, never reused",S-neg7qqfq
+MADR 4.0.0,field,status; date; decision-makers; consulted; informed,optional front matter,S-cs7vd6kx
+UK GDS,field,title; date; status; context; decision; consequences; stakeholders consulted; links to supporting documents,template fields,S-6ek6kqhq
+AWS,field,Title; Status; Date; Context; Decision; Consequences; Compliance; Notes,"example ADR; Notes holds author, version and changelog",S-gb6pcwtm
+Azure WAF,field,problem statement with context; options considered; decision outcome with trade-offs and confidence; status,record anatomy,S-efm54uef
+Google Cloud,field,authors and team; context and problem; requirements; critical user journeys; key options; decision and reasons; optional timestamp,example outline,S-l52pzhgp
