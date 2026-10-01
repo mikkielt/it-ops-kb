@@ -73,7 +73,8 @@ USAGE_TOOL_KEYS = ("tool", "ok", "chars")
 WORK = "work"
 WORK_HEADER_KEYS = ("run", "reader", "counts")
 WORK_COUNT_KEYS = ("items", "shared", "missing")
-WORK_ITEM_KEYS = ("item", "prompts", "main", "sub")  # one item worked: its window prompts' summed counts
+WORK_ITEM_KEYS = ("item", "prompts", "main", "sub", "rework")  # one item worked: its window prompts' summed counts
+WORK_REWORK_KEYS = ("prompts", "main", "sub")  # an item line's `rework`: the part of its counts from its first refused done
 WORK_SHARED_KEYS = ("items", "prompts", "main", "sub")  # one session that worked items: its prompts outside any window
 WORK_OVERHEAD_KEYS = ("overhead", "calls", "main")  # one kind of the kb's own background runs: no item, no prompt
 OVERHEAD_KINDS = ("distill", "digest", "eval", "census")  # the background runs a line may name (usage.md)
@@ -267,13 +268,23 @@ def tally_add(tally, counts):
         add_models(tally["sub"].setdefault(g, {}), models)
 
 
-def work_line(key, value, tally):
-    """The work sidecar line of a tally: `item` (an id) for one item's line, `items` (ids) for a session's shared
-    line; the summed counts in their sorted order, `sub` only when a subagent ran."""
+def work_counts(tally):
+    """The counts of a tally in their sorted order: `prompts`, `main`, and `sub` only when a subagent ran."""
     sort = lambda models: {m: models[m] for m in sorted(models)}  # noqa: E731
-    line = {key: value, "prompts": tally["prompts"], "main": sort(tally["main"])}
+    out = {"prompts": tally["prompts"], "main": sort(tally["main"])}
     if tally["sub"]:
-        line["sub"] = {g: sort(tally["sub"][g]) for g in sorted(tally["sub"])}
+        out["sub"] = {g: sort(tally["sub"][g]) for g in sorted(tally["sub"])}
+    return out
+
+
+def work_line(key, value, tally, rework=None):
+    """The work sidecar line of a tally: `item` (an id) for one item's line, `items` (ids) for a session's shared
+    line; the summed counts in their sorted order, `sub` only when a subagent ran. `rework`, the tally of the part
+    of an item's counts from its first refused done (a part of the line's counts, not added to them), becomes the
+    line's `rework` block when it holds a prompt or a subagent."""
+    line = {key: value, **work_counts(tally)}
+    if rework and (rework["prompts"] or rework["sub"]):
+        line["rework"] = work_counts(rework)
     return line
 
 
@@ -757,13 +768,66 @@ def overhead_line_problems(w, where):
     return out + _models_problems(w.get("main"), f"{where}: main")
 
 
+def _counted_problems(w, where, may_have_no_prompt):
+    """The gates on the counts of a work line or of its `rework` block: a positive prompt count and `main` per model,
+    or, for an item line (`may_have_no_prompt`), no prompt (`prompts` 0), an empty `main` and a `sub`; and `sub` in
+    its closed shape when there is one."""
+    out = []
+    if may_have_no_prompt and type(w.get("prompts")) is int and w["prompts"] == 0:
+        if w.get("main") != {} or "sub" not in w:
+            out.append(f"{where}: an item line with no prompt holds an empty main and a sub")
+    else:
+        if not (_count(w.get("prompts")) and w["prompts"] > 0):
+            out.append(f"{where}: prompts is not a positive count")
+        out += _models_problems(w.get("main"), f"{where}: main")
+    if "sub" in w:
+        out += _sub_problems(w["sub"], where)
+    return out
+
+
+def _within_problems(part, whole, where):
+    """A `rework` block `part` of a line `whole`, both with sound counts, is a part of it: no more prompts, and for
+    each model (and agent group) no count above the line's."""
+    out = []
+    if part["prompts"] > whole["prompts"]:
+        out.append(f"{where}: rework prompts exceed the line's")
+    pairs = [("main", part["main"], whole["main"])]
+    pairs += [(f"sub {g!r:.40}", models, whole.get("sub", {}).get(g, {})) for g, models in part.get("sub", {}).items()]
+    for name, mine, theirs in pairs:
+        for m, c in mine.items():
+            if any(c[k] > theirs.get(m, {}).get(k, 0) for k in USAGE_COUNTS):
+                out.append(f"{where}: {name} counts of {m!r:.60} exceed the line's")
+    return out
+
+
+def rework_problems(w, where):
+    """The gates on an item line's `rework` block: a closed shape (`prompts`, `main`, `sub`, nothing else), the
+    counts of a line (a positive prompt count and `main`, or no prompt, an empty `main` and a `sub`), a part of the
+    line's own counts, and on no sprint's line (a prompt in several windows is never split)."""
+    b = w["rework"]
+    if not isinstance(b, dict):
+        return [f"{where}: rework is not a block of counts"]
+    here = f"{where}: rework"
+    out = []
+    other = sorted(set(b) - set(WORK_REWORK_KEYS))
+    if other:
+        out.append(f"{here} has fields it never has: {', '.join(other)}")
+    if isinstance(w.get("item"), str) and w["item"].startswith("SP-"):
+        out.append(f"{here}: a sprint's line has no rework")
+    out += _counted_problems(b, here, True)
+    if not out and not _counted_problems(w, where, True):
+        out += _within_problems(b, w, here)
+    return out
+
+
 def work_line_problems(w, where):
-    """The gates on one work sidecar line: an item line (`item`, `prompts`, `main`, `sub`) or a shared line (`items`,
-    `prompts`, `main`, `sub`), with an item id, a prompt count and counts in the usage record's closed shapes, and
-    nothing else: no session, prompt, transcript, command or text. A shared line has a positive prompt count and a
-    `main`; an item line has them too, or no prompt (`prompts` 0) and an empty `main` with a `sub`: the counts of
-    subagents routed to the item, none of its prompts counted on its own line. An overhead line is a third kind
-    (overhead_line_problems), with no item at all."""
+    """The gates on one work sidecar line: an item line (`item`, `prompts`, `main`, `sub`, and `rework`, the counts
+    from its first refused done: rework_problems) or a shared line (`items`, `prompts`, `main`, `sub`), with an item
+    id, a prompt count and counts in the usage record's closed shapes, and nothing else: no session, prompt,
+    transcript, command or text. A shared line has a positive prompt count and a `main`; an item line has them too,
+    or no prompt (`prompts` 0) and an empty `main` with a `sub`: the counts of subagents routed to the item, none of
+    its prompts counted on its own line. An overhead line is a third kind (overhead_line_problems), with no item at
+    all."""
     out = []
     if sum(1 for k in ("item", "items", "overhead") if k in w) != 1:
         return [f"{where}: a work line has an `item` or an `items` or an `overhead`, one of them and not several or "
@@ -783,15 +847,9 @@ def work_line_problems(w, where):
             out.append(f"{where}: items are not sorted, each once")
     elif not (isinstance(w["item"], str) and WORK_ITEM.fullmatch(w["item"])):
         out.append(f"{where}: item is not an item id")
-    if not shared and type(w.get("prompts")) is int and w["prompts"] == 0:
-        if w.get("main") != {} or "sub" not in w:
-            out.append(f"{where}: an item line with no prompt holds an empty main and a sub")
-    else:
-        if not (_count(w.get("prompts")) and w["prompts"] > 0):
-            out.append(f"{where}: prompts is not a positive count")
-        out += _models_problems(w.get("main"), f"{where}: main")
-    if "sub" in w:
-        out += _sub_problems(w["sub"], where)
+    out += _counted_problems(w, where, not shared)
+    if "rework" in w and not shared:
+        out += rework_problems(w, where)
     return out
 
 

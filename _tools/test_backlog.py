@@ -3882,6 +3882,142 @@ def test_backlog_cost_without_sidecars_prints_zeros_and_exits_0(sprint, capsys):
     assert one["shared"] == {} and one["session_total"] == {} and one["shared_prompts"] == 0
 
 
+# --- backlog.py cost --rework: the work before an item's first refused done apart from the rework after it ---
+
+COST_RUN_C = "20261005T100000Z-eeeeeeee"
+
+
+@pytest.fixture
+def reworked(costed):
+    """The costed sprint with a third sidecar: the task and the unrelated bug each have a `rework` block (a part of the
+    line's own counts, from their first refused done), the story a line with none."""
+    repo, st, tk, bg = costed["repo"], costed["st"], costed["tk"], costed["bg"]
+    cost_sidecar(repo, COST_RUN_C, [
+        {"item": tk, "prompts": 2, "main": {OPUS: cc(2, 10, 5, 100, 6)},
+         "sub": {"Plan": {OPUS: cc(1, 2, 1, 3, 4)}},
+         "rework": {"prompts": 1, "main": {OPUS: cc(1, 4, 2, 40, 2)}, "sub": {"Plan": {OPUS: cc(1, 2, 1, 3, 4)}}}},
+        {"item": st, "prompts": 1, "main": {OPUS: cc(1, 1, 1, 1, 1)}},
+        {"item": bg, "prompts": 2, "main": {OPUS: cc(2, 6, 0, 60, 6)},
+         "rework": {"prompts": 1, "main": {OPUS: cc(1, 3, 0, 30, 3)}}},
+    ])
+    return costed
+
+
+def rework_out(w, capsys, iid, *a):
+    return json.loads(cost_out(w["repo"], capsys, iid, "--rework", "--format", "json", *a))
+
+
+def check_rework_numbers(w, capsys):
+    """The split of the task, of the story (a line of its own with no rework, and its task's) and of the sprint, as the
+    sidecars hold them: rework is the blocks, work is the lines' counts less them, and the two add to the report's
+    direct and attributed."""
+    tk, st, sp, bg = w["tk"], w["st"], w["sp"], w["bg"]
+    task = rework_out(w, capsys, tk)
+    split = task["rework_split"]
+    assert split["items"] == [tk] and split["rework"]["prompts"] == 1 and split["work"]["prompts"] == 4, split
+    assert split["rework"]["direct"] == {OPUS: cc(1, 4, 2, 40, 2)}, split
+    assert split["rework"]["attributed"] == {OPUS: cc(1, 2, 1, 3, 4)}, split
+    assert split["work"]["direct"] == {OPUS: cc(6, 19, 9, 164, 16, cw1h=2), SONNET: cc(1, 1, 0, 2, 3)}, split
+    assert split["work"]["attributed"] == {OPUS: cc(4, 26, 6, 61, 11), SONNET: cc(1, 1, 1, 1, 1)}, split
+    assert (split["work"]["tokens"], split["rework"]["tokens"]) == (322, 58), split
+    assert split["by_item"] == {tk: {"work": split["work"], "rework": split["rework"]}}, split
+    # the report's own figures are the sum of the two, per model and count
+    for key in ("direct", "attributed"):
+        for m, c in task[key].items():
+            both = {k: split["work"][key].get(m, {}).get(k, 0) + split["rework"][key].get(m, {}).get(k, 0) for k in c}
+            assert both == c, (key, m)
+    assert task["prompts"] == split["work"]["prompts"] + split["rework"]["prompts"] == 5
+    story = rework_out(w, capsys, st)["rework_split"]  # its own line and its task's: the task's rework only
+    assert story["items"] == [tk] and story["rework"] == split["rework"] and story["work"]["prompts"] == 4 + 2, story
+    sprint = rework_out(w, capsys, sp)["rework_split"]  # the task's and the bug's
+    assert sprint["items"] == sorted([tk, bg]) and sprint["rework"]["prompts"] == 2, sprint
+    assert sprint["rework"]["direct"] == {OPUS: cc(2, 7, 2, 70, 5)}, sprint
+    assert set(sprint["by_item"]) == {tk, bg} and sprint["by_item"][bg]["work"]["prompts"] == 2, sprint  # run A's 1, run C's 2, less 1
+
+
+def test_backlog_work_rework_cost_prints_work_and_rework_for_an_item_a_story_and_a_sprint(reworked, capsys):
+    check_rework_numbers(reworked, capsys)
+
+
+def test_backlog_work_rework_cost_text(reworked, capsys):
+    repo, tk, bg = reworked["repo"], reworked["tk"], reworked["bg"]
+    view = backlog.Backlog(repo)
+    out = cost_out(repo, capsys, tk, "--rework")
+    block = out.split("work and rework (")[1]
+    assert "1 item(s) with rework" in block.splitlines()[0], out
+    assert "  work (4 prompt(s), 322 tokens):" in block and "  rework (1 prompt(s), 58 tokens):" in block, out
+    assert f"{OPUS}  requests 1  in 4  cr 40  out 2 | cw 2" in block.split("rework (1 prompt(s)")[1], out
+    assert (f"  {view.label(tk)}: work 4 prompt(s), 322 tokens; rework 1 prompt(s), 58 tokens") in out, out
+    assert view.label(bg) not in out
+    sprint = cost_out(repo, capsys, reworked["sp"], "--rework")
+    assert view.label(tk) in sprint.split("work and rework (")[1] and view.label(bg) in sprint.split("work and rework (")[1]
+
+
+def test_backlog_work_rework_an_item_with_no_rework_has_none(costed, capsys):
+    """No sidecar line has a `rework` block: no item, the whole of the report as work, and the text says so."""
+    tk = costed["tk"]
+    split = rework_out(costed, capsys, tk)["rework_split"]
+    assert split["items"] == [] and split["by_item"] == {} and split["rework"]["prompts"] == 0, split
+    assert split["rework"]["direct"] == {} and split["rework"]["attributed"] == {}
+    assert split["work"]["prompts"] == 3 and split["work"]["direct"][OPUS] == cc(5, 13, 6, 104, 12, cw1h=2), split
+    assert "no item has rework" in cost_out(costed["repo"], capsys, tk, "--rework")
+    assert rework_out(costed, capsys, costed["bg"])["rework_split"]["items"] == []
+
+
+def test_backlog_work_rework_without_the_flag_the_output_of_cost_is_unchanged(reworked, capsys):
+    """`cost` of a store with rework blocks prints what it prints of the same store without them, text and json, with
+    and without `--runs`; the key `rework_split` is only in a `--rework` report."""
+    repo = reworked["repo"]
+    ids = [reworked[k] for k in ("tk", "st", "sp")]
+    runs = (("--runs",), ())
+    before = {(i, a, f): cost_out(repo, capsys, i, *a, "--format", f) for i in ids for a in runs for f in ("text", "json")}
+    side = Path(repo) / "kb" / "_querylog" / "work" / "2026-10" / f"{COST_RUN_C}.jsonl"
+    rows = [json.loads(x) for x in side.read_text(encoding="utf-8").splitlines()]
+    for row in rows:
+        row.pop("rework", None)
+    side.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+    after = {(i, a, f): cost_out(repo, capsys, i, *a, "--format", f) for i in ids for a in runs for f in ("text", "json")}
+    assert before == after
+    assert all("rework" not in v for v in before.values())
+    flagged = json.loads(cost_out(repo, capsys, ids[0], "--rework", "--format", "json"))
+    assert "rework_split" in flagged and "rework_split" not in json.loads(before[(ids[0], (), "json")])
+
+
+def test_backlog_work_rework_a_sidecar_with_a_block_above_its_line_is_skipped(reworked, capsys):
+    repo, tk = reworked["repo"], reworked["tk"]
+    side = Path(repo) / "kb" / "_querylog" / "work" / "2026-10" / f"{COST_RUN_C}.jsonl"
+    text = side.read_text(encoding="utf-8").replace('"prompts": 1, "main": {"' + OPUS + '": {"requests": 1, "in": 4',
+                                                    '"prompts": 9, "main": {"' + OPUS + '": {"requests": 1, "in": 4', 1)
+    side.write_text(text, encoding="utf-8", newline="\n")
+    code, out = b(repo, "cost", tk, "--rework")
+    assert code == 0 and f"skipped sidecars that break the store's gates: {COST_RUN_C}" in out, out
+    assert rework_out(reworked, capsys, tk)["rework_split"]["items"] == []
+
+
+def test_backlog_work_rework_refuses_research_with_it(reworked):
+    code, out = b(reworked["repo"], "cost", "--research", "--rework")
+    assert code == 2 and "no ID, no --runs and no --rework" in out, out
+
+
+def test_backlog_work_rework_planted_failure_of_the_subtraction_is_caught(reworked, capsys, monkeypatch):
+    """With rework not taken out of the work, work counts what rework counts too."""
+    monkeypatch.setattr(backlog, "cost_take", lambda total, models: None)
+    with pytest.raises(AssertionError):
+        check_rework_numbers(reworked, capsys)
+
+
+def test_backlog_work_rework_planted_failure_of_a_dropped_block_is_caught(reworked, capsys, monkeypatch):
+    real = backlog.cost_lines
+
+    def no_blocks(root, ids, rework=False):
+        lines, skipped = real(root, ids)
+        return lines, skipped
+
+    monkeypatch.setattr(backlog, "cost_lines", no_blocks)
+    with pytest.raises(AssertionError):
+        check_rework_numbers(reworked, capsys)
+
+
 # --- backlog.py cost: items deleted at sprint close, read from their last version in git history ---
 
 COST_RUN_D = "20261004T100000Z-dddddddd"
