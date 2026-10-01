@@ -2,7 +2,7 @@
   "id": "ST-ykhcvsrx",
   "kind": "story",
   "title": "Stress test timing limits hold under host load",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5cwekumc",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,22 @@
     "_tools/stress_test.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "c-ykhcvsrx"
+  "evidence": {
+    "commit": "8b4e374d61e9abf8d73f4fb071e59d7ca2145bb0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_stress.py",
+          "-m",
+          "stress",
+          "-k",
+          "stress_under_load"
+        ],
+        "exit": 0,
+        "sha256": "795fceee4a5713f9"
+      }
+    ]
+  }
 }
