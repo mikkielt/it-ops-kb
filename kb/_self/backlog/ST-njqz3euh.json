@@ -2,7 +2,7 @@
   "id": "ST-njqz3euh",
   "kind": "story",
   "title": "Skills' opening selfdoc section reads run in a worktree session",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P1",
   "rank": 0,
@@ -34,5 +34,6 @@
     "kb/_self/web-sources.md",
     "kb/_self/plugin.md"
   ],
-  "notes": "Recurred in SP-ar52y6fk: the /kb-sprint run opening section read was refused in the orchestrator worktree and had to be split to leave out the Workflow section."
+  "notes": "Recurred in SP-ar52y6fk: the /kb-sprint run opening section read was refused in the orchestrator worktree and had to be split to leave out the Workflow section.",
+  "claimed_by": "worker-njqz3euh"
 }
