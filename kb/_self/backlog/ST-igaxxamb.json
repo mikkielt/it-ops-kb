@@ -2,7 +2,7 @@
   "id": "ST-igaxxamb",
   "kind": "story",
   "title": "Replay of the 2026-09-29 state finds what the manual review found",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -27,5 +27,20 @@
     "F-6298df20a337",
     "F-88bfb93dc08f",
     "F-e1ebb2febe4b"
-  ]
+  ],
+  "evidence": {
+    "commit": "eb8ddc16682895628f2fc1dd827da8134627e46b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_replay"
+        ],
+        "exit": 0,
+        "sha256": "31f43ec82878e0f8"
+      }
+    ]
+  }
 }
