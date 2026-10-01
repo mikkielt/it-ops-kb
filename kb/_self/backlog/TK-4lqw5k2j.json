@@ -2,7 +2,7 @@
   "id": "TK-4lqw5k2j",
   "kind": "task",
   "title": "Route subagent counts by worktree branch; overlaps to the sprint line",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-jn7qeb2b",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
     "_tools/test_ql_distill.py",
     "_tools/fixtures/querylog/**",
     "kb/_self/usage.md"
-  ]
+  ],
+  "claimed_by": "worker-4lqw5k2j"
 }
