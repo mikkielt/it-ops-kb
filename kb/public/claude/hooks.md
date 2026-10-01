@@ -1,8 +1,8 @@
 ---
 topic: claude/hooks
 priority: P1
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28)"
-retrieved_utc: 2026-09-29
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28; subagent agent_type values and failure input re-read 2026-10-01)"
+retrieved_utc: 2026-10-01
 sources: [S743, S745, S746, S1800, S2157, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf, S-uzkb4duq, S-npnkw4t2]
 status: complete
 ---
@@ -41,6 +41,7 @@ instead, so a hook can answer a prompt without a model call.
 - Common input fields `agent_id` and `agent_type` identify a subagent: `agent_id` is present only when the hook fires inside a subagent call, which tells subagent calls from main-thread calls; `agent_type` is the agent name (e.g. `Explore`), present when the hook fires inside a subagent or the session uses `--agent`, and a subagent's type takes precedence over the session's `--agent` value. [DOC S743]
 - Hooks from settings files, managed policy settings and plugins also run inside subagents: a subagent's tool calls fire the same configured `PreToolUse` and `PostToolUse` hooks as the main conversation, with `agent_id` and `agent_type` in their input. [DOC S743]
 - `SubagentStart` hooks receive `agent_id` and `agent_type` (the name the matcher filters on) beyond the common input fields; `SessionStart` receives `agent_type` only when Claude Code was started with `claude --agent <name>`. [DOC S743]
+- The `agent_type` value of a subagent is the built-in agent's name (`general-purpose`, `Explore`, `Plan`) or, for a custom subagent, the `name` field of its frontmatter, not its filename; for a subagent shipped by a plugin it is the plugin-scoped id such as `my-plugin:reviewer`, not the bare name. The colon puts that name on the matcher's regular-expression path, so an exact `SubagentStart` or `SubagentStop` matcher is anchored: `^my-plugin:reviewer$`. [DOC S743]
 - In the Agent SDK's callback hooks, `agent_id` and `agent_type` are set when the hook fires inside a subagent: on the base hook input for every event in TypeScript; in Python, optional on `PreToolUse`, `PostToolUse`, `PostToolUseFailure` and `PermissionRequest` and required on `SubagentStart` and `SubagentStop`. [DOC S-av5665nf]
 - `transcript_path` is written asynchronously and may not yet hold the current turn's latest messages when a hook fires; `Stop` and `SubagentStop` hooks receive `last_assistant_message` (Claude's final response text) for that purpose. [DOC S743]
 - `CLAUDE_CODE_SESSION_ID` is set automatically to the current session id in Bash and PowerShell tool subprocesses, hook command subprocesses and stdio MCP server subprocesses; for Bash, PowerShell and hooks it matches the hook input `session_id` and is updated on `/clear`, while an MCP server keeps the id it was spawned with (with `--continue` or `--resume` without an id it may get the initial startup id). [DOC S745]
