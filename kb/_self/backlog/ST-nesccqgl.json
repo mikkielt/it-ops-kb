@@ -2,7 +2,7 @@
   "id": "ST-nesccqgl",
   "kind": "story",
   "title": "Research for a planned sprint lands under its item",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -47,5 +47,19 @@
     }
   ],
   "notes": "Research landed ahead of planned sprints without KB-Work, because check-trailers refuses work for items outside a started sprint: 7d1175f7 (meets ST-rjxacpdh's goal), b6baa207 (TK-nytjligk), d0db1b38 (the ST-mmmn42ks tasks). Changing check-trailers is a rule change: the runbook and git.md change with it. ST-rjxacpdh is closed: it landed under KB-Work in SP-fkyrld5h (git log --grep \"KB-Work: ST-rjxacpdh\").",
-  "claimed_by": "worker-nesccqgl"
+  "evidence": {
+    "commit": "3a0abb9a147df52962ca061bf55be74125fadd9b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "research_lands_before_sprint_start"
+        ],
+        "exit": 0,
+        "sha256": "ef6537e07bbd2bd6"
+      }
+    ]
+  }
 }
