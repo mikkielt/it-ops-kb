@@ -6,7 +6,7 @@
   "parent": "ST-ahanvtgq",
   "priority": "P2",
   "rank": 0,
-  "goal": "settings.json's async SessionStart hook runs intake --file --hook; kb-backlog's Triage section lists uncommitted intake drafts first; querylog.py digest prints intake candidates by detector",
+  "goal": "settings.json's async SessionStart hook runs intake --file --hook; kb-backlog's Triage section lists uncommitted intake drafts first; querylog.py digest prints intake candidates by detector; the kb/_self docs of the files it changes describe the hook, the triage listing and the digest line in the same commit",
   "checks": [
     {
       "run": [
@@ -24,6 +24,11 @@
     "_tools/ql_report.py",
     "_tools/test_intake.py",
     "_tools/test_ql_report.py",
-    ".claude/skills/kb-backlog/SKILL.md"
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/usage.md"
   ]
 }
