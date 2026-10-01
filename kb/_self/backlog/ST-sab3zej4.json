@@ -2,7 +2,7 @@
   "id": "ST-sab3zej4",
   "kind": "story",
   "title": "Lookups show decisions and audit flags contradictions",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-v56iwyry",
   "sprint": "SP-jtfo4ael",
   "priority": "P2",
@@ -21,5 +21,20 @@
   "depends_on": [
     "ST-trjsnvos",
     "ST-cumapb4s"
-  ]
+  ],
+  "evidence": {
+    "commit": "15fd091f83b4dc723ae2fd310ee167db28cdf1d4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "decision_lookup"
+        ],
+        "exit": 0,
+        "sha256": "add6fa43adb95ab7"
+      }
+    ]
+  }
 }

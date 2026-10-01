@@ -2559,3 +2559,118 @@ def test_backlog_find_prints_open_matches_with_parent_chain_and_tree_open_hides_
     assert gone in out
     code, out = b(repo, "tree", "--open")
     assert code == 0 and gone not in out and live in out, out
+
+
+ROOT_MD = "---\nroot: public\nid_prefix: S\nvisibility: public\ndescription: test root\n---\n"
+SOURCES_HEADER = ("id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,"
+                  "superseded_by\n")
+DECIDE_TOOLS = ("kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py")
+
+
+@pytest.fixture
+def decide(sprint):
+    """The started sprint's repository with a copy of the decision tools, a minimal public root and kb/_self's decision
+    files, so `answer --record` writes into the copy and never into this repository."""
+    repo = sprint["repo"]
+    (repo / "_tools").mkdir()
+    for name in DECIDE_TOOLS:
+        shutil.copy(os.path.join(TOOLS, name), repo / "_tools" / name)
+    pub = repo / "kb" / "public"
+    pub.mkdir(parents=True)
+    for rel, text in (("_root.md", ROOT_MD), ("_sources.csv", SOURCES_HEADER), ("_artifacts.csv", "path,source_id,sha256\n"),
+                      ("_answers.md", "# Answers\n"), ("_gaps.md", "# Gaps\n"), ("_conflicts.md", "# Conflicts\n")):
+        (pub / rel).write_text(text, encoding="utf-8", newline="\n")
+    kb_self = repo / "kb" / "_self"
+    kb_self.mkdir(exist_ok=True)
+    (kb_self / "_decisions.csv").write_text(
+        "id,text,by,by_ref,source,date,context,status,invalidated_reason,invalidated_date,supersedes,review_by,links\n",
+        encoding="utf-8", newline="\n")
+    (kb_self / "decision-makers.csv").write_text("id,role,name,source\noperator,operator,,the operator answers a gate\n",
+                                                 encoding="utf-8", newline="\n")
+    (repo / ".gitignore").write_text("__pycache__/\n", encoding="utf-8", newline="\n")
+    edit(repo, sprint["bg"], gates=[{"id": "way", "kind": "blocking", "question": "Which way?",
+                                      "options": ["left", "right"], "recommendation": "left"}])
+    commit(repo, "decision tools")
+    return sprint
+
+
+def decisions(repo):
+    import csv
+    with open(Path(repo) / "kb" / "_self" / "_decisions.csv", encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def tool_run(repo, tool, *args):
+    p = subprocess.run([sys.executable, str(Path(repo) / "_tools" / tool), *args], cwd=repo, capture_output=True,
+                       text=True, encoding="utf-8")
+    return p.returncode, p.stdout + p.stderr
+
+
+def test_backlog_answer_record_writes_an_active_decision_of_the_item(decide):
+    repo, bg = decide["repo"], decide["bg"]
+    code, out = b(repo, "answer", bg, "way", "--answer", "left", "--by", "operator", "--record")
+    assert code == 0, out
+    assert item_json(repo, bg)["gates"][0]["answer"] == "left"
+    (row,) = decisions(repo)
+    assert (row["status"], row["text"], row["context"]) == ("active", "left", f"item:{bg}")
+    assert (row["by"], row["by_ref"]) == ("operator", "operator")
+    assert f"{bg} gate way" in row["source"]
+    code, out = tool_run(repo, "kbdecide.py", "list", "--root", "_self", "--context", f"item:{bg}")
+    assert code == 0 and row["id"] in out
+    code, out = tool_run(repo, "check.py")
+    assert code == 0, out
+
+
+def test_backlog_answer_record_without_record_writes_no_decision(decide):
+    repo, bg = decide["repo"], decide["bg"]
+    assert b(repo, "answer", bg, "way", "--answer", "left", "--by", "operator")[0] == 0
+    assert decisions(repo) == []
+
+
+@pytest.mark.parametrize("args", [
+    ("--provisional",),
+    ("--confirm",),
+    ("--answer", "left", "--by", "agent"),
+    ("--answer", "left"),
+    ("--by", "operator"),
+])
+def test_backlog_answer_record_refuses_what_is_not_the_operators_answer(decide, args):
+    repo, bg = decide["repo"], decide["bg"]
+    before = item_text(repo, bg)
+    code, out = b(repo, "answer", bg, "way", *args, "--record")
+    assert code == 2 and "--record" in out, out
+    assert decisions(repo) == [] and item_text(repo, bg) == before
+
+
+def test_backlog_answer_record_leaves_the_gate_open_when_kbdecide_refuses(decide):
+    """A decision kbdecide refuses (here a maker the register lacks) leaves the gate unanswered and no row behind."""
+    repo, bg = decide["repo"], decide["bg"]
+    (Path(repo) / "kb" / "_self" / "decision-makers.csv").write_text("id,role,name,source\n", encoding="utf-8", newline="\n")
+    before = item_text(repo, bg)
+    code, out = b(repo, "answer", bg, "way", "--answer", "left", "--by", "operator", "--record")
+    assert code == 1 and "no decision maker 'operator'" in out, out
+    assert decisions(repo) == [] and item_text(repo, bg) == before
+
+
+def test_backlog_answer_record_decision_stays_active_after_close_and_sweep(decide):
+    repo, tk, st, bg, rv, ep, sp = (decide[k] for k in ("repo", "tk", "st", "bg", "rv", "ep", "sp"))
+    assert b(repo, "answer", bg, "way", "--answer", "left", "--by", "operator", "--record")[0] == 0
+    commit(repo, "the operator's answer")
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+    commit(repo, "b and c", f"{tk}, {bg}")
+    for iid in (tk, st, bg):
+        code, out = b(repo, "done", iid)
+        assert code == 0, out
+    edit(repo, rv, checks=[{"run": PASS}])
+    commit(repo, "state")
+    assert b(repo, "done", rv)[0] == 0
+    assert b(repo, "done", ep)[0] == 0
+    commit(repo, "done")
+    code, out = b(repo, "close", sp)
+    assert code == 0, out
+    assert not (Path(repo) / backlog.REL_DIR / f"{bg}.json").exists()
+    assert [r["status"] for r in decisions(repo)] == ["active"]
+    code, out = tool_run(repo, "kbdecide.py", "sweep", "--root", "_self")
+    assert code == 0, out
+    assert [r["status"] for r in decisions(repo)] == ["active"]

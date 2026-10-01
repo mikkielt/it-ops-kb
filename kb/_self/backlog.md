@@ -112,6 +112,7 @@ An `S1` bug joins the active sprint when it is filed and goes to the front of `n
     - a rule in `AGENTS.md`;
     - a sprint's start.
   - `provisional`: the agent goes on with the recommendation (`answer ID GATE --provisional`, recorded as `by: agent`). The sprint's review story cannot finish until the operator confirms each such answer (`--confirm`) or changes it; a changed answer becomes a task or a bug.
+  - `--record`, added to `answer ID GATE --answer TEXT --by operator`, also keeps the operator's answer as an active decision of `kb/_self/_decisions.csv` (`kbdecide.py record`; `kb/_self/content-rules.md`, Decisions): its maker is the `operator` role of the central register, its source names the item and the gate, its context is `item:<ID>`, and sprint close (which deletes the item) leaves it active, since a done item does not invalidate it. An answer of the agent is never a decision: with `--provisional`, `--confirm` or a `--by` other than `operator` it exits 2 and writes nothing.
 - **Triggers** hold an item until something outside the repository happens, such as a Claude Code release or a spec change. A session that sees it happen runs `backlog.py fire ID`.
 - **Escalation.** An agent that needs a decision records a gate with its recommendation and moves on to the next ready item. In an interactive session it also asks the operator at once (AskUserQuestion) with the same options.
 - **The horizon.** `python3 _tools/backlog.py horizon` shows how far each active sprint can go without the operator:

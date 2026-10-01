@@ -40,10 +40,12 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (a research item of a planned sprint, one whose touches are all inside kb
                                           roots: claimed from draft, released to draft; check accepts it doing or
                                           done, and done proves it before the sprint starts)
-  backlog.py answer ID GATE (--answer TEXT --by operator|agent | --provisional | --confirm)
+  backlog.py answer ID GATE (--answer TEXT --by operator|agent [--record] | --provisional | --confirm)
                                           record a gate's answer: --provisional takes the recommendation as the
                                           agent's answer (provisional gates only); --confirm makes an agent's answer
-                                          the operator's
+                                          the operator's; --record (with --by operator) also writes it as an active
+                                          decision of kb/_self through kbdecide.py, its context the item (exit 2 with
+                                          --provisional, --confirm or a --by other than operator)
   backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
                  [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--add] [--clear FIELD]...
                                           change an item after new: each list option replaces its list (--add:
@@ -1621,12 +1623,28 @@ def cmd_release(bl, a):
     return 0
 
 
+def record_decision(bl, iid, gate, text):
+    """Keep the operator's answer to a gate as an active decision of kb/_self (`kbdecide.py record`, so check.py guards
+    the write): its source names the item and the gate, its context is the item. Refused with kbdecide's reason."""
+    tool = Path(bl.root) / "_tools" / "kbdecide.py"
+    argv = [sys.executable, str(tool), "record", "--root", "_self", "--source", f"backlog item {iid} gate {gate}",
+            "--context", f"item:{iid}", "--by", "operator", "--maker", "operator", "--", text]
+    p = subprocess.run(argv, cwd=str(bl.root), capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       timeout=120)
+    if p.returncode:
+        raise Refused(f"--record: {(p.stdout + p.stderr).strip()}")
+    say(p.stdout.strip())
+
+
 def cmd_answer(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
     g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
     if g is None:
         raise Refused(f"{bl.label(iid)} has no gate {a.gate}")
+    if a.record and (a.provisional or a.confirm or a.by != "operator" or not a.answer):
+        raise Rejected("--record keeps the operator's answer as a decision: --answer TEXT --by operator, "
+                       "never --provisional or --confirm")
     if a.confirm:
         if g.get("by") != "agent":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} has no agent answer to confirm")
@@ -1641,6 +1659,8 @@ def cmd_answer(bl, a):
         if g["kind"] == "blocking" and a.by != "operator":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} is blocking: only the operator answers it")
         g.update(answer=a.answer, by=a.by)
+        if a.record:
+            record_decision(bl, iid, a.gate, a.answer)
     bl.save(it)
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
     return 0
@@ -2648,6 +2668,7 @@ def main(argv=None):
     p.add_argument("--by", choices=("operator", "agent"))
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
+    p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator: keep the answer as an active decision")
     p = sub.add_parser("set")
     p.add_argument("id")
     p.add_argument("--notes")

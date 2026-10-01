@@ -274,6 +274,28 @@ def test_kbdecide_confirm_refuses_what_is_not_proposed_or_not_there(repo):
     refused(repo, "team", "confirm", "x1", "--root", "team", "--by", "operator", says="is not a decision id")
 
 
+def test_kbdecide_record_writes_an_active_decision_in_one_step(repo):
+    code, out = repo.decide("record", "--root", "_self", "Patch on the second Tuesday.", "--source", "backlog gate answer",
+                            "--context", "item:TK-abcd2345", "--by", "operator", "--maker", "owner", "--date", DAY)
+    assert code == 0 and "\tactive\t_self" in out, out
+    row = repo.row(out.split("\t")[0], "_self")
+    assert (row["status"], row["by"], row["by_ref"], row["date"]) == ("active", "operations owner", "owner", DAY)
+    assert row["source"] == "backlog gate answer" and row["context"] == "item:TK-abcd2345"
+    repo.check()
+
+
+def test_kbdecide_record_refusals_leave_no_row(repo):
+    base = ("record", "--root", "_self", "Text.", "--source", "a talk", "--context", "item:TK-abcd2345", "--maker", "owner")
+    refused(repo, "_self", *base, says="only the operator records a decision")
+    refused(repo, "_self", *base, "--by", "agent", says="only the operator records a decision")
+    refused(repo, "_self", *base[:-2], "--by", "operator", says="keeps decision makers by reference")
+    refused(repo, "_self", *base[:-1], "nobody", "--by", "operator", says="no decision maker 'nobody'")
+    refused(repo, "_self", *base[:3], "  ", *base[4:], "--by", "operator", says="needs text")
+    assert not repo.rows("_self")
+    assert repo.decide(*base, "--by", "operator")[0] == 0
+    refused(repo, "_self", *base, "--by", "operator", says="is already in kb/_self/_decisions.csv")
+
+
 def active(repo, store="team", text="Servers patch on the second Tuesday."):
     did = propose(repo, store, text)
     maker = ["--maker", "public-lead"] if store == "public" else []

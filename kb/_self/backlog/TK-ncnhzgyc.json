@@ -26,7 +26,8 @@
     "_tools/kbdecide.py",
     "_tools/test_kbdecide.py",
     "kb/_self/decision-makers.csv",
-    "kb/_self/content-rules.md"
+    "kb/_self/content-rules.md",
+    "_tools/test_kb_cohesion.py"
   ],
   "claimed_by": "worker-answer-record"
 }
