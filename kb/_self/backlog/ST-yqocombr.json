@@ -2,7 +2,7 @@
   "id": "ST-yqocombr",
   "kind": "story",
   "title": "Review sprint: Proofs prove the work",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5cwekumc",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "c-yqocombr"
+  "evidence": {
+    "commit": "a40402cde722f41fbe7f42dce3d7ea22be0f85ef",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b01d49f229c2df72"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "107b7588b3a03da5"
+      }
+    ]
+  }
 }
