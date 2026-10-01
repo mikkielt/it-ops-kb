@@ -1,0 +1,66 @@
+{
+  "id": "ST-t7xxgt47",
+  "kind": "story",
+  "title": "The sprint manager measures each change's test impact and schedules heavy runs by it",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-gfoakqar",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "testmap.py impact, given paths or an item id, prints the test files the item's touches select, their share of all test files, a cost estimated from per-test-file durations that a full tests.py run records, and one tier (narrow, gate or checkpoint) with its reason; backlog.py plan and start print it per item; kb-sprint orders ready items by it (items that select all first) and after each landing a backlog.py subcommand sums the landed impact since the last heavy run and says when a heavy run is due (a landed item that selects all, or a sum past the threshold the story's gate sets); that heavy run is the sprint's checkpoint and the run before review stays mandatory.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "testmap_impact"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_prints_item_impact"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "heavy_run_due"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/testmap.py",
+    "_tools/test_testmap.py",
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "_tools/tests.py",
+    "_tools/test_durations.json",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-tbi3rras"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When is a heavy run (stress_test.py with the full tests.py) due in the middle of a sprint? Recommended: when a landed item selects all test files, or the landed items' selected test files since the last heavy run pass half of all test files.",
+      "options": [
+        "An item that selects all, or landed impact past half of all test files",
+        "Only an item that selects all",
+        "Every fifth landing of a _tools/ item"
+      ],
+      "recommendation": "An item that selects all, or landed impact past half of all test files"
+    }
+  ],
+  "notes": "testmap.py already builds the import graph in-process with ast (reach, deps, explain, select), so the impact measure extends it. kbingest map's PythonMapper runs python -m ast in a subprocess per file, isolated for untrusted repositories; it is not reused, since this repository is trusted and its maps are slower; other languages are out of scope. Impact inputs: the test files a path selects (all for conftest.py, tests.py, pyproject.toml and unknown paths), a module's fan-in (the test files that reach it), and per-test-file durations written by a full tests.py run. A heavy run due mid-sprint replaces a fixed cadence: ST-tbi3rras's bisect then spans only the landings since that run."
+}
