@@ -1,7 +1,8 @@
 """backlog.py in a throwaway git repository: items are created, validated, scheduled, finished and deleted.
 
 Each refusal has a planted failure: a bug whose repro passes or fails for its own error (not found, a SyntaxError in
-its own code, a usage error, no tests selected), a non-canonical file, a cycle, a blocking gate an
+its own code, a usage error, no tests selected), a repro that passes doing nothing in this clone (no public remote;
+refused by done until a check runs tests or the operator accepts), a check that runs no code (warned of), a non-canonical file, a cycle, a blocking gate an
 agent answers, a sprint started without the operator or with a work item without touches, a failing check, a commit outside `touches` (and the revert
 that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
 planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
@@ -480,6 +481,118 @@ def test_next_orders_s1_bugs_first(sprint):
     assert out.splitlines()[0].startswith(sprint["bg"])
     assert sprint["st"] not in out  # a story with an open task is not ready itself
     assert sprint["rv"] not in out  # the review waits on every other item
+
+
+def test_done_flags_noop_check_classifier():
+    """noop_output, trivial_command and is_test_run on outputs and commands of each kind, the BG-uqmjlqfl output
+    (publish --dry-run in a clone with no public remote) first."""
+    f, t, tr = backlog.noop_output, backlog.trivial_command, backlog.is_test_run
+    assert "no public remote" in f("note: no public remote (git config kb.publishRemote <remote>); nothing published\n")
+    assert "nothing published" in f("bridge: nothing published\n")
+    assert "no test can be affected" in f("tests.py --changed HEAD: no test can be affected by the changed paths\n")
+    assert "skipped" in f("ss\n2 skipped in 0.03s\n") and "skipped" in f("===== 3 skipped, 1 deselected in 0.10s =====\n")
+    for out in ("..s\n2 passed, 1 skipped in 0.20s\n", "1 failed, 1 skipped in 0.20s\n", "red-pipeline: nothing to file",
+                "", "ok\n"):
+        assert f(out) is None, out
+    for argv in (["true"], ["/usr/bin/echo", "ok"], PASS, ["python3", "-c", "import sys; sys.exit(0)"],
+                 ["python3", "-c", "print('ok')"], ["sh", "-c", "exit 0"], ["cmd", "/c", "exit 0"]):
+        assert t(argv), argv
+    for argv in (is_file("x"), ["python3", "-c", "import sys; sys.exit(not 1)"], ["python3", "_tools/tests.py", "-k", "x"],
+                 ["git", "grep", "-q", "-e", "x", "--", "f"], ["sh", "-c", "set -e; python3 t.py"]):
+        assert t(argv) is None, argv
+    assert tr(["python3", "_tools/tests.py", "-k", "x"]) and tr(["python3", "-m", "pytest", "t.py"]) and tr(["pytest"])
+    assert not tr(["python3", "_tools/kbgit.py", "publish", "--dry-run"]) and not tr(["python3", "-c", "import tests"])
+
+
+def test_done_flags_noop_check_real_publish_output(repo, capsys):
+    """The real code: publish --dry-run in a clone with no public remote passes doing nothing, and its own output is
+    what noop_output flags."""
+    import kbpublic
+    assert kbpublic.cmd_publish(argparse.Namespace(remote=None, dry_run=True), str(repo)) == 0
+    out = capsys.readouterr().out
+    assert "no public remote" in backlog.noop_output(out), out
+
+
+def test_done_flags_noop_check_real_backlog_commands():
+    """Real inputs: no check or repro of the repository's own items runs nothing (trivial_command flags none)."""
+    flagged = []
+    for f in (Path(TOOLS).parent / backlog.REL_DIR).glob("*.json"):
+        it = json.loads(f.read_text(encoding="utf-8"))
+        for c in it.get("checks", []) + ([it["repro"]] if it.get("repro") else []):
+            if backlog.trivial_command(c["run"]):
+                flagged.append((it["id"], c["run"]))
+    assert not flagged, flagged
+
+
+NOOP_TOOL = """import pathlib, sys
+if not pathlib.Path('remote.cfg').is_file():
+    print('note: no public remote (git config kb.publishRemote <remote>); nothing published')
+    sys.exit(0)
+sys.exit('refused: the defect')
+"""
+
+
+def noop_bug(sprint):
+    """BG-uqmjlqfl planted: a bug whose repro runs a tool that fails while the clone has its remote (the defect), then
+    the remote goes and the repro passes doing nothing."""
+    repo = sprint["repo"]
+    (repo / "pub.py").write_text(NOOP_TOOL, encoding="utf-8", newline="\n")
+    (repo / "remote.cfg").write_text("pub\n", encoding="utf-8")
+    (repo / ".gitignore").write_text("__pycache__/\n", encoding="utf-8")  # pytest's rewritten test_fix.py
+    commit(repo, "tool")
+    code, out = b(repo, "new", "bug", "--title", "Publish refuses", "--sprint", sprint["sp"], "--severity", "S2",
+                  "--repro", "python3 pub.py", "--goal", "publish works", "--touch", "remote.cfg", "--touch", "test_fix.py")
+    assert code == 0 and "no --check runs tests" in out, out
+    bg = item(repo, "Publish refuses")["id"]
+    commit(repo, "file bug")
+    sh(repo, "git", "rm", "-q", "remote.cfg")
+    commit(repo, "the remote goes", bg)
+    return repo, bg
+
+
+def test_done_flags_noop_check_refuses_a_repro_that_does_nothing_here(sprint):
+    repo, bg = noop_bug(sprint)
+    code, out = b(repo, "done", bg)
+    assert code == 1 and "passed without doing its work" in out and "no public remote" in out, out
+    assert "no check that runs tests" in out and item(repo, "Publish refuses")["status"] != "done"
+    # the operator accepts the host-bound proof: done passes, still warning of it
+    assert b(repo, "gate", "add", bg, "--id", backlog.HOST_BOUND_GATE, "--question", "Accept?", "--option", "accept",
+             "--option", "add-test", "--recommendation", "add-test")[0] == 0
+    assert b(repo, "answer", bg, backlog.HOST_BOUND_GATE, "--answer", "accept", "--by", "operator")[0] == 0
+    commit(repo, "gate", bg)
+    code, out = b(repo, "done", bg, "--dry-run")
+    assert code == 0 and "warning:" in out and "would be done" in out, out
+
+
+def test_done_flags_noop_check_passes_with_a_test_run(sprint):
+    """A check that runs tests and did its work proves the fix beside the no-op repro; one whose tests were all
+    skipped does not."""
+    pytest.importorskip("pytest")
+    repo, bg = noop_bug(sprint)
+    run = "python3 -m pytest -q -p no:cacheprovider test_fix.py"
+    edit(repo, bg, checks=[{"run": shlex.split(run)}])
+    (repo / "test_fix.py").write_text("import pytest\n\n\ndef test_fix():\n    pytest.skip('planted')\n",
+                                      encoding="utf-8")
+    commit(repo, "a skipped test", bg)
+    code, out = b(repo, "done", bg)
+    assert code == 1 and "no check that runs tests" in out, out
+    (repo / "test_fix.py").write_text("def test_fix():\n    assert True\n", encoding="utf-8")
+    commit(repo, "the test runs", bg)
+    code, out = b(repo, "done", bg)
+    assert code == 0 and "warning:" in out and "no public remote" in out, out
+
+
+def test_done_flags_noop_check_new_and_done_warn_of_a_trivial_check(sprint):
+    """A check that runs no test or tool code is warned of by new and by done; done still passes on it."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    code, out = b(repo, "set", tk, "--add", "--check", argstr(PASS))
+    assert code == 0, out
+    code, out = b(repo, "new", "story", "--title", "Trivial", "--goal", "g", "--check", argstr(PASS))
+    assert code == 0 and "warning:" in out and "proves nothing" in out, out
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    commit(repo, "write b", tk)
+    code, out = b(repo, "done", tk)
+    assert code == 0 and "passed without doing its work" in out and "only passes" in out, out
 
 
 def test_done_refuses_failing_check_and_scope_then_passes(sprint):
