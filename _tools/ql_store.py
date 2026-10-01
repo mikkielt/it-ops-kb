@@ -134,6 +134,20 @@ def store_entries(store):
     return out
 
 
+def run_ids(store):
+    """The run ids of a store, oldest first: those of its run files and of its usage sidecars."""
+    return sorted({p.stem for p in run_files(store) + usage_files(store)})
+
+
+def resolve_id(names, given):
+    """(the one name `given` is or starts with, the names it starts): an exact name wins over a longer one it prefixes;
+    the first is None when no name, or more than one, starts with `given`."""
+    hits = [n for n in names if n.startswith(given)]
+    if given in hits:
+        return given, hits
+    return (hits[0] if len(hits) == 1 else None), hits
+
+
 def finding_states(store):
     """{finding id: its last record} across the store's findings files, in run order."""
     last = {}

@@ -10,6 +10,11 @@ the other classes below).
   TestStatus        open source findings ranked by result characters, open querylog/ merge requests (glab and gh
                     stubs: GitLab MR API, gh pr list) and KB-Auto reverts; not signed in, a failed call and no origin
                     are skipped with a note; the revert trailer read from a real git log (marker git)
+  TestQuerylogShow  `show`: the exact lines of --run, --entry, --findings (filters, cap), --usage and --spool; the
+                    spool prints no text, id or host a row holds; the store is left as it was and two copies print the
+                    same bytes; no process starts; every run, entry and sidecar of the committed store reads; planted:
+                    each refusal (unknown or ambiguous id, bad kind, state or article, a filter without --findings,
+                    --store with --spool, a missing store, two things to show) exits 2 with its rule and writes nothing
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub. The helpers the classes share are in
 ql_testkit.py.
@@ -346,3 +351,224 @@ class TestStatus:
             return p.returncode, p.stdout, p.stderr
         got = ql_report.reverted_commits(repo.path, run)
         assert [s for _, s in got] == ["revert: query log commit abc"]
+
+
+# ---------------------------------------------------------------- show (Reporting, Show)
+
+SHOW_USAGE_ENTRY = "66666666-0000-4000-8000-0000000000a1"  # the W39 run file's one entry, given a usage line
+SHOW_LAPS_ENTRY = "55555555-0000-4000-8000-0000000000a2"  # an entry the findings of the fixture name
+
+
+def usage_cts(**kw):
+    return {"requests": 2, "in": 10, "cw": 100, "cw1h": 100, "cr": 1000, "out": 50, **kw}
+
+
+def show_store(dst):
+    """The digest fixture store plus the usage sidecar of its W39 run: one line, with a subagent group and a cut."""
+    store = digest_store(dst)
+    line = {"id": SHOW_USAGE_ENTRY, "main": {"claude-opus-5-5": usage_cts()},
+            "sub": {"Explore": {"claude-haiku-4-5": usage_cts(**{"in": 1, "cw": 2, "cr": 3, "out": 4, "requests": 1,
+                                                              "cw1h": 0})}},
+            "start": 500, "steps": [{"tools": [{"tool": "kb_pack", "ok": True, "chars": 700}], "grow": 300}], "cut": 2}
+    write_store_file(store / "usage" / "2026-09" / f"{W39_RUN}.jsonl",
+                     {"run": W39_RUN, "reader": 1, "counts": {"entries": 1, "missing": 0}}, [line])
+    assert ql_store.store_problems(store) == [] and ql_store.usage_problems(store) == []
+    return store
+
+
+def run_show(*args, store=None, env=None, cwd=None):
+    """(exit code, stdout, stderr) of `querylog.py show ARGS` (--store STORE) in a subprocess."""
+    argv = [sys.executable, QL, "show", *args] + (["--store", str(store)] if store else [])
+    p = subprocess.run(argv, capture_output=True, timeout=120, env=env, cwd=str(cwd) if cwd else None)
+    return p.returncode, p.stdout.decode("utf-8").replace("\r\n", "\n"), p.stderr.decode("utf-8").replace("\r\n", "\n")
+
+
+def tree_bytes(store):
+    return {p.relative_to(store).as_posix(): p.read_bytes() for p in sorted(store.rglob("*")) if p.is_file()}
+
+
+class TestQuerylogShow:
+    def test_querylog_show_run_prints_the_header_and_one_line_per_entry(self, tmp_path):
+        store = show_store(tmp_path / "store")
+        rc, out, err = run_show("--run", W39_RUN, store=store)
+        assert (rc, err) == (0, "")
+        assert out == (f"run {W39_RUN}: pipeline 2, retrieval 4, kb_commit 000000000000\n"
+                       "counts: entries 1, dropped 2, waiting 0\n"
+                       "usage sidecar: yes\n"
+                       "entries: 1\n"
+                       f"  {SHOW_USAGE_ENTRY} kb_ask 2026-09-27 good - 0 lines  Which port does WinRM over HTTPS use?\n")
+        rc, out, _ = run_show("--run", "20260928", "--limit", "3", store=store)  # the start of an id; capped
+        lines_ = out.splitlines()
+        assert rc == 0 and lines_[0].startswith("run 20260928T130000Z-0000beef: ") and "usage sidecar: no" in lines_
+        assert lines_[4].startswith("  55555555-0000-4000-8000-0000000000a1 prompt 2026-09-27 weak missed 1 lines  ")
+        assert lines_[-1] == "... 12 more (--limit 0 prints all)" and len(lines_) == 8
+        assert len(run_show("--run", "20260928", "--limit", "0", store=store)[1].splitlines()) == 4 + 15
+
+    def test_querylog_show_entry_prints_every_field_its_findings_and_usage(self, tmp_path):
+        store = show_store(tmp_path / "store")
+        rc, out, err = run_show("--entry", SHOW_LAPS_ENTRY, store=store)
+        assert (rc, err) == (0, "")
+        assert out == (f"entry {SHOW_LAPS_ENTRY} (run 20260928T130000Z-0000beef)\n"
+                       "surface: prompt\nday: 2026-09-27\ntools: kb_pack\n"
+                       "question: How long is a zqxlapsor plomkinator secret by default?\n"
+                       "verdict: none\narticles: public/windows/laps.md\n"
+                       "citations: 1\n  public/windows/laps.md:12 DOC none\n"
+                       "cited: pack\njudged: partly\nbest: public/windows/laps.md\n"
+                       "findings: 2\n"
+                       f"  {ql_store.finding_id('eval', SHOW_LAPS_ENTRY)} eval applied stage=miss "
+                       "expect=public/windows/laps.md\n"
+                       f"  {ql_store.finding_id('alias', SHOW_LAPS_ENTRY)} alias applied stage=miss "
+                       "article=public/windows/laps.md terms=zqxlapsor\n"
+                       "usage: none\n")
+        out = run_show("--entry", SHOW_USAGE_ENTRY[:8], store=store)[1]  # the start of an id names one entry
+        assert out.endswith("findings: 0\nusage: yes, in the usage sidecar of its run\n")
+
+    def test_querylog_show_entry_prints_the_fetches_of_an_entry(self, tmp_path):
+        store = show_store(tmp_path / "store")
+        e = {"id": "77777777-0000-4000-8000-000000000001", "surface": "prompt", "day": "2026-09-27",
+             "question": "q", "fetches": [{"tool": "WebFetch", "host": "learn.microsoft.com", "path": "/en-us/a",
+                                           "outcome": "unknown", "n": 2, "chars": 15}]}
+        run = "20260929T000000Z-0000feed"
+        write_store_file(store / "2026-09" / f"{run}.jsonl",
+                         {"run": run, "pipeline": 5, "retrieval": 5, "kb_commit": "0" * 40,
+                          "counts": {"entries": 1, "dropped": 0, "waiting": 0}}, [e])
+        out = run_show("--entry", "77777777", store=store)[1]
+        assert "fetches: 1\n  tool=WebFetch host=learn.microsoft.com path=/en-us/a outcome=unknown n=2 chars=15\n" in out
+
+    def test_querylog_show_findings_filters_by_kind_article_and_state(self, tmp_path):
+        store = show_store(tmp_path / "store")
+        rc, out, err = run_show("--findings", store=store)
+        lines_ = out.splitlines()
+        assert (rc, err) == (0, "") and lines_[0] == "findings: 8"  # every finding once, in its last state
+        assert [ln.split()[1] for ln in lines_[1:]] == ["eval"] * 3 + ["alias", "expansion", "gap", "source", "source"]
+        assert [ln.split()[2] for ln in lines_[1:4]] == ["fixed-since", "applied", "applied"]  # a2's later record wins
+        out = run_show("--findings", "--kind", "alias", store=store)[1]
+        assert out == (f"findings: 1 (kind alias)\n{ql_store.finding_id('alias', SHOW_LAPS_ENTRY)} alias applied "
+                       f"stage=miss entry={SHOW_LAPS_ENTRY} article=public/windows/laps.md terms=zqxlapsor\n")
+        out = run_show("--findings", "--article", "laps.md", "--state", "applied", store=store)[1]
+        assert out.splitlines()[0] == "findings: 2 (article laps.md, state applied)"
+        full = run_show("--findings", "--article", "public/windows/laps.md", "--state", "applied", store=store)[1]
+        assert full.splitlines()[1:] == out.splitlines()[1:]  # the tail and the whole path name one article
+        assert run_show("--findings", "--article", "nothing.md", store=store)[1] == "findings: 0 (article nothing.md)\n"
+        capped = run_show("--findings", "--limit", "2", store=store)[1].splitlines()
+        assert len(capped) == 4 and capped[-1] == "... 6 more (narrow with --kind, --article, --state, or --limit 0)"
+        source = run_show("--findings", "--kind", "source", store=store)[1].splitlines()
+        assert source[0] == "findings: 2 (kind source)"
+        assert all(" source open " in ln and "signal=stage host=" in ln and "triggers=failures" in ln
+                   for ln in source[1:])
+
+    def test_querylog_show_usage_prints_the_run_sidecar(self, tmp_path):
+        store = show_store(tmp_path / "store")
+        rc, out, err = run_show("--usage", "20260927", store=store)
+        assert (rc, err) == (0, "")
+        assert out == (f"usage {W39_RUN}: reader 1, entries 1, missing 0\n"
+                       f"  {SHOW_USAGE_ENTRY} input 1116 (uncached 11, cache write 102, cache read 1003), "
+                       "output 54, requests 3, subagents input 6, steps 1 (+2 cut)\n")
+        rc, out, _ = run_show("--usage", "20260928T130000Z-0000beef", store=store)  # a run without a sidecar
+        assert rc == 0 and out == "usage 20260928T130000Z-0000beef: no sidecar (no entry of the run had a usage row)\n"
+
+    def test_querylog_show_spool_prints_kinds_of_rows_and_never_their_text(self, tmp_path):
+        from ql_testkit import plant_spool, NOW
+        plant_spool(tmp_path / "querylog", NOW)
+        env = querylog_env(tmp_path)
+        rc, out, err = run_show("--spool", env=env)
+        assert (rc, err) == (0, "")
+        assert out.splitlines() == [
+            "spool: 4 files, 19 rows",
+            "  session 1, ended: 11 rows (prompt 4, kb_hook 2, mcp 1, fetch 3, stop 1), days 2026-09-27",
+            "  session 2, open: 2 rows (prompt 1, mcp 1), days 2026-09-26",
+            "  session 3, open: 2 rows (prompt 1, kb_hook 1), days 2026-09-28",
+            "  tools 2026-09-27: 4 rows (kb_ask 2, tool_fetch 2), days 2026-09-27",
+            "rows whose id the committed store holds: 0"]
+        # planted: every string a spool row holds that the store does not (text, ids, hosts, paths, times) is absent
+        raw = set()
+        for f in (tmp_path / "querylog" / "spool").glob("*.jsonl"):
+            for ln in f.read_text(encoding="utf-8").splitlines():
+                row = json.loads(ln)
+                for k in ("prompt", "answer", "question", "session_id", "prompt_id", "host", "path", "args", "id",
+                          "ts"):
+                    v = row.get(k)
+                    raw |= {x for x in ([v] if isinstance(v, str) else []) if len(x) > 3}
+        assert len(raw) > 20 and not [x for x in raw if x in out], [x for x in raw if x in out]
+        assert run_show("--spool", env=querylog_env(tmp_path / "empty"))[1] == "spool: empty\n"
+
+    def test_querylog_show_spool_counts_the_rows_the_store_holds(self, tmp_path, monkeypatch):
+        from ql_testkit import plant_spool, NOW
+        sp = plant_spool(tmp_path / "querylog", NOW)
+        store = show_store(tmp_path / "store")
+        held = ql_store.store_entries(store)[0][1]["id"]
+        row = {"id": held, "ts": "2026-09-27T09:00:00.000Z", "surface": "kb_ask", "question": "q"}
+        (sp / "tools-2026-09-30.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
+        monkeypatch.setattr(ql_report, "STORE", store)
+        said = []
+        ql_report.show_spool(said.append, sp)
+        assert said[-1] == "rows whose id the committed store holds: 1" and said[0] == "spool: 5 files, 20 rows"
+
+    def test_querylog_show_reads_only_and_is_the_same_in_every_copy(self, tmp_path, monkeypatch):
+        trees = []
+        for name in ("one", "two"):
+            store = show_store(tmp_path / name / "store")
+            before = tree_bytes(store)
+            outs = [run_show(*a, store=store, cwd=tmp_path / name)[1] for a in (
+                ("--run", W39_RUN), ("--entry", SHOW_LAPS_ENTRY), ("--findings",), ("--usage", W39_RUN))]
+            assert tree_bytes(store) == before  # nothing written, not even a marker
+            trees.append(outs)
+        assert trees[0] == trees[1] and all(trees[0])
+
+        def refuse(*a, **k):
+            raise AssertionError("show started a process")
+        for name in ("run", "Popen"):
+            monkeypatch.setattr(subprocess, name, refuse)
+        store = show_store(tmp_path / "three" / "store")
+        said = []
+        for kw in ({"run": W39_RUN}, {"entry": SHOW_LAPS_ENTRY}, {"findings": True}, {"usage": W39_RUN}):
+            assert ql_report.show(store, out=said.append, **kw) == 0  # no model, no network, no git
+
+    def test_querylog_show_over_the_committed_store_reads_every_run_and_entry(self):
+        import ql_base
+        store = ql_base.STORE
+        said = []
+        for p in ql_store.run_files(store):
+            assert ql_report.show(store, run=p.stem, limit=0, out=said.append) == 0, p.name
+        for _, e in ql_store.store_entries(store):
+            assert ql_report.show(store, entry=e["id"], out=said.append) == 0, e["id"]
+        for run in ql_store.run_ids(store):
+            assert ql_report.show(store, usage=run, limit=0, out=said.append) == 0, run
+        assert ql_report.show(store, findings=True, limit=0, out=said.append) == 0
+
+    @pytest.mark.parametrize("args,rule", [
+        (["--run", "19990101"], "unknown run '19990101': no run id of the store starts with it"),
+        (["--run", "2026"], "run '2026' is ambiguous: 2 ids start with it"),
+        (["--run", "../x"], "run '../x' is not an id: it is letters, digits and hyphens"),
+        (["--entry", "ffffffff"], "unknown entry 'ffffffff': no entry id of the store starts with it"),
+        (["--entry", "55555555-0000-4000-8000-0000000000"], "entry '55555555-0000-4000-8000-0000000000' is ambiguous"),
+        (["--usage", "nothing"], "unknown run 'nothing'"),
+        (["--findings", "--kind", "bogus"], "--kind 'bogus' is not a finding kind: eval, alias, expansion, gap, source"),
+        (["--findings", "--state", "open,applied"], "--state 'open,applied' is not a finding state: open, "),
+        (["--findings", "--article", "laps md"], "--article 'laps md' is not an article path"),
+        (["--run", "2026", "--kind", "gap"], "--kind, --article and --state filter --findings only"),
+        (["--findings", "--limit", "-1"], "--limit is a number of lines, 0 or more"),
+        (["--spool", "--store", "x"], "--spool reads the local spool, which is no store: --store does not apply"),
+    ])
+    def test_querylog_show_refuses_a_bad_request_with_exit_2_and_the_rule(self, tmp_path, args, rule):
+        store = show_store(tmp_path / "store")
+        before = tree_bytes(store)
+        rc, out, err = run_show(*args, store=None if "--spool" in args else store)
+        assert (rc, out) == (2, "") and err.startswith("show: refused: ") and rule in err, err
+        assert tree_bytes(store) == before
+
+    def test_querylog_show_refuses_a_missing_store_and_a_wrong_choice_of_what_to_show(self, tmp_path):
+        rc, out, err = run_show("--findings", store=tmp_path / "none")
+        assert (rc, out) == (2, "") and "--store names no directory" in err
+        for args in ([], ["--run", "x", "--findings"], ["--spool", "--usage", "x"]):
+            rc, out, err = run_show(*args)
+            assert (rc, out) == (2, "") and ("not allowed with argument" in err or "one of the arguments" in err), err
+        said = []
+        assert ql_report.show(findings=True, run="x", out=said.append, err=said.append) == 2
+        assert said == ["show: refused: give one of --run, --entry, --findings, --usage or --spool, "
+                        "not --run and --findings"]
+
+    def test_querylog_show_an_empty_store_answers_with_nothing_and_exits_0(self, tmp_path):
+        (tmp_path / "empty").mkdir()
+        assert run_show("--findings", store=tmp_path / "empty")[:2] == (0, "findings: 0\n")
+        assert run_show("--run", "2026", store=tmp_path / "empty")[0] == 2  # an unknown run is a refusal
