@@ -276,6 +276,34 @@ class TestCohesion:
             assert self.goal_clause_problems(skill.replace(need, "x"), runbook), need
             assert self.goal_clause_problems(skill, runbook.replace(need, "x")), need
 
+    @staticmethod
+    def goal_lane_order_problems(skill, backlog_skill, runbook):
+        """Problems with how sprint planning checks a goal's step order: each text names the rule and the merge request."""
+        plan = skill.split("## plan", 1)[-1].split("\n## start", 1)[0]
+        sprints = runbook.split("## Sprints", 1)[-1].split("\n## Working on items", 1)[0]
+        problems = []
+        for name, part in (("kb-sprint plan", plan), ("kb-backlog", backlog_skill), ("backlog.md Sprints", sprints)):
+            for need in ("code/<id>", "merge", "a push to `main`"):
+                if need not in part:
+                    problems.append(f"{name}: no `{need}`")
+        for need in ("step order", "gate"):
+            if need not in plan:
+                problems.append(f"kb-sprint plan: no `{need}`")
+        return problems
+
+    def test_plan_goal_lane_order(self):
+        skill, backlog_skill, runbook = (text(".claude/skills/kb-sprint/SKILL.md"), text(".claude/skills/kb-backlog/SKILL.md"),
+                                         text("kb/_self/backlog.md"))
+        assert self.goal_lane_order_problems(skill, backlog_skill, runbook) == []
+        plan = skill.split("## plan", 1)[1].split("\n## start", 1)[0]
+        assert plan.index("step order") < plan.index("Ask the operator"), "the check comes before the operator's approval"
+        # planted failures: each part removed from each text
+        for need in ("code/<id>", "merge", "a push to `main`", "step order", "gate"):
+            assert self.goal_lane_order_problems(skill.replace(need, "x"), backlog_skill, runbook), need
+        for need in ("code/<id>", "merge", "a push to `main`"):
+            assert self.goal_lane_order_problems(skill, backlog_skill.replace(need, "x"), runbook), need
+            assert self.goal_lane_order_problems(skill, backlog_skill, runbook.replace(need, "x")), need
+
     def test_python_passes_ruff_when_installed(self):
         """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""
         try:
