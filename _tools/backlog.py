@@ -141,7 +141,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           that fingerprint (or one cannot run), 0 once none does; the repro of every bug
                                           intake files. Exit 1 also when a detector failed, 2 for a bad fingerprint
                                           or --status with --file. --hook (the async SessionStart form, run as
-                                          --file --hook, offline): silent, exit 0 always, stops waiting for the detectors after
+                                          --file --hook, offline): silent, exit 0 always, runs drift after the other
+                                          detectors, stops waiting for them after
                                           INTAKE_HOOK_BUDGET_S and files what the finished ones found, as uncommitted
                                           drafts, never commits or pushes
 
@@ -2772,16 +2773,17 @@ def cmd_intake(bl, a):
 
 
 INTAKE_HOOK_BUDGET_S = 50  # intake --hook stops waiting for the detectors after this; the hook's own timeout is 60
+INTAKE_HOOK_SLOW = {"drift"}  # intake --hook runs these after the other offline detectors: drift runs item checks
 
 
 def hook_intake(bl, a, budget=None):
-    """`intake --file --hook`, the async SessionStart form: runs the offline detectors (the network ones only with
-    `--network`, after the offline ones) and stops waiting after `budget` seconds (default INTAKE_HOOK_BUDGET_S);
-    what the detectors that finished by then found is filed, so a slow one costs only its own findings. It writes each
-    new candidate as an uncommitted draft item as `--file` does, prints nothing, never commits or pushes, and returns 0
-    whatever happens."""
+    """`intake --file --hook`, the async SessionStart form: runs the fast offline detectors first, then the slow ones
+    (INTAKE_HOOK_SLOW, on what is left of the budget), then the network ones (only with `--network`), and stops
+    waiting after `budget` seconds (default INTAKE_HOOK_BUDGET_S); what the detectors that finished by then found is
+    filed, so a slow one costs only its own findings. It writes each new candidate as an uncommitted draft item as
+    `--file` does, prints nothing, never commits or pushes, and returns 0 whatever happens."""
     budget = INTAKE_HOOK_BUDGET_S if budget is None else budget
-    names = sorted(bl_intake.DETECTORS, key=lambda n: (n in bl_intake.NETWORK_DETECTORS, n))
+    names = sorted(bl_intake.DETECTORS, key=lambda n: (n in bl_intake.NETWORK_DETECTORS, n in INTAKE_HOOK_SLOW, n))
     found = []  # candidates of the detectors that finished, in order
 
     def read():
