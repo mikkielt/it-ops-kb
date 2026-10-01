@@ -2,7 +2,7 @@
   "id": "ST-qd4j2fwg",
   "kind": "story",
   "title": "Sprint planning maps each goal clause to an item",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,19 @@
     "AGENTS.md",
     "_tools/test_kb_cohesion.py"
   ],
-  "claimed_by": "orch-fourth-w3"
+  "evidence": {
+    "commit": "d6513f2670ee6d9546a5ea997ca4b7c2328abe73",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_plan_goal_clauses"
+        ],
+        "exit": 0,
+        "sha256": "f96862a888273666"
+      }
+    ]
+  }
 }
