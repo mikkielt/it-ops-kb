@@ -2,7 +2,7 @@
   "id": "TK-62hyopvl",
   "kind": "task",
   "title": "selfdoc numbers a source's lines by LF alone in map_tools and check_map",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-uymi3axm",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_selfdoc.py",
     "kb/_self/README.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "c-62hyopvl"
 }
