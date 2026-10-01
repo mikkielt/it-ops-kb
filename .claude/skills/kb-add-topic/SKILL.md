@@ -11,7 +11,7 @@ Request: $ARGUMENTS. If the domain, slug or scope is unclear, ask before researc
 Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The layout, ids and licence table are in the steps below; the commands are spelled out there too:
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "CODE: what the implementation does" content-rules "SNIPPET: a code example with evidence" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "CODE: what the implementation does" content-rules "SNIPPET: a code example with evidence" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git.md "Workflow"
 ```
 
 What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` commits and pushes.

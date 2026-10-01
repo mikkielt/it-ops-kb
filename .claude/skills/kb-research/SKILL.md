@@ -11,7 +11,7 @@ Question: $ARGUMENTS. If it is empty or too broad to answer in one pass, ask for
 Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ids" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ids" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git.md "Workflow"
 ```
 
 What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Ids"` source and answer ids, CSV writing; `git "Workflow"` commits and pushes.

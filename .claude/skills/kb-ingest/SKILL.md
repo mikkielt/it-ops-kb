@@ -11,7 +11,7 @@ Request: $ARGUMENTS. The facts come from one repository at one pinned commit: it
 Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Roots" content-rules "CODE: what the implementation does" content-rules "Licensing and privacy" plugin "6. A team's own knowledge: roots beside kb/public" git "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Roots" content-rules "CODE: what the implementation does" content-rules "Licensing and privacy" plugin "6. A team's own knowledge: roots beside kb/public" git.md "Workflow"
 ```
 
 What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `plugin "6. A team's own knowledge: roots beside kb/public"` a team's own roots; `section` matches headings without their backticks; `git "Workflow"` commits and pushes.

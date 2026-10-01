@@ -11,7 +11,7 @@ Request: $ARGUMENTS. A root is a directory under `kb/` beside `kb/public/`, with
 Read these sections of the `kb/_self/` docs first, not the whole docs, in one command:
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Roots" git "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Roots" git.md "Workflow"
 ```
 
 What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Roots"` what a root holds; `git "Workflow"` commits and pushes.

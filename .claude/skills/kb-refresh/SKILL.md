@@ -11,7 +11,7 @@ Target: $ARGUMENTS. If empty, ask which topic, directory or file. Never refresh 
 Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ids" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git "Workflow" git "Commit trailers"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ids" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git.md "Workflow" git.md "Commit trailers"
 ```
 
 What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Ids"` source ids, replaced sources, CSV writing; `git "Workflow"` commits and pushes; `git "Commit trailers"` `KB-Verified`.

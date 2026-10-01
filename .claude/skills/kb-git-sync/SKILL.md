@@ -11,7 +11,7 @@ Arguments: $ARGUMENTS. Push only if they contain `--push` or the user asked to p
 Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ledgers and retrieval data" git "Workflow" git "Merging (what sync automates)" git "Commit trailers"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ledgers and retrieval data" git.md "Workflow" git.md "Merging (what sync automates)" git.md "Commit trailers"
 ```
 
 What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Facts and tags"` resolving articles; `content-rules "Ledgers and retrieval data"` resolving ledgers and tool data; `git "Workflow"` sync, the gate, exit codes.
