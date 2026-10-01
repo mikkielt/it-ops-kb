@@ -2,7 +2,7 @@
   "id": "TK-skhq4sef",
   "kind": "task",
   "title": "Record refused dones as work rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-2w2bqtjf",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/test_ql_capture.py",
     "_tools/fixtures/querylog/**",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "worker-skhq4sef"
 }
