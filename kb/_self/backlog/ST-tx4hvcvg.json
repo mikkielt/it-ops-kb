@@ -6,6 +6,16 @@
   "priority": "P3",
   "rank": 0,
   "goal": "kb-sprint run step 3's 'A sprint in a second clone' fallback and kb/_self/backlog.md say where the orchestrator's own steps run, not only the worker's: the claim sync, backlog.py held, the worktree removal of step 4.2 and backlog.py land run in <clone> (or from a session started there), and a hand-made worker worktree, which Claude Code never locked, is removed before land, since land refuses an unlocked worktree that holds the branch. Found by the SP-x2pvljz6 review (F2, ST-eoiljxkt).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sprint_second_clone_orchestrator_steps"
+      ]
+    }
+  ],
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",

@@ -6,6 +6,16 @@
   "priority": "P3",
   "rank": 0,
   "goal": "kb-worker.md rule 4 has a worker run tests.py -k \"ruff or tools_map\" whenever its touches include a Python file the sync gate's ruff check covers (.claude/**/*.py as well as _tools/), not only when they include _tools/, so a worker changing only a skill's lint.py catches what the gate would. Found by the SP-x2pvljz6 review (goal clause 'runs the lint the gate runs').",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_ruff_for_any_python"
+      ]
+    }
+  ],
   "touches": [
     ".claude/agents/kb-worker.md",
     "_tools/test_kb_mcp.py",

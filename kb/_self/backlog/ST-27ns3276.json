@@ -6,6 +6,16 @@
   "priority": "P3",
   "rank": 0,
   "goal": "When kbgit.py sync re-runs itself because its rebase changed kbgit.py (ST-sajrwz6a), the re-run still repairs a source-id or answer-id collision that both sides added: the parent passes the rebase's base, upstream and side to the child (or runs fix with them before re-running), so a union-merged id collision is renumbered as before instead of exiting 3 with 'sides unknown, pass --side'. A test in test_sync.py plants an incoming kbgit.py change plus a colliding source id on both sides. Found by the SP-x2pvljz6 review (F1, kbgit.py sync_once and fix_args).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sync_reexec_keeps_merge_sides"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbgit.py",
     "_tools/test_sync.py",
