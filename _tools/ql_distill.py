@@ -3,7 +3,8 @@ file in the local store. Per lookup the question the kb was asked (never the pro
 scan, the path:line citations of the kb lines it returned (never the reply), and Haiku's judgement in capped batches;
 no text of Haiku's is stored. Started by SessionEnd with the session's transcript, distill first writes a `usage` row
 per kb prompt of that session and per prompt inside one of its work windows (ql_capture.add_usage), and the usage rows
-of the written entries become the run's usage sidecar. Also the SessionEnd and SessionStart launcher that starts a detached distill.
+of the written entries become the run's usage sidecar, and the prompts of the closed sessions' work windows, summed per
+item, become its work sidecar. Also the SessionEnd and SessionStart launcher that starts a detached distill.
 
 Distill reads every row format capture has written (ROW_FORMAT, format 0 for a row without `v`) and skips and counts a
 row it cannot read.
@@ -15,7 +16,7 @@ import kbusage
 import ql_store as store_
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
-from ql_capture import ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, add_usage, pack_lines
+from ql_capture import ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines
 from ql_store import (ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, NAME, OUTCOME, QUESTION_MAX_CHARS,
                       ROW_SURFACES, SKIPPED_KEY, SOURCES_MAX, URL_PATH, public_host)
 
@@ -34,6 +35,7 @@ LOG_NAME = "distill.log"
 LOG_MAX_BYTES = 1_000_000  # the launcher starts a fresh log above it
 CALLS_NAME = "haiku-calls.json"  # {"day", "calls"}: the Haiku calls this machine made today
 CONSUMED_NAME = "consumed.json"  # {tools file: [row ids]}: tools rows already distilled into an entry
+WORKED_NAME = "worked.json"  # {session id: [prompt ids]}: prompts whose usage a work sidecar already holds
 KB_SURFACES = ("kb_hook", "mcp", "kb_ask", "tool_fetch")
 REPLY_CITE = re.compile(r"(?<![\w./-])(?:kb/)?((?:[\w-]+/)+[\w.-]+:[1-9]\d*)")  # a path:line a reply names
 DISTILL_TASK = (
@@ -50,6 +52,14 @@ DISTILL_TASK = (
 
 def ts_of(r):
     return r.get("ts") if isinstance(r.get("ts"), str) else ""
+
+
+def _text(path):
+    """The text of a file, or None when it cannot be read."""
+    try:
+        return Path(path).read_text(encoding="utf-8")
+    except OSError:
+        return None
 
 
 # ---------------------------------------------------------------- reading the spool
@@ -333,6 +343,79 @@ def usage_of(rs):
     return last["usage"]
 
 
+# ---------------------------------------------------------------- work windows
+
+def work_windows(rows):
+    """({prompt id: the items whose window holds it}, the items the rows claimed), the prompts in the order they began.
+    The windows of `ql_capture.usage_targets`: a prompt is inside an item's window when the item was open as the
+    prompt began, or the prompt's own row claims it, or closes it with `done` or `release`; a `done` or `release` with
+    no open claim in these rows opens and closes nothing. Windows of several items may overlap."""
+    inside, worked, open_items = {}, set(), set()
+    for r in rows:
+        pid = r.get("prompt_id")
+        if r.get("surface") == "usage" or not isinstance(pid, str):
+            continue
+        inside.setdefault(pid, set(open_items))
+        item = r.get("item") if r.get("surface") == "work" else None
+        if not (isinstance(item, str) and WORK_ITEM.fullmatch(item)):
+            continue
+        if r.get("action") == "claim":
+            open_items.add(item)
+            worked.add(item)
+            inside[pid].add(item)
+        elif r.get("action") in ("done", "release") and item in open_items:
+            open_items.discard(item)
+            inside[pid].add(item)
+    return inside, worked
+
+
+def session_work(rows, done, items):
+    """One closed session's work: (its shared line or None, the window prompts without usage, the prompt ids
+    counted). Each prompt not in `done` with a usage record of this reader (usage_of) adds its counts to the tally of
+    every item whose window holds it (`items`: {item: tally}, which the run's sessions share), and a prompt outside
+    every window to the session's shared tally. A session that claimed no item is unrecorded."""
+    inside, worked = work_windows(rows)
+    if not worked:
+        return None, 0, set()
+    by_prompt = {}
+    for r in rows:
+        if isinstance(r.get("prompt_id"), str):
+            by_prompt.setdefault(r["prompt_id"], []).append(r)
+    shared, missing, counted = store_.new_tally(), 0, set()
+    for pid, windows in inside.items():
+        if pid in done:
+            continue
+        usage = usage_of(by_prompt[pid])
+        counts = store_.usage_counts(usage) if usage else None
+        if counts is None:
+            missing += 1 if windows else 0
+            continue
+        counted.add(pid)
+        for item in windows:
+            store_.tally_add(items.setdefault(item, store_.new_tally()), counts)
+        if not windows:
+            store_.tally_add(shared, counts)
+    return (store_.work_line("items", sorted(worked), shared) if shared["prompts"] else None), missing, counted
+
+
+def plan_work(sessions, worked):
+    """(the work sidecar's lines, the window prompts without usage, {session id: prompt ids counted}) of the closed
+    sessions: the items' lines in id order, then the sessions' shared lines. `worked` ({session id: prompt ids}) holds
+    the prompts an earlier run counted, so a session whose rows stayed in the spool is never counted twice."""
+    items, shared, missing, counted = {}, [], 0, {}
+    for sid in sorted(sessions):
+        if not sessions[sid]["closed"]:
+            continue
+        line, m, pids = session_work(sessions[sid]["rows"], set(worked.get(sid, ())), items)
+        missing += m
+        if pids:
+            counted[sid] = pids
+        if line:
+            shared.append(line)
+    lines = [store_.work_line("item", i, items[i]) for i in sorted(items)]
+    return lines + sorted(shared, key=lambda ln: json.dumps(ln, sort_keys=True)), missing, counted
+
+
 # ---------------------------------------------------------------- Haiku
 
 def claude_haiku(prompt):
@@ -514,18 +597,28 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
     counts = {"entries": len(written), "dropped": len(dropped), "waiting": len(waiting)}
     if skipped:
         counts[SKIPPED_KEY] = sum(skipped.values())
-    if written or dropped or skipped:
+    worked = read_json(qdir / WORKED_NAME, {})
+    worked = {sid: ids for sid, ids in worked.items() if sid in sessions and isinstance(ids, list)} \
+        if isinstance(worked, dict) else {}
+    work_lines, work_missing, work_counted = plan_work(sessions, worked)
+    if written or dropped or skipped or work_lines:
         run_id = run_id or f"{now_dt.strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
         written.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
         write_text(store_.run_path(qdir / "store", run_id),
                    json_lines([store_.header(run_id, counts, kb_commit)] + [t["entry"] for t in written]))
         lines = [ln for ln in (store_.usage_line(t["entry"]["id"], t.get("usage")) for t in written) if ln]
         store_.write_usage(qdir / "store", run_id, lines, len(written) - len(lines), kbusage.READER_VERSION)
+        store_.write_work(qdir / "store", run_id, work_lines, work_missing, kbusage.READER_VERSION)
+        for sid, pids in work_counted.items():
+            worked[sid] = sorted(set(worked.get(sid, ())) | pids)
         out(f"distill: run={run_id} entries={counts['entries']} dropped={counts['dropped']} "
             f"waiting={counts['waiting']}" + (f" skipped={counts[SKIPPED_KEY]}" if skipped else "")
-            + (f" usage={len(lines)}" if lines else ""))
+            + (f" usage={len(lines)}" if lines else "") + (f" work={len(work_lines)}" if work_lines else ""))
     else:
         out(f"distill: nothing to write (waiting={counts['waiting']})")
+    text = json.dumps(dict(sorted(worked.items()))) + "\n"
+    if (worked or (qdir / WORKED_NAME).exists()) and text != _text(qdir / WORKED_NAME):
+        write_text(qdir / WORKED_NAME, text)
     if keep:
         _settle(spool, sessions, tools, consumed, qdir, today, dropped, waiting + written + done, skipped)
         if written or done:

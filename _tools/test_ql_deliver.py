@@ -21,6 +21,9 @@ and the other classes below).
                     `auto` keeps them while the push fails (planted), distills nothing twice, and spool_delivered
                     deletes only the delivered entries' rows; the leak scan over store files (planted: an address in
                     a field `check` never reads)
+  TestWorkSidecarDelivery  `apply --push` copies the work sidecar with its run file, as it copies the usage sidecar
+                    (`-k work_sidecar`), counts it in the commit's words, copies none that origin/main holds, and
+                    refuses the copy when the worktree's `querylog.py check` flags it (planted: a session id)
   TestHostRules     push_refusal on each refusal shape (GitLab project and protected branch, GitHub denied and GH006,
                     HTTP 403) and on what is no refusal (a generic declined hook, DNS, connection, remote failure);
                     the install url from known_marketplaces.json (git, github) or the marketplace clone's origin;
@@ -712,6 +715,58 @@ class TestDeliverRules:
         golden_store(store, objs)
         (hit,) = ql_store.leak_problems(store, [rel])
         assert hit == f"{rel}:2: the leak scan flags an identifier (email)", hit
+
+
+class TestWorkSidecarDelivery:
+    """`apply --push` copies the work sidecar with its run file, as it copies the usage sidecar (`-k work_sidecar`)."""
+
+    LINES = [{"item": "TK-aaaaaaaa", "prompts": 2, "main": {"claude-opus-5-5": {
+        "requests": 2, "in": 5, "cw": 100, "cw1h": 0, "cr": 900, "out": 40}}}]
+
+    def pusher(self, tmp_path):
+        q = tmp_path / "querylog"
+        local = golden_store(q / "store")
+        ql_store.write_work(local, RUN_ID, self.LINES, 0, 1)
+        pusher = ql_deliver.Pusher(tmp_path, q, None, lambda *a: 0, print, cloud=False)
+
+        def gate(name, *args):  # the worktree's own querylog.py check, here this clone's
+            p = subprocess.run([sys.executable, QL, *args], capture_output=True, text=True, encoding="utf-8",
+                               timeout=120)
+            return p.returncode, p.stdout, p.stderr
+        pusher.tool = gate
+        return q, pusher
+
+    def test_work_sidecar_is_copied_with_its_run_file(self, tmp_path):
+        q, pusher = self.pusher(tmp_path)
+        _, new, kept = pusher.local_files()
+        assert sorted(rel for _, rel, _ in new) == [f"2026-09/{RUN_ID}.jsonl", f"work/2026-09/{RUN_ID}.jsonl"]
+        assert kept == []
+        assert pusher.brought(new) == ("1 run file(s), 1 work sidecar(s)", [RUN_ID])
+        code = pusher.bring(new, kept)  # copied into the worktree's store, then gated there
+        assert code == 0
+        copied = pusher.wt / ql_deliver.STORE_REL / "work" / "2026-09" / f"{RUN_ID}.jsonl"
+        assert copied.read_bytes() == ql_store.work_files(q / "store")[0].read_bytes()
+
+    def test_work_sidecar_already_on_main_is_not_copied_again(self, tmp_path):
+        q, pusher = self.pusher(tmp_path)
+        for rel in (f"2026-09/{RUN_ID}.jsonl", f"work/2026-09/{RUN_ID}.jsonl"):
+            there = pusher.wt / ql_deliver.STORE_REL / rel
+            there.parent.mkdir(parents=True, exist_ok=True)
+            there.write_text("{}\n", encoding="utf-8")
+        _, new, _ = pusher.local_files()
+        assert new == []
+
+    def test_work_sidecar_a_gate_failure_stops_the_copy_before_any_commit(self, tmp_path):
+        q, pusher = self.pusher(tmp_path)
+        path = ql_store.work_files(q / "store")[0]
+        objs = jsonl(path)
+        objs[1]["session_id"] = "3f2a4c1e-0000-4000-8000-00000000abcd"  # planted
+        path.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
+        said = []
+        pusher.out = said.append
+        _, new, kept = pusher.local_files()
+        assert pusher.bring(new, kept) == 1
+        assert said and "refused: the store gates fail" in said[0] and "session_id" in said[0], said
 
 
 def learn_then_apply(wt, store, hold, out):

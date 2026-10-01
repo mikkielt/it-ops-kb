@@ -10,6 +10,9 @@ remote, the findings, the eval file, the ledgers, the spool and the gate (the st
 
   TestAnswered      a kb: lookup the hook answered with `good`: one entry, no finding, only the run file pushed, the
                     local store's file as it was; the hook's answer is kb_hook.answer's
+  TestWorkSidecar   a closed session that claimed an item and finished it, with usage rows: a run file of no entry and
+                    the work sidecar (an item line, a shared line) reach main in one commit whose gates pass; no
+                    session, prompt or text in it; a second run pushes nothing (`-k work_sidecar`)
   TestFixes         a miss fixed by an alias, one fixed by an expansion and one with no article that answers it (a
                     _gaps.md entry under its topic), in one push: the store's commit, then the apply commit, main
                     the only branch, no CI to check yet; a second run on unchanged inputs changes nothing (the CI
@@ -346,6 +349,69 @@ class TestAnswered:
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
         rel = f"{ql_base.STORE_REL}/{self.local.relative_to(w.q / 'store').as_posix()}"
         assert w.show(rel) == self.local.read_text(encoding="utf-8")  # the local store's run file, as it was
+
+
+# ---------------------------------------------------------------- a session that worked an item: the work sidecar
+
+class TestWorkSidecar:
+    """A closed session that claimed an item and finished it, with `usage` rows for its prompts: distill writes a run
+    file of no entry and its work sidecar, and the push carries both to main (`-k work_sidecar`)."""
+
+    ITEM = "TK-aaaaaaaa"
+    COUNTS = {"requests": 1, "in": 3, "cw": 30, "cw1h": 3, "cr": 300, "out": 3}
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory, seed):
+        import kbusage
+        w = cls.w = World(tmp_path_factory.mktemp("e2e-work"), seed)
+        cls.sid = s = sid()
+        rows = []
+        for i, work in enumerate(("claim", None, "done", None)):
+            base = {"session_id": s, "v": 1, "prompt_id": f"p{i}"}
+            extra = [("prompt", {"prompt": "PRIVATE-WORK-TEXT"}),
+                     ("usage", {"reader": kbusage.READER_VERSION,
+                                "usage": {"main": {"claude-opus-5-5": cls.COUNTS}, "start": 100}})]
+            if work:
+                extra.insert(1, ("work", {"action": work, "item": cls.ITEM}))
+            for surface, fields in extra:
+                rows.append(dict(base, id=str(uuid.uuid4()), ts=f"2026-09-28T09:00:{len(rows):02d}.000Z",
+                                 surface=surface, **fields))
+        spool = w.q / "spool"
+        spool.mkdir(parents=True, exist_ok=True)
+        (spool / f"{s}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+        w.end(s)
+        cls.rc, cls.said = w.distill()
+        cls.st = w.state()
+        (cls.local,) = ql_store.work_files(w.q / "store")
+
+    def test_work_sidecar_reaches_main_with_its_run_file(self):
+        w, st = self.w, self.st
+        assert self.rc == 0 and says(self.said, "entries=0 dropped=0 waiting=0 work=2"), self.said
+        rel = f"{ql_base.STORE_REL}/{self.local.relative_to(w.q / 'store').as_posix()}"
+        assert rel.startswith(f"{ql_base.STORE_REL}/work/") and w.show(rel) == self.local.read_text(encoding="utf-8")
+        got = [json.loads(ln) for ln in w.show(rel).splitlines()]
+        main = {"claude-opus-5-5": {"requests": 3, "in": 9, "cw": 90, "cw1h": 9, "cr": 900, "out": 9}}
+        assert got[1:] == [{"item": self.ITEM, "prompts": 3, "main": main},
+                           {"items": [self.ITEM], "prompts": 1,
+                            "main": {"claude-opus-5-5": self.COUNTS}}], got
+        assert got[0]["counts"] == {"items": 1, "shared": 1, "missing": 0}
+        assert w.commits() == [("chore(kb): query log store, 1 run file(s), 1 work sidecar(s)", "querylog")]
+        assert st["runs"] == [self.local.stem] and st["entries"] == [] and st["findings"] == {}
+        assert st["spool"] == [] and st["gate"] == [], st["gate"]  # the store gates include the work sidecar's
+
+    def test_work_sidecar_holds_no_session_prompt_or_text(self):
+        text = self.st["text"]
+        for raw in (self.sid, "PRIVATE-WORK-TEXT", "p0", "session_id", "prompt_id", "transcript", "claim"):
+            assert raw not in text, raw
+        store = self.w.store()
+        rel = next(p.relative_to(store).as_posix() for p in ql_store.work_files(store))
+        assert ql_store.leak_problems(store, [rel]) == []
+
+    def test_work_sidecar_a_second_run_pushes_nothing(self):
+        before = self.w.main()
+        rc, said = self.w.distill()
+        assert rc == 0 and self.w.main() == before, said
 
 
 # ---------------------------------------------------------------- misses: an alias, an expansion, a gap entry
