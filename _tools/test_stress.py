@@ -9,6 +9,11 @@ Python traceback (a crash is never an acceptable way to report bad input).
   HAND_EDITS      hand edits of the generated index files: build_index.py --check catches them, a build repairs them
   flows           concurrency and determinism, corpus scaling (KB_STRESS_SCALE, default 5), build_index.py extras,
                   kbgit.py fix after a union-style merge, fetch.py --diff/--status against a local web server
+
+Timing limits follow the host's load: a tool call's timeout (TIMEOUT) and the query log hook's latency margin are
+multiplied by load_factor(), the 1-minute load average per CPU and at least 1 (1 where the platform has no load
+average, as on Windows), so a host loaded by parallel runs does not fail a case it passes alone. The
+`stress_under_load` tests plant a high load and check the limits with it.
 """
 import concurrent.futures as cf, csv, functools, http.server, io, json, os, random, shutil, statistics, subprocess, sys, threading, time
 
@@ -44,9 +49,29 @@ def copy_kb(tmp, name):
     return d
 
 
+def host_load():
+    """The host's 1-minute load average, or None where the platform has none (Windows) or it cannot be read."""
+    try:
+        return os.getloadavg()[0]
+    except (AttributeError, OSError):
+        return None
+
+
+def host_cpus():
+    return os.cpu_count() or 1
+
+
+def load_factor():
+    """How many times oversubscribed the host is now: the 1-minute load average per CPU, at least 1 (1 when the load
+    average cannot be read). A timing limit set on an idle host is multiplied by it."""
+    load = host_load()
+    return 1.0 if load is None else max(1.0, load / host_cpus())
+
+
 def run(kb, tool, *args):
     p = subprocess.run([sys.executable, os.path.join(kb, "_tools", tool), *args],
-                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=TIMEOUT)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       timeout=TIMEOUT * load_factor())
     return p.returncode, p.stdout, p.stderr
 
 
@@ -54,8 +79,8 @@ def problems(kb, tool, args, rc, expect="", check=None):
     """(what is wrong with one tool call, its stdout)."""
     try:
         got, out, err = run(kb, tool, *args)
-    except subprocess.TimeoutExpired:
-        return [f"timeout after {TIMEOUT} s"], ""
+    except subprocess.TimeoutExpired as e:
+        return [f"timeout after {e.timeout:.0f} s"], ""
     why = []
     if "Traceback (most recent call last)" in err:
         why.append("crashed: " + err.strip().splitlines()[-1][:120])
@@ -203,17 +228,31 @@ def hook_median(kb, prompt):
     for _ in range(HOOK_RUNS):
         t = time.perf_counter()
         p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "kb_hook.py")], input=ev, capture_output=True,
-                           text=True, encoding="utf-8", timeout=TIMEOUT)
+                           text=True, encoding="utf-8", timeout=TIMEOUT * load_factor())
         ts.append(time.perf_counter() - t)
         assert p.returncode == 0, p.stderr
     return statistics.median(ts)
 
 
+def hook_problems(off, on, plain, f):
+    """What is wrong with the hook's medians (seconds) under load factor f: capture on within off times
+    1 + (HOOK_MARGIN - 1) * f plus HOOK_SLACK_S * f, a plain prompt faster than off times f (both as before at f 1)."""
+    why = []
+    if on > off * (1 + (HOOK_MARGIN - 1) * f) + HOOK_SLACK_S * f:
+        why.append(f"capture on {on:.3f} s vs off {off:.3f} s (load factor {f:.1f})")
+    if not plain < off * f:
+        why.append(f"a plain prompt ({plain:.3f} s vs off {off:.3f} s, load factor {f:.1f}) must return before the kb "
+                   "(and the query log) is loaded")
+    return why
+
+
 def test_kb_hook_latency_with_capture(base):
     """kb_hook.py writes one query log row per kb: prompt (kb/_self/querylog.md): with capture on (the default mode)
-    it is no slower than with mode off, within HOOK_MARGIN times plus HOOK_SLACK_S; a plain prompt loads nothing."""
+    it is no slower than with mode off, within HOOK_MARGIN times plus HOOK_SLACK_S; a plain prompt loads nothing.
+    The margins widen with the host's load (hook_problems), read before and after the timings."""
     q = "kb: intune win32 app detection rule"
     cfg = os.path.join(base, "_private", "querylog.json")
+    f = load_factor()
     try:
         hook_median(base, q)  # the index is built or opened once, outside the timing
         write(base, os.path.relpath(cfg, base), '{"mode": "off"}')
@@ -224,9 +263,11 @@ def test_kb_hook_latency_with_capture(base):
     finally:
         if os.path.exists(cfg):
             os.remove(cfg)
-    print(f"kb_hook.py median: capture off {off * 1000:.0f} ms, on {on * 1000:.0f} ms, plain prompt {plain * 1000:.0f} ms")
-    assert on <= off * HOOK_MARGIN + HOOK_SLACK_S, f"capture on {on:.3f} s vs off {off:.3f} s"
-    assert plain < off, "a plain prompt must return before the kb (and the query log) is loaded"
+    f = max(f, load_factor())
+    print(f"kb_hook.py median: capture off {off * 1000:.0f} ms, on {on * 1000:.0f} ms, plain prompt {plain * 1000:.0f} ms"
+          f", load factor {f:.1f}")
+    why = hook_problems(off, on, plain, f)
+    assert not why, "; ".join(why)
 
 
 @pytest.mark.skipif(SCALE < 2, reason="KB_STRESS_SCALE < 2")
@@ -239,6 +280,62 @@ def test_corpus_scaling(tmp_path):
             shutil.copytree(os.path.join(pub, dom), os.path.join(pub, f"{dom}-copy{i}"))
     call(d, "rag.py", ["search", "kerberos", "delegation", "-k", "5"], 0)
     call(d, "check.py", [], 0)
+
+
+def plant_load(monkeypatch, load, cpus=8):
+    mod = sys.modules[__name__]
+    monkeypatch.setattr(mod, "host_load", lambda: load)
+    monkeypatch.setattr(mod, "host_cpus", lambda: cpus)
+
+
+@pytest.mark.parametrize("load,want", [(64.0, 8.0), (4.0, 1.0), (None, 1.0)], ids=["loaded", "idle", "no-loadavg"])
+def test_stress_under_load_factor(monkeypatch, load, want):
+    """The load factor is the load average per CPU, never below 1, and 1 where no load average exists (Windows)."""
+    plant_load(monkeypatch, load)
+    assert load_factor() == want
+
+
+def test_stress_under_load_host_load_reads_or_falls_back(monkeypatch):
+    got = host_load()
+    assert got is None or got >= 0
+    monkeypatch.delattr(os, "getloadavg", raising=False)  # as on Windows
+    assert host_load() is None and load_factor() == 1.0
+
+
+def test_stress_under_load_tool_timeout_scales(monkeypatch):
+    """test_corpus_scaling's tool calls: a call that takes 400 s on a loaded host times out at TIMEOUT idle (the
+    planted failure) and passes with the load factor applied."""
+    def slow(argv, **kw):
+        if kw["timeout"] < 400:
+            raise subprocess.TimeoutExpired(argv, kw["timeout"])
+        return subprocess.CompletedProcess(argv, 0, "", "")
+    monkeypatch.setattr(subprocess, "run", slow)
+    plant_load(monkeypatch, 4.0)
+    assert problems("kb", "check.py", [], 0)[0] == [f"timeout after {TIMEOUT} s"]
+    plant_load(monkeypatch, 64.0)
+    assert problems("kb", "check.py", [], 0)[0] == []
+
+
+def test_stress_under_load_hook_latency(tmp_path, monkeypatch):
+    """test_kb_hook_latency_with_capture with planted medians as a loaded host gives them (capture on twice as slow,
+    a plain prompt as slow as off): it fails idle (the planted failure) and passes at load 64 on 8 CPUs; a capture
+    far slower than the load explains still fails."""
+    mod = sys.modules[__name__]
+
+    def medians(off, on, plain):
+        seq = iter([off, off, on, plain])
+        monkeypatch.setattr(mod, "hook_median", lambda kb, prompt: next(seq))
+    medians(0.2, 0.4, 0.2)
+    plant_load(monkeypatch, 4.0)
+    with pytest.raises(AssertionError, match="capture on"):
+        test_kb_hook_latency_with_capture(str(tmp_path))
+    medians(0.2, 0.4, 0.2)
+    plant_load(monkeypatch, 64.0)
+    test_kb_hook_latency_with_capture(str(tmp_path))
+    medians(0.2, 0.2 * 40, 0.1)
+    with pytest.raises(AssertionError, match="capture on"):
+        test_kb_hook_latency_with_capture(str(tmp_path))
+    assert hook_problems(0.2, 0.2, 0.3, 1.0) and not hook_problems(0.2, 0.2, 0.3, 8.0)
 
 
 # ---------------------------------------------------------------- malformed kb content: each mutation on a fresh copy
