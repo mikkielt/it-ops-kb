@@ -2,7 +2,7 @@
   "id": "TK-ydxqes3n",
   "kind": "task",
   "title": "Decision-maker storage policy per root",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rcceqbdr",
   "priority": "P2",
   "rank": 1,
@@ -28,5 +28,19 @@
     "_tools/test_kb_root.py",
     "kb/_self/content-rules.md"
   ],
-  "claimed_by": "worker-maker-policy"
+  "evidence": {
+    "commit": "e6daaf38ea5b9f3fab1014eccb0b8508c6d90c9e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbdecide_makers"
+        ],
+        "exit": 0,
+        "sha256": "18bd9a9bc0259f10"
+      }
+    ]
+  }
 }
