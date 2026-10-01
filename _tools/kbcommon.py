@@ -14,7 +14,8 @@ source ledger. One copy, so every tool reads and writes these files the same way
   DECISIONS, DECISION_MAKERS  the decision files a root and kb/_self may hold; DECISION_COLS, MAKER_COLS their columns,
                               DECISION_ID the `D-<8 base32>` id (D is reserved), DECISION_STATUS, CONTEXT_KINDS
   context_refs(text)          [(kind, value)] of a decision's context; split_list(text) any `;`-separated field
-  maker_names_allowed(root)   whether a root's decision-makers file may hold a name (the one place a policy refines)
+  maker_names_allowed(root)   whether a root's decision-makers file may hold a name (visibility and the root's policy)
+  root_policy(root)           the storage policy for decision makers a root's decision-makers.csv sets ('' when unset)
   data_path(rel, shared)      a file of the kb's own retrieval data under <kb>/DATA_DIR/
   repo_rel(rel)               a path relative to the kb root as a path relative to this repository (git pathspecs)
   kb_rel(path)                the inverse: a repository path (or absolute path) relative to the kb root, or None
@@ -99,6 +100,15 @@ DECISIONS, DECISION_MAKERS = "_decisions.csv", "decision-makers.csv"
 DECISION_COLS = ["id", "text", "by", "by_ref", "source", "date", "context", "status", "invalidated_reason",
                  "invalidated_date", "supersedes", "review_by", "links"]
 MAKER_COLS = ["id", "role", "name", "source"]
+# A root's storage policy for decision makers is one reserved row of its decision-makers.csv: id POLICY_ROW (no slug,
+# so no maker has it) and the policy in `role`. A root with no such row has no policy, and kbdecide.py refuses its
+# first decision until the operator sets one; kb/_self, the central register, holds roles only and has none.
+POLICY_ROW = "_policy"
+POLICIES = {
+    "role-only": "the root keeps the role of a decision maker only",
+    "role-and-name": "the root keeps the role and the name (an internal root only)",
+    "central-register": "the root keeps no makers of its own and references the central register kb/_self/decision-makers.csv",
+}
 DECISION_PREFIX = "D"  # a decision id is D-<8 base32 characters> like a source id, and `D` is a reserved root prefix
 DECISION_ID = re.compile(r"D-[a-z2-7]{8}")
 MAKER_ID = re.compile(r"[a-z][a-z0-9-]{0,39}")  # a decision maker's id in decision-makers.csv: a short lowercase slug
@@ -127,12 +137,27 @@ def context_refs(text):
     return out
 
 
-def maker_names_allowed(root):
+def root_policy(root):
+    """The storage policy for decision makers of `root` (a key of POLICIES), or '' when its decision-makers.csv sets none,
+    is missing or cannot be read (check.py reports a bad file on the file itself); '' for None (kb/_self)."""
+    if root is None:
+        return ""
+    try:
+        rows = load_csv(os.path.join(root.path, DECISION_MAKERS))[1]
+    except CsvError:
+        return ""
+    return next(((r.get("role") or "").strip() for r in rows if (r.get("id") or "").strip() == POLICY_ROW), "")
+
+
+def maker_names_allowed(root, policy=None):
     """Whether a decision maker's name may be stored in `root`'s files (None: kb/_self, the central register). Only an
-    internal root may: kb/_self is published, so its register holds roles only. The storage policy per root (a root
-    keeping roles only, or referencing the central register) may change this later, and every check of names asks
-    this one function."""
-    return root is not None and root.visibility == "internal"
+    internal root may: kb/_self is published, so its register holds roles only. A root whose policy keeps roles only
+    or references the central register keeps no names either; one with no policy yet is bound by its visibility alone.
+    `policy` is the one to ask about (default: the root's own). Every check of names asks this one function."""
+    if root is None or root.visibility != "internal":
+        return False
+    policy = root_policy(root) if policy is None else policy
+    return policy in ("", "role-and-name")
 
 
 # Secret shapes: the leak scan over tracked files (test_kb_leaks.py, TestLeaks) and kbingest.py's survey of a repository.

@@ -323,3 +323,51 @@ def test_decisions_store_d_is_a_reserved_id_prefix(tmp_path):
     make_root(root, prefix="D")
     code, out = run("check.py", roots=root)
     assert code == 1 and "id_prefix" in out and "not one of" in out and "Traceback" not in out, out[-400:]
+
+
+def policy(value, **over):
+    return {"id": "_policy", "role": value, "name": "", "source": "", **over}
+
+
+def test_decisions_store_a_storage_policy_is_one_reserved_row_and_passes(tmp_path):
+    """Each policy is clean where it may be: a root that keeps its makers by role only, one that keeps names, one that
+    keeps none of its own; the policy row is no maker, so a by_ref cannot name it."""
+    owner = {"id": "owner", "role": "print owner", "name": "", "source": ""}
+    named = {"id": "named", "role": "lead", "name": "Jan Kowalski", "source": ""}
+    for i, (makers, visibility, rows) in enumerate((
+            ([policy("role-only"), owner], "public", [decision(0, by="print owner", by_ref="owner")]),
+            ([policy("role-only"), owner], "internal", [decision(0, by="print owner", by_ref="owner")]),
+            ([policy("role-and-name"), named], "internal", [decision(0, by="Jan Kowalski", by_ref="named")]),
+            ([policy("central-register")], "public", [decision(0, status="proposed", by="")]),
+            ([], "internal", []))):  # no policy row: a root with the file only, as kbroot.py makes it
+        code, found, out = checked_root(tmp_path / str(i), rows, makers, visibility=visibility)
+        assert code == 0 and not found, (i, out[-800:])
+    code, found, out = checked_root(tmp_path / "ref", [decision(0, by="policy", by_ref="_policy")], [policy("role-only")])
+    assert code == 1 and "by_ref '_policy' names no decision maker" in out, out[-600:]
+
+
+def test_decisions_store_plants_one_failure_per_storage_policy_rule(tmp_path):
+    owner = {"id": "owner", "role": "print owner", "name": "", "source": ""}
+    named = {"id": "named", "role": "lead", "name": "Jan Kowalski", "source": ""}
+    cases = [  # (the error's rule, the maker rows, visibility, the decision rows, the line of the error and its file)
+        ("policy 'everyone' is not one of role-only|role-and-name|central-register", [policy("everyone")], "internal", [], 2, MAK),
+        ("policy '' is not one of", [policy("")], "internal", [], 2, MAK),
+        ("policy role-and-name in a root that is public, not an internal root: keep the role only",
+         [policy("role-and-name")], "public", [], 2, MAK),
+        ("a name or a source on the policy row", [policy("role-only", name="Jan Kowalski")], "internal", [], 2, MAK),
+        ("a second policy row", [policy("role-only"), policy("role-only")], "internal", [], 3, MAK),
+        ("a maker of its own in a root whose policy is central-register", [policy("central-register"), owner],
+         "internal", [], 3, MAK),
+        ("a name in a root that is internal, its decision-maker policy is role-only: keep the role only",
+         [policy("role-only"), named], "internal", [], 3, MAK),
+        ("by_ref is empty: a root that is internal, its decision-maker policy is role-only, keeps no names",
+         [policy("role-only"), owner], "internal", [decision(0, by="Jan Kowalski")], 2, DEC),
+        ("by 'Jan Kowalski' is not the role 'print owner' of owner: a root that is internal, its decision-maker "
+         "policy is role-only, keeps no names", [policy("role-only"), owner], "internal",
+         [decision(0, by="Jan Kowalski", by_ref="owner")], 2, DEC),
+    ]
+    for i, (rule, makers, visibility, rows, line, file) in enumerate(cases):
+        code, found, out = checked_root(tmp_path / str(i), rows, makers, visibility=visibility)
+        msgs = found.get(f"{file}:{line}", [])
+        assert code == 1 and len(msgs) == 1 and rule in msgs[0], (rule, found, out[-600:])
+        assert len(found) == 1, (rule, found)

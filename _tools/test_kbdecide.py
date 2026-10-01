@@ -57,9 +57,9 @@ def template(tmp_path_factory):
     make_root(repo / "kb" / "public", "public", "S", "public")
     make_root(repo / "kb" / "team", "team", "T", "internal")
     write(repo / "kb" / "public" / kbcommon.DECISION_MAKERS, ",".join(kbcommon.MAKER_COLS) + "\n"
-          + "public-lead,public lead,,\n")
+          + f"{kbcommon.POLICY_ROW},role-only,,\npublic-lead,public lead,,\n")
     write(repo / "kb" / "team" / kbcommon.DECISION_MAKERS, ",".join(kbcommon.MAKER_COLS) + "\n"
-          + f"lead,team lead,Jan Kowalski,{kbid.source_id(URL, 'T')}\n")
+          + f"{kbcommon.POLICY_ROW},role-and-name,,\nlead,team lead,Jan Kowalski,{kbid.source_id(URL, 'T')}\n")
     write(repo / "kb" / "_self" / kbcommon.DECISIONS, ",".join(kbcommon.DECISION_COLS) + "\n")
     write(repo / "kb" / "_self" / kbcommon.DECISION_MAKERS, ",".join(kbcommon.MAKER_COLS) + "\nowner,operations owner,,\n")
     return repo
@@ -422,3 +422,154 @@ def test_kbdecide_a_change_does_not_hide_an_error_the_file_already_had(repo):
     assert [r["id"] for r in repo.rows("team")] == [first, second]
     code, out = repo.run("check.py")
     assert code == 1 and "review_by 'soon'" in out and "errors=1" in out, out[-600:]
+
+
+# --- the storage policy for decision makers: `makers R --policy P --by operator` ---
+
+
+def makers_file(repo, store):
+    return repo.path / "kb" / ("_self" if store == "_self" else store) / kbcommon.DECISION_MAKERS
+
+
+def policy_of(repo, store):
+    rows = kbcommon.load_csv(str(makers_file(repo, store)))[1]
+    return next((r["role"] for r in rows if r["id"] == kbcommon.POLICY_ROW), "")
+
+
+def unset_policy(repo, store):
+    """The root as kbroot.py leaves it: its decision-makers.csv without a policy row."""
+    path = makers_file(repo, store)
+    kept = [r for r in kbcommon.load_csv(str(path))[1] if r["id"] != kbcommon.POLICY_ROW]
+    kbcommon.write_csv(str(path), kbcommon.MAKER_COLS, kept)
+
+
+def set_policy(repo, store, policy, *extra):
+    return repo.decide("makers", store, "--policy", policy, "--by", "operator", *extra)
+
+
+def propose_args(store):
+    return ("propose", "--root", store, "Text.", "--source", "a talk", "--context", "domain:ops")
+
+
+def test_kbdecide_makers_propose_in_a_root_without_a_policy_asks_the_question(repo):
+    unset_policy(repo, "team")
+    unset_policy(repo, "public")
+    for store, options in (("team", ("role-only", "role-and-name", "central-register")),
+                           ("public", ("role-only", "central-register"))):
+        before = repo.file(store).read_bytes()
+        code, out = repo.decide(*propose_args(store))
+        assert code == 2 and out.startswith("refused: "), out
+        assert f"{store} has no storage policy for decision makers. How is a decision maker saved there?" in out, out
+        assert all(o in out for o in options), out
+        assert ("role-and-name" in out) == (store == "team"), out  # a root that keeps no names is not offered names
+        assert f"python3 _tools/kbdecide.py makers {store} --policy <option> --by operator" in out, out
+        assert repo.file(store).read_bytes() == before
+    unset_policy(repo, "public")  # a second refusal, with the file gone: the question comes before any file is made
+    repo.file("public").unlink()
+    assert repo.decide(*propose_args("public"))[0] == 2 and not repo.file("public").exists()
+
+
+def test_kbdecide_makers_a_root_with_a_policy_takes_its_first_decision(repo):
+    unset_policy(repo, "team")
+    assert repo.decide(*propose_args("team"))[0] == 2
+    code, out = set_policy(repo, "team", "role-and-name")
+    assert code == 0 and out.strip() == "policy=role-and-name\tteam", out
+    assert repo.decide(*propose_args("team"))[0] == 0
+    repo.check()
+
+
+def test_kbdecide_makers_kb_self_needs_no_policy_and_takes_none(repo):
+    propose(repo, "_self")
+    refused(repo, "_self", "makers", "_self", "--policy", "role-only", "--by", "operator", says="has no storage policy to set")
+    repo.check()
+
+
+def test_kbdecide_makers_set_the_policy_needs_by_operator(repo):
+    unset_policy(repo, "team")
+    before = makers_file(repo, "team").read_bytes()
+    for by in ((), ("--by", "agent"), ("--by", "Operator")):
+        code, out = repo.decide("makers", "team", "--policy", "role-only", *by)
+        assert code == 2 and "only the operator sets how a root saves its decision makers" in out, (by, out)
+        assert makers_file(repo, "team").read_bytes() == before
+
+
+def test_kbdecide_makers_sets_one_policy_row_and_keeps_the_makers(repo):
+    code, out = set_policy(repo, "public", "role-only")  # the same policy again: one row, not two
+    assert code == 0, out
+    rows = kbcommon.load_csv(str(makers_file(repo, "public")))[1]
+    assert [(r["id"], r["role"]) for r in rows] == [(kbcommon.POLICY_ROW, "role-only"), ("public-lead", "public lead")], rows
+    assert policy_of(repo, "public") == "role-only"
+    repo.check()
+
+
+def test_kbdecide_makers_refuses_a_policy_the_makers_file_breaks(repo):
+    """role-only in an internal root keeps no names, so the team's maker with a name would fail check.py: the change
+    is undone and refused. With the name gone it goes through, and a confirmation then takes no --name."""
+    before = makers_file(repo, "team").read_bytes()
+    code, out = repo.decide("makers", "team", "--policy", "role-only", "--by", "operator")
+    assert code == 2 and "would fail check.py" in out and "its decision-maker policy is role-only" in out, out
+    assert makers_file(repo, "team").read_bytes() == before
+    rows = [{"id": "lead", "role": "team lead", "name": "", "source": ""}]
+    kbcommon.write_csv(str(makers_file(repo, "team")), kbcommon.MAKER_COLS, rows)
+    assert set_policy(repo, "team", "role-only")[0] == 0
+    did = propose(repo, "team")
+    refused(repo, "team", "confirm", did, "--root", "team", "--by", "operator", "--name", "Jan Kowalski", says="keeps no names")
+    refused(repo, "team", "confirm", did, "--root", "team", "--by", "operator", says="keeps decision makers by reference")
+    assert repo.decide("confirm", did, "--root", "team", "--by", "operator", "--maker", "lead")[0] == 0
+    assert (repo.row(did, "team")["by"], repo.row(did, "team")["by_ref"]) == ("team lead", "lead")
+    repo.check()
+
+
+def test_kbdecide_makers_refuses_role_and_name_where_no_names_are_kept(repo):
+    """role-and-name is impossible where kbcommon.maker_names_allowed says no: a root that is not internal."""
+    before = makers_file(repo, "public").read_bytes()
+    code, out = set_policy(repo, "public", "role-and-name")
+    assert code == 2 and "may not keep decision makers by role-and-name" in out and "not an internal root" in out, out
+    assert makers_file(repo, "public").read_bytes() == before
+    assert policy_of(repo, "public") == "role-only"
+
+
+def test_kbdecide_makers_central_register_keeps_no_makers_of_its_own(repo):
+    """The policy that references the central register is refused while the root holds a maker of its own; a
+    confirmation then names a maker of kb/_self/decision-makers.csv only."""
+    before = makers_file(repo, "public").read_bytes()
+    code, out = set_policy(repo, "public", "central-register")
+    assert code == 2 and "a maker of its own in a root whose policy is central-register" in out, out
+    assert makers_file(repo, "public").read_bytes() == before
+    kbcommon.write_csv(str(makers_file(repo, "public")), kbcommon.MAKER_COLS, [])
+    assert set_policy(repo, "public", "central-register")[0] == 0
+    did = propose(repo, "public")
+    refused(repo, "public", "confirm", did, "--root", "public", "--by", "operator", "--maker", "public-lead",
+            says="no decision maker 'public-lead' in the central register")
+    assert repo.decide("confirm", did, "--root", "public", "--by", "operator", "--maker", "owner")[0] == 0
+    assert (repo.row(did)["by"], repo.row(did)["by_ref"]) == ("operations owner", "owner")
+    repo.check()
+
+
+def test_kbdecide_makers_creates_the_file_when_the_root_has_none(repo):
+    makers_file(repo, "team").unlink()
+    assert set_policy(repo, "team", "role-and-name")[0] == 0
+    assert kbcommon.load_csv(str(makers_file(repo, "team")))[1] == [
+        {"id": kbcommon.POLICY_ROW, "role": "role-and-name", "name": "", "source": ""}]
+    repo.check()
+
+
+def test_kbdecide_makers_refusals(repo):
+    refused(repo, "public", "makers", "public", "--policy", "everyone", "--by", "operator", says="not one of role-only")
+    refused(repo, "public", "makers", "nowhere", "--policy", "role-only", "--by", "operator", says="no root 'nowhere'")
+    makers_file(repo, "team").write_text("id,role\nlead,x\n", encoding="utf-8", newline="\n")
+    refused(repo, "team", "makers", "team", "--policy", "role-only", "--by", "operator", says="header is 'id,role'")
+
+
+def test_kbdecide_makers_without_a_policy_argument_shows_it(repo):
+    code, out = repo.decide("makers", "public")
+    assert code == 0 and out.splitlines()[0] == "policy=role-only\tpublic" and "public-lead\tpublic lead\t" in out, out
+    unset_policy(repo, "public")
+    assert repo.decide("makers", "public")[1].splitlines()[0] == "policy=unset\tpublic"
+
+
+def test_kbdecide_makers_kb_self_holds_no_policy_row(repo):
+    """check.py plants the failure: a policy row in the central register, which holds roles only and has no policy."""
+    write(makers_file(repo, "_self"), ",".join(kbcommon.MAKER_COLS) + f"\n{kbcommon.POLICY_ROW},role-only,,\nowner,operations owner,,\n")
+    code, out = repo.run("check.py")
+    assert code == 1 and "ERROR kb/_self/decision-makers.csv:2 a storage policy in kb/_self" in out, out[-600:]
