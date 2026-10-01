@@ -9,7 +9,8 @@ the part that does not touch the backlog's files:
 - `Candidate`: what a detector reports (kind bug or story, title, goal, a `key` naming the finding, a bug's severity,
   a story's checks, extra links);
 - `fingerprint(detector, key)`: 12 hex characters naming one finding; the same detector and key give the same one, so a
-  finding is filed once however often intake runs;
+  finding is filed once however often intake runs. The drift and trailers detectors report their whole finding set as
+  one candidate keyed WHOLE_KEY, so each keeps one fingerprint while it reports anything;
 - `collect(root)`: every detector's candidates in a fixed order, each with its fingerprint, and the detectors that
   failed;
 - `item_of(candidate, iid)`: the draft item `--file` writes (outside any sprint; a bug's repro is
@@ -58,6 +59,8 @@ FP_RE = re.compile(r"[0-9a-f]{12}")
 FP_LINK = "fingerprint "  # a link `fingerprint <12 hex>`, the same marker red-pipeline's bugs carry
 DETECTOR_LINK = "detector "  # the last link of an item intake files: `detector <name>`, which the digest counts by
 STATUS_REPRO = ["python3", "_tools/backlog.py", "intake", "--status"]  # + the fingerprint: a filed bug's repro
+WHOLE_KEY = "open"  # the key of a detector that reports its whole finding set as one candidate (drift, trailers): its
+# fingerprint stays the same while the detector reports anything, whichever findings make up the set
 TEXT_MAX = 2000  # backlog.py's limit for one field's text; a candidate is cut to it
 
 
@@ -421,13 +424,13 @@ def scan_drift(root, hours=None, timeout=None, budget=None):
 def drift_detector(root):
     """One story listing the items that disagree with their commits: each doing item whose newest work commit on main
     is older than DRIFT_HOURS (no done followed it), and each draft or todo item with touches whose own checks already
-    pass on HEAD. The fingerprint is the sorted item ids. Items left unchecked (a timeout, a heavy check, the spent
+    pass on HEAD. The key is WHOLE_KEY, so the fingerprint stays the same whichever items drift or the budget reached;
+    the notes list the items found. Items left unchecked (a timeout, a heavy check, the spent
     budget) are counted in the notes and never reported."""
     d = scan_drift(root)
     ids = sorted(set(d.stale) | set(d.passing))
     if not ids:
         return []
-    key = ",".join(ids)
     notes = [f"{i}: doing, its newest work commit {d.stale[i][0][:10]} is {d.stale[i][1]} h older than the tip of "
              f"{main_ref(root)}, and no done followed it" for i in sorted(d.stale)]
     notes += [f"{i}: its {d.passing[i]} check(s) already pass on HEAD" for i in sorted(d.passing)]
@@ -444,7 +447,7 @@ def drift_detector(root):
         kind="story", title=f"Drift: {len(ids)} backlog item(s) disagree with their commits",
         goal=f"Each of {', '.join(ids)} is finished with done, dropped, or has its status corrected, so no detector "
              "reports it as drifted.",
-        key=key, checks=[STATUS_REPRO + [fingerprint("drift", key)]], notes="; ".join(notes))]
+        key=WHOLE_KEY, checks=[STATUS_REPRO + [fingerprint("drift", WHOLE_KEY)]], notes="; ".join(notes))]
 
 
 # ------------------------------------------------------------------ the trailer detector
@@ -494,7 +497,8 @@ def trailer_findings(root, days=None):
 def trailers_detector(root):
     """One bug listing the commits of the last TRAILER_WINDOW_DAYS on the integration main whose KB-Work line git
     reads as no trailer, or that change `_tools/`, `.claude/`, `.githooks/` or `.gitlab-ci.yml` with neither a KB-Work
-    nor a KB-Auto trailer. The fingerprint is the sorted short shas."""
+    nor a KB-Auto trailer. The key is WHOLE_KEY, so the fingerprint stays the same whichever commits the window
+    holds; the notes list the commits found."""
     found = trailer_findings(root)
     if not found:
         return []
@@ -512,7 +516,7 @@ def trailers_detector(root):
         kind="bug", title=f"Trailers: {len(shas)} commit(s) on main without a KB-Work trailer git reads",
         goal=f"No commit of the last {TRAILER_WINDOW_DAYS} days on {main_ref(root)} has a KB-Work line git reads as no "
              "trailer, or changes code with no KB-Work and no KB-Auto trailer.",
-        key=",".join(shas), severity="S3", notes="; ".join(notes))]
+        key=WHOLE_KEY, severity="S3", notes="; ".join(notes))]
 
 
 # ------------------------------------------------------------------ the stranded-findings detector
