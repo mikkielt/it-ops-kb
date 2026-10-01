@@ -8,7 +8,12 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           and title. A bug's --repro must fail now, and for the defect: one that
                                           cannot start, dies of a SyntaxError in its own code, gets a usage error
                                           (argparse exit 2) or runs no tests (pytest exit 5) is refused with the
-                                          cause; a sprint gets its start gate and its review story
+                                          cause; a sprint gets its start gate and its review story. A new item that
+                                          is a near-duplicate of an open one (similar, below) gets a warning naming
+                                          it; the item is still written and the exit code is unchanged
+  backlog.py similar TITLE [--goal G]     open items ranked by word overlap of TITLE (and G) with their title and
+                                          goal: the share of the query's words found (stop words left out), the
+                                          shared count, `near` from 0.60 and 2 words; the first 10; exit 0
   backlog.py check                        validate every item (fields, links, cycles, canonical form, a planned
                                           sprint's items still draft, and the kb references of its `knowledge`: a
                                           missing one is an error, a fact key no longer found is reported as stale
@@ -44,7 +49,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           once it has merged ends as a content item does. Stops at the first failing
                                           step, naming it (exit 1); a failed rebase is aborted
   backlog.py drop ID --why TEXT          status dropped (an item outside any sprint is deleted: git keeps it)
-  backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo
+  backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo;
+                                          a warning (exit 0) for each open P1 item whose `recurs` names 2 or more
+                                          sprint ids and that is not in the sprint
   backlog.py close SPRINT [--summary]     delete a finished sprint, its items and the epics they finished
                                           (--summary: first list each of them with its status and the commit done
                                           recorded, for the close commit's body)
@@ -116,7 +123,7 @@ NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
 ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "priority", "rank", "severity", "goal",
          "repro", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "knowledge", "links", "notes",
-         "claimed_by", "evidence")
+         "recurs", "claimed_by", "evidence")
 FIELDS = set(ORDER)
 # files any item's commits may change besides its `touches`: the tracker itself and what build_index.py regenerates
 ALWAYS_IN_SCOPE = ("kb/_self/backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.md")
@@ -127,6 +134,16 @@ APPROVALS = ("approve", "approved", "yes")  # the start gate's answers that let 
 # horizon's cause for the items of a sprint the operator approved but nobody started: backlog.py start is what remains,
 # not a question for the operator (a "change" or "cancel" answer is no approval and stays the operator's question)
 STARTS = "the sprint's start: approved, not started; run python3 _tools/backlog.py start "
+SPRINT_ID_RE = re.compile(r"SP-[a-z2-7]{8}")
+OPEN = ("draft", "todo", "doing")
+# similar and new: an open item whose title and goal hold at least SIMILAR_MIN of the query's words, and at least
+# SIMILAR_WORDS of them, is a near-duplicate; words are lowercased runs of letters and digits, stop words left out
+SIMILAR_MIN = 0.6
+SIMILAR_WORDS = 2
+SIMILAR_SHOWN = 10
+STOP_WORDS = frozenset("""a an and are as at be by for from has have in into is it its of on or that the their them
+    then there these this those to was were what when which with without""".split())
+RECURRING_MIN = 2  # start: an open P1 item with this many sprint ids in its recurs list belongs in the sprint
 REVIEW_CHECKS = [{"run": ["python3", "_tools/backlog.py", "check"]}, {"run": ["python3", "_tools/tests.py"]}]
 
 
@@ -961,6 +978,12 @@ def validate(bl, pieces=None):
                 e(f"gate {g['id']}: an answer needs by: operator|agent")
             if g["kind"] == "blocking" and g.get("by") == "agent":
                 e(f"gate {g['id']} is blocking: only the operator answers it")
+        if "recurs" in it:
+            rc = it["recurs"]
+            if not isinstance(rc, list) or not all(isinstance(r, str) and SPRINT_ID_RE.fullmatch(r) for r in rc):
+                e("recurs must be a list of sprint ids (SP-...): the sprints the work came back in")
+            elif len(set(rc)) != len(rc):
+                e("recurs names a sprint twice")
         trig = it.get("trigger")
         if trig is not None and not (isinstance(trig, dict) and _text_ok(trig.get("when", ""))
                                      and isinstance(trig.get("fired", False), bool)):
@@ -1036,6 +1059,39 @@ def ready(bl, sprint=None, any_sprint=False):
     ids = [i for i in bl.items if not waits(bl, i, any_sprint)
            and (sprint is None or bl.sprint_of(i) == sprint)]
     return sorted(ids, key=bl.order_key)
+
+
+# ------------------------------------------------------------------ near-duplicates and recurring work
+
+def words(text):
+    """The words similar compares: lowercased runs of letters and digits, stop words and single characters left out."""
+    return {w for w in re.findall(r"[a-z0-9]+", str(text).lower()) if len(w) > 1 and w not in STOP_WORDS}
+
+
+def similar(bl, text, exclude=()):
+    """Open items ranked by word overlap with text: (score, shared count, id) for each item that shares a word, the
+    score the share of text's words found in the item's title and goal; highest first, then most shared, then id."""
+    q = words(text)
+    out = []
+    for iid, it in bl.items.items():
+        if iid in exclude or it.get("kind") == "sprint" or it.get("status") not in OPEN:
+            continue
+        shared = q & words(f"{it.get('title', '')} {it.get('goal', '')}")
+        if shared:
+            out.append((round(len(shared) / len(q), 2), len(shared), iid))
+    return sorted(out, key=lambda r: (-r[0], -r[1], r[2]))
+
+
+def is_near(row):
+    return row[0] >= SIMILAR_MIN and row[1] >= SIMILAR_WORDS
+
+
+def recurring_left_out(bl, sid):
+    """Open P1 items whose recurs list names RECURRING_MIN sprints or more and that are not in sprint sid."""
+    return sorted((i for i, it in bl.items.items()
+                   if it.get("kind") != "sprint" and it.get("status") in OPEN and it.get("priority") == "P1"
+                   and isinstance(it.get("recurs"), list) and len(set(it["recurs"])) >= RECURRING_MIN
+                   and bl.sprint_of(i) != sid), key=bl.order_key)
 
 
 # ------------------------------------------------------------------ git and checks
@@ -1342,7 +1398,21 @@ def cmd_new(bl, a):
     say(f"new {kind} {bl.label(it['id'])}")
     for x in errs:
         say(f"  to fill in: {x.split(': ', 1)[1]}")
+    for row in filter(is_near, similar(bl, f"{it['title']} {it.get('goal', '')}", exclude={it["id"]})):
+        say(f"  warning: near-duplicate of open {bl.label(row[2])} (word overlap {row[0]:.2f}); "
+            "drop this one if it is the same work")
     commit_written(bl, a, "file", it["id"])
+    return 0
+
+
+def cmd_similar(bl, a):
+    text = f"{a.title} {a.goal or ''}"
+    if not words(text):
+        raise Refused("similar: the title holds no word to compare")
+    rows = similar(bl, text)
+    for row in rows[:SIMILAR_SHOWN]:
+        say(f"{row[0]:.2f}  {row[1]:>2}  {'near' if is_near(row) else '    '}  {bl.label(row[2])}")
+    say(f"similar: {len(rows)} open item(s) share a word, {sum(map(is_near, rows))} near-duplicate(s)")
     return 0
 
 
@@ -1753,6 +1823,9 @@ def cmd_start(bl, a):
     sp["status"] = "active"
     bl.save(sp)
     say(f"started {bl.label(sid)}: {sp['goal']}")
+    for i in recurring_left_out(bl, sid):
+        say(f"  warning: recurring P1 item {bl.label(i)} (recurs in {len(set(bl.items[i]['recurs']))} sprints) "
+            "is not in this sprint")
     commit_written(bl, a, "start", sid)
     return 0
 
@@ -2326,6 +2399,9 @@ def main(argv=None):
     p.add_argument("--touch", action="append")
     p.add_argument("--depends", action="append")
     p.add_argument("--repro")
+    p = sub.add_parser("similar")
+    p.add_argument("title")
+    p.add_argument("--goal")
     sub.add_parser("check")
     sub.add_parser("fmt")
     sub.add_parser("selectors")
