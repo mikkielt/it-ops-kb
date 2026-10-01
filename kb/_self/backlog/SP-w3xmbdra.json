@@ -1,0 +1,22 @@
+{
+  "id": "SP-w3xmbdra",
+  "kind": "sprint",
+  "title": "Test suites run faster with no lost coverage",
+  "status": "active",
+  "goal": "Fresh scenario clones reuse the seed's pack index, test kb copies are hard links of a scanned template, workers start the longest scopes first and match the host's cores, query-log and git scenarios share their setup and drop proven duplicates, throwaway test repositories run no automatic git maintenance, and tests over the repository's live data do not depend on its size",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

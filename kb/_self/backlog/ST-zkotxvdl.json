@@ -2,7 +2,7 @@
   "id": "ST-zkotxvdl",
   "kind": "story",
   "title": "A full tests.py, stress_test.py or 8-worker gate waits for another one running on the same host",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-gfoakqar",
   "priority": "P1",

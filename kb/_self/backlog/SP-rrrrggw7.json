@@ -2,7 +2,7 @@
   "id": "SP-rrrrggw7",
   "kind": "sprint",
   "title": "Operational events measure the sprint runner",
-  "status": "planned",
+  "status": "active",
   "goal": "kb/_querylog/ops/ holds redacted, gated rows of what land, the sync gate, tests, refused dones, CI reads, intake runs, subagents and sprint closes did and took; querylog.py export prints them with the query log in one record format; the digest and the review report them; the autopilot finds stalled work, inventories the processes its agents left running and checks its own tools at each tick; kb_http.py logs no client address",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

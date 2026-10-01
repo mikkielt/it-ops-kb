@@ -21,5 +21,6 @@
     "kb/_self/reports/windows-run.md",
     "_tools/test_kb_cohesion.py",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "notes": "Kept as a draft: the run it records needs a Claude session on the Windows host, and no sprint runs there; schedule it when such a session exists."
 }

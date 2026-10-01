@@ -2,7 +2,7 @@
   "id": "ST-kmsi4dyv",
   "kind": "story",
   "title": "tests.py records each run's scope, time and per-file durations",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",

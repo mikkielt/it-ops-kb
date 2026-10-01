@@ -2,7 +2,7 @@
   "id": "SP-parnkbr7",
   "kind": "sprint",
   "title": "LOG is a kb type",
-  "status": "planned",
+  "status": "active",
   "goal": "A _logs.csv per root, cut from the public projection, holds LOG rows that a LOG tag cites; kblog.py records, confirms, invalidates and proposes them from the ops store; lookups show active LOG lines beside facts as evidence, never as coverage",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

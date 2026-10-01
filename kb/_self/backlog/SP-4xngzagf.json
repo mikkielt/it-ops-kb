@@ -1,0 +1,22 @@
+{
+  "id": "SP-4xngzagf",
+  "kind": "sprint",
+  "title": "The autopilot manager runs sprints within its authority",
+  "status": "active",
+  "goal": "A manager session plans, starts, runs, reviews and closes sprints headless within its authority: it answers gates as recorded decisions the operator ratifies from a digest, starts a sprint only after its research, keeps its state in one capped command, runs sprint runners that restart and share one host, and reports context rot and decision disagreement",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
   "id": "ST-tbi3rras",
   "kind": "story",
   "title": "Sprint runs test in three tiers: narrow per task, the gate per landing, the heavy suites once at sprint end",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-gfoakqar",
   "priority": "P1",

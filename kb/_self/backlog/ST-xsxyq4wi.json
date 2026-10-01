@@ -2,7 +2,7 @@
   "id": "ST-xsxyq4wi",
   "kind": "story",
   "title": "querylog.py export prints the store and the ops rows as one record format",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",

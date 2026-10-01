@@ -1,0 +1,22 @@
+{
+  "id": "SP-ummegr5o",
+  "kind": "sprint",
+  "title": "Sprint landing, planning and retro findings are fixed",
+  "status": "active",
+  "goal": "sync retries a rejected push, keeps merge sides for fix after a code-changing rebase, names an override for a foreign session that is gone and gates every git scenario by what a change touches; kb-worker runs the gate's ruff check; planning flags a file most items share, tests goals over their input range and covers the orchestrator's own steps in a second clone; stacked commits carry their own Self-Reviewed trailer; intake's drift rotation and budget hold under load; text_only_repro sees a grep through a pipe",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

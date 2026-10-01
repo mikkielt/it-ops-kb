@@ -2,7 +2,7 @@
   "id": "BG-3und5yxq",
   "kind": "bug",
   "title": "kb_http.py logs each request's client address and request line to stderr",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",

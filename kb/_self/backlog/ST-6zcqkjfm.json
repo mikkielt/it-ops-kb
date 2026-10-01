@@ -2,7 +2,7 @@
   "id": "ST-6zcqkjfm",
   "kind": "story",
   "title": "The query log keeps operational rows in a gated ops sidecar",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
