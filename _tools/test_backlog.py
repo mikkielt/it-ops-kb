@@ -2554,6 +2554,66 @@ class TestBacklogLand:
         bug = self.story_range(landing, bug_code=True)
         self.land_story_twice(landing, f"code/{bug}")
 
+    # a finished worker's worktree under .claude/worktrees/ that Claude Code left locked ("claude agent ...") and
+    # clean is unlocked and removed by land's branch step; planted: one with uncommitted files, another lock reason,
+    # or outside .claude/worktrees/ is refused, its lock and files kept
+    AGENT_LOCK = "claude agent agent-a0 (pid 1 start Mon Jan  1 00:00:00 2026)"
+
+    def worker_tree(self, ld, lock=AGENT_LOCK, where=None):
+        """The landed branch checked out in a worker's worktree, locked with LOCK; the clone back on main."""
+        repo, tk = ld["repo"], ld["tk"]
+        self.work(ld, ["src/b.txt"], "src/b.txt")
+        sh(repo, "git", "checkout", "-q", "main")
+        (repo / ".git" / "info").mkdir(exist_ok=True)
+        (repo / ".git" / "info" / "exclude").write_text(".claude/worktrees/\n", encoding="utf-8")
+        path = where or repo / ".claude" / "worktrees" / "agent-a0"
+        sh(repo, "git", "worktree", "add", "-q", str(path), f"work/{tk}")
+        if lock is not None:
+            sh(repo, "git", "worktree", "lock", "--reason", lock, str(path))
+        return path
+
+    def worktree_listed(self, ld, path):
+        listed = self.out(ld["repo"], "worktree", "list", "--porcelain")
+        return f"worktree {path.resolve()}" in listed or f"worktree {path}" in listed
+
+    def test_clean_worker_worktree_unlocked_and_removed(self, landing):
+        ld = landing
+        path = self.worker_tree(ld)
+        code, out = self.land(ld)
+        assert code == 0 and "removed the finished worker's worktree" in out and "not done yet" in out, out
+        assert not path.exists() and not self.worktree_listed(ld, path), out
+        assert self.head_ref(ld) == "refs/heads/main", out
+
+    def refused_kept(self, ld, path, why):
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step branch" in out and why in out, out
+        assert path.exists() and self.worktree_listed(ld, path), out
+        return out
+
+    def test_dirty_worker_worktree_unlocked_never(self, landing):
+        ld = landing
+        path = self.worker_tree(ld)
+        (path / "src" / "b.txt").write_text("unsaved\n", encoding="utf-8")  # planted: uncommitted work
+        self.refused_kept(ld, path, "uncommitted changes")
+        assert (path / "src" / "b.txt").read_text(encoding="utf-8") == "unsaved\n"
+        assert "locked claude agent" in self.out(ld["repo"], "worktree", "list", "--porcelain")
+
+    def test_other_lock_worker_worktree_unlocked_never(self, landing):
+        ld = landing
+        path = self.worker_tree(ld, lock="on a removable disk")  # planted: not Claude Code's lock
+        self.refused_kept(ld, path, "locked (on a removable disk)")
+
+    def test_unlocked_worker_worktree_unlocked_never(self, landing):
+        ld = landing
+        path = self.worker_tree(ld, lock=None)  # not locked: the orchestrator removes it, as before
+        self.refused_kept(ld, path, "not locked")
+
+    def test_outside_worker_worktree_unlocked_never(self, landing):
+        ld = landing
+        where = ld["repo"].parent / f"{ld['repo'].name}-wt"  # planted: not under .claude/worktrees/
+        path = self.worker_tree(ld, where=where)
+        self.refused_kept(ld, path, "not under .claude/worktrees/")
+
     def test_backlog_land_refuses_kb_trailers(self, landing):
         code, out = b(landing["repo"], "land", landing["tk"], "--trailer", f"KB-Work: {landing['tk']}")
         assert code == 1 and "--trailer" in out, out

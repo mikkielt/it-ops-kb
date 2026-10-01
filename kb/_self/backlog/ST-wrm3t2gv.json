@@ -26,5 +26,19 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When land finds the branch in a finished worker's worktree under .claude/worktrees/ that Claude Code left locked (reason starting 'claude agent') and that has no uncommitted changes, does land unlock and remove it itself, or only refuse and name the unlock and remove commands?",
+      "options": [
+        "auto-unlock: land unlocks and removes it (never --force) and reports that it did",
+        "name only: land refuses as before and names git worktree unlock and git worktree remove for that path"
+      ],
+      "recommendation": "auto-unlock: land unlocks and removes it (never --force) and reports that it did",
+      "answer": "auto-unlock: land unlocks and removes it (never --force) and reports that it did",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-blstack"
 }
