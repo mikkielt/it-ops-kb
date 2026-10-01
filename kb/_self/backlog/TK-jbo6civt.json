@@ -2,7 +2,7 @@
   "id": "TK-jbo6civt",
   "kind": "task",
   "title": "Parse backlog claim, done and release into work rows",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-n77nrtv7",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "_tools/fixtures/querylog/**",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "worker-jbo6civt"
+  "evidence": {
+    "commit": "4a978ddca6e3a022e1228bbdf6706011f69faf46",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_row"
+        ],
+        "exit": 0,
+        "sha256": "19e21fb1ece8dcac"
+      }
+    ]
+  }
 }
