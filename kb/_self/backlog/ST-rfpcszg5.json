@@ -2,7 +2,7 @@
   "id": "ST-rfpcszg5",
   "kind": "story",
   "title": "A bug that reads CI job states is checked by a table test over every job status and failure reason",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -24,5 +24,6 @@
     "_tools/ql_deliver.py",
     "kb/_self/querylog.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "c-rfpcszg5"
 }
