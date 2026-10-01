@@ -42,6 +42,9 @@ and the other classes below).
                     jobs of a stub list decide the verdict
   TestJobVerdict    ql_deliver.job_verdict reads a pipeline by its jobs: red, unverified or green, each job state
                     planted
+  TestJobStateTable job_ran and job_verdict over every job status, started or not, and each failure reason the code
+                    names (`-k job_state_table`, with test_backlog.py's red-pipeline rows); a row an open bug breaks is
+                    a strict xfail naming it
   the revert's bug  the fingerprint of a red automatic push's pipeline is backlog.py's, and a second pipeline
                     that fails the same way joins the open bug (planted, and on recorded real GitLab.com logs)
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
@@ -428,6 +431,89 @@ class TestNoGateJobs:
         jobs[7] = [{"name": "kb-tests", "status": "manual"}]  # no job ran in any: the newest is read, and is ok
         verdict, _, pipe = ql_deliver.ci_pipeline("https://gitlab.example.com/team/kb.git", "d" * 40, run)
         assert (verdict, pipe["id"]) == ("ok", 9)
+
+
+# ---- the job-state table: every GitLab job status, started or not, and every failure reason the code names
+# (RAN_AND_FAILED, ci_quota_exceeded, runner_system_failure from BG-vsqfchgz, none). The expected value of each row
+# comes from the documented rules (job_ran's and job_verdict's docstrings, kb/_self/backlog.md, red-pipeline), not
+# from the code. A row that hits an open bug is a strict xfail naming it, so the fix must flip it. SP-z7a5c76b:
+# TK-zutzzklq's checks passed on states its author chose while two S2 defects sat in states none planted.
+
+JOB_STATUSES = ("created", "pending", "running", "success", "failed", "canceled", "skipped", "manual")
+JOB_REASONS = ql_deliver.RAN_AND_FAILED + ("ci_quota_exceeded", "runner_system_failure", None)
+
+
+def job_states():
+    """[(status, started, failure_reason)]: each status started or not; a failed job with each reason."""
+    return [(s, started, r) for s in JOB_STATUSES for started in (False, True)
+            for r in (JOB_REASONS if s == "failed" else (None,))]
+
+
+def job_of(status, started, reason, name="kb-tests"):
+    j = {"id": 1, "name": name, "status": status, "allow_failure": True}
+    if started:
+        j["started_at"] = "2026-09-30T08:00:00Z"
+    if reason:
+        j["failure_reason"] = reason
+    return j
+
+
+def state_id(st):
+    status, started, reason = st
+    return f"{status}-{'started' if started else 'unstarted'}" + (f"-{reason}" if reason else "")
+
+
+def own_failure(status, reason):
+    return status == "failed" and reason in ql_deliver.RAN_AND_FAILED
+
+
+def ran_rows():
+    """job_ran: a start time, success, running or a failure of its own; a canceled job never counts (BG-sim2fdaa's
+    goal: a job someone started and canceled is no verdict on it)."""
+    rows = []
+    for st in job_states():
+        status, started, reason = st
+        if status == "canceled" and started:
+            rows.append(pytest.param(st, False, id=state_id(st), marks=pytest.mark.xfail(strict=True, reason="BG-sim2fdaa")))
+            continue
+        rows.append(pytest.param(st, started or status in ("success", "running") or own_failure(status, reason),
+                                 id=state_id(st)))
+    return rows
+
+
+class TestJobStateTable:
+    """ql_deliver.job_ran and job_verdict over the whole job-state table (`-k job_state_table`)."""
+
+    def test_job_state_table_covers_every_status_and_reason(self):
+        states = job_states()
+        assert {s for s, _, _ in states} == set(JOB_STATUSES)
+        assert {r for s, _, r in states if s == "failed"} >= set(ql_deliver.RAN_AND_FAILED) | {"ci_quota_exceeded"}
+        assert all((s, not st, r) in states for s, st, r in states)
+
+    @pytest.mark.parametrize("st,want", ran_rows())
+    def test_job_state_table_job_ran(self, st, want):
+        assert ql_deliver.job_ran(job_of(*st)) is want
+
+    @pytest.mark.parametrize("st", job_states(), ids=state_id)
+    def test_job_state_table_job_verdict_with_no_gate(self, st):
+        """No gate job (the default): red only when the job failed on its own account, else ok."""
+        status, _, reason = st
+        want = ("red", ["kb-tests"], []) if own_failure(status, reason) else ("ok", [], [])
+        assert ql_deliver.job_verdict([job_of(*st)], gate=()) == want
+
+    @pytest.mark.parametrize("st", job_states(), ids=state_id)
+    def test_job_state_table_job_verdict_with_the_job_a_gate(self, st):
+        """The job a gate: red on its own failure, ok on success, pending while unfinished, else unverified naming
+        its status (and failure reason)."""
+        status, _, reason = st
+        verdict, failed, unpassed = ql_deliver.job_verdict([job_of(*st)], gate=("kb-tests",))
+        if own_failure(status, reason):
+            assert (verdict, failed) == ("red", ["kb-tests"])
+        elif status == "success":
+            assert (verdict, failed, unpassed) == ("ok", [], [])
+        else:
+            assert verdict == ("pending" if status in ql_deliver.GITLAB_UNFINISHED else "unverified")
+            assert failed == [] and unpassed == [f"kb-tests {status}" + (f" ({reason})" if reason else "")]
 
 
 @pytest.fixture
