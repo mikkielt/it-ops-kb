@@ -1,0 +1,22 @@
+{
+  "id": "BG-gop6hqfa",
+  "kind": "bug",
+  "title": "spool_delivered deletes a closed work session that distill has not counted yet",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "ql_distill.spool_delivered leaves a closed session file that holds a work window or prompts not yet counted in worked.json: a session with claim and done rows and no kb entry, closed after the distill pass read the spool or when apply --push runs standalone, still reaches a work sidecar; found in the review of SP-fvztfmtm (the settle step of ql_distill.py, around lines 795-850, unlinks every closed session file with no waiting kb entry); a planted test replays session W1 (claim, done and usage rows) next to a closed kb-only session W4 and asserts W1's file survives spool_delivered and is counted by the next distill",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport sys,json,tempfile,datetime\nfrom pathlib import Path\nsys.path.insert(0,'_tools')\nimport ql_distill\nd=Path(tempfile.mkdtemp())/'q'; sp=d/'spool'; sp.mkdir(parents=True)\nn=[0]\ndef row(sid,pid,surface,**x):\n    n[0]+=1\n    return dict(id='%s-%012x'%(sid[:23],n[0]),ts='2026-09-28T09:%02d:%02d.000Z'%(n[0]//60,n[0]%60),surface=surface,v=1,session_id=sid,prompt_id=pid,**x)\ndef put(sid,rows):\n    (sp/(sid+'.jsonl')).write_text(''.join(json.dumps(r)+'\\n' for r in rows))\n    (sp/(sid+'.end')).touch()\nW1='bbbbbbbb-0000-4000-8000-000000000001'; W4='bbbbbbbb-0000-4000-8000-000000000004'; T='TK-aaaaaaaa'\nput(W1,[row(W1,'p0','prompt',prompt='x'),row(W1,'p0','work',action='claim',item=T),row(W1,'p1','prompt',prompt='y'),row(W1,'p1','work',action='done',item=T)])\nL='public/windows/laps.md'\nput(W4,[row(W4,'p0','prompt',prompt='windows laps password length'),row(W4,'p0','mcp',tool='kb_pack',args={'question':'windows laps password length'},verdict='good',articles=[L],lines=[{'line':L+':5','tag':'DOC','verdict':'good'}])])\nnow=datetime.datetime(2026,9,29,tzinfo=datetime.timezone.utc)\ntodo=ql_distill._plan(d,now.timestamp(),now.date().isoformat(),None)[4]\nids={t['entry']['id'] for t in todo}\nassert ids,'no entry planted'\nql_distill.spool_delivered(d,ids,now)\nsys.exit(0 if (sp/(W1+'.jsonl')).exists() else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/test_ql_distill.py",
+    "kb/_self/querylog.md"
+  ]
+}
