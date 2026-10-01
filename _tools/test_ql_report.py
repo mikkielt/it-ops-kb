@@ -159,6 +159,57 @@ class TestDigest:
                                      "outcome": "unknown", "n": 3, "chars": 15}]
 
 
+INTAKE_ITEMS = {  # file stem: (status, links)
+    "TK-aaaaaaaa": ("draft", ["fingerprint 111111111111", "detector drift"]),
+    "TK-bbbbbbbb": ("draft", ["fingerprint 222222222222", "detector trailers"]),
+    "BG-cccccccc": ("todo", ["fingerprint 333333333333", "detector trailers"]),
+    "BG-dddddddd": ("done", ["fingerprint 444444444444", "detector ci"]),  # finished: not counted
+    "BG-eeeeeeee": ("dropped", ["detector ci"]),  # dropped: not counted
+    "TK-ffffffff": ("draft", ["pipeline 7"]),  # filed by hand, no detector link: not counted
+}
+
+
+def intake_backlog(dst, items=INTAKE_ITEMS):
+    dst.mkdir(parents=True, exist_ok=True)
+    for stem, (status, links) in items.items():
+        (dst / f"{stem}.json").write_text(json.dumps({"id": stem, "status": status, "links": links}) + "\n",
+                                          encoding="utf-8", newline="\n")
+    (dst / "BG-garbage0.json").write_text("{not json", encoding="utf-8")  # unreadable: left out
+    return dst
+
+
+class TestDigestIntake:
+    def test_digest_intake_line_counts_the_open_items_by_detector(self, tmp_path):
+        d = intake_backlog(tmp_path / "backlog")
+        assert ql_report.intake_line(d) == "intake: 3 open (drift 1, trailers 2)"
+        assert ql_report.intake_line(tmp_path / "gone") == "intake: none open"
+        assert ql_report.intake_line(intake_backlog(tmp_path / "other", {"TK-aaaaaaaa": ("done", ["detector ci"])})) \
+            == "intake: none open"
+
+    def test_digest_intake_line_closes_the_digest_when_a_backlog_is_given(self, tmp_path):
+        store = digest_store(tmp_path / "store")
+        lines = ql_report.digest(store, "2026-W39", intake_backlog(tmp_path / "backlog"))[1]
+        assert "\n".join(lines) == DIGEST_W39 + "\nintake: 3 open (drift 1, trailers 2)"
+        assert "\n".join(ql_report.digest(store, "2026-W39")[1]) == DIGEST_W39  # no backlog, no line
+
+    def test_digest_intake_line_is_the_hooks_last_line(self, tmp_path, monkeypatch):
+        q = tmp_path / "querylog"
+        monkeypatch.setattr(ql_report, "places", lambda: (q, q / "config.json"))
+        store = digest_store(tmp_path / "store")
+        line = ql_report.digest_hook(TestDigestHook.MONDAY, store, intake_backlog(tmp_path / "backlog"))
+        assert json.loads(line)["systemMessage"].splitlines()[-1] == "intake: 3 open (drift 1, trailers 2)"
+
+    def test_digest_command_on_the_default_store_ends_with_the_intake_line(self, tmp_path):
+        p = subprocess.run([sys.executable, QL, "digest"], capture_output=True, env=querylog_env(tmp_path), timeout=60)
+        out = p.stdout.decode("utf-8").splitlines()
+        assert p.returncode == 0 and out[-1].startswith("intake: "), out[-3:]
+
+    def test_digest_intake_line_never_runs_a_detector(self, tmp_path, monkeypatch):
+        import bl_intake
+        monkeypatch.setattr(bl_intake, "collect", lambda *a, **k: pytest.fail("the digest ran the detectors"))
+        assert ql_report.intake_line(intake_backlog(tmp_path / "backlog")).startswith("intake: 3 open")
+
+
 class TestDigestHook:
     MONDAY = datetime.datetime(2026, 9, 28, 7, 0, tzinfo=datetime.timezone.utc)  # 2026-W40: shows 2026-W39
 

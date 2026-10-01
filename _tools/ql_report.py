@@ -16,6 +16,8 @@ from ql_capture import VERDICTS
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
 DIGEST_BUDGET_S = 3  # the SessionStart digest prints nothing when reading the store took longer
 DIGEST_HOOK_TIMEOUT_S = 10  # the digest hook's `timeout` in .claude/settings.json and the plugin
+BACKLOG = HOME / "kb" / "_self" / "backlog"  # the item files, which `intake --file` writes drafts into
+DETECTOR_LINK = "detector "  # the last link of an item intake files (bl_intake.DETECTOR_LINK; no import of it here)
 WEEK = re.compile(r"(\d{4})-W(\d{2})")
 MISS_KINDS = ("eval", "gap")  # one finding per judged miss: an eval finding with a best article, else a gap finding
 
@@ -95,11 +97,39 @@ def usage_lines(entries, usage):
     return out
 
 
-def digest(store=None, week=None):
+def intake_line(backlog=None):
+    """The digest's line for the backlog's intake: the open items (not done or dropped) `backlog.py intake --file`
+    filed, counted by the detector named in their `detector <name>` link, such as `intake: 3 open (drift 1, trailers 2)`,
+    or `intake: none open`. It reads the item files of `backlog` (default kb/_self/backlog) as they are in the working
+    tree, uncommitted drafts included, and never runs a detector, which would take longer than the digest may."""
+    found = {}
+    d = Path(backlog or BACKLOG)
+    for p in sorted(d.glob("*.json")) if d.is_dir() else []:
+        try:
+            it = json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(it, dict) or it.get("status") in ("done", "dropped"):
+            continue
+        for link in it.get("links") or []:
+            if isinstance(link, str) and link.startswith(DETECTOR_LINK) and link[len(DETECTOR_LINK):].strip():
+                name = link[len(DETECTOR_LINK):].strip()
+                found[name] = found.get(name, 0) + 1
+                break
+    if not found:
+        return "intake: none open"
+    return f"intake: {sum(found.values())} open ({_counts(sorted(found.items()))})"
+
+
+def digest(store=None, week=None, backlog=None):
     """(week, lines, whether the week holds anything) of the committed store (default kb/_querylog) for the ISO week
     `week` (default: the week of the newest entry). Only the store and `week` go in, so every clone at the same
-    commit prints the same lines. Entries count by their `day`, run and findings files by their run id's date, and
-    findings states are each finding's last record in the findings files dated up to the week's Sunday."""
+    commit prints the same lines, except the last, the `intake_line` of the item files in `backlog`: kb/_self/backlog
+    when `store` is the default store too, else none unless given. Entries count by their `day`, run and findings
+    files by their run id's date, and findings states are each finding's last record in the findings files dated up
+    to the week's Sunday."""
+    if backlog is None and store is None:
+        backlog = BACKLOG
     store = Path(store or STORE)
     week = week or latest_week(store)
     if week is None:
@@ -175,10 +205,12 @@ def digest(store=None, week=None):
     for kind in FINDING_KINDS:
         if kind in table:
             lines.append(f"  {kind}: " + _counts((s, table[kind][s]) for s in FINDING_STATES if s in table[kind]))
+    if backlog is not None:
+        lines.append(intake_line(backlog))
     return week, lines, bool(entries or runs or recorded)
 
 
-def digest_hook(now_dt=None, store=None):
+def digest_hook(now_dt=None, store=None, backlog=None):
     """The SessionStart digest: the JSON line `{"systemMessage": ...}` the first SessionStart of an ISO week prints
     (last week's digest), or None: logging off (mode `off`, the DISABLED marker), already shown this week (the marker
     beside the spool names the week), an empty week, or reading the store took more than DIGEST_BUDGET_S. The
@@ -196,7 +228,7 @@ def digest_hook(now_dt=None, store=None):
     except OSError:
         pass
     write_text(marker, this + "\n")
-    _, lines, found = digest(store, iso_week(today - datetime.timedelta(days=7)))
+    _, lines, found = digest(store, iso_week(today - datetime.timedelta(days=7)), backlog)
     if not found or time.monotonic() - t0 > DIGEST_BUDGET_S:
         return None
     return json.dumps({"systemMessage": "\n".join(lines)}, ensure_ascii=False)
