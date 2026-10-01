@@ -251,8 +251,8 @@ class Refused(Exception):
 
 
 class Rejected(Refused):
-    """A refusal that exits 2: `set`, `gate add` and `new` (a text-only repro with no reason) could not do what was
-    asked."""
+    """A refusal that exits 2: `set`, `gate add` and `new` (a text-only repro with no reason, `--sprint` on a task or
+    subtask) could not do what was asked."""
 
 
 # ------------------------------------------------------------------ storage
@@ -1693,6 +1693,8 @@ def cmd_new(bl, a):
         say(f"new sprint {bl.label(it['id'])}, review story {bl.label(rv['id'])}")
         commit_written(bl, a, "file", it["id"], [it["id"], rv["id"]])
         return 0
+    if a.sprint and kind not in IN_SPRINT:
+        raise Rejected(f"new {kind} refuses --sprint: only stories and bugs name a sprint; a {kind} follows its parent's")
     it.update(status="todo" if kind in ("task", "subtask") else "draft", priority=a.priority, rank=a.rank)
     for k in ("parent", "sprint", "goal"):
         if getattr(a, k):
