@@ -2,7 +2,7 @@
   "id": "TK-xp6iyhiz",
   "kind": "task",
   "title": "kbroot.py add creates the decision files",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rmabmiaq",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,19 @@
     "_tools/test_kbroot.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "mac-second"
+  "evidence": {
+    "commit": "118d462ec1eb4e9cbc1c86f58edbb1345b28a74d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "decisions_store_kbroot"
+        ],
+        "exit": 0,
+        "sha256": "1f4c056baf0f8537"
+      }
+    ]
+  }
 }
