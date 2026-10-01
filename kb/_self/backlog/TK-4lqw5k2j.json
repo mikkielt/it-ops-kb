@@ -2,7 +2,7 @@
   "id": "TK-4lqw5k2j",
   "kind": "task",
   "title": "Route subagent counts by worktree branch; overlaps to the sprint line",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-jn7qeb2b",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,19 @@
     "kb/_self/querylog.md"
   ],
   "notes": "Scope widened: a routed subagent gives an item line prompts 0 and no main, which ql_store.work_line_problems rejects; the work sidecar bullets in querylog.md describe the old overlap rule.",
-  "claimed_by": "worker-4lqw5k2j"
+  "evidence": {
+    "commit": "b2cfc1c7cacb3fc309f60b18da39cf0cd7e2b60d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_subagent"
+        ],
+        "exit": 0,
+        "sha256": "eff336e56c1b0b2a"
+      }
+    ]
+  }
 }
