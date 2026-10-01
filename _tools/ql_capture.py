@@ -26,6 +26,7 @@ SKILL = re.compile(r"\s*/(?:it-ops-kb:)?kb-[\w-]+")  # a kb skill typed as a sla
 SAFE_SESSION = re.compile(r"[A-Za-z0-9_-]{1,80}")  # a session id that is safe as a file name
 STATUS = re.compile(r"\b(?:HTTP(?:/[\d.]+)?|status(?: code)?)\D{0,3}([1-5]\d\d)\b", re.I)
 WORK_ACTIONS = ("claim", "done", "release")  # the backlog.py commands that open or end a window of work on an item
+WORK_REFUSED_EXIT = 1  # the exit code of a refused backlog.py command (its Refused; bad usage exits 2)
 WORK_ITEM = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")  # backlog.py's ID_RE
 WORK_LAUNCHER = re.compile(r"(?:sh|bash|python[\d.]*|py)(?:\.exe)?|kbpy|-[\w.-]+|[A-Za-z_]\w*=\S*", re.I)  # beside backlog.py
 WORK_VALUE_FLAGS = ("--by", "--trailer", "--root", "--branch", "--why")  # backlog.py options that take a value
@@ -321,6 +322,22 @@ def work_action(command):
     return None
 
 
+def refused_done(event, command):
+    """The item of a `backlog.py done ID` that ran and was refused, from a `PostToolUseFailure` event, else None. The
+    command is read as `work_action` reads a success (the same parser: a mention or a dry run is none), and the
+    failure must be the command's own exit: the first line of `error` is `Exit code 1`, backlog.py's refusal code
+    (WORK_REFUSED_EXIT). An interrupt, a start failure or timeout with no such line, another exit code (2 is bad
+    usage, 127 and 9009 a missing interpreter) and a failed `claim` or `release` are none. Never the error's text."""
+    if event.get("is_interrupt"):
+        return None
+    first = str(event.get("error") or "").split("\n", 1)[0].strip()
+    m = re.fullmatch(r"Exit code (\d+)", first)
+    if not m or int(m.group(1)) != WORK_REFUSED_EXIT:
+        return None
+    work = work_action(command)
+    return work[0] if work and work[1] == "done" else None
+
+
 def fetch_outcome(tool, ok, event, host):
     """The outcome class of a hook-seen fetch: facts only, else `unknown` (querylog.md, Surfaces)."""
     if not ok:
@@ -380,8 +397,14 @@ def capture(event):
             summary = pack_summary(text_of(event.get("tool_response"))) if ok else {"outcome": "error"}
             return record("mcp", sid, prompt_id=pid, tool=m.group(1),
                           args={k: clip(args[k]) for k in KB_ARGS if k in args} or None, **summary)
-        work = work_action(args.get("command")) if ok and tool in SHELL_TOOLS and isinstance(args.get("command"), str) else None
-        if work:  # a successful claim, done or release: only the item and the action, never the command
+        work = None
+        if tool in SHELL_TOOLS and isinstance(args.get("command"), str):
+            if ok:
+                work = work_action(args["command"])
+            else:
+                item = refused_done(event, args["command"])
+                work = (item, "refused") if item else None
+        if work:  # a successful claim, done or release, or a refused done: only the item and the action, never the command
             agent = event.get("agent_id")
             return record("work", sid, prompt_id=pid, agent_id=agent if isinstance(agent, str) and agent else None,
                           item=work[0], action=work[1])

@@ -1,5 +1,5 @@
 {
-  "_note": "Hook events in the shape claude/hooks.md documents (DOC S743) for the capture hook: the Bash and PowerShell tool_response shapes, the common input fields (session_id, prompt_id, and agent_id only inside a subagent) and the command forms the backlog skills use; written by hand, not recorded from a live session. Session, prompt and agent ids are placeholders. `row` is what capture must write, null when it must write none.",
+  "_note": "Hook events in the shape claude/hooks.md documents (DOC S743) for the capture hook: the Bash and PowerShell tool_response shapes, the common input fields (session_id, prompt_id, and agent_id only inside a subagent) and the command forms the backlog skills use; written by hand, not recorded from a live session. Session, prompt and agent ids are placeholders. The `PostToolUseFailure` events (a non-zero exit: `error` is `Exit code N` and the output, `is_interrupt` false unless the user stopped it) are written from the documented shape by hand as well, not recorded. `row` is what capture must write, null when it must write none.",
   "events": [
     {
       "name": "claim, with the session's flags and a trailer",
@@ -37,13 +37,101 @@
       "row": {"item": "ST-bbbbbbbb", "action": "release"}
     },
     {
-      "name": "the claim a refused done follows: the failed run is a PostToolUseFailure",
+      "name": "a refused done: the failed run is a PostToolUseFailure whose error starts Exit code 1",
       "event": {
         "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-refused", "hook_event_name": "PostToolUseFailure",
         "tool_name": "Bash",
         "tool_input": {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"},
         "error": "Exit code 1\nrefused: a file in scope has uncommitted changes",
-        "tool_use_id": "toolu_04", "is_interrupt": false
+        "tool_use_id": "toolu_f1", "is_interrupt": false
+      },
+      "row": {"item": "TK-aaaaaaaa", "action": "refused"}
+    },
+    {
+      "name": "a refused done with flags, run by a subagent",
+      "event": {
+        "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-refused-sub", "agent_id": "agent-0000000000000001", "agent_type": "kb-worker", "hook_event_name": "PostToolUseFailure",
+        "tool_name": "Bash",
+        "tool_input": {"command": "python3 _tools/backlog.py done TK-aaaaaaaa --commit --trailer 'Co-Authored-By: Claude <noreply@example.com>'"},
+        "error": "Exit code 1\nTK-aaaaaaaa is not done: 1 check(s) failed",
+        "tool_use_id": "toolu_f2", "is_interrupt": false
+      },
+      "row": {"item": "TK-aaaaaaaa", "action": "refused", "agent_id": "agent-0000000000000001"}
+    },
+    {
+      "name": "a refused done through PowerShell, CRLF after the exit line",
+      "event": {
+        "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-refused-ps", "hook_event_name": "PostToolUseFailure",
+        "tool_name": "PowerShell",
+        "tool_input": {"command": "& \"C:\\\\Program Files\\\\Python311\\\\python.exe\" .\\\\_tools\\\\backlog.py done ST-bbbbbbbb"},
+        "error": "Exit code 1\r\nST-bbbbbbbb is not done: open child",
+        "tool_use_id": "toolu_f3", "is_interrupt": false
+      },
+      "row": {"item": "ST-bbbbbbbb", "action": "refused"}
+    },
+    {
+      "name": "a refused claim writes none",
+      "event": {
+        "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-claim-refused", "hook_event_name": "PostToolUseFailure",
+        "tool_name": "Bash",
+        "tool_input": {"command": "python3 _tools/backlog.py claim TK-aaaaaaaa --by worker-aaaaaaaa"},
+        "error": "Exit code 1\nrefused: already claimed",
+        "tool_use_id": "toolu_f4", "is_interrupt": false
+      },
+      "row": null
+    },
+    {
+      "name": "an interrupted done writes none",
+      "event": {
+        "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-interrupt", "hook_event_name": "PostToolUseFailure",
+        "tool_name": "Bash",
+        "tool_input": {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"},
+        "error": "Exit code 1\nInterrupted",
+        "tool_use_id": "toolu_f5", "is_interrupt": true
+      },
+      "row": null
+    },
+    {
+      "name": "a done that could not start, no exit-code line, writes none",
+      "event": {
+        "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-nostart", "hook_event_name": "PostToolUseFailure",
+        "tool_name": "Bash",
+        "tool_input": {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"},
+        "error": "spawn /bin/sh ENOENT",
+        "tool_use_id": "toolu_f6", "is_interrupt": false
+      },
+      "row": null
+    },
+    {
+      "name": "a done that timed out writes none",
+      "event": {
+        "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-timeout", "hook_event_name": "PostToolUseFailure",
+        "tool_name": "Bash",
+        "tool_input": {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"},
+        "error": "Command timed out after 2m 0s",
+        "tool_use_id": "toolu_f7", "is_interrupt": false
+      },
+      "row": null
+    },
+    {
+      "name": "a done with another exit code (bad usage) writes none",
+      "event": {
+        "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-usage", "hook_event_name": "PostToolUseFailure",
+        "tool_name": "Bash",
+        "tool_input": {"command": "python3 _tools/backlog.py done TK-aaaaaaaa --bogus"},
+        "error": "Exit code 2\nusage: backlog.py done [-h]",
+        "tool_use_id": "toolu_f8", "is_interrupt": false
+      },
+      "row": null
+    },
+    {
+      "name": "a failed command that only mentions the script writes none",
+      "event": {
+        "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "prompt_id": "p-mention", "hook_event_name": "PostToolUseFailure",
+        "tool_name": "Bash",
+        "tool_input": {"command": "grep -n 'backlog.py done TK-aaaaaaaa' missing.md"},
+        "error": "Exit code 2\ngrep: missing.md: No such file or directory",
+        "tool_use_id": "toolu_f9", "is_interrupt": false
       },
       "row": null
     },
