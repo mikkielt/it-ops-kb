@@ -10,7 +10,11 @@ order.
 import argparse
 import datetime
 import json
+import os
 import re
+import signal
+import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
@@ -447,6 +451,126 @@ def test_intake_drift_budget_is_well_under_a_minute_and_bounds_each_check():
 ])
 def test_intake_drift_a_whole_suite_or_stress_check_is_heavy(run, heavy):
     assert bl_intake.heavy_check({"run": run}) is heavy
+
+
+@pytest.mark.parametrize("run, heavy", [
+    (["sh", "-c", "python3 _tools/tests.py"], True),
+    (["bash", "-lc", "cd . && python3 _tools/tests.py -q"], True),
+    (["/bin/sh", "-c", "sh -c 'python3 _tools/stress_test.py'"], True),
+    (["cmd.exe", "/c", "python _tools\\tests.py"], True),
+    (["pwsh", "-Command", "python3 _tools/tests.py; echo done"], True),
+    (["sh", "-c", "python3 _tools/tests.py -k intake && python3 _tools/tests.py"], True),
+    (["sh", "-c", "python3 _tools/tests.py -k intake_drift"], False),
+    (["python3", "_tools/perfcheck.py", "ids", "--against", "x.txt"], True),
+    (["python3", "_tools/perfcheck.py", "time", "-k", "x"], True),
+    (["python3", "_tools/tests.py", "-k", "not slow"], True),
+    (["python3", "_tools/tests.py", "-k", "not slow and not stress"], True),
+    (["python3", "_tools/tests.py", "-k", "intake or not slow"], True),
+    (["python3", "_tools/tests.py", "-k", ""], True),
+    (["python3", "_tools/tests.py", "-knot slow"], True),
+    (["sh", "-c", "python3 _tools/tests.py -k 'not slow'"], True),
+    (["python3", "_tools/tests.py", "-k", "intake and not slow"], False),
+    (["python3", "_tools/tests.py", "-k", "(intake or drift) and not slow"], False),
+    (["python3", "_tools/tests.py", "-k", "not slow", "-k", "intake"], False),
+    (["uv", "run", "pytest", "-n", "auto"], True),
+    (["python3", "-m", "pytest", "-q"], True),
+    (["python3", "-m", "pytest", "_tools/test_intake.py"], False),
+    (["python3", "-c", "import pytest"], False),
+    (["python3", "-c", "print('_tools/tests.py and stress_test')"], False),
+])
+def test_intake_drift_process_tree_heavy_check_sees_through_wrappers(run, heavy):
+    assert bl_intake.heavy_check({"run": run}) is heavy
+
+
+GRANDCHILD = ("import os, sys, time\n"
+              "open(sys.argv[1] + '.pid', 'w').write(str(os.getpid()))\n"
+              "while True:\n"
+              "    open(sys.argv[1], 'a').write('.')\n"
+              "    time.sleep(0.05)\n")
+
+
+def planted_tree(beat):
+    """A check that starts a grandchild appending to `beat` (its pid in `beat`.pid) and then sleeps."""
+    child = ("import subprocess, sys, time\n"
+             f"subprocess.Popen([sys.executable, '-c', {GRANDCHILD!r}, {str(beat)!r}])\n"
+             "time.sleep(60)\n")
+    return {"run": ["python3", "-c", child]}
+
+
+def beating(beat, wait=0.6):
+    """True when the heartbeat file still grows over `wait` seconds."""
+    before = beat.stat().st_size if beat.exists() else 0
+    time.sleep(wait)
+    return (beat.stat().st_size if beat.exists() else 0) > before
+
+
+def wait_for(path, seconds=10):
+    end = time.monotonic() + seconds
+    while not (path.exists() and path.read_text(encoding="utf-8").strip()) and time.monotonic() < end:
+        time.sleep(0.05)
+    return path.exists()
+
+
+def reap(pidfile):
+    """End the planted grandchild whatever the test found."""
+    if not pidfile.exists():
+        return
+    try:
+        pid = int(pidfile.read_text(encoding="utf-8").strip())
+    except ValueError:
+        return
+    if os.name == "posix":
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
+    else:
+        subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True)
+
+
+def test_intake_drift_process_tree_a_timeout_ends_the_grandchild(tmp_path):
+    beat = tmp_path / "beat"
+    try:
+        t = time.monotonic()
+        assert bl_intake.check_result(tmp_path, planted_tree(beat), 2) == "timeout"
+        assert time.monotonic() - t < 15  # no wait on the grandchild's pipes
+        assert wait_for(Path(f"{beat}.pid"))  # the grandchild started before the timeout
+        time.sleep(0.3)
+        assert not beating(beat)
+    finally:
+        reap(Path(f"{beat}.pid"))
+
+
+def test_intake_drift_process_tree_an_exit_ends_a_running_check(tmp_path):
+    beat = tmp_path / "beat"
+    script = ("import sys, threading, time\n"
+              f"sys.path.insert(0, {str(Path(bl_intake.__file__).parent)!r})\n"
+              "import bl_intake\n"
+              f"check = {planted_tree(beat)!r}\n"
+              f"threading.Thread(target=bl_intake.check_result, args=({str(tmp_path)!r}, check, 60), daemon=True).start()\n"
+              "end = time.monotonic() + 10\n"
+              f"while not __import__('os').path.exists({str(beat) + '.pid'!r}) and time.monotonic() < end:\n"
+              "    time.sleep(0.05)\n")
+    try:
+        p = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, timeout=30)
+        assert p.returncode == 0, p.stderr
+        assert wait_for(Path(f"{beat}.pid"))
+        time.sleep(0.3)
+        assert not beating(beat)  # the exit ended the check the daemon thread was still waiting on
+    finally:
+        reap(Path(f"{beat}.pid"))
+
+
+def test_intake_drift_process_tree_planted_leak_is_caught(tmp_path, monkeypatch):
+    """The planted failure: with the group kill disabled, the grandchild outlives the timeout and the probe sees it."""
+    beat = tmp_path / "beat"
+    monkeypatch.setattr(bl_intake, "end_tree", lambda proc: proc.kill())
+    try:
+        assert bl_intake.check_result(tmp_path, planted_tree(beat), 2) == "timeout"
+        assert wait_for(Path(f"{beat}.pid"))
+        assert beating(beat)
+    finally:
+        reap(Path(f"{beat}.pid"))
 
 
 def test_intake_drift_a_heavy_check_never_runs_and_is_counted(world):

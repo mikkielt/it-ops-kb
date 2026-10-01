@@ -19,9 +19,11 @@ the part that does not touch the backlog's files:
   candidate;
 - `lines(candidate)`: the lines the command prints for one candidate;
 - the `drift` detector (`scan_drift`, `drift_detector`): items whose state disagrees with their commits. Its item
-  checks run within a total budget (DRIFT_BUDGET_S, each check at most CHECK_TIMEOUT_S), and a check that runs the
-  whole test suite (`_tools/tests.py` with no `-k`) or `stress_test.py` never runs; the items those leave unchecked are
-  counted in the story's notes, never reported as passing. The budget is the detector's one reading of time, so an
+  checks run within a total budget (DRIFT_BUDGET_S, each check at most CHECK_TIMEOUT_S), each as a process group of
+  its own that a timeout or this process's exit ends whole (`end_tree`, `end_live`), and a check that runs the whole
+  test suite (`heavy_check`: `_tools/tests.py` or pytest with no narrowing `-k`, `stress_test.py`, a wrapper such as
+  `perfcheck.py`, also inside `sh -c '...'`) never runs; the items those leave unchecked are counted in the story's
+  notes, never reported as passing. The budget is the detector's one reading of time, so an
   intake stays short enough for a SessionStart hook;
 - the `trailers` detector (`trailer_findings`, `trailers_detector`, at the end): commits of main whose KB-Work line git
   does not read, or that change code with no KB-Work and no KB-Auto trailer;
@@ -39,14 +41,17 @@ This module imports no tool module but `kbpublic` (the integration remote's name
 pipeline, `ql_base` (the command runner) and `ql_deliver` (the forge calls), inside the function that needs them; it is
 below backlog.py, which passes its own `run` to the readers.
 """
+import atexit
 import datetime
 import hashlib
 import json
 import os
 import re
 import shlex
+import signal
 import subprocess
 import sys
+import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -224,8 +229,10 @@ BACKLOG_DIR = "kb/_self/backlog"  # backlog.py's REL_DIR: the item files, one `<
 DRIFT_HOURS = 24  # a doing item whose newest work commit is older than this drifted
 CHECK_TIMEOUT_S = 15  # one check run by the detector; a check that exceeds it is counted and says nothing
 DRIFT_BUDGET_S = 30  # all the checks of one scan; once spent, no further check starts and the rest are counted
-HEAVY_SCRIPTS = ("stress_test.py",)  # a check that runs one of these never runs from intake
-SUITE = "_tools/tests.py"  # a check that runs it with no `-k` selector (the whole suite) never runs from intake
+HEAVY_SCRIPTS = ("stress_test.py", "perfcheck.py")  # a check that runs one of these (whole-suite wrappers) never runs
+SUITE = "_tools/tests.py"  # a check that runs it, or pytest, with no narrowing `-k` selector never runs from intake
+SEPARATORS = (";", "&&", "||", "|", "&")  # shell operators that end one command of a `sh -c` string
+SHELLS = ("sh", "bash", "zsh", "dash", "ksh", "cmd", "powershell", "pwsh")  # their string arguments are commands
 WORK_KEY = "KB-Work"
 ID_RE = re.compile(r"[A-Z]{2}-[0-9a-z]{8}")
 
@@ -345,35 +352,141 @@ def check_env():
     return env
 
 
+def is_shell(word):
+    return word.rsplit("/", 1)[-1].lower().removesuffix(".exe") in SHELLS
+
+
+def words(argv, depth=0):
+    """The argv's words, `\\` read as `/`, with each argument after a shell (`sh -c '...'`, `bash -lc`, `cmd /c`,
+    `pwsh -Command`) that holds whitespace or a shell operator split into its own words and operators; a `-k`
+    expression stays one word."""
+    out = []
+    for a in argv:
+        a = str(a).replace("\\", "/")
+        if (depth < 4 and any(is_shell(w) for w in out) and out[-1] != "-k"
+                and re.search(r"[\s;&|]", a)):
+            lex = shlex.shlex(a, posix=True, punctuation_chars=";&|")
+            lex.whitespace_split = True
+            try:
+                parts = list(lex)
+            except ValueError:
+                parts = a.split()
+            if parts != [a]:
+                out.extend(words(parts, depth + 1))
+                continue
+        out.append(a)
+    return out
+
+
+def narrows(expr):
+    """True when the `-k` expression selects a part of the suite: each `or` alternative has a term not under `not`
+    (`-k 'not slow'` selects nearly all of it)."""
+    for alt in re.split(r"\bor\b", re.sub(r"[()]", " ", expr)):
+        ws = alt.split()
+        if not any(w not in ("and", "not") and (j == 0 or ws[j - 1] != "not") for j, w in enumerate(ws)):
+            return False
+    return True
+
+
+def command(rest):
+    """The words of `rest` up to the end of their command (a shell operator)."""
+    return rest[:next((j for j, w in enumerate(rest) if w in SEPARATORS), len(rest))]
+
+
+def selects_part(seg):
+    """True when the last `-k` expression among a suite runner's words (`-k EXPR` or `-kEXPR`) narrows it."""
+    expr = None
+    for j, w in enumerate(seg):
+        if w == "-k":
+            expr = seg[j + 1] if j + 1 < len(seg) else ""
+        elif w.startswith("-k"):
+            expr = w[2:]
+    return expr is not None and narrows(expr)
+
+
 def heavy_check(check):
-    """True when the check's argv runs `stress_test.py`, or `_tools/tests.py` with no `-k` selector after it."""
-    argv = [str(a).replace("\\", "/") for a in check.get("run", [])]
-    for i, a in enumerate(argv):
+    """True when the check runs `stress_test.py` or a whole-suite wrapper (HEAVY_SCRIPTS), or `_tools/tests.py` or
+    pytest with no narrowing `-k` selector (pytest: nor a test file), seen through a shell string such as
+    `sh -c '...'`."""
+    ws = words(check.get("run", []))
+    for i, a in enumerate(ws):
         name = a.rsplit("/", 1)[-1]
         if name in HEAVY_SCRIPTS:
             return True
         if a == SUITE or a.endswith("/" + SUITE) or a == "tests.py":
-            if not any(x == "-k" or x.startswith("-k") for x in argv[i + 1:]):
+            if not selects_part(command(ws[i + 1:])):
+                return True
+        if name in ("pytest", "py.test") or (a == "-m" and ws[i + 1:i + 2] == ["pytest"]):
+            rest = command(ws[i + 2:] if a == "-m" else ws[i + 1:])
+            if not any(w.endswith(".py") or "::" in w for w in rest) and not selects_part(rest):
                 return True
     return False
 
 
+LIVE = set()  # the drift checks running now (Popen); an exit ends their process groups (end_live)
+LIVE_LOCK = threading.Lock()
+
+
+def end_tree(proc):
+    """End the process group the check leads (tests.py, uv, pytest and its workers), then the check itself."""
+    if os.name == "posix":
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
+    else:
+        subprocess.run(["taskkill", "/PID", str(proc.pid), "/T", "/F"], capture_output=True)
+    try:
+        proc.kill()
+    except OSError:
+        pass
+
+
+@atexit.register
+def end_live():
+    """End every drift check still running when the process exits: `intake --hook` stops waiting for a detector and
+    exits while its thread may still run one."""
+    with LIVE_LOCK:
+        procs = list(LIVE)
+    for proc in procs:
+        end_tree(proc)
+
+
 def check_result(root, check, timeout):
     """"pass", "fail" or "timeout" for one item check (`run` argv, optional `exit` and `match`), run in `root` without a
-    shell; a check that cannot start fails. python3 runs with the interpreter running this tool."""
+    shell as the leader of a process group of its own, which a timeout or an exit ends whole; a check that cannot
+    start fails. python3 runs with the interpreter running this tool."""
     argv = list(check["run"])
     if argv and argv[0] in ("python3", "python"):
         argv[0] = sys.executable
+    group = {"start_new_session": True} if os.name == "posix" else {
+        "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     try:
-        p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           timeout=timeout, env=check_env())
-    except subprocess.TimeoutExpired:
-        return "timeout"
+        proc = subprocess.Popen(argv, cwd=root, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace",
+                                env=check_env(), **group)
     except OSError:
         return "fail"
-    ok = p.returncode == check.get("exit", 0)
+    with LIVE_LOCK:
+        LIVE.add(proc)
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        end_tree(proc)
+        try:
+            proc.communicate(timeout=2)  # the pipes close once the group is gone
+        except subprocess.TimeoutExpired:
+            pass
+        return "timeout"
+    except BaseException:
+        end_tree(proc)
+        raise
+    finally:
+        with LIVE_LOCK:
+            LIVE.discard(proc)
+    ok = proc.returncode == check.get("exit", 0)
     if ok and check.get("match"):
-        ok = re.search(check["match"], (p.stdout or "") + (p.stderr or ""), re.M) is not None
+        ok = re.search(check["match"], (out or "") + (err or ""), re.M) is not None
     return "pass" if ok else "fail"
 
 
