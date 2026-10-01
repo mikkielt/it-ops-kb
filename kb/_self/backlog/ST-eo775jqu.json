@@ -2,7 +2,7 @@
   "id": "ST-eo775jqu",
   "kind": "story",
   "title": "Closing a query-log finding never borrows a work item's trailer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -29,5 +29,6 @@
     "kb/_self/web-sources.md",
     "kb/_self/maintaining.md",
     "AGENTS.md"
-  ]
+  ],
+  "claimed_by": "c-eo775jqu"
 }
