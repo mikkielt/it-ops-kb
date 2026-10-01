@@ -2,7 +2,7 @@
   "id": "BG-w2dmqlse",
   "kind": "bug",
   "title": "backlog.md's opening still says to read maintaining.md whole before a change",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-djri7fqp",
   "priority": "P3",

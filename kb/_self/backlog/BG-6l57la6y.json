@@ -2,7 +2,7 @@
   "id": "BG-6l57la6y",
   "kind": "bug",
   "title": "A CODE pointer cannot name an extensionless script such as src/adr-new",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
@@ -31,7 +31,9 @@
         "Accept an extensionless path",
         "Keep the limit and name it in the kb contract"
       ],
-      "recommendation": "Accept an extensionless path"
+      "recommendation": "Accept an extensionless path",
+      "answer": "Accept an extensionless path",
+      "by": "operator"
     }
   ]
 }

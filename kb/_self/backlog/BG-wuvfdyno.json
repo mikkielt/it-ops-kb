@@ -2,7 +2,7 @@
   "id": "BG-wuvfdyno",
   "kind": "bug",
   "title": "The observed-run lint takes any dotted number for a version and flags 'in the long run'",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-djri7fqp",
   "priority": "P3",

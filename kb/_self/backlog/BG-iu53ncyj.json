@@ -2,7 +2,7 @@
   "id": "BG-iu53ncyj",
   "kind": "bug",
   "title": "horizon and its hook do not show an approved planned sprint while another sprint is active",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,

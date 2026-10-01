@@ -2,7 +2,7 @@
   "id": "BG-ha4u5dxz",
   "kind": "bug",
   "title": "A new pinned artifact turns a content sync into a code merge request: kbgit.py fix rewrites .gitattributes, a code-lane path",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,

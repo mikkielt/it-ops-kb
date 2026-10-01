@@ -2,7 +2,7 @@
   "id": "BG-blote7g5",
   "kind": "bug",
   "title": "The change router's once-per-session marker survives /compact and /clear, so a later change request after compaction gets no routing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-ld5jtjhm",
   "priority": "P2",

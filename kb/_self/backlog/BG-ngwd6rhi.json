@@ -2,7 +2,7 @@
   "id": "BG-ngwd6rhi",
   "kind": "bug",
   "title": "The fingerprint misses GitLab.com's stream marker on a continuation line (01O+ with no space)",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mguj7foz",
   "priority": "P2",
   "rank": 0,

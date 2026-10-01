@@ -2,7 +2,7 @@
   "id": "BG-rqbs26dr",
   "kind": "bug",
   "title": "backlog.py close leaves other items' depends_on and relates_to naming the items it deleted, so check fails",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-xdzgepun",
   "priority": "P3",

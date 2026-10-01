@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "backlog.py check refuses a leak-scan hit in an item's text",
   "status": "draft",
+  "sprint": "SP-gfoakqar",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py check runs the leak scan (kbcommon.leak_hits with _tools/tests_allowlist.txt) over each item's text (title, goal, repro, notes, gate questions and answers) and fails on a hit, so a bug filed with a quoted id or address is refused before commit instead of entering history for good; in SP-v5xagbyv a bug goal quoting two synthetic test ids blocked every publish until BG-md3ir277 relaxed publish",
@@ -22,5 +23,5 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Kept as a draft: the operator has not asked for it. backlog.py never calls kbcommon.leak_hits, so an item's text is not scanned before commit."
+  "notes": "backlog.py never calls kbcommon.leak_hits, so an item's text is not scanned before commit."
 }

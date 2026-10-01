@@ -2,7 +2,7 @@
   "id": "BG-4tu6biaz",
   "kind": "bug",
   "title": "done names a code/<task> merge request that sync never opened when the range began with another item",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,

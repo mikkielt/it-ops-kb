@@ -2,7 +2,7 @@
   "id": "BG-5rkmjsbr",
   "kind": "bug",
   "title": "backlog.py done misses a code-lane commit that renames a code path into a content path",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-2gpsaosi",
   "kind": "bug",
   "title": "red-pipeline --job on GitHub skips a run whose job list it cannot read",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
   "sprint": "SP-mguj7foz",
   "priority": "P3",

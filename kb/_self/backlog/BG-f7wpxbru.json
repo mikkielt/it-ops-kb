@@ -2,7 +2,7 @@
   "id": "BG-f7wpxbru",
   "kind": "bug",
   "title": "A pack never prints a SNIPPET's code, so the h2_applock pack lacks @LockTimeout = 0 and sp_releaseapplock",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-4i5quwba",
   "priority": "P2",

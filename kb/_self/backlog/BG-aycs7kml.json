@@ -2,7 +2,7 @@
   "id": "BG-aycs7kml",
   "kind": "bug",
   "title": "Knowledge state with --root mixes the other clone's refs with this clone's pack and conflicts",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,

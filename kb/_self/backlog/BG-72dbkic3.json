@@ -2,7 +2,7 @@
   "id": "BG-72dbkic3",
   "kind": "bug",
   "title": "The name check refuses ordinary kb text on a CI shell runner or a Windows container account",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-xdzgepun",
   "priority": "P2",

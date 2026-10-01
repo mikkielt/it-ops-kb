@@ -2,7 +2,7 @@
   "id": "BG-a3ubazze",
   "kind": "bug",
   "title": "backlog.py new refuses a genuine repro whose tool under test has a SyntaxError or passes on exit 127",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-xdzgepun",
   "priority": "P2",

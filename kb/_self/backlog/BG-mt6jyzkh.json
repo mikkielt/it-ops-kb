@@ -2,7 +2,7 @@
   "id": "BG-mt6jyzkh",
   "kind": "bug",
   "title": "kbingest map copies MSBuild error text carrying evaluated values into its notes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,

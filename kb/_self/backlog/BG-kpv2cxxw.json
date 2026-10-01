@@ -2,7 +2,7 @@
   "id": "BG-kpv2cxxw",
   "kind": "bug",
   "title": "kb_mcp.py upstream() falls back to origin/HEAD instead of the integration remote",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,

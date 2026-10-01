@@ -2,7 +2,7 @@
   "id": "BG-6a7jiylf",
   "kind": "bug",
   "title": "kb-sprint close never recognises the harness's worktree-agent branches, which carry no commits",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,

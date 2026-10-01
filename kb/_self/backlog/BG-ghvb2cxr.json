@@ -2,7 +2,7 @@
   "id": "BG-ghvb2cxr",
   "kind": "bug",
   "title": "benchmarks report prints files_read with five decimals",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,

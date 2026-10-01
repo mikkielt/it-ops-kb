@@ -2,7 +2,7 @@
   "id": "SP-42bn4vz7",
   "kind": "sprint",
   "title": "Landing and the lane gates match their rules",
-  "status": "planned",
+  "status": "active",
   "goal": "land, done and sync name the code/<id> branch and lane the same way, run the item's checks before an auto-merging merge request, and the pre-push, fix and publish gates refuse and accept what the lane and leak rules say; the sprint skills name set, move and reopen and the cleanup steps that an orchestrator in its own worktree can run",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

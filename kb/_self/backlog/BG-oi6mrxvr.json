@@ -2,7 +2,7 @@
   "id": "BG-oi6mrxvr",
   "kind": "bug",
   "title": "settings.json allows no kbid.py, kbusage.py or querylog.py show command",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ld5jtjhm",
   "priority": "P3",
   "rank": 0,

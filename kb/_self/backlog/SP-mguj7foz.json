@@ -2,7 +2,7 @@
   "id": "SP-mguj7foz",
   "kind": "sprint",
   "title": "red-pipeline reads job states exactly",
-  "status": "planned",
+  "status": "active",
   "goal": "red-pipeline and the failure fingerprint read a job that ran, was retried, was canceled or never started as the CI states say, with bounded job-list calls and an unreadable GitHub run reported as unverified",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

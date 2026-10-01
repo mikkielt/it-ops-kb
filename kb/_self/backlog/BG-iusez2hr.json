@@ -2,7 +2,7 @@
   "id": "BG-iusez2hr",
   "kind": "bug",
   "title": "kbingest map keeps PATH entries under the source repository's own clone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,

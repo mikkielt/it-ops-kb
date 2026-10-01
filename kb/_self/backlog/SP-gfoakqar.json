@@ -1,0 +1,20 @@
+{
+  "id": "SP-gfoakqar",
+  "kind": "sprint",
+  "title": "The host runs one test gate at a time and items stay leak-free",
+  "status": "planned",
+  "goal": "tests.py and stress_test.py wait for another full run on the same host, a tool proves a test-suite speed-up lost no test, and backlog.py check refuses a leak-scan hit in an item's text",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

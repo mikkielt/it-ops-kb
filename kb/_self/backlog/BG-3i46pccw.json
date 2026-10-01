@@ -2,7 +2,7 @@
   "id": "BG-3i46pccw",
   "kind": "bug",
   "title": "kbingest map may run a repository rustc through .cargo/config.toml build.rustc",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,

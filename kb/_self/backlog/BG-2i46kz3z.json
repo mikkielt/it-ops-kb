@@ -2,7 +2,7 @@
   "id": "BG-2i46kz3z",
   "kind": "bug",
   "title": "answer --record refuses a second gate of one item whose answer text repeats the first",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-v56iwyry",
   "sprint": "SP-ld5jtjhm",
   "priority": "P2",

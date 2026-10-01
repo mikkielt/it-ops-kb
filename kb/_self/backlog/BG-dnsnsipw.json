@@ -2,7 +2,7 @@
   "id": "BG-dnsnsipw",
   "kind": "bug",
   "title": "The end-to-end fixture's about text names the deleted test_kb.py",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-djri7fqp",
   "priority": "P2",
   "rank": 0,

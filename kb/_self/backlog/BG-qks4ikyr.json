@@ -2,7 +2,7 @@
   "id": "BG-qks4ikyr",
   "kind": "bug",
   "title": "kbdecide sweep leaves a decision active when its item was dropped outside a sprint",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-v56iwyry",
   "sprint": "SP-ld5jtjhm",
   "priority": "P2",

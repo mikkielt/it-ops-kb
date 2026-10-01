@@ -2,7 +2,7 @@
   "id": "BG-2lj5x3eh",
   "kind": "bug",
   "title": "The rule for a bug filed while landing leaves out that the bug must join a started sprint",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,

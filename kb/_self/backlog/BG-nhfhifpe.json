@@ -2,7 +2,7 @@
   "id": "BG-nhfhifpe",
   "kind": "bug",
   "title": "benchmarks.py nav_result parses claude stream-json tested only on synthetic streams",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4i5quwba",
   "priority": "P3",
   "rank": 0,

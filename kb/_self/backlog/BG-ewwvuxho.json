@@ -2,7 +2,7 @@
   "id": "BG-ewwvuxho",
   "kind": "bug",
   "title": "tests.py given a test file still runs every test file",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4i5quwba",
   "priority": "P3",
   "rank": 0,

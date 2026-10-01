@@ -2,7 +2,7 @@
   "id": "SP-djri7fqp",
   "kind": "sprint",
   "title": "Docs and lints say what the code does",
-  "status": "planned",
+  "status": "active",
   "goal": "kb/_self docs, a fixture and two public articles agree with the code they describe, the observed-run lint and the selfdoc section-reference checks accept ordinary text and refuse dead references, and the two DER facts name their version",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

@@ -2,7 +2,7 @@
   "id": "BG-fuwt5ocn",
   "kind": "bug",
   "title": "backlog check's stale-touches error fires on the item that deleted the file, which done requires to name it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,

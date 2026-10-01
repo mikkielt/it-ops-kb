@@ -2,7 +2,7 @@
   "id": "BG-zjcxjhs7",
   "kind": "bug",
   "title": "selfdoc check skips dead references to a removed doc, and sections holding a parenthesis, backtick or colon",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-djri7fqp",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "BG-xuluwj4g",
   "kind": "bug",
   "title": "benchmarks.py records table shows only the first arm of an armed scenario's record",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,

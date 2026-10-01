@@ -1,9 +1,9 @@
 {
-  "id": "ST-gh3jdkqy",
+  "id": "ST-qsrllonh",
   "kind": "story",
-  "title": "Review sprint: Servers, packs and benchmarks report what they hold",
-  "status": "todo",
-  "sprint": "SP-4i5quwba",
+  "title": "Review sprint: The host runs one test gate at a time and items stay leak-free",
+  "status": "draft",
+  "sprint": "SP-gfoakqar",
   "review": true,
   "priority": "P1",
   "rank": 999999,

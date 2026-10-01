@@ -2,7 +2,7 @@
   "id": "BG-iafrnmc3",
   "kind": "bug",
   "title": "backlog.py check stays silent when a code task's docs sit in a sibling, an earlier task or its parent",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-xdzgepun",
   "priority": "P2",

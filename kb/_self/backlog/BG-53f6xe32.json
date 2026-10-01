@@ -2,7 +2,7 @@
   "id": "BG-53f6xe32",
   "kind": "bug",
   "title": "backlog.py check fails on knowledge refs of items nobody is working on",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,

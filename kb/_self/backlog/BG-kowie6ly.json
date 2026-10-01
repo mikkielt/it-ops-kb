@@ -2,7 +2,7 @@
   "id": "BG-kowie6ly",
   "kind": "bug",
   "title": "land pushes an auto-merging code merge request before the item's own checks run",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,

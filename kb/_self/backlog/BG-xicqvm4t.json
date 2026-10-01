@@ -2,7 +2,7 @@
   "id": "BG-xicqvm4t",
   "kind": "bug",
   "title": "Knowledge refs are resolved against the working tree, not HEAD",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-r5wzfz3c",
   "kind": "bug",
   "title": "A first kbgit.py publish refuses official GUIDs and doc-example addresses that the tracked-file leak scan accepts",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,

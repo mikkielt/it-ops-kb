@@ -2,7 +2,7 @@
   "id": "BG-hcn4jesz",
   "kind": "bug",
   "title": "codebase-mapping lists dotnet package list --no-restore as a read-only form",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
