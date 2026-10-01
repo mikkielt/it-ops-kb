@@ -2,7 +2,7 @@
   "id": "ST-vfct2532",
   "kind": "story",
   "title": "A gap-step rule change is checked over the committed store's real findings",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -31,5 +31,19 @@
     "kb/_self/maintaining.md",
     "AGENTS.md"
   ],
-  "claimed_by": "c-vfct2532"
+  "evidence": {
+    "commit": "53b526acceebd2cbe74406efec1197016030141f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "gap_replay_over_store"
+        ],
+        "exit": 0,
+        "sha256": "5bd1035b4521a922"
+      }
+    ]
+  }
 }
