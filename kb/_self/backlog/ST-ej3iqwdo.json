@@ -2,7 +2,7 @@
   "id": "ST-ej3iqwdo",
   "kind": "story",
   "title": "The kb covers decision records",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-v56iwyry",
   "sprint": "SP-jtfo4ael",
   "priority": "P2",
@@ -25,5 +25,28 @@
       ],
       "match": "errors=0"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "b55e8bef8f7aafb17ee963697fc04c782f68b479",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "architecture decision record status superseded"
+        ],
+        "exit": 0,
+        "sha256": "9aeecdf1a528189e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "2375cf3d37070d68"
+      }
+    ]
+  }
 }
