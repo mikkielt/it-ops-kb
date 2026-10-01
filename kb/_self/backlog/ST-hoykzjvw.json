@@ -1,0 +1,9 @@
+{
+  "id": "ST-hoykzjvw",
+  "kind": "story",
+  "title": "close --summary only prints",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py close SP --summary prints the one line per item close would delete and changes nothing, as the runbook's order of steps implies; close without --summary deletes"
+}
