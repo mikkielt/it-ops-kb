@@ -2,7 +2,7 @@
   "id": "ST-fmtszrey",
   "kind": "story",
   "title": "One command writes a valid _sources.csv row",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-xb45i7t4",
   "priority": "P2",
@@ -49,5 +49,28 @@
       "by": "operator"
     }
   ],
-  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. 115 ad-hoc Python appends to _sources.csv and 90 ad-hoc reads. kbid.py url only prints the id; rag.py src only reads; ql_research.py write_research appends rows for the query log alone; census.py rewrites the whole table. kb-add-topic/SKILL.md, kb-census/SKILL.md and kb-ingest/SKILL.md tell the agent to append rows with a CSV writer, and check.py rejects bad ids, licences and reuse classes afterwards. Kb facts: public/agents/subagents-vs-deterministic-tools.md:74 (a fixed sequence becomes one tool, DOC S1935), public/agents/agent-evaluation.md:36 (DOC S1935)."
+  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. 115 ad-hoc Python appends to _sources.csv and 90 ad-hoc reads. kbid.py url only prints the id; rag.py src only reads; ql_research.py write_research appends rows for the query log alone; census.py rewrites the whole table. kb-add-topic/SKILL.md, kb-census/SKILL.md and kb-ingest/SKILL.md tell the agent to append rows with a CSV writer, and check.py rejects bad ids, licences and reuse classes afterwards. Kb facts: public/agents/subagents-vs-deterministic-tools.md:74 (a fixed sequence becomes one tool, DOC S1935), public/agents/agent-evaluation.md:36 (DOC S1935).",
+  "evidence": {
+    "commit": "5b3ac04eb6963a31a2741a3eddb78d0d946a4755",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "add_source"
+        ],
+        "exit": 0,
+        "sha256": "88218f2c6961b951"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "8e44965e62fe70bd"
+      }
+    ]
+  }
 }
