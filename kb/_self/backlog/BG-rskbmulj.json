@@ -2,7 +2,7 @@
   "id": "BG-rskbmulj",
   "kind": "bug",
   "title": "A kb/_self heading rename does not select the test of the skills' section commands",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5cwekumc",
   "priority": "P3",
   "rank": 0,
@@ -20,5 +20,18 @@
     "_tools/test_testmap.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "c-rskbmulj"
+  "evidence": {
+    "commit": "cf54e5699279d39428949152d7443b4e6c58227e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys; out = subprocess.run([sys.executable, '_tools/testmap.py', 'select', '--paths', 'kb/_self/backlog.md'], capture_output=True, text=True).stdout.split(); print(out); sys.exit(0 if 'all' in out or any(s.startswith('_tools/test_selfdoc.py') for s in out) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2e1d92214e17899f"
+      }
+    ]
+  }
 }
