@@ -2,7 +2,7 @@
   "id": "BG-fmdeqiy3",
   "kind": "bug",
   "title": "backlog.py land leaves the checkout on the landed work branch",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-blstack"
 }
