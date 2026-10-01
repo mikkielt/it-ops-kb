@@ -16,6 +16,10 @@ other classes below).
                     older one is queued; the close records pass `check`; close refuses what is no open gap; `close
                     --reject` refuses an entry still in the ledger, then records a gap whose entry was removed
                     rejected at candidate-gap, no longer open, and the gap step and queue leave it
+  TestCloseCommit   `close --commit` commits the findings record alone, with the session's trailers and no KB-Work
+                    trailer, leaving the _gaps.md note and what was staged out of it; planted: the record committed
+                    the old way under a research task's KB-Work trailer, and a KB-* or malformed --trailer, or one
+                    without --commit, refused before anything is written
   TestQuoteCheck    quotecheck on a recorded page: entities, no-break spaces, curly quotes, links and emphasis
                     normalized; planted: a quote not on its page, page chrome, over 25 or under 5 words, a page that
                     cannot be fetched; the default fetcher is fetch.py's; the command line
@@ -38,7 +42,7 @@ from pathlib import Path
 import pytest
 
 import querylog, ql_apply, ql_base, ql_learn, ql_report, ql_research, ql_store
-from conftest import copy_kb, KB, querylog_env
+from conftest import copy_kb, git_env, KB, querylog_env, Repo, requires_git
 from ql_testkit import (BAD_QUOTE, by_id, cand, E, failing, findings, GOOD_QUOTE, jsonl, LAPS, LAPS_GAP_Q, learn_store,
                         LEGACY_QUOTE, none_entry, PAGE, PAGE_URL, passing, plant_entries, QL, reply, run_learn,
                         tree)
@@ -651,6 +655,73 @@ class TestQueue:
                              capture_output=True, text=True, encoding="utf-8", cwd=KB,
                              env=querylog_env(tmp_path / "data"))
         assert out.returncode == 1 and "no open gap finding" in out.stdout, out.stdout + out.stderr
+
+
+def record_work(repo, path):
+    """The KB-Work trailers git reads on the commits that changed `path`: the work items `backlog.py done` would count
+    them to, so a story whose touches never name the store refuses them."""
+    log = repo.git("log", "--format=%(trailers:key=KB-Work,valueonly)%x1e", "--", str(path))
+    return [v.strip() for v in log.split("\x1e") if v.strip()]
+
+
+@requires_git
+class TestCloseCommit:
+    """`close --commit` commits the findings record alone and never with a work item's KB-Work trailer: the record is
+    the query log's, so `backlog.py done` never refuses the story whose research answered the gap over a path outside
+    its touches (SP-jtfo4ael's retrospective, ST-ej3iqwdo). Planted: the old way, the record committed by hand under
+    the research task's KB-Work trailer, which `record_work` sees; a KB-Work --trailer is refused."""
+
+    def repo(self, tmp_path, monkeypatch):
+        env = git_env()
+        for k in ("GIT_CONFIG_GLOBAL", "GIT_CONFIG_NOSYSTEM", "GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL",
+                  "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL"):
+            monkeypatch.setenv(k, env[k])
+        root, store, gate = queued(tmp_path)
+        repo = Repo(tmp_path, env)
+        repo.git("init", "-q", "-b", "main")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "base")
+        fid = listed(run_queue(store, gate)[1])[0]
+        resolve(root, fid)  # the research's own change: stays for its commit
+        (tmp_path / "staged.txt").write_text("x\n", encoding="utf-8")
+        repo.git("add", "staged.txt")  # staged before close: stays staged and out of its commit
+        return repo, root, store, gate, fid
+
+    def test_querylog_close_trailer_commits_the_record_alone_without_kb_work(self, tmp_path, monkeypatch):
+        repo, root, store, gate, fid = self.repo(tmp_path, monkeypatch)
+        base = repo.rev("HEAD")
+        said = []
+        rc = querylog.close([fid], claim=True, store=store, gate=gate, day=DAY, kb_commit="0" * 40, out=said.append,
+                            commit=True, trailers=["Co-Authored-By: t <t@example.com>"])
+        assert rc == 0 and said[-1] == "close: committed 1 findings file(s), with no KB-Work trailer", said
+        (changed,) = repo.git("show", "--name-only", "--format=", "HEAD").split()  # the record alone
+        rec = tmp_path / changed
+        assert changed.startswith(f"{store.relative_to(tmp_path).as_posix()}/findings/") and rec.is_file()
+        assert repo.rev("HEAD~1") == base
+        assert repo.git("log", "-1", "--format=%s", "HEAD") == f"chore(querylog): close {fid} (claim)\n"
+        assert repo.git("log", "-1", "--format=%(trailers:key=Co-Authored-By,valueonly)").strip() == "t <t@example.com>"
+        assert record_work(repo, rec) == []
+        status = repo.git("status", "--porcelain")
+        assert "M root/_gaps.md" in status and "A  staged.txt" in status, status
+        assert by_id(store)[fid]["stage"] == "claim" and querylog.main(["check", str(store)]) == 0
+
+    def test_querylog_close_trailer_planted_old_way_and_kb_work_refused(self, tmp_path, monkeypatch):
+        repo, root, store, gate, fid = self.repo(tmp_path, monkeypatch)
+        before = tree(store)
+        said = []
+        for trailers, commit in ((["KB-Work: TK-s7c63awy"], True), (["kb-work:TK-x"], True), (["no trailer"], True),
+                                 (["Co-Authored-By: t <t@example.com>"], False)):
+            assert querylog.close([fid], claim=True, store=store, gate=gate, day=DAY, out=said.append,
+                                  commit=commit, trailers=trailers) == 1
+        assert tree(store) == before and said[0].startswith("close: refused --trailer 'KB-Work: TK-s7c63awy'"), said
+        assert said[-1] == "close: --trailer needs --commit"
+        written = []  # the old way: close writes, the research task commits the record under its own trailer
+        assert ql_research.close(fid, claim=True, store=store, gate=gate, day=DAY, out=said.append,
+                                 written=written) == 0
+        repo.git("add", "--", str(written[0]))
+        repo.git("commit", "-q", "-m", "chore(querylog): close", "-m", "KB-Work: TK-s7c63awy", "--only", "--",
+                 str(written[0]))
+        assert record_work(repo, written[0]) == ["TK-s7c63awy"]  # what done counts to the item: it fails
 
 
 class TestQuoteCheck:

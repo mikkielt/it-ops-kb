@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 from ql_base import (DISABLED_NAME, HOME, STORE, Replay, claude_p, one_line, places, read_json, read_mode,
                      read_research, restore, run_cmd, write_text)
 from ql_store import (APPLY_FAILED, CLOSED_STAGE, HOSTNAME, LEARN_STATES, PRIVATE_TLDS, QUESTION_MAX_CHARS,
-                      closed_gaps, finding_states, reopened_problems, store_entries, write_findings)
+                      closed_gaps, finding_states, reopened_problems, run_path, store_entries, write_findings)
 
 QUOTE_MAX_WORDS = 25  # the longest quote the kb's rules allow (kbcommon.QUOTE_WORDS, kb/_self/content-rules.md)
 QUOTE_MIN_WORDS = 5  # a shorter quote is found on almost any page and backs nothing
@@ -640,7 +640,8 @@ def queue(store=None, limit=None, gate=None, day=None, kb_commit=None, out=print
     return 1 if problems else 0
 
 
-def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_commit=None, out=print, reject=False):
+def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_commit=None, out=print, reject=False,
+          written=None):
     """`close F-ID --claim|--tried NOTE|--reject`: one findings record for an open gap finding worked by
     `/kb-research`. --claim: its _gaps.md entry must carry a `Resolved <day>:` note (the content rules), and the finding
     is promoted to claim (by kb-research, `applied`). --tried: the dated note `  - Tried <day>: NOTE (topic: ...)` goes
@@ -648,7 +649,7 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
     as off the kb's domains), and the finding is put back from its stage to candidate-gap (by kb-research), `rejected`
     with OFF_DOMAINS in `observed`: the record the gap step writes for a candidate no topic can take. 0; 1 refused (not
     an open gap, no entry, no Resolved note for --claim, a resolved entry or an empty note for --tried, an entry still
-    in the ledger for --reject)."""
+    in the ledger for --reject). `written`: a list the findings file's path is appended to."""
     from ql_apply import Gate  # imported here: ql_apply imports this module
     store = Path(store or STORE)
     gate = gate or Gate()
@@ -670,6 +671,8 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
                               {"from": g["stage"], "to": REJECTED_STAGE, "by": "kb-research"}],
                "observed": {"gate": [OFF_DOMAINS], "entry": "removed"}}
         run_id, _ = write_findings(store, store_entries(store), [rec], ("rejected",), kb_commit)
+        if written is not None:
+            written.append(run_path(store, run_id, findings=True))
         out(f"close: {fid} rejected run={run_id}")
         return 0
     if loc is None:
@@ -700,5 +703,7 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
         write_text(path, "\n".join(lines))
         rec = {**keep, "tried": day, "observed": {"entry": where}}
     run_id, _ = write_findings(store, store_entries(store), [rec], ("applied",), kb_commit)
+    if written is not None:
+        written.append(run_path(store, run_id, findings=True))
     out(f"close: {fid} {CLOSED_STAGE if claim else 'tried ' + day} run={run_id}")
     return 0
