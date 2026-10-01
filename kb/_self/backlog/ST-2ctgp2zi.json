@@ -2,7 +2,7 @@
   "id": "ST-2ctgp2zi",
   "kind": "story",
   "title": "kb/_self/tools.md gives backlog.py one row per subcommand, so two sessions' edits rebase without a conflict",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -38,5 +38,38 @@
     "_tools/test_selfdoc.py"
   ],
   "notes": "SP-3brmvlnh retrospective: the single backlog.py row conflicted on four rebases across three sessions.",
-  "claimed_by": "orch-fourth-w1"
+  "evidence": {
+    "commit": "af4ce396e03e675f2ede6cb47afb0482d14cfaea",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "tools_md_backlog_row_per_subcommand"
+        ],
+        "exit": 0,
+        "sha256": "c3d6c867bf454303"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "tools_map"
+        ],
+        "exit": 0,
+        "sha256": "33b3adcde37595cc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
