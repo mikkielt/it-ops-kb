@@ -2,7 +2,7 @@
   "id": "ST-trjsnvos",
   "kind": "story",
   "title": "Facts cite decisions with a DECISION tag",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-v56iwyry",
   "sprint": "SP-jtfo4ael",
   "priority": "P2",
@@ -27,5 +27,28 @@
   ],
   "depends_on": [
     "ST-rmabmiaq"
-  ]
+  ],
+  "evidence": {
+    "commit": "7626403ca4355824a4b11b06c3b2c867376a5de7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "decision_tag"
+        ],
+        "exit": 0,
+        "sha256": "aeb903bc6ba8dd5c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "8e44965e62fe70bd"
+      }
+    ]
+  }
 }
