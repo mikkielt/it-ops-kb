@@ -2,7 +2,7 @@
   "id": "TK-auqemaih",
   "kind": "task",
   "title": "Decision and decision-maker file formats in kbcommon and check.py",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rmabmiaq",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,27 @@
     "kb/_self/content-rules.md",
     "kb/_self/plugin.md"
   ],
-  "claimed_by": "worker-decision-formats"
+  "evidence": {
+    "commit": "91eb3006f2aa52008b856fd4f042f82d131289e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "decisions_store"
+        ],
+        "exit": 0,
+        "sha256": "de56966d229fa82b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "2375cf3d37070d68"
+      }
+    ]
+  }
 }
