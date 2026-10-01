@@ -2,7 +2,7 @@
   "id": "TK-j6zvcfgf",
   "kind": "task",
   "title": "querylog.py show with run, entry, findings, usage and spool filters",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ppxck77t",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,19 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-j6zvcfgf"
+  "evidence": {
+    "commit": "d15900954e057aafebb48023351dbd30fb3743cd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "querylog_show"
+        ],
+        "exit": 0,
+        "sha256": "bf03570fe8791a76"
+      }
+    ]
+  }
 }
