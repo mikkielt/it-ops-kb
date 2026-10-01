@@ -2,7 +2,7 @@
   "id": "TK-wumpeljo",
   "kind": "task",
   "title": "Document system overhead in the cost reports",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-gbnpn6vq",
   "priority": "P2",
   "rank": 2,
@@ -23,5 +23,18 @@
   "depends_on": [
     "TK-plrpnzon"
   ],
-  "claimed_by": "worker-wumpeljo"
+  "evidence": {
+    "commit": "70dba872d75129de62e3e2ebaf62cbfe45f466f5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
