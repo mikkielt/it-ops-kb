@@ -2,7 +2,7 @@
   "id": "TK-y2zl2oqd",
   "kind": "task",
   "title": "Runbook and skills use set and gate add",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-wgzgijlw",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "TK-7jm3ikaa"
-  ]
+  ],
+  "claimed_by": "worker-y2zl2oqd"
 }
