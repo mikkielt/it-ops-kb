@@ -2674,3 +2674,153 @@ def test_backlog_answer_record_decision_stays_active_after_close_and_sweep(decid
     code, out = tool_run(repo, "kbdecide.py", "sweep", "--root", "_self")
     assert code == 0, out
     assert [r["status"] for r in decisions(repo)] == ["active"]
+
+
+# ------------------------------------------------------------------ move and reopen
+
+@pytest.fixture
+def planned(sprint):
+    """The started sprint's story with its task, plus a second sprint still planned."""
+    repo = sprint["repo"]
+    assert b(repo, "new", "sprint", "--title", "Later", "--goal", "g")[0] == 0
+    return {**sprint, "later": item(repo, "Later")["id"]}
+
+
+def statuses(repo, *ids):
+    return [item_json(repo, i)["status"] for i in ids]
+
+
+def test_backlog_move_to_a_planned_sprint_writes_draft_and_the_tasks_follow(planned):
+    repo, st, tk, later = planned["repo"], planned["st"], planned["tk"], planned["later"]
+    assert statuses(repo, st, tk) == ["todo", "todo"]
+    code, out = b(repo, "move", st, "--sprint", later)
+    assert code == 0 and "status draft" in out and "1 task" in out, out
+    assert item_json(repo, st)["sprint"] == later and statuses(repo, st, tk) == ["draft", "draft"]
+    assert b(repo, "check")[0] == 0
+
+
+def test_backlog_move_to_an_active_sprint_writes_todo_and_the_tasks_follow(planned):
+    repo, st, tk, later, sp = planned["repo"], planned["st"], planned["tk"], planned["later"], planned["sp"]
+    assert b(repo, "move", st, "--sprint", later)[0] == 0
+    code, out = b(repo, "move", st, "--sprint", sp)
+    assert code == 0 and "status todo" in out, out
+    assert item_json(repo, st)["sprint"] == sp and statuses(repo, st, tk) == ["todo", "todo"]
+    assert b(repo, "check")[0] == 0
+
+
+def test_backlog_move_none_removes_the_sprint_and_writes_draft(planned):
+    repo, st, tk = planned["repo"], planned["st"], planned["tk"]
+    code, out = b(repo, "move", st, "--sprint", "none")
+    assert code == 0, out
+    assert "sprint" not in item_json(repo, st) and statuses(repo, st, tk) == ["draft", "draft"]
+    assert b(repo, "check")[0] == 0
+
+
+def test_backlog_move_second_run_changes_nothing(planned):
+    repo, st, later = planned["repo"], planned["st"], planned["later"]
+    for target in (later, "none"):
+        assert b(repo, "move", st, "--sprint", target)[0] == 0
+        files = {i: item_text(repo, i) for i in (st, planned["tk"])}
+        code, out = b(repo, "move", st, "--sprint", target)
+        assert code == 0 and "unchanged" in out, out
+        assert {i: item_text(repo, i) for i in files} == files
+
+
+def test_backlog_move_refuses_what_a_sprint_cannot_hold(planned):
+    repo, st, tk, rv, sp, later = (planned[k] for k in ("repo", "st", "tk", "rv", "sp", "later"))
+    refused_unchanged(repo, tk, "move", tk, "--sprint", later, rule="only a story or a bug names a sprint")
+    refused_unchanged(repo, later, "move", later, "--sprint", sp, rule="only a story or a bug names a sprint")
+    refused_unchanged(repo, rv, "move", rv, "--sprint", later, rule="exactly one review story")
+    refused_unchanged(repo, st, "move", st, "--sprint", "SP-zzzzzzzz", rule="does not exist")
+    refused_unchanged(repo, st, "move", st, "--sprint", planned["ep"], rule="is not a sprint")
+
+
+def test_backlog_move_refuses_a_claimed_item_and_one_with_a_claimed_task(planned):
+    repo, st, tk, later = planned["repo"], planned["st"], planned["tk"], planned["later"]
+    assert b(repo, "claim", tk, "--by", "me")[0] == 0
+    refused_unchanged(repo, st, "move", st, "--sprint", later, rule="is doing (claimed)")
+    assert b(repo, "release", tk)[0] == 0
+    edit(repo, st, status="doing", claimed_by="me")
+    refused_unchanged(repo, st, "move", st, "--sprint", later, rule="is doing (claimed)")
+
+
+def test_backlog_move_refuses_a_done_and_a_dropped_item(planned):
+    repo, bg, later = planned["repo"], planned["bg"], planned["later"]
+    edit(repo, bg, status="done", evidence={"commit": "abc", "checks": []})
+    refused_unchanged(repo, bg, "move", bg, "--sprint", later, rule="reopen it first")
+    edit(repo, bg, status="dropped")
+    refused_unchanged(repo, bg, "move", bg, "--sprint", later, rule="it is dropped")
+
+
+def test_backlog_move_refuses_an_item_without_touches_into_an_active_sprint(planned):
+    repo, sp = planned["repo"], planned["sp"]
+    assert b(repo, "new", "story", "--title", "Bare", "--goal", "g", "--check", argstr(PASS))[0] == 0
+    bare = item(repo, "Bare")["id"]
+    refused_unchanged(repo, bare, "move", bare, "--sprint", sp, rule="has no touches")
+    assert b(repo, "move", bare, "--sprint", planned["later"])[0] == 0  # a planned sprint takes it as a draft
+
+
+def test_backlog_move_refuses_what_check_would_flag_and_writes_no_task(planned):
+    repo, st, tk, later = planned["repo"], planned["st"], planned["tk"], planned["later"]
+    assert b(repo, "new", "task", "--title", "Second", "--parent", st, "--goal", "g", "--touch", "src/**",
+             "--check", argstr(PASS))[0] == 0
+    second = item(repo, "Second")["id"]
+    edit(repo, tk, status="done", evidence={"commit": "abc", "checks": []})  # planted: done cannot sit in a planned sprint
+    before = item_text(repo, second)
+    refused_unchanged(repo, st, "move", st, "--sprint", later, rule="while its sprint")
+    assert item_text(repo, second) == before and statuses(repo, second) == ["todo"]
+
+
+def test_backlog_move_requires_a_sprint_argument(planned):
+    code, out = b(planned["repo"], "move", planned["st"])
+    assert code == 2 and "--sprint" in out, out
+
+
+def test_backlog_move_unknown_id_exits_2(planned):
+    code, out = b(planned["repo"], "move", "ST-zzzzzzzz", "--sprint", "none")
+    assert code == 2 and "no item" in out, out
+
+
+def test_backlog_move_reopen_clears_evidence_and_claim_and_sets_todo(planned):
+    repo, bg = planned["repo"], planned["bg"]
+    edit(repo, bg, status="done", evidence={"commit": "abc", "checks": []}, claimed_by="me")
+    before = item_text(repo, bg)
+    code, out = b(repo, "reopen", bg, "--why", "the fix regressed")
+    assert code == 0 and "the fix regressed" in out, out
+    it = item_json(repo, bg)
+    assert it["status"] == "todo" and "evidence" not in it and "claimed_by" not in it
+    assert "regressed" not in item_text(repo, bg) and item_text(repo, bg) != before
+    assert b(repo, "check")[0] == 0
+
+
+def test_backlog_move_reopen_in_a_planned_sprint_writes_draft(planned):
+    repo, st, later = planned["repo"], planned["st"], planned["later"]
+    assert b(repo, "move", st, "--sprint", later)[0] == 0
+    edit(repo, st, status="done", evidence={"commit": "abc", "checks": []})
+    assert b(repo, "reopen", st, "--why", "again")[0] == 0
+    assert item_json(repo, st)["status"] == "draft"
+
+
+def test_backlog_move_reopen_second_run_is_refused_and_changes_nothing(planned):
+    repo, bg = planned["repo"], planned["bg"]
+    edit(repo, bg, status="done", evidence={"commit": "abc", "checks": []})
+    assert b(repo, "reopen", bg, "--why", "x")[0] == 0
+    refused_unchanged(repo, bg, "reopen", bg, "--why", "x", rule="reopen takes only a done item")
+
+
+@pytest.mark.parametrize("status", ["draft", "todo", "doing", "dropped"])
+def test_backlog_move_reopen_refuses_every_status_but_done(planned, status):
+    repo, bg = planned["repo"], planned["bg"]
+    edit(repo, bg, status=status, **({"claimed_by": "me"} if status == "doing" else {}))
+    refused_unchanged(repo, bg, "reopen", bg, "--why", "x", rule=f"it is {status}")
+
+
+def test_backlog_move_reopen_refuses_a_missing_or_blank_reason_and_a_sprint(planned):
+    repo, bg, sp = planned["repo"], planned["bg"], planned["sp"]
+    edit(repo, bg, status="done", evidence={"commit": "abc", "checks": []})
+    code, out = b(repo, "reopen", bg)
+    assert code == 2 and "--why" in out, out
+    refused_unchanged(repo, bg, "reopen", bg, "--why", "  ", rule="must not be empty")
+    refused_unchanged(repo, sp, "reopen", sp, "--why", "x", rule="a sprint has no done status")
+    code, out = b(repo, "reopen", "ST-zzzzzzzz", "--why", "x")
+    assert code == 2 and "no item" in out, out
