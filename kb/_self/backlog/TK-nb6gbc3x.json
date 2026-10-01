@@ -2,7 +2,7 @@
   "id": "TK-nb6gbc3x",
   "kind": "task",
   "title": "cost --research: tokens per closed gap",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ecacczzu",
   "priority": "P2",
   "rank": 0,
@@ -63,5 +63,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-nb6gbc3x"
+  "evidence": {
+    "commit": "573141ae233ea35e76e2e8e6ef995c5d7b141f21",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cost_research"
+        ],
+        "exit": 0,
+        "sha256": "d212fb0d9827242a"
+      }
+    ]
+  }
 }
