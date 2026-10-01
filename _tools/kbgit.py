@@ -86,6 +86,11 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
      --continue`. Any other conflicted path (an article, a tool, docs, the coverage page outside the table) stops with exit 3
      and the rebase left in progress: `needs-human: PATH` lines, a `sync-state: base=.. upstream=.. orig_head=..` line
      and the commands to finish (or `git rebase --abort`). Article text is never resolved automatically.
+     A rebase that changed kbgit.py or a _tools module it loaded (kblane, kbpublic, kg_merge...: code_changed, the
+     loaded modules' files at the old HEAD against the rebased one) leaves this process on the old code: sync re-runs
+     itself once, a new process with the same arguments (--session and all) on the rebased tree and KB_SYNC_REEXEC=1,
+     and returns its exit code, so the new code decides the push; the re-run finds nothing behind. A re-run whose
+     rebase changed the code again, or a sync with no command line to repeat (bridge's), stops with exit 3 instead.
   d. fix (with --base/--side when both sides had commits); what it changed is committed on its own as
      "chore(kb): kbgit fix after sync" with KB-* trailers. Unpushed commits whose trailers no longer match their diff
      (conflict resolution, renumbered ids) get them rewritten (`git rebase --exec "kbgit.py trailers --amend"`).
@@ -98,7 +103,8 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
   f. a report: commits rebased, conflicts resolved, fix, ids renumbered, trailers refreshed, gate, pushed or not.
   --dry-run fetches and reports ahead/behind, the incoming commits and the files both sides changed; nothing else.
 Exit (sync): 0 done, 1 gate failed, push rejected/failed or another session's commits, 2 refused (dirty tree, operation in progress, bad
-arguments, fetch failed), 3 a conflict or a fix problem needs a human or /kb-git-sync.
+arguments, fetch failed), 3 a conflict or a fix problem needs a human or /kb-git-sync, or the rebase changed sync's
+code where it cannot re-run itself (run it again). After a re-run, the re-run's exit code.
 
 Why: `.gitattributes` merges the append-only ledgers with git's built-in union driver, so two branches that
 each add rows or answers merge without conflict markers. Union keeps every line of both sides, so a row both
@@ -152,6 +158,7 @@ Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, aso
 2 bad arguments, not a git clone, or a git error. Hooks always exit 0.
 """
 import argparse, csv, datetime, io, json, os, re, shlex, stat, subprocess, sys
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbid  # noqa: E402
@@ -1247,10 +1254,55 @@ def gitx(*args, env=None):
 
 
 def tool(name, *args, env=None):
-    """(exit code, output) of a kb tool in this checkout (the files on disk, which a rebase may have updated)."""
+    """(exit code, output) of a kb tool in this checkout (the files on disk, which a rebase may have updated). The
+    re-run marker (REEXEC_ENV) is not passed on: it belongs to this sync, not to a sync a tool starts."""
+    base = {k: v for k, v in os.environ.items() if k != REEXEC_ENV}
     p = subprocess.run([sys.executable, os.path.join(KB, "_tools", name), *args], cwd=KB, capture_output=True,
-                       text=True, encoding="utf-8", errors="replace", env={**os.environ, **(env or {})})
+                       text=True, encoding="utf-8", errors="replace", env={**base, **(env or {})})
     return p.returncode, p.stdout + p.stderr
+
+
+# A rebase that brings a new kbgit.py, or a new version of a _tools module it loaded (kblane, kbpublic, kg_merge...),
+# leaves this process running the code it loaded before. sync then re-runs itself once, as a new process with the same
+# arguments on the rebased tree, so the new rules (lanes, the gate) decide the push that brought them; the re-run finds
+# nothing behind and goes on. REEXEC_ENV marks the re-run: a re-run whose own rebase (the remote moved again) changed
+# the code once more stops with exit 3 instead of a second re-run, and so does a sync with no command line to repeat.
+REEXEC_ENV = "KB_SYNC_REEXEC"
+
+
+def loaded_tools():
+    """The repository paths (`_tools/NAME.py`) of the _tools modules this process has loaded, sorted."""
+    tools = Path(KB, "_tools").resolve()
+    out = set()
+    for m in list(sys.modules.values()):
+        f = getattr(m, "__file__", None)
+        if f and f.endswith(".py") and Path(f).resolve().parent == tools:
+            out.add("_tools/" + Path(f).name)
+    return sorted(out)
+
+
+def code_changed(before, after="HEAD"):
+    """The loaded _tools modules (loaded_tools) whose files differ between BEFORE and AFTER, sorted. BEFORE is the
+    commit the code was loaded from: sync refuses a dirty tree, so the files on disk were BEFORE's."""
+    out = git("diff", "--name-only", "-z", before, after, "--", *loaded_tools()) or ""
+    return sorted(p for p in out.split("\0") if p)
+
+
+def rerun_sync(a, r, changed):
+    """The rebase changed CHANGED, code this process runs: run sync again, once, with the rebased code and return its
+    exit code. Inside a re-run already, or without a command line to repeat (sync started by bridge): exit 3."""
+    print("the rebase changed the code sync runs: " + ", ".join(changed))
+    argv = getattr(a, "rerun", None)
+    if not argv or os.environ.get(REEXEC_ENV) == "1":
+        print("stopped: the rebase is complete; nothing fixed, committed or pushed. Run the same kbgit.py sync command "
+              "again, so the rebased code decides the push")
+        r["pushed"] = "no (rerun sync: the rebase changed its code)"
+        return 3
+    print("re-running sync once with the rebased code", flush=True)
+    sys.stderr.flush()
+    p = subprocess.run([sys.executable, *argv], cwd=KB, env={**os.environ, REEXEC_ENV: "1"})
+    r["rerun"] = p.returncode
+    return p.returncode
 
 
 def in_progress():
@@ -1658,6 +1710,9 @@ def sync_once(a, r):
         if code:
             return code
         r["rebased"] += ahead
+        changed = code_changed(orig)
+        if changed:
+            return rerun_sync(a, r, changed)
     both_sides = bool(up and behind and ahead)
     code, out = tool("kbgit.py", *fix_args(base if both_sides else None, up, orig))
     if code:
@@ -1740,6 +1795,8 @@ def cmd_sync(a, r=None):
             print(f"push rejected twice ({a.remote}/{a.branch} keeps moving); giving up, nothing lost locally")
             r["pushed"] = "no (rejected twice)"
             code = 1
+    if "rerun" in r:
+        return code  # the re-run with the rebased code printed its own report
     if a.dry_run:
         if refuse:
             print(refuse)
@@ -1917,7 +1974,9 @@ def main():
     h.add_argument("name", choices=HOOKS)
     h.add_argument("args", nargs="*")
     a = ap.parse_args()
-    cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane, "check-lanes": cmd_check_lanes,
+    if a.cmd == "sync":
+        a.rerun = [os.path.abspath(__file__), *sys.argv[1:]]  # what rerun_sync repeats after a rebase changed this code
+    cmds ={"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane, "check-lanes": cmd_check_lanes,
             "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
             "sync": cmd_sync, "bridge": cmd_bridge, "publish": lambda a: (kbpublic.cmd_publish_hook if a.hook else kbpublic.cmd_publish)(a, KB),
             "check-public": lambda a: kbpublic.cmd_check_public(a, KB)}

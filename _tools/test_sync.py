@@ -18,6 +18,9 @@
                            `sync --push` refuses it (exit 1, naming it, nothing pushed); a same-session commit, one
                            already on the remote and an unknown current session pass (`--dry-run`)
   TestPrePushInGit         (marker git) the pre-push hook blocks a plain push when the gate fails; tags and sync pushes pass.
+  TestSyncReexec           (marker git; `tests.py -k sync_reexec_after_kbgit_rebase`) an incoming commit changes kbgit.py's
+                           push decision: sync re-runs itself with the rebased code, which decides the push; with the
+                           re-run disabled (KB_SYNC_REEXEC=1) the planted failure: it stops, exit 3, nothing pushed.
   TestAutonomousWrite      (marker git; `tests.py -k autonomous_write`) the writers that run without a person reach
                            origin's main only through `kbgit.py sync --push` (kb/_self/querylog.md, Delivery): the
                            query log's `apply --push` (ql_deliver.Pusher) against a small fixture origin, every
@@ -848,6 +851,75 @@ class TestCodeLaneSync(SyncScenario):
         ns = type("A", (), dict(remote="origin", branch="main"))()
         assert kbgit.push_branch(ns, {"notes": []}, "main", "origin/main") == 2
         assert "not a code/*" in capsys.readouterr().out
+
+
+PLANTED_LANE = "code/planted-by-rebase"
+CONTENT_RETURN = "        return kblane.CONTENT, None\n"
+
+
+@requires_git
+@pytest.mark.git
+class TestSyncReexec(SyncScenario):
+    """A rebase inside sync that changes kbgit.py's push decision (`tests.py -k sync_reexec_after_kbgit_rebase`): B
+    pushes a kbgit.py whose lane_plan routes every push to PLANTED_LANE, A (behind, one content commit) runs
+    `sync --push`. The re-run with the rebased code decides: A's commit goes to PLANTED_LANE, main stays B's. The planted
+    failure: the same run with the re-run disabled (KB_SYNC_REEXEC=1, as inside a re-run) does not route it there."""
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory, kb_seed):
+        tmp = str(tmp_path_factory.mktemp("kb-sync-reexec"))
+        env = git_env(KB_SYNC_NO_TESTS="1")
+        env.pop(kbgit.REEXEC_ENV, None)  # a gate run inside a re-run must not disable this one
+        cls.runs = {}
+        for name, extra in (("reexec", {}), ("disabled", {kbgit.REEXEC_ENV: "1"})):
+            os.makedirs(os.path.join(tmp, name))
+            remote, (a, b), _ = clones(kb_seed, os.path.join(tmp, name), env, ("a", "b"))
+            src = b.read("_tools/kbgit.py")
+            assert src.count(CONTENT_RETURN) == 1
+            b.write("_tools/kbgit.py", src.replace(CONTENT_RETURN, f"        return kblane.CODE, {PLANTED_LANE!r}\n"))
+            b.git("commit", "-q", "-am", "chore(tools): planted lane rule")
+            b.git("push", "-q", "--no-verify", "origin", "HEAD:main", env={"KB_GATE_DONE": "1"})
+            url = "https://learn.microsoft.com/en-us/sync-test/reexec"
+            cls.add_source(a, "S-", url, "reexec")
+            cls.article(a, "reexec", [kbid.source_id(url)], ["Reexec fact."])
+            cls.commit(a, "docs(kb): reexec test")
+            r = a.tool("kbgit.py", "sync", "--push", "--session", "session_reexec", env=extra)
+            bare = Repo(remote, env)
+            heads = {x.split()[1].replace("refs/heads/", ""): x.split()[0]
+                     for x in bare.git("for-each-ref", "--format=%(objectname) %(refname)", "refs/heads/").splitlines()}
+            cls.runs[name] = (r, heads, b.rev("HEAD"), a.rev("HEAD"))
+        yield
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    @staticmethod
+    def assert_new_code_decided(run):
+        r, heads, theirs, head = run
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "the rebase changed the code sync runs: _tools/kbgit.py" in r.stdout, r.stdout
+        assert "re-running sync once with the rebased code" in r.stdout, r.stdout
+        assert heads.get(PLANTED_LANE) == head, (heads, r.stdout)
+        assert heads["main"] == theirs  # the old code would have pushed A's commit to main
+        assert "local 1 ahead, 0 behind" in r.stdout  # the re-run did not rebase again
+
+    def test_sync_reexec_after_kbgit_rebase_new_code_decides_the_push(self):
+        self.assert_new_code_decided(self.runs["reexec"])
+
+    def test_sync_reexec_after_kbgit_rebase_disabled_fails(self):
+        run = self.runs["disabled"]
+        with pytest.raises(AssertionError):
+            self.assert_new_code_decided(run)
+        r, heads, theirs, _ = run
+        assert r.returncode == 3, r.stdout + r.stderr
+        assert "Run the same kbgit.py sync command again" in r.stdout
+        assert PLANTED_LANE not in heads and heads["main"] == theirs  # stopped: nothing pushed with the old code
+
+    def test_sync_reexec_after_kbgit_rebase_watches_imported_modules(self):
+        loaded = kbgit.loaded_tools()
+        for rel in ("_tools/kbgit.py", "_tools/kblane.py", "_tools/kbpublic.py", "_tools/kg_merge.py", "_tools/kg_base.py",
+                    "_tools/kbcommon.py"):
+            assert rel in loaded
+        assert all(p.startswith("_tools/") and p.endswith(".py") for p in loaded)
 
 
 def red(pid):
