@@ -2,7 +2,7 @@
   "id": "BG-2yllitql",
   "kind": "bug",
   "title": "kb/_self/map.csv maps no doc to _tools/testmap.py, so selfdoc stale never flags tools.md's testmap row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
@@ -17,5 +17,6 @@
   },
   "touches": [
     "kb/_self/map.csv"
-  ]
+  ],
+  "claimed_by": "mac-second"
 }
