@@ -2,7 +2,7 @@
   "id": "TK-y2zl2oqd",
   "kind": "task",
   "title": "Runbook and skills use set and gate add",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-wgzgijlw",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,18 @@
   "depends_on": [
     "TK-7jm3ikaa"
   ],
-  "claimed_by": "worker-y2zl2oqd"
+  "evidence": {
+    "commit": "ad0a3b67758b3fa5846a044ccad215f128d8fe3d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
