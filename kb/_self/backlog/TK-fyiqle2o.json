@@ -2,7 +2,7 @@
   "id": "TK-fyiqle2o",
   "kind": "task",
   "title": "Document kbusage.py tree and the census method",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-exu6fdy6",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,18 @@
   "depends_on": [
     "TK-yxch5sqm"
   ],
-  "claimed_by": "worker-fyiqle2o"
+  "evidence": {
+    "commit": "03b930b74f0c9a637123ff014e1c0cb81bf872e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
