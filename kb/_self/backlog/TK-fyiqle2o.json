@@ -2,7 +2,7 @@
   "id": "TK-fyiqle2o",
   "kind": "task",
   "title": "Document kbusage.py tree and the census method",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-exu6fdy6",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "TK-yxch5sqm"
-  ]
+  ],
+  "claimed_by": "worker-fyiqle2o"
 }
