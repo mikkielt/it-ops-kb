@@ -2,7 +2,7 @@
   "id": "TK-bro74m66",
   "kind": "task",
   "title": "Digest lists the week's items by tokens",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-zjw6ugq6",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/test_ql_report.py",
     "_tools/fixtures/querylog/**",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "worker-bro74m66"
 }
