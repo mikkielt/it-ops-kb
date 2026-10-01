@@ -234,6 +234,14 @@ Several sprints may be active at once. Each has its own horizon.
 - Changing an item's JSON (claim, set, gate add, gate answers, done) goes in the same commit as the work, or in its own commit with the same trailer.
 - `--commit` on `claim`, `done`, `new`, `start` and `close` makes that commit: only the item files the command wrote or deleted (`git commit --only`: changes staged before it stay staged and out of it), the subject `chore(backlog): claim|done|file|start|close ID "title"`, and a last paragraph of `KB-Work: <ids>` (the item; a new sprint and its review story) followed by the session's own trailers, each passed as `--trailer 'KEY: VALUE'` (a `KB-*` key is refused: the command writes `KB-Work` and the hook the others). `check-trailers` passes on it.
 
+## Cost of work
+
+`python3 _tools/backlog.py cost ID [--runs] [--format text|json]` prints what an item and its descendants cost in tokens, from the work sidecars the query log's distill writes (`kb/_querylog/work/<yyyy-mm>/<run-id>.jsonl`; `kb/_self/querylog.md`, Distill, and `kb/_self/usage.md`). It works for an item of any kind and reads no command text, session or prompt id: the sidecar holds none.
+- **What it sums:** the item lines (`item: <id>`) of every sidecar for the item and each descendant in the item files at `HEAD`; for a sprint, its own line (the multi-window prompts of its orchestrator) and the items in it. A shared line is its session's, not an item's, and is left out.
+- **Per model:** requests, `in`, `cr` and `out`, with `cw` (cache writes) after them as a figure of its own, never added to another count. Two groups, printed apart: direct, the item lines' `main` (the main agent's prompts inside the item's windows), and attributed, their `sub` (the subagents routed to the item) summed over agent groups. A model row ends with `all models`, the sum of the rows, zeros when there are none.
+- **`--runs`** lists each run's line apart, one per run and item; `--format json` gives the same numbers (`direct`, `attributed`, `by_item`, `run_lines` with `--runs`). A sidecar that breaks the store's work gates (`ql_store.work_line_problems`) is skipped whole and named on stderr, so a bad file never skews a sum.
+- **Not covered:** the shared and session-total figures, the background runs' overhead, and an item deleted at sprint close (its lines are summed only while its file exists). With no sidecar the command prints zeros and exits 0; an unknown id exits 2.
+
 ## Writing about items
 
 Every message, report, commit body or note that names an item gives its id and its title together: `ST-pbonxqx4 “Direct push on the real origin”`, never a bare id. The tool's own output does the same. A list of ids alone tells the reader nothing.

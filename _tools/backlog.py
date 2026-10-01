@@ -102,6 +102,14 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           items, what waits on which gate or trigger, the critical path, the
                                           knowledge state of the next item's asks and refs (--hook runs no pack)
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope
+  backlog.py cost ID [--runs] [--format text|json]
+                                          the tokens the query log's work sidecars (kb/_querylog/work/) hold for the
+                                          item and its descendants (for a sprint, its items too; a sprint's own line
+                                          counts for a sprint only), per model: requests, in, cr, out and cw apart,
+                                          direct (the item lines' main) and attributed (their routed subagents'
+                                          sub). Shared lines, the session total and overhead are not printed yet.
+                                          --runs lists each run's line apart; json gives the same numbers. No
+                                          sidecar: zeros, exit 0; an unknown id: exit 2
   backlog.py red-pipeline [--status [--job J]|--hook]   the newest pipeline of origin's main in which a job ran
                                           (--job: in which job J ran; the newest finished one when none did; glab
                                           api, gh on GitHub; a note when neither is signed in), on GitLab read by its
@@ -2734,6 +2742,127 @@ def hook_intake(bl, a, budget=None):
     return 0
 
 
+# `cost ID`: what the query log's work sidecars (kb/_querylog/work/<yyyy-mm>/<run-id>.jsonl, written by distill) hold
+# for an item and its descendants: tokens per model, the counts of its own prompts (direct, the `main` of its lines)
+# apart from those of the subagents routed to it (attributed, the `sub`), cache writes (cw) as a figure of their own.
+# A sprint line (`item: SP-...`) is the sprint's, and a shared line is its session's, not an item's. Reads no
+# command text, session or prompt id: the sidecar has none.
+COST_KEYS = ("requests", "in", "cw", "cw1h", "cr", "out")
+# one entry per figure group a cost report prints: (report key, sidecar field, label); a later total adds an entry
+COST_GROUPS = (("direct", "main", "direct (main)"), ("attributed", "sub", "attributed (sub)"))
+
+
+def cost_add(total, models):
+    """Add {model: counts} into `total`: all six counts, a missing one as 0."""
+    for m, c in models.items():
+        t = total.setdefault(m, dict.fromkeys(COST_KEYS, 0))
+        for k in COST_KEYS:
+            t[k] += c.get(k, 0)
+
+
+def cost_models(w, field):
+    """{model: counts} of a work line's `main`, or its `sub` summed over the agent groups."""
+    maps = [w.get(field) or {}] if field == "main" else list((w.get(field) or {}).values())
+    out = {}
+    for models in maps:
+        cost_add(out, models)
+    return out
+
+
+def cost_lines(root, ids):
+    """([line], [skipped run id]): the item lines of the work sidecars under root/kb/_querylog that name one of `ids`,
+    each {run, item, prompts, <report key>: {model: counts}}, oldest run first; a sidecar that breaks the store's
+    work gates (`ql_store.work_line_problems`) is skipped whole and named, so a bad file never skews a sum."""
+    import ql_store
+    out, skipped = [], []
+    for p in ql_store.work_files(Path(root) / "kb" / "_querylog"):
+        try:
+            objs = ql_store.load_run(p)
+        except (OSError, ValueError):
+            objs = []
+        lines = [w for _, w in objs[1:]]
+        if not objs or any(ql_store.work_line_problems(w, p.stem) for w in lines):
+            skipped.append(p.stem)
+            continue
+        for w in lines:
+            if w.get("item") in ids:  # a shared line has `items`, no `item`
+                out.append({"run": p.stem, "item": w["item"], "prompts": w["prompts"],
+                            **{key: cost_models(w, field) for key, field, _ in COST_GROUPS}})
+    return out, skipped
+
+
+def cost_scope(bl, iid):
+    """The ids whose lines an item's cost sums: it and its descendants, and for a sprint also the items in it."""
+    ids = {iid, *bl.descendants(iid)}
+    if bl.items[iid].get("kind") == "sprint":
+        ids |= set(bl.sprint_items(iid))
+    return ids
+
+
+def cost_report(bl, iid):
+    """The report of `cost ID`: {id, items, runs, prompts, <report key>: {model: counts}, by_item, run_lines, skipped}."""
+    lines, skipped = cost_lines(bl.root, cost_scope(bl, iid))
+    rep = {"id": iid, "runs": len({w["run"] for w in lines}), "prompts": sum(w["prompts"] for w in lines),
+           **{key: {} for key, _, _ in COST_GROUPS}, "by_item": {}, "run_lines": lines, "skipped": skipped}
+    for w in lines:
+        one = rep["by_item"].setdefault(w["item"], {"prompts": 0, **{key: {} for key, _, _ in COST_GROUPS}})
+        one["prompts"] += w["prompts"]
+        for key, _, _ in COST_GROUPS:
+            cost_add(rep[key], w[key])
+            cost_add(one[key], w[key])
+    rep["items"] = sorted(rep["by_item"])
+    return rep
+
+
+def cost_row(name, c):
+    return f"{name}  requests {c['requests']}  in {c['in']}  cr {c['cr']}  out {c['out']} | cw {c['cw']}"
+
+
+def cost_figures(models, indent):
+    """The rows of one figure group: a row per model, then the sum of the models (zeros when there are none)."""
+    allm = {k: sum(c[k] for c in models.values()) for k in COST_KEYS}
+    return [indent + cost_row(m, models[m]) for m in sorted(models)] + [indent + cost_row("all models", allm)]
+
+
+def cost_block(part, indent):
+    out = []
+    for key, _, label in COST_GROUPS:
+        out.append(f"{indent}{label}:")
+        out += cost_figures(part[key], indent + "  ")
+    return out
+
+
+def cmd_cost(bl, a):
+    iid = need(bl, a.id)
+    rep = cost_report(bl, iid)
+    if rep["skipped"]:
+        print(f"cost: skipped sidecars that break the store's gates: {', '.join(rep['skipped'])}", file=sys.stderr)
+    if a.format == "json":
+        out = {k: rep[k] for k in ("id", "items", "runs", "prompts", "by_item", "skipped", *(g[0] for g in COST_GROUPS))}
+        if a.runs:
+            out["run_lines"] = rep["run_lines"]
+        say(json.dumps(out, sort_keys=True, indent=2))
+        return 0
+    n = len(rep["items"])
+    say(f"cost {bl.label(iid)}: {rep['runs']} run(s), {n} item(s) with work lines, {rep['prompts']} prompt(s)"
+        " (the item and its descendants)")
+    for x in cost_block(rep, ""):
+        say(x)
+    if rep["items"] not in ([], [iid]):
+        say("by item:")
+        for i in rep["items"]:
+            say(f"  {bl.label(i)}: {rep['by_item'][i]['prompts']} prompt(s)")
+            for x in cost_block(rep["by_item"][i], "    "):
+                say(x)
+    if a.runs:
+        say("runs:")
+        for w in rep["run_lines"]:
+            say(f"  {w['run']}  {bl.label(w['item'])}: {w['prompts']} prompt(s)")
+            for x in cost_block(w, "    "):
+                say(x)
+    return 0
+
+
 def cmd_goal(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -2861,6 +2990,10 @@ def main(argv=None):
     p.add_argument("--hook", action="store_true")
     p = sub.add_parser("goal")
     p.add_argument("id")
+    p = sub.add_parser("cost")
+    p.add_argument("id")
+    p.add_argument("--runs", action="store_true", help="also list each run's line apart")
+    p.add_argument("--format", choices=("text", "json"), default="text")
     p = sub.add_parser("red-pipeline")
     p.add_argument("--status", action="store_true")
     p.add_argument("--job", help="read the newest pipeline of main in which this job ran (a red-main bug's repro)")
