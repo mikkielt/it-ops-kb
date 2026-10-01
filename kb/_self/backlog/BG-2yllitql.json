@@ -2,7 +2,7 @@
   "id": "BG-2yllitql",
   "kind": "bug",
   "title": "kb/_self/map.csv maps no doc to _tools/testmap.py, so selfdoc stale never flags tools.md's testmap row",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
@@ -18,5 +18,18 @@
   "touches": [
     "kb/_self/map.csv"
   ],
-  "claimed_by": "mac-second"
+  "evidence": {
+    "commit": "76729cc45b50272202f3652d48c75cf5fd2cd2bf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,fnmatch,sys;rows=list(csv.reader(open(\"kb/_self/map.csv\",encoding=\"utf-8\")));sys.exit(0 if any(r[0]==\"kb/_self/tools.md\" and fnmatch.fnmatch(\"_tools/testmap.py\",r[1]) for r in rows[1:]) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
