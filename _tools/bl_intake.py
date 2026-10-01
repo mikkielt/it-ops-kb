@@ -24,19 +24,26 @@ the part that does not touch the backlog's files:
   intake stays short enough for a SessionStart hook;
 - the `trailers` detector (`trailer_findings`, `trailers_detector`, at the end): commits of main whose KB-Work line git
   does not read, or that change code with no KB-Work and no KB-Auto trailer;
-- the `stranded` detector (`stranded_findings`, `stranded_detector`, at the end): query-log findings of the committed
+- the `stranded` detector (`stranded_findings`, `stranded_detector`): query-log findings of the committed
   store whose newest record is a candidate-gap, an open source finding, no-fix or apply-failed and older than
   STRANDED_DAYS on HEAD's commit day (`kb/_self/querylog.md`, Store and Learn). It reads the findings files at HEAD
-  directly, with no ql_ module.
+  directly, with no ql_ module;
+- the `ci` detector (`latest_pipeline`, `pipeline_candidate`, `ci_detector`, at the end): the newest pipeline of the
+  integration main in which a job ran, as `backlog.py red-pipeline` reads it (glab, gh), and the bug a red one files,
+  with red-pipeline's fingerprint, links and repro. It is the one detector that uses the network, so it is in
+  NETWORK_DETECTORS and `collect` runs it only when asked (`intake --network`); red-pipeline calls the same reader and
+  candidate with its own `run`.
 
-This module imports no tool module but `kbpublic` (the integration remote's name, inside the function that needs it);
-it is below backlog.py.
+This module imports no tool module but `kbpublic` (the integration remote's name) and, in the functions that read a
+pipeline, `ql_base` (the command runner) and `ql_deliver` (the forge calls), inside the function that needs them; it is
+below backlog.py, which passes its own `run` to the readers.
 """
 import datetime
 import hashlib
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 import time
@@ -44,6 +51,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 DETECTORS = {}  # name -> fn(root) -> iterable of Candidate; the registry
+NETWORK_DETECTORS = {"ci"}  # detectors that call the network: `collect` runs them only with network=True
 KINDS = ("bug", "story")
 SEVERITIES = ("S1", "S2", "S3", "S4")
 FP_RE = re.compile(r"[0-9a-f]{12}")
@@ -64,6 +72,10 @@ class Candidate:
     checks: list = field(default_factory=list)  # a story's: argv lists proving the end state
     links: list = field(default_factory=list)  # besides the fingerprint
     notes: str = ""
+    priority: str = "P2"  # a bug's, in the item `--file` writes
+    repro: list = field(default_factory=list)  # a bug's repro argv when it is not `intake --status <fingerprint>`
+    lead_links: list = field(default_factory=list)  # links before the fingerprint; an item naming one is the finding's
+    fp_fixed: str = ""  # a fingerprint the detector computed itself, kept by collect() in place of the hash of its key
     detector: str = ""  # set by collect()
     fp: str = ""  # set by collect()
 
@@ -98,13 +110,16 @@ def problem(c):
     return None
 
 
-def collect(root, only=None):
+def collect(root, only=None, network=False):
     """(candidates, failures) over the registry: the candidates of every detector (or the one named `only`) sorted by
     detector name, then fingerprint, each with `detector` and `fp` set, a finding reported twice kept once; the
-    failures as `detector: why` lines (a detector that raised, a candidate that `problem` refuses)."""
+    failures as `detector: why` lines (a detector that raised, a candidate that `problem` refuses). A detector of
+    NETWORK_DETECTORS runs only with `network`, or when it is the one named `only`."""
     out, failures, seen = [], [], set()
     for name in sorted(DETECTORS):
         if only is not None and name != only:
+            continue
+        if name in NETWORK_DETECTORS and not (network or only == name):
             continue
         try:
             found = list(DETECTORS[name](Path(root)))
@@ -116,7 +131,7 @@ def collect(root, only=None):
             if why:
                 failures.append(f"{name}: candidate {getattr(c, 'title', '')!r} refused: {why}")
                 continue
-            c.detector, c.fp = name, fingerprint(name, c.key)
+            c.detector, c.fp = name, c.fp_fixed or fingerprint(name, c.key)
             if c.fp not in seen:
                 seen.add(c.fp)
                 out.append(c)
@@ -137,12 +152,30 @@ def one(text):
     return " ".join(str(text).split())
 
 
+def named_by(items, c):
+    """The id of an item, open or not, that names one of the candidate's `lead_links` (a CI finding's
+    `pipeline <id>`) in its title, goal, notes or links, or None: the finding is filed already."""
+    for lead in c.lead_links:
+        for iid, it in sorted(items.items()):
+            if names_pipeline(it, lead):
+                return iid
+    return None
+
+
+def names_pipeline(it, marker):
+    """True when an item names `marker` (`pipeline <id>`) in its title, goal, notes or links."""
+    text = " ".join(str(it.get(f, "")) for f in ("title", "goal", "notes")) + " " + " ".join(map(str, it.get("links", [])))
+    return re.search(rf"\b{re.escape(marker)}\b", text) is not None
+
+
 def repro_of(c):
-    return STATUS_REPRO + [c.fp]
+    return list(c.repro) if c.repro else STATUS_REPRO + [c.fp]
 
 
 def links_of(c):
-    out = [f"{FP_LINK}{c.fp}"]
+    out = [x.strip() for x in c.lead_links]
+    if c.fp and f"{FP_LINK}{c.fp}" not in out:
+        out.append(f"{FP_LINK}{c.fp}")
     for x in c.links:
         if x.strip() not in out:
             out.append(x.strip())
@@ -152,8 +185,8 @@ def links_of(c):
 def item_of(c, iid):
     """The draft item for candidate `c` under the id `iid`: no sprint, no parent, priority P2. A bug's repro is
     `intake --status <fingerprint>`, which exits 1 while the detector reports the finding."""
-    it = {"id": iid, "kind": c.kind, "title": one(c.title)[:TEXT_MAX], "status": "draft", "priority": "P2",
-          "rank": 0, "goal": one(c.goal)[:TEXT_MAX]}
+    it = {"id": iid, "kind": c.kind, "title": one(c.title)[:TEXT_MAX], "status": "draft",
+          "priority": c.priority if c.kind == "bug" else "P2", "rank": 0, "goal": one(c.goal)[:TEXT_MAX]}
     if c.kind == "bug":
         it["severity"] = c.severity
         it["repro"] = {"run": repro_of(c)}
@@ -581,3 +614,251 @@ def stranded_detector(root):
                      "closed by hand, so the stranded-findings detector does not report it.",
                 key=key, severity="S3", notes=notes))
     return out
+
+
+# ------------------------------------------------------------------ the CI detector
+
+GITLAB_FINISHED = ("success", "failed", "canceled", "skipped", "manual")  # manual: waits on a person, read by its jobs
+S1_JOBS = ("kb-tests",)  # a red one means the gate every push runs fails on main itself: S1; any other job: S2
+PIPELINE_REPRO = ["python3", "_tools/backlog.py", "red-pipeline", "--status"]  # a red-main bug adds --job <its job>
+MAIN_PIPELINES = 100  # pipelines of main read, newest first, to find the newest one in which a job ran
+ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")
+
+
+def run_argv(argv, cwd=None):
+    """(exit code, stdout, stderr) of a command given as an argument list (git, glab, gh); 127 when it cannot start.
+    The readers below take a `run` of this shape, so a caller (backlog.py) passes its own."""
+    from ql_base import run_cmd
+    return run_cmd(argv, cwd=cwd, timeout=60)
+
+
+# GitLab.com prefixes each log line with a timestamp and a stream marker: a 2-digit stream, O (stdout) or E
+# (stderr), and `+` on a line continued from the one before (`2026-09-29T01:06:40.889927Z 01O `, `00O+`)
+LOG_PREFIX_RE = re.compile(r"^\s*(?:\d{4}-\d\d-\d\dT[\d:.]+Z\s+(?:\d\d[OE]\+?\s)?\s*)?"
+                           r"(?:section_(?:start|end):\d+:\S+\s*)?")
+TEST_ID_RES = (re.compile(r"^(?:FAILED|ERROR)\s+(\S+::\S+)"), re.compile(r"^(\S+::\S+)\s+(?:FAILED|ERROR)\b"))
+ERROR_LINE_RE = re.compile(r"\b(?:error|errors|failed|failure|traceback|exception|fatal)\b", re.I)
+
+
+def normalise_error_line(line, prefix_re=None):
+    """One log line with what differs between two runs of the same failure taken out: colour codes, the runner's
+    timestamp prefix (`prefix_re`, default LOG_PREFIX_RE), hex ids (7+ characters) and numbers become fixed tokens,
+    whitespace collapses."""
+    s = (prefix_re or LOG_PREFIX_RE).sub("", ANSI_RE.sub("", line))
+    s = re.sub(r"\b[0-9a-f]{7,}\b", "<hex>", s, flags=re.I)
+    s = re.sub(r"\d+", "<n>", s)
+    return " ".join(s.split())[:200]
+
+
+def first_failure(log, prefix_re=None):
+    """What failed first in a job log: the first failing pytest test id (`FAILED a.py::t`, `a.py::t FAILED`), else the
+    normalised first line that names an error or a failure, else ''. `prefix_re` (default LOG_PREFIX_RE) takes the
+    runner's per-line prefix off."""
+    prefix_re = prefix_re or LOG_PREFIX_RE
+    lines = [prefix_re.sub("", ANSI_RE.sub("", ln)).strip() for ln in (log or "").splitlines()]
+    for ln in lines:
+        for r in TEST_ID_RES:
+            m = r.match(ln)
+            if m:
+                return m.group(1)
+    for ln in lines:
+        if ERROR_LINE_RE.search(ln):
+            return normalise_error_line(ln, prefix_re)
+    return ""
+
+
+def failure_fingerprint(job, failure=""):
+    """12 hex characters naming one way of failing: the failed job's name and what failed first in it (a test id or
+    a normalised error line, `first_failure`). Two pipelines that fail the same way get the same fingerprint. With
+    no readable log `failure` is '' and the job alone names it."""
+    return hashlib.sha256(f"{job}\n{failure}".encode("utf-8")).hexdigest()[:12]
+
+
+def github_jobs(host, project, rid, run):
+    """The jobs of GitHub Actions run `rid`, as `gh run view --json jobs` answers them, or None."""
+    code, o, _ = run(["gh", "run", "view", str(rid), "-R", f"{host}/{project}", "--json", "jobs"])
+    try:
+        js = json.loads(o) if code == 0 else None
+    except ValueError:
+        js = None
+    js = js.get("jobs") if isinstance(js, dict) else None
+    return js if isinstance(js, list) else None
+
+
+def latest_pipeline(root, job=None, run=None):
+    """(pipeline, note): a finished pipeline of origin's main as {id, sha, url, red, jobs, unverified, how}, a red
+    one with `failure`, `fingerprint` and `first` (the name of its first failed job, by name) read from that job's
+    log, or None with the note that says why not (no origin, glab or gh not signed in, a failed call, no such
+    pipeline). Which pipeline, newest first among the last MAIN_PIPELINES:
+    - with `job`: the newest in which that job ran, red when it failed (`ql_deliver.job_ran`, RAN_AND_FAILED);
+    - else on GitLab the newest that failed or in which a job ran (every job is manual, so a newer pipeline no one
+      started hides nothing), or the newest finished one when no job ran in any; on GitHub the newest completed run.
+    On GitLab a pipeline waiting on manual jobs counts as finished, and one whose status is no failure is read by its
+    jobs (`ql_deliver.job_verdict`): red when a job someone started failed, else `unverified` says how each gate job
+    did not succeed. `how` names the choice for the message."""
+    run = run or run_argv
+    from ql_deliver import (GITHUB_RED, RAN_AND_FAILED, any_ran, forge_list, gitlab_jobs, job_ran, job_verdict,
+                            latest_jobs, origin_forge)
+    import kbpublic
+    remote = kbpublic.integration_remote(root)
+    code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
+    if code:
+        return None, f"no {remote} remote"
+    url = url.strip()
+    forge, host, project = origin_forge(url)
+    quoted = project.replace("/", "%2F")
+    data, cli, note = forge_list(
+        url, run, lambda repo: ["gh", "run", "list", "--branch", "main", "-R", repo, "--json",
+                                "databaseId,headSha,status,conclusion,url", "-L", str(MAIN_PIPELINES)],
+        lambda p: f"projects/{p}/pipelines?ref=main&per_page={MAIN_PIPELINES}", named=3)
+    if data is None:
+        return None, note
+    newest = None  # GitLab without `job`: the newest finished pipeline, read when no job ran in any
+    for r in data:
+        if not isinstance(r, dict):
+            continue
+        jobs = None
+        if forge == "github":
+            if r.get("status") != "completed":
+                continue
+            p = {"id": r.get("databaseId"), "sha": r.get("headSha"), "url": r.get("url"),
+                 "red": r.get("conclusion") in GITHUB_RED, "unverified": [], "how": "the newest completed"}
+            if job:
+                jobs = github_jobs(host, project, p["id"], run)
+                mine = [j for j in jobs or [] if isinstance(j, dict) and j.get("name") == job
+                        and j.get("conclusion") in ("success",) + GITHUB_RED]
+                if not mine:
+                    continue
+                p["red"], p["how"] = mine[0].get("conclusion") in GITHUB_RED, f"the newest {job}"
+        else:
+            if r.get("status") not in GITLAB_FINISHED:
+                continue
+            p = {"id": r.get("id"), "sha": r.get("sha"), "url": r.get("web_url"), "red": r.get("status") == "failed",
+                 "unverified": [], "how": "the newest started"}
+            jobs = gitlab_jobs(host, quoted, p["id"], run)
+            if job:
+                mine = latest_jobs(jobs).get(job)
+                if jobs is None:
+                    p["red"], p["unverified"] = False, ["the pipeline's jobs could not be read"]
+                elif mine is None or not job_ran(mine):
+                    continue
+                else:
+                    p["red"] = mine.get("status") == "failed"
+                p["how"] = f"the newest {job}"
+            elif not p["red"]:
+                if jobs is not None and not any_ran(jobs):
+                    newest = newest or (p, jobs)
+                    continue
+                verdict, _, unpassed = job_verdict(jobs)
+                p["red"] = verdict == "red"
+                p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
+        return red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run, job), note
+    if newest:
+        p, jobs = newest
+        verdict, _, unpassed = job_verdict(jobs)
+        p["red"] = verdict == "red"
+        p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
+        p["how"] = f"no job ran in the last {MAIN_PIPELINES}; the newest finished"
+        return red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run), note
+    which = f"in which {job} ran" if job else "finished"
+    return None, f"no pipeline of main {which} among the last {MAIN_PIPELINES} on {host} ({cli})"
+
+
+def red_detail(p, jobs, forge, host, project, quoted, ran_and_failed, run, job=None):
+    """`p` with `jobs` (the failed jobs' names) and, when it is red, `first`, `failure` and `fingerprint` read from
+    the log of its first failed job by name (among the jobs whose script ran, when there are any; `job` when given)."""
+    p["jobs"] = []
+    if not p["red"]:
+        return p
+    if forge == "github":
+        js = jobs if jobs is not None else github_jobs(host, project, p["id"], run) or []
+        bad, field = ("failure", "timed_out", "startup_failure"), "conclusion"
+    else:
+        js, bad, field = jobs or [], ("failed",), "status"
+    failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
+    failed = [j for j in failed if j.get("failure_reason") in ran_and_failed] or failed  # scripts that ran
+    if job:
+        failed = [j for j in failed if j["name"] == job][:1] or failed
+    p["jobs"] = [j["name"] for j in failed]
+    if failed:
+        first = min(failed, key=lambda j: str(j["name"]))  # the failed job the fingerprint names
+        jid = first.get("databaseId" if forge == "github" else "id")
+        log = ""
+        if jid is not None:
+            argv = (["gh", "api", "--hostname", host, f"repos/{project}/actions/jobs/{jid}/logs"]
+                    if forge == "github" else
+                    ["glab", "api", "--hostname", host, f"projects/{quoted}/jobs/{jid}/trace"])
+            code, o, _ = run(argv)
+            log = o if code == 0 else ""
+        p["first"] = str(first["name"])
+        p["failure"] = first_failure(log)
+        p["fingerprint"] = failure_fingerprint(first["name"], p["failure"])
+    return p
+
+
+def covered_by_revert(root, sha, run=None):
+    """True when an automatic revert (KB-Auto: revert) on origin/main reverts the automatic push that `sha` ends;
+    None when the history cannot be read. The revert commit names the first commit of that push."""
+    import kbpublic
+    run = run or run_argv
+    code, o, _ = run(["git", "log", f"{sha}..{kbpublic.integration_remote(root)}/main", "--format=%B%x1e"], cwd=root)
+    if code:
+        return None
+    for body in o.split("\x1e"):
+        m = re.search(r"^This reverts commit ([0-9a-f]{40})\b", body, re.M)
+        if not m or "KB-Auto: revert" not in body:
+            continue
+        first = m.group(1)
+        if sha == first:
+            return True
+        code, o2, _ = run(["git", "log", f"{first}..{sha}", "--format=%(trailers:key=KB-Auto,valueonly)%x1e"], cwd=root)
+        recs = o2.split("\x1e")[:-1] if code == 0 else []
+        if code == 0 and all(r.strip() for r in recs):
+            return True
+    return False
+
+
+def pipeline_candidate(pid, sha, sev, jobs=(), url=None, extra="", fingerprint=None, job=None):
+    """The bug candidate of a red pipeline of main: it names `pipeline PID` (the marker red-pipeline files by) in its
+    title and links, and `fingerprint <hex>` in its links when one is given; its repro is
+    `red-pipeline --status --job JOB` (the failed job the fingerprint names), which fails until JOB passes on main
+    again, or plain `--status` (the newest pipeline of main in which a job ran) when no job was read; `extra` closes
+    its notes. The fingerprint is the failure's own (`failure_fingerprint`), not the hash of the key: a pipeline that
+    fails the same way as an earlier one is one finding."""
+    marker = f"pipeline {pid}"
+    repro = list(PIPELINE_REPRO) + (["--job", job] if job else [])
+    end = (f"The newest pipeline of main in which {job} ran passed it" if job else
+           "The newest pipeline of main in which a job ran is green")
+    return Candidate(
+        kind="bug", severity=sev, priority="P1" if sev == "S1" else "P2", key=marker,
+        title=f"Red main {marker}: {', '.join(jobs) or 'no failed job read'}"[:200],
+        goal=f"{end}: `{shlex.join(repro)}` exits 0.", repro=repro, lead_links=[marker],
+        fp=fingerprint or "", fp_fixed=fingerprint or "",
+        notes=(f"{marker.capitalize()} of commit {str(sha)[:12]} failed"
+               + (f" in {', '.join(jobs)}" if jobs else "") + (f": {url}" if url else "") + "."
+               + (" " + extra if extra else ""))[:TEXT_MAX])
+
+
+def pipeline_finding(p):
+    """The `pipeline_candidate` of a red pipeline `p` as `latest_pipeline` read it: S1 when a job of S1_JOBS failed,
+    else S2."""
+    jobs = p["jobs"]
+    return pipeline_candidate(p["id"], p["sha"], "S1" if any(j in S1_JOBS for j in jobs) else "S2", jobs, p.get("url"),
+                              f"It failed first on: {p['failure']}." if p.get("failure") else "",
+                              fingerprint=p.get("fingerprint"), job=p.get("first"))
+
+
+@detector("ci")
+def ci_detector(root, run=None):
+    """One bug when the newest pipeline of the integration main in which a job ran is red and no automatic revert covers
+    it (`kb/_self/backlog.md`, red pipeline): the same candidate, fingerprint and links `backlog.py red-pipeline` files,
+    so whichever runs first files the bug and the other finds it. A pipeline whose jobs nobody started is green; one
+    that cannot be read (no remote, not signed in, a failed call) reports nothing. It fetches the integration main and
+    calls the forge, so `collect` runs it only with `network` (`intake --network`)."""
+    run = run or run_argv
+    import kbpublic
+    run(["git", "fetch", "-q", kbpublic.integration_remote(root), "main"], cwd=root)
+    p, _ = latest_pipeline(root, None, run)
+    if p is None or not p["red"] or covered_by_revert(root, p["sha"], run) is not False:
+        return []
+    return [pipeline_finding(p)]

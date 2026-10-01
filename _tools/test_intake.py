@@ -1023,3 +1023,200 @@ def test_intake_replay_planted_trailers_in_one_block_leave_three_commits(tmp_pat
     repo, ids = build_replay(tmp_path, edit=join)
     (c,) = by_detector(Path(repo.path))["trailers"]
     assert c.key.split(",") == sorted(ids[o][:bl_intake.SHORT_SHA] for o in STORY_UNREAD if o != "7219acbb")
+
+
+# ------------------------------------------------------------------ the CI detector (intake_ci)
+#
+# origin is a planted GitLab project: `bl_intake.run_argv` (which backlog.py's `run` calls) answers glab with the
+# pipelines, jobs and job logs of the test, so no network is used. Planted: a red pipeline filed by intake and then
+# met by red-pipeline, and the other way round (one bug, the same item either way); the same failure in a later
+# pipeline (skipped by its fingerprint) and a different one (a second bug); a pipeline whose jobs nobody started (green:
+# nothing filed, whatever the status says); a covered, an unreadable and a green pipeline (no candidate); the detector
+# off without --network.
+
+FORGE_LOGS = Path(__file__).resolve().parent / "fixtures" / "forge_logs"
+CI_URL = "https://gitlab.example.com/team/kb.git"
+RED_JOBS = [{"id": 11, "name": "kb-tests-windows", "status": "failed", "failure_reason": "script_failure"}]
+RED_LOGS = {11: "2026-09-01T10:00:00Z 01O FAILED _tools/test_x.py::test_a - assert 3 == 4\n"}
+SHA = "a" * 40
+
+
+@pytest.fixture
+def ci_register(monkeypatch):
+    monkeypatch.setitem(bl_intake.DETECTORS, "ci", bl_intake.ci_detector)
+
+
+def ci_world(tmp_path, monkeypatch, pipelines, jobs=(), logs=None, signed_in=True):
+    """A repository whose origin is a GitLab project answering `pipelines` (newest first), `jobs` (one list for every
+    pipeline) and job logs; the lists and the dict are read on every call, so a test changes them in place. Returns
+    (world, calls), `calls` being the argv lists of every glab call."""
+    w = World(tmp_path)
+    w.commit(0, "init", {"src/a.txt": "a\n"})
+    w.repo.git("remote", "add", "origin", CI_URL)
+    w.publish()
+    calls = []
+    real = bl_intake.run_argv
+
+    def fake(argv, cwd=None):
+        if argv[:2] == ["git", "fetch"]:
+            return 0, "", ""
+        if argv[0] in ("glab", "gh"):
+            calls.append(argv)
+            if argv[1] == "auth":
+                return (0, "", "") if signed_in else (1, "", "not logged in")
+            if argv[-1].endswith("/trace"):
+                jid = int(argv[-1].split("/")[-2])
+                return (0, logs[jid], "") if logs and jid in logs else (1, "", "404 Not Found")
+            return 0, json.dumps(jobs if "/jobs?" in argv[-1] else pipelines).replace(SHA, tip), ""
+        return real(argv, cwd=cwd)
+
+    tip = w.repo.rev("HEAD")  # a pipeline's `sha` SHA stands for the commit the clone is at
+    monkeypatch.setattr(bl_intake, "run_argv", fake)
+    monkeypatch.setattr(backlog, "run_check", lambda root, c: (False, 1, ""))  # the repro fails: main is red
+    return w, calls
+
+
+def red_pipeline(root, *a):
+    return backlog.main(["--root", str(root), "red-pipeline", *a])
+
+
+def filed(root):
+    return sorted((x for x in load(root) if x["kind"] == "bug"), key=lambda x: x["links"])
+
+
+def ci_fp(job, failure):
+    return backlog.failure_fingerprint(job, failure)
+
+
+def test_intake_ci_runs_only_with_network(tmp_path, monkeypatch, capsys, ci_register):
+    w, calls = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RED_JOBS, RED_LOGS)
+    assert intake(w.root, capsys) == (0, ["intake: no candidates"], "")
+    assert calls == []  # the detector did not run
+    code, out, _ = intake(w.root, capsys, "--network")
+    assert code == 0 and calls and out[0].startswith("ci bug ")
+    assert bl_intake.NETWORK_DETECTORS == {"ci"}
+    calls.clear()  # `--status` alone does not run it either
+    assert intake(w.root, capsys, "--status", "0" * 12)[0] == 0 and calls == []
+
+
+def test_intake_ci_candidate_is_the_red_pipeline_bug(tmp_path, monkeypatch, capsys, ci_register):
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed", "web_url": "https://x/901"}],
+                    RED_JOBS, RED_LOGS)
+    fp = ci_fp("kb-tests-windows", "_tools/test_x.py::test_a")
+    code, out, _ = intake(w.root, capsys, "--network")
+    assert code == 0
+    assert out[0] == f"ci bug {fp} Red main pipeline 901: kb-tests-windows"
+    assert "  severity: S2" in out
+    assert "  repro: python3 _tools/backlog.py red-pipeline --status --job kb-tests-windows" in out
+    assert f"  links: pipeline 901, fingerprint {fp}" in out
+    assert out[-1] == "intake: 1 candidate(s), 1 new, 0 skipped"
+
+
+def test_intake_ci_intake_files_and_red_pipeline_finds_it(tmp_path, monkeypatch, capsys, ci_register):
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RED_JOBS, RED_LOGS)
+    assert intake(w.root, capsys, "--network", "--file")[0] == 0
+    (b1,) = filed(w.root)
+    capsys.readouterr()
+    assert red_pipeline(w.root) == 0
+    assert "pipeline 901 already filed as" in capsys.readouterr().out
+    assert filed(w.root) == [b1]  # one bug for one red pipeline
+    assert intake(w.root, capsys, "--network", "--file")[1][-1] == "intake: 1 candidate(s), 0 new filed, 1 skipped"
+    assert filed(w.root) == [b1]
+
+
+def test_intake_ci_red_pipeline_files_and_intake_skips_it(tmp_path, monkeypatch, capsys, ci_register):
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RED_JOBS, RED_LOGS)
+    assert red_pipeline(w.root) == 0
+    (b1,) = filed(w.root)
+    code, out, _ = intake(w.root, capsys, "--network", "--file")
+    assert code == 0 and "(skipped: filed as" in out[0] and out[-1] == "intake: 1 candidate(s), 0 new filed, 1 skipped"
+    assert filed(w.root) == [b1]
+
+
+def test_intake_ci_either_command_files_the_same_item(tmp_path_factory, monkeypatch, capsys, ci_register):
+    """On two copies of one red pipeline, intake --file and red-pipeline write the same item but for its id."""
+    pipes = [{"id": 901, "sha": SHA, "status": "failed", "web_url": "https://x/901"}]
+    a, _ = ci_world(tmp_path_factory.mktemp("a"), monkeypatch, pipes, RED_JOBS, RED_LOGS)
+    assert intake(a.root, capsys, "--network", "--file")[0] == 0
+    b, _ = ci_world(tmp_path_factory.mktemp("b"), monkeypatch, pipes, RED_JOBS, RED_LOGS)
+    assert red_pipeline(b.root) == 0
+    (ia,), (ib,) = filed(a.root), filed(b.root)
+    assert {**ia, "id": 0} == {**ib, "id": 0}
+    assert ia["links"] == ["pipeline 901", f"fingerprint {ci_fp('kb-tests-windows', '_tools/test_x.py::test_a')}"]
+    assert ia["repro"] == {"run": backlog.STATUS_REPRO + ["--job", "kb-tests-windows"]}
+
+
+def test_intake_ci_a_gate_job_is_s1_with_priority_p1(tmp_path, monkeypatch, capsys, ci_register):
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 77, "sha": SHA, "status": "failed"}],
+                    [{"id": 5, "name": "kb-tests", "status": "failed"}], {5: "Traceback (most recent call last):\n"})
+    assert intake(w.root, capsys, "--network", "--file")[0] == 0
+    (b1,) = filed(w.root)
+    assert b1["severity"] == "S1" and b1["priority"] == "P1" and b1["status"] == "draft" and "sprint" not in b1
+
+
+def test_intake_ci_the_same_failure_in_a_later_pipeline_is_skipped_by_its_fingerprint(tmp_path, monkeypatch, capsys,
+                                                                                    ci_register):
+    pipes = [{"id": 901, "sha": SHA, "status": "failed"}]
+    logs = dict(RED_LOGS)
+    w, _ = ci_world(tmp_path, monkeypatch, pipes, RED_JOBS, logs)
+    assert intake(w.root, capsys, "--network", "--file")[0] == 0
+    pipes[:] = [{"id": 902, "sha": SHA, "status": "failed"}]
+    logs[11] = "2026-09-03T08:15:42Z 01O FAILED _tools/test_x.py::test_a - assert 7 == 9\n"  # other time, numbers
+    code, out, _ = intake(w.root, capsys, "--network", "--file")
+    assert code == 0 and "(skipped: filed as" in out[0] and len(filed(w.root)) == 1
+    pipes[:] = [{"id": 903, "sha": SHA, "status": "failed"}]  # planted: a different failure is a second bug
+    logs[11] = "FAILED _tools/test_y.py::test_b\n"
+    assert intake(w.root, capsys, "--network", "--file")[0] == 0
+    assert len(filed(w.root)) == 2
+
+
+def test_intake_ci_a_pipeline_nobody_started_is_green_and_files_nothing(tmp_path, monkeypatch, capsys, ci_register):
+    """Every job manual: the status says success or manual whatever happened, no job ran, nothing is red."""
+    manual = [{"id": 15, "name": "kb-tests-windows", "status": "manual", "allow_failure": True},
+              {"id": 11, "name": "kb-tests", "status": "manual", "allow_failure": True}]
+    pipes = [{"id": 61, "sha": SHA, "status": "manual"}, {"id": 60, "sha": SHA, "status": "success"}]
+    w, _ = ci_world(tmp_path, monkeypatch, pipes, manual)
+    assert intake(w.root, capsys, "--network", "--file") == (0, ["intake: no candidates"], "")
+    assert red_pipeline(w.root) == 0 and red_pipeline(w.root, "--status") == 0
+    assert filed(w.root) == []
+    manual[0].update(status="failed", failure_reason="script_failure")  # planted: a job someone started failed
+    code, out, _ = intake(w.root, capsys, "--network")
+    assert code == 0 and out[0].startswith("ci bug ") and "kb-tests-windows" in out[0]
+
+
+@pytest.mark.parametrize("what", ["covered", "unreadable", "green"])
+def test_intake_ci_a_covered_unreadable_or_green_pipeline_reports_nothing(tmp_path, monkeypatch, capsys, ci_register,
+                                                                         what):
+    red = what == "covered"
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 5, "sha": SHA, "status": "failed" if red else "success"}],
+                    RED_JOBS if red else [{"id": 3, "name": "kb-tests", "status": "success"}], RED_LOGS,
+                    signed_in=what != "unreadable")
+    if red:
+        monkeypatch.setattr(bl_intake, "covered_by_revert", lambda root, sha, run=None: True)
+    assert intake(w.root, capsys, "--network") == (0, ["intake: no candidates"], "")
+
+
+def test_intake_ci_the_fingerprint_of_a_recorded_real_log_is_red_pipelines(tmp_path, monkeypatch, capsys, ci_register):
+    doc = json.loads((FORGE_LOGS / "gitlab-com-kb-tests-windows.json").read_text(encoding="utf-8"))
+    log = "".join(doc["lines"])
+    jobs = [{"id": 30, "name": doc["job"], "status": "failed", "failure_reason": "script_failure"}]
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 801, "sha": SHA, "status": "failed"}], jobs, {30: log})
+    code, out, _ = intake(w.root, capsys, "--network")
+    fp = ci_fp("kb-tests-windows", backlog.first_failure(log))
+    assert code == 0 and out[0].startswith(f"ci bug {fp} ") and fp != ci_fp("kb-tests-windows", "")
+
+
+def test_intake_ci_red_pipeline_files_the_candidate_the_detector_builds(tmp_path, monkeypatch, capsys, ci_register):
+    """red-pipeline asks the detector's `pipeline_finding` for the bug: a candidate changed there changes the item."""
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RED_JOBS, RED_LOGS)
+    real = bl_intake.pipeline_finding
+
+    def planted(p):
+        c = real(p)
+        c.title = "Planted title " + c.title
+        return c
+
+    monkeypatch.setattr(bl_intake, "pipeline_finding", planted)
+    assert red_pipeline(w.root) == 0
+    (b1,) = filed(w.root)
+    assert b1["title"].startswith("Planted title Red main pipeline 901")
