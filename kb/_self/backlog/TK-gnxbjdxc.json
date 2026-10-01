@@ -2,7 +2,7 @@
   "id": "TK-gnxbjdxc",
   "kind": "task",
   "title": "backlog.py cost over the work sidecars",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-6bi7oe6y",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-gnxbjdxc"
+  "evidence": {
+    "commit": "89d6823952383140b18352153446c381eac17f90",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_cost"
+        ],
+        "exit": 0,
+        "sha256": "da8cfe80cf197aed"
+      }
+    ]
+  }
 }
