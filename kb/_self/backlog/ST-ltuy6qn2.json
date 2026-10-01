@@ -29,6 +29,20 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which command does kb-worker use to tell that its base is behind origin/main before it rebases?",
+      "options": [
+        "git merge-base --is-ancestor origin/main HEAD (exit 1: behind)",
+        "git rev-list --count HEAD..origin/main (non-zero: behind)"
+      ],
+      "recommendation": "git merge-base --is-ancestor origin/main HEAD (exit 1: behind)",
+      "answer": "git merge-base --is-ancestor origin/main HEAD (exit 1: behind)",
+      "by": "agent"
+    }
+  ],
   "notes": "Planning lead (live docs, not in the kb, code.claude.com/docs/en/settings-reference#worktree, 2026-10-01): the worktree setting's baseRef \"head\" branches isolated subagent worktrees from the current HEAD instead of the default branch.",
   "claimed_by": "worker-ltuy6qn2"
 }
