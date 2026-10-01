@@ -1,0 +1,71 @@
+{
+  "id": "ST-fb2hxf6s",
+  "kind": "story",
+  "title": "The autopilot inventories processes its agents left running and ends its own",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "backlog.py procs lists every process whose working directory lies under a clone or worktree of the repository (what live_processes already finds, with parent process and age) as owned (started by the autopilot, its pid and start time recorded at dispatch), orphaned (parent gone) or foreign (another session's), by command name only; it ends an owned orphan with the process-tree end the intake drift check uses, after a grace; it never signals a foreign process and names it for the operator; a runner or worker that returns leaves no owned process; where a host cannot list working directories it says so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "procs_inventory_orphans"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "procs_ends_only_own"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_procs.py",
+    "_tools/backlog.py",
+    "_tools/bl_intake.py",
+    "_tools/test_bl_procs.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-6zcqkjfm"
+  ],
+  "relates_to": [
+    "ST-2jojzufm"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    },
+    {
+      "id": "end-owned-orphans",
+      "kind": "blocking",
+      "question": "May the autopilot end a process it started that outlived its agent (a background server, a watcher, a runner)? Recommended: yes, only an owned orphan, after a grace, never a foreign process.",
+      "options": [
+        "yes: only an owned orphan, after a grace, never a foreign process",
+        "no: it inventories and reports only"
+      ],
+      "recommendation": "yes: only an owned orphan, after a grace, never a foreign process"
+    }
+  ],
+  "notes": "Reuse: live_processes (cwd check, never signals), the process-tree end of the intake drift check (os.killpg, taskkill /T /F), and land's refusal of a worktree with a live process. Windows lists no working directories, so there it reports that it cannot check."
+}

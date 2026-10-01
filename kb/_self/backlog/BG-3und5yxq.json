@@ -1,0 +1,27 @@
+{
+  "id": "BG-3und5yxq",
+  "kind": "bug",
+  "title": "kb_http.py logs each request's client address and request line to stderr",
+  "status": "draft",
+  "parent": "EP-5sc7hr36",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_http.py's log_message no longer writes the client address or the request line of a request to stderr; its line is structured (method, status, milliseconds) without the address or the question, so a host journal holds no personal data; hosted lookups stay out of the query log.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,io;sys.path.insert(0,'_tools');import kb_http;a='.'.join(['203','0','113','7']);h=object.__new__(kb_http.Handler);h.client_address=(a,5555);h.server=type('S',(),{'quiet':False})();buf=io.StringIO();sys.stderr=buf;h.log_message('%s','GET /x HTTP/1.1');sys.stderr=sys.__stderr__;sys.exit(1 if a in buf.getvalue() else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kb_http.py",
+    "_tools/test_kb_http.py",
+    "kb/_self/hosting.md",
+    "kb/_self/design.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ]
+}

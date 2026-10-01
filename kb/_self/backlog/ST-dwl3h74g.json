@@ -1,0 +1,54 @@
+{
+  "id": "ST-dwl3h74g",
+  "kind": "story",
+  "title": "kblog.py proposes LOG rows from the ops store",
+  "status": "draft",
+  "parent": "EP-auko2fyn",
+  "sprint": "SP-parnkbr7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kblog.py propose --since DAY derives aggregates (counts, medians, ranges) from the ops sidecar's rows as proposed LOG rows, each with its source run ids, its observed date range and the context it relates to; it writes no raw event, person or text; a second run proposes nothing new.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kblog_propose_from_ops"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kblog_propose_converges"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kblog.py",
+    "_tools/test_kblog.py",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-c5l2j4af",
+    "ST-6zcqkjfm"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    }
+  ]
+}

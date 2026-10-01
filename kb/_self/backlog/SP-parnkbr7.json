@@ -1,0 +1,20 @@
+{
+  "id": "SP-parnkbr7",
+  "kind": "sprint",
+  "title": "LOG is a kb type",
+  "status": "planned",
+  "goal": "A _logs.csv per root, cut from the public projection, holds LOG rows that a LOG tag cites; kblog.py records, confirms, invalidates and proposes them from the ops store; lookups show active LOG lines beside facts as evidence, never as coverage",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

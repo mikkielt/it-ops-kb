@@ -1,0 +1,59 @@
+{
+  "id": "ST-7d7i4x3z",
+  "kind": "story",
+  "title": "Lookups show active LOG lines beside facts as evidence, never as coverage",
+  "status": "draft",
+  "parent": "EP-auko2fyn",
+  "sprint": "SP-parnkbr7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "rag.py pack, show and audit and the kb MCP tools print the active LOG lines of the matched articles' contexts with their observed dates, labelled as observed signal; coverage and the check line ignore them; a LOG line is never the answer alone.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lookup_shows_log_lines"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "log_not_counted_in_coverage"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/rag.py",
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_lookup.py",
+    "_tools/test_kb_mcp.py",
+    "_tools/fixtures/kb_mcp_contract.json",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/plugin.md",
+    "kb/_self/embedding.md"
+  ],
+  "depends_on": [
+    "ST-c5l2j4af"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    }
+  ]
+}

@@ -25,5 +25,5 @@
     "kb/_self/tools.md",
     "kb/_self/maintaining.md"
   ],
-  "notes": "tests.py, stress_test.py and conftest.py hold no host lock, so two sessions' full runs overlap on one host. Raised to P1 by the operator at the SP-5cwekumc retrospective (2026-10-01): four sessions landing in parallel overloaded the host (a land killed for low memory, test timeouts) and a land token had to be passed by hand."
+  "notes": "tests.py, stress_test.py and conftest.py hold no host lock, so two sessions' full runs overlap on one host. Raised to P1 by the operator at the SP-5cwekumc retrospective (2026-10-01): four sessions landing in parallel overloaded the host (a land killed for low memory, test timeouts) and a land token had to be passed by hand. A lock wait and hold are recorded as ops host.lock rows once the ops sidecar exists."
 }

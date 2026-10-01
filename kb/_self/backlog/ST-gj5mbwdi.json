@@ -1,0 +1,76 @@
+{
+  "id": "ST-gj5mbwdi",
+  "kind": "story",
+  "title": "A LOG row and its tag have a contract the checks enforce",
+  "status": "draft",
+  "parent": "EP-auko2fyn",
+  "sprint": "SP-parnkbr7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_logs.csv has a header contract (id, observation, source run ids, observed_from, observed_to, context, status, invalidated_reason, links); a LOG tag cites a row id and check.py resolves it, refuses it in an article of a public root and refuses a row that carries raw event text; kbgit.py publish leaves every _logs.csv out of the projection and refuses one in a pushed range.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "log_row_contract"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "log_tag_refused_in_public_root"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "publish_omits_logs_csv"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/check.py",
+    "_tools/kbpublic.py",
+    "_tools/test_kb_lookup.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
+  ],
+  "relates_to": [
+    "BG-juqwx7nf"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    },
+    {
+      "id": "scope",
+      "kind": "blocking",
+      "question": "LOG rows would hold derived observations about the project's own operation. Approve rows of aggregates with their source run ids and observed date range, never raw events or text, kept out of the public projection?",
+      "options": [
+        "approve: derived aggregates with source run ids and a date range only, never raw events or text, out of the public projection",
+        "no: no LOG rows"
+      ],
+      "recommendation": "approve: derived aggregates with source run ids and a date range only, never raw events or text, out of the public projection",
+      "answer": "approve: derived aggregates with source run ids and a date range only, never raw events or text, out of the public projection",
+      "by": "operator"
+    }
+  ],
+  "notes": "The DECISION tag in CSV data rows has the same resolution gap (BG-juqwx7nf); one fix serves both tags."
+}

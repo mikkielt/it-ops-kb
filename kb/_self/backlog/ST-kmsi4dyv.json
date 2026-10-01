@@ -1,0 +1,35 @@
+{
+  "id": "ST-kmsi4dyv",
+  "kind": "story",
+  "title": "tests.py records each run's scope, time and per-file durations",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "tests.py appends one ops test.run row per run: mode (full, changed, fast or stress), selected and total test files, workers, milliseconds, exit, counts of passed, failed and skipped, the slowest files with their milliseconds and, for a full run, every file's; failed test ids are shape-checked and capped; _tools/test_durations.json of ST-t7xxgt47 is derived from these rows.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_test_run_row"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_testmap.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-6zcqkjfm"
+  ],
+  "relates_to": [
+    "ST-t7xxgt47",
+    "ST-g73vlg44"
+  ],
+  "notes": "Failure it answers: the suite's run times and load timeouts are known only from reports written by hand (EP-hlnsqx4f); tests.py also changes in ST-g73vlg44 and ST-t7xxgt47, so these run one after another."
+}

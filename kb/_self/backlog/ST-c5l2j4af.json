@@ -1,0 +1,59 @@
+{
+  "id": "ST-c5l2j4af",
+  "kind": "story",
+  "title": "kblog.py records, confirms and invalidates LOG rows",
+  "status": "draft",
+  "parent": "EP-auko2fyn",
+  "sprint": "SP-parnkbr7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kblog.py record adds a proposed row; kblog.py confirm --by operator makes it active; a row stays active until its context (an item, fact, article or domain) is invalidated, and kblog.py sweep then marks it invalidated with the reason while the row stays in its file; the row store is kbdecide.py's, shared and not copied.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kblog_record_confirm"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kblog_sweep_invalidates_with_context"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kblog.py",
+    "_tools/kbdecide.py",
+    "_tools/test_kblog.py",
+    "_tools/test_kbdecide.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-gj5mbwdi"
+  ],
+  "relates_to": [
+    "BG-qks4ikyr",
+    "BG-2i46kz3z"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    }
+  ],
+  "notes": "Related defects in the store it reuses: BG-qks4ikyr and BG-2i46kz3z."
+}

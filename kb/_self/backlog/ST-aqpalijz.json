@@ -1,0 +1,63 @@
+{
+  "id": "ST-aqpalijz",
+  "kind": "story",
+  "title": "The autopilot detects stalled or hampered work and works through a ladder of remedies",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "backlog.py stalled lists each claimed or ready item with its stall signals read from claims, git and the ops rows (a claim with no commit past a limit, a refused done repeated, a check that timed out twice, land stopping at the same step twice, a red main, a host lock wait past a limit, a worker that returned without a commit); kb-sprint names the remedy ladder for each signal (retry once narrower, release and redispatch with the failure named in the brief, file the blocker as a bug or story and take the next ready item, ask the operator through a gate or the digest); the autopilot never idles while a ready item remains, and each remedy it takes leaves an ops row and an autopilot decision.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stalled_items_by_signal"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stall_ladder_files_blocker_and_moves_on"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_stall.py",
+    "_tools/backlog.py",
+    "_tools/test_bl_stall.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-6zcqkjfm",
+    "ST-2fxtyrr5"
+  ],
+  "relates_to": [
+    "ST-nrhwbodb",
+    "ST-mdwkhv7k",
+    "ST-6sujnopr"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    }
+  ],
+  "notes": "It reads claims and git with held and horizon, which exist; the stall limits are named in the work, not guessed here."
+}

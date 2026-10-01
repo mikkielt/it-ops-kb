@@ -1,0 +1,46 @@
+{
+  "id": "ST-2fxtyrr5",
+  "kind": "story",
+  "title": "land and the sync gate record their steps and times",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land appends one ops row per step it runs (item id, step, exit, milliseconds) and one land.end row with the total and the lane; kbgit.py sync appends one sync.gate row per run holding each check's name, whether it ran, why it was skipped, its exit and milliseconds, the selected test scope and the push outcome.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_land_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_sync_gate_row"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/kbgit.py",
+    "_tools/test_backlog.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-6zcqkjfm"
+  ],
+  "relates_to": [
+    "ST-zkotxvdl",
+    "BG-7ods5qqd"
+  ],
+  "notes": "Failures it answers: gates and lands that waited about 40 minutes with no record of which step or whose run (ST-zkotxvdl), and a gate that dropped its git scenarios with nothing printed about the selected scope (BG-7ods5qqd)."
+}

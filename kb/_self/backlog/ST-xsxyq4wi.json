@@ -1,0 +1,60 @@
+{
+  "id": "ST-xsxyq4wi",
+  "kind": "story",
+  "title": "querylog.py export prints the store and the ops rows as one record format",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py export --format jsonl [--since DAY] [--event E] prints entries, findings, usage, work and ops rows as records shaped like an OpenTelemetry log record (timestamp, severity, event name, record id, resource, closed attributes, null body) without changing the store's own files; read-time redaction drops unknown keys, checks each value's shape and runs the leak scan, and omits the question text unless asked.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_export_unified"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_export_redacts_at_read"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/querylog.py",
+    "_tools/ql_export.py",
+    "_tools/test_ql_export.py",
+    ".claude/settings.json",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-6zcqkjfm"
+  ],
+  "relates_to": [
+    "BG-oi6mrxvr"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    }
+  ],
+  "notes": "No endpoint is built: observability tools read the exported JSON Lines, and an OTLP-JSON form is added only when the operator names a tool that needs it. The command needs an allow rule in .claude/settings.json (BG-oi6mrxvr)."
+}

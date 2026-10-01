@@ -1,0 +1,53 @@
+{
+  "id": "ST-hgsttaai",
+  "kind": "story",
+  "title": "The weekly digest and the sprint review print an ops section",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The weekly digest and the sprint review print median land and gate times, refused-done reason counts, test time and stalled or orphaned counts, read from the ops rows; the review story of a sprint lists the sprint's ops figures.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "digest_ops"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_report.py",
+    "_tools/test_ql_report.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-2fxtyrr5",
+    "ST-kmsi4dyv",
+    "ST-chco2mot"
+  ],
+  "relates_to": [
+    "ST-zjw6ugq6"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    }
+  ],
+  "notes": "The digest file also changes in ST-zjw6ugq6."
+}
