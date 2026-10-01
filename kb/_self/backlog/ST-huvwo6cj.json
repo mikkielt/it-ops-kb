@@ -2,7 +2,7 @@
   "id": "ST-huvwo6cj",
   "kind": "story",
   "title": "Sync refuses to push another session's local commits from a shared checkout",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
@@ -23,5 +23,19 @@
     "_tools/test_sync.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "worker-huvwo6cj"
+  "evidence": {
+    "commit": "fd8090cdf2ddbb0d668b9fe9456cafa144fd99cb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sync_foreign_session"
+        ],
+        "exit": 0,
+        "sha256": "24aa728d1d317405"
+      }
+    ]
+  }
 }
