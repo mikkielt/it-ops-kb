@@ -8,7 +8,7 @@ that clears it), a review with an unconfirmed provisional answer, a malformed KB
 planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
 commit included), a --commit commit with KB-Work outside its trailer paragraph or a file the command did not write,
 a KB-* or malformed --trailer, a landing whose step fails (land stops there, naming it), and red pipelines that fail
-the same way (one bug) or differently (a second), or the same way as a closed bug (a new one), a near-duplicate new
+the same way (one bug) or differently (a second), red-pipeline over the job-state table (`-k job_state_table`), or the same way as a closed bug (a new one), a near-duplicate new
 item (warned of) and a recurring P1 item a started sprint leaves out (warned of), and a malformed `recurs`. The repository's
 own backlog must pass `backlog.py check`.
 """
@@ -20,6 +20,7 @@ import pytest
 import backlog
 import kbgit
 import ql_deliver
+from test_ql_deliver import job_of, job_states, state_id  # the job-state table's rows
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 TOOL = os.path.join(TOOLS, "backlog.py")
@@ -1926,6 +1927,50 @@ def test_red_pipeline_notes_when_not_signed_in(repo, monkeypatch, capsys):
     assert red_pipeline(repo) == 0
     assert "not signed in" in capsys.readouterr().out and bugs(repo) == []
     assert red_pipeline(repo, "--status") == 1
+
+
+# ---- red-pipeline over the job-state table (test_ql_deliver.py's rows: every status, started or not, each reason)
+
+# allow_failure: a failed job leaves its pipeline's status success; created, pending and running are unfinished
+PIPELINE_OF = {"failed": "success"}
+
+
+def job_repro_rows():
+    """`--status --job kb-tests` passes only when the newest pipeline in which kb-tests reached a verdict passed it:
+    a canceled, manual or skipped job someone started is no verdict (BG-sim2fdaa), so the older red run decides."""
+    return [pytest.param(st, id=state_id(st), marks=[pytest.mark.xfail(strict=True, reason="BG-sim2fdaa")]
+                         if st[1] and st[0] in ("canceled", "manual", "skipped") else []) for st in job_states()]
+
+
+@pytest.mark.parametrize("st", job_repro_rows())
+def test_job_state_table_red_pipeline_job_repro(repo, monkeypatch, st):
+    """Pipeline 81 holds kb-tests in the row's state, the older 80 a kb-tests whose script failed."""
+    sha = head(repo)
+    forge(monkeypatch, repo, [{"id": 81, "sha": sha, "status": PIPELINE_OF.get(st[0], st[0])},
+                              {"id": 80, "sha": sha, "status": "success"}],
+          jobs={81: [job_of(*st)], 80: [job_of("failed", True, "script_failure")]})
+    assert red_pipeline(repo, "--status", "--job", "kb-tests") == (0 if st[0] == "success" else 1)
+
+
+def file_rows():
+    """A main pipeline that failed is red whatever its job did, so red-pipeline files a bug: its repro must fail now.
+    A failed job that never ran named by `--job` lets the repro read an older pass (BG-vsqfchgz)."""
+    return [pytest.param(st, id=state_id(st), marks=[pytest.mark.xfail(strict=True, reason="BG-vsqfchgz")]
+                         if st[0] == "failed" and not st[1] and st[2] not in ql_deliver.RAN_AND_FAILED else [])
+            for st in job_states()]
+
+
+@pytest.mark.parametrize("st", file_rows())
+def test_job_state_table_red_pipeline_files_a_failed_main(repo, monkeypatch, st):
+    """Pipeline 91 failed with kb-tests in the row's state; in the older 90 kb-tests passed. The bug's repro runs
+    against the same forge (not canned), as red-pipeline's second read does."""
+    sha = head(repo)
+    forge(monkeypatch, repo, [{"id": 91, "sha": sha, "status": "failed"}, {"id": 90, "sha": sha, "status": "success"}],
+          jobs={91: [job_of(*st)], 90: [job_of("success", True, None)]})
+    monkeypatch.setattr(backlog, "run_check", lambda root, c: (
+        lambda code: (code == 0, code, ""))(backlog.main(["--root", str(root), *c["run"][2:]])))
+    assert red_pipeline(repo) == 0
+    assert [x for x in bugs(repo) if "pipeline 91" in x["title"]], "nothing filed for a failed main"
 
 
 # ---- failure fingerprint: planted logs of red pipelines, the same failure twice and a different one
