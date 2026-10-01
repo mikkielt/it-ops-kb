@@ -9,7 +9,7 @@ argument-hint: "plan \"<goal>\" | start SP-... | run [SP-...] | review SP-... | 
 Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section backlog "Sprints" backlog "Dependencies, gates and triggers" backlog "Definition of done" backlog "Working on items" backlog "Git" maintaining "Conduct for changes" git "Workflow"
+python3 _tools/selfdoc.py section backlog "Sprints" backlog "Dependencies, gates and triggers" backlog "Definition of done" backlog "Working on items" backlog "Git" maintaining "Conduct for changes" git.md "Workflow"
 ```
 
 What each gives: `backlog "Git"` the `KB-Work` trailer; `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` sync and the gate.

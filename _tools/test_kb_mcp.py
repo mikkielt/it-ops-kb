@@ -48,8 +48,11 @@ test_embed_contract_*  kb_mcp.py as a host server's stdio child: the names and i
                 kb_show and the instructions' sha256 match _tools/fixtures/kb_mcp_contract.json unless kb_mcp.VERSION
                 moved; one call of each answers in shape; a planted schema change is caught. After a VERSION bump:
                 `uv run --frozen python _tools/test_kb_mcp.py --write-contract`.
+test_skill_section_git_doc*  no .claude/skills/*/SKILL.md passes the doc to `selfdoc.py section` as a bare `git`, which a
+                worktree session's isolation check reads as a second git call and refuses; skills pass `git.md`, which
+                selfdoc.py takes as the bare name. Planted: a code-block and an inline command with bare `git`.
 """
-import hashlib, json, os, re, shutil, subprocess, sys, tempfile
+import hashlib, json, os, re, shlex, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 import pytest
@@ -1543,6 +1546,59 @@ def test_live_docs_cache_lives_under_the_ignored_cache_directory(monkeypatch):
     assert p.returncode == 0, ".gitignore must cover _cache/ (the cache is never committed)"
     monkeypatch.setenv("CLAUDE_PLUGIN_DATA", "/plugin-data")
     assert Path(kb_mcp.docs_cache_dir()) == Path("/plugin-data") / "live-docs"
+
+
+SELFDOC_SECTION = re.compile(r"python3 _tools/selfdoc\.py section ([^`\n]*)")
+
+
+def skill_section_git_doc_problems(skills):
+    """What names a doc as a bare `git` argument in a `selfdoc.py section` command of the SKILL.md texts `skills`
+    ({path: text}): [] when nothing. Claude Code's worktree isolation reads a second `git` word in one Bash command
+    as a second git call and refuses the command, so a skill passes the doc as `git.md`."""
+    problems = []
+    for rel, text in sorted(skills.items()):
+        for n, line in enumerate(text.splitlines(), 1):
+            for m in SELFDOC_SECTION.finditer(line):
+                try:
+                    args = shlex.split(m.group(1))
+                except ValueError:
+                    problems.append(f"{rel}:{n}: unparsable selfdoc.py section arguments: {m.group(1)!r}")
+                    continue
+                docs = args[0::2]  # DOC HEADING pairs
+                if "git" in docs:
+                    problems.append(f"{rel}:{n}: selfdoc.py section names the doc as bare `git`; pass `git.md`")
+    return problems
+
+
+def skill_texts():
+    return {p.relative_to(KB).as_posix(): p.read_text(encoding="utf-8")
+            for p in sorted(Path(KB, ".claude", "skills").glob("*/SKILL.md"))}
+
+
+def test_skill_section_git_doc():
+    skills = skill_texts()
+    assert skills, "no SKILL.md found under .claude/skills"
+    assert skill_section_git_doc_problems(skills) == []
+
+
+def test_skill_section_git_doc_planted_failure():
+    planted = {".claude/skills/x/SKILL.md": "```\npython3 _tools/selfdoc.py section maintaining "
+                                            "\"Conduct for changes\" git \"Workflow\"\n```\n",
+               ".claude/skills/y/SKILL.md": "Run `python3 _tools/selfdoc.py section git \"Workflow\"` first.\n"}
+    problems = skill_section_git_doc_problems(planted)
+    assert len(problems) == 2 and all("bare `git`" in p for p in problems), problems
+    fixed = {k: v.replace(' git "', ' git.md "') for k, v in planted.items()}
+    assert skill_section_git_doc_problems(fixed) == []
+    # a heading that reads "git" is not a doc name
+    assert skill_section_git_doc_problems({"z": 'python3 _tools/selfdoc.py section backlog "git"'}) == []
+
+
+def test_skill_section_git_doc_name_with_md_is_accepted_by_selfdoc():
+    """selfdoc.py section takes a doc name with `.md` as it takes the bare one (maintaining.md here; git.md the same)."""
+    p = subprocess.run([sys.executable, os.path.join(TOOLS, "selfdoc.py"), "section", "maintaining.md",
+                        "Conduct for changes"], cwd=KB, capture_output=True, text=True, encoding="utf-8",
+                       timeout=timeout_s(60))
+    assert p.returncode == 0 and "## Conduct for changes" in p.stdout, p.stdout + p.stderr
 
 
 if __name__ == "__main__":
