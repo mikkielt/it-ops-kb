@@ -254,6 +254,28 @@ class TestCohesion:
                 assert not manual, f"{p}: a skill that changes the kb must stay model-invocable (disable-model-invocation)"
                 assert fm.split("description:", 1)[1].lstrip().startswith("Use "), f"{p}: description must start with its trigger (Use when ...)"
 
+    @staticmethod
+    def goal_clause_problems(skill, runbook):
+        """Problems with how the sprint plan maps goal clauses to items: the skill's plan step and the runbook's Sprints say it."""
+        plan = skill.split("## plan", 1)[-1].split("\n## start", 1)[0]
+        sprints = runbook.split("## Sprints", 1)[-1].split("\n## Working on items", 1)[0]
+        problems = []
+        for name, part in (("kb-sprint plan", plan), ("backlog.md Sprints", sprints)):
+            for need in ("clause", "already met", "earlier item"):
+                if need not in part:
+                    problems.append(f"{name}: no `{need}`")
+        return problems
+
+    def test_sprint_plan_goal_clauses(self):
+        skill, runbook = text(".claude/skills/kb-sprint/SKILL.md"), text("kb/_self/backlog.md")
+        assert self.goal_clause_problems(skill, runbook) == []
+        plan = skill.split("## plan", 1)[1].split("\n## start", 1)[0]
+        assert plan.index("clause") < plan.index("Ask the operator"), "the mapping comes before the operator's approval"
+        # planted failures: each part removed from either text
+        for need in ("clause", "already met", "earlier item"):
+            assert self.goal_clause_problems(skill.replace(need, "x"), runbook), need
+            assert self.goal_clause_problems(skill, runbook.replace(need, "x")), need
+
     def test_python_passes_ruff_when_installed(self):
         """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""
         try:
