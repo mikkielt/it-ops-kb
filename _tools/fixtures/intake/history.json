@@ -1,0 +1,245 @@
+{
+  "identity": {
+    "name": "Jan Kowalski",
+    "email": "jan.kowalski@corp.example.com"
+  },
+  "commits": [
+    {
+      "orig": "f237e7b4",
+      "authored": "2026-09-28T18:35:05+02:00",
+      "committed": "2026-09-28T18:35:05+02:00",
+      "message": [
+        "chore(kb): query log apply 20260928T163402Z-1a95c314",
+        "",
+        "KB-Auto: gap, querylog"
+      ],
+      "files": [
+        "kb/_querylog/findings/2026-09/20260928T163401Z-030cd002.jsonl",
+        "kb/_querylog/findings/2026-09/20260928T190919Z-ac253eef.jsonl"
+      ],
+      "touch": []
+    },
+    {
+      "orig": "0d7642ee",
+      "authored": "2026-09-28T23:14:07+02:00",
+      "committed": "2026-09-28T23:14:07+02:00",
+      "message": [
+        "chore(kb): query log apply 20260928T211328Z-57915870",
+        "",
+        "KB-Auto: querylog"
+      ],
+      "files": [
+        "kb/_querylog/findings/2026-09/20260928T211328Z-57915870.jsonl"
+      ],
+      "touch": []
+    },
+    {
+      "orig": "7d1175f7",
+      "authored": "2026-09-29T03:31:08+02:00",
+      "committed": "2026-09-29T03:31:12+02:00",
+      "message": [
+        "docs(kb): import syntax per language, read-only map outputs and closed research gaps",
+        "",
+        "Co-Authored-By: Claude Sonnet 5.5 <noreply@example.com>"
+      ],
+      "files": [],
+      "touch": [
+        "kb/public/_gaps.md",
+        "kb/public/agents/codebase-mapping.md",
+        "kb/public/windows/powershell-static-analysis.md"
+      ]
+    },
+    {
+      "orig": "70e8a120",
+      "authored": "2026-09-29T10:04:02+02:00",
+      "committed": "2026-09-29T10:04:02+02:00",
+      "message": [
+        "chore(kb): query log apply 20260929T080305Z-1dd669b7",
+        "",
+        "KB-Auto: querylog"
+      ],
+      "files": [
+        "kb/_querylog/findings/2026-09/20260929T080305Z-1dd669b7.jsonl"
+      ],
+      "touch": []
+    },
+    {
+      "orig": "b2b3a905",
+      "authored": "2026-09-29T10:15:55+02:00",
+      "committed": "2026-09-29T10:17:11+02:00",
+      "message": [
+        "chore(backlog): keep the planned sprints' items draft until their start",
+        "",
+        "KB-Work: BG-ifszzzis",
+        "Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@example.com>"
+      ],
+      "files": [
+        "kb/_self/backlog/ST-rjxacpdh.json"
+      ],
+      "touch": []
+    },
+    {
+      "orig": "23b361ad",
+      "authored": "2026-09-29T10:46:07+02:00",
+      "committed": "2026-09-29T10:46:07+02:00",
+      "message": [
+        "chore(backlog): file the SP-liemltg2 review's two gaps",
+        "",
+        "KB-Work: BG-jam2lysj",
+        "Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@example.com>"
+      ],
+      "files": [
+        "kb/_self/backlog/BG-jam2lysj.json"
+      ],
+      "touch": []
+    },
+    {
+      "orig": "96ec6fa2",
+      "authored": "2026-09-29T11:45:50+02:00",
+      "committed": "2026-09-29T11:57:05+02:00",
+      "message": [
+        "fix(kb-item): commit the claim on its own before any work commit",
+        "",
+        "Self-Reviewed: AGENTS.md, kb/_self/maintaining.md",
+        "Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@example.com>",
+        "KB-Work: BG-t7tx2byg"
+      ],
+      "files": [],
+      "touch": [
+        ".claude/skills/kb-item/SKILL.md",
+        "_tools/test_backlog.py"
+      ]
+    },
+    {
+      "orig": "8da30157",
+      "authored": "2026-09-29T11:45:32+02:00",
+      "committed": "2026-09-29T11:58:30+02:00",
+      "message": [
+        "feat(kb_ask): route web and split from the pack's route line",
+        "",
+        "KB-Work: TK-3iesrs66",
+        "",
+        "Co-Authored-By: Claude Sonnet 5.5 <noreply@example.com>"
+      ],
+      "files": [],
+      "touch": [
+        "_tools/kb_ask.py",
+        "_tools/test_kb.py",
+        "_tools/test_kb_ask_route.py"
+      ]
+    },
+    {
+      "orig": "9cb820ec",
+      "authored": "2026-09-29T11:53:21+02:00",
+      "committed": "2026-09-29T11:59:50+02:00",
+      "message": [
+        "feat(querylog): learn turns a none entry whose fetched pages the kb cites into an eval finding",
+        "",
+        "KB-Work: TK-mmrsjxct",
+        "",
+        "Co-Authored-By: Claude Sonnet 5.5 <noreply@example.com>"
+      ],
+      "files": [],
+      "touch": [
+        "_tools/ql_learn.py",
+        "_tools/test_querylog.py"
+      ]
+    },
+    {
+      "orig": "ac03d1b3",
+      "authored": "2026-09-29T12:15:35+02:00",
+      "committed": "2026-09-29T12:21:23+02:00",
+      "message": [
+        "feat(kbfacts): a near-miss none routes split, not web",
+        "",
+        "KB-Work: TK-e4i2gbqk",
+        "",
+        "Co-Authored-By: Claude Sonnet 5.5 <noreply@example.com>"
+      ],
+      "files": [],
+      "touch": [
+        "_tools/kbfacts.py",
+        "_tools/test_route.py"
+      ]
+    },
+    {
+      "orig": "7219acbb",
+      "authored": "2026-09-29T12:17:42+02:00",
+      "committed": "2026-09-29T12:21:56+02:00",
+      "message": [
+        "feat(kb): kb_hook.py hands the model the differential for routed packs",
+        "",
+        "KB-Work: TK-b4xlov32",
+        "",
+        "Co-Authored-By: Claude Sonnet 5.5 <noreply@example.com>"
+      ],
+      "files": [],
+      "touch": [
+        "_tools/kb_hook.py",
+        "_tools/test_kb.py",
+        "kb/_self/tools.md"
+      ]
+    },
+    {
+      "orig": "379939b4",
+      "authored": "2026-09-29T12:32:53+02:00",
+      "committed": "2026-09-29T12:33:47+02:00",
+      "message": [
+        "feat(querylog): kb_ask rows carry the kb sources their researcher cites",
+        "",
+        "Co-Authored-By: Claude Sonnet 5.5 <noreply@example.com>",
+        "",
+        "Self-Reviewed: AGENTS.md, kb/_self/tools.md",
+        "KB-Work: TK-if7de5pb"
+      ],
+      "files": [],
+      "touch": [
+        "_tools/kb_ask.py",
+        "_tools/ql_learn.py",
+        "kb/_self/querylog.md"
+      ]
+    },
+    {
+      "orig": "1c0e9c34",
+      "authored": "2026-09-29T12:33:58+02:00",
+      "committed": "2026-09-29T12:33:58+02:00",
+      "message": [
+        "chore(backlog): close TK-if7de5pb \"kb_ask.py rows carry the kb sources its researcher cites\"",
+        "",
+        "KB-Work: TK-if7de5pb",
+        "Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@example.com>"
+      ],
+      "files": [
+        "kb/_self/backlog/TK-if7de5pb.json"
+      ],
+      "touch": []
+    },
+    {
+      "orig": "79c56e62",
+      "authored": "2026-09-29T12:35:16+02:00",
+      "committed": "2026-09-29T12:35:16+02:00",
+      "message": [
+        "docs(self): tools.md names the near-miss route and the eval guard",
+        "",
+        "KB-Work: TK-homvd6ia",
+        "Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@example.com>"
+      ],
+      "files": [],
+      "touch": [
+        "kb/_self/tools.md"
+      ]
+    },
+    {
+      "orig": null,
+      "authored": "2026-10-03T12:00:00+02:00",
+      "committed": "2026-10-03T12:00:00+02:00",
+      "message": [
+        "chore: the day intake runs over the 2026-09-29 state",
+        "",
+        "No file changes: the stranded-findings detector counts days to HEAD's commit day."
+      ],
+      "files": [],
+      "touch": []
+    }
+  ]
+}

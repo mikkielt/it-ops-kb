@@ -1,0 +1,3 @@
+{"run":"20260928T211328Z-57915870","pipeline":5,"retrieval":4,"kb_commit":"0000000000000000000000000000000000000000","counts":{"findings":2,"fixed-since":1,"open":1}}
+{"id":"F-124139646a54","kind":"gap","state":"fixed-since","stage":"candidate-gap","promotions":[{"from":"miss","to":"candidate-gap","by":"learn"}],"entry":"00000000-0000-0000-0000-000000000006","observed":{"verdict":"good","paths":["public/agents/agent-planning-and-done.md"]}}
+{"id":"F-e1ebb2febe4b","kind":"source","state":"open","signal":"stage","host":"www.anthropic.com","level":0,"needs":1,"triggers":["share"],"observed":{"rows":31,"failures":0,"entries":1}}

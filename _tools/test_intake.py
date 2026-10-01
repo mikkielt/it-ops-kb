@@ -842,3 +842,184 @@ def test_intake_stranded_status_is_the_repro_and_passes_once_the_finding_moves_o
     assert intake(world.root, capsys, *argv[3:])[0] == 1  # still stranded
     world.commit(2, "chore: learn", store_file(run_id(0, 7), finding("F-000000000001", state="fixed-since")))
     assert intake(world.root, capsys, *argv[3:])[0] == 0  # it moved on
+
+
+# ------------------------------------------------------------------ the replay of the 2026-09-29 state (intake_replay)
+#
+# `_tools/fixtures/intake/` holds the query-log findings, item files and git history of the 2026-09-29 review, reduced
+# (its README.md): `history.json` is the commits as data (message, dates, the files each writes), `tree/` the files they
+# write. The test builds a throwaway repository from it with the real detectors in the registry and reads what intake
+# reports. The commits are re-created, so their ids differ from the originals: `history.json` keeps each original short
+# sha as `orig`, and the test maps it to the re-created commit, so the shas the story names (7219acbb ...) are what is
+# asserted, not subjects. Planted: the same history without the closing replay-day commit (HEAD on the review's own
+# day: no finding is old enough), one of the four messages with its trailers in one block (git reads it: three commits
+# remain), a finding that moves on in a later run (its bug's repro passes), a second `--file` run over the first one's
+# files (files nothing).
+
+REPLAY = Path(__file__).resolve().parent / "fixtures" / "intake"
+STORY_STRANDED = {  # finding id -> (kind, title) the stranded detector reports on the replay
+    "F-6298df20a337": ("bug", "Query-log finding F-6298df20a337 is stranded in candidate-gap"),
+    "F-88bfb93dc08f": ("story", "Probe the provider of docs.github.com: source finding F-88bfb93dc08f is stranded"),
+    "F-e1ebb2febe4b": ("story", "Probe the provider of www.anthropic.com: source finding F-e1ebb2febe4b is stranded"),
+}
+STORY_UNREAD = ["7219acbb", "ac03d1b3", "9cb820ec", "8da30157"]  # original short shas: a KB-Work git reads as no trailer
+LATER = {"GIT_AUTHOR_DATE": "2026-10-03T13:00:00+02:00", "GIT_COMMITTER_DATE": "2026-10-03T13:00:00+02:00"}
+
+
+def build_replay(path, upto=None, edit=None):
+    """A repository of the first `upto` commits of the fixture's history (all by default; `edit(commit)` may change a
+    commit's data first), with origin/main at its tip. Returns (Repo, {original short sha: re-created commit id})."""
+    data = json.loads((REPLAY / "history.json").read_text(encoding="utf-8"))
+    ident = data["identity"]
+    repo = Repo(path)
+    repo.git("init", "-q", "-b", "main")
+    ids = {}
+    for c in data["commits"][:upto]:
+        if edit:
+            edit(c)
+        for rel in c["files"]:
+            repo.write(rel, (REPLAY / "tree" / rel).read_text(encoding="utf-8"))
+        for rel in c["touch"]:
+            repo.write(rel, f"# reduced from {c['orig']}\n")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "--allow-empty", "-m", "\n".join(c["message"]), env={
+            "GIT_AUTHOR_NAME": ident["name"], "GIT_AUTHOR_EMAIL": ident["email"], "GIT_AUTHOR_DATE": c["authored"],
+            "GIT_COMMITTER_NAME": ident["name"], "GIT_COMMITTER_EMAIL": ident["email"],
+            "GIT_COMMITTER_DATE": c["committed"]})
+        if c["orig"]:
+            ids[c["orig"]] = repo.rev("HEAD")
+    repo.git("update-ref", "refs/remotes/origin/main", "HEAD")
+    return repo, ids
+
+
+def replay_detectors():
+    for name, fn in (("drift", bl_intake.drift_detector), ("stranded", bl_intake.stranded_detector),
+                     ("trailers", bl_intake.trailers_detector)):
+        bl_intake.detector(name)(fn)
+
+
+@pytest.fixture
+def replay(tmp_path):
+    replay_detectors()
+    repo, ids = build_replay(tmp_path)
+    return Path(repo.path), ids
+
+
+def by_detector(root):
+    found, failures = bl_intake.collect(root)
+    assert failures == []
+    return {name: [c for c in found if c.detector == name] for name in ("drift", "stranded", "trailers")}
+
+
+def test_intake_replay_fixture_holds_nothing_private():
+    names = sorted(p for p in REPLAY.rglob("*") if p.is_file())
+    assert names, "the fixture is missing"
+    text = "\n".join(p.read_text(encoding="utf-8") for p in names)
+    for private in ("@gmail.com", "claude.ai/code/session", "/Users/", "anward"):
+        assert private not in text
+    assert "jan.kowalski@corp.example.com" in text
+
+
+def test_intake_replay_reports_the_stranded_findings_of_the_review(replay):
+    root, _ = replay
+    found = by_detector(root)["stranded"]
+    assert {c.key.split()[0]: (c.kind, c.title) for c in found} == STORY_STRANDED
+    assert {c.key for c in found} == {"F-6298df20a337 candidate-gap", "F-88bfb93dc08f open", "F-e1ebb2febe4b open"}
+
+
+def test_intake_replay_leaves_out_the_findings_that_moved_on(replay):
+    root, _ = replay
+    reported = {c.key.split()[0] for c in by_detector(root)["stranded"]}
+    # fixed-since gaps and evals, and a gap a later run applied, are in the store and not reported
+    store = "\n".join(p.read_text(encoding="utf-8") for p in (REPLAY / "tree" / "kb" / "_querylog").rglob("*.jsonl"))
+    for fid in ("F-06357ea792e0", "F-7de46a799d5a", "F-27b9b6ccd368", "F-124139646a54", "F-e6b4ad31465c"):
+        assert fid in store and fid not in reported
+
+
+def test_intake_replay_reports_the_four_commits_with_an_unread_kb_work(replay):
+    root, ids = replay
+    (c,) = by_detector(root)["trailers"]
+    assert c.kind == "bug"
+    assert c.key.split(",") == sorted(ids[o][:bl_intake.SHORT_SHA] for o in STORY_UNREAD)
+    assert "a KB-Work line git does not read as a trailer" in c.notes and "no KB-Work or KB-Auto" not in c.notes
+    # the replay's other commits (a trailer git reads, content only, a backlog commit) are not in the set
+    for orig in ("379939b4", "96ec6fa2", "1c0e9c34", "79c56e62", "7d1175f7"):
+        assert ids[orig][:bl_intake.SHORT_SHA] not in c.key
+
+
+def test_intake_replay_drift_reports_the_item_whose_check_passes(replay):
+    root, _ = replay
+    (c,) = by_detector(root)["drift"]
+    assert c.kind == "story" and c.key == "BG-jam2lysj"
+    assert "BG-jam2lysj: its 1 check(s) already pass on HEAD" in c.notes
+
+
+def test_intake_replay_drift_does_not_report_the_reviews_two_items(replay):
+    # ST-rjxacpdh (a draft with no touches, its goal met by a commit with no KB-Work) and TK-if7de5pb (done) are in the
+    # replay as they were, and the drift detector reads neither: it reads a doing item with an old work commit and a
+    # draft or todo item with touches whose checks pass (the gate on TK-hft3uklk).
+    root, _ = replay
+    items = bl_intake.load_items(root)
+    assert items["ST-rjxacpdh"]["status"] == "draft" and not items["ST-rjxacpdh"].get("touches")
+    assert items["TK-if7de5pb"]["status"] == "done"
+    (c,) = by_detector(root)["drift"]
+    assert "ST-rjxacpdh" not in c.key and "TK-if7de5pb" not in c.key
+
+
+def test_intake_replay_plain_run_prints_the_candidates_and_writes_nothing(replay, capsys):
+    root, _ = replay
+    before = files(root)
+    code, out, err = intake(root, capsys)
+    assert code == 0 and err == ""
+    assert out[-1] == "intake: 5 candidate(s), 5 new, 0 skipped"
+    assert sum(1 for ln in out if ln.startswith("stranded ")) == 3
+    assert sum(1 for ln in out if ln.startswith("trailers bug ")) == 1
+    assert sum(1 for ln in out if ln.startswith("drift story ")) == 1
+    assert files(root) == before
+
+
+def test_intake_replay_a_second_file_run_files_nothing(replay, capsys):
+    root, _ = replay
+    before = files(root)
+    code, out, _ = intake(root, capsys, "--file")
+    assert code == 0 and out[-1] == "intake: 5 candidate(s), 5 new filed, 0 skipped"
+    filed = [f for f in files(root) if f not in before]
+    assert len(filed) == 5
+    assert [json.loads(f.read_text(encoding="utf-8"))["status"] for f in filed] == ["draft"] * 5
+    code, out, _ = intake(root, capsys, "--file")
+    assert code == 0 and out[-1] == "intake: 5 candidate(s), 0 new filed, 5 skipped"
+    assert files(root) == sorted(before + filed)  # no sixth file
+
+
+def test_intake_replay_a_filed_bugs_repro_fails_until_its_finding_moves_on(replay, capsys):
+    root, _ = replay
+    assert intake(root, capsys, "--file")[0] == 0
+    items = [json.loads(f.read_text(encoding="utf-8")) for f in files(root)]
+    (bug_item,) = [it for it in items if it["title"].startswith("Query-log finding F-6298df20a337")]
+    argv = bug_item["repro"]["run"]
+    assert intake(root, capsys, *argv[3:])[0] == 1  # still stranded
+    (path, text), = store_file("20261002T080000Z-00000001", finding("F-6298df20a337", state="fixed-since")).items()
+    repo = Repo(root)
+    repo.write(path, text)
+    repo.git("add", "-A")
+    repo.git("commit", "-q", "-m", "chore: learn", env=LATER)
+    assert intake(root, capsys, *argv[3:])[0] == 0  # it moved on
+
+
+def test_intake_replay_planted_head_on_the_review_day_finds_no_stranded_finding(tmp_path):
+    replay_detectors()
+    repo, _ = build_replay(tmp_path, upto=-1)  # without the replay-day commit: HEAD is on 2026-09-29
+    assert by_detector(Path(repo.path))["stranded"] == []
+
+
+def test_intake_replay_planted_trailers_in_one_block_leave_three_commits(tmp_path):
+    replay_detectors()
+
+    def join(c):  # the blank line before Co-Authored-By goes: git reads the KB-Work line
+        if c["orig"] == "7219acbb":
+            c["message"] = [ln for i, ln in enumerate(c["message"])
+                            if not (ln == "" and c["message"][i + 1].startswith("Co-Authored-By"))]
+
+    repo, ids = build_replay(tmp_path, edit=join)
+    (c,) = by_detector(Path(repo.path))["trailers"]
+    assert c.key.split(",") == sorted(ids[o][:bl_intake.SHORT_SHA] for o in STORY_UNREAD if o != "7219acbb")

@@ -1,0 +1,40 @@
+{
+  "id": "ST-rjxacpdh",
+  "kind": "story",
+  "title": "Work the research gaps of the codebase-mapping topics",
+  "status": "draft",
+  "parent": "EP-g5hizdko",
+  "sprint": "SP-fkyrld5h",
+  "priority": "P3",
+  "rank": 6,
+  "goal": "Every _gaps.md entry under agents/codebase-mapping, windows/powershell-static-analysis and agents/coding-agent-codebase-context has a Resolved line (with source ids) or a dated Tried note from /kb-research; resolved facts are in those topics and check.py, lint and rag.py eval pass.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('kb/public/_gaps.md',encoding='utf-8').read();S=('agents/codebase-mapping','windows/powershell-static-analysis','agents/coding-agent-codebase-context');bad=[b.strip()[:70] for s in S for b in re.split(r'\\n(?=- )',t.split('## '+s+'\\n',1)[1].split('\\n## ',1)[0]) if b.strip().startswith('- **') and not re.search(r'\\n  - (Resolved|Tried) ',b)];print('open without Resolved or Tried:',len(bad),*bad,sep='\\n');sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ],
+      "match": "errors=0"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "links": [
+    "kb/public/_gaps.md",
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/windows/powershell-static-analysis.md",
+    "kb/public/agents/coding-agent-codebase-context.md"
+  ]
+}
