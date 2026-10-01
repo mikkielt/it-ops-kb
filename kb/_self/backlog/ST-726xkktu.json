@@ -42,7 +42,7 @@
       ],
       "recommendation": "count it as installed when the path is the .githooks of a worktree of the clone holding the hook scripts, and leave the value alone",
       "answer": "count it as installed when the path is the .githooks of a worktree of the clone holding the hook scripts, and leave the value alone",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

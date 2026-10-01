@@ -40,7 +40,7 @@
       ],
       "recommendation": "git merge-base --is-ancestor origin/main HEAD (exit 1: behind)",
       "answer": "git merge-base --is-ancestor origin/main HEAD (exit 1: behind)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Planning lead (live docs, not in the kb, code.claude.com/docs/en/settings-reference#worktree, 2026-10-01): the worktree setting's baseRef \"head\" branches isolated subagent worktrees from the current HEAD instead of the default branch.",

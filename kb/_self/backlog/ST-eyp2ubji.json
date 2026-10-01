@@ -33,7 +33,7 @@
       ],
       "recommendation": "the first KB-Work id among the range's code-lane commits, then the range's first id, then HEAD's short hash",
       "answer": "the first KB-Work id among the range's code-lane commits, then the range's first id, then HEAD's short hash",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

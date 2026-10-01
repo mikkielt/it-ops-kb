@@ -38,7 +38,7 @@
       ],
       "recommendation": "refuse it (exit 1, like --trailer without --commit), nothing written",
       "answer": "refuse it (exit 1, like --trailer without --commit), nothing written",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

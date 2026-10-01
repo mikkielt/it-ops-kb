@@ -37,7 +37,7 @@
       ],
       "recommendation": "auto-unlock: land unlocks and removes it (never --force) and reports that it did",
       "answer": "auto-unlock: land unlocks and removes it (never --force) and reports that it did",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

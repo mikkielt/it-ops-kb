@@ -43,7 +43,7 @@
       ],
       "recommendation": "a fresh Claude session in that clone first, hand-made worktrees (agent without isolation) as the fallback",
       "answer": "a fresh Claude session in that clone first, hand-made worktrees (agent without isolation) as the fallback",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

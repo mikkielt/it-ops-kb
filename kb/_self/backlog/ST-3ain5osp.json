@@ -46,7 +46,7 @@
       ],
       "recommendation": "send the branch back to the worker",
       "answer": "send the branch back to the worker",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

@@ -37,7 +37,7 @@
       ],
       "recommendation": "a new subcommand: held [--overlaps ID] [--ref REF]",
       "answer": "a new subcommand: held [--overlaps ID] [--ref REF]",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -49,7 +49,7 @@
       ],
       "recommendation": "the item files by default, --ref REF (origin/main after git fetch) for every pushed claim; --overlaps exits 1 when it finds one",
       "answer": "the item files by default, --ref REF (origin/main after git fetch) for every pushed claim; --overlaps exits 1 when it finds one",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {
