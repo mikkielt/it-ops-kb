@@ -4,6 +4,9 @@ the other classes below).
   TestDigest        two copies of one fixture store give byte-identical `digest` output, equal to the expected text;
                     the default week is the newest entry's; findings states stop at the week's Sunday; an empty or
                     missing store and a bad week; distill sums a fetch's result characters
+  TestDigestWork    the digest's work lines (`-k digest_work`): the week's items by tokens, an item's runs summed, ties by
+                    id, at most WORK_TOP listed, main and subagent shares, shared and overhead lines left out, a week
+                    with no item line prints nothing extra, a sidecar that breaks the work gates is left out whole
   TestDigestHook    the first SessionStart of an ISO week shows last week's digest once as a systemMessage; mode off,
                     the DISABLED marker and an empty week show nothing; planted: over DIGEST_BUDGET_S shows nothing
                     and is not tried again that week; the hook command prints at most one JSON line and exits 0
@@ -19,7 +22,7 @@ Every run writes under a temporary plugin data directory (conftest.querylog_env)
 test calls the real `claude`: Haiku is the recorded reply file or a stub. The helpers the classes share are in
 ql_testkit.py.
 """
-import datetime, json, os, subprocess, sys, time, uuid
+import datetime, json, os, re, subprocess, sys, time, uuid
 
 import pytest
 
@@ -213,6 +216,136 @@ class TestDigestIntake:
         import bl_intake
         monkeypatch.setattr(bl_intake, "collect", lambda *a, **k: pytest.fail("the digest ran the detectors"))
         assert ql_report.intake_line(intake_backlog(tmp_path / "backlog")).startswith("intake: 3 open")
+
+
+WORK_W39_EARLY = "20260926T090000Z-0000a1ce"  # a second run in ISO week 2026-W39
+WORK_W39_BAD = "20260925T090000Z-0000a3ce"  # a third, whose sidecar breaks the work gates
+WORK_W40 = "20260929T090000Z-0000a2ce"  # a run in 2026-W40: after the week's end
+
+
+def wcts(n):
+    """The counts of n tokens, all of them uncached input."""
+    return {"requests": 1, "in": n, "cw": 0, "cw1h": 0, "cr": 0, "out": 0}
+
+
+def work_item(item, main=0, sub=0):
+    """An item line: `main` tokens of its own prompts, `sub` tokens of subagents routed to it (an Explore group)."""
+    line = {"item": item, "prompts": 1 if main else 0, "main": {"claude-opus-5-5": wcts(main)} if main else {}}
+    if sub:
+        line["sub"] = {"Explore": {"claude-haiku-4-5": wcts(sub)}}
+    return line
+
+
+def write_work_sidecar(store, run, lines):
+    """The work sidecar of `run` with `lines`, and a run file of it beside it when the store has none."""
+    header = {"run": run, "reader": 1, "counts": {"items": sum(1 for w in lines if "item" in w),
+                                                  "shared": sum(1 for w in lines if "items" in w), "missing": 0}}
+    if any("overhead" in w for w in lines):
+        header["counts"]["overhead"] = sum(1 for w in lines if "overhead" in w)
+    month = f"{run[:4]}-{run[4:6]}"
+    write_store_file(store / "work" / month / f"{run}.jsonl", header, lines)
+    if not (store / month / f"{run}.jsonl").exists():
+        write_store_file(store / month / f"{run}.jsonl",
+                         {"run": run, "pipeline": 2, "retrieval": 4, "kb_commit": "0" * 40,
+                          "counts": {"entries": 0, "dropped": 0, "waiting": 0}}, [])
+
+
+def work_store(dst):
+    """The digest fixture store plus work sidecars: two runs of ISO week 2026-W39 (an item in both), one of 2026-W40,
+    and in them a shared line and an overhead line, which no item owns."""
+    store = digest_store(dst)
+    shared = {"items": ["TK-aaaaaaaa", "TK-bbbbbbbb"], "prompts": 2, "main": {"claude-opus-5-5": wcts(5000)}}
+    system = {"overhead": "distill", "calls": 1, "main": {"claude-haiku-4-5": wcts(7000)}}
+    write_work_sidecar(store, W39_RUN, [work_item("TK-aaaaaaaa", 600, 400), work_item("TK-bbbbbbbb", 1200),
+                                        work_item("TK-cccccccc", 0, 300), work_item("SP-dddddddd", 700),
+                                        work_item("TK-ffffffff", 10), shared, system])
+    write_work_sidecar(store, WORK_W39_EARLY, [work_item("TK-aaaaaaaa", 200), work_item("BG-eeeeeeee", 50)])
+    write_work_sidecar(store, WORK_W40, [work_item("TK-aaaaaaaa", 99999), work_item("TK-gggggggg", 5)])
+    assert ql_store.store_problems(store) == []
+    return store
+
+
+def work_part(lines_):
+    """The digest lines between its usage line and its runs line: the work lines."""
+    start = next(i for i, ln in enumerate(lines_) if ln.startswith("usage:")) + 1
+    return lines_[start:next(i for i, ln in enumerate(lines_) if ln.startswith("runs:"))]
+
+
+DIGEST_W39_WORK = """work: 6 items, tokens 3460 (main 80%, subagents 20%); top 5 by tokens
+  TK-aaaaaaaa: 1200 tokens, main 67%, subagents 33%
+  TK-bbbbbbbb: 1200 tokens, main 100%, subagents 0%
+  SP-dddddddd: 700 tokens, main 100%, subagents 0%
+  TK-cccccccc: 300 tokens, main 0%, subagents 100%
+  BG-eeeeeeee: 50 tokens, main 100%, subagents 0%"""
+
+
+class TestDigestWork:
+    def test_digest_work_lists_the_weeks_items_by_tokens(self, tmp_path):
+        store = work_store(tmp_path / "store")
+        week, lines_, found = ql_report.digest(store, "2026-W39")
+        assert week == "2026-W39" and found
+        assert "\n".join(work_part(lines_)) == DIGEST_W39_WORK  # ties by id, an item's runs summed, W40 left out
+        assert "runs: 2," in "\n".join(lines_)
+
+    def test_digest_work_shows_the_share_of_subagents_beside_main(self, tmp_path):
+        lines_ = work_part(ql_report.digest(work_store(tmp_path / "store"), "2026-W39")[1])
+        assert "  TK-cccccccc: 300 tokens, main 0%, subagents 100%" in lines_  # routed subagents only, no prompt
+        assert "  TK-aaaaaaaa: 1200 tokens, main 67%, subagents 33%" in lines_
+
+    def test_digest_work_counts_tokens_as_input_cache_and_output(self, tmp_path):
+        store = digest_store(tmp_path / "store")
+        counts = {"requests": 3, "in": 10, "cw": 20, "cw1h": 5, "cr": 300, "out": 4000}
+        write_work_sidecar(store, W39_RUN, [{"item": "TK-aaaaaaaa", "prompts": 1, "main": {"claude-opus-5-5": counts}}])
+        assert work_part(ql_report.digest(store, "2026-W39")[1])[1] == \
+            "  TK-aaaaaaaa: 4330 tokens, main 100%, subagents 0%"
+
+    def test_digest_work_lists_the_top_items_only_and_counts_all(self, tmp_path):
+        store = digest_store(tmp_path / "store")
+        ids = [f"TK-{c * 8}" for c in "abcdefgh"]
+        write_work_sidecar(store, W39_RUN, [work_item(i, 100 + n) for n, i in enumerate(ids)])
+        part = work_part(ql_report.digest(store, "2026-W39")[1])
+        assert ql_report.WORK_TOP == 5 and len(part) == 1 + 5
+        assert part[0].startswith("work: 8 items, tokens 828 ") and part[0].endswith("top 5 by tokens")
+        assert [ln.split(":")[0].strip() for ln in part[1:]] == ids[::-1][:5]  # most tokens first
+
+    def test_digest_work_leaves_out_shared_and_overhead_lines(self, tmp_path):
+        text = "\n".join(ql_report.digest(work_store(tmp_path / "store"), "2026-W39")[1])
+        assert "5000" not in text and "7000" not in text and "tokens 3460 " in text
+
+    def test_digest_work_prints_nothing_extra_for_a_week_without_item_lines(self, tmp_path):
+        store = digest_store(tmp_path / "store")
+        assert "\n".join(ql_report.digest(store, "2026-W39")[1]) == DIGEST_W39  # no sidecar at all
+        write_work_sidecar(store, W39_RUN, [{"overhead": "distill", "calls": 1,
+                                             "main": {"claude-haiku-4-5": wcts(7)}}])
+        assert "\n".join(ql_report.digest(store, "2026-W39")[1]) == DIGEST_W39  # an overhead line is no item
+        other = work_store(tmp_path / "other")
+        assert not any(ln.startswith("work:") for ln in ql_report.digest(other, "2026-W38")[1])  # no run that week
+
+    def test_digest_work_leaves_out_a_sidecar_that_breaks_the_work_gates(self, tmp_path):
+        store = work_store(tmp_path / "store")
+        bad = work_item("TK-aaaaaaaa", 888888)
+        bad["session"] = "3f2a4c1e-0000-4000-8000-00000000abcd"  # a field a work line never has
+        write_work_sidecar(store, WORK_W39_BAD, [bad])
+        assert ql_store.work_problems(store) != []  # the store's own gate names it
+        lines_ = ql_report.digest(store, "2026-W39")[1]
+        assert "\n".join(work_part(lines_)) == DIGEST_W39_WORK
+        assert "888888" not in "\n".join(lines_) and "3f2a4c1e" not in "\n".join(lines_)
+
+    def test_digest_work_prints_item_ids_only(self, tmp_path):
+        """An id deleted at sprint close has no item file; the line holds the id, never a title or a session."""
+        store = work_store(tmp_path / "store")
+        for ln in work_part(ql_report.digest(store, "2026-W39")[1])[1:]:
+            assert re.fullmatch(r"  (?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}: \d+ tokens, main \d+%, subagents \d+%", ln)
+
+    def test_digest_work_two_copies_of_one_store_give_identical_output(self, tmp_path):
+        outs = []
+        for name in ("one", "two"):
+            store = work_store(tmp_path / name / "store")
+            p = subprocess.run([sys.executable, QL, "digest", "--store", str(store), "--week", "2026-W39"],
+                               capture_output=True, timeout=120, cwd=str(tmp_path / name))
+            assert p.returncode == 0, p.stderr
+            outs.append(p.stdout)
+        assert outs[0] == outs[1] and DIGEST_W39_WORK in outs[0].decode("utf-8").replace("\r\n", "\n")
 
 
 class TestDigestHook:

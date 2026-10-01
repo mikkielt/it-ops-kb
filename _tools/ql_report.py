@@ -11,7 +11,7 @@ from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_l
 from ql_learn import FAILED, host_fetches, is_miss
 from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RUN_ID,
                       SURFACES, finding_id, finding_states, findings_files, load_run, records, resolve_id, run_files,
-                      run_ids, store_entries, usage_files, usage_records)
+                      run_ids, store_entries, usage_files, usage_records, work_files, work_line_problems)
 from ql_capture import VERDICTS
 
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
@@ -20,6 +20,7 @@ DIGEST_HOOK_TIMEOUT_S = 10  # the digest hook's `timeout` in .claude/settings.js
 BACKLOG = HOME / "kb" / "_self" / "backlog"  # the item files, which `intake --file` writes drafts into
 DETECTOR_LINK = "detector "  # the last link of an item intake files (bl_intake.DETECTOR_LINK; no import of it here)
 WEEK = re.compile(r"(\d{4})-W(\d{2})")
+WORK_TOP = 5  # the items the digest's work lines list, most tokens first
 MISS_KINDS = ("eval", "gap")  # one finding per judged miss: an eval finding with a best article, else a gap finding
 
 
@@ -95,6 +96,46 @@ def usage_lines(entries, usage):
     if kb:
         out.append(f"kb results: {len(kb)} steps, context growth median {rank(grow, 0.5)} tokens, "
                    f"result characters median {rank(chars, 0.5)}")
+    return out
+
+
+def work_tokens(models):
+    """The tokens of a map of model counts: uncached input, cache writes, cache reads and output."""
+    return sum(c["in"] + c["cw"] + c["cr"] + c["out"] for c in models.values())
+
+
+def work_lines(files, week_run):
+    """The digest's work lines for the work sidecars `files` whose run id `week_run` accepts: `work: N items, tokens
+    T (main M%, subagents S%); top K by tokens` and one line per listed item, `  ID: T tokens, main M%, subagents
+    S%`, the most tokens first and the id first among equals, at most WORK_TOP of them; [] when the week's sidecars
+    hold no item line. Only item lines count (an id, or a sprint's, which holds the prompts inside several of its
+    items' windows): a shared line is a session's, an overhead line the system's, and neither is an item's. An item's
+    lines of the week's runs are summed. A sidecar that breaks the work gates is left out whole, as `backlog.py cost`
+    does, so one bad file never skews a figure. Only ids and counts go in: the sidecar holds no text, session or
+    prompt, and an item deleted at sprint close is listed by its id like any other. The work sidecar holds no kb tool
+    counts, so there is no kb-tool share."""
+    items = {}
+    for p, objs in records(f for f in files if week_run(f.stem)):
+        lines = [w for _, w in objs]
+        if not lines or any(work_line_problems(w, p.stem) for w in lines):
+            continue
+        for w in lines:
+            if "item" not in w:
+                continue
+            t = items.setdefault(w["item"], {"main": 0, "sub": 0})
+            t["main"] += work_tokens(w.get("main") or {})
+            t["sub"] += sum(work_tokens(m) for m in (w.get("sub") or {}).values())
+    if not items:
+        return []
+    pct = lambda n, total: f"{round(100 * n / total)}%" if total else "0%"  # noqa: E731
+    main, sub = sum(t["main"] for t in items.values()), sum(t["sub"] for t in items.values())
+    top = sorted(items, key=lambda i: (-(items[i]["main"] + items[i]["sub"]), i))[:WORK_TOP]
+    out = [f"work: {len(items)} items, tokens {main + sub} (main {pct(main, main + sub)}, subagents "
+           f"{pct(sub, main + sub)}); top {len(top)} by tokens"]
+    for i in top:
+        t = items[i]
+        total = t["main"] + t["sub"]
+        out.append(f"  {i}: {total} tokens, main {pct(t['main'], total)}, subagents {pct(t['sub'], total)}")
     return out
 
 
@@ -195,6 +236,7 @@ def digest(store=None, week=None, backlog=None):
              f"misses: {len(misses)}, fixed: {sum(fixed.values())} ({_counts(fixed.items())})",
              f"fetches: {nfetch}, failed {failed}, result characters {chars}",
              *usage_lines(entries, usage_records(store)),
+             *work_lines(work_files(store), lambda stem: inside(run_day(stem))),
              f"runs: {runs}, entries dropped by redaction {dropped}",
              f"finding records written: {recorded}"]
     table = {}
