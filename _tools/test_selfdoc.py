@@ -574,6 +574,50 @@ class TestSelfdocInGit:
         repo.git("commit", "-qam", "log a query")  # item-only commits after the doc update, still no trailer
         assert selfdoc.stale(root, since=up) == [], "the doc update anywhere in the range clears it"
 
+    @pytest.mark.parametrize("entry", ["sync_gate_selfdoc_stale_over_pushed_range",
+                                       "pre_push_selfdoc_stale_over_pushed_range"])
+    def test_selfdoc_gate_passes_since(self, entry, monkeypatch):
+        """Both entry points of the gate (sync's, and the pre-push hook for a plain `git push`) run
+        `selfdoc.py stale --since UP` with the upstream they judge: without `--since` the check reads only the
+        last commit, and the range judgement above (test_selfdoc_range_review_over_the_pushed_range) is never
+        reached. The check list is read from the tool calls the gate makes, so dropping the argument from
+        kbgit.py fails here; the planted failure strips it from the call and the same assertion catches it."""
+        import kbgit
+        up, head = "a" * 40, "b" * 40
+        for k in (*LEAKY, "KB_GATE_DONE", "KB_SYNC_NO_TESTS"):
+            monkeypatch.delenv(k, raising=False)
+
+        def run_gate(strip_since):
+            calls = []
+
+            def tool(name, *args, env=None):
+                if strip_since and name == "selfdoc.py":
+                    args = tuple(a for a in args if a not in ("--since", up))
+                calls.append((name, list(args)))
+                return 0, "ok\n"
+            monkeypatch.setattr(kbgit, "tool", tool)
+            monkeypatch.setattr(kbgit, "gate_paths", lambda _up: None)  # no path filter: every check runs
+            monkeypatch.setattr(kbgit, "trailer_audit", lambda *_a, **_k: (0, 0, []))
+            if entry.startswith("sync_gate"):
+                assert kbgit.gate({"target": "origin"}, up)
+            else:
+                monkeypatch.setattr(kbgit.kbpublic, "guard_push", lambda *_a, **_k: [])
+                monkeypatch.setattr(kbgit, "lane_refusals", lambda *_a, **_k: [])
+                monkeypatch.setattr(kbgit, "rev_parse", lambda _rev: head)
+                monkeypatch.setattr(kbgit, "git", lambda *_a, **_k: "")
+                monkeypatch.setattr(kbgit, "dirty_paths", lambda: ([], []))
+                stdin = f"refs/heads/main {head} refs/heads/main {up}\n"
+                assert kbgit.hook_pre_push(["origin"], stdin) == 0
+            return calls
+
+        def assert_since(calls):
+            stale = [args for name, args in calls if name == "selfdoc.py"]
+            assert stale == [["stale", "--since", up]], f"selfdoc.py must run `stale --since {up}`, ran {stale}"
+
+        assert_since(run_gate(strip_since=False))
+        with pytest.raises(AssertionError, match="--since"):
+            assert_since(run_gate(strip_since=True))  # planted: the call without --since is caught
+
     def test_foreign_stale_doc_does_not_fail_done(self, repo):
         """An item's check `selfdoc.py stale --work ID`, run as `backlog.py done` runs it, fails only on a doc the
         item's own commits left stale: another item's commit that left a doc stale (TK-uxm5arrb and 17d0f58 in
