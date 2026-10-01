@@ -15,6 +15,11 @@
                     routed to it, never otherwise), a model id, agent group or count outside its shape, `cw1h`
                     above `cw`, an item twice in a file (the same item in two runs is fine), an empty file or one that is not JSON lines;
                     `querylog.py check` and the leak scan run over it
+  TestOverheadGates the overhead line of the work sidecar (`-k overhead_sidecar`), each gate with a planted failure: an
+                    item or items beside it, a session, prompt or text field, a kind outside `OVERHEAD_KINDS`, a
+                    `calls` or a count that is not a (positive) count, counts outside the model shape, a header
+                    count that does not match, a kind twice in a file; a valid line does not make `backlog.py cost`
+                    skip the sidecar
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub. The helpers the classes share are in
 ql_testkit.py.
@@ -377,3 +382,111 @@ class TestWorkGates:
         ql_store.work_files(bad)[0].write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8")
         (hit,) = ql_store.leak_problems(bad, [f"work/2026-09/{WORK_RUN}.jsonl"])
         assert hit == f"work/2026-09/{WORK_RUN}.jsonl:2: the leak scan flags an identifier (email)", hit
+
+
+def overhead_lines():
+    """The work lines with the distill's overhead line after them."""
+    return work_lines() + [ql_store.overhead_line("distill", 2, {"claude-haiku-4-5-20251001": HAIKU})]
+
+
+class TestOverheadGates:
+    """The overhead line of the work sidecar (`-k overhead_sidecar`): one per kind of the kb's own background runs,
+    with no item, session, prompt or text, each gate with a planted failure."""
+
+    def test_overhead_sidecar_gates_pass_beside_item_lines(self, tmp_path):
+        store, problems = work_store(tmp_path, lines=overhead_lines())
+        assert problems == [] and ql_store.store_problems(store) == []
+        objs = jsonl(ql_store.work_files(store)[0])
+        assert objs[0] == {"run": WORK_RUN, "reader": 1,
+                           "counts": {"items": 2, "shared": 1, "missing": 0, "overhead": 1}}
+        assert objs[4] == {"overhead": "distill", "calls": 2, "main": {"claude-haiku-4-5-20251001": HAIKU}}
+
+    def test_overhead_sidecar_alone_and_one_line_per_kind(self, tmp_path):
+        two = [ql_store.overhead_line(k, 1, {"claude-haiku-4-5-20251001": HAIKU}) for k in ("distill", "eval")]
+        store, problems = work_store(tmp_path, lines=two)
+        assert problems == [] and jsonl(ql_store.work_files(store)[0])[0]["counts"] == {
+            "items": 0, "shared": 0, "missing": 0, "overhead": 2}
+
+    def test_overhead_sidecar_without_a_line_has_no_overhead_count(self, tmp_path):
+        store, _ = work_store(tmp_path)
+        assert "overhead" not in jsonl(ql_store.work_files(store)[0])[0]["counts"]
+
+    def test_overhead_sidecar_line_builder_refuses_what_the_gates_refuse(self):
+        counts = {"claude-haiku-4-5-20251001": HAIKU}
+        assert ql_store.overhead_line("distill", 1, {}) is None
+        assert ql_store.overhead_line("backup", 1, counts) is None
+        assert ql_store.overhead_line("distill", 0, counts) is None
+        assert ql_store.overhead_line("distill", 1, {"claude-haiku-4-5-20251001": {**HAIKU, "in": -1}}) is None
+        assert ql_store.overhead_line("distill", 1, counts)["main"] == counts
+
+    @pytest.mark.parametrize("change,needle", [
+        # an item, session or prompt id, or any text on the line
+        (at([4, "item"], WORK_A), "a work line has an `item` or an `items` or an `overhead`"),
+        (at([4, "items"], [WORK_A]), "a work line has an `item` or an `items` or an `overhead`"),
+        (at([4, "session_id"], "3f2a4c1e-0000-4000-8000-00000000abcd"), "fields an overhead line never has: session_id"),
+        (at([4, "prompt_id"], "p1"), "fields an overhead line never has: prompt_id"),
+        (at([4, "prompts"], 1), "fields an overhead line never has: prompts"),
+        (at([4, "sub"], {"kb-lookup": {"claude-haiku-4-5-20251001": HAIKU}}), "fields an overhead line never has: sub"),
+        (at([4, "text"], "judged the question of anna.nowak"), "fields an overhead line never has: text"),
+        (at([4, "command"], "querylog.py distill --session abc"), "fields an overhead line never has: command"),
+        # an unknown kind
+        (at([4, "overhead"], "backup"), "overhead is not a background run kind"),
+        (at([4, "overhead"], "TK-aaaaaaaa"), "overhead is not a background run kind"),
+        (at([4, "overhead"], ""), "overhead is not a background run kind"),
+        (at([4, "overhead"], ["distill"]), "overhead is not a background run kind"),
+        # a count that is not one
+        (at([4, "calls"], 0), "calls is not a positive count"),
+        (at([4, "calls"], -1), "calls is not a positive count"),
+        (at([4, "calls"], True), "calls is not a positive count"),
+        (at([4, "calls"], "2"), "calls is not a positive count"),
+        (lambda o: o[4].pop("calls"), "calls is not a positive count"),
+        (at([4, "main", "claude-haiku-4-5-20251001", "in"], -1), "as counts"),
+        (at([4, "main", "claude-haiku-4-5-20251001", "out"], True), "as counts"),
+        (at([4, "main", "claude-haiku-4-5-20251001", "cr"], "5"), "as counts"),
+        (at([4, "main", "claude-haiku-4-5-20251001", "requests"], 1.5), "as counts"),
+        # counts in a malformed shape
+        (lambda o: o[4].pop("main"), "not a map of model ids to counts"),
+        (at([4, "main"], {}), "not a map of model ids to counts"),
+        (at([4, "main"], [HAIKU]), "not a map of model ids to counts"),
+        (at([4, "main"], {"jan.kowalski@corp.example.com": HAIKU}), "is not a model id"),
+        (at([4, "main", "claude-haiku-4-5-20251001"], {"requests": 1, "in": 1}), "as counts"),
+        (at([4, "main", "claude-haiku-4-5-20251001", "note"], 1), "as counts"),
+        (at([4, "main", "claude-haiku-4-5-20251001", "cw1h"], 999999), "cw1h of 'claude-haiku-4-5-20251001' exceeds cw"),
+        # the header's count
+        (at([0, "counts"], {"items": 2, "shared": 1, "missing": 0}), "counts are not items, shared, missing, overhead"),
+        (at([0, "counts", "overhead"], 2), "counts.overhead is 2, the file has 1"),
+        (at([0, "counts", "overhead"], -1), "counts are not items, shared, missing, overhead"),
+    ])
+    def test_overhead_sidecar_planted(self, tmp_path, change, needle):
+        problems = work_store(tmp_path, change, lines=overhead_lines())[1]
+        assert any(needle in p for p in problems), problems
+
+    def test_overhead_sidecar_a_kind_twice_in_a_file(self, tmp_path):
+        lines = overhead_lines() + [ql_store.overhead_line("distill", 1, {"claude-haiku-4-5-20251001": HAIKU})]
+        problems = work_store(tmp_path, lines=lines)[1]
+        assert any(f"duplicate overhead distill (also work/2026-09/{WORK_RUN}.jsonl:5)" in p for p in problems), problems
+
+    def test_overhead_sidecar_count_in_a_header_without_a_line(self, tmp_path):
+        problems = work_store(tmp_path, at([0, "counts", "overhead"], 1))[1]
+        assert any("counts are not items, shared, missing as counts" in p for p in problems), problems
+
+    def test_overhead_sidecar_check_runs_the_gates(self, tmp_path):
+        store, _ = work_store(tmp_path, lines=overhead_lines())
+        p = subprocess.run([sys.executable, QL, "check", str(store)], capture_output=True, text=True, encoding="utf-8",
+                           timeout=120)
+        assert (p.returncode, p.stdout) == (0, "querylog check: problems=0\n"), p.stdout
+        bad, _ = work_store(tmp_path / "bad", at([4, "item"], WORK_A), lines=overhead_lines())
+        p = subprocess.run([sys.executable, QL, "check", str(bad)], capture_output=True, text=True, encoding="utf-8",
+                           timeout=120)
+        assert p.returncode == 1 and "a work line has an `item` or an `items` or an `overhead`" in p.stdout, p.stdout
+
+    def test_overhead_sidecar_does_not_make_the_cost_report_skip_the_file(self, tmp_path):
+        """backlog.py cost skips a sidecar that breaks a work gate whole: a valid overhead line must not."""
+        import backlog
+        store, problems = work_store(tmp_path, lines=overhead_lines())
+        assert problems == []
+        root = tmp_path / "root"
+        (root / "kb").mkdir(parents=True)
+        store.rename(root / "kb" / "_querylog")
+        lines, skipped = backlog.cost_lines(root, None)
+        assert skipped == [] and {ln["item"] for ln in lines if "item" in ln} == {WORK_A, WORK_B}

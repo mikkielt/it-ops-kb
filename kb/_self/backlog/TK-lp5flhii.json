@@ -32,6 +32,32 @@
     "kb/_self/usage.md",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "overhead-capture",
+      "kind": "provisional",
+      "question": "Nothing in the store holds a background run's token counts (the digest, eval and census start no model; the distill's Haiku call prints text only). May the distill read the counts of its own Haiku calls by running them with --output-format json and reading modelUsage?",
+      "options": [
+        "yes: only the distill's own calls, counts only, written as its overhead line",
+        "no: record no overhead line until the capture is approved elsewhere"
+      ],
+      "recommendation": "yes: only the distill's own calls, counts only, written as its overhead line",
+      "answer": "yes: only the distill's own calls, counts only, written as its overhead line",
+      "by": "agent"
+    },
+    {
+      "id": "overhead-shape",
+      "kind": "provisional",
+      "question": "Shape of the overhead line and the kinds the gates accept: which?",
+      "options": [
+        "overhead: <kind> with calls and main per model; kinds distill, digest, eval, census (only distill written)",
+        "overhead: <kind> with calls and main per model; only the kinds that write a line (distill)"
+      ],
+      "recommendation": "overhead: <kind> with calls and main per model; kinds distill, digest, eval, census (only distill written)",
+      "answer": "overhead: <kind> with calls and main per model; kinds distill, digest, eval, census (only distill written)",
+      "by": "agent"
+    }
+  ],
   "notes": "Scope widened: querylog.md Distill steps, Haiku batch, Store work-sidecar and Gates bullets describe the overhead line.",
   "claimed_by": "worker-lp5flhii"
 }

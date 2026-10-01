@@ -4,7 +4,8 @@ scan, the path:line citations of the kb lines it returned (never the reply), and
 no text of Haiku's is stored. Started by SessionEnd with the session's transcript, distill first writes a `usage` row
 per kb prompt of that session and per prompt inside one of its work windows (ql_capture.add_usage), and the usage rows
 of the written entries become the run's usage sidecar, and the prompts of the closed sessions' work windows, summed per
-item (a prompt in several windows once, on their sprint; a work-branch subagent on its item), become its work sidecar.
+item (a prompt in several windows once, on their sprint; a work-branch subagent on its item), become its work sidecar,
+which also holds the run's own Haiku calls' token counts as an overhead line (Spend, haiku_result).
 Also the SessionEnd and SessionStart launcher that starts a detached distill.
 
 Distill reads every row format capture has written (ROW_FORMAT, format 0 for a row without `v`) and skips and counts a
@@ -484,11 +485,66 @@ def plan_work(sessions, worked, sprint_of=None):
 
 # ---------------------------------------------------------------- Haiku
 
-def claude_haiku(prompt):
+def count_of(v):
+    return v if isinstance(v, int) and not isinstance(v, bool) and v >= 0 else 0
+
+
+def haiku_result(stdout):
+    """(text, {model: counts}) of a `claude -p --output-format json` result: its `result` text and, from
+    `modelUsage` (whole-run counts per model, `claude/ci-and-headless.md`), the counts in the usage record's shape
+    (`requests`: the run's `num_turns` for one model, else 1 per model; `cw1h` 0, since the result does not split
+    the cache write by lifetime). A stdout that is not such a result (an older CLI) is the text itself with no
+    counts; an error result is an OSError. Nothing else of the result is read, and none of it is kept."""
+    try:
+        r = json.loads(stdout)
+    except ValueError:
+        return stdout, {}
+    if not (isinstance(r, dict) and r.get("type") == "result"):
+        return stdout, {}
+    if r.get("is_error") or str(r.get("subtype", "")).startswith("error") or not isinstance(r.get("result"), str):
+        raise OSError("claude -p returned an error result")
+    usage = r.get("modelUsage")
+    usage = {m: u for m, u in usage.items() if isinstance(u, dict)} if isinstance(usage, dict) else {}
+    models = {}
+    for m, u in usage.items():
+        c = {"requests": 1, "in": count_of(u.get("inputTokens")), "cw": count_of(u.get("cacheCreationInputTokens")),
+             "cw1h": 0, "cr": count_of(u.get("cacheReadInputTokens")), "out": count_of(u.get("outputTokens"))}
+        if any(c[k] for k in ("in", "cw", "cr", "out")):
+            if len(usage) == 1:
+                c["requests"] = max(1, count_of(r.get("num_turns")))
+            store_.add_models(models, {kbusage.model_of(m): c})
+    return r["result"], models
+
+
+class Spend:
+    """The tokens of one distill run's own `claude -p` calls, per model: what `claude_haiku` counts, written as the
+    run's `distill` overhead line (querylog.md, Store)."""
+
+    def __init__(self):
+        self.calls, self.models = 0, {}
+
+    def add(self, models):
+        """One call's counts (haiku_result); a call that reported none is not counted."""
+        if models:
+            self.calls += 1
+            store_.add_models(self.models, models)
+
+    def lines(self):
+        """The overhead lines of the run: one for `distill`, or none when no call reported counts."""
+        line = store_.overhead_line("distill", self.calls, self.models) if self.calls else None
+        return [line] if line else []
+
+
+def claude_haiku(prompt, spend=None):
     """One `claude -p` call of the Haiku stage (redact.names_argv: hooks off, no tools, no user plugins or MCP
-    servers), in an empty directory so no project instructions load. OSError when it cannot answer."""
+    servers, and `--output-format json` so the result carries the call's token counts), in an empty directory so no
+    project instructions load; the reply's text, and the counts added to `spend`. OSError when it cannot answer."""
     import redact
-    return claude_p(redact.names_argv(HAIKU_MODEL), prompt, HAIKU_TIMEOUT_S)
+    text, models = haiku_result(claude_p(redact.names_argv(HAIKU_MODEL) + ["--output-format", "json"], prompt,
+                                         HAIKU_TIMEOUT_S))
+    if spend is not None:
+        spend.add(models)
+    return text
 
 
 def haiku_items(texts, candidates, k):
@@ -569,7 +625,9 @@ def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit
             if n:
                 out(f"distill: usage rows written: {n}")
         now_dt = now_dt or datetime.datetime.now(datetime.timezone.utc)
-        rc = _distill(qdir, haiku or claude_haiku, now_dt, run_id, kb_commit, out, keep=deliver is not None)
+        spend = Spend()
+        rc = _distill(qdir, haiku or functools.partial(claude_haiku, spend=spend), now_dt, run_id, kb_commit, out,
+                      keep=deliver is not None, spend=spend)
         if deliver is not None:
             rc = 1 if deliver(qdir, out) not in (0, None) else rc
         return rc
@@ -617,9 +675,10 @@ def _plan(qdir, t_now, today, k):
     return spool, sessions, tools, consumed, todo, skipped
 
 
-def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
+def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None):
     """The run file of the closed sessions (entries a run file of the local store already holds are not distilled
-    again), then the spool: the rows of dropped entries go, and so do those of written ones unless `keep`."""
+    again), then the spool: the rows of dropped entries go, and so do those of written ones unless `keep`. `spend`
+    holds the tokens of the run's own Haiku calls, which become its overhead line."""
     k = None  # the known ids of the public root (redact.known) are read when an entry first needs them
     t_now, today = now_dt.timestamp(), now_dt.date().isoformat()
     spool, sessions, tools, consumed, todo, skipped = _plan(qdir, t_now, today, k)
@@ -667,19 +726,20 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
     worked = {sid: ids for sid, ids in worked.items() if sid in sessions and isinstance(ids, list)} \
         if isinstance(worked, dict) else {}
     work_lines, work_missing, work_counted = plan_work(sessions, worked, sprint_finder())
-    if written or dropped or skipped or work_lines:
+    overhead = spend.lines() if spend is not None else []
+    if written or dropped or skipped or work_lines or overhead:
         run_id = run_id or f"{now_dt.strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
         written.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
         write_text(store_.run_path(qdir / "store", run_id),
                    json_lines([store_.header(run_id, counts, kb_commit)] + [t["entry"] for t in written]))
         lines = [ln for ln in (store_.usage_line(t["entry"]["id"], t.get("usage")) for t in written) if ln]
         store_.write_usage(qdir / "store", run_id, lines, len(written) - len(lines), kbusage.READER_VERSION)
-        store_.write_work(qdir / "store", run_id, work_lines, work_missing, kbusage.READER_VERSION)
+        store_.write_work(qdir / "store", run_id, work_lines + overhead, work_missing, kbusage.READER_VERSION)
         for sid, pids in work_counted.items():
             worked[sid] = sorted(set(worked.get(sid, ())) | pids)
         out(f"distill: run={run_id} entries={counts['entries']} dropped={counts['dropped']} "
             f"waiting={counts['waiting']}" + (f" skipped={counts[SKIPPED_KEY]}" if skipped else "")
-            + (f" usage={len(lines)}" if lines else "") + (f" work={len(work_lines)}" if work_lines else ""))
+            + (f" usage={len(lines)}" if lines else "") + (f" work={len(work_lines)}" if work_lines else "") + (f" overhead={len(overhead)}" if overhead else ""))
     else:
         out(f"distill: nothing to write (waiting={counts['waiting']})")
     text = json.dumps(dict(sorted(worked.items()))) + "\n"
