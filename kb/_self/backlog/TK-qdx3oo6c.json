@@ -2,7 +2,7 @@
   "id": "TK-qdx3oo6c",
   "kind": "task",
   "title": "Trailer detector",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-qouhlhni",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/bl_intake.py",
     "_tools/test_intake.py"
   ],
-  "claimed_by": "worker-qdx3oo6c"
+  "evidence": {
+    "commit": "987bfeb0e60975e3895bd59fe8bd8dc0aea70124",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_trailers"
+        ],
+        "exit": 0,
+        "sha256": "3f499ca6541d470f"
+      }
+    ]
+  }
 }
