@@ -2314,16 +2314,17 @@ if os.environ.get("LAND_FAIL") == NAME:
     sys.exit(1)
 print(NAME + ": ok")
 """
-# sync's stand-in: pushes by lane as kbgit.py sync --push does (code/<first KB-Work id> when a path is outside kb/)
-SYNC_STUB = STEP_STUB.format(name="sync") + """import re, subprocess
+# sync's stand-in: pushes by lane as kbgit.py sync --push does, the lane and the code/<id> branch from the real
+# kbgit.lane_plan (LAND_TOOLS: this _tools/ directory), the one helper sync and land name the branch with
+SYNC_STUB = STEP_STUB.format(name="sync") + """import subprocess
 def git(*a):
     return subprocess.run(["git", *a], capture_output=True, text=True, check=True).stdout
 git("fetch", "-q", "origin")
-if any(not p.startswith("kb/") for p in git("diff", "--name-only", "origin/main", "HEAD").split()):
-    ids = re.findall(r"(?:ST|TK|SB|BG)-[a-z2-7]{8}", git("log", "--reverse", "--format=%B", "origin/main..HEAD"))
-    git("push", "-q", "origin", "HEAD:refs/heads/code/" + ids[0])
-else:
-    git("push", "-q", "origin", "HEAD:refs/heads/main")
+sys.path.insert(0, os.environ["LAND_TOOLS"])
+import kbgit
+kbgit.KB = os.getcwd()
+_, branch = kbgit.lane_plan("refs/remotes/origin/main", "HEAD")
+git("push", "-q", "origin", "HEAD:refs/heads/" + (branch or "main"))
 """
 
 
@@ -2359,6 +2360,7 @@ class TestBacklogLand:
         sh(repo, "git", "push", "-q", "origin", "main")
         log = repo.parent / f"{repo.name}-land.log"
         monkeypatch.setenv("LAND_LOG", str(log))
+        monkeypatch.setenv("LAND_TOOLS", TOOLS)
         monkeypatch.delenv("LAND_FAIL", raising=False)
         sh(repo, "git", "checkout", "-q", "-b", f"work/{tk}")
         assert b(repo, "claim", tk, "--by", "worker", "--commit")[0] == 0
@@ -2515,6 +2517,42 @@ class TestBacklogLand:
         code, out = self.land(ld)
         assert code == 0 and "landed" in out, out
         assert self.head_ref(ld) is None and self.out(ld["repo"], "rev-parse", "HEAD").strip() == start, out
+
+    # land names the code/<id> branch it waits on with kbgit.lane_plan, as sync names the branch it opens: a story's
+    # range that begins with a content commit of another item (a bug filed with new --commit) is recognised on a
+    # re-run before the merge. Planted: the bug's own code commit comes first, so sync opens code/<bug>, a branch
+    # land's old naming (the item's own id) never looked for.
+    def story_range(self, ld, bug_code):
+        repo, tk = ld["repo"], ld["tk"]
+        code, out = b(repo, "new", "bug", "--title", "Found", "--severity", "S3", "--repro",
+                      argstr(is_file("src/c.txt")), "--goal", "c exists", "--touch", "src/**", "--commit")
+        assert code == 0, out
+        bug = item(repo, "Found")["id"]
+        if bug_code:
+            (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+            commit(repo, "fix the bug first", bug)
+        (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+        commit(repo, "the story's work", tk)
+        return bug
+
+    def land_story_twice(self, ld, branch):
+        land = ["land", self.story, "--branch", f"work/{ld['tk']}", "--trailer", self.CO]
+        code, out = b(ld["repo"], *land)
+        assert code == 0 and f"merge request of branch {branch}" in out and "not done yet" in out, out
+        assert self.out(ld["remote"], "branch", "--list", branch).strip(), out
+        code, out = b(ld["repo"], *land)  # before the merge: it finds the branch sync opened
+        assert code == 0 and "waits for its merge request" in out and f"branch {branch} on origin" in out, out
+        assert self.steps(ld) == ["sync"], out  # nothing pushed again
+
+    def test_claim_first_land_names_sync_branch(self, landing, sprint):
+        self.story = sprint["st"]
+        self.story_range(landing, bug_code=False)
+        self.land_story_twice(landing, f"code/{landing['tk']}")
+
+    def test_bug_first_land_names_sync_branch(self, landing, sprint):
+        self.story = sprint["st"]
+        bug = self.story_range(landing, bug_code=True)
+        self.land_story_twice(landing, f"code/{bug}")
 
     def test_backlog_land_refuses_kb_trailers(self, landing):
         code, out = b(landing["repo"], "land", landing["tk"], "--trailer", f"KB-Work: {landing['tk']}")
