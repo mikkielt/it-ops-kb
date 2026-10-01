@@ -2,7 +2,7 @@
   "id": "TK-3oiz7npb",
   "kind": "task",
   "title": "Move the main-pipeline check into an intake detector",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-uzqoj5du",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/backlog.py",
     "_tools/test_intake.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "worker-3oiz7npb"
 }
