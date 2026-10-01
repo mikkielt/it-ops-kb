@@ -1,0 +1,10 @@
+{
+  "id": "ST-kiwbi7iz",
+  "kind": "story",
+  "title": "Decision matching in pack is calibrated on real decisions",
+  "status": "draft",
+  "parent": "EP-v56iwyry",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Once the kb holds real decisions, the pack's decision match (60% of the question's informative words plus every name, at most 3 lines and a third of the budget) and kbdecide sweep's relink cut (difflib 0.5) are measured over them and lookup_eval rows, and each threshold is kept or changed on that evidence."
+}
