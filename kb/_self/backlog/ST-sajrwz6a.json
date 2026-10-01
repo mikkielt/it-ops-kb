@@ -2,7 +2,7 @@
   "id": "ST-sajrwz6a",
   "kind": "story",
   "title": "sync --push re-runs itself when its rebase changed kbgit.py",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_sync.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "worker-sajrwz6a"
+  "evidence": {
+    "commit": "2ebff5e89331871d027d76c5f6ee02da4036c261",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sync_reexec_after_kbgit_rebase"
+        ],
+        "exit": 0,
+        "sha256": "d3e625deba8b5043"
+      }
+    ]
+  }
 }
