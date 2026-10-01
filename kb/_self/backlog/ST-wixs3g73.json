@@ -2,7 +2,7 @@
   "id": "ST-wixs3g73",
   "kind": "story",
   "title": "drop leaves no dropped item depending on another dropped item",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -23,5 +23,6 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-w10"
 }
