@@ -26,5 +26,20 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does close --summary --commit do, now that --summary changes nothing?",
+      "options": [
+        "refuse it (exit 1, like --trailer without --commit), nothing written",
+        "ignore --commit and only print",
+        "print the list, then close and commit as --commit does"
+      ],
+      "recommendation": "refuse it (exit 1, like --trailer without --commit), nothing written",
+      "answer": "refuse it (exit 1, like --trailer without --commit), nothing written",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-blstack2"
 }
