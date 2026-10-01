@@ -2299,6 +2299,111 @@ class TestBacklogLand:
         code, out = b(landing["repo"], "land", landing["tk"], "--trailer", f"KB-Work: {landing['tk']}")
         assert code == 1 and "--trailer" in out, out
 
+    # a re-run of land while the code/<id> request waits reads the request on GitLab: open, mergeable, auto-merge set
+    # and a skipped pipeline is stuck (auto-merge never fires), and land names the command that merges it
+    MR_SAMPLE = Path(TOOLS) / "fixtures" / "forge_mr" / "gitlab-merged-skipped-pipeline.json"
+    FORGE_URL = "https://gitlab.corp.example.com/team/kb.git"
+    MERGE_CMD = "glab mr merge 103 --auto-merge=false --yes -R https://gitlab.corp.example.com/team/kb"
+
+    @classmethod
+    def recorded_mr(cls):
+        return json.loads(cls.MR_SAMPLE.read_text(encoding="utf-8"))["reply"]
+
+    @classmethod
+    def open_mr(cls, pipeline="skipped", **change):
+        """The recorded request as it was while it waited: open and mergeable, its pipeline in state PIPELINE."""
+        mr = cls.recorded_mr()
+        mr.update(state="opened", detailed_merge_status="mergeable", merged_at=None, merged_by=None)
+        mr["head_pipeline"]["status"] = pipeline
+        mr.update(change)
+        return mr
+
+    def gitlab(self, monkeypatch, mr, signed_in=True, down=False):
+        """origin (as land reads its url) is a GitLab project whose glab answers MR (None: no open request) for the
+        list of open requests and the single request; DOWN: every glab api call fails as a network failure does."""
+        calls, real = [], backlog.run
+
+        def fake(argv, cwd=None):
+            if argv[:3] == ["git", "remote", "get-url"]:
+                return 0, self.FORGE_URL + "\n", ""
+            if argv[0] != "glab":
+                return real(argv, cwd=cwd)
+            calls.append(argv)
+            if argv[1] == "auth":
+                return (0, "", "") if signed_in else (1, "", "not logged in")
+            if down:
+                return 127, "", "dial tcp: lookup gitlab.corp.example.com: no such host"
+            if "/merge_requests?" in argv[-1]:
+                return 0, json.dumps([{"iid": mr["iid"]}] if mr else []), ""
+            if mr and argv[-1].endswith(f"/merge_requests/{mr['iid']}"):
+                return 0, json.dumps(mr), ""
+            return 1, "", "404 Not Found"
+
+        monkeypatch.setattr(backlog, "run", fake)
+        return calls
+
+    def rerun(self, ld, capsys):
+        """The code item's first land (it opens code/<id>), then the re-run in this process, where `run` is faked."""
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        code, out = self.land(ld)
+        assert code == 0 and "not done yet" in out, out
+        capsys.readouterr()
+        code = backlog.main(["--root", str(ld["repo"]), "land", ld["tk"], "--trailer", self.CO])
+        out = capsys.readouterr().out
+        assert code == 0 and "waits for its merge request" in out, out
+        assert len(self.steps(ld)) == 4, out  # nothing re-run, nothing pushed
+        return out
+
+    def test_land_stuck_auto_merge_is_reported(self, landing, monkeypatch, capsys):
+        calls = self.gitlab(monkeypatch, self.open_mr())
+        out = self.rerun(landing, capsys)
+        assert "!103" in out and "pipeline was skipped" in out and self.MERGE_CMD in out, out
+        listed = [c[-1] for c in calls if "/merge_requests?" in c[-1]]
+        assert listed and "state=opened" in listed[0] and f"source_branch=code%2F{landing['tk']}" in listed[0]
+
+    def test_land_stuck_auto_merge_not_reported_while_its_pipeline_runs(self, landing, monkeypatch, capsys):
+        self.gitlab(monkeypatch, self.open_mr(pipeline="running"))
+        out = self.rerun(landing, capsys)
+        assert "glab mr merge" not in out, out
+
+    @pytest.mark.parametrize("mr, forge", [
+        ({"pipeline": "running"}, {}),
+        ({"pipeline": "pending"}, {}),
+        ({"detailed_merge_status": "conflict"}, {}),  # not mergeable
+        ({"detailed_merge_status": "not_approved"}, {}),
+        ({"merge_when_pipeline_succeeds": False}, {}),  # no auto-merge: nothing waits to fire
+        ({"state": "closed"}, {}),
+        ({"head_pipeline": None}, {}),
+        (None, {}),  # no open request
+        ({}, {"signed_in": False}),  # glab not signed in: nothing extra
+        ({}, {"down": True}),  # a network failure: nothing extra
+    ])
+    def test_land_stuck_auto_merge_not_reported(self, tmp_path, monkeypatch, mr, forge):
+        self.gitlab(monkeypatch, None if mr is None else self.open_mr(**mr), **forge)
+        assert backlog.stuck_merge_request(tmp_path, "origin", "code/TK-aaaaaaaa") is None
+
+    def test_land_stuck_auto_merge_reports_the_planted_stuck_request(self, tmp_path, monkeypatch):
+        self.gitlab(monkeypatch, self.open_mr())
+        note = backlog.stuck_merge_request(tmp_path, "origin", "code/TK-aaaaaaaa")
+        assert note and self.MERGE_CMD in note and "/merge_requests/103" in note, note
+
+    def test_land_stuck_auto_merge_reads_the_recorded_sample(self):
+        mr = self.recorded_mr()  # merged by hand after its skipped pipeline left auto-merge waiting
+        assert mr["merge_when_pipeline_succeeds"] is True and mr["head_pipeline"]["status"] == "skipped"
+        assert not backlog.mr_stuck(mr)  # merged: nothing to report
+        assert backlog.mr_stuck(self.open_mr())  # the same reply while it was open and mergeable
+        legacy = self.open_mr()
+        del legacy["detailed_merge_status"]  # a GitLab without the detailed field: merge_status decides
+        assert backlog.mr_stuck(legacy)
+        assert not backlog.mr_stuck(dict(legacy, merge_status="cannot_be_merged"))
+
+    def test_land_stuck_auto_merge_skips_a_local_remote(self, landing, monkeypatch):
+        """The landing fixture's origin is a bare repository on disk: no forge to ask, no glab call."""
+        real, calls = backlog.run, []
+        monkeypatch.setattr(backlog, "run", lambda argv, cwd=None: calls.append(argv) or real(argv, cwd=cwd))
+        assert backlog.stuck_merge_request(landing["repo"], "origin", f"code/{landing['tk']}") is None
+        assert [c[:3] for c in calls] == [["git", "remote", "get-url"]], calls
+
 
 # ------------------------------------------------------------------ set and gate add
 
