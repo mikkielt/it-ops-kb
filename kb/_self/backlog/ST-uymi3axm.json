@@ -2,7 +2,7 @@
   "id": "ST-uymi3axm",
   "kind": "story",
   "title": "The gate runs selfdoc's tools-map test for a change to any _tools Python file",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,29 @@
         "TestSelfdocToolsMap"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "48c1a0247f604a53caa6ba5c365807cd32eac086",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/testmap.py','select','--paths','_tools/test_kb_mcp.py'],capture_output=True,text=True).stdout;sys.exit(0 if 'test_selfdoc.py' in o else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestSelfdocToolsMap"
+        ],
+        "exit": 0,
+        "sha256": "0bee7efd8133ff1b"
+      }
+    ]
+  }
 }
