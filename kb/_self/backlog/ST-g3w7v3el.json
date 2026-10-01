@@ -1,0 +1,26 @@
+{
+  "id": "ST-g3w7v3el",
+  "kind": "story",
+  "title": "intake's drift checks end their whole process tree on a timeout and catch whole-suite runs behind a wrapper",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A drift check that times out, or is running when the hook exits, has its whole process group ended (tests.py, uv, pytest and its xdist workers), and heavy_check also refuses a whole-suite run reached through sh -c, a wrapper such as perfcheck.py or a -k 'not ...' selector; tests plant a check whose grandchild outlives a timeout and each wrapper form",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_drift_process_tree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py",
+    "kb/_self/backlog.md"
+  ],
+  "notes": "Sprint review of SP-3brmvlnh: check_result kills only its direct child, so a timed-out tests.py leaves uv run pytest -n auto with parent pid 1."
+}
