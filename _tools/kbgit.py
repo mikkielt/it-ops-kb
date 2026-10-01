@@ -90,8 +90,8 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
      "chore(kb): kbgit fix after sync" with KB-* trailers. Unpushed commits whose trailers no longer match their diff
      (conflict resolution, renumbered ids) get them rewritten (`git rebase --exec "kbgit.py trailers --amend"`).
      Gate: build_index.py --check, check.py, fetch.py --offline, doc2query.py stale, selfdoc.py stale --since
-     REMOTE/BRANCH (a `Self-Reviewed:` trailer clears a doc), tests.py with KB_TESTS_FAST=1 (no git scenarios;
-     KB_SYNC_NO_TESTS=1 skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1,
+     REMOTE/BRANCH (a `Self-Reviewed:` trailer clears a doc), tests.py --changed with KB_TESTS_FAST=1 (git scenarios only
+     in the test files a changed tool or other code path selects; KB_SYNC_NO_TESTS=1 skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1,
      nothing pushed.
   e. --push: git push REMOTE HEAD:BRANCH, never --force. Rejected because the remote moved: fetch and rebase once more,
      then give up (exit 1).
@@ -1484,7 +1484,8 @@ def gate(r, up, fix_check=False):
     check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
     clears a doc), backlog.py check for backlog items, querylog.py check for the query log store, and tests.py
-    --changed UP (KB_TESTS_FAST=1: no git scenarios; testmap.py maps the paths to the test files they can break).
+    --changed UP (testmap.py maps the paths to the test files they can break; KB_TESTS_FAST=1 keeps the git scenarios
+    of the test files a code path selects, TestCloudInGit for kbgit.py, and leaves out those only kb content selects).
     `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
     rebuilds the generated files, so its gate has neither. A skipped check is listed with why."""
     results = []

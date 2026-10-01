@@ -6,7 +6,10 @@
   tests.py --changed [REV]         only the test files a change from REV's merge base (default HEAD: the working tree)
                                    can break, from testmap.py's map; none when no test can be affected
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
-  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git"): kbgit.py sync's gate
+  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git"): kbgit.py sync's gate. With --changed it
+                                   keeps them in the test files a code path selects (a changed path outside kb content
+                                   and the backlog and query log store): one run of those with -m "not stress", one of
+                                   the rest without the git scenarios; an `all` selection still leaves them out
   stress_test.py                   the stress suite (test_stress.py)
 
 Modules: test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py, test_kb_leaks.py, test_merge.py, test_history.py, test_sync.py, test_census.py,
@@ -55,27 +58,65 @@ def write_lint_baseline():
     return 0
 
 
+FULL_M, FAST_M = "not stress", "not stress and not git"
+EVERY = "all"  # every test module in _tools/ (testmap.ALL)
+
+
+def is_code(path):
+    """A changed path whose tests keep their git scenarios in a fast run: any path but kb content and the backlog and
+    query log store (testmap's CONTENT and NO_TESTS)."""
+    import testmap
+    return not path.replace("\\", "/").startswith(testmap.CONTENT + testmap.NO_TESTS)
+
+
+def plan(paths, fast):
+    """The pytest runs for the changed paths: [(nodes, -m expression)], nodes a testmap node list or EVERY; [] when no
+    test can be affected. A fast run (KB_TESTS_FAST=1, kbgit.py sync's gate) keeps the git scenarios of the test files
+    a code path selects (is_code) and leaves them out of the rest, which only kb content selects, and of an `all`
+    selection: the gate runs the slow tests of the code a push changes, not the whole slow suite."""
+    import testmap
+    sel, _ = testmap.select(paths)
+    if sel == testmap.NONE:
+        return []
+    if sel == testmap.ALL or not fast:
+        return [(EVERY if sel == testmap.ALL else sel, FAST_M if fast else FULL_M)]
+    code, _ = testmap.select([p for p in paths if is_code(p)])
+    if code in (testmap.NONE, testmap.ALL):
+        return [(sel, FAST_M)]
+    rest = [n for n in sel if n not in code and n.split("::")[0] not in code]
+    return [(code, FULL_M)] + ([(rest, FAST_M)] if rest else [])
+
+
+def target(node):
+    """A testmap node (`_tools/test_x.py` or `_tools/test_x.py::Class`) as a pytest target under KB."""
+    return os.path.join(KB, *node.split("::")[0].split("/")) + ("::" + node.split("::", 1)[1] if "::" in node else "")
+
+
 def main(argv):
     if "--write-lint-baseline" in argv:
         return write_lint_baseline()
     args = list(argv)
-    targets = [TOOLS]
+    fast = os.environ.get("KB_TESTS_FAST") == "1"
+    runs = [(EVERY, FAST_M if fast else FULL_M)]
     if "--changed" in args:  # only the tests the change can break (testmap.py)
         i = args.index("--changed")
         rev = args[i + 1] if i + 1 < len(args) and not args[i + 1].startswith("-") else None
         del args[i:i + (2 if rev else 1)]
         import testmap
-        sel, _ = testmap.select(testmap.changed(rev or "HEAD"))
-        if sel == testmap.NONE:
+        runs = plan(testmap.changed(rev or "HEAD"), fast)
+        if not runs:
             print(f"tests.py --changed {rev or 'HEAD'}: no test can be affected by the changed paths (testmap.py explain)")
             return 0
-        if sel != testmap.ALL:
-            targets = [os.path.join(KB, *n.split("::")[0].split("/")) + ("::" + n.split("::", 1)[1] if "::" in n else "") for n in sel]
-            print(f"tests.py --changed {rev or 'HEAD'}: {len(sel)} of {len(testmap.test_files())} test files or classes")
-    if "-m" not in args:
-        args = ["-m", "not stress and not git" if os.environ.get("KB_TESTS_FAST") == "1" else "not stress"] + args
-    code = run_pytest(targets + args)
-    return 0 if code == 5 and targets != [TOOLS] else code  # 5: every selected test was deselected by -m
+        if runs[0][0] != EVERY:
+            n = sum(len(nodes) for nodes, _ in runs)
+            slow = f", the git scenarios of {len(runs[0][0])} kept" if fast and runs[0][1] == FULL_M else ""
+            print(f"tests.py --changed {rev or 'HEAD'}: {n} of {len(testmap.test_files())} test files or classes{slow}")
+    code = 0
+    for nodes, m in runs:
+        got = run_pytest(([TOOLS] if nodes == EVERY else [target(n) for n in nodes])
+                         + ([] if "-m" in args else ["-m", m]) + args)
+        code = code or (0 if got == 5 and nodes != EVERY else got)  # 5: every selected test was deselected by -m
+    return code
 
 
 if __name__ == "__main__":
