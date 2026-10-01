@@ -17,7 +17,8 @@
   },
   "touches": [
     "_tools/testmap.py",
-    "_tools/test_testmap.py"
+    "_tools/test_testmap.py",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "c-rskbmulj"
 }
