@@ -1,0 +1,21 @@
+{
+  "id": "BG-oi6mrxvr",
+  "kind": "bug",
+  "title": "settings.json allows no kbid.py, kbusage.py or querylog.py show command",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A headless run is allowed the commands the skills now name: kbid.py add, kbusage.py tree and querylog.py show each have a Bash and a PowerShell allow rule in .claude/settings.json, as kb/_self/backlog.md says for a task that adds a command skills or subagents run; the operator decides whether the writing command kbid.py add is allowed",
+  "repro": {
+    "run": [
+      "grep",
+      "-q",
+      "kbid.py",
+      ".claude/settings.json"
+    ]
+  },
+  "touches": [
+    ".claude/settings.json"
+  ]
+}
