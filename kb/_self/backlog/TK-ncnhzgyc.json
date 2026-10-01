@@ -2,7 +2,7 @@
   "id": "TK-ncnhzgyc",
   "kind": "task",
   "title": "backlog.py answer --record",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-r25rmm76",
   "priority": "P2",
   "rank": 0,
@@ -22,6 +22,11 @@
     "_tools/test_backlog.py",
     "kb/_self/code.md",
     "kb/_self/tools.md",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "_tools/kbdecide.py",
+    "_tools/test_kbdecide.py",
+    "kb/_self/decision-makers.csv",
+    "kb/_self/content-rules.md"
+  ],
+  "claimed_by": "worker-answer-record"
 }
