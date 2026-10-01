@@ -17,7 +17,8 @@
                     block the prompt with their output as the reason: no model call. A command that fails or times out
                     lets the prompt through with a note of what failed.
   backlog+: [text]  always let the prompt through: the same output as additionalContext with a short instruction, cut so
-                    the context stays under the limit.
+                    the context stays under the limit: each command keeps a share of it, cut by whole lines and ending
+                    in a note of the lines left out and the command that prints them all (fit_blocks).
   anything else     no output: the prompt goes to the model unchanged.
 
 The same script answers a PreToolUse event on Bash or PowerShell (a JSON event with `tool_input`): a command that reads a
@@ -83,8 +84,38 @@ def respond(prompt):
     return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, dict(row, answered=False)
 
 
-def backlog_output():
-    """(the output of each BACKLOG_COMMANDS entry joined under its command line, None) or (None, what failed)."""
+def cut_block(text, share, shown):
+    """TEXT (a `$ command` line and its output) cut by whole lines to at most SHARE characters, its first line always
+    kept, ending in a note of the lines left out and SHOWN, the command that prints them all."""
+    if len(text) <= share:
+        return text
+    lines = text.splitlines()
+    note = lambda n: f"... {n} more line(s): run `{shown}` for all of them"
+    kept, size = lines[:1], len(lines[0]) + 1
+    for line in lines[1:]:
+        if size + len(line) + 1 + len(note(len(lines))) > share:
+            break
+        kept.append(line)
+        size += len(line) + 1
+    return "\n".join(kept + [note(len(lines) - len(kept))])
+
+
+def fit_blocks(blocks, budget):
+    """BLOCKS ((command, text) pairs) joined so the whole stays within BUDGET characters: the budget is shared equally,
+    a block shorter than its share leaves the rest to the others, and each longer one is cut (cut_block). Cutting
+    only from the end would drop the last command's output whole once the first fills the budget."""
+    sep = "\n\n"
+    left = budget - len(sep) * (len(blocks) - 1)
+    out = [""] * len(blocks)
+    order = sorted(range(len(blocks)), key=lambda i: len(blocks[i][1]))
+    for k, i in enumerate(order):
+        out[i] = cut_block(blocks[i][1], left // (len(order) - k), blocks[i][0])
+        left -= len(out[i])
+    return sep.join(out)
+
+
+def backlog_blocks():
+    """([(command, its `$ command` line and output)] for each BACKLOG_COMMANDS entry, None) or (None, what failed)."""
     parts = []
     for args in BACKLOG_COMMANDS:
         shown = "backlog.py " + " ".join(args)
@@ -97,24 +128,23 @@ def backlog_output():
         if p.returncode != 0:
             last = ((p.stderr or p.stdout).strip().splitlines() or ["no output"])[-1]
             return None, f"`{shown}` exited {p.returncode}: {last}"
-        parts.append(f"$ {shown}\n{p.stdout.rstrip()}")
-    return "\n\n".join(parts), None
+        parts.append((shown, f"$ {shown}\n{p.stdout.rstrip()}"))
+    return parts, None
 
 
 def backlog_answer(forward):
     """The answer to a `backlog:` prompt (block, the output as the reason) or `backlog+:` (the output as context)."""
-    text, error = backlog_output()
-    if text is None:  # never block a prompt on a tool that does not run
+    blocks, error = backlog_blocks()
+    if blocks is None:  # never block a prompt on a tool that does not run
         return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                        "additionalContext": f"The backlog hook could not read the backlog: {error}"}}
     if not forward:
-        return {"decision": "block", "reason": text + BACKLOG_NOTE}
+        return {"decision": "block", "reason": "\n\n".join(text for _, text in blocks) + BACKLOG_NOTE}
     head = ("The backlog hook ran `backlog.py horizon` and `backlog.py next --all --any` for this question. Answer from "
             "their output, naming item ids; run another backlog.py command only if it misses what was asked.\n\n")
-    lines = text.splitlines()
-    while lines and len(head) + len("\n".join(lines)) > LIMIT:  # over 10,000 characters the context is saved to a file
-        lines.pop()
-    return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": head + "\n".join(lines)}}
+    # over 10,000 characters the context is saved to a file: every command keeps a share of LIMIT (fit_blocks)
+    return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                   "additionalContext": head + fit_blocks(blocks, LIMIT - len(head))}}
 
 
 def routed(res):
