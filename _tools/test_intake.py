@@ -1572,6 +1572,27 @@ def test_intake_hook_stops_waiting_for_a_detector_that_outlasts_its_budget_and_f
     assert [it["links"][-1] for it in load(world.root)] == ["detector docs"]  # the slow one's finding is never filed
 
 
+def test_intake_hook_order_runs_drift_last_so_a_drift_scan_past_the_budget_costs_only_its_own_findings(world):
+    # drift sorts first by name; were it run first, a scan that outlasts the budget would starve stranded and trailers
+    release, ran = threading.Event(), []
+
+    def drift(root):
+        ran.append("drift")
+        release.wait(30)
+        return [bug("drift:z", title="Drift finding")]
+
+    bl_intake.detector("drift")(drift)
+    bl_intake.detector("stranded")(lambda root: ran.append("stranded") or [bug("stranded:1", title="Stranded")])
+    bl_intake.detector("trailers")(lambda root: ran.append("trailers") or [bug("trailers:1", title="Trailers")])
+    try:
+        code = backlog.hook_intake(backlog.Backlog(world.root), argparse.Namespace(file=True, network=False), budget=0.5)
+    finally:
+        release.set()
+    time.sleep(0.2)
+    assert code == 0 and ran == ["stranded", "trailers", "drift"]
+    assert sorted(it["links"][-1] for it in load(world.root)) == ["detector stranded", "detector trailers"]
+
+
 def test_intake_hook_runs_a_network_detector_only_with_network_and_after_the_offline_ones(world, capsys, monkeypatch):
     ran = []
     monkeypatch.setattr(bl_intake, "NETWORK_DETECTORS", {"aaa-net"})
