@@ -2,7 +2,7 @@
   "id": "TK-bro74m66",
   "kind": "task",
   "title": "Digest lists the week's items by tokens",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-zjw6ugq6",
   "priority": "P2",
   "rank": 0,
@@ -50,5 +50,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-bro74m66"
+  "evidence": {
+    "commit": "673092b551af461e926d3241263b4206aaa135a5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "digest_work"
+        ],
+        "exit": 0,
+        "sha256": "7443b2a91a184a74"
+      }
+    ]
+  }
 }
