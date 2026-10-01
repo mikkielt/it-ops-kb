@@ -13,7 +13,9 @@ TestSelfdocInGit   (marker git) a throwaway repo with a map, two docs and the fi
                    described file makes its doc stale, editing or committing the doc clears it, --since compares a
                    revision with the working tree, and check reports a missing doc, a dead pattern and an unmapped doc;
                    the gate judges the pushed range, so backlog-item and query-log commits need no Self-Reviewed
-                   trailer while code without its doc update still fails (`-k selfdoc_range_review`).
+                   trailer while code without its doc update still fails (`-k selfdoc_range_review`); an item's
+                   check `stale --work ID` fails only on a doc its own commits left stale, never on another
+                   item's (`-k foreign_stale_doc`).
 """
 import functools, glob, os, pathlib, re, shlex
 
@@ -571,6 +573,54 @@ class TestSelfdocInGit:
         repo.write(store, '{"q": 1}\n')
         repo.git("commit", "-qam", "log a query")  # item-only commits after the doc update, still no trailer
         assert selfdoc.stale(root, since=up) == [], "the doc update anywhere in the range clears it"
+
+    def test_foreign_stale_doc_does_not_fail_done(self, repo):
+        """An item's check `selfdoc.py stale --work ID`, run as `backlog.py done` runs it, fails only on a doc the
+        item's own commits left stale: another item's commit that left a doc stale (TK-uxm5arrb and 17d0f58 in
+        SP-v5xagbyv) does not fail it, while plain `stale` still lists that doc. The planted failure: the item's own
+        code change without its doc."""
+        import backlog
+        for name in ("selfdoc.py", "kbcommon.py"):  # the tool reads the clone it sits in
+            repo.write(f"_tools/{name}", (pathlib.Path(selfdoc.__file__).parent / name).read_text(encoding="utf-8"))
+        repo.append(f"{S}/map.csv", f"{S}/agents.md,lib/*.py\n")
+        repo.write(f"{S}/agents.md", "agents\n")
+        repo.write("lib/hook.py", "print(0)\n")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "tools and a second doc")
+        root, mine = repo.path, ["python3", "_tools/selfdoc.py", "stale", "--work", "ST-mine"]
+
+        def commit(msg, item):
+            repo.git("add", "-A")
+            repo.git("commit", "-q", "-m", f"{msg}\n\nbecause\n\nKB-Work: {item}")
+
+        repo.write("lib/hook.py", "print(1)\n")
+        commit("foreign change, no doc", "ST-other")  # leaves agents.md stale
+        assert backlog.run_check(root, {"run": mine})[0], "no commit of the item yet: nothing of its own is stale"
+        repo.write("src/tool.py", "print(7)\n")
+        repo.write(f"{S}/tools.md", "tools v7\n")
+        commit("the item's change with its doc", "ST-mine")
+        assert [d for d, _, _ in selfdoc.stale(root)] == [f"{S}/agents.md"], "plain stale still lists the foreign doc"
+        ok, code, out = backlog.run_check(root, {"run": mine})
+        assert ok and code == 0 and "stale=0" in out, out
+        assert selfdoc.stale(root, work=["ST-mine"]) == []
+
+        repo.write("src/tool.py", "print(8)\n")
+        commit("the item's change without its doc", "ST-mine, TK-sub")
+        ok, code, out = backlog.run_check(root, {"run": mine})
+        assert not ok and code == 1 and f"STALE {S}/tools.md" in out and "agents.md" not in out, out
+        assert [d for d, _, _ in selfdoc.stale(root, work=["TK-sub"])] == [f"{S}/tools.md"], "any id of the trailer"
+        assert selfdoc.stale(root, work=["ST-none"]) == []
+        repo.git("commit", "-q", "--allow-empty", "-m", f"review\n\nSelf-Reviewed: {S}/tools.md\nKB-Work: ST-other")
+        assert selfdoc.stale(root, work=["ST-mine"]) == [], "a later review, whoever's, clears it"
+        repo.write("src/tool.py", "print(9)\n")
+        commit("again", "ST-mine")
+        assert [d for d, _, _ in selfdoc.stale(root, work=["ST-mine"])] == [f"{S}/tools.md"], "a later change needs more"
+        repo.write(f"{S}/tools.md", "tools v9\n")
+        commit("the doc, by a later commit", "ST-third")
+        assert selfdoc.stale(root, work=["ST-mine"]) == [], "a later doc edit clears it"
+        with pytest.raises(SystemExit) as e:
+            selfdoc.main(["stale", "--work", "ST-mine", "--since", "HEAD"])
+        assert e.value.code == 2, "--work and --since are one or the other"
 
     def test_check(self, repo):
         root = repo.path

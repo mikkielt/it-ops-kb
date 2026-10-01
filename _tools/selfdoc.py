@@ -6,6 +6,11 @@
   selfdoc.py stale --since REV     docs whose described files differ between REV and the working tree (untracked files
                                    included) while the doc does not: the check before a commit or a push
                                    (`--since @{upstream}`); exit 1 when any
+  selfdoc.py stale --work ID [--work ID ...]
+                                   only the staleness the commits whose `KB-Work` trailer names an ID cause: a doc
+                                   such a commit's described files changed while neither that commit nor a later one
+                                   changed or reviewed the doc; a backlog item's check, which a commit of another item
+                                   or sprint cannot fail; exit 1 when any
   selfdoc.py map PATH [PATH ...]   the docs that describe these paths
   selfdoc.py check                 map rows naming a missing doc or matching no file, kb/_self/*.md docs with no row,
                                    and dead section references; exit 1 when any
@@ -139,10 +144,46 @@ def reviews(root, rev_range=None):
     return out
 
 
-def stale(root=KB, since=None):
+WORK = "KB-Work"  # commit trailer: the backlog items a commit works on
+
+
+def work_commits(root, ids):
+    """[(hash, {changed paths})] newest first: the commits of HEAD's history whose `KB-Work` trailer, as git reads
+    trailers, names one of IDS."""
+    fmt = f"%H%x1f%(trailers:key={WORK},valueonly,separator=%x2C)%x1e"
+    out = []
+    for rec in git(root, "log", f"--format={fmt}", "HEAD").split("\x1e"):
+        h, _, names = rec.strip().partition("\x1f")
+        if h and {n.strip() for n in names.replace("\n", ",").split(",")} & set(ids):
+            out.append((h, set(lines(git(root, "diff-tree", "--no-commit-id", "--name-only", "-r", "--root", h)))))
+    return out
+
+
+def stale_work(root, ids, docs):
+    """stale() limited to the commits that name IDS: a doc counts as behind when such a commit changed a file it
+    describes and neither that commit nor a later one (to HEAD, whatever its trailer) changed the doc or names it in
+    `Self-Reviewed:`. A doc another item's commit left stale is not this item's to fail."""
+    out, seen = [], set()
+    for h, paths in work_commits(root, ids):  # newest first: each doc is judged against its newest such commit
+        for doc, hit in describing(docs, sorted(paths)).items():
+            if doc in seen:
+                continue  # judged against a newer commit of the item already
+            seen.add(doc)
+            if doc in paths or lines(git(root, "rev-list", "-1", f"{h}..HEAD", "--", doc)):
+                continue  # edited in the change or after it
+            if any(doc in names for r in (f"{h}^!", f"{h}..HEAD") for _, names in reviews(root, r)):
+                continue  # reviewed in the change or after it
+            out.append((doc, h[:12], hit))
+    return out
+
+
+def stale(root=KB, since=None, work=None):
     """[(doc, reference, [changed described paths])]: the docs that are behind what they describe. A doc edited in
-    the change, or named in a `Self-Reviewed:` trailer of a commit since, counts as up to date."""
+    the change, or named in a `Self-Reviewed:` trailer of a commit since, counts as up to date. WORK (item ids) limits
+    it to the changes of the commits whose `KB-Work` trailer names one of them (stale_work)."""
     docs = load_map(root)
+    if work:
+        return stale_work(root, work, docs)
     out = []
     if since:
         git(root, "rev-parse", "--verify", "--quiet", since + "^{commit}")
@@ -514,7 +555,10 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("stale", help="docs behind the files they describe")
-    s.add_argument("--since", metavar="REV", help="compare REV with the working tree instead of each doc's last commit")
+    w = s.add_mutually_exclusive_group()
+    w.add_argument("--since", metavar="REV", help="compare REV with the working tree instead of each doc's last commit")
+    w.add_argument("--work", metavar="ID", action="append",
+                   help="only what the commits whose KB-Work trailer names ID changed (repeatable): an item's check")
     m = sub.add_parser("map", help="the docs that describe these paths")
     m.add_argument("paths", nargs="+")
     sub.add_parser("check", help="map rows naming a missing doc or matching no file; _self docs with no row; "
@@ -549,7 +593,7 @@ def main(argv=None):
                 print("PROBLEM", p)
             print(f"problems={len(problems)}")
             return 1 if problems else 0
-        result = stale(since=a.since)
+        result = stale(since=a.since, work=a.work)
         for doc, ref, hit in result:
             more = f" +{len(hit) - 8} more" if len(hit) > 8 else ""
             print(f"STALE {doc} (since {ref}): {', '.join(hit[:8])}{more}")
