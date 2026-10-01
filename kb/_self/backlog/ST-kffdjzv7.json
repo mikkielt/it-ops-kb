@@ -2,7 +2,7 @@
   "id": "ST-kffdjzv7",
   "kind": "story",
   "title": "The sync gate runs the tests of the code a push changes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
     "kb/_self/maintaining.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Merged at planning 2026-10-01 from ST-4nd3ua4q (dropped): a change to kbgit.py sync makes sync's own gate run the tests that exercise it, TestCloudInGit included, so a regression like BG-7kug25eh (lane routing broke the cloud-session distill, caught only by a later full run in SP-v5xagbyv) cannot pass the gate. Cause found at planning: testmap already selects test_ql_deliver.py for kbgit.py, but the gate's KB_TESTS_FAST=1 leaves out every git-marked test."
+  "notes": "Merged at planning 2026-10-01 from ST-4nd3ua4q (dropped): a change to kbgit.py sync makes sync's own gate run the tests that exercise it, TestCloudInGit included, so a regression like BG-7kug25eh (lane routing broke the cloud-session distill, caught only by a later full run in SP-v5xagbyv) cannot pass the gate. Cause found at planning: testmap already selects test_ql_deliver.py for kbgit.py, but the gate's KB_TESTS_FAST=1 leaves out every git-marked test.",
+  "claimed_by": "c-kffdjzv7"
 }
