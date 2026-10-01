@@ -2,7 +2,7 @@
   "id": "TK-ymbmdww4",
   "kind": "task",
   "title": "Write, gate and deliver the work sidecar",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-mn4j4fis",
   "priority": "P2",
   "rank": 1,
@@ -39,5 +39,28 @@
   "depends_on": [
     "TK-ufwy5bec"
   ],
-  "claimed_by": "worker-ymbmdww4"
+  "evidence": {
+    "commit": "fd8090cdf2ddbb0d668b9fe9456cafa144fd99cb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_sidecar"
+        ],
+        "exit": 0,
+        "sha256": "697884e803a33fcb"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/querylog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ca69e22a961e6b9a"
+      }
+    ]
+  }
 }
