@@ -2,7 +2,7 @@
   "id": "TK-ncnhzgyc",
   "kind": "task",
   "title": "backlog.py answer --record",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-r25rmm76",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,19 @@
     "kb/_self/content-rules.md",
     "_tools/test_kb_cohesion.py"
   ],
-  "claimed_by": "worker-answer-record"
+  "evidence": {
+    "commit": "a57b57a8d920a188587c90451a7be161f99e4324",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "answer_record"
+        ],
+        "exit": 0,
+        "sha256": "9dbdda2faf632e84"
+      }
+    ]
+  }
 }
