@@ -2,7 +2,7 @@
   "id": "BG-li55bhiq",
   "kind": "bug",
   "title": "No test holds that the sync gate and pre-push run selfdoc stale over the pushed range",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-5cwekumc",
   "priority": "P3",
@@ -31,5 +31,30 @@
   "touches": [
     "_tools/test_selfdoc.py"
   ],
-  "claimed_by": "c-li55bhiq"
+  "evidence": {
+    "commit": "539f84360f8ceda2a6d1cd834658ba971e7bb47e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc_stale_over_pushed_range"
+        ],
+        "exit": 0,
+        "sha256": "528a492eb9212555"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "test_selfdoc_gate_passes_since",
+          "_tools/test_selfdoc.py"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }
