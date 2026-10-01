@@ -2,7 +2,7 @@
   "id": "ST-wixs3g73",
   "kind": "story",
   "title": "drop leaves no dropped item depending on another dropped item",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -24,5 +24,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orch-fourth-w10"
+  "evidence": {
+    "commit": "57074e4799103b2e70bc10315278a6590bc016aa",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "drop_chain"
+        ],
+        "exit": 0,
+        "sha256": "e19256230dd193a2"
+      }
+    ]
+  }
 }
