@@ -1,0 +1,24 @@
+{
+  "id": "ST-g73vlg44",
+  "kind": "story",
+  "title": "tests.py caps its pytest workers so concurrent sessions do not oversubscribe the host",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "tests.py runs pytest-xdist with a capped worker count (a KB_TEST_WORKERS setting, and by default a share of the CPUs when other tests.py runs of the clone are live) instead of -n auto, so four sessions' gates on one host do not each start one worker per core and turn tests into timeouts. Answers SP-x2pvljz6: every gate started about 14 workers per session and many fast-test failures were load timeouts that passed alone.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_workers_capped"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_testmap.py",
+    "kb/_self/tools.md"
+  ]
+}
