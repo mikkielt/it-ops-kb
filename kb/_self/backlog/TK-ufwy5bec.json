@@ -2,7 +2,7 @@
   "id": "TK-ufwy5bec",
   "kind": "task",
   "title": "Usage rows for every prompt of a work window",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-mn4j4fis",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,19 @@
     "kb/_self/querylog.md"
   ],
   "notes": "Scope widened: the usage surface and Distill steps in kb/_self/querylog.md describe kb prompts only and must say work-window prompts too.",
-  "claimed_by": "worker-ufwy5bec"
+  "evidence": {
+    "commit": "5e26d8805b8b6aae0761ab834e3738826ec17781",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_usage"
+        ],
+        "exit": 0,
+        "sha256": "80862a8e17e15c46"
+      }
+    ]
+  }
 }
