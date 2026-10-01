@@ -2,7 +2,7 @@
   "id": "BG-sim2fdaa",
   "kind": "bug",
   "title": "red-pipeline --job reads a started-then-canceled job as passed, so a red-main bug's repro turns green",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -27,5 +27,19 @@
     "kb/_self/tools.md",
     "_tools/bl_intake.py"
   ],
-  "claimed_by": "c-sim2fdaa"
+  "evidence": {
+    "commit": "dd4e02bb489fc5efa0d69f6749403ae0ec8d40e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "red_pipeline_job_skips_a_canceled_run"
+        ],
+        "exit": 0,
+        "sha256": "b9e453b94297153f"
+      }
+    ]
+  }
 }
