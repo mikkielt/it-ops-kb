@@ -2,7 +2,7 @@
   "id": "BG-umgofrno",
   "kind": "bug",
   "title": "Sprint landing steps rebase on local main, which an orchestrator in its own worktree cannot move",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
