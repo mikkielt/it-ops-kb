@@ -5,7 +5,7 @@
   "status": "draft",
   "priority": "P2",
   "rank": 0,
-  "goal": "A change runs only the checks it can break, and on the project's Windows 11 host python3 _tools/tests.py finishes in 10 minutes or less and python3 _tools/stress_test.py in 5 minutes or less with nothing else running, kb-tests-windows finishes within its 1-hour job timeout, and every run collects the same test ids as before the epic, with every planted-failure test still present and passing.",
+  "goal": "A change runs only the checks it can break, and on the project's Windows 11 host python3 _tools/tests.py finishes in 10 minutes or less and python3 _tools/stress_test.py in 5 minutes or less with nothing else running, kb-tests-windows finishes within its 3-hour job timeout, and every run collects the same test ids as before the epic, with every planted-failure test still present and passing.",
   "links": [
     "kb/_self/reports/test-suite-speed.md",
     "kb/public/_answers.md#QK-subprocess-heavy-pytest-suite-run-faster",

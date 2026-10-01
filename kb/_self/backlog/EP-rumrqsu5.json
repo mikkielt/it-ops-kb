@@ -5,7 +5,7 @@
   "status": "draft",
   "priority": "P2",
   "rank": 0,
-  "goal": "Every clone follows one git regime whatever host it lives on: kb content lands on the integration remote's main by direct push through kbgit.py sync --push; code (tools, hooks, skills, CI, process docs) lands only through a code/<id> branch merged by a merge or pull request; a CI job in .gitlab-ci.yml and in the GitHub workflow fails a push to main that carries a code-lane commit outside a merge; a clone with a publish remote fast-forwards it from a green integration main and never publishes an internal root, _private/ or _cache/; kb/_self/git.md, kb/_self/backlog.md and AGENTS.md state the regime.",
+  "goal": "Every clone follows one git regime whatever host it lives on: kb content lands on the integration remote's main by direct push through kbgit.py sync --push; code (tools, hooks, skills, CI, process docs) lands only through a code/<id> branch merged by a merge or pull request; a manual CI job in .gitlab-ci.yml and in the GitHub workflow runs kbgit.py check-lanes and fails when main carries a code-lane commit outside a merge; a clone with a publish remote fast-forwards it from a green integration main and never publishes an internal root, _private/ or _cache/; kb/_self/git.md, kb/_self/backlog.md and AGENTS.md state the regime.",
   "links": [
     "kb/_self/git.md",
     "kb/_self/backlog.md",

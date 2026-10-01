@@ -1,0 +1,27 @@
+{
+  "id": "ST-op2wzdt2",
+  "kind": "story",
+  "title": "check-lanes runs as a manual CI job on both forges",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A manual job in .gitlab-ci.yml and one in .github/workflows/kb.yml run kbgit.py check-lanes over the pushed range and fail when it lists a code-lane commit no merged request introduced; kb/_self/git.md says the job exists and that it detects, never blocks a push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_lanes_ci_job"
+      ]
+    }
+  ],
+  "touches": [
+    ".gitlab-ci.yml",
+    ".github/workflows/kb.yml",
+    "_tools/test_ci_config.py",
+    "kb/_self/git.md",
+    "kb/_self/runners.md"
+  ]
+}
