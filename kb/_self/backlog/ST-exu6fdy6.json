@@ -2,7 +2,7 @@
   "id": "ST-exu6fdy6",
   "kind": "story",
   "title": "Usage across a transcript tree, by tool, command and file",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-xb45i7t4",
   "priority": "P3",
@@ -38,5 +38,20 @@
       "by": "operator"
     }
   ],
-  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. 92 ad-hoc reads of .jsonl transcripts and 122 scripts touching usage; the census behind this epic was itself hand-written. kbusage.py covers one transcript and one prompt; ST-6bi7oe6y and ST-mn4j4fis roll usage up by item and work window, not by tool or file. Kb facts: public/claude/otel-monitoring.md:18 (DOC S744), public/claude/agent-sdk.md:68,75 (modelUsage covers subagents; subagent transcripts, DOC S-isqfh6pr S-gztpah4d), public/claude/hooks.md:39 (transcript_path, DOC S743). It measures the other stories of EP-hsyx42zz."
+  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. 92 ad-hoc reads of .jsonl transcripts and 122 scripts touching usage; the census behind this epic was itself hand-written. kbusage.py covers one transcript and one prompt; ST-6bi7oe6y and ST-mn4j4fis roll usage up by item and work window, not by tool or file. Kb facts: public/claude/otel-monitoring.md:18 (DOC S744), public/claude/agent-sdk.md:68,75 (modelUsage covers subagents; subagent transcripts, DOC S-isqfh6pr S-gztpah4d), public/claude/hooks.md:39 (transcript_path, DOC S743). It measures the other stories of EP-hsyx42zz.",
+  "evidence": {
+    "commit": "c5df2279e7e5d24f39a5a707b40d6405baa16872",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbusage_tree"
+        ],
+        "exit": 0,
+        "sha256": "02462dbea824ebd0"
+      }
+    ]
+  }
 }
