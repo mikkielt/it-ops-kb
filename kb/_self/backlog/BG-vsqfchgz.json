@@ -2,7 +2,7 @@
   "id": "BG-vsqfchgz",
   "kind": "bug",
   "title": "A red main whose only failed job never ran gets a --job repro that passes, so red-pipeline files nothing",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -27,5 +27,19 @@
     "kb/_self/tools.md",
     "_tools/bl_intake.py"
   ],
-  "claimed_by": "c-vsqfchgz"
+  "evidence": {
+    "commit": "1b3ddc210fdce2f1d5ac6437ca1755a7ecd3aace",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "red_pipeline_files_a_red_status_whose_job_never_ran"
+        ],
+        "exit": 0,
+        "sha256": "1d83f17fbb53e713"
+      }
+    ]
+  }
 }
