@@ -31,5 +31,20 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "For a sprint in a second clone, which way do the skill and runbook give first?",
+      "options": [
+        "a fresh Claude session in that clone first, hand-made worktrees (agent without isolation) as the fallback",
+        "hand-made worktrees from the current session first",
+        "only a fresh Claude session in that clone"
+      ],
+      "recommendation": "a fresh Claude session in that clone first, hand-made worktrees (agent without isolation) as the fallback",
+      "answer": "a fresh Claude session in that clone first, hand-made worktrees (agent without isolation) as the fallback",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-skillstack"
 }
