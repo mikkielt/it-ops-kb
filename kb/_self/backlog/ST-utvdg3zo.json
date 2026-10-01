@@ -2,7 +2,7 @@
   "id": "ST-utvdg3zo",
   "kind": "story",
   "title": "A sprint worker ends every background process and monitor before it returns",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
@@ -30,5 +30,6 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "SP-3brmvlnh retrospective: a worker left a ten-minute intake run with tests.py under it, and another left monitors that woke the orchestrator a dozen times."
+  "notes": "SP-3brmvlnh retrospective: a worker left a ten-minute intake run with tests.py under it, and another left monitors that woke the orchestrator a dozen times.",
+  "claimed_by": "worker-blstack2"
 }
