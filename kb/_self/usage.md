@@ -29,6 +29,7 @@ What a kb lookup costs in tokens, read from what Claude Code already recorded an
 ## `kbusage.py`
 
 - `python3 _tools/kbusage.py TRANSCRIPT [--prompt PROMPT_ID]` prints one JSON line per prompt of a transcript (or the one named), numbered in order instead of by its id: the record the sidecar keeps, or `"usage": null`.
+- `python3 _tools/kbusage.py tree PATH [--format json] [--top N]` reads a transcript with its `subagents/*.jsonl`, or a project directory of transcripts, and prints the calls and characters of tool results by tool, Bash command head, file path and agent group; a call repeated across resumed transcripts counts once. Its check exits 1 when a group's rows do not add up to the totals or the characters exceed `TOKEN_SPAN_MAX` (16) per token of fresh input, and 2 for a missing path or no transcripts. The distill does not use it.
 - `kbusage.prompt_usage(transcript_path, prompt_id)` is what the query log's distill calls: the record, or None.
 - Tested in `_tools/test_kbusage.py` on the fixture transcript `_tools/fixtures/kbusage/session.jsonl` and its `session/subagents/`.
 
