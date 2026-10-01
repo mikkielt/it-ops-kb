@@ -20,10 +20,12 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "TK-gnxbjdxc"
   ],
+  "notes": "Scope widened: the cost row of tools.md says an unknown id exits 2 and omits items deleted at sprint close.",
   "claimed_by": "worker-3kj5dh3r"
 }
