@@ -12,7 +12,7 @@
   kbgit.py blame <path:line>                               the commit that wrote that line, and the sources it cites
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
-  kbgit.py sync [--push] [--dry-run] [--remote R] [--branch main]   fetch, rebase, fix, gate, push: the way to push
+  kbgit.py sync [--push] [--dry-run] [--remote R] [--branch main] [--session S]   fetch, rebase, fix, gate, push
   kbgit.py publish [--remote R] [--dry-run] [--rewrite] [--hook]    push the integration main without kb/_querylog to the public home
   kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]  a public-home branch to the integration remote: rebase, gate, push by lane
   kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog (kbpublic.py)
@@ -75,7 +75,10 @@ counts the sources and the _fetch_state.csv checks. `asof census-2026-09-26 PATH
 Sync (the only way to push; people push straight to main, CI is a safety net):
   a. refuses (exit 2) with uncommitted tracked changes (lists staged/unstaged: commit or stash them), or while a
      rebase/merge/cherry-pick/revert is in progress; untracked files do not count.
-  b. git fetch REMOTE BRANCH; prints how far HEAD is ahead of / behind REMOTE/BRANCH.
+  b. git fetch REMOTE BRANCH; prints how far HEAD is ahead of / behind REMOTE/BRANCH. With --push (--dry-run too) it
+     refuses (exit 1, nothing rebased or pushed) when a local commit not on REMOTE carries a `Claude-Session:` trailer
+     naming a session other than the one sync runs in (--session, else KB_SESSION, else CLAUDE_CODE_REMOTE_SESSION_ID
+     or CLAUDE_CODE_BRIDGE_SESSION_ID: current_session), listing each. An unknown session refuses nothing.
   c. git -c merge.conflictStyle=diff3 rebase REMOTE/BRANCH (diff3: see MERGE_CFG; merge commits are linearised: they
      would carry no trailers). A step that conflicts only
      in MECHANICAL paths (the union ledgers, _coverage.csv, _tools/lint_baseline.txt, the coverage table page) is
@@ -94,7 +97,7 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
      then give up (exit 1).
   f. a report: commits rebased, conflicts resolved, fix, ids renumbered, trailers refreshed, gate, pushed or not.
   --dry-run fetches and reports ahead/behind, the incoming commits and the files both sides changed; nothing else.
-Exit (sync): 0 done, 1 gate failed or push rejected/failed, 2 refused (dirty tree, operation in progress, bad
+Exit (sync): 0 done, 1 gate failed, push rejected/failed or another session's commits, 2 refused (dirty tree, operation in progress, bad
 arguments, fetch failed), 3 a conflict or a fix problem needs a human or /kb-git-sync.
 
 Why: `.gitattributes` merges the append-only ledgers with git's built-in union driver, so two branches that
@@ -1275,6 +1278,49 @@ def short(rev):
     return (rev or "")[:9]
 
 
+# The session that runs sync, matched against the `Claude-Session: <url>` trailer Claude Code adds to the commits of a
+# cloud or Remote Control session. In order: --session, KB_SESSION (set but empty: unknown), a cloud session's
+# CLAUDE_CODE_REMOTE_SESSION_ID (`cse_<id>`, the url's `session_<id>`), a Remote Control session's
+# CLAUDE_CODE_BRIDGE_SESSION_ID. A session that sets none of them writes no such trailer either: unknown, never refused.
+SESSION_TRAILER = "Claude-Session"
+SESSION_ENV = ("CLAUDE_CODE_REMOTE_SESSION_ID", "CLAUDE_CODE_BRIDGE_SESSION_ID")
+
+
+def session_key(value):
+    """The comparable form of a session: the url's last path segment, `cse_` read as `session_`; "" when empty."""
+    v = (value or "").strip().rstrip("/").rsplit("/", 1)[-1]
+    return "session_" + v[len("cse_"):] if v.startswith("cse_") else v
+
+
+def current_session(arg=None, env=None):
+    """The session sync runs in (session_key form), or "" when unknown."""
+    env = os.environ if env is None else env
+    if arg is not None:
+        return session_key(arg)
+    if "KB_SESSION" in env:
+        return session_key(env["KB_SESSION"])
+    return next((session_key(env[k]) for k in SESSION_ENV if env.get(k, "").strip()), "")
+
+
+def foreign_session_commits(rev, remote, up, session):
+    """[(short, subject, sessions)] of REV's commits not on REMOTE (UP, the remote's tracking refs) whose
+    Claude-Session trailers name a session other than SESSION; [] when SESSION is unknown. A commit with no such
+    trailer (a person's, a tool's) is never foreign."""
+    if not session:
+        return []
+    out = git("log", f"--format=%h%x1f%s%x1f%(trailers:key={SESSION_TRAILER},valueonly,unfold,separator=%x1d)%x1e",
+              rev, "--not", *([up] if up else []), f"--remotes={remote}") or ""
+    found = []
+    for rec in out.split("\x1e"):
+        parts = rec.strip("\n").split("\x1f")
+        if len(parts) != 3:
+            continue
+        sessions = [session_key(s) for s in parts[2].split("\x1d") if s.strip()]
+        if sessions and session not in sessions:
+            found.append((parts[0], parts[1], sessions))
+    return found
+
+
 def fix_args(base, up, orig):
     """kbgit.py fix arguments after rebasing orig onto up: up is already pushed, so its ids and answer ids stay."""
     return ["fix"] + (["--base", base, "--upstream", up, "--side", orig] if base else [])
@@ -1575,6 +1621,17 @@ def sync_once(a, r):
     r.update(ahead=ahead, behind=behind)
     print(f"{target}: local {ahead} ahead, {behind} behind" + ("" if up else f" ({a.branch} does not exist on {a.remote} yet)"))
 
+    session = current_session(getattr(a, "session", None))
+    foreign = foreign_session_commits(orig, a.remote, up, session) if a.push else []
+    if foreign:
+        print(f"refused: {len(foreign)} local commit(s) were made by another Claude session in this checkout (this one: "
+              f"{session}); the session that made them pushes them, each session from its own clone or worktree:")
+        for h, subject, sessions in foreign:
+            print(f"  {h} {subject} ({SESSION_TRAILER}: {', '.join(sessions)})")
+        print("nothing rebased, fixed or pushed")
+        r["pushed"] = "no (another session's commits)"
+        return 1
+
     if a.dry_run:
         lane, branch = lane_plan(up, orig, a.branch)
         print(f"lane: {lane or f'not routed (a push to {a.branch})'}; " + (f"would push branch {branch} with merge-request push options, {a.branch} would not move"
@@ -1781,7 +1838,8 @@ def cmd_bridge(a):
         return 3
     if not code:
         r["rebased"] = len(commits)
-        a2 = argparse.Namespace(remote=a.remote, branch="main", push=a.push, dry_run=False)
+        # session "": the bridged commits are the public home's, already pushed there, not a local session's
+        a2 = argparse.Namespace(remote=a.remote, branch="main", push=a.push, dry_run=False, session="")
         code = cmd_sync(a2, r)
     if code == 3:
         return 3
@@ -1836,6 +1894,8 @@ def main():
     y.add_argument("--dry-run", action="store_true", help="fetch and report what would happen; rebase, commit and push nothing")
     y.add_argument("--remote", help=f"the remote (default: the integration remote, git config {kbpublic.INTEGRATION_KEY}, else origin)")
     y.add_argument("--branch", default="main", help="the remote branch to rebase onto and push to (default main)")
+    y.add_argument("--session", help="the Claude Code session sync runs in, as its Claude-Session url or id (default: "
+                                     "KB_SESSION, else the session's environment; an empty value: unknown)")
     g = sub.add_parser("tag-census", help="annotated tag census-YYYY-MM-DD on HEAD (not pushed)")
     g.add_argument("date", metavar="YYYY-MM-DD")
     pb = sub.add_parser("publish", help="push the projection of the integration main (no kb/_querylog) to the public home")
