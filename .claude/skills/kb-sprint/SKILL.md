@@ -47,6 +47,7 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    - "run the item's checks and the fast tests, `python3 _tools/tests.py --changed origin/main`; never `python3 _tools/stress_test.py` or the full `tests.py`" (parallel full runs load the host into false timeouts);
    - "commit on a local branch `work/<id>` with `KB-Work: <id>` in the message's last paragraph, with `Co-Authored-By` and the other trailers; never push";
    - "file a bug for any defect outside the item, do not fix it";
+  - "a doc that needs an edit outside the touches stops the work with a report; `Self-Reviewed:` names only docs read and found still correct";
    - "record a gate with a recommendation instead of guessing, and stop";
    - "never write the operator's decisions into docs or code".
    An item with a single commit and a narrow `touches` may be done in this session instead.
