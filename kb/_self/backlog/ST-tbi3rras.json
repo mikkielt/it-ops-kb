@@ -1,0 +1,50 @@
+{
+  "id": "ST-tbi3rras",
+  "kind": "story",
+  "title": "Sprint runs test in three tiers: narrow per task, the gate per landing, the heavy suites once at sprint end",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-gfoakqar",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "A kb-worker runs only its item's own -k checks plus ruff and tools_map, and the sync gate's tests.py --changed is the one mapped run per landing; backlog.py land no longer runs stress_test.py; the review story's checks run stress_test.py with the full tests.py once before review and retro; when that end run fails, a backlog.py subcommand finds the landed commit after which the failing test ids first fail, and kb-sprint says to file a bug naming that commit's item and dispatch a kb-worker for it at once; kb-sprint, kb-worker, kb-item and backlog.md state the three tiers.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_runs_no_stress_before_sprint_end"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "review_checks_run_stress_once"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "red_end_run_finds_culprit_landing"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "Tiers before the story: a worker runs the item's checks and tests.py --changed origin/main; land runs done, stress_test.py, rag.py eval and lint, then the sync gate runs --changed again; the review story runs the full tests.py once. After it: the worker runs no --changed, stress_test.py runs once at sprint end, and a red end run is bisected over the sprint's landings with its bug fixed by a worker dispatched at once. The story is large: /kb-item splits it into tasks (land and review checks; worker brief and docs; the bisect subcommand and the kb-sprint step)."
+}
