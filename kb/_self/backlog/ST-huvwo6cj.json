@@ -1,0 +1,20 @@
+{
+  "id": "ST-huvwo6cj",
+  "kind": "story",
+  "title": "Sync refuses to push another session's local commits from a shared checkout",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py sync --push refuses (exit 1, naming them) when the range holds commits a different Claude session made in this checkout, and the kb-sprint skill says each session works in its own clone or worktree. Answers SP-jtfo4ael's retrospective: other sessions ran backlog.py start and committed in the orchestrator's checkout, and one session's sync pushed another's local main.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sync_foreign_session"
+      ]
+    }
+  ]
+}
