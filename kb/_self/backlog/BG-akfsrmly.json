@@ -1,0 +1,21 @@
+{
+  "id": "BG-akfsrmly",
+  "kind": "bug",
+  "title": "PIPELINE_VERSION is not bumped although distill now writes work sidecars, overhead and rework",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "PIPELINE_VERSION in _tools/ql_base.py is raised above 5 and the PIPELINE_VERSION row of the defaults table in kb/_self/querylog.md follows, because what distill writes changed during SP-fvztfmtm (the work sidecar, the overhead line, the rework block, routed subagent counts); found in the review of SP-fvztfmtm",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import ql_base; sys.exit(0 if ql_base.PIPELINE_VERSION > 5 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_base.py",
+    "kb/_self/querylog.md"
+  ]
+}
