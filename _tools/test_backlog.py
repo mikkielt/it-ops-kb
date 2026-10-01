@@ -3839,9 +3839,10 @@ def test_backlog_cost_without_sidecars_prints_zeros_and_exits_0(sprint, capsys):
     repo, tk = sprint["repo"], sprint["tk"]
     code, out = b(repo, "cost", tk)
     assert code == 0 and "0 run(s)" in out, out
-    assert out.count("all models  requests 0  in 0  cr 0  out 0 | cw 0") == 2, out
+    assert out.count("all models  requests 0  in 0  cr 0  out 0 | cw 0") == 4, out  # direct, attributed, shared, total
     one = json.loads(cost_out(repo, capsys, tk, "--format", "json"))
     assert one["direct"] == {} and one["attributed"] == {} and one["runs"] == 0 and one["prompts"] == 0
+    assert one["shared"] == {} and one["session_total"] == {} and one["shared_prompts"] == 0
 
 
 # --- backlog.py cost: items deleted at sprint close, read from their last version in git history ---
@@ -4087,3 +4088,221 @@ def test_backlog_cost_closed_history_parse_takes_the_newest_deletion_and_skips_a
 def test_backlog_cost_closed_history_items_of_no_ids_runs_no_git(monkeypatch):
     monkeypatch.setattr(backlog.subprocess, "run", lambda *a, **kw: pytest.fail("git ran"))
     assert backlog.history_items(".", []) == {} and backlog.history_items(".", ["../x", "not an id"]) == {}
+
+
+# --- backlog.py cost: shared (a session's prompts outside any window) and the session total ---
+
+COST_RUN_E, COST_RUN_F = "20261005T100000Z-eeeeeeee", "20261005T110000Z-ffffffff"
+KEYS6 = ("requests", "in", "cw", "cw1h", "cr", "out")
+
+
+def plus(*maps):
+    """{model: counts} summed by hand, without the code under test."""
+    out = {}
+    for m in maps:
+        for model, c in m.items():
+            t = out.setdefault(model, dict.fromkeys(KEYS6, 0))
+            for k in KEYS6:
+                t[k] += c.get(k, 0)
+    return out
+
+
+@pytest.fixture
+def shared(sprint):
+    """One session works the task, then the bug, with a prompt before the first window, one between the two and one
+    after: the sidecar holds their counts on one shared line naming both items; a second session works the story and
+    the task (a shared line naming both), a third only the bug. Three sessions in two runs, over the one epic and the
+    one sprint of the fixture."""
+    w = dict(sprint)
+    st, tk, bg = w["st"], w["tk"], w["bg"]
+    before, between, after = {OPUS: cc(1, 11, 2, 110, 5)}, {SONNET: cc(1, 13, 3, 130, 6)}, {OPUS: cc(1, 17, 5, 170, 8)}
+    w["l1"] = {"items": sorted([tk, bg]), "prompts": 3, "main": plus(before, between, after),
+               "sub": {"general-purpose": {OPUS: cc(2, 1, 1, 1, 1)}}}
+    w["l2"] = {"items": sorted([st, tk]), "prompts": 2, "main": {OPUS: cc(2, 40, 0, 400, 20)}}
+    w["l3"] = {"items": [bg], "prompts": 1, "main": {OPUS: cc(5, 50, 5, 500, 50)}}
+    w["x_tk"] = {"item": tk, "prompts": 2, "main": {OPUS: cc(2, 20, 4, 200, 9)},
+                 "sub": {"Explore": {OPUS: cc(1, 2, 1, 3, 4)}}}
+    w["x_bg"] = {"item": bg, "prompts": 1, "main": {OPUS: cc(3, 30, 6, 300, 12)}}
+    w["y_st"] = {"item": st, "prompts": 1, "main": {OPUS: cc(1, 100, 10, 1000, 70)}}
+    w["y_tk"] = {"item": tk, "prompts": 1, "main": {OPUS: cc(1, 5, 0, 50, 2)}}
+    w["z_bg"] = {"item": bg, "prompts": 1, "main": {OPUS: cc(1, 1, 1, 1, 1)}}
+    cost_sidecar(w["repo"], COST_RUN_E, [w["x_tk"], w["x_bg"], w["l1"]])
+    cost_sidecar(w["repo"], COST_RUN_F, [w["y_st"], w["y_tk"], w["z_bg"], w["l2"], w["l3"]])
+    return w
+
+
+def shared_expect(w, who):
+    """The figures `cost` must give for the task, the bug, the story, the epic or the sprint, by hand from the lines."""
+    def both(line):
+        return plus(line["main"], *line.get("sub", {}).values())
+
+    story = {"direct": plus(w["y_st"]["main"], w["x_tk"]["main"], w["y_tk"]["main"]),
+             "attributed": plus(*w["x_tk"]["sub"].values()), "shared": plus(both(w["l1"]), both(w["l2"]))}
+    one = {"tk": {"direct": plus(w["x_tk"]["main"], w["y_tk"]["main"]), "attributed": story["attributed"],
+                  "shared": story["shared"]},
+           "bg": {"direct": plus(w["x_bg"]["main"], w["z_bg"]["main"]), "attributed": {},
+                  "shared": plus(both(w["l1"]), both(w["l3"]))},
+           "st": story, "ep": story,  # the epic holds the story and the task, not the bug
+           "sp": {"direct": plus(story["direct"], w["x_bg"]["main"], w["z_bg"]["main"]),
+                  "attributed": story["attributed"], "shared": plus(both(w["l1"]), both(w["l2"]), both(w["l3"]))}}[who]
+    return {**one, "total": plus(one["direct"], one["attributed"], one["shared"])}
+
+
+def check_shared_totals(w, capsys):
+    """Each figure, the session total as their sum, cw apart, and a shared line once for every rollup."""
+    for who in ("tk", "bg", "st", "ep", "sp"):
+        rep, e = cost_json(w["repo"], capsys, w[who]), shared_expect(w, who)
+        assert rep["direct"] == e["direct"], who
+        assert rep["attributed"] == e["attributed"], who
+        assert rep["shared"] == e["shared"], who
+        assert rep["session_total"] == e["total"], who
+        # cw is its own figure: the total's cw is the sum of the three cw's, and no cw is in an `in`
+        for k in ("cw", "in"):
+            assert sum(c[k] for c in rep["session_total"].values()) == sum(
+                c[k] for g in ("direct", "attributed", "shared") for c in rep[g].values()), (who, k)
+    # hand-picked figures: the task's shared is its two sessions' prompts outside their windows
+    tk = cost_json(w["repo"], capsys, w["tk"])
+    assert tk["shared"][OPUS] == cc(1 + 1 + 2 + 2, 11 + 17 + 1 + 40, 2 + 5 + 1, 110 + 170 + 1 + 400, 5 + 8 + 1 + 20)
+    assert tk["shared"][SONNET] == cc(1, 13, 3, 130, 6) and tk["shared_prompts"] == 5
+    # a shared line naming two items of one rollup is counted once: the story and its task name the second session
+    assert cost_json(w["repo"], capsys, w["ep"])["shared_prompts"] == 5
+    assert cost_json(w["repo"], capsys, w["sp"])["shared_prompts"] == 6
+
+
+def test_backlog_cost_shared_totals_per_item_and_rollup(shared, capsys):
+    check_shared_totals(shared, capsys)
+
+
+def test_backlog_cost_shared_text_prints_shared_and_the_session_total(shared, capsys):
+    out = cost_out(shared["repo"], capsys, shared["tk"])
+    e = shared_expect(shared, "tk")
+    labels = [x for x in out.splitlines() if x.endswith(":") and not x.startswith(" ")]
+    assert labels == ["direct (main):", "attributed (sub):", "shared (outside any window, 5 prompt(s)):",
+                      "session total (direct + attributed + shared):"], out
+    c = e["total"][OPUS]
+    assert f"  {OPUS}  requests {c['requests']}  in {c['in']}  cr {c['cr']}  out {c['out']} | cw {c['cw']}\n" in (
+        out.split("session total")[1]), out
+    assert f"  {SONNET}  requests 1  in 13  cr 130  out 6 | cw 3\n" in out.split("shared (")[1].split("session total")[0]
+
+
+def test_backlog_cost_shared_json_shape_and_runs(shared, capsys):
+    w = shared
+    rep = cost_json(w["repo"], capsys, w["sp"])
+    assert sorted(rep) == ["attributed", "by_item", "direct", "id", "items", "prompts", "restored", "runs",
+                           "session_total", "shared", "shared_prompts", "skipped", "unresolved"], sorted(rep)
+    assert all(set(x) == {"prompts", "direct", "attributed"} for x in rep["by_item"].values())  # none holds shared
+    runs = cost_json(w["repo"], capsys, w["sp"], "--runs")
+    assert [(x["run"], x["items"], x["prompts"]) for x in runs["shared_lines"]] == [
+        (COST_RUN_E, w["l1"]["items"], 3), (COST_RUN_F, w["l2"]["items"], 2), (COST_RUN_F, w["l3"]["items"], 1)]
+    assert runs["shared_lines"][0]["shared"] == plus(w["l1"]["main"], *w["l1"]["sub"].values())
+    assert all("item" not in x for x in runs["shared_lines"]) and all("items" not in x for x in runs["run_lines"])
+    assert "shared_lines" not in rep
+    out = cost_out(w["repo"], capsys, w["sp"], "--runs")
+    assert out.index("shared lines") < out.index("runs:") and out.count(COST_RUN_F) >= 3, out
+
+
+def test_backlog_cost_shared_line_of_no_item_in_scope_stays_out(shared, capsys):
+    """The session that worked only the bug adds nothing to the task or to the story."""
+    for who in ("tk", "st"):
+        lines = cost_json(shared["repo"], capsys, shared[who], "--runs")["shared_lines"]
+        assert [x["items"] for x in lines] == [shared["l1"]["items"], shared["l2"]["items"]], who
+
+
+def test_backlog_cost_shared_without_a_shared_line_is_zero_and_total_is_direct_plus_attributed(sprint, capsys):
+    w = sprint
+    cost_sidecar(w["repo"], COST_RUN_E, [{"item": w["tk"], "prompts": 1, "main": {OPUS: cc(1, 2, 3, 4, 5)},
+                                          "sub": {"Plan": {OPUS: cc(1, 1, 1, 1, 1)}}}])
+    rep = cost_json(w["repo"], capsys, w["tk"])
+    assert rep["shared"] == {} and rep["shared_prompts"] == 0
+    assert rep["session_total"] == {OPUS: cc(2, 3, 4, 5, 6)}
+
+
+@pytest.fixture
+def closed_shared(sprint):
+    """The sprint closed in git (story, task, bug and review deleted, the epic stays) with one session whose only
+    record is its shared line naming the task: the task has no line of its own."""
+    w = dict(sprint)
+    w["l"] = {"items": [w["tk"]], "prompts": 2, "main": {OPUS: cc(2, 4, 6, 8, 10)}}
+    cost_sidecar(w["repo"], COST_RUN_E, [w["l"]])
+    for k in ("st", "tk", "bg", "rv"):
+        edit(w["repo"], w[k], status="done")
+    commit(w["repo"], "the sprint, finished")
+    assert b(w["repo"], "close", w["sp"])[0] == 0
+    commit(w["repo"], "close the sprint")
+    return w
+
+
+def test_backlog_cost_shared_of_an_item_deleted_at_sprint_close_reaches_the_epic(closed_shared, capsys):
+    w = closed_shared
+    ep = cost_json(w["repo"], capsys, w["ep"])
+    assert ep["shared"] == w["l"]["main"] and ep["shared_prompts"] == 2 and ep["items"] == []
+    assert ep["session_total"] == ep["shared"]
+
+
+def planted_total_without_shared(real):
+    def report(bl, iid):
+        rep = real(bl, iid)
+        rep["session_total"] = plus(rep["direct"], rep["attributed"])
+        return rep
+    return report
+
+
+def planted_a_line_per_item(real):
+    def lines(root, ids):
+        out, skipped = real(root, ids)
+        return [x for w in out for x in ([{**w, "items": [i]} for i in w["items"]] if "items" in w else [w])], skipped
+    return lines
+
+
+def planted_sessions_merged(real):
+    """Every shared line given the items of all of them: a session counted for items it never worked."""
+    def lines(root, ids):
+        out, skipped = real(root, ids)
+        every = sorted({i for w in out if "items" in w for i in w["items"]})
+        return [{**w, "items": every} if "items" in w else w for w in out], skipped
+    return lines
+
+
+def planted_shared_without_sonnet(real):
+    def lines(root, ids):
+        out, skipped = real(root, ids)
+        return [{**w, "shared": {m: c for m, c in w["shared"].items() if m != SONNET}} if "items" in w else w
+                for w in out], skipped
+    return lines
+
+
+def planted_json_without_shared(real):
+    def report(bl, iid):
+        rep = real(bl, iid)
+        rep["shared"] = {}
+        return rep
+    return report
+
+
+@pytest.mark.parametrize("name,planted", [
+    ("cost_report", planted_total_without_shared),
+    ("cost_lines", planted_a_line_per_item),
+    ("cost_lines", planted_sessions_merged),
+    ("cost_lines", planted_shared_without_sonnet),
+    ("cost_report", planted_json_without_shared),
+], ids=["total without shared", "a shared line per item it names", "sessions' shared lines merged",
+        "shared of one model left out", "shared left out"])
+def test_backlog_cost_shared_planted_failure_of_each_rule_is_caught(shared, capsys, monkeypatch, name, planted):
+    monkeypatch.setattr(backlog, name, planted(getattr(backlog, name)))
+    with pytest.raises(AssertionError):
+        check_shared_totals(shared, capsys)
+
+
+def test_backlog_cost_shared_planted_failure_of_cw_folded_into_in_is_caught(shared, capsys, monkeypatch):
+    monkeypatch.setattr(backlog, "cost_add", planted_cw_into_in)
+    with pytest.raises(AssertionError):
+        check_shared_totals(shared, capsys)
+
+
+def test_backlog_cost_shared_planted_failure_of_a_shared_line_dropped_for_a_deleted_item_is_caught(closed_shared,
+                                                                                                capsys, monkeypatch):
+    """Only item lines name the ids asked of git history: the epic then misses the deleted task's shared line."""
+    real = backlog.cost_view
+    monkeypatch.setattr(backlog, "cost_view", lambda bl, ids: real(bl, {i for i in ids if i != closed_shared["tk"]}))
+    with pytest.raises(AssertionError):
+        test_backlog_cost_shared_of_an_item_deleted_at_sprint_close_reaches_the_epic(closed_shared, capsys)
