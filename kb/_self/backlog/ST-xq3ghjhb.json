@@ -2,7 +2,7 @@
   "id": "ST-xq3ghjhb",
   "kind": "story",
   "title": "intake's drift detector reaches every eligible item over successive runs, not the same first few",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P3",
@@ -24,5 +24,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "notes": "BG-vubkpech bounded drift to a 30 s budget; on the repository it then checks the same first items in id order every run and leaves most of the eligible ones unchecked."
+  "notes": "BG-vubkpech bounded drift to a 30 s budget; on the repository it then checks the same first items in id order every run and leaves most of the eligible ones unchecked.",
+  "claimed_by": "c-xq3ghjhb"
 }
