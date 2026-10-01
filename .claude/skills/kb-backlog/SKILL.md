@@ -22,9 +22,9 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
 
 ## Plan ("<what to plan>")
 1. See what exists: `python3 _tools/backlog.py find WORDS` first (open items whose title or goal hold every word, with parent chains; exit 1 when none), then `python3 _tools/backlog.py tree --open` and `python3 _tools/backlog.py horizon`. Extend an epic or story that already covers the request rather than adding a parallel one.
-2. Find the facts the work rests on: `python3 _tools/rag.py pack -q "<part>" -q "<part>"` for the product side, and `kb/_self/` for how the kb works. Name them in the items' `links` or `notes`.
+2. Find the facts the work rests on: `python3 _tools/rag.py pack -q "<part>" -q "<part>"` for the product side, and `kb/_self/` for how the kb works. Name them in the items' `links` or `notes` (`backlog.py set ID --link L --notes N`, `--add` appends).
 3. Interview the operator on anything the request leaves open: scope, what must not change, the checks that prove it, and gates. Ask with AskUserQuestion, a recommendation first, before writing items. Do not invent requirements.
-4. Write the items top down with `python3 _tools/backlog.py new KIND --title ...`, then edit their JSON:
+4. Write the items top down with `python3 _tools/backlog.py new KIND --title ...` (`--goal`, `--touch`, `--check`, `--depends` and `--priority` fill those fields as it creates the item), then add or change the rest with `python3 _tools/backlog.py set ID` (`--touch`, `--check`, `--link`, `--depends`, `--relates` replace a list and `--add` appends to it; `--notes`, `--priority`, `--rank`, `--sprint`; `--clear FIELD`) and `python3 _tools/backlog.py gate add ID`, never by editing the item's JSON (`status`, `claimed_by` and `evidence` come only from `claim` and `done`, and `set` refuses them with the rule):
    - an epic states the outcome;
    - each story is one verifiable capability that lands in one push, with a `goal` and `checks` (argv lists, no shell);
    - each task is one commit, with `touches` globs as narrow as the work allows;
@@ -33,7 +33,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    - a task that adds a read-only command a skill or subagent runs also adds its `Bash(...)` and `PowerShell(...)` allow rules to `.claude/settings.json` in its `touches`, and a check that the command refuses a path argument outside the repository, so the rule allows nothing beyond the clone;
    - a change to how agents read docs or call a tool (a route) lists every consumer of it in the plan: the skills, the `.claude/agents/` definitions, `AGENTS.md` and headless runs such as `_tools/ql_research.py` (`grep -rn` the command or doc it changes over `.claude/`, `AGENTS.md` and `_tools/`), and each consumer is in some item's `touches`;
    - `depends_on` wherever order matters;
-   - a gate for each question only the operator can settle (the always-blocking list is in "Dependencies, gates and triggers"), with options and a recommendation.
+   - a gate for each question only the operator can settle (the always-blocking list is in "Dependencies, gates and triggers"), with options and a recommendation: `python3 _tools/backlog.py gate add ID --question Q --option O --option O --recommendation R [--kind blocking|provisional]`, the recommendation one of the options.
 5. New stories and bugs stay `draft` and outside any sprint unless the operator says which sprint.
 6. `python3 _tools/backlog.py fmt`, then `python3 _tools/backlog.py check` must print `errors=0`, and no warning about a new item's docs.
 7. Show the result with `python3 _tools/backlog.py tree <epic>` and say what is still open.
@@ -46,9 +46,9 @@ An outcome that takes several pushes. Plan it as below, with these steps first:
    - what is out of scope, and what must not change;
    - which command would prove the whole epic;
    - the decisions only the operator can make.
-3. `python3 _tools/backlog.py new epic --title T --goal "<outcome>"`. Add the epic's own checks, if any.
+3. `python3 _tools/backlog.py new epic --title T --goal "<outcome>"`. Add the epic's own checks, if any, with `--check` on `new` or `python3 _tools/backlog.py set EP-... --check "CMD"`.
 4. Write its first stories, only the ones whose goal and checks are clear now, each with `--parent EP-...`. Everything else stays in the epic's `notes` until it is refined in a later `/kb-backlog` or `/kb-sprint plan`.
-5. Put each open decision as a gate on the story it blocks, with options and a recommendation.
+5. Put each open decision as a gate on the story it blocks (`python3 _tools/backlog.py gate add ID --question Q --option O --option O --recommendation R`).
 6. `fmt`, `check`, then `python3 _tools/backlog.py tree EP-...`. Report the epic's id and title, its stories, and the gates waiting on the operator.
 
 ## Bug ("<defect>")
@@ -64,7 +64,7 @@ List what needs deciding, intake's drafts first:
 - bugs without a sprint;
 - items whose trigger may have fired (fire them with `python3 _tools/backlog.py fire ID` once the event is confirmed).
 
-Propose priority, severity, sprint or drop for each, in one AskUserQuestion batch. Apply the answers, then run `fmt` and `check`.
+Propose priority, severity, sprint or drop for each, in one AskUserQuestion batch. Apply the answers (`python3 _tools/backlog.py set ID --priority P --sprint SP`, `python3 _tools/backlog.py drop ID --why W`; a bug's severity is set by `new`), then run `fmt` and `check`.
 
 ## Finish
 Commit the item files with a `KB-Work:` trailer naming the items, in the message's last paragraph with `Co-Authored-By` and the other trailers. Commit only when the user asked. Then run `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops).
