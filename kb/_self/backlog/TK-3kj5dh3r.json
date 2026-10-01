@@ -2,7 +2,7 @@
   "id": "TK-3kj5dh3r",
   "kind": "task",
   "title": "Resolve items deleted at sprint close from git history",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-6bi7oe6y",
   "priority": "P2",
   "rank": 1,
@@ -24,5 +24,6 @@
   ],
   "depends_on": [
     "TK-gnxbjdxc"
-  ]
+  ],
+  "claimed_by": "worker-3kj5dh3r"
 }
