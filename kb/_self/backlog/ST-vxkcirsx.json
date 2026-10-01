@@ -1,0 +1,24 @@
+{
+  "id": "ST-vxkcirsx",
+  "kind": "story",
+  "title": "sync retries a rejected push with backoff while origin/main keeps moving",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbgit.py sync --push retries a push rejected because origin/main moved more than twice, with a growing pause and a bound it names, so several sessions pushing claims at once do not make a content push give up; the exit and report say how many tries it made. Answers SP-x2pvljz6: a claim push gave up after two rejections while four sessions pushed.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sync_push_retries_backoff"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md"
+  ]
+}
