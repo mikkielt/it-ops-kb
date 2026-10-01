@@ -2,7 +2,7 @@
   "id": "ST-weieuayk",
   "kind": "story",
   "title": "A sprint brief names known failing tests and the bug filed for them",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "worker-skillstack"
+  "evidence": {
+    "commit": "468198b554dad06624468d78879f173bbf1abfd3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_brief_known_failures"
+        ],
+        "exit": 0,
+        "sha256": "2818a6f8a09bff9b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
