@@ -2,7 +2,7 @@
   "id": "BG-jl7p67r2",
   "kind": "bug",
   "title": "land and sync can name different code/<id> branches for one range",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "worker-blstack"
 }
