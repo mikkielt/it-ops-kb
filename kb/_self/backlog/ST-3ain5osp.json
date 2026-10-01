@@ -2,7 +2,7 @@
   "id": "ST-3ain5osp",
   "kind": "story",
   "title": "A sprint worker's flagged choices become gates before landing",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
@@ -49,5 +49,28 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-3ain5osp"
+  "evidence": {
+    "commit": "2c4034d19f1af5c34553585909b48d86cfb63a70",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "worker_provisional_gate"
+        ],
+        "exit": 0,
+        "sha256": "222b9e2b4db02396"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
