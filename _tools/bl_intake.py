@@ -16,12 +16,18 @@ the part that does not touch the backlog's files:
   `intake --status <fingerprint>`);
 - `open_with_fingerprint(items, fp)`: the open item whose links already carry the fingerprint, which skips the
   candidate;
-- `lines(candidate)`: the lines the command prints for one candidate.
+- `lines(candidate)`: the lines the command prints for one candidate;
+- the `drift` detector (`scan_drift`, `drift`, at the end): items whose state disagrees with their commits.
 
-This module imports no other tool module (it is below backlog.py).
+This module imports no tool module but `kbpublic` (the integration remote's name, inside the function that needs it);
+it is below backlog.py.
 """
 import hashlib
+import json
+import os
 import re
+import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -159,3 +165,196 @@ def lines(c, filed=None):
         out.extend("  check: " + " ".join(one(y) for y in x) for x in c.checks)
     out.append("  links: " + ", ".join(one(x) for x in links_of(c)))
     return out
+
+
+# ------------------------------------------------------------------ the drift detector
+
+BACKLOG_DIR = "kb/_self/backlog"  # backlog.py's REL_DIR: the item files, one `<id>.json` each
+DRIFT_HOURS = 24  # a doing item whose newest work commit is older than this drifted
+CHECK_TIMEOUT_S = 120  # one check run by the detector; a check that exceeds it is counted and says nothing
+WORK_KEY = "KB-Work"
+ID_RE = re.compile(r"[A-Z]{2}-[0-9a-z]{8}")
+
+
+@dataclass
+class Drift:
+    """What `scan_drift` found: `stale` {doing item id: (work commit, hours it is older than the tip of main)},
+    `passing` {draft or todo item id: how many checks it has} (all of its checks pass on HEAD), `timed_out` the ids of
+    items with a check that exceeded the timeout, `ran` how many items had their checks run."""
+    stale: dict = field(default_factory=dict)
+    passing: dict = field(default_factory=dict)
+    timed_out: list = field(default_factory=list)
+    ran: int = 0
+
+
+def git_out(root, *args):
+    """git's stdout in `root`; RuntimeError with its message when it fails."""
+    p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if p.returncode:
+        raise RuntimeError(f"git {' '.join(args)}: {(p.stderr or p.stdout).strip()}")
+    return p.stdout
+
+
+def ref_exists(root, ref):
+    return subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root,
+                          capture_output=True).returncode == 0
+
+
+def load_items(root):
+    """{id: item} of the item files under `root`; a file that is not a JSON object is left out."""
+    out = {}
+    d = Path(root) / BACKLOG_DIR
+    for p in sorted(d.glob("*.json")) if d.is_dir() else []:
+        try:
+            item = json.loads(p.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        if isinstance(item, dict):
+            out[p.stem] = item
+    return out
+
+
+def family(items, iid):
+    """`iid` and the ids of every item below it (a story or bug whose tasks carried the work)."""
+    out, grew = {iid}, True
+    while grew:
+        grew = False
+        for k, it in items.items():
+            if k not in out and it.get("parent") in out:
+                out.add(k)
+                grew = True
+    return out
+
+
+def is_item_file(path):
+    return path.startswith(BACKLOG_DIR + "/") and path.endswith(".json")
+
+
+def main_ref(root):
+    """The integration remote's main as last fetched, such as `<remote>/main`: the branch work lands on."""
+    import kbpublic
+    return f"{kbpublic.integration_remote(root)}/main"
+
+
+def work_commits(root, ref):
+    """[(sha, committer time, ids named by KB-Work, paths)] of the commits on `ref` that changed a file other than an
+    item file (a claim or a done is no work), newest first."""
+    log = git_out(root, "log", ref, "--no-merges", "--name-only",
+                  f"--format=%x1e%H%x00%ct%x00%(trailers:key={WORK_KEY},valueonly,separator=%x2C)%x00")
+    out = []
+    for rec in log.split("\x1e"):
+        parts = rec.split("\x00", 3)
+        if len(parts) < 4:
+            continue
+        paths = [p for p in parts[3].split("\n") if p.strip()]
+        if any(not is_item_file(p) for p in paths):
+            out.append((parts[0].strip(), int(parts[1]), set(ID_RE.findall(parts[2])), paths))
+    return out
+
+
+def stale_doing(root, items, hours):
+    """{id: (sha, hours)} of the doing items whose newest work commit on main is more than `hours` older than the
+    newest commit on main. The tip's time stands for "now": the detector reads the repository and no clock, so the same
+    clone gives the same findings."""
+    ref = main_ref(root)
+    if not ref_exists(root, ref):
+        return {}
+    tip = int(git_out(root, "log", "-1", "--format=%ct", ref).strip() or 0)
+    commits = work_commits(root, ref)
+    out = {}
+    for iid, it in sorted(items.items()):
+        if it.get("status") != "doing":
+            continue
+        ids = family(items, iid)
+        named = [c for c in commits if c[2] & ids]  # newest first
+        if named and tip - named[0][1] > hours * 3600:
+            out[iid] = (named[0][0], (tip - named[0][1]) // 3600)
+    return out
+
+
+def touches_changed_since_file(root, iid, touches):
+    """True when a commit on HEAD after the one that last changed the item's file changed a file `touches` matches."""
+    last = git_out(root, "log", "-1", "--format=%H", "--", f"{BACKLOG_DIR}/{iid}.json").strip()
+    if not last or not touches:
+        return False
+    specs = [f":(glob){g}" for g in touches]
+    return bool(git_out(root, "log", "-1", "--format=%H", f"{last}..HEAD", "--", *specs).strip())
+
+
+def check_env():
+    env = {k: v for k, v in os.environ.items() if k not in ("FORCE_COLOR", "PYTHON_COLORS", "CLICOLOR_FORCE")}
+    env["NO_COLOR"] = "1"
+    return env
+
+
+def check_result(root, check, timeout):
+    """"pass", "fail" or "timeout" for one item check (`run` argv, optional `exit` and `match`), run in `root` without a
+    shell; a check that cannot start fails. python3 runs with the interpreter running this tool."""
+    argv = list(check["run"])
+    if argv and argv[0] in ("python3", "python"):
+        argv[0] = sys.executable
+    try:
+        p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=timeout, env=check_env())
+    except subprocess.TimeoutExpired:
+        return "timeout"
+    except OSError:
+        return "fail"
+    ok = p.returncode == check.get("exit", 0)
+    if ok and check.get("match"):
+        ok = re.search(check["match"], (p.stdout or "") + (p.stderr or ""), re.M) is not None
+    return "pass" if ok else "fail"
+
+
+def passing_open(root, items, timeout, drift):
+    """Run the checks of each draft or todo item that has touches and checks and whose touches changed since its file
+    did; an item is reported when all its checks pass, left out when one fails, left out and counted when one
+    exceeds `timeout`."""
+    for iid, it in sorted(items.items()):
+        checks = [c for c in it.get("checks", []) if isinstance(c, dict) and c.get("run")]
+        if it.get("status") not in ("draft", "todo") or not it.get("touches") or not checks:
+            continue
+        if not touches_changed_since_file(root, iid, it["touches"]):
+            continue
+        drift.ran += 1
+        results = []
+        for c in checks:
+            results.append(check_result(root, c, timeout))
+            if results[-1] != "pass":
+                break
+        if results[-1] == "timeout":
+            drift.timed_out.append(iid)
+        elif results[-1] == "pass":
+            drift.passing[iid] = len(checks)
+
+
+def scan_drift(root, hours=None, timeout=None):
+    """The `Drift` of the repository under `root`; `hours` and `timeout` default to DRIFT_HOURS and CHECK_TIMEOUT_S."""
+    hours = DRIFT_HOURS if hours is None else hours
+    timeout = CHECK_TIMEOUT_S if timeout is None else timeout
+    items = load_items(root)
+    drift = Drift(stale=stale_doing(root, items, hours))
+    passing_open(root, items, timeout, drift)
+    return drift
+
+
+@detector("drift")
+def drift_detector(root):
+    """One story listing the items that disagree with their commits: each doing item whose newest work commit on main
+    is older than DRIFT_HOURS (no done followed it), and each draft or todo item with touches whose own checks already
+    pass on HEAD. The fingerprint is the sorted item ids."""
+    d = scan_drift(root)
+    ids = sorted(set(d.stale) | set(d.passing))
+    if not ids:
+        return []
+    key = ",".join(ids)
+    notes = [f"{i}: doing, its newest work commit {d.stale[i][0][:10]} is {d.stale[i][1]} h older than the tip of "
+             f"{main_ref(root)}, and no done followed it" for i in sorted(d.stale)]
+    notes += [f"{i}: its {d.passing[i]} check(s) already pass on HEAD" for i in sorted(d.passing)]
+    if d.timed_out:
+        notes.append(f"{len(d.timed_out)} item(s) had a check that exceeded {CHECK_TIMEOUT_S} s and were left out")
+    return [Candidate(
+        kind="story", title=f"Drift: {len(ids)} backlog item(s) disagree with their commits",
+        goal=f"Each of {', '.join(ids)} is finished with done, dropped, or has its status corrected, so no detector "
+             "reports it as drifted.",
+        key=key, checks=[STATUS_REPRO + [fingerprint("drift", key)]], notes="; ".join(notes))]
