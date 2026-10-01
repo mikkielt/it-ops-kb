@@ -2,7 +2,7 @@
   "id": "ST-qouhlhni",
   "kind": "story",
   "title": "Intake detector: work commits whose KB-Work git does not read",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -38,5 +38,20 @@
       "answer": "7",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "c31a60f577d134c42caca34a0d8dd01b0f45acd6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_trailers"
+        ],
+        "exit": 0,
+        "sha256": "56647149093e308f"
+      }
+    ]
+  }
 }
