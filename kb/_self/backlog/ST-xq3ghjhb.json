@@ -1,0 +1,25 @@
+{
+  "id": "ST-xq3ghjhb",
+  "kind": "story",
+  "title": "intake's drift detector reaches every eligible item over successive runs, not the same first few",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Within its time budget the drift detector starts from a different eligible item on each run (a rotation keyed on the main tip, so the same inputs give the same order), so every eligible item's checks run within a bounded number of runs; a test plants more eligible items than one budget covers and shows each is checked within N runs",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_drift_rotates"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py"
+  ],
+  "notes": "BG-vubkpech bounded drift to a 30 s budget; on the repository it then checks the same first items in id order every run and leaves most of the eligible ones unchecked."
+}

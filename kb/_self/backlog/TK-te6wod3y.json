@@ -6,7 +6,7 @@
   "parent": "ST-ahanvtgq",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.md's bug sources, tools.md's backlog.py commands, querylog.md's Reporting and maintaining.md's setup describe intake, each detector, its fingerprint and the uncommitted drafts; selfdoc.py stale prints nothing; kb/_self/map.csv maps _tools/bl_*.py to backlog.md and tools.md as it maps ql_ and kg_ modules",
+  "goal": "backlog.md's bug sources, tools.md's backlog.py commands, querylog.md's Reporting and maintaining.md's setup describe intake, each detector, its fingerprint and the uncommitted drafts; selfdoc.py stale prints nothing; kb/_self/map.csv maps _tools/bl_*.py to backlog.md and tools.md as it maps ql_ and kg_ modules; backlog.md no longer says intake reads no clock where the drift detector now spends a time budget",
   "checks": [
     {
       "run": [
