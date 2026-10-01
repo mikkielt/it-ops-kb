@@ -2,7 +2,7 @@
   "id": "TK-e4a7mayb",
   "kind": "task",
   "title": "pack, show and audit handle decisions",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-sab3zej4",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md"
-  ]
+  ],
+  "claimed_by": "worker-decision-lookup"
 }
