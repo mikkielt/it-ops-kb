@@ -2,7 +2,7 @@
   "id": "ST-eoiljxkt",
   "kind": "story",
   "title": "kb-sprint says how to run workers from a second clone",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,28 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-skillstack"
+  "evidence": {
+    "commit": "89d6823952383140b18352153446c381eac17f90",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_second_clone_worktree"
+        ],
+        "exit": 0,
+        "sha256": "2b67d887fa4b0c3a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
