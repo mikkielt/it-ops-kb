@@ -28,6 +28,7 @@
     "_tools/ql_distill.py",
     "_tools/ql_store.py",
     "_tools/test_ql_distill.py",
-    "_tools/test_ql_store.py"
+    "_tools/test_ql_store.py",
+    "kb/_self/usage.md"
   ]
 }
