@@ -441,6 +441,38 @@ def test_backlog_docs_after_code_start_refuses_and_check_errors(repo):
     assert code == 0, out
 
 
+def test_dependency_outside_sprint_named_by_horizon_and_start(repo):
+    """Planted: a sprint story depends on an item in no sprint and one in a sprint not started; horizon --sprint
+    and start name each with where it stands. A dependency inside the sprint, or on a done item, is not named."""
+    b(repo, "new", "epic", "--title", "E", "--goal", "g")
+    ep = item(repo, "E")["id"]
+    b(repo, "new", "sprint", "--title", "S", "--goal", "g")
+    sp = item(repo, "S")["id"]
+    b(repo, "new", "sprint", "--title", "Later", "--goal", "g")
+    later = item(repo, "Later")["id"]
+    b(repo, "new", "story", "--title", "Story", "--parent", ep, "--sprint", sp, "--goal", "g",
+      "--touch", "src/a.py", "--check", argstr(PASS))
+    b(repo, "new", "story", "--title", "Inside", "--parent", ep, "--sprint", sp, "--goal", "g",
+      "--touch", "src/b.py", "--check", argstr(PASS))
+    b(repo, "new", "story", "--title", "Nowhere", "--parent", ep, "--goal", "g", "--touch", "src/c.py",
+      "--check", argstr(PASS))
+    b(repo, "new", "story", "--title", "Unstarted", "--parent", ep, "--sprint", later, "--goal", "g",
+      "--touch", "src/d.py", "--check", argstr(PASS))
+    st, inside, nowhere, unstarted = (item(repo, t)["id"] for t in ("Story", "Inside", "Nowhere", "Unstarted"))
+    edit(repo, st, depends_on=[inside, nowhere, unstarted])
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    code, out = b(repo, "horizon", "--sprint", sp)
+    assert (f"waiting on outside this sprint: {nowhere} “Nowhere” (in no sprint), "
+            f"{unstarted} “Unstarted” (in sprint {later} “Later”, not started)") in out, out
+    assert code == 0, out
+    code, out = b(repo, "start", sp)
+    assert code == 0 and item(repo, "S")["status"] == "active", out
+    assert f"  warning: {st} “Story” depends on {nowhere} “Nowhere”, outside this sprint (in no sprint)" in out, out
+    assert (f"  warning: {st} “Story” depends on {unstarted} “Unstarted”, outside this sprint "
+            f"(in sprint {later} “Later”, not started)") in out, out
+    assert out.count("outside this sprint") == 2 and inside not in out, out
+
+
 def test_start_names_docs_warnings(repo):
     """Planted: a sprint task whose touches name mapped code, its doc in no item's touches; start prints the docs warning for it, exit 0, and starts. The doc in its own
     touches gives no warning."""
