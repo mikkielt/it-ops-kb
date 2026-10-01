@@ -85,6 +85,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           check does; the same gate again changes nothing, a different gate with an
                                           existing question or id is refused, as is one on a done or dropped item
                                           (exit 2); `answer` answers it
+                                          --host-check CMD: the command that proves the setup the gate's answer names
+                                          holds on this host (exit 0), kept on the gate; `host-check` runs it
+  backlog.py host-check SPRINT            run the host check of each answered gate of the sprint's open items, on this
+                                          host, before the start gate is asked, and record each result on the gate
+                                          (host_checked: ok, exit); exit 1, naming each gate and the command's output
+                                          tail, when one fails; `start` refuses a sprint with an answered gate whose
+                                          host check has no passing record
   backlog.py fire ID                      mark an item's external trigger as fired
   backlog.py done ID [--dry-run]          run the item's checks at a clean HEAD, check its commits' scope, record the
                                           evidence and set status done; exit 1 with the reasons otherwise, among
@@ -1129,6 +1136,13 @@ def validate(bl, pieces=None):
                 e(f"gate {g['id']}: an answer needs by: operator|agent")
             if g["kind"] == "blocking" and g.get("by") == "agent":
                 e(f"gate {g['id']} is blocking: only the operator answers it")
+            hc = g.get("host_check")
+            if "host_check" in g and not (isinstance(hc, dict) and isinstance(hc.get("run"), list) and hc["run"]
+                                          and all(isinstance(w, str) and w for w in hc["run"])):
+                e(f"gate {g['id']}: host_check needs run: a command as a list of words")
+            if "host_checked" in g and not (isinstance(g["host_checked"], dict)
+                                            and isinstance(g["host_checked"].get("ok"), bool)):
+                e(f"gate {g['id']}: host_checked needs ok: true or false")
         if "recurs" in it:
             rc = it["recurs"]
             if not isinstance(rc, list) or not all(isinstance(r, str) and SPRINT_ID_RE.fullmatch(r) for r in rc):
@@ -2231,6 +2245,10 @@ def cmd_gate(bl, a):
                        f"and not {START_GATE!r}, the sprint's own")
     gate = {"id": gid, "kind": a.kind, "question": a.question.strip(), "options": options,
             "recommendation": a.recommendation.strip()}
+    if a.host_check:
+        gate["host_check"] = {"run": parse_cmd(a.host_check)}
+        if not gate["host_check"]["run"]:
+            raise Rejected("gate add: --host-check needs a command")
     same = [g for g in gates if g.get("question") == gate["question"] or g.get("id") == gid]
     if same:
         known = same[0]
@@ -2246,6 +2264,45 @@ def cmd_gate(bl, a):
 
     changed_item(bl, iid, edit)
     say(f"gate {gid} ({gate['kind']}) added to {bl.label(iid)}: {gate['question']}")
+    return 0
+
+
+def host_gates(bl, sid, answered=True):
+    """(item id, gate) for each gate of the sprint's open items that carries a host check, the answered ones only
+    unless `answered` is False."""
+    return [(i, g) for i in bl.sprint_items(sid) if bl.items[i].get("status") not in ("done", "dropped")
+            for g in bl.items[i].get("gates", []) if "host_check" in g and (not answered or "answer" in g)]
+
+
+def cmd_host_check(bl, a):
+    """host-check: run, on this host, the check of each answered gate that names a host setup; record the result."""
+    sid = need(bl, a.sprint)
+    if bl.items[sid].get("kind") != "sprint":
+        raise Refused(f"{bl.label(sid)} is not a sprint")
+    rows = host_gates(bl, sid)
+    if not rows:
+        say(f"{bl.label(sid)}: no answered gate names a host setup")
+        return 0
+    results, failed = {}, []
+    for iid, g in rows:
+        ok, code, out = run_check(bl.root, g["host_check"])
+        results[(iid, g["id"])] = {"ok": ok, "exit": code}
+        say(f"{'ok' if ok else 'FAILED'} {bl.label(iid)} gate {g['id']} ({g['answer']}): "
+            f"{shlex.join(g['host_check']['run'])} exited {code}")
+        if not ok:
+            failed.append(f"{bl.label(iid)} gate {g['id']}: {g['question']}\n    " + "\n    ".join(out.strip().splitlines()[-5:]))
+
+    def edits(iid):
+        def edit(new):
+            for g in new["gates"]:
+                if (iid, g["id"]) in results:
+                    g["host_checked"] = results[(iid, g["id"])]
+        return edit
+
+    changed_items(bl, {i: edits(i) for i in {i for i, _ in results}})
+    if failed:
+        say("host setup does not hold on this host:\n  " + "\n  ".join(failed))
+        return 1
     return 0
 
 
@@ -2699,6 +2756,11 @@ def cmd_start(bl, a):
     items = bl.sprint_items(sid)
     if len(items) < 2:
         raise Refused(f"{bl.label(sid)} commits to no item besides its review")
+    unchecked = [f"{bl.label(i)} gate {g['id']}" for i, g in host_gates(bl, sid)
+                 if not g.get("host_checked", {}).get("ok")]
+    if unchecked:
+        raise Refused(f"{bl.label(sid)} has an answered gate whose host setup is not checked on this host "
+                      "(`backlog.py host-check`, which must pass):\n  " + "\n  ".join(unchecked))
     bare = [i for i in items if not bl.items[i].get("review") and not has_scope(bl, i)]
     if bare:
         raise Refused(f"{bl.label(sid)} has work items without touches (give each its own touches, or tasks that "
@@ -3489,6 +3551,7 @@ def main(argv=None):
     p.add_argument("--recommendation", required=True, help="the option the agent recommends")
     p.add_argument("--kind", default="blocking", help="blocking (default) or provisional")
     p.add_argument("--id", dest="gate_id", help="the gate's id (default g1, g2, ...)")
+    p.add_argument("--host-check", help="a command that exits 0 when the host setup the answer names holds here")
     p = sub.add_parser("fire")
     p.add_argument("id")
     p = sub.add_parser("done")
@@ -3503,6 +3566,8 @@ def main(argv=None):
     p.add_argument("id")
     p.add_argument("--why", required=True)
     p = sub.add_parser("start")
+    p.add_argument("sprint")
+    p = sub.add_parser("host-check")
     p.add_argument("sprint")
     p = sub.add_parser("close")
     p.add_argument("sprint")

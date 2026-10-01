@@ -4328,3 +4328,64 @@ def test_backlog_cost_shared_planted_failure_of_a_shared_line_dropped_for_a_dele
     monkeypatch.setattr(backlog, "cost_view", lambda bl, ids: real(bl, {i for i in ids if i != closed_shared["tk"]}))
     with pytest.raises(AssertionError):
         test_backlog_cost_shared_of_an_item_deleted_at_sprint_close_reaches_the_epic(closed_shared, capsys)
+
+
+def host_sprint(repo, host_check):
+    """A planned sprint whose story has a gate naming a host setup, answered by the operator, with `host_check`."""
+    b(repo, "new", "sprint", "--title", "Host sprint", "--goal", "ship b")
+    sp = item(repo, "Host sprint")["id"]
+    b(repo, "new", "story", "--title", "Host story", "--sprint", sp, "--goal", "b exists",
+      "--check", argstr(is_file("src/b.txt")), "--touch", "src/**")
+    st = item(repo, "Host story")["id"]
+    code, out = b(repo, "gate", "add", st, "--id", "setup", "--question", "Which host?", "--option", "sandbox",
+                  "--option", "vm", "--recommendation", "sandbox", "--host-check", argstr(host_check))
+    assert code == 0, out
+    assert b(repo, "answer", st, "setup", "--answer", "sandbox", "--by", "operator")[0] == 0
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    return sp, st
+
+
+def test_host_setup_gate_checked_records_a_passing_check_and_start_follows(repo):
+    sp, st = host_sprint(repo, PASS)
+    code, out = b(repo, "start", sp)
+    assert code == 1 and "gate setup" in out and "host-check" in out, out
+    code, out = b(repo, "host-check", sp)
+    assert code == 0 and "ok" in out, out
+    assert item_json(repo, st)["gates"][0]["host_checked"] == {"ok": True, "exit": 0}
+    assert b(repo, "check")[0] == 0
+    code, out = b(repo, "start", sp)
+    assert code == 0, out
+
+
+def test_host_setup_gate_checked_planted_failure_stops_the_sprint(repo):
+    sp, st = host_sprint(repo, ["python3", "-c", "import sys; print('feature is off'); sys.exit(3)"])
+    code, out = b(repo, "host-check", sp)
+    assert code == 1 and "FAILED" in out and "feature is off" in out and "Which host?" in out, out
+    assert item_json(repo, st)["gates"][0]["host_checked"] == {"ok": False, "exit": 3}
+    code, out = b(repo, "start", sp)
+    assert code == 1 and "not checked on this host" in out, out
+    assert item_json(repo, sp)["status"] != "active"
+
+
+def test_host_setup_gate_checked_skips_gates_without_one_and_unanswered_ones(repo):
+    b(repo, "new", "sprint", "--title", "Plain sprint", "--goal", "g")
+    sp = item(repo, "Plain sprint")["id"]
+    b(repo, "new", "story", "--title", "Plain story", "--sprint", sp, "--goal", "g",
+      "--check", argstr(PASS), "--touch", "src/**")
+    st = item(repo, "Plain story")["id"]
+    code, out = b(repo, "host-check", sp)
+    assert code == 0 and "no answered gate names a host setup" in out, out
+    b(repo, "gate", "add", st, "--question", "Which?", "--option", "a", "--option", "b", "--recommendation", "a",
+      "--host-check", argstr(["python3", "-c", "raise SystemExit(1)"]))
+    code, out = b(repo, "host-check", sp)
+    assert code == 0 and "no answered gate" in out, out
+
+
+def test_host_setup_gate_checked_refuses_a_malformed_host_check(repo):
+    sp, st = host_sprint(repo, PASS)
+    edit(repo, st, gates=[dict(item_json(repo, st)["gates"][0], host_check={"run": []})])
+    code, out = b(repo, "check")
+    assert code != 0 and "host_check needs run" in out, out
+    code, out = b(repo, "gate", "add", st, "--question", "Other?", "--option", "a", "--option", "b",
+                  "--recommendation", "a", "--host-check", "  ")
+    assert code == 2 and "--host-check needs a command" in out, out
