@@ -24,7 +24,9 @@
     "_tools/test_ql_capture.py",
     "_tools/test_ql_distill.py",
     "_tools/fixtures/querylog/**",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md"
   ],
+  "notes": "Scope widened: the usage surface and Distill steps in kb/_self/querylog.md describe kb prompts only and must say work-window prompts too.",
   "claimed_by": "worker-ufwy5bec"
 }
