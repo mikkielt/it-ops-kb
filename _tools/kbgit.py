@@ -42,7 +42,10 @@ changed topic X / source S / answer QK-..." without reading diffs:
                           whose item file is in neither the commit nor its parent, and, on a commit not yet on
                           origin/main, an id whose item is not claimed (doing or done at the commit) or is not in a
                           started sprint (its sprint active at the commit). Exempt from that: a backlog-planning commit
-                          (only kb/_self/backlog/*.json changed), a sprint and a sprint's review story. On a commit
+                          (only kb/_self/backlog/*.json changed), a sprint and a sprint's review story. A claimed
+                          research item of a planned sprint (its touches all inside kb roots) passes on a commit that
+                          changes only kb content and item files, and is refused on one that changes anything else
+                          (_tools/, .claude/, .githooks/, CI, kb/_self/ docs). On a commit
                           not yet on origin/main it also flags a KB-Work line git does not read as a trailer (outside
                           the message's last paragraph, e.g. a blank line before Co-Authored-By). The commit-msg
                           hook warns about these; the pre-push hook and sync's gate refuse them.
@@ -903,9 +906,12 @@ def work_state(values, paths, load):
     item must be claimed (doing, or done) and in a started (active) sprint, read from the backlog at the commit.
     `load(rel)` is a file's text at the commit, else at its parent (a sprint close deletes the files), or None.
     Exempt: a backlog-planning commit (it changes only item files: new items, claims, gates, a sprint's plan, start
-    or close), and the sprint and review items themselves. An id with no item file is work_ok's to report."""
+    or close), and the sprint and review items themselves. A research item of a planned sprint (its own touches all
+    inside kb roots, backlog.research_touches) may land claimed, on a commit that changes only kb content and item
+    files. An id with no item file is work_ok's to report."""
     if paths and all(BACKLOG_FILE.fullmatch(p) for p in paths):
         return []
+    import backlog
     cache = {}
 
     def get(i):
@@ -932,7 +938,14 @@ def work_state(values, paths, load):
             seen.add(cur["parent"])
             cur = get(cur["parent"])
         state = (get(sp) or {}).get("status") if sp else None
-        if state != "active":
+        research = it.get("kind") in backlog.RESEARCH_KINDS and backlog.research_touches(it.get("touches"))
+        if state == "planned" and research:
+            # a research item of a planned sprint: its kb content lands before the sprint starts, nothing else does
+            other = sorted(p for p in paths if not BACKLOG_FILE.fullmatch(p) and not backlog.research_touches([p]))
+            if other:
+                out.append(f"{i} is a research item of a planned sprint ({sp}): its commit changes only kb content "
+                           f"and item files, not {', '.join(other[:5])}")
+        elif state != "active":
             out.append(f"{i} is not in a started sprint" + (f" ({sp} is {state or 'missing'})" if sp else " (no sprint)"))
     return out
 
