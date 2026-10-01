@@ -1,0 +1,48 @@
+{
+  "id": "ST-igln3v6y",
+  "kind": "story",
+  "title": "A claim holds the sections it edits of a shared doc, not the whole file",
+  "status": "todo",
+  "parent": "EP-o2bjijfp",
+  "sprint": "SP-tpulmoxh",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "backlog.py held and held --overlaps compare touches of the form path#heading (a heading of a markdown file) so two items that edit different sections of kb/_self/backlog.md, a skill's SKILL.md or another doc held by several items do not overlap, while a whole-file touch overlaps every section; backlog.py check refuses a path#heading whose heading the file lacks, and done and selfdoc stale treat path#heading as its file.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "held_compares_doc_sections"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "touches_refuses_missing_heading"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "_tools/test_backlog.py",
+    "_tools/test_bl_*.py",
+    "_tools/selfdoc.py",
+    "_tools/test_selfdoc.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/README.md"
+  ],
+  "depends_on": [
+    "ST-d3uyx3pv"
+  ],
+  "relates_to": [
+    "ST-2ceybba2",
+    "ST-6vciuxux"
+  ],
+  "notes": "The failure it answers: kb/_self/backlog.md, a skill's SKILL.md and AGENTS.md (mapped to every skill) are each held by items of two sprints at once (backlog.py held shows it), file-level held --overlaps serialised sessions on three files for hours, and four rebases conflicted on one shared tools.md row until it became one row per subcommand. Items on these docs edit only their own bullet or section. It waits for the backlog.py split because held lives in the code that split moves."
+}
