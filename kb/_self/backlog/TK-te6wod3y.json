@@ -2,7 +2,7 @@
   "id": "TK-te6wod3y",
   "kind": "task",
   "title": "Document intake and its detectors",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ahanvtgq",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,18 @@
   "depends_on": [
     "TK-362zj6ag"
   ],
-  "claimed_by": "worker-te6wod3y"
+  "evidence": {
+    "commit": "4eda2c93d8ae2c5ca45779d59adc771903e928e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
