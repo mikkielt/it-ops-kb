@@ -26,5 +26,31 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which command prints the paths claimed items hold?",
+      "options": [
+        "a new subcommand: held [--overlaps ID] [--ref REF]",
+        "an option of next: next --all --any --held"
+      ],
+      "recommendation": "a new subcommand: held [--overlaps ID] [--ref REF]",
+      "answer": "a new subcommand: held [--overlaps ID] [--ref REF]",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where does held read the claims of other sessions, and what does --overlaps exit with?",
+      "options": [
+        "the item files by default, --ref REF (origin/main after git fetch) for every pushed claim; --overlaps exits 1 when it finds one",
+        "always origin/main; --overlaps exits 0 whatever it finds"
+      ],
+      "recommendation": "the item files by default, --ref REF (origin/main after git fetch) for every pushed claim; --overlaps exits 1 when it finds one",
+      "answer": "the item files by default, --ref REF (origin/main after git fetch) for every pushed claim; --overlaps exits 1 when it finds one",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-blstack2"
 }

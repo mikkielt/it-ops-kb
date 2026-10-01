@@ -43,7 +43,14 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py next [--sprint ID] [--any] [--all]   the ready item to work on first (--all: every ready item in
                                           order; --any: items outside an active sprint too, for single-item work),
                                           with the knowledge state of each of its asks and refs
-  backlog.py claim ID --by NAME           status doing, claimed by NAME;  backlog.py release ID  back to todo
+  backlog.py held [--overlaps ID] [--ref REF]   the paths other sessions hold: one line per touches glob of each
+                                          claimed (doing) item, with the item, its claimer and its sprint; --ref
+                                          reads the item files as REF has them (origin/main after git fetch, where
+                                          every claim sync lands; exit 2 for a ref git cannot read). --overlaps ID:
+                                          only the claimed items outside ID's chain whose touches overlap ID's own or
+                                          its descendants' (a glob read as a path matches the other, or a tracked file
+                                          matches both), each naming the glob it meets; exit 1 when there is one
+  backlog.py claim ID --by NAME          status doing, claimed by NAME;  backlog.py release ID  back to todo
                                           (a research item of a planned sprint, one whose touches are all inside kb
                                           roots: claimed from draft, released to draft; check accepts it doing or
                                           done, and done proves it before the sprint starts)
@@ -1800,6 +1807,85 @@ def cmd_next(bl, a):
     return 0
 
 
+def items_at(root, ref):
+    """{id: item} of the item files as git REF has them (a fetched origin/main holds every pushed claim); a file
+    that is not a JSON object is left out. Exit 2 (Rejected) for a ref git cannot read."""
+    try:
+        names = [n for n in git(root, "ls-tree", "--name-only", f"{ref}:{REL_DIR}").splitlines() if n.endswith(".json")]
+    except Refused as e:
+        raise Rejected(f"held --ref {ref}: {e}") from e
+    p = subprocess.run(["git", "cat-file", "--batch"], cwd=root, capture_output=True,
+                       input="".join(f"{ref}:{REL_DIR}/{n}\n" for n in names).encode("utf-8"))
+    data, out, at = p.stdout, {}, 0
+    for n in names:
+        nl = data.find(b"\n", at)
+        if nl < 0:
+            break
+        head = data[at:nl].split()
+        if len(head) != 3 or head[1] != b"blob":  # `<name> missing`: nothing follows the header
+            at = nl + 1
+            continue
+        size = int(head[2])
+        body, at = data[nl + 1:nl + 1 + size], nl + 2 + size
+        try:
+            item = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if isinstance(item, dict):
+            out[n[:-len(".json")]] = item
+    return out
+
+
+def touches_overlap(a, b, files):
+    """True when two touches globs can name one path: either, read as a path, matches the other (`_tools/**` and
+    `_tools/x.py`), or a tracked file matches both (`_tools/*.py` and `_tools/back*`)."""
+    ra, rb = glob_re(a), glob_re(b)
+    return bool(ra.match(b) or rb.match(a) or any(ra.match(f) and rb.match(f) for f in files))
+
+
+def held_line(bl, iid, glob):
+    it = bl.items[iid]
+    sp = bl.sprint_of(iid)
+    return f"{glob}  {bl.label(iid)}  by {it.get('claimed_by')}  {bl.label(sp) if sp else 'no sprint'}"
+
+
+def cmd_held(bl, a):
+    """The touches of every claimed (doing) item, one line per glob: the glob, the item, its claimer and its sprint.
+    --overlaps ID: only the claimed items outside ID's own chain whose touches overlap ID's scope (its touches and
+    its descendants'), each line naming the glob of ID's it meets; exit 1 when there is one."""
+    mine = bl
+    if a.ref:
+        bl = Backlog(bl.root)
+        bl.items, bl.raw = items_at(bl.root, a.ref), {}
+    doing = sorted(i for i, it in bl.items.items() if it.get("status") == "doing" and it.get("claimed_by")
+                   and it.get("kind") != "sprint")
+    if not a.overlaps:
+        rows = sorted((t, i) for i in doing for t in bl.items[i].get("touches", []) or [] if isinstance(t, str) and t)
+        for t, i in rows:
+            say(held_line(bl, i, t))
+        if not rows:
+            say("held: no claimed item holds a path")
+        return 0
+    src = mine if a.overlaps in mine.items else bl
+    iid = need(src, a.overlaps)
+    chain = {iid, *src.ancestors(iid), *src.descendants(iid)}
+    own = [t for t in scope(src, iid) if isinstance(t, str) and t]
+    files = tracked_files(bl.root)
+    hits = []
+    for i in doing:
+        if i in chain:
+            continue
+        for t in bl.items[i].get("touches", []) or []:
+            met = [m for m in own if isinstance(t, str) and t and touches_overlap(m, t, files)]
+            if met:
+                hits.append(f"{held_line(bl, i, t)}  meets {', '.join(met)}")
+    for x in sorted(hits):
+        say(x)
+    if not hits:
+        say(f"held: no claimed item's touches overlap {src.label(iid)}")
+    return 1 if hits else 0
+
+
 def cmd_claim(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -3167,6 +3253,9 @@ def main(argv=None):
     p.add_argument("--sprint")
     p.add_argument("--any", action="store_true")
     p.add_argument("--all", action="store_true")
+    p = sub.add_parser("held")
+    p.add_argument("--overlaps", metavar="ID", help="only the claimed items whose touches overlap this item's")
+    p.add_argument("--ref", help="read the claims from this git ref (origin/main after git fetch) instead of the files")
     p = sub.add_parser("claim")
     p.add_argument("id")
     p.add_argument("--by", required=True)

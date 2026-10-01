@@ -1107,6 +1107,78 @@ def test_backlog_close_summary_with_commit_is_refused_and_commits_nothing(sprint
     assert subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout == head
 
 
+def holders(sprint):
+    """The task claimed by agent-1 holding src/a.txt and docs/*.md, the bug by agent-2 holding src/**, a second task
+    (todo, unclaimed) holding src/b/**; the story stays todo, so it holds nothing."""
+    repo, tk, bg, st = sprint["repo"], sprint["tk"], sprint["bg"], sprint["st"]
+    edit(repo, tk, touches=["src/a.txt", "docs/*.md"])
+    b(repo, "new", "task", "--title", "Task two", "--parent", st, "--goal", "b/x written", "--touch", "src/b/**",
+      "--check", argstr(is_file("src/b/x.txt")))
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    assert b(repo, "claim", bg, "--by", "agent-2")[0] == 0
+    return item(repo, "Task two")["id"]
+
+
+def check_held_overlaps(out, code, sprint):
+    """What held --overlaps must say for task two: the bug's src/** meets its src/b/**, the task's paths do not."""
+    assert code == 1, out
+    assert out.splitlines() == [f"src/**  {sprint['bg']} “Bug”  by agent-2  {sprint['sp']} “Sprint”  meets src/b/**"], out
+
+
+def test_backlog_held_paths_lists_each_claimed_glob_with_claimer_and_sprint(sprint):
+    repo, tk, bg, sp = sprint["repo"], sprint["tk"], sprint["bg"], sprint["sp"]
+    holders(sprint)
+    code, out = b(repo, "held")
+    assert code == 0, out
+    assert out.splitlines() == [f"docs/*.md  {tk} “Task”  by agent-1  {sp} “Sprint”",
+                                f"src/**  {bg} “Bug”  by agent-2  {sp} “Sprint”",
+                                f"src/a.txt  {tk} “Task”  by agent-1  {sp} “Sprint”"], out
+
+
+def test_backlog_held_paths_overlaps_names_the_claimed_items_an_item_would_meet(sprint):
+    repo = sprint["repo"]
+    tk2 = holders(sprint)
+    code, out = b(repo, "held", "--overlaps", tk2)
+    check_held_overlaps(out, code, sprint)
+    code, out = b(repo, "held", "--overlaps", sprint["tk"])  # its own src/a.txt meets the bug's src/**
+    assert code == 1 and out.startswith(f"src/**  {sprint['bg']} “Bug”") and "meets src/a.txt" in out, out
+    edit(repo, tk2, touches=["kb/public/x/**"])
+    code, out = b(repo, "held", "--overlaps", tk2)
+    assert code == 0 and "no claimed item's touches overlap" in out, out
+    assert b(repo, "held", "--overlaps", "TK-zzzzzzzz")[0] == 2
+
+
+def test_backlog_held_paths_planted_failure_of_the_overlap_rule_is_caught(sprint, capsys, monkeypatch):
+    """The check is not vacuous: an overlap rule that never finds one (planted) fails it."""
+    tk2 = holders(sprint)
+    monkeypatch.setattr(backlog, "touches_overlap", lambda a, b, files: False)  # planted
+    code = backlog.main(["--root", str(sprint["repo"]), "held", "--overlaps", tk2])
+    with pytest.raises(AssertionError):
+        check_held_overlaps(capsys.readouterr().out, code, sprint)
+
+
+def test_backlog_held_paths_overlap_rule():
+    files = ["_tools/backlog.py", "_tools/kbgit.py"]
+    assert backlog.touches_overlap("_tools/**", "_tools/x.py", [])  # a glob read as a path
+    assert backlog.touches_overlap("_tools/*.py", "_tools/back*", files)  # a tracked file both match
+    assert not backlog.touches_overlap("_tools/*.py", "_tools/zz*", files)
+    assert not backlog.touches_overlap("kb/_self/a.md", "kb/_self/b.md", files)
+
+
+def test_backlog_held_paths_ref_reads_the_claims_git_has(sprint):
+    """--ref reads the item files as a ref has them: a claim pushed there shows though the files lost it."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    holders(sprint)
+    commit(repo, "claims")
+    sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+    assert b(repo, "release", tk)[0] == 0
+    assert f"{tk} “Task”" not in b(repo, "held")[1]
+    code, out = b(repo, "held", "--ref", "origin/main")
+    assert code == 0 and f"src/a.txt  {tk} “Task”  by agent-1" in out, out
+    code, out = b(repo, "held", "--ref", "no/such/ref")
+    assert code == 2 and "held --ref no/such/ref" in out, out
+
+
 def test_close_summary_refuses_open_items_and_deletes_nothing(sprint):
     code, out = b(sprint["repo"], "close", sprint["sp"], "--summary")
     assert code == 1 and "not finished" in out and "delivered by" not in out
