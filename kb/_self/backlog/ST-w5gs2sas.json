@@ -2,7 +2,7 @@
   "id": "ST-w5gs2sas",
   "kind": "story",
   "title": "backlog.py find and tree --open answer does an item already cover this in a few lines",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-xb45i7t4",
   "priority": "P2",
@@ -24,5 +24,6 @@
     ".claude/skills/kb-backlog/SKILL.md",
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-w5gs2sas"
 }
