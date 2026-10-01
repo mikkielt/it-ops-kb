@@ -2,7 +2,7 @@
   "id": "ST-sajrwz6a",
   "kind": "story",
   "title": "sync --push re-runs itself when its rebase changed kbgit.py",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-huvwo6cj",
   "kind": "story",
   "title": "Sync refuses to push another session's local commits from a shared checkout",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
