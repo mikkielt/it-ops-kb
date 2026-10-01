@@ -2,7 +2,7 @@
   "id": "ST-eyp2ubji",
   "kind": "story",
   "title": "A code/<id> branch is named after the item whose code it carries",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -21,5 +21,6 @@
     "_tools/kbgit.py",
     "_tools/test_sync.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "worker-eyp2ubji"
 }
