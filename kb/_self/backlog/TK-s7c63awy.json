@@ -2,7 +2,7 @@
   "id": "TK-s7c63awy",
   "kind": "task",
   "title": "Research decision records with /kb-research",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ej3iqwdo",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,17 @@
     "kb/public/_retrieval/signals.csv",
     "_tools/aliases.csv"
   ],
-  "claimed_by": "worker-decision-research"
+  "evidence": {
+    "commit": "d64301e4e80a9f1d9a30e9c14e9cb83ef51ad9f3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "2375cf3d37070d68"
+      }
+    ]
+  }
 }
