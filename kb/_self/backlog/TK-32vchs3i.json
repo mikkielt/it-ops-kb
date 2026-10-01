@@ -2,7 +2,7 @@
   "id": "TK-32vchs3i",
   "kind": "task",
   "title": "kbid.py add writes a converging _sources.csv row",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-fmtszrey",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,27 @@
     "kb/_self/content-rules.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-32vchs3i"
+  "evidence": {
+    "commit": "4317b24bebe3ae512ffbca36206b4f29d84593e9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "add_source"
+        ],
+        "exit": 0,
+        "sha256": "a6f880c35af39742"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "8e44965e62fe70bd"
+      }
+    ]
+  }
 }
