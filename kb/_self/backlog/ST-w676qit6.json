@@ -2,7 +2,7 @@
   "id": "ST-w676qit6",
   "kind": "story",
   "title": "backlog.py start names the committed items whose code docs sit outside their touches",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -36,5 +36,29 @@
     "AGENTS.md"
   ],
   "notes": "Merged at planning 2026-10-01 from ST-ei6xrp7n (dropped): the skills already tell planners to put a code task's mapped docs in its own touches and check warns (docs_warnings); left from it: the warning ignores mapped docs held only by an unrelated item's touches (not the item's own scope or a dependency) and must name them too.",
-  "claimed_by": "orch-fourth-w7"
+  "evidence": {
+    "commit": "c10f4ea2331d5c5e0261ffb14405c3ffe0299e2f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "start_names_docs_warnings"
+        ],
+        "exit": 0,
+        "sha256": "ba25960e4f7cb318"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_docs_touches"
+        ],
+        "exit": 0,
+        "sha256": "b5e1379fab41633e"
+      }
+    ]
+  }
 }
