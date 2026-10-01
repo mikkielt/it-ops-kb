@@ -1,0 +1,45 @@
+{
+  "id": "BG-o3cjsgmm",
+  "kind": "bug",
+  "title": "The backlog+ hook drops the next --all --any output when horizon fills its context limit",
+  "status": "todo",
+  "sprint": "SP-x2pvljz6",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kb_hook.py's backlog+ answer keeps a share of every command it ran (horizon and next --all --any), each cut by whole lines with a note of what was left out and the command that prints it all, so a long horizon never hides the next list; test_kb_lookup's end-to-end backlog prompt test passes on the live backlog again, and a test over synthetic outputs longer than the limit fails on the old cut-from-the-end behaviour. Found when main went red after seven triage sprints started (horizon alone 9447 characters against LIMIT 9500).",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_backlog_prompt_end_to_end_without_loading_the_kb"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_backlog_prompt_end_to_end_without_loading_the_kb"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_hook_keeps_every_part"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/test_kb_lookup.py",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "AGENTS.md"
+  ]
+}
