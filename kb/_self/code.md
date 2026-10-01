@@ -56,3 +56,8 @@ The same code runs on Linux, macOS and Windows.
 - **No cycles at the top level.** A reach back up the order is an import inside the function that needs it.
 - **A leading underscore means the module's own.** Another module does not import or call a name that starts with `_`; a name two modules need is public, without the underscore.
 - **A test holds the first and third rules.** `_tools/test_layout.py` parses every `_tools/*.py` with `ast` and fails when a `ql_*`, `kg_*` or `bench_*` module imports its facade, or a module imports an underscore name from another one (`from x import _y` or `x._y`); the exceptions the tree had are listed by name in the test, and a new one fails.
+
+## Writing a checked file
+
+- **A tool that writes a file `check.py` checks asks `check.py` whether the write is clean.** `kbdecide.py` writes a root's `_decisions.csv` (or kb/_self's), then runs `check.check_decisions` over the files as they are and undoes the write, with exit 2 and the errors, when it added one the file did not have before; it never hand-copies a rule of the format, so a row it writes cannot fail the check, and a later rule applies to it at once. The module takes the check as a library, which is the one place a tool imports `check.py`.
+- **A refusal is a planted failure.** Each rule a command refuses by has a test in `_tools/test_kbdecide.py` that runs the command, finds exit 2 and the rule in the message, and finds every decision file as it was.
