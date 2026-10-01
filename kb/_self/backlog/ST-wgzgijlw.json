@@ -2,7 +2,7 @@
   "id": "ST-wgzgijlw",
   "kind": "story",
   "title": "backlog.py set and gate add edit an item after new",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-xb45i7t4",
   "priority": "P3",
@@ -42,5 +42,20 @@
       "by": "operator"
     }
   ],
-  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. About 20 Python heredocs load an item's JSON and set notes, gates, checks, touches or links. backlog.py new sets title, parent, sprint, priority, rank, goal, severity, checks, touches, depends_on and repro; nothing changes them later or adds a gate (answer only answers one). kb-backlog/SKILL.md says 'then edit their JSON'. Kb facts: public/agents/agent-planning-and-done.md:43 (task state as structured data flipped by checks, DER S2150), public/gitlab/work-items-planning.md:25 (fixed work item statuses, DOC S-il7kjbdz). Relates to ST-3cofh4hv, which covers backlog questions."
+  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. About 20 Python heredocs load an item's JSON and set notes, gates, checks, touches or links. backlog.py new sets title, parent, sprint, priority, rank, goal, severity, checks, touches, depends_on and repro; nothing changes them later or adds a gate (answer only answers one). kb-backlog/SKILL.md says 'then edit their JSON'. Kb facts: public/agents/agent-planning-and-done.md:43 (task state as structured data flipped by checks, DER S2150), public/gitlab/work-items-planning.md:25 (fixed work item statuses, DOC S-il7kjbdz). Relates to ST-3cofh4hv, which covers backlog questions.",
+  "evidence": {
+    "commit": "aab5df29e910ac15ab9e1631dbc37b2fe342447f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_set"
+        ],
+        "exit": 0,
+        "sha256": "696b0633e225abaf"
+      }
+    ]
+  }
 }
