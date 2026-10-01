@@ -2,7 +2,7 @@
   "id": "ST-2ctgp2zi",
   "kind": "story",
   "title": "kb/_self/tools.md gives backlog.py one row per subcommand, so two sessions' edits rebase without a conflict",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -37,5 +37,6 @@
     "kb/_self/tools.md",
     "_tools/test_selfdoc.py"
   ],
-  "notes": "SP-3brmvlnh retrospective: the single backlog.py row conflicted on four rebases across three sessions."
+  "notes": "SP-3brmvlnh retrospective: the single backlog.py row conflicted on four rebases across three sessions.",
+  "claimed_by": "orch-fourth-w1"
 }
