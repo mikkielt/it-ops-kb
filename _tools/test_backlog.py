@@ -7,7 +7,8 @@ that clears it), a review with an unconfirmed provisional answer, a malformed KB
 planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
 commit included), a --commit commit with KB-Work outside its trailer paragraph or a file the command did not write,
 a KB-* or malformed --trailer, a landing whose step fails (land stops there, naming it), and red pipelines that fail
-the same way (one bug) or differently (a second), or the same way as a closed bug (a new one). The repository's
+the same way (one bug) or differently (a second), or the same way as a closed bug (a new one), a near-duplicate new
+item (warned of) and a recurring P1 item a started sprint leaves out (warned of), and a malformed `recurs`. The repository's
 own backlog must pass `backlog.py check`.
 """
 import argparse, json, os, re, shlex, shutil, subprocess, sys
@@ -400,6 +401,75 @@ def test_start_refuses_work_items_without_touches(repo):
     code, out = b(repo, "start", sp)
     assert code == 0, out
     assert item(repo, "S")["status"] == "active" and item(repo, "Bare bug")["status"] == "todo"
+
+
+def test_backlog_similar_ranks_open_items_and_new_warns_of_a_near_duplicate(sprint):
+    """A planted duplicate: similar ranks it first as near, new names it in a warning and still writes the item with
+    exit 0; a unique title gets no warning, and a dropped item is no longer compared."""
+    repo, ep = sprint["repo"], sprint["ep"]
+    b(repo, "new", "story", "--title", "Rotate the BitLocker recovery keys after use", "--parent", ep,
+      "--goal", "every used recovery key is rotated")
+    dup = item(repo, "Rotate the BitLocker recovery keys after use")["id"]
+    code, out = b(repo, "similar", "Rotate BitLocker recovery keys")
+    assert code == 0, out
+    first = out.splitlines()[0]
+    assert dup in first and "near" in first and first.startswith("1.00"), out
+    assert b(repo, "similar", "Rotate BitLocker recovery keys") == (code, out)  # deterministic
+    code, out = b(repo, "new", "story", "--title", "Rotate used BitLocker recovery keys", "--parent", ep,
+                  "--goal", "recovery keys rotated")
+    assert code == 0, out
+    assert f"warning: near-duplicate of open {dup} “Rotate the BitLocker recovery keys after use”" in out, out
+    assert item(repo, "Rotate used BitLocker recovery keys")["status"] == "draft"
+    code, out = b(repo, "new", "story", "--title", "Publish the sprint calendar", "--parent", ep,
+                  "--goal", "calendar published")
+    assert code == 0 and "warning" not in out, out
+    edit(repo, dup, status="dropped", notes="planted")
+    edit(repo, item(repo, "Rotate used BitLocker recovery keys")["id"], status="dropped", notes="planted")
+    code, out = b(repo, "similar", "Rotate BitLocker recovery keys")
+    assert code == 0 and dup not in out and "0 near-duplicate(s)" in out, out
+    assert b(repo, "similar", "a the of")[0] == 1  # nothing to compare is refused, not an empty ranking
+
+
+def test_backlog_similar_recurs_is_a_list_of_sprint_ids(sprint):
+    """recurs is optional; check refuses a non-list, a non-sprint id and a repeated sprint, and fmt keeps it stable."""
+    repo, st = sprint["repo"], sprint["st"]
+    for bad, why in (("SP-aaaaaaaa", "recurs must be a list"), (["ST-aaaaaaaa"], "recurs must be a list"),
+                     (["SP-aaaaaaaa", "SP-aaaaaaaa"], "recurs names a sprint twice")):
+        edit(repo, st, recurs=bad)
+        code, out = b(repo, "check")
+        assert code == 1 and why in out, out
+    edit(repo, st, recurs=["SP-aaaaaaaa", "SP-bbbbbbbb"])
+    f = Path(repo) / backlog.REL_DIR / f"{st}.json"
+    before = f.read_bytes()
+    assert b(repo, "fmt")[1].strip() == "fmt: rewrote 0" and f.read_bytes() == before
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+
+
+def test_start_warns_recurring_p1_item_left_out_of_the_sprint(repo):
+    """start warns (exit 0) of an open P1 item with two or more recurrences outside the sprint; one recurrence, a
+    recurring item already in the sprint, a P2 one and a done one give no warning."""
+    b(repo, "new", "epic", "--title", "E", "--goal", "g")
+    ep = item(repo, "E")["id"]
+    b(repo, "new", "sprint", "--title", "S", "--goal", "g")
+    sp = item(repo, "S")["id"]
+    two = ["SP-aaaaaaaa", "SP-bbbbbbbb"]
+    for title, extra, recurs in (("Recurring left out", [], two), ("Recurs once", [], two[:1]),
+                                 ("Recurring inside", ["--sprint", sp, "--touch", "src/**"], two),
+                                 ("Recurring P2", [], two), ("Recurring done", [], two)):
+        prio = "P2" if title == "Recurring P2" else "P1"
+        b(repo, "new", "story", "--title", title, "--parent", ep, "--goal", "g", "--priority", prio,
+          "--check", argstr(PASS), *extra)
+        edit(repo, item(repo, title)["id"], recurs=recurs)
+    edit(repo, item(repo, "Recurring done")["id"], status="dropped", notes="planted")
+    assert b(repo, "check")[0] == 0
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    code, out = b(repo, "start", sp)
+    assert code == 0, out
+    left = item(repo, "Recurring left out")["id"]
+    assert f"warning: recurring P1 item {left} “Recurring left out” (recurs in 2 sprints) is not in this sprint" in out
+    assert out.count("warning") == 1, out
+    assert item(repo, "S")["status"] == "active"
 
 
 def test_next_orders_s1_bugs_first(sprint):
