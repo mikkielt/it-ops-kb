@@ -8,6 +8,7 @@ still print, exit 1), a malformed fingerprint (exit 2), and the same inputs givi
 order.
 """
 import json
+import time
 from pathlib import Path
 
 import pytest
@@ -212,7 +213,9 @@ def test_intake_core_multiline_text_prints_on_one_line(tmp_path, capsys):
 # its tip. Planted: a doing item with an old work commit (reported) beside one with a recent one, with only claim
 # commits, and with none (all left out); a todo item whose check passes (reported) beside one whose check fails, one of
 # two checks failing, and one whose touches did not change since its file (all left out, the last without running
-# its checks); a check that exceeds the timeout (left out and counted).
+# its checks); a check that exceeds the timeout (left out and counted); a check that runs the whole tests.py or
+# stress_test.py (never run, counted); a check that sleeps past the total budget (cut, and the items after it not
+# checked, counted).
 
 T0 = 1767225600  # 2026-01-01T00:00:00Z
 HOUR = 3600
@@ -420,6 +423,72 @@ def test_intake_drift_a_timeout_alone_files_nothing(world, monkeypatch):
     world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[SLOW_CHECK])
     world.commit(2, "feat: work", {"src/a.txt": "b\n"})
     assert drift_candidates(world) == ([], [])
+
+
+def test_intake_drift_budget_is_well_under_a_minute_and_bounds_each_check():
+    assert bl_intake.CHECK_TIMEOUT_S < bl_intake.DRIFT_BUDGET_S <= 30
+
+
+@pytest.mark.parametrize("run, heavy", [
+    (["python3", "_tools/tests.py"], True),
+    (["python3", "_tools/tests.py", "-q"], True),
+    (["python3", "_tools\\tests.py"], True),
+    (["python3", "_tools/stress_test.py"], True),
+    (["python3", "_tools/stress_test.py", "-k", "x"], True),
+    (["python3", "_tools/tests.py", "-k", "intake_drift"], False),
+    (["python3", "_tools/tests.py", "-kintake"], False),
+    (["python3", "_tools/backlog.py", "check"], False),
+    (["python3", "-c", "pass"], False),
+])
+def test_intake_drift_a_whole_suite_or_stress_check_is_heavy(run, heavy):
+    assert bl_intake.heavy_check({"run": run}) is heavy
+
+
+def test_intake_drift_a_heavy_check_never_runs_and_is_counted(world):
+    marker = world.root / "ran.txt"
+    world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"],
+               checks=[{"run": ["python3", "-c", f"open({str(marker)!r}, 'w').close()"]},
+                       {"run": ["python3", "_tools/tests.py"]}])
+    world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[{"run": ["python3", "_tools/stress_test.py"]}])
+    world.item(1, "TK-cccccccc", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.commit(2, "feat: work", {"src/a.txt": "b\n"})
+    d = bl_intake.scan_drift(world.root)
+    assert d.heavy == ["TK-aaaaaaaa", "TK-bbbbbbbb"] and d.passing == {"TK-cccccccc": 1} and d.ran == 1
+    assert not marker.exists()  # no check of a heavy item ran, not even its light one
+
+
+def test_intake_drift_a_check_sleeping_past_the_budget_stops_the_scan_and_the_rest_are_counted(world):
+    world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[SLOW_CHECK])
+    world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.item(1, "TK-cccccccc", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.commit(2, "feat: work", {"src/a.txt": "b\n"})
+    t = time.monotonic()
+    d = bl_intake.scan_drift(world.root, timeout=30, budget=1)
+    assert time.monotonic() - t < 20  # the budget, not the check's own timeout, cut the sleep
+    assert d.timed_out == ["TK-aaaaaaaa"] and d.over_budget == ["TK-bbbbbbbb", "TK-cccccccc"]
+    assert d.passing == {} and d.ran == 1
+
+
+def test_intake_drift_finished_checks_report_the_same_set_on_every_run(world):
+    world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[FAIL_CHECK])
+    world.commit(2, "feat: work", {"src/a.txt": "b\n"})
+    first, second = bl_intake.scan_drift(world.root), bl_intake.scan_drift(world.root)
+    assert first == second and first.passing == {"TK-aaaaaaaa": 1} and first.over_budget == []
+
+
+def test_intake_drift_skipped_items_are_counted_in_the_story(world, monkeypatch):
+    monkeypatch.setattr(bl_intake, "DRIFT_BUDGET_S", 3)
+    world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[{"run": ["python3", "_tools/tests.py"]}])
+    world.item(1, "TK-cccccccc", "todo", touches=["src/**"], checks=[SLOW_CHECK])
+    world.item(1, "TK-dddddddd", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.commit(2, "feat: work", {"src/a.txt": "b\n"})
+    (c,), _ = drift_candidates(world)
+    assert c.key == "TK-aaaaaaaa"
+    assert "1 item(s) had a check that runs the whole test suite or the stress tests" in c.notes
+    assert "1 item(s) had a check that exceeded" in c.notes
+    assert "1 item(s) were not checked: the 3 s budget for checks was spent" in c.notes
 
 
 def test_intake_drift_nothing_drifted_reports_no_candidate(world):
