@@ -2,7 +2,7 @@
   "id": "ST-wwmidxim",
   "kind": "story",
   "title": "Intake detector: query-log findings stranded in a non-terminal state",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -35,5 +35,20 @@
       "answer": "3",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "97239e02d86c2c65a26d5b4d8a25bf173b7aa376",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_stranded"
+        ],
+        "exit": 0,
+        "sha256": "41906639868ef545"
+      }
+    ]
+  }
 }
