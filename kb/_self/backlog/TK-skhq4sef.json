@@ -23,5 +23,31 @@
     "_tools/fixtures/querylog/**",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which exit codes of a backlog.py done write a refused work row: any non-zero exit, or exit 1 only (backlog.py's refusal code; 2 is bad usage, 127 and 9009 a missing interpreter)?",
+      "options": [
+        "any non-zero exit with an Exit code N first line",
+        "exit 1 only"
+      ],
+      "recommendation": "exit 1 only",
+      "answer": "exit 1 only",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "A done joined to another command that fails (done ID && make, cd x && done ID) exits non-zero: write a refused row anyway (same parser as the success path), or only when the done is the command's last piece?",
+      "options": [
+        "write refused for any piece position",
+        "write refused only when the done is the last piece"
+      ],
+      "recommendation": "write refused for any piece position",
+      "answer": "write refused for any piece position",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-skhq4sef"
 }

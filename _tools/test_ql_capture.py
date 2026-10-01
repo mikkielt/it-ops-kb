@@ -6,8 +6,10 @@
                     only in a prompt that used the kb; the row size cap; stale spool files pruned
   TestWorkRows      a successful `backlog.py claim|done|release ID` in Bash or PowerShell writes one `work` row
                     {item, action} (and the subagent's `agent_id`), keyed like every hook row, never the command's
-                    text; a failed run, a dry run, another command and a mention in quoted text write none
-                    (planted: the same command succeeding writes one)
+                    text; a failed claim, a dry run, another command and a mention in quoted text write none
+                    (planted: the same command succeeding writes one); a `done` that exits 1 (PostToolUseFailure,
+                    `Exit code 1` first) writes `refused`, item only, and an interrupt, a start failure or timeout, another
+                    exit code and a failed claim or release write none (`-k work_refused`)
                     `usage_targets` picks the prompts that need a usage row: the kb's and every prompt of a work window
   TestSwitches      mode `off`, the DISABLED marker and an unreadable config file write nothing (planted: the same
                     events with the default mode write); where rows go in a clone and in a plugin host
@@ -253,7 +255,8 @@ class TestWorkRows:
 
     def test_work_row_failed_run_writes_none(self, tmp_path):
         """PostToolUse fires only after a successful call, a non-zero exit fires PostToolUseFailure
-        (claude/hooks.md): a refused claim or done writes none. Planted: the same command succeeding writes one."""
+        (claude/hooks.md): a refused claim writes none (a refused done writes `refused`, below). Planted: the same
+        command succeeding writes one."""
         for name in ("Bash", "PowerShell"):
             hook(tmp_path, tool(name, {"command": CLAIM}, ok=False, error="Exit code 1\nrefused: already claimed"))
         assert lines(tmp_path) == []
@@ -314,6 +317,120 @@ class TestWorkRows:
             if row:
                 assert (row["surface"], row["session_id"], row["prompt_id"]) == \
                        ("work", e["event"]["session_id"], e["event"]["prompt_id"])
+
+    def test_work_refused_done_writes_a_row(self, tmp_path):
+        """A `backlog.py done ID` that exits 1 fires PostToolUseFailure with `Exit code 1` first: one `work` row
+        `refused`, item only, keyed like every hook row, the error text and the command's flags never kept.
+        Planted: the same command succeeding writes `done`, not `refused`."""
+        err = "Exit code 1\nTK-aaaaaaaa is not done:\n  ERROR-SECRET uncommitted changes in scope"
+        cmd = "python3 _tools/backlog.py done TK-aaaaaaaa --commit --trailer 'Co-Authored-By: Claude <x>'"
+        for n, name in enumerate(("Bash", "PowerShell")):
+            assert hook(tmp_path, tool(name, {"command": cmd}, ok=False, error=err, pid=f"p{n}")) == (0, b"")
+        hook(tmp_path, dict(tool("Bash", {"command": cmd}, ok=False, error=err, pid="p2"),
+                            agent_id="agent-0000000000000001"))
+        a, b, c = lines(tmp_path)
+        assert [(r["surface"], r["item"], r["action"], r["prompt_id"]) for r in (a, b, c)] == [
+            ("work", "TK-aaaaaaaa", "refused", "p0"), ("work", "TK-aaaaaaaa", "refused", "p1"),
+            ("work", "TK-aaaaaaaa", "refused", "p2")]
+        assert all(r["session_id"] == SID and r["v"] == ql_capture.ROW_FORMAT and is_uuid4(r["id"]) for r in (a, b, c))
+        assert "agent_id" not in a and c["agent_id"] == "agent-0000000000000001"
+        assert [f.name for f in spool(tmp_path).iterdir()] == [f"{SID}.jsonl"]
+        assert set(a) == {"id", "ts", "surface", "v", "session_id", "prompt_id", "item", "action"}
+        text = raw(tmp_path).decode("utf-8")
+        for secret in ("ERROR-SECRET", "Exit code", "is not done", "--commit", "Co-Authored", "backlog.py", "python"):
+            assert secret not in text, secret  # no error text, command text or flag
+        ok = tmp_path / "ok"
+        hook(ok, tool("Bash", {"command": cmd}, {"stdout": "done"}))
+        assert [r["action"] for r in lines(ok)] == ["done"]
+
+    def test_work_refused_a_successful_done_still_writes_done(self, tmp_path):
+        hook(tmp_path, tool("Bash", {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"}, {"stdout": "done"}))
+        (row,) = lines(tmp_path)
+        assert (row["surface"], row["item"], row["action"]) == ("work", "TK-aaaaaaaa", "done")
+
+    def test_work_refused_a_failed_claim_or_release_writes_none(self, tmp_path):
+        """Only a done is a refusal worth a row. Planted: the same `Exit code 1` on a done writes one."""
+        for n, cmd in enumerate(("python3 _tools/backlog.py claim TK-aaaaaaaa --by worker-x",
+                                 "python3 _tools/backlog.py release TK-aaaaaaaa",
+                                 "python3 _tools/backlog.py land TK-aaaaaaaa",
+                                 "python3 _tools/backlog.py show TK-aaaaaaaa")):
+            hook(tmp_path, tool("Bash", {"command": cmd}, ok=False, error="Exit code 1\nrefused", pid=f"p{n}"))
+        assert lines(tmp_path) == []
+        hook(tmp_path, tool("Bash", {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"}, ok=False,
+                            error="Exit code 1\nrefused"))
+        assert [r["action"] for r in lines(tmp_path)] == ["refused"]
+
+    def test_work_refused_interrupt_writes_none(self, tmp_path):
+        """A done the user interrupted is no refusal, though its error may still begin `Exit code 1`. Planted: the
+        same event with `is_interrupt` false writes one."""
+        ev = tool("Bash", {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"}, ok=False, error="Exit code 1\n")
+        for flag in (True, 1, "yes"):
+            hook(tmp_path, dict(ev, is_interrupt=flag))
+        assert lines(tmp_path) == []
+        hook(tmp_path, dict(ev, is_interrupt=False))
+        assert [r["action"] for r in lines(tmp_path)] == ["refused"]
+
+    @pytest.mark.parametrize("error", [
+        "Command timed out after 2m 0s", "spawn /bin/sh ENOENT", "", "Exit code 0\nrefused", "Exit code 2\nusage: x",
+        "Exit code 127\nsh: python3: command not found", "Exit code 9009", "Exit code\nrefused", "exit code 1",
+        "Command timed out after 2m 0s\nExit code 1", "Exit code 10\nrefused", "Exit code -1"])
+    def test_work_refused_needs_an_exit_code_one_first_line(self, tmp_path, error):
+        """A start failure or timeout with no exit-code first line, another exit code and an exit line anywhere but
+        first write none. Planted: `Exit code 1` first writes one."""
+        cmd = {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"}
+        hook(tmp_path, tool("Bash", cmd, ok=False, error=error))
+        assert lines(tmp_path) == []
+        hook(tmp_path, tool("Bash", cmd, ok=False, error="Exit code 1\n" + error))
+        assert [r["action"] for r in lines(tmp_path)] == ["refused"]
+
+    def test_work_refused_a_mention_of_the_script_writes_none(self, tmp_path):
+        """The parser of the success path decides which commands are a `backlog.py done`: a failed command that
+        only mentions it, a dry run or a done with no id writes none. Planted: the plain command writes one."""
+        cmds = ["grep -n 'backlog.py done TK-aaaaaaaa' missing.md", "echo \"backlog.py done TK-aaaaaaaa\" && false",
+                "git commit -m 'run backlog.py done TK-aaaaaaaa'", "python3 _tools/backlog.py done TK-aaaaaaaa --dry-run",
+                "python3 _tools/backlog.py done", "python3 _tools/backlog.py done not-an-id",
+                "python3 _tools/other.py done TK-aaaaaaaa", "python3 -c \"print('backlog.py done TK-aaaaaaaa')\""]
+        for n, cmd in enumerate(cmds):
+            hook(tmp_path, tool("Bash", {"command": cmd}, ok=False, error="Exit code 1\nx", pid=f"p{n}"))
+        for ev in (tool("Bash", {}, ok=False, error="Exit code 1"), tool("Bash", {"command": 7}, ok=False, error="Exit code 1"),
+                   tool("Read", {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"}, ok=False, error="Exit code 1"),
+                   dict(tool("Bash", {"command": cmds[0]}, ok=False), error=None)):
+            hook(tmp_path, ev)
+        assert lines(tmp_path) == []
+        hook(tmp_path, tool("Bash", {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"}, ok=False,
+                            error="Exit code 1\nx"))
+        assert [r["action"] for r in lines(tmp_path)] == ["refused"]
+
+    def test_work_refused_documented_events(self):
+        """The fixture's `PostToolUseFailure` events (written by hand from the documented shape) cover a refused done
+        and each case that writes none, and are run by test_work_row_documented_events."""
+        fails = [e for e in load("_tools/fixtures/querylog/work_events.json")["events"]
+                 if e["event"]["hook_event_name"] == "PostToolUseFailure"]
+        assert sum(1 for e in fails if e["row"] and e["row"]["action"] == "refused") >= 3
+        assert sum(1 for e in fails if e["row"] is None) >= 5 and any(e["event"]["is_interrupt"] for e in fails)
+
+    def test_work_refused_off_writes_nothing(self, tmp_path):
+        d = Path(tmp_path) / "querylog"
+        d.mkdir()
+        (d / "config.json").write_text('{"mode": "off"}', encoding="utf-8", newline="\n")
+        assert hook(tmp_path, tool("Bash", {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"}, ok=False,
+                                   error="Exit code 1\nx")) == (0, b"")
+        assert lines(tmp_path) == [] and not spool(tmp_path).exists()
+
+    def test_work_refused_keeps_the_window_open(self):
+        """A `refused` row neither opens a window nor closes one: the item is not done. Planted: a `done` row of the
+        same prompt closes it, so the later prompt is no target."""
+        def plan(action):
+            return [{"surface": "prompt", "prompt_id": "p0"},
+                    {"surface": "work", "prompt_id": "p0", "item": "TK-aaaaaaaa", "action": "claim"},
+                    {"surface": "prompt", "prompt_id": "p1"},
+                    {"surface": "work", "prompt_id": "p1", "item": "TK-aaaaaaaa", "action": action},
+                    {"surface": "prompt", "prompt_id": "p2"}]
+        assert ql_capture.usage_targets(plan("refused"))[0] == ["p0", "p1", "p2"]
+        assert ql_capture.usage_targets(plan("done"))[0] == ["p0", "p1"]
+        assert ql_capture.usage_targets([{"surface": "prompt", "prompt_id": "p0"},
+                                         {"surface": "work", "prompt_id": "p0", "item": "TK-aaaaaaaa",
+                                          "action": "refused"}])[0] == []
 
     def test_work_row_off_writes_nothing(self, tmp_path):
         d = Path(tmp_path) / "querylog"
