@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Skills' opening selfdoc section reads run in a worktree session",
   "status": "draft",
+  "sprint": "SP-x2pvljz6",
   "priority": "P1",
   "rank": 0,
   "goal": "No skill's opening selfdoc.py section command names the doc as a bare git argument that a worktree session's guard reads as a second git call: kb-sprint and every skill that reads git \"Workflow\" pass it as git.md (or split the read), and a test checks that no SKILL.md passes a bare git doc name to selfdoc.py section. Answers the SP-rhgeod5g failure: kb-sprint's first command was refused in a worktree session because the command 'names git more than once'.",
@@ -17,8 +18,21 @@
     }
   ],
   "touches": [
-    ".claude/skills/*/SKILL.md",
-    "_tools/test_kb_mcp.py"
+    ".claude/skills/kb-add-topic/SKILL.md",
+    ".claude/skills/kb-add-root/SKILL.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    ".claude/skills/kb-census/SKILL.md",
+    ".claude/skills/kb-git-sync/SKILL.md",
+    ".claude/skills/kb-refresh/SKILL.md",
+    ".claude/skills/kb-probe/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-research/SKILL.md",
+    "_tools/test_kb_mcp.py",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/backlog.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/plugin.md"
   ],
   "notes": "Recurred in SP-ar52y6fk: the /kb-sprint run opening section read was refused in the orchestrator worktree and had to be split to leave out the Workflow section."
 }

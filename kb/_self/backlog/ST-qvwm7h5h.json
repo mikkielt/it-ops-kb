@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "land reports a mergeable code merge request whose auto-merge has not fired",
   "status": "draft",
+  "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py land, re-run on an item whose code/<id> merge request is open, mergeable, with auto-merge set and a skipped pipeline, says so and names the command that merges it, instead of only waiting; it answers SP-rks3vx5g, where merge request !103 sat mergeable for over 20 minutes until a manual glab mr merge",
@@ -15,5 +16,12 @@
         "land_stuck_auto_merge"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "_tools/fixtures/forge_mr/**",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

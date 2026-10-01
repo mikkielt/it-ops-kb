@@ -3,20 +3,25 @@
   "kind": "story",
   "title": "kb-backlog asks what a push carries when planning a safety check on it",
   "status": "draft",
+  "sprint": "SP-6eifcza6",
   "priority": "P2",
   "rank": 0,
   "goal": "When /kb-backlog breaks down a check that guards a push (publish, a pre-push refusal, a mirror), it asks and records in the goal what the push carries (every commit of the range, not only the final tree), so a hole like BG-rqgmjrq3 (S1, found only at SP-v5xagbyv's review) is in the task's checks from the start",
   "checks": [
     {
       "run": [
-        "grep",
-        "-c",
-        "-i",
-        "-F",
-        "what the push carries",
-        ".claude/skills/kb-backlog/SKILL.md"
-      ],
-      "exit": 0
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_push_check_names_what_push_carries"
+      ]
     }
+  ],
+  "touches": [
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md",
+    "_tools/test_kb_cohesion.py"
   ]
 }

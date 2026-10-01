@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A finished worker's worktree is not left locked",
   "status": "draft",
+  "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
   "goal": "After a kb-worker agent returns, its worktree under .claude/worktrees/ can be removed with git worktree remove without unlocking it first, so backlog.py land and the sprint close cleanup run without a manual unlock",
@@ -15,5 +16,14 @@
         "worker_worktree_unlocked"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ]
 }

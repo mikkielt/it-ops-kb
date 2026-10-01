@@ -3,30 +3,17 @@
   "kind": "story",
   "title": "A failed auto-merge of a code merge request is retried once and named",
   "status": "draft",
+  "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
   "goal": "/kb-sprint run step 4 and /kb-item Land check the code/<id> merge request's state after kbgit.py sync --push (glab mr view) and, when auto-merge failed (state opened with a merge_error), retry once with glab mr merge and name the error; kb/_self/backlog.md Working on items says the same. Answers the SP-rhgeod5g failure: auto-merge of !72 failed with 'Something went wrong during merge pre-receive hook' and a plain glab mr merge went through.",
   "checks": [
     {
       "run": [
-        "git",
-        "grep",
-        "-q",
-        "-e",
-        "glab mr merge",
-        "--",
-        ".claude/skills/kb-sprint/SKILL.md"
-      ]
-    },
-    {
-      "run": [
-        "git",
-        "grep",
-        "-q",
-        "-e",
-        "glab mr merge",
-        "--",
-        ".claude/skills/kb-item/SKILL.md"
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "code_mr_merge_retry"
       ]
     },
     {
@@ -40,6 +27,9 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md",
-    "kb/_self/backlog.md"
+    "_tools/test_kb_mcp.py",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ]
 }

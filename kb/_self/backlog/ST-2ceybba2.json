@@ -4,6 +4,7 @@
   "title": "Order tasks that share a file without a depends_on that blocks one session from claiming both",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-6eifcza6",
   "priority": "P3",
   "rank": 0,
   "goal": "The runbook and backlog.py give the orchestrator a way to serialize two ready items whose touches overlap (next --all already skips an overlap in flight) without depends_on, or claim --by X accepts an item whose only unmet dependency is claimed by X; nobody edits an item's JSON by hand to drop the dependency. Retrospective of SP-z7a5c76b: a depends_on added only to order TK-qohv7zet after TK-zutzzklq (both touch ql_deliver.py) refused the claim in the one session working both.",
@@ -16,5 +17,11 @@
         "claim_accepts_own_claimed_dependency"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

@@ -4,6 +4,7 @@
   "title": "intake --hook runs its fast detectors before drift so the budget never starves them",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
   "goal": "intake --hook runs stranded and trailers before drift (or drift on what budget is left), so a slow drift scan costs only its own findings, as backlog.md says; a test plants a drift detector that outlasts the hook budget and shows the other detectors' drafts are still filed",
@@ -20,7 +21,8 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_intake.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "notes": "Sprint review of SP-3brmvlnh: hook_intake runs drift, stranded, trailers in name order; drift alone takes about 32 s, so past the 50 s budget the fast detectors never run."
 }

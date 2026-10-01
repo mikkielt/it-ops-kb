@@ -1,0 +1,32 @@
+{
+  "id": "TK-jy4mvbgc",
+  "kind": "task",
+  "title": "testmap selects test_selfdoc's tools-map test for a change to any _tools Python file",
+  "status": "draft",
+  "parent": "ST-uymi3axm",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "testmap.py select maps a change to any _tools/*.py file (test files included) to _tools/test_selfdoc.py::TestSelfdocToolsMap, so the gate's tests.py --changed runs the map test whatever tool file a push changes; a test in test_testmap.py plants a change to a test file and sees the map test selected",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/testmap.py','select','--paths','_tools/test_kb_mcp.py'],capture_output=True,text=True).stdout;sys.exit(0 if 'test_selfdoc.py' in o else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "testmap_selects_tools_map_for_any_tool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/testmap.py",
+    "_tools/test_testmap.py",
+    "kb/_self/tools.md"
+  ]
+}

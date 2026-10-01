@@ -4,6 +4,7 @@
   "title": "A gate's options name the command that carries each out",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-6eifcza6",
   "priority": "P2",
   "rank": 0,
   "goal": "A gate may give each option a do field (the argv that carries it out, or the id of the item whose work adds that command); backlog.py check warns on a blocking gate of an open item whose options have neither, naming the gate; a planted gate in test_backlog.py fails the warning; kb/_self/backlog.md and /kb-backlog describe the field, so an operator answer never waits on a command nobody planned",
@@ -21,6 +22,7 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
-    ".claude/skills/kb-backlog/SKILL.md"
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/tools.md"
   ]
 }

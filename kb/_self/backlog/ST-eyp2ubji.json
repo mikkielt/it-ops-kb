@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A code/<id> branch is named after the item whose code it carries",
   "status": "draft",
+  "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
   "goal": "kbgit.py sync names the code/<id> branch after the KB-Work id of the first code-lane commit in the range, not the first KB-Work id of any commit, so a content claim of another item riding along does not name the merge request (code/TK-5mrfocpz carried TK-opkxumeu's code in SP-v5xagbyv)",
@@ -15,5 +16,10 @@
         "test_code_branch_named_after_code_commit"
       ]
     }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md"
   ]
 }

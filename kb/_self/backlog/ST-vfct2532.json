@@ -4,6 +4,7 @@
   "title": "A gap-step rule change is checked over the committed store's real findings",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
   "goal": "querylog.py gap-replay [--store DIR] re-runs the gap step's keep/reject decision (domain_article, weak_off_topic) over every gap finding of the committed store kb/_querylog on the working tree and prints one line per finding (id, question, lead, verdict, decision) with nothing written; a test plants a store and a rule change that flips a decision and sees the output change; /kb-backlog's plan step says an item that changes a gap-step rule adds a check comparing gap-replay before and after, besides planted cases",
@@ -20,9 +21,14 @@
   "touches": [
     "_tools/querylog.py",
     "_tools/ql_apply.py",
+    "_tools/ql_learn.py",
     "_tools/test_ql_research.py",
     "kb/_self/querylog.md",
     "kb/_self/tools.md",
-    ".claude/skills/kb-backlog/SKILL.md"
+    "kb/_self/plugin.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md"
   ]
 }

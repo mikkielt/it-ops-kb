@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A session reads which paths other sessions hold from the backlog, not from messages",
   "status": "draft",
+  "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py prints the touches of every claimed item with its claimer (and the claimer's sprint), so a session planning or orchestrating work learns which paths other sessions hold without asking them; the kb-sprint plan step names the command. Answers the SP-bno4xpft retrospective: path locks were negotiated by ad-hoc cross-session messages, one of which expired unread.",
@@ -20,6 +21,9 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ]
 }

@@ -1,0 +1,20 @@
+{
+  "id": "SP-x2pvljz6",
+  "kind": "sprint",
+  "title": "Sprint workers land clean",
+  "status": "planned",
+  "goal": "A sprint worker starts from the orchestrator's tip in a worktree with the commit hooks and working selfdoc reads, runs the lint the gate runs, ends its processes and leaves no locked worktree; land and sync name the item's code/<id> branch, retry and report an auto-merge that did not fire, re-run after their own rebase changed kbgit.py and refuse another session's commits; flagged choices become gates and a session reads which paths others hold from the backlog.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

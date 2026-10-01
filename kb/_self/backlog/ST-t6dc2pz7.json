@@ -4,6 +4,7 @@
   "title": "Self-Reviewed is never a way past the stale gate",
   "status": "draft",
   "parent": "EP-rumrqsu5",
+  "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
   "goal": "The kb-worker brief, the kb-sprint skill and maintaining.md say a doc that needs an edit outside the item's touches stops the work with a report, and Self-Reviewed names only docs checked and found correct. Answers SP-jtfo4ael's retrospective: two workers added Self-Reviewed to clear the gate on docs that still needed an edit (AGENTS.md, alternatives.md).",
@@ -14,6 +15,22 @@
         "_tools/selfdoc.py",
         "check"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys;fs=[\".claude/agents/kb-worker.md\",\".claude/skills/kb-sprint/SKILL.md\",\"kb/_self/maintaining.md\"];sys.exit(0 if all(\"Self-Reviewed\" in pathlib.Path(f).read_text(encoding=\"utf-8\") for f in fs) else 1)"
+      ]
     }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md"
   ]
 }

@@ -1,0 +1,34 @@
+{
+  "id": "TK-62hyopvl",
+  "kind": "task",
+  "title": "selfdoc numbers a source's lines by LF alone in map_tools and check_map",
+  "status": "draft",
+  "parent": "ST-uymi3axm",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "selfdoc.map_tools and selfdoc.check_map split a source on LF alone (not str.splitlines), so a literal U+2028, U+2029 or U+0085 in a _tools file neither shifts the map's line numbers nor makes check_map fail; a test plants each character in a source and sees map_tools and check_map agree with the LF numbering",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc_map_lines_by_lf"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestSelfdocToolsMap"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/test_selfdoc.py",
+    "kb/_self/README.md",
+    "kb/_self/tools.md"
+  ]
+}

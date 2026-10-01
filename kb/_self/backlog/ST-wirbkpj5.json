@@ -2,8 +2,9 @@
   "id": "ST-wirbkpj5",
   "kind": "story",
   "title": "A bug's repro runs the failure it names, not a text search for the fix",
-  "status": "draft",
+  "status": "dropped",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
   "goal": "kb/_self/backlog.md and /kb-backlog say a bug's repro runs the failing behaviour (a test, a command on a planted input), and backlog.py check warns on a repro that only reads a source file of _tools/ for a string. Answers the SP-ufr3qnff failure where BG-rrht7uts's repro grepped for 'worktrees' and passed on a fix that did not work",
@@ -21,6 +22,10 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
-    ".claude/skills/kb-backlog/SKILL.md"
-  ]
+    "kb/_self/tools.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md"
+  ],
+  "notes": "Dropped: near-duplicate, merged into ST-2lnlt3ir at planning (operator, 2026-10-01)"
 }

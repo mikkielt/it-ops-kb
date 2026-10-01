@@ -4,6 +4,7 @@
   "title": "Closing a query-log finding never borrows a work item's trailer",
   "status": "draft",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
   "goal": "querylog.py close commits its record without a KB-Work trailer of the work item that answered the finding, or the kb-research skill names the record in the research task's touches, so done never refuses the story over it. Answers SP-jtfo4ael's retrospective: done refused ST-ej3iqwdo because the close was committed under TK-s7c63awy's trailer.",
@@ -16,5 +17,17 @@
         "querylog_close_trailer"
       ]
     }
+  ],
+  "touches": [
+    "_tools/querylog.py",
+    "_tools/ql_research.py",
+    "_tools/test_ql_research.py",
+    ".claude/skills/kb-research/SKILL.md",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md"
   ]
 }

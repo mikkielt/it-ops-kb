@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "sync --push re-runs itself when its rebase changed kbgit.py",
   "status": "draft",
+  "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
   "goal": "When the rebase inside kbgit.py sync changes _tools/kbgit.py (or a module it imports), sync does not go on with the code it loaded before the rebase: it re-executes itself on the rebased tree (or stops and asks for a rerun), so a new push rule such as code lanes applies to the same sync that brought it in; a test plants a rebase that changes kbgit.py and shows the new code decides the push (SP-xourq2gj retrospective: BG-u5wubtmv went straight to main after the code-lane change had merged)",
@@ -15,5 +16,10 @@
         "sync_reexec_after_kbgit_rebase"
       ]
     }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md"
   ]
 }

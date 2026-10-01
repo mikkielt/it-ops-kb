@@ -4,6 +4,7 @@
   "title": "backlog.py new refuses --sprint on a task instead of saving an item check rejects",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-6eifcza6",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py new task|subtask --sprint SP exits 2 naming the rule (only stories and bugs name a sprint; tasks follow their parent) and writes nothing, so no item file needs a hand edit. Retrospective of SP-z7a5c76b: new saved TK-zutzzklq with a sprint, and check failed until its JSON was edited by hand.",
@@ -16,5 +17,11 @@
         "new_task_refuses_sprint"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A gate that names a host setup is checked on that host before the sprint starts",
   "status": "draft",
+  "sprint": "SP-6eifcza6",
   "priority": "P2",
   "rank": 0,
   "goal": "/kb-sprint plan checks, before asking the start gate, that each answered gate naming a host setup (a Windows feature, an account type, a tool) holds on that host, and records the check. Failure it answers: SP-76inhw33's clean-host story was committed with the gate answer 'Windows Sandbox on a Windows 11 Pro machine', but the feature was off (a reboot to enable), and the story was dropped mid-sprint; the S4U task for the runner never started under an Entra ID account, found only by testing.",
@@ -15,5 +16,13 @@
         "host_setup_gate_checked"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md"
   ]
 }

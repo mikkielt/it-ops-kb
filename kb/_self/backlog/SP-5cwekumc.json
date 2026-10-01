@@ -1,0 +1,20 @@
+{
+  "id": "SP-5cwekumc",
+  "kind": "sprint",
+  "title": "Proofs prove the work",
+  "status": "planned",
+  "goal": "A bug's repro and an item's checks run the behaviour they name, done flags one that passes without doing its work, CI-state code has a table test over every job state, a gap-rule change runs over the store's real findings, the sync gate runs the tests of the code a push changes (cloud scenarios and selfdoc's tools-map test included) with no Self-Reviewed way past stale docs, stress timings hold under load, and intake's detectors all run within the hook budget and reach every item.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

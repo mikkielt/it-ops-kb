@@ -4,6 +4,7 @@
   "title": "An item whose code reads backlog state checks every path that changes it",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-6eifcza6",
   "priority": "P2",
   "rank": 0,
   "goal": "Planning (kb-backlog) adds, for an item whose code reads an item's status or presence, a check for each way the state changes (done, drop inside and outside a sprint, close, release), and backlog.py check warns when such an item's checks name fewer. Answers SP-jtfo4ael's retrospective: kbdecide sweep passed its checks while missing items dropped outside a sprint (BG-qks4ikyr).",
@@ -16,5 +17,12 @@
         "backlog_state_paths"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-backlog/SKILL.md"
   ]
 }

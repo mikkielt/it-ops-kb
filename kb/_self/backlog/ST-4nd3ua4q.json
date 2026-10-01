@@ -2,7 +2,8 @@
   "id": "ST-4nd3ua4q",
   "kind": "story",
   "title": "sync's gate runs the tests of the code a change touches, cloud-session scenarios included",
-  "status": "draft",
+  "status": "dropped",
+  "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
   "goal": "A change to kbgit.py sync makes sync's own gate run the tests that exercise it, TestCloudInGit included, so a regression like BG-7kug25eh (lane routing broke the cloud-session distill, caught only by a later full run in SP-v5xagbyv) cannot pass the gate; check first whether _tools/testmap.py's selection already covers it and add only what is missing",
@@ -15,5 +16,14 @@
         "test_sync_gate_selects_cloud_scenarios"
       ]
     }
-  ]
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/tests.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Dropped: near-duplicate, merged into ST-kffdjzv7 at planning (operator, 2026-10-01)"
 }

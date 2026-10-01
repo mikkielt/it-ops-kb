@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "close --summary only prints",
   "status": "draft",
+  "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py close SP --summary prints the one line per item close would delete and changes nothing, as the runbook's order of steps implies; close without --summary deletes",
@@ -15,5 +16,14 @@
         "backlog_close_summary"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ]
 }

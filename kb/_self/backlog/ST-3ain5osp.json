@@ -4,16 +4,17 @@
   "title": "A sprint worker's flagged choices become gates before landing",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
   "goal": "The kb-worker brief asks for choices the item's goal leaves open as recorded provisional gates with a recommendation, not report prose, and /kb-sprint run lands an item only after its gates are answered or provisional; the review then confirms them. Answers the SP-ufr3qnff failure where a worker's flagged --root choice landed unasked and came back as BG-aycs7kml",
   "checks": [
     {
       "run": [
-        "grep",
-        "-c",
-        "provisional gate",
-        ".claude/agents/kb-worker.md"
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_provisional_gate"
       ]
     },
     {
@@ -27,6 +28,11 @@
   "touches": [
     ".claude/agents/kb-worker.md",
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/backlog.md"
+    "_tools/test_kb_mcp.py",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
   ]
 }

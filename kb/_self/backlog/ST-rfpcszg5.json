@@ -4,6 +4,7 @@
   "title": "A bug that reads CI job states is checked by a table test over every job status and failure reason",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
   "goal": "A task that decides from GitLab or GitHub job states (ql_deliver.job_ran, job_verdict, red-pipeline --job) carries a check that runs one table test over every job status (created, pending, running, success, failed, canceled, skipped, manual) crossed with started or not and the failure reasons the code names, and the breakdown brief in kb/_self/backlog.md asks for it. Retrospective of SP-z7a5c76b: TK-zutzzklq's checks passed on planted states chosen by its author while the review found two S2 defects (BG-sim2fdaa, BG-vsqfchgz) in states no check planted.",
@@ -16,5 +17,12 @@
         "job_state_table"
       ]
     }
+  ],
+  "touches": [
+    "_tools/test_ql_deliver.py",
+    "_tools/test_backlog.py",
+    "_tools/ql_deliver.py",
+    "kb/_self/querylog.md",
+    "kb/_self/backlog.md"
   ]
 }
