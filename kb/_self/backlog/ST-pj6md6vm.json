@@ -2,7 +2,7 @@
   "id": "ST-pj6md6vm",
   "kind": "story",
   "title": "test_layout's facade map covers bl_ modules",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P3",
@@ -29,5 +29,6 @@
   "touches": [
     "_tools/test_layout.py",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-w2"
 }
