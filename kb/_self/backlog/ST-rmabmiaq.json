@@ -2,7 +2,7 @@
   "id": "ST-rmabmiaq",
   "kind": "story",
   "title": "Roots keep decisions and decision makers in checked CSV files",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-v56iwyry",
   "sprint": "SP-jtfo4ael",
   "priority": "P2",
@@ -27,5 +27,28 @@
   ],
   "depends_on": [
     "ST-ej3iqwdo"
-  ]
+  ],
+  "evidence": {
+    "commit": "b302124f21409a83ab1947e42d28f51ebcd31d90",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "decisions_store"
+        ],
+        "exit": 0,
+        "sha256": "d010f2412e3da34f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "2375cf3d37070d68"
+      }
+    ]
+  }
 }
