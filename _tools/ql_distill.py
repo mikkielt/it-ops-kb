@@ -389,6 +389,33 @@ def work_windows(rows):
     return inside, worked
 
 
+def rework_windows(rows):
+    """{prompt id: the items in rework at it}, for the prompts in the order they began: an item is in rework from the
+    prompt of its first `refused` row (a `backlog.py done` that exited 1) while its window is open, up to the prompt
+    that closes it with `done` or `release`, both included. A `refused` row of an item with no open claim in these
+    rows is none, and a later `claim` of an item that was released starts a window with no rework: the windows are
+    those of work_windows, and a session's refusals never carry into another session's rows."""
+    out, open_items, refused = {}, set(), set()
+    for r in rows:
+        pid = r.get("prompt_id")
+        if r.get("surface") == "usage" or not isinstance(pid, str):
+            continue
+        out.setdefault(pid, set(refused))
+        item = r.get("item") if r.get("surface") == "work" else None
+        if not (isinstance(item, str) and WORK_ITEM.fullmatch(item)):
+            continue
+        action = r.get("action")
+        if action == "claim":
+            open_items.add(item)
+        elif action == "refused" and item in open_items:
+            refused.add(item)
+            out[pid].add(item)
+        elif action in ("done", "release") and item in open_items:
+            open_items.discard(item)
+            refused.discard(item)
+    return out
+
+
 def sprint_finder(directory=None):
     """sprint_of(item id): the sprint of a backlog item read from its file in `directory` (default: the clone's
     kb/_self/backlog): its own `sprint`, else that of the nearest item above it with one (the story or bug of a task),
@@ -430,15 +457,20 @@ def add_sub(tally, sub):
     tally["prompts"] -= 1
 
 
-def session_work(rows, done, items, sprint_of=None):
+def session_work(rows, done, items, sprint_of=None, rework=None):
     """One closed session's work: (its shared line or None, the window prompts without usage, the prompt ids
     counted). Each prompt not in `done` with a usage record of this reader (usage_of) adds its counts to the tally of
     the line work_lines_of names (`items`: {item or sprint: tally}, which the run's sessions share), or to the
     session's shared tally when that is none; the subagents the record routes to items (routed_of) add their counts
-    to those items' tallies. A session that claimed no item is unrecorded."""
+    to those items' tallies. A session that claimed no item is unrecorded. `rework` ({item: tally}, shared by the
+    run's sessions like `items`) also takes the counts that fall in an item's rework (rework_windows): a prompt of
+    one window only, and a subagent routed to an item, in rework at that prompt; a prompt in several windows counts
+    on its sprint's line with no split."""
+    rework = {} if rework is None else rework
     inside, worked = work_windows(rows)
     if not worked:
         return None, 0, set()
+    again = rework_windows(rows)
     by_prompt = {}
     for r in rows:
         if isinstance(r.get("prompt_id"), str):
@@ -457,10 +489,14 @@ def session_work(rows, done, items, sprint_of=None):
         lines = work_lines_of(windows, sprint_of)
         for key in lines:
             store_.tally_add(items.setdefault(key, store_.new_tally()), counts)
+            if len(windows) == 1 and key in again[pid]:
+                store_.tally_add(rework.setdefault(key, store_.new_tally()), counts)
         if not lines:
             store_.tally_add(shared, counts)
         for item, sub in routed.items():
             add_sub(items.setdefault(item, store_.new_tally()), sub)
+            if item in again[pid]:
+                add_sub(rework.setdefault(item, store_.new_tally()), sub)
     return (store_.work_line("items", sorted(worked), shared) if shared["prompts"] else None), missing, counted
 
 
@@ -469,17 +505,17 @@ def plan_work(sessions, worked, sprint_of=None):
     sessions: the items' lines in id order, then the sessions' shared lines. `worked` ({session id: prompt ids}) holds
     the prompts an earlier run counted, so a session whose rows stayed in the spool is never counted twice;
     `sprint_of` (sprint_finder) names the sprint of an item."""
-    items, shared, missing, counted = {}, [], 0, {}
+    items, rework, shared, missing, counted = {}, {}, [], 0, {}
     for sid in sorted(sessions):
         if not sessions[sid]["closed"]:
             continue
-        line, m, pids = session_work(sessions[sid]["rows"], set(worked.get(sid, ())), items, sprint_of)
+        line, m, pids = session_work(sessions[sid]["rows"], set(worked.get(sid, ())), items, sprint_of, rework)
         missing += m
         if pids:
             counted[sid] = pids
         if line:
             shared.append(line)
-    lines = [store_.work_line("item", i, items[i]) for i in sorted(items)]
+    lines = [store_.work_line("item", i, items[i], rework.get(i)) for i in sorted(items)]
     return lines + sorted(shared, key=lambda ln: json.dumps(ln, sort_keys=True)), missing, counted
 
 

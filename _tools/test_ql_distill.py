@@ -29,7 +29,11 @@
                     line when the items do not share one or no sprint is known; no duplicate on a second run; routing
                     outside the closed shape (a branch for an id, an unknown group or model) is not counted; the
                     routing is no part of an entry's usage line
-  TestOverheadSidecar  the counts of the distill's own Haiku calls (`--output-format json`, `modelUsage`) are the run's
+  TestWorkRework    an item line's `rework` block (`-k work_rework`): the counts from the prompt of the item's first
+                    `refused` row to the end of its window, a part of the line's own counts (work = the line less
+                    it); none for an item with no refused row, for a refused row with no open claim or after the
+                    window closed, or on a sprint's line; a routed subagent counts by the prompt it started under
+  TestOverheadSidecar the counts of the distill's own Haiku calls (`--output-format json`, `modelUsage`) are the run's
                     `distill` overhead line in the work sidecar (`-k overhead_sidecar`): summed over calls and models,
                     no item, session or text, none for an injected Haiku, a result without counts or a failed call
   TestLock         a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
@@ -865,6 +869,123 @@ class TestWorkSubagent:
         for none in (WC, "TK-dddddddd", "TK-ffffffff", "TK-gggggggg", "not an id", None):
             assert sprint_of(none) is None, none
         assert REAL_SPRINT_FINDER(tmp_path / "missing")(WA) is None  # a clone without the backlog
+
+
+# A claimed and worked, refused twice (p2, p4) and done in p5; the subagent of p1 and that of p3 are routed to A, the
+# one of p2 is its prompt's own; p6 lies outside the window
+PLAN_REWORK = [(("claim:" + WA,), 2, False, False), ((), 3, WA, False), (("refused:" + WA,), 4, True, False),
+               ((), 5, WA, False), (("refused:" + WA,), 6, False, False), (("done:" + WA,), 7, False, False),
+               ((), 8, False, False)]
+
+
+def models_minus(whole, part):
+    """{model: counts} of `whole` less `part`'s, as the cost report takes rework from a line's counts."""
+    return {m: {k: v - part.get(m, {}).get(k, 0) for k, v in c.items()} for m, c in whole.items()
+            if any(v - part.get(m, {}).get(k, 0) for k, v in c.items())}
+
+
+def check_rework_split(lines):
+    """A's line of PLAN_REWORK: the prompts from the first refused done (p2) on are the rework block, the two before
+    it the work, and the two sum to the window's total."""
+    (line,) = [ln for ln in lines if ln.get("item") == WA]
+    haiku = "claude-haiku-4-5-20251001"
+    assert line["prompts"] == 6 and line["main"] == work_main(2, 3, 4, 5, 6, 7), line
+    assert line["sub"] == {"Explore": {haiku: total_of([3, 4, 5])}}, line
+    assert line.get("rework") == {"prompts": 4, "main": work_main(4, 5, 6, 7),
+                              "sub": {"Explore": {haiku: total_of([4, 5])}}}, line
+    rework = line["rework"]
+    assert line["prompts"] - rework["prompts"] == 2 and models_minus(line["main"], rework["main"]) == work_main(2, 3)
+    assert models_minus(line["sub"]["Explore"], rework["sub"]["Explore"]) == {haiku: total_of([3])}
+    assert ql_store.work_line_problems(line, "x") == []
+
+
+class TestWorkRework:
+    """The work sidecar splits an item's counts at its first refused done (`-k work_rework`): the item line keeps the
+    window's total and a `rework` block holds the part from the first `refused` row's prompt to the end of the window."""
+
+    @pytest.fixture(autouse=True)
+    def sprints(self, monkeypatch):
+        monkeypatch.setattr(ql_distill, "sprint_finder", lambda directory=None: SPRINTS.get)
+
+    def test_work_rework_split_sums_to_the_window_total(self):
+        lines, missing, counted = ql_distill.plan_work(work_sessions(PLAN_REWORK), {}, SPRINTS.get)
+        check_rework_split(lines)
+        # p6, outside the window, is the session's shared line: the lines add to the prompts counted, no more
+        assert missing == 0 and counted == {W1: {f"p{i}" for i in range(7)}} and prompts_in(lines) == 7
+
+    def test_work_rework_the_total_is_what_a_run_without_refusals_writes(self):
+        """The line's own counts do not depend on the split: PLAN_REWORK without its refused rows has them all."""
+        plain = [(tuple(w for w in work if not w.startswith("refused:")), *rest) for work, *rest in PLAN_REWORK]
+        lines, _, _ = ql_distill.plan_work(work_sessions(plain), {}, SPRINTS.get)
+        refused, _, _ = ql_distill.plan_work(work_sessions(PLAN_REWORK), {}, SPRINTS.get)
+        assert [{k: v for k, v in ln.items() if k != "rework"} for ln in refused] == lines
+
+    def test_work_rework_an_item_without_a_refused_row_has_no_rework(self):
+        plan = [(("claim:" + WA,), 2, False, False), ((), 3, False, False), (("done:" + WA,), 4, False, False)]
+        lines, _, _ = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        assert lines == [{"item": WA, "prompts": 3, "main": work_main(2, 3, 4)}], lines
+        # a refusal of another item does not give this one a figure
+        plan = [(("claim:" + WA,), 2, False, False), (("refused:" + WB,), 3, False, False),
+                (("done:" + WA,), 4, False, False)]
+        lines, _, _ = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        assert lines == [{"item": WA, "prompts": 3, "main": work_main(2, 3, 4)}], lines
+
+    def test_work_rework_a_refused_row_with_no_open_claim_is_none(self):
+        rows = work_rows(W1, [(("refused:" + WA,), 1, False, False), (("claim:" + WA,), 2, False, False),
+                              (("done:" + WA,), 3, False, False), (("refused:" + WA,), 4, False, False)])
+        assert ql_distill.rework_windows(rows) == {"p0": set(), "p1": set(), "p2": set(), "p3": set()}
+
+    def test_work_rework_ends_with_the_window_and_a_new_claim_starts_none(self):
+        plan = [(("claim:" + WA,), 1, False, False), (("refused:" + WA,), 2, False, False),
+                (("release:" + WA,), 3, False, False), (("claim:" + WA,), 4, False, False), ((), 5, False, False),
+                (("done:" + WA,), 6, False, False)]
+        got = ql_distill.rework_windows(work_rows(W1, plan))
+        assert got == {"p0": set(), "p1": {WA}, "p2": {WA}, "p3": set(), "p4": set(), "p5": set()}, got
+        lines, _, _ = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        assert lines[0]["rework"] == {"prompts": 2, "main": work_main(2, 3)}, lines
+
+    def test_work_rework_a_prompt_in_two_windows_is_never_split(self):
+        """The prompts of A and B's overlap are their sprint's, with no rework block, whatever was refused in them."""
+        plan = [(("claim:" + WA,), 2, False, False), (("claim:" + WB,), 3, False, False),
+                (("refused:" + WA,), 5, False, False), (("done:" + WA,), 4, False, False),
+                (("done:" + WB,), 6, False, False)]
+        lines, _, _ = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        assert [ln["item"] for ln in lines] == [SA, WA, WB] and all("rework" not in ln for ln in lines), lines
+
+    def test_work_rework_a_routed_subagent_counts_by_the_prompt_it_started_under(self):
+        plan = [(("claim:" + WA,), 2, WB, False), (("refused:" + WA,), 3, WB, False), (("done:" + WA,), 4, False, False)]
+        lines, _, _ = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        by = {ln["item"]: ln for ln in lines}
+        sub = {"Explore": {"claude-haiku-4-5-20251001": total_of([2, 3])}}
+        assert by[WB] == {"item": WB, "prompts": 0, "main": {}, "sub": sub}, by  # B has no window of this session
+        assert "rework" not in by[WB] and by[WA]["rework"] == {"prompts": 2, "main": work_main(3, 4)}, by
+
+    def test_work_rework_written_to_the_sidecar_passes_the_gates(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_work(q, W1, PLAN_REWORK)
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 work=2"], said  # A's line, a shared line
+        got = jsonl(work_sidecar_of(q))
+        assert got[0]["counts"] == {"items": 1, "shared": 1, "missing": 0}
+        check_rework_split(got[1:])
+        assert "rework" not in got[2]
+        assert ql_store.store_problems(q / "store") == []
+        text = work_sidecar_of(q).read_text(encoding="utf-8")
+        assert W1 not in text and "refused" not in text and "PRIVATE-WORK-TEXT" not in text and "p2" not in text
+
+    def test_work_rework_planted_a_split_that_never_starts_is_caught(self, monkeypatch):
+        monkeypatch.setattr(ql_distill, "rework_windows", lambda rows: {r["prompt_id"]: set() for r in rows
+                                                                       if "prompt_id" in r})
+        lines, _, _ = ql_distill.plan_work(work_sessions(PLAN_REWORK), {}, SPRINTS.get)
+        with pytest.raises(AssertionError):
+            check_rework_split(lines)
+
+    def test_work_rework_planted_a_split_that_starts_at_the_claim_is_caught(self, monkeypatch):
+        monkeypatch.setattr(ql_distill, "rework_windows", lambda rows: {r["prompt_id"]: {WA} for r in rows
+                                                                       if "prompt_id" in r})
+        lines, _, _ = ql_distill.plan_work(work_sessions(PLAN_REWORK), {}, SPRINTS.get)
+        with pytest.raises(AssertionError):
+            check_rework_split(lines)
 
 
 def distill_cli(data, *args):

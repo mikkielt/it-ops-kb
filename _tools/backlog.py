@@ -125,7 +125,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           items, what waits on which gate or trigger, the critical path, the
                                           knowledge state of the next item's asks and refs (--hook runs no pack)
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope
-  backlog.py cost ID [--runs] [--format text|json]
+  backlog.py cost ID [--runs] [--rework] [--format text|json]
                                           the tokens the query log's work sidecars (kb/_querylog/work/) hold for the
                                           item and its descendants (for a sprint, its items too; a sprint's own line
                                           counts for a sprint only), per model: requests, in, cr, out and cw apart,
@@ -135,6 +135,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           apart, and the overhead lines of the sidecar runs inside the sprint's
                                           window (its start commit to its close commit) as a total of their own,
                                           in no item or sprint figure; unresolved in a shallow clone.
+                                          --rework adds the item work's split into work and rework (the counts
+                                          from an item's first refused done; json: `rework_split`).
                                           --runs lists each run's line apart; json gives the same numbers. No
                                           sidecar: zeros, exit 0; an unknown id: exit 2. An item whose file is gone
                                           (deleted at sprint close, a closed sprint included) is read from its last
@@ -3248,12 +3250,13 @@ def cost_models(w, field):
     return out
 
 
-def cost_lines(root, ids):
+def cost_lines(root, ids, rework=False):
     """([line], [skipped run id]): the lines of the work sidecars under root/kb/_querylog that name one of `ids`
     (every line when `ids` is None), oldest run first: an item line {run, item, prompts, <report key>: {model:
     counts}}, and a shared line {run, items, prompts, shared: {model: counts}} (its `main` and `sub` together) that
     names one of `ids` among its `items`; a sidecar that breaks the store's work gates (`ql_store.work_line_problems`) is skipped whole and named, so a bad
-    file never skews a sum."""
+    file never skews a sum. With `rework`, an item line that has a `rework` block also has `rework`: {prompts,
+    <report key>: {model: counts}}, a part of the line's own figures; without it no line has the key."""
     import ql_store
     out, skipped = [], []
     for p in ql_store.work_files(Path(root) / "kb" / "_querylog"):
@@ -3267,8 +3270,12 @@ def cost_lines(root, ids):
             continue
         for w in lines:
             if "item" in w and (ids is None or w["item"] in ids):  # a shared line has `items`, no `item`
-                out.append({"run": p.stem, "item": w["item"], "prompts": w["prompts"],
-                            **{key: cost_models(w, field) for key, field, _ in COST_GROUPS}})
+                row = {"run": p.stem, "item": w["item"], "prompts": w["prompts"],
+                       **{key: cost_models(w, field) for key, field, _ in COST_GROUPS}}
+                if rework and "rework" in w:
+                    row["rework"] = {"prompts": w["rework"]["prompts"],
+                                     **{key: cost_models(w["rework"], field) for key, field, _ in COST_GROUPS}}
+                out.append(row)
             elif "items" in w and (ids is None or ids.intersection(w["items"])):
                 both = {}
                 for _, field, _ in COST_GROUPS:
@@ -3374,7 +3381,55 @@ def cost_sum(lines):
     return out
 
 
-def cost_report(bl, iid):
+def cost_take(total, models):
+    """Subtract {model: counts} from `total` (the counterpart of cost_add): a part of what `total` holds."""
+    for m, c in models.items():
+        t = total.setdefault(m, dict.fromkeys(COST_KEYS, 0))
+        for k in COST_KEYS:
+            t[k] -= c.get(k, 0)
+        if not any(t.values()):  # a model all of whose counts were the part's has no row left
+            del total[m]
+
+
+def cost_part():
+    """An empty figure set of the work/rework split: prompts and each report key's {model: counts}."""
+    return {"prompts": 0, **{key: {} for key, _, _ in COST_GROUPS}}
+
+
+def cost_part_add(into, part, sign=1):
+    """Add (or, with sign -1, take) `part`'s prompts and figures into `into`."""
+    into["prompts"] += sign * part["prompts"]
+    for key, _, _ in COST_GROUPS:
+        (cost_add if sign > 0 else cost_take)(into[key], part[key])
+
+
+def cost_split(lines):
+    """The work/rework split of item lines (cost_lines with `rework`): {items, work, rework, by_item}. `rework` sums the
+    lines' rework blocks and `work` is what is left of their figures (the prompts and counts before an item's first
+    refused done, and all of an item with none), each {prompts, <report key>: {model: counts}}; `items` are the ids
+    with a rework block, sorted, and `by_item` holds, for those only, the item's `work` and `rework` the same way."""
+    whole, rw, per, has = cost_part(), cost_part(), {}, set()
+    for w in lines:
+        cost_part_add(whole, {"prompts": w["prompts"], **{key: w[key] for key, _, _ in COST_GROUPS}})
+        one = per.setdefault(w["item"], {"all": cost_part(), "rework": cost_part()})
+        cost_part_add(one["all"], {"prompts": w["prompts"], **{key: w[key] for key, _, _ in COST_GROUPS}})
+        if "rework" in w:
+            has.add(w["item"])
+            cost_part_add(rw, w["rework"])
+            cost_part_add(one["rework"], w["rework"])
+    work = cost_part()
+    cost_part_add(work, whole)
+    cost_part_add(work, rw, -1)
+    out = {"items": sorted(has), "work": work, "rework": rw, "by_item": {}}
+    for i in out["items"]:
+        part = cost_part()
+        cost_part_add(part, per[i]["all"])
+        cost_part_add(part, per[i]["rework"], -1)
+        out["by_item"][i] = {"work": part, "rework": per[i]["rework"]}
+    return out
+
+
+def cost_report(bl, iid, rework=False):
     """The report of `cost ID`: {id, items, runs, prompts, <report key>: {model: counts}, shared, session_total,
     shared_prompts, by_item, run_lines, shared_lines, skipped, restored, unresolved, view}. `shared` sums the shared
     lines that name any id in the scope, each line once however many of its items are in it (and so once for an
@@ -3385,8 +3440,10 @@ def cost_report(bl, iid):
     a history. A sprint's report also has `research` (the lines of its research items, `cost_is_research`: {items,
     runs, prompts, direct, attributed, total, by_item}), kept out of `items`, `runs`, `prompts`, `direct`,
     `attributed` and `session_total`, which are the item work, and `overhead` (`cost_overhead`), in no figure of
-    either; `run_lines` keeps every item line."""
-    all_lines, skipped = cost_lines(bl.root, None)
+    either; `run_lines` keeps every item line. With `rework`, the report also has `rework_split` (cost_split) of the
+    item work lines, research left out as in the figures above; without it, no line and no key of the report
+    differs from a report that never heard of rework."""
+    all_lines, skipped = cost_lines(bl.root, None, rework=True) if rework else cost_lines(bl.root, None)
     named = {i for w in all_lines for i in (w["items"] if "items" in w else [w["item"]])}
     view, restored, unresolved = cost_view(bl, named | {iid})
     if iid not in view.items:
@@ -3406,6 +3463,8 @@ def cost_report(bl, iid):
     for key in (*(g[0] for g in COST_GROUPS), COST_SHARED):
         cost_add(rep[COST_TOTAL], rep[key])
     rep["items"] = work["items"]
+    if rework:
+        rep["rework_split"] = cost_split([w for w in lines if w["item"] not in research])
     rep["restored"] = sorted(({w["item"] for w in lines} | {iid}) & set(restored))
     if sprint:
         res = cost_sum([w for w in lines if w["item"] in research])
@@ -3706,14 +3765,49 @@ def cost_apart(rep, view):
     return out
 
 
+def cost_part_tokens(part):
+    """The tokens of a work/rework part: `in` + `cw` + `cr` + `out` of its direct and attributed figures."""
+    return sum(cost_tokens(part[key]) for key, _, _ in COST_GROUPS)
+
+
+def cost_split_json(split):
+    """The `rework_split` of the json report: the split's parts, each with its `tokens` besides its prompts and
+    figures, and `token_keys`."""
+    def part(p):
+        return {**p, "tokens": cost_part_tokens(p)}
+    return {"items": split["items"], "work": part(split["work"]), "rework": part(split["rework"]),
+            "by_item": {i: {"work": part(one["work"]), "rework": part(one["rework"])}
+                        for i, one in split["by_item"].items()}, "token_keys": list(TOKEN_KEYS)}
+
+
+def cost_split_text(split, view):
+    """The lines of `cost --rework`: the work and rework figures of the report's item work, then the items that
+    have rework with their tokens of each (none, when no item has)."""
+    out = [f"work and rework (the counts before an item's first refused done and from it; {len(split['items'])} "
+           f"item(s) with rework; tokens = {' + '.join(TOKEN_KEYS)}):"]
+    for name, key in (("work", "work"), ("rework", "rework")):
+        part = split[key]
+        out.append(f"  {name} ({part['prompts']} prompt(s), {cost_part_tokens(part)} tokens):")
+        for gkey, _, label in COST_GROUPS:
+            out.append(f"    {label}:")
+            out += cost_figures(part[gkey], "      ")
+    if not split["items"]:
+        out.append("  no item has rework")
+    for i in split["items"]:
+        one = split["by_item"][i]
+        out.append(f"  {view.label(i)}: work {one['work']['prompts']} prompt(s), {cost_part_tokens(one['work'])} tokens; "
+                   f"rework {one['rework']['prompts']} prompt(s), {cost_part_tokens(one['rework'])} tokens")
+    return out
+
+
 def cmd_cost(bl, a):
     if a.research:
-        if a.id or a.runs:
-            raise Rejected("cost --research lists every research item: it takes no ID and no --runs")
+        if a.id or a.runs or a.rework:
+            raise Rejected("cost --research lists every research item: it takes no ID, no --runs and no --rework")
         return cmd_cost_research(bl, a)
     if not a.id:
         raise Rejected("cost needs an ID, or --research")
-    rep = cost_report(bl, a.id)
+    rep = cost_report(bl, a.id, rework=True) if a.rework else cost_report(bl, a.id)
     iid, view = rep["id"], rep["view"]
     if rep["skipped"]:
         print(f"cost: skipped sidecars that break the store's gates: {', '.join(rep['skipped'])}", file=sys.stderr)
@@ -3724,6 +3818,8 @@ def cmd_cost(bl, a):
         out = {k: rep[k] for k in ("id", "items", "runs", "prompts", "shared_prompts", "by_item", "skipped", "restored",
                                    "unresolved", COST_SHARED, COST_TOTAL, *(g[0] for g in COST_GROUPS))}
         out.update({k: rep[k] for k in ("research", "overhead") if k in rep})  # a sprint's report only
+        if a.rework:
+            out["rework_split"] = cost_split_json(rep["rework_split"])
         if a.runs:
             out["run_lines"] = rep["run_lines"]
             out["shared_lines"] = rep["shared_lines"]
@@ -3738,6 +3834,9 @@ def cmd_cost(bl, a):
         say(x)
     for x in cost_apart(rep, view):
         say(x)
+    if a.rework:
+        for x in cost_split_text(rep["rework_split"], view):
+            say(x)
     if rep["items"] not in ([], [iid]):
         say("by item:")
         for i in rep["items"]:
@@ -3896,6 +3995,8 @@ def main(argv=None):
     p = sub.add_parser("cost")
     p.add_argument("id", nargs="?")
     p.add_argument("--runs", action="store_true", help="also list each run's line apart")
+    p.add_argument("--rework", action="store_true",
+                   help="also split the work from the rework after an item's first refused done")
     p.add_argument("--research", action="store_true",
                    help="instead of an ID: every research item's tokens against the gap findings its commits closed")
     p.add_argument("--format", choices=("text", "json"), default="text")

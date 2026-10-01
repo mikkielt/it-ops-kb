@@ -20,6 +20,10 @@
                     `calls` or a count that is not a (positive) count, counts outside the model shape, a header
                     count that does not match, a kind twice in a file; a valid line does not make `backlog.py cost`
                     skip the sidecar
+  TestWorkReworkGates the `rework` block of an item line (`-k work_rework`), each gate with a planted failure: a sidecar
+                    with and without it passes, a block that is not a block, one with a field outside `prompts`, `main`
+                    and `sub`, counts outside the line shapes, counts above the line's own, one on a sprint's line or
+                    on a shared line
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub. The helpers the classes share are in
 ql_testkit.py.
@@ -490,3 +494,75 @@ class TestOverheadGates:
         store.rename(root / "kb" / "_querylog")
         lines, skipped = backlog.cost_lines(root, None)
         assert skipped == [] and {ln["item"] for ln in lines if "item" in ln} == {WORK_A, WORK_B}
+
+
+REWORK_PART = {"requests": 1, "in": 2, "cw": 600, "cw1h": 600, "cr": 5000, "out": 70}  # a part of OPUS
+
+
+def rework_lines():
+    """The first item line of work_lines with a `rework` block that is a part of its counts."""
+    first = {**work_lines()[0], "rework": {"prompts": 1, "main": {"claude-opus-5-5": REWORK_PART},
+                                           "sub": {"kb-lookup": {"claude-haiku-4-5-20251001": HAIKU}}}}
+    return [first] + work_lines()[1:]
+
+
+class TestWorkReworkGates:
+    """The `rework` block of an item line (`-k work_rework`): optional, a part of the line's counts, each gate with a
+    planted failure."""
+
+    def test_work_rework_gates_pass_with_and_without_the_block(self, tmp_path):
+        store, problems = work_store(tmp_path, lines=rework_lines())
+        assert problems == [] and ql_store.store_problems(store) == []
+        assert "rework" in jsonl(ql_store.work_files(store)[0])[1]
+        store, problems = work_store(tmp_path / "old")  # a sidecar written before the block existed
+        assert problems == [] and all("rework" not in w for w in jsonl(ql_store.work_files(store)[0]))
+
+    def test_work_rework_a_block_of_routed_subagent_counts_only_passes(self, tmp_path):
+        sub = {"kb-lookup": {"claude-haiku-4-5-20251001": HAIKU}}
+        lines = [{"item": WORK_A, "prompts": 0, "main": {}, "sub": sub, "rework": {"prompts": 0, "main": {}, "sub": sub}}]
+        assert work_store(tmp_path, lines=lines)[1] == []
+
+    def test_work_rework_a_line_keeps_a_block_with_a_prompt_or_a_subagent_only(self):
+        tally = ql_store.new_tally()
+        assert "rework" not in ql_store.work_line("item", WORK_A, tally, ql_store.new_tally())
+        ql_store.tally_add(tally, ({"claude-opus-5-5": OPUS}, {}))
+        line = ql_store.work_line("item", WORK_A, tally, tally)
+        assert line["rework"] == {"prompts": 1, "main": {"claude-opus-5-5": OPUS}}
+        assert ql_store.work_line_problems(line, "x") == []
+
+    @pytest.mark.parametrize("change,needle", [
+        (at([1, "rework"], "yes"), "rework is not a block of counts"),
+        (at([1, "rework"], [1]), "rework is not a block of counts"),
+        (at([1, "rework", "session_id"], "3f2a4c1e-0000-4000-8000-00000000abcd"), "rework has fields it never has"),
+        (at([1, "rework", "item"], WORK_A), "rework has fields it never has: item"),
+        (at([1, "rework", "prompts"], 0), "rework: an item line with no prompt holds an empty main and a sub"),
+        (at([1, "rework", "prompts"], -1), "rework: prompts is not a positive count"),
+        (at([1, "rework", "prompts"], "1"), "rework: prompts is not a positive count"),
+        (lambda o: o[1]["rework"].pop("prompts"), "rework: prompts is not a positive count"),
+        (lambda o: o[1]["rework"].pop("main"), "rework: main: not a map of model ids to counts"),
+        (at([1, "rework", "main"], {"jan.kowalski@corp.example.com": REWORK_PART}), "is not a model id"),
+        (at([1, "rework", "main", "claude-opus-5-5", "in"], -1), "as counts"),
+        (at([1, "rework", "sub"], {"payroll-agent": {"claude-haiku-4-5-20251001": HAIKU}}), "is not an agent group"),
+        (at([1, "rework", "prompts"], 4), "rework prompts exceed the line's"),
+        (at([1, "rework", "main", "claude-opus-5-5", "out"], 171), "main counts of 'claude-opus-5-5' exceed the line's"),
+        (at([1, "rework", "main"], {"claude-haiku-4-5-20251001": REWORK_PART}),
+         "main counts of 'claude-haiku-4-5-20251001' exceed"),
+        (at([1, "rework", "sub", "kb-lookup", "claude-haiku-4-5-20251001", "cr"], 1), "sub 'kb-lookup' counts of"),
+        (at([1, "rework", "sub"], {"Explore": {"claude-haiku-4-5-20251001": HAIKU}}), "sub 'Explore' counts of"),
+        (at([1, "item"], "SP-aaaaaaaa"), "a sprint's line has no rework"),
+        (at([3, "rework"], {"prompts": 1, "main": {"claude-opus-5-5": REWORK_PART}}), "fields a work line never has: rework"),
+        (at([2, "rework"], {"prompts": 2, "main": {"claude-opus-5-5": REWORK_PART}}), "rework prompts exceed the line's"),
+    ])
+    def test_work_rework_planted(self, tmp_path, change, needle):
+        problems = work_store(tmp_path, change, lines=rework_lines())[1]
+        assert any(needle in p for p in problems), problems
+
+    def test_work_rework_check_runs_the_gates(self, tmp_path):
+        store, _ = work_store(tmp_path, lines=rework_lines())
+        p = subprocess.run([sys.executable, QL, "check", str(store)], capture_output=True, text=True, encoding="utf-8",
+                           timeout=120)
+        assert (p.returncode, p.stdout) == (0, "querylog check: problems=0\n"), p.stdout
+        bad, _ = work_store(tmp_path / "bad", at([1, "rework", "prompts"], 9), lines=rework_lines())
+        p = subprocess.run([sys.executable, QL, "check", str(bad)], capture_output=True, text=True, encoding="utf-8",
+                           timeout=120)
+        assert p.returncode == 1 and "rework prompts exceed the line's" in p.stdout, p.stdout
