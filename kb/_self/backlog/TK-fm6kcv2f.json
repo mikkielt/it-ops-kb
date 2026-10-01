@@ -2,7 +2,7 @@
   "id": "TK-fm6kcv2f",
   "kind": "task",
   "title": "Parse and check the DECISION tag in every tool",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-trjsnvos",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,19 @@
     "kb/_self/embedding.md",
     "_tools/bench_retrieval.py"
   ],
-  "claimed_by": "worker-decision-tag"
+  "evidence": {
+    "commit": "6bc659bd7d8ed96df009e148f0c75b22d74e05f5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "decision_tag"
+        ],
+        "exit": 0,
+        "sha256": "b62e4c3c3c4a8707"
+      }
+    ]
+  }
 }
