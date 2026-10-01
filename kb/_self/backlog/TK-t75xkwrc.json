@@ -2,7 +2,7 @@
   "id": "TK-t75xkwrc",
   "kind": "task",
   "title": "kbdecide.py rejects a proposal with invalidate and guards supersede and restore",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-rcceqbdr",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   ],
   "depends_on": [
     "TK-ydxqes3n"
-  ]
+  ],
+  "claimed_by": "worker-kbdecide-withdraw"
 }
