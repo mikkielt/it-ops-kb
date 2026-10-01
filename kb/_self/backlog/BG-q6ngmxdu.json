@@ -2,7 +2,7 @@
   "id": "BG-q6ngmxdu",
   "kind": "bug",
   "title": "intake's drift and trailers fingerprints hash their whole finding set, so a changed set or a budget-dependent drift scan files the same findings again",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -33,5 +33,28 @@
     "kb/_self/tools.md"
   ],
   "notes": "Sprint review of SP-3brmvlnh: three drift runs a minute apart gave two fingerprints as the budget reached different items; the trailers key is the sorted short shas, so a window that slides past one commit files a second bug while the first stays open and its repro passes.",
-  "claimed_by": "worker-q6ngmxdu"
+  "evidence": {
+    "commit": "0402a35e8c50184ba3d7a359fcc10f41d7f5f213",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_stable_fingerprint or intake_replay"
+        ],
+        "exit": 0,
+        "sha256": "4b582af6aa6ebe7b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bl_intake as b; a=b.collect('.',only='trailers')[0]; b.TRAILER_WINDOW_DAYS=5; c=b.collect('.',only='trailers')[0]; sys.exit(1 if a and c and a[0].fp != c[0].fp else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
