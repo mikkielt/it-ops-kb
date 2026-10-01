@@ -2,7 +2,7 @@
   "id": "ST-ykhcvsrx",
   "kind": "story",
   "title": "Stress test timing limits hold under host load",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5cwekumc",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,6 @@
     "_tools/test_stress.py",
     "_tools/stress_test.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "c-ykhcvsrx"
 }
