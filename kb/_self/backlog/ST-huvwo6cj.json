@@ -2,7 +2,7 @@
   "id": "ST-huvwo6cj",
   "kind": "story",
   "title": "Sync refuses to push another session's local commits from a shared checkout",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
@@ -22,5 +22,6 @@
     "_tools/kbgit.py",
     "_tools/test_sync.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "worker-huvwo6cj"
 }
