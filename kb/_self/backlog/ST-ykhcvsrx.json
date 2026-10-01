@@ -1,0 +1,9 @@
+{
+  "id": "ST-ykhcvsrx",
+  "kind": "story",
+  "title": "Stress test timing limits hold under host load",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "test_corpus_scaling and test_kb_hook_latency_with_capture in _tools/test_stress.py do not fail on a loaded host (load average above 50) that passes them alone: their limits scale with measured load or they are excluded from backlog.py land's stress run and kept in the manual suite"
+}
