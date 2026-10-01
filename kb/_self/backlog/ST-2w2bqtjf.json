@@ -2,7 +2,7 @@
   "id": "ST-2w2bqtjf",
   "kind": "story",
   "title": "Retrospective: what rework after a refused done cost",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-fvztfmtm",
   "priority": "P3",
@@ -20,5 +20,20 @@
   ],
   "depends_on": [
     "ST-6bi7oe6y"
-  ]
+  ],
+  "evidence": {
+    "commit": "e02306a2e7301214bf8afd9e8cdbc9c80affba30",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_rework"
+        ],
+        "exit": 0,
+        "sha256": "1653d7f38fd7ee4c"
+      }
+    ]
+  }
 }
