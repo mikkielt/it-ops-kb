@@ -2,7 +2,7 @@
   "id": "TK-62hyopvl",
   "kind": "task",
   "title": "selfdoc numbers a source's lines by LF alone in map_tools and check_map",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-uymi3axm",
   "priority": "P2",
   "rank": 0,

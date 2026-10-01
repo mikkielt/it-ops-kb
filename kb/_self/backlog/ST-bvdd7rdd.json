@@ -2,7 +2,7 @@
   "id": "ST-bvdd7rdd",
   "kind": "story",
   "title": "A kb/_self doc left stale by another change does not fail an unrelated item's done",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5cwekumc",
   "priority": "P3",
   "rank": 0,

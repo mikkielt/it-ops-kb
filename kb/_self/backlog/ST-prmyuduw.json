@@ -2,7 +2,7 @@
   "id": "ST-prmyuduw",
   "kind": "story",
   "title": "done flags a repro or check that passes without doing its work",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,

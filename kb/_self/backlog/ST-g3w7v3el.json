@@ -2,7 +2,7 @@
   "id": "ST-g3w7v3el",
   "kind": "story",
   "title": "intake's drift checks end their whole process tree on a timeout and catch whole-suite runs behind a wrapper",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P2",

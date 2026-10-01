@@ -2,7 +2,7 @@
   "id": "ST-rfpcszg5",
   "kind": "story",
   "title": "A bug that reads CI job states is checked by a table test over every job status and failure reason",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "ST-qpngqq6u",
   "kind": "story",
   "title": "intake --hook runs its fast detectors before drift so the budget never starves them",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
