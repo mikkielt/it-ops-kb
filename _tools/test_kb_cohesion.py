@@ -304,6 +304,27 @@ class TestCohesion:
             assert self.goal_lane_order_problems(skill, backlog_skill.replace(need, "x"), runbook), need
             assert self.goal_lane_order_problems(skill, backlog_skill, runbook.replace(need, "x")), need
 
+    @staticmethod
+    def premise_problems(backlog_skill, runbook):
+        """Problems with how planning treats a story's premise: each text names the command in notes, the reproduction
+        and the two ways out."""
+        plan = backlog_skill.split("## Plan", 1)[-1]
+        steps = runbook.split("## Sprints", 1)[-1].split("\n## Working on items", 1)[0]
+        problems = []
+        for name, part in (("kb-backlog Plan", plan), ("backlog.md Sprints", steps)):
+            for need in ("premise", "`notes`", "does not reproduce", "test-only", "drops it"):
+                if need not in part:
+                    problems.append(f"{name}: no `{need}`")
+        return problems
+
+    def test_plan_premise_reproduces(self):
+        backlog_skill, runbook = text(".claude/skills/kb-backlog/SKILL.md"), text("kb/_self/backlog.md")
+        assert self.premise_problems(backlog_skill, runbook) == []
+        # planted failures: each part removed from each text
+        for need in ("premise", "`notes`", "does not reproduce", "test-only", "drops it"):
+            assert self.premise_problems(backlog_skill.replace(need, "x"), runbook), need
+            assert self.premise_problems(backlog_skill, runbook.replace(need, "x")), need
+
     def test_python_passes_ruff_when_installed(self):
         """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""
         try:
