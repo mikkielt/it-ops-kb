@@ -2,7 +2,7 @@
   "id": "ST-zjw6ugq6",
   "kind": "story",
   "title": "Sprint review and digest show what the work cost",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-fvztfmtm",
   "priority": "P3",
@@ -24,5 +24,20 @@
   "links": [
     "kb/_self/querylog.md",
     ".claude/skills/kb-sprint/SKILL.md"
-  ]
+  ],
+  "evidence": {
+    "commit": "1596549dd5ec43d968f48458a478459cb7a028b2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "digest_work"
+        ],
+        "exit": 0,
+        "sha256": "704beecc2f77c25b"
+      }
+    ]
+  }
 }
