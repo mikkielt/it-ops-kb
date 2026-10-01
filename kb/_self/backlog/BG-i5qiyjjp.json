@@ -2,7 +2,7 @@
   "id": "BG-i5qiyjjp",
   "kind": "bug",
   "title": "kb-sprint close cleanup compares branches against a stale local main from the orchestrator's worktree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,22 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "2b7929d510e77fa231504b1f3da7685c6b734461",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-e",
+          "git cherry origin/main",
+          "--",
+          ".claude/skills/kb-sprint/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
