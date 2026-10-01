@@ -1,0 +1,23 @@
+{
+  "id": "ST-pj6md6vm",
+  "kind": "story",
+  "title": "test_layout's facade map covers bl_ modules",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/test_layout.py FACADES maps bl_ to backlog, so a bl_ helper that imports backlog fails the layout test; a planted bl_ module importing backlog makes it fail",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_layout"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_layout.py"
+  ]
+}
