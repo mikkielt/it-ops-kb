@@ -2,7 +2,7 @@
   "id": "TK-wrlfub26",
   "kind": "task",
   "title": "backlog: prompt prefix answered by the hook without the model",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-3cofh4hv",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,19 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-wrlfub26"
+  "evidence": {
+    "commit": "cfb6f8b73e3e8b3345ea2094bef9804a25c92963",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_prompt"
+        ],
+        "exit": 0,
+        "sha256": "94cebe896804bcaa"
+      }
+    ]
+  }
 }
