@@ -1,0 +1,17 @@
+{
+  "id": "BG-6l57la6y",
+  "kind": "bug",
+  "title": "A CODE pointer cannot name an extensionless script such as src/adr-new",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "code_pointer returns (path, symbol) for a CODE tag whose path is an extensionless script (a shell script in a repository's src directory), so lint.py stops reporting a CODE tag without a path#symbol pointer for it, or the kb contract names the limit",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import kbfacts; p = kbfacts.tags_in('- x [CODE S1: src/adr-new#newid]'); sys.exit(0 if kbfacts.code_pointer(p[0]) else 1)"
+    ]
+  }
+}
