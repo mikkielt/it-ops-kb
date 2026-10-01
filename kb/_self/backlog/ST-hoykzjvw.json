@@ -5,5 +5,15 @@
   "status": "draft",
   "priority": "P3",
   "rank": 0,
-  "goal": "backlog.py close SP --summary prints the one line per item close would delete and changes nothing, as the runbook's order of steps implies; close without --summary deletes"
+  "goal": "backlog.py close SP --summary prints the one line per item close would delete and changes nothing, as the runbook's order of steps implies; close without --summary deletes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_close_summary"
+      ]
+    }
+  ]
 }

@@ -5,5 +5,15 @@
   "status": "draft",
   "priority": "P3",
   "rank": 0,
-  "goal": "After a kb-worker agent returns, its worktree under .claude/worktrees/ can be removed with git worktree remove without unlocking it first, so backlog.py land and the sprint close cleanup run without a manual unlock"
+  "goal": "After a kb-worker agent returns, its worktree under .claude/worktrees/ can be removed with git worktree remove without unlocking it first, so backlog.py land and the sprint close cleanup run without a manual unlock",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_worktree_unlocked"
+      ]
+    }
+  ]
 }
