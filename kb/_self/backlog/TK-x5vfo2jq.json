@@ -2,7 +2,7 @@
   "id": "TK-x5vfo2jq",
   "kind": "task",
   "title": "Document decisions in the kb's docs and skills",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-dmflypww",
   "priority": "P2",
   "rank": 0,
@@ -25,6 +25,28 @@
     ".claude/skills/kb-lookup/SKILL.md",
     ".claude/skills/kb-refresh/SKILL.md",
     ".claude/skills/kb-census/SKILL.md",
-    "_tools/kb_mcp.py"
-  ]
+    "_tools/kb_mcp.py",
+    "kb/_self/embedding.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/code.md",
+    "_tools/fixtures/kb_mcp_contract.json",
+    "_tools/test_kb_mcp.py"
+  ],
+  "gates": [
+    {
+      "id": "agents-md-decision",
+      "kind": "blocking",
+      "question": "Add the DECISION tag to AGENTS.md's Tags section?",
+      "options": [
+        "add to Tags, the worker cuts equal bytes elsewhere",
+        "add to Tags and the pack bullet",
+        "leave AGENTS.md alone"
+      ],
+      "recommendation": "add to Tags, the worker cuts equal bytes elsewhere",
+      "answer": "add to Tags, the worker cuts equal bytes elsewhere",
+      "by": "operator"
+    }
+  ],
+  "claimed_by": "worker-decision-docs"
 }
