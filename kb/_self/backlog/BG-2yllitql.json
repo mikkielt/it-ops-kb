@@ -1,0 +1,22 @@
+{
+  "id": "BG-2yllitql",
+  "kind": "bug",
+  "title": "kb/_self/map.csv maps no doc to _tools/testmap.py, so selfdoc stale never flags tools.md's testmap row",
+  "status": "doing",
+  "sprint": "SP-5cwekumc",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/map.csv maps kb/_self/tools.md to _tools/testmap.py, so a change to testmap.py lists tools.md as stale until its testmap row is updated or Self-Reviewed; found while landing BG-rskbmulj, whose testmap rule change left the row out of date with stale=0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,fnmatch,sys;rows=list(csv.reader(open(\"kb/_self/map.csv\",encoding=\"utf-8\")));sys.exit(0 if any(r[0]==\"kb/_self/tools.md\" and fnmatch.fnmatch(\"_tools/testmap.py\",r[1]) for r in rows[1:]) else 1)"
+    ]
+  },
+  "touches": [
+    "kb/_self/map.csv"
+  ],
+  "claimed_by": "mac-second"
+}
