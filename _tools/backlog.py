@@ -139,6 +139,12 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           sidecar: zeros, exit 0; an unknown id: exit 2. An item whose file is gone
                                           (deleted at sprint close, a closed sprint included) is read from its last
                                           version in git history; an id with none is named on stderr, left out
+  backlog.py cost --research [--format text|json]
+                                          every item with `research` true or a link naming a query-log gap finding:
+                                          its tokens (in + cw + cr + out of its own direct + attributed lines), the
+                                          gap findings closed by commits with its KB-Work trailer (a _gaps.md entry
+                                          that gains a Resolved or Superseded note), and tokens per closed gap
+                                          (integer division; n/a when none closed; unresolved in a shallow clone)
   backlog.py red-pipeline [--status [--job J]|--hook]   the newest pipeline of origin's main in which a job ran
                                           (--job: in which job J succeeded or failed on its own account, never
                                           canceled, manual or skipped; the newest finished one when none did; glab
@@ -3496,6 +3502,160 @@ def cost_overhead(root, sid):
     return out
 
 
+# `cost --research`: the items that did research against the query log's gap findings, each with its tokens and the gap
+# findings closed by commits that carry its `KB-Work` trailer. An item is listed when its `research` field is true (a
+# field only a later item adds; until then none is) or one of its `links` names a gap finding of the committed store
+# (`F-<12 hex>` with kind `gap` in `kb/_querylog/findings`). Its tokens are its own lines' direct + attributed counts
+# (`cost_lines`, no descendant, no shared line), the sum of `in`, `cw`, `cr` and `out` over the models (`TOKEN_KEYS`:
+# `requests` is a count of calls, no tokens). A gap finding is closed by a commit when the commit's version of a
+# root's `_gaps.md` has a settling note (`ql_research.SETTLED`: Resolved or Superseded, dated) under the entry that
+# names the finding and its first parent's version has none (or has no entry or no file): the commit that settles the
+# entry, the one `/kb-research` writes, never the query log's own record, which has no `KB-Work` trailer. Tokens per
+# closed gap is the item's tokens divided by the count of its closed gaps, integer division (floor); `n/a` when it
+# closed none, and unresolved, no figure, when git cannot say (a shallow clone, no git, a failing git).
+TOKEN_KEYS = ("in", "cw", "cr", "out")
+GAP_ID_RE = re.compile(r"\bF-[0-9a-f]{12}\b")
+GAPS_PATHSPEC = ":(glob)kb/*/_gaps.md"
+WORK_TRAILER = "KB-Work"
+
+
+def cost_tokens(models):
+    """The tokens of {model: counts}: `in` + `cw` + `cr` + `out` summed over the models."""
+    return sum(c.get(k, 0) for c in models.values() for k in TOKEN_KEYS)
+
+
+def gap_links(it, kinds):
+    """The gap findings (id in `kinds` with kind `gap`) an item's `links` name, sorted."""
+    ids = {m for x in it.get("links", []) if isinstance(x, str) for m in GAP_ID_RE.findall(x)}
+    return sorted(i for i in ids if kinds.get(i) == "gap")
+
+
+def gaps_settled(text):
+    """The ids of the finding named by the _gaps.md entries (top-level bullets, with their indented lines) of `text`
+    that carry a settling dated note, the rule of `ql_research.settled`: an id on the bullet's own lines, never one
+    a note line mentions."""
+    import ql_research
+    lines, out, i = text.split("\n"), set(), 0
+    while i < len(lines):
+        if not lines[i].startswith("- "):
+            i += 1
+            continue
+        end = i + 1
+        while end < len(lines) and lines[end][:1] in (" ", "\t") and lines[end].strip():
+            end += 1
+        notes = [ql_research.NOTE.match(ln) for ln in lines[i + 1:end]]
+        if any(m and m.group(1) in ql_research.SETTLED for m in notes):
+            out.update(m for ln, n in zip(lines[i:end], [None, *notes]) if not n for m in GAP_ID_RE.findall(ln))
+        i = end
+    return out
+
+
+def git_text(root, *args, timeout=GIT_TIMEOUT_S):
+    """The stdout of `git -C root ARGS`, or None when git is missing, times out or fails."""
+    try:
+        p = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=timeout)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return p.stdout if p.returncode == 0 else None
+
+
+def closed_gaps_by_item(root, wanted):
+    """({item id: {gap finding id closed by a commit whose KB-Work trailer names it}}, reason): `reason` is None when
+    git answered, else why it could not (a shallow clone, git missing or failing) and the map is None, never a guess.
+    One `git log --all --no-merges` over the `_gaps.md` ledgers lists the commits that touch one with their
+    trailers; each commit that names one of `wanted` is read at itself and at its first parent."""
+    shallow = git_text(root, "rev-parse", "--is-shallow-repository")
+    if shallow is None:
+        return None, "git history is unavailable"
+    if shallow.strip() == "true":
+        return None, "shallow clone: the commits that closed a gap may be cut from history"
+    log = git_text(root, "log", "--all", "--no-merges", "--no-renames", "--diff-filter=AM", "--name-only",
+                   f"--format=%x1e%H%x1f%P%x1f%(trailers:key={WORK_TRAILER},valueonly)%x1f", "--", GAPS_PATHSPEC,
+                   timeout=HISTORY_TIMEOUT_S)
+    if log is None:
+        return None, "git log failed"
+    out = {i: set() for i in wanted}
+    for rec in log.split("\x1e")[1:]:
+        sha, parents, trailer, names = rec.split("\x1f", 3)
+        ids = wanted.intersection(re.split(r"[,\s]+", trailer.strip()))
+        if not ids:
+            continue
+        for path in sorted({n for n in names.split("\n") if n.strip()}):
+            after = git_text(root, "show", f"{sha}:{path}")
+            first = parents.split()[0] if parents.split() else None
+            held = git_text(root, "ls-tree", "--name-only", first, "--", path) if first else ""  # "" when absent
+            before = git_text(root, "show", f"{first}:{path}") if held and held.strip() else ""
+            if after is None or before is None or held is None:
+                return None, "git could not read a commit's ledger"
+            closed = gaps_settled(after) - gaps_settled(before)
+            for i in ids:
+                out[i] |= closed
+    return out, None
+
+
+def cost_research(bl):
+    """The report of `cost --research`: {items: [{id, title, selected_by, runs, prompts, direct, attributed, tokens,
+    direct_tokens, attributed_tokens, closed_gaps, gap_status, tokens_per_gap}], git: {resolved, reason}, skipped,
+    unresolved, view}, the items by tokens descending then id. `selected_by` holds `research` and `links`; `gap_status`
+    is `closed` (`closed_gaps` sorted, `tokens_per_gap` their floor division), `none` (none closed: no ratio) or
+    `unresolved` (git cannot say: `closed_gaps` and `tokens_per_gap` are None). An item with no work line has 0
+    tokens. Items restored from git history (deleted at sprint close) count when a work line names them."""
+    import ql_store
+    all_lines, skipped = cost_lines(bl.root, None)
+    named = {w["item"] for w in all_lines if "item" in w}
+    view, _, unresolved = cost_view(bl, named)
+    kinds = {i: r.get("kind") for i, r in ql_store.finding_states(Path(bl.root) / "kb" / "_querylog").items()}
+    chosen = {}
+    for iid, it in view.items.items():
+        why = (["research"] if it.get("research") is True else []) + (["links"] if gap_links(it, kinds) else [])
+        if why:
+            chosen[iid] = why
+    closed, reason = closed_gaps_by_item(bl.root, set(chosen)) if chosen else ({}, None)
+    rows = []
+    for iid, why in chosen.items():
+        mine = [w for w in all_lines if w.get("item") == iid]
+        parts = {key: {} for key, _, _ in COST_GROUPS}
+        for w in mine:
+            for key in parts:
+                cost_add(parts[key], w[key])
+        gaps = None if closed is None else sorted(closed[iid])
+        tokens = sum(cost_tokens(m) for m in parts.values())
+        rows.append({"id": iid, "title": view.items[iid].get("title"), "selected_by": why,
+                     "runs": len({w["run"] for w in mine}), "prompts": sum(w["prompts"] for w in mine), **parts,
+                     "tokens": tokens, "direct_tokens": cost_tokens(parts["direct"]),
+                     "attributed_tokens": cost_tokens(parts["attributed"]), "closed_gaps": gaps,
+                     "gap_status": "unresolved" if gaps is None else "closed" if gaps else "none",
+                     "tokens_per_gap": tokens // len(gaps) if gaps else None})
+    rows.sort(key=lambda r: (-r["tokens"], r["id"]))
+    return {"items": rows, "git": {"resolved": reason is None, "reason": reason}, "skipped": skipped,
+            "unresolved": unresolved, "view": view}
+
+
+def cmd_cost_research(bl, a):
+    rep = cost_research(bl)
+    if rep["skipped"]:
+        print(f"cost: skipped sidecars that break the store's gates: {', '.join(rep['skipped'])}", file=sys.stderr)
+    if rep["unresolved"]:
+        print(f"cost: no item file and no git history for {', '.join(rep['unresolved'])}: left out", file=sys.stderr)
+    if a.format == "json":
+        say(json.dumps({"research_items": rep["items"], "git": rep["git"], "skipped": rep["skipped"],
+                        "unresolved": rep["unresolved"], "token_keys": list(TOKEN_KEYS)}, sort_keys=True, indent=2))
+        return 0
+    git = rep["git"]
+    say(f"cost --research: {len(rep['items'])} item(s) with research true or a link to a gap finding; tokens = "
+        f"{' + '.join(TOKEN_KEYS)} of direct + attributed (the item's own lines)")
+    say("closed gaps: " + ("resolved" if git["resolved"] else f"unresolved ({git['reason']})"))
+    for r in rep["items"]:
+        gaps, per = r["closed_gaps"], r["tokens_per_gap"]
+        shown = ("unresolved" if gaps is None else f"{len(gaps)} closed gap(s): {', '.join(gaps)}" if gaps
+                 else "no closed gap")
+        say(f"  {rep['view'].label(r['id'])}: {r['tokens']} tokens (direct {r['direct_tokens']}, attributed "
+            f"{r['attributed_tokens']}), {shown}; tokens per closed gap: "
+            + ("unresolved" if gaps is None else "n/a" if per is None else str(per)))
+    return 0
+
+
 def cost_row(name, c):
     return f"{name}  requests {c['requests']}  in {c['in']}  cr {c['cr']}  out {c['out']} | cw {c['cw']}"
 
@@ -3547,6 +3707,12 @@ def cost_apart(rep, view):
 
 
 def cmd_cost(bl, a):
+    if a.research:
+        if a.id or a.runs:
+            raise Rejected("cost --research lists every research item: it takes no ID and no --runs")
+        return cmd_cost_research(bl, a)
+    if not a.id:
+        raise Rejected("cost needs an ID, or --research")
     rep = cost_report(bl, a.id)
     iid, view = rep["id"], rep["view"]
     if rep["skipped"]:
@@ -3728,8 +3894,10 @@ def main(argv=None):
     p = sub.add_parser("goal")
     p.add_argument("id")
     p = sub.add_parser("cost")
-    p.add_argument("id")
+    p.add_argument("id", nargs="?")
     p.add_argument("--runs", action="store_true", help="also list each run's line apart")
+    p.add_argument("--research", action="store_true",
+                   help="instead of an ID: every research item's tokens against the gap findings its commits closed")
     p.add_argument("--format", choices=("text", "json"), default="text")
     p = sub.add_parser("red-pipeline")
     p.add_argument("--status", action="store_true")

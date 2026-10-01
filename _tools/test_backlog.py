@@ -4715,3 +4715,293 @@ def test_backlog_cost_overhead_planted_failure_of_the_runs_listing_is_caught(ove
     monkeypatch.setattr(backlog, "cost_report", planted_report(lambda rep: rep.update(run_lines=rep["run_lines"][1:])))
     with pytest.raises(AssertionError):
         check_overhead_runs_listing(overheaded, capsys)
+
+
+# --- backlog.py cost --research: the research items' tokens against the gap findings their commits closed ---
+
+GAP1, GAP2, GAP3, GAP4, GAP5, GAP6, EVAL1 = (f"F-{c * 12}" for c in "123456e")
+RS_RUN = "20261001T120000Z-abcdef01"
+RS_NOTE1 = f"Resolved 2026-10-02: a fact (see {GAP6})"
+
+
+def gaps_file(repo, notes):
+    """kb/public/_gaps.md with one entry per gap finding (the id on its bullet) and the dated notes `notes` maps to it."""
+    lines = ["# Gaps", "", "## x-y", ""]
+    for fid in (GAP1, GAP2, GAP3, GAP4, GAP5, GAP6):
+        lines.append(f"- **question of {fid}** The kb was asked this (query log finding {fid}). (topic: x/y)")
+        lines += [f"  - {n} (topic: x/y)" for n in notes.get(fid, [])]
+    d = Path(repo) / "kb" / "public"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "_gaps.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+
+
+def commit_with(repo, msg, trailer):
+    sh(repo, "git", "add", "-A")
+    sh(repo, "git", "commit", "-qm", msg, "-m", trailer)
+
+
+@pytest.fixture
+def researched(costed):
+    """The costed sprint with a findings store (six gap findings and one eval finding), a research task `tk` (research
+    true, a link to a gap finding), the story `st` (a link to a gap finding and one to the eval finding, no research
+    field), a second research task with no work line, the bug `bg` linking only the eval finding, and a ledger that
+    commits close step by step: tk closes two gaps (a note's text names a third id), st only tries one, tk2 closes
+    one with bg in one trailer, and a commit with no trailer closes another; the last commit, tk's, only edits a note."""
+    w = costed
+    repo, st, tk, bg = w["repo"], w["st"], w["tk"], w["bg"]
+    assert b(repo, "new", "task", "--title", "Research task two", "--parent", st, "--goal", "x",
+             "--touch", "kb/public/**")[0] == 0
+    w["tk2"] = item(repo, "Research task two")["id"]
+    d = Path(repo) / "kb" / "_querylog" / "findings" / "2026-10"
+    d.mkdir(parents=True)
+    recs = [{"id": g, "kind": "gap", "state": "open", "stage": "gap", "article": "x/y.md"}
+            for g in (GAP1, GAP2, GAP3, GAP4, GAP5, GAP6)] + [{"id": EVAL1, "kind": "eval", "state": "open",
+                                                                "stage": "miss"}]
+    head = {"run": RS_RUN, "reader": 1, "counts": {"findings": len(recs), "open": len(recs), "fixed-since": 0}}
+    (d / f"{RS_RUN}.jsonl").write_text("".join(json.dumps(o) + "\n" for o in [head, *recs]), encoding="utf-8",
+                                       newline="\n")
+    edit(repo, tk, research=True, links=[f"query log finding {GAP6}"])
+    edit(repo, w["tk2"], research=True)
+    edit(repo, st, links=[f"gap {GAP3}, see also {EVAL1}"])
+    edit(repo, bg, links=[f"finding {EVAL1}"])
+    notes = {}
+    gaps_file(repo, notes)
+    commit(repo, "ledger")
+    notes.update({GAP1: [RS_NOTE1], GAP2: ["Resolved 2026-10-02: a fact"], GAP3: ["Tried 2026-10-02: nothing"]})
+    gaps_file(repo, notes)
+    commit(repo, "tk closes two", work=tk)
+    notes[GAP3] = ["Tried 2026-10-02: nothing", "Tried 2026-10-03: nothing again"]
+    gaps_file(repo, notes)
+    commit(repo, "st only tries", work=st)
+    notes[GAP4] = ["Resolved 2026-10-04: no trailer"]
+    gaps_file(repo, notes)
+    commit(repo, "nobody's trailer")
+    notes[GAP5] = ["Superseded 2026-10-05: by a newer page"]
+    gaps_file(repo, notes)
+    commit_with(repo, "two items one close", f"KB-Work: {w['tk2']}, {bg}")
+    notes[GAP1] = [f"Resolved 2026-10-03: the same entry, its note edited (see {GAP6})"]
+    gaps_file(repo, notes)
+    commit(repo, "tk edits a note", work=tk)
+    return w
+
+
+def research_json(repo, capsys):
+    code = backlog.main(["--root", str(repo), "cost", "--research", "--format", "json"])
+    out = capsys.readouterr()
+    assert code == 0, out.err
+    return json.loads(out.out)
+
+
+def research_rows(w, capsys):
+    return {r["id"]: r for r in research_json(w["repo"], capsys)["research_items"]}
+
+
+def check_research_selection(w, capsys):
+    """An item is listed by `research` true, by a link to a gap finding of the store, or both; a link to an eval
+    finding, an item with neither, selects nothing."""
+    rows = research_rows(w, capsys)
+    assert sorted(rows) == sorted([w["st"], w["tk"], w["tk2"]]), sorted(rows)
+    assert rows[w["tk"]]["selected_by"] == ["research", "links"]
+    assert rows[w["st"]]["selected_by"] == ["links"] and rows[w["tk2"]]["selected_by"] == ["research"]
+
+
+def check_research_tokens(w, capsys):
+    """tokens = in + cw + cr + out of the item's own direct + attributed lines; requests and cw1h are no tokens."""
+    rows = research_rows(w, capsys)
+    tk = rows[w["tk"]]
+    assert tk["direct_tokens"] == (10 + 5 + 100 + 7) + (1 + 0 + 2 + 3) + (3 + 1 + 4 + 5) == 141
+    assert tk["attributed_tokens"] == (20 + 4 + 50 + 9) + (5 + 1 + 10 + 1) + (1 + 1 + 1 + 1) + (1 + 1 + 1 + 1) == 108
+    assert tk["tokens"] == 249 and rows[w["st"]]["tokens"] == (100 + 10 + 1000 + 70) + (2 + 2 + 2 + 2) == 1188
+    assert rows[w["tk2"]]["tokens"] == 0
+    assert tk["runs"] == 2 and tk["prompts"] == 3  # no shared line of the session, no descendant
+
+
+def check_research_closed_gaps(w, capsys):
+    """A gap is closed by a commit with the item's KB-Work trailer whose version of the ledger settles its entry: a
+    Resolved or Superseded note the parent's version lacks. Not a Tried note, not a note's text naming an id, not a
+    note the parent already had, not a commit with no such trailer or another item's."""
+    rows = research_rows(w, capsys)
+    assert rows[w["tk"]]["closed_gaps"] == [GAP1, GAP2] and rows[w["tk"]]["gap_status"] == "closed"
+    assert rows[w["st"]]["closed_gaps"] == [] and rows[w["st"]]["gap_status"] == "none"
+    assert rows[w["tk2"]]["closed_gaps"] == [GAP5]  # a trailer naming two items counts for each of them
+
+
+def check_research_per_gap(w, capsys):
+    """Integer division by the count of closed gaps; none closed: no ratio (n/a); zero tokens over one gap: 0."""
+    rows = research_rows(w, capsys)
+    assert rows[w["tk"]]["tokens"] == 249 and rows[w["tk"]]["tokens_per_gap"] == 124  # 249 // 2, not 124.5 up
+    assert rows[w["st"]]["tokens_per_gap"] is None
+    assert rows[w["tk2"]]["tokens"] == 0 and rows[w["tk2"]]["tokens_per_gap"] == 0
+
+
+def check_research_text(w, capsys):
+    """Text rows by tokens descending then id, each with id and title only, the ratio or n/a."""
+    assert backlog.main(["--root", str(w["repo"]), "cost", "--research"]) == 0
+    out = capsys.readouterr().out
+    rows = [x for x in out.splitlines() if x.startswith("  ")]
+    assert [x.split()[0] for x in rows] == [w["st"], w["tk"], w["tk2"]], out
+    assert rows[0].endswith("tokens per closed gap: n/a") and "no closed gap" in rows[0], rows[0]
+    assert f"{GAP1}, {GAP2}" in rows[1] and rows[1].endswith("tokens per closed gap: 124") and "249 tokens" in rows[1]
+    assert "Research task two" in rows[2] and rows[2].endswith("tokens per closed gap: 0"), rows[2]
+    assert "closed gaps: resolved" in out and "in + cw + cr + out" in out, out
+
+
+def check_research_json_shape(w, capsys):
+    rep = research_json(w["repo"], capsys)
+    assert sorted(rep) == ["git", "research_items", "skipped", "token_keys", "unresolved"], sorted(rep)
+    assert rep["git"] == {"reason": None, "resolved": True} and rep["token_keys"] == ["in", "cw", "cr", "out"]
+    assert [r["id"] for r in rep["research_items"]] == [w["st"], w["tk"], w["tk2"]]
+    one = rep["research_items"][1]
+    assert sorted(one) == ["attributed", "attributed_tokens", "closed_gaps", "direct", "direct_tokens", "gap_status",
+                           "id", "prompts", "runs", "selected_by", "title", "tokens", "tokens_per_gap"], sorted(one)
+    assert one["title"] == "Task" and one["direct"][OPUS]["in"] == 13 and "research" not in rep  # no sprint total key
+
+
+def check_research_shallow(w, capsys, clone):
+    """A shallow clone: the tokens print, the closed gaps are unresolved (no guess, no ratio), exit 0."""
+    rep = research_json(clone, capsys)
+    assert rep["git"]["resolved"] is False and "shallow" in rep["git"]["reason"], rep["git"]
+    for r in rep["research_items"]:
+        assert r["closed_gaps"] is None and r["tokens_per_gap"] is None and r["gap_status"] == "unresolved", r
+    assert {r["id"]: r["tokens"] for r in rep["research_items"]}[w["tk"]] == 249
+    assert backlog.main(["--root", str(clone), "cost", "--research"]) == 0
+    out = capsys.readouterr().out
+    assert "closed gaps: unresolved (shallow clone" in out and "tokens per closed gap: unresolved" in out, out
+    assert "n/a" not in out
+
+
+def test_backlog_cost_research_selects_by_a_gap_link_and_by_research_true(researched, capsys):
+    check_research_selection(researched, capsys)
+
+
+def test_backlog_cost_research_tokens_are_in_cw_cr_out_of_direct_and_attributed(researched, capsys):
+    check_research_tokens(researched, capsys)
+
+
+def test_backlog_cost_research_joins_closed_gaps_by_the_kb_work_trailer(researched, capsys):
+    check_research_closed_gaps(researched, capsys)
+
+
+def test_backlog_cost_research_tokens_per_closed_gap_is_integer_division_or_na(researched, capsys):
+    check_research_per_gap(researched, capsys)
+
+
+def test_backlog_cost_research_text_and_json_shape(researched, capsys):
+    check_research_text(researched, capsys)
+    check_research_json_shape(researched, capsys)
+
+
+def test_backlog_cost_research_shallow_clone_says_unresolved(researched, capsys, tmp_path):
+    check_research_shallow(researched, capsys, clone_shallow(researched, tmp_path))
+
+
+def test_backlog_cost_research_git_missing_says_unresolved(researched, capsys, monkeypatch):
+    real = subprocess.run
+
+    def no_git(argv, *a, **kw):
+        if argv[:1] == ["git"]:
+            raise FileNotFoundError("git")
+        return real(argv, *a, **kw)
+
+    monkeypatch.setattr(backlog.subprocess, "run", no_git)
+    rep = research_json(researched["repo"], capsys)
+    assert rep["git"]["resolved"] is False and all(r["gap_status"] == "unresolved" for r in rep["research_items"])
+
+
+def test_backlog_cost_research_asks_git_once_for_the_selected_items(researched, capsys, monkeypatch):
+    calls = []
+    real = backlog.closed_gaps_by_item
+    monkeypatch.setattr(backlog, "closed_gaps_by_item", lambda root, wanted: calls.append(wanted) or real(root, wanted))
+    research_json(researched["repo"], capsys)
+    assert len(calls) == 1 and calls[0] == {researched["st"], researched["tk"], researched["tk2"]}
+
+
+def test_backlog_cost_research_none_selected_prints_an_empty_list_and_asks_no_git(sprint, capsys, monkeypatch):
+    monkeypatch.setattr(backlog, "closed_gaps_by_item", lambda root, wanted: pytest.fail("git asked"))
+    rep = research_json(sprint["repo"], capsys)
+    assert rep["research_items"] == [] and rep["git"]["resolved"] is True
+    assert backlog.main(["--root", str(sprint["repo"]), "cost", "--research"]) == 0
+    assert "0 item(s)" in capsys.readouterr().out
+
+
+def test_backlog_cost_research_usage_errors_and_cost_id_unchanged(researched, capsys):
+    repo, tk = researched["repo"], researched["tk"]
+    for argv in (["cost"], ["cost", "--research", tk], ["cost", "--research", "--runs"]):
+        assert backlog.main(["--root", str(repo), *argv]) == 2, argv
+        capsys.readouterr()
+    assert backlog.main(["--root", str(repo), "cost", tk]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith(f"cost {tk} “Task”:") and "tokens per closed gap" not in out and "research" not in out
+    one = json.loads(cost_out(repo, capsys, tk, "--format", "json"))
+    assert "research_items" not in one and "git" not in one
+
+
+def test_backlog_cost_research_gaps_settled_reads_the_bullet_not_its_notes():
+    text = "\n".join(["## t", "", f"- **q** (query log finding {GAP1}). (topic: a/b)",
+                      f"  - Resolved 2026-10-02: mentions {GAP2} (topic: a/b)", f"- **q2** {GAP3} wrapped",
+                      f"  into a second line, {GAP4}", "  - Superseded 2026-10-02: by x", f"- **q3** {GAP5}",
+                      "  - Tried 2026-10-02: no", f"- **q4** {GAP6}", "  - Partly resolved 2026-10-02: some"])
+    assert backlog.gaps_settled(text) == {GAP1, GAP3, GAP4} and backlog.gaps_settled("") == set()
+
+
+@pytest.mark.parametrize("check,name,planted", [
+    (check_research_selection, "gap_links", lambda real: lambda it, kinds: []),
+    (check_research_selection, "gap_links",
+     lambda real: lambda it, kinds: real(it, {i: "gap" for i in (EVAL1, GAP3, GAP6)})),
+    (check_research_tokens, "cost_tokens", lambda real: lambda models: real(models) + len(models)),
+    (check_research_tokens, "cost_tokens",
+     lambda real: lambda models: sum(c["requests"] for c in models.values()) + real(models)),
+    (check_research_closed_gaps, "closed_gaps_by_item", lambda real: lambda root, wanted: ({i: set() for i in wanted}, None)),
+    (check_research_closed_gaps, "gaps_settled", lambda real: lambda text: real(text) | set(backlog.GAP_ID_RE.findall(
+        " ".join(x for x in text.split("\n") if x.startswith("  - Resolved"))))),
+    (check_research_closed_gaps, "git_text",
+     lambda real: lambda root, *a, **k: "" if a[:1] == ("ls-tree",) else real(root, *a, **k)),
+    (check_research_per_gap, "cost_tokens", lambda real: lambda models: real(models) + (1 if models else 0)),
+])
+def test_backlog_cost_research_planted_failure_of_each_rule_is_caught(researched, capsys, monkeypatch, check, name,
+                                                                      planted):
+    monkeypatch.setattr(backlog, name, planted(getattr(backlog, name)))
+    with pytest.raises(AssertionError):
+        check(researched, capsys)
+
+
+def planted_research_report(change):
+    real = backlog.cost_research
+
+    def report(bl):
+        rep = real(bl)
+        change(rep)
+        return rep
+    return report
+
+
+@pytest.mark.parametrize("planted", [
+    lambda rep: [r.__setitem__("tokens_per_gap", -(-r["tokens"] // len(r["closed_gaps"])))
+                 for r in rep["items"] if r["closed_gaps"]],
+    lambda rep: [r.__setitem__("tokens_per_gap", 0) for r in rep["items"] if r["tokens_per_gap"] is None],
+])
+def test_backlog_cost_research_planted_failure_of_a_rounded_or_zero_ratio_is_caught(researched, capsys, monkeypatch,
+                                                                                    planted):
+    monkeypatch.setattr(backlog, "cost_research", planted_research_report(planted))
+    with pytest.raises(AssertionError):
+        check_research_per_gap(researched, capsys)
+
+
+def test_backlog_cost_research_planted_failure_of_a_guess_in_a_shallow_clone_is_caught(researched, capsys, tmp_path,
+                                                                                       monkeypatch):
+    clone = clone_shallow(researched, tmp_path)
+    monkeypatch.setattr(backlog, "closed_gaps_by_item", lambda root, wanted: ({i: set() for i in wanted}, None))
+    with pytest.raises(AssertionError):
+        check_research_shallow(researched, capsys, clone)
+
+
+@pytest.mark.parametrize("planted", [
+    lambda rep: rep["items"].reverse(),
+    lambda rep: rep["items"].sort(key=lambda r: r["tokens"]),
+    lambda rep: [r.pop("title") for r in rep["items"]],
+])
+def test_backlog_cost_research_planted_failure_of_the_order_and_shape_is_caught(researched, capsys, monkeypatch, planted):
+    monkeypatch.setattr(backlog, "cost_research", planted_research_report(planted))
+    with pytest.raises(AssertionError):
+        check_research_text(researched, capsys)
+        check_research_json_shape(researched, capsys)
