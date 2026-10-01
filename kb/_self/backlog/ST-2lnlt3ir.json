@@ -2,7 +2,7 @@
   "id": "ST-2lnlt3ir",
   "kind": "story",
   "title": "A bug's repro runs the behaviour it names, or says why it cannot",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,6 @@
     "kb/_self/maintaining.md",
     "AGENTS.md"
   ],
-  "notes": "Merged at planning 2026-10-01 from ST-wirbkpj5 (dropped): kb/_self/backlog.md and /kb-backlog say a bug's repro runs the failing behaviour (a test, a command on a planted input), and backlog.py check warns on a repro that only reads a source file of _tools/ for a string. Origin: SP-ufr3qnff, BG-rrht7uts's repro grepped for 'worktrees' and passed on a fix that did not work."
+  "notes": "Merged at planning 2026-10-01 from ST-wirbkpj5 (dropped): kb/_self/backlog.md and /kb-backlog say a bug's repro runs the failing behaviour (a test, a command on a planted input), and backlog.py check warns on a repro that only reads a source file of _tools/ for a string. Origin: SP-ufr3qnff, BG-rrht7uts's repro grepped for 'worktrees' and passed on a fix that did not work.",
+  "claimed_by": "c-2lnlt3ir"
 }
