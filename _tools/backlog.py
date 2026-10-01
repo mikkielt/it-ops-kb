@@ -2164,14 +2164,53 @@ def has_ref(root, ref):
 
 
 def checked_out_elsewhere(root, branch):
-    """The path of another worktree that has BRANCH checked out, or None (git rebase cannot check it out here)."""
+    """(path, lock reason or None) of another worktree that has BRANCH checked out, or None (git rebase cannot check
+    it out here). A locked worktree with no reason has the reason ""."""
     here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
-    path = None
-    for ln in git(root, "worktree", "list", "--porcelain").splitlines():
-        if ln.startswith("worktree "):
-            path = Path(ln[len("worktree "):]).resolve()
-        elif ln == f"branch refs/heads/{branch}" and path != here:
-            return path
+    for block in git(root, "worktree", "list", "--porcelain").split("\n\n"):
+        lines = block.strip().splitlines()
+        if not lines or not lines[0].startswith("worktree ") or f"branch refs/heads/{branch}" not in lines:
+            continue
+        path = Path(lines[0][len("worktree "):]).resolve()
+        if path != here:
+            lock = next((ln[len("locked "):] for ln in lines if ln == "locked" or ln.startswith("locked ")), None)
+            return path, lock
+    return None
+
+
+# the lock Claude Code puts on a subagent's worktree, which outlives the agent when it left background work running
+WORKER_LOCK = "claude agent"
+WORKER_DIR = (".claude", "worktrees")  # under the clone's main checkout
+
+
+def release_worker_worktree(root, path, lock):
+    """Remove the finished worker's worktree PATH that holds the branch land needs: unlocked, then `git worktree
+    remove` (never --force). Only a worktree under the clone's .claude/worktrees/ whose lock reason starts with
+    WORKER_LOCK and that has no uncommitted changes. Returns None once it is removed, else why it was left as it was
+    (a remove that fails puts the lock back)."""
+    def run_git(*args, cwd=root):
+        p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        return p.returncode, (p.stdout if not p.returncode else (p.stderr or p.stdout)).strip()
+
+    if lock is None:
+        return "it is not locked"
+    if not lock.startswith(WORKER_LOCK):
+        return f"it is locked ({lock or 'no reason given'}), not by a Claude Code agent"
+    common = (Path(root) / git(root, "rev-parse", "--git-common-dir").strip()).resolve()
+    if path.parent != common.parent.joinpath(*WORKER_DIR).resolve():
+        return f"it is locked ({lock}) but not under {'/'.join(WORKER_DIR)}/ of the clone"
+    code, out = run_git("status", "--porcelain", cwd=path)
+    if code or out:
+        return (f"it is locked ({lock}) and has uncommitted changes: commit or discard them there, then "
+                f"git worktree unlock and git worktree remove it")
+    code, out = run_git("worktree", "unlock", str(path))
+    if code:
+        return f"git worktree unlock: {out}"
+    code, out = run_git("worktree", "remove", str(path))
+    if code:
+        run_git("worktree", "lock", "--reason", lock, str(path))
+        return f"git worktree remove: {out}"
+    say(f"land: removed the finished worker's worktree {path} (unlocked; its lock was: {lock})")
     return None
 
 
@@ -2246,9 +2285,11 @@ def cmd_land(bl, a):
     if not has_ref(root, f"refs/heads/{branch}"):
         raise land_stop("branch", f"no local branch {branch} (--branch names another)")
     other = checked_out_elsewhere(root, branch)
-    if other:
-        raise land_stop("branch", f"{branch} is checked out in the worktree {other}: land it from there, or remove "
-                                  "that worktree first")
+    if other:  # a finished worker's worktree, clean and locked by Claude Code, is removed; any other refuses
+        why = release_worker_worktree(root, *other)
+        if why:
+            raise land_stop("branch", f"{branch} is checked out in the worktree {other[0]} and {why}: land it from "
+                                      "there, or remove that worktree first")
     start = git(root, "rev-parse", "HEAD").strip()
     start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
                                encoding="utf-8", errors="replace").stdout.strip()
