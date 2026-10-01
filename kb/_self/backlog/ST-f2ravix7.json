@@ -2,7 +2,7 @@
   "id": "ST-f2ravix7",
   "kind": "story",
   "title": "Intake detector: items drifted from their commits",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -38,5 +38,20 @@
       "answer": "24",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "bfc87d77c86cc709525569da6cb7c1e768a94030",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_drift"
+        ],
+        "exit": 0,
+        "sha256": "61d972d2132e68b7"
+      }
+    ]
+  }
 }
