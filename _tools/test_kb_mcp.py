@@ -33,6 +33,9 @@ test_sprint_worker_starts_from_orchestrator_tip*  .claude/settings.json sets wor
                 isolation worktree branches from the orchestrator's HEAD; /kb-sprint run commits and pushes the claims
                 and dispatches only after that claim sync; kb-worker checks its base against origin/main and rebases
                 only if behind, with no checkout by hand; the runbook agrees. Planted: each rule taken out.
+test_code_mr_merge_retry*  after `land` sends a code/<id> merge request, /kb-sprint run step 4 and /kb-item step 7 read
+                it (glab mr view) and retry an auto-merge that failed (state opened with a merge_error) once with a
+                plain glab mr merge, naming the error; the runbook agrees. Planted: each rule taken out.
 test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
                 (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
                 goes with text; a planted ignored argument is caught.
@@ -437,6 +440,70 @@ def test_sprint_worker_starts_from_orchestrator_tip_planted_failures(i, old, new
     assert planted != texts[i], f"plant does not apply: {old!r}"
     texts[i] = planted
     assert sprint_worker_base_problems(*texts), f"not caught: {old!r} -> {new!r}"
+
+
+KB_ITEM = ".claude/skills/kb-item/SKILL.md"
+MR_VIEW = "`glab mr view code/<id> -F json -R <project url>`"
+MR_MERGE = "`glab mr merge code/<id> --auto-merge=false --yes -R <project url>`"
+
+
+def code_mr_merge_retry_problems(sprint, item, runbook):
+    """What is wrong with how /kb-sprint run step 4 (`sprint`), /kb-item step 7 (`item`) and the runbook (`runbook`)
+    follow a `code/<id>` merge request after `land` sent it: read its state, and when its auto-merge failed (`opened`
+    with a `merge_error`) retry once with a plain merge and name the error. [] when nothing."""
+    run = md_section(sprint, "## run [SP]")
+    step4 = re.search(r"(?ms)^4\. When a subagent returns.*?(?=^\d+\. )", run)
+    step7 = re.search(r"(?ms)^7\. \*\*Prove and land\*\*.*?(?=^\d+\. )", item)
+    work = md_section(runbook, "## Working on items")
+    problems = []
+    for where, text in (("/kb-sprint run step 4", step4.group(0) if step4 else ""),
+                        ("/kb-item step 7", step7.group(0) if step7 else ""),
+                        ("the runbook's Working on items", work)):
+        line = next((l for l in text.splitlines() if MR_VIEW in l), "")
+        if not line:
+            problems.append(f"{where} does not read the code/<id> request's state with {MR_VIEW}")
+            continue
+        for phrase in ("`opened` with a `merge_error`", MR_MERGE, "name", "the error", "third time"):
+            if phrase not in line:
+                problems.append(f"{where} does not say {phrase!r} with the request's state")
+        if not re.search(r"retr(y|ies) once", line):
+            problems.append(f"{where} does not retry a failed auto-merge once")
+        if line.find(MR_VIEW) > line.find(MR_MERGE):
+            problems.append(f"{where} merges before it reads the request's state")
+    return problems
+
+
+def code_mr_merge_retry_texts():
+    texts = []
+    for rel in (KB_SPRINT, KB_ITEM, RUNBOOK):
+        with open(os.path.join(KB, rel), encoding="utf-8") as f:
+            texts.append(f.read())
+    return texts
+
+
+def test_code_mr_merge_retry():
+    """After `land` sends a code/<id> merge request, the session reads its state and retries a failed auto-merge once
+    with a plain `glab mr merge`, naming the error (SP-rhgeod5g, a pre-receive hook error on auto-merge)."""
+    assert code_mr_merge_retry_problems(*code_mr_merge_retry_texts()) == []
+
+
+@pytest.mark.parametrize("i, old, new", [
+    (0, "read the request: `glab mr view code/<id> -F json -R <project url>`", "wait for the request"),
+    (0, "`state` `opened` with a `merge_error`", "a request still open"),
+    (0, "retry once with", "retry with"),
+    (0, "and name the error in your report", "and go on"),
+    (1, "`glab mr merge code/<id> --auto-merge=false --yes -R <project url>`", "`glab mr merge code/<id>`"),
+    (1, "never tried a third time", "tried again"),
+    (2, "reads the request itself, `glab mr view code/<id> -F json -R <project url>`", "waits"),
+    (2, "retries once", "retries"),
+])
+def test_code_mr_merge_retry_planted_failures(i, old, new):
+    """Each rule fails on a planted copy of the sprint skill, the item skill or the runbook without it."""
+    texts = code_mr_merge_retry_texts()
+    planted = texts[i].replace(old, new, 1)
+    assert planted != texts[i], f"plant does not apply: {old!r}"
+    texts[i] = planted
+    assert code_mr_merge_retry_problems(*texts), f"not caught: {old!r} -> {new!r}"
 
 
 class TestKbServer:
