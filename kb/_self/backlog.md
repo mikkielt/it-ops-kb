@@ -143,6 +143,7 @@ Each item adds three parts of its own: the end state (`goal`), the commands that
 - a code-lane commit whose `KB-Work` trailer names the item or one of its descendants (lanes: `_tools/kblane.py`) is not an ancestor of `refs/remotes/<integration>/main` as last fetched, or that ref does not exist: it names the commits and the merge requests `sync` opened for them (branch `code/<id>`, the id each commit names); merge them, fetch, run `done` again. `done` does not fetch, and a content-lane commit never needs to be on the integration `main`;
 - a commit whose `KB-Work` trailer names the item or one of its descendants left a file outside the scope (the item's `touches` with its descendants') changed at `HEAD` (a later revert clears that);
 - one of its checks fails;
+- a check or a bug's repro passed while doing nothing in this clone, and no other passing check runs tests (`tests.py` or pytest) that did their work, unless the operator answered the item's `host-bound` gate `accept` (or an approval): its output carries a no-op marker (`backlog.NOOP_MARKERS`: `no public remote`, `nothing published`, `no test can be affected` and the like) or a pytest summary where every selected test was skipped. BG-uqmjlqfl's repro, `kbgit.py publish --dry-run`, printed `no public remote; nothing published` and passed in a clone without a publish remote (SP-v5xagbyv). `done` warns of each such check, and of one that runs no test or tool code, which it does not refuse;
 - a review story still has an agent's provisional answer.
 
 When it succeeds it records the commit and each check's exit code and output digest in `evidence`. A bug is done when its `repro` passes as well. `backlog.py goal ID` prints a `/goal` condition naming the same end state, checks and scope, so a transcript-only judge sees the proof (`agents/agent-planning-and-done.md`, DOC S-vp5onm7b).
@@ -202,7 +203,7 @@ Several sprints may be active at once. Each has its own horizon.
   - the tool it runs rejects its arguments: argparse's exit 2 with `usage:` and `error:`;
   - a test run selected no tests: pytest's `no tests ran`, or exit 5 with everything deselected, such as a `-k` that matches nothing.
 
-  A failed assertion, a traceback from the code under test, or a tool that prints a finding and exits 1 counts as a reproduction. The repro that `red-pipeline` builds is its own command and does not go through this check. Bugs come from:
+  A failed assertion, a traceback from the code under test, or a tool that prints a finding and exits 1 counts as a reproduction. `new` warns, and still files the item, of a repro or check that runs no test or tool code (`true`, `echo`, a `python -c` that only passes, prints or exits 0), of a failing repro whose output says it did nothing in this clone (below), and of a bug whose repro runs a tool against this clone's state with no `--check` that runs tests: such a repro can pass at `done` without the fix, so name a test selection that plants the defect (`python3 _tools/tests.py -k ...`). The repro that `red-pipeline` builds is its own command and does not go through this check. Bugs come from:
   - an agent at any time;
   - the operator;
   - a sprint review;

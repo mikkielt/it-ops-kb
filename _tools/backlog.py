@@ -8,7 +8,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           and title. A bug's --repro must fail now, and for the defect: one that
                                           cannot start, dies of a SyntaxError in its own code, gets a usage error
                                           (argparse exit 2) or runs no tests (pytest exit 5) is refused with the
-                                          cause; a sprint gets its start gate and its review story. A new item that
+                                          cause; a warning names a check or repro that runs no test or tool code,
+                                          a repro whose output says it did nothing here, and a bug whose repro
+                                          runs a tool with no check that runs tests; a sprint gets its start gate and its review story. A new item that
                                           is a near-duplicate of an open one (similar, below) gets a warning naming
                                           it; the item is still written and the exit code is unchanged
   backlog.py similar TITLE [--goal G]     open items ranked by word overlap of TITLE (and G) with their title and
@@ -73,7 +75,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (exit 2); `answer` answers it
   backlog.py fire ID                      mark an item's external trigger as fired
   backlog.py done ID [--dry-run]          run the item's checks at a clean HEAD, check its commits' scope, record the
-                                          evidence and set status done; exit 1 with the reasons otherwise
+                                          evidence and set status done; exit 1 with the reasons otherwise, among
+                                          them a check or repro that passed doing nothing here (its output a
+                                          no-op marker, such as no public remote, or all tests skipped) with no
+                                          other passing check that runs tests and no operator accept on gate
+                                          host-bound; warns of each such check and of one that runs no code
   backlog.py land ID [--branch B] [--trailer 'KEY: VALUE']...
                                           land a finished item's branch (default work/ID) from a clean tree: fetch
                                           and rebase it on the integration main, then a content item: done --commit,
@@ -1348,6 +1354,83 @@ def own_failure(argv, code, out):
     return None
 
 
+# What a tool prints when it ran but did nothing in this clone (a missing remote, an empty selection): a check or repro
+# whose output says so proves nothing, whatever its exit code (BG-uqmjlqfl's repro, publish --dry-run, printed the
+# first two in a clone with no public remote and passed).
+NOOP_MARKERS = (re.compile(r"\bno public remote\b", re.I),
+                re.compile(r"\bnothing (?:published|to publish|to push|to land|to do|to check|to run)\b", re.I),
+                re.compile(r"\bno test can be affected\b", re.I))
+TEST_SUMMARY = re.compile(r"^=*\s*(\d+ [a-z]+(?:, \d+ [a-z]+)*) in \d+(?:\.\d+)?s\b", re.M)
+RAN_TESTS = {"passed", "failed", "error", "errors", "xfailed", "xpassed"}
+TRIVIAL_CMDS = {"true", ":", "echo", "printf", "rem"}
+TRIVIAL_CODE = re.compile(r"(?:pass|None|True|0|\.\.\.|(?:sys\.)?exit\(\s*0?\s*\)|quit\(\s*\)|import sys"
+                          r"|print\([^()]*\)|true|:|exit(?: 0)?|echo\b.*)?")
+SHELLS = {"sh", "bash", "zsh", "cmd", "pwsh", "powershell"}
+HOST_BOUND_GATE = "host-bound"  # the gate whose operator answer accepts a proof that does nothing in this clone
+HOST_BOUND_ACCEPTS = APPROVALS + ("accept", "accepted")
+
+
+def noop_output(out):
+    """Why a check's or repro's output says it did nothing in this clone, or None: a known no-op marker
+    (NOOP_MARKERS), or a pytest summary where every selected test was skipped."""
+    for rx in NOOP_MARKERS:
+        m = rx.search(out)
+        if m:
+            return f"its output says it did nothing here ({m.group(0)!r})"
+    for m in TEST_SUMMARY.finditer(out):
+        kinds = {w.split()[1] for w in m.group(1).split(", ")}
+        if "skipped" in kinds and not kinds & RAN_TESTS:
+            return f"every test it selected was skipped ({m.group(1)})"
+    return None
+
+
+def trivial_command(argv):
+    """Why a check's command runs no test or tool code, or None: a shell builtin (true, echo), or a python -c or
+    shell -c string of statements that only pass, print or exit 0. It passes whatever the code does."""
+    if not argv:
+        return None
+    base = re.sub(r"\.exe$", "", Path(argv[0]).name.lower())
+    if base in TRIVIAL_CMDS:
+        return f"it runs {base}, no test or tool"
+    code = argv[2] if len(argv) > 2 and argv[1].lower() in ("-c", "/c", "-command") else None
+    if code is not None and (base.startswith("python") or base in SHELLS):
+        if all(TRIVIAL_CODE.fullmatch(s.strip()) for s in re.split(r"[;\n]", code)):
+            return f"its code ({code.strip()[:60]!r}) only passes, prints or exits 0"
+    return None
+
+
+def is_test_run(argv):
+    """True when a check runs tests: tests.py or pytest, so it exercises the code it proves."""
+    return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
+
+
+def noop_warnings(it, repro_out=""):
+    """new's warnings of a proof that may do nothing in this clone: a check or repro that runs no test or tool code,
+    a bug's failing repro whose output says it did nothing here, and a bug whose repro runs a tool against this
+    clone's state with no check that runs tests (done refuses such a repro that passes doing nothing)."""
+    out = []
+    for c in it.get("checks", []) + ([it["repro"]] if it.get("repro") else []):
+        why = trivial_command(c["run"])
+        if why:
+            out.append(f"{shlex.join(c['run'])} proves nothing: {why}, so it passes whatever the code does")
+    if it.get("repro"):
+        run, tests = it["repro"]["run"], any(is_test_run(c["run"]) for c in it.get("checks", []))
+        why = noop_output(repro_out)
+        if why:
+            out.append(f"the repro failed while doing nothing in this clone ({why}): its failure may not be the "
+                       "defect's, and it can pass here the same way")
+        if not tests and not is_test_run(run) and len(run) > 1 and run[1].endswith(".py"):
+            out.append(f"the repro runs {run[1]} against this clone's state and no --check runs tests: should it pass "
+                       "here doing nothing, done refuses it; add --check 'python3 _tools/tests.py -k <the test that "
+                       "plants the defect>'")
+    return out
+
+
+def host_bound_accepted(it):
+    g = next((g for g in it.get("gates", []) if g.get("id") == HOST_BOUND_GATE), {})
+    return g.get("by") == "operator" and str(g.get("answer", "")).strip().lower() in HOST_BOUND_ACCEPTS
+
+
 def parse_cmd(s):
     return shlex.split(s, posix=True)
 
@@ -1464,6 +1547,7 @@ def cmd_new(bl, a):
             raise Refused(f"--repro fails for its own error, not the defect: {why}")
     if a.check:
         it["checks"] = [{"run": parse_cmd(c)} for c in a.check]
+    warns = noop_warnings(it, out if kind == "bug" else "")
     if a.touch:
         it["touches"] = a.touch
     if a.depends:
@@ -1473,6 +1557,8 @@ def cmd_new(bl, a):
     say(f"new {kind} {bl.label(it['id'])}")
     for x in errs:
         say(f"  to fill in: {x.split(': ', 1)[1]}")
+    for x in warns:
+        say(f"  warning: {x}")
     for row in filter(is_near, similar(bl, f"{it['title']} {it.get('goal', '')}", exclude={it["id"]})):
         say(f"  warning: near-duplicate of open {bl.label(row[2])} (word overlap {row[0]:.2f}); "
             "drop this one if it is the same work")
@@ -1929,6 +2015,32 @@ def cmd_fire(bl, a):
     return 0
 
 
+def noop_proof(bl, iid, passed):
+    """done's rule for checks that passed ([(check, output)]) without doing their work: one that runs no test or tool
+    code is warned of; one whose output says it did nothing in this clone (noop_output) is warned of too, and refuses
+    done unless another passing check runs tests and did its work, or the operator accepted the host-bound proof
+    (gate HOST_BOUND_GATE answered accept or approve)."""
+    noops = []
+    for c, out in passed:
+        why = noop_output(out)
+        if why:
+            noops.append((c, why))
+        why = why or trivial_command(c["run"])
+        if why:
+            say(f"warning: {shlex.join(c['run'])} passed without doing its work in this clone: {why}")
+    proven = [c for c, out in passed if is_test_run(c["run"]) and not noop_output(out)]
+    if not noops or proven or host_bound_accepted(bl.items[iid]):
+        return
+    c, why = noops[0]
+    raise Refused(f"{bl.label(iid)} is not done: {shlex.join(c['run'])} passed without doing its work in this clone "
+                  f"({why}), and no check that runs tests proves the fix. Name one: backlog.py set {iid} --add "
+                  "--check 'python3 _tools/tests.py -k <the test that plants the defect>'; or ask the operator to "
+                  f"accept the host-bound proof: backlog.py gate add {iid} --id {HOST_BOUND_GATE} --question "
+                  "'Accept a proof that does nothing in this clone?' --option accept --option add-test "
+                  f"--recommendation add-test, answered with backlog.py answer {iid} {HOST_BOUND_GATE} --answer "
+                  "accept --by operator")
+
+
 def cmd_done(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -1973,19 +2085,22 @@ def cmd_done(bl, a):
     if problems:
         raise Refused(f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
     checks = list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else [])
-    results, failed = [], []
+    results, failed, passed = [], [], []
     for c in checks:
         ok, code, out = run_check(bl.root, c)
         results.append({"run": c["run"], "exit": code, "sha256": hashlib.sha256(out.encode()).hexdigest()[:16]})
         say(f"{'ok  ' if ok else 'FAIL'} exit={code} {shlex.join(c['run'])}")
         if not ok:
             failed.append((c, code, out))
+        else:
+            passed.append((c, out))
     if failed:
         for c, code, out in failed:
             tail = "\n".join(out.strip().splitlines()[-8:])
             say(f"--- {shlex.join(c['run'])} (want exit {c.get('exit', 0)}"
                 + (f", output matching {c['match']!r}" if c.get("match") else "") + f"):\n{tail}")
         raise Refused(f"{bl.label(iid)} is not done: {len(failed)} check(s) failed")
+    noop_proof(bl, iid, passed)
     if a.dry_run:
         say(f"{bl.label(iid)} would be done")
         return 0
