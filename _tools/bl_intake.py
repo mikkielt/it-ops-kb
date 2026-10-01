@@ -13,7 +13,7 @@ the part that does not touch the backlog's files:
 - `collect(root)`: every detector's candidates in a fixed order, each with its fingerprint, and the detectors that
   failed;
 - `item_of(candidate, iid)`: the draft item `--file` writes (outside any sprint; a bug's repro is
-  `intake --status <fingerprint>`);
+  `intake --status <fingerprint>`; its last link is `detector <name>`, which `querylog.py digest` counts by);
 - `open_with_fingerprint(items, fp)`: the open item whose links already carry the fingerprint, which skips the
   candidate;
 - `lines(candidate)`: the lines the command prints for one candidate;
@@ -56,6 +56,7 @@ KINDS = ("bug", "story")
 SEVERITIES = ("S1", "S2", "S3", "S4")
 FP_RE = re.compile(r"[0-9a-f]{12}")
 FP_LINK = "fingerprint "  # a link `fingerprint <12 hex>`, the same marker red-pipeline's bugs carry
+DETECTOR_LINK = "detector "  # the last link of an item intake files: `detector <name>`, which the digest counts by
 STATUS_REPRO = ["python3", "_tools/backlog.py", "intake", "--status"]  # + the fingerprint: a filed bug's repro
 TEXT_MAX = 2000  # backlog.py's limit for one field's text; a candidate is cut to it
 
@@ -179,6 +180,8 @@ def links_of(c):
     for x in c.links:
         if x.strip() not in out:
             out.append(x.strip())
+    if c.detector and f"{DETECTOR_LINK}{c.detector}" not in out:  # a candidate not from `collect` (red-pipeline's) has none
+        out.append(f"{DETECTOR_LINK}{c.detector}")
     return out
 
 

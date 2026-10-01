@@ -97,19 +97,24 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           unverified (naming any gate jobs) or unreadable; a bug's repro is --status
                                           --job <its first failed job>. --hook:
                                           the async SessionStart form, silent
-  backlog.py intake [--file | --status FINGERPRINT] [--network]
+  backlog.py intake [--file [--hook] | --status FINGERPRINT] [--network]
                                           the candidates of every detector in bl_intake.DETECTORS (deterministic: the
                                           repository's files, no network, no model; --network adds the `ci` detector,
                                           which reads main's newest pipeline as red-pipeline does and files the same
                                           bug: its `pipeline <id>` and `fingerprint` links, its red-pipeline repro),
                                           one block each: detector, kind,
                                           fingerprint (12 hex), title, then goal, repro (a bug's: intake --status
-                                          FINGERPRINT) and links (`fingerprint <12 hex>` first). Writes nothing; a
+                                          FINGERPRINT) and links (`fingerprint <12 hex>` first, `detector <name>` last).
+                                          Writes nothing; a
                                           candidate whose fingerprint an open item's links already carry is marked
                                           skipped. --file writes each new one as a draft item outside any sprint, so a
                                           second run files nothing. --status FP: exit 1 while a detector still reports
                                           that fingerprint (or one cannot run), 0 once none does; the repro of every bug
                                           intake files. Exit 1 also when a detector failed, 2 for a bad fingerprint
+                                          or --status with --file. --hook (the async SessionStart form, run as
+                                          --file --hook, offline): silent, exit 0 always, stops waiting for the detectors after
+                                          INTAKE_HOOK_BUDGET_S and files what the finished ones found, as uncommitted
+                                          drafts, never commits or pushes
 
 claim, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit the
 item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
@@ -130,7 +135,7 @@ stored, and no part of readiness. An item without `knowledge` costs nothing: the
 Every line that names an item prints its id and its title together, except a title check found holding a piece of
 this host's computer or user name, which is withheld.
 """
-import argparse, base64, copy, functools, getpass, hashlib, json, os, re, secrets, shlex, socket, subprocess, sys
+import argparse, base64, copy, functools, getpass, hashlib, json, os, re, secrets, shlex, socket, subprocess, sys, threading
 from pathlib import Path
 
 import bl_intake
@@ -2421,6 +2426,41 @@ def cmd_intake(bl, a):
     return 1 if failures else 0
 
 
+INTAKE_HOOK_BUDGET_S = 50  # intake --hook stops waiting for the detectors after this; the hook's own timeout is 60
+
+
+def hook_intake(bl, a, budget=None):
+    """`intake --file --hook`, the async SessionStart form: runs the offline detectors (the network ones only with
+    `--network`, after the offline ones) and stops waiting after `budget` seconds (default INTAKE_HOOK_BUDGET_S);
+    what the detectors that finished by then found is filed, so a slow one costs only its own findings. It writes each
+    new candidate as an uncommitted draft item as `--file` does, prints nothing, never commits or pushes, and returns 0
+    whatever happens."""
+    budget = INTAKE_HOOK_BUDGET_S if budget is None else budget
+    names = sorted(bl_intake.DETECTORS, key=lambda n: (n in bl_intake.NETWORK_DETECTORS, n))
+    found = []  # candidates of the detectors that finished, in order
+
+    def read():
+        for name in names:
+            if name in bl_intake.NETWORK_DETECTORS and not a.network:
+                continue
+            try:
+                found.extend(bl_intake.collect(bl.root, only=name)[0])
+            except Exception:  # noqa: BLE001 - a session starts whatever the detectors do
+                pass
+
+    t = threading.Thread(target=read, daemon=True)
+    t.start()
+    t.join(budget)
+    if a.file:
+        seen = set()
+        for c in list(found):
+            if c.fp in seen or bl_intake.open_with_fingerprint(bl.items, c.fp) or bl_intake.named_by(bl.items, c):
+                continue
+            seen.add(c.fp)
+            bl.save(bl_intake.item_of(c, new_id(c.kind)))
+    return 0
+
+
 def cmd_goal(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -2552,6 +2592,8 @@ def main(argv=None):
                    help="exit 1 while a detector still reports this fingerprint (a filed bug's repro)")
     p.add_argument("--network", action="store_true",
                    help="also run the detectors that call the network (ci: the newest pipeline of main, as red-pipeline reads it)")
+    p.add_argument("--hook", action="store_true",
+                   help="the async SessionStart form: silent, bounded, exit 0 always; with --file it writes the drafts uncommitted")
     for name in COMMITS:
         p = sub.choices[name]
         p.add_argument("--commit", action="store_true",
@@ -2568,6 +2610,11 @@ def main(argv=None):
         except Exception:  # noqa: BLE001 - a session starts whatever happens here
             pass
         return 0
+    if a.cmd == "intake" and a.hook:  # async SessionStart: uncommitted drafts at most, prints nothing, never fails
+        try:
+            return hook_intake(Backlog(a.root), a)
+        except Exception:  # noqa: BLE001 - a session starts whatever happens here
+            return 0
     if a.cmd == "horizon" and a.hook:  # the SessionStart event on stdin carries nothing the horizon needs
         try:
             return cmd_horizon(Backlog(a.root), a)

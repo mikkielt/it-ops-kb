@@ -71,6 +71,12 @@
           },
           {
             "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/backlog.py intake --file --hook",
+            "async": true,
+            "timeout": 60
+          },
+          {
+            "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kbgit.py publish --hook",
             "async": true,
             "timeout": 60

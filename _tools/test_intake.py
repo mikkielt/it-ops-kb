@@ -7,8 +7,10 @@ nothing, a done or dropped item skips nothing), a `--status` that exits 1 while 
 still print, exit 1), a malformed fingerprint (exit 2), and the same inputs giving the same lines in any registration
 order.
 """
+import argparse
 import datetime
 import json
+import threading
 import time
 from pathlib import Path
 
@@ -70,7 +72,7 @@ def test_intake_core_prints_candidates_and_writes_nothing(tmp_path, capsys):
     assert f"docs bug {fp} A doc names a gone file" in out
     assert "  goal: The doc names no gone file." in out
     assert "  repro: python3 _tools/backlog.py intake --status " + fp in out
-    assert f"  links: fingerprint {fp}" in out
+    assert f"  links: fingerprint {fp}, detector docs" in out
     assert any(ln.startswith("docs story ") for ln in out) and "  check: python3 -c pass" in out
     assert out[-1] == "intake: 2 candidate(s), 2 new, 0 skipped"
     assert files(tmp_path) == []
@@ -105,7 +107,7 @@ def test_intake_core_file_writes_draft_items_outside_any_sprint(tmp_path, capsys
     fp = bl_intake.fingerprint("docs", "stale-doc:a")
     b = items["bug"]
     assert b["status"] == "draft" and "sprint" not in b and "parent" not in b
-    assert b["links"] == [f"fingerprint {fp}", "pipeline 7"]
+    assert b["links"] == [f"fingerprint {fp}", "pipeline 7", "detector docs"]
     assert b["severity"] == "S3" and b["repro"] == {"run": bl_intake.STATUS_REPRO + [fp]}
     assert items["story"]["status"] == "draft" and items["story"]["checks"] == [{"run": ["python3", "-c", "pass"]}]
     assert backlog.validate(backlog.Backlog(tmp_path)) == []  # canonical form, fields, a bug's repro: all valid
@@ -1108,7 +1110,7 @@ def test_intake_ci_candidate_is_the_red_pipeline_bug(tmp_path, monkeypatch, caps
     assert out[0] == f"ci bug {fp} Red main pipeline 901: kb-tests-windows"
     assert "  severity: S2" in out
     assert "  repro: python3 _tools/backlog.py red-pipeline --status --job kb-tests-windows" in out
-    assert f"  links: pipeline 901, fingerprint {fp}" in out
+    assert f"  links: pipeline 901, fingerprint {fp}, detector ci" in out
     assert out[-1] == "intake: 1 candidate(s), 1 new, 0 skipped"
 
 
@@ -1134,15 +1136,17 @@ def test_intake_ci_red_pipeline_files_and_intake_skips_it(tmp_path, monkeypatch,
 
 
 def test_intake_ci_either_command_files_the_same_item(tmp_path_factory, monkeypatch, capsys, ci_register):
-    """On two copies of one red pipeline, intake --file and red-pipeline write the same item but for its id."""
+    """On two copies of one red pipeline, intake --file and red-pipeline write the same item but for its id and the
+    `detector ci` link that intake adds last."""
     pipes = [{"id": 901, "sha": SHA, "status": "failed", "web_url": "https://x/901"}]
     a, _ = ci_world(tmp_path_factory.mktemp("a"), monkeypatch, pipes, RED_JOBS, RED_LOGS)
     assert intake(a.root, capsys, "--network", "--file")[0] == 0
     b, _ = ci_world(tmp_path_factory.mktemp("b"), monkeypatch, pipes, RED_JOBS, RED_LOGS)
     assert red_pipeline(b.root) == 0
     (ia,), (ib,) = filed(a.root), filed(b.root)
-    assert {**ia, "id": 0} == {**ib, "id": 0}
-    assert ia["links"] == ["pipeline 901", f"fingerprint {ci_fp('kb-tests-windows', '_tools/test_x.py::test_a')}"]
+    assert ia["links"][-1] == "detector ci" and "detector ci" not in ib["links"]
+    assert {**ia, "id": 0, "links": ia["links"][:-1]} == {**ib, "id": 0}
+    assert ia["links"][:-1] == ["pipeline 901", f"fingerprint {ci_fp('kb-tests-windows', '_tools/test_x.py::test_a')}"]
     assert ia["repro"] == {"run": backlog.STATUS_REPRO + ["--job", "kb-tests-windows"]}
 
 
@@ -1220,3 +1224,101 @@ def test_intake_ci_red_pipeline_files_the_candidate_the_detector_builds(tmp_path
     assert red_pipeline(w.root) == 0
     (b1,) = filed(w.root)
     assert b1["title"].startswith("Planted title Red main pipeline 901")
+
+
+# ------------------------------------------------------------------ the SessionStart hook (intake_hook)
+#
+# `intake --file --hook`: silent, exit 0 whatever happens, drafts left uncommitted, bounded. Planted: a first run that
+# writes a draft and prints nothing, a second run that files nothing, a run that leaves HEAD, the index and the remote
+# refs as they were, a detector that raises beside one that finds (the finding is still filed), a detector that never
+# returns within the budget (nothing is filed), a run without --file (writes nothing), and a settings.json whose hook
+# lost its timeout or runs red-pipeline again.
+
+def hook(root, capsys, *args):
+    capsys.readouterr()
+    code = backlog.main(["--root", str(root), "intake", "--file", "--hook", *args])
+    out = capsys.readouterr()
+    return code, out.out, out.err
+
+
+def test_intake_hook_writes_an_uncommitted_draft_and_prints_nothing(world, capsys):
+    register("docs", bug())
+    assert hook(world.root, capsys) == (0, "", "")
+    (it,) = load(world.root)
+    assert it["status"] == "draft" and it["links"][-1] == "detector docs" and "sprint" not in it
+    assert world.repo.git("status", "--porcelain", "-uall").split() == ["??", f"{backlog.REL_DIR}/{it['id']}.json"]
+    assert backlog.validate(backlog.Backlog(world.root)) == []
+
+
+def test_intake_hook_a_second_run_files_nothing(world, capsys):
+    register("docs", bug(), story())
+    assert hook(world.root, capsys) == (0, "", "")
+    first = load(world.root)
+    assert len(first) == 2
+    assert hook(world.root, capsys) == (0, "", "")
+    assert load(world.root) == first
+
+
+def test_intake_hook_never_commits_or_pushes(world, capsys):
+    register("docs", bug())
+    world.publish()
+    before = (world.repo.git("log", "--all", "--format=%H"), world.repo.git("for-each-ref"),
+              world.repo.git("diff", "--cached", "--name-only"))
+    assert hook(world.root, capsys) == (0, "", "") and len(load(world.root)) == 1
+    assert (world.repo.git("log", "--all", "--format=%H"), world.repo.git("for-each-ref"),
+            world.repo.git("diff", "--cached", "--name-only")) == before
+
+
+def test_intake_hook_a_detector_that_raises_does_not_stop_the_others(world, capsys):
+    bl_intake.detector("broken")(lambda root: 1 / 0)
+    register("docs", bug())
+    assert hook(world.root, capsys) == (0, "", "")
+    assert [it["links"][-1] for it in load(world.root)] == ["detector docs"]
+
+
+def test_intake_hook_without_file_writes_nothing(world, capsys):
+    register("docs", bug())
+    capsys.readouterr()
+    assert backlog.main(["--root", str(world.root), "intake", "--hook"]) == 0
+    out = capsys.readouterr()
+    assert (out.out, out.err) == ("", "") and load(world.root) == []
+
+
+def test_intake_hook_stops_waiting_for_a_detector_that_outlasts_its_budget_and_files_the_others(world):
+    release = threading.Event()
+
+    def never(root):
+        release.wait(30)
+        return [bug("late:z", title="Late finding")]
+
+    register("docs", bug())
+    bl_intake.detector("slow")(never)
+    t0 = time.monotonic()
+    try:
+        code = backlog.hook_intake(backlog.Backlog(world.root), argparse.Namespace(file=True, network=False), budget=0.5)
+        elapsed = time.monotonic() - t0
+    finally:
+        release.set()
+    time.sleep(0.2)
+    assert code == 0 and elapsed < 10
+    assert [it["links"][-1] for it in load(world.root)] == ["detector docs"]  # the slow one's finding is never filed
+
+
+def test_intake_hook_runs_a_network_detector_only_with_network_and_after_the_offline_ones(world, capsys, monkeypatch):
+    ran = []
+    monkeypatch.setattr(bl_intake, "NETWORK_DETECTORS", {"aaa-net"})
+    bl_intake.detector("aaa-net")(lambda root: ran.append("net") or [bug("net:1", title="From the network")])
+    bl_intake.detector("zzz-local")(lambda root: ran.append("local") or [bug("local:1", title="Local")])
+    assert hook(world.root, capsys) == (0, "", "") and ran == ["local"]
+    assert hook(world.root, capsys, "--network") == (0, "", "") and ran == ["local", "local", "net"]
+    assert sorted(it["title"] for it in load(world.root)) == ["From the network", "Local"]
+
+
+def test_intake_hook_settings_run_it_offline_beside_red_pipeline_hook_each_async_with_a_timeout():
+    cfg = json.loads((backlog.ROOT / ".claude" / "settings.json").read_text(encoding="utf-8"))
+    cmds = [h for g in cfg["hooks"]["SessionStart"] for h in g["hooks"] if "backlog.py" in h["command"]]
+    (h,) = [h for h in cmds if " intake " in h["command"]]
+    assert h["command"].endswith("_tools/backlog.py intake --file --hook")  # no --network: the offline detectors
+    assert h.get("async") is True and h["timeout"] > backlog.INTAKE_HOOK_BUDGET_S
+    (r,) = [h for h in cmds if "red-pipeline" in h["command"]]  # the pipeline read stays its own hook
+    assert r["command"].endswith("_tools/backlog.py red-pipeline --hook") and r.get("async") is True and r["timeout"] == 60

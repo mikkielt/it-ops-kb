@@ -58,7 +58,8 @@ An outcome that takes several pushes. Plan it as below, with these steps first:
 4. Add tasks only if the fix is known. Otherwise the bug stays one item, and `/kb-item` breaks it down.
 
 ## Triage
-List what needs deciding:
+List what needs deciding, intake's drafts first:
+- the uncommitted drafts the SessionStart hook (`backlog.py intake --file --hook`; `red-pipeline --hook` files a red main's bug the same way) wrote: the new item files in `git status --porcelain -uall kb/_self/backlog/` (`??`) whose `links` carry `fingerprint <12 hex>` and `detector <name>` (`python3 _tools/backlog.py show ID`). Show each with its detector, kind, title and goal. A kept one is committed with the rest of the triage (item files only, `KB-Work` naming them); a dropped one is deleted, since it was never committed, (intake files it again at a later session while a detector still reports it);
 - `python3 _tools/backlog.py list --status draft`;
 - bugs without a sprint;
 - items whose trigger may have fired (fire them with `python3 _tools/backlog.py fire ID` once the event is confirmed).
