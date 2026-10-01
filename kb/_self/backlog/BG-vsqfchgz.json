@@ -24,7 +24,8 @@
     "_tools/test_backlog.py",
     "kb/_self/querylog.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_intake.py"
   ],
   "claimed_by": "c-vsqfchgz"
 }
