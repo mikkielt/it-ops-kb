@@ -6,7 +6,8 @@ local store laid out the same way), their readers and writers, and the gates `qu
   usage/<yyyy-mm>/<run-id>.jsonl      the usage sidecar of a run file: a header (USAGE_HEADER_KEYS), then one line per
                                       entry with token counts (USAGE_KEYS)
   work/<yyyy-mm>/<run-id>.jsonl       the work sidecar of a run file: a header (WORK_HEADER_KEYS), then one line per
-                                      item worked (WORK_ITEM_KEYS) and one per session that worked one (WORK_SHARED_KEYS)
+                                      item worked (WORK_ITEM_KEYS), one per session that worked one (WORK_SHARED_KEYS)
+                                      and one per kind of the kb's own background runs (WORK_OVERHEAD_KEYS)
 """
 import datetime, hashlib, json, re, subprocess
 from pathlib import Path
@@ -74,6 +75,9 @@ WORK_HEADER_KEYS = ("run", "reader", "counts")
 WORK_COUNT_KEYS = ("items", "shared", "missing")
 WORK_ITEM_KEYS = ("item", "prompts", "main", "sub")  # one item worked: its window prompts' summed counts
 WORK_SHARED_KEYS = ("items", "prompts", "main", "sub")  # one session that worked items: its prompts outside any window
+WORK_OVERHEAD_KEYS = ("overhead", "calls", "main")  # one kind of the kb's own background runs: no item, no prompt
+OVERHEAD_KINDS = ("distill", "digest", "eval", "census")  # the background runs a line may name (usage.md)
+OVERHEAD_COUNT_KEY = "overhead"  # a header count that is there only when the file has an overhead line
 SAMPLE_ENTRY_ID = "00000000-0000-4000-8000-000000000000"  # a stand-in id, to read a usage record with usage_line
 
 
@@ -241,7 +245,8 @@ def usage_counts(usage):
     return None if line is None else (line["main"], line.get("sub", {}))
 
 
-def _add_models(into, models):
+def add_models(into, models):
+    """Add per-model counts (`{model: {requests, in, cw, cw1h, cr, out}}`) into `into`."""
     for m, c in models.items():
         t = into.setdefault(m, dict.fromkeys(USAGE_COUNTS, 0))
         for k in USAGE_COUNTS:
@@ -257,9 +262,9 @@ def tally_add(tally, counts):
     """One prompt's (main, sub) counts (usage_counts) added into `tally`."""
     main, sub = counts
     tally["prompts"] += 1
-    _add_models(tally["main"], main)
+    add_models(tally["main"], main)
     for g, models in sub.items():
-        _add_models(tally["sub"].setdefault(g, {}), models)
+        add_models(tally["sub"].setdefault(g, {}), models)
 
 
 def work_line(key, value, tally):
@@ -272,14 +277,24 @@ def work_line(key, value, tally):
     return line
 
 
+def overhead_line(kind, calls, models):
+    """The work sidecar line of one kind of the kb's own background runs: `overhead` (the kind), `calls` (the
+    `claude -p` calls counted) and `main`, their counts per model in work_line's order; None when it breaks the gates
+    (overhead_line_problems) or `models` is empty."""
+    line = {"overhead": kind, "calls": calls, "main": {m: models[m] for m in sorted(models)}}
+    return None if not models or overhead_line_problems(line, "") else line
+
+
 def write_work(store, run_id, lines, missing, reader):
     """The work sidecar of run `run_id`: a header (the run, the transcript reader's version, counts), then the lines
-    (item lines, then shared lines). Nothing is written without a line."""
+    (item lines, shared lines, then overhead lines). Nothing is written without a line."""
     if not lines:
         return None
     path = run_path(store, run_id, work=True)
     counts = {"items": sum(1 for ln in lines if "item" in ln), "shared": sum(1 for ln in lines if "items" in ln),
               "missing": missing}
+    if any("overhead" in ln for ln in lines):
+        counts[OVERHEAD_COUNT_KEY] = sum(1 for ln in lines if "overhead" in ln)
     write_text(path, json_lines([{"run": run_id, "reader": reader, "counts": counts}] + lines))
     return path
 
@@ -727,16 +742,35 @@ def usage_problems(store):
     return out
 
 
+def overhead_line_problems(w, where):
+    """The gates on one overhead line (`overhead`, `calls`, `main`): a background run kind of OVERHEAD_KINDS, a
+    positive count of calls and counts per model in the usage record's closed shape, and nothing else: no item,
+    session, prompt, command or text."""
+    out = []
+    other = sorted(set(w) - set(WORK_OVERHEAD_KEYS))
+    if other:
+        out.append(f"{where}: fields an overhead line never has: {', '.join(other)}")
+    if w.get("overhead") not in OVERHEAD_KINDS:
+        out.append(f"{where}: overhead is not a background run kind ({', '.join(OVERHEAD_KINDS)})")
+    if not (_count(w.get("calls")) and w["calls"] > 0):
+        out.append(f"{where}: calls is not a positive count")
+    return out + _models_problems(w.get("main"), f"{where}: main")
+
+
 def work_line_problems(w, where):
     """The gates on one work sidecar line: an item line (`item`, `prompts`, `main`, `sub`) or a shared line (`items`,
     `prompts`, `main`, `sub`), with an item id, a prompt count and counts in the usage record's closed shapes, and
     nothing else: no session, prompt, transcript, command or text. A shared line has a positive prompt count and a
     `main`; an item line has them too, or no prompt (`prompts` 0) and an empty `main` with a `sub`: the counts of
-    subagents routed to the item, none of its prompts counted on its own line."""
+    subagents routed to the item, none of its prompts counted on its own line. An overhead line is a third kind
+    (overhead_line_problems), with no item at all."""
     out = []
+    if sum(1 for k in ("item", "items", "overhead") if k in w) != 1:
+        return [f"{where}: a work line has an `item` or an `items` or an `overhead`, one of them and not several or "
+                f"none"]
+    if "overhead" in w:
+        return overhead_line_problems(w, where)
     shared = "items" in w
-    if shared == ("item" in w):
-        return [f"{where}: a work line has an `item` or an `items`, not both or neither"]
     keys = WORK_SHARED_KEYS if shared else WORK_ITEM_KEYS
     other = sorted(set(w) - set(keys))
     if other:
@@ -786,10 +820,13 @@ def work_problems(store):
         if not (_count(h.get("reader")) and h.get("reader")):
             out.append(f"{rel}:{hn}: reader is not a version number")
         c = h.get("counts")
-        if not (isinstance(c, dict) and set(c) == set(WORK_COUNT_KEYS) and all(_count(v) for v in c.values())):
-            out.append(f"{rel}:{hn}: counts are not {', '.join(WORK_COUNT_KEYS)} as counts")
+        keys = WORK_COUNT_KEYS + ((OVERHEAD_COUNT_KEY,) if any("overhead" in w for _, w in lines) else ())
+        if not (isinstance(c, dict) and set(c) == set(keys) and all(_count(v) for v in c.values())):
+            out.append(f"{rel}:{hn}: counts are not {', '.join(keys)} as counts")
         else:
-            for key, name in (("items", "item"), ("shared", "items")):
+            for key, name in (("items", "item"), ("shared", "items"), (OVERHEAD_COUNT_KEY, "overhead")):
+                if key not in c:
+                    continue
                 n = sum(1 for _, w in lines if name in w)
                 if c[key] != n:
                     out.append(f"{rel}:{hn}: counts.{key} is {c[key]}, the file has {n}")
@@ -805,6 +842,12 @@ def work_problems(store):
                     out.append(f"{where}: duplicate item {i} (also {seen[i]})")
                 else:
                     seen[i] = where
+            kind = w.get("overhead")
+            if isinstance(kind, str):
+                if ("overhead", kind) in seen:
+                    out.append(f"{where}: duplicate overhead {kind} (also {seen[('overhead', kind)]})")
+                else:
+                    seen[("overhead", kind)] = where
     return out
 
 

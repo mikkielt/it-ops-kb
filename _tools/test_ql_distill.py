@@ -29,6 +29,9 @@
                     line when the items do not share one or no sprint is known; no duplicate on a second run; routing
                     outside the closed shape (a branch for an id, an unknown group or model) is not counted; the
                     routing is no part of an entry's usage line
+  TestOverheadSidecar  the counts of the distill's own Haiku calls (`--output-format json`, `modelUsage`) are the run's
+                    `distill` overhead line in the work sidecar (`-k overhead_sidecar`): summed over calls and models,
+                    no item, session or text, none for an injected Haiku, a result without counts or a failed call
   TestLock         a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
                     of several processes taking the lock at once exactly one gets it
   TestLaunch        SessionEnd marks its session closed; the launcher returns within the 1.5-second budget with its
@@ -878,6 +881,173 @@ got = ql_base.acquire(sys.argv[1])
 print("got" if got else "busy", flush=True)
 time.sleep(1.5)
 """
+
+
+HAIKU_ID = "claude-haiku-4-5-20251001"
+HAIKU_USAGE = {"inputTokens": 120, "outputTokens": 40, "cacheReadInputTokens": 5, "cacheCreationInputTokens": 7,
+               "costUSD": 0.001}
+OVERHEAD_COUNTS = {"requests": 1, "in": 120, "cw": 7, "cw1h": 0, "cr": 5, "out": 40}
+
+
+def cli_result(text, model_usage=None, **over):
+    """What `claude -p --output-format json` prints for a successful run: the reply in `result`, the whole run's counts
+    per model in `modelUsage`, and fields the distill never reads (a session id, a cost)."""
+    return json.dumps({"type": "result", "subtype": "success", "is_error": False, "num_turns": 1, "result": text,
+                       "session_id": "3f2a4c1e-0000-4000-8000-00000000abcd", "total_cost_usd": 0.01,
+                       "modelUsage": {HAIKU_ID: HAIKU_USAGE} if model_usage is None else model_usage, **over})
+
+
+def fake_claude(monkeypatch, reply, calls=None):
+    """Replace the subprocess under claude_p (never the real CLI): its stdout is `reply(prompt)`."""
+    def run(argv, prompt, timeout):
+        if calls is not None:
+            calls.append(argv)
+        return reply(prompt)
+    monkeypatch.setattr(ql_distill, "claude_p", run)
+
+
+class TestOverheadSidecar:
+    """The distill's own Haiku calls are the run's overhead line in the work sidecar (`-k overhead_sidecar`): no item,
+    no session, no text; only the kinds whose counts exist are written."""
+
+    def distill_with_cli(self, q, monkeypatch, wrap=cli_result, **kw):
+        replay = ql_base.Replay(FIXTURES / "haiku.json")
+        calls = []
+        fake_claude(monkeypatch, lambda prompt: wrap(replay(prompt), **kw), calls)
+        said = []
+        rc = ql_distill.distill(qdir=q, cfg=Path(q) / "config.json", now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40,
+                                out=said.append)
+        return rc, said, calls
+
+    def overhead_sidecar_of(self, q):
+        return jsonl(q / "store" / "work" / "2026-09" / f"{RUN_ID}.jsonl")
+
+    def test_overhead_sidecar_counts_of_the_haiku_call_are_the_distill_line(self, tmp_path, monkeypatch):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        rc, said, calls = self.distill_with_cli(q, monkeypatch)
+        assert rc == 0 and len(calls) == 1 and said == [f"distill: run={RUN_ID} entries=6 dropped=1 waiting=0 overhead=1"]
+        assert "--output-format" in calls[0] and calls[0][calls[0].index("--output-format") + 1] == "json"
+        assert self.overhead_sidecar_of(q) == [
+            {"run": RUN_ID, "reader": kbusage.READER_VERSION, "counts": {"items": 0, "shared": 0, "missing": 0,
+                                                                          "overhead": 1}},
+            {"overhead": "distill", "calls": 1, "main": {HAIKU_ID: OVERHEAD_COUNTS}}]
+        assert ql_store.store_problems(q / "store") == []
+        text = (q / "store" / "work" / "2026-09" / f"{RUN_ID}.jsonl").read_text(encoding="utf-8")
+        for raw in ("session_id", "3f2a4c1e", "total_cost_usd", "costUSD", "anna.nowak", "judged", '"item"', '"items":['):
+            assert raw not in text, raw
+
+    def test_overhead_sidecar_the_entries_are_what_a_replayed_reply_gives(self, tmp_path, monkeypatch):
+        """The JSON wrapper changes nothing the run file holds."""
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        self.distill_with_cli(q, monkeypatch)
+        run = [p for p in store_files(q) if p.parent.parent.name != "work"]
+        import kbfacts
+        want = jsonl(FIXTURES / "golden.jsonl")
+        want[0]["retrieval"] = kbfacts.INDEX_VERSION
+        assert [jsonl(p) for p in run] == [want]
+
+    def test_overhead_sidecar_calls_and_models_sum(self, tmp_path, monkeypatch):
+        """Several calls (a batch each) and models add into the one line of the kind."""
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        monkeypatch.setattr(ql_distill, "HAIKU_BATCH_ENTRIES", 2)
+        seen = []
+
+        def reply(prompt):
+            seen.append(prompt)
+            items = json.loads(prompt[prompt.index("\n\n[") + 2:])
+            usage = {HAIKU_ID: HAIKU_USAGE, "claude-sonnet-5-5": {"inputTokens": 3, "outputTokens": 1}} \
+                if len(seen) == 1 else {HAIKU_ID: HAIKU_USAGE}
+            return cli_result(echo(prompt), usage, num_turns=len(items))
+        fake_claude(monkeypatch, reply)
+        assert ql_distill.distill(qdir=q, cfg=q / "config.json", now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40,
+                                  out=lambda s: None) == 0
+        assert len(seen) == 3
+        (line,) = self.overhead_sidecar_of(q)[1:]
+        assert line["overhead"] == "distill" and line["calls"] == 3, line
+        main = line["main"]
+        assert list(main) == [HAIKU_ID, "claude-sonnet-5-5"]  # sorted
+        assert main["claude-sonnet-5-5"] == {"requests": 1, "in": 3, "cw": 0, "cw1h": 0, "cr": 0, "out": 1}
+        assert (main[HAIKU_ID]["in"], main[HAIKU_ID]["out"], main[HAIKU_ID]["cr"], main[HAIKU_ID]["cw"]) \
+            == (360, 120, 15, 21)
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_overhead_sidecar_a_batch_that_is_dropped_still_spent_its_tokens(self, tmp_path, monkeypatch):
+        """A reply that is not the expected JSON drops its batch; the call's counts are still the run's overhead."""
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        fake_claude(monkeypatch, lambda prompt: cli_result("not a JSON array of judgements"))
+        said = []
+        ql_distill.distill(qdir=q, cfg=q / "config.json", now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40,
+                           out=said.append)
+        assert "overhead=1" in said[0], said
+        assert self.overhead_sidecar_of(q)[0]["counts"] == {"items": 0, "shared": 0, "missing": 0, "overhead": 1}
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_overhead_sidecar_none_without_counts(self, tmp_path, monkeypatch):
+        """A stdout that is not a result (an older CLI), a result with no `modelUsage` and one with only zeros give no
+        line, no sidecar and the same entries."""
+        for n, wrap in enumerate((lambda text: text, lambda text: cli_result(text, {}),
+                                  lambda text: cli_result(text, {HAIKU_ID: {"inputTokens": 0}}))):
+            q = tmp_path / f"q{n}"
+            plant_spool(q)
+            rc, said, _ = self.distill_with_cli(q, monkeypatch, wrap=wrap)
+            assert said == [f"distill: run={RUN_ID} entries=6 dropped=1 waiting=0"], said
+            assert not (q / "store" / "work").exists()
+
+    def test_overhead_sidecar_a_failed_call_leaves_no_line(self, tmp_path, monkeypatch):
+        """An error result is a failed call: its entries wait, nothing is counted, nothing written."""
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        fake_claude(monkeypatch, lambda prompt: cli_result("", is_error=True, subtype="error_during_execution"))
+        said = []
+        assert ql_distill.distill(qdir=q, cfg=q / "config.json", now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40,
+                                  out=said.append) == 0
+        assert any("Haiku call failed" in s for s in said), said
+        assert not (q / "store" / "work").exists()
+
+    def test_overhead_sidecar_no_line_when_haiku_is_injected(self, tmp_path):
+        """A replayed or stubbed Haiku has no counts: only a real call is measured."""
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        run_distill(q, ql_base.Replay(FIXTURES / "haiku.json"))
+        assert not (q / "store" / "work").exists()
+
+    def test_overhead_sidecar_only_the_distill_kind_has_counts(self):
+        """The digest, eval and census run no model and write none: the kinds the gates name are a superset."""
+        assert ql_distill.Spend().lines() == []
+        spend = ql_distill.Spend()
+        spend.add({HAIKU_ID: OVERHEAD_COUNTS})
+        (line,) = spend.lines()
+        assert line["overhead"] == "distill" and line["overhead"] in ql_store.OVERHEAD_KINDS
+
+    @pytest.mark.parametrize("result,want", [
+        (cli_result("ok"), ("ok", {HAIKU_ID: OVERHEAD_COUNTS})),
+        (cli_result("ok", {HAIKU_ID: HAIKU_USAGE}, num_turns=3), ("ok", {HAIKU_ID: {**OVERHEAD_COUNTS, "requests": 3}})),
+        (cli_result("ok", {"claude-opus-5-5": {"inputTokens": 2}, HAIKU_ID: HAIKU_USAGE}, num_turns=4),
+         ("ok", {"claude-opus-5-5": {"requests": 1, "in": 2, "cw": 0, "cw1h": 0, "cr": 0, "out": 0},
+                 HAIKU_ID: OVERHEAD_COUNTS})),
+        (cli_result("ok", {"payroll-model": {"inputTokens": 9}}),
+         ("ok", {"other": {"requests": 1, "in": 9, "cw": 0, "cw1h": 0, "cr": 0, "out": 0}})),
+        (cli_result("ok", {HAIKU_ID: {"inputTokens": -5, "outputTokens": True, "cacheReadInputTokens": "9",
+                                      "cacheCreationInputTokens": 2.5}}), ("ok", {})),
+        (cli_result("ok", {HAIKU_ID: "not a map"}), ("ok", {})),
+        ("[]", ("[]", {})),
+        ("not json", ("not json", {})),
+        ('{"type": "assistant"}', ('{"type": "assistant"}', {})),
+    ])
+    def test_overhead_sidecar_haiku_result(self, result, want):
+        assert ql_distill.haiku_result(result) == want
+
+    @pytest.mark.parametrize("result", [
+        cli_result("", is_error=True), cli_result("", subtype="error_max_turns"),
+        json.dumps({"type": "result", "subtype": "success", "is_error": False}),
+    ])
+    def test_overhead_sidecar_haiku_result_error_is_oserror(self, result):
+        with pytest.raises(OSError):
+            ql_distill.haiku_result(result)
 
 
 class TestLock:
