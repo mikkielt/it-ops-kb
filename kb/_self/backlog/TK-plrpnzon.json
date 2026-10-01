@@ -2,7 +2,7 @@
   "id": "TK-plrpnzon",
   "kind": "task",
   "title": "backlog.py cost prints item work, research and overhead apart for a sprint",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-gbnpn6vq",
   "priority": "P2",
   "rank": 1,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "TK-lp5flhii"
-  ]
+  ],
+  "claimed_by": "worker-plrpnzon"
 }
