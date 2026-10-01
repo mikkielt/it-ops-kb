@@ -2,7 +2,7 @@
   "id": "ST-ltuy6qn2",
   "kind": "story",
   "title": "Sprint workers start from the orchestrator's branch tip",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-x2pvljz6",
   "priority": "P2",
@@ -44,5 +44,19 @@
     }
   ],
   "notes": "Planning lead (live docs, not in the kb, code.claude.com/docs/en/settings-reference#worktree, 2026-10-01): the worktree setting's baseRef \"head\" branches isolated subagent worktrees from the current HEAD instead of the default branch.",
-  "claimed_by": "worker-ltuy6qn2"
+  "evidence": {
+    "commit": "2042f1eee42258f3234462d7682a76b14962b81e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_worker_starts_from_orchestrator_tip"
+        ],
+        "exit": 0,
+        "sha256": "e2d7f2e72c4e3571"
+      }
+    ]
+  }
 }
