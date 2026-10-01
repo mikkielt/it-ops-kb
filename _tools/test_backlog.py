@@ -3254,3 +3254,248 @@ def test_backlog_cost_without_sidecars_prints_zeros_and_exits_0(sprint, capsys):
     assert out.count("all models  requests 0  in 0  cr 0  out 0 | cw 0") == 2, out
     one = json.loads(cost_out(repo, capsys, tk, "--format", "json"))
     assert one["direct"] == {} and one["attributed"] == {} and one["runs"] == 0 and one["prompts"] == 0
+
+
+# --- backlog.py cost: items deleted at sprint close, read from their last version in git history ---
+
+COST_RUN_D = "20261004T100000Z-dddddddd"
+NO_HISTORY = "TK-aaaaaaaa"  # an id shaped like an item's, with no item file and no commit that ever held one
+
+
+@pytest.fixture
+def closed(costed):
+    """The costed sprint, finished and closed in git: its story, task, bug, review and two more items are deleted (the
+    epic stays), the sidecars stay. Task two has no work line of its own; its subtask has one (run D), so the subtask
+    reaches the story only through a parent that is gone too."""
+    w = costed
+    repo, st = w["repo"], w["st"]
+    assert b(repo, "new", "task", "--title", "Task two", "--parent", st, "--goal", "x", "--touch", "src/**")[0] == 0
+    w["tk2"] = item(repo, "Task two")["id"]
+    assert b(repo, "new", "subtask", "--title", "Subtask", "--parent", w["tk2"], "--goal", "x", "--touch", "src/**")[0] == 0
+    w["sb"] = item(repo, "Subtask")["id"]
+    cost_sidecar(repo, COST_RUN_D, [{"item": w["sb"], "prompts": 5, "main": {OPUS: cc(1, 1, 1, 1, 1)}}])
+    for k in ("st", "tk", "bg", "rv", "tk2", "sb"):
+        edit(repo, w[k], status="done")
+    commit(repo, "the sprint, finished")
+    code, out = b(repo, "close", w["sp"])
+    assert code == 0, out
+    commit(repo, "close the sprint")
+    assert not [i for i in ("sp", "st", "tk", "bg", "tk2", "sb") if (Path(repo) / backlog.REL_DIR / f"{w[i]}.json").exists()]
+    return w
+
+
+def cost_run(repo, capsys, *a):
+    """(exit code, stdout, stderr) of an in-process `cost`; a crash is a failed assertion, so a planted one is caught."""
+    try:
+        code = backlog.main(["--root", str(repo), "cost", *a])
+    except Exception as e:  # noqa: BLE001 - any escape is the failure the check looks for
+        raise AssertionError(f"cost crashed: {e!r}") from e
+    cap = capsys.readouterr()
+    return code, cap.out, cap.err
+
+
+def cost_json(repo, capsys, *a):
+    code, out, err = cost_run(repo, capsys, *a, "--format", "json")
+    assert code == 0, err
+    return json.loads(out)
+
+
+def check_closed_totals(w, capsys):
+    """A closed sprint's total and an epic's total hold the lines of the items whose files are gone."""
+    repo = w["repo"]
+    sp = cost_json(repo, capsys, w["sp"])
+    assert sp["items"] == sorted([w["sp"], w["st"], w["tk"], w["bg"], w["sb"]]) and sp["prompts"] == 14, sp["items"]
+    assert sp["direct"][OPUS] == cc(20, 163, 26, 1514, 96, cw1h=2) and sp["restored"] == sp["items"]
+    ep = cost_json(repo, capsys, w["ep"])
+    assert ep["items"] == sorted([w["st"], w["tk"], w["sb"]]) and ep["prompts"] == 9, ep["items"]
+    assert ep["direct"][OPUS] == cc(7, 114, 17, 1105, 83, cw1h=2) and ep["restored"] == ep["items"]
+    # the text names the items it read from history, with their titles from the last version of their files
+    code, out, _ = cost_run(repo, capsys, w["ep"])
+    assert code == 0 and "from git history (item file deleted):" in out and "“Task”" in out and "“Subtask”" in out, out
+    assert f"cost {w['sp']} “Sprint”:" in cost_run(repo, capsys, w["sp"])[1]
+
+
+def test_backlog_cost_closed_sprint_and_epic_totals_include_deleted_items(closed, capsys):
+    check_closed_totals(closed, capsys)
+
+
+real_history_items = backlog.history_items
+
+
+def planted_history_none(root, ids):
+    return {}
+
+
+def planted_history_without_parent(root, ids):
+    return {i: {k: v for k, v in it.items() if k != "parent"} for i, it in real_history_items(root, ids).items()}
+
+
+def planted_history_without_sprint(root, ids):
+    return {i: {k: v for k, v in it.items() if k != "sprint"} for i, it in real_history_items(root, ids).items()}
+
+
+@pytest.mark.parametrize("planted", [planted_history_none, planted_history_without_parent,
+                                     planted_history_without_sprint],
+                         ids=["no history", "no parent", "no sprint"])
+def test_backlog_cost_closed_planted_failure_of_each_total_is_caught(closed, capsys, monkeypatch, planted):
+    monkeypatch.setattr(backlog, "history_items", planted)
+    with pytest.raises(AssertionError):
+        check_closed_totals(closed, capsys)
+
+
+def test_backlog_cost_closed_item_with_a_gone_parent_reaches_the_story(closed, capsys):
+    """The subtask's parent (task two) has no line: it is found by asking history for the parent of a restored item."""
+    one = cost_json(closed["repo"], capsys, closed["st"])
+    assert closed["sb"] in one["items"] and closed["tk2"] not in one["items"] and one["unresolved"] == []
+
+
+def check_closed_unresolved(w, capsys):
+    """An id with a line and no history stays out of every sum and is named on stderr and in the json."""
+    repo = w["repo"]
+    cost_sidecar(repo, "20261005T100000Z-eeeeeeee", [{"item": NO_HISTORY, "prompts": 50, "main": {OPUS: cc(99, 99, 99, 99, 99)}}])
+    code, out, err = cost_run(repo, capsys, w["ep"])
+    assert code == 0 and NO_HISTORY in err and "no git history" in err and NO_HISTORY not in out, (out, err)
+    assert "requests 99" not in out
+    one = cost_json(repo, capsys, w["sp"])
+    assert one["unresolved"] == [NO_HISTORY] and one["prompts"] == 14 and NO_HISTORY not in one["by_item"]
+
+
+def test_backlog_cost_closed_id_with_no_history_stays_out_and_is_named(closed, capsys):
+    check_closed_unresolved(closed, capsys)
+
+
+def real_scope_wrapped(bl, iid):
+    ids = {iid, *bl.descendants(iid)}
+    if bl.items[iid].get("kind") == "sprint":
+        ids |= set(bl.sprint_items(iid))
+    return ids
+
+
+def test_backlog_cost_closed_planted_failure_of_an_unresolved_id_counted_is_caught(closed, capsys, monkeypatch):
+    monkeypatch.setattr(backlog, "cost_scope", lambda bl, iid: {*real_scope_wrapped(bl, iid), NO_HISTORY})
+    with pytest.raises(AssertionError):
+        check_closed_unresolved(closed, capsys)
+
+
+def test_backlog_cost_closed_planted_failure_of_an_unresolved_id_unnamed_is_caught(closed, capsys, monkeypatch):
+    real = backlog.cost_report
+    monkeypatch.setattr(backlog, "cost_report", lambda bl, iid: {**real(bl, iid), "unresolved": []})
+    with pytest.raises(AssertionError):
+        check_closed_unresolved(closed, capsys)
+
+
+def clone_shallow(w, tmp_path):
+    """A depth-1 clone of the closed repository: its history holds one commit, none that deleted an item file."""
+    dst = tmp_path / "shallow"
+    sh(tmp_path, "git", "clone", "-q", "--depth", "1", Path(w["repo"]).as_uri(), str(dst))
+    return dst
+
+
+def check_closed_unreadable_history(w, capsys, repo):
+    """The epic's file is there, its deleted items are not readable: zeros, the ids named, exit 0, no crash."""
+    code, out, err = cost_run(repo, capsys, w["ep"])
+    assert code == 0 and "0 run(s)" in out and "from git history" not in out, (out, err)
+    for k in ("sp", "st", "tk", "bg", "sb"):
+        assert w[k] in err, err
+    assert cost_run(repo, capsys, w["sp"])[0] == 2  # the closed sprint itself has no file and no history
+
+
+def test_backlog_cost_closed_shallow_clone_names_the_ids_and_does_not_crash(closed, capsys, tmp_path):
+    check_closed_unreadable_history(closed, capsys, clone_shallow(closed, tmp_path))
+
+
+def test_backlog_cost_closed_git_missing_names_the_ids_and_does_not_crash(closed, capsys, monkeypatch):
+    real = subprocess.run
+
+    def no_git(argv, *a, **kw):
+        if argv[:1] == ["git"]:
+            raise FileNotFoundError("git")
+        return real(argv, *a, **kw)
+
+    monkeypatch.setattr(backlog.subprocess, "run", no_git)
+    check_closed_unreadable_history(closed, capsys, closed["repo"])
+
+
+def test_backlog_cost_closed_git_failing_names_the_ids_and_does_not_crash(closed, capsys, monkeypatch):
+    real = subprocess.run
+
+    def failing(argv, *a, **kw):
+        if argv[:1] == ["git"]:
+            raise subprocess.TimeoutExpired(argv, 1)
+        return real(argv, *a, **kw)
+
+    monkeypatch.setattr(backlog.subprocess, "run", failing)
+    check_closed_unreadable_history(closed, capsys, closed["repo"])
+
+
+def test_backlog_cost_closed_planted_failure_of_a_crash_on_unreadable_history_is_caught(closed, capsys, tmp_path,
+                                                                                      monkeypatch):
+    def raises(root, ids):
+        raise OSError("git")
+
+    monkeypatch.setattr(backlog, "history_items", raises)
+    with pytest.raises(AssertionError):
+        check_closed_unreadable_history(closed, capsys, clone_shallow(closed, tmp_path))
+
+
+def test_backlog_cost_closed_planted_failure_of_resolving_without_history_is_caught(closed, capsys, tmp_path,
+                                                                                   monkeypatch):
+    ep = closed["ep"]
+    monkeypatch.setattr(backlog, "history_items", lambda root, ids: {i: {"kind": "task", "parent": ep} for i in ids})
+    with pytest.raises(AssertionError):
+        check_closed_unreadable_history(closed, capsys, clone_shallow(closed, tmp_path))
+
+
+def asked_of_git(w, capsys, monkeypatch, *ids):
+    """The ids `cost ID` asks git about, per call, with each call's argument list."""
+    asked = []
+
+    def spy(root, want):
+        asked.append(sorted(want))
+        return real_history_items(root, want)
+
+    monkeypatch.setattr(backlog, "history_items", spy)
+    for i in ids:
+        cost_json(w["repo"], capsys, i)
+    return asked
+
+
+def check_closed_asked_once(w, capsys, monkeypatch):
+    asked = asked_of_git(w, capsys, monkeypatch, w["st"])
+    flat = [i for call in asked for i in call]
+    assert len(flat) == len(set(flat)), asked  # one lookup per distinct id
+    assert len(asked) == 2 and w["tk2"] in asked[1] and w["ep"] not in flat, asked  # an item with a file is never asked
+
+
+def test_backlog_cost_closed_asks_git_once_per_id(closed, capsys, monkeypatch):
+    check_closed_asked_once(closed, capsys, monkeypatch)
+
+
+def test_backlog_cost_closed_planted_failure_of_a_second_lookup_is_caught(closed, capsys, monkeypatch):
+    real = backlog.cost_view
+
+    def twice(bl, ids):
+        backlog.history_items(bl.root, [i for i in ids if i not in bl.items])
+        return real(bl, ids)
+
+    monkeypatch.setattr(backlog, "cost_view", twice)
+    with pytest.raises(AssertionError):
+        check_closed_asked_once(closed, capsys, monkeypatch)
+
+
+def test_backlog_cost_closed_history_parse_takes_the_newest_deletion_and_skips_a_broken_one():
+    text = "\n".join([
+        "diff --git a/kb/_self/backlog/TK-aaaaaaab.json b/kb/_self/backlog/TK-aaaaaaab.json",
+        "deleted file mode 100644", "--- a/kb/_self/backlog/TK-aaaaaaab.json", "+++ /dev/null", "@@ -1,3 +0,0 @@",
+        '-{', '-  "id": "new"', '-}',
+        "diff --git a/kb/_self/backlog/TK-aaaaaaab.json b/kb/_self/backlog/TK-aaaaaaab.json",
+        "deleted file mode 100644", "@@ -1,3 +0,0 @@", '-{', '-  "id": "old"', '-}',
+        "diff --git a/kb/_self/backlog/TK-aaaaaaac.json b/kb/_self/backlog/TK-aaaaaaac.json",
+        "deleted file mode 100644", "@@ -1 +0,0 @@", "-not json", "\\ No newline at end of file",
+    ])
+    assert backlog.history_parse(text) == {"TK-aaaaaaab": {"id": "new"}}
+
+
+def test_backlog_cost_closed_history_items_of_no_ids_runs_no_git(monkeypatch):
+    monkeypatch.setattr(backlog.subprocess, "run", lambda *a, **kw: pytest.fail("git ran"))
+    assert backlog.history_items(".", []) == {} and backlog.history_items(".", ["../x", "not an id"]) == {}

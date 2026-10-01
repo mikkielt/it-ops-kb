@@ -109,7 +109,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           direct (the item lines' main) and attributed (their routed subagents'
                                           sub). Shared lines, the session total and overhead are not printed yet.
                                           --runs lists each run's line apart; json gives the same numbers. No
-                                          sidecar: zeros, exit 0; an unknown id: exit 2
+                                          sidecar: zeros, exit 0; an unknown id: exit 2. An item whose file is gone
+                                          (deleted at sprint close, a closed sprint included) is read from its last
+                                          version in git history; an id with none is named on stderr, left out
   backlog.py red-pipeline [--status [--job J]|--hook]   the newest pipeline of origin's main in which a job ran
                                           (--job: in which job J ran; the newest finished one when none did; glab
                                           api, gh on GitHub; a note when neither is signed in), on GitLab read by its
@@ -2746,7 +2748,9 @@ def hook_intake(bl, a, budget=None):
 # for an item and its descendants: tokens per model, the counts of its own prompts (direct, the `main` of its lines)
 # apart from those of the subagents routed to it (attributed, the `sub`), cache writes (cw) as a figure of their own.
 # A sprint line (`item: SP-...`) is the sprint's, and a shared line is its session's, not an item's. Reads no
-# command text, session or prompt id: the sidecar has none.
+# command text, session or prompt id: the sidecar has none. An id with a line and no item file (deleted at sprint close)
+# is resolved from the last version of its file in git history (`history_items`), so the totals of its ancestors and
+# of its sprint, open or closed, include its lines.
 COST_KEYS = ("requests", "in", "cw", "cw1h", "cr", "out")
 # one entry per figure group a cost report prints: (report key, sidecar field, label); a later total adds an entry
 COST_GROUPS = (("direct", "main", "direct (main)"), ("attributed", "sub", "attributed (sub)"))
@@ -2770,9 +2774,10 @@ def cost_models(w, field):
 
 
 def cost_lines(root, ids):
-    """([line], [skipped run id]): the item lines of the work sidecars under root/kb/_querylog that name one of `ids`,
-    each {run, item, prompts, <report key>: {model: counts}}, oldest run first; a sidecar that breaks the store's
-    work gates (`ql_store.work_line_problems`) is skipped whole and named, so a bad file never skews a sum."""
+    """([line], [skipped run id]): the item lines of the work sidecars under root/kb/_querylog that name one of `ids`
+    (every item line when `ids` is None), each {run, item, prompts, <report key>: {model: counts}}, oldest run first;
+    a sidecar that breaks the store's work gates (`ql_store.work_line_problems`) is skipped whole and named, so a bad
+    file never skews a sum."""
     import ql_store
     out, skipped = [], []
     for p in ql_store.work_files(Path(root) / "kb" / "_querylog"):
@@ -2785,7 +2790,7 @@ def cost_lines(root, ids):
             skipped.append(p.stem)
             continue
         for w in lines:
-            if w.get("item") in ids:  # a shared line has `items`, no `item`
+            if "item" in w and (ids is None or w["item"] in ids):  # a shared line has `items`, no `item`
                 out.append({"run": p.stem, "item": w["item"], "prompts": w["prompts"],
                             **{key: cost_models(w, field) for key, field, _ in COST_GROUPS}})
     return out, skipped
@@ -2799,11 +2804,90 @@ def cost_scope(bl, iid):
     return ids
 
 
+HISTORY_CHUNK = 100  # item files named in one `git log`, so the command line stays short on every OS
+HISTORY_TIMEOUT_S = 60
+
+
+def history_parse(text):
+    """{id: item JSON} from the patch text of `git log -p --diff-filter=D` over item files, newest deletion first: the
+    removed lines of each deleted file, the first (newest) deletion of an id kept; a version that is not a JSON
+    object is left out."""
+    body, cur, hunk = {}, None, False
+    for ln in text.splitlines():
+        if ln.startswith("diff --git "):
+            m = re.search(r"/([^/ ]+)\.json$", ln)
+            cur = m.group(1) if m and m.group(1) not in body else None
+            hunk = False
+            if cur:
+                body[cur] = []
+        elif cur and ln.startswith("@@"):
+            hunk = True
+        elif cur and hunk and ln.startswith("-"):
+            body[cur].append(ln[1:])
+    out = {}
+    for iid, rows in body.items():
+        try:
+            it = json.loads("\n".join(rows))
+        except ValueError:
+            continue
+        if isinstance(it, dict):
+            out[iid] = it
+    return out
+
+
+def history_items(root, ids):
+    """{id: the last version of its item file} for the ids whose file git history shows deleted: one `git log --all`
+    per `HISTORY_CHUNK` ids, run in `root` (a worktree shares its history). An id with no deletion in the history
+    this clone holds (never committed, or a shallow clone cut it) is absent; git missing, failing or timing out
+    leaves the chunk's ids absent, never an error."""
+    found = {}
+    ids = sorted({i for i in ids if ID_RE.fullmatch(i)})
+    for n in range(0, len(ids), HISTORY_CHUNK):
+        paths = [f"{REL_DIR}/{i}.json" for i in ids[n:n + HISTORY_CHUNK]]
+        argv = ["git", "--literal-pathspecs", "-C", str(root), "log", "--all", "--diff-filter=D", "--no-renames",
+                "--no-ext-diff", "--no-textconv", "--format=", "-p", "--", *paths]
+        try:
+            p = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                               timeout=HISTORY_TIMEOUT_S)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if p.returncode == 0:
+            found.update(history_parse(p.stdout))
+    return found
+
+
+def cost_view(bl, ids):
+    """(view, {id: item} restored from history, [id asked of history and not found]): a copy of `bl` whose items also
+    hold each of `ids` that has no item file (and, in turn, the parent of each such item that has none), so the
+    parent chain and the sprint of an item deleted at sprint close resolve. An id is asked of git once per run."""
+    view = copy.copy(bl)
+    view.items = dict(bl.items)
+    restored, asked = {}, set()
+    want = {i for i in ids if i not in view.items}
+    while want:
+        asked |= want
+        got = history_items(bl.root, want)
+        restored.update(got)
+        view.items.update(got)
+        want = {it["parent"] for it in got.values() if isinstance(it.get("parent"), str)} - asked - set(view.items)
+    return view, restored, sorted(asked - set(restored))
+
+
 def cost_report(bl, iid):
-    """The report of `cost ID`: {id, items, runs, prompts, <report key>: {model: counts}, by_item, run_lines, skipped}."""
-    lines, skipped = cost_lines(bl.root, cost_scope(bl, iid))
+    """The report of `cost ID`: {id, items, runs, prompts, <report key>: {model: counts}, by_item, run_lines, skipped,
+    restored, unresolved, view}. `restored` are the ids in the sum whose item file is gone, read from git history;
+    `unresolved` the ids with a line (or the parents of those) that have no file and no history, left out of every
+    sum; `view` the backlog with the restored items, for labels. Raises KeyError for an id with neither a file nor
+    a history."""
+    all_lines, skipped = cost_lines(bl.root, None)
+    view, restored, unresolved = cost_view(bl, {w["item"] for w in all_lines} | {iid})
+    if iid not in view.items:
+        raise KeyError(iid)
+    keep = cost_scope(view, iid)
+    lines = [w for w in all_lines if w["item"] in keep]
     rep = {"id": iid, "runs": len({w["run"] for w in lines}), "prompts": sum(w["prompts"] for w in lines),
-           **{key: {} for key, _, _ in COST_GROUPS}, "by_item": {}, "run_lines": lines, "skipped": skipped}
+           **{key: {} for key, _, _ in COST_GROUPS}, "by_item": {}, "run_lines": lines, "skipped": skipped,
+           "unresolved": unresolved, "view": view}
     for w in lines:
         one = rep["by_item"].setdefault(w["item"], {"prompts": 0, **{key: {} for key, _, _ in COST_GROUPS}})
         one["prompts"] += w["prompts"]
@@ -2811,6 +2895,7 @@ def cost_report(bl, iid):
             cost_add(rep[key], w[key])
             cost_add(one[key], w[key])
     rep["items"] = sorted(rep["by_item"])
+    rep["restored"] = sorted((set(rep["by_item"]) | {iid}) & set(restored))
     return rep
 
 
@@ -2833,31 +2918,37 @@ def cost_block(part, indent):
 
 
 def cmd_cost(bl, a):
-    iid = need(bl, a.id)
-    rep = cost_report(bl, iid)
+    rep = cost_report(bl, a.id)
+    iid, view = rep["id"], rep["view"]
     if rep["skipped"]:
         print(f"cost: skipped sidecars that break the store's gates: {', '.join(rep['skipped'])}", file=sys.stderr)
+    if rep["unresolved"]:
+        print(f"cost: no item file and no git history for {', '.join(rep['unresolved'])}: left out of every sum",
+              file=sys.stderr)
     if a.format == "json":
-        out = {k: rep[k] for k in ("id", "items", "runs", "prompts", "by_item", "skipped", *(g[0] for g in COST_GROUPS))}
+        out = {k: rep[k] for k in ("id", "items", "runs", "prompts", "by_item", "skipped", "restored", "unresolved",
+                                   *(g[0] for g in COST_GROUPS))}
         if a.runs:
             out["run_lines"] = rep["run_lines"]
         say(json.dumps(out, sort_keys=True, indent=2))
         return 0
     n = len(rep["items"])
-    say(f"cost {bl.label(iid)}: {rep['runs']} run(s), {n} item(s) with work lines, {rep['prompts']} prompt(s)"
+    say(f"cost {view.label(iid)}: {rep['runs']} run(s), {n} item(s) with work lines, {rep['prompts']} prompt(s)"
         " (the item and its descendants)")
+    if rep["restored"]:
+        say("from git history (item file deleted): " + ", ".join(view.label(i) for i in rep["restored"]))
     for x in cost_block(rep, ""):
         say(x)
     if rep["items"] not in ([], [iid]):
         say("by item:")
         for i in rep["items"]:
-            say(f"  {bl.label(i)}: {rep['by_item'][i]['prompts']} prompt(s)")
+            say(f"  {view.label(i)}: {rep['by_item'][i]['prompts']} prompt(s)")
             for x in cost_block(rep["by_item"][i], "    "):
                 say(x)
     if a.runs:
         say("runs:")
         for w in rep["run_lines"]:
-            say(f"  {w['run']}  {bl.label(w['item'])}: {w['prompts']} prompt(s)")
+            say(f"  {w['run']}  {view.label(w['item'])}: {w['prompts']} prompt(s)")
             for x in cost_block(w, "    "):
                 say(x)
     return 0
