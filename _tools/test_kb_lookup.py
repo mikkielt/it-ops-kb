@@ -602,6 +602,37 @@ class TestBacklogPrompt:
         assert len(ctx) <= kb_hook.LIMIT and "FAKE horizon" in ctx and "line 0 " in ctx and "line 299 " not in ctx
         assert len(kb_hook.respond("backlog: x")[0]["reason"]) > 10000, "the block reason is shown to the user whole"
 
+    @staticmethod
+    def every_part_problems(ctx):
+        """What a backlog+ context lacks: each command's line, a note of its left-out lines, the limit."""
+        problems = [] if len(ctx) <= kb_hook.LIMIT else [f"{len(ctx)} characters, over LIMIT"]
+        for args in kb_hook.BACKLOG_COMMANDS:
+            shown = "backlog.py " + " ".join(args)
+            if f"$ {shown}\nFAKE {' '.join(args)}\nline 0 " not in ctx:
+                problems.append(f"no output of {shown}")
+            if f"more line(s): run `{shown}` for all of them" not in ctx:
+                problems.append(f"no note of the lines of {shown} left out")
+        return problems
+
+    def test_backlog_hook_keeps_every_part(self, tmp_path, monkeypatch):
+        # each command alone fills the limit (as horizon did once seven sprints were active): both keep a share
+        self.fake(tmp_path, monkeypatch, long=200)
+        ctx = kb_hook.respond("backlog+: x")[0]["hookSpecificOutput"]["additionalContext"]
+        assert self.every_part_problems(ctx) == [], ctx[-400:]
+        # a short part leaves its unused share to the long one, uncut
+        assert kb_hook.fit_blocks([("a", "$ a\nshort"), ("b", "$ b\n" + "y\n" * 50)], 80).startswith("$ a\nshort\n\n$ b\n")
+
+    def test_backlog_hook_keeps_every_part_planted_failure(self, tmp_path, monkeypatch):
+        def cut_from_the_end(blocks, budget):  # the old cut: lines popped from the end of the joined output
+            lines = "\n\n".join(text for _, text in blocks).splitlines()
+            while lines and len("\n".join(lines)) > budget:
+                lines.pop()
+            return "\n".join(lines)
+        self.fake(tmp_path, monkeypatch, long=200)
+        monkeypatch.setattr(kb_hook, "fit_blocks", cut_from_the_end)
+        ctx = kb_hook.respond("backlog+: x")[0]["hookSpecificOutput"]["additionalContext"]
+        assert "no output of backlog.py next --all --any" in self.every_part_problems(ctx)
+
     def test_backlog_prompt_command_that_fails_never_blocks_the_prompt(self, tmp_path, monkeypatch):
         self.fake(tmp_path, monkeypatch, fail=True)
         for prompt in ("backlog: x", "backlog+: x"):
