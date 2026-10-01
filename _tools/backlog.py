@@ -3136,13 +3136,16 @@ def hook_intake(bl, a, budget=None):
 # `cost ID`: what the query log's work sidecars (kb/_querylog/work/<yyyy-mm>/<run-id>.jsonl, written by distill) hold
 # for an item and its descendants: tokens per model, the counts of its own prompts (direct, the `main` of its lines)
 # apart from those of the subagents routed to it (attributed, the `sub`), cache writes (cw) as a figure of their own.
-# A sprint line (`item: SP-...`) is the sprint's, and a shared line is its session's, not an item's. Reads no
-# command text, session or prompt id: the sidecar has none. An id with a line and no item file (deleted at sprint close)
+# A sprint line (`item: SP-...`) is the sprint's, and a shared line (`items`: the ids its session claimed) is its
+# session's, not an item's: its counts, `main` and `sub` together, are the `shared` figure of a report, counted once
+# for every line that names any id in the report's scope, never once per item it names, and the session total is
+# direct + attributed + shared (`cost_report`). Reads no command text, session or prompt id: the sidecar has none. An id with a line and no item file (deleted at sprint close)
 # is resolved from the last version of its file in git history (`history_items`), so the totals of its ancestors and
 # of its sprint, open or closed, include its lines.
 COST_KEYS = ("requests", "in", "cw", "cw1h", "cr", "out")
 # one entry per figure group a cost report prints: (report key, sidecar field, label); a later total adds an entry
 COST_GROUPS = (("direct", "main", "direct (main)"), ("attributed", "sub", "attributed (sub)"))
+COST_SHARED, COST_TOTAL = "shared", "session_total"  # the report's figures beside COST_GROUPS, never an item's own
 
 
 def cost_add(total, models):
@@ -3163,9 +3166,10 @@ def cost_models(w, field):
 
 
 def cost_lines(root, ids):
-    """([line], [skipped run id]): the item lines of the work sidecars under root/kb/_querylog that name one of `ids`
-    (every item line when `ids` is None), each {run, item, prompts, <report key>: {model: counts}}, oldest run first;
-    a sidecar that breaks the store's work gates (`ql_store.work_line_problems`) is skipped whole and named, so a bad
+    """([line], [skipped run id]): the lines of the work sidecars under root/kb/_querylog that name one of `ids`
+    (every line when `ids` is None), oldest run first: an item line {run, item, prompts, <report key>: {model:
+    counts}}, and a shared line {run, items, prompts, shared: {model: counts}} (its `main` and `sub` together) that
+    names one of `ids` among its `items`; a sidecar that breaks the store's work gates (`ql_store.work_line_problems`) is skipped whole and named, so a bad
     file never skews a sum."""
     import ql_store
     out, skipped = [], []
@@ -3182,6 +3186,11 @@ def cost_lines(root, ids):
             if "item" in w and (ids is None or w["item"] in ids):  # a shared line has `items`, no `item`
                 out.append({"run": p.stem, "item": w["item"], "prompts": w["prompts"],
                             **{key: cost_models(w, field) for key, field, _ in COST_GROUPS}})
+            elif "items" in w and (ids is None or ids.intersection(w["items"])):
+                both = {}
+                for _, field, _ in COST_GROUPS:
+                    cost_add(both, cost_models(w, field))
+                out.append({"run": p.stem, "items": w["items"], "prompts": w["prompts"], COST_SHARED: both})
     return out, skipped
 
 
@@ -3263,26 +3272,36 @@ def cost_view(bl, ids):
 
 
 def cost_report(bl, iid):
-    """The report of `cost ID`: {id, items, runs, prompts, <report key>: {model: counts}, by_item, run_lines, skipped,
-    restored, unresolved, view}. `restored` are the ids in the sum whose item file is gone, read from git history;
+    """The report of `cost ID`: {id, items, runs, prompts, <report key>: {model: counts}, shared, session_total,
+    shared_prompts, by_item, run_lines, shared_lines, skipped, restored, unresolved, view}. `shared` sums the shared
+    lines that name any id in the scope, each line once however many of its items are in it (and so once for an
+    epic or a sprint), and `session_total` is direct + attributed + shared; `by_item` and `run_lines` hold item
+    lines only, so a shared line is in no item's own row. `restored` are the ids in the sum whose item file is gone, read from git history;
     `unresolved` the ids with a line (or the parents of those) that have no file and no history, left out of every
     sum; `view` the backlog with the restored items, for labels. Raises KeyError for an id with neither a file nor
     a history."""
     all_lines, skipped = cost_lines(bl.root, None)
-    view, restored, unresolved = cost_view(bl, {w["item"] for w in all_lines} | {iid})
+    named = {i for w in all_lines for i in (w["items"] if "items" in w else [w["item"]])}
+    view, restored, unresolved = cost_view(bl, named | {iid})
     if iid not in view.items:
         raise KeyError(iid)
     keep = cost_scope(view, iid)
-    lines = [w for w in all_lines if w["item"] in keep]
+    lines = [w for w in all_lines if w.get("item") in keep]
+    shared = [w for w in all_lines if keep.intersection(w.get("items", ()))]  # each line once, however many items
     rep = {"id": iid, "runs": len({w["run"] for w in lines}), "prompts": sum(w["prompts"] for w in lines),
-           **{key: {} for key, _, _ in COST_GROUPS}, "by_item": {}, "run_lines": lines, "skipped": skipped,
-           "unresolved": unresolved, "view": view}
+           **{key: {} for key, _, _ in COST_GROUPS}, COST_SHARED: {}, COST_TOTAL: {},
+           "shared_prompts": sum(w["prompts"] for w in shared), "by_item": {}, "run_lines": lines,
+           "shared_lines": shared, "skipped": skipped, "unresolved": unresolved, "view": view}
     for w in lines:
         one = rep["by_item"].setdefault(w["item"], {"prompts": 0, **{key: {} for key, _, _ in COST_GROUPS}})
         one["prompts"] += w["prompts"]
         for key, _, _ in COST_GROUPS:
             cost_add(rep[key], w[key])
             cost_add(one[key], w[key])
+    for w in shared:
+        cost_add(rep[COST_SHARED], w[COST_SHARED])
+    for key in (*(g[0] for g in COST_GROUPS), COST_SHARED):
+        cost_add(rep[COST_TOTAL], rep[key])
     rep["items"] = sorted(rep["by_item"])
     rep["restored"] = sorted((set(rep["by_item"]) | {iid}) & set(restored))
     return rep
@@ -3299,8 +3318,13 @@ def cost_figures(models, indent):
 
 
 def cost_block(part, indent):
+    """The figure groups of `part`; a report (it has COST_SHARED) also prints shared and the session total."""
     out = []
-    for key, _, label in COST_GROUPS:
+    groups = [(key, label) for key, _, label in COST_GROUPS]
+    if COST_SHARED in part:
+        groups += [(COST_SHARED, f"shared (outside any window, {part['shared_prompts']} prompt(s))"),
+                   (COST_TOTAL, "session total (direct + attributed + shared)")]
+    for key, label in groups:
         out.append(f"{indent}{label}:")
         out += cost_figures(part[key], indent + "  ")
     return out
@@ -3315,10 +3339,11 @@ def cmd_cost(bl, a):
         print(f"cost: no item file and no git history for {', '.join(rep['unresolved'])}: left out of every sum",
               file=sys.stderr)
     if a.format == "json":
-        out = {k: rep[k] for k in ("id", "items", "runs", "prompts", "by_item", "skipped", "restored", "unresolved",
-                                   *(g[0] for g in COST_GROUPS))}
+        out = {k: rep[k] for k in ("id", "items", "runs", "prompts", "shared_prompts", "by_item", "skipped", "restored",
+                                   "unresolved", COST_SHARED, COST_TOTAL, *(g[0] for g in COST_GROUPS))}
         if a.runs:
             out["run_lines"] = rep["run_lines"]
+            out["shared_lines"] = rep["shared_lines"]
         say(json.dumps(out, sort_keys=True, indent=2))
         return 0
     n = len(rep["items"])
@@ -3335,6 +3360,11 @@ def cmd_cost(bl, a):
             for x in cost_block(rep["by_item"][i], "    "):
                 say(x)
     if a.runs:
+        say("shared lines (one per session):")
+        for w in rep["shared_lines"]:
+            say(f"  {w['run']}  {', '.join(view.label(i) for i in w['items'])}: {w['prompts']} prompt(s)")
+            for x in cost_figures(w[COST_SHARED], "    "):
+                say(x)
         say("runs:")
         for w in rep["run_lines"]:
             say(f"  {w['run']}  {view.label(w['item'])}: {w['prompts']} prompt(s)")
