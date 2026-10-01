@@ -2,7 +2,7 @@
   "id": "TK-qdx3oo6c",
   "kind": "task",
   "title": "Trailer detector",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-qouhlhni",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/bl_intake.py",
     "_tools/test_intake.py"
-  ]
+  ],
+  "claimed_by": "worker-qdx3oo6c"
 }
