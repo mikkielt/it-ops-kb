@@ -20,7 +20,8 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "worker-nb6gbc3x"
 }
