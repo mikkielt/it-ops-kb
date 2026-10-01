@@ -80,7 +80,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           stress_test.py, rag.py eval and the lint when the landing changes _tools/,
                                           kbgit.py sync --push; an item with a code-lane commit not on that main:
                                           those checks and sync --push (the code/<id> merge request), and a re-run
-                                          once it has merged ends as a content item does. Stops at the first failing
+                                          once it has merged ends as a content item does. A re-run before the merge
+                                          says it waits, and when the request is open, mergeable, set to auto-merge
+                                          and its pipeline was skipped (GitLab, glab signed in; else nothing more),
+                                          names the glab mr merge command that merges it. Stops at the first failing
                                           step, naming it (exit 1); a failed rebase is aborted
   backlog.py drop ID --why TEXT          status dropped (an item outside any sprint is deleted: git keeps it)
   backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo;
@@ -2047,6 +2050,59 @@ def checked_out_elsewhere(root, branch):
     return None
 
 
+# head pipeline states after which GitLab's auto-merge ("merge when the pipeline succeeds") never fires
+STUCK_PIPELINES = ("skipped",)
+
+
+def mr_stuck(mr):
+    """True for a GitLab merge request, as the single-request API (`projects/:id/merge_requests/:iid`) answers it,
+    that is open, mergeable (`detailed_merge_status` mergeable; `merge_status` can_be_merged on a GitLab without the
+    detailed field), set to auto-merge, and whose head pipeline ended in a state in STUCK_PIPELINES: auto-merge waits
+    for a pipeline to succeed, which a skipped one never does, so the request sits until someone merges it."""
+    if not isinstance(mr, dict):
+        return False
+    pipe = mr.get("head_pipeline") if isinstance(mr.get("head_pipeline"), dict) else {}
+    detailed = mr.get("detailed_merge_status")
+    mergeable = detailed == "mergeable" if detailed is not None else mr.get("merge_status") == "can_be_merged"
+    return (mr.get("state") == "opened" and mr.get("merge_when_pipeline_succeeds") is True and mergeable
+            and pipe.get("status") in STUCK_PIPELINES)
+
+
+def stuck_merge_request(root, remote, branch):
+    """The line land adds while it waits for the merge request of BRANCH: when an open request of BRANCH into main on
+    REMOTE's GitLab is stuck (`mr_stuck`), it names the request and the command that merges it. None when no request
+    is stuck, and also, saying nothing, when it cannot tell: a remote that is a local path, a forge that is not GitLab,
+    glab not signed in, a failed or unreadable call."""
+    import urllib.parse
+    from ql_deliver import forge_list, origin_forge
+    code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
+    url = (url or "").strip()
+    if code or not url or url.lower().startswith("file:") or Path(url).exists():
+        return None  # a local remote names no forge
+    forge, host, project = origin_forge(url)
+    if forge != "gitlab":
+        return None
+    quoted = urllib.parse.quote(project, safe="")
+    listed, _, _ = forge_list(url, run, None, lambda p: (
+        f"projects/{p}/merge_requests?state=opened&source_branch={urllib.parse.quote(branch, safe='')}"
+        f"&target_branch=main&per_page=20"))
+    for summary in listed or []:
+        iid = summary.get("iid") if isinstance(summary, dict) else None
+        if not isinstance(iid, int):
+            continue
+        code, out, _ = run(["glab", "api", "--hostname", host, f"projects/{quoted}/merge_requests/{iid}"])
+        try:
+            mr = json.loads(out) if code == 0 else None
+        except ValueError:
+            mr = None
+        if mr_stuck(mr):
+            status = mr["head_pipeline"].get("status")
+            return (f"land: merge request !{iid} ({mr.get('web_url') or branch}) is mergeable and set to auto-merge, "
+                    f"but its pipeline was {status}, so auto-merge will not fire: merge it with "
+                    f"glab mr merge {iid} --auto-merge=false --yes -R https://{host}/{project}")
+    return None
+
+
 def cmd_land(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
     heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the heavy checks, sync
@@ -2089,6 +2145,9 @@ def cmd_land(bl, a):
         if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
             say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
                 f"pushed with this content): merge it, then run backlog.py land {iid} again")
+            stuck = stuck_merge_request(root, remote, code_branch)
+            if stuck:
+                say(stuck)
             return 0
     if not late:
         if bl.items[iid].get("status") == "done":
