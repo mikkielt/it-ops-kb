@@ -120,12 +120,23 @@ the ql_*.py modules beside it.
                         open source findings of the committed store, most result characters first; open merge
                         requests from querylog/ branches on origin's forge (glab or gh, skipped with a note when not
                         signed in); automatic commits reverted (KB-Auto: revert in git log). Exit 0
+  querylog.py show (--run ID | --entry ID | --findings [--kind K] [--article A] [--state S] | --usage RUN | --spool)
+                        [--limit N] [--store DIR]
+                        one point of the query log's state, read-only, from the committed store (default
+                        kb/_querylog) or DIR, with no model and no network, and never more than the store holds:
+                        --run one run file (header, usage sidecar yes or no, one line per entry), --entry one entry
+                        with its findings and whether it has usage, --findings each finding's last record under the
+                        filters, --usage one run's sidecar (input, cache and output tokens per entry), --spool the
+                        local spool by file and kind of row, never a row's text. An id may be its start when that
+                        names one. Lists stop after SHOW_LIMIT lines unless --limit says (0: all). Exit 0 (an
+                        empty answer too), 2 refused (an unknown or ambiguous id, a bad kind, state or article, a
+                        filter without --findings, --store with --spool), the rule on stderr
 
 Modules: ql_base.py (places, config, the lock, commands), ql_capture.py (the capture hook and `record`, which
 kb_hook.py, kb_ask.py, fetch.py and census.py call), ql_distill.py (distill and the launcher), ql_store.py (run and
 findings files, and the store gates), ql_learn.py, ql_apply.py, ql_research.py (research, the quote check and the
 research queue),
-ql_deliver.py (apply --push, plugin hosts, cloud sessions) and ql_report.py (digest and status).
+ql_deliver.py (apply --push, plugin hosts, cloud sessions) and ql_report.py (digest, status and show).
 
 Where (querylog.md, Spool and Configuration): in a clone `_cache/querylog/spool/<session_id>.jsonl` (rows without a
 session: `tools-<yyyy-mm-dd>.jsonl`), the config file `_private/querylog.json` and the marker
@@ -254,6 +265,25 @@ def main(argv=None):
             return 2
         print("\n".join(lines))
         return 0
+    if argv[:1] == ["show"]:
+        ap = argparse.ArgumentParser(prog="querylog.py show")
+        what = ap.add_mutually_exclusive_group(required=True)
+        what.add_argument("--run", metavar="ID", help="one run file: its header and its entries (an id or its start)")
+        what.add_argument("--entry", metavar="ID", help="one entry, its findings and whether it has usage")
+        what.add_argument("--findings", action="store_true", help="each finding's last record, under the filters")
+        what.add_argument("--usage", metavar="RUN", help="one run's usage sidecar, one line per entry")
+        what.add_argument("--spool", action="store_true", help="the local spool: its files and rows by kind, no text")
+        ap.add_argument("--kind", help="with --findings: only this kind (eval, alias, expansion, gap, source)")
+        ap.add_argument("--article", help="with --findings: only the findings of this article, a path or its tail")
+        ap.add_argument("--state", help="with --findings: only this state (open, fixed-since, applied, ...)")
+        ap.add_argument("--limit", type=int, default=None, help="lines of a list to print (default: SHOW_LIMIT; "
+                        "0: all)")
+        ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")
+        a = ap.parse_args(argv[1:])
+        import ql_report
+        return ql_report.show(a.store, run=a.run, entry=a.entry, findings=a.findings, usage=a.usage, spool=a.spool,
+                              kind=a.kind, article=a.article, state=a.state,
+                              limit=ql_report.SHOW_LIMIT if a.limit is None else a.limit)
     if argv[:1] == ["status"]:
         ap = argparse.ArgumentParser(prog="querylog.py status")
         ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")

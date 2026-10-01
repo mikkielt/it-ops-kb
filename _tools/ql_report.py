@@ -1,7 +1,7 @@
 """The query log's reporting (kb/_self/querylog.md, Reporting): the weekly digest of the committed store, shown once
-per ISO week by a SessionStart hook, and `status` (open source findings, open conflict merge requests, reverted
-automatic commits). Only the store and the week go into the digest, so every clone at one commit prints the same
-lines.
+per ISO week by a SessionStart hook, `status` (open source findings, open conflict merge requests, reverted
+automatic commits) and `show` (one run, entry, usage sidecar, the findings under a filter, or the local spool). Only
+the store and the week go into the digest, so every clone at one commit prints the same lines.
 """
 import datetime, json, math, re, sys, time
 from pathlib import Path
@@ -9,8 +9,9 @@ from pathlib import Path
 from ql_base import HOME, STORE, logging_off, places, run_cmd, write_text
 from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_list, origin_forge
 from ql_learn import FAILED, host_fetches, is_miss
-from ql_store import (FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, RUN_ID, SURFACES, finding_id,
-                      finding_states, findings_files, load_run, records, run_files, store_entries, usage_records)
+from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RUN_ID,
+                      SURFACES, finding_id, finding_states, findings_files, load_run, records, resolve_id, run_files,
+                      run_ids, store_entries, usage_files, usage_records)
 from ql_capture import VERDICTS
 
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
@@ -313,3 +314,248 @@ def status(store=None, home=None, run=None, out=print):
     for h, subject in reverts:
         out(f"  {h} {subject}")
     return 0
+
+
+# ---------------------------------------------------------------- show (Reporting, Show)
+
+SHOW_LIMIT = 40  # lines of a list `show` prints unless --limit says otherwise
+SHOW_ID = re.compile(r"[0-9A-Za-z-]{1,40}")  # a run id, an entry id, or the start of one
+SHOW_ARTICLE = re.compile(r"[\w.-]+(?:/[\w.-]+)*")  # an article path or its tail, `laps.md` included
+SHOW_QUESTION_CHARS = 80  # the question a run's entry list keeps of each entry
+FINDING_FIELDS = ("expect", "article", "terms", "tried", "signal", "host", "level", "needs", "triggers", "tool",
+                  "route")  # what `show --findings` prints of a record besides its id, kind, state, stage and entry
+
+
+class ShowRefused(ValueError):
+    """A request `show` refuses: exit 2, the rule in the message."""
+
+
+def _flat(v):
+    """A value on one line: a string as it is, a list of strings joined by commas, anything else as compact JSON."""
+    if isinstance(v, str):
+        return " ".join(v.split())
+    if isinstance(v, list) and all(isinstance(x, str) for x in v):
+        return ", ".join(" ".join(x.split()) for x in v)
+    return json.dumps(v, ensure_ascii=False, separators=(",", ":"))
+
+
+def _capped(lines, limit, hint, out):
+    """Print `lines`, at most `limit` of them (0: all), then one line saying how many were left out."""
+    for line in lines if not limit else lines[:limit]:
+        out(line)
+    if limit and len(lines) > limit:
+        out(f"... {len(lines) - limit} more ({hint})")
+
+
+def _pick(names, given, what):
+    """The one name of `names` that `given` is or starts with, else ShowRefused with the rule."""
+    if not SHOW_ID.fullmatch(given):
+        raise ShowRefused(f"{what} {given!r} is not an id: it is letters, digits and hyphens, up to 40 characters")
+    found, hits = resolve_id(names, given)
+    if found is None and not hits:
+        raise ShowRefused(f"unknown {what} {given!r}: no {what} id of the store starts with it")
+    if found is None:
+        more = f", {len(hits) - 3} more" if len(hits) > 3 else ""
+        raise ShowRefused(f"{what} {given!r} is ambiguous: {len(hits)} ids start with it ({', '.join(hits[:3])}{more});"
+                          " give more characters")
+    return found
+
+
+def _read(p):
+    """[(line number, object)] of a store file, ShowRefused naming the file when it does not read."""
+    try:
+        return load_run(p)
+    except (OSError, ValueError) as e:
+        raise ShowRefused(f"{p.name} does not read ({type(e).__name__}): run `querylog.py check`") from None
+
+
+def _rank(r):
+    return FINDING_KINDS.index(r["kind"]) if r.get("kind") in FINDING_KINDS else len(FINDING_KINDS), str(r.get("id"))
+
+
+def _entry_line(e):
+    cites = e.get("citations")
+    return (f"  {e.get('id')} {e.get('surface', '-')} {e.get('day', '-')} {e.get('verdict', '-')} "
+            f"{e.get('judged', '-')} {len(cites) if isinstance(cites, list) else 0} lines  "
+            f"{_flat(e.get('question', ''))[:SHOW_QUESTION_CHARS]}").rstrip()
+
+
+def _finding_line(r, entry=True):
+    fields = " ".join(f"{k}={_flat(r[k])}" for k in FINDING_FIELDS if k in r)
+    return " ".join(x for x in (str(r.get("id")), str(r.get("kind")), str(r.get("state")),
+                                f"stage={r['stage']}" if "stage" in r else "",
+                                f"entry={r['entry']}" if entry and "entry" in r else "", fields) if x)
+
+
+def show_run(store, given, limit, out):
+    """One run file: its header, whether it has a usage sidecar, and one line per entry (id, surface, day, verdict,
+    judged, citation count, the question's start)."""
+    path = {p.stem: p for p in run_files(store)}
+    run = _pick(sorted(path), given, "run")
+    objs = _read(path[run])
+    head = objs[0][1] if objs else {}
+    counts = head.get("counts") if isinstance(head.get("counts"), dict) else {}
+    out(f"run {run}: pipeline {head.get('pipeline', '-')}, retrieval {head.get('retrieval', '-')}, "
+        f"kb_commit {str(head.get('kb_commit', '-'))[:12]}")
+    out("counts: " + (_counts(counts.items()) or "none"))
+    out("usage sidecar: " + ("yes" if any(p.stem == run for p in usage_files(store)) else "no"))
+    lines = [_entry_line(e) for _, e in objs[1:]]
+    out(f"entries: {len(lines)}")
+    _capped(lines, limit, "--limit 0 prints all", out)
+
+
+def show_entry(store, given, out):
+    """One entry with every field it holds, the findings that name it and whether it has usage."""
+    found = {e["id"]: (r, e) for r, e in store_entries(store)}
+    entry_id = _pick(sorted(found), given, "entry")
+    run, e = found[entry_id]
+    out(f"entry {entry_id} (run {run})")
+    for k in ENTRY_KEYS:
+        if k == "id" or k not in e:
+            continue
+        v = e[k]
+        if k == "citations" and isinstance(v, list):
+            out(f"citations: {len(v)}")
+            for c in v:
+                c = c if isinstance(c, dict) else {}
+                out("  " + " ".join(str(c[ck]) for ck in ("line", "tag", "verdict") if ck in c))
+        elif k == "fetches" and isinstance(v, list):
+            out(f"fetches: {len(v)}")
+            for f in v:
+                f = f if isinstance(f, dict) else {}
+                out("  " + " ".join(f"{fk}={_flat(f[fk])}" for fk in FETCH_KEYS if fk in f))
+        else:
+            out(f"{k}: {_flat(v)}")
+    recs = sorted((r for r in finding_states(store).values() if r.get("entry") == entry_id), key=_rank)
+    out(f"findings: {len(recs)}")
+    for r in recs:
+        out("  " + _finding_line(r, entry=False))
+    out("usage: " + ("yes, in the usage sidecar of its run" if entry_id in usage_records(store) else "none"))
+
+
+def show_findings(store, kind, article, state, limit, out):
+    """Each finding's last record (kind order, then id) that has `kind` and `state`, and `article` as its article or
+    expected article (the whole path, or its tail after a `/`)."""
+    def has_article(r):
+        return any(isinstance(r.get(k), str) and (r[k] == article or r[k].endswith("/" + article))
+                   for k in ("article", "expect"))
+    recs = sorted((r for r in finding_states(store).values()
+                   if (kind is None or r.get("kind") == kind) and (state is None or r.get("state") == state)
+                   and (article is None or has_article(r))), key=_rank)
+    named = [f"{k} {v}" for k, v in (("kind", kind), ("article", article), ("state", state)) if v is not None]
+    out(f"findings: {len(recs)}" + (f" ({', '.join(named)})" if named else ""))
+    _capped([_finding_line(r) for r in recs], limit, "narrow with --kind, --article, --state, or --limit 0", out)
+
+
+def usage_totals(u):
+    """{in, cw, cr, out, requests, sub_in, steps} of one usage line, reading only what is a whole number."""
+    def n(c, k):
+        v = c.get(k) if isinstance(c, dict) else None
+        return v if isinstance(v, int) and not isinstance(v, bool) else 0
+
+    def models(group):
+        return list(group.values()) if isinstance(group, dict) else []
+    main = models(u.get("main"))
+    sub = [c for g in u["sub"].values() for c in models(g)] if isinstance(u.get("sub"), dict) else []
+    t = {k: sum(n(c, k) for c in main + sub) for k in ("in", "cw", "cr", "out", "requests")}
+    t["sub_in"] = sum(n(c, k) for c in sub for k in ("in", "cw", "cr"))
+    t["steps"] = len(u["steps"]) if isinstance(u.get("steps"), list) else 0
+    return t
+
+
+def show_usage(store, given, limit, out):
+    """One run's usage sidecar: its header and one line per entry with the input and output tokens."""
+    run = _pick(run_ids(store), given, "run")
+    files = [p for p in usage_files(store) if p.stem == run]
+    if not files:
+        out(f"usage {run}: no sidecar (no entry of the run had a usage row)")
+        return
+    objs = _read(files[0])
+    head = objs[0][1] if objs else {}
+    counts = head.get("counts") if isinstance(head.get("counts"), dict) else {}
+    out(f"usage {run}: reader {head.get('reader', '-')}, entries {counts.get('entries', '-')}, "
+        f"missing {counts.get('missing', '-')}")
+    lines = []
+    for _, u in objs[1:]:
+        t = usage_totals(u)
+        lines.append(f"  {u.get('id')} input {t['in'] + t['cw'] + t['cr']} (uncached {t['in']}, cache write "
+                     f"{t['cw']}, cache read {t['cr']}), output {t['out']}, requests {t['requests']}, subagents "
+                     f"input {t['sub_in']}, steps {t['steps']}"
+                     + (f" (+{u['cut']} cut)" if isinstance(u.get("cut"), int) else ""))
+    _capped(lines, limit, "--limit 0 prints all", out)
+
+
+def show_spool(out, spool=None):
+    """The local spool by file and by kind of row, never by what a row holds: the spool keeps prompts and answers as
+    typed, and what the store holds is all `show` prints. A session file is named by its number (the store holds no
+    session id), a tools file by its day; each line gives the file's rows by surface, the days they fall on, the
+    rows distill cannot read, and whether its session ended. The last line counts the rows whose id an entry of the
+    committed store carries (rows mode `auto` keeps until their run file is on origin/main)."""
+    import ql_distill
+    spool = Path(spool) if spool else places()[0] / "spool"
+    files = sorted(spool.glob("*.jsonl")) if spool.is_dir() else []
+    if not files:
+        out("spool: empty")
+        return
+    held = {e["id"] for _, e in store_entries(STORE)}
+    parsed, n_session = [], 0
+    for p in files:
+        rs, bad = ql_distill.spool_rows(p)
+        if p.name.startswith("tools-"):
+            label = "tools " + p.stem[len("tools-"):]
+        else:
+            n_session += 1
+            label = f"session {n_session}, " + ("ended" if p.with_suffix(".end").exists() else "open")
+        by = _counts((s, n) for s, n in ((s, sum(1 for r in rs if r["surface"] == s)) for s in ROW_SURFACES) if n)
+        days = sorted({r["ts"][:10] for r in rs if DAY.fullmatch(r["ts"][:10])})
+        span = f", days {days[0]}" + (f" to {days[-1]}" if days[-1] != days[0] else "") if days else ""
+        parsed.append((rs, f"  {label}: {len(rs)} rows ({by or 'none'}){span}" + (f", {bad} unreadable" if bad else "")))
+    out(f"spool: {len(files)} files, {sum(len(rs) for rs, _ in parsed)} rows")
+    for _, line in parsed:
+        out(line)
+    out(f"rows whose id the committed store holds: {sum(1 for rs, _ in parsed for r in rs if r['id'] in held)}")
+
+
+def show(store=None, run=None, entry=None, findings=False, usage=None, spool=False, kind=None, article=None,
+         state=None, limit=SHOW_LIMIT, out=print, err=None):
+    """`querylog.py show`: exactly one of `run`, `entry`, `findings`, `usage` (a run) or `spool`, read from the
+    committed store (default kb/_querylog) or `store`, never written. `kind`, `article` and `state` filter
+    `findings`. A refused request (the reason on `err`, default stderr) is 2; an answer, even an empty one, 0."""
+    err = err or (lambda s: print(s, file=sys.stderr))
+    try:
+        modes = [m for m, on in (("--run", run is not None), ("--entry", entry is not None), ("--findings", findings),
+                                 ("--usage", usage is not None), ("--spool", spool)) if on]
+        if len(modes) != 1:
+            raise ShowRefused("give one of --run, --entry, --findings, --usage or --spool"
+                              + (f", not {' and '.join(modes)}" if modes else ""))
+        if not findings and any(v is not None for v in (kind, article, state)):
+            raise ShowRefused("--kind, --article and --state filter --findings only")
+        if kind is not None and kind not in FINDING_KINDS:
+            raise ShowRefused(f"--kind {kind!r} is not a finding kind: {', '.join(FINDING_KINDS)}")
+        if state is not None and state not in FINDING_STATES:
+            raise ShowRefused(f"--state {state!r} is not a finding state: {', '.join(FINDING_STATES)}")
+        if article is not None and not SHOW_ARTICLE.fullmatch(article):
+            raise ShowRefused(f"--article {article!r} is not an article path: a path or its tail, such as "
+                              "public/windows/laps.md or laps.md")
+        if limit < 0:
+            raise ShowRefused("--limit is a number of lines, 0 or more (0 prints all)")
+        if spool:
+            if store is not None:
+                raise ShowRefused("--spool reads the local spool, which is no store: --store does not apply")
+            show_spool(out)
+            return 0
+        root = Path(store or STORE)
+        if not root.is_dir():
+            raise ShowRefused("--store names no directory: it is a store laid out as kb/_querylog")
+        if run is not None:
+            show_run(root, run, limit, out)
+        elif entry is not None:
+            show_entry(root, entry, out)
+        elif usage is not None:
+            show_usage(root, usage, limit, out)
+        else:
+            show_findings(root, kind, article, state, limit, out)
+        return 0
+    except ShowRefused as e:
+        err(f"show: refused: {e}")
+        return 2

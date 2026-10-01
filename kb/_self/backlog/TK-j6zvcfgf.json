@@ -21,7 +21,9 @@
     "_tools/querylog.py",
     "_tools/ql_store.py",
     "_tools/ql_report.py",
-    "_tools/test_ql_report.py"
+    "_tools/test_ql_report.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "worker-j6zvcfgf"
 }

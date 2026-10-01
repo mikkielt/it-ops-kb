@@ -14,7 +14,7 @@ Every kb lookup leaves a redacted, judged record in the repository, in `kb/_quer
 | learn | `_tools/ql_learn.py` | `learn` |
 | apply | `_tools/ql_apply.py` (eval rows with their fixes, the gap step), `_tools/ql_research.py` (research, the quote check, the research queue) | `apply`, `quotecheck`, `queue`, `close` |
 | delivery | `_tools/ql_deliver.py` (plugin hosts and cloud sessions too) | `apply` with its push |
-| reporting | `_tools/ql_report.py` | `digest`, `status` |
+| reporting | `_tools/ql_report.py` | `digest`, `status`, `show` |
 
 ## Rules
 
@@ -217,6 +217,7 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds), `surface` and `v`, 
   - open source findings of the committed store, most result characters first: the `chars` the store's fetches of the host recorded, so the host whose pages cost the most context comes first;
   - open merge requests from a `querylog/` branch to `main` on `origin`'s forge (host from `origin`'s url, as in Delivery): `glab auth status --hostname <host>`, then `glab api --hostname <host> projects/<path>/merge_requests?state=opened&target_branch=main&per_page=100` on GitLab; `gh auth status --hostname <host>`, then `gh pr list -R <host>/<path> --base main --state open --json number,title,headRefName,url -L 100` on GitHub; the branch prefix is matched on the answer, since both filters take one whole branch name (`gitlab/automated-merge-requests.md`, DOC and DER S-4abgkvor, S-dn5ck62j); not signed in, a failed call or no `origin` prints a note instead;
   - reverted automatic commits: the commits at `HEAD` whose `KB-Auto` trailer holds `revert`.
+- **Show:** `querylog.py show` answers a point question without a script over the JSONL files: `--run ID` (a run file's header and one line per entry), `--entry ID` (the entry, the findings that name it, whether it has usage), `--findings` with `--kind`, `--article` and `--state` (each finding's last record), `--usage RUN` (the sidecar's tokens per entry) and `--spool` (the local spool's files and rows by kind). It reads the committed store or `--store DIR`, runs no model, no git and no network, and prints only what the store holds: for the spool, counts and days, never a row's text, id or session. An id may be its start when that names one; a list stops at `--limit` lines. Exit 0, 2 with the rule on stderr for a refusal (`_tools/test_ql_report.py`, the tests named `querylog_show`).
 - **Audit trail:** `git log --format='%h %(trailers:key=KB-Auto,valueonly)'`.
 
 ## Configuration
