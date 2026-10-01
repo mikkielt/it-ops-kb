@@ -2,7 +2,7 @@
   "id": "TK-3iwrdvp4",
   "kind": "task",
   "title": "AGENTS.md routes plain-words backlog questions to backlog.py",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-3cofh4hv",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,18 @@
   "depends_on": [
     "TK-wrlfub26"
   ],
-  "claimed_by": "worker-3iwrdvp4"
+  "evidence": {
+    "commit": "bb6ce96b2229497c3a826116aa4565d6a7146cc2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
