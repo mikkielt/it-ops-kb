@@ -2,7 +2,7 @@
   "id": "TK-jbo6civt",
   "kind": "task",
   "title": "Parse backlog claim, done and release into work rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-n77nrtv7",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/test_ql_capture.py",
     "_tools/fixtures/querylog/**",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "worker-jbo6civt"
 }
