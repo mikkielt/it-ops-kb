@@ -2,7 +2,7 @@
   "id": "TK-j6zvcfgf",
   "kind": "task",
   "title": "querylog.py show with run, entry, findings, usage and spool filters",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ppxck77t",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/ql_store.py",
     "_tools/ql_report.py",
     "_tools/test_ql_report.py"
-  ]
+  ],
+  "claimed_by": "worker-j6zvcfgf"
 }
