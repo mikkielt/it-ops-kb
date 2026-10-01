@@ -1,0 +1,28 @@
+{
+  "id": "BG-2i46kz3z",
+  "kind": "bug",
+  "title": "answer --record refuses a second gate of one item whose answer text repeats the first",
+  "status": "draft",
+  "parent": "EP-v56iwyry",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Two gates of one item answered with the same text each record their own decision (the gate is part of what makes the decision id distinct), and the second gate's answer is saved.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; python3 _tools/backlog.py gate add BG-3i46pccw --question \"Q1?\" --option yes --option no --recommendation yes --id ga >/dev/null; python3 _tools/backlog.py gate add BG-3i46pccw --question \"Q2?\" --option yes --option no --recommendation yes --id gb >/dev/null; python3 _tools/backlog.py answer BG-3i46pccw ga --answer yes --by operator --record >/dev/null; python3 _tools/backlog.py answer BG-3i46pccw gb --answer yes --by operator --record >/dev/null"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "_tools/kbdecide.py",
+    "_tools/test_kbdecide.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/content-rules.md"
+  ]
+}
