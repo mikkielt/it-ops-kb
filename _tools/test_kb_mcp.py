@@ -39,6 +39,9 @@ test_code_mr_merge_retry*  after `land` sends a code/<id> merge request, /kb-spr
 test_sprint_brief_known_failures*  /kb-sprint run's brief names each test the orchestrator knows fails on the host, with
                 the bug filed for it (id and title) and its cause, so a worker files no duplicate and guesses no cause;
                 the runbook agrees. Planted: each rule taken out.
+test_sprint_second_clone_worktree*  a sprint in a second clone is orchestrated from a fresh session in that clone, else
+                each worker gets a worktree and work/<id> branch of it made by hand after the claim sync, the agent run
+                without isolation and briefed with the path; the runbook agrees. Planted: each rule taken out.
 test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
                 (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
                 goes with text; a planted ignored argument is caught.
@@ -562,6 +565,66 @@ def test_sprint_brief_known_failures_planted_failures(i, old, new):
     assert planted != texts[i], f"plant does not apply: {old!r}"
     texts[i] = planted
     assert sprint_brief_known_failures_problems(*texts), f"not caught: {old!r} -> {new!r}"
+
+
+SECOND_CLONE = "A sprint in a second clone"
+WORKTREE_ADD = "`git -C <clone> worktree add <clone>/.claude/worktrees/<id> -b work/<id> origin/main`"
+
+
+def sprint_second_clone_worktree_problems(sprint, runbook):
+    """What is wrong with how /kb-sprint run step 3 (`sprint`) and the runbook (`runbook`) give each worker its own
+    worktree and work/<id> branch of a second clone, where the Agent tool's isolation would branch from the session's
+    clone: [] when nothing."""
+    problems = []
+    step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", md_section(sprint, "## run [SP]"))
+    work = md_section(runbook, "## Working on items")
+    for where, text in (("/kb-sprint run step 3", step3.group(0) if step3 else ""),
+                        ("the runbook's Working on items", work)):
+        line = next((l for l in text.splitlines() if SECOND_CLONE in l), "")
+        if not line:
+            problems.append(f"{where} does not say how to run workers from a second clone")
+            continue
+        for phrase in ("fresh Claude session", "no working directory of its own", "wrong clone", "after the claim sync",
+                       "`git -C <clone> fetch origin`", WORKTREE_ADD, "without `isolation`", "names that path in the brief",
+                       "absolute path"):
+            if phrase not in line:
+                problems.append(f"{where} does not say {phrase!r} for a sprint in a second clone")
+        if 0 <= line.find(WORKTREE_ADD) < line.find("fresh Claude session"):
+            problems.append(f"{where} puts the hand-made worktree before the fresh session in the clone")
+    return problems
+
+
+def sprint_second_clone_worktree_texts():
+    texts = []
+    for rel in (KB_SPRINT, RUNBOOK):
+        with open(os.path.join(KB, rel), encoding="utf-8") as f:
+            texts.append(f.read())
+    return texts
+
+
+def test_sprint_second_clone_worktree():
+    """A sprint run in a second clone starts its workers in that clone: a fresh session there, else a worktree and
+    work/<id> branch made by hand with the agent run without isolation (SP-xourq2gj)."""
+    assert sprint_second_clone_worktree_problems(*sprint_second_clone_worktree_texts()) == []
+
+
+@pytest.mark.parametrize("i, old, new", [
+    (0, "   A sprint in a second clone (", "   A sprint elsewhere ("),
+    (0, "Start a fresh Claude session in that clone and orchestrate from there. ", ""),
+    (0, "-b work/<id> origin/main`; it starts", "`; it starts"),
+    (0, "starts the subagent without `isolation`", "starts the subagent with `isolation`"),
+    (0, "by absolute path into it", "in it"),
+    (1, "is orchestrated from a fresh Claude session started in that clone", "is orchestrated as any other"),
+    (1, "after the claim sync, `git -C", "at once, `git -C"),
+    (1, "and names that path in the brief", "and briefs it"),
+])
+def test_sprint_second_clone_worktree_planted_failures(i, old, new):
+    """Each rule fails on a planted copy of the sprint skill or the runbook without it."""
+    texts = sprint_second_clone_worktree_texts()
+    planted = texts[i].replace(old, new, 1)
+    assert planted != texts[i], f"plant does not apply: {old!r}"
+    texts[i] = planted
+    assert sprint_second_clone_worktree_problems(*texts), f"not caught: {old!r} -> {new!r}"
 
 
 class TestKbServer:
