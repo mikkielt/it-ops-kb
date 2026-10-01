@@ -2,7 +2,7 @@
   "id": "ST-uzqoj5du",
   "kind": "story",
   "title": "red-pipeline becomes intake's CI detector",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -20,5 +20,20 @@
   ],
   "depends_on": [
     "ST-tngq6z2j"
-  ]
+  ],
+  "evidence": {
+    "commit": "4c62fadc688bb2296791d55220981ba536d0f8e9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_ci or red_pipeline"
+        ],
+        "exit": 0,
+        "sha256": "8e06a0ae30571b04"
+      }
+    ]
+  }
 }
