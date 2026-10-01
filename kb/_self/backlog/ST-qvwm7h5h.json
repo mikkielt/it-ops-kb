@@ -2,7 +2,7 @@
   "id": "ST-qvwm7h5h",
   "kind": "story",
   "title": "land reports a mergeable code merge request whose auto-merge has not fired",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-qvwm7h5h"
+  "evidence": {
+    "commit": "baf27a67f1dd6e0dfe08d3306a1e3800acf7ebb5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_stuck_auto_merge"
+        ],
+        "exit": 0,
+        "sha256": "05c5b2199696411b"
+      }
+    ]
+  }
 }
