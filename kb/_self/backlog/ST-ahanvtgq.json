@@ -2,7 +2,7 @@
   "id": "ST-ahanvtgq",
   "kind": "story",
   "title": "SessionStart runs intake and writes its drafts uncommitted",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
@@ -38,5 +38,20 @@
       "answer": "two hooks: offline intake --file --hook, and red-pipeline --hook as before",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "5c36a0d58d315b45f9df39022bd16ef727149dff",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_hook or change_router"
+        ],
+        "exit": 0,
+        "sha256": "8f93ce1a0b832bde"
+      }
+    ]
+  }
 }
