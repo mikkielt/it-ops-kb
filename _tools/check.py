@@ -248,9 +248,28 @@ def check_decisions(root, owner, known):
     field = lambda r, k: (r.get(k) or "").strip()  # noqa: E731
     mname = name(kbcommon.DECISION_MAKERS)
     who = "kb/_self, which is published" if root is None else f"a root that is {root.visibility}"
+    table = read_table(base / kbcommon.DECISION_MAKERS, mname, kbcommon.MAKER_COLS) or []
+    policies = [field(r, "role") for r in table if field(r, "id") == kbcommon.POLICY_ROW]
+    policy = policies[0] if policies and policies[0] in kbcommon.POLICIES else ""
+    names_ok = kbcommon.maker_names_allowed(root, policy)
+    why = "not an internal root" if root is None or root.visibility != "internal" else f"its decision-maker policy is {policy}"
     own, seen = {}, set()
-    for n, r in enumerate(read_table(base / kbcommon.DECISION_MAKERS, mname, kbcommon.MAKER_COLS) or [], start=2):
+    for n, r in enumerate(table, start=2):
         mid, bad = field(r, "id"), []
+        if mid == kbcommon.POLICY_ROW:  # the root's storage policy for decision makers, not a maker
+            if root is None:
+                bad.append("a storage policy in kb/_self: the central register holds roles only and has none")
+            elif field(r, "role") not in kbcommon.POLICIES:
+                bad.append(f"policy {field(r, 'role')!r} is not one of {'|'.join(kbcommon.POLICIES)}")
+            elif field(r, "role") == "role-and-name" and not kbcommon.maker_names_allowed(root, "role-and-name"):
+                bad.append(f"policy role-and-name in {who}, not an internal root: keep the role only")
+            if field(r, "name") or field(r, "source"):
+                bad.append("a name or a source on the policy row: only its role, the policy, is set")
+            if mid in seen:
+                bad.append("a second policy row")
+            seen.add(mid)
+            errors.extend(f"{mname}:{n} {b}" for b in bad)
+            continue
         if not kbcommon.MAKER_ID.fullmatch(mid):
             bad.append(f"id {mid!r} is not a lowercase slug (a-z, 0-9, -)")
         elif mid in seen:
@@ -259,8 +278,10 @@ def check_decisions(root, owner, known):
         own[mid] = field(r, "role")
         if not own[mid]:
             bad.append("no role")
-        if field(r, "name") and not kbcommon.maker_names_allowed(root):
-            bad.append(f"a name in {who}, not an internal root: keep the role only")
+        if policy == "central-register":
+            bad.append("a maker of its own in a root whose policy is central-register: reference the central register")
+        if field(r, "name") and not names_ok:
+            bad.append(f"a name in {who}, {why}: keep the role only")
         errors.extend(f"{mname}:{n} {b}" for b in bad)
     central = own if root is None else central_makers()
     dname = name(kbcommon.DECISIONS)
@@ -287,13 +308,13 @@ def check_decisions(root, owner, known):
             bad.append(f"by_ref {ref!r} names no decision maker in {mname} or the central register")
         elif status != "proposed" and not (by or ref):
             bad.append("names no decision maker (by or by_ref) though it is not proposed")
-        if not kbcommon.maker_names_allowed(root) and (by or ref):  # no names: `by` is the role of a maker it references
+        if not names_ok and (by or ref):  # no names: `by` is the role of a maker it references
             role = own.get(ref, central.get(ref)) if ref else None
             if not ref:
-                bad.append(f"by_ref is empty: {who}, not an internal root, keeps no names, so by "
+                bad.append(f"by_ref is empty: {who}, {why}, keeps no names, so by "
                            f"is the role of a maker it references")
             elif role is not None and by != role:
-                bad.append(f"by {by!r} is not the role {role!r} of {ref}: {who}, not an internal root, keeps no names")
+                bad.append(f"by {by!r} is not the role {role!r} of {ref}: {who}, {why}, keeps no names")
         refs = kbcommon.context_refs(r.get("context"))
         if not refs:
             bad.append("no context (kind:value references to the item, fact, source, article or domain it is about)")

@@ -10,6 +10,9 @@
                                          withdraw an active decision; its row stays
   kbdecide.py restore ID --root R          bring an invalidated decision back, `active` when a maker confirmed it,
                                          else `proposed`; its row stays and `links` keeps what was invalidated
+  kbdecide.py makers R [--policy P --by operator]
+                                         show how root R saves its decision makers, or (the operator's) set the policy:
+                                         role-only, role-and-name or central-register
   kbdecide.py list [--root R] [--status S] [--context REF]
                                          the decisions of one root, or of every root and kb/_self, one per line:
                                          root, id, status, date, by, context, text (tab-separated)
@@ -28,6 +31,11 @@ lands in a root by omission. The rows go to the root's `_decisions.csv`; its for
     kb/_self/decision-makers.csv; a root that keeps names (an internal one) may leave it out and may take `--name`.
   - Nothing is ever deleted: `invalidate` sets the status and the reason, `supersede` marks the old decision
     `superseded` and lists it in the new one's `supersedes`.
+  - A root saves its decision makers by a policy (kbcommon.POLICIES), one reserved row of its decision-makers.csv.
+    There is no default: `propose` in a root with none is refused with the question and the options until the
+    operator runs `makers R --policy P --by operator`. role-and-name is refused where kbcommon.maker_names_allowed
+    says no names may be kept (a root that is not internal); kb/_self is the central register, holds roles only and
+    has no policy to set.
   - Every row written passes `check.py`: after each write the files are checked, and a change that would add an
     error is undone and refused. Refusals before a root's first decision go through `policy_refusal`.
 
@@ -116,25 +124,39 @@ def problems(store):
     return found
 
 
-def save(store, rows):
-    """Write the rows, then check the files: a change that adds an error to what check.py found before is undone and
-    refused, so no row kbdecide writes fails check.py. The file is replaced whole, never half written."""
+def save(store, rows, path=None, cols=None):
+    """Write the rows (of _decisions.csv, or of `path` with the columns `cols`), then check the files: a change that
+    adds an error to what check.py found before is undone and refused, so no row kbdecide writes fails check.py. The
+    file is replaced whole, never half written."""
+    path, cols = path or store.path, cols or kbcommon.DECISION_COLS
     before = problems(store)
-    old = store.path.read_bytes() if store.path.is_file() else None
-    kbcommon.write_csv(str(store.path), kbcommon.DECISION_COLS, rows, atomic=True)
+    old = path.read_bytes() if path.is_file() else None
+    kbcommon.write_csv(str(path), cols, rows, atomic=True)
     new = [e for e in problems(store) if e not in before]
     if new:
         if old is None:
-            store.path.unlink()
+            path.unlink()
         else:
-            store.path.write_bytes(old)
+            path.write_bytes(old)
         raise Refused("the change would fail check.py: " + "; ".join(new))
+
+
+def policy_question(store):
+    """The question a root with no policy is asked, with the options it may take."""
+    options = [f"{p} ({what})" for p, what in kbcommon.POLICIES.items()
+               if p != "role-and-name" or kbcommon.maker_names_allowed(store.root, p)]
+    return (f"{store.name} has no storage policy for decision makers. How is a decision maker saved there? Options: "
+            + "; ".join(options) + f". The operator sets it: python3 _tools/kbdecide.py makers {store.name} "
+            f"--policy <option> --by {OPERATOR}")
 
 
 def policy_refusal(store, rows):
     """Why `store` may not take a decision yet, or None. The one place a root's rule for how a decision maker is saved
-    is enforced before its first decision; `propose` asks it with the rows the file holds. No rule is enforced yet."""
-    return None
+    is enforced before its first decision; `propose` asks it with the rows the file holds. A root with no policy is
+    refused with the question and its options; kb/_self, the central register, has a fixed one (roles only)."""
+    if store.root is None or kbcommon.root_policy(store.root):
+        return None
+    return policy_question(store)
 
 
 def maker_fields(store, maker, name):
@@ -143,16 +165,18 @@ def maker_fields(store, maker, name):
     store may hold names (kbcommon.maker_names_allowed); a store that may not requires `maker`."""
     names_ok = kbcommon.maker_names_allowed(store.root)
     if name and not names_ok:
-        raise Refused(f"{store.name} keeps no names (it is published or not an internal root): leave out --name and "
-                      f"name a role with --maker")
+        raise Refused(f"{store.name} keeps no names (it is not an internal root or its policy keeps none): leave out "
+                      f"--name and name a role with --maker")
     if not maker:
         if not names_ok:
             raise Refused(f"{store.name} keeps decision makers by reference: pass --maker with the id of a row of its "
                           f"{kbcommon.DECISION_MAKERS} or of the central register kb/_self/{kbcommon.DECISION_MAKERS}")
         return name or OPERATOR, ""
-    roles = {**read_makers(Path(kbcommon.SELF)), **read_makers(store.base)}
+    central = kbcommon.root_policy(store.root) == "central-register"
+    roles = {**read_makers(Path(kbcommon.SELF)), **({} if central else read_makers(store.base))}
     if maker not in roles:
-        raise Refused(f"no decision maker {maker!r} in {store.name}/{kbcommon.DECISION_MAKERS} or the central register")
+        where = "the central register" if central else f"{store.name}/{kbcommon.DECISION_MAKERS} or the central register"
+        raise Refused(f"no decision maker {maker!r} in {where}")
     return name or roles[maker], maker
 
 
@@ -162,7 +186,8 @@ def read_makers(base):
         rows = kbcommon.load_csv(str(base / kbcommon.DECISION_MAKERS))[1]
     except kbcommon.CsvError:
         return {}
-    return {(r.get("id") or "").strip(): (r.get("role") or "").strip() for r in rows}
+    return {(r.get("id") or "").strip(): (r.get("role") or "").strip() for r in rows
+            if (r.get("id") or "").strip() != kbcommon.POLICY_ROW}
 
 
 def decision_id(text, context):
@@ -227,9 +252,13 @@ def cmd_propose(a):
     return 0
 
 
-def cmd_confirm(a):
+def need_operator(a, what):
     if a.by != OPERATOR:
-        raise Refused(f"only the operator confirms a decision: run it with --by {OPERATOR} once the operator has said so")
+        raise Refused(f"only the operator {what}: run it with --by {OPERATOR} once the operator has said so")
+
+
+def cmd_confirm(a):
+    need_operator(a, "confirms a decision")
     store = Store(a.root)
     rows = load(store)
     row = find(rows, a.id, store)
@@ -238,6 +267,37 @@ def cmd_confirm(a):
     row.update(status="active", by=by, by_ref=by_ref, date=day(a.date))
     save(store, rows)
     print(f"{a.id}\tactive\t{store.name}")
+    return 0
+
+
+def cmd_makers(a):
+    store = Store(a.root)
+    if store.root is None:
+        raise Refused(f"{SELF_ROOT} is the central register: it holds roles only and has no storage policy to set")
+    path = store.base / kbcommon.DECISION_MAKERS
+    try:
+        header, rows = kbcommon.load_csv(str(path)) if path.is_file() else (kbcommon.MAKER_COLS, [])
+    except kbcommon.CsvError as e:
+        raise Refused(str(e))
+    if header != kbcommon.MAKER_COLS:
+        raise Refused(f"{kbcommon.qualify(store.root, kbcommon.DECISION_MAKERS)}: header is {','.join(header or [])!r}, "
+                      f"not {','.join(kbcommon.MAKER_COLS)!r}")
+    if a.policy is None:
+        print(f"policy={kbcommon.root_policy(store.root) or 'unset'}\t{store.name}")
+        for r in rows:
+            if field(r, "id") != kbcommon.POLICY_ROW:
+                print("\t".join([field(r, "id"), field(r, "role"), field(r, "name")]))
+        return 0
+    need_operator(a, "sets how a root saves its decision makers")
+    if a.policy not in kbcommon.POLICIES:
+        raise Refused(f"policy {a.policy!r} is not one of {'|'.join(kbcommon.POLICIES)}")
+    if a.policy == "role-and-name" and not kbcommon.maker_names_allowed(store.root, a.policy):
+        raise Refused(f"{store.name} may not keep decision makers by {a.policy}: it is not an internal root, so it keeps "
+                      f"no names (choose role-only or central-register)")
+    row = dict.fromkeys(kbcommon.MAKER_COLS, "")
+    row.update(id=kbcommon.POLICY_ROW, role=a.policy)
+    save(store, [row] + [r for r in rows if field(r, "id") != kbcommon.POLICY_ROW], path, kbcommon.MAKER_COLS)
+    print(f"policy={a.policy}\t{store.name}")
     return 0
 
 
@@ -335,13 +395,17 @@ def parser():
     p.add_argument("--date", help="YYYY-MM-DD (default: today)")
     p = add("restore", "bring an invalidated decision back")
     p.add_argument("id")
+    p = sub.add_parser("makers", help="show or set how a root saves its decision makers")
+    p.add_argument("root", help="a root's name")
+    p.add_argument("--policy", help=f"{'|'.join(kbcommon.POLICIES)}; the operator's")
+    p.add_argument("--by", help=f"must be {OPERATOR} with --policy")
     p = add("list", "the decisions of one root or of all", root_required=False)
     p.add_argument("--status", choices=kbcommon.DECISION_STATUS)
     p.add_argument("--context", help="only the decisions whose context names this kind:value (or bare value)")
     return ap
 
 
-COMMANDS = {"propose": cmd_propose, "confirm": cmd_confirm, "supersede": cmd_supersede, "invalidate": cmd_invalidate,
+COMMANDS = {"propose": cmd_propose, "confirm": cmd_confirm, "makers": cmd_makers, "supersede": cmd_supersede, "invalidate": cmd_invalidate,
             "restore": cmd_restore, "list": cmd_list}
 
 
