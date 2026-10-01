@@ -2,7 +2,7 @@
   "id": "BG-dnsnsipw",
   "kind": "bug",
   "title": "The end-to-end fixture's about text names the deleted test_kb.py",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-djri7fqp",
   "priority": "P2",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "the defect is descriptive text in a test fixture; there is no behaviour to run",
   "touches": [
     "_tools/fixtures/querylog/e2e.json"
-  ]
+  ],
+  "claimed_by": "sixth-w1"
 }
