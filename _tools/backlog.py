@@ -2232,7 +2232,9 @@ def cmd_land(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
     heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the heavy checks, sync
     --push (a code/<id> merge request; main does not move), and a re-run once it has merged finishes it as content
-    does. Stops at the first failing step, naming it."""
+    does. Stops at the first failing step, naming it. Every run and every stop ends on the branch (or the detached
+    commit) it started on: the rebase switches to the landed branch, and a claim --commit made after land must not
+    ride on it into its merge request."""
     import kbpublic
     iid = need(bl, a.id)
     root = bl.root
@@ -2247,53 +2249,65 @@ def cmd_land(bl, a):
     if other:
         raise land_stop("branch", f"{branch} is checked out in the worktree {other}: land it from there, or remove "
                                   "that worktree first")
-    say(f"land: fetch {remote} main")
-    land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
-    say(f"land: rebase {branch} on {remote}/main")
-    p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True, text=True,
-                       encoding="utf-8", errors="replace")
-    if p.returncode:
-        subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
-        raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "
-                                  f"changed): rebase it by hand, then run land again\n{(p.stderr or p.stdout).strip()}")
-    bl = Backlog(root)  # the item files as the rebased branch has them
-    need(bl, iid)
-    family = [iid] + bl.descendants(iid)
-    late, _, owners = unlanded_code(root, family)
-    if late == ["(no such ref)"]:
-        raise land_stop("fetch", f"{upstream} does not exist after the fetch")
-    if late:
-        code_branch = "code/" + (owners[0] if owners else iid)
-        tracking = f"refs/remotes/{remote}/{code_branch}"
-        fetched = subprocess.run(["git", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}"],
-                                 cwd=root, capture_output=True).returncode == 0
-        if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
-            say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
-                f"pushed with this content): merge it, then run backlog.py land {iid} again")
-            stuck = stuck_merge_request(root, remote, code_branch)
-            if stuck:
-                say(stuck)
-            return 0
-    if not late:
-        if bl.items[iid].get("status") == "done":
-            say(f"land: done: {bl.label(iid)} is done already")
+    start = git(root, "rev-parse", "HEAD").strip()
+    start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
+                               encoding="utf-8", errors="replace").stdout.strip()
+    try:
+        say(f"land: fetch {remote} main")
+        land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
+        say(f"land: rebase {branch} on {remote}/main")
+        p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        if p.returncode:
+            subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
+            raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "
+                                      f"changed): rebase it by hand, then run land again\n"
+                                      f"{(p.stderr or p.stdout).strip()}")
+        bl = Backlog(root)  # the item files as the rebased branch has them
+        need(bl, iid)
+        family = [iid] + bl.descendants(iid)
+        late, _, owners = unlanded_code(root, family)
+        if late == ["(no such ref)"]:
+            raise land_stop("fetch", f"{upstream} does not exist after the fetch")
+        if late:
+            code_branch = "code/" + (owners[0] if owners else iid)
+            tracking = f"refs/remotes/{remote}/{code_branch}"
+            fetched = subprocess.run(["git", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}"],
+                                     cwd=root, capture_output=True).returncode == 0
+            if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
+                say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
+                    f"pushed with this content): merge it, then run backlog.py land {iid} again")
+                stuck = stuck_merge_request(root, remote, code_branch)
+                if stuck:
+                    say(stuck)
+                return 0
+        if not late:
+            if bl.items[iid].get("status") == "done":
+                say(f"land: done: {bl.label(iid)} is done already")
+            else:
+                say("land: done --commit")
+                try:
+                    cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer))
+                except Refused as e:
+                    raise land_stop("done", str(e)) from None
+        changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
+        if any(p.startswith("_tools/") for p in changed):
+            for step, argv in LAND_HEAVY:
+                land_run(root, step, argv)
+        land_run(root, *LAND_SYNC, whole=True)
+        if late:
+            say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
+                f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
         else:
-            say("land: done --commit")
-            try:
-                cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer))
-            except Refused as e:
-                raise land_stop("done", str(e)) from None
-    changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
-    if any(p.startswith("_tools/") for p in changed):
-        for step, argv in LAND_HEAVY:
-            land_run(root, step, argv)
-    land_run(root, *LAND_SYNC, whole=True)
-    if late:
-        say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
-            f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
-    else:
-        say(f"land: {bl.label(iid)} landed")
-    return 0
+            say(f"land: {bl.label(iid)} landed")
+        return 0
+    finally:  # back to where land started, whatever happened after the rebase switched to BRANCH
+        back = (["switch", "-q", start_ref[len("refs/heads/"):]] if start_ref.startswith("refs/heads/")
+                else ["switch", "-q", "--detach", start])
+        p = subprocess.run(["git", *back], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
+        if p.returncode:
+            say(f"land: could not return to {start_ref or start[:10]}: {(p.stderr or p.stdout).strip()}")
 
 
 def cmd_drop(bl, a):
