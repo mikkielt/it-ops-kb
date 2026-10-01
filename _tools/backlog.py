@@ -131,6 +131,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           counts for a sprint only), per model: requests, in, cr, out and cw apart,
                                           direct (the item lines' main) and attributed (their routed subagents'
                                           sub). Shared lines, the session total and overhead are not printed yet.
+                                          For a sprint, research items' lines (kb content only) are printed
+                                          apart, and the overhead lines of the sidecar runs inside the sprint's
+                                          window (its start commit to its close commit) as a total of their own,
+                                          in no item or sprint figure; unresolved in a shallow clone.
                                           --runs lists each run's line apart; json gives the same numbers. No
                                           sidecar: zeros, exit 0; an unknown id: exit 2. An item whose file is gone
                                           (deleted at sprint close, a closed sprint included) is read from its last
@@ -3344,6 +3348,26 @@ def cost_view(bl, ids):
     return view, restored, sorted(asked - set(restored))
 
 
+def cost_is_research(view, iid):
+    """True for a research item (backlog.md, Sprints): a story, task or subtask whose touches, its descendants' too,
+    are all kb content (`research_touches`)."""
+    return view.items[iid].get("kind") in RESEARCH_KINDS and research_touches(scope(view, iid))
+
+
+def cost_sum(lines):
+    """{runs, prompts, <report key>: {model: counts}, by_item, items} of item lines."""
+    out = {"runs": len({w["run"] for w in lines}), "prompts": sum(w["prompts"] for w in lines),
+           **{key: {} for key, _, _ in COST_GROUPS}, "by_item": {}}
+    for w in lines:
+        one = out["by_item"].setdefault(w["item"], {"prompts": 0, **{key: {} for key, _, _ in COST_GROUPS}})
+        one["prompts"] += w["prompts"]
+        for key, _, _ in COST_GROUPS:
+            cost_add(out[key], w[key])
+            cost_add(one[key], w[key])
+    out["items"] = sorted(out["by_item"])
+    return out
+
+
 def cost_report(bl, iid):
     """The report of `cost ID`: {id, items, runs, prompts, <report key>: {model: counts}, shared, session_total,
     shared_prompts, by_item, run_lines, shared_lines, skipped, restored, unresolved, view}. `shared` sums the shared
@@ -3352,7 +3376,10 @@ def cost_report(bl, iid):
     lines only, so a shared line is in no item's own row. `restored` are the ids in the sum whose item file is gone, read from git history;
     `unresolved` the ids with a line (or the parents of those) that have no file and no history, left out of every
     sum; `view` the backlog with the restored items, for labels. Raises KeyError for an id with neither a file nor
-    a history."""
+    a history. A sprint's report also has `research` (the lines of its research items, `cost_is_research`: {items,
+    runs, prompts, direct, attributed, total, by_item}), kept out of `items`, `runs`, `prompts`, `direct`,
+    `attributed` and `session_total`, which are the item work, and `overhead` (`cost_overhead`), in no figure of
+    either; `run_lines` keeps every item line."""
     all_lines, skipped = cost_lines(bl.root, None)
     named = {i for w in all_lines for i in (w["items"] if "items" in w else [w["item"]])}
     view, restored, unresolved = cost_view(bl, named | {iid})
@@ -3361,23 +3388,112 @@ def cost_report(bl, iid):
     keep = cost_scope(view, iid)
     lines = [w for w in all_lines if w.get("item") in keep]
     shared = [w for w in all_lines if keep.intersection(w.get("items", ()))]  # each line once, however many items
-    rep = {"id": iid, "runs": len({w["run"] for w in lines}), "prompts": sum(w["prompts"] for w in lines),
-           **{key: {} for key, _, _ in COST_GROUPS}, COST_SHARED: {}, COST_TOTAL: {},
-           "shared_prompts": sum(w["prompts"] for w in shared), "by_item": {}, "run_lines": lines,
+    sprint = view.items[iid].get("kind") == "sprint"
+    research = {w["item"] for w in lines if sprint and cost_is_research(view, w["item"])}
+    work = cost_sum([w for w in lines if w["item"] not in research])
+    rep = {"id": iid, "runs": work["runs"], "prompts": work["prompts"],
+           **{key: work[key] for key, _, _ in COST_GROUPS}, COST_SHARED: {}, COST_TOTAL: {},
+           "shared_prompts": sum(w["prompts"] for w in shared), "by_item": work["by_item"], "run_lines": lines,
            "shared_lines": shared, "skipped": skipped, "unresolved": unresolved, "view": view}
-    for w in lines:
-        one = rep["by_item"].setdefault(w["item"], {"prompts": 0, **{key: {} for key, _, _ in COST_GROUPS}})
-        one["prompts"] += w["prompts"]
-        for key, _, _ in COST_GROUPS:
-            cost_add(rep[key], w[key])
-            cost_add(one[key], w[key])
     for w in shared:
         cost_add(rep[COST_SHARED], w[COST_SHARED])
     for key in (*(g[0] for g in COST_GROUPS), COST_SHARED):
         cost_add(rep[COST_TOTAL], rep[key])
-    rep["items"] = sorted(rep["by_item"])
-    rep["restored"] = sorted((set(rep["by_item"]) | {iid}) & set(restored))
+    rep["items"] = work["items"]
+    rep["restored"] = sorted(({w["item"] for w in lines} | {iid}) & set(restored))
+    if sprint:
+        res = cost_sum([w for w in lines if w["item"] in research])
+        res["total"] = {}
+        for key, _, _ in COST_GROUPS:
+            cost_add(res["total"], res[key])
+        rep["research"] = res
+        rep["overhead"] = cost_overhead(bl.root, iid)
     return rep
+
+
+# `cost SP`, overhead: the `overhead` lines of the work sidecars (usage.md) are the kb's own background runs, in
+# no item's or sprint's figure. A sprint's window runs from its start commit to its close commit: the oldest commit
+# that adds `"status": "active"` to the sprint's item file (`start`), to the newest commit that deletes the file
+# (`close`; none while the file exists: the window is open, with no upper bound). A run belongs to it when the time
+# in its run id (UTC) is at or after the start and at or before the close. Git decides, as in `history_items`: a
+# shallow clone, no git or no start commit leaves the overhead unresolved, never guessed.
+GIT_TIMEOUT_S = 30
+
+
+def git_times(root, *args):
+    """[epoch seconds] of the commits `git log --all` lists for `args` (`%ct` of each), or None when git fails."""
+    argv = ["git", "--literal-pathspecs", "-C", str(root), "log", "--all", "--format=%ct", *args]
+    try:
+        p = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=GIT_TIMEOUT_S)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return [int(x) for x in p.stdout.split()] if p.returncode == 0 else None
+
+
+def sprint_window(root, sid):
+    """(start, end, reason): the sprint's window in epoch seconds (`end` None while the sprint is open), or
+    (None, None, why) when git history cannot say."""
+    try:
+        shallow = subprocess.run(["git", "-C", str(root), "rev-parse", "--is-shallow-repository"],
+                                 capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                 timeout=GIT_TIMEOUT_S)
+    except (OSError, subprocess.SubprocessError):
+        return None, None, "git is unavailable"
+    if shallow.returncode != 0:
+        return None, None, "git history is unavailable"
+    if shallow.stdout.strip() == "true":
+        return None, None, "shallow clone: the sprint's start commit may be cut from history"
+    path = f"{REL_DIR}/{sid}.json"
+    starts = git_times(root, "--diff-filter=AM", "-S", '"status": "active"', "--", path)
+    if not starts:
+        return None, None, "no commit in history sets the sprint active"
+    if (Path(root) / path).is_file():
+        return min(starts), None, None
+    closes = git_times(root, "--diff-filter=D", "--", path)
+    if not closes:
+        return None, None, "the sprint's file is gone and no commit in history deletes it"
+    return min(starts), max(closes), None
+
+
+def cost_overhead(root, sid):
+    """The overhead of sprint `sid`: {resolved, reason, start, end, runs, calls, kinds: {kind: {calls, main}}, total}
+    (`start` and `end` UTC `YYYY-MM-DDThh:mm:ssZ`, `end` None while open): the overhead lines of the work sidecars of the runs
+    inside the sprint's window, summed apart from every item. Unresolved (`resolved` False, a `reason`, no figures)
+    when the window is unknown (`sprint_window`). A sidecar that breaks the store's work gates is left out, as
+    `cost_lines` does."""
+    import datetime
+    import ql_store
+    start, end, reason = sprint_window(root, sid)
+    def iso(t):
+        return None if t is None else datetime.datetime.fromtimestamp(t, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    out = {"resolved": reason is None, "reason": reason, "start": iso(start), "end": iso(end)}
+    if reason:
+        return out
+    out.update(runs=0, calls=0, kinds={}, total={})
+    for p in ql_store.work_files(Path(root) / "kb" / "_querylog"):
+        if not ql_store.RUN_ID.fullmatch(p.stem):
+            continue
+        when = datetime.datetime.strptime(p.stem[:16], "%Y%m%dT%H%M%SZ").replace(tzinfo=datetime.timezone.utc)
+        if when.timestamp() < start or (end is not None and when.timestamp() > end):
+            continue
+        try:
+            objs = ql_store.load_run(p)
+        except (OSError, ValueError):
+            continue
+        lines = [w for _, w in objs[1:]]
+        if not objs or any(ql_store.work_line_problems(w, p.stem) for w in lines):
+            continue
+        mine = [w for w in lines if "overhead" in w]
+        out["runs"] += bool(mine)
+        for w in mine:
+            one = out["kinds"].setdefault(w["overhead"], {"calls": 0, "main": {}})
+            one["calls"] += w["calls"]
+            out["calls"] += w["calls"]
+            cost_add(one["main"], w["main"])
+            cost_add(out["total"], w["main"])
+    return out
 
 
 def cost_row(name, c):
@@ -3403,6 +3519,33 @@ def cost_block(part, indent):
     return out
 
 
+def cost_apart(rep, view):
+    """The lines of a sprint's research and overhead, apart from the item work above them (none for any other id)."""
+    out = []
+    if "research" in rep:
+        res = rep["research"]
+        out.append(f"research ({len(res['items'])} item(s), {res['prompts']} prompt(s); in none of the figures above"
+                   + (": " + ", ".join(view.label(i) for i in res["items"]) if res["items"] else "") + "):")
+        for key, _, label in COST_GROUPS:
+            out.append(f"  {label}:")
+            out += cost_figures(res[key], "    ")
+        out.append("  total (direct + attributed):")
+        out += cost_figures(res["total"], "    ")
+    if "overhead" in rep:
+        ov = rep["overhead"]
+        if not ov["resolved"]:
+            out.append(f"system overhead: unresolved ({ov['reason']})")
+        else:
+            out.append(f"system overhead ({ov['start']} to {ov['end'] or 'now'}, {ov['runs']} run(s), "
+                       f"{ov['calls']} call(s); in no item or sprint figure):")
+            for kind in sorted(ov["kinds"]):
+                out.append(f"  {kind} ({ov['kinds'][kind]['calls']} call(s)):")
+                out += cost_figures(ov["kinds"][kind]["main"], "    ")
+            out.append("  all kinds:")
+            out += cost_figures(ov["total"], "    ")
+    return out
+
+
 def cmd_cost(bl, a):
     rep = cost_report(bl, a.id)
     iid, view = rep["id"], rep["view"]
@@ -3414,6 +3557,7 @@ def cmd_cost(bl, a):
     if a.format == "json":
         out = {k: rep[k] for k in ("id", "items", "runs", "prompts", "shared_prompts", "by_item", "skipped", "restored",
                                    "unresolved", COST_SHARED, COST_TOTAL, *(g[0] for g in COST_GROUPS))}
+        out.update({k: rep[k] for k in ("research", "overhead") if k in rep})  # a sprint's report only
         if a.runs:
             out["run_lines"] = rep["run_lines"]
             out["shared_lines"] = rep["shared_lines"]
@@ -3425,6 +3569,8 @@ def cmd_cost(bl, a):
     if rep["restored"]:
         say("from git history (item file deleted): " + ", ".join(view.label(i) for i in rep["restored"]))
     for x in cost_block(rep, ""):
+        say(x)
+    for x in cost_apart(rep, view):
         say(x)
     if rep["items"] not in ([], [iid]):
         say("by item:")
