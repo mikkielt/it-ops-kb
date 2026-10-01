@@ -676,6 +676,32 @@ def test_horizon_hook_of_the_repository_backlog_stays_under_the_limit():
     assert len(out) < HOOK_LIMIT, (len(out), out)
 
 
+def test_horizon_hook_stays_under_the_limit_with_many_sprints_and_a_long_gate(sprint):
+    """Six active sprints with long titles and a gate question of 1500 characters: the lines are clipped and the last
+    ones give way to a line naming how many were left out, so the hook stays valid JSON under the limit."""
+    repo = sprint["repo"]
+    ids = []
+    for n in range(6):
+        title = f"Sprint {n} whose title runs on" + " and on" * 12
+        b(repo, "new", "sprint", "--title", title, "--goal", f"goal {n}")
+        sp = item(repo, title)["id"]
+        ids.append(sp)
+        b(repo, "new", "bug", "--title", f"Bug {n}", "--sprint", sp, "--severity", "S3",
+          "--repro", argstr(is_file("src/c.txt")), "--goal", "c exists", "--touch", "src/**")
+        assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+        assert b(repo, "start", sp)[0] == 0
+    edit(repo, item(repo, "Bug 0")["id"], gates=[{"id": "G1", "kind": "blocking", "question": "Why? " * 300,
+                                                  "recommendation": "fix"}])
+    code, out = b(repo, "horizon", "--hook")
+    assert code == 0, out
+    assert len(out) < HOOK_LIMIT, (len(out), out)
+    context = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+    assert "Why? " * 30 not in out and "more line(s): python3 _tools/backlog.py horizon" in context, context
+    assert sprint["sp"] in context or ids[0] in context, context
+    code, out = b(repo, "horizon")  # without --hook: every sprint and the whole question
+    assert code == 0 and all(sp in out for sp in ids) and "Why? " * 300 in out.replace("\n", "")
+
+
 def test_review_needs_confirmed_provisional_answers_and_close_deletes(sprint):
     repo, bg = sprint["repo"], sprint["bg"]
     edit(repo, bg, gates=[{"id": "G1", "kind": "provisional", "question": "Name c?", "recommendation": "c.txt"}])

@@ -1906,12 +1906,13 @@ def cmd_horizon(bl, a):
         waiting = sum(map(len, stuck.values())) - starts
         if a.hook:  # every session reads it: id and title, counts and the next id; horizon without --hook has the rest
             nxt = ready(bl, sid)
-            lines.append(f"sprint {bl.label(sid)}: {done}/{len(items)} done, {len(reach)} reachable"
+            lines.append(f"sprint {sid} “{clip(bl.items[sid].get('title', ''), HOOK_TITLE)}”: "
+                         f"{done}/{len(items)} done, {len(reach)} reachable"
                          + (f", {starts} wait on backlog.py start" if starts else "")
                          + (f", {waiting} wait on the operator or a trigger" if waiting else "")
                          + (f", next {nxt[0]}" if nxt else ""))
             for c, ids in stuck.items():
-                lines.append(f"  waiting on {c}: " + ", ".join(ids[:5]))
+                lines.append(f"  waiting on {clip(c, HOOK_CAUSE)}: " + ", ".join(ids[:5]))
             continue
         lines.append(f"sprint {bl.label(sid)} [{bl.items[sid].get('status')}]: goal {bl.items[sid].get('goal')}")
         lines.append(f"  {done}/{len(items)} done; {len(reach)} more reachable without the operator; "
@@ -1931,13 +1932,36 @@ def cmd_horizon(bl, a):
                 lines.append(f"    {bl.label(i)}")
     text = withhold("\n".join(lines))
     if a.hook:
-        print(json.dumps({"systemMessage": text, "hookSpecificOutput": {
-            "hookEventName": "SessionStart",
-            "additionalContext": text + "\nGoals and critical paths: python3 _tools/backlog.py horizon. "
-                                        "The backlog runbook is kb/_self/backlog.md."}}, ensure_ascii=False))
+        print(hook_json(text))
     else:
         say(text)
     return 0
+
+
+HOOK_MAX = 1000  # characters of the hook's whole stdout (its newline included), which every session in a clone reads
+HOOK_TITLE = 48  # characters of a sprint title on a hook line
+HOOK_CAUSE = 100  # characters of a waiting cause (a gate's question, a trigger) on a hook line
+
+
+def clip(s, n):
+    """s cut to n characters, its last one an ellipsis when cut."""
+    return s if len(s) <= n else s[:n - 1] + "…"
+
+
+def hook_json(text):
+    """The SessionStart hook's JSON for text, under HOOK_MAX: its last lines give way, newest first, to one line
+    naming how many were left out and the command that prints them, whatever the number of sprints."""
+    def dump(t):
+        return json.dumps({"systemMessage": t, "hookSpecificOutput": {
+            "hookEventName": "SessionStart",
+            "additionalContext": t + "\nGoals and critical paths: python3 _tools/backlog.py horizon. "
+                                     "The backlog runbook is kb/_self/backlog.md."}}, ensure_ascii=False)
+    lines, cut, out = text.split("\n"), 0, dump(text)
+    while len(out) + 1 >= HOOK_MAX and lines:
+        lines.pop()
+        cut += 1
+        out = dump("\n".join(lines + [f"(+{cut} more line(s): python3 _tools/backlog.py horizon)"]))
+    return out
 
 
 GITLAB_FINISHED = ("success", "failed", "canceled", "skipped", "manual")  # manual: waits on a person, read by its jobs
