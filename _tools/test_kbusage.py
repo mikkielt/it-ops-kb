@@ -11,6 +11,11 @@
                     prompts' rows; the SessionEnd launcher passes the session id and transcript path to
                     the distill it starts, also while a distill holds the lock; distill writes those rows first;
                     --session and --transcript go together
+  TestWorkUsage     the same rows for every prompt inside a work window of the session (a claim row to the done or
+                    release row of the same item, both prompts included, an open window running to the end of the
+                    spool), kb prompts or not; a prompt outside any window keeps the kb rule; none twice, none for the
+                    running prompt, none for a window that was closed, never opened or another item's; the next
+                    prompt's capture and the distill write them
   TestSidecar       distill writes the usage sidecar beside the run file: one line per written entry with usage,
                     `missing` counting the rest, the store gates pass; a row of another reader version is left out;
                     a second distill writes nothing; delivery copies the sidecar with its run file
@@ -185,6 +190,132 @@ class TestSessionEnd:
     def test_command_line_pairs_session_and_transcript(self):
         p = subprocess.run([sys.executable, QL, "distill", "--session", SID], capture_output=True, text=True)
         assert p.returncode == 2 and "go together" in p.stderr
+
+
+def work_spool(tmp_path, plan, sid=SID):
+    """A session spool of prompts p0, p1, ...: `plan` lists per prompt its kinds, any of "kb" (an mcp row) and
+    "claim:ID", "done:ID", "release:ID" (a work row); returns the spool directory."""
+    sp = tmp_path / "querylog" / "spool"
+    rows, n = [], 0
+    for i, kinds in enumerate(plan):
+        pid = f"p{i}"
+        base = {"session_id": sid, "v": 1, "prompt_id": pid}
+        for surface, extra in [("prompt", {"prompt": "x"})] + [
+                ("mcp", {"tool": "kb_pack"}) if k == "kb" else ("work", dict(zip(("action", "item"), k.split(":"))))
+                for k in kinds]:
+            n += 1
+            rows.append(dict(base, id=f"r{n}", ts=f"2026-09-28T09:{n // 60:02d}:{n % 60:02d}.000Z", surface=surface,
+                             **extra))
+    write_jsonl(sp / f"{sid}.jsonl", rows)
+    return sp
+
+
+def work_transcript(tmp_path, count):
+    """A transcript of prompts p0 .. p<count-1>, each one request of 10 uncached input and i output tokens."""
+    recs = []
+    for i in range(count):
+        recs.append({"type": "user", "promptId": f"p{i}", "message": {"content": "x"}})
+        recs.append({"type": "assistant", "requestId": f"q{i}", "message": {
+            "model": "claude-sonnet-5", "usage": {"input_tokens": 10, "output_tokens": i}, "content": []}})
+    return str(write_jsonl(tmp_path / "t.jsonl", recs))
+
+
+def usage_pids(sp, sid=SID):
+    return [r["prompt_id"] for r in jsonl(sp / f"{sid}.jsonl") if r["surface"] == "usage"]
+
+
+A, B = "TK-aaaaaaaa", "TK-bbbbbbbb"
+
+
+class TestWorkUsage:
+    def test_work_usage_window_kb_and_non_kb_prompts(self, tmp_path):
+        sp = work_spool(tmp_path, [[], ["claim:" + A], [], ["kb"], ["done:" + A], []])
+        t = work_transcript(tmp_path, 6)
+        assert ql_distill.add_usage(sp, SID, t) == 4
+        assert usage_pids(sp) == ["p1", "p2", "p3", "p4"]  # the claim's and the done's prompts, none outside
+        rows = [r for r in jsonl(sp / f"{SID}.jsonl") if r["surface"] == "usage"]
+        assert rows[1]["usage"]["main"] == {"claude-sonnet-5": {"requests": 1, "in": 10, "cw": 0, "cw1h": 0, "cr": 0,
+                                                                "out": 2}}
+        assert all(ql_distill.readable(r) and r["reader"] == kbusage.READER_VERSION for r in rows)
+        text = (sp / f"{SID}.jsonl").read_text(encoding="utf-8")
+        assert t not in text and "transcript" not in text
+
+    def test_work_usage_outside_a_window_keeps_the_kb_rule(self, tmp_path):
+        sp = work_spool(tmp_path, [["kb"], [], ["claim:" + A], ["done:" + A], ["kb"], []])
+        assert ql_distill.add_usage(sp, SID, work_transcript(tmp_path, 6)) == 4
+        assert usage_pids(sp) == ["p0", "p2", "p3", "p4"]  # p1 and p5, outside, are not kb prompts: no row
+
+    def test_work_usage_open_window_runs_to_the_end(self, tmp_path):
+        sp = work_spool(tmp_path, [[], ["claim:" + A], [], []])
+        assert ql_distill.add_usage(sp, SID, work_transcript(tmp_path, 4)) == 3
+        assert usage_pids(sp) == ["p1", "p2", "p3"]
+
+    def test_work_usage_release_closes_the_window(self, tmp_path):
+        sp = work_spool(tmp_path, [["claim:" + A], [], ["release:" + A], []])
+        assert ql_distill.add_usage(sp, SID, work_transcript(tmp_path, 4)) == 3
+        assert usage_pids(sp) == ["p0", "p1", "p2"]
+
+    def test_work_usage_planted_prompts_no_window_covers_get_none(self, tmp_path):
+        """A done with no claim, another item's done, and a window another session holds open the wrong rows: each
+        planted case writes no row for a prompt that is not in a window of its own session."""
+        sp = work_spool(tmp_path, [["done:" + A], [], ["claim:" + A], ["done:" + B], [], ["done:" + A], []])
+        assert ql_distill.add_usage(sp, SID, work_transcript(tmp_path, 7)) == 4
+        assert usage_pids(sp) == ["p2", "p3", "p4", "p5"]  # p0 (done without a claim), p1 and p6 get none
+        other = "9a9a9a9a-0000-4000-8000-00000000dcba"
+        sp2 = work_spool(tmp_path, [[], [], []], sid=other)  # no window in this session, though SID's is open
+        assert ql_distill.add_usage(sp2, other, work_transcript(tmp_path, 3)) == 0
+
+    def test_work_usage_two_items_overlap(self, tmp_path):
+        sp = work_spool(tmp_path, [["claim:" + A], ["claim:" + B], ["done:" + A], [], ["done:" + B], []])
+        assert ql_distill.add_usage(sp, SID, work_transcript(tmp_path, 6)) == 5
+        assert usage_pids(sp) == ["p0", "p1", "p2", "p3", "p4"]  # B holds the window open after A's done
+
+    def test_work_usage_no_duplicate_row_on_a_second_run(self, tmp_path):
+        sp = work_spool(tmp_path, [["claim:" + A], [], ["kb"]])
+        t = work_transcript(tmp_path, 3)
+        assert ql_distill.add_usage(sp, SID, t) == 3
+        before = (sp / f"{SID}.jsonl").read_bytes()
+        assert ql_distill.add_usage(sp, SID, t) == 0
+        assert (sp / f"{SID}.jsonl").read_bytes() == before
+
+    def test_work_usage_a_prompt_with_a_row_gets_none_and_another_reader_does(self, tmp_path):
+        sp = work_spool(tmp_path, [["claim:" + A], [], []])
+        have = {"id": "u1", "ts": "2026-09-28T10:00:00.000Z", "surface": "usage", "v": 1, "session_id": SID,
+                "prompt_id": "p1", "reader": kbusage.READER_VERSION, "usage": P1}
+        with open(sp / f"{SID}.jsonl", "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(have) + "\n" + json.dumps(dict(have, id="u2", prompt_id="p2",
+                                                              reader=kbusage.READER_VERSION + 1)) + "\n")
+        assert ql_distill.add_usage(sp, SID, work_transcript(tmp_path, 3)) == 2
+        assert usage_pids(sp) == ["p1", "p2", "p0", "p2"]
+
+    def test_work_usage_the_running_prompt_is_skipped(self, tmp_path):
+        sp = work_spool(tmp_path, [["claim:" + A], [], []])
+        assert ql_distill.add_usage(sp, SID, work_transcript(tmp_path, 3), skip="p2") == 2
+        assert usage_pids(sp) == ["p0", "p1"]
+
+    def test_work_usage_a_prompt_the_transcript_lacks_gets_none(self, tmp_path):
+        sp = work_spool(tmp_path, [["claim:" + A], [], []])
+        assert ql_distill.add_usage(sp, SID, work_transcript(tmp_path, 2)) == 2
+        assert usage_pids(sp) == ["p0", "p1"]
+
+    def test_work_usage_next_prompt_capture_writes_the_window_rows(self, tmp_path):
+        work_spool(tmp_path, [[], ["claim:" + A], []])
+        event = {"hook_event_name": "UserPromptSubmit", "session_id": SID, "prompt_id": "p3", "prompt": "next",
+                 "transcript_path": work_transcript(tmp_path, 4)}
+        p = subprocess.run([sys.executable, QL, "capture"], input=json.dumps(event).encode("utf-8"),
+                           capture_output=True, env=querylog_env(tmp_path), timeout=60)
+        assert p.returncode == 0 and p.stdout == b""
+        spool = tmp_path / "querylog" / "spool"
+        assert usage_pids(spool) == ["p1", "p2"]  # never the prompt being recorded (p3), nor p0 before the claim
+
+    def test_work_usage_distill_writes_the_window_rows_first(self, tmp_path):
+        q = tmp_path / "querylog"
+        work_spool(tmp_path, [[], ["claim:" + A], [], ["kb"]])
+        said = []
+        ql_distill.distill(qdir=q, cfg=q / "config.json", haiku=echo, now_dt=NOW, run_id=RUN_ID,
+                                kb_commit="0" * 40, out=said.append, usage_from=(SID, work_transcript(tmp_path, 4)))
+        assert said[0] == "distill: usage rows written: 3", said
+        assert usage_pids(q / "spool") == ["p1", "p2", "p3"]
 
 
 def plant(qdir, usage_rows=True, reader=None):

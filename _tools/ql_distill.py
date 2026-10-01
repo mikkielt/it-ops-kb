@@ -2,8 +2,8 @@
 file in the local store. Per lookup the question the kb was asked (never the prompt) after the rules and the leak
 scan, the path:line citations of the kb lines it returned (never the reply), and Haiku's judgement in capped batches;
 no text of Haiku's is stored. Started by SessionEnd with the session's transcript, distill first writes a `usage` row
-per kb prompt of that session (kbusage.prompt_usage), and the usage rows of the written entries become the run's usage
-sidecar. Also the SessionEnd and SessionStart launcher that starts a detached distill.
+per kb prompt of that session and per prompt inside one of its work windows (ql_capture.add_usage), and the usage rows
+of the written entries become the run's usage sidecar. Also the SessionEnd and SessionStart launcher that starts a detached distill.
 
 Distill reads every row format capture has written (ROW_FORMAT, format 0 for a row without `v`) and skips and counts a
 row it cannot read.
