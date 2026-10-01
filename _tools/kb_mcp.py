@@ -104,7 +104,7 @@ TOOL_LIST = [
                     "a file), optionally only facts carrying some tag kinds (e.g. UNK, COMMUNITY).",
      "inputSchema": {"type": "object", "properties": {
          "prefix": {"type": "string"},
-         "tags": {"type": "array", "items": {"type": "string", "enum": ["DOC", "CODE", "DER", "COMMUNITY", "UNK"]}},
+         "tags": {"type": "array", "items": {"type": "string", "enum": ["DOC", "CODE", "DER", "COMMUNITY", "UNK", "DECISION"]}},
          "root": ROOT,
          "response_format": {**FORMAT, "default": "concise"}},
          "required": ["prefix"], "additionalProperties": False},

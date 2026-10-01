@@ -1,0 +1,37 @@
+{
+  "id": "TK-t75xkwrc",
+  "kind": "task",
+  "title": "kbdecide.py rejects a proposal with invalidate and guards supersede and restore",
+  "status": "todo",
+  "parent": "ST-rcceqbdr",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "invalidate accepts a proposed decision as well as an active one, with --reason, and needs no maker for it (check.py accepts an invalidated row with no by or by_ref that was never active); supersede and restore refuse without --by operator, while invalidate stays open to agents for the context sweep; tests named kbdecide_withdraw plant each refusal and the rejected proposal.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbdecide_withdraw"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbdecide.py",
+    "_tools/test_kbdecide.py",
+    "_tools/check.py",
+    "_tools/test_kb_root.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "TK-ydxqes3n"
+  ]
+}

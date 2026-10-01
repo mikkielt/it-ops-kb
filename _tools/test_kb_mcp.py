@@ -1019,6 +1019,21 @@ def imports_arg_problems(default, by_imports):
     return problems
 
 
+def test_decision_tag_is_a_kb_facts_filter(monkeypatch):
+    """kb_facts's tag enum lists every kind kbfacts parses, DECISION included, and a `tags: [DECISION]` call keeps
+    only the facts that cite a decision (planted: a DOC filter leaves that fact out)."""
+    import kbfacts
+    enum = next(t for t in kb_mcp.TOOL_LIST if t["name"] == "kb_facts")["inputSchema"]["properties"]["tags"]["items"]["enum"]
+    assert "DECISION" in enum and enum == list(kbfacts.KINDS)
+    article = ("- Finished jobs are kept 14 days. [DECISION D-k3f7q2zd]\n"
+               "- The spooler purges nightly. [DOC S100]\n- Unconfirmed. [UNK]\n")
+    monkeypatch.setattr(kbfacts, "units", lambda _scope: kbfacts.md_units("public/print/queues.md", article))
+    got = kb_mcp.kb_facts({"prefix": "print", "tags": ["DECISION"], "response_format": "detailed"})
+    assert "Finished jobs are kept 14 days" in got and "spooler purges" not in got and "Unconfirmed" not in got, got
+    only_doc = kb_mcp.kb_facts({"prefix": "print", "tags": ["DOC"], "response_format": "detailed"})
+    assert "Finished jobs are kept" not in only_doc and "spooler purges" in only_doc, only_doc
+
+
 def test_kb_topics_for_imports_arg_reaches_imports_mode(tmp_path):
     schema = next(t for t in kb_mcp.TOOL_LIST if t["name"] == "kb_topics_for")["inputSchema"]
     assert schema["properties"]["imports"]["type"] == "boolean" and "imports" not in schema.get("required", [])

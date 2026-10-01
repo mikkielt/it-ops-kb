@@ -892,6 +892,18 @@ class TestResearch:
         assert ql_research.candidate_problems(cand(), facts) == []
         assert any(why in p for p in ql_research.candidate_problems(cand(**change), facts)), change
 
+    def test_decision_tag_is_never_a_research_tag(self):
+        """Research states facts from documentation (DOC or COMMUNITY): a reply that carries the DECISION tag, as
+        its `tag` or inside its text, is rejected, though every other tool accepts the kind."""
+        import kbfacts
+        assert "DECISION" in kbfacts.KINDS and ql_research.RESEARCH_TAGS == ("DOC", "COMMUNITY")
+        facts = ql_research.fact_lines(ARTICLE_MD)
+        assert ql_research.candidate_problems(cand(), facts) == []
+        assert any("tag 'DECISION' is not one of DOC, COMMUNITY" in p
+                   for p in ql_research.candidate_problems(cand(tag="DECISION"), facts))
+        carried = cand(text="Windows LAPS keeps 14 days of history by decision. [DECISION D-k3f7q2zd]")
+        assert any("text carries a tag" in p for p in ql_research.candidate_problems(carried, facts))
+
     def test_edit_problems(self):
         e = ql_research.edit_problems
         assert e("x/a.md", ARTICLE_MD, ARTICLE_MD.replace("## Reference", "- New. [DOC S1]\n\n## Reference")) == []

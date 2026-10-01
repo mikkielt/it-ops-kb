@@ -29,6 +29,9 @@
   is invalidated, `supersedes` naming other decisions of the file (and every superseded one named by another), an empty or
   valid review_by; a maker with a slug id (unique) and a role; and no name in a row of a root that is not internal or
   of kb/_self (kbcommon.maker_names_allowed: the makers' `name` is empty, and a decision's `by` is its maker's role);
+- every [DECISION <id>] tag names a decision of its own root's _decisions.csv (an id of another root is an error that
+  says so; a tag with no id is one too); files outside the roots (kb/_self, README.md) may cite any root's or
+  kb/_self's decisions, and a first word that does not start `D-` there is a placeholder in prose, not checked;
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
 - every `topic: <domain>/<slug>` marker in a root's _gaps.md and _conflicts.md names a topic of that root.
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
@@ -40,6 +43,8 @@ import kbcommon, kbid
 
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
 TAG = re.compile(r"\[(?:DOC|CODE|DER|COMMUNITY)\s([^\]]+)\]")  # \s: a tag may wrap after DOC
+DECISION_TAG = re.compile(r"\[(?:DOC|CODE|DER|COMMUNITY|UNK|DECISION)\b[^\]]*\]")  # a DECISION part may follow another
+DECISION_PART = re.compile(r"(?:\[|[;,])\s*DECISION\b\s*([^\s:;,\]]*)")  # a part of a tag: its first word is the id
 SKIP = {"_cache", "_private", "node_modules", "__pycache__"}
 errors = []
 
@@ -330,6 +335,37 @@ def cite_error(sid, root, owner, known):
     return f"cites unknown source {sid}"
 
 
+def decision_ids(base):
+    """The ids of the decisions in base's `_decisions.csv`; empty when it has none or cannot be read (check_decisions
+    reports that on the file itself)."""
+    try:
+        rows = kbcommon.load_csv(str(Path(base) / kbcommon.DECISIONS))[1]
+    except kbcommon.CsvError:
+        return set()
+    return {(r.get("id") or "").strip() for r in rows}
+
+
+def decision_cite_error(token, root, decided):
+    """The error for a `[DECISION <token>]` tag in a file of root (None: outside the roots), or None when it names a
+    decision it may cite. `decided` is {root name or None: ids of its _decisions.csv}."""
+    if not kbcommon.DECISION_ID.fullmatch(token):
+        if root is None and not token.startswith("D-"):
+            return None  # prose outside the roots that explains the tag, with a placeholder for the id
+        return f"has a DECISION tag naming {token!r}, not a decision id (D-<8 base32>)" if token else \
+            "has a DECISION tag with no decision id (D-<8 base32>)"
+    if root is None:
+        if any(token in ids for ids in decided.values()):
+            return None
+    elif token in decided[root.name]:
+        return None
+    else:
+        for name, ids in decided.items():
+            if name != root.name and name is not None and token in ids:
+                return (f"cites decision {token} of root {name}; a root cites only its own decisions: record it in "
+                        f"{root.name}/{kbcommon.DECISIONS}")
+    return f"cites unknown decision {token}"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", help="check only this root (default: every root and the files outside them)")
@@ -353,6 +389,8 @@ def main():
                 except kbcommon.CsvError:
                     pass
     known["*"] = set().union(*known.values())
+    decided = {r.name: decision_ids(r.path) for r in roots}  # DECISION tags resolve here; None is kb/_self's file
+    decided[None] = decision_ids(kbcommon.SELF)
     scans = [(r, r.path) for r in roots if not a.root or r.name == a.root]
     if not a.root:
         scans.append((None, kbcommon.HOME))  # this repository outside the roots: kb/_self, _tools/ data, README.md
@@ -401,6 +439,11 @@ def main():
                 for sid in kbid.ANY_ID.findall(tag):
                     cited += 1
                     e = cite_error(sid, root, owner, known)
+                    if e:
+                        errors.append(f"{rel} {e}")
+            for tag in DECISION_TAG.findall(text):
+                for token in DECISION_PART.findall(tag):
+                    e = decision_cite_error(token, root, decided)
                     if e:
                         errors.append(f"{rel} {e}")
             if text.startswith("---\n") and "\ntopic:" in text.split("\n---", 2)[0]:

@@ -34,7 +34,8 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/querylog.md",
     "kb/_self/usage.md",
-    "kb/_self/embedding.md"
+    "kb/_self/embedding.md",
+    "_tools/bench_retrieval.py"
   ],
   "claimed_by": "worker-decision-tag"
 }

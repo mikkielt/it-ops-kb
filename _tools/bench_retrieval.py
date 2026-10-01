@@ -71,7 +71,7 @@ def s_retrieval(b):
         for ln in kbfacts.pack(c["question"])["text"].splitlines():
             where = ln[2:].split(" ", 1)[0] if ln.startswith("- ") else ""
             if where in tagged and ("..." in ln or "…" in ln) and \
-                    not re.search(r"\[(DOC|CODE|DER|COMMUNITY|UNK)[^\]]*\]|tag=|\((DOC|CODE|DER|COMMUNITY|UNK)\)", ln):
+                    not re.search(r"\[(DOC|CODE|DER|COMMUNITY|UNK|DECISION)[^\]]*\]|tag=|\((DOC|CODE|DER|COMMUNITY|UNK|DECISION)\)", ln):
                 cut_no_tag += 1
     b.row("retrieval", "cut facts with no visible tag", "current", "value", cut_no_tag, 1)
     snippets = [u for u in all_units if u["text"].lstrip().startswith("SNIPPET")]

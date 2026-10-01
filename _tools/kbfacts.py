@@ -11,7 +11,7 @@ qualified here as it is read. A prefix (`units`, `audit`, a pack's domain) is qu
 (`intune`: that domain in every root): in_prefix(), scope().
 
 Tag grammar. A tag is `[PART; PART ...]`; a PART is `KIND[/KIND] [from] [IDS] [NOTE]`:
-  KIND  DOC | CODE | DER | COMMUNITY | UNK
+  KIND  DOC | CODE | DER | COMMUNITY | UNK | DECISION
   IDS   source ids (S123, S-k3f7q2zd) separated by commas or spaces
   NOTE  free text after `:`, ` - `, ` — ` or `,` (a derivation, a pointer to _gaps.md, ...)
 CODE is the implementation read at a pinned commit, not a documented contract: `[CODE S-id: path#symbol]` (or
@@ -21,6 +21,9 @@ A `;` or `,` directly followed by a KIND starts the next part, so `[DOC S1208, C
 `[DER S328,S329: different property; Type has no table]` has one. Canonical form: `[DOC S1, S2]`, `[DER S1: how]`,
 `[UNK]` or `[UNK: why]`, `[CODE S1: path#symbol]`. DOC, CODE and COMMUNITY parts must name at least one source id,
 and a CODE part a pointer and a pinned source (kb-verify lint reports those that do not).
+DECISION cites an operator decision of the root's `_decisions.csv`, not a source: `[DECISION D-k3f7q2zd]` or
+`[DECISION D-k3f7q2zd: note]`. Its id is `kbcommon.DECISION_ID`; the part carries it as `part["decision"]` (empty when
+the tag names none) and `part["ids"]` stays empty, so no tool reads a decision id as a source id. check.py resolves it.
 
 Snippets. A bullet that starts `SNIPPET:` introduces the fenced code block right below it: `- SNIPPET: <what it does>;
 context: <versions, prerequisites>; checked: no|syntax|run [DER S1: ...]`. It is an ordinary fact unit (the pack
@@ -56,7 +59,7 @@ import kbcommon, kbid  # noqa: E402
 
 ROOT_LEDGERS = (kbcommon.ANSWERS, kbcommon.GAPS, kbcommon.CONFLICTS)
 
-KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
+KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK", "DECISION")
 _K = "|".join(KINDS)
 SKIP_DIRS = {"_tools", kbcommon.DATA_DIR, "_private", "_cache", "_census", "_self", "artifacts", kbcommon.SNAPSHOTS}
 TAG = re.compile(rf"\[(?:{_K})\b[^\]]*\]")
@@ -65,6 +68,7 @@ _PART_SPLIT = re.compile(rf"\s*[;,]\s*(?=(?:{_K})\b)")
 _PART = re.compile(rf"({_K})(?:/({_K}))?\b\s*(?:from\s+)?"
                    rf"((?:{kbid.ID_PATTERN})(?:[\s,]+(?:{kbid.ID_PATTERN})\b)*)?(.*)", re.S)  # every root's id prefix
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
+_DECISION_PART = re.compile(rf"DECISION\b\s*({kbcommon.DECISION_ID.pattern}\b)?(.*)", re.S)
 csv.field_size_limit(2**31 - 1)
 
 
@@ -75,6 +79,11 @@ def parse_tag(tag):
     inner = " ".join(tag.strip()[1:-1].split())
     parts = []
     for seg in _PART_SPLIT.split(inner):
+        d = _DECISION_PART.match(seg)
+        if d:  # its id is a decision's, not a source's: kept apart from `ids`
+            parts.append({"kind": "DECISION", "ids": [], "decision": d.group(1) or "",
+                          "note": d.group(2).strip().lstrip(":,—–- ").strip()})
+            continue
         m = _PART.match(seg)
         if not m:  # a `;` inside a note: belongs to the previous part
             if parts:
