@@ -30,6 +30,21 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does land find a live process in a worker's worktree, and what does it do where it cannot look?",
+      "options": [
+        "/proc/<pid>/cwd on Linux, lsof -d cwd on other POSIX hosts, none on Windows; where it cannot look it says so and removes the clean worktree",
+        "lsof +D <path> on POSIX only; where it cannot look it refuses",
+        "ps on POSIX, PowerShell Get-CimInstance on Windows (no working directory there, so command lines only)"
+      ],
+      "recommendation": "/proc/<pid>/cwd on Linux, lsof -d cwd on other POSIX hosts, none on Windows; where it cannot look it says so and removes the clean worktree",
+      "answer": "/proc/<pid>/cwd on Linux, lsof -d cwd on other POSIX hosts, none on Windows; where it cannot look it says so and removes the clean worktree",
+      "by": "agent"
+    }
+  ],
   "notes": "SP-3brmvlnh retrospective: a worker left a ten-minute intake run with tests.py under it, and another left monitors that woke the orchestrator a dozen times.",
   "claimed_by": "worker-blstack2"
 }

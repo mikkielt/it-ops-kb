@@ -2882,6 +2882,59 @@ class TestBacklogLand:
         path = self.worker_tree(ld, where=where)
         self.refused_kept(ld, path, "not under .claude/worktrees/")
 
+    # a worker that left a background command running in its worktree: land refuses to remove the worktree from
+    # under it, naming the pid; planted: a process check blind to it removes the worktree, which the check catches.
+    # The test names differ in their first 30 characters (pytest's tmp_path cut, beside which the remote sits).
+    @staticmethod
+    def sleeper(path):
+        if backlog.live_processes(path)[0] is None:
+            pytest.skip(f"no process check on this host: {backlog.live_processes(path)[1]}")
+        return subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"], cwd=path)
+
+    @staticmethod
+    def check_refused_naming(code, out, pid):
+        assert code == 1 and "land stopped at step branch" in out and f"pid {pid} (" in out, out
+        assert "a process still runs there" in out, out
+
+    def test_pid_named_land_refuses_live_worker_process(self, landing):
+        ld = landing
+        path = self.worker_tree(ld)
+        child = self.sleeper(path)
+        try:
+            code, out = self.land(ld)
+            self.check_refused_naming(code, out, child.pid)
+            assert path.exists() and self.worktree_listed(ld, path), out
+            assert "locked claude agent" in self.out(ld["repo"], "worktree", "list", "--porcelain")
+        finally:
+            child.kill()
+            child.wait()
+        code, out = self.land(ld)  # the process gone: the clean worktree is removed as before
+        assert code == 0 and "removed the finished worker's worktree" in out, out
+
+    def test_planted_blind_land_refuses_live_worker_process(self, landing, monkeypatch, capsys):
+        ld = landing
+        path = self.worker_tree(ld)
+        child = self.sleeper(path)
+        try:
+            monkeypatch.setattr(backlog, "live_processes", lambda p: ([], None))  # planted: sees nothing
+            other = backlog.checked_out_elsewhere(ld["repo"], f"work/{ld['tk']}")
+            why = backlog.release_worker_worktree(ld["repo"], *other)
+            with pytest.raises(AssertionError):
+                self.check_refused_naming(1 if why else 0, f"land stopped at step branch: {why}", child.pid)
+        finally:
+            child.kill()
+            child.wait()
+
+    def test_unchecked_host_land_refuses_live_worker_process(self, landing, monkeypatch, capsys):
+        """A host with no way to list processes does not refuse: land says it could not check and goes on."""
+        ld = landing
+        path = self.worker_tree(ld)
+        monkeypatch.setattr(backlog, "live_processes", lambda p: (None, "no /proc and no lsof on this host"))
+        other = backlog.checked_out_elsewhere(ld["repo"], f"work/{ld['tk']}")
+        assert backlog.release_worker_worktree(ld["repo"], *other) is None
+        out = capsys.readouterr().out
+        assert "could not check" in out and "no lsof" in out and not path.exists(), out
+
     def test_backlog_land_refuses_kb_trailers(self, landing):
         code, out = b(landing["repo"], "land", landing["tk"], "--trailer", f"KB-Work: {landing['tk']}")
         assert code == 1 and "--trailer" in out, out

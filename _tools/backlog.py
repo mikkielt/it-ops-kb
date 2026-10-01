@@ -101,7 +101,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           once it has merged ends as a content item does. A re-run before the merge
                                           says it waits, and when the request is open, mergeable, set to auto-merge
                                           and its pipeline was skipped (GitLab, glab signed in; else nothing more),
-                                          names the glab mr merge command that merges it. Stops at the first failing
+                                          names the glab mr merge command that merges it. A finished worker's clean
+                                          worktree that Claude Code left locked is removed, unless a process still
+                                          runs in it (refused, naming each pid; a host that cannot list them: a note,
+                                          and it is removed). Stops at the first failing
                                           step, naming it (exit 1); a failed rebase is aborted
   backlog.py drop ID --why TEXT          status dropped (an item outside any sprint is deleted: git keeps it)
   backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo;
@@ -178,7 +181,7 @@ stored, and no part of readiness. An item without `knowledge` costs nothing: the
 Every line that names an item prints its id and its title together, except a title check found holding a piece of
 this host's computer or user name, which is withheld.
 """
-import argparse, base64, copy, functools, getpass, hashlib, json, os, re, secrets, shlex, socket, subprocess, sys, threading
+import argparse, base64, copy, functools, getpass, hashlib, json, os, re, secrets, shlex, shutil, socket, subprocess, sys, threading
 from pathlib import Path
 
 import bl_intake
@@ -2357,6 +2360,53 @@ WORKER_LOCK = "claude agent"
 WORKER_DIR = (".claude", "worktrees")  # under the clone's main checkout
 
 
+def live_processes(path):
+    """([(pid, command)], None) of the processes whose working directory is PATH or under it, or (None, why) when this
+    host gives no way to tell: Linux reads /proc/<pid>/cwd, other POSIX hosts (macOS) ask `lsof -d cwd` for every
+    process's working directory; Windows exposes no process's working directory to the standard library, so it is
+    never checked there. Never signals a process."""
+    target = os.path.realpath(path)
+
+    def inside(cwd):
+        return cwd == target or cwd.startswith(target.rstrip(os.sep) + os.sep)
+
+    if os.name == "nt":
+        return None, "Windows does not expose a process's working directory"
+    proc = Path("/proc")
+    if (proc / "self" / "cwd").exists():
+        out = []
+        for d in proc.iterdir():
+            if not d.name.isdigit():
+                continue
+            try:
+                cwd = os.readlink(d / "cwd")
+                comm = (d / "comm").read_text(encoding="utf-8", errors="replace").strip()
+            except OSError:  # gone, or another user's
+                continue
+            if inside(cwd):
+                out.append((int(d.name), comm))
+        return sorted(out), None
+    lsof = shutil.which("lsof")
+    if not lsof:
+        return None, "no /proc and no lsof on this host"
+    try:
+        p = subprocess.run([lsof, "-n", "-P", "-w", "-d", "cwd", "-Fpcn"], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=30)
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, f"lsof failed: {e}"
+    out, pid, comm, seen = [], None, "", False
+    for ln in p.stdout.splitlines():
+        if ln.startswith("p") and ln[1:].isdigit():
+            pid, comm, seen = int(ln[1:]), "", True
+        elif ln.startswith("c"):
+            comm = ln[1:]
+        elif ln.startswith("n") and pid is not None and inside(ln[1:]):
+            out.append((pid, comm))
+    if not seen:  # lsof lists at least itself: nothing read means it could not look
+        return None, f"lsof listed no process (exit {p.returncode})"
+    return sorted(set(out)), None
+
+
 def release_worker_worktree(root, path, lock):
     """Remove the finished worker's worktree PATH that holds the branch land needs: unlocked, then `git worktree
     remove` (never --force). Only a worktree under the clone's .claude/worktrees/ whose lock reason starts with
@@ -2377,6 +2427,13 @@ def release_worker_worktree(root, path, lock):
     if code or out:
         return (f"it is locked ({lock}) and has uncommitted changes: commit or discard them there, then "
                 f"git worktree unlock and git worktree remove it")
+    procs, unchecked = live_processes(path)
+    if procs:  # the worker left background work running there: removing the worktree would pull it from under it
+        named = ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
+        return (f"it is locked ({lock}) and a process still runs there: {named}; end it (the worker ends every "
+                f"background command and monitor it started), then run land again")
+    if unchecked:
+        say(f"land: could not check {path} for live processes ({unchecked}); removing it as a clean worker's")
     code, out = run_git("worktree", "unlock", str(path))
     if code:
         return f"git worktree unlock: {out}"
