@@ -36,6 +36,9 @@ test_sprint_worker_starts_from_orchestrator_tip*  .claude/settings.json sets wor
 test_code_mr_merge_retry*  after `land` sends a code/<id> merge request, /kb-sprint run step 4 and /kb-item step 7 read
                 it (glab mr view) and retry an auto-merge that failed (state opened with a merge_error) once with a
                 plain glab mr merge, naming the error; the runbook agrees. Planted: each rule taken out.
+test_sprint_brief_known_failures*  /kb-sprint run's brief names each test the orchestrator knows fails on the host, with
+                the bug filed for it (id and title) and its cause, so a worker files no duplicate and guesses no cause;
+                the runbook agrees. Planted: each rule taken out.
 test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
                 (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
                 goes with text; a planted ignored argument is caught.
@@ -504,6 +507,61 @@ def test_code_mr_merge_retry_planted_failures(i, old, new):
     assert planted != texts[i], f"plant does not apply: {old!r}"
     texts[i] = planted
     assert code_mr_merge_retry_problems(*texts), f"not caught: {old!r} -> {new!r}"
+
+
+KNOWN_FAILURES = "known failing tests"
+
+
+def sprint_brief_known_failures_problems(sprint, runbook):
+    """What is wrong with how /kb-sprint run's brief (`sprint`) and the runbook (`runbook`) name the tests the
+    orchestrator already knows fail on the host: each with its bug and cause, so a worker files no duplicate and
+    guesses no cause. [] when nothing."""
+    problems = []
+    step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", md_section(sprint, "## run [SP]"))
+    brief = [l for l in (step3.group(0) if step3 else "").splitlines() if l.lstrip().startswith("- ")]
+    work = md_section(runbook, "## Working on items")
+    for where, lines in (("/kb-sprint run's brief", brief), ("the runbook's Working on items", work.splitlines())):
+        line = next((l for l in lines if KNOWN_FAILURES in l), "")
+        if not line:
+            problems.append(f"{where} does not name the {KNOWN_FAILURES}")
+            continue
+        for phrase in ("fails on the host", "the bug filed for it", "id and title", "its cause", "files it again",
+                       "guesses a cause", "worker's to file"):
+            if phrase not in line:
+                problems.append(f"{where} does not say {phrase!r} with the {KNOWN_FAILURES}")
+    return problems
+
+
+def sprint_brief_known_failures_texts():
+    texts = []
+    for rel in (KB_SPRINT, RUNBOOK):
+        with open(os.path.join(KB, rel), encoding="utf-8") as f:
+            texts.append(f.read())
+    return texts
+
+
+def test_sprint_brief_known_failures():
+    """/kb-sprint run's brief names each test the orchestrator knows fails on the host, with its bug and cause
+    (SP-rhgeod5g, where two workers each filed a duplicate bug with a wrong cause)."""
+    assert sprint_brief_known_failures_problems(*sprint_brief_known_failures_texts()) == []
+
+
+@pytest.mark.parametrize("i, old, new", [
+    (0, "   - the known failing tests: ", "   - the failing tests: "),
+    (0, "with the bug filed for it (id and title) and its cause", "if any"),
+    (0, "so the worker neither files it again nor guesses a cause", "for the record"),
+    (0, "a failure the brief does not name is the worker's to file", "the worker skips any failure"),
+    (1, "and the known failing tests: ", "and the failing tests: "),
+    (1, "with the bug filed for it (id and title) and its cause", "if any"),
+    (1, "so a worker neither files it again nor guesses a cause", "for the record"),
+])
+def test_sprint_brief_known_failures_planted_failures(i, old, new):
+    """Each rule fails on a planted copy of the sprint skill or the runbook without it."""
+    texts = sprint_brief_known_failures_texts()
+    planted = texts[i].replace(old, new, 1)
+    assert planted != texts[i], f"plant does not apply: {old!r}"
+    texts[i] = planted
+    assert sprint_brief_known_failures_problems(*texts), f"not caught: {old!r} -> {new!r}"
 
 
 class TestKbServer:
