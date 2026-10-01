@@ -15,7 +15,7 @@ TestSelfdocInGit   (marker git) a throwaway repo with a map, two docs and the fi
                    the gate judges the pushed range, so backlog-item and query-log commits need no Self-Reviewed
                    trailer while code without its doc update still fails (`-k selfdoc_range_review`).
 """
-import functools, glob, os, re, shlex
+import functools, glob, os, pathlib, re, shlex
 
 import pytest
 
@@ -435,6 +435,37 @@ class TestSelfdocToolsMap:
                     if name.startswith("test_"):  # read from the tokens, so a `def test_x` inside a string does not count
                         found.add(f"{p.relative_to(selfdoc.KB).as_posix()}:{no}")
         assert tests == found and found
+
+    @staticmethod
+    def backlog_rows(text):
+        """The command cell of each `backlog.py` row of a tools.md table, split into its subcommands."""
+        rows = []
+        for ln in text.splitlines():
+            m = re.match(r"\| `python3 _tools/backlog\.py ([^`]*)` \|", ln)
+            if m and m.group(1) != "SUBCOMMAND ...":
+                rows.append([a.strip() for a in m.group(1).split("\\|")])
+        return rows
+
+    @staticmethod
+    def backlog_row_problems(rows, known):
+        problems = [f"row lists {len(r)} subcommands" for r in rows if len(r) > 5]
+        names = [a.split(" --")[0] for r in rows for a in r]
+        problems += [f"{n} is no backlog.py subcommand" for n in names if n not in known]
+        if len(rows) < 12:
+            problems.append(f"only {len(rows)} rows")
+        return problems
+
+    def test_tools_md_backlog_row_per_subcommand(self):
+        """tools.md gives backlog.py one row per subcommand (a few share a row), so edits to different ones touch
+        different lines. Planted: the old single row naming them all fails."""
+        known = set(re.findall(r'add_parser\("([a-z-]+)"\)', pathlib.Path(selfdoc.KB, "_tools", "backlog.py").read_text(encoding="utf-8")))
+        known.add("gate add")
+        text = pathlib.Path(selfdoc.KB, S, "tools.md").read_text(encoding="utf-8")
+        rows = self.backlog_rows(text)
+        assert self.backlog_row_problems(rows, known) == []
+        merged = "| `python3 _tools/backlog.py new\\|find\\|check\\|show\\|next\\|claim\\|done` | the backlog |"
+        assert self.backlog_row_problems(self.backlog_rows(merged), known), "planted: one row for many subcommands"
+        assert self.backlog_row_problems(self.backlog_rows(text.replace("backlog.py find`", "backlog.py findx`")), known)
 
     def test_tools_map_this_repository_tampered_map_fails(self):
         lines = selfdoc.map_tools("selfdoc")
