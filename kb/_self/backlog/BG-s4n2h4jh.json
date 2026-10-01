@@ -1,0 +1,23 @@
+{
+  "id": "BG-s4n2h4jh",
+  "kind": "bug",
+  "title": "sync's foreign-session refusal names no override for a session that no longer exists",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "When kbgit.py sync --push refuses commits made by another Claude session, its message says how to push them when that session is gone (a restarted or resumed orchestrator landing its own earlier work/<id> commits): --session <its Claude-Session url> or KB_SESSION, so the refusal is never a dead end; a TestSyncForeignSession test asserts the refusal names the override. Found by the SP-x2pvljz6 review (F3, ST-huvwo6cj).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; s=pathlib.Path('_tools/kbgit.py').read_text(encoding='utf-8'); i=s.index('were made by another Claude session'); sys.exit(0 if '--session' in s[i:i+600] else 1)"
+    ]
+  },
+  "repro_reason": "the refusal only shows in a git fixture whose local range holds another session's commit; the test that builds it is part of the fix, so the repro reads the message text sync prints until then",
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md"
+  ]
+}
