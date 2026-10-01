@@ -61,7 +61,7 @@ Tools that do part of what this kb does, what each overlaps with, how it differs
 | capability | this kb | nearest alternatives |
 |---|---|---|
 | provenance per fact (source row, publisher, licence, date, tag) | every fact line | none of the tools above; RAG platforms cite the chunk's document |
-| answer without a model when covered | the `kb:` hook on a `good` pack | none; each returns text for a model to read |
+| answer without a model when covered | the `kb:` hook on a `good` pack (`backlog:` from `backlog.py`) | none; each returns text for a model to read |
 | "not covered" as a first-class result | `none` verdict and a `_gaps.md` entry | none; search tools return their nearest hits |
 | retrieval dependencies | Python standard library, persisted BM25 index | embedding models, vector stores, Elasticsearch, GGUF models or a hosted API |
 | freshness evidence | source dates, anchored passages, fact diff, census tags | hosted services re-crawl on their own schedule; local indexers re-index on request |

@@ -13,6 +13,11 @@
                     the 10,000 characters Claude Code keeps.
   kb+: <question>   always let the prompt through (the model reasons over it): a clean good pack attached with a short
                     instruction, a pack with a route as for kb:.
+  backlog: [text]   run `backlog.py horizon` and `backlog.py next --all --any` (subprocesses; the text is not read) and
+                    block the prompt with their output as the reason: no model call. A command that fails or times out
+                    lets the prompt through with a note of what failed.
+  backlog+: [text]  always let the prompt through: the same output as additionalContext with a short instruction, cut so
+                    the context stays under the limit.
   anything else     no output: the prompt goes to the model unchanged.
 
 The same script answers a PreToolUse event on Bash or PowerShell (a JSON event with `tool_input`): a command that reads a
@@ -28,13 +33,19 @@ plugin, so a prompt without the prefix returns before kbfacts (and the kb) is lo
 writes one query log spool row (querylog.record: the question, the verdict, the articles and the kb lines
 (path:line, tag, verdict) the pack returned, whether the hook answered it), after the answer is printed.
 """
-import json, os, re, sys
+import json, os, re, subprocess, sys
 
 PREFIX = re.compile(r"^\s*kb(\+)?\s*:\s*(\S.*)$", re.I | re.S)
+BACKLOG_PREFIX = re.compile(r"^\s*backlog(\+)?\s*:", re.I)
+BACKLOG_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backlog.py")
+BACKLOG_COMMANDS = (("horizon",), ("next", "--all", "--any"))  # the plain-words backlog question's two answers
+BACKLOG_TIMEOUT = 60
 LIMIT = 9500  # additionalContext is capped at 10,000 characters (kb/public/claude/hooks.md); keep the margin
 HEAD_LINES = ("coverage:", "check:", "freshness:", "route:", "kb has:", "kb lacks:")
 NOTE = ("\n\n(answered by the kb hook from the kb alone, without the model; ask again with `kb+:` to have Claude "
         "reason over these facts)")
+BACKLOG_NOTE = ("\n\n(answered by the backlog hook from backlog.py alone, without the model; ask again with `backlog+:` "
+                "to have Claude reason over this output)")
 
 
 def answer(prompt):
@@ -44,6 +55,9 @@ def answer(prompt):
 
 def respond(prompt):
     """(the hook's answer or None, the query log fields of a `kb:` prompt or None)."""
+    b = BACKLOG_PREFIX.match(prompt or "")
+    if b:  # no query log row: the answer is the backlog's own state, not a kb lookup
+        return backlog_answer(bool(b.group(1))), None
     m = PREFIX.match(prompt or "")
     if not m:
         return None, None
@@ -67,6 +81,40 @@ def respond(prompt):
                "it with path:line and source urls. Search the kb again only if the pack misses what was asked."
                + "\n\n" + res["text"])
     return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, dict(row, answered=False)
+
+
+def backlog_output():
+    """(the output of each BACKLOG_COMMANDS entry joined under its command line, None) or (None, what failed)."""
+    parts = []
+    for args in BACKLOG_COMMANDS:
+        shown = "backlog.py " + " ".join(args)
+        try:
+            p = subprocess.run([sys.executable, BACKLOG_PY, *args], capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=BACKLOG_TIMEOUT, cwd=os.path.dirname(os.path.dirname(BACKLOG_PY)),
+                               env=dict(os.environ, PYTHONUTF8="1"))
+        except (OSError, subprocess.SubprocessError) as e:
+            return None, f"`{shown}` could not run: {type(e).__name__}"
+        if p.returncode != 0:
+            last = ((p.stderr or p.stdout).strip().splitlines() or ["no output"])[-1]
+            return None, f"`{shown}` exited {p.returncode}: {last}"
+        parts.append(f"$ {shown}\n{p.stdout.rstrip()}")
+    return "\n\n".join(parts), None
+
+
+def backlog_answer(forward):
+    """The answer to a `backlog:` prompt (block, the output as the reason) or `backlog+:` (the output as context)."""
+    text, error = backlog_output()
+    if text is None:  # never block a prompt on a tool that does not run
+        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                       "additionalContext": f"The backlog hook could not read the backlog: {error}"}}
+    if not forward:
+        return {"decision": "block", "reason": text + BACKLOG_NOTE}
+    head = ("The backlog hook ran `backlog.py horizon` and `backlog.py next --all --any` for this question. Answer from "
+            "their output, naming item ids; run another backlog.py command only if it misses what was asked.\n\n")
+    lines = text.splitlines()
+    while lines and len(head) + len("\n".join(lines)) > LIMIT:  # over 10,000 characters the context is saved to a file
+        lines.pop()
+    return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": head + "\n".join(lines)}}
 
 
 def routed(res):

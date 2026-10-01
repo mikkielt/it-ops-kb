@@ -509,6 +509,86 @@ class TestKbHookRoute:
         assert self.INSTRUCTION not in ctx and ctx.endswith("coverage: good")
 
 
+class TestBacklogPrompt:
+    """kb_hook on `backlog:` and `backlog+:` prompts: backlog.py's output is the answer, or the model's context."""
+    FAKE = ("import pathlib, sys\n"
+            "if (pathlib.Path(__file__).parent / 'fail').exists():\n"
+            "    sys.exit('planted failure')\n"
+            "print('FAKE ' + ' '.join(sys.argv[1:]))\n"
+            "for i in range(int(pathlib.Path(__file__).with_name('long').read_text())):\n"
+            "    print(f'line {i} ' + 'x' * 100)\n")
+
+    def fake(self, tmp_path, monkeypatch, long=0, fail=False):
+        script = tmp_path / "_tools" / "backlog.py"
+        script.parent.mkdir()
+        script.write_text(self.FAKE, encoding="utf-8", newline="\n")
+        (script.parent / "long").write_text(str(long), encoding="utf-8")
+        if fail:
+            (script.parent / "fail").write_text("", encoding="utf-8")
+        monkeypatch.setattr(kb_hook, "BACKLOG_PY", str(script))
+
+    def test_backlog_prompt_is_answered_and_blocked(self, tmp_path, monkeypatch):
+        self.fake(tmp_path, monkeypatch)
+        for prompt in ("backlog: what is next?", "  Backlog:", "backlog:what is blocked"):
+            out, row = kb_hook.respond(prompt)
+            assert row is None and set(out) == {"decision", "reason"} and out["decision"] == "block", (prompt, out)
+            assert out["reason"].startswith("$ backlog.py horizon\nFAKE horizon\n\n$ backlog.py next --all --any\n"
+                                            "FAKE next --all --any"), out["reason"]
+            assert "without the model" in out["reason"] and "`backlog+:`" in out["reason"]
+
+    def test_backlog_prompt_plus_passes_the_same_output_to_the_model(self, tmp_path, monkeypatch):
+        self.fake(tmp_path, monkeypatch)
+        out, row = kb_hook.respond("backlog+: what is next?")
+        assert row is None and "decision" not in out
+        ctx = out["hookSpecificOutput"]["additionalContext"]
+        assert out["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+        assert "Answer from their output" in ctx and ctx.endswith("$ backlog.py horizon\nFAKE horizon\n\n"
+                                                                   "$ backlog.py next --all --any\nFAKE next --all --any")
+        assert kb_hook.respond("backlog: x")[0]["reason"].startswith(ctx.split("\n\n", 1)[1])
+
+    def test_backlog_prompt_plus_context_is_cut_to_the_limit(self, tmp_path, monkeypatch):
+        self.fake(tmp_path, monkeypatch, long=300)
+        ctx = kb_hook.respond("backlog+: x")[0]["hookSpecificOutput"]["additionalContext"]
+        assert len(ctx) <= kb_hook.LIMIT and "FAKE horizon" in ctx and "line 0 " in ctx and "line 299 " not in ctx
+        assert len(kb_hook.respond("backlog: x")[0]["reason"]) > 10000, "the block reason is shown to the user whole"
+
+    def test_backlog_prompt_command_that_fails_never_blocks_the_prompt(self, tmp_path, monkeypatch):
+        self.fake(tmp_path, monkeypatch, fail=True)
+        for prompt in ("backlog: x", "backlog+: x"):
+            out, row = kb_hook.respond(prompt)
+            ctx = out["hookSpecificOutput"]["additionalContext"]
+            assert row is None and "decision" not in out, (prompt, out)
+            assert "`backlog.py horizon` exited 1: planted failure" in ctx, ctx
+        monkeypatch.setattr(kb_hook, "BACKLOG_PY", str(tmp_path / "missing" / "backlog.py"))
+        assert "decision" not in kb_hook.respond("backlog: x")[0]
+        monkeypatch.setattr(kb_hook, "BACKLOG_TIMEOUT", 0.001)
+        monkeypatch.setattr(kb_hook, "BACKLOG_PY", str(tmp_path / "_tools" / "backlog.py"))
+        assert "TimeoutExpired" in kb_hook.respond("backlog: x")[0]["hookSpecificOutput"]["additionalContext"]
+
+    def test_backlog_prompt_only_a_leading_prefix_counts(self):
+        for prompt in ("my backlog: x", "backlogs: x", "backlog x", "backlog", "fix the backlog: it is slow", ""):
+            assert kb_hook.BACKLOG_PREFIX.match(prompt) is None, prompt
+            assert kb_hook.answer(prompt) is None, prompt
+
+    def test_backlog_prompt_end_to_end_without_loading_the_kb(self, tmp_path):
+        def hook(prompt):
+            p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=json.dumps({"prompt": prompt}),
+                               capture_output=True, text=True, encoding="utf-8", cwd=KB, timeout=timeout_s(60),
+                               env=querylog_env(tmp_path))
+            assert p.returncode == 0, p.stderr
+            return json.loads(p.stdout)
+        out = hook("backlog: what is next?")
+        assert out["decision"] == "block" and out["reason"].startswith("$ backlog.py horizon\n"), out["reason"][:200]
+        assert "\n\n$ backlog.py next --all --any\n" in out["reason"]
+        ctx = hook("backlog+: what is next?")["hookSpecificOutput"]["additionalContext"]
+        assert "$ backlog.py horizon\n" in ctx and "$ backlog.py next --all --any\n" in ctx
+        p = subprocess.run([sys.executable, "-c", "import sys, kb_hook; kb_hook.answer('backlog: x'); "
+                            "sys.exit('kbfacts' in sys.modules)"], cwd=TOOLS, capture_output=True, text=True,
+                           encoding="utf-8", timeout=timeout_s(60))
+        assert p.returncode == 0, "a backlog: prompt must not load kbfacts"
+        assert not list((tmp_path / "querylog" / "spool").rglob("*.jsonl")), "a backlog: prompt writes no query log row"
+
+
 class TestRawReadNudge:
     """kb_hook on a PreToolUse Bash or PowerShell event: a whole-file read of a kb article gets a hint and runs; all else is silent."""
     READS = ["cat kb/public/claude/hooks.md", "cat ./kb/public/claude/hooks.md kb/public/ad/gpo.md",
