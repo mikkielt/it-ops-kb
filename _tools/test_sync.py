@@ -27,6 +27,10 @@
                            and files one bug item, and the next run files none; research (ql_research) and ingest
                            (kbingest.py) push nothing and start no `git push` or `git commit`; a planted direct push,
                            through the pusher's `run` or around it, and a planted push in a writer's source fail.
+  TestSyncGateTests        (`tests.py -k sync_gate_`) the gate's tests.py run keeps the git scenarios of the test files a
+                           changed tool selects: a planted tool change that breaks one fails the gate (real pytest over a
+                           planted tree), a content-only change leaves its own out; a change to kbgit.py or querylog.py
+                           collects TestCloudInGit.
 """
 import ast, contextlib, csv, io, json, os, re, shutil, subprocess
 from pathlib import Path
@@ -987,3 +991,98 @@ class TestAutonomousWrite:
         assert writer_push_calls(source) == [], module
         planted = source + '\n\ndef sneak(repo):\n    return git(repo, "push", "origin", "HEAD:main")\n'
         assert writer_push_calls(planted) == [len(planted.splitlines())]
+
+
+class TestSyncGateTests:
+    """The gate's tests.py run (`tests.py -k sync_gate_`): a fast run keeps the git scenarios of the test files the
+    changed code selects (TestCloudInGit for kbgit.py and querylog.py), and leaves out those only kb content selects."""
+
+    PLANTED = {"_tools/widget.py": ["_tools/test_widget.py"], "kb/public/x.md": ["_tools/test_content.py"]}
+
+    @staticmethod
+    def plant(root, value):
+        """A tree of its own: a tool, its test file with a git scenario that passes only when the tool's VALUE is 1
+        (and leaves a mark), and a content test file whose git scenario always fails."""
+        tools = Path(root, "_tools")
+        tools.mkdir(parents=True, exist_ok=True)
+        (tools / "conftest.py").write_text('def pytest_configure(config):\n    config.addinivalue_line("markers", "git: x")\n'
+                                           '    config.addinivalue_line("markers", "stress: x")\n', encoding="utf-8", newline="\n")
+        (tools / "widget.py").write_text(f"VALUE = {value}\n", encoding="utf-8", newline="\n")
+        mark = "@pytest.mark.git"
+        (tools / "test_widget.py").write_text("\n".join([
+            "import os, pytest, widget", "", "", "def test_fast():", "    pass", "", "", mark, "def test_slow():",
+            "    open(os.path.join(os.path.dirname(__file__), 'ran-slow'), 'w').close()", "    assert widget.VALUE == 1", ""]),
+            encoding="utf-8", newline="\n")
+        (tools / "test_content.py").write_text("\n".join([
+            "import pytest", "", "", "def test_fast():", "    pass", "", "", mark, "def test_slow():", "    assert False", ""]),
+            encoding="utf-8", newline="\n")
+        return tools
+
+    def gate(self, monkeypatch, root, paths):
+        """kbgit's gate over PATHS, its tests.py run in this process over the planted tree (real pytest, no xdist):
+        (passed, the tests.py line of the report)."""
+        import sys, testmap
+        import tests as tests_py
+
+        def select(ps):
+            nodes = sorted({n for p in ps for n in self.PLANTED.get(p, [])})
+            return (nodes or testmap.NONE), []
+
+        def tool(name, *args, env=None):
+            if name != "tests.py":
+                return 0, "ok"
+            with monkeypatch.context() as m:
+                for k, v in (env or {}).items():
+                    m.setenv(k, v)
+                return tests_py.main(list(args)), ""
+        monkeypatch.delenv("KB_SYNC_NO_TESTS", raising=False)
+        monkeypatch.setattr(tests_py, "KB", str(root))
+        monkeypatch.setattr(tests_py, "TOOLS", str(Path(root, "_tools")))
+        monkeypatch.setattr(tests_py, "pytest_cmd", lambda: [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider"])  # -B: no stale .pyc
+        monkeypatch.setattr(tests_py, "XDIST", ["-n", "0"])
+        monkeypatch.setattr(testmap, "changed", lambda rev: sorted(paths))
+        monkeypatch.setattr(testmap, "select", select)
+        monkeypatch.setattr(kbgit, "gate_paths", lambda up: set(paths))
+        monkeypatch.setattr(kbgit, "trailer_audit", lambda rng, quiet=False, **k: (0, 0, []))
+        monkeypatch.setattr(kbgit, "tool", tool)
+        r = {"target": "origin/main"}
+        ok = kbgit.gate(r, "origin/main")
+        return ok, {label: out for label, out, _ in r["gate"]}["tests.py (changed)"]
+
+    def test_sync_gate_runs_changed_slow_tests(self, tmp_path, monkeypatch):
+        """Planted: a tool change that breaks a git scenario of its test file fails the gate (with every git scenario
+        left out, as KB_TESTS_FAST=1 did, it passed); the fixed tool passes, the scenario having run; a content-only
+        change leaves its failing git scenario out."""
+        tools = self.plant(tmp_path, 2)
+        ok, out = self.gate(monkeypatch, tmp_path, ["_tools/widget.py"])
+        assert not ok and out.startswith("FAILED"), out
+        (tools / "ran-slow").unlink()
+        self.plant(tmp_path, 1)
+        ok, out = self.gate(monkeypatch, tmp_path, ["_tools/widget.py", "kb/public/x.md"])
+        assert ok and out.startswith("ok"), out
+        assert (tools / "ran-slow").exists()
+        (tools / "ran-slow").unlink()
+        ok, out = self.gate(monkeypatch, tmp_path, ["kb/public/x.md"])
+        assert ok, out
+        assert not (tools / "ran-slow").exists()
+
+    def test_sync_gate_selects_cloud_scenarios(self):
+        """A change to kbgit.py or querylog.py: the gate's fast run keeps the git scenarios of test_ql_deliver.py, and
+        pytest collects TestCloudInGit with that run's -m (and not with the content run's); kb content alone keeps the
+        fast run, and a run that is not fast is one run."""
+        import sys
+        import tests as tests_py
+        node = "_tools/test_ql_deliver.py"
+        for path in ("_tools/kbgit.py", "_tools/querylog.py"):
+            runs = tests_py.plan([path], True)
+            assert runs[0][1] == tests_py.FULL_M and node in runs[0][0], (path, runs)
+            assert tests_py.plan([path], False) == [(runs[0][0], tests_py.FULL_M)]
+        content = tests_py.plan(["kb/public/README.md"], True)
+        assert [m for _, m in content] == [tests_py.FAST_M], content
+        mixed = tests_py.plan(["_tools/kbgit.py", "kb/public/README.md"], True)
+        assert mixed[0][1] == tests_py.FULL_M and all(m == tests_py.FAST_M for _, m in mixed[1:]), mixed
+        for m, want in ((runs[0][1], True), (tests_py.FAST_M, False)):
+            p = subprocess.run([sys.executable, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", "-n", "0",
+                                "-m", m, tests_py.target(node)], cwd=os.path.dirname(TOOLS), capture_output=True,
+                               text=True, encoding="utf-8", errors="replace")
+            assert ("TestCloudInGit" in p.stdout) == want, (m, p.stdout[-2000:] + p.stderr[-2000:])
