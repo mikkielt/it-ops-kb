@@ -2,7 +2,7 @@
   "id": "ST-t6dc2pz7",
   "kind": "story",
   "title": "Self-Reviewed is never a way past the stale gate",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -33,5 +33,27 @@
     "kb/_self/backlog.md",
     "AGENTS.md"
   ],
-  "claimed_by": "c-t6dc2pz7"
+  "evidence": {
+    "commit": "85afb48c9acbb39cec1152d2d63e0dfe1c5594e6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;fs=[\".claude/agents/kb-worker.md\",\".claude/skills/kb-sprint/SKILL.md\",\"kb/_self/maintaining.md\"];sys.exit(0 if all(\"Self-Reviewed\" in pathlib.Path(f).read_text(encoding=\"utf-8\") for f in fs) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
