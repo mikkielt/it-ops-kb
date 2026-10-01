@@ -1,0 +1,29 @@
+{
+  "id": "ST-7lngzqng",
+  "kind": "story",
+  "title": "A goal that says every or whatever is tested over its input range",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The kb-worker brief, the kb-backlog skill and kb/_self/backlog.md say that an item whose goal claims a property for every input or whatever input (every item, whatever number of commits) proves it with a test over a range of inputs, including sizes and steps that share a factor or change between runs, not one case its author chose; a cohesion test holds the wording. Answers SP-5cwekumc's retrospective: ST-xq3ghjhb's check advanced one commit per run and passed while the review showed the rotation never reaches some items (BG-3q6fviow).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "goal_every_needs_range_test"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/test_kb_cohesion.py",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ]
+}
