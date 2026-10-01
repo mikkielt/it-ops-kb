@@ -2655,6 +2655,15 @@ def cmd_drop(bl, a):
     users = [i for i, x in bl.items.items() if iid in x.get("depends_on", []) and x.get("status") != "dropped"]
     if users:
         raise Refused(f"{bl.label(iid)} is a dependency of " + ", ".join(bl.label(u) for u in users[:5]))
+    # a dropped item that depended on this one keeps no link to it: check reports a dependency on a dropped item
+    for i, x in bl.items.items():
+        if x.get("status") == "dropped" and iid in x.get("depends_on", []):
+            left = [d for d in x["depends_on"] if d != iid]
+            if left:
+                x["depends_on"] = left
+            else:
+                x.pop("depends_on")
+            bl.save(x)
     if not bl.sprint_of(iid):
         label = bl.label(iid)
         for d in bl.descendants(iid):
