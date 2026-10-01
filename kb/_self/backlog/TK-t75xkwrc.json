@@ -2,7 +2,7 @@
   "id": "TK-t75xkwrc",
   "kind": "task",
   "title": "kbdecide.py rejects a proposal with invalidate and guards supersede and restore",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rcceqbdr",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,27 @@
   "depends_on": [
     "TK-ydxqes3n"
   ],
-  "claimed_by": "worker-kbdecide-withdraw"
+  "evidence": {
+    "commit": "f2e682b0882eb3c543f02a85caaa3ae86de52841",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbdecide_withdraw"
+        ],
+        "exit": 0,
+        "sha256": "234dcf3fed42ef2a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "8e44965e62fe70bd"
+      }
+    ]
+  }
 }
