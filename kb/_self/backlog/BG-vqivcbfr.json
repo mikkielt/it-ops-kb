@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "An item filed into an active sprint without touches is done with no commit",
   "status": "draft",
+  "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

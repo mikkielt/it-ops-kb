@@ -4,6 +4,7 @@
   "title": "A revert's bug can name a job whose retry passed, so its --job repro is green at once",
   "status": "draft",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-mguj7foz",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,5 +16,14 @@
       "-k",
       "pipeline_failure_skips_a_retried_job"
     ]
-  }
+  },
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/test_ql_deliver.py",
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/querylog.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
 }

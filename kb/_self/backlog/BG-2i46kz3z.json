@@ -4,6 +4,7 @@
   "title": "answer --record refuses a second gate of one item whose answer text repeats the first",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-ld5jtjhm",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

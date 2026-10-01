@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The fingerprint misses GitLab.com's stream marker on a continuation line (01O+ with no space)",
   "status": "draft",
+  "sprint": "SP-mguj7foz",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -20,12 +21,14 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "fingerprint"
+        "fingerprint_continuation_stream_marker"
       ]
     }
   ],
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

@@ -23,5 +23,6 @@
         "eval"
       ]
     }
-  ]
+  ],
+  "notes": "Kept as a draft: kb/_self/_decisions.csv holds no decision row yet, so there is nothing to calibrate on; start when real decisions exist."
 }

@@ -16,5 +16,13 @@
         "host_test_lock_waits"
       ]
     }
-  ]
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/stress_test.py",
+    "_tools/test_testmap.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "notes": "Kept as a draft: the operator has not asked for it. tests.py, stress_test.py and conftest.py hold no host lock, so two sessions' full runs overlap on one host."
 }

@@ -15,5 +15,12 @@
         "test_backlog_check_refuses_leak_in_item_text"
       ]
     }
-  ]
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Kept as a draft: the operator has not asked for it. backlog.py never calls kbcommon.leak_hits, so an item's text is not scanned before commit."
 }

@@ -4,6 +4,7 @@
   "title": "kbdecide sweep leaves a decision active when its item was dropped outside a sprint",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-ld5jtjhm",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

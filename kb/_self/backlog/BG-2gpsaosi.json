@@ -4,6 +4,7 @@
   "title": "red-pipeline --job on GitHub skips a run whose job list it cannot read",
   "status": "draft",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-mguj7foz",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,5 +16,11 @@
       "-k",
       "red_pipeline_job_github_unreadable_is_unverified"
     ]
-  }
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
 }

@@ -4,6 +4,7 @@
   "title": "kb_http read_chunked caps only chunk data at --max-body, so chunk extensions and trailers let one request make the server read far past the limit",
   "status": "draft",
   "parent": "EP-5sc7hr36",
+  "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -21,12 +22,16 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "kb_http"
+        "kb_http_chunk_extensions_capped"
       ]
     }
   ],
   "touches": [
     "_tools/kb_http.py",
-    "_tools/test_kb_http.py"
+    "_tools/test_kb_http.py",
+    "kb/_self/design.md",
+    "kb/_self/hosting.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
   ]
 }

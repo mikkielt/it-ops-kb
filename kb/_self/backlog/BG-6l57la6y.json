@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A CODE pointer cannot name an extensionless script such as src/adr-new",
   "status": "draft",
+  "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -13,5 +14,24 @@
       "-c",
       "import sys; sys.path.insert(0, '_tools'); import kbfacts; p = kbfacts.tags_in('- x [CODE S1: src/adr-new#newid]'); sys.exit(0 if kbfacts.code_pointer(p[0]) else 1)"
     ]
-  }
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_kb_lookup.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Should code_pointer accept a CODE tag whose path has no extension (a shell script in a repository's src directory), or should the kb contract name that as a limit? Recommended: accept it, since ingested repositories hold such scripts and a named limit leaves their CODE facts without a pointer.",
+      "options": [
+        "Accept an extensionless path",
+        "Keep the limit and name it in the kb contract"
+      ],
+      "recommendation": "Accept an extensionless path"
+    }
+  ]
 }

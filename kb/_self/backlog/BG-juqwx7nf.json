@@ -4,6 +4,7 @@
   "title": "check.py does not resolve DECISION tags in CSV data rows",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-ld5jtjhm",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

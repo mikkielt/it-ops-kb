@@ -1,0 +1,20 @@
+{
+  "id": "SP-djri7fqp",
+  "kind": "sprint",
+  "title": "Docs and lints say what the code does",
+  "status": "planned",
+  "goal": "kb/_self docs, a fixture and two public articles agree with the code they describe, the observed-run lint and the selfdoc section-reference checks accept ordinary text and refuse dead references, and the two DER facts name their version",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

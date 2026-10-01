@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbingest map's .NET value shapes accept the machine's own host and user names",
   "status": "draft",
+  "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -14,5 +15,10 @@
       "-k",
       "kbingest_map_dotnet_machine_names"
     ]
-  }
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "kb/_self/tools.md"
+  ]
 }

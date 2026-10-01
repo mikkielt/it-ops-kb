@@ -4,6 +4,7 @@
   "title": "The observed-run lint takes any dotted number for a version and flags 'in the long run'",
   "status": "draft",
   "parent": "EP-5p4ahbnq",
+  "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -17,6 +18,8 @@
   },
   "touches": [
     ".claude/skills/kb-verify/lint.py",
-    "_tools/test_kb_lookup.py"
+    "_tools/test_kb_lookup.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
   ]
 }

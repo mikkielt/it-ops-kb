@@ -4,6 +4,7 @@
   "title": "red-pipeline makes up to 100 job-list calls in a row when no recent main pipeline was started",
   "status": "draft",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-mguj7foz",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,5 +16,14 @@
       "-k",
       "red_pipeline_bounds_job_list_calls"
     ]
-  }
+  },
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/test_ql_deliver.py",
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/querylog.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
 }

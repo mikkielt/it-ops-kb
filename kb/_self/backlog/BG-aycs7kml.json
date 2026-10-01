@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "Knowledge state with --root mixes the other clone's refs with this clone's pack and conflicts",
   "status": "draft",
+  "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -20,7 +21,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "knowledge_state"
+        "knowledge_state_root_uses_its_own_refs"
       ]
     }
   ],

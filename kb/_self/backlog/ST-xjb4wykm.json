@@ -37,7 +37,8 @@
   ],
   "depends_on": [
     "ST-4mcoplex",
-    "ST-ykvho3zp"
+    "ST-ykvho3zp",
+    "ST-c35i7vjx"
   ],
   "gates": [
     {
@@ -72,5 +73,5 @@
     "kb/public/defender/asr-and-antivirus.md",
     "kb/public/_gaps.md (windows/dev-drive entries)"
   ],
-  "notes": "Machine changes are the operator's: no agent changes Defender, disks or CPU caps. Each option is timed with the same command before and after, on an idle host, and the result goes in the report. What each option gives up: no change keeps full synchronous scanning at the measured cost; a Dev Drive keeps scanning but defers it until after the open (less protection than synchronous, more than an exclusion), needs 50 GB, admin rights and a second volume, and its trust must be re-applied if moved; a folder exclusion stops scanning of that folder entirely and must never be the per-user Temp folder; a contextual OnAccess exclusion still lets on-demand and behaviour scans run. The CI container is not helped by a host scratch-root change: whether host scanning reaches writes inside the hypervisor-isolated container is an open gap (kb/public/_gaps.md, windows/dev-drive). Gate scratch-root stays open on purpose (operator, 2026-09-30): no machine change until the Defender recording and ST-ykvho3zp “Test kb copies are hard links of a scanned per-session template” show what first-read cost is left; ask it again with those numbers."
+  "notes": "Machine changes are the operator's: no agent changes Defender, disks or CPU caps. Each option is timed with the same command before and after, on an idle host, and the result goes in the report. What each option gives up: no change keeps full synchronous scanning at the measured cost; a Dev Drive keeps scanning but defers it until after the open (less protection than synchronous, more than an exclusion), needs 50 GB, admin rights and a second volume, and its trust must be re-applied if moved; a folder exclusion stops scanning of that folder entirely and must never be the per-user Temp folder; a contextual OnAccess exclusion still lets on-demand and behaviour scans run. The CI container is not helped by a host scratch-root change: whether host scanning reaches writes inside the hypervisor-isolated container is an open gap (kb/public/_gaps.md, windows/dev-drive). Gate scratch-root stays open on purpose (operator, 2026-09-30): no machine change until the Defender recording and ST-ykvho3zp “Test kb copies are hard links of a scanned per-session template” show what first-read cost is left; ask it again with those numbers. Kept as a draft: the operator has not scheduled the test-speed epic EP-hlnsqx4f. Its checks name _tools/perfcheck.py and _tools/test_ids_baseline.txt, which ST-c35i7vjx \"A tool proves a test-suite speed-up lost no test\" creates, so that story comes first."
 }

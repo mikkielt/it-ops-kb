@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "benchmarks.py records table shows only the first arm of an armed scenario's record",
   "status": "draft",
+  "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -20,21 +21,14 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "benchmark"
-      ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/benchmarks.py",
-        "report",
-        "--check"
+        "bench_records_every_arm"
       ]
     }
   ],
   "touches": [
     "_tools/bench_report.py",
     "_tools/test_benchmarks.py",
-    "kb/_self/reports/benchmarks.md"
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/tools.md"
   ]
 }

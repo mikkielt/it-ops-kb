@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "done names a code/<task> merge request that sync never opened when the range began with another item",
   "status": "draft",
+  "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -27,6 +28,8 @@
   ],
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

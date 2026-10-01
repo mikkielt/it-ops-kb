@@ -4,6 +4,7 @@
   "title": "backlog.py close leaves other items' depends_on and relates_to naming the items it deleted, so check fails",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,5 +16,11 @@
       "-k",
       "close_drops_links_to_deleted_items"
     ]
-  }
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
 }

@@ -1,0 +1,24 @@
+{
+  "id": "BG-ghvb2cxr",
+  "kind": "bug",
+  "title": "benchmarks report prints files_read with five decimals",
+  "status": "draft",
+  "sprint": "SP-4i5quwba",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bench_report.fmt formats the files_read metric like turns and tool_calls (one decimal), so the navigation table reads 1.7, not 1.66667",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bench_report as b;sys.exit(0 if b.fmt('files_read','1.666667')=='1.7' else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_report.py",
+    "_tools/test_benchmarks.py",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ]
+}

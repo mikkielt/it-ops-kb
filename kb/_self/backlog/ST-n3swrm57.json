@@ -47,5 +47,5 @@
     "kb/_self/reports/test-suite-speed.md",
     "kb/public/gitlab/git-test-repositories.md (gc.auto, maintenance.auto, GIT_CONFIG_COUNT)"
   ],
-  "notes": "Measured: git commit --allow-empty in a full kb clone takes 0.14 s, 0.10 s with gc.auto=0 and maintenance.auto=false; tests.py runs about 262 git commits and 6,900 git calls. Expected saving: under a minute of worker time; it also removes detached background maintenance that can hold files while a test deletes its directory. The test has a planted failure: with the two settings removed from git_env it must fail."
+  "notes": "Measured: git commit --allow-empty in a full kb clone takes 0.14 s, 0.10 s with gc.auto=0 and maintenance.auto=false; tests.py runs about 262 git commits and 6,900 git calls. Expected saving: under a minute of worker time; it also removes detached background maintenance that can hold files while a test deletes its directory. The test has a planted failure: with the two settings removed from git_env it must fail. Kept as a draft: the operator has not scheduled the test-speed epic EP-hlnsqx4f. Its checks name _tools/perfcheck.py and _tools/test_ids_baseline.txt, which ST-c35i7vjx \"A tool proves a test-suite speed-up lost no test\" creates, so that story comes first."
 }

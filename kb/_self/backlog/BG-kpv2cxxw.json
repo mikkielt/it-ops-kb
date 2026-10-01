@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb_mcp.py upstream() falls back to origin/HEAD instead of the integration remote",
   "status": "draft",
+  "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +14,14 @@
       "-c",
       "import sys, pathlib; sys.exit(int('origin/' in pathlib.Path('_tools/kb_mcp.py').read_text(encoding='utf-8')))"
     ]
-  }
+  },
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_mcp.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/embedding.md"
+  ]
 }

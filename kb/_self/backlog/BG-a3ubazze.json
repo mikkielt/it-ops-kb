@@ -4,6 +4,7 @@
   "title": "backlog.py new refuses a genuine repro whose tool under test has a SyntaxError or passes on exit 127",
   "status": "draft",
   "parent": "EP-5p4ahbnq",
+  "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -18,6 +19,7 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

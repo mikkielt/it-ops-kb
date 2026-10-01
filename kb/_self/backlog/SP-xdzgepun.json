@@ -1,0 +1,20 @@
+{
+  "id": "SP-xdzgepun",
+  "kind": "sprint",
+  "title": "Backlog commands keep the backlog valid",
+  "status": "planned",
+  "goal": "backlog.py check, new, close and horizon refuse or report exactly what breaks the backlog: knowledge refs read from HEAD and only for live items, docs outside a code task's touches, items filed without touches, dangling links after close, and name-check, repro and project-path edge cases; the items that cite the dropped work say what the repository holds",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

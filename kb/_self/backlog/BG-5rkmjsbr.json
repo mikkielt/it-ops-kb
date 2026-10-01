@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py done misses a code-lane commit that renames a code path into a content path",
   "status": "draft",
+  "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -17,6 +18,8 @@
   },
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

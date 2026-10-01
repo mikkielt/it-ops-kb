@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "Knowledge refs are resolved against the working tree, not HEAD",
   "status": "draft",
+  "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -20,12 +21,14 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "knowledge_refs"
+        "knowledge_refs_read_from_head"
       ]
     }
   ],
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

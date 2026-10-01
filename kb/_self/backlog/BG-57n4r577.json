@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "No planted-failure test for land's refusal of a missing branch or one checked out in another worktree",
   "status": "draft",
+  "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

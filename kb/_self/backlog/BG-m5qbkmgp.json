@@ -4,6 +4,7 @@
   "title": "project_paths misses an scp-style remote without a user and can crash on a non-ASCII remote",
   "status": "draft",
   "parent": "EP-5p4ahbnq",
+  "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -17,6 +18,8 @@
   },
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

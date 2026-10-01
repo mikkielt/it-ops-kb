@@ -4,6 +4,7 @@
   "title": "A pack never prints a SNIPPET's code, so the h2_applock pack lacks @LockTimeout = 0 and sp_releaseapplock",
   "status": "draft",
   "parent": "EP-c7fzjhge",
+  "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -21,12 +22,15 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "TestRoute"
+        "pack_prints_snippet_code"
       ]
     }
   ],
   "touches": [
     "_tools/kbfacts.py",
-    "_tools/test_route.py"
+    "_tools/test_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
   ]
 }

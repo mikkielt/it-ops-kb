@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb_change_router.py exits 1 with a traceback on a non-string prompt",
   "status": "draft",
+  "sprint": "SP-ld5jtjhm",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -16,6 +17,8 @@
   },
   "touches": [
     ".claude/hooks/kb_change_router.py",
-    "_tools/test_change_router.py"
+    "_tools/test_change_router.py",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md"
   ]
 }

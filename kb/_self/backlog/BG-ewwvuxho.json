@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "tests.py given a test file still runs every test file",
   "status": "draft",
+  "sprint": "SP-4i5quwba",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -19,12 +20,15 @@
       "run": [
         "python3",
         "_tools/tests.py",
-        "_tools/test_testmap.py"
+        "-k",
+        "tests_py_file_argument_runs_only_that_file"
       ]
     }
   ],
   "touches": [
     "_tools/tests.py",
-    "_tools/test_testmap.py"
+    "_tools/test_testmap.py",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
   ]
 }

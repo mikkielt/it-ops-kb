@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb-sprint run and kb-item claim without --commit, so land stops at clean tree",
   "status": "draft",
+  "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

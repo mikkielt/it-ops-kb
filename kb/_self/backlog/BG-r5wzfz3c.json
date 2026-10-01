@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A first kbgit.py publish refuses official GUIDs and doc-example addresses that the tracked-file leak scan accepts",
   "status": "draft",
+  "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -17,6 +18,7 @@
   },
   "touches": [
     "_tools/kbpublic.py",
-    "_tools/test_kbpublic.py"
+    "_tools/test_kbpublic.py",
+    "kb/_self/git.md"
   ]
 }

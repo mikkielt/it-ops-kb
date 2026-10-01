@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "git.md says GitHub CI is run by hand on the runners, but kb.yml runs on every push on GitHub's hosted runners",
   "status": "draft",
+  "sprint": "SP-djri7fqp",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

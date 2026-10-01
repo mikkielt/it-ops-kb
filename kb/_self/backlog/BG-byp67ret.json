@@ -4,6 +4,7 @@
   "title": "selfdoc's section-reference match accepts any leading word of a heading, such as (querylog.md, The)",
   "status": "draft",
   "parent": "EP-hsyx42zz",
+  "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

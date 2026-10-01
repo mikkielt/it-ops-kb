@@ -4,6 +4,7 @@
   "title": "The change router's once-per-session marker survives /compact and /clear, so a later change request after compaction gets no routing",
   "status": "draft",
   "parent": "EP-hsyx42zz",
+  "sprint": "SP-ld5jtjhm",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

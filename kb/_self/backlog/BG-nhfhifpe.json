@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "benchmarks.py nav_result parses claude stream-json tested only on synthetic streams",
   "status": "draft",
+  "sprint": "SP-4i5quwba",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -20,12 +21,13 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "navigation"
+        "navigation_recorded_stream"
       ]
     }
   ],
   "touches": [
     "_tools/fixtures/navigation",
-    "_tools/test_benchmarks.py"
+    "_tools/test_benchmarks.py",
+    "kb/_self/tools.md"
   ]
 }

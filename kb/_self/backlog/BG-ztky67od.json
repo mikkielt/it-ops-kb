@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The pre-push lane refusal refuses a merge-pull of content, and misses a push by url or another remote name",
   "status": "draft",
+  "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

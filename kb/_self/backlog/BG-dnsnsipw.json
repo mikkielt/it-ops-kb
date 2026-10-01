@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The end-to-end fixture's about text names the deleted test_kb.py",
   "status": "draft",
+  "sprint": "SP-djri7fqp",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -13,5 +14,8 @@
       "-c",
       "import sys; from pathlib import Path; sys.exit(1 if 'test_kb.py' in Path('_tools/fixtures/querylog/e2e.json').read_text(encoding='utf-8') else 0)"
     ]
-  }
+  },
+  "touches": [
+    "_tools/fixtures/querylog/e2e.json"
+  ]
 }

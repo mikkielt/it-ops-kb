@@ -1,0 +1,20 @@
+{
+  "id": "SP-eqmblr7t",
+  "kind": "sprint",
+  "title": "kbingest map runs nothing from the repository",
+  "status": "planned",
+  "goal": "kbingest map runs no program a repository names (cargo config rustc, PATH entries under its clone), leaves the machine's host and user names and MSBuild message text out of the map, and the mapping docs and CODE pointers state the limits of the read-only forms",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

@@ -4,6 +4,7 @@
   "title": "backlog.py check stays silent when a code task's docs sit in a sibling, an earlier task or its parent",
   "status": "draft",
   "parent": "EP-hsyx42zz",
+  "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

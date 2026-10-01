@@ -39,5 +39,5 @@
     "kb/_self/reports/test-suite-speed.md",
     "kb/public/python/pytest.md (--collect-only -q, pytest @file, exit code 5)"
   ],
-  "notes": "_tools/test_ids_baseline.txt is the id list of tests.py and stress_test.py at the commit before the epic's first change (1,223 ids: 1,134 by tests.py plus the 89 stress ids); a later story that adds tests appends their ids, and one that removes a test id needs the operator's word. A planted-failure test is one that plants a defect and asserts a check reports it; the id comparison proves each is still collected, tests.py proves each still passes."
+  "notes": "_tools/test_ids_baseline.txt is the id list of tests.py and stress_test.py at the commit before the epic's first change (1,223 ids: 1,134 by tests.py plus the 89 stress ids); a later story that adds tests appends their ids, and one that removes a test id needs the operator's word. A planted-failure test is one that plants a defect and asserts a check reports it; the id comparison proves each is still collected, tests.py proves each still passes. Kept as a draft: the operator has not scheduled the test-speed epic EP-hlnsqx4f. perfcheck.py and test_ids_baseline.txt do not exist yet, and every other story of the epic waits on them."
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "horizon and its hook do not show an approved planned sprint while another sprint is active",
   "status": "draft",
+  "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

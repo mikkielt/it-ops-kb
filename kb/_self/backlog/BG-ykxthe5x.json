@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb-sprint and kb-backlog skills do not name backlog.py move and reopen",
   "status": "draft",
+  "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

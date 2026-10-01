@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py check fails on knowledge refs of items nobody is working on",
   "status": "draft",
+  "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -20,7 +21,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "knowledge_refs"
+        "knowledge_refs_active_items_only"
       ]
     }
   ],

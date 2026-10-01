@@ -1,0 +1,20 @@
+{
+  "id": "SP-ld5jtjhm",
+  "kind": "sprint",
+  "title": "Decisions and the change router stay exact",
+  "status": "planned",
+  "goal": "check.py resolves DECISION tags in CSV rows, answer --record and the kbdecide sweep keep decisions in step with their items' gates and drops, the change router routes after compaction and on any prompt type, and settings.json allows the read-only id, usage and query-log show commands",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
