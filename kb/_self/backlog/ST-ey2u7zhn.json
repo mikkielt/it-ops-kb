@@ -2,7 +2,7 @@
   "id": "ST-ey2u7zhn",
   "kind": "story",
   "title": "A session reads which paths other sessions hold from the backlog, not from messages",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
     "kb/_self/tools.md",
     "AGENTS.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "worker-blstack2"
 }
