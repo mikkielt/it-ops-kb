@@ -2,7 +2,7 @@
   "id": "ST-xq3ghjhb",
   "kind": "story",
   "title": "intake's drift detector reaches every eligible item over successive runs, not the same first few",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-5cwekumc",
   "priority": "P3",
@@ -25,5 +25,19 @@
     "kb/_self/tools.md"
   ],
   "notes": "BG-vubkpech bounded drift to a 30 s budget; on the repository it then checks the same first items in id order every run and leaves most of the eligible ones unchecked.",
-  "claimed_by": "c-xq3ghjhb"
+  "evidence": {
+    "commit": "7bf2c2827965da4c2f655d755d05a33c01bc7ab2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_drift_rotates"
+        ],
+        "exit": 0,
+        "sha256": "49dba6424fa841ff"
+      }
+    ]
+  }
 }
