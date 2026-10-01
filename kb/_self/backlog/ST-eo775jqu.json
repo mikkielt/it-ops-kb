@@ -2,7 +2,7 @@
   "id": "ST-eo775jqu",
   "kind": "story",
   "title": "Closing a query-log finding never borrows a work item's trailer",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-5cwekumc",
   "priority": "P2",
@@ -30,5 +30,19 @@
     "kb/_self/maintaining.md",
     "AGENTS.md"
   ],
-  "claimed_by": "c-eo775jqu"
+  "evidence": {
+    "commit": "f216cd7c6baf188fd0d36bb0e3d83bf28c4517ec",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "querylog_close_trailer"
+        ],
+        "exit": 0,
+        "sha256": "e8255a66bde2d878"
+      }
+    ]
+  }
 }
