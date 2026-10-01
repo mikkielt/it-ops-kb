@@ -2,7 +2,7 @@
   "id": "ST-qvwm7h5h",
   "kind": "story",
   "title": "land reports a mergeable code merge request whose auto-merge has not fired",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x2pvljz6",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,6 @@
     "_tools/fixtures/forge_mr/**",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-qvwm7h5h"
 }
