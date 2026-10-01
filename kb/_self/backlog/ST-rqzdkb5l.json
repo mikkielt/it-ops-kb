@@ -2,7 +2,7 @@
   "id": "ST-rqzdkb5l",
   "kind": "story",
   "title": "backlog.py move sets an item's sprint and status; reopen returns a done item to work",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-xb45i7t4",
   "priority": "P2",
@@ -27,5 +27,19 @@
   "depends_on": [
     "ST-wgzgijlw"
   ],
-  "claimed_by": "worker-rqzdkb5l"
+  "evidence": {
+    "commit": "aaaa44bcb37b5ba5c7bfd767dcf4d22c824938d4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_move"
+        ],
+        "exit": 0,
+        "sha256": "c90338652f7c739b"
+      }
+    ]
+  }
 }
