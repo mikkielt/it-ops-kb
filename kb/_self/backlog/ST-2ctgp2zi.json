@@ -1,0 +1,24 @@
+{
+  "id": "ST-2ctgp2zi",
+  "kind": "story",
+  "title": "kb/_self/tools.md gives backlog.py one row per subcommand, so two sessions' edits rebase without a conflict",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py's commands in kb/_self/tools.md are one row (or sub-list entry) per subcommand instead of one line, so edits to different subcommands touch different lines; selfdoc.py check and the tools-map test pass",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "tools_map"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md"
+  ],
+  "notes": "SP-3brmvlnh retrospective: the single backlog.py row conflicted on four rebases across three sessions."
+}

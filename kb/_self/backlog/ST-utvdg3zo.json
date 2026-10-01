@@ -1,0 +1,29 @@
+{
+  "id": "ST-utvdg3zo",
+  "kind": "story",
+  "title": "A sprint worker ends every background process and monitor before it returns",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": ".claude/agents/kb-worker.md and the kb-sprint brief tell a worker to end every background command and monitor it started before returning, and land refuses a branch whose worker worktree still has a live process, naming it; a test plants a worktree with a live child process",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_refuses_live_worker_process"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "AGENTS.md"
+  ],
+  "notes": "SP-3brmvlnh retrospective: a worker left a ten-minute intake run with tests.py under it, and another left monitors that woke the orchestrator a dozen times."
+}

@@ -1,0 +1,30 @@
+{
+  "id": "ST-csdjyfat",
+  "kind": "story",
+  "title": "A planning commit that names an item carries that item's file",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "check-trailers refuses a backlog-planning commit whose KB-Work names an item whose file the commit does not change, and the kb-sprint and kb-backlog skills edit items with backlog.py set instead of hand edits to the JSON; a test plants a planning commit naming two items that changes one",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_trailers_planning_commit_names_item"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/git.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md"
+  ],
+  "notes": "SP-3brmvlnh retrospective: ec181b58 named ST-igaxxamb but changed only TK-hft3uklk; the hand edit had been refused by a guard whose error showed on another call."
+}
