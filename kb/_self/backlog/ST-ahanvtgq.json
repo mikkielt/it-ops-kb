@@ -7,7 +7,7 @@
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
-  "goal": "The async SessionStart hook that runs red-pipeline --hook runs backlog.py intake --file --hook instead: silent, bounded by a timeout, writes draft item files that stay uncommitted until /kb-backlog triage commits them, never commits or pushes; /kb-backlog triage lists intake's uncommitted drafts first; the query log digest counts the week's intake candidates by detector",
+  "goal": "An async SessionStart hook runs backlog.py intake --file --hook (the offline detectors) beside the red-pipeline --hook one, which keeps reading main's pipeline: silent, bounded by a timeout, writes draft item files that stay uncommitted until /kb-backlog triage commits them, never commits or pushes; /kb-backlog triage lists intake's uncommitted drafts first; the query log digest counts the week's intake candidates by detector",
   "checks": [
     {
       "run": [
@@ -23,5 +23,20 @@
     "ST-qouhlhni",
     "ST-f2ravix7",
     "ST-uzqoj5du"
+  ],
+  "gates": [
+    {
+      "id": "hooks",
+      "kind": "blocking",
+      "question": "intake's ci check overruns the SessionStart budget after drift; how should the hooks run?",
+      "options": [
+        "two hooks: offline intake --file --hook, and red-pipeline --hook as before",
+        "one hook, ci detector first",
+        "one hook as built"
+      ],
+      "recommendation": "two hooks: offline intake --file --hook, and red-pipeline --hook as before",
+      "answer": "two hooks: offline intake --file --hook, and red-pipeline --hook as before",
+      "by": "operator"
+    }
   ]
 }

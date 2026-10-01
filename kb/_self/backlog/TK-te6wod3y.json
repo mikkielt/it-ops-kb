@@ -6,7 +6,7 @@
   "parent": "ST-ahanvtgq",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.md's bug sources, tools.md's backlog.py commands, querylog.md's Reporting and maintaining.md's setup describe intake, each detector, its fingerprint and the uncommitted drafts; selfdoc.py stale prints nothing; kb/_self/map.csv maps _tools/bl_*.py to backlog.md and tools.md as it maps ql_ and kg_ modules; backlog.md no longer says intake reads no clock where the drift detector now spends a time budget",
+  "goal": "backlog.md's bug sources, tools.md's backlog.py commands, querylog.md's Reporting and maintaining.md's setup describe intake, each detector, its fingerprint and the uncommitted drafts; selfdoc.py stale prints nothing; kb/_self/map.csv maps _tools/bl_*.py to backlog.md and tools.md as it maps ql_ and kg_ modules; backlog.md no longer says intake reads no clock where the drift detector now spends a time budget; git.md names the intake SessionStart hook beside red-pipeline where it lists the hooks; the docs name the detector <name> link intake adds to the items it files",
   "checks": [
     {
       "run": [
@@ -21,7 +21,8 @@
     "kb/_self/tools.md",
     "kb/_self/querylog.md",
     "kb/_self/maintaining.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/git.md"
   ],
   "depends_on": [
     "TK-362zj6ag"
