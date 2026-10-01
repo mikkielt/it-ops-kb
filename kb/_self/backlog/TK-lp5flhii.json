@@ -2,7 +2,7 @@
   "id": "TK-lp5flhii",
   "kind": "task",
   "title": "Distill records the kb's background runs as overhead lines",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-gbnpn6vq",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_ql_distill.py",
     "_tools/test_ql_store.py",
     "kb/_self/usage.md"
-  ]
+  ],
+  "claimed_by": "worker-lp5flhii"
 }
