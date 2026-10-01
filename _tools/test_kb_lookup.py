@@ -100,6 +100,55 @@ class TestLookup:
             assert [(p["kind"], p["ids"]) for p in kbfacts.parse_tag(tag)] == want, tag
         assert kbfacts.parse_tag("[DER S100: how; why]")[0]["note"] == "how; why"
 
+    def test_decision_tag_parses_one_way(self):
+        """`[DECISION D-<8 base32>]` and `[DECISION D-<8 base32>: note]` are tags of their own kind: the id is the
+        part's `decision`, never one of its source `ids`; a tag with no valid id parses with an empty one."""
+        import kbfacts
+        assert "DECISION" in kbfacts.KINDS
+        part = kbfacts.parse_tag("[DECISION D-k3f7q2zd]")[0]
+        assert (part["kind"], part["ids"], part["decision"], part["note"]) == ("DECISION", [], "D-k3f7q2zd", "")
+        part = kbfacts.parse_tag("[DECISION D-k3f7q2zd: chosen for the pilot; revisit in 2027]")[0]
+        assert (part["decision"], part["note"]) == ("D-k3f7q2zd", "chosen for the pilot; revisit in 2027")
+        parts = kbfacts.parse_tag("[DOC S1208; DECISION D-k3f7q2zd, DECISION D-aaaaaaab: later]")
+        assert [(p["kind"], p["ids"], p.get("decision")) for p in parts] == [
+            ("DOC", ["S1208"], None), ("DECISION", [], "D-k3f7q2zd"), ("DECISION", [], "D-aaaaaaab")]
+        assert kbfacts.parse_tag("[DECISION\n  D-k3f7q2zd]")[0]["decision"] == "D-k3f7q2zd"
+        for bad in ("[DECISION]", "[DECISION D-AAAA]", "[DECISION S1208]", "[DECISION D-k3f7q2zd9]"):  # planted
+            assert kbfacts.parse_tag(bad)[0]["decision"] == "", bad
+        unit = kbfacts.md_units("public/x/y.md", "- Keep jobs 14 days. [DECISION D-k3f7q2zd]\n")[0]
+        assert kbfacts.kinds_of(unit["tags"]) == ["DECISION"]
+
+    def test_decision_tag_is_resolved_by_check(self, tmp_path):
+        """check.py resolves each `[DECISION <id>]` to a row of its own root's _decisions.csv: a known id passes; an
+        unknown id, a malformed id, no id and another root's id each give one error that names the rule."""
+        from test_kb_root import DEC, SID, decision, did, make_root, run as run_tool
+        root, other = tmp_path / "team-kb", tmp_path / "other-kb"
+        make_root(str(root))
+        make_root(str(other), prefix="OTH")
+        meta = other / "_root.md"
+        meta.write_text(meta.read_text(encoding="utf-8").replace("root: fixture", "root: other"), encoding="utf-8", newline="\n")
+        for r in (root, other):  # check.py wants the artifacts ledger
+            (r / "_artifacts.csv").write_text("path,source_id,sha256\n", encoding="utf-8", newline="\n")
+        kbcommon.write_csv(str(root / DEC), kbcommon.DECISION_COLS, [decision(0)])
+        kbcommon.write_csv(str(other / DEC), kbcommon.DECISION_COLS, [decision(1)])
+        art = root / "print" / "queues.md"
+        base = art.read_text(encoding="utf-8")
+
+        def errors(*tags):
+            art.write_text(base + "".join(f"- A decided fact. {t}\n" for t in tags), encoding="utf-8", newline="\n")
+            code, out = run_tool("check.py", "--root", "fixture", roots=os.pathsep.join([str(root), str(other)]))
+            assert "Traceback" not in out, out[-800:]
+            return code, [ln for ln in out.splitlines() if ln.startswith("ERROR")]
+
+        assert errors(f"[DECISION {did(0)}]", f"[DECISION {did(0)}: why]", f"[DOC {SID}; DECISION {did(0)}]") == (0, [])
+        for tag, rule in ((f"[DECISION {did(5)}]", f"cites unknown decision {did(5)}"),
+                          (f"[DECISION {did(1)}]", f"cites decision {did(1)} of root other; a root cites only its own"),
+                          ("[DECISION D-AAAA]", "naming 'D-AAAA', not a decision id"),
+                          ("[DECISION]", "has a DECISION tag with no decision id"),
+                          (f"[DOC {SID}; DECISION {did(7)}]", f"cites unknown decision {did(7)}")):
+            code, found = errors(tag)
+            assert code == 1 and len(found) == 1 and rule in found[0] and "fixture/print/queues.md" in found[0], (tag, found)
+
     def test_code_kind_pointer_and_pinned_sources(self):
         import kbfacts
         part = kbfacts.parse_tag("[CODE S-abcdefgh: crates/ruff_linter/src/settings/mod.rs#DEFAULT_SELECTORS]")[0]

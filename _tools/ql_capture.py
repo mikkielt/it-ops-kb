@@ -28,9 +28,9 @@ STATUS = re.compile(r"\b(?:HTTP(?:/[\d.]+)?|status(?: code)?)\D{0,3}([1-5]\d\d)\
 CUT = " [...]"
 ARG_MAX_CHARS = 1000
 VERDICTS = ("none", "weak", "good")  # worst first
-TAGS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
+TAGS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK", "DECISION")
 KB_LINE = re.compile(r"^\s*(- |\[[\d.]+\] )([\w-]+(?:/[\w.-]+)+:[1-9]\d*)(?![\w:])(.*)$")  # a pack line, a search hit
-LINE_TAG = re.compile(r"\[(DOC|CODE|DER|COMMUNITY|UNK)\b[^\]]*\]\s*$")
+LINE_TAG = re.compile(r"\[(DOC|CODE|DER|COMMUNITY|UNK|DECISION)\b[^\]]*\]\s*$")
 COVERAGE = re.compile(r"^coverage: (good|weak|none)\b", re.M)
 _lock = threading.Lock()
 

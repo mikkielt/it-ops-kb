@@ -93,6 +93,19 @@ class TestHookRows:
         assert (b["tool"], b["args"], b["verdict"]) == ("kb_show", {"path": "public/windows/laps.md:12"}, "weak")
         assert (c["outcome"], "verdict" in c) == ("error", False)
 
+    def test_decision_tag_line_keeps_its_tag(self, tmp_path):
+        """A pack line that cites a decision records `DECISION` as its tag, with the path:line and never the text or
+        the decision's id; a tag of no kind the kb has is left out (planted)."""
+        pack = ("coverage: good (best article matches 3 of 3 key words)\n\n## public/print/queues.md  Print queues\n"
+                "- public/print/queues.md:12 Finished jobs are kept 14 days. [DECISION D-k3f7q2zd: pilot]\n"
+                "- public/print/queues.md:13 A made-up kind. [GUESS S100]\n")
+        assert "DECISION" in ql_capture.TAGS
+        hook(tmp_path, tool("mcp__kb__kb_pack", {"question": "q"}, [{"type": "text", "text": pack}]))
+        (row,) = lines(tmp_path)
+        assert row["lines"] == [{"line": "public/print/queues.md:12", "tag": "DECISION", "verdict": "good"},
+                                {"line": "public/print/queues.md:13", "verdict": "good"}]
+        assert b"D-k3f7q2zd" not in raw(tmp_path)
+
     def test_fetch_rows_keep_host_and_path_only(self, tmp_path):
         hook(tmp_path, prompt("kb: windows laps"))
         url = "https://jan:pw@Learn.Microsoft.com:443/en-us/windows/laps?view=secret-token#frag"
