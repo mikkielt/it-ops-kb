@@ -2,7 +2,7 @@
   "id": "TK-5m4r7eah",
   "kind": "task",
   "title": "Split work and rework in the sidecar, cost and review",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-2w2bqtjf",
   "priority": "P2",
   "rank": 1,
@@ -27,9 +27,13 @@
     "_tools/fixtures/querylog/**",
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/querylog.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
   ],
   "depends_on": [
     "TK-skhq4sef"
-  ]
+  ],
+  "notes": "Touches carry the cost row of tools.md (new flag) and usage.md (work line shape); the push gate refuses the code without them.",
+  "claimed_by": "worker-5m4r7eah"
 }
