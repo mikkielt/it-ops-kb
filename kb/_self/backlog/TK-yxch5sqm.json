@@ -2,7 +2,7 @@
   "id": "TK-yxch5sqm",
   "kind": "task",
   "title": "kbusage.py tree: tool-result rollup over a transcript and its subagents",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-exu6fdy6",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/kbusage.py",
     "_tools/test_kbusage.py"
-  ]
+  ],
+  "claimed_by": "worker-yxch5sqm"
 }
