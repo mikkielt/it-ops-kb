@@ -845,18 +845,19 @@ def github_jobs(host, project, rid, run):
 
 def latest_pipeline(root, job=None, run=None):
     """(pipeline, note): a finished pipeline of origin's main as {id, sha, url, red, jobs, unverified, how}, a red
-    one with `failure`, `fingerprint` and `first` (the name of its first failed job, by name) read from that job's
-    log, or None with the note that says why not (no origin, glab or gh not signed in, a failed call, no such
+    one with `failure` and `fingerprint` read from the log of its first failed job by name, and `first` (that job's
+    name, which the bug's repro names) only when its script ran and failed, or None with the note that says why not (no origin, glab or gh not signed in, a failed call, no such
     pipeline). Which pipeline, newest first among the last MAIN_PIPELINES:
-    - with `job`: the newest in which that job ran and ended success or failed (`ql_deliver.job_ran`, RAN_AND_FAILED),
-      red when it failed: a job started and then canceled, left manual or skipped holds no verdict;
+    - with `job`: the newest in which that job succeeded or failed on its own account (`ql_deliver.job_decided`),
+      red when it failed: a job started and then canceled, left manual or skipped, or failed without its script
+      (ci_quota_exceeded, runner_system_failure) holds no verdict;
     - else on GitLab the newest that failed or in which a job ran (every job is manual, so a newer pipeline no one
       started hides nothing), or the newest finished one when no job ran in any; on GitHub the newest completed run.
     On GitLab a pipeline waiting on manual jobs counts as finished, and one whose status is no failure is read by its
     jobs (`ql_deliver.job_verdict`): red when a job someone started failed, else `unverified` says how each gate job
     did not succeed. `how` names the choice for the message."""
     run = run or run_argv
-    from ql_deliver import (GITHUB_RED, RAN_AND_FAILED, any_ran, forge_list, gitlab_jobs, job_ran, job_verdict,
+    from ql_deliver import (GITHUB_RED, RAN_AND_FAILED, any_ran, forge_list, gitlab_jobs, job_decided, job_verdict,
                             latest_jobs, origin_forge)
     import kbpublic
     remote = kbpublic.integration_remote(root)
@@ -899,8 +900,8 @@ def latest_pipeline(root, job=None, run=None):
                 mine = latest_jobs(jobs).get(job)
                 if jobs is None:
                     p["red"], p["unverified"] = False, ["the pipeline's jobs could not be read"]
-                elif mine is None or not job_ran(mine) or mine.get("status") not in ("success", "failed"):
-                    continue  # canceled, manual or skipped, started or not: no verdict on the job
+                elif mine is None or not job_decided(mine):
+                    continue  # canceled, manual, skipped or failed without its script: no verdict on the job
                 else:
                     p["red"] = mine.get("status") == "failed"
                 p["how"] = f"the newest {job}"
@@ -924,8 +925,11 @@ def latest_pipeline(root, job=None, run=None):
 
 
 def red_detail(p, jobs, forge, host, project, quoted, ran_and_failed, run, job=None):
-    """`p` with `jobs` (the failed jobs' names) and, when it is red, `first`, `failure` and `fingerprint` read from
-    the log of its first failed job by name (among the jobs whose script ran, when there are any; `job` when given)."""
+    """`p` with `jobs` (the failed jobs' names) and, when it is red, `failure` and `fingerprint` read from the log of
+    its first failed job by name (among the jobs whose script ran, when there are any; `job` when given), and `first`,
+    that job's name, only when its script ran and failed (on GitHub, any failed job): the bug's repro names it with
+    `--job`, which reads only a pipeline where the job reached a verdict, so a job that failed without running (such as
+    ci_quota_exceeded or runner_system_failure) gets plain `--status`, which reads the red pipeline itself."""
     p["jobs"] = []
     if not p["red"]:
         return p
@@ -949,7 +953,8 @@ def red_detail(p, jobs, forge, host, project, quoted, ran_and_failed, run, job=N
                     ["glab", "api", "--hostname", host, f"projects/{quoted}/jobs/{jid}/trace"])
             code, o, _ = run(argv)
             log = o if code == 0 else ""
-        p["first"] = str(first["name"])
+        if forge == "github" or first.get("failure_reason") in ran_and_failed:
+            p["first"] = str(first["name"])
         p["failure"] = first_failure(log)
         p["fingerprint"] = failure_fingerprint(first["name"], p["failure"])
     return p
@@ -980,8 +985,9 @@ def covered_by_revert(root, sha, run=None):
 def pipeline_candidate(pid, sha, sev, jobs=(), url=None, extra="", fingerprint=None, job=None):
     """The bug candidate of a red pipeline of main: it names `pipeline PID` (the marker red-pipeline files by) in its
     title and links, and `fingerprint <hex>` in its links when one is given; its repro is
-    `red-pipeline --status --job JOB` (the failed job the fingerprint names), which fails until JOB passes on main
-    again, or plain `--status` (the newest pipeline of main in which a job ran) when no job was read; `extra` closes
+    `red-pipeline --status --job JOB` (the failed job the fingerprint names, when its script ran and failed), which
+    fails until JOB passes on main again, or plain `--status` (the newest pipeline of main in which a job ran) when
+    no such job was read; `extra` closes
     its notes. The fingerprint is the failure's own (`failure_fingerprint`), not the hash of the key: a pipeline that
     fails the same way as an earlier one is one finding."""
     marker = f"pipeline {pid}"

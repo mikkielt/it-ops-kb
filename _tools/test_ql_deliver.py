@@ -593,6 +593,19 @@ class TestJobVerdict:
         failure, fp = ql_deliver.pipeline_failure("https://gitlab.example.com/team/kb.git", {"id": 3}, run)
         assert fp == backlog.failure_fingerprint("kb-tests", "_tools/test_x.py::test_a"), failure
 
+    @pytest.mark.parametrize("job,named", [
+        ({"id": 2, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure"}, True),
+        ({"id": 2, "name": "kb-tests", **QUOTA}, False),
+        ({"id": 2, "name": "kb-tests", "status": "failed", "failure_reason": "runner_system_failure",
+          "started_at": "2026-09-30T08:00:00Z"}, False),
+    ])
+    def test_the_revert_repro_names_a_job_only_when_its_script_ran_and_failed(self, job, named):
+        """BG-vsqfchgz: a job that failed without running gets the plain `--status` repro, not `--job`."""
+        run = fingerprint_forge([job], {2: "ERROR: Job failed\n"})
+        pipe = {"id": 3}
+        _, fp = ql_deliver.pipeline_failure("https://gitlab.example.com/team/kb.git", pipe, run)
+        assert fp and pipe.get("job") == ("kb-tests" if named else None), pipe
+
     def test_auto_kinds(self):
         import kbgit
         paths = ["kb/_querylog/findings/2026-09/x.jsonl", "_tools/aliases.csv", "kb/public/_retrieval/lookup_eval.csv",

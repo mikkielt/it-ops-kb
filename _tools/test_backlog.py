@@ -1752,7 +1752,7 @@ def test_red_pipeline_files_one_s2_bug_per_pipeline(repo, monkeypatch, capsys):
     forge(monkeypatch, repo, [{"id": 902, "sha": sha, "status": "running"},
                               {"id": 901, "sha": sha, "status": "failed", "web_url": "https://x/901"},
                               {"id": 900, "sha": sha, "status": "success"}],
-          jobs=[{"name": "kb-tests-windows", "status": "failed"}])
+          jobs=[{"name": "kb-tests-windows", "status": "failed", "failure_reason": "script_failure"}])
     assert red_pipeline(repo) == 0
     (bug,) = bugs(repo)
     assert bug["severity"] == "S2" and bug["status"] == "draft" and "pipeline 901" in bug["title"]
@@ -1951,6 +1951,24 @@ def test_job_state_table_red_pipeline_job_repro(repo, monkeypatch, st):
     assert red_pipeline(repo, "--status", "--job", "kb-tests") == (0 if st[0] == "success" else 1)
 
 
+@pytest.mark.parametrize("reason", ["ci_quota_exceeded", "runner_system_failure"])
+def test_red_pipeline_files_a_red_status_whose_job_never_ran(repo, monkeypatch, reason):
+    """BG-vsqfchgz: main's pipeline 85 failed by its status, its only failed job kb-tests failed without running; in
+    the older 84 kb-tests passed. The bug is filed with plain `--status` as its repro (a `--job kb-tests` one would
+    read 84 and pass), and that repro, run against the same forge, fails."""
+    sha = head(repo)
+    forge(monkeypatch, repo, [{"id": 85, "sha": sha, "status": "failed"}, {"id": 84, "sha": sha, "status": "success"}],
+          jobs={85: [{"id": 41, "name": "kb-tests", "status": "failed", "failure_reason": reason}],
+                84: [{"id": 40, "name": "kb-tests", "status": "success", "started_at": "2026-09-30T08:00:00Z"}]})
+    monkeypatch.setattr(backlog, "run_check", lambda root, c: (
+        lambda code: (code == 0, code, ""))(backlog.main(["--root", str(root), *c["run"][2:]])))
+    assert red_pipeline(repo) == 0
+    filed = [x for x in bugs(repo) if "pipeline 85" in x["title"]]
+    assert filed and filed[0]["repro"]["run"] == backlog.STATUS_REPRO, filed
+    assert red_pipeline(repo, "--status") == 1
+    assert red_pipeline(repo, "--status", "--job", "kb-tests") == 0  # what a --job repro would have read
+
+
 def test_red_pipeline_job_skips_a_canceled_run(repo, monkeypatch):
     """BG-sim2fdaa: someone starts kb-tests on main and cancels it; the newer pipeline holds no verdict on kb-tests,
     so a red-main bug's repro (`--status --job kb-tests`) still reads the older red run and fails."""
@@ -1972,10 +1990,8 @@ def test_red_pipeline_job_skips_a_canceled_run(repo, monkeypatch):
 
 def file_rows():
     """A main pipeline that failed is red whatever its job did, so red-pipeline files a bug: its repro must fail now.
-    A failed job that never ran named by `--job` lets the repro read an older pass (BG-vsqfchgz)."""
-    return [pytest.param(st, id=state_id(st), marks=[pytest.mark.xfail(strict=True, reason="BG-vsqfchgz")]
-                         if st[0] == "failed" and not st[1] and st[2] not in ql_deliver.RAN_AND_FAILED else [])
-            for st in job_states()]
+    A failed job that never ran is not named by `--job`, which would read an older pass (BG-vsqfchgz)."""
+    return [pytest.param(st, id=state_id(st)) for st in job_states()]
 
 
 @pytest.mark.parametrize("st", file_rows())

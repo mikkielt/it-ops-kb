@@ -127,6 +127,15 @@ def job_ran(j):
         s == "failed" and j.get("failure_reason") in RAN_AND_FAILED)
 
 
+def job_decided(j):
+    """Whether a GitLab job reached a verdict on itself: it succeeded, or failed for a reason in RAN_AND_FAILED.
+    `red-pipeline --job` reads only a pipeline where its job did, and a red-main bug's repro names a job only when it
+    failed so: a job canceled, manual or skipped (started or not) or failed without its script (ci_quota_exceeded,
+    runner_system_failure) says nothing of it."""
+    s = j.get("status")
+    return s == "success" or (s == "failed" and j.get("failure_reason") in RAN_AND_FAILED)
+
+
 
 def any_ran(jobs):
     """Whether a job of a GitLab job list ran (its newest entry by name, `job_ran`)."""
@@ -239,7 +248,10 @@ def pipeline_failure(url, pipe, run):
     for main's pipeline: the first failed job by name (among the jobs whose script ran and failed, when there are
     any), what failed first in its log (`backlog.first_failure`), and
     `backlog.failure_fingerprint` of the two. ('', None) when no failed job can be read (no id, a failed call).
-    The first failed job's name goes into `pipe["job"]`, which the bug's repro names."""
+    The first failed job's name goes into `pipe["job"]`, which the bug's repro names with `--job`, only when its
+    script ran and failed (`job_decided`; on GitHub, any failed job): `--job` reads only a pipeline where the job
+    reached a verdict, so a job that failed without running (ci_quota_exceeded, runner_system_failure) leaves the
+    repro plain `--status`, which reads the red pipeline itself."""
     import backlog
     pid = pipe.get("id")
     if pid is None:
@@ -263,7 +275,8 @@ def pipeline_failure(url, pipe, run):
     if not failed:
         return "", None
     first = min(failed, key=lambda j: str(j["name"]))
-    pipe["job"] = str(first["name"])
+    if forge == "github" or job_decided(first):
+        pipe["job"] = str(first["name"])
     log, jid = "", first.get(idkey)
     if jid is not None:
         argv = (["gh", "api", "--hostname", host, f"repos/{project}/actions/jobs/{jid}/logs"] if forge == "github" else
