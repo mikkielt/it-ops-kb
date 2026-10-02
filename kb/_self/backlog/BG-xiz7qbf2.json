@@ -2,7 +2,7 @@
   "id": "BG-xiz7qbf2",
   "kind": "bug",
   "title": "codebase-mapping.md says the SDK-resolution bullet is below, but it is above",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,28 @@
     "kb/public/agents/codebase-mapping.md",
     "_tools/test_kb_cohesion.py"
   ],
-  "claimed_by": "seventh-w21"
+  "evidence": {
+    "commit": "727cb027657d7635e923110f2d266ec863a07e9e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_article_reference_direction"
+        ],
+        "exit": 0,
+        "sha256": "9259e2ae979c6141"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/agents/codebase-mapping.md',encoding='utf-8').read();sys.exit(1 if 'SDK-resolution bullet below' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
