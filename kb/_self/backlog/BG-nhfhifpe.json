@@ -30,5 +30,18 @@
     "_tools/test_benchmarks.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "No recorded stream-json of a navigation run exists on this host: the benchmark keeps only parsed fields, and the one real stream of a read-only run is a sprint session with private content and no result event. A fixture needs one fresh paid claude -p navigation run (one case, sonnet, hooks off) over a clone, then trimmed and redacted. Run it?",
+      "options": [
+        "Run one paid navigation case now with its raw stdout kept, then redact and trim it into _tools/fixtures/navigation",
+        "Change bench_lookup.nav_run to keep each run's raw stdout beside the parsed row (a separate item), so the next paid navigation run records a stream",
+        "Drop the bug: nav_result stays tested on synthetic streams only"
+      ],
+      "recommendation": "Run one paid navigation case now with its raw stdout kept, then redact and trim it into _tools/fixtures/navigation"
+    }
+  ],
   "claimed_by": "mac-third-worker"
 }
