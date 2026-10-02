@@ -2,7 +2,7 @@
   "id": "TK-vekgp5gc",
   "kind": "task",
   "title": "kg_lane.py holds the code/<id> branch name and the lane plan, taking the root",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -38,5 +38,6 @@
   ],
   "depends_on": [
     "TK-cilkikzk"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
