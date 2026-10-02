@@ -2,7 +2,7 @@
   "id": "BG-xiz7qbf2",
   "kind": "bug",
   "title": "codebase-mapping.md says the SDK-resolution bullet is below, but it is above",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "touches": [
     "kb/public/agents/codebase-mapping.md",
     "_tools/test_kb_cohesion.py"
-  ]
+  ],
+  "claimed_by": "seventh-w21"
 }
