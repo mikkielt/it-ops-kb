@@ -23,7 +23,63 @@
     "AGENTS.md",
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    ".claude/hooks/kb_change_router.py"
+  ],
+  "gates": [
+    {
+      "id": "interval",
+      "kind": "provisional",
+      "question": "How often does the manager's tick fire under /loop?",
+      "options": [
+        "every 15 minutes (/loop 15m /kb-autopilot)",
+        "every 5 minutes",
+        "self-paced (/loop /kb-autopilot)"
+      ],
+      "recommendation": "every 15 minutes (/loop 15m /kb-autopilot)",
+      "class": "agents-rule",
+      "answer": "every 15 minutes (/loop 15m /kb-autopilot)",
+      "by": "agent"
+    },
+    {
+      "id": "triage-keeps",
+      "kind": "provisional",
+      "question": "What does the tick's triage keep of intake's drafts?",
+      "options": [
+        "a draft that names a failure that happened with its evidence and has no near-duplicate",
+        "every draft"
+      ],
+      "recommendation": "a draft that names a failure that happened with its evidence and has no near-duplicate",
+      "class": "agents-rule",
+      "answer": "a draft that names a failure that happened with its evidence and has no near-duplicate",
+      "by": "agent"
+    },
+    {
+      "id": "json-keys",
+      "kind": "provisional",
+      "question": "Which keys does each judgment subagent's JSON object carry?",
+      "options": [
+        "triage keep, drop, merge, why; review verdict, confirm, change, gaps; retrospective stories, no_change; plan sprint, goal, items, stop; research sprint, done, gaps",
+        "the same with a free-text summary key on each"
+      ],
+      "recommendation": "triage keep, drop, merge, why; review verdict, confirm, change, gaps; retrospective stories, no_change; plan sprint, goal, items, stop; research sprint, done, gaps",
+      "class": "agents-rule",
+      "answer": "triage keep, drop, merge, why; review verdict, confirm, change, gaps; retrospective stories, no_change; plan sprint, goal, items, stop; research sprint, done, gaps",
+      "by": "agent"
+    },
+    {
+      "id": "retro-pick",
+      "kind": "provisional",
+      "question": "How does the manager pick a retrospective's stories as autopilot decisions?",
+      "options": [
+        "each story filed as a draft with a take or leave gate, answered take by the autopilot and recorded",
+        "stories filed as drafts only, left for the operator"
+      ],
+      "recommendation": "each story filed as a draft with a take or leave gate, answered take by the autopilot and recorded",
+      "class": "agents-rule",
+      "answer": "each story filed as a draft with a take or leave gate, answered take by the autopilot and recorded",
+      "by": "agent"
+    }
   ],
   "claimed_by": "mac-first-w3"
 }
