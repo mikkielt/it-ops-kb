@@ -2,7 +2,7 @@
   "id": "BG-s7wrfy37",
   "kind": "bug",
   "title": "kb_http.py's internal-error line prints the exception text, which can hold request content",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -36,5 +36,6 @@
   ],
   "depends_on": [
     "BG-3und5yxq"
-  ]
+  ],
+  "claimed_by": "seventh-w6"
 }
