@@ -21,7 +21,12 @@
     "_tools/bl_testkit.py",
     "_tools/test_backlog.py",
     "_tools/test_layout.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_selfdoc.py",
+    "_tools/test_testmap.py",
+    "kb/_self/map.csv",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md"
   ],
   "depends_on": [
     "TK-cilkikzk"

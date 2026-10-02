@@ -23,7 +23,14 @@
     "_tools/test_sync.py",
     "_tools/test_kblane.py",
     "_tools/test_layout.py",
-    "kb/_self/git.md"
+    "kb/_self/git.md",
+    "_tools/test_selfdoc.py",
+    "_tools/test_testmap.py",
+    "_tools/test_kbpublic.py",
+    "_tools/test_merge.py",
+    "_tools/kblane.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "TK-i2x2csig"
