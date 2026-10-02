@@ -2,7 +2,7 @@
   "id": "ST-n6w6n7ko",
   "kind": "story",
   "title": "Review sprint: Plans hold before work starts",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-6eifcza6",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "69dfcef35da3abcb6b77a793ba428e4197ca8d27",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "dc6e6f2e937d2ec4"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "68de4cbe18ede428"
+      }
+    ]
+  }
 }
