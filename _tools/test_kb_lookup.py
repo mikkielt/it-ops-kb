@@ -1076,3 +1076,159 @@ def test_decision_lookup_audit_lists_shared_contexts_without_blocking(tmp_path):
     # nothing is blocked: check.py reports no decision error for the sharing rows
     code, found, text = checked_root(tmp_path / "chk", rows[:2] + [rows[3]])
     assert found == {}, text[-800:]
+
+
+# ---- LOG rows and the LOG tag, and the DECISION tag in data rows (check.py: LOG_COLS, LEDGER_TAGS)
+
+def log_row(i=0, **over):
+    """A valid LOG row of the fixture root, with the fields in `over` replaced."""
+    row = {"id": "L-aaaaaaa" + "abcdefgh"[i], "observation": "Median 12 pack calls a day over 9 days, 3 of them weak.",
+           "source_run_ids": "20260929T101500Z-0000abcd; 20260930T101500Z-0000abce", "observed_from": "2026-09-21",
+           "observed_to": "2026-09-30", "context": "article:print/queues; domain:print", "status": "active",
+           "invalidated_reason": "", "links": ""}
+    row.update(over)
+    return row
+
+
+def log_check(tmp_path, rows=None, *, other=None, visibility="internal", article="", data="", prefix="FXT"):
+    """check.py over a fixture root (and a second root `other` with its own log rows) that keeps these LOG rows
+    (dicts; None: no _logs.csv), `article` appended to its article and `data` as a row of a data file:
+    (exit code, the ERROR lines)."""
+    from test_kb_root import make_root, run as run_tool
+    root, second = tmp_path / "team-kb", tmp_path / "other-kb"
+    make_root(str(root), prefix=prefix)
+    make_root(str(second), prefix="OTH")
+    meta = second / "_root.md"
+    meta.write_text(meta.read_text(encoding="utf-8").replace("root: fixture", "root: other"), encoding="utf-8", newline="\n")
+    meta = root / "_root.md"
+    meta.write_text(meta.read_text(encoding="utf-8").replace("visibility: internal", f"visibility: {visibility}"),
+                    encoding="utf-8", newline="\n")
+    for r in (root, second):  # check.py wants the artifacts ledger
+        (r / "_artifacts.csv").write_text("path,source_id,sha256\n", encoding="utf-8", newline="\n")
+    if rows is not None:
+        kbcommon.write_csv(str(root / "_logs.csv"), ["id", "observation", "source_run_ids", "observed_from", "observed_to",
+                                                     "context", "status", "invalidated_reason", "links"], rows)
+    if other is not None:
+        kbcommon.write_csv(str(second / "_logs.csv"), ["id", "observation", "source_run_ids", "observed_from", "observed_to",
+                                                       "context", "status", "invalidated_reason", "links"], other)
+    art = root / "print" / "queues.md"
+    art.write_text(art.read_text(encoding="utf-8") + article, encoding="utf-8", newline="\n")
+    if data:
+        sig = root / "_retrieval" / "signals.csv"
+        sig.write_text(sig.read_text(encoding="utf-8") + data, encoding="utf-8", newline="\n")
+    code, out = run_tool("check.py", "--root", "fixture", roots=os.pathsep.join([str(root), str(second)]))
+    assert "Traceback" not in out, out[-800:]
+    return code, [ln for ln in out.splitlines() if ln.startswith("ERROR")]
+
+
+def test_log_row_contract(tmp_path):
+    """A `_logs.csv` has the header id, observation, source_run_ids, observed_from, observed_to, context, status,
+    invalidated_reason, links, and each row is a derived aggregate with the runs it came from: a valid row passes;
+    each defect (planted) gives one error that names the rule, and a row carrying raw event text is refused."""
+    assert log_check(tmp_path / "ok", [log_row(0), log_row(1, status="proposed"),
+                                       log_row(2, status="invalidated", invalidated_reason="the article was rewritten")]) == (0, [])
+    assert log_check(tmp_path / "none") == (0, [])  # the file is optional
+    planted = {
+        "id": ("id 'L-AAAA' is not L-<8 base32>", {"id": "L-AAAA"}),
+        "no observation": ("no observation", {"observation": ""}),
+        "no number": ("holds no number", {"observation": "Users often ask about print queues"}),
+        "long": ("is longer than", {"observation": "Median 12 calls. " + "words " * 60}),
+        "json": ("holds a JSON object", {"observation": 'Median 12 calls {"event": "pack", "n": 3}'}),
+        "timestamp": ("holds a timestamp with a time of day", {"observation": "Median 12 calls at 2026-09-30T10:15:00Z"}),
+        "compact timestamp": ("holds a timestamp with a time of day", {"links": "20260930T101500Z"}),
+        "line break": ("holds a line break", {"observation": "Median 12 calls\nsecond line"}),
+        "leak": ("has a leak-scan hit (ip)", {"observation": "Median 12 calls from 10.20.30.40"}),
+        "no runs": ("no source_run_ids", {"source_run_ids": ""}),
+        "bad run": ("is not a run id", {"source_run_ids": "r-12"}),
+        "run twice": ("a run id twice", {"source_run_ids": "20260929T101500Z-0000abcd;20260929T101500Z-0000abcd"}),
+        "bad date": ("are not both YYYY-MM-DD", {"observed_from": "2026-9-21"}),
+        "dates reversed": ("is after observed_to", {"observed_from": "2026-10-01"}),
+        "status": ("is not one of proposed|active|invalidated", {"status": "superseded"}),
+        "no context": ("no context", {"context": ""}),
+        "bad context": ("is not <kind>:<value>", {"context": "print queues"}),
+        "unknown article": ("names no article print/gone", {"context": "article:print/gone"}),
+        "reason without invalidation": ("invalidated_reason exactly when", {"invalidated_reason": "why"}),
+        "invalidated without reason": ("invalidated_reason exactly when", {"status": "invalidated"}),
+    }
+    for n, (name, (rule, over)) in enumerate(planted.items()):
+        code, found = log_check(tmp_path / f"p{n}", [log_row(0, **over)])
+        assert code == 1 and len(found) == 1 and rule in found[0] and "fixture/_logs.csv:2" in found[0], (name, found)
+    code, found = log_check(tmp_path / "dup", [log_row(0), log_row(0)])
+    assert code == 1 and len(found) == 2 and all("duplicate log row id" in e for e in found), found
+    assert log_check(tmp_path / "inv", [log_row(0, status="invalidated", invalidated_reason="gone", context="article:print/gone")]) == (0, [])
+    code, found = log_check(tmp_path / "pre", [log_row(0)], prefix="L")  # a root prefix L would read as a log row's id
+    assert code == 1 and any("id_prefix 'L' is reserved for log row ids" in e for e in found), found
+
+
+def test_log_header_is_exact(tmp_path):
+    """A `_logs.csv` whose header is not LOG_COLS is one error on the file."""
+    from test_kb_root import make_root, run as run_tool
+    root = tmp_path / "team-kb"
+    make_root(str(root))
+    (root / "_artifacts.csv").write_text("path,source_id,sha256\n", encoding="utf-8", newline="\n")
+    (root / "_logs.csv").write_text("id,observation,context\nL-aaaaaaaa,Median 12,article:print/queues\n", encoding="utf-8", newline="\n")
+    code, out = run_tool("check.py", "--root", "fixture", roots=str(root))
+    assert code == 1 and "fixture/_logs.csv: header is 'id,observation,context', not 'id,observation," in out, out[-600:]
+
+
+def test_log_tag_is_resolved_by_check(tmp_path):
+    """An internal root's `[LOG <id>]` names a row of its own root's _logs.csv, in an article or in a data row: a known
+    id passes (alone or beside a source); an unknown, a malformed, a missing and another root's id each give one error."""
+    from test_kb_root import SID
+    own, other = log_row(0), log_row(1)
+    ok = f"- A fact with a signal. [LOG {own['id']}]\n- Another. [DOC {SID}; LOG {own['id']}]\n- Wrapped. [LOG\n  {own['id']}]\n"
+    assert log_check(tmp_path / "ok", [own], other=[other], article=ok, data=f"spooler,\"print/queues [LOG {own['id']}]\"\n") == (0, [])
+    for n, (tag, rule) in enumerate(((f"[LOG {log_row(5)['id']}]", f"cites unknown log row {log_row(5)['id']}"),
+                                     (f"[LOG {other['id']}]", f"cites log row {other['id']} of root other; a root cites only its own log rows"),
+                                     ("[LOG L-AAAA]", "naming 'L-AAAA', not a log row id"),
+                                     ("[LOG]", "has a LOG tag with no log row id"),
+                                     (f"[DOC {SID}; LOG {log_row(6)['id']}]", f"cites unknown log row {log_row(6)['id']}"))):
+        code, found = log_check(tmp_path / f"a{n}", [own], other=[other], article=f"- A signal. {tag}\n")
+        assert code == 1 and len(found) == 1 and rule in found[0] and "fixture/print/queues.md" in found[0], (tag, found)
+        code, found = log_check(tmp_path / f"d{n}", [own], other=[other], data=f"spooler,\"{tag}\"\n")
+        assert code == 1 and len(found) == 1 and rule in found[0] and "fixture/_retrieval/signals.csv:3" in found[0], (tag, found)
+    code, found = log_check(tmp_path / "ccm", [own], article="- A CCM line is `<![LOG[text]LOG]!><time=\"1\">`. [DOC " + SID + "]\n")
+    assert (code, found) == (0, []), found  # the log line of a CCM client is no tag
+
+
+def test_log_tag_refused_in_public_root(tmp_path):
+    """A `[LOG <id>]` in an article or a data row of a public root is refused, even when the root holds the row (observed
+    signals stay beside internal facts); the same tag in an internal root passes."""
+    own = log_row(0)
+    tag = f"[LOG {own['id']}]"
+    assert log_check(tmp_path / "internal", [own], article=f"- Fact. {tag}\n") == (0, [])
+    for n, kw in enumerate(({"article": f"- Fact. {tag}\n"}, {"data": f"spooler,\"{tag}\"\n"}, {"article": "- Fact. [LOG L-AAAA]\n"})):
+        code, found = log_check(tmp_path / f"pub{n}", [own], visibility="public", **kw)
+        assert code == 1 and len(found) == 1 and "has a LOG tag, and root fixture is public" in found[0], (kw, found)
+    assert log_check(tmp_path / "pubfile", [own], visibility="public") == (0, [])  # the file itself may sit there: the projection keeps it off
+
+
+def test_decision_tag_in_csv_data_row_is_resolved(tmp_path):
+    """check.py resolves a `[DECISION <id>]` in a data row of a root's CSV as it does in Markdown: a known id passes; an
+    unknown id, a malformed one, no id and another root's id each give one error on the row."""
+    from test_kb_root import DEC, decision, did, make_root, run as run_tool
+    root, other = tmp_path / "team-kb", tmp_path / "other-kb"
+    make_root(str(root))
+    make_root(str(other), prefix="OTH")
+    meta = other / "_root.md"
+    meta.write_text(meta.read_text(encoding="utf-8").replace("root: fixture", "root: other"), encoding="utf-8", newline="\n")
+    for r in (root, other):
+        (r / "_artifacts.csv").write_text("path,source_id,sha256\n", encoding="utf-8", newline="\n")
+    kbcommon.write_csv(str(root / DEC), kbcommon.DECISION_COLS, [decision(0)])
+    kbcommon.write_csv(str(other / DEC), kbcommon.DECISION_COLS, [decision(1)])
+    sig = root / "_retrieval" / "signals.csv"
+    base = sig.read_text(encoding="utf-8")
+
+    def errors(tag):
+        sig.write_text(base + f"spooler,\"print/queues {tag}\"\n", encoding="utf-8", newline="\n")
+        code, out = run_tool("check.py", "--root", "fixture", roots=os.pathsep.join([str(root), str(other)]))
+        assert "Traceback" not in out, out[-800:]
+        return code, [ln for ln in out.splitlines() if ln.startswith("ERROR")]
+
+    assert errors(f"[DECISION {did(0)}]") == (0, [])
+    for tag, rule in ((f"[DECISION {did(5)}]", f"cites unknown decision {did(5)}"),
+                      (f"[DECISION {did(1)}]", f"cites decision {did(1)} of root other; a root cites only its own"),
+                      ("[DECISION D-AAAA]", "naming 'D-AAAA', not a decision id"),
+                      ("[DECISION]", "has a DECISION tag with no decision id")):
+        code, found = errors(tag)
+        assert code == 1 and len(found) == 1 and rule in found[0] and "fixture/_retrieval/signals.csv:3" in found[0], (tag, found)

@@ -19,6 +19,9 @@
                    another file passes, a value new to the public home is refused.
   TestPublishHistory (marker git) the same refusals for a commit of the range that adds what a later commit deletes,
                    named by its hash, on a first publish too; a clean range and a value the parent's version holds pass.
+  TestLogsCsv      (marker git) every `_logs.csv` (a root's observed signals, any directory, kb/_self's too) is left out of
+                   the projection, a commit of nothing else is gone, a file that only ends alike stays; publish pushes
+                   none of them, and check-public, the push guard and the bridge's range name a history that holds one.
   TestGuard        (marker git) guard_push and sync refuse a history with kb/_querylog only when the remote is the
                    public home (git config kb.publishRemote); a clone without one pushes it; the pre-push hook of a kb
                    clone refuses a plain push to the public home.
@@ -490,6 +493,73 @@ class TestPublishHistory:
         # nothing published yet: the whole history is walked; the GUID was allowlisted when it was added, and the
         # later commit keeps a value its parent's version holds
         assert kbpublic.cmd_publish(ns(), r.path) == 0 and pub.rev("main") == kbpublic.project(head, r.path)
+
+
+LOGS_FILES = ("kb/_self/_logs.csv", "kb/team/_logs.csv", "kb/public/_logs.csv", "kb/public/deep/er/_logs.csv")
+
+
+@pytest.fixture
+def logs_src(tmp_path):
+    """A repository: a public commit, one adding a _logs.csv at four depths beside files that only end alike, one
+    holding nothing else, one editing a _logs.csv and a public file, one deleting them all, and a public commit."""
+    r = Repo(tmp_path / "logs")
+    os.makedirs(r.path)
+    r.git("init", "-q", "-b", "main")
+    shas = [commit(r, {"kb/public/a.md": "fact\n"}, "public"),
+            commit(r, {**{x: "id,observation\nL-aaaaaaaa,Median 12\n" for x in LOGS_FILES},
+                       "kb/public/my_logs.csv": "a\n", "kb/public/logs.csv": "b\n", "kb/public/_logs.csv.md": "c\n"}, "logs"),
+            commit(r, {"kb/other/_logs.csv": "x\n"}, "logs only"),
+            commit(r, {"kb/_self/_logs.csv": "changed\n", "kb/public/b.md": "b\n"}, "mixed"),
+            commit(r, {}, "remove logs", remove=[*LOGS_FILES, "kb/other/_logs.csv"]),
+            commit(r, {"kb/public/c.md": "c\n"}, "public again")]
+    return r, shas
+
+
+class TestLogsCsv:
+    def test_publish_omits_logs_csv(self, logs_src, tmp_path, capsys):
+        """the projection holds no _logs.csv at any depth in any commit, keeps what only ends alike, drops the commit that
+        held nothing else, and `publish` pushes that projection: the public home has none of them in its history"""
+        r, shas = logs_src
+        p = kbpublic.project(shas[-1], r.path)
+        assert kbpublic.private_commits(p, r.path) == []
+        assert kbpublic.project(shas[-1], r.path) == p  # the same commits when computed twice
+        assert r.git("log", "--format=%s", p).split("\n")[:-1] == ["public again", "mixed", "logs", "public"]  # the two commits of _logs.csv only are gone
+        for sha in (shas[1], shas[3]):
+            tree = r.git("ls-tree", "-r", "--name-only", kbpublic.project(sha, r.path)).split()
+            assert not [x for x in tree if x.endswith("/_logs.csv")], tree
+        tree = r.git("ls-tree", "-r", "--name-only", kbpublic.project(shas[1], r.path)).split()
+        assert {"kb/public/my_logs.csv", "kb/public/logs.csv", "kb/public/_logs.csv.md", "kb/public/a.md"} <= set(tree)
+        assert not [x for x in tree if x.startswith(("kb/team", "kb/public/deep"))]  # a directory of nothing else is gone
+        assert r.git("rev-list", p).split()[-1] == shas[0]  # the history before the first one keeps its hashes
+        assert kbpublic.private_commits(shas[-1], r.path) and kbpublic.private_commits(shas[2], r.path)
+        pub = Repo(tmp_path / "pub.git")
+        Repo(tmp_path).git("init", "-q", "--bare", "-b", "main", pub.path)
+        origin = Repo(tmp_path / "origin.git")
+        Repo(tmp_path).git("clone", "-q", "--bare", r.path, origin.path)
+        r.git("remote", "add", "origin", origin.path)
+        r.git("remote", "add", "pub", pub.path)
+        r.git("config", "kb.publishRemote", "pub")
+        assert kbpublic.cmd_publish(ns(), r.path) == 0
+        assert "published" in capsys.readouterr().out
+        assert pub.git("log", "--all", "--format=%H", "--", ":(glob)**/_logs.csv") == ""  # no commit of the public home touched one
+        assert kbpublic.private_commits("main", pub.path) == []
+
+    def test_logs_csv_refused_in_a_pushed_range(self, logs_src, tmp_path, capsys):
+        """check-public, the push guard and the bridge's range name a history that holds a _logs.csv (planted: one that
+        does not), and the refusal names the file"""
+        r, shas = logs_src
+        assert kbpublic.cmd_check_public(argparse.Namespace(rev=shas[0]), r.path) == 0
+        assert kbpublic.cmd_check_public(argparse.Namespace(rev=shas[2]), r.path) == 1
+        out = capsys.readouterr().out
+        assert "_logs.csv (in any directory)" in out and "FAILED" in out, out
+        r.git("remote", "add", "pub", str(tmp_path / "x.git"))
+        r.git("config", "kb.publishRemote", "pub")
+        assert kbpublic.guard_push("pub", None, [("refs/heads/main", shas[0])], r.path) == []
+        bad = kbpublic.guard_push("pub", None, [("refs/heads/main", shas[-1])], r.path)
+        assert bad and "_logs.csv" in bad[0][1], bad
+        assert kbpublic.private_commits(f"{shas[0]}..{shas[-1]}", r.path)  # the range the bridge reads
+        assert kbpublic.private_commits(f"{shas[3]}..{shas[-1]}", r.path)  # the commit that deletes them is one too
+        assert kbpublic.private_commits(f"{shas[4]}..{shas[-1]}", r.path) == []
 
 
 class TestGuard:
