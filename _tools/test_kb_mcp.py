@@ -17,7 +17,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both. The clone-only
                 kb-worker agent (test_kb_worker_agent*): the sonnet alias, effort high, not in plugin.json, and it runs
-                `kbgit.py fix --check` and, for a change to _tools/, the ruff and tools_map tests before a commit. Its
+                `kbgit.py fix --check` and, for a change to any Python file ruff covers (_tools/, .claude/**/*.py), the ruff and
+                tools_map tests before a commit (test_kb_worker_rule_4_worker_ruff_for_any_python). Its
                 dispatch (test_kb_worker_dispatch*): /kb-sprint run starts tasks and subtasks on it with no model
                 override, S1 and S2 bugs and breakdowns on the session model; the review, /kb-census and the
                 runbook agree. Its fallback (test_kb_worker_fallback*): when the Agent tool does not list kb-worker,
@@ -244,6 +245,21 @@ def kb_worker_fallback_problems(sprint, runbook):
 
 
 FAST_TESTS = "python3 _tools/tests.py --changed origin/main"
+
+
+def kb_worker_ruff_problems(worker):
+    """What is wrong with kb-worker's rule 4 (`worker`) on running the gate's ruff check for a changed Python file:
+    [] when nothing."""
+    rule = re.search(r"(?ms)^4\. \*\*The sync gate's own checks.*?(?=^\d+\. )", worker)
+    sentence = next((s for s in re.split(r"(?<=\.) ", rule.group(0)) if "tests.py -k" in s), "") if rule else ""
+    problems = []
+    if not rule:
+        problems.append("kb-worker has no rule 4 on the sync gate's own checks")
+    if 'tests.py -k "ruff or tools_map"' not in sentence:
+        problems.append("kb-worker's rule 4 does not run the ruff and tools_map tests")
+    if "any Python file" not in sentence or "`.claude/**/*.py`" not in sentence or "`_tools/`" not in sentence:
+        problems.append("kb-worker's rule 4 does not run them for any Python file the gate's ruff covers (`.claude/**/*.py`, `_tools/`)")
+    return problems
 
 
 def kb_worker_load_problems(worker, sprint, runbook):
@@ -926,6 +942,18 @@ class TestPluginManifest:
         # The sync gate's own checks run in the worktree before each commit, not first at the orchestrator's gate.
         for phrase in ("kbgit.py fix --check", 'tests.py -k "ruff or tools_map"'):
             assert phrase in body, f"the worker brief runs {phrase!r} before a commit"
+
+    def test_kb_worker_rule_4_worker_ruff_for_any_python(self):
+        """Rule 4 has a worker run the ruff and tools_map tests for any Python file the sync gate's ruff check covers,
+        `.claude/**/*.py` as well as `_tools/`, not only when its touches include `_tools/`."""
+        with open(os.path.join(KB, KB_WORKER), encoding="utf-8") as f:
+            text = f.read()
+        assert kb_worker_ruff_problems(text) == []
+        for old, new in (("`.claude/**/*.py`", "`_tools/`"), ("any Python file", "`_tools/`"),
+                         ('tests.py -k "ruff or tools_map"', "tests.py")):
+            planted = text.replace(old, new)
+            assert planted != text, f"plant does not apply: {old!r}"
+            assert kb_worker_ruff_problems(planted), f"not caught: {old!r} -> {new!r}"
 
     def test_kb_worker_agent_planted_failures(self):
         """Each rule fails on a planted copy: a pinned id, inherit, no model, another effort, a plugin listing."""

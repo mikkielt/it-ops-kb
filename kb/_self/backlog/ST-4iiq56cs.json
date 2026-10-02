@@ -2,7 +2,7 @@
   "id": "ST-4iiq56cs",
   "kind": "story",
   "title": "kb-worker runs the gate's ruff check for any Python it changes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -21,5 +21,6 @@
     ".claude/agents/kb-worker.md",
     "_tools/test_kb_mcp.py",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
