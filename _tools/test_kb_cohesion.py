@@ -715,9 +715,11 @@ class TestScopeGroups:
         of = lambda cls, test="test_x": conftest.scope_of(f"{self.E2E}::{cls}::{test}")  # noqa: E731
         assert of("TestAnswered") == of("TestFetches", "test_y") == of("TestToolRows") == of("TestRedaction")
         assert of("TestFixedSince") == of("TestSessions")
-        assert of("TestAnswered") != of("TestFixedSince")  # two stages, two clones, two scopes
-        for other in ("TestFixes", "TestWorkSidecar", "TestModesAuto", "TestTwoClones"):
-            assert of(other) == f"{self.E2E}::{other}" and of(other) not in {of("TestAnswered"), of("TestSessions")}
+        assert of("TestModesOff") == of("TestModesLocal", "test_y") == of("TestModesAuto")  # the mode scenarios
+        assert len({of("TestAnswered"), of("TestFixedSince"), of("TestModesOff")}) == 3  # three stages, three scopes
+        for other in ("TestFixes", "TestWorkSidecar", "TestTwoClones"):
+            assert of(other) == f"{self.E2E}::{other}" and of(other) not in {of("TestAnswered"), of("TestSessions"),
+                                                                           of("TestModesOff")}
         assert conftest.scope_of("_tools/test_kb.py::test_f") == "_tools/test_kb.py"  # a module's functions
         assert conftest.scope_of("test_querylog_e2e.py::TestAnswered::test_x") == of("TestAnswered")  # any rootdir
         assert conftest.scope_of("other/test_x.py::TestAnswered::test_x") == "other/test_x.py::TestAnswered"  # other module

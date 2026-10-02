@@ -437,6 +437,9 @@ SCOPE_GROUPS = {  # "module.py::Class" -> the one loadscope unit its tests share
     "test_querylog_e2e.py::TestRedaction": "test_querylog_e2e.py::stage-a",
     "test_querylog_e2e.py::TestFixedSince": "test_querylog_e2e.py::stage-b",
     "test_querylog_e2e.py::TestSessions": "test_querylog_e2e.py::stage-b",
+    "test_querylog_e2e.py::TestModesOff": "test_querylog_e2e.py::stage-c",
+    "test_querylog_e2e.py::TestModesLocal": "test_querylog_e2e.py::stage-c",
+    "test_querylog_e2e.py::TestModesAuto": "test_querylog_e2e.py::stage-c",
 }
 
 
