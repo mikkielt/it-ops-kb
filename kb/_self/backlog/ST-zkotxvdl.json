@@ -2,7 +2,7 @@
   "id": "ST-zkotxvdl",
   "kind": "story",
   "title": "A full tests.py, stress_test.py or 8-worker gate waits for another one running on the same host",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-gfoakqar",
   "priority": "P1",
@@ -26,5 +26,19 @@
     "kb/_self/maintaining.md"
   ],
   "notes": "tests.py, stress_test.py and conftest.py hold no host lock, so two sessions' full runs overlap on one host. Raised to P1 by the operator at the SP-5cwekumc retrospective (2026-10-01): four sessions landing in parallel overloaded the host (a land killed for low memory, test timeouts) and a land token had to be passed by hand. A lock wait and hold are recorded as ops host.lock rows once the ops sidecar exists.",
-  "claimed_by": "seventh-w7"
+  "evidence": {
+    "commit": "b3bc09d858b0ff05593c472b4b78085b0133e82b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "host_test_lock_waits"
+        ],
+        "exit": 0,
+        "sha256": "77ea3eda78d40aa4"
+      }
+    ]
+  }
 }
