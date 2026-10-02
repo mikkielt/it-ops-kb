@@ -2,7 +2,7 @@
   "id": "ST-ng7igc4l",
   "kind": "story",
   "title": "kb-sprint runs headless as a restartable sprint runner",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -28,5 +28,6 @@
     "kb/_self/maintaining.md",
     "AGENTS.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
