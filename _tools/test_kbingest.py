@@ -1198,7 +1198,53 @@ def test_kbingest_map_dotnet_value_shapes(tmp_path, monkeypatch):
         "imports[0].imports[0]: a value of the leak scan's shapes (guid) redacted"]
 
 
-def test_kbingest_map_dotnet_value_shapes_accept_real_values():
+def plant_machine(monkeypatch, host="PL-LT-00123", user="jan.kowalski"):
+    """This machine is HOST and USER, whatever the real one is: the environment variables and the two lookups."""
+    for k in kbingest.MACHINE_ENV:
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("COMPUTERNAME", host)
+    monkeypatch.setenv("USERNAME", user)
+    monkeypatch.setattr(kbingest.socket, "gethostname", lambda: f"{host}.corp.example.com")
+    monkeypatch.setattr(kbingest.getpass, "getuser", lambda: user)
+
+
+def test_kbingest_map_dotnet_machine_names(tmp_path, monkeypatch):
+    """Planted: a project whose properties and items evaluate to this machine's host or user name (a property set from
+    GetEnvironmentVariable('COMPUTERNAME') or 'USERNAME'), alone, in another case, or as part of a package id or a
+    project path: each has a shape a single token fits, yet none reaches the map; a note names the project and the
+    property, never the name. Values that hold no name are kept."""
+    plant_machine(monkeypatch)
+    (tmp_path / "App.csproj").write_text(CSPROJ, encoding="utf-8")
+    ev = {"Properties": {"TargetFrameworkMoniker": "PL-LT-00123", "LangVersion": "latest"},
+          "Items": {"PackageReference": [{"Identity": "jan.kowalski", "Version": "1.0.0"},
+                                         {"Identity": "Acme.PL-LT-00123.Tools", "Version": "1.0.0"},
+                                         {"Identity": "Polly", "Version": "1.0.0-pl-lt-00123"},
+                                         {"Identity": "Serilog", "Version": "3.1.1"}],
+                    "ProjectReference": [{"Identity": "Jan.Kowalski\\Lib.csproj"}, {"Identity": "Lib\\Lib.csproj"}]}}
+    ctx = kbingest.MapCtx(tmp_path, {}, 1, "dotnet")
+    monkeypatch.setattr(ctx, "json", lambda *a, **k: ev)
+    kbingest.DotnetMapper().project(ctx, "App.csproj")
+    assert ctx.packages == [{"language": "dotnet", "name": "App", "path": ".", "project": "App.csproj", "kind": "project",
+                             "langversion": "latest", "references": ["Lib/Lib.csproj"],
+                             "requested": {"Serilog": "3.1.1"}}]
+    assert ctx.imports == [{"language": "dotnet", "path": "App.csproj", "imports": ["Polly", "Serilog"]}]
+    held = "the evaluated value holds this machine's host or user name, left out"
+    assert ctx.notes == [f"App.csproj: {what}: {held}" for what in (
+        "TargetFrameworkMoniker", "ProjectReference", "PackageReference Identity", "PackageReference Identity",
+        "PackageReference Polly Version")]
+    assert "pl-lt-00123" not in json.dumps(ctx.notes).lower() and "kowalski" not in json.dumps(ctx.notes).lower()
+    assert not kbingest.holds_machine_name("net8.0") and kbingest.holds_machine_name("PL-LT-00123")
+
+
+def test_kbingest_map_dotnet_machine_names_short_name_matches_only_whole(monkeypatch):
+    """A user name shorter than MACHINE_NAME_MIN (`me`) is left out only as the whole value, not inside any package id
+    that happens to hold its letters."""
+    plant_machine(monkeypatch, host="PL-LT-00123", user="me")
+    assert kbingest.holds_machine_name("ME") and not kbingest.holds_machine_name("Microsoft.Extensions.Hosting")
+
+
+def test_kbingest_map_dotnet_value_shapes_accept_real_values(monkeypatch):
+    plant_machine(monkeypatch)
     good = {"TargetFrameworkMoniker": [".NETCoreApp,Version=v8.0", ".NETFramework,Version=v4.7.2,Profile=Client",
                                        "net8.0-windows10.0.19041", "netstandard2.0"],
             "LangVersion": ["latest", "12.0", "preview", "latestMajor", "default", "ISO-2", "9"],
