@@ -24,7 +24,14 @@
     "kb/_self/reports/autopilot-digest.md",
     "kb/_self/content-rules.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/bl_base.py",
+    "_tools/bl_land.py",
+    "_tools/bl_check.py",
+    "_tools/bl_plan.py",
+    "_tools/test_kb_leaks.py",
+    "_tools/test_selfdoc.py",
+    "_tools/test_testmap.py"
   ],
   "depends_on": [
     "ST-6sujnopr"
