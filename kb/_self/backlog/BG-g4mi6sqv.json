@@ -2,7 +2,7 @@
   "id": "BG-g4mi6sqv",
   "kind": "bug",
   "title": "git.md says GitHub CI is run by hand on the runners, but kb.yml runs on every push on GitHub's hosted runners",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-djri7fqp",
   "priority": "P2",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
