@@ -2,7 +2,7 @@
   "id": "BG-b3tmj3p6",
   "kind": "bug",
   "title": "The sprint cost report's shared figure and session total include the sessions of research items although research lines are left out",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "documentation wording only: the code behaves as designed and the defect is a sentence the docs lack, which no behaviour test can show",
   "touches": [
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
