@@ -86,7 +86,9 @@ class TestRoute:
         assert kbfacts.NONE_SENTENCE not in lines and "Do not answer from the hits" not in res["text"], lines[:3]
         assert res["paths"][0] == "public/sqlserver/sp-getapplock.md", res["paths"]
         facts = [ln for ln in lines if ln.startswith("- public/sqlserver/sp-getapplock.md:")]
-        assert len(facts) > 2 and any("SNIPPET:" in ln and "@LockTimeout" in ln for ln in facts), facts
+        code = [ln for ln in lines if ln.startswith("  ") and not ln.startswith("  ->")]  # the picked snippet's code
+        assert len(facts) > 2 and any("@LockTimeout = 0" in ln for ln in code), code
+        assert any("sp_releaseapplock" in ln for ln in code), code
         assert res["sources"] == ["S467"] and "sources:" in lines, res["sources"]
         assert any(ln.startswith("  -> S467  https://") for ln in lines), lines[-3:]
         # a none that routes web keeps its none behaviour: the sentence, two lines of one article, no footer
@@ -95,6 +97,18 @@ class TestRoute:
         assert kbfacts.NONE_SENTENCE in off_lines and off["sources"] == [] and "sources:" not in off_lines
         assert sum(1 for ln in off_lines if ln.startswith("## ")) <= 1
         assert sum(1 for ln in off_lines if ln.startswith("- ")) <= 2
+
+    def test_pack_prints_snippet_code(self):
+        # a picked SNIPPET: bullet brings the fenced block below it, indented under the bullet, and the budget counts it
+        res = kbfacts.pack(NEAR_MISS_Q)
+        lines = res["text"].splitlines()
+        at = next(i for i, ln in enumerate(lines) if ".md:44 SNIPPET:" in ln)
+        assert "sp_getapplock" in lines[at + 2] and "@LockTimeout = 0" in lines[at + 3], lines[at:at + 8]
+        assert "sp_releaseapplock" in lines[at + 6] and not lines[at + 7].strip(), lines[at:at + 8]
+        assert len("\n".join(lines)) < int(1200 * 3.5) + 600
+        # a pack that picks no snippet prints no indented code
+        good = kbfacts.pack(CLEAN_Q)["text"].splitlines()
+        assert not [ln for ln in good if ln.startswith("  ") and not ln.startswith(("  ->", "  (+"))], good
 
     def test_several_parts_with_a_near_miss_route_split(self):
         res = kbfacts.pack_many([NEAR_MISS_Q, NONE_Q])

@@ -2,7 +2,7 @@
   "id": "BG-f7wpxbru",
   "kind": "bug",
   "title": "A pack never prints a SNIPPET's code, so the h2_applock pack lacks @LockTimeout = 0 and sp_releaseapplock",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
@@ -32,5 +32,6 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
