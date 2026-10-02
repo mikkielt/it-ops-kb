@@ -2,7 +2,7 @@
   "id": "ST-c5l2j4af",
   "kind": "story",
   "title": "kblog.py records, confirms and invalidates LOG rows",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-auko2fyn",
   "sprint": "SP-parnkbr7",
   "priority": "P3",
@@ -80,5 +80,29 @@
     }
   ],
   "notes": "Related defects in the store it reuses: BG-qks4ikyr and BG-2i46kz3z.",
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "fa5ebcd68464bfa1a3b784aa017aa4d2cb4892f9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kblog_record_confirm"
+        ],
+        "exit": 0,
+        "sha256": "ff563bc93c8e29a3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kblog_sweep_invalidates_with_context"
+        ],
+        "exit": 0,
+        "sha256": "2a776710ce6ebcc5"
+      }
+    ]
+  }
 }
