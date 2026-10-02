@@ -2,7 +2,7 @@
   "id": "ST-wxhe6jci",
   "kind": "story",
   "title": "The digest reports context rot and decision disagreement",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -82,5 +82,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "6e753b6f7b10abe5d4b5886b12c0c655bf43516a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_rot_metrics"
+        ],
+        "exit": 0,
+        "sha256": "d475e5d6cce9d955"
+      }
+    ]
+  }
 }
