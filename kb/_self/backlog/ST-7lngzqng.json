@@ -2,7 +2,7 @@
   "id": "ST-7lngzqng",
   "kind": "story",
   "title": "A goal that says every or whatever is tested over its input range",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "seventh-w18"
 }
