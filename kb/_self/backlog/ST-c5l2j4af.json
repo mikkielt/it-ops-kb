@@ -53,6 +53,30 @@
       "recommendation": "wait for the failure",
       "answer": "add",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When sweep meets a fact: context reference that no fact has any more, does it invalidate a LOG row (as for an item, source, article or domain) or flag it for relink as kbdecide's sweep flags a decision?",
+      "options": [
+        "invalidate the row",
+        "flag it for relink"
+      ],
+      "recommendation": "invalidate the row",
+      "answer": "invalidate the row",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What makes a LOG row's id: the sha256 of its observation and context alone (as a decision's id is of its text and context), or of its observation, context, runs and dates too?",
+      "options": [
+        "observation, context, runs and dates",
+        "observation and context only"
+      ],
+      "recommendation": "observation, context, runs and dates",
+      "answer": "observation, context, runs and dates",
+      "by": "agent"
     }
   ],
   "notes": "Related defects in the store it reuses: BG-qks4ikyr and BG-2i46kz3z.",
