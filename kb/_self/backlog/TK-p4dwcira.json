@@ -2,7 +2,7 @@
   "id": "TK-p4dwcira",
   "kind": "task",
   "title": "kbgit.py sync appends one sync.gate row per run with each check's name, ran flag, skip reason, exit and ms, the scope and the push outcome",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-2fxtyrr5",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/git.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "2241d1a037712c52b333dfe06f6594a948c88c88",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_sync_gate_row"
+        ],
+        "exit": 0,
+        "sha256": "df5454e534d929de"
+      }
+    ]
+  }
 }
