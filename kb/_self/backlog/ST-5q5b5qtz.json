@@ -1,13 +1,13 @@
 {
   "id": "ST-5q5b5qtz",
   "kind": "story",
-  "title": "Workers start the longest test scopes first and match the host's cores",
+  "title": "Workers start the longest test scopes first",
   "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 4,
-  "goal": "tests.py orders its loadscope units so the git scenario classes with long class fixtures are handed out first, and chooses its worker count from a measured default instead of one worker per logical CPU.",
+  "goal": "tests.py orders its loadscope units so the git scenario classes with long class fixtures are handed out first; the worker count stays the host's logical CPUs shared among live runs, its measured default is ST-f57fq7np's.",
   "checks": [
     {
       "run": [
@@ -44,39 +44,6 @@
   ],
   "depends_on": [
     "ST-c35i7vjx"
-  ],
-  "gates": [
-    {
-      "id": "g1",
-      "kind": "blocking",
-      "question": "Default worker count of tests.py with no -n: only -n 8 is measured (1,106 s) on the 4-core 8-thread Windows host (the -n 4 run was dropped). physical-cores: workers = physical cores, shared among live runs, set from full -n 4, -n 6 and -n 8 runs under the host lock; keep-logical: today's logical-CPU share; cap-8: min(logical CPUs, 8) shared among live runs.",
-      "options": [
-        "physical-cores",
-        "keep-logical",
-        "cap-8"
-      ],
-      "recommendation": "physical-cores",
-      "do": {
-        "physical-cores": [
-          "python3",
-          "_tools/tests.py",
-          "-n",
-          "4"
-        ],
-        "keep-logical": [
-          "python3",
-          "_tools/backlog.py",
-          "show",
-          "ST-5q5b5qtz"
-        ],
-        "cap-8": [
-          "python3",
-          "_tools/backlog.py",
-          "show",
-          "ST-5q5b5qtz"
-        ]
-      }
-    }
   ],
   "links": [
     "kb/_self/reports/test-suite-speed.md",
