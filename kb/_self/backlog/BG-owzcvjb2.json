@@ -2,7 +2,7 @@
   "id": "BG-owzcvjb2",
   "kind": "bug",
   "title": "The autopilot decision review date defaults to 30 days though the operator chose 14",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4xngzagf",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_backlog_authority.py",
     "kb/_self/backlog.md",
     "kb/_self/content-rules.md"
-  ]
+  ],
+  "claimed_by": "seventh-w33"
 }
