@@ -1,0 +1,17 @@
+{
+  "id": "BG-amcsfoms",
+  "kind": "bug",
+  "title": "factdiff drop_citation loses the id of a DECISION or LOG part in the tag it rewrites",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "drop_citation (_tools/factdiff.py) rewrites a tag part by part from kind, ids and note, so a DECISION or LOG part (its id is in part decision or log, ids empty) comes out as a bare kind with its id gone; it keeps those ids, and a test named drop_citation_keeps_decision_and_log_ids plants a tag with a source and a LOG or DECISION part",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile; d=tempfile.mkdtemp(); os.makedirs(d+'/print'); open(d+'/_root.md','w').write('---\\nroot: fixture\\nid_prefix: FXT\\nvisibility: internal\\ndescription: x\\n---\\n'); open(d+'/print/queues.md','w').write('---\\ntopic: print/queues\\n---\\n\\n## Facts\\n- Jobs are kept 14 days. [DOC S1208, S1209; LOG L-aaaaaaaa]\\n'); os.environ['KB_ROOTS']=d; sys.path.insert(0,'_tools'); import factdiff,kbcommon,kbfacts; factdiff.ROOT=kbcommon.root('fixture'); key=next(kbfacts.fact_key(u['text']) for u in kbfacts.units('fixture') if '14 days' in u['text']); factdiff.drop_citation('print/queues.md',key,'S1208','gone'); sys.exit(0 if 'LOG L-aaaaaaaa' in open(d+'/print/queues.md').read() else 1)"
+    ]
+  }
+}
