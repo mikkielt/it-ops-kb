@@ -2,7 +2,7 @@
   "id": "ST-lopowpsz",
   "kind": "story",
   "title": "Subagent start and stop leave ops rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -50,5 +50,6 @@
       "by": "operator"
     }
   ],
-  "notes": "SubagentStart can fire more than once for one agent id, so a start row is not a dispatch count. A worker is counted under other in kbusage today."
+  "notes": "SubagentStart can fire more than once for one agent id, so a start row is not a dispatch count. A worker is counted under other in kbusage today.",
+  "claimed_by": "seventh-w12"
 }
