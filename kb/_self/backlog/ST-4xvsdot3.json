@@ -44,7 +44,8 @@
     "_tools/kg_lock.py",
     "_tools/test_kb_leaks.py",
     "_tools/test_selfdoc.py",
-    "_tools/test_testmap.py"
+    "_tools/test_testmap.py",
+    "_tools/test_kbdecide.py"
   ],
   "depends_on": [
     "ST-aqpalijz",
