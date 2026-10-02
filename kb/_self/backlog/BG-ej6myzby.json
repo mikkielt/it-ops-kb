@@ -2,7 +2,7 @@
   "id": "BG-ej6myzby",
   "kind": "bug",
   "title": "A git fetch that hangs inside land or sync holds kb-main.lock for an hour with every runner waiting behind it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,6 @@
     "_tools/bl_land.py",
     "_tools/test_git_timeout.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
