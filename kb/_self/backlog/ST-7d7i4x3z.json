@@ -2,7 +2,7 @@
   "id": "ST-7d7i4x3z",
   "kind": "story",
   "title": "Lookups show active LOG lines beside facts as evidence, never as coverage",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-auko2fyn",
   "sprint": "SP-parnkbr7",
   "priority": "P3",
@@ -55,5 +55,6 @@
       "answer": "add",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
