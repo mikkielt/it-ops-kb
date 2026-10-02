@@ -43,7 +43,8 @@ import xml.etree.ElementTree as ET
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
-XDIST = ["-n", "auto"]  # dist loadscope: a class's scenario is built once, on one worker (stress_test.py: load);
+XDIST = ["-n", "auto"]  # dist loadscope: a class's scenario is built once, on one worker (stress_test.py: load); run with
+# --no-loadscope-reorder, conftest.pytest_collection_modifyitems orders the scopes: class-fixture scenarios first;
 # "auto" here means default_workers(): the CPUs shared among the tests.py runs live on the host, KB_TEST_WORKERS overriding
 
 
@@ -162,7 +163,7 @@ def run_pytest(args, env=None, dist="loadscope", report=None, mode=None):
         extra = [f"--junitxml={xml}"]
     start = time.monotonic()
     try:
-        code = subprocess.run(cmd + xdist_args() + ["--dist", dist] + extra + args, cwd=KB,
+        code = subprocess.run(cmd + xdist_args() + ["--dist", dist] + (["--no-loadscope-reorder"] if dist == "loadscope" else []) + extra + args, cwd=KB,
                               env={**os.environ, **(env or {})}).returncode
         entry = {"exit": code, "ms": int((time.monotonic() - start) * 1000), "files": junit_files(xml) if xml else {}}
     finally:

@@ -426,3 +426,36 @@ class Repo:
 
     def append(self, rel, text):
         self.write(rel, text, "a")
+
+
+def scope_of(nodeid):
+    """The pytest-xdist loadscope unit of a test id: a class's tests are one unit, a module's functions another."""
+    return nodeid.rsplit("::", 1)[0]
+
+
+def longest_scopes_first(units):
+    """`units` as (scope, tests, class_fixtures) in the order a loadscope run should hand them out: the scopes with a
+    class-scoped fixture first (a scenario built once per class, the scopes that take minutes to set up), each group by
+    test count, most first, then by scope name; the order is the same in every worker."""
+    return sorted(units, key=lambda u: (not u[2], -u[1], u[0]))
+
+
+def has_class_fixture(item):
+    info = getattr(item, "_fixtureinfo", None)
+    defs = info.name2fixturedefs.values() if info else ()
+    return any(d.scope == "class" for ds in defs for d in ds)
+
+
+def pytest_collection_modifyitems(config, items):
+    """Under --no-loadscope-reorder (tests.py passes it for loadscope) the scheduler hands scopes out in collection
+    order: put the scopes with a class fixture first, by size, so the long scenario classes start at the beginning
+    of the run, not 500-1,000 s into it. Tests keep their order inside a scope."""
+    if getattr(config.option, "loadscopereorder", True):
+        return
+    units = {}
+    for it in items:
+        u = units.setdefault(scope_of(it.nodeid), [0, False])
+        u[0] += 1
+        u[1] = u[1] or has_class_fixture(it)
+    rank = {s: i for i, (s, _, _) in enumerate(longest_scopes_first([(s, n, h) for s, (n, h) in units.items()]))}
+    items.sort(key=lambda it: rank[scope_of(it.nodeid)])  # stable: a scope's tests keep their order
