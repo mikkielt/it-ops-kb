@@ -2,7 +2,7 @@
   "id": "BG-lhpz2n7j",
   "kind": "bug",
   "title": "A CODE pointer now accepts scheme-less urls and prose such as and/or#x, untested",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "72602eb1815f0da0da8d2f820b0f6518e3ae4b9f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "code_pointer_rejects_prose_and_hosts"
+        ],
+        "exit": 0,
+        "sha256": "5381bdfddc225e28"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;p=kbfacts.tags_in('- x [CODE S1: and/or#x]');sys.exit(1 if p and kbfacts.code_pointer(p[0]) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
