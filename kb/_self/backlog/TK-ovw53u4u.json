@@ -2,7 +2,7 @@
   "id": "TK-ovw53u4u",
   "kind": "task",
   "title": "kbgit.py is the facade: its commands, usage and dispatch only",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -41,5 +41,19 @@
   "depends_on": [
     "TK-5sjw6qpg"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "42eb8c72e71c102fcc40dfd6b2110efeb1af764d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_kbgit_facade_only"
+        ],
+        "exit": 0,
+        "sha256": "688dc05a6d1b8c8c"
+      }
+    ]
+  }
 }
