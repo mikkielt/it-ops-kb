@@ -2,7 +2,7 @@
   "id": "ST-4xvsdot3",
   "kind": "story",
   "title": "The manager's tick starts with a self-check of its tools, rules, hooks and host",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-rrrrggw7",
   "priority": "P1",
@@ -70,5 +70,29 @@
     }
   ],
   "notes": "Its state output is the one capped command of ST-nrhwbodb; each failed check names a remedy a stalled item uses too (A1).",
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "02b2e61c931e24c7874e7f37db15b81c1863ea96",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfcheck_names_remedy"
+        ],
+        "exit": 0,
+        "sha256": "447d19121ad5266b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfcheck_capped"
+        ],
+        "exit": 0,
+        "sha256": "d4c77472d8085885"
+      }
+    ]
+  }
 }
