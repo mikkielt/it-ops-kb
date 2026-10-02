@@ -5,11 +5,11 @@
   "status": "todo",
   "priority": "P2",
   "rank": 0,
-  "goal": "Every story and task names the knowledge it needs as kb lookup questions and stable references (topic, QK answer, source id, fact key); research that the kb lacks is scheduled before the work that needs it; agents start from the packs of that knowledge instead of rediscovering it.",
+  "goal": "A story or task can name the knowledge it rests on as kb lookup questions and stable references (topic, QK answer, source id, fact key) in its knowledge field, and show, next and horizon print the derived state of each (coverage, conflicting or stale) from a pack run in process, so a planner sees what the kb holds or lacks before work starts. A compact brief of the packs for the working agent was measured and dropped (kb/_self/token-efficiency.md, Measured, not assumed, \"Tried and dropped\").",
   "links": [
     "kb/_self/backlog.md",
     "agents/agent-planning-and-done.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Order: the knowledge field (ST-ireqmpda), then the measurement with a compact brief (ST-zptutwlf). The brief command (ST-u7bliqzx), research scheduling (ST-wgymzw72) and the planning skills (ST-hzja7lj4) wait on the measurement's blocking gates. Planning writes knowledge needs (asks and refs); only research and the kb's own skills write facts."
+  "notes": "Delivered: the knowledge field (ST-ireqmpda) with its derived state, and the measurement of a compact brief (ST-zptutwlf), which showed the brief added tokens and was dropped. Planning writes knowledge needs (asks and refs); only research and the kb's own skills write facts."
 }
