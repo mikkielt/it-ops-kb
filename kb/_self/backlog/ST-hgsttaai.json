@@ -32,9 +32,6 @@
     "ST-kmsi4dyv",
     "ST-chco2mot"
   ],
-  "relates_to": [
-    "ST-zjw6ugq6"
-  ],
   "gates": [
     {
       "id": "no-failure-yet",

@@ -24,9 +24,6 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "TK-cilkikzk",
-    "TK-plrpnzon",
-    "TK-nb6gbc3x",
-    "TK-5m4r7eah"
+    "TK-cilkikzk"
   ]
 }

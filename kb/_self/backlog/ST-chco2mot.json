@@ -28,9 +28,5 @@
   "depends_on": [
     "ST-6zcqkjfm"
   ],
-  "relates_to": [
-    "ST-2w2bqtjf",
-    "TK-skhq4sef"
-  ],
   "notes": "Failure it answers: the work sidecar's refused row says only that done exited 1, so the rework a refusal costs cannot be split by cause (ST-2w2bqtjf)."
 }
