@@ -2,7 +2,7 @@
   "id": "ST-d6aozshf",
   "kind": "story",
   "title": "The autopilot's own work has an end: a definition of done for sprints, retros and the backlog it fills",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-rrrrggw7",
   "priority": "P1",
@@ -159,5 +159,69 @@
     }
   ],
   "notes": "The failure it answers: closing a sprint turns every accepted review or retro finding into a story, so one sprint's close filed ten drafts (SP-x2pvljz6) and another six (SP-5cwekumc), with the operator as the only brake; an autopilot that answers for the operator has no brake. The existing process rule (backlog.md, Changing this process: a new mechanism only for a failure that happened) becomes a check. The limits gate holds the numbers. The story is large: /kb-item splits it into tasks (what a sprint gains and what findings file; the caps and the inflow guard; the manager's stop conditions and the docs).",
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "af972ed2d13dd5bc617ff4acf79264013c6bcc01",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bounds_sprint_gains_only_s1"
+        ],
+        "exit": 0,
+        "sha256": "4d1aa9cf11f3b1aa"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bounds_finding_needs_failure_and_evidence"
+        ],
+        "exit": 0,
+        "sha256": "8fefd8ca91669162"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bounds_retro_origin_has_no_retro"
+        ],
+        "exit": 0,
+        "sha256": "ad6bfdece1580440"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bounds_inflow_guard"
+        ],
+        "exit": 0,
+        "sha256": "5a978ddbb36aaf5e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bounds_rework_cap"
+        ],
+        "exit": 0,
+        "sha256": "33dd3ce364f4a79c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bounds_stops_on_budget"
+        ],
+        "exit": 0,
+        "sha256": "651f876054adc2bc"
+      }
+    ]
+  }
 }
