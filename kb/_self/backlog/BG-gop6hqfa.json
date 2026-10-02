@@ -2,7 +2,7 @@
   "id": "BG-gop6hqfa",
   "kind": "bug",
   "title": "spool_delivered deletes a closed work session that distill has not counted yet",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
     "_tools/ql_distill.py",
     "_tools/test_ql_distill.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "seventh-w2"
 }
