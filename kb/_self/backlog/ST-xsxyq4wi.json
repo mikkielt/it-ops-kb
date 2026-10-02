@@ -2,7 +2,7 @@
   "id": "ST-xsxyq4wi",
   "kind": "story",
   "title": "querylog.py export prints the store and the ops rows as one record format",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -84,5 +84,29 @@
     }
   ],
   "notes": "No endpoint is built: observability tools read the exported JSON Lines, and an OTLP-JSON form is added only when the operator names a tool that needs it. The command needs an allow rule in .claude/settings.json (BG-oi6mrxvr).",
-  "claimed_by": "seventh-w13"
+  "evidence": {
+    "commit": "ab63aeb551c4c12d84605aecb09d8b84e913ead9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_export_unified"
+        ],
+        "exit": 0,
+        "sha256": "812e17b7672fb775"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_export_redacts_at_read"
+        ],
+        "exit": 0,
+        "sha256": "814e29dde60e9ef2"
+      }
+    ]
+  }
 }
