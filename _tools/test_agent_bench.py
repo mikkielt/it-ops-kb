@@ -133,7 +133,7 @@ def _model(argv):
     return argv[argv.index("--model") + 1]
 
 
-def test_route_web_asks_the_no_kb_researcher_with_the_question_and_what_the_kb_lacks(routed):
+def test_route_web_asks_the_live_docs_researcher_with_the_question_and_what_the_kb_lacks(routed):
     import kb_ask
     calls = routed("web", ["live answer"])
     r = ab.route("How do I autoscale?", ab.PIN)
@@ -264,3 +264,22 @@ def test_the_pinned_arms_and_the_bare_question_of_s5_none():
     q = ab.WEB_Q["s5_none"]
     assert "kubernetes cluster autoscaler" in q.lower() and "Use the kb" not in q and q.endswith("Cite the source urls.")
     assert ab.S["s5_none"][0].startswith(q.replace(" Cite the source urls.", ""))
+
+
+def _old_researcher_words(text):
+    """The wording of the researcher before it read live docs through the kb server, as a regex over lowercased text;
+    the pattern is spelled so that this file does not match itself."""
+    import re
+    return re.findall(r"no[-_ ]kb[-_ ]researcher", text.lower())
+
+
+def test_agent_bench_researcher_wording():
+    from pathlib import Path
+    here = Path(__file__).resolve().parent
+    for name in ("agent_bench.py", "test_agent_bench.py"):
+        assert not _old_researcher_words((here / name).read_text(encoding="utf-8")), name
+    # planted failure: the old words in a sample are seen, spelled as the docstring and as a test name had them
+    for old in ("goes to the " + "no-kb" + " researcher with", "test_x_the_" + "no_kb" + "_researcher_asks",
+                "a No KB " + "Researcher" + " answers"):
+        sample = "def f():\n    '''" + old + "'''\n"
+        assert _old_researcher_words(sample), old
