@@ -64,7 +64,9 @@ tools redirect the process-wide stdout while they work.
 
 Log: one line per answered request on stderr, `kb_http: METHOD STATUS MSms` (the method, the status, the milliseconds
 since the request line was read). Never the client address, the path or the request line, so a host journal holds
-no personal data and no question; the base class's own access and error lines are dropped.
+no personal data and no question; the base class's own access and error lines are dropped. An internal error adds
+one line, `kb_http: internal error: CLASS`: the exception's class, never its message, which can hold a question
+or a path from the request.
 
 Exit codes: 0 after an interrupt, 1 when the address cannot be bound, 2 for a bad option (a non-loopback --bind
 without --bind-any, and a --roots name that is no root, among them).
@@ -101,7 +103,7 @@ def answer(msg):
         with _HANDLE_LOCK:
             reply = kb_mcp.handle(msg)
     except Exception as e:  # noqa: BLE001 - one bad request must not end the server
-        print(f"kb_http: internal error: {type(e).__name__}: {e}", file=sys.stderr)
+        print(f"kb_http: internal error: {type(e).__name__}", file=sys.stderr)  # never the message: it can hold the request
         return HTTPStatus.INTERNAL_SERVER_ERROR, kb_mcp.error(msg.get("id") if isinstance(msg, dict) else None,
                                                               -32603, "Internal error")
     if reply is None:
