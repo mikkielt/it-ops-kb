@@ -2,7 +2,7 @@
   "id": "TK-5sjw6qpg",
   "kind": "task",
   "title": "kg_hooks.py holds the pre-push hook and the hook install",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -37,5 +37,19 @@
   "depends_on": [
     "TK-i2x2csig"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "360ae87fac4ba599afa34a2f23d70c7fdcba153f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kg_split_hooks"
+        ],
+        "exit": 0,
+        "sha256": "726677f6234bd93e"
+      }
+    ]
+  }
 }
