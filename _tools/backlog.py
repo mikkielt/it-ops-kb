@@ -3922,6 +3922,50 @@ def cmd_cost(bl, a):
     return 0
 
 
+def referrer_patterns(term, files):
+    """The patterns that name term: a tracked file by its path (a .py also by its module name, word-bounded), any
+    other term as a symbol, word-bounded."""
+    if term in files:
+        pats = [re.compile(re.escape(term))]
+        if term.endswith(".py"):
+            pats.append(re.compile(r"\b" + re.escape(Path(term).stem) + r"\b"))
+        return pats
+    return [re.compile(r"(?<![\w])" + re.escape(term) + r"(?![\w])")]
+
+
+def referrers_of(root, term, files):
+    """(path, first line number, matching line count) of each tracked text file other than term itself that names it."""
+    pats = referrer_patterns(term, files)
+    out = []
+    for f in files:
+        path = Path(root) / f
+        if f == term or not path.is_file() or path.stat().st_size > 4_000_000:
+            continue
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        hit = [n for n, ln in enumerate(lines, 1) if any(p.search(ln) for p in pats)]
+        if hit:
+            out.append((f, hit[0], len(hit)))
+    return out
+
+
+def cmd_referrers(bl, a):
+    """Every tracked file that names a file or symbol a task will move or delete: one line per file with its first
+    line and its count of lines, read-only. --item ID marks each file outside the item's scope (its touches and its
+    descendants') and exits 1 when there is one, so the touches hold them before the work starts."""
+    files = tracked_files(bl.root)
+    globs = scope(bl, need(bl, a.item)) if a.item else None
+    stray = 0
+    for term in a.terms:
+        rows = referrers_of(bl.root, term, files)
+        for f, first, n in rows:
+            out = bool(globs is not None and not in_scope(f, globs))
+            stray += out
+            say(f"{term}  {f}:{first}  {n} line{'s' * (n != 1)}" + ("  outside touches" if out else ""))
+        if not rows:
+            say(f"{term}  no tracked file names it")
+    return 1 if stray else 0
+
+
 def cmd_goal(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -4059,6 +4103,9 @@ def main(argv=None):
     p.add_argument("--hook", action="store_true")
     p = sub.add_parser("goal")
     p.add_argument("id")
+    p = sub.add_parser("referrers")
+    p.add_argument("terms", nargs="+", help="a tracked file path or a symbol a task will move or delete")
+    p.add_argument("--item", help="mark the files outside this item's scope (touches and its descendants')")
     p = sub.add_parser("cost")
     p.add_argument("id", nargs="?")
     p.add_argument("--runs", action="store_true", help="also list each run's line apart")
