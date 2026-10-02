@@ -2,7 +2,7 @@
   "id": "TK-ajwqcbpm",
   "kind": "task",
   "title": "bl_land.py holds land, done, close and the evidence they share",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -44,5 +44,19 @@
     "TK-gefod47d",
     "TK-vekgp5gc"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "eded4b829d93b6e4e7d1bbb62978a7349977f6f5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_land"
+        ],
+        "exit": 0,
+        "sha256": "2a1de73617d3b09b"
+      }
+    ]
+  }
 }
