@@ -549,8 +549,28 @@ def nav_argv():
     return task_argv("sonnet", ["--strict-mcp-config", "--allowedTools", *NAV_ALLOWED, "--disallowedTools", *NAV_DENIED])
 
 
+def keep_stream(stdout):
+    """The run's raw claude stream-json, byte for byte, in a file beside the runs file (the scratch directory, never a
+    tracked path), named <runs stem>-stream-NNN.jsonl with the first free number: created exclusively, so a run never
+    overwrites another's. Returns the relative file name, or None when no runs file is set."""
+    if not RAW.get("path") or not stdout:
+        return None
+    runs = Path(RAW["path"])
+    stem = runs.name[:-len("-runs.jsonl")] if runs.name.endswith("-runs.jsonl") else runs.stem
+    n = 1
+    while True:
+        name = f"{stem}-stream-{n:03d}.jsonl"
+        try:
+            with open(runs.parent / name, "x", encoding="utf-8", newline="") as f:
+                f.write(stdout)
+            return name
+        except FileExistsError:
+            n += 1
+
+
 def nav_run(argv, prompt, cwd):
-    """One `claude -p` run of a navigation question in `cwd`, hooks off, through nav_result."""
+    """One `claude -p` run of a navigation question in `cwd`, hooks off, through nav_result. The raw stdout is kept
+    beside the row (keep_stream) and the row names it in `stream`."""
     t = time.time()
     try:
         p = subprocess.run(argv, cwd=str(cwd), input=prompt, capture_output=True, text=True, encoding="utf-8",
@@ -558,6 +578,9 @@ def nav_run(argv, prompt, cwd):
     except subprocess.TimeoutExpired:
         return {"error": "timed out after 900 s"}
     r = nav_result(p.stdout, cwd, time.time() - t)
+    kept = keep_stream(p.stdout)
+    if kept:
+        r["stream"] = kept
     if "error" in r:
         r["error"] += (": " + p.stderr.strip()[-300:]) if p.stderr.strip() else ""
         return r

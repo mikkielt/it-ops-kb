@@ -1,7 +1,7 @@
 """_tools/benchmarks.py without a paid run: the report's generated tables and README.md's numbers against the results
 file, the isolation of every run (hooks off, throwaway clones with a local origin, a plugin copy whose hooks write
 under the scratch directory), the transcript reader and the scenario list the report names."""
-import json, os, re, shutil, subprocess
+import json, os, re, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
@@ -413,6 +413,46 @@ def test_navigation_run_takes_the_answer_from_a_fake_claude(tmp_path, monkeypatc
     assert "CLAUDE_PLUGIN_ROOT" not in seen["env"] and bench_core.SPEND["runs"] == 1
     monkeypatch.setattr(bench_lookup.subprocess, "run", lambda argv, **kw: subprocess.CompletedProcess(argv, 1, "", "boom"))
     assert bench_lookup.nav_run(bench_lookup.nav_argv(), "q", tmp_path)["error"] == "no result event: boom"
+
+
+def _kept_streams(tmp_path, monkeypatch, run, n=2):
+    """`n` runs of `run` (a nav_run) against a fake claude that prints a known stream; returns the stream and the rows."""
+    stream = _nav_stream([("Read", {"file_path": "_tools/kbgit.py"})], RIGHT["N2"]) + '{"type": "note", "t": "zażółć"}\n'
+    fake = tmp_path / "fake_claude.py"
+    fake.write_text("import sys\nsys.stdin.read()\nsys.stdout.buffer.write(" + repr(stream.encode("utf-8")) + ")\n",
+                    encoding="utf-8", newline="\n")
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    monkeypatch.setitem(bench_core.RAW, "path", raw / "navigation-2026-09-30-runs.jsonl")
+    for k in ("usd", "input", "out", "runs"):
+        monkeypatch.setitem(bench_core.SPEND, k, 0)
+    return stream, [run([sys.executable, str(fake)], "q", tmp_path) for _ in range(n)]
+
+
+def _assert_streams_kept(stream, rows, raw):
+    names = [r["stream"] for r in rows]
+    assert len(set(names)) == len(names) and all(Path(n).name == n for n in names)  # distinct, relative names only
+    for n in names:
+        assert (raw / n).read_bytes() == stream.encode("utf-8")  # byte for byte beside the runs file
+    assert sorted(p.name for p in raw.glob("*-stream-*")) == sorted(names)
+    assert [json.loads(ln)["stream"] for ln in (raw / "navigation-2026-09-30-runs.jsonl").read_text(encoding="utf-8").splitlines()] == names
+
+
+def test_nav_run_keeps_raw_stdout_beside_the_row(tmp_path, monkeypatch):
+    stream, rows = _kept_streams(tmp_path, monkeypatch, bench_lookup.nav_run, n=3)
+    _assert_streams_kept(stream, rows, tmp_path / "raw")
+    assert not list(tmp_path.glob("*-stream-*"))  # nothing outside the scratch raw directory
+
+
+def test_nav_run_keeps_raw_stdout_fails_for_a_run_that_drops_it(tmp_path, monkeypatch):
+    def drops(argv, prompt, cwd):  # planted failure: a nav_run that drops stdout but still names the file
+        r = bench_lookup.nav_run(argv, prompt, cwd)
+        (tmp_path / "raw" / r["stream"]).write_text("", encoding="utf-8")
+        return r
+
+    stream, rows = _kept_streams(tmp_path, monkeypatch, drops, n=1)
+    with pytest.raises(AssertionError):
+        _assert_streams_kept(stream, rows, tmp_path / "raw")
 
 
 def _nav_bench(tmp_path, arm="before", reps=1):
