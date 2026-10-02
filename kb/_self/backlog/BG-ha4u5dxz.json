@@ -2,7 +2,7 @@
   "id": "BG-ha4u5dxz",
   "kind": "bug",
   "title": "A new pinned artifact turns a content sync into a code merge request: kbgit.py fix rewrites .gitattributes, a code-lane path",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/test_kblane.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "seventh-w23"
+  "evidence": {
+    "commit": "4a830121545ea6bae5a81fbd6d73d76f126c86e1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_gitattributes_fix_is_content"
+        ],
+        "exit": 0,
+        "sha256": "2c7b737b2947ac19"
+      }
+    ]
+  }
 }
