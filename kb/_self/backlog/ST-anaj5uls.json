@@ -2,7 +2,7 @@
   "id": "ST-anaj5uls",
   "kind": "story",
   "title": "backlog.py land verifies its done commit reached main, carries the claim commit and keeps the done commit after a rejected push",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
