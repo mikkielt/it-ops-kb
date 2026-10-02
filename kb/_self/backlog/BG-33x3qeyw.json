@@ -2,7 +2,7 @@
   "id": "BG-33x3qeyw",
   "kind": "bug",
   "title": "settings.json allows kbgit.py publish and git push to a headless agent with no prompt",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
   "rank": 0,
@@ -40,5 +40,28 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "d6cf1e9c7a5687511c60dc0ed5c5934437b9c396",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "settings_allow_headless_runner"
+        ],
+        "exit": 0,
+        "sha256": "89dc75bfc3ef92c1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys;p=json.load(open(\".claude/settings.json\"))[\"permissions\"];a=p.get(\"allow\",[]);d=p.get(\"deny\",[]);sys.exit(0 if \"Bash(python3 _tools/kbgit.py *)\" not in a and any(\"kbgit.py publish\" in x for x in d) and any(\"git push\" in x for x in d) and \"Bash(git -C *)\" not in a else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
