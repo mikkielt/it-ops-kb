@@ -38,7 +38,9 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py"
   ],
   "claimed_by": "mac-sixth"
 }
