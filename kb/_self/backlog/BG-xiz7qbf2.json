@@ -27,6 +27,7 @@
     }
   ],
   "touches": [
-    "kb/public/agents/codebase-mapping.md"
+    "kb/public/agents/codebase-mapping.md",
+    "_tools/test_kb_cohesion.py"
   ]
 }
