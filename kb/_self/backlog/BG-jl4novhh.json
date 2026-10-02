@@ -2,7 +2,7 @@
   "id": "BG-jl4novhh",
   "kind": "bug",
   "title": "The weak-lead rule keeps short generic off-kb questions whose two words share one unrelated line",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4i5quwba",
   "priority": "P3",
@@ -20,5 +20,6 @@
     "_tools/ql_apply.py",
     "_tools/test_ql_research.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
