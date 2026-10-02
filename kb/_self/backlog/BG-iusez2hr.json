@@ -2,7 +2,7 @@
   "id": "BG-iusez2hr",
   "kind": "bug",
   "title": "kbingest map keeps PATH entries under the source repository's own clone",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/test_kbingest.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "d30b1e82a1a53ab9269b9a88f91d8edb8ec5e271",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_path_outside_source_clone"
+        ],
+        "exit": 0,
+        "sha256": "2c66394e3a2b0735"
+      }
+    ]
+  }
 }
