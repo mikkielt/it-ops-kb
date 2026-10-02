@@ -60,7 +60,7 @@ PrivateTmp=yes
 WantedBy=multi-user.target
 ```
 
-`sudo systemctl enable --now kb-http-public.service`; `journalctl -u kb-http-public` shows the startup line with the port and the roots served. Exit 1 means the port is taken, exit 2 a bad option or an unknown root.
+`sudo systemctl enable --now kb-http-public.service`; `journalctl -u kb-http-public` shows the startup line with the port and the roots served, then one line per request (`kb_http: POST 200 12ms`: method, status, milliseconds), with no client address, path or question, so the journal holds no personal data. Exit 1 means the port is taken, exit 2 a bad option or an unknown root.
 
 **The update timer** moves the clone to the newest census tag and restarts the instances (a restart with no new tag reuses the index):
 
