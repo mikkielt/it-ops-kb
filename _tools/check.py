@@ -33,6 +33,14 @@
 - every [DECISION <id>] tag names a decision of its own root's _decisions.csv (an id of another root is an error that
   says so; a tag with no id is one too); files outside the roots (kb/_self, README.md) may cite any root's or
   kb/_self's decisions, and a first word that does not start `D-` there is a placeholder in prose, not checked;
+- a root's and kb/_self's _logs.csv (LOG_COLS), when present: the exact header; a row with an `L-<8 base32>` id (unique),
+  an observation of one short line that is a derived aggregate (a digit in it) and no raw event text (no line break, JSON,
+  timestamp with a time of day or leak-scan hit), `;`-separated source run ids (`<yyyymmdd>T<hhmmss>Z-<8 hex>`, each once),
+  an observed_from and observed_to date in order, a context of `kind:value` references as a decision's, a status of
+  proposed|active|invalidated, and an invalidated_reason exactly when the status is invalidated; no root has the id prefix L;
+- every [LOG <id>] tag names a row of its own root's _logs.csv, in an article or a data row of an internal root or kb/_self
+  only (a public root never cites one; files outside the roots may cite any root's or kb/_self's rows). A [DECISION <id>]
+  tag is resolved the same way in a root's CSV data rows as in its Markdown files;
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
 - every `topic: <domain>/<slug>` marker in a root's _gaps.md and _conflicts.md names a topic of that root.
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
@@ -44,8 +52,27 @@ import kbcommon, kbid
 
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
 TAG = re.compile(r"\[(?:DOC|CODE|DER|COMMUNITY)\s([^\]]+)\]")  # \s: a tag may wrap after DOC
-DECISION_TAG = re.compile(r"\[(?:DOC|CODE|DER|COMMUNITY|UNK|DECISION)\b[^\]]*\]")  # a DECISION part may follow another
-DECISION_PART = re.compile(r"(?:\[|[;,])\s*DECISION\b\s*([^\s:;,\]]*)")  # a part of a tag: its first word is the id
+LEDGER_TAG = re.compile(r"\[(?:DOC|CODE|DER|COMMUNITY|UNK|DECISION|LOG)(?=[\s\],;:])[^\]]*\]")  # not `[LOG[`, a CCM log line  # a DECISION or LOG part may follow another
+LEDGER_PART = re.compile(r"(?:\[|[;,])\s*(DECISION|LOG)(?=[\s\],;:])\s*([^\s:;,\]]*)")  # a part of a tag: its first word is the id
+# The kinds of tag that cite a row of a ledger rather than a source: (the file, its id form, what a row is called, the
+# id's shape in a message). A LOG row is a private observed signal (kb/_self/content-rules.md, Logs).
+LOGS = "_logs.csv"
+LOG_COLS = ["id", "observation", "source_run_ids", "observed_from", "observed_to", "context", "status",
+            "invalidated_reason", "links"]
+LOG_ID = re.compile(r"L-[a-z2-7]{8}")
+LOG_PREFIX = "L"  # a root's id prefix may not be it: a log row id would read as one of the root's source ids
+LOG_STATUS = ("proposed", "active", "invalidated")
+RUN_ID = re.compile(r"\d{8}T\d{6}Z-[0-9a-f]{8}")  # a query-log run id (kb/_self/querylog.md, Store)
+LOG_TEXT_MAX = 240  # characters of a free-text cell of a LOG row: an aggregate is a short sentence
+LEDGER_TAGS = {
+    "DECISION": (kbcommon.DECISIONS, kbcommon.DECISION_ID, "decision", "decision id", "D-<8 base32>"),
+    "LOG": (LOGS, LOG_ID, "log row", "log row id", "L-<8 base32>"),
+}
+RAW_EVENT = (  # what a derived aggregate never holds: the shapes of a raw spool or ops event and of free text
+    (re.compile(r"[\r\n]"), "a line break"),
+    (re.compile(r"[{\[]\s*\"[^\"]*\"\s*:"), "a JSON object"),
+    (re.compile(r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}|\b\d{8}T\d{6}Z\b"), "a timestamp with a time of day"),
+)
 SKIP = {"_cache", "_private", "node_modules", "__pycache__"}
 errors = []
 
@@ -223,7 +250,7 @@ def central_makers():
     return {(r.get("id") or "").strip(): (r.get("role") or "").strip() for r in rows}
 
 
-def context_error(kind, value, root, base, owner, known):
+def context_error(kind, value, root, base, owner, known, noun="decisions"):
     """Why a context reference names nothing (an existing source, article or domain), or None. kb/_self (root None)
     qualifies an article or a domain as <root>/<path>."""
     if kind == "source":
@@ -234,7 +261,7 @@ def context_error(kind, value, root, base, owner, known):
     if root is None:
         owner_root, rel = kbcommon.split(value)
         if owner_root is None:
-            return f"names no root; kb/_self decisions write {kind}:<root>/<path>"
+            return f"names no root; kb/_self {noun} write {kind}:<root>/<path>"
         where = Path(owner_root.path)
     if kind == "article":
         return None if rel and (where / f"{rel}.md").is_file() else f"names no article {value}"
@@ -357,35 +384,105 @@ def cite_error(sid, root, owner, known):
     return f"cites unknown source {sid}"
 
 
-def decision_ids(base):
-    """The ids of the decisions in base's `_decisions.csv`; empty when it has none or cannot be read (check_decisions
-    reports that on the file itself)."""
+def ledger_ids(base, name):
+    """The ids of the rows of base's ledger `name` (`_decisions.csv`, `_logs.csv`); empty when it has none or cannot be
+    read (check_decisions and check_logs report that on the file itself)."""
     try:
-        rows = kbcommon.load_csv(str(Path(base) / kbcommon.DECISIONS))[1]
+        rows = kbcommon.load_csv(str(Path(base) / name))[1]
     except kbcommon.CsvError:
         return set()
     return {(r.get("id") or "").strip() for r in rows}
 
 
-def decision_cite_error(token, root, decided):
-    """The error for a `[DECISION <token>]` tag in a file of root (None: outside the roots), or None when it names a
-    decision it may cite. `decided` is {root name or None: ids of its _decisions.csv}."""
-    if not kbcommon.DECISION_ID.fullmatch(token):
-        if root is None and not token.startswith("D-"):
+def ledger_cite_error(kind, token, root, held):
+    """The error for a `[DECISION <token>]` or `[LOG <token>]` tag (`kind`) in a file of root (None: outside the roots),
+    or None when it names a row it may cite. `held` is {root name or None: ids of that root's ledger of the kind}. A
+    LOG tag in a public root is refused whatever it names: observed signals never sit beside public facts."""
+    file, form, noun, idname, shape = LEDGER_TAGS[kind]
+    if kind == "LOG" and root is not None and root.visibility == "public":
+        return (f"has a LOG tag, and root {root.name} is public: a LOG row is a private observed signal, cited only "
+                f"from an internal root or kb/_self")
+    if not form.fullmatch(token):
+        if root is None and not token.startswith(form.pattern[0] + "-"):
             return None  # prose outside the roots that explains the tag, with a placeholder for the id
-        return f"has a DECISION tag naming {token!r}, not a decision id (D-<8 base32>)" if token else \
-            "has a DECISION tag with no decision id (D-<8 base32>)"
+        return f"has a {kind} tag naming {token!r}, not a {idname} ({shape})" if token else \
+            f"has a {kind} tag with no {idname} ({shape})"
     if root is None:
-        if any(token in ids for ids in decided.values()):
+        if any(token in ids for ids in held.values()):
             return None
-    elif token in decided[root.name]:
+    elif token in held[root.name]:
         return None
     else:
-        for name, ids in decided.items():
+        for name, ids in held.items():
             if name != root.name and name is not None and token in ids:
-                return (f"cites decision {token} of root {name}; a root cites only its own decisions: record it in "
-                        f"{root.name}/{kbcommon.DECISIONS}")
-    return f"cites unknown decision {token}"
+                return (f"cites {noun} {token} of root {name}; a root cites only its own {noun}s: record it in "
+                        f"{root.name}/{file}")
+    return f"cites unknown {noun} {token}"
+
+
+def tag_errors(text, root, held):
+    """The errors of every DECISION and LOG tag in `text`, a file of root (None: outside the roots); `held` is
+    {kind: {root name or None: ids}}."""
+    res = []
+    for tag in LEDGER_TAG.findall(text):
+        for kind, token in LEDGER_PART.findall(tag):
+            e = ledger_cite_error(kind, token, root, held[kind])
+            if e:
+                res.append(e)
+    return res
+
+
+def check_logs(root, owner, known):
+    """The format of a root's `_logs.csv`, or of kb/_self's when `root` is None (LOG_COLS): optional. A row is a derived
+    aggregate with the runs it came from, never raw event text (RAW_EVENT, the leak scan)."""
+    base = Path(kbcommon.SELF) if root is None else Path(root.path)
+    name = f"kb/_self/{LOGS}" if root is None else kbcommon.qualify(root, LOGS)
+    rows = read_table(base / LOGS, name, LOG_COLS) or []
+    field = lambda r, k: (r.get(k) or "").strip()  # noqa: E731
+    ids = [field(r, "id") for r in rows]
+    for n, r in enumerate(rows, start=2):
+        lid, status, bad = field(r, "id"), field(r, "status"), []
+        if not LOG_ID.fullmatch(lid):
+            bad.append(f"id {lid!r} is not L-<8 base32>")
+        elif ids.count(lid) > 1:
+            bad.append(f"duplicate log row id {lid}")
+        if not field(r, "observation"):
+            bad.append("no observation")
+        elif not re.search(r"\d", field(r, "observation")):
+            bad.append("observation holds no number: a row is a derived aggregate (a count, a median, a range), not text")
+        for col in ("observation", "context", "invalidated_reason", "links"):
+            text = r.get(col) or ""
+            if len(text) > LOG_TEXT_MAX:
+                bad.append(f"{col} is longer than {LOG_TEXT_MAX} characters: a row holds an aggregate, not raw event text")
+            bad.extend(f"{col} holds {what}: a row never carries raw event text" for rx, what in RAW_EVENT if rx.search(text))
+            bad.extend(f"{col} has a leak-scan hit ({kind}): a row never carries raw event text"
+                       for kind in sorted({k for k, _ in kbcommon.leak_hits(text)}))
+        runs = kbcommon.split_list(r.get("source_run_ids"))
+        if not runs:
+            bad.append("no source_run_ids: a row names the runs of the query log's store it was derived from")
+        bad.extend(f"source_run_ids part {x!r} is not a run id (<yyyymmdd>T<hhmmss>Z-<8 hex>)" for x in runs if not RUN_ID.fullmatch(x))
+        if len(set(runs)) != len(runs):
+            bad.append("a run id twice in source_run_ids")
+        first, last = field(r, "observed_from"), field(r, "observed_to")
+        if not is_date(first) or not is_date(last):
+            bad.append(f"observed_from {first!r} and observed_to {last!r} are not both YYYY-MM-DD")
+        elif first > last:
+            bad.append(f"observed_from {first} is after observed_to {last}")
+        if status not in LOG_STATUS:
+            bad.append(f"status {status!r} is not one of {'|'.join(LOG_STATUS)}")
+        refs = kbcommon.context_refs(r.get("context"))
+        if not refs:
+            bad.append("no context (kind:value references to the item, fact, source, article or domain it is about)")
+        for kind, value in refs:
+            if not kind:
+                bad.append(f"context part {value!r} is not <kind>:<value> with kind {'|'.join(kbcommon.CONTEXT_KINDS)}")
+            elif not kbcommon.CONTEXT_KINDS[kind].fullmatch(value):
+                bad.append(f"context {kind}:{value} is not a valid {kind} reference")
+            elif status != "invalidated" and (e := context_error(kind, value, root, base, owner, known, "log rows")):
+                bad.append(f"context {kind}:{value} {e}")
+        if (status == "invalidated") != bool(field(r, "invalidated_reason")):
+            bad.append("invalidated_reason exactly when the status is invalidated")
+        errors.extend(f"{name}:{n} {b}" for b in bad)
 
 
 def main():
@@ -411,8 +508,11 @@ def main():
                 except kbcommon.CsvError:
                     pass
     known["*"] = set().union(*known.values())
-    decided = {r.name: decision_ids(r.path) for r in roots}  # DECISION tags resolve here; None is kb/_self's file
-    decided[None] = decision_ids(kbcommon.SELF)
+    held = {kind: {r.name: ledger_ids(r.path, f[0]) for r in roots} for kind, f in LEDGER_TAGS.items()}  # tags resolve here
+    for kind, f in LEDGER_TAGS.items():
+        held[kind][None] = ledger_ids(kbcommon.SELF, f[0])  # kb/_self's file
+    errors.extend(f"{kbcommon.qualify(r, kbcommon.ROOT_FILE)}: id_prefix {LOG_PREFIX!r} is reserved for log row ids"
+                  for r in roots if r.id_prefix == LOG_PREFIX and (not a.root or r.name == a.root))
     scans = [(r, r.path) for r in roots if not a.root or r.name == a.root]
     if not a.root:
         scans.append((None, kbcommon.HOME))  # this repository outside the roots: kb/_self, _tools/ data, README.md
@@ -424,6 +524,7 @@ def main():
 
     for root, base in scans:
         check_decisions(root, owner, known)  # a root's own files, or kb/_self's (root None: the repository outside the roots)
+        check_logs(root, owner, known)
         skip = root_dirs - {os.path.abspath(base)}
         for p in walk(base, (".csv",), skip):
             rel = name_of(root, p)
@@ -440,6 +541,8 @@ def main():
             # a data file's source columns (source, sources, source_id, evidence_source_ids) must name known ids;
             # the root ledgers are checked above
             if rows and not os.path.basename(p).startswith("_"):
+                for n, r in enumerate(rows[1:], start=2):  # a data row cites a decision or a log row as a Markdown fact does
+                    errors.extend(f"{rel}:{n} {e}" for e in tag_errors("\n".join(r), root, held))
                 cols = [i for i, h in enumerate(rows[0]) if h.strip().lower().endswith(("source", "sources", "source_id", "source_ids"))]
                 for n, r in enumerate(rows[1:], start=2):
                     for i in cols:
@@ -463,11 +566,7 @@ def main():
                     e = cite_error(sid, root, owner, known)
                     if e:
                         errors.append(f"{rel} {e}")
-            for tag in DECISION_TAG.findall(text):
-                for token in DECISION_PART.findall(tag):
-                    e = decision_cite_error(token, root, decided)
-                    if e:
-                        errors.append(f"{rel} {e}")
+            errors.extend(f"{rel} {e}" for e in tag_errors(text, root, held))
             if text.startswith("---\n") and "\ntopic:" in text.split("\n---", 2)[0]:
                 head = text.split("\n---", 2)[0]
                 for key in ("topic", "priority", "retrieved_utc", "sources", "status"):

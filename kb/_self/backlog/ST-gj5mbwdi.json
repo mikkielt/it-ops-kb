@@ -70,6 +70,18 @@
       "recommendation": "approve: derived aggregates with source run ids and a date range only, never raw events or text, out of the public projection",
       "answer": "approve: derived aggregates with source run ids and a date range only, never raw events or text, out of the public projection",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A LOG row id is L-<8 base32> (like D- for decisions), a root's id_prefix L is then refused by check.py, and the source run ids column is source_run_ids. Keep these forms?",
+      "options": [
+        "L-<8 base32>, prefix L reserved, column source_run_ids",
+        "LOG-<8 base32> ids, prefix LOG reserved"
+      ],
+      "recommendation": "L-<8 base32>, prefix L reserved, column source_run_ids",
+      "answer": "L-<8 base32>, prefix L reserved, column source_run_ids",
+      "by": "agent"
     }
   ],
   "notes": "The DECISION tag in CSV data rows has the same resolution gap (BG-juqwx7nf); one fix serves both tags.",

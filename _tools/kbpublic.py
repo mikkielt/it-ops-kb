@@ -6,7 +6,8 @@
   kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]
 
 The integration remote (git config kb.integrationRemote, default `origin`) holds everything; the public home (GitHub) holds the same history without the
-PRIVATE paths: the query log's store `kb/_querylog/` is kept on the integration remote only. Both hosts cannot carry
+PRIVATE paths: the query log's store `kb/_querylog/` and every `_logs.csv` (a root's observed signals, in any
+directory) are kept on the integration remote only. Both hosts cannot carry
 the same `main`, so the public home gets a projection of it:
 
   projection  every commit of the source is rewritten with the PRIVATE paths removed from its tree and its parents
@@ -60,6 +61,9 @@ import hashlib, json, os, re, subprocess, sys, tempfile
 from pathlib import Path
 
 PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
+PRIVATE_NAMES = ("_logs.csv",)  # file names kept there too, in any directory: a root's observed signals (content-rules.md, Logs)
+PRIVATE_SPECS = (*PRIVATE, *(f":(glob)**/{n}" for n in PRIVATE_NAMES))  # `git log --` pathspecs of everything kept off
+PRIVATE_LABEL = ", ".join((*PRIVATE, *(f"{n} (in any directory)" for n in PRIVATE_NAMES)))  # what a refusal names
 CONFIG_KEY = "kb.publishRemote"
 INTEGRATION_KEY = "kb.integrationRemote"
 CLONE_REMOTE = "origin"  # what `git clone` names its source: the integration remote unless INTEGRATION_KEY says otherwise
@@ -115,7 +119,7 @@ def is_public(remote, cwd, url=None):
 def private_commits(rev, cwd, limit=20):
     """The commits reachable from REV that touch a PRIVATE path (newest first, at most LIMIT), or None on a git
     error. A root commit that adds one counts, so an empty list means no tree in REV's history holds one."""
-    code, o, _ = run(["log", f"-{limit}", "--format=%H", rev, "--", *PRIVATE], cwd)
+    code, o, _ = run(["log", f"-{limit}", "--format=%H", rev, "--", *PRIVATE_SPECS], cwd)
     return o.decode().split() if code == 0 else None
 
 
@@ -178,7 +182,12 @@ class Projector:
         return res
 
     def filter_tree(self, tree, paths):
-        """TREE without the PATHS (tuples of names), written when it changed; the same sha when it did not."""
+        """TREE without the PATHS (tuples of names) and without every file named in PRIVATE_NAMES, at any depth,
+        written when it changed; the same sha when it did not. A directory that held nothing else goes too."""
+        return self.filtered(tree, paths) or self.write("tree", b"")
+
+    def filtered(self, tree, paths):
+        """filter_tree's sha, or None when nothing is left of TREE."""
         key = (tree, paths)
         if key in self.trees:
             return self.trees[key]
@@ -190,17 +199,19 @@ class Projector:
         new, changed = [], False
         for mode, name, sha in self.entries(tree):
             dec = name.decode("utf-8", "surrogateescape")
-            if dec in here:
+            if dec in here or (mode not in (b"40000", b"160000") and dec in PRIVATE_NAMES):
                 changed = True
                 continue
-            if dec in below and mode == b"40000":
-                sub = self.filter_tree(sha, tuple(below[dec]))
+            if mode == b"40000":
+                sub = self.filtered(sha, tuple(below.get(dec, ())))
                 changed |= sub != sha
+                if sub is None:
+                    continue
                 sha = sub
             new.append((mode, name, sha))
         res = tree
         if changed:
-            res = self.write("tree", b"".join(m + b" " + nm + b"\0" + bytes.fromhex(s) for m, nm, s in new))
+            res = self.write("tree", b"".join(m + b" " + nm + b"\0" + bytes.fromhex(s) for m, nm, s in new)) if new else None
         self.trees[key] = res
         return res
 
@@ -270,7 +281,7 @@ class Projector:
 def projection_cache(hexlen):
     """The name of the projection cache file: one per PRIVATE, PROJECTION_FORM and object format, so a change of what the
     projection removes or how never reads an older cache."""
-    key = json.dumps([PROJECTION_FORM, list(PRIVATE), hexlen]).encode("utf-8")
+    key = json.dumps([PROJECTION_FORM, list(PRIVATE), list(PRIVATE_NAMES), hexlen]).encode("utf-8")
     return f"projection-{hashlib.sha256(key).hexdigest()[:16]}.json"
 
 
@@ -596,8 +607,8 @@ def bridge_range(pub, branch, cwd):
     if bad is None:
         raise BridgeError(2, f"git error reading {pub}/main..{pub}/{branch}")
     if bad:
-        raise BridgeError(1, f"{pub}/{branch} touches {', '.join(PRIVATE)} in {', '.join(b[:9] for b in bad)}: "
-                             "the query log's store stays on the integration remote; nothing was bridged")
+        raise BridgeError(1, f"{pub}/{branch} touches {PRIVATE_LABEL} in {', '.join(b[:9] for b in bad)}: "
+                             "these stay on the integration remote; nothing was bridged")
     commits = (out(["rev-list", "--reverse", rng], cwd) or "").split()
     return main, tip, commits
 
@@ -632,7 +643,7 @@ def cmd_publish(a, cwd):
         return 2
     left = private_commits(proj, cwd)
     if left is None or left:
-        print(f"refused: the projection {proj[:12]} still touches {', '.join(PRIVATE)} in {left}")
+        print(f"refused: the projection {proj[:12]} still touches {PRIVATE_LABEL} in {left}")
         return 1
     tip = out(["rev-parse", "--verify", "--quiet", f"refs/remotes/{remote}/{a.branch}^{{commit}}"], cwd)
     print(f"source: {source} {src[:12]}; projection: {proj[:12]}" + (" (the same commit)" if src == proj else ""))
@@ -713,8 +724,8 @@ def cmd_check_public(a, cwd):
         print(f"check-public: git error reading {rev}")
         return 2
     for sha in bad:
-        print(f"private: {sha[:12]} touches {', '.join(PRIVATE)}")
-    print(f"check-public: {'clean' if not bad else 'FAILED'} ({rev}; kept off the public home: {', '.join(PRIVATE)})")
+        print(f"private: {sha[:12]} touches {PRIVATE_LABEL}")
+    print(f"check-public: {'clean' if not bad else 'FAILED'} ({rev}; kept off the public home: {PRIVATE_LABEL})")
     return 1 if bad else 0
 
 
@@ -729,7 +740,7 @@ def guard_push(remote, url, refs, cwd):
             continue
         bad = private_commits(sha, cwd, limit=3)
         if bad is None or bad:
-            res.append((ref, f"its history touches {', '.join(PRIVATE)}" + (f" ({', '.join(b[:9] for b in bad)})"
+            res.append((ref, f"its history touches {PRIVATE_LABEL}" + (f" ({', '.join(b[:9] for b in bad)})"
                                                                               if bad else " (git error)")))
     return res
 
