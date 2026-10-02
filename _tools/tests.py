@@ -22,6 +22,10 @@ O_EXCL file in KB_HOST_LOCK_DIR (default /tmp, or the public directory on Window
 A second run prints who holds it and waits; a holder whose pid no longer runs is cleared. A -k run, a run inside a test
 and a one-worker run (-n 1) take none.
 
+The default worker count is capped, not one per CPU: KB_TEST_WORKERS (a number) when set, else the CPUs divided among
+this run and the other live tests.py runs (each run holds a kb-tests-run.PID file beside the lock while it runs; a dead
+pid's is removed), at least 1; an explicit -n in the arguments wins.
+
 Modules: test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py, test_kb_leaks.py, test_merge.py, test_history.py, test_sync.py, test_census.py,
 test_kb_mcp.py, test_research_merge.py, test_agent_bench.py, test_portability.py, test_redact.py, test_ql_capture.py,
 test_ql_distill.py, test_ql_store.py, test_ql_learn.py, test_ql_deliver.py, test_ql_research.py, test_ql_report.py,
@@ -36,7 +40,8 @@ import xml.etree.ElementTree as ET
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
-XDIST = ["-n", "auto"]  # dist loadscope: a class's scenario is built once, on one worker (stress_test.py: load)
+XDIST = ["-n", "auto"]  # dist loadscope: a class's scenario is built once, on one worker (stress_test.py: load);
+# "auto" here means default_workers(): the CPUs shared among the tests.py runs live on the host, KB_TEST_WORKERS overriding
 
 
 def pytest_cmd():
@@ -117,8 +122,7 @@ def record_run(mode, entries, args, wall_ms):
         if not entries or inside_test():
             return None
         import ql_capture
-        workers = args[args.index("-n") + 1] if "-n" in args[:-1] else XDIST[1]
-        workers = os.cpu_count() if workers == "auto" else int(workers)
+        workers = worker_count(args)
         try:
             import testmap
             total = len(testmap.test_files())
@@ -133,6 +137,11 @@ def record_run(mode, entries, args, wall_ms):
 
 def run_mode(env, fast):
     return "stress" if "KB_STRESS_SCALE" in (env or {}) else "fast" if fast else "full"
+
+
+def xdist_args():
+    """The default -n arguments: XDIST, with "auto" replaced by the capped default_workers()."""
+    return ["-n", str(default_workers())] if XDIST[1] == "auto" else list(XDIST)
 
 
 def run_pytest(args, env=None, dist="loadscope", report=None, mode=None):
@@ -150,7 +159,7 @@ def run_pytest(args, env=None, dist="loadscope", report=None, mode=None):
         extra = [f"--junitxml={xml}"]
     start = time.monotonic()
     try:
-        code = subprocess.run(cmd + XDIST + ["--dist", dist] + extra + args, cwd=KB,
+        code = subprocess.run(cmd + xdist_args() + ["--dist", dist] + extra + args, cwd=KB,
                               env={**os.environ, **(env or {})}).returncode
         entry = {"exit": code, "ms": int((time.monotonic() - start) * 1000), "files": junit_files(xml) if xml else {}}
     finally:
@@ -290,14 +299,74 @@ def host_lock(label="tests.py", poll=None):
                 os.unlink(path)
 
 
-def worker_count(args):
-    """The xdist workers a run with these pytest arguments uses (the last -n wins; the default is XDIST's)."""
-    val = XDIST[1]
+RUN_PREFIX = "kb-tests-run."
+
+
+def live_runs():
+    """How many other tests.py runs are live on the host: the run files (RUN_PREFIX + pid, in the host lock's directory)
+    whose pid still runs and is not this process's; a file of a pid that no longer runs is removed."""
+    base, n = host_lock_dir(), 0
+    try:
+        names = os.listdir(base)
+    except OSError:
+        return 0
+    for name in names:
+        pid = name[len(RUN_PREFIX):]
+        if not name.startswith(RUN_PREFIX) or not pid.isdigit() or int(pid) == os.getpid():
+            continue
+        if pid_alive(int(pid)):
+            n += 1
+        else:
+            with contextlib.suppress(OSError):
+                os.unlink(os.path.join(base, name))
+    return n
+
+
+@contextlib.contextmanager
+def run_registered():
+    """Count this run among the live ones (a RUN_PREFIX file named by its pid) for the block; not inside a test."""
+    path = os.path.join(host_lock_dir(), RUN_PREFIX + str(os.getpid()))
+    made = False
+    if not inside_test():
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
+                f.write(f"clone={KB}\n")
+            made = True
+        except OSError:
+            pass
+    try:
+        yield
+    finally:
+        if made:
+            with contextlib.suppress(OSError):
+                os.unlink(path)
+
+
+def default_workers(others=None, cpus=None):
+    """The workers a run uses when no -n is given: KB_TEST_WORKERS when it is a number (at least 1), else the CPUs
+    divided among this run and the `others` live ones (live_runs() when None), never below 1."""
+    try:
+        return max(int(os.environ["KB_TEST_WORKERS"]), 1)
+    except (KeyError, ValueError):
+        pass
+    cpus = cpus if cpus is not None else (os.cpu_count() or 1)
+    return max(cpus // ((live_runs() if others is None else others) + 1), 1)
+
+
+def worker_count(args, others=None):
+    """The xdist workers a run with these pytest arguments uses (the last -n wins; the default is XDIST's, the capped
+    default_workers() for "auto")."""
+    val = None
     for i, a in enumerate(args):
         if a == "-n" and i + 1 < len(args):
             val = args[i + 1]
         elif a.startswith("-n") and len(a) > 2:
             val = a[2:]
+    if val is None:
+        val = XDIST[1]
+        if val == "auto":
+            return default_workers(others)
     if val == "auto":
         return os.cpu_count() or 1
     try:
@@ -312,10 +381,11 @@ def wants_host_lock(args):
 
 
 def main(argv):
-    if wants_host_lock(argv):
-        with host_lock("tests.py"):
-            return run_main(argv)
-    return run_main(argv)
+    with run_registered():
+        if wants_host_lock(argv):
+            with host_lock("tests.py"):
+                return run_main(argv)
+        return run_main(argv)
 
 
 def run_main(argv):
