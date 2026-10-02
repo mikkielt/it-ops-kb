@@ -2,7 +2,7 @@
   "id": "BG-svpvanw4",
   "kind": "bug",
   "title": "publish's leak scan passes a GUID in a .py, .json or .csv file",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/kbpublic.py",
     "_tools/test_kbpublic.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "seventh-w25"
 }
