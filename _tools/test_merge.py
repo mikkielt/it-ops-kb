@@ -9,7 +9,7 @@ import csv, io, os, re, shutil
 
 import pytest
 
-import kbgit, kbid, kg_merge, kg_sync
+import kbid, kg_merge, kg_sync, kg_trailers
 import kbcommon
 from conftest import KB, SOURCES_HEADER as HEADER, P, Repo, copy_kb, requires_git
 # the generated coverage table's page, a repository path: one per root, or the one page an older build_index keeps
@@ -18,7 +18,7 @@ COVERAGE_PAGE = P(kbcommon.COVERAGE_MD)
 
 def team(rel):
     """A repository path in the scenario's second root `team` (kb/team/)."""
-    return f"{kbgit.KB_DIR_REL}/team/{rel}"
+    return f"{kg_trailers.KB_DIR_REL}/team/{rel}"
 
 
 def tid(url):
