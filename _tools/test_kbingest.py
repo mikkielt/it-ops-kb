@@ -1141,6 +1141,30 @@ def test_kbingest_map_dotnet_no_sdk_resolver(tmp_path, monkeypatch):
         log.unlink()
 
 
+def test_kbingest_map_dotnet_note_values(tmp_path, monkeypatch):
+    """Planted: a failed `dotnet msbuild` whose stderr is MSB4019 quoting the path of an Import that a property function
+    (ReadAllText of a file in the repository) built, so the message holds a value evaluation read. The note names the
+    exit status, the project and the error code, never the message text; stderr with no MSBuild error code adds no
+    text either."""
+    (tmp_path / "App.csproj").write_text(CSPROJ, encoding="utf-8")
+    planted = "PLANTED-VALUE-PL-LT-00123"
+    cases = {
+        "App.csproj(5,3): error MSB4019: The imported project \"/work/" + planted + ".props\" was not found.\n":
+            "dotnet msbuild App.csproj: exit 1: MSB4019",
+        "first line " + planted + "\nApp.csproj : error MSB4236: The SDK '" + planted + "' could not be found.\n":
+            "dotnet msbuild App.csproj: exit 1: MSB4236",
+        "Unhandled exception: " + planted + "\n": "dotnet msbuild App.csproj: exit 1",
+    }
+    for err, note in cases.items():
+        monkeypatch.setattr(kbingest, "run_tool", lambda *a, _err=err: kbingest.Run(1, b"", _err.encode("utf-8")))
+        ctx = kbingest.MapCtx(tmp_path, {}, 1, "dotnet")
+        kbingest.DotnetMapper().project(ctx, "App.csproj")
+        assert ctx.notes[0] == note, (err, ctx.notes)
+        assert planted not in json.dumps(ctx.notes) and "imported project" not in json.dumps(ctx.notes), ctx.notes
+    assert kbingest.msbuild_error_code("x : error MSB4019: y\nerror MSB1009: z") == "MSB4019"
+    assert kbingest.msbuild_error_code("warning MSB3277: y") == ""
+
+
 @requires_git
 def test_kbingest_map_dotnet_failures_and_odd_references_are_notes(webrepo, tmp_path, monkeypatch):
     install_lang(tmp_path, monkeypatch, WEB_TOOLS)

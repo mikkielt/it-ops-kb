@@ -1065,10 +1065,11 @@ class MapCtx:
             return None
         return p
 
-    def run(self, args, label=None, timeout=None, cwd=None):
+    def run(self, args, label=None, timeout=None, cwd=None, err_text=None):
         """A Run of ARGS in the worktree, or in its directory CWD (a `/` path relative to the root: a project's own
         directory, where the SDK's global.json and the nearest tsconfig.json apply); a missing program, a timeout and
-        a non-zero exit each add a note."""
+        a non-zero exit each add a note. The note of a non-zero exit carries the first line of stderr, or what
+        ERR_TEXT makes of the whole stderr (a tool whose messages may hold values the repository evaluated)."""
         where = self.root if cwd in (None, "", ".") else self.root / cwd
         r = run_tool(list(args), where, self.env, timeout or self.timeout)
         what = label or " ".join(str(a) for a in args)[:100]
@@ -1077,15 +1078,16 @@ class MapCtx:
         elif r.timed_out:
             self.note(f"{what}: timed out after {timeout or self.timeout}s")
         elif r.rc != 0:
-            first = (r.err.decode("utf-8", "replace").strip().splitlines() or [""])[0][:200]
+            err = r.err.decode("utf-8", "replace")
+            first = err_text(err) if err_text else (err.strip().splitlines() or [""])[0][:200]
             self.note(f"{what}: exit {r.rc}" + (f": {first}" if first else ""))
         return r
 
-    def output(self, args, what, cwd=None, nonzero_ok=False):
+    def output(self, args, what, cwd=None, nonzero_ok=False, err_text=None):
         """The text a command prints, or None (with a note) when it failed, was not found or printed too much.
         NONZERO_OK keeps the output of a command that exited non-zero (still with its note): `npm ls` prints its
         tree, then exits 1 for the problems it lists."""
-        r = self.run(args, what, cwd=cwd)
+        r = self.run(args, what, cwd=cwd, err_text=err_text)
         if r.missing or r.timed_out or (r.rc != 0 and not (nonzero_ok and r.out.strip())):
             return None
         if len(r.out) > MAP_MAX_OUTPUT:
@@ -1093,10 +1095,10 @@ class MapCtx:
             return None
         return r.out.decode("utf-8", "replace")
 
-    def json(self, args, label=None, cwd=None, nonzero_ok=False):
+    def json(self, args, label=None, cwd=None, nonzero_ok=False, err_text=None):
         """The parsed JSON a command prints, or None (with a note)."""
         what = label or " ".join(str(a) for a in args)[:100]
-        text = self.output(args, what, cwd=cwd, nonzero_ok=nonzero_ok)
+        text = self.output(args, what, cwd=cwd, nonzero_ok=nonzero_ok, err_text=err_text)
         if text is None:
             return None
         try:
@@ -1473,6 +1475,15 @@ DOTNET_SHAPES = {
     "ProjectReference": re.compile(r"(?:[\w.()+ -]+[\\/])*[\w.()+ -]+\.\w*proj"),  # relative: no drive, no root
 }
 DOTNET_MAX_VALUE = 260
+MSBUILD_ERROR = re.compile(r"\berror (MSB\d{4})\b")
+
+
+def msbuild_error_code(stderr):
+    """The first MSBuild error code in STDERR (`MSB4019`), or "". An MSBuild message is not kept: it quotes the values
+    evaluation produced (the path of an Import, which a property function such as ReadAllText can fill from a file),
+    so the note names the code and, by its label, the project."""
+    m = MSBUILD_ERROR.search(stderr)
+    return m.group(1) if m else ""
 MACHINE_NAME_MIN = 4  # a name this long or longer is also left out when it is only part of a value
 MACHINE_ENV = ("COMPUTERNAME", "HOSTNAME", "USERNAME", "USER", "LOGNAME")  # Windows, then the shells that export them
 
@@ -1520,7 +1531,9 @@ class DotnetMapper(Mapper):
     existing file (a committed obj/project.assets.json) it builds NuGet's collection targets, and with them the
     project's InitialTargets and any repository target hooked to them (kb agents/codebase-mapping). Each evaluated
     value is kept only when it has its shape (DOTNET_SHAPES) and holds neither the host name nor the user name of
-    the machine mapping (holds_machine_name), else left out with a note."""
+    the machine mapping (holds_machine_name), else left out with a note. A failed call's note names the exit status,
+    the project and the first MSBuild error code, never the message text (msbuild_error_code), which quotes
+    evaluated values."""
     language = "dotnet"
     name = "dotnet"
     tool = "dotnet"
@@ -1581,7 +1594,8 @@ class DotnetMapper(Mapper):
         # itself, so the repository could add -target, -restore or -logger; only this switch turns that off
         # (https://learn.microsoft.com/visualstudio/msbuild/msbuild-response-files, "Disabling response files")
         ev = ctx.json(["dotnet", "msbuild", "-noAutoResponse", base, "-getProperty:TargetFrameworkMoniker,LangVersion",
-                       "-getItem:PackageReference,ProjectReference"], label=f"dotnet msbuild {proj}", cwd=folder)
+                       "-getItem:PackageReference,ProjectReference"], label=f"dotnet msbuild {proj}", cwd=folder,
+                      err_text=msbuild_error_code)
         props = ev.get("Properties") if isinstance(ev, dict) and isinstance(ev.get("Properties"), dict) else {}
         items = ev.get("Items") if isinstance(ev, dict) and isinstance(ev.get("Items"), dict) else {}
         extra = {"project": proj, "kind": "project"}
