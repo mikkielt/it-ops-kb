@@ -2,7 +2,7 @@
   "id": "BG-33x3qeyw",
   "kind": "bug",
   "title": "settings.json allows kbgit.py publish and git push to a headless agent with no prompt",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
   "rank": 0,
@@ -31,5 +31,6 @@
     "_tools/test_settings_allow.py",
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
