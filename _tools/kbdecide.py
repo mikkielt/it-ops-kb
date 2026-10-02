@@ -63,8 +63,8 @@ the store.
     has no policy to set.
   - `sweep` covers every root and kb/_self, or the one `--root`, and invalidates a proposed or an active decision
     when one of its context references no longer holds: (1) an `item:` is dropped, as its file says or, when sprint
-    close deleted the file, as its last version in git history says (an item that is done, or was deleted at close
-    done, does not invalidate; one with no history says nothing); (2) a `source:` has a `superseded_by` in its
+    close or `backlog.py drop` outside a sprint deleted the file, as its last version in git history says (not done:
+    dropped; an item that is done, or was deleted done, does not invalidate; one with no history says nothing); (2) a `source:` has a `superseded_by` in its
     _sources.csv; (3) an `article:` or a `domain:` is gone, a root's removal included; (4) its `review_by` is before
     the date. The reason names the reference (`item:TK-x dropped`), several joined by `; `. A `fact:` whose key no
     fact has any more (the fact was reworded or removed) invalidates nothing: the decision is flagged with a line
@@ -477,17 +477,22 @@ class Context:
         self.items, self.sources = {}, None
 
     def item_status(self, iid):
-        """The status of backlog item `iid`: its file's, else that of the last version git history holds of the file
-        sprint close deleted, else '' (never seen, or no git history to ask)."""
+        """The status of backlog item `iid`: its file's; else, for a file that was deleted (sprint close, or `drop`
+        outside a sprint), `done` when its last version in git history was done and `dropped` for any other status;
+        else '' (never seen, or no git history to ask)."""
         if iid not in self.items:
             rel = f"kb/_self/backlog/{iid}.json"
             path = Path(kbcommon.HOME) / rel
-            text = path.read_text(encoding="utf-8") if path.is_file() else self.deleted_version(rel)
+            here = path.is_file()
+            text = path.read_text(encoding="utf-8") if here else self.deleted_version(rel)
             try:
                 data = json.loads(text) if text else None
             except ValueError:
                 data = None
-            self.items[iid] = (data.get("status") or "") if isinstance(data, dict) else ""
+            status = (data.get("status") or "") if isinstance(data, dict) else ""
+            if not here and status not in ("", "done"):
+                status = "dropped"  # deleted by sprint close or by `backlog.py drop` outside a sprint, and never done
+            self.items[iid] = status
         return self.items[iid]
 
     @staticmethod

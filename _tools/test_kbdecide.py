@@ -753,6 +753,28 @@ def test_decision_sweep_tells_a_dropped_item_from_one_deleted_at_close_by_its_la
     repo.check()
 
 
+@requires_git
+def test_decision_sweep_invalidates_an_item_dropped_outside_a_sprint_and_keeps_the_others(repo):
+    """`backlog.py drop` outside a sprint deletes the file at its last status (not dropped): git history says it was
+    never done. A deleted item whose last version was done, and an item still present, keep their decisions."""
+    for iid, status in (("TK-droppedo", "todo"), ("TK-gonedone", "done"), ("TK-stillhre", "todo")):
+        put_item(repo, iid, status)
+    git(repo, "init", "-q")
+    commit_all(repo, "files")
+    for iid in ("TK-droppedo", "TK-gonedone"):
+        (repo.path / "kb" / "_self" / "backlog" / f"{iid}.json").unlink()
+    commit_all(repo, "drop outside a sprint")
+    dropped, done, here = (sweep_propose(repo, f"item:{i}", text=f"About {i}.")
+                           for i in ("TK-droppedo", "TK-gonedone", "TK-stillhre"))
+    code, out = swept(repo, "--dry-run")
+    assert code == 0 and "would_invalidate=1" in out, out  # the planted failure: the sweep left it active
+    code, out = swept(repo)
+    assert code == 0 and "invalidated=1" in out, out
+    assert invalidated(repo, dropped) == "item:TK-droppedo dropped"
+    assert [repo.row(d)["status"] for d in (done, here)] == ["proposed"] * 2
+    repo.check()
+
+
 def test_decision_sweep_says_nothing_of_an_item_with_no_git_history(repo):
     """Outside a git repository a missing item file proves nothing: the decision stays."""
     did = sweep_propose(repo, "item:TK-neverhad")
