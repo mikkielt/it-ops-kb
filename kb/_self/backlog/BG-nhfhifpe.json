@@ -29,9 +29,6 @@
     "_tools/test_benchmarks.py",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-qc4vvlgs"
-  ],
   "gates": [
     {
       "id": "g1",
@@ -52,7 +49,14 @@
           "--reps",
           "1"
         ],
-        "Change bench_lookup.nav_run to keep each run's raw stdout beside the parsed row (a separate item), so the next paid navigation run records a stream": "ST-qc4vvlgs"
+        "Change bench_lookup.nav_run to keep each run's raw stdout beside the parsed row (a separate item), so the next paid navigation run records a stream": [
+          "git",
+          "log",
+          "-1",
+          "--format=%h %s",
+          "--grep",
+          "KB-Work: ST-qc4vvlgs"
+        ]
       },
       "answer": "Change bench_lookup.nav_run to keep each run's raw stdout beside the parsed row (a separate item), so the next paid navigation run records a stream",
       "by": "operator"
