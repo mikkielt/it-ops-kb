@@ -15,6 +15,11 @@ from ql_store import (APPLY_STATES, FIX_KINDS, failed_counts, finding_states, st
 FAILED_RETRIES = 0  # times a finding recorded apply-failed is applied again: never
 ALIAS_CANDIDATES = 3  # canonical words tried per alias finding: the article's file-name words, then its title's
 EXPANSION_CANDIDATES = 3  # facts of the article tried per expansion finding, most words shared with the question first
+SUBJECT_WORDS = 3  # key words one line of a weak lead holds at least for the lead to hold the question's subject
+SPECIFIC_WORDS = 2  # of them, words few articles hold (`specific_words`)
+ABOUT_UNITS = 10  # lines of a weak lead holding one key word: the lead is about that word
+MANY_WORDS = 5 # key words in one line that are the subject whichever they are
+SPECIFIC_ONE_IN = 15  # a specific word is in at most one article in this many
 CSV_HEADERS = {"eval": ["id", "question", "expect_paths", "expect_verdict", "allow_weak"],
                "aliases": ["term", "canonical"], "expansions": ["key", "question"]}
 
@@ -299,12 +304,34 @@ def weak_off_topic(res, article, gate):
     together in one line; words scattered over the article, or only its title's or file name's, are qualifiers or
     chance. 'cargo metadata --no-deps invokes rustc ...' led by agents/codebase-mapping: a Rust fact holds cargo,
     metadata and no-dep, 3 of 5, so it is the lead's gap; 'What is the maximum email attachment size?' led by
-    mecm/collect-client-logs: its best line holds size, 1 of 4."""
+    mecm/collect-client-logs: its best line holds size, 1 of 4. A pair of words in one line is chance, and so is a
+    line whose words are common ones: the line needs three of them, two specific to the kb (`specific_words`), as
+    cargo and no-dep are, or five of any ('laptop battery replacement': battery and laptop share a line of
+    logs/azure-monitor-agent, 2 of 3). A key word the lead never mentions (`unmatched`: 'CIs' of a ServiceNow CMDB
+    question led by prior-art/device-identity-correlation) is a word of the subject the lead lacks, unless the lead is
+    about another key word, one that ten of its lines hold ('Does a gMSA password rotate on a Hyper-V replica
+    host?': Hyper-V is unmatched, gmsa is in 37 lines of windows/gmsa)."""
     known = [w for w in res.get("known") or [] if isinstance(w, str) and w.strip()]
     if res.get("verdict") != "weak" or not known:
         return False
-    best = max((len(set(ws) & set(known)) for ws in gate.unit_words(article, known)), default=0)
-    return best * 2 <= len(known)
+    units = [set(ws) & set(known) for ws in gate.unit_words(article, known)]
+    if any(isinstance(w, str) and w.strip() for w in res.get("unmatched") or []) and not any(
+            sum(w in held for held in units) >= ABOUT_UNITS for w in known):
+        return True
+    for held in units:
+        if len(held) * 2 > len(known) and (len(held) >= MANY_WORDS or (
+                len(held) >= SUBJECT_WORDS and len(specific_words(held)) >= SPECIFIC_WORDS)):
+            return False
+    return True
+
+
+def specific_words(words):
+    """The words of `words` that few articles of the kb hold (at most one in fifteen of them): 'cargo' and 'no-dep' are
+    specific, 'file', 'size' and 'user' are not."""
+    import kbfacts
+    st = kbfacts.store()
+    limit = max(1, len(set(st.paths)) // SPECIFIC_ONE_IN)
+    return {w for w in words if len({st.paths[i] for i in st.own(w)}) <= limit}
 
 
 def gap_decision(question, gate):

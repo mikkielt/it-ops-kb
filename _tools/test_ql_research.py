@@ -333,11 +333,12 @@ class TestGapStep:
         self.assert_weak_rejected(gap_store(tmp_path), tmp_path / "root", gate)
 
     def test_gap_step_weak_takes_the_leads_subject(self, tmp_path):
-        """A `weak` lead with a line holding more than half the key words the kb knows is the question's topic."""
-        res = {"verdict": "weak", "matched": ["laps", "maximum", "password"],
-               "known": ["azur", "laps", "maximum", "password"], "lacks": ["Azure"], "missing": []}
+        """A `weak` lead with a line holding more than half the key words the kb knows, three at least and two of them
+        specific to the kb (krbtgt, DSRM), is the question's topic."""
+        res = {"verdict": "weak", "matched": ["dsrm", "krbtgt", "password"],
+               "known": ["azur", "dsrm", "krbtgt", "password"], "lacks": ["Azure"], "missing": []}
         gate = self.weak_gate(kb_root(tmp_path / "root"), res, "laps Windows LAPS",
-                              "The maximum password age is 365 days. [DOC S100]")
+                              "The krbtgt and DSRM password never expire. [DOC S100]")
         self.assert_weak_taken(gap_store(tmp_path), tmp_path / "root", gate)
 
     @pytest.mark.parametrize("finding,lead,off", [
@@ -361,6 +362,48 @@ class TestGapStep:
             pytest.skip(f"{finding}: the kb moved on ({res.get('verdict')}, lead {article})")
         assert ql_apply.weak_off_topic(res, article, gate) is off, (entry["question"], res.get("known"),
                                                                     gate.unit_words(article, res.get("known")))
+
+    SHORT_GENERIC = ["laptop battery replacement", "how long does a laptop battery last", "meeting room booking",
+                     "network printer deployment", "how long are deleted emails kept",
+                     "How does the ServiceNow CMDB identification engine reconcile duplicate CIs?"]
+
+    def test_weak_lead_generic_offkb(self):
+        """Short generic off-kb questions whose two words share one unrelated line ('laptop battery replacement') and
+        every question of the off-kb list that packs `weak` with a lead article are off the kb's domains: the rule
+        wants three key words in one line, two of them specific to the kb, and no key word the lead never mentions.
+        A question the kb has since moved on from (no longer `weak`, or no lead) does not reach the rule."""
+        offkb = Path(KB) / "kb" / "public" / "_retrieval" / "doc2query" / "offkb_questions.txt"
+        listed = [ln.strip() for ln in offkb.read_text(encoding="utf-8").splitlines()
+                  if ln.strip() and not ln.startswith("#")]
+        gate = ql_apply.Gate()
+        reached, kept = 0, []
+        for q in dict.fromkeys(self.SHORT_GENERIC + listed):
+            res = gate.pack(q)
+            article = ql_learn.domain_article(res, gate.article_of)
+            if res.get("verdict") != "weak" or not article:
+                continue
+            reached += 1
+            if not ql_apply.weak_off_topic(res, article, gate):
+                kept.append((q, article))
+        assert reached, "no question reached the rule: the list or the packs changed shape"
+        assert kept == [], kept
+
+    def test_weak_lead_generic_pair_and_common_words_planted(self, tmp_path):
+        """The rule on planted lines: two key words in one line, or three common ones, or a key word the lead never
+        mentions, is no subject; three words with two specific ones is."""
+        def off(res, title, line):
+            gate = self.weak_gate(kb_root(tmp_path / "root"), res, title, line)
+            return ql_apply.weak_off_topic(res, LAPS, gate)
+
+        base = {"verdict": "weak", "missing": []}
+        assert off({**base, "known": ["battery", "laptop", "replac"]}, "laps Windows LAPS",
+                   "A laptop battery is not covered. [DOC S100]") is True  # a pair
+        assert off({**base, "known": ["file", "size", "user", "limit"]}, "laps Windows LAPS",
+                   "The user file size is not limited. [DOC S100]") is True  # three common words
+        assert off({**base, "known": ["dsrm", "krbtgt", "password", "zqxcis"], "unmatched": ["zqxcis"]},
+                   "laps Windows LAPS", "The krbtgt and DSRM password never expire. [DOC S100]") is True  # unmatched
+        assert off({**base, "known": ["dsrm", "krbtgt", "password", "zqxcis"]}, "laps Windows LAPS",
+                   "The krbtgt and DSRM password never expire. [DOC S100]") is False
 
     def test_gap_step_weak_counts_product_aliases(self):
         """A key word that is a product alias (sccm for ConfigMgr) is held where its product's other names are."""
@@ -464,13 +507,13 @@ class TestGapReplay:
     """`gap-replay` re-runs the gap step's decision over every gap finding of a store and writes nothing: a planted
     rule change flips a planted finding's decision and the output shows it."""
 
-    RES = {"verdict": "weak", "matched": ["laps", "maximum", "password"],
-           "known": ["azur", "laps", "maximum", "password"], "lacks": ["Azure"], "missing": []}
+    RES = {"verdict": "weak", "matched": ["dsrm", "krbtgt", "password"],
+           "known": ["azur", "dsrm", "krbtgt", "password"], "lacks": ["Azure"], "missing": []}
 
     @staticmethod
     def gate(root):
         return TestGapStep.weak_gate(root, TestGapReplay.RES, "laps Windows LAPS",
-                                     "The maximum password age is 365 days. [DOC S100]")
+                                     "The krbtgt and DSRM password never expire. [DOC S100]")
 
     @staticmethod
     def replay(store, gate):
