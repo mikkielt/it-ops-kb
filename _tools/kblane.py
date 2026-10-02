@@ -14,8 +14,10 @@ A path is content when it is written by the kb's own routine work, and code othe
 
 A commit is code when any path it changes against its first parent is code (a merge commit is judged the same way; a
 root commit against the empty tree), else content. Every path the query log's writers accept (ql_deliver.auto_kinds)
-and every path `kbgit.py fix` rewrites after a rebase (kg_sync.MECHANICAL) is content, so a sync that rebases content
-never turns into code (tests: test_kblane.py). This module imports no other kb module: the classifier is shared by
+and every path `kbgit.py fix` rewrites after a rebase (fix_texts of kg_merge) is content, so a sync that rebases content
+never turns into code (tests: test_kblane.py). One of those paths, .gitattributes, is code by its path (a hand edit of
+its rules is code) and content only when a commit changes nothing outside its pinned block, the lines between
+`# pinned:start` and `# pinned:end` that fix regenerates from _artifacts.csv: commit_paths leaves it out then. This module imports no other kb module: the classifier is shared by
 kbgit.py, backlog.py and CI, and only its CLI wiring lives in kbgit.py.
 
 check_lanes lists the code-lane commits of a range that no merged merge request or pull request introduced, by the
@@ -40,6 +42,24 @@ def path_lane(path):
             or _ROOT.fullmatch(p):
         return CONTENT
     return CODE
+
+
+ATTRS = ".gitattributes"
+PIN_START, PIN_END = "# pinned:start", "# pinned:end"  # the block kbgit.py fix regenerates (kg_merge)
+
+
+def _unpinned(text):
+    """(text before the pinned block, text after it), or None when it has no single well-formed block."""
+    t = text.replace("\r\n", "\n")
+    if t.count(PIN_START) != 1 or t.count(PIN_END) != 1 or t.index(PIN_START) > t.index(PIN_END):
+        return None
+    return t[:t.index(PIN_START)], t[t.index(PIN_END) + len(PIN_END):]
+
+
+def attrs_block_only(old, new):
+    """True when two texts of .gitattributes differ only inside the pinned block (a text without one never is)."""
+    a, b = _unpinned(old), _unpinned(new)
+    return a is not None and a == b
 
 
 def paths_lane(paths):
@@ -67,7 +87,12 @@ def commit_paths(repo, sha):
     out = _git(repo, "diff-tree", "-r", "--no-renames", "--name-only", "-z", base, sha)
     if out is None:
         return None
-    return sorted(x for x in out.split("\0") if x)
+    names = sorted(x for x in out.split("\0") if x)
+    if ATTRS in names:
+        old, new = _git(repo, "show", f"{base}:{ATTRS}"), _git(repo, "show", f"{sha}:{ATTRS}")
+        if old is not None and new is not None and attrs_block_only(old, new):
+            names.remove(ATTRS)
+    return names
 
 
 def commit_lanes(repo, spec):

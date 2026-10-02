@@ -5,6 +5,8 @@
              kg_sync.MECHANICAL path content, and (marker git) planted commits in a throwaway repository: a
              content-only, a code-only, a mixed, a merge and a backlog-item commit, and a root commit; `kbgit.py lane`
              prints them. Planted failures: a code path in a content commit and a content path in a code one flip the lane.
+             test_gitattributes_fix_is_content: every path kg_merge.fix_texts writes is content, .gitattributes only
+             through its pinned block (a hand edit outside the block stays code).
   TestCheckLanes  check_lanes and `kbgit.py check-lanes` in a throwaway repository against an injected opener and a stub
              forge on loopback: a direct code commit listed, a merged one (GitLab merge request, GitHub pull request
              with merged_at) passing, an unmerged pull request listed, a merge commit judged by the commits it brings
@@ -18,7 +20,7 @@ from pathlib import Path
 
 import pytest
 
-import kblane, kbgit, kg_hooks, kg_lane, kg_sync, ql_deliver
+import kblane, kbgit, kg_hooks, kg_lane, kg_merge, kg_sync, ql_deliver
 from conftest import Repo, requires_git
 
 HERE = Path(__file__).resolve().parent
@@ -59,6 +61,52 @@ class TestLanes:
             assert kblane.path_lane(p) == "content", p
         assert kg_sync.MECHANICAL
         assert [p for p in kg_sync.MECHANICAL if kblane.path_lane(p) != "content"] == []
+
+    @staticmethod
+    def fix_paths():
+        """Every path `kbgit.py fix` writes in this repository (kg_merge.fix_texts, read from the working tree)."""
+        ns = argparse.Namespace(base=None, cmd="fix", side=[], upstream=None)
+        return set(kg_merge.fix_texts(ns, [], []))
+
+    @staticmethod
+    def not_content(paths):
+        """The paths neither content by their path nor the pinned-block-only .gitattributes."""
+        return sorted(p for p in paths if kblane.path_lane(p) != "content" and p != kblane.ATTRS)
+
+    @pytest.mark.git
+    @requires_git
+    def test_gitattributes_fix_is_content(self, tmp_path):
+        paths = self.fix_paths()
+        assert kblane.ATTRS in paths and paths > {kblane.ATTRS}  # the set comes from the function, not a list here
+        assert self.not_content(paths) == []
+        # planted failure: a new code path in the set is reported (the check is not vacuous)
+        assert self.not_content(paths | {"_tools/new_output.txt"}) == ["_tools/new_output.txt"]
+        assert (kg_merge.PIN_START, kg_merge.PIN_END) == (kblane.PIN_START, kblane.PIN_END)
+        head = "* text=auto eol=lf\n"
+        tail = "kb/*/_x.csv merge=union\n"
+        text = lambda *pins: head + kg_merge.PIN_START + "\n" + "".join(p + " -text\n" for p in pins) + kg_merge.PIN_END + "\n" + tail  # noqa: E731
+        assert kg_merge.resolve_attrs(text("a"), ["kb/public/new.pdf"]) == text("kb/public/new.pdf")
+        r = Repo(tmp_path)
+        r.git("init", "-q", "-b", "main")
+        commit(r, {".gitattributes": text("kb/public/a.pdf")}, "root")
+        # what fix does for a new artifact: only the block changes -> content
+        regenerated = commit(r, {".gitattributes": kg_merge.resolve_attrs(text("kb/public/a.pdf"), ["kb/public/a.pdf", "kb/public/b.pdf"])}, "pin")
+        assert lane_of(r, regenerated) == ("content", [])
+        # a hand edit outside the block stays code, alone or beside a block change
+        hand = commit(r, {".gitattributes": text("kb/public/a.pdf", "kb/public/b.pdf").replace(head, head + "*.txt text\n")}, "hand")
+        assert lane_of(r, hand) == ("code", [".gitattributes"])
+        both = commit(r, {".gitattributes": text("kb/public/a.pdf").replace(tail, tail + "x merge=union\n")}, "both")
+        assert lane_of(r, both) == ("code", [".gitattributes"])
+        # planted failures: a lost or doubled marker, and a file that gains its block, are code
+        nomark = commit(r, {".gitattributes": text("kb/public/a.pdf").replace(kg_merge.PIN_END + "\n", "")}, "no end")
+        assert lane_of(r, nomark) == ("code", [".gitattributes"])
+        same = commit(r, {".gitattributes": text("kb/public/a.pdf")}, "restore")
+        assert lane_of(r, same) == ("code", [".gitattributes"])  # from a file without an end marker
+        assert kblane.attrs_block_only(text("a"), text("b", "c")) and not kblane.attrs_block_only(text("a"), text("a") + "x\n")
+        assert not kblane.attrs_block_only("x\n", "y\n")
+        # the plan of a sync: a range whose only change is the block stays in the content lane
+        assert kg_lane.lane_plan(r.path, regenerated + "^", regenerated) == ("content", None)
+        assert kg_lane.lane_plan(r.path, hand + "^", hand)[0] == "code"
 
     def test_lane_of_paths(self):
         assert kblane.paths_lane([]) == ("content", [])
