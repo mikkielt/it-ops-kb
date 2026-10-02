@@ -2,7 +2,7 @@
   "id": "TK-i2x2csig",
   "kind": "task",
   "title": "kg_trailers.py holds the trailer audit and the work state",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -37,5 +37,19 @@
   "depends_on": [
     "TK-2doxt2xx"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "2c3141e042af5acabe48b2d26d2d0d07c52bfe75",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kg_split_trailers"
+        ],
+        "exit": 0,
+        "sha256": "7cf9bc0dac75f706"
+      }
+    ]
+  }
 }
