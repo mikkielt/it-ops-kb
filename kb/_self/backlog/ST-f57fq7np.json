@@ -1,0 +1,26 @@
+{
+  "id": "ST-f57fq7np",
+  "kind": "story",
+  "title": "tests.py's pytest worker count is chosen from timings at -n 4, 6 and 8 under the host lock",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A recorded run of the full tests.py at -n 4, 6 and 8 on the same host, each under the host lock, shows which worker count is fastest on a 4-core and an 8-core host, and tests.py's default follows it (physical cores, logical cores or a cap), with a test named worker_count_default that plants a core count and sees the chosen n. Found by ST-5q5b5qtz, which landed ordering only: its worker-count data was one -n 8 run of 1106 s on the Windows 4-core host.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_count_default"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_tests_order.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
