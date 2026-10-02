@@ -1,0 +1,36 @@
+{
+  "id": "BG-wn5dag5n",
+  "kind": "bug",
+  "title": "A kbingest change left the kb-ingest skill false, and selfdoc maps kbingest.py to no skill",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb/_self/map.csv maps _tools/kbingest.py to .claude/skills/kb-ingest/SKILL.md so a change to the tool marks the skill stale, and the skill's line about PATH entries inside the source clone says they are dropped and names the cargo-config skip; found in the review of SP-eqmblr7t (BG-iusez2hr changed only the tools.md row)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,sys;rows=list(csv.DictReader(open('kb/_self/map.csv',encoding='utf-8')));sys.exit(0 if any(r['pattern']=='_tools/kbingest.py' and r['doc'].endswith('kb-ingest/SKILL.md') for r in rows) else 1)"
+    ]
+  },
+  "repro_reason": "the first half is a missing row in a data file and the second a doc's wording; the map's selfdoc test is the item's own check, still to be written",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbingest_change_marks_the_ingest_skill_stale"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-ingest/SKILL.md",
+    "kb/_self/map.csv",
+    "kb/_self/README.md",
+    "_tools/test_selfdoc.py",
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md"
+  ]
+}

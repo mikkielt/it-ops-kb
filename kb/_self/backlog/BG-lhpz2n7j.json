@@ -1,0 +1,34 @@
+{
+  "id": "BG-lhpz2n7j",
+  "kind": "bug",
+  "title": "A CODE pointer now accepts scheme-less urls and prose such as and/or#x, untested",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbfacts.code_pointer rejects a first segment that is a dotted host name or a prose pair such as and/or, while an extensionless script path such as src/adr-new still passes; tests plant both; found in the review of SP-eqmblr7t (BG-6l57la6y)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;p=kbfacts.tags_in('- x [CODE S1: and/or#x]');sys.exit(1 if p and kbfacts.code_pointer(p[0]) else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "code_pointer_rejects_prose_and_hosts"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_kb_lookup.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ]
+}

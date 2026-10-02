@@ -1,0 +1,33 @@
+{
+  "id": "BG-jpxrgjfz",
+  "kind": "bug",
+  "title": "kbingest map's machine-name check takes the environment user and lets a short host name inside a longer value pass",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "machine_names reads the passwd user as well as the environment's (pwd.getpwuid, guarded for Windows) and compares the first label of a dot-split value, so a host name shorter than four characters inside an FQDN is left out of the map; a test plants each; found in the review of SP-eqmblr7t (BG-lv7oszlp)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/kbingest.py',encoding='utf-8').read();sys.exit(0 if 'getpwuid' in t else 1)"
+    ]
+  },
+  "repro_reason": "the fix adds a lookup the host decides; a planted user and host are the item's own test, still to be written, and the repro reads the source until it exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbingest_machine_names_passwd_and_short_host"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "kb/_self/tools.md"
+  ]
+}

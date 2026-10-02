@@ -1,0 +1,31 @@
+{
+  "id": "BG-xiz7qbf2",
+  "kind": "bug",
+  "title": "codebase-mapping.md says the SDK-resolution bullet is below, but it is above",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/agents/codebase-mapping.md names the SDK-resolution bullet as above the line that cites it; found in the review of SP-eqmblr7t (BG-hcn4jesz)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/public/agents/codebase-mapping.md',encoding='utf-8').read();sys.exit(1 if 'SDK-resolution bullet below' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a word in a kb article; there is no behaviour to run",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_article_reference_direction"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/codebase-mapping.md"
+  ]
+}
