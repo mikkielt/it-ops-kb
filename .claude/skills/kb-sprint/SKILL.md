@@ -53,7 +53,7 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    - "run the item's checks and the fast tests, `python3 _tools/tests.py --changed origin/main`; never `python3 _tools/stress_test.py` or the full `tests.py`" (parallel full runs load the host into false timeouts);
    - "commit on a local branch `work/<id>` with `KB-Work: <id>` in the message's last paragraph, with `Co-Authored-By` and the other trailers; never push";
    - the known failing tests: each test you already know fails on the host (its test id), with the bug filed for it (id and title) and its cause, so the worker neither files it again nor guesses a cause; a failure the brief does not name is the worker's to file;
-   - "run tests in the foreground, and end every background command and monitor you started before you return": `land` refuses a branch while a process still runs in its worker's worktree, naming the pid;
+   - "run tests in the foreground, and end every background command and monitor you started before you return": `land` refuses a branch while a process still runs in its worker's worktree, naming each pid and command, and `python3 _tools/backlog.py procs` lists what workers left running in the clone (`procs --end` ends only an owned orphan);
    - "file a bug for any defect outside the item, do not fix it";
   - "a doc that needs an edit outside the touches stops the work with a report; `Self-Reviewed:` names only docs read and found still correct";
    - "a choice the goal leaves open: record a provisional gate with a recommendation (`gate add ID --kind provisional ...`), answer it `--provisional` and commit it with the work, never prose in the report only; a choice only the operator can make: a blocking gate, and stop";
