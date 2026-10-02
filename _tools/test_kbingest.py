@@ -447,6 +447,51 @@ def test_kbingest_map_path_absolute_only_scrub_env(tmp_path):
         e for e in mixed if e and Path(e).is_absolute()]  # no worktree yet: the relative entries still go
 
 
+def test_kbingest_map_scrubs_toolchain_hooks_env(tmp_path):
+    """Planted: toolchain variables that name a program or hook inside the worktree or the source clone (an absolute
+    path, one piece of a list or of `--require=PATH`, a relative path with a folder part, a link to the worktree)
+    are dropped from the child's environment; the same variables naming nothing of the clone, and unrelated
+    ones, stay."""
+    root, repo, out = tmp_path / "tree", tmp_path / "clone", tmp_path / "toolchain"
+    for folder in (root, repo, out):
+        folder.mkdir()
+    sep = os.pathsep
+    planted = {
+        "NODE_OPTIONS": f"--max-old-space-size=64 --require={repo / 'hook.js'}",
+        "DOTNET_STARTUP_HOOKS": sep.join([str(out / "ok.dll"), str(root / "hook.dll")]),
+        "DOTNET_ROOT": str(repo / "dotnet"),
+        "CARGO_HOME": str(root / ".cargo-home"),
+        "RUSTC": str(repo / "bin" / "rustc"),
+        "RUSTC_WRAPPER": os.path.join("tools", "w"),
+        "RUSTC_WORKSPACE_WRAPPER": "./w",
+        "Node_Options": f'"--require={root / "x.js"}"',  # the spelling is not compared
+        "PL_TOOL_DIR": str(repo / "tools"),  # not a toolchain name: any variable naming the clone goes
+    }
+    try:
+        os.symlink(root, tmp_path / "alias", target_is_directory=True)
+        planted["NODE_PATH"] = str(tmp_path / "alias" / "node_modules")
+    except (OSError, NotImplementedError):
+        pass  # no symbolic links here (Windows without the privilege)
+    kept = {
+        "HOME": "/home/jan.kowalski", "LANG": "C", "PATH": str(out / "bin"), "PL_NOTE": "tools/w",
+        "NODE_OPTIONS_LIMIT": "--max-old-space-size=64", "DOTNET_ROOT_X64": str(out / "dotnet"),
+        "CARGO_HOME_NOTE": str(out / ".cargo"), "RUSTC_NOTE": "sccache", "RUSTDOC": "rustdoc",
+        "PL_TOOL_HOME": str(tmp_path),  # an ancestor of the clone is not inside it
+    }
+    env = kbingest.scrub_env({**planted, **kept}, root=root, repo=repo)
+    for name in planted:
+        assert name not in env, name
+    assert {k: env[k] for k in kept} == kept
+    # outside the clone the same names stay, and without a worktree or clone only a relative path goes
+    outside = {"NODE_OPTIONS": "--max-old-space-size=64", "DOTNET_STARTUP_HOOKS": str(out / "ok.dll"),
+               "DOTNET_ROOT": str(out / "dotnet"), "CARGO_HOME": str(out / ".cargo"), "RUSTC": "rustc",
+               "RUSTC_WRAPPER": "sccache"}
+    assert {k: v for k, v in kbingest.scrub_env(outside, root=root, repo=repo).items() if k in outside} == outside
+    bare = kbingest.scrub_env(planted)
+    assert "RUSTC_WRAPPER" not in bare and "RUSTC_WORKSPACE_WRAPPER" not in bare
+    assert bare["DOTNET_ROOT"] == planted["DOTNET_ROOT"] and bare["NODE_OPTIONS"] == planted["NODE_OPTIONS"]
+
+
 PLANTED = "kb-planted-node"  # a repository's node_modules/.bin/node, by a name no host has
 
 PATH_PROBE = ("import json, os, shutil, subprocess\n"
@@ -820,6 +865,38 @@ def test_kbingest_map_cargo_config_rustc(tmp_path, monkeypatch):
     assert code == 0 and calls_of(log) == []
     assert notes_of(doc)[-1] == ".cargo/config.toml: not a regular file, Cargo not mapped and no cargo command run"
     ok = commit_files(tmp_path / "ok", {**crate, ".cargo/config.toml": '[build]\njobs = 2\n[net]\noffline = true\n'})
+    code, doc = fake_map(ok, tmp_path, monkeypatch, kbingest.CargoMapper())
+    assert code == 0 and [c["args"] for c in calls_of(log)] == CARGO_CALLS
+    assert doc["tools"]["rust"]["tool"] == "cargo"
+
+
+@requires_git
+def test_kbingest_map_scrubs_toolchain_hooks_cargo_config(tmp_path, monkeypatch):
+    """Planted: a `.cargo/config.toml` whose `[env]` table sets any variable (RUSTC_WRAPPER, a plain one), a
+    `rustflags` of `[build]` or of a target, or any `[host]` key; no cargo command runs. A config with only `[term]`
+    and `[net]` still maps."""
+    log = install_lang(tmp_path, monkeypatch, ("cargo",))
+    crate = {"Cargo.toml": "[package]\nname = 'app'\n", "src/main.rs": "fn main() {}\n"}
+    declined = (
+        ("env-wrapper", ".cargo/config.toml", '[env]\nRUSTC_WRAPPER = "tools/w"\n', "names env.RUSTC_WRAPPER"),
+        ("env-plain", ".cargo/config", '[env]\nPL_NOTE = { value = "x", force = true }\n', "names env.PL_NOTE"),
+        ("env-flat", ".cargo/config.toml", "env = 1\n", "names env"),
+        ("build-flags", ".cargo/config.toml", '[build]\nrustflags = ["-C", "link-arg=-fuse-ld=tools/ld"]\n',
+         "names build.rustflags"),
+        ("target-flags", ".cargo/config.toml", "[target.'cfg(unix)']\nrustflags = ['-Z', 'x']\n",
+         "names target.cfg(unix).rustflags"),
+        ("host-linker", ".cargo/config.toml", "[host]\nlinker = 'tools/ld'\n", "names host.linker"),
+        ("host-flags", ".cargo/config.toml", "[host]\nrustflags = ['-C', 'x']\n", "names host.rustflags"),
+        ("host-runner", ".cargo/config.toml", "[host]\nrunner = 'tools/run'\n", "names host.runner"))
+    for name, rel, text, why in declined:
+        r = commit_files(tmp_path / name, {**crate, rel: text})
+        code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.CargoMapper())
+        assert code == 0
+        assert calls_of(log) == [], name  # not even cargo --version
+        assert len(notes_of(doc)) == 1 and notes_of(doc)[0].startswith(f"{rel}: {why}"), name
+        assert doc["tools"] == {} and doc["packages"] == [], name
+    ok = commit_files(tmp_path / "ok", {**crate, ".cargo/config.toml":
+                                        "[term]\nquiet = true\n[net]\noffline = true\n"})
     code, doc = fake_map(ok, tmp_path, monkeypatch, kbingest.CargoMapper())
     assert code == 0 and [c["args"] for c in calls_of(log)] == CARGO_CALLS
     assert doc["tools"]["rust"]["tool"] == "cargo"
