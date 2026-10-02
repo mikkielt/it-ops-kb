@@ -2,7 +2,7 @@
   "id": "BG-s4n2h4jh",
   "kind": "bug",
   "title": "sync's foreign-session refusal names no override for a session that no longer exists",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,18 @@
     "kb/_self/git.md",
     "_tools/kg_sync.py"
   ],
-  "claimed_by": "seventh-w28"
+  "evidence": {
+    "commit": "1de67695b6e17edbe9a1087eda1bf883ecace365",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; s=pathlib.Path('_tools/kg_sync.py').read_text(encoding='utf-8'); i=s.index('were made by another Claude session'); sys.exit(0 if '--session' in s[i:i+600] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
