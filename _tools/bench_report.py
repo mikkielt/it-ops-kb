@@ -64,20 +64,25 @@ def change(a, b):
     return f" ({(y - x) / x * 100:+.0f}%)"
 
 
+ARMED = ("navigation",)  # the scenarios whose record holds one set of rows per arm (bench_core.ARMED, tested equal)
+
+
 def records(rows, scenario):
-    """The scenario's records in date order (history first when a date ties): [(record, first row)]."""
+    """The scenario's records in date order (history first when a date ties): [(record, first row)]; an ARMED
+    scenario's record appears once per arm, as (record, first row of that arm), so each arm's commit shows."""
     seen = {}
     for r in rows:
-        if r["scenario"] == scenario and r["record"] not in seen:
-            seen[r["record"]] = r
+        if r["scenario"] == scenario:
+            seen.setdefault((r["record"], r["arm"] if scenario in ARMED else ""), r)
     order = list(seen)
-    return sorted(seen.items(), key=lambda kv: (kv[1]["date"], kv[0] == kv[1]["date"], order.index(kv[0])))
+    return sorted(((k[0], r) for k, r in seen.items()),
+                  key=lambda kv: (kv[1]["date"], kv[0] == kv[1]["date"], order.index((kv[0], kv[1]["arm"] if scenario in ARMED else ""))))
 
 
 def table(rows, scenario, metrics, cases=None, arms=None):
     """A Markdown table: one line per case and arm, a column per metric; each cell holds every record's value in date
     order, `->` between them, and the change of the last from the one before."""
-    order = [rec for rec, _ in records(rows, scenario)]
+    order = list(dict.fromkeys(rec for rec, _ in records(rows, scenario)))
     cells, keys = {}, []
     for r in rows:
         if r["scenario"] != scenario or r["metric"] not in metrics:
@@ -105,13 +110,15 @@ def table(rows, scenario, metrics, cases=None, arms=None):
 def records_table(rows, scenario):
     out = ["| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |", "|---|---|---|---|---|---|---|"]
     for rec, first in records(rows, scenario):
-        mine = [r for r in rows if r["scenario"] == scenario and r["record"] == rec]
+        mine = [r for r in rows if r["scenario"] == scenario and r["record"] == rec
+                and (scenario not in ARMED or r["arm"] == first["arm"])]
         counts = [r["runs"] for r in mine if r["runs"] and r["case"] != "all paid runs"]
         runs = [max(sorted(set(counts), key=float), key=counts.count)] if counts else []  # the most common; ties: the smallest
         total = [float(r["value"]) for r in mine if r["metric"] == "spend_usd" and _isnum(r["value"])]
         spend = total[0] if total else sum(float(r["value"]) * float(r["runs"] or 1) for r in mine
                                            if r["metric"] in ("cost", "cost_est") and _isnum(r["value"]))
-        out.append(f"| {rec} | {first['date'] or '-'} | {first['commit'] or '-'} | {first['claude_code'] or '-'} | "
+        label = f"{rec} ({first['arm']})" if scenario in ARMED and first["arm"] else rec
+        out.append(f"| {label} | {first['date'] or '-'} | {first['commit'] or '-'} | {first['claude_code'] or '-'} | "
                    f"{first['kb_topics'] or '-'} | {', '.join(runs) or '-'} | {('$%.2f' % spend) if spend else '-'} |")
     return "\n".join(out)
 

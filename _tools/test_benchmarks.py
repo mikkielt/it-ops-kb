@@ -497,3 +497,16 @@ def test_run_navigation_replaces_only_the_named_arms_rows(tmp_path, monkeypatch)
     old = [dict(r, scenario="router") for r in rows if r["arm"] == "before"]
     new = [dict(r, scenario="router", arm="after") for r in rows if r["arm"] == "before"]
     assert bench_core.merge_rows(old, new) == new  # a scenario that is not ARMED is replaced whole, whatever its arms
+
+
+def test_bench_records_every_arm_of_an_armed_record():
+    base = {"scenario": "navigation", "record": "2026-09-30", "date": "2026-09-30", "claude_code": "2.1.286",
+            "kb_topics": "292", "case": "all paid runs", "model": "", "runs": "3", "note": ""}
+    rows = [dict(base, arm=arm, commit=commit, metric="spend_usd", value=usd)
+            for arm, commit, usd in (("before", "aaaaaaa", "0.50"), ("after", "bbbbbbb", "0.25"))]
+    text = bench_report.records_table(rows, "navigation")
+    assert "| 2026-09-30 (before) | 2026-09-30 | aaaaaaa | 2.1.286 | 292 | - | $0.50 |" in text
+    assert "| 2026-09-30 (after) | 2026-09-30 | bbbbbbb | 2.1.286 | 292 | - | $0.25 |" in text
+    assert bench_report.ARMED == bench_core.ARMED  # the report module imports no sibling, so the list is copied
+    plain = [dict(r, scenario="demo") for r in rows]
+    assert bench_report.records_table(plain, "demo").count("\n") == 2  # not armed: one line per record, as before

@@ -1008,7 +1008,8 @@ Each question asks for function and test names only, and an answer is checked by
 <!-- bench:records navigation -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-09-30 | 2026-09-30 | f2509b1 | 2.1.286 | 292 | 3 | $0.70 |
+| 2026-09-30 (before) | 2026-09-30 | f2509b1 | 2.1.286 | 292 | 3 | $0.70 |
+| 2026-09-30 (after) | 2026-09-30 | 0c375fc | 2.1.286 | 292 | 3 | $0.74 |
 <!-- /bench -->
 
 <!-- bench:table navigation metrics=turns,tool_calls,files_read,input,cost,wall_s,checks -->
