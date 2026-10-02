@@ -98,6 +98,47 @@ def test_hook_protocol():
         assert (p.returncode, p.stdout) == (0, ""), p.stderr
 
 
+@pytest.mark.parametrize("event", [
+    {"prompt": 5, "session_id": "x"},
+    {"prompt": ["add a new topic"], "session_id": "x"},
+    {"prompt": None, "session_id": "x"},
+    {"prompt": {"text": "add a new topic"}, "session_id": "x"},
+    {"prompt": 1.5},
+    {"prompt": True},
+    {"session_id": ["x"]},
+    {"prompt": "add a new topic on Intune scope tags", "session_id": {"a": 1}},
+    [],
+    ["add a new topic"],
+    5,
+    None,
+    "add a new topic",
+])
+def test_malformed_event_is_silent_and_exits_zero(event):
+    """A non-string prompt, a missing or non-dict field, or a non-object event never breaks the hook: no output, exit 0,
+    no traceback (a prompt must never be blocked by the router)."""
+    p = subprocess.run([sys.executable, HOOK], input=json.dumps(event), capture_output=True, text=True,
+                       encoding="utf-8", timeout=30)
+    if isinstance(event, dict) and isinstance(event.get("prompt"), str):
+        assert p.returncode == 0 and "Traceback" not in p.stderr, p.stderr  # routed: bad session id keeps no marker
+    else:
+        assert (p.returncode, p.stdout) == (0, ""), p.stderr
+    assert "Traceback" not in p.stderr, p.stderr
+
+
+@pytest.mark.parametrize("prompt", [5, 1.5, True, ["add a new topic"], None, {"a": 1}])
+def test_non_string_prompt_routes_nowhere(prompt, tmp_path):
+    assert router.routes(prompt) == [] and router.answer(prompt) is None
+    assert router.emit({"prompt": prompt, "session_id": "s1"}, str(tmp_path)) is None
+    assert not os.listdir(tmp_path)
+
+
+def test_deeply_nested_event_is_silent_and_exits_zero():
+    """A JSON nesting deeper than the parser's limit (a RecursionError on interpreters that raise it) is not our input."""
+    p = subprocess.run([sys.executable, HOOK], input="[" * 100000, capture_output=True, text=True, encoding="utf-8",
+                       timeout=60)
+    assert (p.returncode, p.stdout) == (0, ""), p.stderr[-300:]
+
+
 def test_routes_to_sections_not_the_whole_maintaining_doc():
     """A change is sent to the "Conduct for changes" section, never to kb/_self/maintaining.md as a whole file."""
     text = router.answer("add a new topic on Intune scope tags")["hookSpecificOutput"]["additionalContext"]
