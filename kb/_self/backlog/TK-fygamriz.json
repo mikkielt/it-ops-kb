@@ -2,7 +2,7 @@
   "id": "TK-fygamriz",
   "kind": "task",
   "title": "The kb-autopilot skill runs one manager tick under /loop",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-mdwkhv7k",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md",
     "kb/_self/map.csv"
-  ]
+  ],
+  "claimed_by": "mac-first-w3"
 }
