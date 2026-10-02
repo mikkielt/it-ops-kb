@@ -37,7 +37,8 @@
     "kb/_self/tools.md",
     "kb/_self/git.md",
     "_tools/bl_selfcheck.py",
-    ".claude/skills/kb-sprint/SKILL.md"
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
   ],
   "claimed_by": "mac-first"
 }
