@@ -2,7 +2,7 @@
   "id": "TK-ovw53u4u",
   "kind": "task",
   "title": "kbgit.py is the facade: its commands, usage and dispatch only",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,6 @@
   ],
   "depends_on": [
     "TK-5sjw6qpg"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
