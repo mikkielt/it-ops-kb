@@ -66,7 +66,8 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/maintaining.md",
-    "_tools/test_layout.py"
+    "_tools/test_layout.py",
+    "_tools/test_kbdecide.py"
   ],
   "depends_on": [
     "ST-aqpalijz",
@@ -102,6 +103,59 @@
       "recommendation": "5 findings per sprint, 3 refusals per item, inflow within the last 3 sprints' outflow, 60 open drafts",
       "answer": "5 findings per sprint, 3 refusals per item, inflow within the last 3 sprints' outflow, 60 open drafts",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "check, new and close live in bl_check, bl_land and backlog.py, outside this item's touches: bl_bounds puts its rules in front of them at import (the registered handler, and the owning module's cmd_check and cmd_close, become bl_bounds's wrapper). Keep that, or add hook seams in those modules?",
+      "options": [
+        "wrappers installed by bl_bounds",
+        "seams in bl_check, bl_land and backlog.py, in a later item"
+      ],
+      "recommendation": "wrappers installed by bl_bounds",
+      "class": "agents-rule",
+      "answer": "wrappers installed by bl_bounds",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which sprints does the rule that a running sprint gains no item but an S1 bug hold?",
+      "options": [
+        "only a sprint whose start gate the autopilot answered",
+        "every sprint"
+      ],
+      "recommendation": "only a sprint whose start gate the autopilot answered",
+      "class": "agents-rule",
+      "answer": "only a sprint whose start gate the autopilot answered",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What is the sprint's budget the manager stops on?",
+      "options": [
+        "items landed: the runner's --landed K",
+        "tokens the sprint's cost report shows",
+        "elapsed time"
+      ],
+      "recommendation": "items landed: the runner's --landed K",
+      "class": "secrets",
+      "answer": "items landed: the runner's --landed K",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Where does an item a review or retro filed carry its origin and evidence, and what does the inflow guard do with no sprint.close row?",
+      "options": [
+        "links origin KIND SP and evidence KIND REF; no close row: the guard does not judge",
+        "new item fields, which bl_base owns; no close row: outflow is zero and no finding is filed"
+      ],
+      "recommendation": "links origin KIND SP and evidence KIND REF; no close row: the guard does not judge",
+      "class": "agents-rule",
+      "answer": "links origin KIND SP and evidence KIND REF; no close row: the guard does not judge",
+      "by": "agent"
     }
   ],
   "notes": "The failure it answers: closing a sprint turns every accepted review or retro finding into a story, so one sprint's close filed ten drafts (SP-x2pvljz6) and another six (SP-5cwekumc), with the operator as the only brake; an autopilot that answers for the operator has no brake. The existing process rule (backlog.md, Changing this process: a new mechanism only for a failure that happened) becomes a check. The limits gate holds the numbers. The story is large: /kb-item splits it into tasks (what a sprint gains and what findings file; the caps and the inflow guard; the manager's stop conditions and the docs).",

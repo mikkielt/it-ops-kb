@@ -192,6 +192,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           each claimed or ready item with its stall signals and the next remedy of
                                           the ladder (bl_stall.py); --took records a remedy taken as an ops row and
                                           an autopilot decision
+  backlog.py bounds [report | stop | file] [--sprint SP] [--budget K --landed N] [--json]
+                                          the limits of the autopilot's work (bl_bounds.py): the report counts
+                                          findings per sprint, open drafts, draft inflow against the done outflow of
+                                          the last sprints and each item's rework; `stop` says whether the manager
+                                          stops (sprint-budget, inflow-guard or no-ready; exit 1 when it does);
+                                          `file --origin review|retro|mid-sprint --sprint SP --title T --goal G
+                                          --evidence commit:SHA|test:ID|ops:ID [--kind story|bug --severity S
+                                          --repro CMD --check CMD --touch GLOB]` files a finding as a draft, merges
+                                          it into a near-duplicate's notes, or keeps it for the close commit body
 
 claim, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit the
 item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
@@ -1588,6 +1597,7 @@ bl_cli.register("intake", cmd_intake, args_intake)
 import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
 import bl_selfcheck  # noqa: F401 - registers `selfcheck`
+import bl_bounds  # noqa: F401 - registers bounds
 
 
 def main(argv=None):
