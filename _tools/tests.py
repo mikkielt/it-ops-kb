@@ -19,7 +19,8 @@ slowest files, every file's time for a full run and the names of the test files 
 
 A full run, a --changed run with more than one worker and stress_test.py take a host-wide lock first (host_lock): an
 O_EXCL file in KB_HOST_LOCK_DIR (default /tmp, or the public directory on Windows) holding the pid, clone and start time.
-A second run prints who holds it and waits; a holder whose pid no longer runs is cleared. A -k run, a run inside a test
+A second run prints who holds it and waits; a holder whose pid no longer runs is cleared by one waiter (an atomic claim),
+an empty lock file only after KB_HOST_LOCK_GRACE seconds (default 10). A -k run, a run inside a test
 and a one-worker run (-n 1) take none.
 
 The default worker count is capped, not one per CPU: KB_TEST_WORKERS (a number) when set, else the CPUs divided among
@@ -220,6 +221,7 @@ def target(node):
 
 
 HOST_LOCK_NAME = "kb-tests.lock"
+HOST_LOCK_GRACE = 10.0  # seconds
 
 
 def host_lock_dir():
@@ -243,20 +245,65 @@ def pid_alive(pid):
         return True
 
 
-def read_holder(path):
-    """{pid, clone, started} of a lock file, or None when it is missing or unreadable."""
+def parse_holder(text):
+    """{pid, clone, started} of a lock file's text, or None when it does not hold a record (empty, torn, garbled)."""
     try:
-        with open(path, encoding="utf-8") as f:
-            got = dict(ln.split("=", 1) for ln in f.read().splitlines() if "=" in ln)
+        got = dict(ln.split("=", 1) for ln in text.splitlines() if "=" in ln)
         return {"pid": int(got["pid"]), "clone": got.get("clone", "?"), "started": got.get("started", "?")}
-    except (OSError, ValueError, KeyError):
+    except (ValueError, KeyError):
         return None
 
 
+def read_lock(path):
+    """The raw text of a lock file, or None when it is missing or unreadable."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+    except (OSError, ValueError):
+        return None
+
+
+def read_holder(path):
+    """{pid, clone, started} of a lock file, or None when it is missing or unreadable."""
+    text = read_lock(path)
+    return None if text is None else parse_holder(text)
+
+
+def lock_grace():
+    """Seconds an empty or unreadable lock file is left alone, for its holder to write the record (KB_HOST_LOCK_GRACE)."""
+    try:
+        return float(os.environ.get("KB_HOST_LOCK_GRACE", HOST_LOCK_GRACE))
+    except ValueError:
+        return HOST_LOCK_GRACE
+
+
+def clear_stale(path, judged):
+    """Remove the lock file whose text the caller judged stale, only if it is still that text: claim it by renaming it to
+    a name of this waiter (one waiter's rename succeeds, the others find no file), check that what was claimed is what
+    was judged, then delete it. A lock another waiter wrote in between is put back (a link, which never replaces) and
+    left alone. True when this waiter cleared it."""
+    if read_lock(path) != judged:
+        return False
+    mine = f"{path}.clear.{os.getpid()}.{os.urandom(4).hex()}"
+    try:
+        os.replace(path, mine)
+    except OSError:
+        return False  # someone else took it
+    took = read_lock(mine)
+    if took != judged:
+        with contextlib.suppress(OSError):
+            os.link(mine, path)
+    with contextlib.suppress(OSError):
+        os.unlink(mine)
+    return took == judged
+
+
 @contextlib.contextmanager
-def host_lock(label="tests.py", poll=None):
+def host_lock(label="tests.py", poll=None, on_stale=None):
     """Hold the host-wide test lock for the block: take it by exclusive create, print who holds it and wait while a live
-    process does, clear a holder whose pid no longer runs, and release on exit, on an error and on SIGTERM."""
+    process does, clear a holder whose pid no longer runs (clear_stale: one waiter does, none removes a lock it did not
+    judge), leave an empty or unreadable file alone for lock_grace() seconds, and release on exit, on an error and on
+    SIGTERM. on_stale(label) is called after a lock is judged stale and before it is cleared (a test's hook)."""
     path = os.path.join(host_lock_dir(), HOST_LOCK_NAME)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     poll = poll if poll is not None else float(os.environ.get("KB_HOST_LOCK_POLL", "5"))
@@ -267,11 +314,24 @@ def host_lock(label="tests.py", poll=None):
         try:
             fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
         except FileExistsError:
-            holder = read_holder(path)
+            text = read_lock(path)
+            if text is None and not os.path.exists(path):  # released: look again
+                continue
+            holder = parse_holder(text or "")
+            if holder is None:
+                try:
+                    young = time.time() - os.stat(path).st_mtime < lock_grace()
+                except OSError:
+                    continue
+                if young:  # its holder has not written the record yet
+                    time.sleep(poll)
+                    continue
             if holder is None or not pid_alive(holder["pid"]):
-                print(f"{label}: clearing a stale host test lock ({holder['pid'] if holder else 'unreadable'})", flush=True)
-                with contextlib.suppress(OSError):
-                    os.unlink(path)
+                if on_stale:
+                    on_stale(label)
+                if clear_stale(path, text):
+                    print(f"{label}: clearing a stale host test lock ({holder['pid'] if holder else 'unreadable'})",
+                          flush=True)
                 continue
             if holder != told:
                 print(f"{label}: waiting for the host test lock held by pid {holder['pid']} "

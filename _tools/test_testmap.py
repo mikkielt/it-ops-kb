@@ -387,6 +387,165 @@ def test_host_test_lock_waits_planted_failure_a_live_foreign_holder_is_not_clear
     assert got
 
 
+def dead_pid():
+    import subprocess, sys
+    dead = subprocess.Popen([sys.executable, "-c", "pass"])
+    dead.wait()
+    return dead.pid
+
+
+def plant_stale_lock(tmp_path, monkeypatch):
+    """A lock file of a pid that no longer runs, in a lock directory of the test's own."""
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path))
+    monkeypatch.setenv("KB_HOST_LOCK_GRACE", "60")
+    lock = tmp_path / tests_py.HOST_LOCK_NAME
+    lock.write_text(f"pid={dead_pid()}\nclone=/gone\nstarted=2000-01-01T00:00:00Z\n", encoding="utf-8")
+    return lock
+
+
+def two_waiters_on_one_stale_lock():
+    """Waiter b judges the stale lock first and is held in the on_stale hook until waiter a has cleared it and holds the
+    lock, then goes on to clear what it judged. Returns the most waiters inside the lock at once (threads, no host timing:
+    a holds for a bounded wait that ends early when b gets in)."""
+    import threading
+    b_judged, a_in, both = threading.Event(), threading.Event(), threading.Event()
+    guard = threading.Lock()
+    inside, most, errors = [0], [0], []
+
+    def hook(label):
+        if label == "b":
+            b_judged.set()
+            a_in.wait(10)
+
+    def waiter(label):
+        try:
+            with tests_py.host_lock(label, poll=0.02, on_stale=hook):
+                with guard:
+                    inside[0] += 1
+                    most[0] = max(most[0], inside[0])
+                    if inside[0] > 1:
+                        both.set()
+                if label == "a":
+                    a_in.set()
+                    both.wait(0.5)
+                with guard:
+                    inside[0] -= 1
+        except Exception as e:  # noqa: BLE001 - reported by the test
+            errors.append(e)
+
+    b = threading.Thread(target=waiter, args=("b",), daemon=True)
+    b.start()
+    assert b_judged.wait(10)
+    a = threading.Thread(target=waiter, args=("a",), daemon=True)
+    a.start()
+    a.join(30)
+    b.join(30)
+    assert not errors and not a.is_alive() and not b.is_alive()
+    return most[0]
+
+
+def test_host_test_lock_two_waiters_only_one_holds_a_stale_lock(tmp_path, monkeypatch):
+    plant_stale_lock(tmp_path, monkeypatch)
+    assert two_waiters_on_one_stale_lock() == 1
+    assert not (tmp_path / tests_py.HOST_LOCK_NAME).exists()  # released
+
+
+def test_host_test_lock_two_waiters_planted_failure_an_unconditional_unlink_lets_both_hold(tmp_path, monkeypatch):
+    """The gate's planted failure: with the stale lock cleared by a plain unlink, the second waiter removes the first's
+    fresh lock and both hold it."""
+    import contextlib
+    plant_stale_lock(tmp_path, monkeypatch)
+
+    def unlink(path, judged):
+        with contextlib.suppress(OSError):
+            os.unlink(path)
+        return True
+
+    monkeypatch.setattr(tests_py, "clear_stale", unlink)
+    assert two_waiters_on_one_stale_lock() == 2
+
+
+def test_host_test_lock_two_waiters_clear_stale_leaves_a_lock_it_did_not_judge(tmp_path, monkeypatch):
+    lock = tmp_path / tests_py.HOST_LOCK_NAME
+    fresh = f"pid={os.getpid()}\nclone=/other\nstarted=x\n"
+    lock.write_text(fresh, encoding="utf-8")
+    assert tests_py.clear_stale(str(lock), "pid=1\n") is False  # judged another text: not claimed
+    assert lock.read_text(encoding="utf-8") == fresh
+    reads = []
+    real = tests_py.read_lock
+
+    def racing(path):  # the lock changes between the judgement and the claim: the first look still sees the old text
+        reads.append(path)
+        return "pid=1\n" if len(reads) == 1 else real(path)
+
+    monkeypatch.setattr(tests_py, "read_lock", racing)
+    assert tests_py.clear_stale(str(lock), "pid=1\n") is False  # claimed a lock it did not judge: put back
+    assert lock.read_text(encoding="utf-8") == fresh and [f.name for f in tmp_path.iterdir()] == [lock.name]
+    monkeypatch.setattr(tests_py, "read_lock", real)
+    lock.write_text("pid=1\n", encoding="utf-8")
+    assert tests_py.clear_stale(str(lock), "pid=1\n") is True and not lock.exists()  # judged and claimed: cleared
+    assert tests_py.clear_stale(str(lock), "pid=1\n") is False  # nothing left to claim
+
+
+def waiter_on_an_empty_lock(tmp_path, monkeypatch, grace):
+    """An empty lock file (its holder created it and has not written yet) and a waiter on it; the waiter's thread and
+    whether it got the lock within a moment."""
+    import threading
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path))
+    monkeypatch.setenv("KB_HOST_LOCK_GRACE", grace)
+    lock = tmp_path / tests_py.HOST_LOCK_NAME
+    lock.write_text("", encoding="utf-8")
+    got = []
+
+    def waiter():
+        with tests_py.host_lock(poll=0.02):
+            got.append(1)
+
+    t = threading.Thread(target=waiter, daemon=True)
+    t.start()
+    t.join(1)
+    return lock, t, got
+
+
+def test_host_test_lock_two_waiters_an_empty_lock_younger_than_the_grace_is_waited_on(tmp_path, monkeypatch):
+    lock, t, got = waiter_on_an_empty_lock(tmp_path, monkeypatch, "60")
+    assert t.is_alive() and not got and lock.exists()  # waiting, the file not cleared
+    lock.write_text(f"pid={os.getpid()}\nclone=/other\nstarted=x\n", encoding="utf-8")  # the holder writes its record
+    t.join(0.3)
+    assert t.is_alive() and not got  # a live holder: still waited on
+    lock.unlink()
+    t.join(30)
+    assert got
+
+
+def test_host_test_lock_two_waiters_planted_failure_an_empty_lock_past_the_grace_is_cleared(tmp_path, monkeypatch):
+    """The gate's planted failure: a grace of zero (the old behaviour) clears the empty lock at once."""
+    lock, t, got = waiter_on_an_empty_lock(tmp_path, monkeypatch, "0")
+    t.join(30)
+    assert got and not t.is_alive()
+
+
+def test_host_test_lock_two_waiters_an_empty_lock_older_than_the_grace_is_cleared(tmp_path, monkeypatch):
+    """A holder that died before writing leaves an empty file: it is cleared once it is older than the grace."""
+    import threading, time
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path))
+    monkeypatch.setenv("KB_HOST_LOCK_GRACE", "60")
+    lock = tmp_path / tests_py.HOST_LOCK_NAME
+    lock.write_text("", encoding="utf-8")
+    old = time.time() - 3600
+    os.utime(lock, (old, old))
+    got = []
+
+    def waiter():
+        with tests_py.host_lock(poll=0.02):
+            got.append(1)
+
+    t = threading.Thread(target=waiter, daemon=True)
+    t.start()
+    t.join(30)
+    assert got and not t.is_alive()
+
+
 def test_workers_capped_env_override_wins_over_the_share(monkeypatch):
     monkeypatch.setenv("KB_TEST_WORKERS", "3")
     assert tests_py.default_workers(others=5, cpus=16) == 3 and tests_py.worker_count([], others=5) == 3
