@@ -396,6 +396,56 @@ def gate_needs(paths):
             "querylog": why(store, "the query log store")}
 
 
+GATE_NOTE = re.compile(r"tests\.py --changed \S+: (\d+) of (\d+) test files or classes(, the git scenarios of \d+ kept)?")
+
+
+def gate_name(label):
+    """A check's label as a row token: lower case, one dash for each run of other characters, no revision."""
+    first = "check-trailers" if label.startswith("check-trailers") else label.split(" --since")[0]
+    return (re.sub(r"[^a-z0-9_.]+", "-", first.lower()).strip("-") or "check")[:40]
+
+
+def gate_mark(r, label, why=None, code=None, since=None):
+    """Append the row of one check to r["gate_rows"]: skipped (WHY, a token) or ran (its exit and the ms since SINCE)."""
+    row = {"name": gate_name(label), "ran": why is None}
+    if why:
+        row["why"] = why
+    else:
+        row.update(exit=code, ms=int((time.monotonic() - since) * 1000))
+    r.setdefault("gate_rows", []).append(row)
+
+
+def gate_scope(r, skipped, out):
+    """r["scope"] (a closed token) and r["scope_line"] (what a reader needs) of the gate's tests.py step: SKIPPED
+    names why it did not run, else OUT is its output, whose `--changed` line gives the selection."""
+    m = GATE_NOTE.search(out or "")
+    if skipped:
+        r["scope"], r["scope_line"] = ("skipped", "tests.py did not run (KB_SYNC_NO_TESTS=1)") if skipped == "no-tests-env" else (
+            "none", "tests.py did not run, no path it reads changed")
+    elif m:
+        r["scope"], r["scope_line"] = ("changed-git" if m.group(3) else "changed"), m.group(0)
+    elif "no test can be affected" in (out or ""):
+        r["scope"], r["scope_line"] = "none", "no test file can be affected by the changed paths"
+    else:
+        r["scope"], r["scope_line"] = "all", "every test file, without the git scenarios"
+
+
+def record_gate(r, code):
+    """Append the ops row `sync.gate` of this sync run (r["gate_rows"] of its last gate, the ms of every gate run, the
+    scope, the count of paths the gate read, the push outcome, the exit); best effort: nothing when no gate ran or
+    capture is off, no exception and no output."""
+    try:
+        if not r.get("gate_rows"):
+            return None
+        import ql_capture
+        pushed = r.get("pushed", "")
+        push = "pushed" if pushed.startswith("yes") else "rejected" if "rejected" in pushed else "none"
+        return ql_capture.record("ops", event="sync.gate", ms=int(r.get("gate_ms", 0)), checks=r["gate_rows"][:40],
+                                 scope=r.get("scope"), files=r.get("gate_files"), push=push, exit=code)
+    except Exception:  # noqa: BLE001 - a sync never fails for its log
+        return None
+
+
 def gate(r, up, host, fix_check=False, since=None):
     """The checks the changed paths (gate_paths) can break, then check-trailers on up..HEAD:
     check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
@@ -407,11 +457,13 @@ def gate(r, up, host, fix_check=False, since=None):
     rebuilds the generated files, so its gate has neither. A skipped check is listed with why.
     SINCE (a retry after a rejected push): the commit the last green gate judged. Each check then reads only the paths
     that differ between SINCE and HEAD, so a rebase that changed none of them re-runs nothing but check-trailers."""
-    results = []
+    results, t_gate = [], time.monotonic()
+    r["gate_rows"], r["scope"] = [], None
     paths = gate_paths(up)
     if since:
         staged, unstaged = dirty_paths()
         paths = set(names("diff", "--name-only", since, "HEAD")) | set(staged) | set(unstaged)
+    r["gate_files"] = None if paths is None else len(paths)
     need = gate_needs(paths)
     if since:
         need["tests"] = "always" if any(need[k] for k in ("check", "fetch", "doc2query", "selfdoc")) else None
@@ -429,17 +481,27 @@ def gate(r, up, host, fix_check=False, since=None):
     for label, name, args, env, reason in checks:
         if name == "tests.py" and os.environ.get("KB_SYNC_NO_TESTS") == "1":
             results.append((label, "skipped (KB_SYNC_NO_TESTS=1)", True))
+            gate_mark(r, label, "no-tests-env"), gate_scope(r, "no-tests-env", "")
             continue
         if not reason:
             results.append((label, "skipped: no path it reads changed", True))
+            gate_mark(r, label, "no-path-changed")
+            if name == "tests.py":
+                gate_scope(r, "no-path-changed", "")
             continue
+        t0 = time.monotonic()
         code, out = tool(name, *args, env=env)
+        gate_mark(r, label, code=code, since=t0)
+        if name == "tests.py":
+            gate_scope(r, None, out)
         tail = [ln for ln in out.strip().splitlines() if ln.strip()][-1:] or [""]
         results.append((label, ("ok" if code == 0 else f"FAILED (exit {code})") + f": {tail[0][:100]}", code == 0))
         if code:
             print(f"--- {label} output (last lines)\n" + "\n".join(out.strip().splitlines()[-25:]))
     rng = f"{up}..HEAD" if up else "HEAD"
+    t0 = time.monotonic()
     audit = host.audit(rng, quiet=True)
+    gate_mark(r, f"check-trailers {rng}", code=int(audit is None or bool(audit[2])), since=t0)
     if audit is None:
         results.append((f"check-trailers {rng}", "FAILED: not a valid range", False))
     else:
@@ -448,6 +510,7 @@ def gate(r, up, host, fix_check=False, since=None):
         results.append((f"check-trailers {r['target']}..HEAD", f"{'ok' if not audit[2] else 'FAILED'}: commits={audit[0]} bad={len(audit[2])}",
                         not audit[2]))
     r["gate"] = results
+    r["gate_ms"] = r.get("gate_ms", 0) + int((time.monotonic() - t_gate) * 1000)
     return all(ok for _, _, ok in results)
 
 
@@ -676,6 +739,7 @@ def cmd_sync(a, host, r=None):
             print(refuse)
             return 2
         return code
+    record_gate(r, code)
     print("--- sync report")
     print(f"target: {r.get('target')}; was {r['ahead']} ahead, {r['behind']} behind; commits rebased: {r['rebased']}")
     if r["auto"]:
@@ -689,6 +753,8 @@ def cmd_sync(a, host, r=None):
         print("note: " + n)
     for label, result, _ in r["gate"]:
         print(f"gate {label}: {result}")
+    if r.get("scope"):
+        print(f"gate scope: {r['scope']} ({r['scope_line']})")
     print(f"pushed: {r['pushed']}")
     print(f"sync: exit {code}, {r.get('tries', 1)} push {'try' if r.get('tries', 1) == 1 else 'tries'}")
     return code
