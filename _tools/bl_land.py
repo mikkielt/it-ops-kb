@@ -13,8 +13,8 @@ import argparse, hashlib, json, os, re, shlex, shutil, subprocess, sys
 from pathlib import Path
 
 from bl_base import (
-    Backlog, ID_RE, CHECK_TIMEOUT_S, Refused, commit_written, git, in_scope, item_file, line, need, run, say, scope,
-    waits,
+    Backlog, ID_RE, CHECK_TIMEOUT_S, REL_DIR, Refused, commit_written, git, in_scope, item_file, line, need, run, say,
+    scope, waits,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 from bl_intake import ANSI_RE
@@ -400,6 +400,93 @@ def stuck_merge_request(root, remote, branch):
     return None
 
 
+LAND_REF = "refs/land"  # refs/land/<id>: the done commit land made, kept until the landing is verified
+
+
+def unpicked(root, upstream, head, commits_of):
+    """The commits of HEAD that no patch-equivalent commit of UPSTREAM or of the branch COMMITS_OF has, oldest first
+    (`git cherry`: a claim that sync rewrote on the integration main, or that the branch carries already, is not
+    one)."""
+    def plus(*args):
+        p = subprocess.run(["git", "cherry", *args], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
+        return [ln[2:].strip() for ln in p.stdout.splitlines() if ln.startswith("+ ")]
+    ahead = set(plus(upstream, head))
+    return [sha for sha in plus(commits_of, head) if sha in ahead]
+
+
+def missing_claims(root, family, start, upstream, branch):
+    """The claim commits of the item's family on START (the checkout land began on) that the branch lacks and the
+    integration main does not have: a claim made after the branch was cut, or never pushed. Oldest first."""
+    out = []
+    for sha in unpicked(root, upstream, start, branch):
+        subject, _, vals = git(root, "log", "-1", "--format=%s%x00%(trailers:key=KB-Work,valueonly,separator=%x2C)",
+                               sha).partition("\x00")
+        if subject.startswith("chore(backlog): claim ") and set(ID_RE.findall(vals)) & set(family):
+            out.append(sha)
+    return out
+
+
+def carry_claims(root, claims, upstream, branch):
+    """Rebase BRANCH on UPSTREAM with CLAIMS (commits, oldest first) under its own commits: they are cherry-picked on
+    the detached upstream, then the branch's commits are replayed on that. A conflict aborts and changes nothing."""
+    def undo():
+        subprocess.run(["git", "cherry-pick", "--abort"], cwd=root, capture_output=True)
+        subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
+    land_git(root, "rebase", "switch", "-q", "--detach", upstream)
+    p = subprocess.run(["git", "cherry-pick", *claims], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                       errors="replace")
+    if p.returncode:
+        undo()
+        raise land_stop("rebase", f"the claim commit(s) {', '.join(c[:10] for c in claims)} do not apply on "
+                                  f"{upstream} (cherry-pick aborted, nothing changed): push the claim first "
+                                  f"(kbgit.py sync --push), then run land again\n{(p.stderr or p.stdout).strip()}")
+    tip = git(root, "rev-parse", "HEAD").strip()
+    return subprocess.run(["git", "rebase", "--quiet", "--onto", tip, upstream, branch], cwd=root,
+                          capture_output=True, text=True, encoding="utf-8", errors="replace")
+
+
+def item_state(root, rev, iid):
+    """The status the item's file has at REV, None when it has none there."""
+    blob = blob_id(root, rev, f"{REL_DIR}/{iid}.json")
+    if not blob:
+        return None
+    try:
+        return json.loads(git(root, "cat-file", "-p", blob)).get("status")
+    except ValueError:
+        return None
+
+
+def verify_landed(root, remote, upstream, iid):
+    """After sync --push reported success: fetch the integration main and require that the item's done commit (the
+    last commit on HEAD that wrote its file) is on it and that its file reads done there. Stops, naming the step,
+    when it is not: a sync that gave up quietly must never end in `landed`."""
+    land_git(root, "verify", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
+    done = git(root, "log", "-1", "--format=%H", "HEAD", "--", f"{REL_DIR}/{iid}.json").strip()
+    on_main = bool(done) and subprocess.run(["git", "merge-base", "--is-ancestor", done, upstream], cwd=root,
+                                            capture_output=True).returncode == 0
+    if not on_main:
+        raise land_stop("verify", f"sync --push exited 0, but the done commit {done[:10] or '(none)'} is not on "
+                                  f"{remote}/main after a fetch: it stays on the branch, run land again once the push can go through")
+    if item_state(root, upstream, iid) != "done":
+        raise land_stop("verify", f"{iid}'s file on {remote}/main does not read done (it reads "
+                                  f"{item_state(root, upstream, iid)}): run land again")
+
+
+def restore_done(root, iid):
+    """The done commit land kept in refs/land/<id> back on HEAD (the branch) when the branch lost it, in place of
+    running done again: cherry-picked, only when it is the item's own done commit. True once HEAD has it."""
+    ref = f"{LAND_REF}/{iid}"
+    if not has_ref(root, ref) or item_state(root, ref, iid) != "done":
+        return False
+    p = subprocess.run(["git", "cherry-pick", ref], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                       errors="replace")
+    if p.returncode:
+        subprocess.run(["git", "cherry-pick", "--abort"], cwd=root, capture_output=True)
+        return False
+    return item_state(root, "HEAD", iid) == "done"
+
+
 def cmd_land(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
     heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the heavy checks, sync
@@ -430,8 +517,13 @@ def cmd_land(bl, a):
         say(f"land: fetch {remote} main")
         land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
         say(f"land: rebase {branch} on {remote}/main")
-        p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace")
+        claims = missing_claims(root, [iid] + bl.descendants(iid), start, upstream, branch)
+        if claims:  # claimed after the branch was cut, or never pushed: the claim goes under the worker's commits
+            say(f"land: carry the claim commit(s) {', '.join(c[:10] for c in claims)} under {branch}")
+            p = carry_claims(root, claims, upstream, branch)
+        else:
+            p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True,
+                               text=True, encoding="utf-8", errors="replace")
         if p.returncode:
             subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
             raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "
@@ -460,12 +552,16 @@ def cmd_land(bl, a):
         if not late:
             if bl.items[iid].get("status") == "done":
                 say(f"land: done: {bl.label(iid)} is done already")
+            elif restore_done(root, iid):  # a run before this one made the done commit and the branch lost it
+                say(f"land: done: {bl.label(iid)} has its done commit from the last run ({LAND_REF}/{iid}), "
+                    "not run again")
             else:
                 say("land: done --commit")
                 try:
                     cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer))
                 except Refused as e:
                     raise land_stop("done", str(e)) from None
+                land_git(root, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
         changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
             for step, argv in LAND_HEAVY:
@@ -475,6 +571,8 @@ def cmd_land(bl, a):
             say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
                 f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
         else:
+            verify_landed(root, remote, upstream, iid)
+            subprocess.run(["git", "update-ref", "-d", f"{LAND_REF}/{iid}"], cwd=root, capture_output=True)
             say(f"land: {bl.label(iid)} landed")
         return 0
     finally:  # back to where land started, whatever happened after the rebase switched to BRANCH
