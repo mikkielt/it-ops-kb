@@ -45,8 +45,8 @@
           "test_publish_scan_matches_tracked_scan"
         ]
       },
-      "answer": "match-tracked-scan: GUIDs in Markdown files only",
-      "by": "agent"
+      "answer": "keep-guid-in-code: GUIDs also in _tools code and fixtures",
+      "by": "operator"
     }
   ],
   "evidence": {

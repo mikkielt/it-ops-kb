@@ -1,0 +1,33 @@
+{
+  "id": "BG-svpvanw4",
+  "kind": "bug",
+  "title": "publish's leak scan passes a GUID in a .py, .json or .csv file",
+  "status": "todo",
+  "sprint": "SP-42bn4vz7",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbpublic.file_hits reports a GUID in any text file that is not a vendor export, snapshot or pinned artifact (a .py, .json or .csv as much as a .md), so kbgit.py publish refuses it unless the allowlist holds it, with a test named publish_guid_any_text that plants one in each of the three types; pinned files and vendor exports stay scanned for secrets only. Operator decision on BG-r5wzfz3c g1: keep GUID scanning in every text file at publish.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;sys.exit(0 if any(h[0]=='guid' for h in k.file_hits('x.py','t = \"3f2504e0-4f89-11d3-9a0c-0305e82c3301\"\\n',set(),())) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "publish_guid_any_text"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/git.md"
+  ]
+}
