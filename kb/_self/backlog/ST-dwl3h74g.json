@@ -49,6 +49,32 @@
       "recommendation": "wait for the failure",
       "answer": "add",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which aggregates does kblog.py propose make from the ops sidecar's rows?",
+      "options": [
+        "one row per event and context: row count, nonzero-exit count, ms median and range",
+        "one row per aggregate (count, median and range each its own row)",
+        "counts only"
+      ],
+      "recommendation": "one row per event and context: row count, nonzero-exit count, ms median and range",
+      "answer": "one row per event and context: row count, nonzero-exit count, ms median and range",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What context does a proposed row carry for an ops event that names no item (sync.gate, test.run, ci.pipeline, intake.detect)?",
+      "options": [
+        "the item or sprint the event names; an event with none is left out unless --context names one",
+        "a fixed domain: reference",
+        "never aggregate events with no item"
+      ],
+      "recommendation": "the item or sprint the event names; an event with none is left out unless --context names one",
+      "answer": "the item or sprint the event names; an event with none is left out unless --context names one",
+      "by": "agent"
     }
   ],
   "claimed_by": "mac-sixth"

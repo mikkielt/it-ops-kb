@@ -3,6 +3,9 @@
 
   kblog.py record --root R OBSERVATION --runs ID;ID --from DATE --to DATE --context C [--links TEXT]
                                          add a row with status `proposed` and print its id
+  kblog.py propose --root R --since DAY [--until DAY] [--store DIR] [--context REF] [--dry-run]
+                                         derive aggregates from the ops sidecar's rows and add each as a `proposed`
+                                         row; print one line per row added and a count line
   kblog.py confirm ID --root R --by operator
                                          make a proposed row `active`; refused without `--by operator`
   kblog.py invalidate ID --root R --reason TEXT [--date DATE]
@@ -38,9 +41,24 @@ change that adds an error is undone and refused, exit 2.
     (`item:TK-x dropped`), several joined by `; `, and the day goes to `links`. The row stays in its file; nothing is
     deleted. `--dry-run` prints what it would invalidate and writes nothing.
 
+`propose` reads the ops sidecar of the query log's store (`kb/_querylog/ops/`, `--store DIR` for another; kb/_self/querylog.md,
+Distill) through ql_store's readers and gates, never a spool file, and makes a small closed set of aggregates from the rows
+of the days `--since` to `--until` (default: no end): one row for each event and context, its observation a count of the
+event's rows, how many of them ended with a nonzero `exit`, and the median and the range of its `ms`, written by this
+tool from numbers only (`ops land.step: 7 rows, 2 with a nonzero exit, ms median 1200, range 300 to 9000`). A row's runs are
+the runs that held those rows, its dates the first and last day of them, and its context `item:ID` of the item (or sprint)
+the event names. An event with no item key (`sync.gate`, `test.run`, `ci.pipeline`, `intake.detect`, an `agent.run` with
+no item) has no context of its own: it is aggregated only when `--context REF` names what it is about, else left out and
+counted. A row of the sidecar that is not the closed shape (ql_store.ops_line_problems) is left out and counted. No
+event, id of a row, time of day, person or text reaches a row, and a row goes through the same path as `record`, one
+`save`, so check.py's rules apply and one refusal leaves the file as it was. The id is `record`'s, so an aggregate of the
+same runs and days is the row already there (any status, an invalidated one included) and the second run adds nothing;
+only the operator confirms (`confirm --by operator`), `propose` never activates. Exit 0 also when it proposes nothing.
+
 Exit: 0 done, 2 refused (a rule above, an unknown root or id, or a file that cannot be read) or bad arguments.
 """
 import argparse, sys
+from pathlib import Path
 
 import kbcommon, kbdecide
 from kbdecide import LOGS, OPERATOR, Refused, Store, day, field, find, load, need, need_operator, row_id, save
@@ -65,6 +83,99 @@ def cmd_record(a):
                context=context, status="proposed", links=(a.links or "").strip())
     save(store, rows + [row])
     print(f"{lid}\tproposed\t{store.name}")
+    return 0
+
+
+# The aggregates `propose` makes, closed: the rows of one event and context, a count, the rows whose `exit` is not 0
+# and, for the event's `ms`, the median (the whole number between the two middle values, rounded down) and the range.
+NO_CONTEXT = "no-context"
+
+
+def middle(values):
+    v = sorted(values)
+    n = len(v)
+    return v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) // 2
+
+
+def observation_of(event, rows):
+    """The one-line aggregate of the rows of one event (each a closed ops line): numbers and the event's name only."""
+    out = [f"{len(rows)} row" + ("" if len(rows) == 1 else "s")]
+    codes = [r["exit"] for r in rows if "exit" in r]
+    if codes:
+        out.append(f"{sum(1 for c in codes if c != 0)} with a nonzero exit")
+    times = [r["ms"] for r in rows if "ms" in r]
+    if times:
+        out.append(f"ms median {middle(times)}, range {min(times)} to {max(times)}")
+    return f"ops {event}: " + ", ".join(out)
+
+
+def ops_rows(store_dir, since, until):
+    """([(run id, day, closed ops line)] of the days since..until, how many lines were left out as not closed): a line
+    is read with ql_store's readers and kept when ql_store.ops_line_problems finds nothing."""
+    import ql_store
+    rows, bad = [], 0
+    for p, objs in ql_store.records(ql_store.ops_files(store_dir)):
+        for n, o in objs:
+            if ql_store.ops_line_problems(o, f"{p.name}:{n}"):
+                bad += 1
+                continue
+            d = o["ts"][:10]
+            if d >= since and (until is None or d <= until):
+                rows.append((p.stem, d, o))
+    return rows, bad
+
+
+def aggregates(rows, fallback):
+    """[(event, context, runs, first day, last day, observation)] sorted, and how many rows had no context: a row's own
+    `item` (or `sprint`) is its context, else `fallback` (the `--context` text) when there is one."""
+    groups, none = {}, 0
+    for run, d, o in rows:
+        own = o.get("item") or o.get("sprint")
+        context = f"item:{own}" if own else fallback
+        if not context:
+            none += 1
+            continue
+        groups.setdefault((o["event"], context), []).append((run, d, o))
+    out = []
+    for (event, context), g in sorted(groups.items()):
+        days = sorted(d for _, d, _ in g)
+        out.append((event, context, sorted({run for run, _, _ in g}), days[0], days[-1], observation_of(event, [o for _, _, o in g])))
+    return out, none
+
+
+def cmd_propose(a):
+    store = Store(a.root, LOGS)
+    since, until = day(a.since), day(a.until) if a.until else None
+    if until is not None and until < since:
+        raise Refused(f"--until {until} is before --since {since}")
+    fallback = "; ".join(kbcommon.split_list(a.context))
+    if any(not kind for kind, _ in kbcommon.context_refs(fallback)):
+        raise Refused(f"--context {fallback!r} is not kind:value references ({', '.join(kbcommon.CONTEXT_KINDS)})")
+    import ql_base
+    store_dir = Path(a.store) if a.store else ql_base.STORE
+    if not store_dir.is_dir():
+        raise Refused(f"{store_dir} is no query-log store")
+    rows = load(store)
+    have = {field(r, "id") for r in rows}
+    read, bad = ops_rows(store_dir, since, until)
+    new, kept = [], 0
+    found, none = aggregates(read, fallback)
+    for _, context, runs, first, last, observation in found:
+        run_ids = "; ".join(runs)
+        lid = row_id(LOGS, observation, context, run_ids, first, last)
+        if lid in have:
+            kept += 1
+            continue
+        have.add(lid)
+        row = dict.fromkeys(LOGS.cols, "")
+        row.update(id=lid, observation=observation, source_run_ids=run_ids, observed_from=first, observed_to=last,
+                   context=context, status="proposed")
+        new.append(row)
+    if new and not a.dry_run:
+        save(store, rows + new)
+    for r in new:
+        print(f"{r['id']}\tproposed\t{store.name}\t{r['context']}\t{r['observation']}")
+    print(f"proposed={len(new)} known={kept} {NO_CONTEXT}={none} not-closed={bad}" + (" dry-run" if a.dry_run else ""))
     return 0
 
 
@@ -125,6 +236,12 @@ def parser():
     p.add_argument("--to", dest="observed_to", required=True, help="YYYY-MM-DD, the last day it covers")
     p.add_argument("--context", required=True, help="`;`-separated kind:value references (item, fact, source, article, domain)")
     p.add_argument("--links", help="free text")
+    p = add("propose", "derive proposed log rows from the ops sidecar")
+    p.add_argument("--since", required=True, help="YYYY-MM-DD, the first day of the ops rows read")
+    p.add_argument("--until", help="YYYY-MM-DD, the last day (default: no end)")
+    p.add_argument("--store", help="a query-log store directory (default: kb/_querylog)")
+    p.add_argument("--context", help="`;`-separated kind:value references for the events that name no item")
+    p.add_argument("--dry-run", action="store_true", help="print what would be proposed and write nothing")
     p = add("confirm", "the operator confirms a proposed log row")
     p.add_argument("id")
     p.add_argument("--by", help=f"must be {OPERATOR}")
@@ -141,7 +258,7 @@ def parser():
     return ap
 
 
-COMMANDS = {"record": cmd_record, "confirm": cmd_confirm, "invalidate": cmd_invalidate, "sweep": cmd_sweep,
+COMMANDS = {"record": cmd_record, "propose": cmd_propose, "confirm": cmd_confirm, "invalidate": cmd_invalidate, "sweep": cmd_sweep,
             "list": cmd_list}
 
 
