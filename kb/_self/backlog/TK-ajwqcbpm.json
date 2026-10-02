@@ -28,7 +28,16 @@
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py",
     "kb/_self/map.csv",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/bl_base.py",
+    "_tools/bl_cli.py",
+    "_tools/bl_testkit.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_check.py",
+    "_tools/test_bl_plan.py",
+    "_tools/test_bl_check.py",
+    "_tools/test_kb_leaks.py",
+    "_tools/kg_lane.py"
   ],
   "depends_on": [
     "TK-gefod47d",
