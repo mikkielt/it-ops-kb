@@ -15,6 +15,8 @@ from pyproject.toml's dev group) or `uv run pytest`.
                         link into the template
   kb_seed               (fixture) a bare repository of a kb copy, committed once per run and shared by the xdist
                         workers: the origin a git scenario clones
+  SCOPE_GROUPS          {"module.py::Class": unit}: the classes that share a fixture built once per worker run as one
+                        xdist loadscope unit (scope_of; the hook pytest_xdist_make_scheduler), in file order
   requires_git          skip marker for a test that needs the git binary
   marker `git`          a scenario in throwaway git repositories (about 10 s each); `-m "not git"` leaves them out,
                         which is what KB_TESTS_FAST=1 (kbgit.py sync's gate) does
@@ -428,9 +430,42 @@ class Repo:
         self.write(rel, text, "a")
 
 
+SCOPE_GROUPS = {  # "module.py::Class" -> the one loadscope unit its tests share: scenarios built in one shared clone
+    "test_querylog_e2e.py::TestAnswered": "test_querylog_e2e.py::stage-a",
+    "test_querylog_e2e.py::TestFetches": "test_querylog_e2e.py::stage-a",
+    "test_querylog_e2e.py::TestToolRows": "test_querylog_e2e.py::stage-a",
+    "test_querylog_e2e.py::TestRedaction": "test_querylog_e2e.py::stage-a",
+    "test_querylog_e2e.py::TestFixedSince": "test_querylog_e2e.py::stage-b",
+    "test_querylog_e2e.py::TestSessions": "test_querylog_e2e.py::stage-b",
+}
+
+
 def scope_of(nodeid):
-    """The pytest-xdist loadscope unit of a test id: a class's tests are one unit, a module's functions another."""
-    return nodeid.rsplit("::", 1)[0]
+    """The pytest-xdist loadscope unit of a test id: a class's tests are one unit, a module's functions another; the
+    classes of one SCOPE_GROUPS entry are one unit together (they share a fixture built once per worker)."""
+    scope = nodeid.rsplit("::", 1)[0]
+    module, _, rest = scope.partition("::")
+    return SCOPE_GROUPS.get(f"{module.replace(chr(92), '/').rsplit('/', 1)[-1]}::{rest}", scope)
+
+
+@functools.lru_cache(maxsize=None)
+def grouped_scheduler():
+    """pytest-xdist's LoadScopeScheduling with scope_of as its unit: the classes of a SCOPE_GROUPS entry go to one worker."""
+    from xdist.scheduler import LoadScopeScheduling
+
+    class GroupedLoadScope(LoadScopeScheduling):
+        def _split_scope(self, nodeid):
+            return scope_of(nodeid)
+
+    return GroupedLoadScope
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_xdist_make_scheduler(config, log):
+    """`--dist loadscope` hands out scope_of's units; any other distribution is xdist's own."""
+    if config.getoption("dist", None) == "loadscope":
+        return grouped_scheduler()(config, log)
+    return None
 
 
 def longest_scopes_first(units):

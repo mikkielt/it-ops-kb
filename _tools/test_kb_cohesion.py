@@ -703,3 +703,36 @@ class TestSelfDocs:
         paths = lambda index: [h["path"].replace(os.sep, "/") for h in rag.search("selfdoc stale map.csv docs", 5, None, index, [])]  # noqa: E731
         assert not [p for p in paths(False) if "kb/_self/" in p]
         assert any("kb/_self/" in p for p in paths(True)), paths(True)
+
+
+class TestScopeGroups:
+    """conftest.SCOPE_GROUPS: the classes of one group are one xdist loadscope unit, every other class its own."""
+
+    E2E = "_tools/test_querylog_e2e.py"
+
+    def test_scope_groups_map_grouped_classes_to_one_scope_and_others_apart(self):
+        import conftest
+        of = lambda cls, test="test_x": conftest.scope_of(f"{self.E2E}::{cls}::{test}")  # noqa: E731
+        assert of("TestAnswered") == of("TestFetches", "test_y") == of("TestToolRows") == of("TestRedaction")
+        assert of("TestFixedSince") == of("TestSessions")
+        assert of("TestAnswered") != of("TestFixedSince")  # two stages, two clones, two scopes
+        for other in ("TestFixes", "TestWorkSidecar", "TestModesAuto", "TestTwoClones"):
+            assert of(other) == f"{self.E2E}::{other}" and of(other) not in {of("TestAnswered"), of("TestSessions")}
+        assert conftest.scope_of("_tools/test_kb.py::test_f") == "_tools/test_kb.py"  # a module's functions
+        assert conftest.scope_of("test_querylog_e2e.py::TestAnswered::test_x") == of("TestAnswered")  # any rootdir
+        assert conftest.scope_of("other/test_x.py::TestAnswered::test_x") == "other/test_x.py::TestAnswered"  # other module
+
+    def test_scope_groups_scheduler_splits_by_the_same_scopes(self):
+        import conftest
+        split = conftest.grouped_scheduler()._split_scope
+        for cls in ("TestAnswered", "TestSessions", "TestFixes"):
+            nodeid = f"{self.E2E}::{cls}::test_x"
+            assert split(None, nodeid) == conftest.scope_of(nodeid)
+        assert split(None, f"{self.E2E}::TestAnswered::t") == split(None, f"{self.E2E}::TestRedaction::t")
+        assert split(None, f"{self.E2E}::TestAnswered::t") != split(None, f"{self.E2E}::TestSessions::t")
+
+    def test_scope_groups_name_existing_classes(self):
+        import conftest
+        for key in conftest.SCOPE_GROUPS:
+            module, cls = key.split("::")
+            assert re.search(rf"^class {cls}\b", text(f"_tools/{module}") or "", re.M), key

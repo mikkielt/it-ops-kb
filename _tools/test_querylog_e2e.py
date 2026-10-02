@@ -8,6 +8,11 @@ recorded Haiku replies of that file, then the push of mode `auto` (ql_deliver.Pu
 `querylog.py learn` and `apply`, then its `kbgit.py sync --push`). After each scenario the tests check the store on the
 remote, the findings, the eval file, the ledgers, the spool and the gate (the store gates and check-trailers).
 
+TestAnswered, TestFetches, TestToolRows and TestRedaction share one clone (`stage_a`), TestFixedSince and TestSessions
+another (`stage_b`; TestSessions last, its open session stays in the spool): conftest.SCOPE_GROUPS puts each stage's
+classes on one xdist worker, each world is built once per process, and every class runs its own session, Haiku and
+distill in it and reads what its run added (World.mark, World.state(since=)).
+
   TestAnswered      a kb: lookup the hook answered with `good`: one entry, no finding, only the run file pushed, the
                     local store's file as it was; the hook's answer is kb_hook.answer's
   TestWorkSidecar   a closed session that claimed an item and finished it, with usage rows: a run file of no entry and
@@ -54,6 +59,7 @@ kbgit.py sync's gate, leaves them out).
 """
 import datetime, difflib, io, json, os, re, shlex, shutil, subprocess, sys, uuid
 from pathlib import Path
+from typing import NamedTuple
 
 import pytest
 
@@ -95,6 +101,19 @@ def seed(kb_seed):
     return kb_seed
 
 
+@pytest.fixture(scope="session")
+def stage_a(tmp_path_factory, seed):
+    """The clone TestAnswered, TestFetches, TestToolRows and TestRedaction share (conftest.SCOPE_GROUPS runs them on one
+    xdist worker): built once per process, each class a session of its own in it, reading what its run added."""
+    return World(tmp_path_factory.mktemp("e2e-stage-a"), seed)
+
+
+@pytest.fixture(scope="session")
+def stage_b(tmp_path_factory, seed):
+    """The clone TestFixedSince and TestSessions share; TestSessions goes last: its open session stays in the spool."""
+    return World(tmp_path_factory.mktemp("e2e-stage-b"), seed)
+
+
 class Haiku:
     """The recorded Haiku replies of e2e.json: each entry of a batch is answered with the reply of the one lookup
     whose `match` (default: its prompt) is in the entry's rule-redacted prompt. Keeps every batch it was sent."""
@@ -114,6 +133,12 @@ class Haiku:
 
     def sent(self):
         return json.dumps(self.batches, ensure_ascii=False)
+
+
+class Mark(NamedTuple):
+    main: str
+    spool: frozenset
+    local: frozenset
 
 
 class World:
@@ -248,15 +273,19 @@ class World:
         p = self.remote.run_git("show", f"{rev}:{rel}")
         return p.stdout if p.returncode == 0 else None
 
-    def added(self, rel, rev="main"):
-        """The lines of `rel` at `rev` that the seed does not have."""
-        base = set((self.show(rel, self.base) or "").splitlines())
+    def added(self, rel, rev="main", base=None):
+        """The lines of `rel` at `rev` that the seed (or the commit `base`) does not have."""
+        base = set((self.show(rel, base or self.base) or "").splitlines())
         return [ln for ln in (self.show(rel, rev) or "").splitlines() if ln not in base]
 
-    def store(self, rev="main"):
-        """The remote's kb/_querylog at `rev`, written out under the scenario's directory."""
+    def store(self, rev="main", since=None):
+        """The remote's kb/_querylog at `rev`, written out under the scenario's directory; with `since` (a Mark), only
+        the files that commit does not have: what one run added."""
         d = self.tmp / f"store-{uuid.uuid4().hex[:8]}"
         names = self.remote.git("ls-tree", "-r", "--name-only", rev, "--", ql_base.STORE_REL).split()
+        if since:
+            old = set(self.remote.git("ls-tree", "-r", "--name-only", since.main, "--", ql_base.STORE_REL).split())
+            names = [n for n in names if n not in old]
         for n in names:
             (d / n).parent.mkdir(parents=True, exist_ok=True)
             (d / n).write_text(self.show(n, rev), encoding="utf-8", newline="\n")
@@ -266,14 +295,21 @@ class World:
         sp = self.q / "spool"
         return sorted(p.name for p in sp.iterdir()) if sp.is_dir() else []
 
-    def local_runs(self):
-        return ql_store.run_files(self.q / "store")
+    def local_runs(self, since=None):
+        return [p for p in ql_store.run_files(self.q / "store") if not since or p not in since.local]
 
-    def state(self, rev="main"):
+    def mark(self):
+        """Where the remote's main and the clone's spool and local store are now: a run reads what it added after it."""
+        return Mark(self.main(), frozenset(self.spool()), frozenset(self.local_runs()))
+
+    def state(self, rev="main", since=None):
         """What the remote holds at `rev` and what the clone keeps: run files, entries, findings, the kb files'
         added lines, the spool, and the gate (the store gates and the leak scan, check-trailers, the person's checkout
-        untouched)."""
-        store = self.store(rev)
+        untouched). With `since` (a Mark), the run files, findings, text, kb lines and spool of the run after it; the
+        gate still covers the whole store and every commit after the seed."""
+        full = store = self.store(rev)
+        if since:
+            store = self.store(rev, since)
         runs = ql_store.run_files(store)
         rels = [p.relative_to(store).as_posix() for p in runs + ql_store.findings_files(store)]
         self.clone.git("fetch", "-q", "origin")
@@ -284,9 +320,9 @@ class World:
             "entries": [e for p in runs for e in jsonl(p)[1:]],
             "findings": ql_store.finding_states(store),
             "text": "".join(p.read_text(encoding="utf-8") for p in sorted(store.rglob("*.jsonl"))),
-            **{rel: self.added(rel, rev) for rel in KB_FILES},
-            "spool": self.spool(),
-            "gate": ql_store.store_problems(store) + ql_store.leak_problems(store, rels) +
+            **{rel: self.added(rel, rev, since.main if since else None) for rel in KB_FILES},
+            "spool": [n for n in self.spool() if not since or n not in since.spool],
+            "gate": ql_store.store_problems(full) + ql_store.leak_problems(full, rels) +
                     ([] if trailers.returncode == 0 else [trailers.stdout.strip()]) +
                     [f"person's checkout: {s}" for s in [self.clone.git("status", "--porcelain").strip()] if s] +
                     ([] if self.clone.rev("HEAD") == self.base else ["person's checkout moved"]),
@@ -324,14 +360,15 @@ def sid():
 class TestAnswered:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory, seed):
-        w = cls.w = World(tmp_path_factory.mktemp("e2e-answered"), seed)
+    def scenario(cls, stage_a):
+        w = cls.w = stage_a
+        w.haiku, cls.since = Haiku(), w.mark()
         s = sid()
         cls.answer = w.lookup("win32", s)
         w.end(s)
         cls.rc, cls.said = w.distill()
-        cls.st = w.state()
-        (cls.local,) = w.local_runs()
+        cls.st = w.state(since=cls.since)
+        (cls.local,) = w.local_runs(cls.since)
 
     def test_an_entry_no_finding_and_only_the_run_file(self):
         import kb_hook
@@ -342,7 +379,7 @@ class TestAnswered:
         assert (e["surface"], e["intent"], e["tools"], e["verdict"], e["judged"]) == \
             ("prompt", "lookup", ["kb_hook"], "good", "answered")
         assert "public/intune/win32-apps.md" in e["articles"] and e["question"] == LOOKUPS["win32"]["asked"]
-        assert st["findings"] == {} and w.commits() == [("chore(kb): query log store, 1 run file(s)", "querylog")]
+        assert st["findings"] == {} and w.commits(self.since.main) == [("chore(kb): query log store, 1 run file(s)", "querylog")]
         assert all(st[rel] == [] for rel in KB_FILES)
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
         rel = f"{ql_base.STORE_REL}/{self.local.relative_to(w.q / 'store').as_posix()}"
@@ -541,13 +578,14 @@ class TestFixes:
 class TestFixedSince:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory, seed):
-        w = cls.w = World(tmp_path_factory.mktemp("e2e-fixed"), seed)
+    def scenario(cls, stage_b):
+        w = cls.w = stage_b
+        w.haiku, cls.since = Haiku(), w.mark()
         s = sid()
         w.lookup("fixed_since", s)
         w.end(s)
         cls.rc, cls.said = w.distill()
-        cls.st = w.state()
+        cls.st = w.state(since=cls.since)
 
     def test_fixed_since_and_no_change(self):
         st, w = self.st, self.w
@@ -555,7 +593,7 @@ class TestFixedSince:
         (e,) = st["entries"]
         assert (e["verdict"], e["judged"], e["best"]) == ("weak", "partly", LAPS)
         assert kinds(st["findings"]) == [("eval", "fixed-since", "miss")]
-        assert [v for _, v in w.commits()] == ["querylog"]  # the run file and learn's findings, in one commit
+        assert [v for _, v in w.commits(self.since.main)] == ["querylog"]  # the run file and learn's findings, in one commit
         assert all(st[rel] == [] for rel in KB_FILES)
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
 
@@ -565,15 +603,16 @@ class TestFixedSince:
 class TestFetches:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory, seed):
-        w = cls.w = World(tmp_path_factory.mktemp("e2e-fetches"), seed)
+    def scenario(cls, stage_a):
+        w = cls.w = stage_a
+        w.haiku, cls.since = Haiku(), w.mark()
         s = sid()
         w.lookup("fetches", s)
         w.lookup("plain_fetch", s)
         cls.rows = [json.loads(ln) for ln in (w.q / "spool" / f"{s}.jsonl").read_text(encoding="utf-8").splitlines()]
         w.end(s)
         cls.rc, cls.said = w.distill()
-        cls.st = w.state()
+        cls.st = w.state(since=cls.since)
 
     def test_host_and_path_only_and_no_row_without_the_kb(self):
         st = self.st
@@ -605,16 +644,17 @@ class TestFetches:
 class TestToolRows:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory, seed):
-        w = cls.w = World(tmp_path_factory.mktemp("e2e-tools"), seed)
+    def scenario(cls, stage_a):
+        w = cls.w = stage_a
+        w.haiku, cls.since = Haiku(), w.mark()
         s = sid()
         with serve() as url:
             w.server = url
             w.lookup("tools", s)
-        cls.tools = sorted(p.name for p in (w.q / "spool").glob("tools-*.jsonl"))
+        cls.tools = sorted(p.name for p in (w.q / "spool").glob("tools-*.jsonl") if p.name not in cls.since.spool)
         w.end(s)
         cls.rc, cls.said = w.distill()
-        cls.st = w.state()
+        cls.st = w.state(since=cls.since)
 
     def test_kb_ask_fetch_and_census_rows_join_their_prompt(self):
         st, w = self.st, self.w
@@ -629,7 +669,7 @@ class TestToolRows:
         assert not any("host" in f for f in e["fetches"])  # 127.0.0.1 is no public host
         assert len(self.tools) == 1 and st["spool"] in ([], self.tools)  # today's tools file goes after its day
         consumed = json.loads((w.q / ql_distill.CONSUMED_NAME).read_text(encoding="utf-8")) if st["spool"] else {}
-        assert all(len(ids) == 3 for ids in consumed.values())
+        assert all(len(ids) == 3 for name, ids in consumed.items() if name in self.tools)
         assert st["gate"] == [], st["gate"]
 
 
@@ -638,14 +678,15 @@ class TestToolRows:
 class TestRedaction:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory, seed):
-        w = cls.w = World(tmp_path_factory.mktemp("e2e-redact"), seed)
+    def scenario(cls, stage_a):
+        w = cls.w = stage_a
+        w.haiku, cls.since = Haiku(), w.mark()
         s = sid()
         w.lookup("identifier", s)
         w.lookup("identifying", s)
         w.end(s)
         cls.rc, cls.said = w.distill()
-        cls.st = w.state()
+        cls.st = w.state(since=cls.since)
 
     def test_an_identifier_is_redacted_and_an_identifying_entry_dropped(self):
         st, w = self.st, self.w
@@ -1012,19 +1053,20 @@ class TestModesAuto:
 class TestSessions:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory, seed):
-        w = cls.w = World(tmp_path_factory.mktemp("e2e-sessions"), seed)
+    def scenario(cls, stage_b):
+        w = cls.w = stage_b
+        w.haiku, cls.since = Haiku(), w.mark()
         cls.open_, cls.ended, cls.idle = sid(), sid(), sid()
         w.lookup("win32", cls.open_)
         w.lookup("laps_length", cls.ended)
         w.lookup("do_port", cls.idle)
         w.end(cls.ended)
-        cls.markers = sorted(p.name for p in (w.q / "spool").glob("*.end"))
+        cls.markers = sorted(p.name for p in (w.q / "spool").glob("*.end") if p.name not in cls.since.spool)
         old = datetime.datetime.now().timestamp() - ql_distill.SESSION_IDLE_CLOSED_S - 60
         os.utime(w.q / "spool" / f"{cls.idle}.jsonl", (old, old))
         cls.open_before = (w.q / "spool" / f"{cls.open_}.jsonl").read_bytes()
         cls.rc, cls.said = w.distill()
-        cls.st = w.state()
+        cls.st = w.state(since=cls.since)
 
     def test_an_open_session_waits_an_ended_and_an_idle_one_are_distilled(self):
         st, w = self.st, self.w
