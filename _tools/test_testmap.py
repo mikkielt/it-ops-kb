@@ -288,3 +288,99 @@ def test_ops_test_run_row_never_breaks_a_run(tmp_path, spool, monkeypatch):
     assert tests_py.junit_files(str(tmp_path / "missing.xml")) == {}
     (tmp_path / "bad.xml").write_text("<a", encoding="utf-8")
     assert tests_py.junit_files(str(tmp_path / "bad.xml")) == {}
+
+
+# The host lock (tests.host_lock): a second full gate on one host waits for the first. Real processes, a lock directory of
+# their own (KB_HOST_LOCK_DIR), so no test touches the host's lock.
+HOLD = ("import sys, time, pathlib; sys.path.insert(0, sys.argv[1]); import tests\n"
+        "stop = pathlib.Path(sys.argv[2])\n"
+        "with tests.host_lock('holder', poll=0.05):\n"
+        "    print('held', flush=True)\n"
+        "    while not stop.exists():\n"
+        "        time.sleep(0.05)\n")
+TAKE = ("import sys; sys.path.insert(0, sys.argv[1]); import tests\n"
+        "with tests.host_lock('second', poll=0.05):\n"
+        "    print('got it', flush=True)\n")
+
+
+def lock_env(tmp_path):
+    return {**os.environ, "KB_HOST_LOCK_DIR": str(tmp_path / "lock")}
+
+
+def spawn(code, tmp_path, *extra):
+    import subprocess, sys
+    return subprocess.Popen([sys.executable, "-c", code, tests_py.TOOLS, *extra], env=lock_env(tmp_path),
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8")
+
+
+def test_host_test_lock_waits_second_run_waits_for_the_first(tmp_path):
+    import time
+    stop = tmp_path / "stop"
+    first = spawn(HOLD, tmp_path, str(stop))
+    try:
+        assert first.stdout.readline().strip() == "held"
+        held = (tmp_path / "lock" / tests_py.HOST_LOCK_NAME).read_text(encoding="utf-8")
+        assert f"pid={first.pid}" in held and f"clone={tests_py.KB}" in held and "started=" in held
+        second = spawn(TAKE, tmp_path)
+        time.sleep(1)
+        assert second.poll() is None  # still waiting while the first holds the lock
+        stop.write_text("x", encoding="utf-8")
+        out, _ = second.communicate(timeout=60)
+        assert f"waiting for the host test lock held by pid {first.pid}" in out and "got it" in out
+        assert first.wait(timeout=60) == 0
+        assert not (tmp_path / "lock" / tests_py.HOST_LOCK_NAME).exists()  # released on exit
+    finally:
+        stop.write_text("x", encoding="utf-8")
+        first.kill()
+        first.wait()
+
+
+def test_host_test_lock_waits_clears_a_stale_holder(tmp_path):
+    import subprocess, sys
+    dead = subprocess.Popen([sys.executable, "-c", "pass"])
+    dead.wait()
+    lock = tmp_path / "lock"
+    lock.mkdir()
+    (lock / tests_py.HOST_LOCK_NAME).write_text(f"pid={dead.pid}\nclone=/gone\nstarted=2000-01-01T00:00:00Z\n", encoding="utf-8")
+    p = spawn(TAKE, tmp_path)
+    out, _ = p.communicate(timeout=60)
+    assert "clearing a stale host test lock" in out and "got it" in out and p.returncode == 0
+    assert not (lock / tests_py.HOST_LOCK_NAME).exists()
+
+
+def test_host_test_lock_waits_is_released_on_an_error(tmp_path, monkeypatch):
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path))
+    with pytest.raises(RuntimeError):
+        with tests_py.host_lock(poll=0.01):
+            assert (tmp_path / tests_py.HOST_LOCK_NAME).exists()
+            raise RuntimeError("planted")
+    assert not (tmp_path / tests_py.HOST_LOCK_NAME).exists()
+
+
+def test_host_test_lock_waits_applies_to_full_and_many_worker_runs_only(monkeypatch):
+    monkeypatch.setattr(tests_py, "inside_test", lambda: False)
+    assert tests_py.wants_host_lock([]) and tests_py.wants_host_lock(["--changed", "-n", "4"])
+    assert not tests_py.wants_host_lock(["--changed", "-n", "1"]) and not tests_py.wants_host_lock(["-n0"])
+    assert not tests_py.wants_host_lock(["-k", "ruff"])
+    monkeypatch.setattr(tests_py, "inside_test", lambda: True)
+    assert not tests_py.wants_host_lock([])  # a run inside a test never takes the host's lock
+
+
+def test_host_test_lock_waits_planted_failure_a_live_foreign_holder_is_not_cleared(tmp_path, monkeypatch):
+    """The gate's planted failure: with the holder's pid alive and no release, a second run must not get the lock."""
+    import threading
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path))
+    (tmp_path / tests_py.HOST_LOCK_NAME).write_text(f"pid={os.getpid()}\nclone=/other\nstarted=x\n", encoding="utf-8")
+    got = []
+
+    def second():
+        with tests_py.host_lock(poll=0.02):
+            got.append(1)
+
+    t = threading.Thread(target=second, daemon=True)
+    t.start()
+    t.join(1)
+    assert t.is_alive() and not got  # waiting, not cleared
+    (tmp_path / tests_py.HOST_LOCK_NAME).unlink()  # the holder releases
+    t.join(30)
+    assert got

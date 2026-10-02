@@ -16,7 +16,11 @@ def main():
     ap.add_argument("-k", dest="filter", default="", help="run only cases whose name matches (pytest -k)")
     a, rest = ap.parse_known_args()
     args = [os.path.join(tests.TOOLS, "test_stress.py"), "-m", "stress"] + (["-k", a.filter] if a.filter else []) + rest
-    return tests.run_pytest(args, {"KB_STRESS_SCALE": str(a.scale)}, dist="load")  # independent cases: spread them all
+    run = lambda: tests.run_pytest(args, {"KB_STRESS_SCALE": str(a.scale)}, dist="load")  # independent cases: spread them all
+    if tests.wants_host_lock(args):  # the host lock (tests.py): one full gate at a time per host
+        with tests.host_lock("stress_test.py"):
+            return run()
+    return run()
 
 
 if __name__ == "__main__":

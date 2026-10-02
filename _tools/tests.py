@@ -17,6 +17,11 @@ when capture is off, inside a test, or when the row breaks its closed shape, and
 exit code): mode, selected and total test files, workers, milliseconds, exit, passed, failed and skipped counts, the
 slowest files, every file's time for a full run and the names of the test files with a failure.
 
+A full run, a --changed run with more than one worker and stress_test.py take a host-wide lock first (host_lock): an
+O_EXCL file in KB_HOST_LOCK_DIR (default /tmp, or the public directory on Windows) holding the pid, clone and start time.
+A second run prints who holds it and waits; a holder whose pid no longer runs is cleared. A -k run, a run inside a test
+and a one-worker run (-n 1) take none.
+
 Modules: test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py, test_kb_leaks.py, test_merge.py, test_history.py, test_sync.py, test_census.py,
 test_kb_mcp.py, test_research_merge.py, test_agent_bench.py, test_portability.py, test_redact.py, test_ql_capture.py,
 test_ql_distill.py, test_ql_store.py, test_ql_learn.py, test_ql_deliver.py, test_ql_research.py, test_ql_report.py,
@@ -26,7 +31,7 @@ pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lo
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
 under test stay stdlib-only.
 """
-import os, re, shutil, subprocess, sys, tempfile, time
+import contextlib, datetime, os, re, shutil, signal, subprocess, sys, tempfile, time
 import xml.etree.ElementTree as ET
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -205,7 +210,115 @@ def target(node):
     return os.path.join(KB, *node.split("::")[0].split("/")) + ("::" + node.split("::", 1)[1] if "::" in node else "")
 
 
+HOST_LOCK_NAME = "kb-tests.lock"
+
+
+def host_lock_dir():
+    """Where the host lock lives: KB_HOST_LOCK_DIR, else a directory every user of the host can reach (not the per-user
+    temp directory): /tmp, or the Public profile on Windows."""
+    env = os.environ.get("KB_HOST_LOCK_DIR")
+    if env:
+        return env
+    return os.environ.get("PUBLIC", r"C:\Users\Public") if os.name == "nt" else "/tmp"
+
+
+def pid_alive(pid):
+    """Whether process `pid` runs, asked of the OS without signalling it (ps, tasklist); True when it cannot be told."""
+    try:
+        if os.name == "nt":
+            out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True,
+                                 encoding="utf-8", errors="replace", timeout=30).stdout
+            return str(pid) in out.split()
+        return subprocess.run(["ps", "-p", str(pid), "-o", "pid="], capture_output=True, timeout=30).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return True
+
+
+def read_holder(path):
+    """{pid, clone, started} of a lock file, or None when it is missing or unreadable."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            got = dict(ln.split("=", 1) for ln in f.read().splitlines() if "=" in ln)
+        return {"pid": int(got["pid"]), "clone": got.get("clone", "?"), "started": got.get("started", "?")}
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+@contextlib.contextmanager
+def host_lock(label="tests.py", poll=None):
+    """Hold the host-wide test lock for the block: take it by exclusive create, print who holds it and wait while a live
+    process does, clear a holder whose pid no longer runs, and release on exit, on an error and on SIGTERM."""
+    path = os.path.join(host_lock_dir(), HOST_LOCK_NAME)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    poll = poll if poll is not None else float(os.environ.get("KB_HOST_LOCK_POLL", "5"))
+    me = (f"pid={os.getpid()}\nclone={KB}\n"
+          f"started={datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}\n")
+    told = None
+    while True:
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            holder = read_holder(path)
+            if holder is None or not pid_alive(holder["pid"]):
+                print(f"{label}: clearing a stale host test lock ({holder['pid'] if holder else 'unreadable'})", flush=True)
+                with contextlib.suppress(OSError):
+                    os.unlink(path)
+                continue
+            if holder != told:
+                print(f"{label}: waiting for the host test lock held by pid {holder['pid']} "
+                      f"(clone {holder['clone']}, started {holder['started']})", flush=True)
+                told = holder
+            time.sleep(poll)
+            continue
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(me)
+        break
+    prev = None
+    try:
+        prev = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
+    except (ValueError, OSError):  # not the main thread
+        pass
+    try:
+        yield path
+    finally:
+        if prev is not None:
+            with contextlib.suppress(ValueError, OSError):
+                signal.signal(signal.SIGTERM, prev)
+        holder = read_holder(path)
+        if holder and holder["pid"] == os.getpid():
+            with contextlib.suppress(OSError):
+                os.unlink(path)
+
+
+def worker_count(args):
+    """The xdist workers a run with these pytest arguments uses (the last -n wins; the default is XDIST's)."""
+    val = XDIST[1]
+    for i, a in enumerate(args):
+        if a == "-n" and i + 1 < len(args):
+            val = args[i + 1]
+        elif a.startswith("-n") and len(a) > 2:
+            val = a[2:]
+    if val == "auto":
+        return os.cpu_count() or 1
+    try:
+        return max(int(val), 1)
+    except ValueError:
+        return 1
+
+
+def wants_host_lock(args):
+    """A run takes the host lock unless it is inside a test, selects with -k, or uses one worker."""
+    return not inside_test() and not any(a == "-k" or a.startswith("-k") for a in args) and worker_count(args) > 1
+
+
 def main(argv):
+    if wants_host_lock(argv):
+        with host_lock("tests.py"):
+            return run_main(argv)
+    return run_main(argv)
+
+
+def run_main(argv):
     if "--write-lint-baseline" in argv:
         return write_lint_baseline()
     args = list(argv)
