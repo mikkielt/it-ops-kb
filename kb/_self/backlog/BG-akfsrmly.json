@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "PIPELINE_VERSION in _tools/ql_base.py is raised above 5 and the PIPELINE_VERSION row of the defaults table in kb/_self/querylog.md follows, because what distill writes changed during SP-fvztfmtm (the work sidecar, the overhead line, the rework block, routed subagent counts); found in the review of SP-fvztfmtm",
+  "goal": "PIPELINE_VERSION in _tools/ql_base.py is raised above 5, the one \"pipeline\" header value of _tools/fixtures/querylog/golden.jsonl follows it, and the PIPELINE_VERSION row of the defaults table in kb/_self/querylog.md follows, because what distill writes changed during SP-fvztfmtm (the work sidecar, the overhead line, the rework block, routed subagent counts); found in the review of SP-fvztfmtm",
   "repro": {
     "run": [
       "python3",
@@ -17,7 +17,8 @@
   },
   "touches": [
     "_tools/ql_base.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "_tools/fixtures/querylog/golden.jsonl"
   ],
   "depends_on": [
     "ST-6zcqkjfm"
