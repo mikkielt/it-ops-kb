@@ -2,7 +2,7 @@
   "id": "ST-7bnhmnja",
   "kind": "story",
   "title": "The operator ratifies or reverts autopilot decisions from a digest",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -28,5 +28,6 @@
   ],
   "depends_on": [
     "ST-6sujnopr"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
