@@ -2,7 +2,7 @@
   "id": "BG-xuluwj4g",
   "kind": "bug",
   "title": "benchmarks.py records table shows only the first arm of an armed scenario's record",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/reports/benchmarks.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "42aec8bcfdee5350c51be183cb39ed8b8cb57b25",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bench_records_every_arm"
+        ],
+        "exit": 0,
+        "sha256": "2a22cf1b2080b95b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read(); s=t.split('<!-- bench:records navigation -->')[1].split('<!-- /bench -->')[0]; sys.exit(0 if '0c375fc' in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
