@@ -35,10 +35,52 @@
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py",
     "kb/_self/reports/autopilot-digest.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "kb/_self/design.md"
   ],
   "depends_on": [
     "ST-mdwkhv7k"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What is one manager tick in kbusage tree's context-rot report?",
+      "options": [
+        "one prompt (promptId) of the manager transcript, one /loop firing, numbered per transcript",
+        "one entry of the autopilot's ticks.jsonl"
+      ],
+      "recommendation": "one prompt (promptId) of the manager transcript, one /loop firing, numbered per transcript",
+      "class": "secrets",
+      "answer": "one prompt (promptId) of the manager transcript, one /loop firing, numbered per transcript",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How are a tick's and a runner's tokens counted?",
+      "options": [
+        "uncached input plus cache write plus cache read plus output, once per request, with a tick's subagent transcripts included",
+        "fresh input (uncached plus cache write) plus output only"
+      ],
+      "recommendation": "uncached input plus cache write plus cache read plus output, once per request, with a tick's subagent transcripts included",
+      "class": "secrets",
+      "answer": "uncached input plus cache write plus cache read plus output, once per request, with a tick's subagent transcripts included",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "When does an autopilot decision contradict an earlier one?",
+      "options": [
+        "an earlier autopilot decision in force with the same gate id and the same class has a different answer",
+        "any earlier decision of the same class has a different answer, whatever the gate id"
+      ],
+      "recommendation": "an earlier autopilot decision in force with the same gate id and the same class has a different answer",
+      "class": "secrets",
+      "answer": "an earlier autopilot decision in force with the same gate id and the same class has a different answer",
+      "by": "agent"
+    }
   ],
   "claimed_by": "orch-fourth-s2"
 }
