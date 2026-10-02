@@ -1,0 +1,41 @@
+{
+  "id": "BG-k5dql2np",
+  "kind": "bug",
+  "title": "The test-id baseline still spells a test BG-7lmqjumx renamed, so perfcheck ids reports it missing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "_tools/test_ids_baseline.txt names _tools/test_agent_bench.py::test_route_web_asks_the_live_docs_researcher_with_the_question_and_what_the_kb_lacks instead of its old no_kb_researcher spelling (a rename loses no test), so python3 _tools/perfcheck.py ids --against _tools/test_ids_baseline.txt exits 0 on main; found by TK-62clbs52's worker",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/perfcheck.py",
+      "ids",
+      "--against",
+      "_tools/test_ids_baseline.txt"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "perfcheck"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_ids_baseline.txt"
+  ]
+}
