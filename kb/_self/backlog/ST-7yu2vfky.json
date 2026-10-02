@@ -2,7 +2,7 @@
   "id": "ST-7yu2vfky",
   "kind": "story",
   "title": "Review sprint: Docs and lints say what the code does",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-djri7fqp",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "44b24cfde368a21cfb02a3738976a1f274731e84",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "7213cdaa7a5e93b4"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a70e03b921b14074"
+      }
+    ]
+  }
 }
