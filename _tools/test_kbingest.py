@@ -1344,6 +1344,31 @@ def test_kbingest_map_dotnet_machine_names_short_name_matches_only_whole(monkeyp
     assert kbingest.holds_machine_name("ME") and not kbingest.holds_machine_name("Microsoft.Extensions.Hosting")
 
 
+def test_kbingest_machine_names_passwd_and_short_host(monkeypatch):
+    """Planted: the account database's user differs from the environment's (a caller that set USER to something else),
+    and the host name is shorter than MACHINE_NAME_MIN. Each is left out of the map: the passwd user alone, and the
+    short host as the first label of a longer value, though not as the middle of one or inside another word."""
+    plant_machine(monkeypatch, host="pc1", user="me")
+    monkeypatch.setattr(kbingest.socket, "gethostname", lambda: "pc1")
+    for k in kbingest.MACHINE_ENV:
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setattr(kbingest.getpass, "getuser", lambda: "someone")
+
+    class FakePwd:
+        @staticmethod
+        def getpwuid(uid):
+            return type("Entry", (), {"pw_name": "Jan.Kowalski"})()
+
+    monkeypatch.setitem(sys.modules, "pwd", FakePwd)
+    assert "jan.kowalski" in kbingest.machine_names()
+    assert kbingest.holds_machine_name("jan.kowalski")
+    assert kbingest.holds_machine_name("PC1.corp.example.com") and kbingest.holds_machine_name("pc1")
+    assert not kbingest.holds_machine_name("corp.pc1.example.com") and not kbingest.holds_machine_name("pc10.example.com")
+    assert not kbingest.holds_machine_name("Microsoft.Extensions.Hosting")
+    monkeypatch.setitem(sys.modules, "pwd", None)  # no pwd module (Windows): the other names still count
+    assert "jan.kowalski" not in kbingest.machine_names() and "pc1" in kbingest.machine_names()
+
+
 def test_kbingest_map_dotnet_value_shapes_accept_real_values(monkeypatch):
     plant_machine(monkeypatch)
     good = {"TargetFrameworkMoniker": [".NETCoreApp,Version=v8.0", ".NETFramework,Version=v4.7.2,Profile=Client",

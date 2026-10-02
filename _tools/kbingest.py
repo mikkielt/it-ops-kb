@@ -1546,14 +1546,21 @@ def machine_names():
         names.append(getpass.getuser())
     except Exception:  # noqa: BLE001 - no login name found: nothing to guard
         pass
+    try:  # the account database's user, which the environment's variables (set by the caller) may not name
+        import pwd  # not on Windows
+        names.append(pwd.getpwuid(os.getuid()).pw_name)
+    except (ImportError, AttributeError, OSError, KeyError):
+        pass
     return {n.strip().lower() for n in names if n and n.strip()}
 
 
 def holds_machine_name(value):
-    """True when VALUE, compared without case (Windows host names), equals one of machine_names() or, for a name of
-    MACHINE_NAME_MIN characters or more, contains it."""
+    """True when VALUE, compared without case (Windows host names), equals one of machine_names(), contains one of
+    MACHINE_NAME_MIN characters or more, or has one shorter than that as the first label of the value split on `.`
+    (a short host name inside a fully qualified name)."""
     low = value.lower()
-    return any(low == n or (len(n) >= MACHINE_NAME_MIN and n in low) for n in machine_names())
+    first = low.split(".")[0]
+    return any(low == n or first == n or (len(n) >= MACHINE_NAME_MIN and n in low) for n in machine_names())
 
 
 class DotnetMapper(Mapper):
