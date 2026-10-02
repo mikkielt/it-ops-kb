@@ -189,6 +189,79 @@ def gitlab_jobs(host, quoted, pid, run):
     return data if isinstance(data, list) else None
 
 
+# ---------------------------------------------------------------- ops rows of the CI reads and the other tools
+
+CI_STATE_FILE = "ci-state.json"  # beside the spool: the last state each pipeline was recorded in, so only a change is a row
+CI_STATES_KEPT = 50  # pipelines that file remembers
+CI_ROW_STATES = ("red", "pending", "green", "unverified")  # `ok` is `green`; `none` and `skip` read no pipeline
+
+
+def inside_test():
+    """True in a run started by a test (pytest sets PYTEST_CURRENT_TEST, which a subprocess inherits): its ops rows
+    never reach the clone's own spool, as `tests.inside_test`."""
+    return bool(os.environ.get("PYTEST_CURRENT_TEST"))
+
+
+def ops_row(event, **fields):
+    """Append one ops row (`ql_capture.record("ops", ...)`, which writes only a closed event with its closed keys) and
+    return it; None when capture is off, when the row breaks its shape, inside a test run (its rows never reach the
+    clone's own spool, as `tests.record_run`) or on any error: a tool never fails or waits for its log."""
+    try:
+        if inside_test():
+            return None
+        import ql_capture
+        return ql_capture.record("ops", event=event, **fields)
+    except Exception:  # noqa: BLE001 - see the docstring
+        return None
+
+
+def is_job_list(argv):
+    """Whether a forge call reads one pipeline's job list (`glab api projects/<p>/pipelines/<id>/jobs`, `gh run view
+    <id> --json jobs`), not a job's log or the pipeline list."""
+    a = [str(x) for x in argv]
+    return (a[:2] == ["glab", "api"] and any("/pipelines/" in x and "/jobs" in x for x in a)) or (
+        a[:3] == ["gh", "run", "view"] and "jobs" in a)
+
+
+def counting(run):
+    """(run2, calls): `run2` is `run` and adds one to `calls[0]` for each job-list call (`is_job_list`) it makes."""
+    calls = [0]
+
+    def counted(argv, *args, **kw):
+        if is_job_list(argv):
+            calls[0] += 1
+        return run(argv, *args, **kw)
+    return counted, calls
+
+
+def record_pipeline(pid, state, calls, sha=None):
+    """Append the `ci.pipeline` ops row of pipeline `pid` read in `state` (`red`, `pending`, `green` or `unverified`; `ok`
+    is `green`) with the `calls` it made for job lists, only when `pid` was last recorded in another state or never
+    (the file CI_STATE_FILE beside the spool keeps the last CI_STATES_KEPT). Nothing when capture is off or inside a
+    test run; never raises."""
+    try:
+        state = "green" if state == "ok" else state
+        if inside_test() or pid is None or state not in CI_ROW_STATES:
+            return None
+        import ql_capture
+        spool = ql_capture.spool_dir()
+        if spool is None:
+            return None
+        path = Path(spool).parent / CI_STATE_FILE
+        seen = read_json(path, {})
+        seen = seen if isinstance(seen, dict) else {}
+        key = str(pid)
+        if seen.get(key) == state:
+            return None
+        seen.pop(key, None)
+        seen[key] = state
+        write_text(path, json.dumps(dict(list(seen.items())[-CI_STATES_KEPT:]), separators=(",", ":")))
+        sha = str(sha)[:12] if sha and ql_capture.OPS_SHA.fullmatch(str(sha)[:12]) else None
+        return ops_row("ci.pipeline", state=state, calls=int(calls or 0), sha=sha)
+    except Exception:  # noqa: BLE001 - see ops_row
+        return None
+
+
 def ci_pipeline(url, sha, run):
     """(verdict, detail, pipeline) of the CI of commit `sha` on origin's forge: verdict `red`, `pending`, `ok`,
     `unverified` (GitLab: a gate job did not succeed, `job_verdict`), `none` (no pipeline) or `skip` (no signed-in
@@ -197,6 +270,7 @@ def ci_pipeline(url, sha, run):
     one started hides nothing. One whose status is no failure and not unfinished is read by its jobs. `pipeline` is
     {id, url, status} of the pipeline read (GitHub: the first red run), or None."""
     forge = origin_forge(url)[0]
+    run, calls = counting(run)
     data, cli, note = forge_list(
         url, run, lambda repo: ["gh", "run", "list", "--commit", sha, "-R", repo, "--json",
                                 "status,conclusion,databaseId,url", "-L", "100"],
@@ -241,6 +315,7 @@ def ci_pipeline(url, sha, run):
             shown += f"; script failed in {', '.join(failed)}"
         elif unpassed:
             shown += f"; {', '.join(unpassed)}"
+    record_pipeline(pipe.get("id"), verdict, calls[0], sha)  # a row only when this pipeline's state changed
     return verdict, f"{note}: {shown}", pipe
 
 

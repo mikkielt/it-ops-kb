@@ -1294,3 +1294,98 @@ def test_revert_fingerprint_of_a_real_forge_log_names_its_first_failing_test(tmp
         assert fp == backlog.failure_fingerprint("kb-tests-windows", want[jid])
         filed.append(pusher.file_bug(f"{pid:040d}", {}, {"id": pid, "failure": failure, "fingerprint": fp}))
     assert None not in filed and filed[0] != filed[1] and len(backlog.Backlog(pusher.wt).items) == 2
+
+
+# --- the ops row `ci.pipeline` of the delivery CI check (ST-hwua72bg): a row when a pipeline's state changes ---
+
+@pytest.fixture
+def ops_spool(tmp_path, monkeypatch):
+    """Ops capture on, into a spool of this test (never the clone's): the guard that keeps a test run's rows out of the
+    real spool is lifted. Returns the spool directory."""
+    import ql_capture
+    spool = tmp_path / "querylog" / "spool"
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: spool)
+    monkeypatch.setattr(ql_deliver, "inside_test", lambda: False)
+    return spool
+
+
+def ci_rows(spool):
+    out = []
+    for f in sorted(Path(spool).glob("*.jsonl")) if Path(spool).is_dir() else []:
+        out += [r for r in jsonl(f) if r.get("surface") == "ops" and r.get("event") == "ci.pipeline"]
+    return out
+
+
+class CiForge:
+    """origin is a planted GitLab project: the pipelines of a commit (newest first, `status` of each editable in place)
+    and one job list for every pipeline; `jobs_calls` counts the job-list reads."""
+
+    def __init__(self, pipelines, jobs=PASSED):
+        self.pipelines, self.jobs, self.jobs_calls = pipelines, jobs, 0
+
+    def __call__(self, argv, cwd=None):
+        if argv[1:3] == ["auth", "status"]:
+            return 0, "", ""
+        if "/jobs?" in argv[-1]:
+            self.jobs_calls += 1
+            return 0, json.dumps(self.jobs), ""
+        return 0, json.dumps(self.pipelines), ""
+
+    def read(self):
+        return ql_deliver.ci_pipeline("git@gitlab.corp.example.com:grp/proj.git", "d" * 40, self)
+
+
+def test_ops_ci_pipeline_row_counts_the_job_list_calls_of_a_read(ops_spool):
+    """Three finished pipelines in none of which a job ran: each job list is read before the newest is taken, and the
+    row says how many calls that took (BG-h4wygoak)."""
+    forge = CiForge([{"id": n, "status": "success"} for n in (9, 8, 7)], jobs=[{"name": "kb-tests", "status": "manual"}])
+    assert forge.read()[0] == "ok"
+    (row,) = ci_rows(ops_spool)
+    assert (row["state"], row["calls"], row["sha"]) == ("green", 3, "d" * 12) and forge.jobs_calls == 3, row
+
+
+def test_ops_ci_pipeline_row_only_when_the_pipeline_state_changes(ops_spool):
+    forge = CiForge([{"id": 7, "status": "success"}])
+    forge.read()
+    forge.read()  # the same pipeline in the same state: no second row
+    assert [r["state"] for r in ci_rows(ops_spool)] == ["green"]
+    forge.pipelines[0]["status"] = "running"
+    forge.read()
+    forge.read()
+    forge.pipelines[0]["status"] = "failed"
+    forge.read()
+    assert [r["state"] for r in ci_rows(ops_spool)] == ["green", "pending", "red"]
+    assert [r["calls"] for r in ci_rows(ops_spool)] == [1, 0, 0]  # a status that decides needs no job list
+    forge.pipelines.insert(0, {"id": 8, "status": "failed"})  # a new pipeline, red as well: its first state is a change
+    forge.read()
+    assert [r["state"] for r in ci_rows(ops_spool)] == ["green", "pending", "red", "red"]
+
+
+def test_ops_ci_pipeline_row_a_read_that_finds_no_pipeline_writes_none(ops_spool):
+    assert CiForge([]).read()[0] == "none"
+    skipped = ql_deliver.ci_pipeline("git@gitlab.corp.example.com:grp/proj.git", "d" * 40,
+                                     lambda argv, cwd=None: (1, "", "not signed in"))
+    assert skipped[0] == "skip"
+    assert ci_rows(ops_spool) == []
+
+
+def test_ops_ci_pipeline_row_never_fails_the_check_and_follows_logging_off(ops_spool, monkeypatch):
+    import ql_capture
+    forge = CiForge([{"id": 7, "status": "failed"}])
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: None)  # mode off, or the DISABLED marker
+    assert forge.read()[0] == "red" and not (ops_spool.parent / ql_deliver.CI_STATE_FILE).exists()
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: ops_spool)
+    monkeypatch.setattr(ql_capture, "record", lambda *a, **k: 1 / 0)  # a log that raises
+    assert forge.read()[0] == "red"
+    assert ci_rows(ops_spool) == []
+
+
+def test_ops_ci_pipeline_row_is_none_inside_a_test_run_and_with_no_pipeline_id(tmp_path, monkeypatch):
+    """The guard of the real spool: without the fixture's lift, a test run writes no row and no state file."""
+    import ql_capture
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
+    assert ql_deliver.inside_test() and ql_deliver.record_pipeline(7, "red", 0) is None
+    monkeypatch.setattr(ql_deliver, "inside_test", lambda: False)
+    assert ql_deliver.record_pipeline(None, "red", 0) is None and ql_deliver.record_pipeline(7, "none", 0) is None
+    assert not (tmp_path / "spool").exists() and not (tmp_path / ql_deliver.CI_STATE_FILE).exists()
+    assert ql_deliver.record_pipeline(7, "red", 2, "not a sha")["calls"] == 2  # a value of no sha shape is left out

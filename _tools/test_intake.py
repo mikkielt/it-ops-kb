@@ -1680,3 +1680,149 @@ def test_intake_hook_settings_run_it_offline_beside_red_pipeline_hook_each_async
     assert h.get("async") is True and h["timeout"] > backlog.INTAKE_HOOK_BUDGET_S
     (r,) = [h for h in cmds if "red-pipeline" in h["command"]]  # the pipeline read stays its own hook
     assert r["command"].endswith("_tools/backlog.py red-pipeline --hook") and r.get("async") is True and r["timeout"] == 60
+
+
+# ------------------------------------------------------------------ the ops rows `intake.detect` and `ci.pipeline`
+#
+# Planted: a detector that found something (a row with its count, and with the drift detector's budget and coverage),
+# one that found nothing (no row), one that ran out of its budget and found nothing (a row), `--status` (none), the
+# hook (the same row), a log that raises (the run still files); and red-pipeline's row, written only when the pipeline's
+# state changes, with the job-list calls the read made.
+
+@pytest.fixture
+def ops_spool(tmp_path_factory, monkeypatch):
+    """Ops capture on, into a spool of this test (never the clone's): the guard that keeps a test run's rows out of the
+    real spool is lifted. Returns the spool directory."""
+    import ql_capture, ql_deliver
+    spool = tmp_path_factory.mktemp("querylog") / "spool"
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: spool)
+    monkeypatch.setattr(ql_deliver, "inside_test", lambda: False)
+    return spool
+
+
+def ops_rows(spool, event):
+    out = []
+    for f in sorted(Path(spool).glob("*.jsonl")) if Path(spool).is_dir() else []:
+        out += [r for r in (json.loads(ln) for ln in f.read_text(encoding="utf-8").splitlines())
+                if r.get("surface") == "ops" and r.get("event") == event]
+    return out
+
+
+def detects(spool):
+    return [{k: v for k, v in r.items() if k not in ("id", "ts", "surface", "v", "event")}
+            for r in ops_rows(spool, "intake.detect")]
+
+
+def test_ops_intake_row_a_detector_that_found_something_leaves_one(world, capsys, ops_spool):
+    register("docs", bug("stale-doc:a"), bug("stale-doc:b"))
+    register("quiet")
+    assert intake(world.root, capsys)[0] == 0
+    assert detects(ops_spool) == [{"detector": "docs", "found": 2}]  # `quiet` found nothing: no row
+
+
+def test_ops_intake_row_a_finding_reported_twice_counts_once(world, capsys, ops_spool):
+    register("docs", bug("stale-doc:a"), bug("stale-doc:a"))
+    intake(world.root, capsys)
+    assert detects(ops_spool) == [{"detector": "docs", "found": 1}]
+
+
+def test_ops_intake_row_status_leaves_none_and_file_leaves_the_same_row(world, capsys, ops_spool):
+    register("docs", bug())
+    fp = bl_intake.collect(world.root)[0][0].fp  # collect without `record` writes none
+    assert detects(ops_spool) == []
+    assert intake(world.root, capsys, "--status", fp)[0] == 1
+    assert detects(ops_spool) == []
+    assert intake(world.root, capsys, "--file")[0] == 0
+    assert detects(ops_spool) == [{"detector": "docs", "found": 1}]
+
+
+def test_ops_intake_row_the_hook_leaves_it_too(world, capsys, ops_spool):
+    register("docs", bug())
+    assert hook(world.root, capsys) == (0, "", "")
+    assert detects(ops_spool) == [{"detector": "docs", "found": 1}]
+
+
+def test_ops_intake_row_drift_says_its_coverage_and_whether_its_budget_ran_out(world, capsys, ops_spool, monkeypatch):
+    for c in "abc":
+        world.item(1, f"TK-{c * 8}", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.commit(2, "feat: work", {"src/a.txt": "b\n"})
+    bl_intake.detector("drift")(bl_intake.drift_detector)
+    assert intake(world.root, capsys)[0] == 0
+    assert detects(ops_spool) == [{"detector": "drift", "found": 1, "budget": False, "coverage": 3}]
+    monkeypatch.setattr(bl_intake, "DRIFT_BUDGET_S", 0)  # spent before the first check: nothing found, a row anyway
+    assert intake(world.root, capsys)[0] == 0
+    assert detects(ops_spool)[1:] == [{"detector": "drift", "found": 0, "budget": True, "coverage": 0}]
+
+
+def test_ops_intake_row_drift_with_nothing_to_check_and_a_budget_left_leaves_none(world, capsys, ops_spool):
+    bl_intake.detector("drift")(bl_intake.drift_detector)
+    assert intake(world.root, capsys)[0] == 0 and detects(ops_spool) == []
+
+
+def test_ops_intake_row_a_row_never_holds_free_text(world, capsys, ops_spool):
+    register("docs", bug(title="A doc names the host PL-LT-00123 and jan.kowalski", key="stale-doc:a"))
+    intake(world.root, capsys)
+    (row,) = ops_rows(ops_spool, "intake.detect")
+    assert set(row) == {"id", "ts", "surface", "v", "event", "detector", "found"}
+
+
+def test_ops_intake_row_a_failing_log_never_fails_intake(world, capsys, ops_spool, monkeypatch):
+    import ql_deliver
+
+    def broken(event, **fields):
+        raise OSError("the spool is read-only")
+    monkeypatch.setattr(ql_deliver, "ops_row", broken)
+    register("docs", bug())
+    assert intake(world.root, capsys, "--file")[0] == 0 and len(load(world.root)) == 1
+    assert hook(world.root, capsys) == (0, "", "")
+
+
+def test_ops_intake_row_a_detector_that_raises_leaves_no_row(world, capsys, ops_spool):
+    bl_intake.detector("broken")(lambda root: 1 / 0)
+    assert intake(world.root, capsys)[0] == 1 and detects(ops_spool) == []
+
+
+def ci_rows(spool):
+    return [{k: v for k, v in r.items() if k not in ("id", "ts", "surface", "v", "event")}
+            for r in ops_rows(spool, "ci.pipeline")]
+
+
+def test_ops_ci_pipeline_row_red_pipeline_leaves_one_with_its_job_list_calls(tmp_path, monkeypatch, capsys, ops_spool):
+    w, calls = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RED_JOBS, RED_LOGS)
+    assert red_pipeline(w.root) == 0
+    (row,) = ci_rows(ops_spool)
+    assert row == {"state": "red", "calls": 1, "sha": w.repo.rev("HEAD")[:12]} and row["calls"] == sum(
+        1 for c in calls if "/jobs?" in c[-1])
+
+
+def test_ops_ci_pipeline_row_counts_every_job_list_a_read_made(tmp_path, monkeypatch, capsys, ops_spool):
+    """No job ran in any of three pipelines: each list is read (BG-h4wygoak), and the row says three."""
+    pipelines = [{"id": n, "sha": SHA, "status": "success"} for n in (903, 902, 901)]
+    w, calls = ci_world(tmp_path, monkeypatch, pipelines, [{"name": "kb-tests", "status": "manual"}])
+    assert red_pipeline(w.root, "--status") == 0
+    (row,) = ci_rows(ops_spool)
+    assert row["state"] == "green" and row["calls"] == 3 == sum(1 for c in calls if "/jobs?" in c[-1]), row
+
+
+def test_ops_ci_pipeline_row_only_when_the_state_changes(tmp_path, monkeypatch, capsys, ops_spool):
+    pipelines = [{"id": 901, "sha": SHA, "status": "failed"}]
+    jobs = [dict(RED_JOBS[0])]
+    w, _ = ci_world(tmp_path, monkeypatch, pipelines, jobs, RED_LOGS)
+    for _ in range(3):  # a SessionStart hook reads the same red pipeline every session
+        red_pipeline(w.root, "--status")
+    assert [r["state"] for r in ci_rows(ops_spool)] == ["red"]
+    pipelines[0]["status"] = "success"  # the same pipeline, read again once its job has passed
+    jobs[0].update(status="success", failure_reason=None)
+    red_pipeline(w.root, "--status")
+    red_pipeline(w.root, "--status")
+    assert [r["state"] for r in ci_rows(ops_spool)] == ["red", "green"]
+
+
+def test_ops_ci_pipeline_row_a_job_read_leaves_none_and_a_failing_log_never_fails_it(
+        tmp_path, monkeypatch, capsys, ops_spool):
+    import ql_deliver
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RED_JOBS, RED_LOGS)
+    assert red_pipeline(w.root, "--status", "--job", "kb-tests-windows") == 1
+    assert ci_rows(ops_spool) == []  # the state of a job is not the pipeline's
+    monkeypatch.setattr(ql_deliver, "record_pipeline", lambda *a, **k: 1 / 0)
+    assert red_pipeline(w.root) == 0 and len(filed(w.root)) == 1  # the bug is still filed
