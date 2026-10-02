@@ -60,5 +60,6 @@
       "answer": "interactive /loop session first, generational ticks if rot metrics show drift",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "From ST-fb2hxf6s: the manager's dispatch must call backlog.py procs --record for the runner's processes (autopilot.py was outside that story's touches); the tick runs procs and ends only an owned orphan after the grace."
 }
