@@ -1,4 +1,4 @@
-{"run":"20260928T120000Z-0000abcd","pipeline":5,"retrieval":4,"kb_commit":"0000000000000000000000000000000000000000","counts":{"entries":6,"dropped":1,"waiting":0}}
+{"run":"20260928T120000Z-0000abcd","pipeline":6,"retrieval":4,"kb_commit":"0000000000000000000000000000000000000000","counts":{"entries":6,"dropped":1,"waiting":0}}
 {"id":"22222222-0000-4000-8000-0000000000a1","surface":"prompt","day":"2026-09-26","intent":"skill","tools":["kb_search"],"question":"presidio pesel recognizer","articles":["public/reuse/pseudonymization-tokenization.md"],"citations":[{"line":"public/reuse/pseudonymization-tokenization.md:30","tag":"DOC"}],"cited":"pack","judged":"partly","best":"public/reuse/pseudonymization-tokenization.md"}
 {"id":"44444444-0000-4000-8000-0000000000a1","surface":"tool_fetch","day":"2026-09-27","tool":"fetch.py","host":"learn.microsoft.com","path":"/en-us/windows/security/identity-protection/windows-laps/laps-overview","outcome":"http-200"}
 {"id":"44444444-0000-4000-8000-0000000000a2","surface":"tool_fetch","day":"2026-09-27","tool":"fetch.py","outcome":"error"}
