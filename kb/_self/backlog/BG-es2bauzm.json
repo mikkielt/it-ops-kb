@@ -1,0 +1,33 @@
+{
+  "id": "BG-es2bauzm",
+  "kind": "bug",
+  "title": "The host test lock clears a lock file its holder has not written yet, and two waiters can both clear one stale lock",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "tests.host_lock leaves a lock file alone while it is empty or unreadable and younger than a short grace period, and clears a stale one by an atomic claim (rename to a name of the waiter) so that two waiters judging one stale lock cannot both take the lock or remove each other's fresh lock; a planted test starts two waiters on one stale lock and asserts only one holds it at a time, and another asserts an empty lock younger than the grace period is waited on",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile,threading;sys.path.insert(0,\"_tools\");d=tempfile.mkdtemp();os.environ[\"KB_HOST_LOCK_DIR\"]=d;os.environ[\"KB_HOST_LOCK_POLL\"]=\"0.05\";import tests;open(os.path.join(d,tests.HOST_LOCK_NAME),\"w\").close();ok=[];t=threading.Thread(target=lambda:(tests.host_lock().__enter__(),ok.append(1)),daemon=True);t.start();t.join(3);sys.exit(1 if ok else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "host_test_lock_two_waiters"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_testmap.py",
+    "kb/_self/tools.md"
+  ]
+}
