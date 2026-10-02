@@ -27,7 +27,15 @@
     "kb/_self/querylog.md",
     "kb/_self/content-rules.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/bl_authority.py",
+    "_tools/ql_base.py",
+    "_tools/ql_store.py",
+    "_tools/test_kb_leaks.py",
+    "_tools/test_selfdoc.py",
+    "_tools/test_testmap.py",
+    "kb/_self/reports/autopilot-digest.md",
+    "kb/_self/token-efficiency.md"
   ],
   "depends_on": [
     "ST-mdwkhv7k"
