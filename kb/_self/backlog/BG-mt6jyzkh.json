@@ -2,7 +2,7 @@
   "id": "BG-mt6jyzkh",
   "kind": "bug",
   "title": "kbingest map copies MSBuild error text carrying evaluated values into its notes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/test_kbingest.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "6042b5195cd9beb9576624945e19bb62cd8057a2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_dotnet_note_values"
+        ],
+        "exit": 0,
+        "sha256": "533b491a5e89a391"
+      }
+    ]
+  }
 }
