@@ -34,7 +34,17 @@
     "kb/_self/maintaining.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "_tools/test_layout.py"
+    "_tools/test_layout.py",
+    "_tools/bl_base.py",
+    "_tools/bl_cli.py",
+    "_tools/bl_testkit.py",
+    "_tools/bl_procs.py",
+    "_tools/bl_stall.py",
+    "_tools/autopilot.py",
+    "_tools/kg_lock.py",
+    "_tools/test_kb_leaks.py",
+    "_tools/test_selfdoc.py",
+    "_tools/test_testmap.py"
   ],
   "depends_on": [
     "ST-aqpalijz",
