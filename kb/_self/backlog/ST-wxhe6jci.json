@@ -2,7 +2,7 @@
   "id": "ST-wxhe6jci",
   "kind": "story",
   "title": "The digest reports context rot and decision disagreement",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -31,5 +31,6 @@
   ],
   "depends_on": [
     "ST-mdwkhv7k"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
