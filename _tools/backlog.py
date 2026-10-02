@@ -673,8 +673,10 @@ def cmd_answer(bl, a):
     if a.record and (a.provisional or a.confirm or a.by not in ("operator", "autopilot") or not a.answer):
         raise Rejected("--record keeps the operator's or the autopilot's answer as a decision: --answer TEXT --by "
                        "operator|autopilot, never --provisional or --confirm")
+    members = [bl.items[i] for i in bl.sprint_items(iid)] if it.get("kind") == "sprint" else []
+    scope = bl_authority.sprint_scope(it, g, members)
     if a.by == "autopilot":
-        ok, cls = bl_authority.autopilot_may_answer(it, g)
+        ok, cls = bl_authority.autopilot_may_answer(scope, g)
         if not ok:
             raise Rejected(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it")
         if g.get("by") == "operator":
@@ -683,7 +685,7 @@ def cmd_answer(bl, a):
         raise Rejected(f"gate {a.gate} of {bl.label(iid)}: --confirm needs --by operator, which an agent passes only "
                        "after the operator said so")
     if a.by != "operator" and (a.by or a.provisional):
-        cls = bl_authority.derived_class(it, g)
+        cls = bl_authority.derived_class(scope, g)
         if cls in bl_authority.AUTOPILOT_REFUSED:
             refuse = Rejected if a.provisional or a.confirm else Refused  # --answer by an agent: exit 1, as a blocking gate
             raise refuse(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it "
