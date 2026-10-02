@@ -1,0 +1,43 @@
+{
+  "id": "ST-anaj5uls",
+  "kind": "story",
+  "title": "backlog.py land verifies its done commit reached main, carries the claim commit and keeps the done commit after a rejected push",
+  "status": "todo",
+  "sprint": "SP-ummegr5o",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land verifies that its done commit is on the integration main before it prints landed, carries the claim commit under the worker commit itself, and keeps the done commit when its push is rejected twice and sync rebases it, with tests named land_verifies_done_commit_on_integration_main, land_carries_claim_commit_under_worker_commit and land_keeps_done_commit_after_rejected_push. Split from ST-vxkcirsx: its evidence is two items left doing on main for hours (ST-pvu4ecpv, ST-2ceybba2), two lands cherry-picked by hand, and three reruns after a lost done commit (ST-pvu4ecpv, TK-i2x2csig, TK-5sjw6qpg).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_verifies_done_commit_on_integration_main"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_carries_claim_commit_under_worker_commit"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_keeps_done_commit_after_rejected_push"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
