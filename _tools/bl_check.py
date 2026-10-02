@@ -403,14 +403,14 @@ def knowledge_lines(bl, iid, indent="  "):
             for kind, text, state, why in knowledge_states(bl, iid)]
 
 
-UNSOUND = ("unknown", "stale", "conflicting")  # the states that keep an autopilot-answered start from running
+UNSOUND = ("unknown", "partial", "stale", "conflicting")  # every state but sufficient: they keep an autopilot-answered start from running
 
 
 def autopilot_start_causes(bl, sid):
     """The causes that refuse `start` of sprint SID when its start gate was answered by the autopilot, one text each:
     no goal research story, or one not done; a committed story or bug (the review and research stories, dropped and
-    done items left out) with no knowledge asks or refs; each ask or ref of one that reads unknown, stale or
-    conflicting."""
+    done items left out) with no knowledge asks or refs; each ask or ref of one that reads anything but
+    sufficient (unknown, partial, stale or conflicting)."""
     out = []
     rs = research_story(bl, sid)
     if rs is None:

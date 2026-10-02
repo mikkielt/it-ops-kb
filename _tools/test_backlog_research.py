@@ -1,7 +1,7 @@
 """A sprint starts only once its research is done (bl_check.autopilot_start_causes, backlog.cmd_start): `new sprint`
 files a goal research story whose touches are kb content, and `start` of a sprint whose start gate the autopilot
 answered refuses, naming each cause, while that story is not done, while a committed story or bug has no knowledge asks
-or refs, or while one of its asks or refs reads unknown, stale or conflicting. An operator's approval starts as before.
+or refs, or while one of its asks or refs reads unknown, partial, stale or conflicting. An operator's approval starts as before.
 
 Each refusal has a planted failure over a small kb of invented words (the corpus `test_bl_check.py`'s knowledge-state
 tests use), run through a copy of the tools in the repository so the pack reads that kb."""
@@ -9,11 +9,13 @@ import os
 import shutil
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 import pytest
 
 import backlog
+import bl_check
 import bl_testkit
 from bl_testkit import PASS, TOOLS, argstr, b, commit, edit, is_file, item, item_json
 
@@ -159,6 +161,32 @@ def test_research_gated_start_refuses_a_ref_reading_each_unsound_state(plan, sta
     else:
         plan.write("_conflicts.md", "# Conflicts\n\n- The pages disagree on retries. (topic: demo/tool)\n")
     refused_unchanged(plan, plan.start("autopilot"), f"knowledge {state} ask")
+
+
+def partial_sprint():
+    """A sprint whose research story is done and whose one story asks something the kb answers only partially: the
+    states are planted (a `weak` pack is not reproducible over a small kb), the cause list is the code under test."""
+    items = {"SP-aaaaaaaa": {"kind": "sprint"}, "ST-research": {"kind": "story", "goal_research": True, "status": "done"},
+             "ST-work": {"kind": "story", "status": "draft", "knowledge": {"ask": ["an ask"], "refs": ["a ref"]}}}
+    state = types.SimpleNamespace(of_ask=lambda t: ("partial", "coverage weak"), of_ref=lambda t: ("sufficient", ""))
+    return types.SimpleNamespace(items=items, sprint_items=lambda s: [k for k in items if k != s],
+                                 order_key=lambda i: i, label=lambda i: i, state=state)
+
+
+def test_research_gated_start_partial_reading_refuses_like_the_other_unsound_states():
+    causes = bl_check.autopilot_start_causes(partial_sprint(), "SP-aaaaaaaa")
+    assert causes == ["ST-work: knowledge partial ask: an ask (coverage weak)"], causes
+
+
+def test_research_gated_start_partial_a_sufficient_ask_and_ref_do_not_refuse():
+    bl = partial_sprint()
+    bl.state = types.SimpleNamespace(of_ask=lambda t: ("sufficient", ""), of_ref=lambda t: ("sufficient", ""))
+    assert bl_check.autopilot_start_causes(bl, "SP-aaaaaaaa") == []
+
+
+def test_research_gated_start_partial_planted_failure_the_old_states_let_it_through(monkeypatch):
+    monkeypatch.setattr(bl_check, "UNSOUND", ("unknown", "stale", "conflicting"))  # the states before the fix
+    assert bl_check.autopilot_start_causes(partial_sprint(), "SP-aaaaaaaa") == []  # a partial reading ran the start
 
 
 def test_research_gated_start_names_every_cause_at_once(plan):
