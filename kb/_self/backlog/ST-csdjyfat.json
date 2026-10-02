@@ -2,7 +2,7 @@
   "id": "ST-csdjyfat",
   "kind": "story",
   "title": "A planning commit that names an item carries that item's file",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
@@ -29,5 +29,19 @@
     "AGENTS.md"
   ],
   "notes": "SP-3brmvlnh retrospective: ec181b58 named ST-igaxxamb but changed only TK-hft3uklk; the hand edit had been refused by a guard whose error showed on another call.",
-  "claimed_by": "orch-fourth-w19"
+  "evidence": {
+    "commit": "f245376b27b5a1c89f6fafe402040b43c1ecba7a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "check_trailers_planning_commit_names_item"
+        ],
+        "exit": 0,
+        "sha256": "973dae6c44def12e"
+      }
+    ]
+  }
 }
