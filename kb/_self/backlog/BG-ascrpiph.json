@@ -1,0 +1,33 @@
+{
+  "id": "BG-ascrpiph",
+  "kind": "bug",
+  "title": "kbgit.py help strings and the kb.yml comment still say the private path is only kb/_querylog",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbgit.py's usage and help strings and the comment above kb-public in .github/workflows/kb.yml say the private paths are kb/_querylog and any _logs.csv, as kbpublic.PRIVATE_LABEL does, with a test named private_label_in_help that reads both",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "python3 _tools/kbgit.py -h | grep -q _logs.csv"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "private_label_in_help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    ".github/workflows/kb.yml",
+    "kb/_self/git.md"
+  ]
+}

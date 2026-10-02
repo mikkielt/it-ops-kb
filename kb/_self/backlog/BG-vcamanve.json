@@ -1,0 +1,32 @@
+{
+  "id": "BG-vcamanve",
+  "kind": "bug",
+  "title": "kbcommon.RESERVED_PREFIXES lacks L, so kbroot.py add --prefix L creates a root that only check.py later refuses",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.RESERVED_PREFIXES holds L beside D, so kbroot.py add --prefix L is refused at once, with a test named reserved_prefix_log that plants the call",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbcommon;sys.exit(0 if 'L' in kbcommon.RESERVED_PREFIXES else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "reserved_prefix_log"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/test_kbroot.py",
+    "kb/_self/tools.md"
+  ]
+}
