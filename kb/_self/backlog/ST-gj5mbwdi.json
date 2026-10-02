@@ -2,7 +2,7 @@
   "id": "ST-gj5mbwdi",
   "kind": "story",
   "title": "A LOG row and its tag have a contract the checks enforce",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-auko2fyn",
   "sprint": "SP-parnkbr7",
   "priority": "P3",
@@ -72,5 +72,6 @@
       "by": "operator"
     }
   ],
-  "notes": "The DECISION tag in CSV data rows has the same resolution gap (BG-juqwx7nf); one fix serves both tags."
+  "notes": "The DECISION tag in CSV data rows has the same resolution gap (BG-juqwx7nf); one fix serves both tags.",
+  "claimed_by": "mac-sixth"
 }
