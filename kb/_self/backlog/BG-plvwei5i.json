@@ -2,7 +2,7 @@
   "id": "BG-plvwei5i",
   "kind": "bug",
   "title": "EP-vpb7u3us still plans the dropped brief and research-first scheduling",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "the defect is text in an epic's item file; no program behaviour is involved",
   "touches": [
     "kb/_self/backlog/EP-vpb7u3us.json"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
