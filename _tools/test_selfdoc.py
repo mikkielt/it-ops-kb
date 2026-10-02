@@ -474,7 +474,10 @@ class TestSelfdocToolsMap:
     def test_tools_md_backlog_row_per_subcommand(self):
         """tools.md gives backlog.py one row per subcommand (a few share a row), so edits to different ones touch
         different lines. Planted: the old single row naming them all fails."""
-        known = set(re.findall(r'add_parser\("([a-z-]+)"\)', pathlib.Path(selfdoc.KB, "_tools", "backlog.py").read_text(encoding="utf-8")))
+        tools = pathlib.Path(selfdoc.KB, "_tools")
+        known = set()
+        for path in [tools / "backlog.py", *sorted(tools.glob("bl_*.py"))]:  # each module registers its commands in bl_cli
+            known |= set(re.findall(r'bl_cli\.register\("([a-z-]+)"', path.read_text(encoding="utf-8")))
         known.add("gate add")
         text = pathlib.Path(selfdoc.KB, S, "tools.md").read_text(encoding="utf-8")
         rows = self.backlog_rows(text)

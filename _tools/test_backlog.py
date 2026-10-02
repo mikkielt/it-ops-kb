@@ -1774,7 +1774,7 @@ def test_knowledge_refs_without_a_kb_are_refused(repo):
 
 # ---- knowledge state: show, next and horizon run the pack on each ask and ref of an item's `knowledge`
 
-KS_TOOLS = ("backlog.py", "bl_base.py", "bl_intake.py", "kbcommon.py", "kbfacts.py", "kbid.py", "ql_base.py", "aliases.csv")
+KS_TOOLS = ("backlog.py", "bl_base.py", "bl_cli.py", "bl_intake.py", "kbcommon.py", "kbfacts.py", "kbid.py", "ql_base.py", "aliases.csv")
 KS_SOURCES = ("id,url,title,superseded_by,used_in\n"
               "S100,https://example.com/a,Zorbex agent guide,,demo/tool.md\n"
               "S101,https://example.com/b,Plimt gadget firmware notes,,demo/gadget.md\n")

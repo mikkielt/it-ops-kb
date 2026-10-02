@@ -208,6 +208,7 @@ this host's computer or user name, which is withheld.
 import argparse, copy, hashlib, json, os, re, shlex, shutil, subprocess, sys, threading
 from pathlib import Path
 
+import bl_cli
 import bl_intake
 from bl_base import (
     APPROVALS, Backlog, CHECK_TIMEOUT_S, COMMITS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS,
@@ -3589,11 +3590,7 @@ def cmd_goal(bl, a):
     return 0
 
 
-def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--root", default=str(ROOT))
-    sub = ap.add_subparsers(dest="cmd", required=True)
-    p = sub.add_parser("new")
+def args_new(p):
     p.add_argument("kind", choices=list(KINDS))
     p.add_argument("--title", required=True)
     p.add_argument("--parent")
@@ -3607,37 +3604,54 @@ def main(argv=None):
     p.add_argument("--depends", action="append")
     p.add_argument("--repro")
     p.add_argument("--repro-reason", help="why a repro that only matches text in a file cannot run the behaviour")
-    p = sub.add_parser("similar")
+
+
+def args_similar(p):
     p.add_argument("title")
     p.add_argument("--goal")
-    sub.add_parser("check")
-    sub.add_parser("fmt")
-    sub.add_parser("selectors")
-    p = sub.add_parser("list")
+
+
+def args_list(p):
     p.add_argument("--kind", choices=list(KINDS))
     p.add_argument("--status")
     p.add_argument("--sprint")
-    p = sub.add_parser("tree")
+
+
+def args_tree(p):
     p.add_argument("id", nargs="?")
     p.add_argument("--sprint")
     p.add_argument("--open", action="store_true")
-    p = sub.add_parser("find")
+
+
+def args_find(p):
     p.add_argument("words", nargs="+")
-    p = sub.add_parser("show")
+
+
+def args_show(p):
     p.add_argument("id")
-    p = sub.add_parser("next")
+
+
+def args_next(p):
     p.add_argument("--sprint")
     p.add_argument("--any", action="store_true")
     p.add_argument("--all", action="store_true")
-    p = sub.add_parser("held")
+
+
+def args_held(p):
     p.add_argument("--overlaps", metavar="ID", help="only the claimed items whose touches overlap this item's")
     p.add_argument("--ref", help="read the claims from this git ref (origin/main after git fetch) instead of the files")
-    p = sub.add_parser("claim")
+
+
+def args_claim(p):
     p.add_argument("id")
     p.add_argument("--by", required=True)
-    p = sub.add_parser("release")
+
+
+def args_release(p):
     p.add_argument("id")
-    p = sub.add_parser("answer")
+
+
+def args_answer(p):
     p.add_argument("id")
     p.add_argument("gate")
     p.add_argument("--answer")
@@ -3645,7 +3659,9 @@ def main(argv=None):
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
     p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator: keep the answer as an active decision")
-    p = sub.add_parser("set")
+
+
+def args_set(p):
     p.add_argument("id")
     p.add_argument("--notes")
     p.add_argument("--link", dest="links", action="append")
@@ -3660,13 +3676,19 @@ def main(argv=None):
     p.add_argument("--clear", action="append", default=[], metavar="FIELD", help="remove a field (repeatable)")
     for f in SET_REFUSED:  # accepted only to be refused with the rule that applies
         p.add_argument("--" + f.replace("_", "-"), dest="no_" + f, help=argparse.SUPPRESS)
-    p = sub.add_parser("move")
+
+
+def args_move(p):
     p.add_argument("id")
     p.add_argument("--sprint", required=True, metavar="SP|none")
-    p = sub.add_parser("reopen")
+
+
+def args_reopen(p):
     p.add_argument("id")
     p.add_argument("--why", required=True)
-    p = sub.add_parser("gate")
+
+
+def args_gate(p):
     gsub = p.add_subparsers(dest="verb", required=True)
     p = gsub.add_parser("add")
     p.add_argument("id")
@@ -3678,37 +3700,59 @@ def main(argv=None):
     p.add_argument("--do", action="append", metavar="OPTION=CMD|ID",
                    help="the command that carries OPTION out, or the id of the item whose work adds it (repeatable)")
     p.add_argument("--host-check", help="a command that exits 0 when the host setup the answer names holds here")
-    p = sub.add_parser("fire")
+
+
+def args_fire(p):
     p.add_argument("id")
-    p = sub.add_parser("done")
+
+
+def args_done(p):
     p.add_argument("id")
     p.add_argument("--dry-run", action="store_true")
-    p = sub.add_parser("land")
+
+
+def args_land(p):
     p.add_argument("id")
     p.add_argument("--branch", help="the local branch to land (default work/ID)")
     p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
                    help="a trailer of the session's own for the done --commit commit (repeatable)")
-    p = sub.add_parser("drop")
+
+
+def args_drop(p):
     p.add_argument("id")
     p.add_argument("--why", required=True)
-    p = sub.add_parser("start")
+
+
+def args_start(p):
     p.add_argument("sprint")
-    p = sub.add_parser("host-check")
+
+
+def args_host_check(p):
     p.add_argument("sprint")
-    p = sub.add_parser("close")
+
+
+def args_close(p):
     p.add_argument("sprint")
     p.add_argument("--summary", action="store_true",
                    help="only print each item close would delete with its status and evidence commit (the close "
                         "commit's body); changes nothing")
-    p = sub.add_parser("horizon")
+
+
+def args_horizon(p):
     p.add_argument("--sprint")
     p.add_argument("--hook", action="store_true")
-    p = sub.add_parser("goal")
+
+
+def args_goal(p):
     p.add_argument("id")
-    p = sub.add_parser("referrers")
+
+
+def args_referrers(p):
     p.add_argument("terms", nargs="+", help="a tracked file path or a symbol a task will move or delete")
     p.add_argument("--item", help="mark the files outside this item's scope (touches and its descendants')")
-    p = sub.add_parser("cost")
+
+
+def args_cost(p):
     p.add_argument("id", nargs="?")
     p.add_argument("--runs", action="store_true", help="also list each run's line apart")
     p.add_argument("--rework", action="store_true",
@@ -3716,11 +3760,15 @@ def main(argv=None):
     p.add_argument("--research", action="store_true",
                    help="instead of an ID: every research item's tokens against the gap findings its commits closed")
     p.add_argument("--format", choices=("text", "json"), default="text")
-    p = sub.add_parser("red-pipeline")
+
+
+def args_red_pipeline(p):
     p.add_argument("--status", action="store_true")
     p.add_argument("--job", help="read the newest pipeline of main in which this job succeeded or failed on its own account (a red-main bug's repro)")
     p.add_argument("--hook", action="store_true")
-    p = sub.add_parser("intake")
+
+
+def args_intake(p):
     p.add_argument("--file", action="store_true", help="write each new candidate as a draft item outside any sprint")
     p.add_argument("--status", metavar="FINGERPRINT",
                    help="exit 1 while a detector still reports this fingerprint (a filed bug's repro)")
@@ -3728,12 +3776,43 @@ def main(argv=None):
                    help="also run the detectors that call the network (ci: the newest pipeline of main, as red-pipeline reads it)")
     p.add_argument("--hook", action="store_true",
                    help="the async SessionStart form: silent, bounded, exit 0 always; with --file it writes the drafts uncommitted")
-    for name in COMMITS:
-        p = sub.choices[name]
-        p.add_argument("--commit", action="store_true",
-                       help="commit the item files this command wrote, and only them, with a fixed subject and KB-Work")
-        p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
-                       help="a trailer of the session's own after KB-Work in the commit (--commit only; repeatable)")
+
+
+bl_cli.register("new", cmd_new, args_new)
+bl_cli.register("similar", cmd_similar, args_similar)
+bl_cli.register("check", cmd_check)
+bl_cli.register("fmt", cmd_fmt)
+bl_cli.register("selectors", cmd_selectors)
+bl_cli.register("list", cmd_list, args_list)
+bl_cli.register("tree", cmd_tree, args_tree)
+bl_cli.register("find", cmd_find, args_find)
+bl_cli.register("show", cmd_show, args_show)
+bl_cli.register("next", cmd_next, args_next)
+bl_cli.register("held", cmd_held, args_held)
+bl_cli.register("claim", cmd_claim, args_claim)
+bl_cli.register("release", cmd_release, args_release)
+bl_cli.register("answer", cmd_answer, args_answer)
+bl_cli.register("set", cmd_set, args_set)
+bl_cli.register("move", cmd_move, args_move)
+bl_cli.register("reopen", cmd_reopen, args_reopen)
+bl_cli.register("gate", cmd_gate, args_gate)
+bl_cli.register("fire", cmd_fire, args_fire)
+bl_cli.register("done", cmd_done, args_done)
+bl_cli.register("land", cmd_land, args_land)
+bl_cli.register("drop", cmd_drop, args_drop)
+bl_cli.register("start", cmd_start, args_start)
+bl_cli.register("host-check", cmd_host_check, args_host_check)
+bl_cli.register("close", cmd_close, args_close)
+bl_cli.register("horizon", cmd_horizon, args_horizon)
+bl_cli.register("goal", cmd_goal, args_goal)
+bl_cli.register("referrers", cmd_referrers, args_referrers)
+bl_cli.register("cost", cmd_cost, args_cost)
+bl_cli.register("red-pipeline", cmd_red_pipeline, args_red_pipeline)
+bl_cli.register("intake", cmd_intake, args_intake)
+
+
+def main(argv=None):
+    ap = bl_cli.build_parser(__doc__.split("\n\n")[0], str(ROOT))
     a = ap.parse_args(argv)
     OUTPUT_ROOT[0] = a.root
     for s in (sys.stdout, sys.stderr):  # refusals go to stderr; on Windows a pipe defaults to the ANSI code page
@@ -3762,7 +3841,7 @@ def main(argv=None):
             why = next(filter(None, map(trailer_problem, a.trailer)), None)
             if why:
                 raise Refused(why)
-        return globals()["cmd_" + a.cmd.replace("-", "_")](bl, a)
+        return bl_cli.handler_of(a.cmd)(bl, a)
     except KeyError as e:
         print(withhold(f"no item {e.args[0]}"), file=sys.stderr)
         return 2
