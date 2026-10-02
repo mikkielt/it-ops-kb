@@ -490,6 +490,37 @@ class TestCohesion:
                 if m["sec"].split()[0] in ("Learn", "Apply"))
         assert n >= 2, "the query log's Learn and Apply references are no longer read as section references"
 
+    def test_selfdoc_short_name_must_end_at_a_heading_separator(self):
+        """A leading word that cuts a phrase (`The` for `The research queue`, `Store` and `Tests` for `Store layout` and
+        `Tests plan`) names no heading; a prefix that ends at a note, a colon or a joining `and` still does."""
+        import selfdoc
+        keys = selfdoc.heading_keys(["## The research queue", "## Store layout", "## Tests plan",
+                                     "## Ledgers and retrieval data", "## Staging levels: what to know",
+                                     "## Capture (`querylog.py capture`)"])
+        for bad in ("The", "Store", "Tests", "Ledgers and", "Staging"):
+            assert not selfdoc.names_heading(bad, keys), bad
+        for good in ("The research queue", "Ledgers", "Staging levels", "Capture", "capture (querylog.py capture)"):
+            assert selfdoc.names_heading(good, keys), good
+
+    def test_selfdoc_flags_a_cut_phrase_reference(self, tmp_path):
+        """A reference naming only `The`, or `Store and Tests`, is reported when the doc has only the headings `The research
+        queue`, `Store layout` and `Tests plan`; the whole heading and a short name for `Ledgers and retrieval data` pass."""
+        import selfdoc
+        self_dir = tmp_path / SELF_REL
+        self_dir.mkdir(parents=True)
+        (tmp_path / "_tools").mkdir()
+        w = lambda p, s: p.write_text(s, encoding="utf-8", newline="\n")  # noqa: E731
+        w(self_dir / "map.csv", f"doc,pattern\n{SELF_REL}/querylog.md,-\n{SELF_REL}/rules.md,-\n")
+        w(self_dir / "querylog.md", "# Query log\n\n## The research queue\n\n## Store layout\n\n## Tests plan\n")
+        w(self_dir / "rules.md", "# Rules\n\n## Ledgers and retrieval data\n\n(querylog.md, The) (querylog.md, Store and Tests)"
+                                 " (querylog.md, The research queue) (rules.md, Ledgers)\n")
+        subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+        got = sorted(p for p in selfdoc.check(str(tmp_path)) if "names" in p)
+        assert got == [
+            f"{SELF_REL}/rules.md:5: (querylog.md, Store and Tests) names no heading of {SELF_REL}/querylog.md",
+            f"{SELF_REL}/rules.md:5: (querylog.md, The) names no heading of {SELF_REL}/querylog.md",
+        ], got
+
 
 class TestSelfDocs:
     def test_self_docs_stay_out_of_the_pack(self):

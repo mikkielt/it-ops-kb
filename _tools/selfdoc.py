@@ -280,11 +280,15 @@ def heading_keys(text_lines):
     return keys
 
 
+HEADING_TAIL_RX = re.compile(r"\s*[:;,.(/–—-]|\s+and\s")
+
+
 def names_heading(sec, keys):
-    """Whether SEC names one of the heading KEYS: the whole text, or its first words up to a word boundary
-    (`Ledgers` for `Ledgers and retrieval data`, `Staging levels` for `Staging levels: what you must know at each`)."""
+    """Whether SEC names one of the heading KEYS: the whole text, or its first words when what follows them starts a
+    note or a joined clause (`Ledgers` for `Ledgers and retrieval data`, `Staging levels` for `Staging levels: what you
+    must know at each`). A leading word that cuts a phrase (`The` for `The research queue`) names nothing."""
     s = norm_heading(sec)
-    return bool(s) and any(k == s or (k.startswith(s) and not k[len(s)].isalnum()) for k in keys)
+    return bool(s) and any(k == s or (k.startswith(s) and bool(HEADING_TAIL_RX.match(k, len(s)))) for k in keys)
 
 
 def dead_section_refs(root=KB, files=None):
