@@ -2,7 +2,7 @@
   "id": "BG-44tj4tsq",
   "kind": "bug",
   "title": "test_selfdoc's backlog row test passes although kb/_self/tools.md has no row for fire, fmt, goal, list or release",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-djri7fqp",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "touches": [
     "_tools/test_selfdoc.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
