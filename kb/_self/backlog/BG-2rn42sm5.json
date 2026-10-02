@@ -2,7 +2,7 @@
   "id": "BG-2rn42sm5",
   "kind": "bug",
   "title": "testmap select leaves out a test that scans every _tools file as text, so a new tool file turns main red unseen",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/testmap.py",
     "_tools/test_testmap_scans.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "seventh-w29"
 }
