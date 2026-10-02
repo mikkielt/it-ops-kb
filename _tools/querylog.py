@@ -346,7 +346,14 @@ def main(argv=None):
         import ql_report
         return ql_report.status(a.store)
     if argv[:1] == ["distill"]:
-        ap = argparse.ArgumentParser(prog="querylog.py distill")
+        ap = argparse.ArgumentParser(
+            prog="querylog.py distill", formatter_class=argparse.RawDescriptionHelpFormatter,
+            description="Distill the closed sessions of the spool into the local store. A run writes:\n"
+                        "  a run file    one entry per kb lookup (the question, the cited path:line, Haiku's judgement)\n"
+                        "  a usage sidecar   token counts per written entry\n"
+                        "  a work sidecar    token counts per item worked (item lines), per session that worked items\n"
+                        "                    (shared lines) and per kind of the kb's own background runs (overhead lines)\n"
+                        "  an ops sidecar    one line per `ops` row of what the kb's own tools did and took")
         ap.add_argument("--replay", help="answer the Haiku calls from this recorded reply file")
         ap.add_argument("--settle", type=float, default=0.0, help="seconds to wait after taking the lock")
         ap.add_argument("--session", help="the session whose usage rows are written first (with --transcript)")
