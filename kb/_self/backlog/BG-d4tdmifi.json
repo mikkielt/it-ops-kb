@@ -2,7 +2,7 @@
   "id": "BG-d4tdmifi",
   "kind": "bug",
   "title": "A backlog.py done piped into another command is recorded as a done work row although a refused done exits non-zero inside the pipe",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rrrrggw7",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,6 @@
     "_tools/ql_capture.py",
     "_tools/test_ql_capture.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "seventh-w8"
 }
