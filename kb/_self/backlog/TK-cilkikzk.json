@@ -2,7 +2,7 @@
   "id": "TK-cilkikzk",
   "kind": "task",
   "title": "kb-sprint states the rule for a task that moves code out of a shared file",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-e4nkkkm2",
   "priority": "P1",
   "rank": 0,
@@ -22,5 +22,6 @@
     "kb/_self/backlog.md",
     "_tools/test_kb_cohesion.py",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s1"
 }
