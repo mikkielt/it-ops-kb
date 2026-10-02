@@ -38,7 +38,8 @@
     "kb/_self/code.md",
     "_tools/ql_capture.py",
     "_tools/test_ql_capture.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "_tools/test_kbdecide.py"
   ],
   "depends_on": [
     "ST-6zcqkjfm",
