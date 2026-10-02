@@ -2,7 +2,7 @@
   "id": "TK-3hphkfbg",
   "kind": "task",
   "title": "autopilot.py runner start launches a headless sprint run and runner-status reports it",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ng7igc4l",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "_tools/test_autopilot.py",
     "kb/_self/tools.md",
     "kb/_self/map.csv"
-  ]
+  ],
+  "claimed_by": "mac-first-w1"
 }
