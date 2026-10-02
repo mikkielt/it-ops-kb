@@ -2,7 +2,7 @@
   "id": "ST-nrhwbodb",
   "kind": "story",
   "title": "The manager's state is one capped command and survives compaction",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -45,5 +45,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "b5414ceeb1b0c941ac1c877eb7a68c98d6230240",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_status"
+        ],
+        "exit": 0,
+        "sha256": "942c28e5802447fe"
+      }
+    ]
+  }
 }
