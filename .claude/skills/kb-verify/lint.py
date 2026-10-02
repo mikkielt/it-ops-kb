@@ -17,8 +17,8 @@ a CODE part without a `path#symbol` pointer or citing a source that is not pinne
 bullet without `context:`, a `checked: no|syntax|run` value, an evidence tag other than UNK, or a fenced block right
 below it; a `checked: syntax` json, toml or python block that does not parse.
 WARN: no H1 title; a Facts bullet mixing tag kinds; a DER Facts bullet (not a SNIPPET) that says it rests on a run or
-probe of our own (OBSERVED_RUN) and names no version (VERSION: 2.1.285, "version N", "vN"); header source ids never
-cited in the body, or cited ids missing from the header.
+probe of our own (OBSERVED_RUN) and names no version (has_version: 2.1.285, 3.3, "version N", "vN"; a measurement
+such as 2.5 s or TLS 1.2 is none); header source ids never cited in the body, or cited ids missing from the header.
 """
 import csv, glob, json, os, re, sys
 
@@ -34,23 +34,50 @@ SID = kbid.SOURCE_ID  # hash source ids (S-k3f7q2zd) and legacy ones (S123)
 SNIPPET = re.compile(r"^- SNIPPET:", re.M)
 # A fact that says it rests on a run of our own (kb/_self/content-rules.md, Facts and tags): "observed on|in|by|with|
 # against|at|when|running|:", "measured" the same way, "probed", "the|a|this|that|same|one|each [word] probe
-# on|of|against|in|with|showed|found|returned|gave|was|answered", or "in the|a|one|two|three|each|both|these|those|N
-# [word] probe(s)|run(s)". Deliberately narrow: "an observed failure", "measured behavior", "a liveness probe" and
-# "a `-c` probe" (the thing, not our run of it) do not match.
+# on|of|against|in|with|showed|found|returned|gave|was|answered", "in the|a|one|two|three|each|both|these|those|N
+# [word] probe(s)", or "in the|a|one|two|three|each|both|these|those|N [setting] run(s)" where the setting word is one of
+# RUN_SETTING (headless, interactive, first, same ...). Deliberately narrow: "an observed failure", "measured behavior",
+# "a liveness probe", "a `-c` probe" (the thing, not our run of it), "in the long run" and "in a pipeline run" do not match.
+RUN_SETTING = (r"(?:headless|interactive|first|second|third|last|same|single|separate|repeated|test|local|live|manual"
+               r"|own|our)")
 OBSERVED_RUN = re.compile(
     r"\b(?:observed|measured)(?=\s*:|\s+(?:on|in|by|with|against|at|when|running)\b)"
     r"|\bprobed\b"
     r"|\b(?:the|a|this|that|same|one|each)\s+(?:\w+\s+)?probe\s+(?:on|of|against|in|with|showed|found|returned|gave|was|answered)\b"
-    r"|\bin\s+(?:the|a|one|two|three|each|both|these|those|\d+)\s+(?:\w+\s+)?(?:probe|run)s?\b", re.I)
-# The version such a fact must state: a dotted number (2.1.285, 3.3), "version N" or "vN".
-VERSION = re.compile(r"\b\d+\.\d+(?:\.\d+)*\b|\bversion\s+\d+|\bv\d+(?:\.\d+)*\b", re.I)
+    r"|\bin\s+(?:the|a|one|two|three|each|both|these|those|\d+)\s+(?:\w+\s+)?probes?\b"
+    r"|\bin\s+(?:the|a|one|two|three|each|both|these|those|\d+)\s+(?:" + RUN_SETTING + r"\s+)?runs?\b", re.I)
+# The version such a fact must state. A version has a version shape: three or more dotted parts (2.1.285), "version N",
+# "vN", or two dotted parts (3.3) that are no measurement: not followed by a unit (2.5 s, 1.5 MB, 3.2 %), not after a
+# protocol name (TLS 1.2) or a measuring word (took 2.5, about 2.5), and not marked approximate (~2.5).
+VERSION_WORD = re.compile(r"\bv\d+(?:\.\d+)*\b|\bversion\s+\d+(?:\.\d+)*", re.I)
+DOTTED = re.compile(r"(?<![\w.])\d+(?:\.\d+)+(?!\d)")
+UNIT_AFTER = re.compile(
+    r"\s*(?:%|(?:s|sec|secs|seconds?|ms|milliseconds?|min|mins|minutes?|h|hr|hrs|hours?|days?|[kmgt]i?b|bytes?|x|times"
+    r"|percent|rows?|requests?|calls?|items?|events?|users?|devices?)\b)", re.I)
+NOT_A_VERSION_BEFORE = re.compile(
+    r"(?:\b(?:tls|ssl|dtls|https?|ipv|smb|ntlm|ssh|quic)\s*(?:version\s*|v)?"
+    r"|\b(?:took|takes|taking|waited|waits|after|about|around|roughly|approximately|nearly|almost"
+    r"|within|under|over|than)\s*|[~\u2248\u00b1<>]\s*)$", re.I)
+
+
+def has_version(item):
+    """Whether the text names a version of what ran (shapes above), not only a measurement."""
+    for m in VERSION_WORD.finditer(item):
+        if not NOT_A_VERSION_BEFORE.search(item[:m.start()]):
+            return True
+    for m in DOTTED.finditer(item):
+        if m.group().count(".") >= 2:
+            return True
+        if not UNIT_AFTER.match(item, m.end()) and not NOT_A_VERSION_BEFORE.search(item[:m.start()]):
+            return True
+    return False
 
 
 def unversioned_run(item, kinds):
     """Whether a Facts bullet is a DER fact resting on a run or probe that names no version (not a SNIPPET: its
     `context:` carries the versions)."""
     return ("DER" in kinds and not item.startswith("- SNIPPET:") and bool(OBSERVED_RUN.search(item))
-            and not VERSION.search(item))
+            and not has_version(item))
 FENCE = re.compile(r"^```(\w*)[^\n]*\n(.*?)^```", re.M | re.S)
 
 
