@@ -499,6 +499,47 @@ def test_kbingest_map_path_absolute_only(tmp_path, monkeypatch):
     assert probe["path"].split(os.pathsep) == host and str(bindir) in host  # the host's absolute entries, in order
 
 
+@requires_git
+def test_kbingest_map_path_outside_source_clone(tmp_path, monkeypatch):
+    """Planted: the operator's PATH names the source repository's own clone (its node_modules/.bin, which holds a
+    program, the clone itself, a link to it, another case where the file system allows) beside a folder outside it;
+    the mapper's child must not find the program, and only the outside folder stays."""
+    r = Repo(tmp_path / "attack")
+    Path(r.path).mkdir()
+    r.git("init", "-q", "-b", "main")
+    r.write("src/a.fake", "x\n")
+    if os.name == "nt":
+        r.write(f"node_modules/.bin/{PLANTED}.cmd", '@echo ran> "%KB_TEST_MARK%"\r\n')
+    else:
+        r.write(f"node_modules/.bin/{PLANTED}", '#!/bin/sh\necho ran > "$KB_TEST_MARK"\n')
+        os.chmod(r.file(f"node_modules/.bin/{PLANTED}"), 0o755)
+    r.git("add", "-A")
+    r.git("commit", "-q", "-m", "init")
+    mark = tmp_path / "ran.txt"
+    monkeypatch.setenv("KB_TEST_MARK", str(mark))
+    clone = Path(r.path)
+    bindir = install_fake(tmp_path, monkeypatch)
+    planted = [str(clone / "node_modules" / ".bin"), str(clone), str(clone / "no-such" / ".." / "node_modules" / ".bin")]
+    if case_insensitive(tmp_path):
+        planted.append(str(tmp_path / "ATTACK" / "node_modules" / ".bin"))
+    try:
+        os.symlink(clone, tmp_path / "clone-alias", target_is_directory=True)
+        planted.append(str(tmp_path / "clone-alias" / "node_modules" / ".bin"))
+    except (OSError, NotImplementedError):
+        pass  # no symbolic links here (Windows without the privilege)
+    host = [e for e in os.environ["PATH"].split(os.pathsep) if e and Path(e).is_absolute()]
+    monkeypatch.setenv("PATH", os.pathsep.join(planted + os.environ["PATH"].split(os.pathsep)))
+    m = PathProbe()
+    code, doc = fake_map(r, tmp_path, monkeypatch, m)
+    assert code == 0 and doc["tools"]["fake"]["tool"] == "fakemap", doc
+    probe = m.seen["probe"]
+    assert probe is not None, doc["notes"]
+    assert probe["node"] is None and not mark.exists(), ("the source clone's program ran", probe)
+    assert probe["path"].split(os.pathsep) == host and str(bindir) in host  # only the entries outside the clone stay
+    env = kbingest.scrub_env({"PATH": os.pathsep.join([*planted, str(tmp_path / "bin")])}, repo=clone)
+    assert env["PATH"] == str(tmp_path / "bin")  # and a repository with no worktree yet: scrub_env alone does it
+
+
 def test_kbingest_map_notes_are_capped():
     ctx = kbingest.MapCtx("/nowhere", {}, 1, "fake")
     for i in range(kbingest.NOTE_LIMIT + 5):
