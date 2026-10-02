@@ -1,0 +1,27 @@
+{
+  "id": "TK-ehgunyr4",
+  "kind": "task",
+  "title": "kb-sprint run --headless records gates and stops after K landed items",
+  "status": "todo",
+  "parent": "ST-ng7igc4l",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The kb-sprint skill's run section gains a headless path for 'run SP --headless --landed K', the prompt autopilot.py runner start sends: it never calls AskUserQuestion; a choice the operator must make is recorded as a gate with its options and recommendation (backlog.py gate add), its items wait and the run goes on with the rest; a provisional gate takes its recommendation (answer --provisional); it stops after K items landed or when next has nothing ready, and its last message names the exit cause the runner records (landed-limit, sprint-done or blocked); a relaunched run starts from horizon and next as the interactive loop does, so it continues where the last one stopped. kb/_self/backlog.md's Sprints section names the runner (autopilot.py runner start and runner-status) in one paragraph. A test autopilot_runner_skill_headless checks that the prompt runner start sends names a section the skill holds and that the headless section names no AskUserQuestion call. AGENTS.md stays under its 4 KB cap: no line is added there unless one is removed.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_autopilot.py"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/test_autopilot.py"
+  ],
+  "depends_on": [
+    "TK-3hphkfbg"
+  ]
+}

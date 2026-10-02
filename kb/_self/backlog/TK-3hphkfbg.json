@@ -1,0 +1,25 @@
+{
+  "id": "TK-3hphkfbg",
+  "kind": "task",
+  "title": "autopilot.py runner start launches a headless sprint run and runner-status reports it",
+  "status": "todo",
+  "parent": "ST-ng7igc4l",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "New _tools/autopilot.py: 'runner start SP [--landed K]' makes or reuses the worktree .claude/worktrees/runner-<SP> at origin/main (a clean one is fast-forwarded, a dirty one is refused, naming its files) and runs claude -p '/kb-sprint run SP --headless --landed K' there with --output-format stream-json --verbose, --settings <that worktree's .claude/settings.json> and --plugin-dir for each plugin the project loads, passed explicitly; no --permission-mode or --dangerously-skip-permissions flag (the project's allow rules govern the run). The stream is written line by line to _cache/autopilot/<SP>/<UTC stamp>.jsonl; the runner ends the child on the first system compact_boundary event and records exit cause compaction, else landed-limit, sprint-done, blocked or error from the run's own final result and exit code, in _cache/autopilot/<SP>/status.json together with the start ref. 'runner-status SP' prints, in under 1000 characters, the landed items (done commits with KB-Work for the sprint's items since the start ref), gates the run added or left open on sprint items, bugs filed since the start ref, and the exit cause; it exits 1 when no run was recorded. Tests named autopilot_runner_* plant a fake claude that prints a recorded-shape stream (with and without a compact_boundary) and see the stream kept, the child ended at compaction, the status file and runner-status's length and content; a planted runner-status that prints the raw stream fails the length test. Any allow rule a headless run of /kb-sprint run needs that .claude/settings.json lacks is listed in the item's notes with its exact text for the operator, not added.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_autopilot.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot.py",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv"
+  ]
+}
