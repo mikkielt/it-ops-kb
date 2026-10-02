@@ -1,0 +1,35 @@
+{
+  "id": "BG-mk3e3wwu",
+  "kind": "bug",
+  "title": "intake --file files drafts outside bounds, so an intake draft carries no origin, evidence or cap",
+  "status": "todo",
+  "sprint": "SP-itmjxudu",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_bounds.ORIGINS holds intake beside review, retro and mid-sprint, and backlog.py intake --file files each draft through bounds file (origin intake, evidence the detector fingerprint, near-duplicate merge, the 60-draft cap), with a test named intake_files_through_bounds; the kb-autopilot tick's intake step uses it. Found by BG-ujderymb, whose goal named an intake origin that did not exist.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -n \"intake\" _tools/bl_bounds.py | grep -q ORIGINS"
+    ]
+  },
+  "repro_reason": "the gap shows only in how intake files drafts; the text match shows bl_bounds has no intake origin",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_files_through_bounds"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_bounds.py",
+    "_tools/bl_intake.py",
+    "_tools/test_bl_bounds_intake.py",
+    "kb/_self/backlog.md"
+  ]
+}

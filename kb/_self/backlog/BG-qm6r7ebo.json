@@ -54,8 +54,8 @@
           "true"
         ]
       },
-      "answer": "yes",
-      "by": "agent"
+      "answer": "no conversion needed: check accepts the operator-answered provisional gates of those classes",
+      "by": "operator"
     }
   ],
   "evidence": {
