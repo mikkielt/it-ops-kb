@@ -34,7 +34,8 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-6zcqkjfm"
