@@ -14,6 +14,12 @@ report of what the run did.
                                               written, as it arrives, to _cache/autopilot/SP/<UTC stamp>.jsonl. The
                                               runner ends the child at the first system compact_boundary event, and
                                               records the end in _cache/autopilot/SP/status.json with the start ref.
+  autopilot.py runner reset SP                free the worktree a refused start names: refused while a live runner holds SP;
+                                              a worktree with uncommitted files has them kept in a git stash of the clone
+                                              (`autopilot reset SP STAMP`), one whose branch diverged from the integration
+                                              main has the branch kept as `stale/SP-STAMP` and the worktree removed, so
+                                              the next `runner start` makes it afresh at origin/main; one that is clean and
+                                              not diverged is left alone. It names the cause either way.
   autopilot.py runner-status SP               print, in under 1000 characters, the sprint's items the run landed (done
                                               commits with KB-Work since the start ref), the gates it added or left
                                               open on them, the bugs filed since the start ref and the exit cause
@@ -22,7 +28,8 @@ Exit cause (status.json `cause`): `compaction` (the child was ended at its first
 run's own final result and the child's exit code: `error` (the child could not start, no result, an error result or a
 non-zero exit, or a result that names no cause), else the cause the result's last `sprint-runner: <cause>` line names: `landed-limit` (K
 items landed), `sprint-done` (nothing ready is left) or `blocked` (what is ready waits on a gate or trigger). While the
-run lives the cause is `running`.
+run lives the cause is `running`. A runner that gets SIGTERM or SIGHUP (`backlog.py procs --end`, its manager's exit)
+ends the child's process tree and writes `error` with the signal's name as the detail.
 
 At most bl_base.MAX_RUNNERS runners live on a host, whatever their clone. Each records itself while it runs in the host
 lock directory (`kb-runner.<pid>.json`: pid, sprint, clone, start time and the touches of the sprint's open items), and
@@ -32,11 +39,13 @@ the holder (the same check `backlog.py start` makes). A record whose process is 
 
 Exit codes: `runner start` 0 the run ended with a named cause other than `error`, 1 it ended in `error`, 2 refused (a
 bad sprint id, no git clone, a dirty or diverged worktree, no settings file, two runners already live, a sprint held by
-a runner, touches that overlap another runner's); `runner-status` 0
-printed, 1 no run was recorded for the sprint, 2 a bad sprint id. Standard library only.
+a runner, touches that overlap another runner's); `runner reset` 0 reset or nothing to reset, 2 refused (a bad sprint
+id, a live runner holds the sprint, git failed); `runner-status` 0 printed, 1 no run was recorded for the sprint, 2 a bad
+sprint id. Standard library only.
 
   autopilot.py status [--hook]                the manager's state in one capped command: runners (live records of the host
-                                              lock directory, and the cause of each ended run's status.json), each active
+                                              lock directory, and the cause of each ended run's status.json; a status.json that says `running` while no live
+                                              runner holds the sprint is listed as `ended error`), each active
                                               sprint (done of all, reachable, next item), the operator's open blocking
                                               gates, the autopilot's active decisions the operator has not ratified, and the
                                               last tick's actions. Each section prints a count and its first entries; a
@@ -54,7 +63,7 @@ printed, 1 no run was recorded for the sprint, 2 a bad sprint id. Standard libra
                                               anything fails, so a session is never kept from compacting past that step.
   .claude/settings.json runs `status --hook` on SessionStart with the `compact` matcher and `precompact` on PreCompact.
 """
-import argparse, datetime, json, os, re, subprocess, sys
+import argparse, contextlib, datetime, json, os, re, signal, subprocess, sys
 from pathlib import Path
 
 import bl_base
@@ -162,6 +171,50 @@ def prepare_worktree(root, sprint):
     return wt, bl_base.git(wt, "rev-parse", "HEAD").strip()
 
 
+def worktree_state(wt, main):
+    """(uncommitted files, whether the branch diverged from MAIN) of the runner's worktree WT: what prepare_worktree
+    refuses by."""
+    dirty = [ln[3:] for ln in bl_base.git(wt, "status", "--porcelain", "-uall").splitlines() if ln.strip()]
+    diverged = (not git_ok(wt, "merge-base", "--is-ancestor", main, "HEAD")
+                and not git_ok(wt, "merge-base", "--is-ancestor", "HEAD", main))
+    return dirty, diverged
+
+
+def reset_worktree(root, sprint):
+    """The recovery for a start prepare_worktree refused: name the cause and free the worktree without losing what is in
+    it. Uncommitted files go into a git stash of the clone; a diverged branch is kept as `stale/SP-STAMP` and the
+    worktree removed, so the next start makes both afresh at the integration main. A worktree that is clean and not
+    diverged is left as it is. Refused while a live runner holds SP. Returns 0."""
+    held = [r for r in bl_base.live_runners() if r.get("sprint") == sprint]
+    if held:
+        raise bl_base.Refused(f"{sprint} has a live runner (pid {held[0].get('pid')}, clone {held[0].get('clone')}): "
+                              "its worktree is not reset")
+    wt, branch = worktree_path(root, sprint), branch_name(sprint)
+    if not wt.exists():
+        print(f"{sprint}: no runner worktree at {wt}, nothing to reset")
+        return 0
+    remote = kbpublic.integration_remote(str(root))
+    main = f"{remote}/main"
+    bl_base.git(root, "fetch", remote)
+    dirty, diverged = worktree_state(wt, main)
+    if not dirty and not diverged:
+        print(f"{sprint}: the worktree {wt} is clean and not diverged from {main}, nothing to reset")
+        return 0
+    stamp = now().strftime("%Y%m%dT%H%M%SZ")
+    done = []
+    if dirty:
+        bl_base.git(wt, "stash", "push", "--include-untracked", "-m", f"autopilot reset {sprint} {stamp}")
+        done.append(f"{len(dirty)} uncommitted files ({', '.join(dirty[:DIRTY_FILES])}) kept in the stash "
+                    f"'autopilot reset {sprint} {stamp}'")
+    if diverged:
+        stale = f"stale/{sprint}-{stamp}"
+        bl_base.git(root, "branch", "-m", branch, stale)
+        bl_base.git(root, "worktree", "remove", "--force", str(wt))
+        done.append(f"branch {branch} diverged from {main}: kept as {stale}, worktree removed")
+    print(f"{sprint}: " + "; ".join(done) + f"; the next runner start makes the worktree afresh at {main}")
+    return 0
+
+
 def plugin_dirs(worktree):
     """The plugins the project loads, as --plugin-dir values: the project itself when it has a plugin manifest, and
     each directory under .claude-plugin/ that has one of its own, in name order."""
@@ -228,6 +281,40 @@ def supervise(argv, cwd, keep, stderr):
     return out
 
 
+class RunnerEnded(Exception):
+    """Raised in the runner by SIGTERM or SIGHUP; NAME is the signal's name."""
+
+    def __init__(self, name):
+        super().__init__(name)
+        self.name = name
+
+
+@contextlib.contextmanager
+def ends_on_signals():
+    """Within the block SIGTERM and SIGHUP (`backlog.py procs --end`, a manager that exits) raise RunnerEnded in the
+    runner instead of killing it where it stands, so supervise's cleanup ends the child's process tree and the status
+    is written. A second signal while it ends is ignored; the previous handlers come back at the end. Outside the main
+    thread nothing is installed."""
+    sigs = [getattr(signal, n) for n in ("SIGTERM", "SIGHUP") if hasattr(signal, n)]
+    old = {}
+
+    def handler(signum, frame):
+        for sig in sigs:
+            signal.signal(sig, signal.SIG_IGN)
+        raise RunnerEnded(signal.Signals(signum).name)
+
+    try:
+        for sig in sigs:
+            old[sig] = signal.signal(sig, handler)
+    except ValueError:  # not the main thread
+        pass
+    try:
+        yield
+    finally:
+        for sig, previous in old.items():
+            signal.signal(sig, previous if previous is not None else signal.SIG_DFL)
+
+
 def exit_cause(run):
     """(cause, detail) of a finished run, from supervise's dict: compaction when the child was ended at one, else from
     its final result and exit code."""
@@ -271,11 +358,16 @@ def register_runner(root, sprint):
 def runner_start(sprint, landed=None, root=ROOT):
     """Run the sprint headless in its worktree; returns the exit code (the module docstring)."""
     root = Path(root)
-    record = register_runner(root, sprint)
     try:
-        return run_in_slot(sprint, landed, root, record)
-    finally:
-        record.unlink(missing_ok=True)
+        with ends_on_signals():
+            record = register_runner(root, sprint)
+            try:
+                return run_in_slot(sprint, landed, root, record)
+            finally:
+                record.unlink(missing_ok=True)
+    except RunnerEnded as e:  # the signal came where no status was being kept
+        print(f"{sprint}: error (runner ended by {e.name})")
+        return 1
 
 
 def run_in_slot(sprint, landed, root, record):
@@ -311,6 +403,8 @@ def run_in_slot(sprint, landed, root, record):
                 detail = None
             except OSError as e:  # claude not found, or not runnable
                 detail = one_line(f"cannot start {argv[0]}: {e}")
+            except RunnerEnded as e:  # SIGTERM or SIGHUP: supervise's cleanup has ended the child's tree
+                detail = f"runner ended by {e.name}"
     finally:
         cause, why = exit_cause(run) if detail is None else ("error", detail)
         status.update(cause=cause, detail=why, exit_code=run["exit_code"],
@@ -437,8 +531,8 @@ def runner_lines(root, show):
     for p in sorted((Path(root) / "_cache" / "autopilot").glob("SP-*/status.json")):
         sp = p.parent.name
         st = read_status(root, sp)
-        if st and sp not in live and SPRINT_ID.match(sp) and st.get("cause") != "running":
-            items.append(f"{sp} ended {st.get('cause')}")
+        if st and sp not in live and SPRINT_ID.match(sp):  # a `running` no live runner holds was killed: it ended in error
+            items.append(f"{sp} ended {'error' if st.get('cause') == 'running' else st.get('cause')}")
     return [listing("runners", items, show)]
 
 
@@ -584,9 +678,12 @@ def positive(text):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    st = sub.add_parser("runner", help="run a sprint headless in a worktree of its own").add_subparsers(
-        dest="action", required=True).add_parser("start", help="start the run")
+    runner = sub.add_parser("runner", help="run a sprint headless in a worktree of its own").add_subparsers(
+        dest="action", required=True)
+    st = runner.add_parser("start", help="start the run")
     st.add_argument("sprint", type=sprint_arg)
+    runner.add_parser("reset", help="free the worktree a refused start names: stash its files, keep a diverged branch"
+                      ).add_argument("sprint", type=sprint_arg)
     st.add_argument("--landed", type=positive, metavar="K", help="the run stops after K landed items")
     rs = sub.add_parser("runner-status", help="what the recorded run did, in under 1000 characters")
     rs.add_argument("sprint", type=sprint_arg)
@@ -601,6 +698,8 @@ def main(argv=None):
             return precompact(ROOT)
         if a.cmd == "runner-status":
             return runner_status(a.sprint, ROOT)
+        if a.action == "reset":
+            return reset_worktree(ROOT, a.sprint)
         return runner_start(a.sprint, a.landed, ROOT)
     except bl_base.Refused as e:
         print(f"refused: {e}", file=sys.stderr)
