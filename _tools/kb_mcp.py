@@ -13,15 +13,19 @@ Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb 
   kb_pack    the evidence pack for a question, like `rag.py pack`: a coverage verdict (good, weak, none), the best fact
              lines grouped by article with path:line and tag, and one footer of the cited sources' urls. Call it first.
              Operator decisions come beside the facts, labelled decided or proposed (`include_invalidated` adds the
-             withdrawn ones, with why); an active decision that answers the question counts toward `good`.
+             withdrawn ones, with why); an active decision that answers the question counts toward `good`. The active
+             LOG rows (observed signals) of the printed articles and facts follow under `observed signal (LOG, not a
+             fact):` with the dates they cover; they never count toward coverage and are never an answer on their own.
              `questions` (1-6) batches the parts of a multi-part question: a section per part, one shared footer.
              Always loaded (`anthropic/alwaysLoad`): the first lookup needs no tool-search round trip.
   kb_search  line search on the pack index, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
              source ids and their urls, and rag.py's notes ("not found anywhere", "weak match")
   kb_facts   fact lines under a path prefix, optionally only some tag kinds, like `rag.py facts`
   kb_audit   per article: status, retrieved_utc, fact counts by tag kind, linked gap/conflict entries, like `rag.py audit`;
-             then the possible contradictions: active decisions that share a context
-  kb_show    lines of a kb file, like `rag.py show PATH:LINE -n N`, then the decisions tied to those lines
+             then the possible contradictions (active decisions that share a context) and the active LOG rows of the
+             audited articles, as observed signal
+  kb_show    lines of a kb file, like `rag.py show PATH:LINE -n N`, then the decisions tied to those lines and the
+             active LOG rows (observed signal, not facts) of the article and its facts
   kb_source  source rows by id (legacy S123 or hash S-xxxxxxxx), with superseded_by, like `rag.py src`; `cited`
              adds every file line that names each id
   kb_status  how current this copy is: its commit and date, the latest census-* tag (or _census/ log), source and
@@ -312,7 +316,9 @@ def kb_audit(args):
         raise ToolError("no article matches")
     with guarded():
         conflicts = rag.format_decision_conflicts(kbfacts.decision_conflicts(args.get("prefix") or None, root_of(args)))
-    return rag.format_audit(rows, bool(args.get("entries")), fmt_of(args, "concise")) + (f"\n{conflicts}" if conflicts else "")
+        logs = rag.format_logs(kbfacts.audit_logs(rows))
+    return (rag.format_audit(rows, bool(args.get("entries")), fmt_of(args, "concise")) + (f"\n{conflicts}" if conflicts else "")
+            + (f"\n{logs}" if logs else ""))
 
 
 def kb_show(args):
@@ -341,8 +347,9 @@ def kb_show(args):
     with guarded():
         decisions = kbfacts.show_decisions(kbfacts.qpath_of(full), start, start + len(body) - 1,
                                            args.get("include_invalidated") is True)
+        logs = rag.format_logs(kbfacts.show_logs(kbfacts.qpath_of(full), start, start + len(body) - 1))
     return (f"# {rel} lines {start}-{start + len(body) - 1} of {len(lines)}\n" + "\n".join(body)
-            + ("\ndecisions:\n" + "\n".join(decisions) if decisions else ""))
+            + ("\ndecisions:\n" + "\n".join(decisions) if decisions else "") + (f"\n{logs}" if logs else ""))
 
 
 def shown_path(full):

@@ -226,6 +226,12 @@ def format_audit(rows, entries=False, fmt="detailed"):
     return "\n".join(out)
 
 
+def format_logs(lines):
+    """The observed signals (LOG lines, kbfacts.logs_for) a show or an audit prints after its table or lines, under their
+    label; "" for none."""
+    return "\n".join([kbfacts.LOG_LABEL] + lines) if lines else ""
+
+
 def format_decision_conflicts(items):
     """The possible contradictions of kbfacts.decision_conflicts: per shared context, its active decisions. Text for a
     person to read; a kb with none prints nothing."""
@@ -360,9 +366,9 @@ def main():
         print(res["text"])
     elif a.cmd == "facts":
         kinds = {k.strip().upper() for k in (a.tag or "").split(",") if k.strip()}
-        bad = kinds - set(kbfacts.KINDS)
+        bad = kinds - set(kbfacts.EVIDENCE_KINDS)
         if bad:
-            sys.exit(f"unknown tag kind(s): {', '.join(sorted(bad))} (use {', '.join(kbfacts.KINDS)})")
+            sys.exit(f"unknown tag kind(s): {', '.join(sorted(bad))} (use {', '.join(kbfacts.EVIDENCE_KINDS)})")
         res = [u for u in kbfacts.units(kbfacts.scope(a.prefix, a.root))
                if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
         if a.json:
@@ -388,6 +394,8 @@ def main():
         print(format_audit(rows, a.entries, a.format))
         if conflicts := format_decision_conflicts(kbfacts.decision_conflicts(a.prefix, a.root)):
             print(conflicts)
+        if logs := format_logs(kbfacts.audit_logs(rows)):
+            print(logs)
     elif a.cmd == "topics-for":
         if not a.paths and not a.keywords:
             sys.exit("topics-for: give files or directories, or --keywords TEXT")
@@ -428,6 +436,8 @@ def main():
         if decisions:
             print("decisions:")
             print("\n".join(decisions))
+        if logs := format_logs(kbfacts.show_logs(kbfacts.qpath_of(full), start, end - 1)):
+            print(logs)
 
 
 if __name__ == "__main__":

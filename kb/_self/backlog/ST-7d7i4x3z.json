@@ -54,6 +54,19 @@
       "recommendation": "wait for the failure",
       "answer": "add",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which LOG row contexts tie a row to a lookup, and how many lines print? The goal leaves both open.",
+      "options": [
+        "as a decision: article, domain, fact, source or a [LOG id] cite in a printed fact; item: alone never; at most 2 lines in pack and show, 20 in audit; none on a none that routes web",
+        "also item: contexts of the question's own backlog items",
+        "no cap beyond the budget"
+      ],
+      "recommendation": "as a decision: article, domain, fact, source or a [LOG id] cite in a printed fact; item: alone never; at most 2 lines in pack and show, 20 in audit; none on a none that routes web",
+      "answer": "as a decision: article, domain, fact, source or a [LOG id] cite in a printed fact; item: alone never; at most 2 lines in pack and show, 20 in audit; none on a none that routes web",
+      "by": "agent"
     }
   ],
   "claimed_by": "mac-sixth"
