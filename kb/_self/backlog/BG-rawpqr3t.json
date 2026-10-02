@@ -2,7 +2,7 @@
   "id": "BG-rawpqr3t",
   "kind": "bug",
   "title": "The kb-autopilot tick runs kbdecide.py digest and list, PushNotification and ToolSearch, which settings.json does not allow, so an unattended loop stalls on a permission prompt",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
@@ -13,7 +13,7 @@
     "run": [
       "python3",
       "-c",
-      "import json,sys;a=json.load(open(\".claude/settings.json\"))[\"permissions\"][\"allow\"];need=[\"Bash(python3 _tools/kbdecide.py digest*)\",\"Bash(python3 _tools/kbdecide.py list*)\",\"PushNotification\",\"ToolSearch\"];miss=[n for n in need if not any(n.rstrip(\"*\") in x for x in a)];print(miss);sys.exit(1 if miss else 0)"
+      "import json,sys;a=json.load(open(\".claude/settings.json\"))[\"permissions\"][\"allow\"];need=[\"Bash(python3 _tools/kbdecide.py digest)\",\"Bash(python3 _tools/kbdecide.py list *)\",\"PushNotification\",\"ToolSearch\"];miss=[n for n in need if n not in a];print(miss);sys.exit(1 if miss else 0)"
     ]
   },
   "repro_reason": "a permission decision is made by Claude Code when a tool call is attempted and no repro here can run one; the defect is the allow list of the configuration, so the repro reads it",
@@ -30,6 +30,8 @@
   "touches": [
     ".claude/settings.json",
     "_tools/test_settings_allow.py",
-    "kb/_self/plugin.md"
-  ]
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md"
+  ],
+  "claimed_by": "mac-first"
 }
