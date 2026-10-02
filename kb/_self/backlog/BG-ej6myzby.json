@@ -36,7 +36,8 @@
     "_tools/test_autopilot_two_runners.py",
     "_tools/test_kb_leaks.py",
     "_tools/test_sync.py",
-    "_tools/test_bl_land.py"
+    "_tools/test_bl_land.py",
+    "kb/_self/code.md"
   ],
   "claimed_by": "orch-fourth-s2"
 }
