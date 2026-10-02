@@ -9,7 +9,7 @@ import csv, io, os, re, shutil
 
 import pytest
 
-import kbgit, kbid, kg_merge
+import kbgit, kbid, kg_merge, kg_sync
 import kbcommon
 from conftest import KB, SOURCES_HEADER as HEADER, P, Repo, copy_kb, requires_git
 # the generated coverage table's page, a repository path: one per root, or the one page an older build_index keeps
@@ -110,7 +110,7 @@ class TestMergeRules:
         plan = kg_merge.answer_plan(merged, "# A\n", up, {"up": up, "mine": mine}, report, problems)
         assert problems == []
         assert plan["QK-shared"]["by_side"] == {"mine": kbid.answer_id("What does clone b ask about sync?")}
-        assert kbgit.renumbered("\n".join("  " + x for x in report)) == report
+        assert kg_sync.renumbered("\n".join("  " + x for x in report)) == report
         # no base, no pushed side: the first heading keeps the id; a unique id is never touched
         plan = kg_merge.answer_plan(merged, None, None, {"up": up, "mine": mine}, [], [])
         assert list(plan) == ["QK-shared"]

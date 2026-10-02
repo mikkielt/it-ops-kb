@@ -2,7 +2,7 @@
 
   TestLanes  the path classifier's boundaries (kb roots, the query log, backlog items, kb/_self process docs, the two
              tool data files, everything else code), every path ql_deliver.auto_kinds accepts and every
-             kbgit.MECHANICAL path content, and (marker git) planted commits in a throwaway repository: a
+             kg_sync.MECHANICAL path content, and (marker git) planted commits in a throwaway repository: a
              content-only, a code-only, a mixed, a merge and a backlog-item commit, and a root commit; `kbgit.py lane`
              prints them. Planted failures: a code path in a content commit and a content path in a code one flip the lane.
   TestCheckLanes  check_lanes and `kbgit.py check-lanes` in a throwaway repository against an injected opener and a stub
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-import kblane, kbgit, ql_deliver
+import kblane, kbgit, kg_sync, ql_deliver
 from conftest import Repo, requires_git
 
 HERE = Path(__file__).resolve().parent
@@ -57,8 +57,8 @@ class TestLanes:
         for p in auto:
             ql_deliver.auto_kinds([p])  # raises when the writers do not accept it
             assert kblane.path_lane(p) == "content", p
-        assert kbgit.MECHANICAL
-        assert [p for p in kbgit.MECHANICAL if kblane.path_lane(p) != "content"] == []
+        assert kg_sync.MECHANICAL
+        assert [p for p in kg_sync.MECHANICAL if kblane.path_lane(p) != "content"] == []
 
     def test_lane_of_paths(self):
         assert kblane.paths_lane([]) == ("content", [])

@@ -75,7 +75,7 @@ before sha is all zeros or unknown); elsewhere @{upstream}..HEAD, or HEAD alone 
 Census tags: an annotated tag `census-YYYY-MM-DD` marks "the kb was confirmed current as of that date"; its message
 counts the sources and the _fetch_state.csv checks. `asof census-2026-09-26 PATH` reads a file as of a census.
 
-Sync (the only way to push; people push straight to main, CI is a safety net):
+Sync (kg_sync.py; the only way to push; people push straight to main, CI is a safety net):
   a. refuses (exit 2) with uncommitted tracked changes (lists staged/unstaged: commit or stash them), or while a
      rebase/merge/cherry-pick/revert is in progress; untracked files do not count.
   b. git fetch REMOTE BRANCH; prints how far HEAD is ahead of / behind REMOTE/BRANCH. With --push (--dry-run too) it
@@ -162,7 +162,7 @@ Exit (fix, fmt): 0 clean (or fixed), 1 --check and something would change, 2 a p
 Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, asof/blame found no such file or line;
 2 bad arguments, not a git clone, or a git error. Hooks always exit 0.
 """
-import argparse, csv, datetime, io, json, os, re, shlex, stat, subprocess, sys
+import argparse, csv, datetime, io, json, os, re, stat, subprocess, sys
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -172,7 +172,9 @@ import kbpublic  # noqa: E402
 import kblane  # noqa: E402
 import kg_lane  # noqa: E402
 import kg_merge  # noqa: E402
-from kg_base import BASELINE, KB, Problem, repo_roots  # noqa: E402
+import kg_sync  # noqa: E402
+from kg_base import KB, Problem, repo_roots  # noqa: E402
+from kg_sync import do_rebase, gitx, in_progress, new_report  # noqa: E402
 from kg_merge import FB, canon_csv, has_markers, id_key, lf, run, strip_markers  # noqa: E402,F401
 
 KB_DIR_REL = kbcommon.repo_rel(kbcommon.KB_DIR)  # `kb`: the roots are the directories kb/<name>/
@@ -1229,116 +1231,15 @@ def cmd_tag_census(a):
     return 0
 
 
-# ---------------------------------------------------------------- sync: fetch, rebase, fix, gate, push
-
-# Paths whose rebase conflicts are resolved mechanically: the union ledgers and the generated files. `fix` rebuilds
-# them (the coverage page only when its markers are inside the table; otherwise fix reports it and sync stops).
-def mechanical():
-    """Every root's union ledgers, _coverage.csv and coverage page, and the lint baseline (repository paths)."""
-    out = {BASELINE}
-    try:
-        rs = repo_roots()
-    except kbcommon.RootError:
-        rs = []  # a malformed root: sync still resolves the public root's ledgers; check.py names the root
-    for r in rs or [None]:
-        path = r.path if r else kbcommon.PUBLIC
-        L = lambda n: kbcommon.repo_rel(n, path)  # noqa: E731
-        out |= {L(kbcommon.SOURCES), L(kbcommon.STATE), L(kbcommon.ANSWERS), L(kbcommon.GAPS), L(kbcommon.CONFLICTS),
-                L(kbcommon.COVERAGE_CSV), L(kbcommon.COVERAGE_MD)}
-    return frozenset(out)
+FIX_COMMIT = kg_sync.FIX_COMMIT  # ql_deliver.py reads it: the subject of the commit sync makes from what fix changed
 
 
-MECHANICAL = mechanical()
-IN_PROGRESS = (("rebase-merge", "a rebase", "git rebase --continue, or git rebase --abort"),
-               ("rebase-apply", "a rebase", "git rebase --continue, or git rebase --abort"),
-               ("MERGE_HEAD", "a merge", "git merge --continue, or git merge --abort"),
-               ("CHERRY_PICK_HEAD", "a cherry-pick", "git cherry-pick --continue, or git cherry-pick --abort"),
-               ("REVERT_HEAD", "a revert", "git revert --continue, or git revert --abort"))
-NO_EDITOR = {"GIT_EDITOR": "true", "GIT_SEQUENCE_EDITOR": "true"}
-# Every rebase sync runs or tells a human to run. git's union driver (and plain conflicts) merge at the "zealous" level:
-# lines both sides end (or start) with are pulled out of the conflict and kept once. Two answers that end in the same
-# `_Agent: kb-research_` footer then interleave: the second is spliced into the first, above its footer, and the
-# rebased commit edits the other side's section (its KB-Answers trailer names it). diff3 caps the level at "eager",
-# which keeps each side's block whole (and adds the base to conflict markers, which fix and /kb-git-sync read anyway).
-MERGE_CFG = ("-c", "merge.conflictStyle=diff3")
-REBASE = (*MERGE_CFG, "rebase")
-REBASE_HINT = "git -c merge.conflictStyle=diff3 rebase"
-FIX_COMMIT = "chore(kb): kbgit fix after sync"
-REJECTED = re.compile(r"\[rejected\]|non-fast-forward|fetch first|stale info", re.I)
+def short(rev):
+    return (rev or "")[:9]
 
 
-def gitx(*args, env=None):
-    """(exit code, stdout + stderr text) of a git command in the kb; (127, message) when git cannot be started."""
-    try:
-        p = subprocess.run(["git", *args], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           env={**os.environ, **(env or {})})
-    except OSError as e:
-        return 127, str(e)
-    return p.returncode, p.stdout + p.stderr
-
-
-def tool(name, *args, env=None):
-    """(exit code, output) of a kb tool in this checkout (the files on disk, which a rebase may have updated). The
-    re-run marker (REEXEC_ENV) is not passed on: it belongs to this sync, not to a sync a tool starts."""
-    base = {k: v for k, v in os.environ.items() if k != REEXEC_ENV}
-    p = subprocess.run([sys.executable, os.path.join(KB, "_tools", name), *args], cwd=KB, capture_output=True,
-                       text=True, encoding="utf-8", errors="replace", env={**base, **(env or {})})
-    return p.returncode, p.stdout + p.stderr
-
-
-# A rebase that brings a new kbgit.py, or a new version of a _tools module it loaded (kblane, kbpublic, kg_merge...),
-# leaves this process running the code it loaded before. sync then re-runs itself once, as a new process with the same
-# arguments on the rebased tree, so the new rules (lanes, the gate) decide the push that brought them; the re-run finds
-# nothing behind and goes on. REEXEC_ENV marks the re-run: a re-run whose own rebase (the remote moved again) changed
-# the code once more stops with exit 3 instead of a second re-run, and so does a sync with no command line to repeat.
-REEXEC_ENV = "KB_SYNC_REEXEC"
-
-
-def loaded_tools():
-    """The repository paths (`_tools/NAME.py`) of the _tools modules this process has loaded, sorted."""
-    tools = Path(KB, "_tools").resolve()
-    out = set()
-    for m in list(sys.modules.values()):
-        f = getattr(m, "__file__", None)
-        if f and f.endswith(".py") and Path(f).resolve().parent == tools:
-            out.add("_tools/" + Path(f).name)
-    return sorted(out)
-
-
-def code_changed(before, after="HEAD"):
-    """The loaded _tools modules (loaded_tools) whose files differ between BEFORE and AFTER, sorted. BEFORE is the
-    commit the code was loaded from: sync refuses a dirty tree, so the files on disk were BEFORE's."""
-    out = git("diff", "--name-only", "-z", before, after, "--", *loaded_tools()) or ""
-    return sorted(p for p in out.split("\0") if p)
-
-
-def rerun_sync(a, r, changed):
-    """The rebase changed CHANGED, code this process runs: run sync again, once, with the rebased code and return its
-    exit code. Inside a re-run already, or without a command line to repeat (sync started by bridge): exit 3."""
-    print("the rebase changed the code sync runs: " + ", ".join(changed))
-    argv = getattr(a, "rerun", None)
-    if not argv or os.environ.get(REEXEC_ENV) == "1":
-        print("stopped: the rebase is complete; nothing fixed, committed or pushed. Run the same kbgit.py sync command "
-              "again, so the rebased code decides the push")
-        r["pushed"] = "no (rerun sync: the rebase changed its code)"
-        return 3
-    print("re-running sync once with the rebased code", flush=True)
-    sys.stderr.flush()
-    p = subprocess.run([sys.executable, *argv], cwd=KB, env={**os.environ, REEXEC_ENV: "1"})
-    r["rerun"] = p.returncode
-    return p.returncode
-
-
-def in_progress():
-    for name, what, how in IN_PROGRESS:
-        p = git_path(name)
-        if p and os.path.exists(p):
-            return what, how
-    return None
-
-
-def rebasing():
-    return any(os.path.isdir(git_path(n) or "") for n in ("rebase-merge", "rebase-apply"))
+def names(*args):
+    return sorted(p for p in (git(*args, "-z") or "").split("\0") if p)
 
 
 def dirty_paths():
@@ -1346,486 +1247,23 @@ def dirty_paths():
     return names("diff", "--cached", "--name-only"), names("diff", "--name-only")
 
 
-def names(*args):
-    return sorted(p for p in (git(*args, "-z") or "").split("\0") if p)
+# ---------------------------------------------------------------- sync (kg_sync.py): the facade gives it the trailer code
 
 
-def short(rev):
-    return (rev or "")[:9]
-
-
-# The session that runs sync, matched against the `Claude-Session: <url>` trailer Claude Code adds to the commits of a
-# cloud or Remote Control session. In order: --session, KB_SESSION (set but empty: unknown), a cloud session's
-# CLAUDE_CODE_REMOTE_SESSION_ID (`cse_<id>`, the url's `session_<id>`), a Remote Control session's
-# CLAUDE_CODE_BRIDGE_SESSION_ID. A session that sets none of them writes no such trailer either: unknown, never refused.
-SESSION_TRAILER = "Claude-Session"
-SESSION_ENV = ("CLAUDE_CODE_REMOTE_SESSION_ID", "CLAUDE_CODE_BRIDGE_SESSION_ID")
-
-
-def session_key(value):
-    """The comparable form of a session: the url's last path segment, `cse_` read as `session_`; "" when empty."""
-    v = (value or "").strip().rstrip("/").rsplit("/", 1)[-1]
-    return "session_" + v[len("cse_"):] if v.startswith("cse_") else v
-
-
-def current_session(arg=None, env=None):
-    """The session sync runs in (session_key form), or "" when unknown."""
-    env = os.environ if env is None else env
-    if arg is not None:
-        return session_key(arg)
-    if "KB_SESSION" in env:
-        return session_key(env["KB_SESSION"])
-    return next((session_key(env[k]) for k in SESSION_ENV if env.get(k, "").strip()), "")
-
-
-def foreign_session_commits(rev, remote, up, session):
-    """[(short, subject, sessions)] of REV's commits not on REMOTE (UP, the remote's tracking refs) whose
-    Claude-Session trailers name a session other than SESSION; [] when SESSION is unknown. A commit with no such
-    trailer (a person's, a tool's) is never foreign."""
-    if not session:
-        return []
-    out = git("log", f"--format=%h%x1f%s%x1f%(trailers:key={SESSION_TRAILER},valueonly,unfold,separator=%x1d)%x1e",
-              rev, "--not", *([up] if up else []), f"--remotes={remote}") or ""
-    found = []
-    for rec in out.split("\x1e"):
-        parts = rec.strip("\n").split("\x1f")
-        if len(parts) != 3:
-            continue
-        sessions = [session_key(s) for s in parts[2].split("\x1d") if s.strip()]
-        if sessions and session not in sessions:
-            found.append((parts[0], parts[1], sessions))
-    return found
-
-
-def fix_args(base, up, orig):
-    """kbgit.py fix arguments after rebasing orig onto up: up is already pushed, so its ids and answer ids stay."""
-    return ["fix"] + (["--base", base, "--upstream", up, "--side", orig] if base else [])
-
-
-def renumbered(output):
-    """fix's report lines about renumbered source ids and renamed answer ids."""
-    return [ln.strip() for ln in output.splitlines() if " collision: " in ln]
-
-
-def conflict_help(r, up, base, orig, manual, mech, step):
-    fix_cmd = "python3 _tools/kbgit.py " + " ".join(fix_args(base, up, orig))
-    print(f"CONFLICT rebasing onto {r['target']}, at local commit {step}")
-    for p in manual:
-        print(f"needs-human: {p}")
-    for p in mech:
-        print(f"mechanical: {p}  (kbgit.py fix rebuilds it)")
-    print(f"sync-state: base={base} upstream={up} orig_head={orig}")
-    print("The rebase is still in progress; nothing was pushed. Never resolve article text by taking one side blindly.")
-    print("Resolve (or run /kb-git-sync), one command at a time:")
-    print("  edit the needs-human files: keep both sides' facts, no conflict markers left")
-    print(f"  {fix_cmd}")
-    print("  git add <the resolved paths>")
-    print(f"  GIT_EDITOR=true {REBASE_HINT} --continue   (later local commits may stop again)")
-    print("  python3 _tools/kbgit.py sync" + (" --push" if r.get("push") else ""))
-    print(f"Or give up: git rebase --abort  (back to {short(orig)}, nothing lost)")
-
-
-def do_rebase(r, up, base, orig, since=None):
-    """Rebase HEAD onto up, resolving conflicts in MECHANICAL paths with fix. 0 done, 2 git refused, 3 manual. SINCE
-    (the bridge): only the commits after it, `git rebase --onto up since`."""
-    code, out = gitx(*REBASE, *(["--onto", up, since] if since else [up]), env=NO_EDITOR)
-    for _ in range(1000):
-        if not rebasing():
-            if code:
-                print("git rebase failed:\n" + out.rstrip())
-                return 2
-            return 0
-        conflicted = names("diff", "--name-only", "--diff-filter=U")
-        stopped = git("log", "-1", "--format=%h %s", "REBASE_HEAD") or ""
-        step = stopped.strip() or "(unknown)"
-        if not conflicted:
-            if git_run("diff", "--cached", "--quiet", "HEAD").returncode == 0 and \
-                    git_run("diff", "--quiet").returncode == 0:
-                code, out = gitx(*REBASE, "--skip", env=NO_EDITOR)
-                r["notes"].append(f"dropped {step}: empty after the rebase")
-            else:
-                code, out = gitx(*REBASE, "--continue", env=NO_EDITOR)
-                if code and rebasing() and not names("diff", "--name-only", "--diff-filter=U"):
-                    print(out.rstrip())
-                    conflict_help(r, up, base, orig, ["(rebase stopped without a conflict; see git's message above)"], [], step)
-                    return 3
-            continue
-        manual = [p for p in conflicted if p not in MECHANICAL]
-        mech = [p for p in conflicted if p in MECHANICAL]
-        if manual:
-            conflict_help(r, up, base, orig, manual, mech, step)
-            return 3
-        fcode, fout = tool("kbgit.py", *fix_args(base, up, orig))
-        if fcode:
-            print(fout.rstrip())
-            probs = [ln[len("PROBLEM "):] for ln in fout.splitlines() if ln.startswith("PROBLEM ")]
-            conflict_help(r, up, base, orig, [p for p in mech if any(p in x for x in probs)] or mech, [], step)
-            return 3
-        left = [p for p in conflicted if has_markers(read(p))]
-        if left:
-            conflict_help(r, up, base, orig, left, [], step)
-            return 3
-        r["renumbered"] += renumbered(fout)
-        r["auto"].append(f"{step}: {', '.join(mech)}")
-        gitx("add", "-u")
-        code, out = gitx(*REBASE, "--continue", env=NO_EDITOR)
-    print("git rebase did not finish after 1000 steps; inspect with git status")
-    return 3
-
-
-def commit_fix(r):
-    """Commit what fix changed as its own small commit, with KB-* trailers computed here (hook or not)."""
-    gitx("add", "-u")
-    body = f"{FIX_COMMIT}\n\nkbgit.py fix after rebasing onto {r['target']}: " + \
-           ("renumbered colliding ids and their citations; " if r["renumbered"] else "") + \
-           "merged the union-merged ledger rows and rebuilt the generated index.\n"
-    msg = apply_trailers(body, compute(rev_parse("HEAD") or "", INDEX))
-    p = subprocess.run(["git", "commit", "-q", "--no-verify", "--cleanup=whitespace", "-F", "-"], cwd=KB,
-                       input=msg, capture_output=True, text=True, encoding="utf-8", errors="replace")
-    if p.returncode:
-        print("git commit of the fix failed:\n" + (p.stdout + p.stderr).rstrip())
-        return False
-    r["fix_commit"] = rev_parse("HEAD")
-    return True
-
-
-def refresh_trailers(r, up):
-    """Rewrite the KB-* trailers of the unpushed commits whose trailers no longer match their diff
-    (a rebase that resolved conflicts or renumbered ids changes the diffs). Only up..HEAD is touched."""
-    audit = trailer_audit(f"{up}..HEAD", quiet=True, work_state_on=False)
-    if not audit or not audit[2]:
-        return True
-    exe = " ".join(shlex.quote(x) for x in (sys.executable, os.path.join(KB, "_tools", "kbgit.py"), "trailers", "--amend"))
-    code, out = gitx(*REBASE, "--exec", exe, up, env=NO_EDITOR)
-    if code or rebasing():
-        print("refreshing trailers failed:\n" + out.rstrip())
-        if rebasing():
-            gitx("rebase", "--abort")
-        return False
-    r["refreshed"] = len(audit[2])
-    return True
-
-
-def gate_paths(up):
-    """The paths the gate judges: changed from UP's merge base to HEAD, plus the working tree (the pre-push hook
-    checks it too); None when there is no UP (a new branch), which runs every check."""
-    if not up:
-        return None
-    base = (git("merge-base", up, "HEAD") or "").strip()
-    if not base:
-        return None
-    staged, unstaged = dirty_paths()
-    return set(names("diff", "--name-only", base, "HEAD")) | set(staged) | set(unstaged)
-
-
-def artifact_paths():
-    """Every root's pinned artifact files (_artifacts.csv `path`), as repository paths."""
-    out = set()
-    for root in kbcommon.roots():
-        p = os.path.join(root.path, "_artifacts.csv")
-        if os.path.exists(p):
-            with open(p, encoding="utf-8", newline="") as f:
-                out |= {kbcommon.repo_rel(row["path"], root.path) for row in csv.DictReader(f) if row.get("path")}
-    return out
-
-
-def gate_needs(paths):
-    """{check: the reason it runs, or None to skip}. Each check runs only when a path it reads changed; with no
-    known paths (None) every check runs."""
-    if paths is None:
-        return {k: "no base to compare with" for k in ("check", "fetch", "doc2query", "selfdoc", "backlog", "querylog")}
-    ps = {p.replace("\\", "/") for p in paths}
-    kb = {p for p in ps if p.startswith("kb/")}
-    tools = {p for p in ps if p.startswith("_tools/")}
-    items = {p for p in kb if p.startswith(kbcommon.repo_rel(kbcommon.SELF) + "/backlog/")}
-    store = {p for p in kb if p.startswith("kb/_querylog/")}
-    content = kb - items - store
-    arts = artifact_paths()
-
-    def why(hit, what):
-        return f"{what} changed: {sorted(hit)[0]}" + (f" (+{len(hit) - 1})" if len(hit) > 1 else "") if hit else None
-    root = {p for p in ps if "/" not in p}  # README.md, AGENTS.md: check.py validates their citations too
-    return {"check": why(content | tools | root, "kb content, a root file or a tool"),
-            "fetch": why({p for p in ps if p in arts or p.endswith(("/_artifacts.csv", "/_sources.csv")) or p == "_tools/fetch.py"},
-                         "a pinned artifact or its row"),
-            "doc2query": why({p for p in content if p.endswith(".md") or "/doc2query/" in p} | ({"_tools/doc2query.py"} & ps),
-                             "an article or its expansions"),
-            "selfdoc": why(ps - content - items - store, "a file kb/_self describes"),
-            "backlog": why(items | ({"_tools/backlog.py"} & ps), "a backlog item"),
-            "querylog": why(store, "the query log store")}
+def sync_host():
+    """What kg_sync takes from this module: the trailer audit, the fix commit's message and the hooks check, read when
+    sync runs."""
+    return kg_sync.Host(trailer_audit, lambda body: apply_trailers(body, compute(rev_parse("HEAD") or "", INDEX)),
+                        hooks_path_is_ours)
 
 
 def gate(r, up, fix_check=False):
-    """The checks the changed paths (gate_paths) can break, then check-trailers on up..HEAD:
-    check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
-    article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
-    clears a doc), backlog.py check for backlog items, querylog.py check for the query log store, and tests.py
-    --changed UP (testmap.py maps the paths to the test files they can break; KB_TESTS_FAST=1 keeps the git scenarios
-    of the test files a code path selects, TestCloudInGit for kbgit.py, and leaves out those only kb content selects).
-    `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
-    rebuilds the generated files, so its gate has neither. A skipped check is listed with why."""
-    results = []
-    paths = gate_paths(up)
-    need = gate_needs(paths)
-    checks = [("kbgit.py fix --check", "kbgit.py", ["fix", "--check"], None, "pre-push"),
-              ("build_index.py --check", "build_index.py", ["--check"], None, "pre-push")] if fix_check else []
-    checks += [("check.py", "check.py", [], None, need["check"]),
-               ("fetch.py --offline", "fetch.py", ["--offline"], None, need["fetch"]),
-               ("doc2query.py stale", "doc2query.py", ["stale"], None, need["doc2query"]),
-               ("backlog.py check", "backlog.py", ["check"], None, need["backlog"]),
-               ("querylog.py check", "querylog.py", ["check"], None, need["querylog"])]
-    if up:
-        checks.append((f"selfdoc.py stale --since {short(up)}", "selfdoc.py", ["stale", "--since", up], None, need["selfdoc"]))
-    checks.append(("tests.py (changed)" if up else "tests.py (fast)", "tests.py", ["--changed", up] if up else [],
-                   {"KB_TESTS_FAST": "1"}, "always"))
-    for label, name, args, env, reason in checks:
-        if name == "tests.py" and os.environ.get("KB_SYNC_NO_TESTS") == "1":
-            results.append((label, "skipped (KB_SYNC_NO_TESTS=1)", True))
-            continue
-        if not reason:
-            results.append((label, "skipped: no path it reads changed", True))
-            continue
-        code, out = tool(name, *args, env=env)
-        tail = [ln for ln in out.strip().splitlines() if ln.strip()][-1:] or [""]
-        results.append((label, ("ok" if code == 0 else f"FAILED (exit {code})") + f": {tail[0][:100]}", code == 0))
-        if code:
-            print(f"--- {label} output (last lines)\n" + "\n".join(out.strip().splitlines()[-25:]))
-    rng = f"{up}..HEAD" if up else "HEAD"
-    audit = trailer_audit(rng, quiet=True)
-    if audit is None:
-        results.append((f"check-trailers {rng}", "FAILED: not a valid range", False))
-    else:
-        for _, lines in audit[2]:
-            print("\n".join(lines))
-        results.append((f"check-trailers {r['target']}..HEAD", f"{'ok' if not audit[2] else 'FAILED'}: commits={audit[0]} bad={len(audit[2])}",
-                        not audit[2]))
-    r["gate"] = results
-    return all(ok for _, _, ok in results)
-
-
-NO_PUSH_OPTIONS = re.compile(r"receiving end does not support push options", re.I)
-
-
-def push_options(target):
-    """The merge-request push options of a code branch, in the order they are sent."""
-    return ["merge_request.create", f"merge_request.target={target}", "merge_request.auto_merge",
-            "merge_request.remove_source_branch"]
-
-
-def push_branch(a, r, branch, target):
-    """Push HEAD as BRANCH (code/<id>) with the merge-request push options; a server without push options gets the
-    same push without them. An existing branch that is not an ancestor of HEAD is replaced with a lease on the tip
-    fetched here (code/* only: main is never forced). Returns an exit code."""
-    if not branch.startswith(kg_lane.CODE_BRANCH_PREFIX):
-        print(f"refused: {branch} is not a {kg_lane.CODE_BRANCH_PREFIX}* branch")
-        return 2
-    ref = f"refs/heads/{branch}"
-    tracking = f"refs/remotes/{a.remote}/{branch}"
-    code, out = gitx("fetch", "--quiet", a.remote, f"+{ref}:{tracking}")
-    if code and not re.search(r"couldn't find remote ref", out, re.I):
-        print(f"git fetch {a.remote} {branch} failed:\n" + out.rstrip())
-        return 2
-    tip = None if code else rev_parse(tracking)
-    argv = ["push"]
-    if tip and gitx("merge-base", "--is-ancestor", tip, "HEAD")[0] != 0:
-        argv.append(f"--force-with-lease={ref}:{tip}")
-        print(f"{branch} on {a.remote} is not an ancestor of the rebased work; replacing it with a lease on {short(tip)}")
-    elif not tip:
-        argv.append(f"--force-with-lease={ref}:")  # expects no such branch
-    opts = push_options(a.branch)
-    sent = [x for o in opts for x in ("-o", o)]
-    dest = [a.remote, f"HEAD:{ref}"]
-    code, out = gitx(*argv, *sent, *dest, env={"KB_GATE_DONE": "1"})  # gated above
-    if code and NO_PUSH_OPTIONS.search(out):
-        code, out = gitx(*argv, *dest, env={"KB_GATE_DONE": "1"})
-        opts = None
-    if code:
-        if REJECTED.search(out):
-            print(f"push of {branch} refused: it moved on {a.remote} since it was fetched, nothing was overwritten:\n" + out.rstrip())
-            r["pushed"] = f"no ({branch} moved on {a.remote})"
-        else:
-            print("git push failed:\n" + out.rstrip())
-            r["pushed"] = "no (push failed)"
-        return 1
-    r["pushed"] = f"yes: branch {branch} on {a.remote} ({short(rev_parse('HEAD'))}); {target} did not move"
-    if opts:
-        r["notes"].append(f"merge request for {a.branch} requested with push options: {', '.join(opts)}")
-    else:
-        r["notes"].append(f"{a.remote} does not support push options: open a merge or pull request from {branch} "
-                          f"into {a.branch}")
-    r["notes"].append(f"local {a.branch} is unchanged; the commits stay local until the merge request merges, a later "
-                      "sync then finds them on the integration branch")
-    return 0
-
-
-def sync_once(a, r):
-    """One fetch -> rebase -> fix -> gate -> push round. Returns an exit code, or "retry" when the push was rejected."""
-    target = f"{a.remote}/{a.branch}"
-    r["target"] = target
-    code, out = gitx("fetch", "--quiet", a.remote, f"+refs/heads/{a.branch}:refs/remotes/{target}")
-    missing = code and re.search(r"couldn't find remote ref", out, re.I)
-    if code and not missing:
-        print(f"git fetch {a.remote} failed:\n" + out.rstrip())
-        return 2
-    up = None if missing else rev_parse(f"refs/remotes/{target}")
-    orig = rev_parse("HEAD")
-    if up:
-        base = (git("merge-base", up, orig) or "").strip()
-        if not base:
-            print(f"refused: HEAD and {target} share no history")
-            return 2
-        behind, ahead = (int(x) for x in (git("rev-list", "--left-right", "--count", f"{up}...{orig}") or "0 0").split())
-    else:
-        base, behind = None, 0
-        ahead = int((git("rev-list", "--count", orig) or "0").strip())
-    r.update(ahead=ahead, behind=behind)
-    print(f"{target}: local {ahead} ahead, {behind} behind" + ("" if up else f" ({a.branch} does not exist on {a.remote} yet)"))
-
-    session = current_session(getattr(a, "session", None))
-    foreign = foreign_session_commits(orig, a.remote, up, session) if a.push else []
-    if foreign:
-        print(f"refused: {len(foreign)} local commit(s) were made by another Claude session in this checkout (this one: "
-              f"{session}); the session that made them pushes them, each session from its own clone or worktree:")
-        for h, subject, sessions in foreign:
-            print(f"  {h} {subject} ({SESSION_TRAILER}: {', '.join(sessions)})")
-        print("nothing rebased, fixed or pushed")
-        r["pushed"] = "no (another session's commits)"
-        return 1
-
-    if a.dry_run:
-        lane, branch = kg_lane.lane_plan(KB, up, orig, a.branch)
-        print(f"lane: {lane or f'not routed (a push to {a.branch})'}; " + (f"would push branch {branch} with merge-request push options, {a.branch} would not move"
-                                    if branch else f"would push to {target}"))
-        if behind:
-            incoming, local = names("diff", "--name-only", base, up), names("diff", "--name-only", base, orig)
-            both = sorted(set(incoming) & set(local))
-            print(f"incoming commits ({behind}):")
-            print("  " + "\n  ".join((git("log", "--format=%h %s", "-n", "20", f"{orig}..{up}") or "").splitlines()))
-            if ahead:
-                print(f"would rebase {ahead} local commit(s) onto {target}; files changed on both sides: {len(both)}")
-                for p in both:
-                    print(f"  {'mechanical (fix)' if p in MECHANICAL else 'needs a human if it conflicts'}: {p}")
-            else:
-                print(f"would fast-forward to {target}")
-        else:
-            print("nothing incoming" + (f"; would push {ahead} commit(s) after the gate" if ahead else "; nothing to push"))
-        print("dry run: nothing rebased, fixed, committed or pushed")
-        return 0
-
-    if up and behind:
-        code = do_rebase(r, up, base, orig)
-        if code:
-            return code
-        r["rebased"] += ahead
-        changed = code_changed(orig)
-        if changed:
-            return rerun_sync(a, r, changed)
-    both_sides = bool(up and behind and ahead)
-    code, out = tool("kbgit.py", *fix_args(base if both_sides else None, up, orig))
-    if code:
-        print(out.rstrip())
-        print("kbgit.py fix needs a human (listed above); the rebase is complete and nothing was written or pushed. "
-              "Resolve, commit, then rerun python3 _tools/kbgit.py sync --push (or use /kb-git-sync)")
-        return 3
-    r["renumbered"] += renumbered(out)
-    fixed = [ln[len("wrote "):] for ln in out.splitlines() if ln.startswith("wrote ")]
-    if fixed:
-        r["fixed"] += fixed
-        if not commit_fix(r):
-            return 1
-    if up and not refresh_trailers(r, up):
-        return 1
-    if not gate(r, up):
-        print("gate failed: nothing pushed")
-        return 1
-    if not a.push:
-        r["pushed"] = "no (without --push)"
-        return 0
-    now_ahead = int((git("rev-list", "--count", f"{up}..HEAD" if up else "HEAD") or "0").strip())
-    if not now_ahead:
-        r["pushed"] = "nothing to push"
-        return 0
-    lane, branch = kg_lane.lane_plan(KB, up, "HEAD", a.branch)
-    if branch:
-        print(f"lane: code; pushing branch {branch}, {a.branch} does not move")
-        return push_branch(a, r, branch, target)
-    code, out = gitx("push", a.remote, f"HEAD:refs/heads/{a.branch}", env={"KB_GATE_DONE": "1"})  # gated above
-    if code:
-        if REJECTED.search(out):
-            print(f"push rejected ({target} moved):\n" + out.rstrip())
-            return "retry"
-        print("git push failed:\n" + out.rstrip())
-        r["pushed"] = "no (push failed)"
-        return 1
-    r["pushed"] = f"yes: {now_ahead} commit(s) to {target} ({short(rev_parse('HEAD'))})"
-    return 0
-
-
-def new_report(push):
-    return {"push": push, "ahead": 0, "behind": 0, "rebased": 0, "auto": [], "fixed": [], "renumbered": [], "refreshed": 0,
-            "fix_commit": None, "gate": [], "pushed": "no", "notes": []}
+    """kg_sync.gate with this module's trailer audit (the pre-push hook adds `fix_check`)."""
+    return kg_sync.gate(r, up, sync_host(), fix_check)
 
 
 def cmd_sync(a, r=None):
-    a.remote = a.remote or kbpublic.integration_remote(KB)
-    if git("rev-parse", "--is-inside-work-tree") is None or not rev_parse("HEAD"):
-        print("refused: not a git clone with commits (or git is missing)")
-        return 2
-    if git("check-ref-format", "--branch", a.branch) is None or git("remote", "get-url", a.remote) is None:
-        print(f"refused: no remote {a.remote!r}, or {a.branch!r} is not a valid branch name")
-        return 2
-    busy = in_progress()
-    if busy:
-        print(f"refused: {busy[0]} is in progress; finish it first ({busy[1]})")
-        return 2
-    if kbpublic.is_public(a.remote, KB) and kbpublic.private_commits("HEAD", KB, limit=1):
-        print(f"refused: {a.remote} is the public home and HEAD's history touches {', '.join(kbpublic.PRIVATE)}; "
-              "sync pushes to the integration remote, publish to the public one (python3 _tools/kbgit.py publish)")
-        return 2
-    staged, unstaged = dirty_paths()
-    refuse = None
-    if staged or unstaged:
-        lines = ["refused: uncommitted changes; commit them (git commit) or stash them (git stash) first"]
-        lines += [f"  staged:   {p}" for p in staged] + [f"  unstaged: {p}" for p in unstaged]
-        refuse = "\n".join(lines)
-        if not a.dry_run:
-            print(refuse)
-            return 2
-    if not hooks_path_is_ours(git("config", "--get", "core.hooksPath")):
-        print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks, once for the clone and every "
-              "worktree of it); sync repairs trailers of what it rebases")
-    r = r if r is not None else new_report(a.push)
-    code = sync_once(a, r)
-    if code == "retry":
-        print("fetching again and rebasing once more")
-        code = sync_once(a, r)
-        if code == "retry":
-            print(f"push rejected twice ({a.remote}/{a.branch} keeps moving); giving up, nothing lost locally")
-            r["pushed"] = "no (rejected twice)"
-            code = 1
-    if "rerun" in r:
-        return code  # the re-run with the rebased code printed its own report
-    if a.dry_run:
-        if refuse:
-            print(refuse)
-            return 2
-        return code
-    print("--- sync report")
-    print(f"target: {r.get('target')}; was {r['ahead']} ahead, {r['behind']} behind; commits rebased: {r['rebased']}")
-    if r["auto"]:
-        print("conflicts resolved mechanically: " + "; ".join(r["auto"]))
-    print("fix: " + (f"{len(r['fixed'])} file(s) ({', '.join(r['fixed'])}), committed as {short(r['fix_commit'])} {FIX_COMMIT!r}"
-                     if r["fixed"] else "nothing to change"))
-    print("ids renumbered: " + ("; ".join(r["renumbered"]) if r["renumbered"] else "none"))
-    if r["refreshed"]:
-        print(f"trailers refreshed on {r['refreshed']} commit(s)")
-    for n in r["notes"]:
-        print("note: " + n)
-    for label, result, _ in r["gate"]:
-        print(f"gate {label}: {result}")
-    print(f"pushed: {r['pushed']}")
-    print(f"sync: exit {code}")
-    return code
+    return kg_sync.cmd_sync(a, sync_host(), r)
 
 
 BRIDGE_PREFIX = "bridge/"

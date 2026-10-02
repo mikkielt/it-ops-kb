@@ -45,7 +45,7 @@ from pathlib import Path
 
 import pytest
 
-import kbgit, kbid, kg_lane
+import kbgit, kbid, kg_lane, kg_sync
 from conftest import TOOLS, P, Repo, git_env, requires_git
 
 
@@ -71,20 +71,20 @@ class TestSyncRules:
     def test_mechanical_paths(self):
         for p in [P(f) for f in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_conflicts.md",
                                  "_coverage.csv")] + ["_tools/lint_baseline.txt", kbgit.FB(kbgit.build_index.COVERAGE_MD)]:
-            assert p in kbgit.MECHANICAL
+            assert p in kg_sync.MECHANICAL
         for p in (P("auth/kerberos.md"), "_tools/kbgit.py", "AGENTS.md", "README.md", ".gitattributes", P("_artifacts.csv")):
-            assert p not in kbgit.MECHANICAL
+            assert p not in kg_sync.MECHANICAL
 
     def test_fix_args_and_renumber_lines(self):
-        assert kbgit.fix_args(None, "u", "o") == ["fix"]
-        assert kbgit.fix_args("b", "u", "o") == ["fix", "--base", "b", "--upstream", "u", "--side", "o"]
+        assert kg_sync.fix_args(None, "u", "o") == ["fix"]
+        assert kg_sync.fix_args("b", "u", "o") == ["fix", "--base", "b", "--upstream", "u", "--side", "o"]
         out = "  _sources.csv: S9999 collision: https://a.example.com/ -> S-aaaaaaaa (hash id)\n  wrote _sources.csv\n"
-        assert kbgit.renumbered(out) == ["_sources.csv: S9999 collision: https://a.example.com/ -> S-aaaaaaaa (hash id)"]
+        assert kg_sync.renumbered(out) == ["_sources.csv: S9999 collision: https://a.example.com/ -> S-aaaaaaaa (hash id)"]
 
     def test_push_rejection_patterns(self):
-        assert kbgit.REJECTED.search(" ! [rejected]        HEAD -> main (fetch first)")
-        assert kbgit.REJECTED.search("Updates were rejected because the tip ... non-fast-forward")
-        assert not kbgit.REJECTED.search("fatal: Could not read from remote repository.")
+        assert kg_sync.REJECTED.search(" ! [rejected]        HEAD -> main (fetch first)")
+        assert kg_sync.REJECTED.search("Updates were rejected because the tip ... non-fast-forward")
+        assert not kg_sync.REJECTED.search("fatal: Could not read from remote repository.")
 
 
 class SyncScenario:
@@ -328,23 +328,23 @@ def session_url(s):
 
 
 class TestSyncSessionRules:
-    """Which session sync runs in (kbgit.current_session) and how a trailer value compares (kbgit.session_key)."""
+    """Which session sync runs in (kg_sync.current_session) and how a trailer value compares (kg_sync.session_key)."""
 
     def test_sync_foreign_session_key_forms(self):
-        assert kbgit.session_key(session_url(SESSION_A)) == SESSION_A
-        assert kbgit.session_key(SESSION_A + "\n") == SESSION_A
-        assert kbgit.session_key("cse_01AAAAAAAAAAAAAAAAAAAAAAAA") == SESSION_A  # a cloud session's variable
-        assert kbgit.session_key("") == kbgit.session_key(None) == ""
+        assert kg_sync.session_key(session_url(SESSION_A)) == SESSION_A
+        assert kg_sync.session_key(SESSION_A + "\n") == SESSION_A
+        assert kg_sync.session_key("cse_01AAAAAAAAAAAAAAAAAAAAAAAA") == SESSION_A  # a cloud session's variable
+        assert kg_sync.session_key("") == kg_sync.session_key(None) == ""
 
     def test_sync_foreign_session_current_order(self):
         cloud, bridge = {"CLAUDE_CODE_REMOTE_SESSION_ID": "cse_01BBBBBBBBBBBBBBBBBBBBBBBB"}, {"CLAUDE_CODE_BRIDGE_SESSION_ID": SESSION_A}
-        assert kbgit.current_session(None, {}) == ""
-        assert kbgit.current_session(None, bridge) == SESSION_A
-        assert kbgit.current_session(None, {**bridge, **cloud}) == SESSION_B
-        assert kbgit.current_session(None, {**bridge, "KB_SESSION": session_url(SESSION_B)}) == SESSION_B
-        assert kbgit.current_session(None, {**bridge, "KB_SESSION": ""}) == ""  # set empty: unknown
-        assert kbgit.current_session(session_url(SESSION_B), bridge) == SESSION_B
-        assert kbgit.current_session("", bridge) == ""
+        assert kg_sync.current_session(None, {}) == ""
+        assert kg_sync.current_session(None, bridge) == SESSION_A
+        assert kg_sync.current_session(None, {**bridge, **cloud}) == SESSION_B
+        assert kg_sync.current_session(None, {**bridge, "KB_SESSION": session_url(SESSION_B)}) == SESSION_B
+        assert kg_sync.current_session(None, {**bridge, "KB_SESSION": ""}) == ""  # set empty: unknown
+        assert kg_sync.current_session(session_url(SESSION_B), bridge) == SESSION_B
+        assert kg_sync.current_session("", bridge) == ""
 
 
 @requires_git
@@ -359,13 +359,13 @@ class TestSyncForeignSessionInGit:
     def scenario(cls, tmp_path_factory, kb_seed):
         tmp = str(tmp_path_factory.mktemp("kb-sync-session"))
         env = git_env(KB_SYNC_NO_TESTS="1")
-        for k in ("KB_SESSION", *kbgit.SESSION_ENV):  # this run's own session must not reach the scenario
+        for k in ("KB_SESSION", *kg_sync.SESSION_ENV):  # this run's own session must not reach the scenario
             env.pop(k, None)
         remote, (c,), cls.base = clones(kb_seed, tmp, env, ("c",))
         cls.remote, cls.c = Repo(remote, env), c
 
         def commit(subject, session):
-            c.git("commit", "-q", "--allow-empty", "-m", subject, "-m", f"{kbgit.SESSION_TRAILER}: {session_url(session)}")
+            c.git("commit", "-q", "--allow-empty", "-m", subject, "-m", f"{kg_sync.SESSION_TRAILER}: {session_url(session)}")
             return c.rev("HEAD")
 
         def sync(*args, **extra):
@@ -890,7 +890,7 @@ class TestCodeLaneSync(SyncScenario):
         w.a.git("rebase", "-q", "origin/main")  # not an ancestor of the remote branch any more
         theirs = w.b.rev("HEAD")
         w.b.git("checkout", "-q", "-b", "other")
-        real, moved = kbgit.gitx, []
+        real, moved = kg_sync.gitx, []
 
         def racing(*args, **kw):
             if args and args[0] == "push" and not moved:
@@ -898,11 +898,11 @@ class TestCodeLaneSync(SyncScenario):
                 w.b.git("push", "-q", "origin", f"{theirs}:refs/heads/{branch}", "--force", "--no-verify")
             return real(*args, **kw)
 
-        monkeypatch.setattr(kbgit, "KB", w.a.path)
-        monkeypatch.setattr(kbgit, "gitx", racing)
+        monkeypatch.setattr(kg_sync, "KB", w.a.path)
+        monkeypatch.setattr(kg_sync, "gitx", racing)
         ns = type("A", (), dict(remote="origin", branch="main"))()
         r = {"notes": []}
-        assert kbgit.push_branch(ns, r, branch, "origin/main") == 1
+        assert kg_sync.push_branch(ns, r, branch, "origin/main") == 1
         out = capsys.readouterr().out
         assert "nothing was overwritten" in out and branch in out
         assert w.bare.rev(branch) == theirs
@@ -981,9 +981,9 @@ class TestCodeLaneSync(SyncScenario):
 
     def test_only_code_branches_are_pushed_this_way(self, world, monkeypatch, capsys):
         w = world
-        monkeypatch.setattr(kbgit, "KB", w.a.path)
+        monkeypatch.setattr(kg_sync, "KB", w.a.path)
         ns = type("A", (), dict(remote="origin", branch="main"))()
-        assert kbgit.push_branch(ns, {"notes": []}, "main", "origin/main") == 2
+        assert kg_sync.push_branch(ns, {"notes": []}, "main", "origin/main") == 2
         assert "not a code/*" in capsys.readouterr().out
 
 
@@ -1004,9 +1004,9 @@ class TestSyncReexec(SyncScenario):
     def scenario(cls, tmp_path_factory, kb_seed):
         tmp = str(tmp_path_factory.mktemp("kb-sync-reexec"))
         env = git_env(KB_SYNC_NO_TESTS="1")
-        env.pop(kbgit.REEXEC_ENV, None)  # a gate run inside a re-run must not disable this one
+        env.pop(kg_sync.REEXEC_ENV, None)  # a gate run inside a re-run must not disable this one
         cls.runs = {}
-        for name, extra in (("reexec", {}), ("disabled", {kbgit.REEXEC_ENV: "1"})):
+        for name, extra in (("reexec", {}), ("disabled", {kg_sync.REEXEC_ENV: "1"})):
             os.makedirs(os.path.join(tmp, name))
             remote, (a, b), _ = clones(kb_seed, os.path.join(tmp, name), env, ("a", "b"))
             src = b.read("_tools/kg_lane.py")
@@ -1049,8 +1049,8 @@ class TestSyncReexec(SyncScenario):
         assert PLANTED_LANE not in heads and heads["main"] == theirs  # stopped: nothing pushed with the old code
 
     def test_sync_reexec_after_kbgit_rebase_watches_imported_modules(self):
-        loaded = kbgit.loaded_tools()
-        for rel in ("_tools/kbgit.py", "_tools/kblane.py", "_tools/kbpublic.py", "_tools/kg_merge.py", "_tools/kg_lane.py", "_tools/kg_base.py",
+        loaded = kg_sync.loaded_tools()
+        for rel in ("_tools/kbgit.py", "_tools/kblane.py", "_tools/kbpublic.py", "_tools/kg_merge.py", "_tools/kg_lane.py", "_tools/kg_sync.py", "_tools/kg_base.py",
                     "_tools/kbcommon.py"):
             assert rel in loaded
         assert all(p.startswith("_tools/") and p.endswith(".py") for p in loaded)
@@ -1248,9 +1248,9 @@ class TestSyncGateTests:
         monkeypatch.setattr(tests_py, "XDIST", ["-n", "0"])
         monkeypatch.setattr(testmap, "changed", lambda rev: sorted(paths))
         monkeypatch.setattr(testmap, "select", select)
-        monkeypatch.setattr(kbgit, "gate_paths", lambda up: set(paths))
+        monkeypatch.setattr(kg_sync, "gate_paths", lambda up: set(paths))
         monkeypatch.setattr(kbgit, "trailer_audit", lambda rng, quiet=False, **k: (0, 0, []))
-        monkeypatch.setattr(kbgit, "tool", tool)
+        monkeypatch.setattr(kg_sync, "tool", tool)
         r = {"target": "origin/main"}
         ok = kbgit.gate(r, "origin/main")
         return ok, {label: out for label, out, _ in r["gate"]}["tests.py (changed)"]
@@ -1292,3 +1292,48 @@ class TestSyncGateTests:
                                 "-m", m, tests_py.target(node)], cwd=os.path.dirname(TOOLS), capture_output=True,
                                text=True, encoding="utf-8", errors="replace")
             assert ("TestCloudInGit" in p.stdout) == want, (m, p.stdout[-2000:] + p.stderr[-2000:])
+
+
+MOVED_TO_SYNC = ("sync_once", "cmd_sync", "gate", "push_branch", "do_rebase", "gitx", "tool", "gate_paths", "MECHANICAL")
+
+
+def defined_in(source, names):
+    """The NAMES the module SOURCE defines at its top level (a def, a class or an assignment)."""
+    out = set()
+    for n in ast.parse(source).body:
+        if isinstance(n, (ast.FunctionDef, ast.ClassDef)):
+            out.add(n.name)
+        elif isinstance(n, ast.Assign):
+            out |= {t.id for t in n.targets if isinstance(t, ast.Name)}
+    return {x for x in names if x in out}
+
+
+def test_kg_split_sync_run_lives_in_kg_sync_and_kbgit_keeps_the_command():
+    """kg_sync defines the sync run, its gate, its push and its rebase; kbgit.py defines none of the sync_once, push_branch,
+    do_rebase, gitx, tool, gate_paths and MECHANICAL names (it imports what it needs) and keeps the command: a
+    cmd_sync and a gate that give kg_sync the trailer code. Planted failure: a moved name put back into kbgit.py is
+    reported."""
+    kbgit_src = Path(TOOLS, "kbgit.py").read_text(encoding="utf-8")
+    sync_src = Path(TOOLS, "kg_sync.py").read_text(encoding="utf-8")
+    assert defined_in(sync_src, MOVED_TO_SYNC) == set(MOVED_TO_SYNC)
+    keeps = {"cmd_sync", "gate"}
+    assert defined_in(kbgit_src, MOVED_TO_SYNC) == keeps
+    assert "kg_sync.cmd_sync(" in kbgit_src and "kg_sync.gate(" in kbgit_src
+    planted = kbgit_src + "\n\ndef push_branch(a, r, branch, target):\n    return 0\n"
+    assert defined_in(planted, MOVED_TO_SYNC) == keeps | {"push_branch"}
+
+
+@requires_git
+def test_kg_split_sync_imports_no_facade_and_runs_git_in_its_own_kb(tmp_path, monkeypatch):
+    """kg_sync imports no kbgit and runs git in its own KB: a patch of kg_sync.KB moves its git calls to a directory
+    that is no repository. Planted failure: the same patch on kbgit.KB leaves them in this repository."""
+    imports = {a.name for n in ast.walk(ast.parse(Path(TOOLS, "kg_sync.py").read_text(encoding="utf-8")))
+               if isinstance(n, ast.Import) for a in n.names}
+    assert "kbgit" not in imports
+    assert kg_sync.git("rev-parse", "--is-inside-work-tree") is not None
+    with monkeypatch.context() as m:
+        m.setattr(kbgit, "KB", str(tmp_path))
+        assert kg_sync.git("rev-parse", "--is-inside-work-tree") is not None
+    with monkeypatch.context() as m:
+        m.setattr(kg_sync, "KB", str(tmp_path))
+        assert kg_sync.git("rev-parse", "--is-inside-work-tree") is None

@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-import kbgit
+import kg_sync
 import testmap
 import tests as tests_py
 
@@ -159,7 +159,7 @@ def test_tests_py_changed_treats_all_selected_tests_deselected_as_a_pass(monkeyp
 
 
 def ran(paths):
-    return {k for k, v in kbgit.gate_needs(paths).items() if v}
+    return {k for k, v in kg_sync.gate_needs(paths).items() if v}
 
 
 def test_gate_content_change_runs_the_content_checks_only():
@@ -179,7 +179,7 @@ def test_gate_tool_change_runs_check_and_selfdoc():
 
 
 def test_gate_pinned_artifact_runs_fetch():
-    art = sorted(kbgit.artifact_paths())[0]
+    art = sorted(kg_sync.artifact_paths())[0]
     assert "fetch" in ran([art]) and "fetch" in ran(["kb/public/_sources.csv"])
 
 

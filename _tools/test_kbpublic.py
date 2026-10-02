@@ -32,7 +32,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import kbgit, kbpublic
+import kbgit, kbpublic, kg_sync
 from conftest import TOOLS, Repo, git_env, requires_git
 from test_sync import RECORD_OPTIONS, SyncScenario, clones
 from conftest import P
@@ -117,9 +117,9 @@ class TestProjection:
         r.git("config", "kb.publishRemote", "pub")
         assert kbpublic.guard_push("pub", None, [("refs/heads/main", shas[1])], r.path)
         assert kbpublic.guard_push("pub", None, [("refs/heads/main", shas[0])], r.path) == []
-        needs = kbgit.gate_needs([ops])  # kbgit.py's gate: the query log store's check, no kb content or doc check
+        needs = kg_sync.gate_needs([ops])  # kg_sync.py's gate: the query log store's check, no kb content or doc check
         assert needs["querylog"] and not any(needs[k] for k in ("check", "fetch", "doc2query", "selfdoc", "backlog")), needs
-        assert kbgit.gate_needs(["kb/_querylog/work/2026-10/x.jsonl"])["querylog"]  # the same as its sibling sidecars
+        assert kg_sync.gate_needs(["kb/_querylog/work/2026-10/x.jsonl"])["querylog"]  # the same as its sibling sidecars
 
     def test_clean_history_is_its_own(self, src):
         r, shas = src
