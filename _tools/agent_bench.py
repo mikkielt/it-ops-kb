@@ -224,8 +224,8 @@ def _step(model, tools, system, user, steps):
 
 def route(q, pin=None):
     """kb_ask.py's routing as a benchmark run, step for step (its plan, prompts and models): tool answers cost nothing;
-    a web pack (the kb lacks the question) goes to the no-kb researcher with the question, what the kb lacks and the
-    nearest articles; a split pack with a `kb has:` and a `kb lacks:` line (a `-` line is empty: kb_ask.has_lacks)
+    a web pack (the kb lacks the question) goes to the researcher (live docs through the kb server's cached docs_search and docs_fetch) with the question,
+    what the kb lacks and the nearest articles; a split pack with a `kb has:` and a `kb lacks:` line (a `-` line is empty: kb_ask.has_lacks)
     goes to the Haiku reader for the kb has part and to the researcher for the lacks part (in a pack of several parts,
     each part as its own route sends it: kb_ask.part_routes), their costs summed, and a reader INSUFFICIENT gives the whole question to
     the researcher; a good pack, and a split pack that cannot be divided, go to the tool-less reader with the pack,
