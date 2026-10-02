@@ -2,7 +2,7 @@
   "id": "ST-ng7igc4l",
   "kind": "story",
   "title": "kb-sprint runs headless as a restartable sprint runner",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -29,5 +29,19 @@
     "AGENTS.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "06663576e3bf0d23e0f2ed2a096b3624b805fc6c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_runner"
+        ],
+        "exit": 0,
+        "sha256": "e517b30a65fcdb3a"
+      }
+    ]
+  }
 }
