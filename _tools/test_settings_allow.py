@@ -34,6 +34,11 @@ RUNNER_COMMANDS = [
     "glab mr merge *",
 ]
 RUNNER_TOOLS = ["Agent", "Edit", "Write", "SendMessage"]
+# The kb-autopilot tick's own: the decision digest and list (read forms only: digest without --out, which writes to
+# any path), and the tools it notifies with. kbdecide.py's writing forms (record, ratify, revert, supersede,
+# invalidate, ...) are never allowed.
+TICK_COMMANDS = ["python3 _tools/kbdecide.py digest", "python3 _tools/kbdecide.py list *"]
+TICK_TOOLS = ["PushNotification", "ToolSearch"]
 DENIED_COMMANDS = ["python3 _tools/kbgit.py publish *", "git push *", "git -C * push *", "git branch -D *",
                    "git worktree remove *", "git checkout -- *"]
 SHELLS = ("Bash", "PowerShell")
@@ -50,16 +55,40 @@ def runner_problems(perms):
     out = [f"missing {s}({c})" for c in RUNNER_COMMANDS for s in SHELLS if f"{s}({c})" not in have]
     out += [f"missing {t}" for t in RUNNER_TOOLS if t not in have]
     out += [f"not denied {s}({c})" for c in DENIED_COMMANDS for s in SHELLS if f"{s}({c})" not in deny]
-    listed = {f"{s}({c})" for c in RUNNER_COMMANDS for s in SHELLS}
+    out += [f"missing {s}({c})" for c in TICK_COMMANDS for s in SHELLS if f"{s}({c})" not in have]
+    out += [f"missing {t}" for t in TICK_TOOLS if t not in have]
+    listed = {f"{s}({c})" for c in RUNNER_COMMANDS + TICK_COMMANDS for s in SHELLS}
     for rule in allow:
         m = re.fullmatch(r"(Bash|PowerShell)\((.*)\)", rule)
-        if m and re.match(r"(git|glab)\b|python3 _tools/kbgit\.py\b", m.group(2)) and rule not in listed:
+        if m and re.match(r"(git|glab)\b|python3 _tools/(kbgit|kbdecide)\.py\b", m.group(2)) and rule not in listed:
             out.append(f"beyond the list: {rule}")
         elif rule in SHELLS or (m and m.group(2).strip() in ("*", "")):
             out.append(f"whole shell allowed: {rule}")
-        elif not m and not rule.startswith("mcp__") and rule not in RUNNER_TOOLS:
+        elif not m and not rule.startswith("mcp__") and rule not in RUNNER_TOOLS + TICK_TOOLS:
             out.append(f"tool rule beyond the list: {rule}")
     return out
+
+
+def test_settings_allow_tick_commands():
+    """The kb-autopilot tick runs kbdecide.py digest and list and calls PushNotification and ToolSearch: each is
+    allowed, for both shells, and no wider kbdecide.py form is."""
+    problems = runner_problems(permissions(text(".claude/settings.json")))
+    assert problems == []
+
+
+@pytest.mark.parametrize("plant, want", [
+    (lambda a: [r for r in a if r != "PowerShell(python3 _tools/kbdecide.py digest)"],
+     "missing PowerShell(python3 _tools/kbdecide.py digest)"),
+    (lambda a: [r for r in a if r != "Bash(python3 _tools/kbdecide.py list *)"],
+     "missing Bash(python3 _tools/kbdecide.py list *)"),
+    (lambda a: [r for r in a if r != "PushNotification"], "missing PushNotification"),
+    (lambda a: [r for r in a if r != "ToolSearch"], "missing ToolSearch"),
+    *[(lambda a, c=c: a + [f"Bash(python3 _tools/kbdecide.py {c})"], f"beyond the list: Bash(python3 _tools/kbdecide.py {c})")
+      for c in ("*", "digest *", "record *", "ratify *", "revert *", "supersede *", "invalidate *")],
+])
+def test_settings_allow_tick_commands_refuses_a_planted_change(plant, want):
+    perms = permissions(text(".claude/settings.json"))
+    assert want in runner_problems({**perms, "allow": plant(perms["allow"])})
 
 
 def test_settings_allow_headless_runner():
