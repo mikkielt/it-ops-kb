@@ -2,7 +2,7 @@
   "id": "TK-jnijg64s",
   "kind": "task",
   "title": "bl_base.py holds the backlog's shared ground",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -35,5 +35,19 @@
   "depends_on": [
     "TK-k5harfxm"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "f59326e2e256bf044f98c44866de59330cf93980",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_base"
+        ],
+        "exit": 0,
+        "sha256": "bca140e901569948"
+      }
+    ]
+  }
 }
