@@ -1,0 +1,28 @@
+{
+  "id": "TK-fygamriz",
+  "kind": "task",
+  "title": "The kb-autopilot skill runs one manager tick under /loop",
+  "status": "todo",
+  "parent": "ST-mdwkhv7k",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "New .claude/skills/kb-autopilot/SKILL.md, run in the manager's own clone under /loop, does one tick from python3 _tools/autopilot.py status: backlog.py intake --file --network and triage of its drafts; for each runner that exited (status names its cause), the sprint's review, retrospective and close, its provisional answers confirmed and its retro stories picked as autopilot decisions (answer --by autopilot --record, never a secrets or push gate); a refill to two runners (plan, research, start, then autopilot.py runner start in the background, whose pid from autopilot.py status the tick records with backlog.py procs --record, and backlog.py procs --end for owned orphans); the digest; and a PushNotification only for gates the operator keeps (blocking gates of a class the autopilot may not answer). Judgment steps (triage, review, retrospective, plan) run in subagents that return one short JSON object each, named in the skill with its keys; the skill holds a Compact Instructions section and never writes auto-memory. AGENTS.md lists /kb-autopilot and stays under its 4 KB cap (bytes removed elsewhere in it, meaning kept). A test file test_autopilot_skill.py (tests named autopilot_skill_*) checks that the skill is well formed, that each command it names exists (its subcommand parses with --help), that it names the subagent JSON keys, Compact Instructions and PushNotification only for kept gates, and that it holds no instruction to write memory, each with a planted failure. .claude/settings.json is not changed unless the goal's loop needs it, and then never a permission rule.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_skill"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-autopilot/**",
+    "_tools/test_autopilot_skill.py",
+    "AGENTS.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/map.csv"
+  ]
+}
