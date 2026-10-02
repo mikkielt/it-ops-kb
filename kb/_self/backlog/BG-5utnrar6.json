@@ -2,7 +2,7 @@
   "id": "BG-5utnrar6",
   "kind": "bug",
   "title": "kb_change_router.py exits 1 with a traceback on a non-string prompt",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ld5jtjhm",
   "priority": "P3",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md"
   ],
-  "claimed_by": "seventh-w15"
+  "evidence": {
+    "commit": "93a375b4f51a85e0c9669bc5e1c610ad89db2246",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; r=subprocess.run(['python3','.claude/hooks/kb_change_router.py'],input='{\"prompt\": 5, \"session_id\": \"x\"}',capture_output=True,text=True); sys.exit(r.returncode!=0 or 'Traceback' in r.stderr)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
