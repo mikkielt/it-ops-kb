@@ -1,6 +1,6 @@
 # Backlog: planning and shipping changes to this project
 
-How a change to this project is planned, scheduled, worked on, proven done and closed. The work is tracked as epics, stories, tasks, subtasks, bugs and sprints, stored as one JSON file per item in `kb/_self/backlog/`. `_tools/backlog.py` is the only thing that computes state from those files, and three skills run the process: `/kb-backlog` plans, `/kb-sprint` runs a sprint end to end, and `/kb-item` works one item. Read this before any of them. Read `kb/_self/maintaining.md` before the change itself.
+How a change to this project is planned, scheduled, worked on, proven done and closed. The work is tracked as epics, stories, tasks, subtasks, bugs and sprints, stored as one JSON file per item in `kb/_self/backlog/`. `_tools/backlog.py` is the only thing that computes state from those files, and three skills run the process: `/kb-backlog` plans, `/kb-sprint` runs a sprint end to end, and `/kb-item` works one item. Read this before any of them. Read the section "Conduct for changes" of `kb/_self/maintaining.md` (`python3 _tools/selfdoc.py section maintaining "Conduct for changes"`), not the whole file, before the change itself.
 
 The backlog is the one queue of open work. `_gaps.md` and `_conflicts.md` stay content ledgers, and query-log findings stay in `kb/_querylog/`. An item may name a ledger entry or a finding in `links`; the ledger entry itself is not the work item.
 
