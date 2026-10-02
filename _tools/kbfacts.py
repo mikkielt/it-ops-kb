@@ -129,9 +129,11 @@ def kinds_of(parts):
 
 # a file name carries an extension, or sits under a directory (src/adr-new, a script with none)
 POINTER = re.compile(r"(?<![\w/.-])((?:[\w.-]+/)+[\w.-]+|[\w.-]+\.[A-Za-z0-9]+)#([\w.:-]+)")
-# a first segment that is a host name (github.com/o/r/blob/main/x#y, a url without its scheme): letters, a dot and one of
-# these tails, never a code-file extension (so not .py, .rs, .md, .pl, .sh) and never a leading dot (.github/...)
+# a url without its scheme (github.com/o/r/blob/main/x#y, host.example.com/-/x): a first segment that is a host name
+# (letters, a dot and one of these tails, never a leading dot) followed, in a later segment, by a forge's own path marker.
+# A first segment that merely looks like a host (Contoso.Web.App/Program.cs, Foo.Net/Bar.cs, README.org) is a real path.
 _HOST = re.compile(r"[A-Za-z0-9][\w-]*(?:\.[\w-]+)*\.(?:com|org|net|io|dev|app|gov|edu|info|cloud|ai|ms|microsoft|azure|eu|uk)", re.I)
+_FORGE_MARKERS = frozenset(("blob", "tree", "-", "raw"))
 # prose written as a pair of words, which is no extensionless script path (and/or#x, his/her#y); a closed list
 _PROSE_PAIRS = frozenset(("and/or", "either/or", "neither/nor", "he/she", "his/her", "him/her", "yes/no", "on/off",
                           "true/false", "if/else", "pass/fail", "input/output", "read/write", "enable/disable",
@@ -139,15 +141,16 @@ _PROSE_PAIRS = frozenset(("and/or", "either/or", "neither/nor", "he/she", "his/h
 
 
 def _prose_or_host(path):
-    first = path.split("/", 1)[0]
-    if _HOST.fullmatch(first):
+    first, *rest = path.split("/")
+    if _HOST.fullmatch(first) and _FORGE_MARKERS.intersection(rest):
         return True
     return path.lower() in _PROSE_PAIRS
 
 
 def code_pointer(part):
     """The `path#symbol` (or `path#L10-L20`) a CODE part points at, as (path, anchor), or None: a path whose first
-    segment is a host name, or a pair of prose words such as `and/or`, is no file of a repository."""
+    segment is a host name followed by a forge marker (`/blob/`, `/tree/`, `/-/`, `/raw/`: a url without its scheme), or a
+    pair of prose words such as `and/or`, is no file of a repository."""
     for m in POINTER.finditer(part.get("note") or ""):
         if not _prose_or_host(m.group(1)):
             return m.group(1), m.group(2)
