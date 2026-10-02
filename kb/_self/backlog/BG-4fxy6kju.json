@@ -2,7 +2,7 @@
   "id": "BG-4fxy6kju",
   "kind": "bug",
   "title": "Two observed-run DER facts name no version",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,18 @@
     "kb/public/agents/doc-lookup-sources.md",
     "kb/public/gitlab/git-history-queries.md"
   ],
-  "claimed_by": "sixth-w2"
+  "evidence": {
+    "commit": "13c118ca3db3ca3f2d56a2b712cdeb63bda4889a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py','agents/doc-lookup-sources','gitlab/git-history-queries'],capture_output=True,text=True).stdout; sys.exit('names no version' in o)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
