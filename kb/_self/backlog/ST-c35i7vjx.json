@@ -2,7 +2,7 @@
   "id": "ST-c35i7vjx",
   "kind": "story",
   "title": "A tool proves a test-suite speed-up lost no test",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-gfoakqar",
   "priority": "P2",
@@ -40,5 +40,6 @@
     "kb/_self/reports/test-suite-speed.md",
     "kb/public/python/pytest.md (--collect-only -q, pytest @file, exit code 5)"
   ],
-  "notes": "_tools/test_ids_baseline.txt is the id list of tests.py and stress_test.py at the commit before the epic's first change (1,223 ids: 1,134 by tests.py plus the 89 stress ids); a later story that adds tests appends their ids, and one that removes a test id needs the operator's word. A planted-failure test is one that plants a defect and asserts a check reports it; the id comparison proves each is still collected, tests.py proves each still passes. perfcheck.py and test_ids_baseline.txt do not exist yet, and every other story of EP-hlnsqx4f waits on them."
+  "notes": "_tools/test_ids_baseline.txt is the id list of tests.py and stress_test.py at the commit before the epic's first change (1,223 ids: 1,134 by tests.py plus the 89 stress ids); a later story that adds tests appends their ids, and one that removes a test id needs the operator's word. A planted-failure test is one that plants a defect and asserts a check reports it; the id comparison proves each is still collected, tests.py proves each still passes. perfcheck.py and test_ids_baseline.txt do not exist yet, and every other story of EP-hlnsqx4f waits on them.",
+  "claimed_by": "seventh-w11"
 }
