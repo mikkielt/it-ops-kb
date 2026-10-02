@@ -2,7 +2,7 @@
   "id": "ST-qc4vvlgs",
   "kind": "story",
   "title": "A navigation benchmark run keeps its raw claude stream-json beside the parsed row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3siaqxdf",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/bench_lookup.py",
     "_tools/test_benchmarks.py"
-  ]
+  ],
+  "claimed_by": "seventh-w20"
 }
