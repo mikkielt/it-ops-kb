@@ -34,5 +34,34 @@
   ],
   "depends_on": [
     "TK-62clbs52"
+  ],
+  "gates": [
+    {
+      "id": "host-refusal-ids",
+      "kind": "blocking",
+      "question": "Drop four in-git host refusal test ids to save worker time: TestHostRefusalsInGit [gitlab-protected], [github-denied], [github-gh006] and TestHostNoRefusalInGit [unreachable-at-push] (keeping [gitlab-project] and [push-rule])? TestHostRules already proves all four refusal texts, PUSH_RULE and the connection-refused text; the kept cases still assert DISABLED and the spool outcome.",
+      "options": [
+        "drop the four ids and list them in _tools/test_ids_dropped.txt",
+        "keep all cases, close the task with no change"
+      ],
+      "recommendation": "drop the four ids and list them in _tools/test_ids_dropped.txt",
+      "do": {
+        "drop the four ids and list them in _tools/test_ids_dropped.txt": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "keep all cases, close the task with no change": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestHostRefusalsInGit"
+        ]
+      }
+    }
   ]
 }
