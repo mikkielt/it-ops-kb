@@ -2,7 +2,7 @@
   "id": "BG-obefzeor",
   "kind": "bug",
   "title": "autopilot.py names the remote origin instead of asking kbpublic.integration_remote, so main is red",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,30 @@
     "_tools/test_autopilot.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "148a35f59d31a72037be5e5851ef5e9e72b303fa",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot"
+        ],
+        "exit": 0,
+        "sha256": "8e7a5e76fa507382"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_kbpublic.py",
+          "-k",
+          "test_no_tool_holds_the_string_origin"
+        ],
+        "exit": 0,
+        "sha256": "36dc5c55e7c94818"
+      }
+    ]
+  }
 }
