@@ -2,7 +2,7 @@
   "id": "BG-kpv2cxxw",
   "kind": "bug",
   "title": "kb_mcp.py upstream() falls back to origin/HEAD instead of the integration remote",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,28 @@
     "kb/_self/embedding.md",
     "_tools/test_testmap.py"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "56d8ff79edcaafcef68879eaa77a730400d33034",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_status_follows_the_integration_remote_not_origin"
+        ],
+        "exit": 0,
+        "sha256": "bc2c5b67f8611b3e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, pathlib; sys.exit(int('origin/' in pathlib.Path('_tools/kb_mcp.py').read_text(encoding='utf-8')))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
