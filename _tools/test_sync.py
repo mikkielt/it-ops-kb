@@ -570,6 +570,13 @@ class TestSyncForeignSessionInGit:
         assert "pushed: no (another session's commits)" in r.stdout
         assert self.after == (self.pushed_before, self.foreign)  # nothing pushed, nothing rebased
 
+    def test_sync_foreign_session_refusal_names_the_override(self):
+        """a refusal is never a dead end: it says how to push them when the session that made them is gone"""
+        for r in (self.refused, self.refused_dry, self.refused_arg):
+            assert "--session" in r.stdout and "KB_SESSION" in r.stdout and "no longer exists" in r.stdout, r.stdout
+        # the override works: naming the commit's own session pushes (dry-run) instead of refusing
+        assert self.same.returncode == 0, self.same.stdout + self.same.stderr
+
     def test_sync_foreign_session_found_from_env_and_argument(self):
         for r in (self.refused_dry, self.refused_arg):
             assert r.returncode == 1, r.stdout + r.stderr

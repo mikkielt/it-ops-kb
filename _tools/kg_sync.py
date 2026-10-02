@@ -533,7 +533,9 @@ def sync_once(a, r, host):
     foreign = foreign_session_commits(orig, a.remote, up, session) if a.push else []
     if foreign:
         print(f"refused: {len(foreign)} local commit(s) were made by another Claude session in this checkout (this one: "
-              f"{session}); the session that made them pushes them, each session from its own clone or worktree:")
+              f"{session}); the session that made them pushes them, each session from its own clone or worktree; when that "
+              f"session no longer exists (a restarted or resumed orchestrator landing its own earlier commits), name it "
+              f"with --session <its {SESSION_TRAILER} url> or KB_SESSION=<url>:")
         for h, subject, sessions in foreign:
             print(f"  {h} {subject} ({SESSION_TRAILER}: {', '.join(sessions)})")
         print("nothing rebased, fixed or pushed")
