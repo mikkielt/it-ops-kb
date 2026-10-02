@@ -28,6 +28,17 @@
   kbdecide.py makers R [--policy P --by operator]
                                          show how root R saves its decision makers, or (the operator's) set the policy:
                                          role-only, role-and-name or central-register
+  kbdecide.py ratify ID [--root R] --by operator [--date DATE]
+                                         the operator takes an autopilot decision as their own: its maker becomes the
+                                         operator, its `review_by` falls away; `--root` defaults to `_self`; refused
+                                         without `--by operator`
+  kbdecide.py revert ID [--root R] --by operator --why TEXT [--date DATE]
+                                         the operator withdraws an autopilot decision: it is invalidated (its row stays)
+                                         and a story to undo what it changed is filed with `backlog.py new story`;
+                                         refused without `--by operator`
+  kbdecide.py digest [--out PATH]        write kb/_self/reports/autopilot-digest.md: the autopilot's decisions not yet
+                                         ratified, the restricted classes (secrets, push, querylog, agents-rule, delete)
+                                         first, each group oldest first, with item, gate, answer and `review_by`
   kbdecide.py sweep [--root R] [--dry-run] [--date DATE]
                                          invalidate every proposed or active decision whose context is broken (rules
                                          below), naming the context in the reason; open to agents
@@ -469,6 +480,143 @@ def cmd_restore(a):
     return 0
 
 
+ORIGIN = re.compile(r"backlog item (\S+) gate (\S+)")  # the source of a decision `backlog.py answer --record` writes
+RESTRICTED = ("secrets", "push", "querylog", "agents-rule", "delete")  # the classes the digest lists first
+DIGEST = Path(kbcommon.SELF) / "reports" / "autopilot-digest.md"
+
+
+def autopilot_row(rows, did, store, what):
+    """The active decision `did` the autopilot made: Refused when it is another's or is not active."""
+    row = find(rows, did, store)
+    need(row, ("active",), did, what)
+    if field(row, "by") != AUTOPILOT:
+        raise Refused(f"{did} is not an autopilot decision (by {field(row, 'by') or 'no one'}): only the autopilot's can be {what}")
+    return row
+
+
+def origin(row):
+    """(item id, gate id) the decision answered, from its source; ('', '') when its source names none."""
+    m = ORIGIN.search(field(row, "source"))
+    return m.groups() if m else ("", "")
+
+
+def read_item(iid):
+    """The backlog item file `iid` as a dict, None when there is none or it cannot be read."""
+    try:
+        item = json.loads((Path(kbcommon.SELF) / "backlog" / f"{iid}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return item if isinstance(item, dict) else None
+
+
+def cmd_ratify(a):
+    """The operator takes an autopilot decision as their own: its maker becomes the operator's, its review falls away
+    (the sweep invalidates a decision whose `review_by` passed), and `links` keeps who made it and when."""
+    need_operator(a, "ratifies an autopilot decision")
+    store = Store(a.root or SELF_ROOT)
+    rows = load(store)
+    row = autopilot_row(rows, a.id, store, "ratified")
+    when = day(a.date)
+    by, by_ref = maker_fields(store, OPERATOR, None)
+    kept = f"ratified {when}; made by the autopilot {field(row, 'date')}"
+    row.update(by=by, by_ref=by_ref, date=when, review_by="", links="; ".join(filter(None, [field(row, "links"), kept])))
+    save(store, rows)
+    print(f"{a.id}\tratified\t{store.name}")
+    return 0
+
+
+def story_goal(did, text, iid, gate, item, why):
+    """The goal of the story that undoes decision `did`: what it answered, what the item touched, why the operator reverted it."""
+    title = (item or {}).get("title") or "item file gone"
+    touches = ", ".join(map(str, (item or {}).get("touches") or [])) or "no file named"
+    goal = (f"What autopilot decision {did} changed is undone, or the operator's reason to keep it is recorded: the autopilot "
+            f"answered gate {gate} of {iid} ({title}) with: {text}. The operator reverted it because: {why}. "
+            f"That item's touches: {touches}.")
+    return goal[:2000]
+
+
+def file_story(did, row, why):
+    """File, through backlog.py, the story that undoes the decision's work; its id. Refused with backlog's reason."""
+    iid, gate = origin(row)
+    item = read_item(iid) if iid else None
+    title = f"Undo autopilot decision {did}: {(item or {}).get('title') or field(row, 'text')}"
+    argv = [sys.executable, str(Path(kbcommon.TOOLS) / "backlog.py"), "new", "story", "--title", " ".join(title.split())[:200],
+            "--goal", story_goal(did, field(row, "text"), iid or "its item", gate or "its gate", item, why)]
+    for t in (item or {}).get("touches") or []:
+        argv += ["--touch", str(t)]
+    p = subprocess.run(argv, cwd=kbcommon.HOME, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
+    m = re.search(r"new story (\S+)", p.stdout)
+    if p.returncode or not m:
+        raise Refused(f"the story that undoes {did} was not filed: {(p.stdout + p.stderr).strip()}")
+    return m.group(1)
+
+
+def cmd_revert(a):
+    """The operator withdraws an autopilot decision: it is invalidated (its row stays) and a story to undo what it
+    changed is filed first, so a refusal files nothing."""
+    need_operator(a, "reverts an autopilot decision")
+    why = " ".join((a.why or "").split())
+    if not why:
+        raise Refused("--why is empty: say why the operator reverts the decision")
+    store = Store(a.root or SELF_ROOT)
+    rows = load(store)
+    row = autopilot_row(rows, a.id, store, "reverted")
+    when = day(a.date)
+    story = file_story(a.id, row, why)
+    mark_invalidated(store, row, f"reverted by the operator: {why}", when)
+    save(store, rows)
+    print(f"{a.id}\tinvalidated\t{store.name}\tstory {story}")
+    return 0
+
+
+def digest_group(cls):
+    return 0 if cls in RESTRICTED else 1
+
+
+def unratified(store):
+    """[(class, item id, item title, gate, row)] of the store's active autopilot decisions, the restricted classes first,
+    each group oldest first (then by id)."""
+    import bl_authority  # only the digest reads a gate's class: a scratch repository without the backlog still has the rest
+    out = []
+    for row in load(store):
+        if field(row, "status") != "active" or field(row, "by") != AUTOPILOT:
+            continue
+        iid, gate = origin(row)
+        item = read_item(iid) if iid else None
+        g = next((g for g in (item or {}).get("gates") or [] if isinstance(g, dict) and g.get("id") == gate), None)
+        cls = bl_authority.gate_class(item or {}, g or {"id": gate, "question": field(row, "text")})
+        out.append((cls, iid, (item or {}).get("title") or "item file gone", gate, row))
+    return sorted(out, key=lambda x: (digest_group(x[0]), field(x[4], "date"), field(x[4], "id")))
+
+
+def digest_text(entries):
+    lines = ["# Autopilot digest", "",
+             "The autopilot's decisions the operator has not ratified, written by `python3 _tools/kbdecide.py digest`: the "
+             "restricted classes first, each group oldest first. Ratify one with `python3 _tools/kbdecide.py ratify ID --by "
+             f"{OPERATOR}`, or revert it with `python3 _tools/kbdecide.py revert ID --by {OPERATOR} --why TEXT`.", ""]
+    if not entries:
+        return "\n".join(lines + ["No unratified autopilot decisions.", ""])
+    for heading, group in (("Restricted classes (" + ", ".join(RESTRICTED) + ")", 0), ("Other classes", 1)):
+        part = [e for e in entries if digest_group(e[0]) == group]
+        if not part:
+            continue
+        lines += [f"## {heading}", ""]
+        for cls, iid, title, gate, row in part:
+            lines.append(f"- {field(row, 'id')} ({cls}): item {iid or '-'} \"{title}\", gate {gate or '-'}, answer \"{field(row, 'text')}\", "
+                         f"review_by {field(row, 'review_by') or '-'}")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def cmd_digest(a):
+    entries = unratified(Store(SELF_ROOT))
+    path = Path(a.out) if a.out else DIGEST
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(digest_text(entries), encoding="utf-8", newline="\n")
+    print(f"digest\t{len(entries)} unratified\t{path}")
+    return 0
+
+
 def git_out(*args):
     """The output of `git ARGS` run in this repository, '' when it fails (no git, no repository, no such revision)."""
     try:
@@ -849,6 +997,17 @@ def parser():
     p = add("restore", "the operator brings an invalidated decision back")
     p.add_argument("id")
     p.add_argument("--by", help=f"must be {OPERATOR}")
+    p = add("ratify", "the operator makes an autopilot decision their own", root_required=False)
+    p.add_argument("id")
+    p.add_argument("--by", help=f"must be {OPERATOR}")
+    p.add_argument("--date", help="YYYY-MM-DD (default: today)")
+    p = add("revert", "the operator withdraws an autopilot decision and a story undoes what it changed", root_required=False)
+    p.add_argument("id")
+    p.add_argument("--by", help=f"must be {OPERATOR}")
+    p.add_argument("--why", help="why the operator reverts it")
+    p.add_argument("--date", help="YYYY-MM-DD (default: today)")
+    p = sub.add_parser("digest", help="write the unratified autopilot decisions to kb/_self/reports/autopilot-digest.md")
+    p.add_argument("--out", help="write here instead")
     p = sub.add_parser("makers", help="show or set how a root saves its decision makers")
     p.add_argument("root", help="a root's name")
     p.add_argument("--policy", help=f"{'|'.join(kbcommon.POLICIES)}; the operator's")
@@ -868,7 +1027,7 @@ def parser():
 
 
 COMMANDS = {"propose": cmd_propose, "confirm": cmd_confirm, "record": cmd_record, "makers": cmd_makers, "supersede": cmd_supersede, "invalidate": cmd_invalidate,
-            "restore": cmd_restore, "relink": cmd_relink, "sweep": cmd_sweep, "list": cmd_list}
+            "restore": cmd_restore, "ratify": cmd_ratify, "revert": cmd_revert, "digest": cmd_digest, "relink": cmd_relink, "sweep": cmd_sweep, "list": cmd_list}
 
 
 def main(argv=None):

@@ -52,7 +52,8 @@ def make_root(base, name, prefix, visibility):
 def template(tmp_path_factory):
     """The repository every test starts from."""
     repo = tmp_path_factory.mktemp("kbdecide") / "repo"
-    for name in ("kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py"):
+    backlog = ["backlog.py"] + [f"bl_{m}.py" for m in ("authority", "base", "check", "cli", "cost", "intake", "land", "plan", "procs")]
+    for name in ("kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py", *backlog):
         (repo / "_tools").mkdir(parents=True, exist_ok=True)
         shutil.copy(TOOLS / name, repo / "_tools" / name)
     make_root(repo / "kb" / "public", "public", "S", "public")
@@ -62,7 +63,8 @@ def template(tmp_path_factory):
     write(repo / "kb" / "team" / kbcommon.DECISION_MAKERS, ",".join(kbcommon.MAKER_COLS) + "\n"
           + f"{kbcommon.POLICY_ROW},role-and-name,,\nlead,team lead,Jan Kowalski,{kbid.source_id(URL, 'T')}\n")
     write(repo / "kb" / "_self" / kbcommon.DECISIONS, ",".join(kbcommon.DECISION_COLS) + "\n")
-    write(repo / "kb" / "_self" / kbcommon.DECISION_MAKERS, ",".join(kbcommon.MAKER_COLS) + "\nowner,operations owner,,\n")
+    write(repo / "kb" / "_self" / kbcommon.DECISION_MAKERS, ",".join(kbcommon.MAKER_COLS)
+          + "\nowner,operations owner,,\noperator,operator,,\nautopilot,autopilot,,\n")
     return repo
 
 
@@ -1124,3 +1126,127 @@ def test_decision_sweep_relink_finds_a_reworded_fact_of_the_kb_itself():
     assert kbdecide.closest([u for u in facts if u["path"] == target["path"]], kbdecide.text_scorer(reworded)) is target
     assert kbdecide.closest(facts, kbdecide.text_scorer(reworded)) is target
     assert kbdecide.closest(facts, kbdecide.text_scorer("zzqx wvvk plorp")) is None
+
+
+PILOT_TITLE = "Delete the retired runbooks"
+
+
+def item_file(repo, iid, gate_question="Delete the retired runbooks?", touches=("kb/public/ops/old.md",)):
+    """A backlog item with one gate the autopilot answered, in the scratch repo."""
+    item = {"id": iid, "kind": "story", "title": PILOT_TITLE, "status": "todo", "priority": "P2", "rank": 0,
+            "goal": "The retired runbooks are gone.", "touches": list(touches),
+            "gates": [{"id": "g1", "kind": "blocking", "question": gate_question, "options": ["yes", "no"],
+                       "recommendation": "yes", "answer": "yes", "by": "autopilot"}]}
+    write(repo.path / "kb" / "_self" / "backlog" / f"{iid}.json", json.dumps(item, indent=2) + "\n")
+
+
+def autopilot_decision(repo, iid="ST-aaaaaaaa", text="yes, delete them", day="2026-10-01", question="Delete the retired runbooks?",
+                       touches=("kb/public/ops/old.md",)):
+    item_file(repo, iid, question, touches)
+    code, out = repo.decide("record", "--root", "_self", "--by", "autopilot", "--source", f"backlog item {iid} gate g1",
+                            "--context", f"item:{iid}", "--review-by", "2026-11-01", "--date", day, "--", text)
+    assert code == 0, out
+    return out.split("\t")[0]
+
+
+def stories(repo):
+    return sorted((repo.path / "kb" / "_self" / "backlog").glob("ST-*.json"))
+
+
+def test_autopilot_ratify_makes_the_decision_the_operators(repo):
+    did = autopilot_decision(repo)
+    assert repo.row(did, "_self")["by"] == "autopilot"
+    code, out = repo.decide("ratify", did, "--by", "operator", "--date", "2026-10-05")
+    assert code == 0 and out.startswith(f"{did}\tratified"), out
+    row = repo.row(did, "_self")
+    assert (row["status"], row["by"], row["by_ref"], row["date"], row["review_by"]) == ("active", "operator", "operator", "2026-10-05", "")
+    assert "ratified 2026-10-05" in row["links"] and row["text"] == "yes, delete them"
+    repo.check()
+    code, out = repo.decide("digest")  # a ratified decision is no longer listed
+    assert code == 0 and "0 unratified" in out
+    refused(repo, "_self", "ratify", did, "--by", "operator", says="is not an autopilot decision")  # nothing to ratify twice
+
+
+@pytest.mark.parametrize("by", [None, "autopilot", "agent", "Operator", ""])
+def test_autopilot_ratify_and_revert_refuse_any_by_but_operator(repo, by):
+    did = autopilot_decision(repo)
+    before = len(stories(repo))
+    for cmd in (("ratify", did), ("revert", did, "--why", "wrong")):
+        refused(repo, "_self", *cmd, *(("--by", by) if by is not None else ()), says="only the operator")
+    assert len(stories(repo)) == before and repo.row(did, "_self")["by"] == "autopilot"
+
+
+def test_autopilot_ratify_refuses_what_is_not_an_active_autopilot_decision(repo):
+    refused(repo, "_self", "ratify", "D-aaaaaaaa", "--by", "operator", says="no decision D-aaaaaaaa")
+    did = autopilot_decision(repo)
+    assert repo.decide("invalidate", did, "--root", "_self", "--reason", "by hand", "--date", DAY)[0] == 0
+    refused(repo, "_self", "ratify", did, "--by", "operator", says="only active")
+    refused(repo, "_self", "revert", did, "--by", "operator", "--why", "x", says="only active")
+    own = propose(repo, "_self")
+    assert repo.decide("confirm", own, "--root", "_self", "--by", "operator", "--maker", "operator")[0] == 0
+    refused(repo, "_self", "ratify", own, "--by", "operator", says="is not an autopilot decision")
+    refused(repo, "_self", "revert", own, "--by", "operator", "--why", "x", says="is not an autopilot decision")
+
+
+def test_autopilot_ratify_revert_invalidates_and_files_a_story_naming_what_to_undo(repo):
+    did = autopilot_decision(repo)
+    before = set(stories(repo))
+    code, out = repo.decide("revert", did, "--by", "operator", "--why", "the runbooks are still used", "--date", "2026-10-06")
+    assert code == 0 and out.startswith(f"{did}\tinvalidated") and "story ST-" in out, out
+    row = repo.row(did, "_self")
+    assert row["status"] == "invalidated" and row["invalidated_date"] == "2026-10-06"
+    assert "reverted by the operator: the runbooks are still used" in row["invalidated_reason"]
+    new = [f for f in stories(repo) if f not in before]
+    assert len(new) == 1 and new[0].stem == out.split("story ")[1].strip()
+    story = json.loads(new[0].read_text(encoding="utf-8"))
+    for needle in (did, "ST-aaaaaaaa", PILOT_TITLE, "yes, delete them", "the runbooks are still used", "kb/public/ops/old.md"):
+        assert needle in story["title"] + story["goal"], (needle, story)
+    assert story["touches"] == ["kb/public/ops/old.md"]
+    repo.check()
+
+
+def test_autopilot_ratify_revert_with_no_reason_files_nothing(repo):
+    did = autopilot_decision(repo)
+    before = set(stories(repo))
+    refused(repo, "_self", "revert", did, "--by", "operator", "--why", "  ", says="--why is empty")
+    assert set(stories(repo)) == before
+
+
+def read_digest(repo):
+    out = repo.path / "digest.md"
+    code, msg = repo.decide("digest", "--out", str(out))
+    assert code == 0, msg
+    return out.read_text(encoding="utf-8"), msg
+
+
+def test_autopilot_ratify_digest_is_empty_without_autopilot_decisions(repo):
+    text, msg = read_digest(repo)
+    assert "0 unratified" in msg and "No unratified autopilot decisions." in text and "- D-" not in text
+    propose(repo, "_self")  # a proposal is not an autopilot decision either
+    assert "No unratified autopilot decisions." in read_digest(repo)[0]
+
+
+def test_autopilot_ratify_digest_lists_restricted_classes_first_then_oldest_first(repo):
+    plain = autopilot_decision(repo, "ST-bbbbbbbb", "plain, old", "2026-09-01", "Which name does it take?", ())
+    query = autopilot_decision(repo, "ST-cccccccc", "querylog, newer", "2026-09-20", "Keep the query log on?", ())
+    newer = autopilot_decision(repo, "ST-dddddddd", "plain, newer", "2026-09-25", "Which name does it take?", ())
+    delete = autopilot_decision(repo, "ST-eeeeeeee", "delete, newest", "2026-09-30")
+    assert repo.decide("ratify", newer, "--by", "operator")[0] == 0
+    text, msg = read_digest(repo)
+    assert "3 unratified" in msg
+    order = [text.index(d) for d in (query, delete, plain)]
+    assert order == sorted(order), text  # restricted (oldest first), then the rest
+    assert newer not in text
+    assert text.index("## Restricted") < text.index(query) < text.index(delete) < text.index("## Other") < text.index(plain)
+    line = next(ln for ln in text.splitlines() if delete in ln)
+    for needle in ("(delete)", "ST-eeeeeeee", PILOT_TITLE, "gate g1", "delete, newest", "review_by 2026-11-01"):
+        assert needle in line, (needle, line)
+    assert "(querylog)" in next(ln for ln in text.splitlines() if query in ln)
+    assert "(design)" in next(ln for ln in text.splitlines() if plain in ln)
+
+
+def test_autopilot_ratify_digest_rewrites_the_default_file(repo):
+    autopilot_decision(repo)
+    code, out = repo.decide("digest")
+    assert code == 0, out
+    assert "ST-aaaaaaaa" in (repo.path / "kb" / "_self" / "reports" / "autopilot-digest.md").read_text(encoding="utf-8")
