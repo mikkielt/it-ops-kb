@@ -24,6 +24,14 @@
         "-k",
         "land_runs_checks_before_auto_merge"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_names_zero_test_check"
+      ]
     }
   ],
   "touches": [
@@ -31,5 +39,6 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "notes": "Retro of SP-w3xmbdra: a check whose pytest selection runs zero tests (exit 5, a malformed perfcheck.py time form in ST-ykvho3zp and ST-5q5b5qtz) passed review of the plan and failed only at land; the land-time run of the item's checks should name a zero-test selection as a malformed check, and a planner runs each check once before a sprint commits the item."
 }
