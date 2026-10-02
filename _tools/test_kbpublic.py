@@ -372,10 +372,42 @@ class TestPublishSafety:
         r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
         assert kbpublic.cmd_publish(ns(), r.path) == 0  # leak.md is not changed against the public tip: not scanned
 
+    # values built here from parts, so this file holds none the tracked-file scan flags
+    AD_GUID = "-".join(("bf9679e7", "0de6", "11d0", "a285", "00aa003049e2"))  # an official AD schema GUID
+    EXAMPLE_IP = ".".join(("192", "168", "2", "133"))  # an example address of a vendor registry file
+    PINNED = "path,source_id,sha256,zip_member\nlogs/registry.yaml,S1,0,\n"  # _artifacts.csv listing the registry
+
+    def test_publish_scan_matches_tracked_scan(self, src, tmp_path, capsys):
+        """A first publish accepts what the tracked-file scan accepts: a GUID outside Markdown, an address in a pinned
+        artifact; a pinned artifact still counts for secrets."""
+        r, pub = self.prepare(src, tmp_path, {
+            "kb/public/ad/anchors.csv": f"anchor,{self.AD_GUID}\n",
+            "kb/public/logs/registry.yaml": f"host: {self.EXAMPLE_IP}\n",
+            "kb/public/_artifacts.csv": self.PINNED})
+        assert kbpublic.cmd_publish(ns(), r.path) == 0, capsys.readouterr().out
+        assert pub.rev("main") == kbpublic.project(r.rev("HEAD"), r.path)
+        secret = "AKIA" + "ABCDEFGHIJKLMNOP"
+        commit(r, {"kb/public/logs/registry.yaml": f"host: {self.EXAMPLE_IP}\nkey: {secret}\n"}, "plant a secret")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        tip = pub.rev("main")
+        for dry in (True, False):
+            assert kbpublic.cmd_publish(ns(dry_run=dry), r.path) == 1
+            assert "kb/public/logs/registry.yaml has a leak-scan hit (secret)" in capsys.readouterr().out
+            assert pub.rev("main") == tip
+
+    @pytest.mark.parametrize("path, kind", [("kb/public/notes.md", "guid"), ("kb/public/ad/hosts.csv", "ip"),
+                                            ("kb/public/ad/who.csv", "email")])
+    def test_publish_scan_still_refuses_real_leaks(self, src, tmp_path, capsys, path, kind):
+        """The same plants outside the accepted places are refused: a GUID in Markdown, a private address and a person's
+        address in an authored file (the pinned list does not cover them)."""
+        text = {"guid": self.AD_GUID, "ip": self.EXAMPLE_IP, "email": "jan.nowak@" + "corp-mail.net"}[kind]
+        r, pub = self.prepare(src, tmp_path, {path: f"x {text}\n", "kb/public/_artifacts.csv": self.PINNED})
+        self.refused(r, pub, capsys, f"{path} has a leak-scan hit ({kind})")
+
     def published_leak(self, src, tmp_path):
-        """A public tip whose _tools/test_x.py holds a GUID, published under an allowlist that is then dropped."""
+        """A public tip whose kb/public/x.md holds a GUID, published under an allowlist that is then dropped."""
         guid = "-".join(("3f2a4c1e", "0000", "4000", "8000", "00000000abcd"))  # built here so this file has none
-        r, pub = self.prepare(src, tmp_path, {"_tools/test_x.py": f"QID = '{guid}'\n",
+        r, pub = self.prepare(src, tmp_path, {"kb/public/x.md": f"QID = '{guid}'\n",
                                               "_tools/tests_allowlist.txt": f"guid {guid}  # reviewed\n"})
         assert kbpublic.cmd_publish(ns(), r.path) == 0
         r.git("rm", "-q", "_tools/tests_allowlist.txt")
@@ -385,7 +417,7 @@ class TestPublishSafety:
 
     def test_leak_already_public_passes(self, src, tmp_path):
         r, pub, guid = self.published_leak(src, tmp_path)
-        commit(r, {"_tools/test_x.py": f"QID = '{guid}'\nOTHER = 1\n"}, "change the file", remove=[])
+        commit(r, {"kb/public/x.md": f"QID = '{guid}'\nOTHER = 1\n"}, "change the file", remove=[])
         r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
         assert kbpublic.cmd_publish(ns(), r.path) == 0  # the tip's version of the file holds the GUID already
 
@@ -393,19 +425,19 @@ class TestPublishSafety:
         r, pub, guid = self.published_leak(src, tmp_path)
         tip = pub.rev("main")
         new = "-".join(("5b1d7e2a", "0000", "4000", "8000", "00000000abcd"))
-        commit(r, {"_tools/test_x.py": f"QID = '{guid}'\nNEW = '{new}'\n"}, "add a GUID", remove=[])
+        commit(r, {"kb/public/x.md": f"QID = '{guid}'\nNEW = '{new}'\n"}, "add a GUID", remove=[])
         r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
         for dry in (True, False):
             assert kbpublic.cmd_publish(ns(dry_run=dry), r.path) == 1
             text = capsys.readouterr().out
-            assert "_tools/test_x.py has a leak-scan hit (guid)" in text and "nothing pushed" in text
+            assert "kb/public/x.md has a leak-scan hit (guid)" in text and "nothing pushed" in text
             assert pub.rev("main") == tip
 
     def test_value_public_elsewhere_passes(self, src, tmp_path, capsys):
         r, pub, guid = self.published_leak(src, tmp_path)
-        commit(r, {"kb/_self/backlog/BG-x.json": f'{{"repro": "{guid}"}}\n'}, "quote the id elsewhere")
+        commit(r, {"kb/_self/other.md": f"repro {guid}\n"}, "quote the id elsewhere")
         r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
-        assert kbpublic.cmd_publish(ns(), r.path) == 0, capsys.readouterr().out  # _tools/test_x.py holds it publicly
+        assert kbpublic.cmd_publish(ns(), r.path) == 0, capsys.readouterr().out  # kb/public/x.md holds it publicly
         assert list(Path(r.path, *kbpublic.CACHE_DIR).glob("public-*.json"))
         assert not r.git("status", "--porcelain").strip()  # the cache ignores itself
 
@@ -425,8 +457,8 @@ class TestPublishSafety:
 
     def test_leak_without_tip_refused(self, src, tmp_path, capsys):
         guid = "-".join(("3f2a4c1e", "0000", "4000", "8000", "00000000abcd"))
-        r, pub = self.prepare(src, tmp_path, {"_tools/test_x.py": f"QID = '{guid}'\n"})
-        self.refused(r, pub, capsys, "_tools/test_x.py has a leak-scan hit (guid)")
+        r, pub = self.prepare(src, tmp_path, {"kb/public/x.md": f"QID = '{guid}'\n"})
+        self.refused(r, pub, capsys, "kb/public/x.md has a leak-scan hit (guid)")
 
 
 class TestPublishHistory:
@@ -484,11 +516,11 @@ class TestPublishHistory:
 
     def test_value_in_parent_version_passes(self, src, tmp_path):
         guid = "-".join(("3f2a4c1e", "0000", "4000", "8000", "00000000abcd"))  # built here so this file has none
-        r, pub = self.prepare(src, tmp_path, {"_tools/test_x.py": f"QID = '{guid}'\n",
+        r, pub = self.prepare(src, tmp_path, {"kb/public/x.md": f"QID = '{guid}'\n",
                                               "_tools/tests_allowlist.txt": f"guid {guid}  # reviewed\n"})
         r.git("rm", "-q", "_tools/tests_allowlist.txt")
         r.git("commit", "-q", "-m", "drop allowlist")
-        head = commit(r, {"_tools/test_x.py": f"QID = '{guid}'\nOTHER = 1\n"}, "change the file")
+        head = commit(r, {"kb/public/x.md": f"QID = '{guid}'\nOTHER = 1\n"}, "change the file")
         r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
         # nothing published yet: the whole history is walked; the GUID was allowlisted when it was added, and the
         # later commit keeps a value its parent's version holds

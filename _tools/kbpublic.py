@@ -32,12 +32,13 @@ the same `main`, so the public home gets a projection of it:
               a `_private` or `_cache` directory (any depth), or under a root whose `_root.md` says `visibility:
               internal` in any commit of the range, at the tip or in the projection (the projection's tree is checked
               too, for what the tip already holds); a file a commit writes has a leak-scan hit (kbcommon.leak_hits,
-              allowing _tools/tests_allowlist.txt of the commit and of the projection) that neither the parent's nor
+              allowing _tools/tests_allowlist.txt of the commit and of the projection, read as the tracked-file scan
+              reads it: a GUID in a Markdown file only, a vendor export, snapshot or pinned artifact for secrets only) that neither the parent's nor
               the tip's version of the file already holds and whose value no file of the tip holds (already public;
               the tip's values are scanned once per tip and cached in _cache/publish/, as digests); the integration
               CI verdict of the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
               unverified, none, or skip when glab or gh cannot read it. Content is refused, never filtered.
-              Each commit's leak verdict is cached in _cache/publish/ per public tip and projection allowlist, so a
+              Each commit's leak verdict is cached in _cache/publish/ per public tip, projection allowlist and pinned artifacts, so a
               range is scanned once; `publish --hook` leaves a range with more than HOOK_BOUND uncached commits to a
               publish by hand (one line, exit 0, nothing checked or pushed).
   guard       a push to a public remote of a ref whose history touches a PRIVATE path is refused: the pre-push hook
@@ -57,7 +58,7 @@ guarded there, and the query log pushes its store to `origin` as before. Exit (p
 carries a PRIVATE path) or the push failed, 2 bad arguments, no source, or a git error. Exit (check-public): 0 clean,
 1 a PRIVATE path found, 2 a git error.
 """
-import hashlib, json, os, re, subprocess, sys, tempfile
+import csv, hashlib, io, json, os, re, subprocess, sys, tempfile
 from pathlib import Path
 
 PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
@@ -377,14 +378,28 @@ def tree_refusals(proj, files, cwd):
     return res
 
 
-def file_hits(path, text, allow):
-    """[(kind, value)] of the leak scan of the file PATH with TEXT: urls are stripped except for secrets, and vendor
-    exports and snapshots (`/artifacts/`, `/_snapshots/`) are scanned for secrets only, as the tracked-file scan does."""
+def pinned_paths(proj, files, cwd):
+    """{path} of the pinned artifacts the projection's roots list (each `_artifacts.csv` of FILES, PROJ's tree, names
+    its paths relative to the root it sits in): the tracked-file scan reads them for secrets only."""
     import kbcommon
-    vendored = "/artifacts/" in path or f"/{kbcommon.SNAPSHOTS}/" in path
+    res = set()
+    for x, text in blobs(proj, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ARTIFACTS], cwd).items():
+        root = root_dir(x)
+        for row in csv.DictReader(io.StringIO(text.lstrip("\ufeff"), newline="")):
+            if row.get("path"):
+                res.add(f"{root}/{row['path']}" if root else row["path"])
+    return res
+
+
+def file_hits(path, text, allow, pinned=()):
+    """[(kind, value)] of the leak scan of the file PATH with TEXT, as the tracked-file scan reads a file: urls are
+    stripped except for secrets; vendor exports, snapshots (`/artifacts/`, `/_snapshots/`) and the pinned artifacts
+    PINNED lists are scanned for secrets only; a GUID counts in a Markdown file only."""
+    import kbcommon
+    vendored = "/artifacts/" in path or f"/{kbcommon.SNAPSHOTS}/" in path or path in pinned
     hits = kbcommon.leak_hits(URL_RX.sub("", text), allow)
     hits += [h for h in kbcommon.leak_hits(text, allow) if h[0] == "secret" and h not in hits]
-    return [h for h in hits if h[0] == "secret" or not vendored]
+    return [h for h in hits if h[0] == "secret" or not (vendored or (h[0] == "guid" and not path.endswith(".md")))]
 
 
 def cache_load(cwd, name):
@@ -470,10 +485,10 @@ class LongRange(Exception):
         self.n = n
 
 
-def leak_verdicts(written, proj, tip, final, cwd):
+def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset()):
     """{commit: [(path, kinds)]} of the leak check of WRITTEN [(commit, old blob, new blob, path)], the files the
     commits write: a hit in the lines a commit adds that the public tip holds in no file (public_values), and neither
-    the parent's nor TIP's version of the file holds, allowing FINAL (PROJ's allowlist) and the commit's own. A commit
+    the parent's nor TIP's version of the file holds, allowing FINAL (PROJ's allowlist) and the commit's own, and reading PINNED (pinned_paths) for secrets only. A commit
     with no hit is left out."""
     # scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes at a
     # time; the whole versions are read only for the files whose added lines hit
@@ -486,7 +501,7 @@ def leak_verdicts(written, proj, tip, final, cwd):
             if new in got:
                 seen = set(got.get(old, "").splitlines())
                 text = "\n".join(ln for ln in got[new].splitlines() if ln not in seen)
-                if any(hit_key(h) not in public for h in file_hits(x, text, {})):
+                if any(hit_key(h) not in public for h in file_hits(x, text, {}, pinned)):
                     added[old, new, x] = text
     rows = [(c, old, new, x) for c, old, new, x in written if (old, new, x) in added]
     if not rows:
@@ -499,11 +514,11 @@ def leak_verdicts(written, proj, tip, final, cwd):
         known = set()
         for text in (olds.get(old), at_tip.get(x)):
             if text is not None:
-                known |= set(file_hits(x, text, {}))
+                known |= set(file_hits(x, text, {}, pinned))
         allow = {k: set(vals) for k, vals in final.items()}
         for k, vals in parse_allowlist(commit_allow.get(f"{c}:{ALLOWLIST_PATH}", "")).items():
             allow.setdefault(k, set()).update(vals)
-        kinds = sorted({k for k, val in file_hits(x, added[old, new, x], allow)
+        kinds = sorted({k for k, val in file_hits(x, added[old, new, x], allow, pinned)
                         if (k, val) not in known and hit_key((k, val)) not in public})
         if kinds:
             res.setdefault(c, []).append((x, kinds))
@@ -521,7 +536,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
             file of TIP holds (public_values: already public), allowing the _tools/tests_allowlist.txt of the commit
             and of PROJ.
     The leak verdict of each commit (its causes, often none) is cached per commit in
-    CACHE_DIR/verdicts-<TIP>-<digest of PROJ's allowlist>.json, the inputs it depends on beside the commit's own, so a
+    CACHE_DIR/verdicts-<TIP>-<digest of PROJ's allowlist and pinned artifacts>.json, the inputs it depends on beside the commit's own, so a
     range already checked costs one `git log` the next time. With BOUND, raises LongRange before any scan when more
     than BOUND commits of the range have no cached verdict. Raises RuntimeError on a git error."""
     import kbcommon
@@ -529,7 +544,9 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     name = lambda c: sources.get(c, c)[:12] + (f" (projected {c[:12]})" if sources.get(c, c) != c else "")  # noqa: E731
     changes = history_changes(proj, tip, cwd)
     final = blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "")
-    vname = f"verdicts-{tip or 'none'}-{hashlib.sha256(final.encode('utf-8')).hexdigest()[:16]}.json"
+    pinned = pinned_paths(proj, files, cwd)
+    inputs = "\0".join([final, *sorted(pinned)])
+    vname = f"verdicts-{tip or 'none'}-{hashlib.sha256(inputs.encode('utf-8')).hexdigest()[:16]}.json"
     got = cache_load(cwd, vname)
     verdicts = {c: v for c, v in (got.items() if isinstance(got, dict) else ())
                 if isinstance(v, list) and all(isinstance(h, list) and len(h) == 2 for h in v)}
@@ -562,7 +579,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
         tree.append(f"commit {name(c)} writes {len(xs)} path(s) under the internal root {r or '.'} "
                     f"({r + '/' if r else ''}{kbcommon.ROOT_FILE} says visibility: internal), e.g. {xs[0]}")
     if todo:
-        found = leak_verdicts([w for w in written if w[0] in todo], proj, tip, parse_allowlist(final), cwd)
+        found = leak_verdicts([w for w in written if w[0] in todo], proj, tip, parse_allowlist(final), cwd, pinned)
         verdicts.update({c: found.get(c, []) for c in todo})
         cache_save(cwd, vname, verdicts, "verdicts-")
     leak = [f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})" for c, _ in changes for x, kinds in verdicts[c]]
