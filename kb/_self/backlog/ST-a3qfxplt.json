@@ -2,7 +2,7 @@
   "id": "ST-a3qfxplt",
   "kind": "story",
   "title": "Review sprint: kbingest map runs nothing from the repository",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-eqmblr7t",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "3ad972160b7f5f4e37563d22b84e51166163b311",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "a8f5652292a45f1e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "fadc0e16df1d9a7a"
+      }
+    ]
+  }
 }
