@@ -2,7 +2,7 @@
   "id": "TK-3hphkfbg",
   "kind": "task",
   "title": "autopilot.py runner start launches a headless sprint run and runner-status reports it",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ng7igc4l",
   "priority": "P2",
   "rank": 0,
@@ -86,5 +86,18 @@
     }
   ],
   "notes": "Allow rules a headless \"/kb-sprint run\" needs that .claude/settings.json (permissions.allow) lacks, for the operator to add or refuse; none was added. The run passes no permission flag, so a command with no rule is refused. Already allowed: every python3 _tools/backlog.py command (claim, land, done, horizon, next, held, gate, answer), tests.py, stress_test.py, rag.py, check.py, selfdoc.py section, lint.py. Missing, as Bash rules (the PowerShell mirror of each is PowerShell(<same text>) for a Windows host): \"Bash(python3 _tools/kbgit.py *)\" (the claim sync kbgit.py sync --push, workers: kbgit.py fix --check, check-trailers); \"Bash(python3 _tools/selfdoc.py stale *)\" (workers); \"Bash(git fetch *)\"; \"Bash(git status *)\"; \"Bash(git log *)\"; \"Bash(git show *)\"; \"Bash(git diff *)\"; \"Bash(git add *)\"; \"Bash(git commit *)\"; \"Bash(git rebase *)\"; \"Bash(git merge-base *)\"; \"Bash(git checkout *)\"; \"Bash(git branch *)\"; \"Bash(git cherry *)\"; \"Bash(git worktree *)\"; \"Bash(git -C *)\"; \"Bash(glab mr view *)\"; \"Bash(glab mr merge *)\" (the code/<id> merge request, SKILL.md run step 4). Missing, as tool rules: \"Agent\" (the kb-worker subagents), \"Edit\" and \"Write\" (subagents change files in their worktrees), \"SendMessage\" (a subagent sent back to fix a gate or a refused done). For the manager session, not the runner: \"Bash(python3 _tools/autopilot.py *)\" (runner start, runner-status). Whether the harness already allows the read-only git commands (status, log, show, diff, merge-base, cherry) by default is not confirmed here; they are listed so a headless run does not depend on it.",
-  "claimed_by": "mac-first-w1"
+  "evidence": {
+    "commit": "98ceb7336b49a3982ca4b98b3c22487a59e33460",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_autopilot.py"
+        ],
+        "exit": 0,
+        "sha256": "f18152727795e3f9"
+      }
+    ]
+  }
 }
