@@ -2,7 +2,7 @@
   "id": "TK-k5harfxm",
   "kind": "task",
   "title": "bl_testkit.py holds test_backlog.py's shared fixtures",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -31,5 +31,19 @@
   "depends_on": [
     "TK-cilkikzk"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "272a8cff532d514340e49ebf4cc5548662a95f22",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_testkit"
+        ],
+        "exit": 0,
+        "sha256": "dd1d089419a698ae"
+      }
+    ]
+  }
 }
