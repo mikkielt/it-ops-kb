@@ -28,7 +28,18 @@
     "kb/_self/backlog.md",
     "kb/_self/git.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/kg_sync.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_land.py",
+    "_tools/bl_base.py",
+    "_tools/bl_cli.py",
+    "_tools/bl_testkit.py",
+    "_tools/test_bl_plan.py",
+    "_tools/test_bl_land.py",
+    "_tools/test_sync.py",
+    "_tools/test_layout.py",
+    "_tools/test_kb_leaks.py"
   ],
   "depends_on": [
     "ST-zkotxvdl"
