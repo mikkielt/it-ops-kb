@@ -2,7 +2,7 @@
   "id": "BG-wuvfdyno",
   "kind": "bug",
   "title": "The observed-run lint takes any dotted number for a version and flags 'in the long run'",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
@@ -21,5 +21,6 @@
     "_tools/test_kb_lookup.py",
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
