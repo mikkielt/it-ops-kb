@@ -21,5 +21,33 @@
     "_tools/test_kbpublic.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Publish's GUID rule: match the tracked-file scan (a GUID counts in Markdown files only, anywhere in the repository), or count GUIDs in every file outside kb roots' non-Markdown data?",
+      "options": [
+        "match-tracked-scan: GUIDs in Markdown files only",
+        "keep-guid-in-code: GUIDs also in _tools code and fixtures"
+      ],
+      "recommendation": "match-tracked-scan: GUIDs in Markdown files only",
+      "do": {
+        "match-tracked-scan: GUIDs in Markdown files only": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_publish_scan_matches_tracked_scan"
+        ],
+        "keep-guid-in-code: GUIDs also in _tools code and fixtures": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_publish_scan_matches_tracked_scan"
+        ]
+      },
+      "answer": "match-tracked-scan: GUIDs in Markdown files only",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "seventh-w24"
 }
