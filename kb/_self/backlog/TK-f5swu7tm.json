@@ -27,7 +27,11 @@
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py",
     "kb/_self/map.csv",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/bl_base.py",
+    "_tools/bl_testkit.py",
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py"
   ],
   "depends_on": [
     "TK-jnijg64s"
