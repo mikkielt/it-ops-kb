@@ -4,6 +4,7 @@
 
 ip    10.20.30.40    # example address in a pseudonymization test question (agents/eval-question-baseline.csv)
 ip    10.0.0.5       # example input for Presidio's IP_ADDRESS recognizer (privacy/presidio-entities.md)
+ip    192.168.1.20   # made-up RFC 1918 address planted in a leak-scan test question in the first commit of test_kblog.py (no real host)
 
 guid  ccc2a336-d7f3-4818-a213-272b7924213e  # public constant quoted from AKS gMSA docs (arch/k8s-gmsa-windows.md)
 guid  03b07b79-c5bc-4b5e-9bfa-13acf4a99998  # Microsoft first-party appId of the TCM service principal (graph/tcm-apis.md)
