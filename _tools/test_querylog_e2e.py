@@ -114,6 +114,13 @@ def stage_b(tmp_path_factory, seed):
     return World(tmp_path_factory.mktemp("e2e-stage-b"), seed)
 
 
+@pytest.fixture(scope="session")
+def stage_c(tmp_path_factory, seed):
+    """The clone TestModesOff, TestModesLocal and TestModesAuto share, one run after the other in the order off,
+    disabled, unreadable, local, auto (run_mode resets what each leaves); auto goes last: it pushes to the remote."""
+    return World(tmp_path_factory.mktemp("e2e-stage-c"), seed)
+
+
 class Haiku:
     """The recorded Haiku replies of e2e.json: each entry of a batch is answered with the reply of the one lookup
     whose `match` (default: its prompt) is in the entry's rule-redacted prompt. Keeps every batch it was sent."""
@@ -1000,16 +1007,30 @@ class TestResearch:
 
 # ---------------------------------------------------------------- modes, the DISABLED marker, a broken config
 
-def run_mode(tmp_path, seed, mode):
-    """One lookup and one distill with the clone's config set to `mode` (`disabled`: mode auto and
-    the DISABLED marker; `unreadable`: a config that is not JSON)."""
+def reset_modes(w):
+    """What one mode run leaves in the shared clone that the next must not see: the config, the DISABLED marker, the
+    local store, the spool and the worktree. The remote's main and the clone's checkout are not touched."""
+    w.cfg.unlink(missing_ok=True)
+    for name in (ql_base.DISABLED_NAME, "store", "spool", ql_deliver.WORKTREE_NAME):
+        p = w.q / name
+        if p.is_dir():
+            shutil.rmtree(p, ignore_errors=True)
+        elif p.exists():
+            p.unlink()
+
+
+def run_mode(w, mode):
+    """One lookup and one distill with the clone's config set to `mode` (`disabled`: mode auto and the DISABLED marker;
+    `unreadable`: a config that is not JSON), in the shared clone `w` (stage_c): the config, marker, local store, spool
+    and worktree of the run before are reset first, and what the run added is read after a mark."""
     import kb_hook
-    w = World(tmp_path, seed)
+    reset_modes(w)
+    m = w.mark()
     if mode in ("off", "local", "auto"):
         w.config({"mode": mode})
     elif mode == "disabled":
         w.config({"mode": "auto"})
-        w.q.mkdir(parents=True)
+        w.q.mkdir(parents=True, exist_ok=True)
         (w.q / ql_base.DISABLED_NAME).write_text("push refused for want of rights\n", encoding="utf-8")
     elif mode == "unreadable":
         w.config("{not json")
@@ -1019,13 +1040,13 @@ def run_mode(tmp_path, seed, mode):
     wrote = w.spool()
     w.end(s)
     rc, said = w.distill()
-    st = w.state()
+    st = w.state(since=m)
     assert rc == 0 and st["gate"] == [], (said, st["gate"])
     if mode in ("off", "disabled", "unreadable"):
-        assert wrote == [] and said == ["distill: logging is off"] and w.local_runs() == []
+        assert wrote == [] and said == ["distill: logging is off"] and w.local_runs(m) == []
         assert w.main() == w.base and not (w.q / ql_deliver.WORKTREE_NAME).exists()
     elif mode == "local":
-        assert wrote == [f"{s}.jsonl"] and says(said, "entries=1 dropped=0 waiting=0") and len(w.local_runs()) == 1
+        assert wrote == [f"{s}.jsonl"] and says(said, "entries=1 dropped=0 waiting=0") and len(w.local_runs(m)) == 1
         assert w.spool() == [] and w.main() == w.base and not (w.q / ql_deliver.WORKTREE_NAME).exists()
     else:
         assert says(said, "apply --push: pushed ") and len(st["runs"]) == 1 and st["spool"] == [], said
@@ -1033,19 +1054,19 @@ def run_mode(tmp_path, seed, mode):
 
 class TestModesOff:
     @pytest.mark.parametrize("mode", ["off", "disabled", "unreadable"])
-    def test_modes(self, tmp_path, seed, mode):
-        run_mode(tmp_path, seed, mode)
+    def test_modes(self, stage_c, mode):
+        run_mode(stage_c, mode)
 
 
 class TestModesLocal:
-    def test_modes(self, tmp_path, seed):
-        run_mode(tmp_path, seed, "local")
+    def test_modes(self, stage_c):
+        run_mode(stage_c, "local")
 
 
 class TestModesAuto:
     @pytest.mark.parametrize("mode", ["auto"])
-    def test_modes(self, tmp_path, seed, mode):
-        run_mode(tmp_path, seed, mode)
+    def test_modes(self, stage_c, mode):
+        run_mode(stage_c, mode)
 
 
 # ---------------------------------------------------------------- sessions open, ended and idle

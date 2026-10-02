@@ -29,7 +29,10 @@
     }
   ],
   "touches": [
-    "_tools/test_querylog_e2e.py"
+    "_tools/test_querylog_e2e.py",
+    "_tools/conftest.py",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/querylog.md"
   ],
   "depends_on": [
     "TK-7pwnplew"
