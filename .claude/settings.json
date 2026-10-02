@@ -32,6 +32,7 @@
       "Bash(python3 _tools/kbid.py check)",
       "Bash(python3 _tools/kbusage.py tree *)",
       "Bash(python3 _tools/querylog.py show *)",
+      "Bash(python3 _tools/querylog.py export *)",
       "PowerShell(python3 _tools/rag.py *)",
       "PowerShell(python3 _tools/backlog.py *)",
       "PowerShell(python3 _tools/kb_hook.py *)",
@@ -48,7 +49,8 @@
       "PowerShell(python3 _tools/kbid.py eval *)",
       "PowerShell(python3 _tools/kbid.py check)",
       "PowerShell(python3 _tools/kbusage.py tree *)",
-      "PowerShell(python3 _tools/querylog.py show *)"
+      "PowerShell(python3 _tools/querylog.py show *)",
+      "PowerShell(python3 _tools/querylog.py export *)"
     ],
     "deny": [
       "mcp__claude-code-docs__submit_feedback",

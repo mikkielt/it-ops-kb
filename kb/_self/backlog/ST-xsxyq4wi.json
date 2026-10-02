@@ -55,6 +55,32 @@
       "recommendation": "wait for the failure",
       "answer": "add",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Record shape of the export: snake_case field names, severity WARN for a refused done, a nonzero ops exit and an apply-failed finding (else INFO), resource service.name and kb.run, event names entry.<surface>, finding.<kind>, usage, work.<kind>, ops.<event>, and a --store option beside the listed flags?",
+      "options": [
+        "this shape",
+        "OTLP-JSON field names and one flat event namespace"
+      ],
+      "recommendation": "this shape",
+      "do": {
+        "this shape": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_export_unified"
+        ],
+        "OTLP-JSON field names and one flat event namespace": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_export_unified"
+        ]
+      },
+      "answer": "this shape",
+      "by": "agent"
     }
   ],
   "notes": "No endpoint is built: observability tools read the exported JSON Lines, and an OTLP-JSON form is added only when the operator names a tool that needs it. The command needs an allow rule in .claude/settings.json (BG-oi6mrxvr).",
