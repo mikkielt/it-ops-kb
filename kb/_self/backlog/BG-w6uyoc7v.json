@@ -1,0 +1,30 @@
+{
+  "id": "BG-w6uyoc7v",
+  "kind": "bug",
+  "title": "tests.py given only test files still records its run as mode full",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "tests.py writes a run that names only test files with a file-scoped mode, not mode full, so a reader of test.run rows with mode full sees only real full runs; the module docstring (tests.py:16-25) names the named-files run among the runs that take no lock and record no file times; a test plants a path argument and reads the recorded mode; found by the SP-3siaqxdf review of BG-tm3g5pha (tests.py main's record_run call)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import tests;got=[];tests.run_pytest=lambda a,report=None:0;tests.wants_host_lock=lambda a:False;tests.record_run=lambda mode,*r:got.append(mode);tests.main(['_tools/test_tests_lock.py']);assert got and got[0]!='full', 'a named-file run is recorded as mode '+str(got)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_tests_lock.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_tests_lock.py"
+  ]
+}

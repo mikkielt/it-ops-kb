@@ -1,0 +1,30 @@
+{
+  "id": "BG-n4x4r3mu",
+  "kind": "bug",
+  "title": "tests.py given every test file by a shell glob runs the whole suite without the host lock",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "tests.py's named-files exemption (wants_host_lock and named_files_only) holds only for a run cheap enough to skip the lock (e.g. one file, or a few files on one worker), so python3 _tools/tests.py _tools/test_*.py takes /tmp/kb-tests.lock like a full run; a test plants a many-file argument list and sees the lock taken; found by the SP-3siaqxdf review of BG-tm3g5pha",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,glob;sys.path.insert(0,'_tools');import tests;assert tests.wants_host_lock(sorted(glob.glob('_tools/test_*.py'))), 'a run naming every test file takes no host lock'"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_tests_lock.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_tests_lock.py"
+  ]
+}

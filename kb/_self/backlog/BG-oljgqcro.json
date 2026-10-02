@@ -1,0 +1,30 @@
+{
+  "id": "BG-oljgqcro",
+  "kind": "bug",
+  "title": "A failed navigation benchmark run keeps its raw stream with no row naming it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_lookup.nav_run ties every kept navigation-<date>-stream-NNN.jsonl to its prompt: a run with no result event or is_error gets a row (or an error row) in the runs file naming its stream file, a timed-out run keeps the stdout it had, and keep_stream's docstring says what it keeps (text mode turns CRLF into LF, so not byte for byte); a test plants a fake claude that fails and sees the stream named; found by the SP-3siaqxdf review of ST-qc4vvlgs (bench_lookup.nav_run)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile,pathlib;sys.path.insert(0,'_tools');import bench_lookup as b,bench_core as c;t=pathlib.Path(tempfile.mkdtemp());f=t/'f.py';f.write_text('import sys;sys.stdin.read();print(1)');runs=t/'navigation-2026-10-02-runs.jsonl';c.RAW['path']=runs;r=b.nav_run([sys.executable,str(f)],'q',t);kept=[p.name for p in t.glob('*-stream-*')];rows=runs.read_text() if runs.exists() else '';assert all(k in rows for k in kept), 'a failed run kept '+str(kept)+' and no row in the runs file names it'"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_benchmarks.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_lookup.py",
+    "_tools/test_benchmarks.py"
+  ]
+}

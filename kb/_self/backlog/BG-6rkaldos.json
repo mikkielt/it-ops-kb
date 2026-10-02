@@ -1,0 +1,32 @@
+{
+  "id": "BG-6rkaldos",
+  "kind": "bug",
+  "title": "kb_http read_chunked lets chunk framing grow without bound, so a 1-byte-chunk flood is read at about 31 times --max-body",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb_http.Handler.read_chunked caps the total framing allowance (e.g. CHUNK_SLACK plus at most the limit), so a body of 1-byte chunks with short extensions whose framing runs far past --max-body gets 413 and a refused body's drain stays near DRAIN, while a body at --max-body in 256-byte chunks is still served; test_kb_http plants a 1-byte-chunk flood with short extensions, and test_kb_http_chunk_extensions_capped's docstring says what the allowance is; found by the SP-3siaqxdf review of BG-zd6wok57 (kb_http.py:197 adds CHUNK_FRAME per chunk with no cap)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,io;sys.path.insert(0,'_tools');import kb_http as k;h=k.Handler.__new__(k.Handler);h.rfile=io.BytesIO(b'1;x=aaaaaaaaaaaaaaaaaaaaaa\\r\\nA\\r\\n'*65536+b'0\\r\\n\\r\\n');assert h.read_chunked(65536) is None, 'served a flood whose framing is 30x the limit'"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_kb_http.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_http.py",
+    "_tools/test_kb_http.py",
+    "kb/_self/design.md",
+    "kb/_self/hosting.md"
+  ]
+}
