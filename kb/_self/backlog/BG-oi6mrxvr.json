@@ -2,7 +2,7 @@
   "id": "BG-oi6mrxvr",
   "kind": "bug",
   "title": "settings.json allows no kbid.py, kbusage.py or querylog.py show command",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ld5jtjhm",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,6 @@
   "repro_reason": "the defect is a missing allow rule in a settings file, and Claude Code's permission matching cannot run offline, so the repro reads the file",
   "touches": [
     ".claude/settings.json"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
