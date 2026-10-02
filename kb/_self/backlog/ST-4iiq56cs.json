@@ -2,7 +2,7 @@
   "id": "ST-4iiq56cs",
   "kind": "story",
   "title": "kb-worker runs the gate's ruff check for any Python it changes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_kb_mcp.py",
     "kb/_self/plugin.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "5b3836fbc214c6dc41c26c015207e50f2323684f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "worker_ruff_for_any_python"
+        ],
+        "exit": 0,
+        "sha256": "3ab0ea50e04492a7"
+      }
+    ]
+  }
 }
