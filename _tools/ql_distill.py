@@ -19,7 +19,7 @@ import kbusage
 import ql_store as store_
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
-from ql_capture import OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines
+from ql_capture import AGENT_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines
 from ql_store import (ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, NAME, OUTCOME, QUESTION_MAX_CHARS,
                       ROW_SURFACES, SKIPPED_KEY, SOURCES_MAX, URL_PATH, public_host)
 
@@ -131,11 +131,18 @@ def read_spool(spool, t_now):
     return sessions, tools, skipped
 
 
+def is_agent_row(r):
+    """Whether a spool row is the start or stop of a subagent (ql_capture.agent_row): a `work` row of no prompt."""
+    return r.get("surface") == "work" and r.get("action") in AGENT_ACTIONS
+
+
 def groups(session):
     """[key, rows, window start, window end] per prompt of a session, in time order: a prompt's window runs from its
     prompt row to its Stop row, else to the next prompt (the last one: to the session's end)."""
     by = {}
     for r in session["rows"]:
+        if is_agent_row(r):
+            continue  # a subagent's start or stop is no prompt's row and opens no window (plan_agents)
         by.setdefault(r.get("prompt_id") if isinstance(r.get("prompt_id"), str) else f"row:{r['id']}", []).append(r)
     out = []
     for key, rs in by.items():
@@ -193,6 +200,51 @@ def plan_ops(tools, consumed, held=()):
                 lines.append(line)
     lines.sort(key=lambda ln: (ln["ts"], ln["id"]))
     return lines, bad, read
+
+
+def _epoch_ms(ts):
+    """The milliseconds since the epoch of a spool time, or None when it is not one."""
+    try:
+        return round(datetime.datetime.fromisoformat(ts).timestamp() * 1000)
+    except (TypeError, ValueError):
+        return None
+
+
+def plan_agents(sessions, held=()):
+    """([ops lines], rows skipped): one `agent.run` line per subagent that has a start and a stop row in a closed
+    session (ql_capture.agent_row: the salted hash of the agent id, its group and item). SubagentStart can fire more
+    than once for one agent, so the earliest start and the latest stop of a hash make the pair, and `ms` is the time
+    between them. A hash with a start and no stop, a stop and no start, or a stop before every start is skipped, one
+    for each hash, and so is a pair whose line is not the closed shape the store keeps (ql_store.ops_line) or that the
+    leak scan flags. The line's id is derived from the pair's two row ids, so a pass over the same rows writes it once;
+    a line whose id `held` has is not written again."""
+    lines, bad, seen = [], 0, set(held)
+    for s in sessions.values():
+        if not s["closed"]:
+            continue
+        by = {}
+        for r in sorted((r for r in s["rows"] if is_agent_row(r)), key=lambda r: (ts_of(r), r["id"])):
+            by.setdefault(r.get("agent"), {"agent-start": [], "agent-stop": []})[r["action"]].append(r)
+        for agent, kinds in by.items():
+            starts, stops = kinds["agent-start"], kinds["agent-stop"]
+            a, b = (_epoch_ms(starts[0]["ts"]), _epoch_ms(stops[-1]["ts"])) if starts and stops else (None, None)
+            if a is None or b is None or b < a:
+                bad += 1
+                continue
+            rid = str(uuid.uuid5(uuid.NAMESPACE_URL, f"agent.run:{starts[0]['id']}:{stops[-1]['id']}"))
+            if rid in seen:
+                continue
+            seen.add(rid)
+            item = next((r["item"] for r in (starts[0], stops[-1]) if r.get("item")), None)
+            group = starts[0].get("group") or stops[-1].get("group")
+            row = {"id": rid, "ts": stops[-1]["ts"], "event": "agent.run", "group": group, "agent": agent,
+                   "item": item, "ms": b - a}
+            line = store_.ops_line({k: v for k, v in row.items() if v is not None})
+            if line is None or store_.ops_line_leaks(line):
+                bad += 1
+            else:
+                lines.append(line)
+    return lines, bad
 
 
 def worst(verdicts):
@@ -781,7 +833,11 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
                 t["entry"] = ordered({**t["entry"], **res})
                 written.append(t)
 
-    ops_lines, ops_bad, ops_read = plan_ops(tools, consumed, store_.ops_ids(qdir / "store"))
+    held = store_.ops_ids(qdir / "store")
+    ops_lines, ops_bad, ops_read = plan_ops(tools, consumed, held)
+    agent_lines, agent_bad = plan_agents(sessions, held)
+    ops_lines = sorted(ops_lines + agent_lines, key=lambda ln: (ln["ts"], ln["id"]))
+    ops_bad += agent_bad  # an agent that never started or never stopped is a pair distill cannot read
     counts = {"entries": len(written), "dropped": len(dropped), "waiting": len(waiting)}
     if skipped or ops_bad:  # an ops row outside the closed shape is a row distill cannot read
         counts[SKIPPED_KEY] = sum(skipped.values()) + ops_bad

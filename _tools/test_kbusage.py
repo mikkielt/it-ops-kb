@@ -75,6 +75,13 @@ def write_jsonl(path, objs):
     return path
 
 
+@pytest.mark.parametrize("agent_type,group", [
+    ("kb-worker", "kb-worker"), ("it-ops-kb:kb-worker", "kb-worker"), ("kb-lookup", "kb-lookup"),
+    ("worker", "other"), (None, "other")])
+def test_ops_agent_rows_the_agent_list_names_kb_worker(agent_type, group):
+    assert kbusage.agent_group(agent_type) == group
+
+
 class TestReader:
     def test_prompt_records(self):
         assert kbusage.prompt_usage(str(SESSION), "p1") == P1

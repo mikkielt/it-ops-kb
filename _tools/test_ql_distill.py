@@ -42,6 +42,12 @@
                     scan flags is dropped and counted as skipped; a row is read once (the tools file keeps it until
                     its day is over, and `consumed.json` lists it) and, when a sidecar of an earlier run holds its id,
                     written no second time; an ops row joins no prompt, so an entry does not change for it
+  TestAgentRows     distill turns each subagent start and stop (the `work` rows capture writes) into one ops `agent.run`
+                    line (`-k ops_agent_rows`): the group, the salted hash, the item and the milliseconds between
+                    them, the earliest start and latest stop of one agent when SubagentStart fired more than once;
+                    an unpaired start or stop, or a stop before its start, is skipped and counted in the run header,
+                    never written; a row with a raw agent id or free text is dropped; a session still open waits; a
+                    pair is written once
   TestLock         a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
                     of several processes taking the lock at once exactly one gets it
   TestLaunch        SessionEnd marks its session closed; the launcher returns within the 1.5-second budget with its
@@ -1308,6 +1314,133 @@ class TestOpsSidecar:
             assert run_distill(q, lambda p: echo(p))[0] == 0
         assert jsonl(ql_store.run_files(with_ops / "store")[0]) == jsonl(ql_store.run_files(base / "store")[0])
         assert len(jsonl(ops_sidecar_of(with_ops))) == 2 and not (base / "store" / "ops").exists()
+
+
+AG1, AG2, AG3 = "0123456789ab", "ba9876543210", "00ff00ff00ff"  # the salted hashes capture writes
+
+
+def agent_row(n, action, agent, ms, group="kb-worker", item=None, sid=W1, **extra):
+    """The nth `work` row of a subagent's start or stop, `ms` milliseconds into the session's day."""
+    t = datetime.datetime(2026, 9, 28, 10, 0, 0, tzinfo=datetime.timezone.utc) + datetime.timedelta(milliseconds=ms)
+    row = {"id": f"{n:08x}-2222-4222-8222-222222222222", "ts": ql_base.iso(t.timestamp()), "surface": "work", "v": 1,
+           "session_id": sid, "action": action, "agent": agent, "group": group, **extra}
+    if item:
+        row["item"] = item
+    return row
+
+
+def plant_agents(qdir, rows, sid=W1, closed=True):
+    sp = Path(qdir) / "spool"
+    sp.mkdir(parents=True, exist_ok=True)
+    (sp / f"{sid}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+    if closed:
+        (sp / f"{sid}.end").touch()
+    return sp / f"{sid}.jsonl"
+
+
+class TestAgentRows:
+    def test_ops_agent_rows_a_pair_is_one_agent_run_line(self, tmp_path):
+        q = tmp_path / "querylog"
+        f = plant_agents(q, [agent_row(1, "agent-start", AG1, 0, item=WA), agent_row(2, "agent-stop", AG1, 61234, item=WA),
+                             agent_row(3, "agent-start", AG2, 100, group="general-purpose"),
+                             agent_row(4, "agent-stop", AG2, 900, group="general-purpose")])
+        rc, said = run_distill(q, echo)
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 ops=2"], said
+        got = jsonl(ops_sidecar_of(q))
+        assert got[0] == {"run": RUN_ID, "counts": {"rows": 2}}
+        assert [{k: v for k, v in g.items() if k not in ("id", "ts")} for g in got[1:]] == [
+            {"event": "agent.run", "group": "general-purpose", "agent": AG2, "ms": 800},
+            {"event": "agent.run", "group": "kb-worker", "agent": AG1, "item": WA, "ms": 61234}]
+        assert all(ql_capture.OPS_KINDS["agent"](g["agent"]) for g in got[1:])
+        assert ql_store.store_problems(q / "store") == []
+        assert not f.exists()  # the session's rows are consumed
+        before = {p: p.read_bytes() for p in store_files(q)}
+        assert run_distill(q, echo, run_id="20260928T130000Z-0000abce")[1] == ["distill: nothing to write (waiting=0)"]
+        assert {p: p.read_bytes() for p in store_files(q)} == before  # a pair is written once
+
+    def test_ops_agent_rows_the_same_rows_again_write_no_second_line(self, tmp_path):
+        """the spool kept the rows (keep) or the run died before the session left: the line's id is the pair's"""
+        q = tmp_path / "querylog"
+        rows = [agent_row(1, "agent-start", AG1, 0), agent_row(2, "agent-stop", AG1, 50)]
+        plant_agents(q, rows)
+        run_distill(q, echo)
+        plant_agents(q, rows)
+        rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abce")
+        assert said == ["distill: nothing to write (waiting=0)"], said
+        assert len(list((q / "store" / "ops").rglob("*.jsonl"))) == 1 and ql_store.store_problems(q / "store") == []
+
+    def test_ops_agent_rows_a_start_that_fired_twice_is_one_run_from_the_first(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_agents(q, [agent_row(1, "agent-start", AG1, 0), agent_row(2, "agent-start", AG1, 40),
+                         agent_row(3, "agent-stop", AG1, 100)])
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 ops=1"], said
+        assert [g["ms"] for g in jsonl(ops_sidecar_of(q))[1:]] == [100]
+
+    def test_ops_agent_rows_an_unpaired_start_or_stop_is_skipped_and_counted(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_agents(q, [agent_row(1, "agent-start", AG1, 0), agent_row(2, "agent-stop", AG2, 10),
+                         agent_row(3, "agent-start", AG3, 500), agent_row(4, "agent-stop", AG3, 20),  # stop first
+                         agent_row(5, "agent-start", "aaaaaaaaaaaa", 0), agent_row(6, "agent-stop", "aaaaaaaaaaaa", 7)])
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 skipped=3 ops=1"], said
+        assert [(g["agent"], g["ms"]) for g in jsonl(ops_sidecar_of(q))[1:]] == [("aaaaaaaaaaaa", 7)]
+        run = [x for x in store_files(q) if x.parent.parent.name not in ("ops", "work", "usage")][0]
+        assert jsonl(run)[0]["counts"] == {"entries": 0, "dropped": 0, "waiting": 0, "skipped": 3}
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_ops_agent_rows_only_unpaired_rows_write_a_run_file_with_the_count_and_no_sidecar(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_agents(q, [agent_row(1, "agent-start", AG1, 0)])
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 skipped=1"], said
+        assert not (q / "store" / "ops").exists()
+
+    @pytest.mark.parametrize("bad", [
+        {"agent": "agent-0123456789abcdef0"},  # a raw agent id
+        {"group": "a free text group"},
+        {"item": "work/ST-lopowpsz"},  # branch text
+        {"group": "kb-worker", "agent": "glpat" + "-" + "a" * 20}])  # a valid name the leak scan flags
+    def test_ops_agent_rows_a_raw_id_or_free_text_is_dropped_never_written(self, tmp_path, bad):
+        q = tmp_path / "querylog"
+        row = {"agent": AG1, "group": "kb-worker", **bad}
+        plant_agents(q, [agent_row(1, "agent-start", row.pop("agent"), 0, **row),
+                         agent_row(2, "agent-stop", bad.get("agent", AG1), 5, **row)])
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 skipped=1"] or "skipped" in said[0], said
+        assert not (q / "store" / "ops").exists()
+        text = "".join(x.read_text(encoding="utf-8") for x in store_files(q))
+        for v in bad.values():
+            assert v not in text
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_ops_agent_rows_a_session_still_open_waits(self, tmp_path):
+        q = tmp_path / "querylog"
+        f = plant_agents(q, [agent_row(1, "agent-start", AG1, 0), agent_row(2, "agent-stop", AG1, 5)], closed=False)
+        t = NOW.timestamp() - 60
+        os.utime(f, (t, t))
+        assert run_distill(q, echo)[1] == ["distill: nothing to write (waiting=0)"]
+        assert f.exists() and not (q / "store").exists()
+        (q / "spool" / f"{W1}.end").touch()  # planted counterpart: closed, the pair is written
+        assert run_distill(q, echo)[1] == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 ops=1"]
+
+    def test_ops_agent_rows_open_no_prompt_window(self, tmp_path):
+        """the fixture spool distills to the same entries with agent rows inside a session"""
+        base, with_rows = tmp_path / "base", tmp_path / "with"
+        for q in (base, with_rows):
+            plant_spool(q)
+        f = with_rows / "spool" / f"{S_ENDED}.jsonl"
+        first = json.loads(f.read_text(encoding="utf-8").splitlines()[0])
+        t = datetime.datetime.fromisoformat(first["ts"]) + datetime.timedelta(seconds=1)
+        extra = [agent_row(1, "agent-start", AG1, 0, sid=S_ENDED), agent_row(2, "agent-stop", AG1, 9, sid=S_ENDED)]
+        for r in extra:
+            r["ts"] = ql_base.iso(t.timestamp())
+        f.write_text(f.read_text(encoding="utf-8") + "".join(json.dumps(r) + "\n" for r in extra), encoding="utf-8",
+                     newline="\n")
+        for q in (base, with_rows):
+            assert run_distill(q, echo)[0] == 0
+        assert jsonl(ql_store.run_files(with_rows / "store")[0])[1:] == jsonl(ql_store.run_files(base / "store")[0])[1:]
+        assert len(jsonl(ops_sidecar_of(with_rows))) == 2
 
 
 class TestLock:
