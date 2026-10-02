@@ -2,7 +2,7 @@
   "id": "BG-qm6r7ebo",
   "kind": "bug",
   "title": "A provisional gate of class secrets or push is answered by an agent with no class check, and --confirm without --by makes it the operator's",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
   "rank": 0,
@@ -58,5 +58,28 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "seventh-w34"
+  "evidence": {
+    "commit": "b1001a2c5b9cf16fe496f5ae0721ca9e5a40b67b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "authority_refused_class_provisional"
+        ],
+        "exit": 0,
+        "sha256": "9269ff7715d0565a"
+      },
+      {
+        "run": [
+          "sh",
+          "-c",
+          "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; f=$(grep -L '\"sprint\"' kb/_self/backlog/BG-*.json | head -1); id=$(basename \"$f\" .json); python3 _tools/backlog.py gate add \"$id\" --kind provisional --id pushgate --question \"Push the commits to the public remote?\" --option yes --option no --recommendation yes --do \"yes=true\" --do \"no=true\" >/dev/null; if python3 _tools/backlog.py answer \"$id\" pushgate --provisional >/dev/null 2>&1; then exit 1; fi"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
