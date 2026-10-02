@@ -31,5 +31,34 @@
     "_tools/test_autopilot_bound.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which defaults bound a runner's headless child: the turn limit (--max-turns) and the wall-clock deadline (a loop guard above a run's turns before its first compaction, a deadline above a run with a full test suite; both replaceable by KB_RUNNER_MAX_TURNS and KB_RUNNER_DEADLINE_S)?",
+      "options": [
+        "500 turns and 6 hours",
+        "300 turns and 3 hours",
+        "1000 turns and 12 hours"
+      ],
+      "recommendation": "500 turns and 6 hours",
+      "class": "design",
+      "answer": "500 turns and 6 hours",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does runner start exit with when the deadline ended the child (cause timeout)?",
+      "options": [
+        "1, like error",
+        "0, like any named cause"
+      ],
+      "recommendation": "1, like error",
+      "class": "design",
+      "answer": "1, like error",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "mac-sixth"
 }
