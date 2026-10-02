@@ -823,17 +823,30 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
     return 0
 
 
-def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay, skipped=None):
+def uncounted_work(rows, done):
+    """Whether a session's rows hold a prompt inside a work window that `done` (the prompt ids worked.json holds for
+    it) does not list: a prompt no work sidecar counted."""
+    inside, _ = work_windows(rows)
+    return any(windows and pid not in done for pid, windows in inside.items())
+
+
+def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay, skipped=None, work_pending=False):
     """The spool after a pass: the rows of the `gone` entries and of the prompts that never used the kb go, the rows
     of the `stay` entries stay (a closed session keeps its window end), a finished day's tools file goes once all
-    its rows are consumed, and the `skipped` rows (counted in this pass) go from the files that stay."""
+    its rows are consumed, and the `skipped` rows (counted in this pass) go from the files that stay. With
+    `work_pending` (a settle outside a distill pass: no plan_work counted the sessions) a closed session with work
+    prompts that worked.json does not hold stays whole, for the pass that counts them."""
     wait_keys = {(t["sid"], t["key"]) for t in stay if t["sid"]}
+    worked = read_json(qdir / WORKED_NAME, {})
+    worked = worked if isinstance(worked, dict) else {}
     for t in gone:
         for name, r in t["tools"]:
             consumed.setdefault(name, set()).add(r["id"])
     for sid, s in sessions.items():
         if not s["closed"]:
             continue
+        if work_pending and uncounted_work(s["rows"], set(worked.get(sid) or ())):
+            continue  # the whole file waits for the pass that counts its work
         for extra in s.get("skipped", []):
             for name, r in extra:
                 consumed.setdefault(name, set()).add(r["id"])
@@ -877,7 +890,7 @@ def spool_delivered(qdir, ids, now_dt=None):
     gone = [t for t in todo if t["entry"]["id"] in ids]
     if gone:
         _settle(spool, sessions, tools, consumed, Path(qdir), today, gone,
-                [t for t in todo if t["entry"]["id"] not in ids])
+                [t for t in todo if t["entry"]["id"] not in ids], work_pending=True)
     return len(gone)
 
 
