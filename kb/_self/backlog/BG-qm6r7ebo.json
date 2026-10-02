@@ -32,7 +32,8 @@
     "_tools/test_backlog_authority_class.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "_tools/test_bl_land.py"
+    "_tools/test_bl_land.py",
+    ".claude/skills/kb-sprint/SKILL.md"
   ],
   "gates": [
     {
@@ -44,7 +45,7 @@
         "no"
       ],
       "recommendation": "yes",
-      "class": "design",
+      "class": "agents-rule",
       "do": {
         "yes": [
           "true"
