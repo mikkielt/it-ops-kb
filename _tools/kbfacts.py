@@ -129,12 +129,29 @@ def kinds_of(parts):
 
 # a file name carries an extension, or sits under a directory (src/adr-new, a script with none)
 POINTER = re.compile(r"(?<![\w/.-])((?:[\w.-]+/)+[\w.-]+|[\w.-]+\.[A-Za-z0-9]+)#([\w.:-]+)")
+# a first segment that is a host name (github.com/o/r/blob/main/x#y, a url without its scheme): letters, a dot and one of
+# these tails, never a code-file extension (so not .py, .rs, .md, .pl, .sh) and never a leading dot (.github/...)
+_HOST = re.compile(r"[A-Za-z0-9][\w-]*(?:\.[\w-]+)*\.(?:com|org|net|io|dev|app|gov|edu|info|cloud|ai|ms|microsoft|azure|eu|uk)", re.I)
+# prose written as a pair of words, which is no extensionless script path (and/or#x, his/her#y); a closed list
+_PROSE_PAIRS = frozenset(("and/or", "either/or", "neither/nor", "he/she", "his/her", "him/her", "yes/no", "on/off",
+                          "true/false", "if/else", "pass/fail", "input/output", "read/write", "enable/disable",
+                          "allow/deny", "add/remove", "can/cannot", "is/are", "was/were", "has/have"))
+
+
+def _prose_or_host(path):
+    first = path.split("/", 1)[0]
+    if _HOST.fullmatch(first):
+        return True
+    return path.lower() in _PROSE_PAIRS
 
 
 def code_pointer(part):
-    """The `path#symbol` (or `path#L10-L20`) a CODE part points at, as (path, anchor), or None."""
-    m = POINTER.search(part.get("note") or "")
-    return (m.group(1), m.group(2)) if m else None
+    """The `path#symbol` (or `path#L10-L20`) a CODE part points at, as (path, anchor), or None: a path whose first
+    segment is a host name, or a pair of prose words such as `and/or`, is no file of a repository."""
+    for m in POINTER.finditer(part.get("note") or ""):
+        if not _prose_or_host(m.group(1)):
+            return m.group(1), m.group(2)
+    return None
 
 
 FLOATING = {"main", "master", "head", "develop", "dev", "trunk", "latest", "stable", "default", "next", "nightly"}
