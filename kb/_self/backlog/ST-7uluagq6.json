@@ -2,7 +2,7 @@
   "id": "ST-7uluagq6",
   "kind": "story",
   "title": "querylog.py export names its fields as OTLP-JSON and keeps one flat event namespace",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -58,5 +58,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "seventh-w19"
+  "evidence": {
+    "commit": "eca5b6d8ca796ad370badbc2f116ca306cdc0935",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_export_otlp_names"
+        ],
+        "exit": 0,
+        "sha256": "d3d3a7285d0b87bb"
+      }
+    ]
+  }
 }
