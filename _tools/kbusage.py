@@ -27,7 +27,8 @@ DOCS_TOOL = re.compile(r"mcp__(?:plugin_it-ops-kb-docs_)?(microsoft-learn|claude
 BUILTIN = ("Agent", "Task", "Bash", "PowerShell", "Read", "Write", "Edit", "MultiEdit", "NotebookEdit", "Glob", "Grep",
            "WebFetch", "WebSearch", "Skill", "ToolSearch", "TodoWrite", "LSP")
 AGENTS = {"general-purpose": "general-purpose", "Explore": "Explore", "Plan": "Plan", "kb-lookup": "kb-lookup",
-          "it-ops-kb:kb-lookup": "kb-lookup", "kb-reviewer": "kb-reviewer", "it-ops-kb:kb-reviewer": "kb-reviewer"}
+          "it-ops-kb:kb-lookup": "kb-lookup", "kb-reviewer": "kb-reviewer", "it-ops-kb:kb-reviewer": "kb-reviewer",
+          "kb-worker": "kb-worker", "it-ops-kb:kb-worker": "kb-worker"}
 OTHER_AGENT = "other"
 GROUPS = ("tool", "bash", "file", "agent")
 SHELLS = ("Bash", "PowerShell")

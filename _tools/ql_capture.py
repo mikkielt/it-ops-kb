@@ -10,7 +10,7 @@ that event has, each a name, an exit code, a count, milliseconds, an item id, a 
 closed reason class, never free text. `record` writes none that breaks that shape (ops_problems), and the store
 gates the written lines by the same function.
 """
-import datetime, functools, json, re, sys, threading, time, uuid
+import datetime, functools, hashlib, json, re, secrets, sys, threading, time, uuid
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -31,6 +31,10 @@ SKILL = re.compile(r"\s*/(?:it-ops-kb:)?kb-[\w-]+")  # a kb skill typed as a sla
 SAFE_SESSION = re.compile(r"[A-Za-z0-9_-]{1,80}")  # a session id that is safe as a file name
 STATUS = re.compile(r"\b(?:HTTP(?:/[\d.]+)?|status(?: code)?)\D{0,3}([1-5]\d\d)\b", re.I)
 WORK_ACTIONS = ("claim", "done", "release")  # the backlog.py commands that open or end a window of work on an item
+AGENT_ACTIONS = ("agent-start", "agent-stop")  # the `work` rows of a subagent's start and stop (agent_row)
+AGENT_SALT_NAME = "agent.salt"  # beside the spool, never committed: what a hash of an agent id is salted with
+AGENT_HASH_CHARS = 12
+WORK_BRANCH_REF = "ref: refs/heads/work/"
 WORK_REFUSED_EXIT = 1  # the exit code of a refused backlog.py command (its Refused; bad usage exits 2)
 WORK_ITEM = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")  # backlog.py's ID_RE
 WORK_LAUNCHER = re.compile(r"(?:sh|bash|python[\d.]*|py)(?:\.exe)?|kbpy|-[\w.-]+|[A-Za-z_]\w*=\S*", re.I)  # beside backlog.py
@@ -490,6 +494,78 @@ def prune(spool):
         pass
 
 
+def agent_salt():
+    """The salt of the agent hashes: a random string kept in the querylog directory (never in the repository), made on
+    first use. None when it can be neither read nor made."""
+    path = places()[0] / AGENT_SALT_NAME
+    for _ in range(2):
+        try:
+            salt = path.read_text(encoding="utf-8").strip()
+            if len(salt) >= 32:
+                return salt
+        except OSError:
+            pass
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "x", encoding="utf-8") as f:  # exclusive: a second hook that raced reads this one's
+                f.write(secrets.token_hex(16) + "\n")
+        except OSError:
+            pass
+    return None
+
+
+def agent_hash(agent_id):
+    """A salted short hash of an agent id (OPS_AGENT), or None without a salt: the id never leaves this function."""
+    salt = agent_salt()
+    if salt is None or not isinstance(agent_id, str) or not agent_id:
+        return None
+    return hashlib.sha256(f"{salt}\0{agent_id}".encode("utf-8")).hexdigest()[:AGENT_HASH_CHARS]
+
+
+def work_branch_item(cwd):
+    """The item id of the `work/<id>` branch checked out at `cwd` (or above it), read from the repository's HEAD file
+    with no process started, else None. Only the id leaves: never the branch text or a path."""
+    if not (isinstance(cwd, str) and cwd):
+        return None
+    try:
+        start = Path(cwd)
+        if not start.is_absolute():
+            return None
+        for d in (start, *start.parents):
+            dot = d / ".git"
+            if dot.is_dir():
+                head = dot / "HEAD"
+                break
+            if dot.is_file():
+                text = dot.read_text(encoding="utf-8").strip()
+                if not text.startswith("gitdir:"):
+                    return None
+                git_dir = Path(text[len("gitdir:"):].strip())
+                head = (git_dir if git_dir.is_absolute() else d / git_dir) / "HEAD"
+                break
+        else:
+            return None
+        ref = head.read_text(encoding="utf-8").strip()
+    except (OSError, ValueError):
+        return None
+    tail = ref[len(WORK_BRANCH_REF):] if ref.startswith(WORK_BRANCH_REF) else ""
+    return tail if WORK_ITEM.fullmatch(tail) else None
+
+
+def agent_row(event, sid):
+    """The `work` row of a SubagentStart or SubagentStop event: `action` agent-start or agent-stop, `agent` (a salted
+    short hash of the agent id, never the id), `group` (kbusage.agent_group of the agent type, in lower case: a token) and `item` when the
+    hook's directory is on a `work/<id>` branch. None for an event with no agent id. Distill pairs the rows
+    (ql_distill.plan_agents)."""
+    import kbusage
+    agent = agent_hash(event.get("agent_id"))
+    if agent is None:
+        return None
+    kind = str(event.get("agent_type") or "").rsplit(":", 1)[-1]
+    return record("work", sid, action=AGENT_ACTIONS[event.get("hook_event_name") == "SubagentStop"], agent=agent,
+                  group=kbusage.agent_group(kind).lower(), item=work_branch_item(event.get("cwd")))
+
+
 def capture(event):
     """The row one hook event writes, or None."""
     if not isinstance(event, dict):
@@ -534,6 +610,8 @@ def capture(event):
         chars = len(text_of(event.get("tool_response"))) if ok and tool not in SHELL_TOOLS else None
         return record("fetch", sid, prompt_id=pid, tool=tool, fetcher=fetcher, host=host, path=path,
                       outcome=fetch_outcome(tool, ok, event, host), chars=chars)
+    if name in ("SubagentStart", "SubagentStop"):
+        return agent_row(event, sid)
     if name == "Stop":
         if not used_kb(spool, sid, pid):
             return None

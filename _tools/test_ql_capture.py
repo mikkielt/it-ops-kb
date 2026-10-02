@@ -17,6 +17,12 @@
                     event or a key outside the set, a free-text or mistyped value, a missing required key or a row
                     too long to stay whole (planted: the same fields in their closed shape write one; `-k
                     ops_sidecar_refuses_free_text`)
+  TestAgentRows     a SubagentStart or SubagentStop event writes one `work` row {action agent-start|agent-stop, agent,
+                    group, item} (`-k ops_agent_rows`): `agent` a salted short hash of the agent id (the salt a file in
+                    the querylog directory, made once), never the id; `group` kbusage's closed class; `item` only from a
+                    `work/<id>` branch at the event's directory, read from HEAD with no process; no output on stdout;
+                    the `agent.run` ops event refuses a raw agent id and a free-text group (planted: the closed shapes
+                    are written)
   TestSwitches      mode `off`, the DISABLED marker and an unreadable config file write nothing (planted: the same
                     events with the default mode write); where rows go in a clone and in a plugin host
   TestToolRows      kb_hook.py, kb_ask.py, fetch.py and census.py write their own rows; the kb: hook's answer is
@@ -580,6 +586,105 @@ class TestOpsRows:
         assert ql_capture.record("ops", **LAND_STEP) is None and not self.spool.exists()
 
 
+RAW_AGENT = "agent-0123456789abcdef0"
+
+
+def agent_event(kind, sid=SID, agent=RAW_AGENT, agent_type="kb-worker", cwd=None):
+    ev = {"hook_event_name": kind, "session_id": sid, "agent_id": agent, "agent_type": agent_type}
+    if cwd is not None:
+        ev["cwd"] = str(cwd)
+    return ev
+
+
+def branch_dir(tmp_path, branch, worktree=False):
+    """A directory whose repository's HEAD is on `branch` (a file read, no git): a plain checkout, or a worktree
+    whose `.git` file names its own git directory."""
+    repo = tmp_path / ("wt" if worktree else "repo")
+    git_dir = tmp_path / "gitdirs" / "wt" if worktree else repo / ".git"
+    git_dir.mkdir(parents=True)
+    (git_dir / "HEAD").write_text(f"ref: refs/heads/{branch}\n", encoding="utf-8")
+    if worktree:
+        (repo / "sub").mkdir(parents=True)
+        (repo / ".git").write_text(f"gitdir: {git_dir}\n", encoding="utf-8")
+    return repo
+
+
+class TestAgentRows:
+    def test_ops_agent_rows_start_and_stop_are_work_rows_with_a_hashed_agent(self, tmp_path):
+        repo = branch_dir(tmp_path, "work/ST-lopowpsz")
+        assert hook(tmp_path, agent_event("SubagentStart", cwd=repo)) == (0, b"")
+        assert hook(tmp_path, agent_event("SubagentStop", agent_type="it-ops-kb:kb-worker", cwd=repo)) == (0, b"")
+        a, b = lines(tmp_path)
+        assert (a["surface"], a["action"], a["group"], a["item"], a["session_id"]) == (
+            "work", "agent-start", "kb-worker", "ST-lopowpsz", SID)
+        assert (b["action"], b["group"], b["item"]) == ("agent-stop", "kb-worker", "ST-lopowpsz")
+        assert a["agent"] == b["agent"] and ql_capture.OPS_KINDS["agent"](a["agent"])
+        assert "prompt_id" not in a and is_uuid4(a["id"]) and a["id"] != b["id"]
+        text = raw(tmp_path).decode("utf-8")
+        for secret in (RAW_AGENT, "agent-0123", str(repo), "refs/heads", "work/ST"):
+            assert secret not in text, secret
+        salt = (tmp_path / "querylog" / ql_capture.AGENT_SALT_NAME).read_text(encoding="utf-8").strip()
+        assert len(salt) >= 32 and salt not in text
+
+    def test_ops_agent_rows_the_hash_is_salted_and_stable(self, tmp_path):
+        hook(tmp_path, agent_event("SubagentStart"))
+        hook(tmp_path, agent_event("SubagentStart", agent="agent-other"))
+        other = tmp_path / "other"
+        hook(other, agent_event("SubagentStart"))
+        a, b = lines(tmp_path)
+        (c,) = lines(other)
+        assert a["agent"] != b["agent"] and a["agent"] != c["agent"]  # another id, and another salt
+        hook(tmp_path, agent_event("SubagentStop"))
+        assert lines(tmp_path)[-1]["agent"] == a["agent"]  # the same id under the same salt
+
+    @pytest.mark.parametrize("agent_type,group", [
+        ("kb-worker", "kb-worker"), ("it-ops-kb:kb-worker", "kb-worker"), ("general-purpose", "general-purpose"),
+        ("Explore", "explore"), ("my free text type", "other"), (None, "other"), ("", "other")])
+    def test_ops_agent_rows_group_is_a_closed_class(self, tmp_path, agent_type, group):
+        hook(tmp_path, agent_event("SubagentStart", agent_type=agent_type))
+        (row,) = lines(tmp_path)
+        assert row["group"] == group and ql_capture.OPS_KINDS["token"](row["group"])
+        assert "my free text type" not in raw(tmp_path).decode("utf-8")
+
+    def test_ops_agent_rows_item_only_from_a_work_branch(self, tmp_path):
+        plain = tmp_path / "plain"
+        for n, (branch, worktree) in enumerate([("main", False), ("work/not-an-item", False),
+                                                ("work/ST-lopowpsz-extra", False), ("feature/ST-lopowpsz", False)]):
+            hook(tmp_path, agent_event("SubagentStart", cwd=branch_dir(tmp_path / str(n), branch, worktree)))
+        hook(tmp_path, agent_event("SubagentStart", cwd=plain))  # no repository
+        hook(tmp_path, agent_event("SubagentStart", cwd="relative/dir"))
+        hook(tmp_path, agent_event("SubagentStart"))
+        assert all("item" not in r for r in lines(tmp_path)) and len(lines(tmp_path)) == 7
+        # planted counterpart: a work branch, in a worktree and from a subdirectory of it, gives its item
+        wt = branch_dir(tmp_path / "w", "work/BG-6eehkrei", worktree=True)
+        hook(tmp_path, agent_event("SubagentStop", cwd=wt / "sub"))
+        assert lines(tmp_path)[-1]["item"] == "BG-6eehkrei"
+
+    @pytest.mark.parametrize("ev", [{"hook_event_name": "SubagentStart", "session_id": SID},
+                                    {"hook_event_name": "SubagentStop", "session_id": SID, "agent_id": 7},
+                                    {"hook_event_name": "SubagentStop", "session_id": SID, "agent_id": ""}])
+    def test_ops_agent_rows_an_event_with_no_agent_id_writes_nothing(self, tmp_path, ev):
+        assert hook(tmp_path, ev) == (0, b"") and lines(tmp_path) == []
+
+    def test_ops_agent_rows_off_writes_nothing_and_no_salt(self, tmp_path):
+        env = querylog_env(tmp_path, mode="off")
+        assert hook(tmp_path, agent_event("SubagentStart"), env) == (0, b"")
+        assert lines(tmp_path) == [] and not (tmp_path / "querylog" / ql_capture.AGENT_SALT_NAME).exists()
+
+    @pytest.mark.parametrize("fields", [
+        {"event": "agent.run", "group": "a free text group", "ms": 5},
+        {"event": "agent.run", "group": "kb-worker", "ms": 5, "agent": RAW_AGENT},  # a raw id, not its hash
+        {"event": "agent.run", "group": "kb-worker", "ms": 5, "agent": "0123456789abcdef0"},  # too long for a hash
+        {"event": "agent.run", "group": "kb-worker", "ms": 5, "item": "work/ST-lopowpsz"},  # branch text
+        {"event": "agent.run", "group": "kb-worker", "ms": 5, "branch": "work/ST-lopowpsz"},
+        {"event": "agent.run", "group": "kb-worker"}])
+    def test_ops_agent_rows_refuse_free_text_and_a_raw_agent_id(self, tmp_path, monkeypatch, fields):
+        monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
+        assert ql_capture.record("ops", **fields) is None and not (tmp_path / "spool").exists()
+        ok = {"event": "agent.run", "group": "kb-worker", "ms": 5, "agent": "0123456789ab", "item": "ST-lopowpsz"}
+        assert ql_capture.record("ops", **ok) is not None  # planted counterpart: the closed shapes are written
+
+
 class TestSwitches:
     EVENTS =[prompt("kb: laps"), tool("mcp__kb__kb_pack", {"question": "laps"}, PACK),
               tool("WebFetch", {"url": "https://example.com/x"}, "t"), stop("answer")]
@@ -848,7 +953,7 @@ class TestNoHooks:
         assert not (tmp_path / "querylog").exists()
 
 
-CAPTURE_EVENTS = ("UserPromptSubmit", "PostToolUse", "PostToolUseFailure", "Stop")
+CAPTURE_EVENTS = ("UserPromptSubmit", "PostToolUse", "PostToolUseFailure", "Stop", "SubagentStart", "SubagentStop")
 
 
 def capture_problems(cfg, var):

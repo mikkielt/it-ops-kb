@@ -1,0 +1,22 @@
+{
+  "id": "BG-z4qwf37v",
+  "kind": "bug",
+  "title": "PIPELINE_VERSION is not bumped for the agent.run ops lines distill now writes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Decide whether distill's agent.run lines (ST-lopowpsz) change what distill writes enough to bump ql_base.PIPELINE_VERSION (querylog.md, Program defaults: it changes when what distill writes, or how it decides it, changes); bump it with the golden fixture header and its doc row if so, or record in that row why not.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "ops_agent_rows;",
+      "grep",
+      "-n",
+      "PIPELINE_VERSION",
+      "_tools/ql_base.py"
+    ]
+  }
+}
