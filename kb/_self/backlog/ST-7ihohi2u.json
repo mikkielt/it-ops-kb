@@ -13,8 +13,7 @@
       "run": [
         "python3",
         "_tools/tests.py"
-      ],
-      "exit": 0
+      ]
     },
     {
       "run": [
@@ -25,19 +24,16 @@
         "_tools/test_ids_baseline.txt",
         "--allow-removed",
         "_tools/test_ids_dropped.txt"
-      ],
-      "exit": 0
+      ]
     },
     {
       "run": [
         "python3",
         "_tools/perfcheck.py",
         "time",
-        "tests",
-        "--max",
+        "--max-seconds",
         "900"
-      ],
-      "exit": 0
+      ]
     }
   ],
   "touches": [

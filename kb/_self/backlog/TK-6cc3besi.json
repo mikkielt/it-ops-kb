@@ -1,0 +1,37 @@
+{
+  "id": "TK-6cc3besi",
+  "kind": "task",
+  "title": "The mode scenarios (off, disabled, unreadable, local, auto) run in one shared clone, keeping their ids",
+  "status": "todo",
+  "parent": "ST-7ihohi2u",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Fold TestModesOff[off|disabled|unreadable], TestModesLocal and TestModesAuto[auto] into one stage world using the scope-group mechanism of the previous task; order off, disabled, unreadable, local, auto; between runs remove the DISABLED marker, reset the config and clear the local store; every run_mode assertion stays (hook answer unchanged, wrote == [] and 'logging is off', main == base, no worktree, the local run count, 'apply --push: pushed' for auto).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestModesOff or TestModesLocal or TestModesAuto"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_querylog_e2e.py"
+  ],
+  "depends_on": [
+    "TK-7pwnplew"
+  ]
+}

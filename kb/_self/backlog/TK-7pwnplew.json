@@ -1,0 +1,48 @@
+{
+  "id": "TK-7pwnplew",
+  "kind": "task",
+  "title": "The six single-lookup e2e scenarios run in two shared clones, keeping their class and test ids",
+  "status": "todo",
+  "parent": "ST-7ihohi2u",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "conftest.py: classes named in a SCOPE_GROUPS map share one xdist scope (a pytest_xdist_make_scheduler returning a LoadScopeScheduling subclass that overrides _split_scope, and scope_of using the same map); a test_scope_groups test in test_kb_cohesion.py proves two group classes map to one scope and others do not. test_querylog_e2e.py: a stage world is built once per process; stage A is TestAnswered, TestToolRows, TestRedaction, TestFetches, stage B is TestFixedSince and TestSessions (TestSessions last: it asserts an open session's spool remains); each run reads its own delta (commits after its own 'before', its own Haiku); every assertion stays; ids unchanged; no new dropped ids. If the scheduler override cannot keep the ids, stop and record a gate instead of renaming ids.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestAnswered or TestToolRows or TestRedaction or TestFetches or TestFixedSince or TestSessions"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_scope_groups"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_querylog_e2e.py",
+    "_tools/conftest.py",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-62clbs52"
+  ]
+}

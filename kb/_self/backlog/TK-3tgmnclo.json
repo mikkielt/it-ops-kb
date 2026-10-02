@@ -1,0 +1,38 @@
+{
+  "id": "TK-3tgmnclo",
+  "kind": "task",
+  "title": "The in-git host refusal and non-refusal runs keep one case each; the other cases are proven by TestHostRules",
+  "status": "todo",
+  "parent": "ST-7ihohi2u",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "First add a blocking gate (backlog.py gate add, --do per option) on dropping these ids, since no gate covers them: TestHostRefusalsInGit::test_case[gitlab-protected], [github-denied], [github-gh006] (keep [gitlab-project]) and TestHostNoRefusalInGit::test_case[unreachable-at-push] (keep [push-rule]); TestHostRules already covers all four refusal texts, PUSH_RULE and the connection-refused text. If the operator answers drop: remove them in _tools/test_ql_deliver.py, append those four ids to _tools/test_ids_dropped.txt, update the docstring lines; the kept cases still assert DISABLED and the spool outcome. If keep: the task closes with no change.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestHostRefusalsInGit or TestHostNoRefusalInGit or TestHostRules"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_ql_deliver.py",
+    "_tools/test_ids_dropped.txt"
+  ],
+  "depends_on": [
+    "TK-62clbs52"
+  ]
+}
