@@ -85,6 +85,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           check does; the same gate again changes nothing, a different gate with an
                                           existing question or id is refused, as is one on a done or dropped item
                                           (exit 2); `answer` answers it
+                                          --do OPTION=CMD|ID: the argv that carries the option out, or the id of the
+                                          item whose work adds that command (repeatable); check warns of an
+                                          unanswered blocking gate with none
                                           --host-check CMD: the command that proves the setup the gate's answer names
                                           holds on this host (exit 0), kept on the gate; `host-check` runs it
   backlog.py host-check SPRINT            run the host check of each answered gate of the sprint's open items, on this
@@ -1152,6 +1155,14 @@ def validate(bl, pieces=None):
             if "host_check" in g and not (isinstance(hc, dict) and isinstance(hc.get("run"), list) and hc["run"]
                                           and all(isinstance(w, str) and w for w in hc["run"])):
                 e(f"gate {g['id']}: host_check needs run: a command as a list of words")
+            for opt, how in (g.get("do") or {}).items() if isinstance(g.get("do", {}), dict) else ():
+                if opt not in g.get("options", []):
+                    e(f"gate {g['id']}: do names {opt!r}, which is not one of its options")
+                elif not (isinstance(how, list) and how and all(isinstance(w, str) and w for w in how)
+                          or isinstance(how, str) and how in bl.items):
+                    e(f"gate {g['id']}: do for {opt!r} needs an argv (a list of words) or the id of an item")
+            if "do" in g and not isinstance(g["do"], dict):
+                e(f"gate {g['id']}: do maps an option to its command")
             if "host_checked" in g and not (isinstance(g["host_checked"], dict)
                                             and isinstance(g["host_checked"].get("ok"), bool)):
                 e(f"gate {g['id']}: host_checked needs ok: true or false")
@@ -1607,6 +1618,22 @@ def state_path_warnings(bl):
     return out
 
 
+def gate_do_warnings(bl):
+    """check's warnings: an unanswered blocking gate of an open item whose options carry no `do` (the argv that
+    carries an option out, or the id of the item whose work adds that command), so an answer would wait on a command
+    nobody planned."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        if it.get("status") not in OPEN_STATUSES:
+            continue
+        for g in it.get("gates", []):
+            if isinstance(g, dict) and g.get("kind") == "blocking" and "answer" not in g and g.get("id") != START_GATE \
+                    and not g.get("do"):
+                out.append(f"{bl.label(iid)}: blocking gate {g.get('id')} has no `do` for its options, the command "
+                           "that carries each out or the item that adds it (gate add --do OPTION=CMD|ID)")
+    return out
+
+
 def is_test_run(argv):
     """True when a check runs tests: tests.py or pytest, so it exercises the code it proves."""
     return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
@@ -1802,7 +1829,8 @@ def cmd_check(bl, a):
                for i in bl.sprint_items(sid)]
     errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned)
     stale = stale_knowledge(bl)
-    warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl)
+    warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
+        + gate_do_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
@@ -2286,6 +2314,16 @@ def cmd_gate(bl, a):
                        f"and not {START_GATE!r}, the sprint's own")
     gate = {"id": gid, "kind": a.kind, "question": a.question.strip(), "options": options,
             "recommendation": a.recommendation.strip()}
+    if a.do:
+        gate["do"] = {}
+        for d in a.do:
+            opt, sep, how = d.partition("=")
+            opt, how = opt.strip(), how.strip()
+            if not sep or opt not in options or not how:
+                raise Rejected("gate add: --do OPTION=COMMAND, OPTION one of the --option values")
+            gate["do"][opt] = how if how in bl.items else parse_cmd(how)
+            if not gate["do"][opt]:
+                raise Rejected("gate add: --do needs a command or an item id after the =")
     if a.host_check:
         gate["host_check"] = {"run": parse_cmd(a.host_check)}
         if not gate["host_check"]["run"]:
@@ -3991,6 +4029,8 @@ def main(argv=None):
     p.add_argument("--recommendation", required=True, help="the option the agent recommends")
     p.add_argument("--kind", default="blocking", help="blocking (default) or provisional")
     p.add_argument("--id", dest="gate_id", help="the gate's id (default g1, g2, ...)")
+    p.add_argument("--do", action="append", metavar="OPTION=CMD|ID",
+                   help="the command that carries OPTION out, or the id of the item whose work adds it (repeatable)")
     p.add_argument("--host-check", help="a command that exits 0 when the host setup the answer names holds here")
     p = sub.add_parser("fire")
     p.add_argument("id")
