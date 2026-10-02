@@ -125,6 +125,13 @@ the ql_*.py modules beside it.
                         SessionStart of an ISO week (the marker `digest-week` beside the spool), last week's digest
                         as one JSON line {"systemMessage": ...}, which Claude Code shows the person; nothing when
                         logging is off, the week is empty or reading the store took over DIGEST_BUDGET_S. Exit 0
+  querylog.py export --format jsonl [--since DAY] [--event E] [--with-question] [--store DIR]
+                        the store's entries, findings, usage, work and ops rows (default: the committed store) as JSON
+                        Lines, one record shaped like an OpenTelemetry log record (timestamp, severity, event name,
+                        record id, resource, closed attributes, null body) in the order of time, event and id, for a
+                        tool that reads logs. Read-only; redaction at read time: unknown keys are dropped, each value
+                        is checked in its closed shape and by the leak scan, a row that fails is left out and counted
+                        on stderr, and an entry's question is left out unless --with-question. Exit 0, 2 refused
   querylog.py status [--store DIR]
                         open source findings of the committed store, most result characters first; open merge
                         requests from querylog/ branches on origin's forge (glab or gh, skipped with a note when not
@@ -145,7 +152,8 @@ Modules: ql_base.py (places, config, the lock, commands), ql_capture.py (the cap
 kb_hook.py, kb_ask.py, fetch.py and census.py call), ql_distill.py (distill and the launcher), ql_store.py (run and
 findings files, and the store gates), ql_learn.py, ql_apply.py, ql_research.py (research, the quote check and the
 research queue),
-ql_deliver.py (apply --push, plugin hosts, cloud sessions) and ql_report.py (digest, status and show).
+ql_deliver.py (apply --push, plugin hosts, cloud sessions), ql_report.py (digest, status and show) and ql_export.py
+(export).
 
 Where (querylog.md, Spool and Configuration): in a clone `_cache/querylog/spool/<session_id>.jsonl` (rows without a
 session: `tools-<yyyy-mm-dd>.jsonl`), the config file `_private/querylog.json` and the marker
@@ -339,6 +347,17 @@ def main(argv=None):
         return ql_report.show(a.store, run=a.run, entry=a.entry, findings=a.findings, usage=a.usage, spool=a.spool,
                               kind=a.kind, article=a.article, state=a.state,
                               limit=ql_report.SHOW_LIMIT if a.limit is None else a.limit)
+    if argv[:1] == ["export"]:
+        ap = argparse.ArgumentParser(prog="querylog.py export")
+        ap.add_argument("--format", default="jsonl", help="the output format: jsonl")
+        ap.add_argument("--since", metavar="DAY", help="only records from this day (YYYY-MM-DD) on")
+        ap.add_argument("--event", metavar="E", help="only records of this event name (entry.<surface>, "
+                        "finding.<kind>, usage, work.item, work.shared, work.overhead, ops.<event>)")
+        ap.add_argument("--with-question", action="store_true", help="keep each entry's question (left out by default)")
+        ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")
+        a = ap.parse_args(argv[1:])
+        import ql_export
+        return ql_export.export(a.store, fmt=a.format, since=a.since, event=a.event, with_question=a.with_question)
     if argv[:1] == ["status"]:
         ap = argparse.ArgumentParser(prog="querylog.py status")
         ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")
