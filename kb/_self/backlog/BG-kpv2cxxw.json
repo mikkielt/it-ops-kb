@@ -2,7 +2,7 @@
   "id": "BG-kpv2cxxw",
   "kind": "bug",
   "title": "kb_mcp.py upstream() falls back to origin/HEAD instead of the integration remote",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
