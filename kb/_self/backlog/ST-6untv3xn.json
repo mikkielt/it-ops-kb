@@ -1,0 +1,62 @@
+{
+  "id": "ST-6untv3xn",
+  "kind": "story",
+  "title": "settings.json allows the commands a headless sprint runner and its manager run",
+  "status": "todo",
+  "parent": "EP-np3xwfu4",
+  "sprint": "SP-4xngzagf",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "permissions.allow in .claude/settings.json holds the rules a headless /kb-sprint run needs, each as a Bash rule with a PowerShell mirror: python3 _tools/kbgit.py *, python3 _tools/selfdoc.py stale *, git fetch, status, log, show, diff, add, commit, rebase, merge-base, checkout, branch, cherry, worktree and -C, glab mr view and glab mr merge; the tools Agent, Edit, Write and SendMessage; and for the manager python3 _tools/autopilot.py *. Operator decision recorded on gate permissions: add all as listed. The exact rule texts are in TK-3hphkfbg's notes at commit 4ba521801. A test named settings_allow_headless_runner reads settings.json and asserts each rule and its mirror, and no rule beyond the list.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "settings_allow_headless_runner"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "_tools/test_settings_allow.py",
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md"
+  ],
+  "gates": [
+    {
+      "id": "permissions",
+      "kind": "blocking",
+      "question": "Add the allow rules a headless sprint runner and its manager need to .claude/settings.json?",
+      "options": [
+        "add all as listed (Bash rules with PowerShell mirrors, tools Agent Edit Write SendMessage, manager autopilot.py)",
+        "a narrower set without git checkout, branch, worktree and glab mr merge",
+        "none now: the autopilot runs interactively only"
+      ],
+      "recommendation": "add all as listed (Bash rules with PowerShell mirrors, tools Agent Edit Write SendMessage, manager autopilot.py)",
+      "do": {
+        "add all as listed (Bash rules with PowerShell mirrors, tools Agent Edit Write SendMessage, manager autopilot.py)": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "settings_allow_headless_runner"
+        ],
+        "a narrower set without git checkout, branch, worktree and glab mr merge": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "settings_allow_headless_runner"
+        ],
+        "none now: the autopilot runs interactively only": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "settings_allow_headless_runner"
+        ]
+      },
+      "answer": "add all as listed (Bash rules with PowerShell mirrors, tools Agent Edit Write SendMessage, manager autopilot.py)",
+      "by": "operator"
+    }
+  ]
+}
