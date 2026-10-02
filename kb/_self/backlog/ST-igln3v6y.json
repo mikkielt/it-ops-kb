@@ -41,7 +41,6 @@
     "ST-d3uyx3pv"
   ],
   "relates_to": [
-    "ST-2ceybba2",
     "ST-6vciuxux"
   ],
   "notes": "The failure it answers: kb/_self/backlog.md, a skill's SKILL.md and AGENTS.md (mapped to every skill) are each held by items of two sprints at once (backlog.py held shows it), file-level held --overlaps serialised sessions on three files for hours, and four rebases conflicted on one shared tools.md row until it became one row per subcommand. Items on these docs edit only their own bullet or section. It waits for the backlog.py split because held lives in the code that split moves."
