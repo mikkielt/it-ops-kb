@@ -17,6 +17,9 @@ test_kb_http_roots_*  the script as a subprocess with the test_kb_root.py fixtur
 test_kb_http_log_*  one `kb_http: METHOD STATUS MSms` line per answered request on stderr, never the client address,
                 the path, the query or the question (a bad request line and a 404 included), nothing when quiet;
                 the planted failure puts the base class's access line back and the check sees the address.
+test_kb_http_internal_error_*  a request whose handling raises an error carrying a marker text: stderr names the
+                exception class and never the marker, over HTTP too; the planted failure formats the old line
+                (class and message) and the check sees the marker.
 test_kb_http_no_local_path  the script started from a kb clone planted 3 commits behind its origin/main: kb_pack
                 still says the copy is behind, but no answer names the clone's path or a git command.
 test_kb_http_parity_*  the same initialize, tools/list and tools/call of kb_pack, kb_search and kb_show sent to
@@ -734,3 +737,33 @@ def test_kb_http_log_planted_failure_base_access_line_is_seen(capsys, monkeypatc
     monkeypatch.setattr(kb_http.Handler, "log_message", http.server.BaseHTTPRequestHandler.log_message)
     err = logged(capsys, some_requests)
     assert "127.0.0.1" in err and "pl-secret-path" in err and not LOG_LINE.fullmatch(err.splitlines()[0]), err
+
+
+MARKER = "pl-request-content-marker"
+
+
+def raising_with_marker(monkeypatch):
+    def boom(_msg):
+        raise ValueError(f"bad argument {MARKER}")
+    monkeypatch.setattr(kb_mcp, "handle", boom)
+
+
+def test_kb_http_internal_error_hides_message(capsys, monkeypatch):
+    raising_with_marker(monkeypatch)
+    err = logged(capsys, lambda port: rpc(port, {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+        "name": "kb_search", "arguments": {"query": MARKER}}}))
+    lines = [x for x in err.splitlines() if "internal error" in x]
+    assert lines == ["kb_http: internal error: ValueError"], err
+    assert MARKER not in err, err
+    kb_http.answer({"jsonrpc": "2.0", "id": 2, "method": "ping"})  # the function itself, called with no server
+    assert MARKER not in capsys.readouterr().err
+
+
+def test_kb_http_internal_error_planted_failure_message_is_seen(capsys, monkeypatch):
+    """The check catches the leak it guards: the line as it was, with the message, shows the marker."""
+    raising_with_marker(monkeypatch)
+    try:
+        kb_mcp.handle({})
+    except ValueError as e:
+        print(f"kb_http: internal error: {type(e).__name__}: {e}", file=sys.stderr)
+    assert MARKER in capsys.readouterr().err
