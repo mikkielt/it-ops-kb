@@ -2,7 +2,7 @@
   "id": "ST-3pvuyy5s",
   "kind": "story",
   "title": "Review sprint: Servers, docs and benchmarks stay correct",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3siaqxdf",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "266f1a18038c78f06e8d5eef4e3b674e0f5dbd02",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "00a2eb99fde506b7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "90d52e17e3605a5b"
+      }
+    ]
+  }
 }
