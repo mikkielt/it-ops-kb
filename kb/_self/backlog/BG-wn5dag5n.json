@@ -2,7 +2,7 @@
   "id": "BG-wn5dag5n",
   "kind": "bug",
   "title": "A kbingest change left the kb-ingest skill false, and selfdoc maps kbingest.py to no skill",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
     "_tools/test_selfdoc_ingest.py",
     "kb/_self/plugin.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
