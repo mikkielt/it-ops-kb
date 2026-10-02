@@ -61,6 +61,7 @@ class World:
 
     def __init__(self, tmp_path, monkeypatch):
         self.tmp, self.mp = tmp_path, monkeypatch
+        monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path / "hostlocks"))  # the runners' records, one host per test
         env = git_env()
         self.origin = Repo(tmp_path / "origin.git", env)
         (tmp_path / "origin.git").mkdir()

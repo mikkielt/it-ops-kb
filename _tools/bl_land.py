@@ -495,6 +495,7 @@ def cmd_land(bl, a):
     commit) it started on: the rebase switches to the landed branch, and a claim --commit made after land must not
     ride on it into its merge request."""
     import kbpublic
+    import kg_lock  # the host's main lock: the fetch and rebase hold it, the sync --push it runs takes it itself
     iid = need(bl, a.id)
     root = bl.root
     remote = kbpublic.integration_remote(root)
@@ -514,16 +515,17 @@ def cmd_land(bl, a):
     start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
                                encoding="utf-8", errors="replace").stdout.strip()
     try:
-        say(f"land: fetch {remote} main")
-        land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
-        say(f"land: rebase {branch} on {remote}/main")
-        claims = missing_claims(root, [iid] + bl.descendants(iid), start, upstream, branch)
-        if claims:  # claimed after the branch was cut, or never pushed: the claim goes under the worker's commits
-            say(f"land: carry the claim commit(s) {', '.join(c[:10] for c in claims)} under {branch}")
-            p = carry_claims(root, claims, upstream, branch)
-        else:
-            p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True,
-                               text=True, encoding="utf-8", errors="replace")
+        with kg_lock.guarded("backlog.py land: fetch and rebase", "backlog.py", clone=str(root)):
+            say(f"land: fetch {remote} main")
+            land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
+            say(f"land: rebase {branch} on {remote}/main")
+            claims = missing_claims(root, [iid] + bl.descendants(iid), start, upstream, branch)
+            if claims:  # claimed after the branch was cut, or never pushed: the claim goes under the worker's commits
+                say(f"land: carry the claim commit(s) {', '.join(c[:10] for c in claims)} under {branch}")
+                p = carry_claims(root, claims, upstream, branch)
+            else:
+                p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True,
+                                   text=True, encoding="utf-8", errors="replace")
         if p.returncode:
             subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
             raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "
