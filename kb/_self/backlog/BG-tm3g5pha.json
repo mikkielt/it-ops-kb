@@ -15,9 +15,20 @@
       "import sys;sys.path.insert(0,'_tools');import tests as t;sys.exit(1 if t.wants_host_lock(['_tools/test_kb_http.py','-q']) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "tests_py_named_file_no_lock"
+      ]
+    }
+  ],
   "touches": [
     "_tools/tests.py",
-    "_tools/test_tests_lock.py"
+    "_tools/test_tests_lock.py",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "mac-third-worker"
 }

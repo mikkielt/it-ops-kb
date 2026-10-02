@@ -132,7 +132,7 @@ def record_run(mode, entries, args, wall_ms):
             total = len(testmap.test_files())
         except Exception:  # noqa: BLE001 - a count the row can do without
             total = None
-        full = mode == "full" and not any(a == "-k" or a.startswith("-k") for a in args)
+        full = mode == "full" and not any(a == "-k" or a.startswith("-k") for a in args) and not named_files_only(args)
         fields = run_fields(mode, entries, total, workers, full, wall_ms)
         return ql_capture.record("ops", event="test.run", **fields)
     except Exception:  # noqa: BLE001 - a run never fails for its log
@@ -439,12 +439,15 @@ def worker_count(args, others=None):
 
 
 def wants_host_lock(args):
-    """A run takes the host lock unless it is inside a test, selects with -k, or uses one worker."""
-    return not inside_test() and not any(a == "-k" or a.startswith("-k") for a in args) and worker_count(args) > 1
+    """A run takes the host lock unless it is inside a test, selects with -k, names only test files (a cheap targeted
+    run; a named directory is still a full-scope run) or uses one worker."""
+    return (not inside_test() and not any(a == "-k" or a.startswith("-k") for a in args) and not named_files_only(args)
+            and worker_count(args) > 1)
 
 
 VALUE_OPTIONS = {"-k", "-m", "-n", "-p", "-c", "-o", "--dist", "--maxfail", "--deselect", "--ignore", "--rootdir",
-                 "--junitxml", "--durations", "--timeout"}  # pytest options whose next argument is their value
+                 "--junitxml", "--durations", "--timeout", "--basetemp", "--tb", "-W", "--ignore-glob", "--confcutdir",
+                 "--import-mode", "--log-level", "--log-format", "--log-file", "--log-cli-level", "--capture"}  # pytest options whose next argument is their value
 
 
 def path_args(args):
@@ -458,6 +461,16 @@ def path_args(args):
         if base and (os.path.exists(os.path.join(KB, base)) or os.path.exists(base)):
             out.append(a)
     return out
+
+
+def named_files_only(args):
+    """True when the arguments name at least one path and every one is a file (optionally `::node`), and the run is not
+    `--changed`: a targeted run of the named files. A named directory, or no path, is a full-scope run."""
+    if "--changed" in args:
+        return False
+    paths = path_args(args)
+    return bool(paths) and all(os.path.isfile(os.path.join(KB, a.split("::")[0])) or os.path.isfile(a.split("::")[0])
+                               for a in paths)
 
 
 def main(argv):
