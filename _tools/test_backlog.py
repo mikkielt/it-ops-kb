@@ -19,6 +19,7 @@ from pathlib import Path
 import pytest
 
 import backlog
+import bl_base
 import kbgit
 import kg_hooks
 import kg_trailers
@@ -1581,11 +1582,11 @@ PLANTED_PIECES = ("pl-lt-00123", "pllt00123", "pllt00~", "jan.kowalski", "jankow
 @pytest.fixture
 def planted_names(monkeypatch):
     """This host is PL-LT-00123 and its user jan.kowalski, in this process and in the backlog.py it starts."""
-    for k in backlog.HOST_ENV + backlog.USER_ENV + backlog.PROFILE_ENV:
+    for k in bl_base.HOST_ENV + bl_base.USER_ENV + bl_base.PROFILE_ENV:
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("COMPUTERNAME", PLANTED_HOST)
     monkeypatch.setenv("USERNAME", PLANTED_USER)
-    monkeypatch.setattr(backlog.socket, "gethostname", lambda: PLANTED_HOST)
+    monkeypatch.setattr(bl_base.socket, "gethostname", lambda: PLANTED_HOST)
 
 
 def no_planted_piece(out):
@@ -1594,15 +1595,15 @@ def no_planted_piece(out):
 
 
 def test_item_holds_host_names_pieces_of_a_name():
-    assert backlog.name_pieces(PLANTED_HOST) == {"pl-lt-00123", "pllt00123", "pllt00~"}  # pl, lt: too short; 00123: no letter
-    assert backlog.name_pieces(PLANTED_USER) == {"jan.kowalski", "jankowalski", "jankow~", "kowalski"}
-    assert backlog.name_pieces("JanKowalskiCorp") == {"jankowalskicorp", "jankow~", "kowalski"}  # CamelCase parts
-    assert backlog.name_pieces("PL-SRV-0042") == {"pl-srv-0042", "plsrv0042", "plsrv0~"}
-    assert backlog.name_pieces("XYZ-PC01") == {"xyz-pc01", "xyzpc01", "pc01"}  # 4 characters with a digit
+    assert bl_base.name_pieces(PLANTED_HOST) == {"pl-lt-00123", "pllt00123", "pllt00~"}  # pl, lt: too short; 00123: no letter
+    assert bl_base.name_pieces(PLANTED_USER) == {"jan.kowalski", "jankowalski", "jankow~", "kowalski"}
+    assert bl_base.name_pieces("JanKowalskiCorp") == {"jankowalskicorp", "jankow~", "kowalski"}  # CamelCase parts
+    assert bl_base.name_pieces("PL-SRV-0042") == {"pl-srv-0042", "plsrv0042", "plsrv0~"}
+    assert bl_base.name_pieces("XYZ-PC01") == {"xyz-pc01", "xyzpc01", "pc01"}  # 4 characters with a digit
     for generic in ("runner", "root", "user", "admin", "container", "localhost", "DESKTOP"):
-        assert backlog.name_pieces(generic) == set(), generic
+        assert bl_base.name_pieces(generic) == set(), generic
     # a GitLab runner's host name: only its token and the whole name are pieces, not project or concurrent
-    assert backlog.name_pieces("runner-ab12cd34-project-42-concurrent-0") == {
+    assert bl_base.name_pieces("runner-ab12cd34-project-42-concurrent-0") == {
         "runner-ab12cd34-project-42-concurrent-0", "runnerab12cd34project42concurrent0", "ab12cd34"}
 
 
@@ -1640,8 +1641,8 @@ def test_item_holds_host_names_clean_item_passes(sprint, planted_names, capsys):
 def test_item_holds_host_names_short_form(planted_names):
     """Windows' 8.3 form of a long profile name (a TEMP path's JANKOW~1 profile folder) is a piece too, and
     the profile folder's name counts as the user's."""
-    assert "jankow~" in backlog.name_pieces("jan.kowalski") and "jankow~" in backlog.name_pieces("JanKowalskiCorp")
-    assert not any("~" in p for p in backlog.name_pieces("kowal12"))  # 8 characters or fewer: never shortened
+    assert "jankow~" in bl_base.name_pieces("jan.kowalski") and "jankow~" in bl_base.name_pieces("JanKowalskiCorp")
+    assert not any("~" in p for p in bl_base.name_pieces("kowal12"))  # 8 characters or fewer: never shortened
     pieces = backlog.host_user_pieces({"USERNAME": "x", "USERPROFILE": "C:/Users/<profile>/jan.kowalski"})
     assert "kowalski" in pieces and any(p in "c:/users/jankow~1/appdata/local/temp" for p in pieces)
 
@@ -1662,7 +1663,7 @@ def test_name_check_exempts_project_path(sprint, planted_names, capsys):
     subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
     subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", "git@gitlab.com:jan.kowalski/it-ops-kb.git"], check=True)
     subprocess.run(["git", "-C", str(repo), "remote", "add", "pub", "https://github.com/Jan.Kowalski/it-ops-kb"], check=True)
-    assert backlog.project_paths(repo) == {"jan.kowalski/it-ops-kb", "jan.kowalski%2fit-ops-kb"}
+    assert bl_base.project_paths(repo) == {"jan.kowalski/it-ops-kb", "jan.kowalski%2fit-ops-kb"}
     edit(repo, sprint["st"], goal="glab api projects/jan.kowalski%2Fit-ops-kb/runners, see Jan.Kowalski/it-ops-kb")
     assert backlog.main(["--root", str(repo), "check"]) == 0, capsys.readouterr().out
     edit(repo, sprint["st"], goal="projects/jan.kowalski%2Fit-ops-kb, ask jan.kowalski")
@@ -1773,7 +1774,7 @@ def test_knowledge_refs_without_a_kb_are_refused(repo):
 
 # ---- knowledge state: show, next and horizon run the pack on each ask and ref of an item's `knowledge`
 
-KS_TOOLS = ("backlog.py", "bl_intake.py", "kbcommon.py", "kbfacts.py", "kbid.py", "ql_base.py", "aliases.csv")
+KS_TOOLS = ("backlog.py", "bl_base.py", "bl_intake.py", "kbcommon.py", "kbfacts.py", "kbid.py", "ql_base.py", "aliases.csv")
 KS_SOURCES = ("id,url,title,superseded_by,used_in\n"
               "S100,https://example.com/a,Zorbex agent guide,,demo/tool.md\n"
               "S101,https://example.com/b,Plimt gadget firmware notes,,demo/gadget.md\n")
