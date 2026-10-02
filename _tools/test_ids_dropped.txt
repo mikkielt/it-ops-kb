@@ -1,0 +1,4 @@
+_tools/test_querylog_e2e.py::TestCaps::test_the_rest_wait_and_the_next_runs_take_them
+_tools/test_querylog_e2e.py::TestModesAuto::test_modes[default]
+_tools/test_querylog_e2e.py::TestResearch::test_research_over_its_cap
+_tools/test_querylog_e2e.py::TestResearch::test_research_off
