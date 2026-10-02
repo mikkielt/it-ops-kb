@@ -220,7 +220,7 @@ import bl_plan
 from bl_base import (
     Backlog, COMMITS, IN_SPRINT, KINDS, OPEN, OUTPUT_ROOT, PRIORITIES,
     REL_DIR, REVIEW_CHECKS, ROOT, Refused, Rejected, SEVERITIES, SIMILAR_MIN, SIMILAR_SHOWN,
-    SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, TEXT_MAX, canonical, commit_written, git, glob_re, in_scope,
+    SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, TEXT_MAX, canonical, commit_written, git, in_scope,
     line, need, new_id, open_gates, research_in_planned, run, say, scope, trailer_problem, waits, withhold,
 )
 from bl_check import (  # the checks and the readers of knowledge: bl_check holds them, backlog.py's commands use them
@@ -228,6 +228,7 @@ from bl_check import (  # the checks and the readers of knowledge: bl_check hold
 )
 from bl_land import run_check  # the runner of a check: bl_land holds it with done, which host-check and new's repro share
 from bl_base import RESEARCH_KINDS, research_touches  # noqa: F401 - kg_trailers reads them as backlog.NAME
+from bl_base import touches_overlap  # bl_base holds it: held --overlaps and start's runner check share it
 from bl_plan import (  # the plan rules and start: bl_plan holds them, backlog.py's commands use them
     has_scope, host_gates, stale_touches, start_approved, tracked_files, where_outside,
 )
@@ -525,13 +526,6 @@ def items_at(root, ref):
         if isinstance(item, dict):
             out[n[:-len(".json")]] = item
     return out
-
-
-def touches_overlap(a, b, files):
-    """True when two touches globs can name one path: either, read as a path, matches the other (`_tools/**` and
-    `_tools/x.py`), or a tracked file matches both (`_tools/*.py` and `_tools/back*`)."""
-    ra, rb = glob_re(a), glob_re(b)
-    return bool(ra.match(b) or rb.match(a) or any(ra.match(f) and rb.match(f) for f in files))
 
 
 def held_line(bl, iid, glob):

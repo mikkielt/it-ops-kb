@@ -12,6 +12,7 @@ from pathlib import Path
 import kbcommon
 import kbpublic
 import kg_lane
+import kg_lock
 import kg_merge
 from kg_base import BASELINE, KB, repo_roots
 from kg_merge import has_markers
@@ -668,7 +669,11 @@ def cmd_sync(a, host, r=None):
         print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks, once for the clone and every "
               "worktree of it); sync repairs trailers of what it rebases")
     r = r if r is not None else new_report(a.push)
-    code = sync_rounds(a, r, host)
+    if a.push and not a.dry_run:  # a push moves the integration main: one runner on the host at a time
+        with kg_lock.guarded("kbgit.py sync --push", clone=KB):
+            code = sync_rounds(a, r, host)
+    else:
+        code = sync_rounds(a, r, host)
     if "rerun" in r:
         return code  # the re-run with the rebased code printed its own report
     if a.dry_run:

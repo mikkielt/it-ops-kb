@@ -22,14 +22,22 @@ non-zero exit, or a result that names no cause), else the cause the result's las
 items landed), `sprint-done` (nothing ready is left) or `blocked` (what is ready waits on a gate or trigger). While the
 run lives the cause is `running`.
 
+At most bl_base.MAX_RUNNERS runners live on a host, whatever their clone. Each records itself while it runs in the host
+lock directory (`kb-runner.<pid>.json`: pid, sprint, clone, start time and the touches of the sprint's open items), and
+status.json carries the same pid. A third `runner start` is refused naming the two, a start of a sprint a live runner
+holds is refused, and so is one whose committed touches overlap those of another sprint's runner, naming the globs and
+the holder (the same check `backlog.py start` makes). A record whose process is gone is ignored and removed.
+
 Exit codes: `runner start` 0 the run ended with a named cause other than `error`, 1 it ended in `error`, 2 refused (a
-bad sprint id, no git clone, a dirty or diverged worktree, no settings file); `runner-status` 0
+bad sprint id, no git clone, a dirty or diverged worktree, no settings file, two runners already live, a sprint held by
+a runner, touches that overlap another runner's); `runner-status` 0
 printed, 1 no run was recorded for the sprint, 2 a bad sprint id. Standard library only.
 """
 import argparse, datetime, json, os, re, subprocess, sys
 from pathlib import Path
 
 import bl_base
+import bl_plan
 import kbpublic
 from bl_intake import end_tree
 
@@ -210,17 +218,59 @@ def exit_cause(run):
     return "error", "the final result names no cause: its last line is not " + CAUSE_MARKER.format(cause="<cause>")
 
 
+def register_runner(root, sprint):
+    """Claim a runner slot of the host for SPRINT: write this process's record, then look at the live runners. When
+    this process is not among the first MAX_RUNNERS (oldest first), or a live runner already holds the sprint, the
+    record is removed and the start refused, naming the live runners. Returns the record's path."""
+    now_s = now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    path = bl_base.runner_record_path(os.getpid())
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rec = {"pid": os.getpid(), "sprint": sprint, "clone": str(root), "started": now_s, "touches": []}
+    write_status(path, rec)
+    live = bl_base.live_runners()
+    others = [r for r in live if r.get("pid") != os.getpid()]
+    names = ", ".join(f"{r.get('sprint')} (pid {r.get('pid')}, clone {r.get('clone')})" for r in others)
+    held = [r for r in others if r.get("sprint") == sprint]
+    if held:
+        path.unlink(missing_ok=True)
+        raise bl_base.Refused(f"{sprint} already has a live runner on this host: {names}")
+    if [r.get("pid") for r in live].index(os.getpid()) >= bl_base.MAX_RUNNERS:
+        path.unlink(missing_ok=True)
+        raise bl_base.Refused(f"{bl_base.MAX_RUNNERS} sprint runners already run on this host, so a third is not "
+                              f"started: {names}; start {sprint} when one has ended")
+    return path
+
+
 def runner_start(sprint, landed=None, root=ROOT):
     """Run the sprint headless in its worktree; returns the exit code (the module docstring)."""
     root = Path(root)
+    record = register_runner(root, sprint)
+    try:
+        return run_in_slot(sprint, landed, root, record)
+    finally:
+        record.unlink(missing_ok=True)
+
+
+def run_in_slot(sprint, landed, root, record):
+    """runner_start's body, once the host's runner slot is held: the worktree, the overlap check against the other
+    runners, the run and its status."""
     wt, start = prepare_worktree(root, sprint)
+    bl = bl_base.Backlog(wt)
+    held = bl_plan.runner_conflicts(bl, sprint)
+    if held:
+        raise bl_base.Refused(f"{sprint}'s committed touches overlap those of a sprint a runner holds on this "
+                              "host:\n  " + "\n  ".join(held))
+    rec = json.loads(record.read_text(encoding="utf-8"))
+    rec["touches"] = sorted({t for i in bl.sprint_items(sprint) if bl.items[i].get("status") not in ("done", "dropped")
+                             for t in bl_base.scope(bl, i) if isinstance(t, str) and t})
+    write_status(record, rec)
     if not (wt / ".claude" / "settings.json").is_file():
         raise bl_base.Refused(f"{wt / '.claude' / 'settings.json'} is missing: a run takes the project's own settings")
     directory = cache_dir(root, sprint)
     directory.mkdir(parents=True, exist_ok=True)
     started = now()
     name, keep = open_stream(directory, started.strftime("%Y%m%dT%H%M%SZ"))
-    status = {"sprint": sprint, "worktree": str(wt), "branch": branch_name(sprint), "start_ref": start,
+    status = {"sprint": sprint, "pid": os.getpid(), "worktree": str(wt), "branch": branch_name(sprint), "start_ref": start,
               "started": started.strftime("%Y-%m-%dT%H:%M:%SZ"), "stream": name, "landed_limit": landed,
               "cause": "running", "detail": "", "exit_code": None, "ended": None}
     write_status(directory / "status.json", status)

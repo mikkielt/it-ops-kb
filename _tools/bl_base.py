@@ -350,6 +350,90 @@ def item_file(path):
     return path.startswith(REL_DIR + "/") and path.endswith(".json") and "/" not in path[len(REL_DIR) + 1:]
 
 
+def touches_overlap(a, b, files):
+    """True when two touches globs can name one path: either, read as a path, matches the other (`_tools/**` and
+    `_tools/x.py`), or a tracked file matches both (`_tools/*.py` and `_tools/back*`)."""
+    ra, rb = glob_re(a), glob_re(b)
+    return bool(ra.match(b) or rb.match(a) or any(ra.match(f) and rb.match(f) for f in files))
+
+
+# ------------------------------------------------------------------ the sprint runners of the host
+
+RUNNER_PREFIX = "kb-runner."  # a runner's record in the host lock directory: kb-runner.<pid>.json
+MAX_RUNNERS = 2  # sprint runners live on one host at once
+
+
+def runner_dir():
+    """Where the runners' records live, beside the host locks: KB_HOST_LOCK_DIR, else /tmp (the Public profile on
+    Windows)."""
+    env = os.environ.get("KB_HOST_LOCK_DIR")
+    if env:
+        return Path(env)
+    return Path(os.environ.get("PUBLIC", r"C:\Users\Public")) if os.name == "nt" else Path("/tmp")
+
+
+def pid_alive(pid):
+    """Whether process `pid` runs, asked of the OS without signalling it; True when it cannot be told."""
+    try:
+        if os.name == "nt":
+            out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True,
+                                 encoding="utf-8", errors="replace", timeout=30).stdout
+            return str(pid) in out.split()
+        return subprocess.run(["ps", "-p", str(pid), "-o", "pid="], capture_output=True, timeout=30).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return True
+
+
+def live_runners():
+    """The records ({pid, sprint, clone, started, touches}) of the sprint runners whose process runs, oldest first
+    (started, then pid); the record of a process that is gone is removed. A record that does not parse is left
+    out and left alone: its writer may be mid-write."""
+    out = []
+    for p in sorted(runner_dir().glob(RUNNER_PREFIX + "*.json")):
+        try:
+            rec = json.loads(p.read_text(encoding="utf-8"))
+            pid = int(rec["pid"])
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        if not isinstance(rec, dict):
+            continue
+        if pid_alive(pid):
+            out.append(rec)
+        else:
+            try:
+                p.unlink()
+            except OSError:
+                pass
+    return sorted(out, key=lambda r: (str(r.get("started")), int(r["pid"])))
+
+
+def runner_record_path(pid):
+    return runner_dir() / f"{RUNNER_PREFIX}{pid}.json"
+
+
+def runner_overlaps(bl, sid, runners):
+    """[(runner record, [(own glob, held glob)])] for each runner of another sprint than sid whose committed touches
+    overlap those of sid's open items: sid's globs are read from BL, the runner's from its record."""
+    files = None
+    own = sorted({t for i in bl.sprint_items(sid) if bl.items[i].get("status") not in ("done", "dropped")
+                  for t in scope(bl, i) if isinstance(t, str) and t})
+    out = []
+    for rec in runners:
+        if rec.get("sprint") == sid:
+            continue
+        if files is None:
+            try:
+                files = subprocess.run(["git", "-C", str(bl.root), "ls-files"], capture_output=True, text=True,
+                                       encoding="utf-8", errors="replace", timeout=60).stdout.splitlines()
+            except (OSError, subprocess.SubprocessError):
+                files = []
+        held = [t for t in rec.get("touches") or [] if isinstance(t, str) and t]
+        hits = [(m, t) for m in own for t in held if touches_overlap(m, t, files)]
+        if hits:
+            out.append((rec, hits))
+    return out
+
+
 # ------------------------------------------------------------------ output and commits
 
 OUTPUT_ROOT = [ROOT]  # the backlog main() reads: its remotes give the paths withhold() leaves alone
