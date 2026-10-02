@@ -2,7 +2,7 @@
   "id": "BG-bf6eqxqq",
   "kind": "bug",
   "title": "token-efficiency.md says the dropped brief saved no tokens, but it saved 1.1% in one run",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "sixth-w3"
 }
