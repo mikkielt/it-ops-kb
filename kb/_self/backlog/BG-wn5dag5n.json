@@ -2,7 +2,7 @@
   "id": "BG-wn5dag5n",
   "kind": "bug",
   "title": "A kbingest change left the kb-ingest skill false, and selfdoc maps kbingest.py to no skill",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,28 @@
     "kb/_self/plugin.md",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "d63089971b35aefffb061d9ed59d6659808d0b8c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_change_marks_the_ingest_skill_stale"
+        ],
+        "exit": 0,
+        "sha256": "2ccd0f2bf943fea2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys;rows=list(csv.DictReader(open('kb/_self/map.csv',encoding='utf-8')));sys.exit(0 if any(r['pattern']=='_tools/kbingest.py' and r['doc'].endswith('kb-ingest/SKILL.md') for r in rows) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
