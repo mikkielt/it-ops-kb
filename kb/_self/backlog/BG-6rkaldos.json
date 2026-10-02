@@ -28,7 +28,12 @@
     "_tools/kb_http.py",
     "_tools/test_kb_http.py",
     "kb/_self/design.md",
-    "kb/_self/hosting.md"
+    "kb/_self/hosting.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "_tools/test_kb_leaks.py",
+    "_tools/test_selfdoc.py",
+    "_tools/test_testmap.py"
   ],
   "claimed_by": "orch-fourth-s2"
 }
