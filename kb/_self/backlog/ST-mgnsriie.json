@@ -2,7 +2,7 @@
   "id": "ST-mgnsriie",
   "kind": "story",
   "title": "Review sprint: Work has a measured cost",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-fvztfmtm",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "6892805a974bc8b5a5edda3335cb11821ec437ff",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b1fc70b987facc8b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "3b521f677b6fd9a2"
+      }
+    ]
+  }
 }
