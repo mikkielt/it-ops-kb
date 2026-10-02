@@ -20,7 +20,7 @@ import concurrent.futures as cf, csv, functools, http.server, io, json, os, rand
 import pytest
 
 import kbid
-from conftest import D, KB, P, Q
+from conftest import D, KB, P, Q, kb_template
 
 pytestmark = pytest.mark.stress
 TIMEOUT = 300
@@ -45,8 +45,7 @@ def skip(src, names):
 def copy_kb(tmp, name):
     """A copy with the kb's pack index from _cache (so a copy reuses it until a mutation changes a file)."""
     d = os.path.join(str(tmp), name)
-    shutil.copytree(KB, d, ignore=skip, symlinks=True)
-    return d
+    return kb_template("stress", skip, symlinks=True).copy_to(d)  # hard links of one per-process template (conftest)
 
 
 def host_load():

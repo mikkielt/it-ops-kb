@@ -59,7 +59,8 @@
     "_tools/test_stress.py",
     "_tools/test_kb_cohesion.py",
     "_tools/test_kb_lookup.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_factdiff.py"
   ],
   "depends_on": [
     "ST-c35i7vjx"

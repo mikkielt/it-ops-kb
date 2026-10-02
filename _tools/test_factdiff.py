@@ -99,7 +99,7 @@ class TestAnchors:
 
 @pytest.fixture(scope="module")
 def kb(tmp_path_factory):
-    d = copy_kb(str(tmp_path_factory.mktemp("kb-anchors") / "kb"), skip=("_census",))
+    d = copy_kb(str(tmp_path_factory.mktemp("kb-anchors") / "kb"), skip=("_census",), copy=("kb/public/_snapshots",))  # its tests write snapshots
     yield d
     shutil.rmtree(d, ignore_errors=True)
 

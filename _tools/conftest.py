@@ -9,7 +9,10 @@ from pyproject.toml's dev group) or `uv run pytest`.
                         of the variables that would leak the outer repository, a CI run or a verification date into it
   GIT_LOCATION          the git variables that name a repository (GIT_DIR, GIT_WORK_TREE, ...): removed from
                         os.environ at import, so a run a git hook starts never acts on the hook's repository
-  copy_kb(dst, skip)    a copy of the kb's working tree without .git, _cache, _private, __pycache__ (and `skip`)
+  copy_kb(dst, skip, copy)  a copy of the kb's working tree without .git, _cache, _private, __pycache__ (and `skip`):
+                        hard links of a per-process template for the files in LINKED_DIRS, real copies of the rest (and
+                        of the paths in `copy`); an autouse session fixture fails the run when a write went through a
+                        link into the template
   kb_seed               (fixture) a bare repository of a kb copy, committed once per run and shared by the xdist
                         workers: the origin a git scenario clones
   requires_git          skip marker for a test that needs the git binary
@@ -29,7 +32,7 @@ from pyproject.toml's dev group) or `uv run pytest`.
                         a tool run, the tracked files and their text, the pinned and authored subsets, the leak
                         scan's reviewed allowlist and its pattern search
 """
-import csv, functools, json, os, re, shutil, subprocess, sys, time
+import csv, functools, hashlib, json, os, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 
 import pytest
@@ -143,15 +146,114 @@ def git_env(**extra):
     return env
 
 
-def copy_kb(dst, skip=()):
-    patterns = shutil.ignore_patterns(".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache", *skip)
+# Directories whose files tests do not write through a kb copy: a copy links them. A test that writes into one passes
+# `copy=` with the path (test_factdiff.py: its snapshots), else the end-of-run check fails.
+LINKED_DIRS = ("_snapshots", "artifacts", "_census")
+
+
+class KbTemplate:
+    """One copy of a kb working tree, read once, that every kb copy of a run is built from: files in LINKED_DIRS are
+    hard links of it (copied where the filesystem refuses a link), all others real copies, so a test may write any
+    file outside LINKED_DIRS (or inside, when copy_to's `copy` names it). A write through a link would change the
+    template and every later copy: `changed()` rereads the template against the digests taken while it was built."""
+
+    def __init__(self, src, ignore, symlinks=False):
+        self.base = tempfile.mkdtemp(prefix="kb-template-")
+        self.root = os.path.join(self.base, "kb")
+        self.digests = {}
+
+        def read_once(s, d, *, follow_symlinks=True):
+            with open(s, "rb") as f:
+                data = f.read()
+            with open(d, "wb") as f:
+                f.write(data)
+            shutil.copystat(s, d)
+            self.digests[os.path.relpath(d, self.root)] = hashlib.sha256(data).hexdigest()
+            return d
+
+        shutil.copytree(src, self.root, ignore=ignore, symlinks=symlinks, copy_function=read_once)
+
+    @staticmethod
+    def linked(rel, copy=()):
+        rel = rel.replace(os.sep, "/")
+        return any(part in LINKED_DIRS for part in rel.split("/")[:-1]) and not any(
+            rel == c.strip("/") or rel.startswith(c.strip("/") + "/") for c in copy)
+
+    def copy_to(self, dst, skip=(), copy=()):
+        """The template as a new tree at `dst` (which must not exist), without the names matching `skip` (glob
+        patterns, as shutil.ignore_patterns); `copy`: path prefixes (relative, with /) that stay real copies."""
+        drop = shutil.ignore_patterns(*skip) if skip else None
+
+        def walk(s, d, rel):
+            os.makedirs(d, exist_ok=bool(rel))
+            with os.scandir(s) as it:
+                entries = list(it)
+            dropped = set(drop(s, [e.name for e in entries])) if drop else ()
+            for e in entries:
+                if e.name in dropped:
+                    continue
+                r, target = (rel + "/" + e.name) if rel else e.name, os.path.join(d, e.name)
+                if e.is_symlink():
+                    os.symlink(os.readlink(e.path), target)
+                elif e.is_dir():
+                    walk(e.path, target, r)
+                elif self.linked(r, copy):
+                    try:
+                        os.link(e.path, target)
+                    except OSError:  # another device, a filesystem without links, a link count limit
+                        shutil.copy2(e.path, target)
+                else:
+                    shutil.copy2(e.path, target)
+
+        walk(self.root, os.fspath(dst), "")
+        return dst
+
+    def changed(self):
+        """Relative paths of the template's files that differ from what was read, went missing or appeared."""
+        seen = {}
+        for d, _, names in os.walk(self.root):
+            for n in names:
+                p = os.path.join(d, n)
+                if not os.path.islink(p):
+                    with open(p, "rb") as f:
+                        seen[os.path.relpath(p, self.root)] = hashlib.sha256(f.read()).hexdigest()
+        return sorted(k for k in seen.keys() | self.digests.keys() if seen.get(k) != self.digests.get(k))
+
+    def remove(self):
+        shutil.rmtree(self.base, ignore_errors=True)
+
+
+TEMPLATES = {}  # per process, so per xdist worker: each builds its own, nothing is shared between workers
+
+
+def kb_template(key, ignore, symlinks=False):
+    if key not in TEMPLATES:
+        TEMPLATES[key] = KbTemplate(KB, ignore, symlinks)
+    return TEMPLATES[key]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def kb_templates_untouched():
+    """The end of a run (a worker's, under xdist): every template file is what it was when read, else an error."""
+    yield
+    templates, bad = list(TEMPLATES.values()), []
+    TEMPLATES.clear()
+    for t in templates:
+        bad += t.changed()
+        t.remove()
+    if bad:
+        pytest.fail(f"a test wrote through a hard link into the kb template: {bad[:10]} (a file a test writes belongs "
+                    "outside conftest.LINKED_DIRS, or in copy_kb's `copy`)", pytrace=False)
+
+
+def copy_kb(dst, skip=(), copy=()):
+    patterns = shutil.ignore_patterns(".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache")
     claude = os.path.normcase(os.path.join(KB, ".claude"))
 
     def ignore(d, names):  # and Claude Code's worktrees (sprint subagents): each is a whole second kb
         return set(patterns(d, names)) | ({"worktrees"} if os.path.normcase(d) == claude else set())
 
-    shutil.copytree(KB, dst, ignore=ignore)
-    return dst
+    return kb_template("kb", ignore).copy_to(dst, skip, copy)
 
 
 ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")  # the reviewed exceptions of the leak scan
