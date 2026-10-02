@@ -45,7 +45,7 @@ from pathlib import Path
 
 import pytest
 
-import kbgit, kbid, kg_lane, kg_sync, kg_trailers
+import kbgit, kbid, kg_hooks, kg_lane, kg_sync, kg_trailers
 from conftest import TOOLS, P, Repo, git_env, requires_git
 
 
@@ -479,11 +479,11 @@ class TestSprintWorktreeHooks(SyncScenario):
         wt = Repo(os.path.join(c.path, ".claude", "worktrees", "w1"), env)
         c.git("worktree", "add", "-q", wt.path, "-b", "work/w1")
         cls.c, cls.wt, cls.got = c, wt, {}
-        absolute = os.path.join(c.path, kbgit.HOOKS_DIR)
+        absolute = os.path.join(c.path, kg_hooks.HOOKS_DIR)
         stray = os.path.join(tmp, "stray")
-        shutil.copytree(absolute, os.path.join(stray, kbgit.HOOKS_DIR))
+        shutil.copytree(absolute, os.path.join(stray, kg_hooks.HOOKS_DIR))
         for case, value in (("relative", None), ("absolute", absolute), ("unset", ""),
-                            ("stray", os.path.join(stray, kbgit.HOOKS_DIR))):
+                            ("stray", os.path.join(stray, kg_hooks.HOOKS_DIR))):
             if value == "":
                 c.git("config", "--unset", "core.hooksPath")
             elif value:
@@ -1370,3 +1370,36 @@ def test_kg_split_trailers_run_git_in_their_own_kb(tmp_path, monkeypatch):
     with monkeypatch.context() as m:
         m.setattr(kg_trailers, "KB", str(tmp_path))
         assert kg_trailers.git("rev-parse", "--is-inside-work-tree") is None
+
+
+MOVED_TO_HOOKS = ("HOOKS_DIR", "HOOKS", "ZERO", "worktree_tops", "hooks_path_is_ours", "lane_refusals", "cmd_install_hooks")
+
+
+def test_kg_split_hooks_live_in_kg_hooks_and_kbgit_imports_them():
+    """kg_hooks defines the hook files, the hooks check, the lane refusal, the pre-push hook and install-hooks; kbgit.py
+    defines none of the moved names (it imports the check and the command, and hands the pre-push hook its gate and its
+    dirty paths), and kg_hooks imports no facade. Planted failure: a moved name put back into kbgit.py is reported."""
+    kbgit_src = Path(TOOLS, "kbgit.py").read_text(encoding="utf-8")
+    hooks_src = Path(TOOLS, "kg_hooks.py").read_text(encoding="utf-8")
+    assert defined_in(hooks_src, MOVED_TO_HOOKS + ("hook_pre_push",)) == set(MOVED_TO_HOOKS + ("hook_pre_push",))
+    assert defined_in(kbgit_src, MOVED_TO_HOOKS) == set()
+    assert "kg_hooks.hook_pre_push(args, stdin, gate, dirty_paths)" in kbgit_src
+    for name in ("hooks_path_is_ours", "cmd_install_hooks", "HOOKS"):
+        assert getattr(kbgit, name) is getattr(kg_hooks, name)
+    imports = {a.name for n in ast.walk(ast.parse(hooks_src)) if isinstance(n, ast.Import) for a in n.names}
+    assert "kbgit" not in imports
+    planted = kbgit_src + "\n\ndef hooks_path_is_ours(cur):\n    return False\n"
+    assert defined_in(planted, MOVED_TO_HOOKS) == {"hooks_path_is_ours"}
+
+
+@requires_git
+def test_kg_split_hooks_run_git_in_their_own_kb(tmp_path, monkeypatch):
+    """kg_hooks runs git in its own KB: a patch of kg_hooks.KB moves its git calls to a directory that is no
+    repository. Planted failure: the same patch on kbgit.KB leaves them in this repository."""
+    assert kg_hooks.git("rev-parse", "--is-inside-work-tree") is not None
+    with monkeypatch.context() as m:
+        m.setattr(kbgit, "KB", str(tmp_path))
+        assert kg_hooks.git("rev-parse", "--is-inside-work-tree") is not None
+    with monkeypatch.context() as m:
+        m.setattr(kg_hooks, "KB", str(tmp_path))
+        assert kg_hooks.git("rev-parse", "--is-inside-work-tree") is None

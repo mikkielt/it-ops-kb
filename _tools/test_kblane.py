@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-import kblane, kbgit, kg_sync, ql_deliver
+import kblane, kbgit, kg_hooks, kg_sync, ql_deliver
 from conftest import Repo, requires_git
 
 HERE = Path(__file__).resolve().parent
@@ -196,6 +196,7 @@ class TestCheckLanes:
         r.code = commit(r, {"_tools/x.py": "1\n"}, "code")
         r.content = commit(r, {"kb/public/b.md": "b\n"}, "content")
         monkeypatch.setattr(kbgit, "KB", r.path)
+        monkeypatch.setattr(kg_hooks, "KB", r.path)
         monkeypatch.setattr(kbgit, "default_range", lambda: f"{r.base}..HEAD")
         for k in ("CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", *FORGE_VARS):
             monkeypatch.delenv(k, raising=False)

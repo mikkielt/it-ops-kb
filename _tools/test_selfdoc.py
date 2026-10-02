@@ -598,7 +598,7 @@ class TestSelfdocInGit:
         last commit, and the range judgement above (test_selfdoc_range_review_over_the_pushed_range) is never
         reached. The check list is read from the tool calls the gate makes, so dropping the argument from
         kg_sync.py fails here; the planted failure strips it from the call and the same assertion catches it."""
-        import kbgit, kg_sync
+        import kbgit, kg_hooks, kg_sync
         up, head = "a" * 40, "b" * 40
         for k in (*LEAKY, "KB_GATE_DONE", "KB_SYNC_NO_TESTS"):
             monkeypatch.delenv(k, raising=False)
@@ -618,9 +618,9 @@ class TestSelfdocInGit:
                 assert kbgit.gate({"target": "origin"}, up)
             else:
                 monkeypatch.setattr(kbgit.kbpublic, "guard_push", lambda *_a, **_k: [])
-                monkeypatch.setattr(kbgit, "lane_refusals", lambda *_a, **_k: [])
-                monkeypatch.setattr(kbgit, "rev_parse", lambda _rev: head)
-                monkeypatch.setattr(kbgit, "git", lambda *_a, **_k: "")
+                monkeypatch.setattr(kg_hooks, "lane_refusals", lambda *_a, **_k: [])
+                monkeypatch.setattr(kg_hooks, "rev_parse", lambda _rev: head)
+                monkeypatch.setattr(kg_hooks, "git", lambda *_a, **_k: "")
                 monkeypatch.setattr(kbgit, "dirty_paths", lambda: ([], []))
                 stdin = f"refs/heads/main {head} refs/heads/main {up}\n"
                 assert kbgit.hook_pre_push(["origin"], stdin) == 0
