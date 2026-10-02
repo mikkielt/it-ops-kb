@@ -8,12 +8,15 @@ local store laid out the same way), their readers and writers, and the gates `qu
   work/<yyyy-mm>/<run-id>.jsonl       the work sidecar of a run file: a header (WORK_HEADER_KEYS), then one line per
                                       item worked (WORK_ITEM_KEYS), one per session that worked one (WORK_SHARED_KEYS)
                                       and one per kind of the kb's own background runs (WORK_OVERHEAD_KEYS)
+  ops/<yyyy-mm>/<run-id>.jsonl        the ops sidecar of a run file: a header (OPS_HEADER_KEYS), then one line per
+                                      operational row of the spool (ql_capture.OPS_EVENTS): names, exit codes,
+                                      milliseconds, item ids, short shas and test file names, never free text
 """
 import datetime, hashlib, json, re, subprocess
 from pathlib import Path
 
 from ql_base import HOME, PIPELINE_VERSION, STORE, json_lines, write_text
-from ql_capture import ARG_MAX_CHARS, TAGS, VERDICTS, WORK_ITEM
+from ql_capture import ARG_MAX_CHARS, OPS, OPS_EVENTS, TAGS, VERDICTS, WORK_ITEM, ops_problems
 
 HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
@@ -28,7 +31,7 @@ FETCH_KEYS = ("tool", "fetcher", "host", "path", "outcome", "n", "chars")
 RAW_KEYS = ("prompt", "answer", "session_id", "prompt_id", "transcript_path", "cwd", "user", "hostname", "command",
             "args", "ts")  # spool fields a run file never holds
 SURFACES = ("prompt", "kb_hook", "mcp", "kb_ask", "tool_fetch", "fetch", "stop")
-ROW_SURFACES = SURFACES + ("usage", "work")  # spool rows; `usage` and `work` rows go to the sidecars, never an entry
+ROW_SURFACES = SURFACES + ("usage", "work", OPS)  # spool rows; `usage`, `work` and `ops` rows go to the sidecars, never an entry
 TEXT_KEYS = ("question",)
 JUDGED = ("answered", "partly", "missed")
 QUESTION_MAX_CHARS = 500
@@ -81,6 +84,11 @@ OVERHEAD_KINDS = ("distill", "digest", "eval", "census")  # the background runs 
 OVERHEAD_COUNT_KEY = "overhead"  # a header count that is there only when the file has an overhead line
 SAMPLE_ENTRY_ID = "00000000-0000-4000-8000-000000000000"  # a stand-in id, to read a usage record with usage_line
 
+OPS_HEADER_KEYS = ("run", "counts")
+OPS_COUNT_KEYS = ("rows",)
+OPS_LINE_KEYS = ("id", "ts", "event")  # an ops line: these, then the keys of its event (ql_capture.OPS_EVENTS)
+OPS_TS = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z")  # the spool's time format
+
 
 # ---------------------------------------------------------------- reading
 
@@ -105,6 +113,12 @@ def usage_files(store):
 def work_files(store):
     """The work sidecars of a store, oldest run first: work/<yyyy-mm>/<run-id>.jsonl."""
     d = Path(store) / WORK
+    return sorted(d.glob("*/*.jsonl"), key=lambda p: p.stem) if d.is_dir() else []
+
+
+def ops_files(store):
+    """The ops sidecars of a store, oldest run first: ops/<yyyy-mm>/<run-id>.jsonl."""
+    d = Path(store) / OPS
     return sorted(d.glob("*/*.jsonl"), key=lambda p: p.stem) if d.is_dir() else []
 
 
@@ -155,8 +169,8 @@ def store_entries(store):
 
 
 def run_ids(store):
-    """The run ids of a store, oldest first: those of its run files and of its usage and work sidecars."""
-    return sorted({p.stem for p in run_files(store) + usage_files(store) + work_files(store)})
+    """The run ids of a store, oldest first: those of its run files and of its usage, work and ops sidecars."""
+    return sorted({p.stem for p in run_files(store) + usage_files(store) + work_files(store) + ops_files(store)})
 
 
 def resolve_id(names, given):
@@ -215,8 +229,8 @@ def header(run_id, counts, kb_commit=None):
             "kb_commit": kb_commit or head_commit(), "counts": counts}
 
 
-def run_path(store, run_id, findings=False, usage=False, work=False):
-    sub = FINDINGS if findings else USAGE if usage else WORK if work else ""
+def run_path(store, run_id, findings=False, usage=False, work=False, ops=False):
+    sub = FINDINGS if findings else USAGE if usage else WORK if work else OPS if ops else ""
     return Path(store) / sub / f"{run_id[:4]}-{run_id[4:6]}" / f"{run_id}.jsonl"
 
 
@@ -308,6 +322,32 @@ def write_work(store, run_id, lines, missing, reader):
         counts[OVERHEAD_COUNT_KEY] = sum(1 for ln in lines if "overhead" in ln)
     write_text(path, json_lines([{"run": run_id, "reader": reader, "counts": counts}] + lines))
     return path
+
+
+def ops_line(row):
+    """The ops sidecar line of one spool row (`id`, `ts`, `event` and the event's keys, in the event's order), or None
+    when the row is not the closed shape the store keeps (ops_line_problems)."""
+    spec = OPS_EVENTS.get(row.get("event")) if isinstance(row, dict) else None
+    if spec is None:
+        return None
+    line = {k: row[k] for k in OPS_LINE_KEYS if k in row}
+    line.update((k, row[k]) for k in spec if k in row)
+    return None if ops_line_problems(line, "") or set(row) - set(line) - {"surface", "v"} else line
+
+
+def write_ops(store, run_id, lines):
+    """The ops sidecar of run `run_id`: a header (the run, the count of lines), then the lines (ops_line, in the
+    order given). Nothing is written without a line."""
+    if not lines:
+        return None
+    path = run_path(store, run_id, ops=True)
+    write_text(path, json_lines([{"run": run_id, "counts": {"rows": len(lines)}}] + list(lines)))
+    return path
+
+
+def ops_ids(store):
+    """The row ids of the store's ops sidecars: the rows a sidecar already holds."""
+    return {u["id"] for _, objs in records(ops_files(store)) for _, u in objs if isinstance(u.get("id"), str)}
 
 
 def learn_run_id(store, entries_runs, body):
@@ -503,7 +543,8 @@ def store_problems(store=None, k=None):
             out.append(f"{rel}:{hn}: header fields a header never has: {', '.join(extra)}")
         for n, e in entries:
             out += entry_problems(e, f"{rel}:{n}", k)
-    return out + duplicate_ids(store) + findings_problems(store, k) + usage_problems(store) + work_problems(store)
+    return out + duplicate_ids(store) + findings_problems(store, k) + usage_problems(store) + work_problems(store) \
+        + ops_sidecar_problems(store, k)
 
 
 def findings_problems(store, k=None):
@@ -606,21 +647,31 @@ def record_problems(r, where, ids, k):
     return out
 
 
+def _values(x):
+    """The strings of a JSON value, nested ones included."""
+    if isinstance(x, dict):
+        for v in x.values():
+            yield from _values(v)
+    elif isinstance(x, list):
+        for v in x:
+            yield from _values(v)
+    elif isinstance(x, str):
+        yield x
+
+
+def ops_line_leaks(line, k=None):
+    """[kind] of the leak scan's hits over every value of an ops line but its id (the scan of leak_problems)."""
+    import redact
+    return [kind for v in _values({key: val for key, val in line.items() if key != "id"})
+            for kind, _ in redact.scan(v, k)]
+
+
 def leak_problems(store, rels, k=None):
     """The leak scan (redact.scan: kbcommon.leak_hits with what the public root contains allowed) over every value of
     the store files `rels`, the ids that name runs, entries and findings aside: one problem per hit."""
     import redact
     out = []
-
-    def values(x):
-        if isinstance(x, dict):
-            for v in x.values():
-                yield from values(v)
-        elif isinstance(x, list):
-            for v in x:
-                yield from values(v)
-        elif isinstance(x, str):
-            yield x
+    values = _values
 
     for rel in rels:
         try:
@@ -907,6 +958,62 @@ def work_problems(store):
                 else:
                     seen[("overhead", kind)] = where
     return out
+
+
+def ops_line_problems(w, where):
+    """The gates on one ops sidecar line: `id` (a UUID, the spool row's), `ts` (the spool's time format), an `event`
+    of ql_capture.OPS_EVENTS and the keys that event has, each in its closed shape (ql_capture.ops_problems), and
+    nothing else: no session, prompt, command, path or text."""
+    out = []
+    if not (isinstance(w.get("id"), str) and ENTRY_ID.fullmatch(w["id"])):
+        out.append(f"{where}: ops id is not a row id")
+    if not (isinstance(w.get("ts"), str) and OPS_TS.fullmatch(w["ts"])):
+        out.append(f"{where}: ops ts is not a UTC time")
+    return out + ops_problems({k: v for k, v in w.items() if k not in ("id", "ts")}, where)
+
+
+def ops_sidecar_problems(store, k=None):
+    """The ops sidecar gates: a header of exactly `run` and `counts` (`rows`) naming its file and its month beside a
+    run file of the same run, a count that matches, the line gates (ops_line_problems), each row id once across
+    sidecars, and the leak scan over every value (leak_problems)."""
+    store = Path(store)
+    out, seen = [], {}
+    runs = {p.stem for p in run_files(store)}
+    rels = []
+    for p in ops_files(store):
+        rel = p.relative_to(store).as_posix()
+        try:
+            objs = load_run(p)
+        except (OSError, ValueError) as e:
+            out.append(f"{rel}: not an ops sidecar ({e})")
+            continue
+        if not objs:
+            out.append(f"{rel}: empty ops sidecar")
+            continue
+        rels.append(rel)
+        (hn, h), lines = objs[0], objs[1:]
+        m = RUN_ID.fullmatch(str(h.get("run", "")))
+        if not (m and h["run"] == p.stem and p.parent.name == f"{m.group(1)}-{m.group(2)}"):
+            out.append(f"{rel}:{hn}: run id does not name this file")
+        if set(h) != set(OPS_HEADER_KEYS):
+            out.append(f"{rel}:{hn}: an ops header is exactly {', '.join(OPS_HEADER_KEYS)}")
+        c = h.get("counts")
+        if not (isinstance(c, dict) and set(c) == set(OPS_COUNT_KEYS) and all(_count(v) for v in c.values())):
+            out.append(f"{rel}:{hn}: counts are not {', '.join(OPS_COUNT_KEYS)} as counts")
+        elif c["rows"] != len(lines):
+            out.append(f"{rel}:{hn}: counts.rows is {c['rows']}, the file has {len(lines)}")
+        if p.stem not in runs:
+            out.append(f"{rel}: no run file {p.stem} beside it")
+        for n, w in lines:
+            where = f"{rel}:{n}"
+            out += ops_line_problems(w, where)
+            i = w.get("id")
+            if isinstance(i, str):
+                if i in seen:
+                    out.append(f"{where}: duplicate ops id {i} (also {seen[i]})")
+                else:
+                    seen[i] = where
+    return out + leak_problems(store, rels, k)
 
 
 def check(store=None):

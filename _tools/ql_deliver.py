@@ -14,8 +14,9 @@ from ql_base import (DISABLED_NAME, HOME, STORE_REL, acquire, now, places, plugi
                      write_text)
 from ql_distill import spool_delivered
 from ql_research import edit_problems
-from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, USAGE, WORK, finding_states, findings_files, leak_problems,
-                      load_run, run_files, store_entries, usage_files, work_files, write_findings)
+from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, OPS, USAGE, WORK, finding_states, findings_files,
+                      leak_problems, load_run, ops_files, run_files, store_entries, usage_files, work_files,
+                      write_findings)
 
 REMOTE = kbpublic.integration_remote(HOME)  # the integration remote of this clone (git config kb.integrationRemote); a Pusher asks its own home
 BRANCH = "main"  # the branch automatic commits land on
@@ -482,7 +483,7 @@ class Pusher:
     def local_files(self):
         """(entry ids of the local store's run files that origin/main holds, [(source, published path, entry ids)]
         of the local files to copy, [published paths] of the local findings files that stay local). A run file or a
-        usage or work sidecar is copied when origin/main lacks its path; a findings file when origin/main lacks its path,
+        usage, work or ops sidecar is copied when origin/main lacks its path; a findings file when origin/main lacks its path,
         all its records are in a state learn writes (not apply's outcomes for this clone's working tree) and
         origin/main records none of its findings yet."""
         local, store = self.qdir / "store", self.wt / STORE_REL
@@ -510,7 +511,7 @@ class Pusher:
                 new.append((p, rel, set()))
             else:
                 kept.append(rel)
-        for p in usage_files(local) + work_files(local):
+        for p in usage_files(local) + work_files(local) + ops_files(local):
             rel = p.relative_to(local).as_posix()
             if not (store / rel).exists():
                 new.append((p, rel, set()))
@@ -546,13 +547,15 @@ class Pusher:
     @staticmethod
     def brought(new):
         """(what the local files `new` are, in words; the stems of their run files)."""
-        runs = sorted(Path(rel).stem for _, rel, _ in new if not rel.startswith((FINDINGS + "/", USAGE + "/", WORK + "/")))
+        runs = sorted(Path(rel).stem for _, rel, _ in new if not rel.startswith((FINDINGS + "/", USAGE + "/", WORK + "/", OPS + "/")))
         found = sum(1 for _, rel, _ in new if rel.startswith(FINDINGS + "/"))
         used = sum(1 for _, rel, _ in new if rel.startswith(USAGE + "/"))
         worked = sum(1 for _, rel, _ in new if rel.startswith(WORK + "/"))
+        measured = sum(1 for _, rel, _ in new if rel.startswith(OPS + "/"))
         return (f"{len(runs)} run file(s)" + (f", {found} findings file(s)" if found else "")
                 + (f", {used} usage sidecar(s)" if used else "")
-                + (f", {worked} work sidecar(s)" if worked else "")), runs
+                + (f", {worked} work sidecar(s)" if worked else "")
+                + (f", {measured} ops sidecar(s)" if measured else "")), runs
 
     def edited(self, paths):
         """The existing lines the worktree's change removes or edits in an article, a ledger or a source row

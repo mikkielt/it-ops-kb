@@ -11,6 +11,12 @@
                     `Exit code 1` first) writes `refused`, item only, and an interrupt, a start failure or timeout, another
                     exit code and a failed claim or release write none (`-k work_refused`)
                     `usage_targets` picks the prompts that need a usage row: the kb's and every prompt of a work window
+  TestOpsRows       `ql_capture.record("ops", event=..., ...)` writes one `ops` row of a closed event with its closed
+                    keys and values (names, exit codes, counts, milliseconds, item ids, short shas, test file names,
+                    closed reason classes) to the tools file, with no session (`-k ops_sidecar`); it writes none for an
+                    event or a key outside the set, a free-text or mistyped value, a missing required key or a row
+                    too long to stay whole (planted: the same fields in their closed shape write one; `-k
+                    ops_sidecar_refuses_free_text`)
   TestSwitches      mode `off`, the DISABLED marker and an unreadable config file write nothing (planted: the same
                     events with the default mode write); where rows go in a clone and in a plugin host
   TestToolRows      kb_hook.py, kb_ask.py, fetch.py and census.py write their own rows; the kb: hook's answer is
@@ -460,6 +466,92 @@ class TestWorkRows:
                 rs.append({"surface": "work", "prompt_id": pid, "item": "TK-aaaaaaaa", "action": kind})
         rs.append({"surface": "usage", "prompt_id": "p9", "reader": 1})
         assert ql_capture.usage_targets(rs, skip) == (want, {("p9", 1)})
+
+
+LAND_STEP = {"event": "land.step", "item": "ST-aaaaaaaa", "step": "rebase", "exit": 0, "ms": 1234}
+
+
+class TestOpsRows:
+    @pytest.fixture(autouse=True)
+    def spool_here(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
+        self.spool = tmp_path / "spool"
+
+    def rows(self):
+        return [json.loads(ln) for f in sorted(self.spool.glob("*.jsonl")) for ln in f.read_text(encoding="utf-8").splitlines()]
+
+    def test_ops_sidecar_a_closed_event_is_one_row_in_the_tools_file(self):
+        row = ql_capture.record("ops", **LAND_STEP)
+        (got,) = self.rows()
+        assert got == row and got["surface"] == "ops" and got["v"] == ql_capture.ROW_FORMAT and is_uuid4(got["id"])
+        assert {k: got[k] for k in LAND_STEP} == LAND_STEP and "session_id" not in got
+        assert [f.name for f in self.spool.iterdir()] == [f"tools-{got['ts'][:10]}.jsonl"]
+
+    def test_ops_sidecar_a_session_never_reaches_the_row(self):
+        row = ql_capture.record("ops", SID, **LAND_STEP)
+        assert row is not None and "session_id" not in row
+        assert [f.name.startswith("tools-") for f in self.spool.iterdir()] == [True]
+
+    @pytest.mark.parametrize("fields", [
+        {"event": "land.step", "item": "ST-aaaaaaaa", "step": "rebase", "exit": 0, "ms": 5,
+         "list": [1, 2]},  # a key land.step has not
+        {"event": "land.step", "item": "ST-aaaaaaaa", "step": "rebase", "exit": 0},  # a required key missing
+        {"event": "no.such.event", "ms": 5},
+        {"item": "ST-aaaaaaaa", "ms": 5},  # no event at all
+        {**LAND_STEP, "ms": True},  # a flag is no count
+        {**LAND_STEP, "ms": -1},
+        {**LAND_STEP, "ms": 1.5},
+        {**LAND_STEP, "exit": "0"},
+        {**LAND_STEP, "item": "ST-AAAAAAAA"},
+        {"event": "ci.pipeline", "state": "failed", "calls": 3, "sha": "not-a-sha"},
+        {"event": "done.refused", "item": "ST-aaaaaaaa", "ms": 5, "reasons": ["a reason of my own"]},
+        {"event": "test.run", "mode": "fast", "ms": 1, "exit": 0, "slow": [{"file": "tests/test_x.py", "ms": 3}]},
+        {"event": "test.run", "mode": "fast", "ms": 1, "exit": 0, "failed_files": ["test_x.py::test_node"]},
+        {"event": "test.run", "mode": "fast", "ms": 1, "exit": 0, "slow": [{"file": "test_x.py", "ms": 3, "n": 1}]},
+        {"event": "test.run", "mode": "turbo", "ms": 1, "exit": 0},
+    ])
+    def test_ops_sidecar_refuses_free_text_and_shapes_outside_the_closed_set(self, fields):
+        assert ql_capture.record("ops", **fields) is None and not self.spool.exists()
+
+    @pytest.mark.parametrize("step", ["fix the rebase and try again", "Rebase", "../../etc/passwd", "a" * 41, "1step",
+                                      "step\nstep", ""])
+    def test_ops_sidecar_refuses_free_text_in_a_name(self, step):
+        assert ql_capture.record("ops", **{**LAND_STEP, "step": step}) is None and not self.spool.exists()
+
+    def test_ops_sidecar_the_same_fields_in_their_closed_shape_are_written(self):
+        """planted counterpart of the refusals above: each closed shape is one row."""
+        rows = [{"event": "sync.gate", "ms": 90, "scope": "changed", "files": 4, "push": "pushed", "exit": 0,
+                 "checks": [{"name": "check", "ran": True, "exit": 0, "ms": 5},
+                            {"name": "fetch", "ran": False, "why": "no-pinned-change"}]},
+                {"event": "done.refused", "item": "ST-aaaaaaaa", "ms": 7, "reasons": ["check-failed", "status"],
+                 "checks": ["tests-ops-sidecar"]},
+                {"event": "test.run", "mode": "full", "ms": 3 * 10 ** 6, "exit": 3221225786,
+                 "slow": [{"file": "test_ql_store.py", "ms": 900}], "failed_files": ["test_ql_store.py"]},
+                {"event": "ci.pipeline", "state": "failed", "calls": 3, "sha": "0123abc"},
+                {"event": "agent.run", "group": "kb-worker", "ms": 5, "agent": "0123456789abcdef", "item": "ST-aaaaaaaa"},
+                {"event": "intake.detect", "detector": "drift", "found": 2, "budget": False}]
+        for r in rows:
+            assert ql_capture.record("ops", **r) is not None, r
+        assert [{k: v for k, v in r.items() if k in rows[i]} for i, r in enumerate(self.rows())] == rows
+
+    def test_ops_sidecar_a_row_too_long_to_stay_whole_is_not_written(self):
+        names = [f"test_{'a' * 50}_{i}.py" for i in range(300)]
+        files = [{"file": n, "ms": 10 ** 9} for n in names]
+        assert len(json.dumps(files)) + len(json.dumps(names)) > ql_capture.OPS_ROW_MAX_CHARS
+        assert ql_capture.record("ops", event="test.run", mode="full", ms=1, exit=0, files=files,
+                                 failed_files=names) is None
+        assert not self.spool.exists()
+
+    def test_ops_sidecar_is_cut_by_nothing_the_spool_row_cap_applies_to(self):
+        """a row over the spool's usual cap, within its own, is written whole"""
+        files = [{"file": f"test_x{i}.py", "ms": 1234567} for i in range(300)]
+        row = ql_capture.record("ops", event="test.run", mode="full", ms=1, exit=0, files=files)
+        assert len(json.dumps(row)) > ql_capture.SPOOL_ROW_MAX_CHARS and self.rows()[0]["files"] == files
+        assert "cut" not in self.rows()[0]
+
+    def test_ops_sidecar_off_writes_nothing(self, monkeypatch):
+        monkeypatch.setattr(ql_capture, "spool_dir", lambda: None)
+        assert ql_capture.record("ops", **LAND_STEP) is None and not self.spool.exists()
 
 
 class TestSwitches:

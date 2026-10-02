@@ -4,6 +4,11 @@ census.py). Standard library only, and cheap to import: the kb: hook and every c
 
 Every row has a fresh UUID `id`, the UTC time `ts`, its `surface` and the row format `v` (ROW_FORMAT); a hook row also
 has `session_id` and `prompt_id`. Nothing is written when logging is off (ql_base.logging_off).
+
+An `ops` row (OPS_EVENTS) is what a tool of the kb's own work did and took: an `event` from a closed set and the keys
+that event has, each a name, an exit code, a count, milliseconds, an item id, a short sha, a test file name or a
+closed reason class, never free text. `record` writes none that breaks that shape (ops_problems), and the store
+gates the written lines by the same function.
 """
 import datetime, functools, json, re, sys, threading, time, uuid
 from pathlib import Path
@@ -39,6 +44,105 @@ KB_LINE = re.compile(r"^\s*(- |\[[\d.]+\] )([\w-]+(?:/[\w.-]+)+:[1-9]\d*)(?![\w:
 LINE_TAG = re.compile(r"\[(DOC|CODE|DER|COMMUNITY|UNK|DECISION)\b[^\]]*\]\s*$")
 COVERAGE = re.compile(r"^coverage: (good|weak|none)\b", re.M)
 _lock = threading.Lock()
+
+# ---------------------------------------------------------------- operational rows (the `ops` surface)
+
+OPS = "ops"
+OPS_ROW_MAX_CHARS = 32000  # an ops row is never cut (a cut row is no event): one longer than this is not written
+OPS_MS_MAX = 10 ** 11  # about three years of milliseconds
+OPS_COUNT_MAX = 10 ** 7
+OPS_LIST_MAX = 300  # items of a list or rows of a table in one ops row
+OPS_TOKEN = re.compile(r"[a-z][a-z0-9_.-]{0,39}")  # a step, lane, check, state or detector name: never a sentence
+OPS_SHA = re.compile(r"[0-9a-f]{7,12}")
+OPS_AGENT = re.compile(r"[0-9a-f]{8,16}")  # a salted short hash of an agent id, never the id
+OPS_TEST_FILE = re.compile(r"(?:test_[a-z0-9_]{1,60}|conftest)\.py")  # a test file's name, never a node id or a path
+OPS_REFUSED = ("children-open", "not-ready", "status", "provisional-answer", "uncommitted", "no-work-commit",
+               "unlanded-code", "outside-touches", "check-failed", "no-op-proof")  # why a `done` was refused
+OPS_TEST_MODES = ("full", "changed", "fast", "stress")
+
+
+def _number(v, high, low=0):
+    return type(v) is int and low <= v <= high
+
+
+OPS_KINDS = {  # the value shapes an ops key may have
+    "item": lambda v: isinstance(v, str) and WORK_ITEM.fullmatch(v) is not None,
+    "sprint": lambda v: isinstance(v, str) and WORK_ITEM.fullmatch(v) is not None and v.startswith("SP-"),
+    "token": lambda v: isinstance(v, str) and OPS_TOKEN.fullmatch(v) is not None,
+    "sha": lambda v: isinstance(v, str) and OPS_SHA.fullmatch(v) is not None,
+    "agent": lambda v: isinstance(v, str) and OPS_AGENT.fullmatch(v) is not None,
+    "test_file": lambda v: isinstance(v, str) and OPS_TEST_FILE.fullmatch(v) is not None,
+    "reason": lambda v: v in OPS_REFUSED,
+    "mode": lambda v: v in OPS_TEST_MODES,
+    "ms": lambda v: _number(v, OPS_MS_MAX),
+    "count": lambda v: _number(v, OPS_COUNT_MAX),
+    "exit": lambda v: _number(v, 2 ** 32, -2 ** 31),  # a Windows status code is above 255
+    "flag": lambda v: isinstance(v, bool),
+}
+
+
+def _spec(required, optional=None):
+    """{key: (shape, required)} of one event: a shape is a name of OPS_KINDS, ("list", most, name) or ("rows", most,
+    {key: name}), a list of objects each of those keys alone."""
+    return {**{k: (v, True) for k, v in required.items()},
+            **{k: (v, False) for k, v in (optional or {}).items()}}
+
+
+_CHECK_ROW = ("rows", 40, {"name": "token", "ran": "flag", "why": "token", "exit": "exit", "ms": "ms"})
+_FILE_MS = {"file": "test_file", "ms": "ms"}
+OPS_EVENTS = {  # the closed set of events, each with its closed keys
+    "land.step": _spec({"item": "item", "step": "token", "exit": "exit", "ms": "ms"}),
+    "land.end": _spec({"item": "item", "exit": "exit", "ms": "ms"}, {"lane": "token"}),
+    "sync.gate": _spec({"ms": "ms"}, {"checks": _CHECK_ROW, "scope": "token", "files": "count", "push": "token",
+                                       "exit": "exit"}),
+    "done.refused": _spec({"item": "item", "reasons": ("list", len(OPS_REFUSED), "reason"), "ms": "ms"},
+                          {"checks": ("list", 20, "token")}),
+    "sprint.close": _spec({"sprint": "sprint", "landed": "count", "dropped": "count", "bugs": "count",
+                           "confirmed": "count", "refused": "count", "ms": "ms"}),
+    "ci.pipeline": _spec({"state": "token", "calls": "count"}, {"sha": "sha"}),
+    "intake.detect": _spec({"detector": "token"}, {"found": "count", "budget": "flag", "coverage": "count"}),
+    "test.run": _spec({"mode": "mode", "ms": "ms", "exit": "exit"},
+                      {"selected": "count", "total": "count", "workers": "count", "passed": "count",
+                       "failed": "count", "skipped": "count", "slow": ("rows", 20, _FILE_MS),
+                       "files": ("rows", OPS_LIST_MAX, _FILE_MS),
+                       "failed_files": ("list", OPS_LIST_MAX, "test_file")}),
+    "agent.run": _spec({"group": "token", "ms": "ms"}, {"agent": "agent", "item": "item"}),
+}
+
+
+def _shape_ok(shape, v):
+    if isinstance(shape, str):
+        return OPS_KINDS[shape](v)
+    kind, most, sub = shape
+    if not (isinstance(v, list) and len(v) <= most):
+        return False
+    if kind == "list":
+        return all(OPS_KINDS[sub](x) for x in v)
+    return all(isinstance(x, dict) and x and set(x) <= set(sub) and all(OPS_KINDS[sub[k]](x[k]) for k in x) for x in v)
+
+
+def ops_problems(fields, where=""):
+    """The problems of the fields of one ops row (`event` and its keys; the row's id, time, surface and format are
+    not read): an event outside OPS_EVENTS, a key the event does not have, a required key missing, a value outside
+    its shape. [] when it is a row the store keeps. A value is never repeated in full, only its start."""
+    pre = f"{where}: " if where else ""
+    event = fields.get("event")
+    spec = OPS_EVENTS.get(event) if isinstance(event, str) else None
+    if spec is None:
+        return [f"{pre}event {str(event)[:40]!r} is not one of {', '.join(OPS_EVENTS)}"]
+    out = []
+    other = sorted(set(map(str, fields)) - set(spec) - {"event"})
+    if other:
+        out.append(f"{pre}keys event {event} never has: {', '.join(k[:40] for k in other)}")
+    for key, (shape, needed) in spec.items():
+        if key not in fields:
+            if needed:
+                out.append(f"{pre}event {event} lacks {key}")
+        elif not _shape_ok(shape, fields[key]):
+            out.append(f"{pre}{key} of {event} is not a closed {shape if isinstance(shape, str) else shape[0]} value: "
+                       f"{str(fields[key])[:40]!r}")
+    return out
+
 
 
 # ---------------------------------------------------------------- where rows go, and whether they are written
@@ -78,16 +182,25 @@ def spool_file(spool, session_id, ts):
 
 def record(surface, session_id=None, **fields):
     """Append one spool row and return it, or None when capture is off. Never raises: a caller's work never fails
-    for its log."""
+    for its log. An `ops` row (`record("ops", event="land.step", item=..., ...)`) is written only when it is a
+    closed event with its closed keys (ops_problems) and short enough to stay whole (OPS_ROW_MAX_CHARS); it is
+    never given a session."""
     try:
         spool = spool_dir()
         if spool is None:
             return None
         row = {"id": str(uuid.uuid4()), "ts": now(), "surface": surface, "v": ROW_FORMAT}
+        given = {k: v for k, v in fields.items() if v is not None}
+        if surface == OPS:  # no session, and nothing but a closed event: a row that breaks its shape is not written
+            if ops_problems(given):
+                return None
+            session_id = None
         if isinstance(session_id, str) and session_id:
             row["session_id"] = session_id
-        row.update((k, v) for k, v in fields.items() if v is not None)
-        line = fit(dict(row))
+        row.update(given)
+        line = json.dumps(row, ensure_ascii=False, separators=(",", ":")) if surface == OPS else fit(dict(row))
+        if surface == OPS and len(line) > OPS_ROW_MAX_CHARS:
+            return None
         spool.mkdir(parents=True, exist_ok=True)
         with _lock, open(spool_file(spool, row.get("session_id"), row["ts"]), "a", encoding="utf-8", newline="\n") as f:
             f.write(line + "\n")

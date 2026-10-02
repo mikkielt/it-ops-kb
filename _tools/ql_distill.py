@@ -5,7 +5,8 @@ no text of Haiku's is stored. Started by SessionEnd with the session's transcrip
 per kb prompt of that session and per prompt inside one of its work windows (ql_capture.add_usage), and the usage rows
 of the written entries become the run's usage sidecar, and the prompts of the closed sessions' work windows, summed per
 item (a prompt in several windows once, on their sprint; a work-branch subagent on its item), become its work sidecar,
-which also holds the run's own Haiku calls' token counts as an overhead line (Spend, haiku_result).
+which also holds the run's own Haiku calls' token counts as an overhead line (Spend, haiku_result). The `ops` rows of
+the tools files, rows of what the kb's own tools did and took, become the run's ops sidecar (plan_ops).
 Also the SessionEnd and SessionStart launcher that starts a detached distill.
 
 Distill reads every row format capture has written (ROW_FORMAT, format 0 for a row without `v`) and skips and counts a
@@ -18,7 +19,7 @@ import kbusage
 import ql_store as store_
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
-from ql_capture import ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines
+from ql_capture import OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines
 from ql_store import (ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, NAME, OUTCOME, QUESTION_MAX_CHARS,
                       ROW_SURFACES, SKIPPED_KEY, SOURCES_MAX, URL_PATH, public_host)
 
@@ -169,6 +170,30 @@ def assign(sessions, tools, consumed):
 
 
 # ---------------------------------------------------------------- entries
+
+def plan_ops(tools, consumed, held=()):
+    """([ops sidecar line], rows dropped, [(tools file, row id)] read): the `ops` rows of the tools files that no run
+    has consumed, in time order. A row that is not the closed shape the store keeps (ql_store.ops_line), or that the
+    leak scan flags (ql_store.ops_line_leaks), is dropped and counted; a row whose id `held` has (a sidecar of an earlier
+    run wrote it before its consumption was recorded) writes no second line. Every row read is in the third value,
+    to be recorded as consumed once the sidecar is written."""
+    lines, bad, read, seen = [], 0, [], set(held)
+    for name, rs in sorted(tools.items()):
+        for r in rs:
+            if r.get("surface") != OPS or r["id"] in consumed.get(name, ()):
+                continue
+            read.append((name, r["id"]))
+            if r["id"] in seen:
+                continue
+            seen.add(r["id"])
+            line = store_.ops_line(r)
+            if line is None or store_.ops_line_leaks(line):
+                bad += 1
+            else:
+                lines.append(line)
+    lines.sort(key=lambda ln: (ln["ts"], ln["id"]))
+    return lines, bad, read
+
 
 def worst(verdicts):
     vs = [v for v in verdicts if v in VERDICTS]
@@ -683,7 +708,8 @@ def _plan(qdir, t_now, today, k):
                 if n in tools and isinstance(ids, list)}
     for s in sessions.values():
         s["groups"] = groups(s)
-    attached, left = assign(sessions, tools, consumed)
+    attached, left = assign(sessions, {n: [r for r in rs if r.get("surface") != OPS] for n, rs in tools.items()},
+                            consumed)  # an ops row joins no prompt: plan_ops reads it from `tools`
 
     todo = []  # {entry, texts, sid, key, tools}: one per kb lookup of a closed session or a finished day
     for sid, s in sessions.items():
@@ -755,15 +781,16 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
                 t["entry"] = ordered({**t["entry"], **res})
                 written.append(t)
 
+    ops_lines, ops_bad, ops_read = plan_ops(tools, consumed, store_.ops_ids(qdir / "store"))
     counts = {"entries": len(written), "dropped": len(dropped), "waiting": len(waiting)}
-    if skipped:
-        counts[SKIPPED_KEY] = sum(skipped.values())
+    if skipped or ops_bad:  # an ops row outside the closed shape is a row distill cannot read
+        counts[SKIPPED_KEY] = sum(skipped.values()) + ops_bad
     worked = read_json(qdir / WORKED_NAME, {})
     worked = {sid: ids for sid, ids in worked.items() if sid in sessions and isinstance(ids, list)} \
         if isinstance(worked, dict) else {}
     work_lines, work_missing, work_counted = plan_work(sessions, worked, sprint_finder())
     overhead = spend.lines() if spend is not None else []
-    if written or dropped or skipped or work_lines or overhead:
+    if written or dropped or skipped or work_lines or overhead or ops_lines or ops_bad:
         run_id = run_id or f"{now_dt.strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
         written.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
         write_text(store_.run_path(qdir / "store", run_id),
@@ -771,13 +798,17 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
         lines = [ln for ln in (store_.usage_line(t["entry"]["id"], t.get("usage")) for t in written) if ln]
         store_.write_usage(qdir / "store", run_id, lines, len(written) - len(lines), kbusage.READER_VERSION)
         store_.write_work(qdir / "store", run_id, work_lines + overhead, work_missing, kbusage.READER_VERSION)
+        store_.write_ops(qdir / "store", run_id, ops_lines)
         for sid, pids in work_counted.items():
             worked[sid] = sorted(set(worked.get(sid, ())) | pids)
         out(f"distill: run={run_id} entries={counts['entries']} dropped={counts['dropped']} "
-            f"waiting={counts['waiting']}" + (f" skipped={counts[SKIPPED_KEY]}" if skipped else "")
-            + (f" usage={len(lines)}" if lines else "") + (f" work={len(work_lines)}" if work_lines else "") + (f" overhead={len(overhead)}" if overhead else ""))
+            f"waiting={counts['waiting']}" + (f" skipped={counts[SKIPPED_KEY]}" if SKIPPED_KEY in counts else "")
+            + (f" usage={len(lines)}" if lines else "") + (f" work={len(work_lines)}" if work_lines else "") + (f" overhead={len(overhead)}" if overhead else "")
+            + (f" ops={len(ops_lines)}" if ops_lines else ""))
     else:
         out(f"distill: nothing to write (waiting={counts['waiting']})")
+    for name, i in ops_read:
+        consumed.setdefault(name, set()).add(i)
     text = json.dumps(dict(sorted(worked.items()))) + "\n"
     if (worked or (qdir / WORKED_NAME).exists()) and text != _text(qdir / WORKED_NAME):
         write_text(qdir / WORKED_NAME, text)

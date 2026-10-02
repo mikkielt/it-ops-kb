@@ -24,6 +24,10 @@ and the other classes below).
   TestWorkSidecarDelivery  `apply --push` copies the work sidecar with its run file, as it copies the usage sidecar
                     (`-k work_sidecar`), counts it in the commit's words, copies none that origin/main holds, and
                     refuses the copy when the worktree's `querylog.py check` flags it (planted: a session id)
+  TestOpsSidecarDelivery  `apply --push` copies the ops sidecar with its run file (`-k ops_sidecar`), counts it in the
+                    commit's words, copies none that origin/main holds, and refuses the copy when the worktree's
+                    `querylog.py check` flags it (planted: free text in a name) or the leak scan flags a value that
+                    has the shape of a name (planted: a token shaped like a secret)
   TestHostRules     push_refusal on each refusal shape (GitLab project and protected branch, GitHub denied and GH006,
                     HTTP 403) and on what is no refusal (a generic declined hook, DNS, connection, remote failure);
                     the install url from known_marketplaces.json (git, github) or the marketplace clone's origin;
@@ -863,6 +867,66 @@ class TestWorkSidecarDelivery:
         _, new, kept = pusher.local_files()
         assert pusher.bring(new, kept) == 1
         assert said and "refused: the store gates fail" in said[0] and "session_id" in said[0], said
+
+
+class TestOpsSidecarDelivery:
+    """`apply --push` copies the ops sidecar with its run file, as it copies the work sidecar (`-k ops_sidecar`)."""
+
+    ROW = {"id": "11111111-1111-4111-8111-111111111111", "ts": "2026-09-28T11:00:00.000Z", "event": "land.step",
+           "item": "TK-aaaaaaaa", "step": "rebase", "exit": 0, "ms": 1200}
+
+    def pusher(self, tmp_path, row=None):
+        q = tmp_path / "querylog"
+        local = golden_store(q / "store")
+        ql_store.write_ops(local, RUN_ID, [row or self.ROW])
+        pusher = ql_deliver.Pusher(tmp_path, q, None, lambda *a: 0, print, cloud=False)
+
+        def gate(name, *args):  # the worktree's own querylog.py check, here this clone's
+            p = subprocess.run([sys.executable, QL, *args], capture_output=True, text=True, encoding="utf-8",
+                               timeout=120)
+            return p.returncode, p.stdout, p.stderr
+        pusher.tool = gate
+        return q, pusher
+
+    def test_ops_sidecar_is_copied_with_its_run_file(self, tmp_path):
+        q, pusher = self.pusher(tmp_path)
+        _, new, kept = pusher.local_files()
+        assert sorted(rel for _, rel, _ in new) == [f"2026-09/{RUN_ID}.jsonl", f"ops/2026-09/{RUN_ID}.jsonl"]
+        assert kept == []
+        assert pusher.brought(new) == ("1 run file(s), 1 ops sidecar(s)", [RUN_ID])
+        assert pusher.bring(new, kept) == 0
+        copied = pusher.wt / ql_deliver.STORE_REL / "ops" / "2026-09" / f"{RUN_ID}.jsonl"
+        assert copied.read_bytes() == ql_store.ops_files(q / "store")[0].read_bytes()
+
+    def test_ops_sidecar_already_on_main_is_not_copied_again(self, tmp_path):
+        q, pusher = self.pusher(tmp_path)
+        for rel in (f"2026-09/{RUN_ID}.jsonl", f"ops/2026-09/{RUN_ID}.jsonl"):
+            there = pusher.wt / ql_deliver.STORE_REL / rel
+            there.parent.mkdir(parents=True, exist_ok=True)
+            there.write_text("{}\n", encoding="utf-8")
+        _, new, _ = pusher.local_files()
+        assert new == []
+
+    def test_ops_sidecar_a_gate_failure_stops_the_copy_before_any_commit(self, tmp_path):
+        q, pusher = self.pusher(tmp_path)
+        path = ql_store.ops_files(q / "store")[0]
+        objs = jsonl(path)
+        objs[1]["step"] = "I could not rebase because main moved"  # planted: free text in a name
+        path.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
+        said = []
+        pusher.out = said.append
+        _, new, kept = pusher.local_files()
+        assert pusher.bring(new, kept) == 1
+        assert said and "refused: the store gates fail" in said[0] and "step of land.step" in said[0], said
+
+    def test_ops_sidecar_a_leak_scan_hit_stops_the_copy(self, tmp_path):
+        key = "glpat" + "-" + "a" * 20  # a valid name the leak scan flags, built here so this file holds none
+        q, pusher = self.pusher(tmp_path, {**self.ROW, "step": key})
+        said = []
+        pusher.out = said.append
+        _, new, kept = pusher.local_files()
+        assert pusher.bring(new, kept) == 1
+        assert said and "the leak scan flags an identifier (secret)" in said[0], said
 
 
 def learn_then_apply(wt, store, hold, out):
