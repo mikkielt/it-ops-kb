@@ -2,7 +2,7 @@
   "id": "ST-qc4vvlgs",
   "kind": "story",
   "title": "A navigation benchmark run keeps its raw claude stream-json beside the parsed row",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3siaqxdf",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/bench_lookup.py",
     "_tools/test_benchmarks.py"
   ],
-  "claimed_by": "seventh-w20"
+  "evidence": {
+    "commit": "bf81c3149cf3287cf4c48352579080b724da6b05",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "nav_run_keeps_raw_stdout"
+        ],
+        "exit": 0,
+        "sha256": "370c1e91f0f82c17"
+      }
+    ]
+  }
 }
