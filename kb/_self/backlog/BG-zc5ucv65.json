@@ -16,6 +16,15 @@
     ]
   },
   "repro_reason": "the defect is wrong text in a docstring: no behaviour runs differently, so the only proof is the text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(1 if 'no kb server' in open('_tools/kb_ask.py',encoding='utf-8').read() else 0)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kb_ask.py",
     "kb/_self/design.md"
