@@ -28,7 +28,9 @@
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py",
     "kb/_self/map.csv",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/bl_testkit.py",
+    "_tools/test_kb_leaks.py"
   ],
   "depends_on": [
     "TK-k5harfxm"
