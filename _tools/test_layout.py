@@ -179,3 +179,56 @@ def test_bl_split_testkit_planted_copy_of_a_builder_fails():
     tests = {"test_bl_planted.py": "import bl_testkit\nrepo, sprint = bl_testkit.repo, bl_testkit.sprint\ndef b(root, *a):\n    return 1\nPASS = 2\n_own = 3\n",
              "test_bl_clean.py": "from bl_testkit import b\ndef helper(root):\n    return b(root)\n"}
     assert own_copies(kit, tests) == [("test_bl_planted.py", "PASS"), ("test_bl_planted.py", "b")]
+
+
+BASE_CORE = {"Backlog", "Refused", "Rejected", "git", "run", "need", "say", "withhold", "commit_written", "commit_message",
+             "scope", "in_scope", "glob_re", "research_touches", "item_file", "REL_DIR", "KINDS", "ID_RE", "TEXT_MAX"}
+
+
+def tool_source(name):
+    return (Path(TOOLS) / name).read_text(encoding="utf-8")
+
+
+def imported_from(source, module):
+    """The names a module's source imports from `module`, at any depth."""
+    return {a.name for n in ast.walk(ast.parse(source)) if isinstance(n, ast.ImportFrom) and n.module == module
+            for a in n.names}
+
+
+def test_bl_split_base_holds_the_shared_ground_and_backlog_defines_none_of_it():
+    base = tool_source("bl_base.py")
+    assert BASE_CORE <= kit_names(base)
+    assert own_copies(base, {"backlog.py": tool_source("backlog.py")}) == [], "backlog.py imports it from bl_base"
+
+
+def test_bl_split_base_backlog_reexports_the_objects_not_copies():
+    import backlog
+    import bl_base
+    for name in ("Backlog", "Refused", "Rejected", "git", "run", "need", "say", "commit_written", "in_scope", "KINDS"):
+        assert getattr(backlog, name) is getattr(bl_base, name), name
+
+
+def test_bl_split_base_bl_intake_takes_its_ground_from_bl_base_and_never_backlog():
+    src = tool_source("bl_intake.py")
+    assert {"REL_DIR", "TEXT_MAX"} <= imported_from(src, "bl_base")
+    assert not imported_from(src, "backlog")
+    assert "TEXT_MAX" not in kit_names(src), "bl_intake.py holds a copy of a bl_base constant"
+
+
+def test_bl_split_base_imports_no_backlog_at_any_depth():
+    tree = tool_sources()
+    assert not [m for m, s in tree.items() if m.startswith("bl_") and imported_from(s, "backlog")]
+    assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names)
+                   for m, s in tree.items() if m.startswith("bl_") for n in ast.walk(ast.parse(s)))
+
+
+def test_bl_split_base_planted_failures_fail():
+    base = tool_source("bl_base.py")
+    # a name put back in backlog.py
+    for body in ("class Refused(Exception):\n    pass\n", "def git(root, *args):\n    return ''\n", "REL_DIR = 'x'\n"):
+        assert own_copies(base, {"backlog.py": body}) != [], body
+    # an import of backlog by a bl_ module, however deep
+    for body in ("import backlog\n", "from backlog import Refused\n", "def late():\n    from backlog import say\n"):
+        assert unexcused({"backlog": "", "bl_base": body}) == [("facade", "bl_base", "backlog", "backlog")], body
+    # a copy of a bl_base constant in bl_intake.py is seen
+    assert "TEXT_MAX" in kit_names("TEXT_MAX = 2000\n") and "TEXT_MAX" not in kit_names("from bl_base import TEXT_MAX\n")

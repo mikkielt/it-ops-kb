@@ -40,9 +40,9 @@ the part that does not touch the backlog's files:
   NETWORK_DETECTORS and `collect` runs it only when asked (`intake --network`); red-pipeline calls the same reader and
   candidate with its own `run`.
 
-This module imports no tool module but `kbpublic` (the integration remote's name) and, in the functions that read a
-pipeline, `ql_base` (the command runner) and `ql_deliver` (the forge calls), inside the function that needs them; it is
-below backlog.py, which passes its own `run` to the readers.
+This module imports no tool module but `bl_base` (the backlog's constants) and `kbpublic` (the integration remote's
+name) and, in the functions that read a pipeline, `ql_base` (the command runner) and `ql_deliver` (the forge calls),
+inside the function that needs them; it is below backlog.py, which passes its own `run` to the readers.
 """
 import atexit
 import datetime
@@ -59,6 +59,8 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from bl_base import REL_DIR, TEXT_MAX
+
 DETECTORS = {}  # name -> fn(root) -> iterable of Candidate; the registry
 NETWORK_DETECTORS = {"ci"}  # detectors that call the network: `collect` runs them only with network=True
 KINDS = ("bug", "story")
@@ -69,7 +71,6 @@ DETECTOR_LINK = "detector "  # the last link of an item intake files: `detector 
 STATUS_REPRO = ["python3", "_tools/backlog.py", "intake", "--status"]  # + the fingerprint: a filed bug's repro
 WHOLE_KEY = "open"  # the key of a detector that reports its whole finding set as one candidate (drift, trailers): its
 # fingerprint stays the same while the detector reports anything, whichever findings make up the set
-TEXT_MAX = 2000  # backlog.py's limit for one field's text; a candidate is cut to it
 
 
 @dataclass
@@ -228,7 +229,7 @@ def lines(c, filed=None):
 
 # ------------------------------------------------------------------ the drift detector
 
-BACKLOG_DIR = "kb/_self/backlog"  # backlog.py's REL_DIR: the item files, one `<id>.json` each
+BACKLOG_DIR = REL_DIR  # the item files, one `<id>.json` each
 DRIFT_HOURS = 24  # a doing item whose newest work commit is older than this drifted
 CHECK_TIMEOUT_S = 15  # one check run by the detector; a check that exceeds it is counted and says nothing
 DRIFT_BUDGET_S = 30  # all the checks of one scan; once spent, no further check starts and the rest are counted
