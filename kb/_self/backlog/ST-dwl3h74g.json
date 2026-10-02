@@ -2,7 +2,7 @@
   "id": "ST-dwl3h74g",
   "kind": "story",
   "title": "kblog.py proposes LOG rows from the ops store",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-auko2fyn",
   "sprint": "SP-parnkbr7",
   "priority": "P3",
@@ -77,5 +77,29 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "a7109ed338d6dedf12f1b7cf1b2b6d8ec4a6b098",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kblog_propose_from_ops"
+        ],
+        "exit": 0,
+        "sha256": "b779b178ba21c338"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kblog_propose_converges"
+        ],
+        "exit": 0,
+        "sha256": "766d58e6e48d0fce"
+      }
+    ]
+  }
 }
