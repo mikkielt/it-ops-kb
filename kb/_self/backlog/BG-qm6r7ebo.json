@@ -2,7 +2,7 @@
   "id": "BG-qm6r7ebo",
   "kind": "bug",
   "title": "A provisional gate of class secrets or push is answered by an agent with no class check, and --confirm without --by makes it the operator's",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,6 @@
     "_tools/test_backlog_authority_class.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "seventh-w34"
 }
