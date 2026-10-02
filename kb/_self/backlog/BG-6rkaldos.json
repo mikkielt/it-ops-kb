@@ -2,7 +2,7 @@
   "id": "BG-6rkaldos",
   "kind": "bug",
   "title": "kb_http read_chunked lets chunk framing grow without bound, so a 1-byte-chunk flood is read at about 31 times --max-body",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7irdeeel",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/test_kb_http.py",
     "kb/_self/design.md",
     "kb/_self/hosting.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
