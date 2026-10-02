@@ -682,6 +682,36 @@ def test_kb_http_chunked_body(guarded, port):
     assert wire(port, gz)[0][0] == 501
 
 
+def test_kb_http_chunk_extensions_capped(guarded, port):
+    """Every byte a chunked request makes the server read counts against --max-body (plus a small allowance), chunk
+    extensions and trailers included; the drain of a refused or 404 body is bounded the same way."""
+    import io
+    limit = 1 << 20
+    ext = b";" + b"x" * (60 << 10)
+    ext_body = b"".join(b"1" + ext + b"\r\nA\r\n" for _ in range(200)) + b"0\r\n\r\n"
+    trailers = b"0\r\n" + b"".join(b"X-T: " + b"y" * (60 << 10) + b"\r\n" for _ in range(99)) + b"\r\n"
+    for body in (ext_body, trailers):
+        h = object.__new__(kb_http.Handler)
+        h.rfile = io.BytesIO(body)
+        assert h.read_chunked(limit) is None
+        assert h.rfile.tell() <= limit + kb_http.CHUNK_SLACK + 1  # one byte read to see it is over
+        h.rfile = io.BytesIO(body)
+        assert h.read_chunked(kb_http.DRAIN) is None
+        assert h.rfile.tell() <= kb_http.DRAIN + kb_http.CHUNK_SLACK + 1
+    # framing within the allowance still passes
+    h = object.__new__(kb_http.Handler)
+    h.rfile = io.BytesIO(b"2;a=b\r\n{}\r\n0\r\nX: 1\r\n\r\n")
+    assert h.read_chunked(CAP) == b"{}"
+    # on the wire: long extensions past the cap are 413, and a 404 with the same body is answered then closed
+    long_ext = b"".join(b"1;" + b"x" * 4000 + b"\r\nA\r\n" for _ in range(8)) + b"0\r\n\r\n"
+    [(status, hdrs, raw)] = wire(guarded, chunked_post("/mcp", long_ext))
+    assert status == 413 and hdrs["connection"] == "close"
+    more = b"".join(b"1;" + b"x" * 4000 + b"\r\nA\r\n" for _ in range(40)) + b"0\r\n\r\n"  # past the drain bound
+    got = wire(port, chunked_post("/nope", more))
+    assert not got or (got[0][0] == 404 and got[0][1]["connection"] == "close"), got
+    assert wire(port, chunked_post("/mcp", chunks(json.dumps(PING).encode("utf-8"))))[0][0] == 200
+
+
 LOG_LINE = re.compile(r"kb_http: (GET|POST|DELETE|-) \d{3} \d+ms")
 SECRETS = ("203.0.113.7", "127.0.0.1", "pl-secret-question", "pl-secret-path", "HTTP/1.1")
 

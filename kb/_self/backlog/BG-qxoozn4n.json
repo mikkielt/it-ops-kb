@@ -2,7 +2,7 @@
   "id": "BG-qxoozn4n",
   "kind": "bug",
   "title": "kb_http read_chunked caps only chunk data at --max-body, so chunk extensions and trailers let one request make the server read far past the limit",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
@@ -33,5 +33,6 @@
     "kb/_self/hosting.md",
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
