@@ -27,6 +27,25 @@ PLUGIN_SKILLS = {os.path.basename(s.rstrip("/")) for s in json.load(open(os.path
                                                                         encoding="utf-8"))["skills"]}
 
 
+# an article line that points at a bullet "above" or "below" names the direction the bullet really lies in
+DIRECTED_REFS = {"kb/public/agents/codebase-mapping.md": [("the SDK-resolution bullet", "SDKs are resolved while the import is evaluated")]}
+
+
+def reference_direction_problems(text, refs):
+    """For each (reference phrase, start of the bullet it names): the lines that say the bullet is above or below it
+    where it lies the other way."""
+    lines = text.splitlines()
+    problems = []
+    for phrase, start in refs:
+        target = next((i for i, ln in enumerate(lines) if ln.startswith("- " + start)), None)
+        assert target is not None, f"no bullet starts with {start!r}"
+        for i, ln in enumerate(lines):
+            for m in re.finditer(re.escape(phrase) + r" (above|below)", ln):
+                if (m.group(1) == "above") != (target < i):
+                    problems.append(f"line {i + 1}: {phrase} {m.group(1)}, but the bullet is on line {target + 1}")
+    return problems
+
+
 def lint_errors():
     code, out = run(LINT)
     return {ln.strip() for ln in out.splitlines() if ln.startswith("ERROR")}
@@ -170,6 +189,18 @@ class TestToolChecks:
 
 
 class TestCohesion:
+    def test_kb_article_reference_direction(self):
+        for rel, refs in DIRECTED_REFS.items():
+            body = open(os.path.join(KB, rel), encoding="utf-8").read()
+            assert reference_direction_problems(body, refs) == [], rel
+
+    def test_kb_article_reference_direction_a_wrong_direction_fails(self):
+        refs = [("the SDK-resolution bullet", "SDKs are resolved while the import is evaluated")]
+        body = "- see the SDK-resolution bullet below\n- SDKs are resolved while the import is evaluated\n"
+        assert reference_direction_problems(body, refs) == []
+        assert len(reference_direction_problems(body.replace("bullet below", "bullet above"), refs)) == 1
+        assert len(reference_direction_problems("- SDKs are resolved while the import is evaluated\n- the SDK-resolution bullet below\n", refs)) == 1
+
     def test_session_start_names_the_focused_gate(self):
         """The cloud SessionStart notice states the gate as maintaining.md does (kbgit.py sync with tests.py --changed),
         not the old full gate run before every commit."""
