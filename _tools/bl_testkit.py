@@ -5,7 +5,9 @@ The tool and its Python checks: the paths (`TOOLS`, `TOOL`), checks that need no
 `argstr`). A throwaway repository and what drives it: `sh` (a git command), `land` (origin's main fetched at HEAD), `b`
 (a backlog.py run in the repository: exit code and output), `item`, `item_json` and `edit` (read and rewrite an item
 file in its canonical form), `commit`, the fixtures `repo` (a repository with one commit) and `sprint` (an approved,
-started sprint with a story, its task and a bug) and the autouse fixtures `no_git_location` and `gate_jobs`.
+started sprint with a story, its task and a bug) and the autouse fixtures `no_git_location` and `gate_jobs`. The
+story given touches of its own (`story_with_touches`) and its task done under its own id (`finish_task`) serve the
+tests of done and of the commit flag.
 
 This module never imports `backlog` (a `bl_` module's layer rule): `item` and `edit` use the backlog's directory and its
 canonical form through `bind(backlog)`, which each test file calls once after importing `backlog`.
@@ -93,6 +95,25 @@ def edit(root, iid, **kw):
 def commit(root, msg, work=None):
     sh(root, "git", "add", "-A")
     sh(root, "git", "commit", "-qm", msg, *(["-m", f"KB-Work: {work}"] if work else []))
+
+
+def story_with_touches(sprint):
+    """The fixture's story given touches of its own, as a story whose tasks carry its work has."""
+    repo, st = sprint["repo"], sprint["st"]
+    edit(repo, st, touches=["src/**"])
+    commit(repo, "story touches")
+    return repo, st, sprint["tk"]
+
+
+def finish_task(repo, tk):
+    """The task claimed, worked and done under its own KB-Work id; the story's id is on none of these commits."""
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    commit(repo, "claim", tk)
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    commit(repo, "write b", tk)
+    code, out = b(repo, "done", tk)
+    assert code == 0, out
+    commit(repo, "task done", tk)
 
 
 @pytest.fixture(autouse=True)

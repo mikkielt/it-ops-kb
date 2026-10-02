@@ -205,23 +205,24 @@ stored, and no part of readiness. An item without `knowledge` costs nothing: the
 Every line that names an item prints its id and its title together, except a title check found holding a piece of
 this host's computer or user name, which is withheld.
 """
-import argparse, copy, hashlib, json, os, re, shlex, shutil, subprocess, sys, threading
+import argparse, copy, json, os, re, shlex, subprocess, sys, threading
 from pathlib import Path
 
 import bl_check
 import bl_cli
 import bl_intake
+import bl_land
 import bl_plan
 from bl_base import (
-    Backlog, CHECK_TIMEOUT_S, COMMITS, ID_RE, IN_SPRINT, KINDS, OPEN, OUTPUT_ROOT, PRIORITIES,
+    Backlog, COMMITS, IN_SPRINT, KINDS, OPEN, OUTPUT_ROOT, PRIORITIES,
     REL_DIR, REVIEW_CHECKS, ROOT, Refused, Rejected, SEVERITIES, SIMILAR_MIN, SIMILAR_SHOWN,
     SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, TEXT_MAX, canonical, commit_written, git, glob_re, in_scope,
-    item_file, need, new_id, research_in_planned, run, say, scope, trailer_problem, withhold,
+    line, need, new_id, open_gates, research_in_planned, run, say, scope, trailer_problem, waits, withhold,
 )
 from bl_check import (  # the checks and the readers of knowledge: bl_check holds them, backlog.py's commands use them
-    HOST_BOUND_GATE, host_bound_accepted, is_test_run, knowledge_lines, noop_output, noop_warnings,
-    text_only_repro, trivial_command, validate,
+    knowledge_lines, noop_warnings, text_only_repro, validate,
 )
+from bl_land import run_check  # the runner of a check: bl_land holds it with done, which host-check and new's repro share
 from bl_base import RESEARCH_KINDS, research_touches  # noqa: F401 - kg_trailers reads them as backlog.NAME
 from bl_plan import (  # the plan rules and start: bl_plan holds them, backlog.py's commands use them
     has_scope, host_gates, stale_touches, start_approved, tracked_files, where_outside,
@@ -229,46 +230,6 @@ from bl_plan import (  # the plan rules and start: bl_plan holds them, backlog.p
 
 
 # ------------------------------------------------------------------ readiness
-
-def open_gates(it, kinds=("blocking",)):
-    return [g for g in it.get("gates", []) if g.get("kind") in kinds and "answer" not in g]
-
-
-def waits(bl, iid, any_sprint=False, by=None):
-    """Why an item cannot be worked on now ([] = ready): its status, sprint, dependencies, gates, trigger, children.
-    With `by`, a dependency that is `doing` and claimed by that session does not wait (`claim --by`: one session works
-    both items in order)."""
-    it = bl.items[iid]
-    out = []
-    if it.get("kind") in ("sprint", "epic"):
-        return ["not a work item"]
-    if it.get("status") not in ("todo", "doing"):
-        out.append(f"status {it.get('status')}")
-    sp = bl.sprint_of(iid)
-    if not any_sprint and (not sp or bl.items.get(sp, {}).get("status") != "active"):
-        out.append("not in an active sprint")
-    for i in [iid] + bl.ancestors(iid):  # an ancestor's gates, trigger and dependencies hold its descendants too
-        a = bl.items[i]
-        for g in open_gates(a):
-            out.append(f"gate {i}/{g['id']}: {g['question']}")
-        t = a.get("trigger")
-        if t and not t.get("fired"):
-            out.append(f"trigger on {bl.label(i)}: {t['when']}")
-        for d in a.get("depends_on", []):
-            dep = bl.items.get(d, {})
-            if dep.get("status") == "doing" and by is not None and dep.get("claimed_by") == by:
-                continue
-            if dep.get("status") != "done":
-                out.append(f"depends on {bl.label(d)}" + (f" (through {bl.label(i)})" if i != iid else ""))
-    if it.get("review"):
-        for s in bl.sprint_items(sp):
-            if s != iid and bl.items[s].get("kind") in IN_SPRINT and bl.items[s].get("status") not in ("done", "dropped"):
-                out.append(f"review waits on {bl.label(s)}")
-    open_children = [c for c in bl.children(iid) if bl.items[c].get("status") not in ("done", "dropped")]
-    if open_children:
-        out.append(f"{len(open_children)} open child item(s)")
-    return out
-
 
 def ready(bl, sprint=None, any_sprint=False):
     ids = [i for i in bl.items if not waits(bl, i, any_sprint)
@@ -302,93 +263,6 @@ def is_near(row):
 
 
 # ------------------------------------------------------------------ git and checks
-
-def item_commits(root, ids):
-    """{commit: [paths]} of the commits on HEAD whose KB-Work trailer names any of the ids, oldest first. Only work
-    counts: a commit that changes nothing but item files (a claim, a gate, a sprint's plan) is not the item's work."""
-    log = git(root, "log", "HEAD", "--reverse", "--no-merges",
-              "--format=%H%x00%(trailers:key=KB-Work,valueonly,separator=%x2C)%x1e")
-    out = {}
-    for rec in log.split("\x1e"):
-        sha, _, vals = rec.strip().partition("\x00")
-        if sha and set(ID_RE.findall(vals)) & set(ids):
-            paths = [p for p in git(root, "show", "--name-only", "--format=", sha).splitlines() if p]
-            if any(not item_file(p) for p in paths):
-                out[sha] = paths
-    return out
-
-
-def unlanded_code(root, ids):
-    """(short hashes, remote, owners) of the code-lane KB-Work commits on HEAD naming any of the ids that are not
-    ancestors of refs/remotes/<integration>/main as last fetched; the hashes are [] when all are, and ["(no such ref)"]
-    when the ref is missing and there is a code-lane commit. The owners are the ids the late commits name, first seen
-    first, for the code/<id> branches sync opened. Content-lane commits never count."""
-    import kblane, kbpublic
-    remote = kbpublic.integration_remote(root)
-    code = [sha for sha, paths in item_commits(root, ids).items()
-            if kblane.paths_lane(paths)[0] == kblane.CODE]
-    if not code:
-        return [], remote, []
-    ref = f"refs/remotes/{remote}/main"
-    if subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode:
-        return ["(no such ref)"], remote, []
-    late = [sha for sha in code
-            if subprocess.run(["git", "merge-base", "--is-ancestor", sha, ref], cwd=root,
-                              capture_output=True).returncode]
-    owners = []
-    for sha in late:
-        named = ID_RE.findall(git(root, "log", "-1", "--format=%(trailers:key=KB-Work,valueonly,separator=%x2C)", sha))
-        owners += [i for i in named if i in ids and i not in owners][:1]
-    return [sha[:10] for sha in late], remote, owners
-
-
-def blob_id(root, rev, path):
-    p = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{rev}:{path}"], cwd=root, capture_output=True,
-                       text=True, encoding="utf-8", errors="replace")
-    return p.stdout.strip() if p.returncode == 0 else None
-
-
-def out_of_scope(root, commits, globs):
-    """[(commit, path)] of the paths outside the globs that the item's commits changed and HEAD still has changed:
-    a later commit that restored a file (a revert) clears it."""
-    first = {}
-    for sha, paths in commits.items():
-        for p in paths:
-            if not in_scope(p, globs):
-                first.setdefault(p, sha)
-    return [(sha, p) for p, sha in first.items() if blob_id(root, f"{sha}^", p) != blob_id(root, "HEAD", p)]
-
-
-ANSI_RE = bl_intake.ANSI_RE
-
-
-def colourless_env():
-    """The environment with colour off: FORCE_COLOR (3 in a Claude Code background session) makes Python 3.13+
-    colour its tracebacks and 3.14 argparse its usage errors, which would hide a repro's own error from own_failure
-    and a check's output from its match."""
-    env = {k: v for k, v in os.environ.items() if k not in ("FORCE_COLOR", "PYTHON_COLORS", "CLICOLOR_FORCE")}
-    env["NO_COLOR"] = "1"
-    return env
-
-
-def run_check(root, c):
-    """Run one check, or a bug's repro, without a shell and with colour off; its output comes back with any colour
-    codes taken out. A check that names python3 or python runs with the interpreter running this tool: on a host
-    whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
-    argv = list(c["run"])
-    if argv and argv[0] in ("python3", "python"):
-        argv[0] = sys.executable
-    try:
-        p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           timeout=CHECK_TIMEOUT_S, env=colourless_env())
-        code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or ""))
-    except OSError as e:
-        code, out = None, f"cannot start: {e}"
-    except subprocess.TimeoutExpired as e:
-        code, out = None, str(e)
-    ok = code == c.get("exit", 0) and (not c.get("match") or re.search(c["match"], out, re.M) is not None)
-    return ok, code, out
-
 
 SYNTAX_ERROR = re.compile(r"(SyntaxError|IndentationError|TabError)\b")
 FRAME = re.compile(r'File "([^"]*)", line \d+')
@@ -535,12 +409,6 @@ def cmd_fmt(bl, a):
             n += 1
     say(f"fmt: rewrote {n}")
     return 0
-
-
-def line(bl, iid):
-    it = bl.items[iid]
-    extra = f" {it['severity']}" if it.get("severity") else ""
-    return f"{iid}  {it['kind']:<7} {it.get('status', ''):<7} {it.get('priority', ''):<2}{extra}  {it.get('title', '')}"
 
 
 def cmd_list(bl, a):
@@ -1073,388 +941,6 @@ def cmd_fire(bl, a):
     return 0
 
 
-def noop_proof(bl, iid, passed):
-    """done's rule for checks that passed ([(check, output)]) without doing their work: one that runs no test or tool
-    code is warned of; one whose output says it did nothing in this clone (noop_output) is warned of too, and refuses
-    done unless another passing check runs tests and did its work, or the operator accepted the host-bound proof
-    (gate HOST_BOUND_GATE answered accept or approve)."""
-    noops = []
-    for c, out in passed:
-        why = noop_output(out)
-        if why:
-            noops.append((c, why))
-        why = why or trivial_command(c["run"])
-        if why:
-            say(f"warning: {shlex.join(c['run'])} passed without doing its work in this clone: {why}")
-    proven = [c for c, out in passed if is_test_run(c["run"]) and not noop_output(out)]
-    if not noops or proven or host_bound_accepted(bl.items[iid]):
-        return
-    c, why = noops[0]
-    raise Refused(f"{bl.label(iid)} is not done: {shlex.join(c['run'])} passed without doing its work in this clone "
-                  f"({why}), and no check that runs tests proves the fix. Name one: backlog.py set {iid} --add "
-                  "--check 'python3 _tools/tests.py -k <the test that plants the defect>'; or ask the operator to "
-                  f"accept the host-bound proof: backlog.py gate add {iid} --id {HOST_BOUND_GATE} --question "
-                  "'Accept a proof that does nothing in this clone?' --option accept --option add-test "
-                  f"--recommendation add-test, answered with backlog.py answer {iid} {HOST_BOUND_GATE} --answer "
-                  "accept --by operator")
-
-
-def cmd_done(bl, a):
-    iid = need(bl, a.id)
-    it = bl.items[iid]
-    kind = it["kind"]
-    if kind == "sprint":
-        raise Refused("a sprint is closed with backlog.py close")
-    if kind == "epic":
-        problems = [f"open child {line(bl, c)}" for c in bl.children(iid)
-                    if bl.items[c].get("status") not in ("done", "dropped")]
-    else:
-        problems = [x for x in waits(bl, iid, any_sprint=True)
-                    if not x.startswith(("status doing", "not in an active sprint"))]
-    if it.get("status") not in ("todo", "doing", "draft" if kind == "epic" else "todo"):
-        problems.append(f"status {it.get('status')}")
-    if it.get("review"):
-        sp = bl.sprint_of(iid)
-        for s in bl.sprint_items(sp) + [sp]:
-            for g in bl.items[s].get("gates", []):
-                if g.get("by") == "agent":
-                    problems.append(f"provisional answer to confirm: {bl.label(s)} gate {g['id']}: {g['answer']}")
-    globs = scope(bl, iid)
-    if globs:
-        dirty = [ln[3:] for ln in git(bl.root, "status", "--porcelain").splitlines()
-                 if in_scope(ln[3:].strip('"'), globs) and not in_scope(ln[3:].strip('"'), ())]
-        if dirty:
-            problems.append("uncommitted changes in scope (checks run on HEAD): " + ", ".join(dirty[:5]))
-        family = [iid] + bl.descendants(iid)
-        if it.get("touches") and not item_commits(bl.root, [iid] + bl.descendants(iid)):
-            problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} or one of its descendants' ids "
-                            "and changes a file other than item files (git reads a trailer only in the message's last "
-                            "paragraph, with the others; a claim or planning commit is not the work)")
-        late, remote, owners = unlanded_code(bl.root, family)
-        if late == ["(no such ref)"]:
-            problems.append(f"code commits of the item, and refs/remotes/{remote}/main is not fetched: fetch {remote}, "
-                            "then run done again")
-        elif late:
-            branches = ", ".join("code/" + o for o in owners or [iid])
-            problems.append(f"code commit(s) {', '.join(late)} are not on {remote}/main: merge the merge request sync "
-                            f"opened for them (branch {branches}), fetch {remote} and run done again")
-        for sha, path in out_of_scope(bl.root, item_commits(bl.root, family), globs):
-            problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
-    if problems:
-        raise Refused(f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
-    checks = list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else [])
-    results, failed, passed = [], [], []
-    for c in checks:
-        ok, code, out = run_check(bl.root, c)
-        results.append({"run": c["run"], "exit": code, "sha256": hashlib.sha256(out.encode()).hexdigest()[:16]})
-        say(f"{'ok  ' if ok else 'FAIL'} exit={code} {shlex.join(c['run'])}")
-        if not ok:
-            failed.append((c, code, out))
-        else:
-            passed.append((c, out))
-    if failed:
-        for c, code, out in failed:
-            tail = "\n".join(out.strip().splitlines()[-8:])
-            say(f"--- {shlex.join(c['run'])} (want exit {c.get('exit', 0)}"
-                + (f", output matching {c['match']!r}" if c.get("match") else "") + f"):\n{tail}")
-        raise Refused(f"{bl.label(iid)} is not done: {len(failed)} check(s) failed")
-    noop_proof(bl, iid, passed)
-    if a.dry_run:
-        say(f"{bl.label(iid)} would be done")
-        return 0
-    head = git(bl.root, "rev-parse", "HEAD").strip()
-    it.update(status="done", evidence={"commit": head, "checks": results})
-    it.pop("claimed_by", None)
-    bl.save(it)
-    say(f"done {bl.label(iid)} at {head[:10]}" + ("" if a.commit else f"; commit this with the trailer KB-Work: {iid}"))
-    commit_written(bl, a, "done", iid)
-    return 0
-
-
-# land: the steps after a worker's branch comes back, each a command run from the clone's root with this interpreter
-LAND_HEAVY = (("stress_test.py", ["_tools/stress_test.py"]),  # run once, when the landing changes _tools/
-              ("rag.py eval", ["_tools/rag.py", "eval"]),
-              ("lint", [".claude/skills/kb-verify/lint.py"]))
-LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])
-LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
-
-
-def land_stop(step, why):
-    return Refused(f"land stopped at step {step}: {why}")
-
-
-def land_run(root, step, argv, whole=False):
-    """Run one landing step; its output (the tail of it, unless WHOLE or it failed) goes through say()."""
-    say(f"land: {step}")
-    try:
-        p = subprocess.run([sys.executable, *argv], cwd=root, capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", env=colourless_env())
-        code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or "")).rstrip()
-    except OSError as e:
-        code, out = None, f"cannot start: {e}"
-    lines = out.splitlines()
-    shown = lines if whole or code else lines[-LAND_TAIL:]
-    if shown:
-        say("\n".join(shown))
-    if code != 0:
-        raise land_stop(step, f"python3 {shlex.join(argv)} exited {code}")
-
-
-def land_git(root, step, *args):
-    p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
-    if p.returncode:
-        raise land_stop(step, f"git {' '.join(args)}: {(p.stderr or p.stdout).strip()}")
-    return p.stdout
-
-
-def has_ref(root, ref):
-    return subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode == 0
-
-
-def checked_out_elsewhere(root, branch):
-    """(path, lock reason or None) of another worktree that has BRANCH checked out, or None (git rebase cannot check
-    it out here). A locked worktree with no reason has the reason ""."""
-    here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
-    for block in git(root, "worktree", "list", "--porcelain").split("\n\n"):
-        lines = block.strip().splitlines()
-        if not lines or not lines[0].startswith("worktree ") or f"branch refs/heads/{branch}" not in lines:
-            continue
-        path = Path(lines[0][len("worktree "):]).resolve()
-        if path != here:
-            lock = next((ln[len("locked "):] for ln in lines if ln == "locked" or ln.startswith("locked ")), None)
-            return path, lock
-    return None
-
-
-# the lock Claude Code puts on a subagent's worktree, which outlives the agent when it left background work running
-WORKER_LOCK = "claude agent"
-WORKER_DIR = (".claude", "worktrees")  # under the clone's main checkout
-
-
-def live_processes(path):
-    """([(pid, command)], None) of the processes whose working directory is PATH or under it, or (None, why) when this
-    host gives no way to tell: Linux reads /proc/<pid>/cwd, other POSIX hosts (macOS) ask `lsof -d cwd` for every
-    process's working directory; Windows exposes no process's working directory to the standard library, so it is
-    never checked there. Never signals a process."""
-    target = os.path.realpath(path)
-
-    def inside(cwd):
-        return cwd == target or cwd.startswith(target.rstrip(os.sep) + os.sep)
-
-    if os.name == "nt":
-        return None, "Windows does not expose a process's working directory"
-    proc = Path("/proc")
-    if (proc / "self" / "cwd").exists():
-        out = []
-        for d in proc.iterdir():
-            if not d.name.isdigit():
-                continue
-            try:
-                cwd = os.readlink(d / "cwd")
-                comm = (d / "comm").read_text(encoding="utf-8", errors="replace").strip()
-            except OSError:  # gone, or another user's
-                continue
-            if inside(cwd):
-                out.append((int(d.name), comm))
-        return sorted(out), None
-    lsof = shutil.which("lsof")
-    if not lsof:
-        return None, "no /proc and no lsof on this host"
-    try:
-        p = subprocess.run([lsof, "-n", "-P", "-w", "-d", "cwd", "-Fpcn"], capture_output=True, text=True,
-                           encoding="utf-8", errors="replace", timeout=30)
-    except (OSError, subprocess.SubprocessError) as e:
-        return None, f"lsof failed: {e}"
-    out, pid, comm, seen = [], None, "", False
-    for ln in p.stdout.splitlines():
-        if ln.startswith("p") and ln[1:].isdigit():
-            pid, comm, seen = int(ln[1:]), "", True
-        elif ln.startswith("c"):
-            comm = ln[1:]
-        elif ln.startswith("n") and pid is not None and inside(ln[1:]):
-            out.append((pid, comm))
-    if not seen:  # lsof lists at least itself: nothing read means it could not look
-        return None, f"lsof listed no process (exit {p.returncode})"
-    return sorted(set(out)), None
-
-
-def release_worker_worktree(root, path, lock):
-    """Remove the finished worker's worktree PATH that holds the branch land needs: unlocked, then `git worktree
-    remove` (never --force). Only a worktree under the clone's .claude/worktrees/ whose lock reason starts with
-    WORKER_LOCK and that has no uncommitted changes. Returns None once it is removed, else why it was left as it was
-    (a remove that fails puts the lock back)."""
-    def run_git(*args, cwd=root):
-        p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")
-        return p.returncode, (p.stdout if not p.returncode else (p.stderr or p.stdout)).strip()
-
-    if lock is None:
-        return "it is not locked"
-    if not lock.startswith(WORKER_LOCK):
-        return f"it is locked ({lock or 'no reason given'}), not by a Claude Code agent"
-    common = (Path(root) / git(root, "rev-parse", "--git-common-dir").strip()).resolve()
-    if path.parent != common.parent.joinpath(*WORKER_DIR).resolve():
-        return f"it is locked ({lock}) but not under {'/'.join(WORKER_DIR)}/ of the clone"
-    code, out = run_git("status", "--porcelain", cwd=path)
-    if code or out:
-        return (f"it is locked ({lock}) and has uncommitted changes: commit or discard them there, then "
-                f"git worktree unlock and git worktree remove it")
-    procs, unchecked = live_processes(path)
-    if procs:  # the worker left background work running there: removing the worktree would pull it from under it
-        named = ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
-        return (f"it is locked ({lock}) and a process still runs there: {named}; end it (the worker ends every "
-                f"background command and monitor it started), then run land again")
-    if unchecked:
-        say(f"land: could not check {path} for live processes ({unchecked}); removing it as a clean worker's")
-    code, out = run_git("worktree", "unlock", str(path))
-    if code:
-        return f"git worktree unlock: {out}"
-    code, out = run_git("worktree", "remove", str(path))
-    if code:
-        run_git("worktree", "lock", "--reason", lock, str(path))
-        return f"git worktree remove: {out}"
-    say(f"land: removed the finished worker's worktree {path} (unlocked; its lock was: {lock})")
-    return None
-
-
-# head pipeline states after which GitLab's auto-merge ("merge when the pipeline succeeds") never fires
-STUCK_PIPELINES = ("skipped",)
-
-
-def mr_stuck(mr):
-    """True for a GitLab merge request, as the single-request API (`projects/:id/merge_requests/:iid`) answers it,
-    that is open, mergeable (`detailed_merge_status` mergeable; `merge_status` can_be_merged on a GitLab without the
-    detailed field), set to auto-merge, and whose head pipeline ended in a state in STUCK_PIPELINES: auto-merge waits
-    for a pipeline to succeed, which a skipped one never does, so the request sits until someone merges it."""
-    if not isinstance(mr, dict):
-        return False
-    pipe = mr.get("head_pipeline") if isinstance(mr.get("head_pipeline"), dict) else {}
-    detailed = mr.get("detailed_merge_status")
-    mergeable = detailed == "mergeable" if detailed is not None else mr.get("merge_status") == "can_be_merged"
-    return (mr.get("state") == "opened" and mr.get("merge_when_pipeline_succeeds") is True and mergeable
-            and pipe.get("status") in STUCK_PIPELINES)
-
-
-def stuck_merge_request(root, remote, branch):
-    """The line land adds while it waits for the merge request of BRANCH: when an open request of BRANCH into main on
-    REMOTE's GitLab is stuck (`mr_stuck`), it names the request and the command that merges it. None when no request
-    is stuck, and also, saying nothing, when it cannot tell: a remote that is a local path, a forge that is not GitLab,
-    glab not signed in, a failed or unreadable call."""
-    import urllib.parse
-    from ql_deliver import forge_list, origin_forge
-    code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
-    url = (url or "").strip()
-    if code or not url or url.lower().startswith("file:") or Path(url).exists():
-        return None  # a local remote names no forge
-    forge, host, project = origin_forge(url)
-    if forge != "gitlab":
-        return None
-    quoted = urllib.parse.quote(project, safe="")
-    listed, _, _ = forge_list(url, run, None, lambda p: (
-        f"projects/{p}/merge_requests?state=opened&source_branch={urllib.parse.quote(branch, safe='')}"
-        f"&target_branch=main&per_page=20"))
-    for summary in listed or []:
-        iid = summary.get("iid") if isinstance(summary, dict) else None
-        if not isinstance(iid, int):
-            continue
-        code, out, _ = run(["glab", "api", "--hostname", host, f"projects/{quoted}/merge_requests/{iid}"])
-        try:
-            mr = json.loads(out) if code == 0 else None
-        except ValueError:
-            mr = None
-        if mr_stuck(mr):
-            status = mr["head_pipeline"].get("status")
-            return (f"land: merge request !{iid} ({mr.get('web_url') or branch}) is mergeable and set to auto-merge, "
-                    f"but its pipeline was {status}, so auto-merge will not fire: merge it with "
-                    f"glab mr merge {iid} --auto-merge=false --yes -R https://{host}/{project}")
-    return None
-
-
-def cmd_land(bl, a):
-    """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
-    heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the heavy checks, sync
-    --push (a code/<id> merge request; main does not move), and a re-run once it has merged finishes it as content
-    does. Stops at the first failing step, naming it. Every run and every stop ends on the branch (or the detached
-    commit) it started on: the rebase switches to the landed branch, and a claim --commit made after land must not
-    ride on it into its merge request."""
-    import kbpublic
-    iid = need(bl, a.id)
-    root = bl.root
-    remote = kbpublic.integration_remote(root)
-    branch = a.branch or f"work/{iid}"
-    upstream = f"refs/remotes/{remote}/main"
-    if git(root, "status", "--porcelain").strip():
-        raise land_stop("clean tree", "uncommitted changes: commit or stash them first (git status --short)")
-    if not has_ref(root, f"refs/heads/{branch}"):
-        raise land_stop("branch", f"no local branch {branch} (--branch names another)")
-    other = checked_out_elsewhere(root, branch)
-    if other:  # a finished worker's worktree, clean and locked by Claude Code, is removed; any other refuses
-        why = release_worker_worktree(root, *other)
-        if why:
-            raise land_stop("branch", f"{branch} is checked out in the worktree {other[0]} and {why}: land it from "
-                                      "there, or remove that worktree first")
-    start = git(root, "rev-parse", "HEAD").strip()
-    start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
-                               encoding="utf-8", errors="replace").stdout.strip()
-    try:
-        say(f"land: fetch {remote} main")
-        land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
-        say(f"land: rebase {branch} on {remote}/main")
-        p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace")
-        if p.returncode:
-            subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
-            raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "
-                                      f"changed): rebase it by hand, then run land again\n"
-                                      f"{(p.stderr or p.stdout).strip()}")
-        bl = Backlog(root)  # the item files as the rebased branch has them
-        need(bl, iid)
-        family = [iid] + bl.descendants(iid)
-        late, _, owners = unlanded_code(root, family)
-        if late == ["(no such ref)"]:
-            raise land_stop("fetch", f"{upstream} does not exist after the fetch")
-        if late:
-            import kg_lane  # the branch sync --push opens for this range, named by the one helper sync uses
-            _, code_branch = kg_lane.lane_plan(str(root), upstream, "HEAD")
-            code_branch = code_branch or "code/" + (owners[0] if owners else iid)  # git failed: the item's own id
-            tracking = f"refs/remotes/{remote}/{code_branch}"
-            fetched = subprocess.run(["git", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}"],
-                                     cwd=root, capture_output=True).returncode == 0
-            if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
-                say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
-                    f"pushed with this content): merge it, then run backlog.py land {iid} again")
-                stuck = stuck_merge_request(root, remote, code_branch)
-                if stuck:
-                    say(stuck)
-                return 0
-        if not late:
-            if bl.items[iid].get("status") == "done":
-                say(f"land: done: {bl.label(iid)} is done already")
-            else:
-                say("land: done --commit")
-                try:
-                    cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer))
-                except Refused as e:
-                    raise land_stop("done", str(e)) from None
-        changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
-        if any(p.startswith("_tools/") for p in changed):
-            for step, argv in LAND_HEAVY:
-                land_run(root, step, argv)
-        land_run(root, *LAND_SYNC, whole=True)
-        if late:
-            say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
-                f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
-        else:
-            say(f"land: {bl.label(iid)} landed")
-        return 0
-    finally:  # back to where land started, whatever happened after the rebase switched to BRANCH
-        back = (["switch", "-q", start_ref[len("refs/heads/"):]] if start_ref.startswith("refs/heads/")
-                else ["switch", "-q", "--detach", start])
-        p = subprocess.run(["git", *back], cwd=root, capture_output=True, text=True, encoding="utf-8",
-                           errors="replace")
-        if p.returncode:
-            say(f"land: could not return to {start_ref or start[:10]}: {(p.stderr or p.stdout).strip()}")
-
-
 def cmd_drop(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -1484,77 +970,6 @@ def cmd_drop(bl, a):
     it.pop("claimed_by", None)
     bl.save(it)
     say(f"dropped {bl.label(iid)}: {a.why}")
-    return 0
-
-
-def summary_key(bl, iid):
-    """Tree order: each item under its parent, the tops (epics, then the sprint's stories and bugs) in work order."""
-    return [bl.order_key(x) for x in reversed([iid] + bl.ancestors(iid))]
-
-
-def summary_line(bl, iid, gone):
-    """One commit-body line for an item close deletes: its id, title, kind, status and the commit done recorded."""
-    it = bl.items[iid]
-    depth = sum(1 for p in bl.ancestors(iid) if p in gone)
-    ev = (it.get("evidence") or {}).get("commit") if isinstance(it.get("evidence"), dict) else None
-    at = f" at {ev[:10]}" if ev else ", no evidence commit"
-    return f"{'  ' * depth}- {bl.label(iid)} ({it.get('kind', '')}): {it.get('status', '')}{at}"
-
-
-def cmd_close(bl, a):
-    if a.summary and a.commit:
-        raise Refused("close --summary only prints and commits nothing: run close --commit without --summary")
-    sid = need(bl, a.sprint)
-    items = bl.sprint_items(sid)
-    left = [i for i in items if bl.items[i].get("status") not in ("done", "dropped")]
-    if left:
-        raise Refused(f"{bl.label(sid)} is not finished:\n  " + "\n  ".join(line(bl, i) for i in left))
-    gone = set(items)
-    epics = {p for i in items for p in bl.ancestors(i) if bl.items[p].get("kind") == "epic"}
-    for e in epics:
-        rest = [c for c in bl.descendants(e) if c not in gone]
-        if bl.items[e].get("status") == "done" and not rest:
-            gone.add(e)
-    summary = [f"delivered by {bl.label(sid)}:"] + [summary_line(bl, i, gone)
-                                                  for i in sorted(gone, key=lambda i: summary_key(bl, i))]
-    if a.summary:  # the runbook prints the list, writes the retrospective, then closes: --summary changes nothing
-        for x in summary:
-            say(x)
-        return 0
-    title = bl.items[sid].get("title", "")
-    for i in gone:
-        say(f"deleted {line(bl, i)}")
-    # a remaining item's relates_to is information only, and a depends_on on a deleted item that is not dropped is
-    # satisfied (close refuses while anything is open): drop those ids, or check fails on dangling links and horizon
-    # counts the item as waiting outside its sprint. A dependency on a dropped item stays for check to report.
-    dead = gone | {sid}
-    for i, it in sorted(bl.items.items()):
-        if i in dead:
-            continue
-        cut = []
-        for f in ("relates_to", "depends_on"):
-            ids = it.get(f)
-            if not isinstance(ids, list):
-                continue
-            off = [r for r in ids if r in dead and (f == "relates_to" or bl.items[r].get("status") != "dropped")]
-            if not off:
-                continue
-            keep = [r for r in ids if r not in off]
-            if keep:
-                it[f] = keep
-            else:
-                it.pop(f)
-            cut.append(f"{f} {', '.join(off)}")
-        if cut:
-            bl.save(it)
-            say(f"dropped {'; '.join(cut)} from {bl.label(i)}")
-    for i in gone:
-        bl.delete(i)
-    label = bl.label(sid)
-    bl.delete(sid)
-    say(f"closed {label}; its items stay in git history (git log --grep 'KB-Work: <id>')")
-    # the body is the summary: the retrospective's findings, written by hand, go in with git commit --amend
-    commit_written(bl, a, "close", sid, body="\n".join(summary), title=title)
     return 0
 
 
@@ -2050,18 +1465,6 @@ def args_fire(p):
     p.add_argument("id")
 
 
-def args_done(p):
-    p.add_argument("id")
-    p.add_argument("--dry-run", action="store_true")
-
-
-def args_land(p):
-    p.add_argument("id")
-    p.add_argument("--branch", help="the local branch to land (default work/ID)")
-    p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
-                   help="a trailer of the session's own for the done --commit commit (repeatable)")
-
-
 def args_drop(p):
     p.add_argument("id")
     p.add_argument("--why", required=True)
@@ -2069,13 +1472,6 @@ def args_drop(p):
 
 def args_host_check(p):
     p.add_argument("sprint")
-
-
-def args_close(p):
-    p.add_argument("sprint")
-    p.add_argument("--summary", action="store_true",
-                   help="only print each item close would delete with its status and evidence commit (the close "
-                        "commit's body); changes nothing")
 
 
 def args_horizon(p):
@@ -2127,12 +1523,12 @@ bl_cli.register("move", cmd_move, args_move)
 bl_cli.register("reopen", cmd_reopen, args_reopen)
 bl_cli.register("gate", cmd_gate, args_gate)
 bl_cli.register("fire", cmd_fire, args_fire)
-bl_cli.register("done", cmd_done, args_done)
-bl_cli.register("land", cmd_land, args_land)
+bl_cli.register("done", bl_land.cmd_done, bl_land.args_done)
+bl_cli.register("land", bl_land.cmd_land, bl_land.args_land)
 bl_cli.register("drop", cmd_drop, args_drop)
 bl_cli.register("start", bl_plan.cmd_start, bl_plan.args_start)
 bl_cli.register("host-check", cmd_host_check, args_host_check)
-bl_cli.register("close", cmd_close, args_close)
+bl_cli.register("close", bl_land.cmd_close, bl_land.args_close)
 bl_cli.register("horizon", cmd_horizon, args_horizon)
 bl_cli.register("goal", cmd_goal, args_goal)
 bl_cli.register("referrers", cmd_referrers, args_referrers)
