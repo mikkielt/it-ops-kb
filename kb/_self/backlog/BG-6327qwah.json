@@ -2,7 +2,7 @@
   "id": "BG-6327qwah",
   "kind": "bug",
   "title": "ST-ecacczzu rests on a research field that the dropped ST-wgymzw72 would have added",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,5 @@
     "kb/_self/backlog/ST-ecacczzu.json",
     "kb/_self/backlog/TK-nb6gbc3x.json"
   ],
-  "notes": "ST-nesccqgl closed with SP-3brmvlnh, so its relates_to is out of scope."
+  "notes": "ST-nesccqgl closed with SP-3brmvlnh, so its relates_to is out of scope. Dropped: moot: ST-ecacczzu and TK-nb6gbc3x, the two items whose text it corrects, landed and are deleted at SP-fvztfmtm's close; cost --research selects by gap links, so no item names the missing research field any more"
 }
