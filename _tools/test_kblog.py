@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""kblog.py: record, confirm, invalidate, sweep and list over LOG rows, in a small repository of its own.
+"""kblog.py: record, confirm, invalidate, sweep, list and propose over LOG rows, in a small repository of its own.
 
 The repository is the one test_kbdecide.py builds (a public root, an internal root `team` and kb/_self) with kblog.py
 and the store it shares with kbdecide.py. Every command runs as a process; every success is followed by check.py over
 the whole repository, and every refusal plants the failure it names and finds every log and decision file as it was.
 """
-import shutil
+import json, shutil
 from pathlib import Path
 
 import pytest
@@ -27,7 +27,8 @@ def template(tmp_path_factory):
     """The repository every test starts from."""
     repo = tmp_path_factory.mktemp("kblog") / "repo"
     (repo / "_tools").mkdir(parents=True)
-    for name in ("kbdecide.py", "kblog.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py"):
+    for name in ("kbdecide.py", "kblog.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py", "ql_base.py", "ql_capture.py",
+                 "ql_store.py"):
         shutil.copy(TOOLS / name, repo / "_tools" / name)
     make_root(repo / "kb" / "public", "public", "S", "public")
     make_root(repo / "kb" / "team", "team", "T", "internal")
@@ -389,4 +390,142 @@ def test_kblog_sweep_invalidates_with_context_an_item_deleted_at_close_by_its_la
     code, out = swept(repo)
     assert code == 0 and "invalidated=1" in out, out
     assert invalidated(repo, dropped) == "item:TK-closedrp dropped" and repo.logrow(done)["status"] == "proposed"
+    repo.check()
+
+
+# ---- propose: aggregates of the ops sidecar as proposed rows, once
+
+RUN_A, RUN_B = "20261001T120000Z-0a1b2c3d", "20261002T120000Z-4e5f6a7b"
+ITEM = "TK-abcd2345"
+OPS_ID = "11111111-0000-4000-8000-0000000000{:02d}"
+
+
+def ops_store(repo, runs):
+    """Plant a query-log store whose ops sidecars hold `runs`, {run id: [(time, event, keys)]}, and return its path."""
+    store = repo.path / "ops-store"
+    n = 0
+    for run, lines in runs.items():
+        out = [{"run": run, "counts": {"rows": len(lines)}}]
+        for ts, event, keys in lines:
+            n += 1
+            out.append({"id": OPS_ID.format(n), "ts": ts, "event": event, **keys})
+        write(store / "ops" / f"{run[:4]}-{run[4:6]}" / f"{run}.jsonl", "".join(json.dumps(o) + "\n" for o in out))
+    return store
+
+
+def land(ts, exit, ms, item=ITEM):
+    return (ts, "land.step", {"item": item, "step": "rebase", "exit": exit, "ms": ms})
+
+
+def suite(ts, ms, exit=0):
+    return (ts, "test.run", {"mode": "fast", "ms": ms, "exit": exit})
+
+
+PLANTED = {
+    RUN_A: [land("2026-10-01T12:00:00Z", 0, 100), land("2026-10-01T12:00:05Z", 0, 300), land("2026-10-01T12:00:09Z", 1, 200),
+            suite("2026-10-01T12:01:00Z", 4000)],
+    RUN_B: [land("2026-10-02T09:00:00Z", 0, 400), suite("2026-10-02T09:05:00Z", 6000, 1)],
+}
+LAND_OBSERVATION = "ops land.step: 4 rows, 1 with a nonzero exit, ms median 250, range 100 to 400"
+
+
+def propose(repo, store, *args, store_name="public"):
+    code, out = repo.log("propose", "--root", store_name, "--store", str(store), *args)
+    assert code == 0, out
+    return out
+
+
+def test_kblog_propose_from_ops_derives_aggregates_with_runs_dates_and_context(repo):
+    store = ops_store(repo, PLANTED)
+    out = propose(repo, store, "--since", "2026-10-01")
+    (row,) = repo.logs()
+    assert row["observation"] == LAND_OBSERVATION and row["status"] == "proposed", row
+    assert (row["source_run_ids"], row["observed_from"], row["observed_to"], row["context"], row["links"]) == (
+        f"{RUN_A}; {RUN_B}", "2026-10-01", "2026-10-02", f"item:{ITEM}", "")
+    assert f"{row['id']}\tproposed\tpublic\titem:{ITEM}\t{LAND_OBSERVATION}" in out, out
+    assert "proposed=1 known=0 no-context=2 not-closed=0" in out, out  # the two test.run rows name no item
+    text = repo.logfile().read_text(encoding="utf-8")  # no raw event, id, time of day or step name
+    assert not any(x in text for x in (OPS_ID.format(1), "T12:", "rebase", "11111111")), text
+    repo.check()
+    assert repo.log("list", "--status", "proposed")[1].count(LAND_OBSERVATION) == 1
+
+
+def test_kblog_propose_from_ops_names_the_context_of_an_event_that_names_no_item(repo):
+    store = ops_store(repo, PLANTED)
+    propose(repo, store, "--since", "2026-10-01", "--context", "domain:ops")
+    by = {r["context"]: r for r in repo.logs()}
+    assert set(by) == {f"item:{ITEM}", "domain:ops"}
+    assert by["domain:ops"]["observation"] == "ops test.run: 2 rows, 1 with a nonzero exit, ms median 5000, range 4000 to 6000"
+    assert by["domain:ops"]["source_run_ids"] == f"{RUN_A}; {RUN_B}"
+    repo.check()
+    before = repo.snapshot()
+    for context, says in (("table:ops", "not kind:value references"), ("item:abc", "not a valid item reference"),
+                          ("article:ops/nope", "names no article ops/nope")):
+        refused(repo, "propose", "--root", "public", "--store", str(store), "--since", "2026-10-01", "--context", context, says=says)
+    assert repo.snapshot() == before
+
+
+def test_kblog_propose_from_ops_reads_the_days_asked_for_and_the_closed_rows_only(repo):
+    bad = ("2026-10-02T10:00:00Z", "land.step", {"item": ITEM, "step": "see jan.kowalski on PL-LT-00123", "exit": 0, "ms": 5})
+    store = ops_store(repo, {**PLANTED, "20261003T120000Z-aaaa1111": [bad, land("2026-10-03T08:00:00Z", 0, 900)]})
+    out = propose(repo, store, "--since", "2026-10-02", "--until", "2026-10-03")
+    (row,) = repo.logs()
+    assert row["observation"] == "ops land.step: 2 rows, 0 with a nonzero exit, ms median 650, range 400 to 900", row
+    assert (row["source_run_ids"], row["observed_from"], row["observed_to"]) == (f"{RUN_B}; 20261003T120000Z-aaaa1111", "2026-10-02", "2026-10-03")
+    assert "not-closed=1" in out and "jan.kowalski" not in repo.logfile().read_text(encoding="utf-8"), out
+    assert "proposed=0" in propose(repo, store, "--since", "2026-10-05")
+
+
+def test_kblog_propose_from_ops_never_activates_and_the_operator_confirms(repo):
+    store = ops_store(repo, PLANTED)
+    propose(repo, store, "--since", "2026-10-01")
+    lid = repo.logs()[0]["id"]
+    refused(repo, "confirm", lid, "--root", "public", "--by", "agent", says="only the operator")
+    assert repo.logrow(lid)["status"] == "proposed"
+    assert repo.log("confirm", lid, "--root", "public", "--by", "operator")[0] == 0
+    assert repo.logrow(lid)["status"] == "active"
+    repo.check()
+
+
+def test_kblog_propose_from_ops_refuses_what_it_cannot_read_and_writes_nothing_on_dry_run(repo):
+    store = ops_store(repo, PLANTED)
+    refused(repo, "propose", "--root", "public", "--store", str(repo.path / "nowhere"), "--since", DAY, says="no query-log store")
+    refused(repo, "propose", "--root", "public", "--store", str(store), "--since", "2026-13-01", says="is not YYYY-MM-DD")
+    refused(repo, "propose", "--root", "public", "--store", str(store), "--since", DAY, "--until", "2026-09-01", says="is before --since")
+    refused(repo, "propose", "--root", "nowhere", "--store", str(store), "--since", DAY, says="no root 'nowhere'")
+    out = propose(repo, store, "--since", DAY, "--dry-run")
+    assert LAND_OBSERVATION in out and out.endswith("dry-run\n") and not repo.logfile().exists(), out
+
+
+def test_kblog_propose_converges_a_second_run_proposes_nothing_new(repo):
+    store = ops_store(repo, PLANTED)
+    propose(repo, store, "--since", "2026-10-01", "--context", "domain:ops")
+    first = repo.logfile().read_bytes()
+    assert len(repo.logs()) == 2
+    out = propose(repo, store, "--since", "2026-10-01", "--context", "domain:ops")
+    assert "proposed=0 known=2" in out and repo.logfile().read_bytes() == first, out
+    # the operator's answer stays: a confirmed row and a withdrawn one are as known as a proposed one
+    ids = [r["id"] for r in repo.logs()]
+    assert repo.log("confirm", ids[0], "--root", "public", "--by", "operator")[0] == 0
+    assert repo.log("invalidate", ids[1], "--root", "public", "--reason", "not about this")[0] == 0
+    kept = repo.logfile().read_bytes()
+    assert "proposed=0 known=2" in propose(repo, store, "--since", "2026-10-01", "--context", "domain:ops")
+    assert repo.logfile().read_bytes() == kept
+    repo.check()
+
+
+def test_kblog_propose_converges_only_a_changed_aggregate_is_a_new_row(repo):
+    store = ops_store(repo, PLANTED)
+    propose(repo, store, "--since", "2026-10-01")
+    (old,) = repo.logs()
+    ops_store(repo, {**PLANTED, "20261004T120000Z-bbbb2222": [land("2026-10-04T08:00:00Z", 0, 50)]})
+    out = propose(repo, store, "--since", "2026-10-01")
+    assert "proposed=1 known=0" in out, out  # the same event over more runs is another row; the old one stays
+    new = [r for r in repo.logs() if r["id"] != old["id"]]
+    assert len(new) == 1 and new[0]["observation"].startswith("ops land.step: 5 rows") and new[0]["status"] == "proposed"
+    assert repo.logrow(old["id"]) == old
+    assert "proposed=0 known=1" in propose(repo, store, "--since", "2026-10-01")
+    # a row `record` wrote for the same aggregate is the same row
+    refused(repo, *record_args(new[0]["observation"], context=new[0]["context"], runs=new[0]["source_run_ids"],
+                               first=new[0]["observed_from"], last=new[0]["observed_to"]), says=f"{new[0]['id']} is already in")
     repo.check()
