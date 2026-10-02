@@ -2,7 +2,7 @@
   "id": "BG-lhpz2n7j",
   "kind": "bug",
   "title": "A CODE pointer now accepts scheme-less urls and prose such as and/or#x, untested",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
