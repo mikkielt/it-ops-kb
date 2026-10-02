@@ -11,7 +11,7 @@ qualified here as it is read. A prefix (`units`, `audit`, a pack's domain) is qu
 (`intune`: that domain in every root): in_prefix(), scope().
 
 Tag grammar. A tag is `[PART; PART ...]`; a PART is `KIND[/KIND] [from] [IDS] [NOTE]`:
-  KIND  DOC | CODE | DER | COMMUNITY | UNK | DECISION
+  KIND  DOC | CODE | DER | COMMUNITY | UNK | DECISION | LOG
   IDS   source ids (S123, S-k3f7q2zd) separated by commas or spaces
   NOTE  free text after `:`, ` - `, ` — ` or `,` (a derivation, a pointer to _gaps.md, ...)
 CODE is the implementation read at a pinned commit, not a documented contract: `[CODE S-id: path#symbol]` (or
@@ -27,6 +27,12 @@ the tag names none) and `part["ids"]` stays empty, so no tool reads a decision i
 Decisions are rows, not facts: decision_rows() reads every `_decisions.csv`; pack() and show_decisions() print the
 active and proposed ones beside the facts they are tied to (decision_link) or that their text answers, and
 decision_conflicts() lists active decisions that share a context (audit).
+LOG cites an observed signal of the root's `_logs.csv` (`[LOG L-k3f7q2zd]`, also after another tag: `[DOC S1; LOG L-...]`);
+the part carries it as `part["log"]` and `ids` stays empty. A LOG part is parsed (parse_tag) but is no evidence: tags_in()
+and so every unit's `tags` leave it out (EVIDENCE_KINDS are the kinds that count), log_ids_in() reads the ids a text cites,
+and a fact whose only tag is a LOG one is a fact with no tag. Logs are rows, not facts: log_rows() reads every `_logs.csv`;
+pack(), show_logs() and audit_logs() print the active ones beside the facts whose article they are about, labelled as
+observed signal and never counted in a pack's verdict, route or `check:` lines.
 
 Snippets. A bullet that starts `SNIPPET:` introduces the fenced code block right below it: `- SNIPPET: <what it does>;
 context: <versions, prerequisites>; checked: no|syntax|run [DER S1: ...]`. It is an ordinary fact unit (the pack
@@ -62,7 +68,8 @@ import kbcommon, kbid  # noqa: E402
 
 ROOT_LEDGERS = (kbcommon.ANSWERS, kbcommon.GAPS, kbcommon.CONFLICTS)
 
-KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK", "DECISION")
+EVIDENCE_KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK", "DECISION")  # the tag kinds a fact's `tags` holds and counts
+KINDS = EVIDENCE_KINDS + ("LOG",)  # every kind parse_tag knows: a LOG part is observed signal, never evidence
 _K = "|".join(KINDS)
 SKIP_DIRS = {"_tools", kbcommon.DATA_DIR, "_private", "_cache", "_census", "_self", "artifacts", kbcommon.SNAPSHOTS}
 TAG = re.compile(rf"\[(?:{_K})\b[^\]]*\]")
@@ -72,6 +79,9 @@ _PART = re.compile(rf"({_K})(?:/({_K}))?\b\s*(?:from\s+)?"
                    rf"((?:{kbid.ID_PATTERN})(?:[\s,]+(?:{kbid.ID_PATTERN})\b)*)?(.*)", re.S)  # every root's id prefix
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
 _DECISION_PART = re.compile(rf"DECISION\b\s*({kbcommon.DECISION_ID.pattern}\b)?(.*)", re.S)
+LOG_ID = re.compile(r"L-[a-z2-7]{8}")  # check.LOG_ID, which this module cannot import (a test holds them equal)
+LOG_FILE = "_logs.csv"  # check.LOGS, likewise
+_LOG_PART = re.compile(rf"LOG\b\s*({LOG_ID.pattern}\b)?(.*)", re.S)
 csv.field_size_limit(2**31 - 1)
 
 
@@ -87,6 +97,11 @@ def parse_tag(tag):
             parts.append({"kind": "DECISION", "ids": [], "decision": d.group(1) or "",
                           "note": d.group(2).strip().lstrip(":,—–- ").strip()})
             continue
+        g = _LOG_PART.match(seg)
+        if g:  # likewise an observed signal's id, not a source's
+            parts.append({"kind": "LOG", "ids": [], "log": g.group(1) or "",
+                          "note": g.group(2).strip().lstrip(":,—–- ").strip()})
+            continue
         m = _PART.match(seg)
         if not m:  # a `;` inside a note: belongs to the previous part
             if parts:
@@ -98,8 +113,14 @@ def parse_tag(tag):
 
 
 def tags_in(text):
-    """Every tag in a text as parsed parts, flattened."""
-    return [p for t in TAG.findall(text) for p in parse_tag(t)]
+    """Every evidence tag in a text as parsed parts, flattened: a LOG part is left out (log_ids_in), so no unit, count
+    or verdict reads an observed signal as evidence."""
+    return [p for t in TAG.findall(text) for p in parse_tag(t) if p["kind"] != "LOG"]
+
+
+def log_ids_in(text):
+    """The ids of the observed signals a text cites (`[LOG L-k3f7q2zd]`), in order, each once; '' ids left out."""
+    return list(dict.fromkeys(p["log"] for t in TAG.findall(text) for p in parse_tag(t) if p["kind"] == "LOG" and p["log"]))
 
 
 def kinds_of(parts):
@@ -467,7 +488,7 @@ def csv_units(rel, text):
             tags = tags_in(body)
             if not tags:
                 kind = next((cells[c].strip().upper() for c in ("tag", "evidence", "status_evidence")
-                             if cells.get(c, "").strip().upper() in KINDS), None)
+                             if cells.get(c, "").strip().upper() in EVIDENCE_KINDS), None)
                 ids = [i for k, v in cells.items() if "source" in k for i in ID.findall(v)]
                 if kind:
                     tags = [{"kind": kind, "ids": ids, "note": ""}]
@@ -611,7 +632,7 @@ def audit(prefix=None, status=None, root=None):
         counts = Counter(k for u in us for k in kinds_of(u["tags"]))
         row = {"path": rel, "topic": topic, "status": meta.get("status", ""), "priority": meta.get("priority", ""),
                "retrieved_utc": meta.get("retrieved_utc", ""), "facts": sum(1 for u in us if u["tags"]),
-               **{k: counts.get(k, 0) for k in KINDS}}
+               **{k: counts.get(k, 0) for k in EVIDENCE_KINDS}}
         for n, key in ((kbcommon.GAPS, "gaps"), (kbcommon.CONFLICTS, "conflicts")):
             row[key] = [e for e in ledgers[n] if topic in e["explicit"]]
             row[key + "_via_sources"] = [e for e in ledgers[n] if topic in e["via_sources"]]
@@ -629,6 +650,31 @@ DECISION_RANK = {"active": 0, "proposed": 1, "invalidated": 2}  # `superseded` i
 
 
 _DECISIONS = [None, []]  # [signature of the decision files, their rows]
+_LOGS = [None, []]  # [signature of the log files, their rows]
+
+
+def _ledger_stores(name):
+    """(root name, qualifier, file, label) of each `name` file a lookup reads: every served root's and, unless the
+    server is limited to named roots, kb/_self's."""
+    stores = [(r.name, r.name, os.path.join(r.path, name), kbcommon.qualify(r, name)) for r in kbcommon.roots()]
+    if not kbcommon.serving():
+        stores.append(("_self", "", os.path.join(SELF_DIR, name), "kb/_self/" + name))
+    return stores
+
+
+def _cached_rows(cache, name, required, make):
+    """The rows of every `name` file (_ledger_stores), read again when a file's time or size changes."""
+    stores = _ledger_stores(name)
+    sig = []
+    for _, _, full, _ in stores:
+        try:
+            st = os.stat(full)
+            sig.append((full, st.st_mtime_ns, st.st_size))
+        except OSError:
+            continue
+    if cache[0] != sig:
+        cache[:] = [sig, _read_rows(stores, required, make) if sig else []]
+    return cache[1]
 
 
 def decision_rows():
@@ -638,23 +684,13 @@ def decision_rows():
     with an article's or a domain's value qualified (`public/auth/kerberos`). Rows of every status; a file that cannot
     be read gives none (check.py reports it); [] for a kb that keeps no decision. Read again when a decision file's
     time or size changes, so a decision edit costs no index rebuild (these files are not in the pack index)."""
-    stores = [(r.name, r.name, os.path.join(r.path, kbcommon.DECISIONS), kbcommon.qualify(r, kbcommon.DECISIONS))
-              for r in kbcommon.roots()]
-    if not kbcommon.serving():
-        stores.append(("_self", "", os.path.join(SELF_DIR, kbcommon.DECISIONS), "kb/_self/" + kbcommon.DECISIONS))
-    sig = []
-    for _, _, full, _ in stores:
-        try:
-            st = os.stat(full)
-            sig.append((full, st.st_mtime_ns, st.st_size))
-        except OSError:
-            continue
-    if _DECISIONS[0] != sig:
-        _DECISIONS[:] = [sig, _decision_rows(stores) if sig else []]
-    return _DECISIONS[1]
+    return _cached_rows(_DECISIONS, kbcommon.DECISIONS, ("id", "text", "status"), lambda row, at: {
+        "id": row["id"], "text": " ".join((row.get("text") or "").split()), "status": row.get("status", ""),
+        "by": row.get("by", ""), "date": row.get("date", ""), "context": row.get("context", ""),
+        "reason": row.get("invalidated_reason", ""), **at})
 
 
-def _decision_rows(stores):
+def _read_rows(stores, required, make):
     out = []
     for name, prefix, full, label in stores:
         if not os.path.isfile(full):
@@ -664,7 +700,7 @@ def _decision_rows(stores):
                 rd = csv.reader(f)
                 header = next(rd, [])
                 last = rd.line_num
-                if not {"id", "text", "status"} <= set(header):
+                if not set(required) <= set(header):
                     continue
                 for cells in rd:
                     first, last = last + 1, rd.line_num
@@ -673,10 +709,7 @@ def _decision_rows(stores):
                         continue
                     refs = [(k, f"{prefix}/{v}" if prefix and k in ("article", "domain") else v)
                             for k, v in kbcommon.context_refs(row.get("context"))]
-                    out.append({"id": row["id"], "text": " ".join((row.get("text") or "").split()),
-                                "status": row.get("status", ""), "by": row.get("by", ""), "date": row.get("date", ""),
-                                "context": row.get("context", ""), "reason": row.get("invalidated_reason", ""),
-                                "root": name, "path": label, "line": first, "refs": refs})
+                    out.append(make(row, {"root": name, "path": label, "line": first, "refs": refs}))
         except (OSError, UnicodeDecodeError, csv.Error):
             continue
     return out
@@ -795,6 +828,76 @@ def decision_conflicts(prefix=None, root=None):
         for ref in dict.fromkeys(f"{k}:{v}" for k, v in d["refs"] if k):
             by[ref].append(d)
     return sorted(((ref, ds) for ref, ds in by.items() if len(ds) > 1), key=lambda x: x[0])
+
+
+# ---------------------------------------------------------------- observed signals (LOG lines beside a lookup's facts)
+
+LOG_LABEL = "observed signal (LOG, not a fact):"  # the line a block of LOG lines opens with
+MAX_LOGS = 2  # LOG lines one pack or show prints
+MAX_AUDIT_LOGS = 20  # LOG lines one audit prints
+LOG_CLIP = 200  # characters of an observation a line shows
+
+
+def log_rows():
+    """Every LOG row of the served roots' `_logs.csv` and, unless the server is limited to named roots, of kb/_self's,
+    as dicts like decision_rows(): `id, text` (the observation), `status`, `observed_from`, `observed_to`, `context`,
+    `reason`, `root`, `path`, `line` and `refs`. Rows of every status; [] for a kb that keeps none (a public root
+    holds no such file). Read again when a file's time or size changes."""
+    return _cached_rows(_LOGS, LOG_FILE, ("id", "observation", "status"), lambda row, at: {
+        "id": row["id"], "text": " ".join((row.get("observation") or "").split()), "status": row.get("status", ""),
+        "observed_from": row.get("observed_from", ""), "observed_to": row.get("observed_to", ""),
+        "context": row.get("context", ""), "reason": row.get("invalidated_reason", ""), **at})
+
+
+def log_line(r):
+    """`- PATH:LINE observed FROM to TO: <observation> [LOG id]`; PATH:LINE is the row, which `rag.py show` prints."""
+    return (f"- {r['path']}:{r['line']} observed {r['observed_from']} to {r['observed_to']}: "
+            f"{clip(r['text'], LOG_CLIP)} [LOG {r['id']}]")
+
+
+def _active_logs():
+    return [r for r in log_rows() if r["status"] == "active"]
+
+
+def _log_ties(us):
+    """(fact keys, cited source ids, cited LOG ids) of fact units, as _shown_ties does for decisions."""
+    srcs = {i for u in us for p in u["tags"] for i in p["ids"]}
+    cited = {i for u in us for i in log_ids_in(u["text"])}
+    keys = {fact_key(u["text"]) for u in us} if any(k == "fact" for r in log_rows() for k, _ in r["refs"]) else set()
+    return keys, srcs, cited
+
+
+def logs_for(arts, us):
+    """The active LOG rows a lookup prints beside the facts `us` of the qualified articles `arts`, newest first: the row's
+    context is a shown article (`article:`, or a `domain:` that holds one), a shown fact (`fact:`), a source a shown
+    fact cites, or a shown fact cites the row (`[LOG id]`). A proposed or an invalidated row, and one about an `item:`
+    alone, is never printed. A LOG line is context beside the facts, never an answer: it takes no part in a pack's
+    verdict, route or `check:` lines."""
+    rows = _active_logs()
+    if not rows:
+        return []
+    keys, srcs, cited = _log_ties(us)
+    tied = sorted((r for r in rows if decision_link(r, arts, keys, srcs, cited)), key=lambda r: r["id"])
+    return sorted(tied, key=lambda r: r["observed_to"], reverse=True)
+
+
+def show_logs(qpath, first, last):
+    """LOG lines for lines `first`..`last` of the kb file `qpath` (`rag.py show`, `kb_show`), as logs_for() ties them
+    to the article and the facts that start in that range; [] when none, or the file is no article or data file."""
+    if not _active_logs() or not qpath.endswith((".md", ".csv")):
+        return []
+    text = read(qpath)
+    if text is None:
+        return []
+    us = md_units(qpath, text) if qpath.endswith(".md") else csv_units(qpath, text)
+    return [log_line(r) for r in logs_for({qpath}, [u for u in us if first <= u["line"] <= last])[:MAX_LOGS]]
+
+
+def audit_logs(rows):
+    """LOG lines for the articles of audit() `rows`: the active rows whose `article:` is one of them or whose
+    `domain:` holds one, newest first, at most MAX_AUDIT_LOGS."""
+    arts = {r["path"] for r in rows}
+    return [log_line(r) for r in logs_for(arts, [])[:MAX_AUDIT_LOGS]] if arts else []
 
 
 # ---------------------------------------------------------------- pack (fact-level retrieval)
@@ -1420,7 +1523,12 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     <reason>`), counted inside `budget`. An active decision whose text holds 60% of the informative words and every
     name of the question makes the verdict `good` (its words leave `missing` and the route lines, and no `check:` line
     follows from the facts); a proposed or invalidated one never changes it. A kb with none prints what it always did,
-    byte for byte. fmt
+    byte for byte.
+    Observed signals: a kb that keeps `_logs.csv` rows adds, after the decisions, `observed signal (LOG, not a fact):`
+    and the active rows whose context is a printed article or fact (logs_for: at most MAX_LOGS lines, newest first, each
+    with the dates it covers), paid from what budget the facts leave, so a small budget drops them first. They are
+    computed after the verdict, the route and the `check:` lines and change none of them, nor any fact line; a `none`
+    that routes web prints none. A kb with none prints what it always did, byte for byte. fmt
     `concise` drops the article flags and the source url footer; footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
     or qualified `public/intune`) and `root` narrow the units (scope()); paths print qualified (`public/intune/x.md`)."""
     st = store(scope(domain, root))
@@ -1507,7 +1615,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     dused += 40 if dlines else 0  # the section's heading
     concise = fmt == "concise"
     url_cost = 0 if concise else 110  # a source footer line is about 110 characters
-    limit, used, groups, cited, paths = int(budget * 3.5), dused, [], [], []
+    limit, used, groups, cited, paths, printed = int(budget * 3.5), dused, [], [], [], []
     for art in order:
         items, picked = [], sorted(sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6],
                                    key=lambda x: x[1]["line"])
@@ -1522,6 +1630,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
                 used = limit
                 break
             items.append(line)
+            printed.append(u)
             used += cost
             cited += new_ids
         if items:
@@ -1595,6 +1704,18 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         out += ["", h] + items
     if dlines:
         out += ["", "## decisions"] + dlines
+    # observed signals (LOG rows) of the printed articles and facts, after everything above and out of its verdict: they
+    # take what budget the facts leave, so a small budget cuts them first
+    llines, lshown, lused = [], [], len(LOG_LABEL) + 1
+    for r in ([] if shut else logs_for(set(paths), printed)[:MAX_LOGS]):
+        line = log_line(r)
+        if used + lused + len(line) + 1 > limit:
+            break
+        llines.append(line)
+        lshown.append(r)
+        lused += len(line) + 1
+    if llines:
+        out += ["", LOG_LABEL] + llines
     if shut:
         srcs = []
     if srcs and footer and not concise:
@@ -1603,7 +1724,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             "unmatched": unmatched, "spread": spread, "route": route, "has": has, "lacks": lacks, "paths": paths,
             "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),
             "decisions": [{"id": d["id"], "status": d["status"], "label": decision_label(d), "path": d["path"],
-                           "line": d["line"], "text": d["text"], "answers": d["answers"]} for d in dec]}
+                           "line": d["line"], "text": d["text"], "answers": d["answers"]} for d in dec],
+            "logs": [{"id": r["id"], "path": r["path"], "line": r["line"], "observed_from": r["observed_from"],
+                      "observed_to": r["observed_to"], "text": r["text"]} for r in lshown]}
 
 
 # language and format names: a question asking for a topic the kb covers in one of them (T-SQL for sp_getapplock) is a

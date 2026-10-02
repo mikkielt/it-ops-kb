@@ -1232,3 +1232,179 @@ def test_decision_tag_in_csv_data_row_is_resolved(tmp_path):
                       ("[DECISION]", "has a DECISION tag with no decision id")):
         code, found = errors(tag)
         assert code == 1 and len(found) == 1 and rule in found[0] and "fixture/_retrieval/signals.csv:3" in found[0], (tag, found)
+
+
+# ---------------------------------------------------------------- LOG lines beside the facts of a lookup (log lookup)
+
+LOG_BLOCK = "observed signal (LOG, not a fact):"
+LOG_COLS = ["id", "observation", "source_run_ids", "observed_from", "observed_to", "context", "status", "invalidated_reason",
+            "links"]
+
+
+def log_lookup_set(root, rows):
+    """The root's _logs.csv holds these rows (None: no file; []: a header only)."""
+    path = Path(root) / "_logs.csv"
+    if rows is None:
+        path.unlink(missing_ok=True)
+    else:
+        kbcommon.write_csv(str(path), LOG_COLS, rows)
+
+
+def log_lookup_rows():
+    """Six rows: two active ones tied to the fixture article (by `article:` and by `domain:`), and four that no lookup
+    prints (proposed, invalidated, active with an `item:` only, active about another article)."""
+    return [log_row(0, observation="Median 12 pack calls a day over 9 days, 3 of them weak.", context=DECISION_CONTEXT,
+                    observed_to="2026-09-30"),
+            log_row(1, observation="Range 2 to 8 print lookups a day over 5 days.", context="domain:print",
+                    observed_from="2026-09-21", observed_to="2026-09-25"),
+            log_row(2, observation="Median 7 purge questions a day over 4 days.", context=DECISION_CONTEXT, status="proposed"),
+            log_row(3, observation="Median 6 spooler questions a day over 3 days.", context=DECISION_CONTEXT,
+                    status="invalidated", invalidated_reason="article:print/queues was rewritten"),
+            log_row(4, observation="Median 5 sprint calls a day over 2 days.", context="item:TK-abcd2345"),
+            log_row(5, observation="Median 4 other calls a day over 6 days.", context="article:print/other")]
+
+
+def log_lookup_ids(i):
+    return log_row(i)["id"]
+
+
+def log_lookup_split(text):
+    """(the text without the LOG block, the block's lines): the block is the label and the `- ` lines that follow it."""
+    found = re.search(r"\n\n?" + re.escape(LOG_BLOCK) + r"((?:\n- [^\n]*)+)", text)
+    return (text[:found.start()] + text[found.end():], found.group(1).split("\n")[1:]) if found else (text, [])
+
+
+LOG_QUESTION = "How long are finished print jobs kept on the spooler?"  # `good` from the fixture article's own facts
+QUOKKA = "What do the quokka notes say about Friday or Monday?"
+
+
+def test_lookup_shows_log_lines_in_pack_show_and_audit(tmp_path):
+    """The active LOG rows whose context is a shown article (its `article:`, a `domain:` that holds it) print after the
+    facts under `observed signal (LOG, not a fact):` with the dates they cover, in pack, show and audit; a proposed
+    row, an invalidated one, one tied to an item only and one about another article never print, and a root with no
+    `_logs.csv` (a header only, or only such rows) prints no block anywhere."""
+    root = decision_lookup_root(tmp_path)
+    cmds = {"pack": ("pack", LOG_QUESTION, "--root", "fixture"), "show": ("show", "fixture/print/queues.md:1", "-n", "40"),
+            "audit": ("audit", "--root", "fixture")}
+    plain = {name: decision_lookup_run(root, *cmd) for name, cmd in cmds.items()}
+    assert all(LOG_BLOCK not in out for out in plain.values()), plain
+    log_lookup_set(root, log_lookup_rows())
+    want = [f"- fixture/_logs.csv:2 observed 2026-09-21 to 2026-09-30: Median 12 pack calls a day over 9 days, 3 of them weak. "
+            f"[LOG {log_lookup_ids(0)}]",
+            f"- fixture/_logs.csv:3 observed 2026-09-21 to 2026-09-25: Range 2 to 8 print lookups a day over 5 days. "
+            f"[LOG {log_lookup_ids(1)}]"]
+    for name, cmd in cmds.items():
+        out = decision_lookup_run(root, *cmd)
+        rest, block = log_lookup_split(out)
+        assert block == want, (name, out)
+        assert rest == plain[name], (name, "only the block is added")
+        assert all(log_lookup_ids(i) not in out for i in (2, 3, 4, 5)), (name, out)
+    row = decision_lookup_run(root, "show", "fixture/_logs.csv:2", "-n", "1")  # the PATH:LINE a line names is the row
+    assert log_lookup_ids(0) in row and "Median 12 pack calls" in row, row
+    # planted: no file, a header only, or rows nothing prints give the plain output, so the block is the difference
+    for rows in (None, [], log_lookup_rows()[2:]):
+        log_lookup_set(root, rows)
+        for name, cmd in cmds.items():
+            assert decision_lookup_run(root, *cmd) == plain[name], (rows, name)
+
+
+def test_lookup_shows_log_lines_cited_fact_and_budget(tmp_path):
+    """A row tied by `fact:` (a printed fact's key) or cited by a printed fact's `[LOG id]` tag prints, one about an
+    `item:` alone does not; the block is capped (MAX_LOGS lines, the newest first) and paid from the pack's budget after
+    the facts, so a small budget drops it first while the facts print as they do with no log row."""
+    from test_kb_root import SID
+    pad = " ".join(["the long grey drawer beside the old cabinet in the back room"] * 5)  # facts long enough to fill a small budget
+    extra = (f"- Quokka notes are filed on Friday in {pad}. [DOC {SID}; LOG {log_lookup_ids(1)}]\n"
+             f"- Quokka notes are archived on Monday in {pad}. [DOC {SID}]\n")
+    root = decision_lookup_root(tmp_path, None, extra)
+    unit = next(u for u in kbfacts.md_units("fixture/print/queues.md", extra) if "archived on Monday" in u["text"])
+    by_fact = log_row(0, observation="Median 3 quokka questions a day over 5 days.", context=f"fact:{kbfacts.fact_key(unit['text'])}")
+    by_cite = log_row(1, observation="Median 2 filing questions a day over 4 days.", context="item:TK-abcd2345")
+    item_only = log_row(2, observation="Median 9 sprint calls a day over 4 days.", context="item:TK-abcd2345")
+    many = [log_row(i, observation=f"Median {i} spooler calls a day over {i} days.", context="domain:print",
+                    observed_to=f"2026-10-0{i}") for i in range(3, 7)]
+    plain = decision_lookup_pack(root, QUOKKA)
+    assert plain.startswith("coverage: good") and "Friday" in plain and "Monday" in plain, plain
+    log_lookup_set(root, [by_fact, by_cite, item_only])
+    rest, block = log_lookup_split(decision_lookup_pack(root, QUOKKA))
+    assert rest == plain and sorted(ln.rsplit("[LOG ", 1)[1] for ln in block) == [f"{log_lookup_ids(0)}]", f"{log_lookup_ids(1)}]"], block
+    # capped, newest first
+    log_lookup_set(root, [by_fact, by_cite] + many)
+    rest, block = log_lookup_split(decision_lookup_pack(root, QUOKKA))
+    assert rest == plain and len(block) == kbfacts.MAX_LOGS == 2 and log_lookup_ids(6) in block[0], block
+    # the budget: facts as without rows at every budget; the block is there at a large one and gone at a small one
+    shown = {}
+    for budget in ("200", "250", "300", "400", "1200"):
+        log_lookup_set(root, None)
+        bare = decision_lookup_pack(root, QUOKKA, "--budget", budget)
+        log_lookup_set(root, [by_fact, by_cite] + many)
+        rest, block = log_lookup_split(decision_lookup_pack(root, QUOKKA, "--budget", budget))
+        assert rest == bare, (budget, rest, bare)
+        shown[budget] = len(block)
+    assert shown["1200"] == 2 and shown["200"] < shown["1200"], shown
+    assert list(shown.values()) == sorted(shown.values()), f"a smaller budget never prints more LOG lines: {shown}"
+
+
+def test_log_not_counted_in_coverage(tmp_path):
+    """An active LOG row whose words would answer a question changes neither the coverage line, the route lines, the
+    `check:` lines nor the fact lines, whatever the verdict (good, weak, none); where the verdict is `none` and routes
+    to the web the pack prints no block. A decision with the same words does lift the verdict (planted), so the
+    comparison can fail."""
+    from test_kb_root import decision
+    root = decision_lookup_root(tmp_path)
+    questions = {"none": DECISION_QUESTION, "good": LOG_QUESTION,
+                 "weak": "How long are finished print jobs kept for approval of the queue pattern?"}
+    answering = [log_row(0, observation="Print owner approves an early purge of print queues in 3 of 5 cases.",
+                         context=DECISION_CONTEXT),
+                 log_row(1, observation="Finished print jobs are kept for approval of the queue pattern in 7 of 9 cases.",
+                         context="domain:print")]
+    seen = set()
+    for name, question in questions.items():
+        log_lookup_set(root, None)
+        base = decision_lookup_pack(root, question)
+        log_lookup_set(root, answering)
+        got = decision_lookup_pack(root, question)
+        seen.add(base.splitlines()[0].split(" ")[1])
+        rest, block = log_lookup_split(got)
+        assert rest == base, (name, got, base)  # every line of coverage, check:, route, kb has/lacks and the facts
+        assert (block != []) == (not base.startswith("coverage: none")), (name, got)
+        lines = ("coverage:", "check:", "route:", "kb has:", "kb lacks:")
+        assert [ln for ln in got.splitlines() if ln.startswith(lines)] == [ln for ln in base.splitlines() if ln.startswith(lines)]
+    assert seen == {"none", "good", "weak"}, f"the three verdicts are covered: {seen}"
+    # planted: an active decision with the same words does change the coverage
+    log_lookup_set(root, answering)
+    decision_lookup_set(root, [decision(0, text=DECISION_TEXT, context=DECISION_CONTEXT)])
+    assert decision_lookup_pack(root, DECISION_QUESTION).startswith("coverage: good (an active decision answers it;")
+
+
+def test_log_not_counted_in_coverage_tag_is_no_evidence(tmp_path):
+    """`LOG` is a kind kbfacts parses (the id is the part's `log`, never one of its source `ids`), and a `[LOG id]` tag
+    is no evidence: a fact carrying only it has no tag, one that also carries `[DOC id]` counts once as DOC, and
+    audit's counts and a pack's verdict are those of the fact without the LOG tag."""
+    import check
+    assert kbfacts.LOG_ID.pattern == check.LOG_ID.pattern and kbfacts.LOG_FILE == check.LOGS
+    assert "LOG" in kbfacts.KINDS and "LOG" not in kbfacts.EVIDENCE_KINDS
+    part = kbfacts.parse_tag("[LOG L-aaaaaaaa]")[0]
+    assert (part["kind"], part["ids"], part["log"], part["note"]) == ("LOG", [], "L-aaaaaaaa", "")
+    parts = kbfacts.parse_tag("[DOC S1208; LOG L-aaaaaaab: seen twice]")
+    assert [(p["kind"], p["ids"], p.get("log"), p["note"]) for p in parts] == [
+        ("DOC", ["S1208"], None, ""), ("LOG", [], "L-aaaaaaab", "seen twice")]
+    for bad in ("[LOG]", "[LOG L-AAAA]", "[LOG S1208]", "[LOG L-aaaaaaaa9]"):
+        assert kbfacts.parse_tag(bad)[0]["log"] == "", bad
+    only = kbfacts.md_units("fixture/print/queues.md", "- Quokka notes are filed on Friday. [LOG L-aaaaaaaa]\n")[0]
+    assert only["tags"] == [] and kbfacts.log_ids_in(only["text"]) == ["L-aaaaaaaa"], only
+    both = kbfacts.md_units("fixture/print/queues.md", "- Quokka notes are filed on Friday. [DOC S1208; LOG L-aaaaaaaa]\n")[0]
+    assert kbfacts.kinds_of(both["tags"]) == ["DOC"] and kbfacts.log_ids_in(both["text"]) == ["L-aaaaaaaa"], both
+    assert [p["kind"] for p in kbfacts.tags_in("[LOG L-aaaaaaaa] [DER S1: how]")] == ["DER"]
+    # the pack of a question only a LOG-tagged fact answers is no `good`; the same fact tagged DOC is (planted)
+    from test_kb_root import SID
+    question = "What do the quokka notes say about Friday?"
+    logged = decision_lookup_root(tmp_path / "a", None, f"- Quokka notes are filed on Friday. [LOG {log_lookup_ids(0)}]\n")
+    docs = decision_lookup_root(tmp_path / "b", None, f"- Quokka notes are filed on Friday. [DOC {SID}]\n")
+    got, want = decision_lookup_pack(logged, question), decision_lookup_pack(docs, question)
+    assert want.startswith("coverage: good") and not got.startswith("coverage: good"), (got, want)
+    # audit counts: the LOG tag adds no fact and no kind
+    both_root = decision_lookup_root(tmp_path / "c", None, f"- Quokka notes are filed on Friday. [DOC {SID}; LOG {log_lookup_ids(0)}]\n")
+    plain_root = decision_lookup_root(tmp_path / "d", None, f"- Quokka notes are filed on Friday. [DOC {SID}]\n")
+    rows = [decision_lookup_run(r, "audit", "--root", "fixture", "--format", "concise") for r in (both_root, plain_root)]
+    assert rows[0] == rows[1] and "LOG" not in rows[0], rows

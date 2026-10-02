@@ -49,6 +49,9 @@ test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.
 test_decision_lookup_mcp_*  kb_pack, kb_show and kb_audit with a root's decisions (`include_invalidated` on kb_pack and
                 kb_show): the labels, the coverage an active decision gives, the decisions of the lines kb_show prints, the
                 possible contradictions in kb_audit; planted: no decision file, and a string where the boolean true goes.
+test_lookup_shows_log_lines_mcp  kb_pack, kb_show and kb_audit print a root's active LOG rows (observed signal, with the dates
+                they cover) beside the facts of the matched article, none for a proposed, an invalidated or an unrelated
+                row, and the pack's coverage line is the one it has with no row; planted: no `_logs.csv`.
 test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only the named roots in every tool and
                 kb_status, every root without it, and an unknown or missing name refused at the start on stderr.
 test_status_*   how far a clone or an installed plugin is behind the kb it follows, from local refs: the update
@@ -1465,6 +1468,32 @@ def test_decision_lookup_mcp_pack_show_and_audit(tmp_path):
     assert "possible contradiction" not in out[2][1], out[2][1]
 
 
+def test_lookup_shows_log_lines_mcp(tmp_path):
+    """kb_pack, kb_show and kb_audit print the active LOG rows of the matched article under `observed signal (LOG, not a
+    fact):` with the dates they cover; a proposed, an invalidated and an unrelated row never print, and the pack's coverage
+    line and facts are those of the same call with no `_logs.csv`."""
+    from test_kb_lookup import (LOG_BLOCK, LOG_QUESTION, decision_lookup_root, log_lookup_ids, log_lookup_rows, log_lookup_set,
+                                log_lookup_split)
+    root = decision_lookup_root(tmp_path)
+    calls = [("kb_pack", {"question": LOG_QUESTION}), ("kb_show", {"path": "fixture/print/queues.md:1", "n": 40}),
+             ("kb_audit", {"prefix": "fixture"}), ("kb_pack", {"questions": [LOG_QUESTION, "What is the queue name pattern?"]})]
+    p, bare = _embedded(root, "--roots", "fixture", calls=calls)
+    assert p.returncode == 0 and not any(LOG_BLOCK in bare[i][1] for i in bare), (p.stderr, bare)
+    log_lookup_set(root, log_lookup_rows())
+    p, out = _embedded(root, "--roots", "fixture", calls=calls)
+    assert p.returncode == 0, p.stderr
+    for i in (1, 2, 3):
+        rest, block = log_lookup_split(out[i][1])
+        assert len(block) == 2 and f"[LOG {log_lookup_ids(0)}]" in block[0] and f"[LOG {log_lookup_ids(1)}]" in block[1], out[i][1]
+        assert "observed 2026-09-21 to 2026-09-30:" in block[0], block
+        assert all(log_lookup_ids(n) not in out[i][1] for n in (2, 3, 4, 5)), out[i][1]
+        assert rest == bare[i][1], (i, "only the block is added")
+    assert out[1][1].splitlines()[0] == bare[1][1].splitlines()[0] and out[1][1].startswith("coverage: good"), out[1][1]
+    batch = out[4][1]  # a part of a multi-part pack carries its own block, and the parts' verdict lines are the plain ones
+    assert batch.count(LOG_BLOCK) == 2 and [ln for ln in batch.splitlines() if ln.startswith("coverage:")] \
+        == [ln for ln in bare[4][1].splitlines() if ln.startswith("coverage:")], batch
+
+
 MSAL_TOPIC = "public/auth/msal-public-client"
 
 
@@ -1495,7 +1524,7 @@ def test_decision_tag_is_a_kb_facts_filter(monkeypatch):
     only the facts that cite a decision (planted: a DOC filter leaves that fact out)."""
     import kbfacts
     enum = next(t for t in kb_mcp.TOOL_LIST if t["name"] == "kb_facts")["inputSchema"]["properties"]["tags"]["items"]["enum"]
-    assert "DECISION" in enum and enum == list(kbfacts.KINDS)
+    assert "DECISION" in enum and enum == list(kbfacts.EVIDENCE_KINDS) and "LOG" not in enum
     article = ("- Finished jobs are kept 14 days. [DECISION D-k3f7q2zd]\n"
                "- The spooler purges nightly. [DOC S100]\n- Unconfirmed. [UNK]\n")
     monkeypatch.setattr(kbfacts, "units", lambda _scope: kbfacts.md_units("public/print/queues.md", article))
