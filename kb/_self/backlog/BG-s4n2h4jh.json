@@ -2,7 +2,7 @@
   "id": "BG-s4n2h4jh",
   "kind": "bug",
   "title": "sync's foreign-session refusal names no override for a session that no longer exists",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -21,5 +21,6 @@
     "_tools/test_sync.py",
     "kb/_self/git.md",
     "_tools/kg_sync.py"
-  ]
+  ],
+  "claimed_by": "seventh-w28"
 }
