@@ -1,0 +1,34 @@
+{
+  "id": "TK-ztjx5tik",
+  "kind": "task",
+  "title": "land appends a land.step row per step and a land.end row, and warns when the item has no work rows",
+  "status": "todo",
+  "parent": "ST-2fxtyrr5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_land.py: backlog.py land records through ql_capture.record('ops', event='land.step', item, step, exit, ms) one row per step it runs and a land.end row (item, exit, total ms, lane) at every end, stop or success; a land of an item whose branch commits left no work rows (ql_capture work rows for the item, claim/done) prints one 'warning: ...' line naming the item and the missing capture hook, exit unchanged; a capture failure never changes land's exit. Tests in the NEW file _tools/test_ops_land.py: -k ops_land_rows plants a land through the existing land test seams and reads the rows; -k land_warns_when_item_has_no_work_rows plants an item without work rows.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_land_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_warns_when_item_has_no_work_rows"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_ops_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
