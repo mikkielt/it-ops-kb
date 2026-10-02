@@ -2,7 +2,7 @@
   "id": "BG-3q6fviow",
   "kind": "bug",
   "title": "intake's drift rotation skips items forever when the tip moves by more than one commit between runs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
     "_tools/bl_intake.py",
     "_tools/test_intake.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
