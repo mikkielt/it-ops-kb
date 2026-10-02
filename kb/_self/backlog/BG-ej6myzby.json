@@ -1,0 +1,36 @@
+{
+  "id": "BG-ej6myzby",
+  "kind": "bug",
+  "title": "A git fetch that hangs inside land or sync holds kb-main.lock for an hour with every runner waiting behind it",
+  "status": "todo",
+  "sprint": "SP-4xngzagf",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Every git fetch and push that land and sync run while holding kb-main.lock has a bounded wait (a timeout, default 120 s, env KB_GIT_NETWORK_TIMEOUT), after which the git process group is ended, the lock is released and the run reports the timeout and the holder step; a test named git_fetch_timeout_releases_main_lock plants a fetch stub that sleeps and sees the lock released. Failure that happened: a git fetch over ssh hung for 51 minutes inside land TK-ftucvr5v and kb-main.lock stayed held, blocking every runner's push and land.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -rn KB_GIT_NETWORK_TIMEOUT _tools/kg_lock.py _tools/kg_sync.py _tools/bl_land.py | grep -q ."
+    ]
+  },
+  "repro_reason": "the defect needs a hung ssh to the remote, which a repro cannot plant without a network stub; the text match only shows the fetch timeout setting is absent",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "git_fetch_timeout_releases_main_lock"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_lock.py",
+    "_tools/kg_sync.py",
+    "_tools/bl_land.py",
+    "_tools/test_git_timeout.py",
+    "kb/_self/git.md"
+  ]
+}
