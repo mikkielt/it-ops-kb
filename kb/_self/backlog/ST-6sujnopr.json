@@ -68,8 +68,8 @@
       ],
       "recommendation": "30 days",
       "class": "design",
-      "answer": "30 days",
-      "by": "agent"
+      "answer": "14 days",
+      "by": "operator"
     },
     {
       "id": "class-derivation",
@@ -82,7 +82,7 @@
       "recommendation": "strictest of touches and question words, stored class a floor",
       "class": "design",
       "answer": "strictest of touches and question words, stored class a floor",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

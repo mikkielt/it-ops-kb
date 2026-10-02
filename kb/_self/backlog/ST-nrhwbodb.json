@@ -42,7 +42,7 @@
       "recommendation": "only a live holder of this clone (CLAUDE_PROJECT_DIR); any other holder, a gone pid or an error lets compaction run",
       "class": "agents-rule",
       "answer": "only a live holder of this clone (CLAUDE_PROJECT_DIR); any other holder, a gone pid or an error lets compaction run",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

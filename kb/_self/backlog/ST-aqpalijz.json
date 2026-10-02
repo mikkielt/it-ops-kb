@@ -74,7 +74,7 @@
       "recommendation": "a done.refused row naming check-failed whose ms reached CHECK_TIMEOUT_S",
       "class": "agents-rule",
       "answer": "a done.refused row naming check-failed whose ms reached CHECK_TIMEOUT_S",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "remedy-command",
@@ -87,7 +87,7 @@
       "recommendation": "stalled --took ID SIGNAL REMEDY",
       "class": "agents-rule",
       "answer": "stalled --took ID SIGNAL REMEDY",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "stall-limits",
@@ -100,7 +100,7 @@
       "recommendation": "claim without commit 1 h, returned worker 10 min, host lock 30 min, a repeat is the second occurrence",
       "class": "agents-rule",
       "answer": "claim without commit 1 h, returned worker 10 min, host lock 30 min, a repeat is the second occurrence",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "It reads claims and git with held and horizon, which exist; the stall limits are named in the work, not guessed here. Evidence for the stall signals: a worker with staged changes, no commit and no live test process (it waits for a background-run completion notice that never arrives) stalled a chain in the first fleet night; the orchestrator finished the item itself. The ladder's first remedy for that signal is to finish the last steps in the orchestrator, then to run the checks in the foreground.",

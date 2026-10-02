@@ -1,0 +1,34 @@
+{
+  "id": "BG-owzcvjb2",
+  "kind": "bug",
+  "title": "The autopilot decision review date defaults to 30 days though the operator chose 14",
+  "status": "todo",
+  "sprint": "SP-4xngzagf",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority.REVIEW_DAYS is 14, so an autopilot decision's review_by falls due 14 days after it is recorded, with the docs and the existing authority tests updated and a test named review_days_fourteen that reads the written review_by. Operator answer on ST-6sujnopr review-days.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as b;sys.exit(0 if b.REVIEW_DAYS==14 else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "review_days_fourteen"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_backlog_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/content-rules.md"
+  ]
+}
