@@ -26,7 +26,6 @@ remote, the findings, the eval file, the ledgers, the spool and the gate (the st
   TestToolRows      kb_ask.py, fetch.py and census.py rows join the prompt whose window holds them
   TestRedaction     identifiers in a prompt are redacted before Haiku and in the run file; an entry Haiku flags as
                     still identifying is dropped and only counted
-  TestCaps          more entries than the Haiku caps allow: the rest wait in the spool, and later runs take them
   TestTwoClones     two clones distilling against one remote, the second pushing after the first moved main:
                     separate run files, no entry id twice, no conflict
   TestConflict      a conflict with origin/main: the querylog/<run-id> branch with the merge-request push options,
@@ -34,9 +33,8 @@ remote, the findings, the eval file, the ledgers, the spool and the gate (the st
                     options
   TestCiNotRed      unfinished CI holds the push; `manual` and `skipped` are not red; the glab call names origin's
                     host and the last automatic commit
-  TestResearch      research on within its daily cap (a quote-checked fact and a _conflicts.md entry), over its cap,
-                    and off
-  TestModes*        modes `off`, `local`, `auto` and the default (no file), the DISABLED marker, an unreadable config
+  TestResearch      research on within its daily cap (a quote-checked fact and a _conflicts.md entry)
+  TestModes*        modes `off`, `local` and `auto`, the DISABLED marker, an unreadable config
                     (test_modes in TestModesOff, TestModesLocal and TestModesAuto)
   TestSessions      an open session is not distilled; one closed by SessionEnd and one idle for a day are
   TestPushFailure   a refused push keeps the spool; the next push delivers, and the spool goes after it; a leak in a
@@ -664,45 +662,6 @@ class TestRedaction:
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
 
 
-# ---------------------------------------------------------------- the Haiku caps
-
-class TestCaps:
-    @pytest.fixture(scope="class", autouse=True)
-    @classmethod
-    def scenario(cls, tmp_path_factory, seed):
-        w = cls.w = World(tmp_path_factory.mktemp("e2e-caps"), seed)
-        s = sid()
-        for name in ("win32", "laps_length", "do_port"):
-            w.lookup(name, s)
-        w.end(s)
-        now = datetime.datetime.now(datetime.timezone.utc)
-        with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(ql_distill, "HAIKU_BATCH_ENTRIES", 2)
-            mp.setattr(ql_distill, "HAIKU_BATCHES_PER_RUN", 1)
-            mp.setattr(ql_distill, "HAIKU_DAILY_CALLS", 1)
-            cls.first = w.distill(now)
-            cls.spool1, cls.st1 = w.spool(), w.state()
-            cls.second = w.distill(now + datetime.timedelta(minutes=1))
-            cls.calls2 = len(w.haiku.batches)
-            cls.third = w.distill(now + datetime.timedelta(days=1))
-        cls.st3 = w.state()
-
-    def test_the_rest_wait_and_the_next_runs_take_them(self):
-        w = self.w
-        rc, said = self.first
-        assert rc == 0 and says(said, "entries=2 dropped=0 waiting=1"), said
-        assert len(self.st1["entries"]) == 2 and self.spool1, self.spool1  # the waiting lookup's rows stay
-        rc, said = self.second
-        assert rc == 0 and said[0] == "distill: nothing to write (waiting=1)" and self.calls2 == 1, said  # daily cap
-        rc, said = self.third
-        assert rc == 0 and says(said, "entries=1 dropped=0 waiting=0") and len(w.haiku.batches) == 2, said
-        st = self.st3
-        assert len(st["runs"]) == 2 and len(st["entries"]) == 3
-        assert sorted(e["question"] for e in st["entries"]) == sorted(
-            LOOKUPS[n]["asked"] for n in ("win32", "laps_length", "do_port"))
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]
-
-
 # ---------------------------------------------------------------- two clones, one remote
 
 class TestTwoClones:
@@ -968,18 +927,14 @@ class TestResearch:
                                                           legacy)],
                                         "pages": {PAGE_URL: "page.html"}}), encoding="utf-8")
         cls.line = n
-        cls.runs, cls.states, cls.commits = [], [], []
-        for name, config in (("gap", {"mode": "auto", "research": True, "research_daily": 1}),
-                             ("gap_gmsa", {"mode": "auto", "research": True, "research_daily": 1}),
-                             ("gap_win32", {"mode": "auto"})):
-            w.config(config)
-            s = sid()
-            w.lookup(name, s)
-            w.end(s)
-            before = w.main()
-            cls.runs.append((w.distill(), ql_base.read_json(w.q / ql_research.RESEARCH_RUNS_NAME, {})))
-            cls.states.append(w.state())
-            cls.commits.append(w.commits(before))
+        w.config({"mode": "auto", "research": True, "research_daily": 1})
+        s = sid()
+        w.lookup("gap", s)
+        w.end(s)
+        before = w.main()
+        cls.run = (w.distill(), ql_base.read_json(w.q / ql_research.RESEARCH_RUNS_NAME, {}))
+        cls.state = w.state()
+        cls.commits = w.commits(before)
 
     def gap_of(self, st, name):
         return next(r for r in st["findings"].values() if r["kind"] == "gap" and r["entry"] == question(
@@ -987,7 +942,7 @@ class TestResearch:
 
     def test_research_within_its_daily_cap(self):
         import kbid
-        ((rc, said), counted), st = self.runs[0], self.states[0]
+        ((rc, said), counted), st = self.run, self.state
         assert rc == 0 and counted.get("runs") == 1, said
         sid_ = kbid.source_id(PAGE_URL, "S")
         assert bullets(st[ARTICLE]) == [f"- {cand()['text']} [DOC {sid_}]"], st[ARTICLE]
@@ -998,35 +953,14 @@ class TestResearch:
         assert (g["state"], g["stage"]) == ("applied", "claim")
         assert [p["to"] for p in g["promotions"]] == ["candidate-gap", "gap", "candidate-fact", "claim"]
         assert len(bullets(st[GAPS])) == 1 and "2012 R2 after a later update" not in self.w.show(ARTICLE)  # no quote
-        assert [v for _, v in self.commits[0]] == ["gap, querylog, research"], self.commits[0]
+        assert [v for _, v in self.commits] == ["gap, querylog, research"], self.commits
         assert st["gate"] == [], st["gate"]
-
-    def test_research_over_its_cap(self):
-        ((rc, said), counted), st, before = self.runs[1], self.states[1], self.states[0]
-        assert rc == 0 and counted.get("runs") == 1, said  # no run started
-        g = self.gap_of(st, "gap_gmsa")
-        assert (g["state"], g["stage"]) == ("applied", "gap") and g["article"] == "public/windows/gmsa.md"
-        gaps = bullets(st[GAPS])
-        assert len(gaps) == 2 and gaps[1].endswith("(topic: windows/gmsa)"), gaps
-        assert [v for _, v in self.commits[1]] == ["gap, querylog"], self.commits[1]
-        assert (st[ARTICLE], st[SOURCES], st[CONFLICTS]) == (before[ARTICLE], before[SOURCES], before[CONFLICTS])
-        assert st["gate"] == [], st["gate"]
-
-    def test_research_off(self):
-        ((rc, said), counted), st, before = self.runs[2], self.states[2], self.states[1]
-        assert rc == 0 and counted.get("runs") == 1, said
-        g = self.gap_of(st, "gap_win32")
-        assert (g["state"], g["stage"]) == ("applied", "gap")
-        assert bullets(st[GAPS])[-1].endswith("(topic: intune/win32-apps)")
-        assert (st[ARTICLE], st[SOURCES], st[CONFLICTS]) == (before[ARTICLE], before[SOURCES], before[CONFLICTS])
-        assert self.gap_of(st, "gap_gmsa")["stage"] == "gap"  # left at gap: research is off
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]
 
 
 # ---------------------------------------------------------------- modes, the DISABLED marker, a broken config
 
 def run_mode(tmp_path, seed, mode):
-    """One lookup and one distill with the clone's config set to `mode` (`default`: no file; `disabled`: mode auto and
+    """One lookup and one distill with the clone's config set to `mode` (`disabled`: mode auto and
     the DISABLED marker; `unreadable`: a config that is not JSON)."""
     import kb_hook
     w = World(tmp_path, seed)
@@ -1068,7 +1002,7 @@ class TestModesLocal:
 
 
 class TestModesAuto:
-    @pytest.mark.parametrize("mode", ["auto", "default"])
+    @pytest.mark.parametrize("mode", ["auto"])
     def test_modes(self, tmp_path, seed, mode):
         run_mode(tmp_path, seed, mode)
 
