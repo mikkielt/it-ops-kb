@@ -567,11 +567,11 @@ class TestSelfdocInGit:
         """The gate runs `stale --since UP` over the pushed range: a commit that changes only backlog items or the
         query log needs no Self-Reviewed trailer, a doc edit or review anywhere in the range clears the code change
         before it, and a range whose code change lacks its doc update still fails."""
-        import kbgit
+        import kg_sync
         root, up = repo.path, repo.rev("HEAD")
         items, store = [f"{S}/backlog/ST-00000000.json"], "kb/_querylog/2026-09/x.jsonl"
-        assert kbgit.gate_needs(items + [store])["selfdoc"] is None, "item and store paths skip the selfdoc check"
-        assert kbgit.gate_needs(items + ["src/tool.py"])["selfdoc"], "a code path runs it"
+        assert kg_sync.gate_needs(items + [store])["selfdoc"] is None, "item and store paths skip the selfdoc check"
+        assert kg_sync.gate_needs(items + ["src/tool.py"])["selfdoc"], "a code path runs it"
         assert selfdoc.describing(selfdoc.load_map(), items + [store]) == {}, "this repository's map describes neither"
         repo.write(items[0], "{}\n")
         repo.write(store, "{}\n")
@@ -597,8 +597,8 @@ class TestSelfdocInGit:
         `selfdoc.py stale --since UP` with the upstream they judge: without `--since` the check reads only the
         last commit, and the range judgement above (test_selfdoc_range_review_over_the_pushed_range) is never
         reached. The check list is read from the tool calls the gate makes, so dropping the argument from
-        kbgit.py fails here; the planted failure strips it from the call and the same assertion catches it."""
-        import kbgit
+        kg_sync.py fails here; the planted failure strips it from the call and the same assertion catches it."""
+        import kbgit, kg_sync
         up, head = "a" * 40, "b" * 40
         for k in (*LEAKY, "KB_GATE_DONE", "KB_SYNC_NO_TESTS"):
             monkeypatch.delenv(k, raising=False)
@@ -611,8 +611,8 @@ class TestSelfdocInGit:
                     args = tuple(a for a in args if a not in ("--since", up))
                 calls.append((name, list(args)))
                 return 0, "ok\n"
-            monkeypatch.setattr(kbgit, "tool", tool)
-            monkeypatch.setattr(kbgit, "gate_paths", lambda _up: None)  # no path filter: every check runs
+            monkeypatch.setattr(kg_sync, "tool", tool)
+            monkeypatch.setattr(kg_sync, "gate_paths", lambda _up: None)  # no path filter: every check runs
             monkeypatch.setattr(kbgit, "trailer_audit", lambda *_a, **_k: (0, 0, []))
             if entry.startswith("sync_gate"):
                 assert kbgit.gate({"target": "origin"}, up)

@@ -22,7 +22,7 @@ The tools work without any of this; it makes the host cooperate. Each setting is
 
 ## Commands (`_tools/kbgit.py`)
 
-`kbgit.py` is the command line: it parses the arguments and holds the trailers, the history commands and sync, which change together. Merge and ledger repair (`fix`, `fmt`, the `_sources.csv`, `_fetch_state.csv`, answer-id and Markdown-ledger merges, the lint baseline) live in `_tools/kg_merge.py`, the lane plan (the lane of a commit range and the `code/<id>` branch it goes to, taking the root it reads) in `_tools/kg_lane.py`, and the names they share (the repository directory, the baseline path, `Problem`, the repository's roots) in `_tools/kg_base.py`; none imports `kbgit.py` (`kb/_self/code.md`, Layout).
+`kbgit.py` is the command line: it parses the arguments and holds the trailers and the history commands, which change together, and the `sync` and `bridge` commands over `_tools/kg_sync.py`. The sync run (fetch, rebase, `fix`, the gate and the push, with the session check, the re-run after a rebase that changed its code and the report) lives in `_tools/kg_sync.py`, which takes the trailer audit, the fix commit's message and the hooks check from `kbgit.py` as a `Host`. Merge and ledger repair (`fix`, `fmt`, the `_sources.csv`, `_fetch_state.csv`, answer-id and Markdown-ledger merges, the lint baseline) live in `_tools/kg_merge.py`, the lane plan (the lane of a commit range and the `code/<id>` branch it goes to, taking the root it reads) in `_tools/kg_lane.py`, and the names they share (the repository directory, the baseline path, `Problem`, the repository's roots) in `_tools/kg_base.py`; none imports `kbgit.py` (`kb/_self/code.md`, Layout).
 
 | command | does |
 |---|---|
