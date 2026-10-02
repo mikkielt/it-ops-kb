@@ -62,11 +62,11 @@
     "_tools/bl_bounds.py",
     "_tools/backlog.py",
     "_tools/test_bl_bounds.py",
-    "_tools/test_backlog.py",
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "_tools/test_layout.py"
   ],
   "depends_on": [
     "ST-aqpalijz",
