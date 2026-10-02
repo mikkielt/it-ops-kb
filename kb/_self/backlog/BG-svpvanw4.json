@@ -2,7 +2,7 @@
   "id": "BG-svpvanw4",
   "kind": "bug",
   "title": "publish's leak scan passes a GUID in a .py, .json or .csv file",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P1",
   "rank": 0,
@@ -30,5 +30,28 @@
     "_tools/test_kbpublic.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "seventh-w25"
+  "evidence": {
+    "commit": "350ea2acd2a41d32b113bc7f1d8f34e277955ed9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "publish_guid_any_text"
+        ],
+        "exit": 0,
+        "sha256": "e5bbcc28a5868f50"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbpublic as k;sys.exit(0 if any(h[0]=='guid' for h in k.file_hits('x.py','t = \"3f2504e0-4f89-11d3-9a0c-0305e82c3301\"\\n',set(),())) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
