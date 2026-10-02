@@ -2,7 +2,7 @@
   "id": "BG-w2dmqlse",
   "kind": "bug",
   "title": "backlog.md's opening still says to read maintaining.md whole before a change",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
@@ -19,5 +19,6 @@
   "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
