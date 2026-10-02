@@ -1,0 +1,34 @@
+{
+  "id": "BG-dvs4vzr6",
+  "kind": "bug",
+  "title": "backlog.py unlanded_code counts a block-only .gitattributes commit as code at done",
+  "status": "todo",
+  "sprint": "SP-42bn4vz7",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py unlanded_code treats a commit that changes .gitattributes only between the pinned markers as content, as kblane.commit_paths does since BG-ha4u5dxz, so done does not demand a code merge request for it, with a test named unlanded_code_pinned_block that plants such a commit",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -q \"pinned:start\" _tools/backlog.py"
+    ]
+  },
+  "repro_reason": "the defect needs a planted commit that changes only the pinned block of .gitattributes in a throwaway repository, which only the new test can build; the text match only shows the lane rule is absent from backlog.py",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "unlanded_code_pinned_block"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}
