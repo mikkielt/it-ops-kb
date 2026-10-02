@@ -2,7 +2,7 @@
   "id": "BG-6l57la6y",
   "kind": "bug",
   "title": "A CODE pointer cannot name an extensionless script such as src/adr-new",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,6 @@
       "answer": "Accept an extensionless path",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
