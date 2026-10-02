@@ -256,8 +256,9 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     assert "{" + ",".join(SUBCOMMANDS) + "}" in usage
     import bl_check
     import bl_cost
+    import bl_plan
     import bl_procs
-    owner = {"cost": bl_cost, "procs": bl_procs, "check": bl_check, "selectors": bl_check}  # a command a bl_ module owns: its handler is that module's, not backlog's
+    owner = {"cost": bl_cost, "procs": bl_procs, "check": bl_check, "selectors": bl_check, "start": bl_plan}  # a command a bl_ module owns: its handler is that module's, not backlog's
     assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
     for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit
         sub = next(a for a in ap._actions if a.dest == "cmd").choices[n]
@@ -384,7 +385,7 @@ def test_bl_split_check_check_and_selectors_are_registered_through_bl_cli_with_b
     tree = ast.parse(tool_source("bl_check.py"))
     assert not any(isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "add_parser" for n in ast.walk(tree)), \
         "a parser is added through bl_cli"
-    assert set(bl_check.DOCS) == {"stale_touches", "docs_after_code", "docs_warnings"}, "backlog.py binds the docs rules"
+    assert not hasattr(bl_check, "DOCS") and not hasattr(bl_check, "bind_docs"), "check reads the rules from bl_plan"
 
 
 def test_bl_split_check_check_tests_are_in_test_bl_check_and_none_are_left_in_test_backlog():
@@ -409,3 +410,115 @@ def test_bl_split_check_planted_failures_fail():
                for n in ast.parse("def test_knowledge_left_behind():\n    pass\n").body)
     kit = (Path(TOOLS) / "bl_testkit.py").read_text(encoding="utf-8")
     assert own_copies(kit, {"test_bl_check.py": "def b(root, *a):\n    return 1\n"}) == [("test_bl_check.py", "b")]
+
+
+PLAN_MOVED = ("touch_paths", "dependencies", "dependents", "docs_after_code", "docs_warnings", "stale_touches",
+              "outside_deps", "where_outside", "host_gates", "has_scope", "start_approved", "recurring_left_out",
+              "tracked_files", "is_code", "cmd_start", "args_start")
+
+
+def plan_defs(source):
+    """The public names a module defines at its top level that belong to the plan and start helpers."""
+    return {n for n in kit_names(source) if n in PLAN_MOVED}
+
+
+def bl_graph(sources):
+    """{bl_ module: the bl_ modules it imports, at any depth} for `sources` ({module name: source text})."""
+    graph = {}
+    for mod, text in sources.items():
+        if not mod.startswith("bl_") or mod == "bl_testkit":
+            continue
+        seen = set()
+        for n in ast.walk(ast.parse(text)):
+            if isinstance(n, ast.Import):
+                seen |= {a.name for a in n.names}
+            elif isinstance(n, ast.ImportFrom) and n.module and not n.level:
+                seen.add(n.module)
+        graph[mod] = {m for m in seen if m.startswith("bl_") and m != mod}
+    return graph
+
+
+def import_cycle(graph):
+    """One import cycle of GRAPH as a list of modules (the first repeated at the end), or None."""
+    def walk(node, path):
+        if node in path:
+            return path[path.index(node):] + [node]
+        for nxt in sorted(graph.get(node, ())):
+            found = walk(nxt, path + [node])
+            if found:
+                return found
+        return None
+    for start in sorted(graph):
+        found = walk(start, [])
+        if found:
+            return found
+    return None
+
+
+def test_bl_split_plan_bl_plan_holds_the_plan_helpers_and_backlog_defines_none_of_them():
+    assert set(PLAN_MOVED) <= plan_defs(tool_source("bl_plan.py"))
+    assert plan_defs(tool_source("backlog.py")) == set(), "backlog.py imports the plan helpers, it does not define them"
+
+
+def test_bl_split_plan_bl_plan_never_imports_backlog_at_any_depth():
+    src = tool_source("bl_plan.py")
+    tree = ast.parse(src)
+    assert not imported_from(src, "backlog")
+    assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(tree))
+
+
+LAZY_EDGES = {("bl_base", "bl_intake")}  # bl_base reaches bl_intake.run_argv by an import in the function (its docstring)
+
+
+def test_bl_split_plan_no_import_cycle_between_the_bl_modules_and_check_reads_plan_not_the_reverse():
+    graph = {m: {d for d in deps if (m, d) not in LAZY_EDGES} for m, deps in bl_graph(tool_sources()).items()}
+    assert import_cycle(graph) is None, import_cycle(graph)
+    assert "bl_plan" in graph["bl_check"] and "bl_check" not in graph["bl_plan"]
+    assert "bind_docs" not in tool_source("bl_check.py") + tool_source("backlog.py")
+
+
+def test_bl_split_plan_start_is_registered_through_bl_cli_with_the_bl_plan_handler():
+    import backlog
+    import bl_cli
+    import bl_plan
+    names = list(bl_cli.COMMANDS)
+    assert names.index("drop") < names.index("start") < names.index("host-check"), "the usage order is unchanged"
+    assert bl_cli.handler_of("start") is bl_plan.cmd_start and bl_cli.COMMANDS["start"][1] is bl_plan.args_start
+    assert backlog.has_scope is bl_plan.has_scope and backlog.start_approved is bl_plan.start_approved
+    tree = ast.parse(tool_source("bl_plan.py"))
+    assert not any(isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "add_parser" for n in ast.walk(tree)), \
+        "a parser is added through bl_cli"
+
+
+PLAN_TEST_PREFIXES = ("test_start_", "test_backlog_docs_", "test_backlog_stale_touches_", "test_host_setup_gate_",
+                      "test_check_warns_docs_in_later_task", "test_dependency_outside_sprint_",
+                      "test_only_operator_answers_blocking_gates_and_starts_sprints")
+
+
+def test_bl_split_plan_plan_tests_are_in_test_bl_plan_and_none_are_left_in_test_backlog():
+    def plan_tests(src):
+        return {n.name for n in ast.parse(src).body if isinstance(n, ast.FunctionDef)
+                and n.name.startswith(PLAN_TEST_PREFIXES)}
+    sources = backlog_test_sources()
+    assert len(plan_tests(sources["test_bl_plan.py"])) >= 14
+    assert plan_tests(sources["test_backlog.py"]) == set()
+    for needle in ("backlog.touch_paths", "backlog.docs_after_code", "backlog.stale_touches", "backlog.cmd_start"):
+        assert needle not in sources["test_bl_plan.py"], needle
+
+
+def test_bl_split_plan_planted_failures_fail():
+    # a moved name put back in backlog.py, a bl_plan that imports backlog or bl_check (at any depth), a cycle, a plan
+    # test left behind
+    assert plan_defs("def touch_paths(item, files, literal):\n    return set()\n") == {"touch_paths"}
+    assert plan_defs("from bl_plan import touch_paths\n") == set()
+    for body in ("import backlog\n", "from backlog import say\n", "def late():\n    from backlog import say\n"):
+        assert unexcused({"backlog": "", "bl_plan": body}) == [("facade", "bl_plan", "backlog", "backlog")], body
+    assert import_cycle(bl_graph({"bl_check": "import bl_plan\n", "bl_plan": "from bl_base import say\n",
+                                  "bl_base": ""})) is None
+    for body in ("import bl_check\n", "from bl_check import validate\n", "def late():\n    import bl_check\n"):
+        assert import_cycle(bl_graph({"bl_check": "import bl_plan\n", "bl_plan": body})) == \
+            ["bl_check", "bl_plan", "bl_check"], body
+    assert import_cycle(bl_graph({"bl_a": "import bl_b\n", "bl_b": "import bl_c\n", "bl_c": "import bl_a\n"})) == \
+        ["bl_a", "bl_b", "bl_c", "bl_a"]
+    assert any(isinstance(n, ast.FunctionDef) and n.name.startswith(PLAN_TEST_PREFIXES)
+               for n in ast.parse("def test_start_left_behind():\n    pass\n").body)

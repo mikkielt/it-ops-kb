@@ -3,9 +3,9 @@ a module of backlog.py: its tests are those files'.
 
 The tool and its Python checks: the paths (`TOOLS`, `TOOL`), checks that need no tool (`PASS`, `IS_FILE`, `is_file`,
 `argstr`). A throwaway repository and what drives it: `sh` (a git command), `land` (origin's main fetched at HEAD), `b`
-(a backlog.py run in the repository: exit code and output), `item` and `edit` (read and rewrite an item file in its
-canonical form), `commit`, the fixtures `repo` (a repository with one commit) and `sprint` (an approved, started sprint
-with a story, its task and a bug) and the autouse fixtures `no_git_location` and `gate_jobs`.
+(a backlog.py run in the repository: exit code and output), `item`, `item_json` and `edit` (read and rewrite an item
+file in its canonical form), `commit`, the fixtures `repo` (a repository with one commit) and `sprint` (an approved,
+started sprint with a story, its task and a bug) and the autouse fixtures `no_git_location` and `gate_jobs`.
 
 This module never imports `backlog` (a `bl_` module's layer rule): `item` and `edit` use the backlog's directory and its
 canonical form through `bind(backlog)`, which each test file calls once after importing `backlog`.
@@ -77,6 +77,10 @@ def item(root, title):
         if it["title"] == title:
             return it
     raise AssertionError(title)
+
+
+def item_json(root, iid):
+    return json.loads((Path(root) / _bl().REL_DIR / f"{iid}.json").read_text(encoding="utf-8"))
 
 
 def edit(root, iid, **kw):
