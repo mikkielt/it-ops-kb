@@ -1,0 +1,22 @@
+{
+  "id": "SP-gg5nmbal",
+  "kind": "sprint",
+  "title": "Backlog checks catch host setups and unrelated docs",
+  "status": "active",
+  "goal": "a gate whose question names a host setup is checked on that host or says it was not, and check and start warn when a code item's mapped doc sits only in an unrelated item",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

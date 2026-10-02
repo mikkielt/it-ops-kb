@@ -1,0 +1,22 @@
+{
+  "id": "SP-6tg672en",
+  "kind": "sprint",
+  "title": "kbingest map and its skill stay exact",
+  "status": "active",
+  "goal": "kbingest map refuses a clone whose environment, cargo config or machine-name check can be steered by the clone or the environment user, the kb-ingest skill and selfdoc map say what kbingest does, a CODE pointer refuses scheme-less urls and prose, and codebase-mapping.md points to the right bullet",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

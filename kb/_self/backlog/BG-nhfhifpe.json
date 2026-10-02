@@ -29,6 +29,9 @@
     "_tools/test_benchmarks.py",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "ST-qc4vvlgs"
+  ],
   "gates": [
     {
       "id": "g1",
@@ -50,7 +53,10 @@
           "1"
         ],
         "Change bench_lookup.nav_run to keep each run's raw stdout beside the parsed row (a separate item), so the next paid navigation run records a stream": "ST-qc4vvlgs"
-      }
+      },
+      "answer": "Change bench_lookup.nav_run to keep each run's raw stdout beside the parsed row (a separate item), so the next paid navigation run records a stream",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Kept as a draft: the fixture needs a recorded stream, which exists only after ST-qc4vvlgs lands and one later paid navigation run keeps its raw stdout; schedule it then."
 }

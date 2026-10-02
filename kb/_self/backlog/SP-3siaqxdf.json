@@ -1,0 +1,22 @@
+{
+  "id": "SP-3siaqxdf",
+  "kind": "sprint",
+  "title": "Servers, docs and benchmarks stay correct",
+  "status": "active",
+  "goal": "kb_http read_chunked answers 413 only for a body over --max-body, kb_ask docstrings say what the researcher has, tests.py given one test file takes no host lock and records no full run, and a navigation benchmark run keeps its raw stream-json",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}
