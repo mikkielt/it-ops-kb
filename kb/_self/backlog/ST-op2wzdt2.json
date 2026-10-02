@@ -2,7 +2,7 @@
   "id": "ST-op2wzdt2",
   "kind": "story",
   "title": "check-lanes runs as a manual CI job on both forges",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
@@ -24,5 +24,6 @@
     "_tools/test_ci_config.py",
     "kb/_self/git.md",
     "kb/_self/runners.md"
-  ]
+  ],
+  "claimed_by": "seventh-w17"
 }
