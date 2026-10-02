@@ -31,7 +31,17 @@
     "_tools/bl_plan.py",
     "_tools/backlog.py",
     "_tools/test_bl_authority_derivation.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "_tools/bl_base.py",
+    "_tools/bl_cli.py",
+    "_tools/bl_testkit.py",
+    "_tools/bl_land.py",
+    "_tools/bl_check.py",
+    "_tools/test_bl_plan.py",
+    "_tools/test_backlog_authority.py",
+    "_tools/test_kb_leaks.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "orch-fourth-s2"
 }
