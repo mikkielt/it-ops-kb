@@ -438,6 +438,21 @@ class TestCohesion:
             assert self.shared_file_move_problems(skill.replace(need, "x"), runbook), need
             assert self.shared_file_move_problems(skill, runbook.replace(need, "x")), need
 
+    GOAL_RANGE_NEEDS = ("every input or whatever input", "test over a range of inputs", "share a factor", "not one case")
+
+    @staticmethod
+    def goal_range_problems(docs):
+        """Problems with how the worker brief, the kb-backlog skill and backlog.md hold the range-test rule: each says it."""
+        return [f"{name}: no `{need}`" for name, doc in docs.items() for need in TestCohesion.GOAL_RANGE_NEEDS if need not in doc]
+
+    def test_goal_every_needs_range_test(self):
+        docs = {path: text(path) for path in (".claude/agents/kb-worker.md", ".claude/skills/kb-backlog/SKILL.md", "kb/_self/backlog.md")}
+        assert self.goal_range_problems(docs) == []
+        # planted failures: each needle removed from each doc, and one doc without the sentence
+        for path in docs:
+            for need in self.GOAL_RANGE_NEEDS:
+                assert self.goal_range_problems({**docs, path: docs[path].replace(need, "x")}), (path, need)
+
     def test_python_passes_ruff_when_installed(self):
         """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""
         try:
