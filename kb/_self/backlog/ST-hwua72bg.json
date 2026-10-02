@@ -2,7 +2,7 @@
   "id": "ST-hwua72bg",
   "kind": "story",
   "title": "A sprint close, a CI read and an intake run leave an ops row",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -68,5 +68,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Failures it answers: close deletes the items, so per-sprint facts survive only in the commit body (a retrospective had to read git); red-pipeline made up to 100 job-list calls unseen (BG-h4wygoak); drift skipped items for want of coverage data (BG-3q6fviow)."
+  "notes": "Failures it answers: close deletes the items, so per-sprint facts survive only in the commit body (a retrospective had to read git); red-pipeline made up to 100 job-list calls unseen (BG-h4wygoak); drift skipped items for want of coverage data (BG-3q6fviow).",
+  "claimed_by": "mac-sixth"
 }
