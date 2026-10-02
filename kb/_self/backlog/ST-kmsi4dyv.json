@@ -2,7 +2,7 @@
   "id": "ST-kmsi4dyv",
   "kind": "story",
   "title": "tests.py records each run's scope, time and per-file durations",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -31,5 +31,6 @@
     "ST-t7xxgt47",
     "ST-g73vlg44"
   ],
-  "notes": "Failure it answers: the suite's run times and load timeouts are known only from reports written by hand (EP-hlnsqx4f); tests.py also changes in ST-g73vlg44 and ST-t7xxgt47, so these run one after another."
+  "notes": "Failure it answers: the suite's run times and load timeouts are known only from reports written by hand (EP-hlnsqx4f); tests.py also changes in ST-g73vlg44 and ST-t7xxgt47, so these run one after another.",
+  "claimed_by": "seventh-w5"
 }
