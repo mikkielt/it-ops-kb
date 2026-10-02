@@ -24,6 +24,14 @@
         "-k",
         "procs_ends_only_own"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_names_pid_of_process_in_worktree"
+      ]
     }
   ],
   "touches": [
@@ -69,5 +77,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Reuse: live_processes (cwd check, never signals), the process-tree end of the intake drift check (os.killpg, taskkill /T /F), and land's refusal of a worktree with a live process. Windows lists no working directories, so there it reports that it cannot check."
+  "notes": "Reuse: live_processes (cwd check, never signals), the process-tree end of the intake drift check (os.killpg, taskkill /T /F), and land's refusal of a worktree with a live process. Windows lists no working directories, so there it reports that it cannot check. Merged finding (SP-4i5quwba retro): workers leave locked worktrees and stray sleep shells; land refuses without naming the process. land names the pid and command of each live process in a worktree it refuses to remove, and the brief requires a worker to end its monitors."
 }
