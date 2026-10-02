@@ -5,7 +5,7 @@ git in KB, this module's own copy of the repository directory (a caller may poin
 message of the fix commit, whether the commit hooks are installed) comes in as a `Host` the facade builds, since this
 module imports no facade. Standard library only; kbgit.py imports it.
 """
-import csv, os, re, shlex, subprocess, sys
+import csv, os, re, shlex, subprocess, sys, time
 from collections import namedtuple
 from pathlib import Path
 
@@ -76,7 +76,36 @@ MERGE_CFG = ("-c", "merge.conflictStyle=diff3")
 REBASE = (*MERGE_CFG, "rebase")
 REBASE_HINT = "git -c merge.conflictStyle=diff3 rebase"
 FIX_COMMIT = "chore(kb): kbgit fix after sync"
-REJECTED = re.compile(r"\[rejected\]|non-fast-forward|fetch first|stale info", re.I)
+REJECTED = re.compile(r"\[rejected\]|non-fast-forward|fetch first|stale info|cannot lock ref .* but expected", re.I)
+# A push rejected because the remote moved is tried again, after a pause that doubles: PUSH_TRIES rounds in all (the
+# first included), PUSH_PAUSE_S seconds before the second, doubling up to PUSH_PAUSE_MAX_S. The environment overrides
+# them (tests set the pause to 0 and never sleep).
+PUSH_TRIES = 6
+PUSH_PAUSE_S = 2.0
+PUSH_PAUSE_MAX_S = 30.0
+
+
+def env_number(name, default, cast=float):
+    """The environment variable NAME as a number, DEFAULT when it is unset or not one (a negative is 0)."""
+    try:
+        return max(cast(os.environ[name]), 0)
+    except (KeyError, ValueError):
+        return default
+
+
+def push_tries():
+    return max(int(env_number("KB_SYNC_PUSH_TRIES", PUSH_TRIES, int)), 1)
+
+
+def push_pause(n):
+    """Seconds to wait after the Nth rejected try (1-based): PUSH_PAUSE_S doubling, capped at PUSH_PAUSE_MAX_S."""
+    first = env_number("KB_SYNC_PUSH_PAUSE_S", PUSH_PAUSE_S)
+    return min(first * 2 ** (n - 1), max(env_number("KB_SYNC_PUSH_PAUSE_MAX_S", PUSH_PAUSE_MAX_S), first))
+
+
+def pause(seconds):
+    if seconds > 0:
+        time.sleep(seconds)
 
 
 def gitx(*args, env=None):
@@ -367,7 +396,7 @@ def gate_needs(paths):
             "querylog": why(store, "the query log store")}
 
 
-def gate(r, up, host, fix_check=False):
+def gate(r, up, host, fix_check=False, since=None):
     """The checks the changed paths (gate_paths) can break, then check-trailers on up..HEAD:
     check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
@@ -375,10 +404,17 @@ def gate(r, up, host, fix_check=False):
     --changed UP (testmap.py maps the paths to the test files they can break; KB_TESTS_FAST=1 keeps the git scenarios
     of the test files a code path selects, TestCloudInGit for kbgit.py, and leaves out those only kb content selects).
     `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
-    rebuilds the generated files, so its gate has neither. A skipped check is listed with why."""
+    rebuilds the generated files, so its gate has neither. A skipped check is listed with why.
+    SINCE (a retry after a rejected push): the commit the last green gate judged. Each check then reads only the paths
+    that differ between SINCE and HEAD, so a rebase that changed none of them re-runs nothing but check-trailers."""
     results = []
     paths = gate_paths(up)
+    if since:
+        staged, unstaged = dirty_paths()
+        paths = set(names("diff", "--name-only", since, "HEAD")) | set(staged) | set(unstaged)
     need = gate_needs(paths)
+    if since:
+        need["tests"] = "always" if any(need[k] for k in ("check", "fetch", "doc2query", "selfdoc")) else None
     checks = [("kbgit.py fix --check", "kbgit.py", ["fix", "--check"], None, "pre-push"),
               ("build_index.py --check", "build_index.py", ["--check"], None, "pre-push")] if fix_check else []
     checks += [("check.py", "check.py", [], None, need["check"]),
@@ -389,7 +425,7 @@ def gate(r, up, host, fix_check=False):
     if up:
         checks.append((f"selfdoc.py stale --since {short(up)}", "selfdoc.py", ["stale", "--since", up], None, need["selfdoc"]))
     checks.append(("tests.py (changed)" if up else "tests.py (fast)", "tests.py", ["--changed", up] if up else [],
-                   {"KB_TESTS_FAST": "1"}, "always"))
+                   {"KB_TESTS_FAST": "1"}, need.get("tests", "always")))
     for label, name, args, env, reason in checks:
         if name == "tests.py" and os.environ.get("KB_SYNC_NO_TESTS") == "1":
             results.append((label, "skipped (KB_SYNC_NO_TESTS=1)", True))
@@ -547,9 +583,13 @@ def sync_once(a, r, host):
             return 1
     if up and not refresh_trailers(r, up, host):
         return 1
-    if not gate(r, up, host):
+    since = r.get("gated") if up and r.get("gated") and gitx("cat-file", "-e", r["gated"])[0] == 0 else None
+    if not gate(r, up, host, since=since):
         print("gate failed: nothing pushed")
         return 1
+    r["gated"] = rev_parse("HEAD")
+    if since and all("skipped" in res for lab, res, _ in r["gate"] if not lab.startswith("check-trailers")):
+        r["notes"].append("gates not re-run after the rejected push: the rebase changed no path they read")
     if not a.push:
         r["pushed"] = "no (without --push)"
         return 0
@@ -576,6 +616,25 @@ def sync_once(a, r, host):
 def new_report(push):
     return {"push": push, "ahead": 0, "behind": 0, "rebased": 0, "auto": [], "fixed": [], "renumbered": [], "refreshed": 0,
             "fix_commit": None, "gate": [], "pushed": "no", "notes": []}
+
+
+def sync_rounds(a, r, host):
+    """sync_once, again after each rejected push (the remote moved) with a doubling pause, up to push_tries() rounds
+    in all. r["tries"] counts the rounds made; the exit is 1 when the last one was rejected too."""
+    tries = push_tries()
+    code = None
+    for n in range(1, tries + 1):
+        r["tries"] = n
+        code = sync_once(a, r, host)
+        if code != "retry":
+            return code
+        if n < tries:
+            wait = push_pause(n)
+            print(f"fetching again and rebasing once more after {wait:g} s (try {n} of {tries} rejected)", flush=True)
+            pause(wait)
+    print(f"push rejected {tries} times ({a.remote}/{a.branch} keeps moving); giving up, nothing lost locally")
+    r["pushed"] = f"no (rejected {tries} times)"
+    return 1
 
 
 def cmd_sync(a, host, r=None):
@@ -607,14 +666,7 @@ def cmd_sync(a, host, r=None):
         print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks, once for the clone and every "
               "worktree of it); sync repairs trailers of what it rebases")
     r = r if r is not None else new_report(a.push)
-    code = sync_once(a, r, host)
-    if code == "retry":
-        print("fetching again and rebasing once more")
-        code = sync_once(a, r, host)
-        if code == "retry":
-            print(f"push rejected twice ({a.remote}/{a.branch} keeps moving); giving up, nothing lost locally")
-            r["pushed"] = "no (rejected twice)"
-            code = 1
+    code = sync_rounds(a, r, host)
     if "rerun" in r:
         return code  # the re-run with the rebased code printed its own report
     if a.dry_run:
@@ -636,5 +688,5 @@ def cmd_sync(a, host, r=None):
     for label, result, _ in r["gate"]:
         print(f"gate {label}: {result}")
     print(f"pushed: {r['pushed']}")
-    print(f"sync: exit {code}")
+    print(f"sync: exit {code}, {r.get('tries', 1)} push {'try' if r.get('tries', 1) == 1 else 'tries'}")
     return code
