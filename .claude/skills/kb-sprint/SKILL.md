@@ -118,3 +118,25 @@ The review story is ready once every other item is done or dropped. Its work:
    2. `git worktree remove <path>` for the worktree that has it checked out, never with `--force`: a worktree with uncommitted files is refused and kept. A worktree of this sprint's workers under `.claude/worktrees/` locked by Claude Code (its `locked` line starts with `claude agent`: the agent left background work running) with no uncommitted files (`git status --porcelain` in it prints nothing) is unlocked first, `git worktree unlock <path>`, then removed the same way;
    3. `git branch -D <branch>`: a branch landed by a rebase is not an ancestor of `origin/main`, so `-d` refuses it.
    Never touch a worktree with another lock reason, another sprint's branch or `_cache/querylog/worktree`. Report each worktree and branch kept and why (a `+` commit, uncommitted files, locked), and each one unlocked.
+
+## Stalled work
+Stalled work is claimed or ready work that makes no progress, or is hampered. `python3 _tools/backlog.py stalled` lists it (read only, exit 0, no network): each claimed or ready item, its id and title together, with its signals and the next remedy of each. Run it at step 1 of every pass of `run`, before claiming, and act on each listed item with the next remedy of its signal; `stalled --ladder` prints the ladder below from the code (`_tools/bl_stall.py`, whose named limits `CLAIM_NO_COMMIT_S`, `RETURNED_GRACE_S`, `DONE_REFUSED_N`, `CHECK_TIMEOUT_N`, `LAND_SAME_STEP_N` and `HOST_LOCK_WAIT_S` are in `kb/_self/backlog.md`). A signal whose input cannot be read shows as `unknown:<what>`: read that input by hand, never assume it is fine.
+
+Each signal has a ladder, taken in order, each remedy once:
+- `claim-no-commit`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (a claim with no work commit past the limit)
+- `returned-no-commit`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (a worker's worktree with no live process and no commit)
+- `returned-staged`: `finish-here` > `release-redispatch` > `file-blocker` > `ask-operator` (the same with staged or modified files left: the worker waited for a background-run completion notice that never came)
+- `done-refused`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (`done` refused repeatedly)
+- `check-timeout`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (a check ran out of its time twice)
+- `land-same-step`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (`land` stopped at the same step twice)
+- `red-main`: `file-blocker` > `ask-operator` (the newest pipeline row is red)
+- `lock-wait`: `retry-narrower` > `file-blocker` > `ask-operator` (the host test lock held past the limit)
+
+The remedies:
+- `finish-here`: finish the last steps in the orchestrator (stage, commit with `KB-Work: <id>` in the last trailer paragraph, run the item's checks), then run the checks in the foreground, never as a background command whose completion notice a session must wait for.
+- `retry-narrower`: send the work back once (SendMessage) with a narrower request: one file, one test selector, a foreground run; for `lock-wait` a `-k` selection, which takes no host lock.
+- `release-redispatch`: `python3 _tools/backlog.py release ID`, then dispatch it again (`run` step 3) with the failure named in the brief.
+- `file-blocker`: file what blocks the item as a story (`stalled --took ID SIGNAL file-blocker` does it and prints the next ready item), release the item, and take the next ready item.
+- `ask-operator`: record a gate (`gate add ID ...`) or put the question in the digest; in a headless run the gate of the headless rules.
+
+The autopilot never idles while a ready item remains: after `file-blocker`, `release-redispatch` or a spent ladder it takes the next ready item that shows no signal, and it asks only when no such item is left. Record each remedy as it is taken: `python3 _tools/backlog.py stalled --took ID SIGNAL REMEDY` appends one `stall.remedy` ops row (`kb/_self/querylog.md`) and one autopilot decision of `kb/_self` with a `review_by` date, which the next commit carries; a remedy already taken for that item and signal is refused, and the listing then shows the next one.

@@ -1582,6 +1582,7 @@ import bl_cost  # noqa: F401 - registers `cost` here, so the usage text keeps it
 bl_cli.register("red-pipeline", cmd_red_pipeline, args_red_pipeline)
 bl_cli.register("intake", cmd_intake, args_intake)
 import bl_procs  # noqa: F401 - registers procs
+import bl_stall  # noqa: F401 - registers stalled
 
 
 def main(argv=None):
