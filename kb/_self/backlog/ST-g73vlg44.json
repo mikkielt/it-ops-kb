@@ -2,7 +2,7 @@
   "id": "ST-g73vlg44",
   "kind": "story",
   "title": "tests.py caps its pytest workers so concurrent sessions do not oversubscribe the host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gfoakqar",
   "priority": "P2",
   "rank": 0,
@@ -44,5 +44,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "seventh-w9"
+  "evidence": {
+    "commit": "e8da0bc3d533e3f89ea5cccc322ea45b01f28247",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_workers_capped"
+        ],
+        "exit": 0,
+        "sha256": "381d083050016ffe"
+      }
+    ]
+  }
 }
