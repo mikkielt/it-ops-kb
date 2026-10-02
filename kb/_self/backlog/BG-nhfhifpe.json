@@ -2,7 +2,7 @@
   "id": "BG-nhfhifpe",
   "kind": "bug",
   "title": "benchmarks.py nav_result parses claude stream-json tested only on synthetic streams",
-  "status": "doing",
+  "status": "todo",
   "sprint": "SP-4i5quwba",
   "priority": "P3",
   "rank": 0,
@@ -42,6 +42,5 @@
       ],
       "recommendation": "Run one paid navigation case now with its raw stdout kept, then redact and trim it into _tools/fixtures/navigation"
     }
-  ],
-  "claimed_by": "mac-third-worker"
+  ]
 }
