@@ -2,7 +2,7 @@
   "id": "ST-mdwkhv7k",
   "kind": "story",
   "title": "/kb-autopilot runs the backlog as a manager loop",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -61,5 +61,6 @@
       "by": "operator"
     }
   ],
-  "notes": "From ST-fb2hxf6s: the manager's dispatch must call backlog.py procs --record for the runner's processes (autopilot.py was outside that story's touches); the tick runs procs and ends only an owned orphan after the grace. From ST-4xvsdot3: the tick runs backlog.py selfcheck at the start of every tick itself (the skill run step 1 does it for a human run); failure names a kb-sprint remedy, an allow-rule failure is ask-operator, never an edit of settings."
+  "notes": "From ST-fb2hxf6s: the manager's dispatch must call backlog.py procs --record for the runner's processes (autopilot.py was outside that story's touches); the tick runs procs and ends only an owned orphan after the grace. From ST-4xvsdot3: the tick runs backlog.py selfcheck at the start of every tick itself (the skill run step 1 does it for a human run); failure names a kb-sprint remedy, an allow-rule failure is ask-operator, never an edit of settings.",
+  "claimed_by": "mac-first"
 }
