@@ -2,7 +2,7 @@
   "id": "BG-7lmqjumx",
   "kind": "bug",
   "title": "agent_bench.py's route() docstring and a test name in test_agent_bench.py still say no-kb researcher",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3siaqxdf",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,28 @@
     "_tools/agent_bench.py",
     "_tools/test_agent_bench.py"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "f6075221ed307a835d5326e7ce1608c1fbc9dae9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "agent_bench_researcher_wording"
+        ],
+        "exit": 0,
+        "sha256": "3eb5d2746227a44c"
+      },
+      {
+        "run": [
+          "sh",
+          "-c",
+          "if grep -q \"no-kb researcher\" _tools/agent_bench.py; then exit 1; fi"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
