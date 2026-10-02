@@ -586,8 +586,33 @@ def test_intake_drift_a_heavy_check_never_runs_and_is_counted(world):
     assert not marker.exists()  # no check of a heavy item ran, not even its light one
 
 
-def test_intake_drift_a_check_sleeping_past_the_budget_stops_the_scan_and_the_rest_are_counted(world, monkeypatch):
+class FrozenClock:
+    """A clock that moves only when a check ends: the time the scan spends outside its checks (git reads on a loaded
+    host) never reaches the budget. `spend` is the seconds a run of the real `check_result` is taken to have used,
+    and `timeouts` the timeout each run was given."""
+
+    def __init__(self, spend):
+        self.now, self.spend, self.timeouts = 0.0, spend, []
+        self.real = bl_intake.check_result
+
+    def monotonic(self):
+        return self.now
+
+    def check_result(self, root, check, timeout):
+        self.timeouts.append(timeout)
+        result = self.real(root, check, timeout)  # a real process, a real timeout
+        self.now += self.spend
+        return result
+
+
+def test_intake_drift_budget_under_load_a_check_sleeping_past_the_budget_stops_the_scan_and_the_rest_are_counted(
+        world, monkeypatch):
+    # The scan's clock is frozen but for the one check, so a host too loaded to read the repository within the budget
+    # still reaches the sleeping check first and gives it the whole budget as its timeout.
     monkeypatch.setattr(bl_intake, "rotation", lambda root: 0)  # id order: the sleeping check runs first
+    clock = FrozenClock(spend=1)
+    monkeypatch.setattr(bl_intake, "time", clock)
+    monkeypatch.setattr(bl_intake, "check_result", clock.check_result)
     world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[SLOW_CHECK])
     world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[PASS_CHECK])
     world.item(1, "TK-cccccccc", "todo", touches=["src/**"], checks=[PASS_CHECK])
@@ -595,6 +620,7 @@ def test_intake_drift_a_check_sleeping_past_the_budget_stops_the_scan_and_the_re
     t = time.monotonic()
     d = bl_intake.scan_drift(world.root, timeout=30, budget=1)
     assert time.monotonic() - t < 20  # the budget, not the check's own timeout, cut the sleep
+    assert clock.timeouts == [1]  # only the sleeping check ran, with the budget as its timeout
     assert d.timed_out == ["TK-aaaaaaaa"] and d.over_budget == ["TK-bbbbbbbb", "TK-cccccccc"]
     assert d.passing == {} and d.ran == 1
 

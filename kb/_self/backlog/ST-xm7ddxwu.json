@@ -2,7 +2,7 @@
   "id": "ST-xm7ddxwu",
   "kind": "story",
   "title": "intake's drift budget test holds on a loaded host",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,6 @@
   ],
   "touches": [
     "_tools/test_intake.py"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
