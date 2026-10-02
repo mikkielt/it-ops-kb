@@ -2,7 +2,7 @@
   "id": "TK-7pwnplew",
   "kind": "task",
   "title": "The six single-lookup e2e scenarios run in two shared clones, keeping their class and test ids",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-7ihohi2u",
   "priority": "P2",
   "rank": 0,
@@ -40,9 +40,11 @@
     "_tools/test_querylog_e2e.py",
     "_tools/conftest.py",
     "_tools/test_kb_cohesion.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md"
   ],
   "depends_on": [
     "TK-62clbs52"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
