@@ -5254,3 +5254,21 @@ def test_backlog_referrers_planted_failure_of_the_scope_rule_is_caught(sprint, c
     code = backlog.main(["--root", str(repo), "referrers", "lib/mod.py", "--item", sprint["tk"]])
     out = capsys.readouterr().out
     assert code == 0 and "outside touches" not in out  # the stray files go unmarked: the test above would fail
+
+
+def test_claim_accepts_own_claimed_dependency(sprint):
+    """`claim --by X` accepts an item whose only undone dependency is doing and claimed by X, so a depends_on that
+    orders two items sharing a file needs no hand edit; planted: another session's claim, an unclaimed dependency
+    and a dependency of the same session that is not doing still refuse."""
+    repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+    edit(repo, tk, depends_on=[bg])
+    code, out = b(repo, "claim", tk, "--by", "s1")
+    assert code == 1 and "depends on" in out, out  # planted: bg is not claimed
+    assert b(repo, "claim", bg, "--by", "s2")[0] == 0
+    code, out = b(repo, "claim", tk, "--by", "s1")
+    assert code == 1 and "depends on" in out, out  # planted: claimed by another session
+    b(repo, "release", bg)
+    assert b(repo, "claim", bg, "--by", "s1")[0] == 0
+    code, out = b(repo, "claim", tk, "--by", "s1")
+    assert code == 0, out
+    assert backlog.Backlog(repo).items[tk]["claimed_by"] == "s1"
