@@ -2,7 +2,7 @@
   "id": "BG-oi6mrxvr",
   "kind": "bug",
   "title": "settings.json allows no kbid.py, kbusage.py or querylog.py show command",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ld5jtjhm",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "7f908d63612ab44c5d2105ce4c102d13d67d2b36",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-q",
+          "kbid.py",
+          ".claude/settings.json"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
