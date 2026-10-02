@@ -45,11 +45,6 @@
     "ST-6zcqkjfm",
     "ST-2fxtyrr5"
   ],
-  "relates_to": [
-    "ST-nrhwbodb",
-    "ST-mdwkhv7k",
-    "ST-6sujnopr"
-  ],
   "gates": [
     {
       "id": "no-failure-yet",

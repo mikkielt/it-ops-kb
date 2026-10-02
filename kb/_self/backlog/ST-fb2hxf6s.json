@@ -50,9 +50,6 @@
   "depends_on": [
     "ST-6zcqkjfm"
   ],
-  "relates_to": [
-    "ST-2jojzufm"
-  ],
   "gates": [
     {
       "id": "no-failure-yet",
