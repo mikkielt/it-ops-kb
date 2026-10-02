@@ -119,6 +119,19 @@ def gitx(*args, env=None):
     return p.returncode, p.stdout + p.stderr
 
 
+def gitx_net(*args, env=None):
+    """gitx for a network call (fetch, push) with the bounded wait of kg_lock.run_git_bounded: past it git's process
+    group is ended and the result is (124, the timeout message), which the callers report as a failed fetch or push;
+    nothing is pushed by a run that gave up."""
+    try:
+        p = kg_lock.run_git_bounded(args, KB, f"kbgit.py sync: git {args[0]}", env={**os.environ, **(env or {})})
+    except kg_lock.GitNetworkTimeout as e:
+        return 124, str(e)
+    except OSError as e:
+        return 127, str(e)
+    return p.returncode, p.stdout + p.stderr
+
+
 def tool(name, *args, env=None):
     """(exit code, output) of a kb tool in this checkout (the files on disk, which a rebase may have updated). The
     re-run marker (REEXEC_ENV) is not passed on: it belongs to this sync, not to a sync a tool starts."""
@@ -533,7 +546,7 @@ def push_branch(a, r, branch, target):
         return 2
     ref = f"refs/heads/{branch}"
     tracking = f"refs/remotes/{a.remote}/{branch}"
-    code, out = gitx("fetch", "--quiet", a.remote, f"+{ref}:{tracking}")
+    code, out = gitx_net("fetch", "--quiet", a.remote, f"+{ref}:{tracking}")
     if code and not re.search(r"couldn't find remote ref", out, re.I):
         print(f"git fetch {a.remote} {branch} failed:\n" + out.rstrip())
         return 2
@@ -547,9 +560,9 @@ def push_branch(a, r, branch, target):
     opts = push_options(a.branch)
     sent = [x for o in opts for x in ("-o", o)]
     dest = [a.remote, f"HEAD:{ref}"]
-    code, out = gitx(*argv, *sent, *dest, env={"KB_GATE_DONE": "1"})  # gated above
+    code, out = gitx_net(*argv, *sent, *dest, env={"KB_GATE_DONE": "1"})  # gated above
     if code and NO_PUSH_OPTIONS.search(out):
-        code, out = gitx(*argv, *dest, env={"KB_GATE_DONE": "1"})
+        code, out = gitx_net(*argv, *dest, env={"KB_GATE_DONE": "1"})
         opts = None
     if code:
         if REJECTED.search(out):
@@ -574,7 +587,7 @@ def sync_once(a, r, host):
     """One fetch -> rebase -> fix -> gate -> push round. Returns an exit code, or "retry" when the push was rejected."""
     target = f"{a.remote}/{a.branch}"
     r["target"] = target
-    code, out = gitx("fetch", "--quiet", a.remote, f"+refs/heads/{a.branch}:refs/remotes/{target}")
+    code, out = gitx_net("fetch", "--quiet", a.remote, f"+refs/heads/{a.branch}:refs/remotes/{target}")
     missing = code and re.search(r"couldn't find remote ref", out, re.I)
     if code and not missing:
         print(f"git fetch {a.remote} failed:\n" + out.rstrip())
@@ -667,7 +680,7 @@ def sync_once(a, r, host):
     if branch:
         print(f"lane: code; pushing branch {branch}, {a.branch} does not move")
         return push_branch(a, r, branch, target)
-    code, out = gitx("push", a.remote, f"HEAD:refs/heads/{a.branch}", env={"KB_GATE_DONE": "1"})  # gated above
+    code, out = gitx_net("push", a.remote, f"HEAD:refs/heads/{a.branch}", env={"KB_GATE_DONE": "1"})  # gated above
     if code:
         if REJECTED.search(out):
             print(f"push rejected ({target} moved):\n" + out.rstrip())

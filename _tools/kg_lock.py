@@ -10,11 +10,86 @@ inside a test takes none: `wanted`), so the two cannot wait on each other.
 
 A process the lock holder starts (the re-run of sync with rebased code) inherits KB_MAIN_LOCK_HELD, the holder's pid;
 it takes no second lock while the file still names that pid. Standard library only; imports no facade.
+
+The git network calls made under the lock (fetch, push, ls-remote) run through `run_git_bounded`: a wait of
+KB_GIT_NETWORK_TIMEOUT seconds (default 120), after which git's process group is ended and `GitNetworkTimeout` is
+raised, so the error leaves the lock's block and the lock file is released instead of held by a hung ssh.
 """
-import contextlib, datetime, os, signal, sys, time
+import contextlib, datetime, os, signal, subprocess, sys, time
 
 LOCK_NAME = "kb-main.lock"
 HELD_ENV = "KB_MAIN_LOCK_HELD"
+TIMEOUT_ENV = "KB_GIT_NETWORK_TIMEOUT"
+DEFAULT_TIMEOUT = 120.0
+TERM_GRACE = 2.0
+HOLD = {"step": None}  # the step this process took the main lock with (None: it holds none)
+
+
+class GitNetworkTimeout(RuntimeError):
+    """A git network call did not finish within its bound; its process group was ended."""
+
+
+def network_timeout(value=None):
+    """The bound in seconds: VALUE, else KB_GIT_NETWORK_TIMEOUT; the default when it is unset, not a number or not
+    positive."""
+    for raw in (value, os.environ.get(TIMEOUT_ENV)):
+        if raw is None or raw == "":
+            continue
+        try:
+            n = float(raw)
+        except (TypeError, ValueError):
+            continue
+        if n > 0 and n == n and n != float("inf"):
+            return n
+    return DEFAULT_TIMEOUT
+
+
+def end_group(proc):
+    """End the process group a bounded git leads: TERM, KILL after a short grace; `taskkill /T /F` on Windows."""
+    if os.name == "posix":
+        for sig, wait in ((signal.SIGTERM, TERM_GRACE), (signal.SIGKILL, 5)):
+            try:
+                os.killpg(proc.pid, sig)
+            except (ProcessLookupError, PermissionError):
+                break
+            try:
+                proc.wait(timeout=wait)
+                break
+            except subprocess.TimeoutExpired:
+                continue
+        # the leader may be gone while a child of the group lives on: one last KILL for the group
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.killpg(proc.pid, signal.SIGKILL)
+    else:
+        subprocess.run(["taskkill", "/PID", str(proc.pid), "/T", "/F"], capture_output=True)
+    with contextlib.suppress(OSError):
+        proc.kill()
+
+
+def run_git_bounded(args, cwd, step, timeout=None, env=None):
+    """`git ARGS` in CWD with a bounded wait, as the leader of a process group of its own: a CompletedProcess with
+    text output (stdout, stderr), like subprocess.run(capture_output=True, text=True). Past the bound (KB_GIT_NETWORK_
+    TIMEOUT seconds unless TIMEOUT) the group is ended and reaped and GitNetworkTimeout names STEP, the command, the
+    bound and the step the main lock is held for. A git that cannot start raises OSError."""
+    bound = network_timeout(timeout)
+    group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    argv = ["git", *args]
+    proc = subprocess.Popen(argv, cwd=cwd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            text=True, encoding="utf-8", errors="replace", env=env, **group)
+    try:
+        out, err = proc.communicate(timeout=bound)
+    except subprocess.TimeoutExpired:
+        end_group(proc)
+        with contextlib.suppress(subprocess.TimeoutExpired, OSError, ValueError):
+            proc.communicate(timeout=5)
+        held = HOLD["step"]
+        raise GitNetworkTimeout(
+            f"{step}: git {args[0]} did not finish within {bound:g} s (KB_GIT_NETWORK_TIMEOUT); its process group was "
+            "ended" + (f" and the host main lock, held for '{held}', was released" if held else "")) from None
+    except BaseException:
+        end_group(proc)
+        raise
+    return subprocess.CompletedProcess(argv, proc.returncode, out, err)
 
 
 class LockOrderError(RuntimeError):
@@ -51,7 +126,12 @@ def main_lock(step, label="kbgit.py", poll=None, clone=None, on_stale=None):
                              "holds the test lock")
     held = tests_py.read_holder(path)
     if held and os.environ.get(HELD_ENV) == str(held["pid"]) and tests_py.pid_alive(held["pid"]):
-        yield path
+        before_step = HOLD["step"]
+        HOLD["step"] = holder_step(tests_py.read_lock(path))
+        try:
+            yield path
+        finally:
+            HOLD["step"] = before_step
         return
     poll = poll if poll is not None else float(os.environ.get("KB_HOST_LOCK_POLL", "5"))
     me = (f"pid={os.getpid()}\nclone={clone or os.getcwd()}\n"
@@ -96,9 +176,12 @@ def main_lock(step, label="kbgit.py", poll=None, clone=None, on_stale=None):
         pass
     before = os.environ.get(HELD_ENV)
     os.environ[HELD_ENV] = str(os.getpid())
+    before_step = HOLD["step"]
+    HOLD["step"] = step
     try:
         yield path
     finally:
+        HOLD["step"] = before_step
         if before is None:
             os.environ.pop(HELD_ENV, None)
         else:
