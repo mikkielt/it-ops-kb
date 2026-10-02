@@ -30,7 +30,7 @@
     ".claude/skills/kb-ingest/SKILL.md",
     "kb/_self/map.csv",
     "kb/_self/README.md",
-    "_tools/test_selfdoc.py",
+    "_tools/test_selfdoc_ingest.py",
     "kb/_self/plugin.md",
     "kb/_self/maintaining.md"
   ]
