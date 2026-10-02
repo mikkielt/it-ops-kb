@@ -2,7 +2,7 @@
   "id": "ST-6qkeyj72",
   "kind": "story",
   "title": "Review sprint: kbingest map and its skill stay exact",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-6tg672en",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "a9b09cde07257bb64731f2c47d1cbeaa213b8b01",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b992534eb85384d3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "db1a150b10201900"
+      }
+    ]
+  }
 }
