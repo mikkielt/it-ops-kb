@@ -106,7 +106,8 @@ def kinds_of(parts):
     return sorted({p["kind"] for p in parts}, key=KINDS.index)
 
 
-POINTER = re.compile(r"(?<![\w/.-])((?:[\w.-]+/)*[\w.-]+\.[A-Za-z0-9]+)#([\w.:-]+)")
+# a file name carries an extension, or sits under a directory (src/adr-new, a script with none)
+POINTER = re.compile(r"(?<![\w/.-])((?:[\w.-]+/)+[\w.-]+|[\w.-]+\.[A-Za-z0-9]+)#([\w.:-]+)")
 
 
 def code_pointer(part):
