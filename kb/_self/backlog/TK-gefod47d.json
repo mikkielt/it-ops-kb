@@ -2,7 +2,7 @@
   "id": "TK-gefod47d",
   "kind": "task",
   "title": "bl_plan.py holds the plan and start helpers that move together",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,6 @@
   ],
   "depends_on": [
     "TK-ldhzhsc2"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
