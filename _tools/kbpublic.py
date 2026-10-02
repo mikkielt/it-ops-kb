@@ -33,7 +33,7 @@ the same `main`, so the public home gets a projection of it:
               internal` in any commit of the range, at the tip or in the projection (the projection's tree is checked
               too, for what the tip already holds); a file a commit writes has a leak-scan hit (kbcommon.leak_hits,
               allowing _tools/tests_allowlist.txt of the commit and of the projection, read as the tracked-file scan
-              reads it: a GUID in a Markdown file only, a vendor export, snapshot or pinned artifact for secrets only) that neither the parent's nor
+              reads it: a vendor export, snapshot or pinned artifact for secrets only) that neither the parent's nor
               the tip's version of the file already holds and whose value no file of the tip holds (already public;
               the tip's values are scanned once per tip and cached in _cache/publish/, as digests); the integration
               CI verdict of the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
@@ -394,12 +394,12 @@ def pinned_paths(proj, files, cwd):
 def file_hits(path, text, allow, pinned=()):
     """[(kind, value)] of the leak scan of the file PATH with TEXT, as the tracked-file scan reads a file: urls are
     stripped except for secrets; vendor exports, snapshots (`/artifacts/`, `/_snapshots/`) and the pinned artifacts
-    PINNED lists are scanned for secrets only; a GUID counts in a Markdown file only."""
+    PINNED lists are scanned for secrets only; a GUID counts in every other text file."""
     import kbcommon
     vendored = "/artifacts/" in path or f"/{kbcommon.SNAPSHOTS}/" in path or path in pinned
     hits = kbcommon.leak_hits(URL_RX.sub("", text), allow)
     hits += [h for h in kbcommon.leak_hits(text, allow) if h[0] == "secret" and h not in hits]
-    return [h for h in hits if h[0] == "secret" or not (vendored or (h[0] == "guid" and not path.endswith(".md")))]
+    return [h for h in hits if h[0] == "secret" or not vendored]
 
 
 def cache_load(cwd, name):
