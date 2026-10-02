@@ -210,6 +210,74 @@ LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])
 LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
 
 
+# land's ops rows (kb/_self/querylog.md, ops events): a `land.step` row per step, a `land.end` row at every end, and
+# a warning when the item's work left no `work` row in this host's spool. Best effort: nothing here changes land's
+# exit or output beyond the warning line.
+LAND_OPS = {"step": None, "t": 0.0, "exit": 0, "lane": None, "item": None}
+
+
+def ops_token(label):
+    """A step label as an ops token: lower case, every run of other characters one `-`, at most 40 characters."""
+    return re.sub(r"[^a-z0-9_.]+", "-", label.lower()).strip("-")[:40] or "step"
+
+
+def ops_write(**fields):
+    try:
+        import ql_capture
+        ql_capture.record("ops", **fields)
+    except Exception:  # noqa: BLE001 - a landing never fails for its log
+        pass
+
+
+def ops_close(code=0):
+    """Write the row of the step that is open (if one is), with CODE as its exit."""
+    if LAND_OPS["step"] and LAND_OPS["item"]:
+        ops_write(event="land.step", item=LAND_OPS["item"], step=LAND_OPS["step"], exit=code,
+                  ms=int((time.monotonic() - LAND_OPS["t"]) * 1000))
+    LAND_OPS["step"] = None
+
+
+def ops_mark(label):
+    """The next step starts: the one before it passed."""
+    ops_close()
+    LAND_OPS.update(step=ops_token(label), t=time.monotonic(), exit=1)
+
+
+def ops_no_work_rows(root, iid):
+    """Whether this host's spool holds no `work` row (claim, done, release) of the item or of a descendant of it;
+    False when capture is off or anything cannot be read."""
+    try:
+        import ql_capture, ql_distill
+        spool = ql_capture.spool_dir()
+        if spool is None or not Path(spool).is_dir():
+            return False
+        ids = {iid, *Backlog(root).descendants(iid)}
+        return not any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in ql_capture.WORK_ACTIONS
+                       for p in Path(spool).glob("*.jsonl") for r in ql_distill.spool_rows(p)[0])
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def ops_land(handler):
+    """Wrap `cmd_land`: the open step's row and the `land.end` row at every end, and the warning after a run that
+    returned 0 for an item with no work rows."""
+    def wrapped(bl, a):
+        LAND_OPS.update(step=None, exit=1, lane=None, item=getattr(a, "id", None))
+        t0, done = time.monotonic(), False
+        try:
+            code = handler(bl, a)
+            done = code == 0
+            if done and ops_no_work_rows(bl.root, a.id):
+                say(f"warning: {a.id} landed with no work rows (a worker started without the capture hooks?)")
+            return code
+        finally:
+            ops_close(0 if done else LAND_OPS["exit"])
+            ops_write(event="land.end", item=LAND_OPS["item"], exit=0 if done else 1,
+                      ms=int((time.monotonic() - t0) * 1000), lane=LAND_OPS["lane"])
+    wrapped.__doc__ = handler.__doc__
+    return wrapped
+
+
 def land_stop(step, why):
     return Refused(f"land stopped at step {step}: {why}")
 
@@ -217,6 +285,7 @@ def land_stop(step, why):
 def land_run(root, step, argv, whole=False):
     """Run one landing step; its output (the tail of it, unless WHOLE or it failed) goes through say()."""
     say(f"land: {step}")
+    ops_mark(step)
     try:
         p = subprocess.run([sys.executable, *argv], cwd=root, capture_output=True, text=True, encoding="utf-8",
                            errors="replace", env=colourless_env())
@@ -227,6 +296,7 @@ def land_run(root, step, argv, whole=False):
     shown = lines if whole or code else lines[-LAND_TAIL:]
     if shown:
         say("\n".join(shown))
+    LAND_OPS["exit"] = code if isinstance(code, int) else 1
     if code != 0:
         raise land_stop(step, f"python3 {shlex.join(argv)} exited {code}")
 
@@ -487,6 +557,7 @@ def restore_done(root, iid):
     return item_state(root, "HEAD", iid) == "done"
 
 
+@ops_land
 def cmd_land(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
     heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the heavy checks, sync
@@ -517,8 +588,10 @@ def cmd_land(bl, a):
     try:
         with kg_lock.guarded("backlog.py land: fetch and rebase", "backlog.py", clone=str(root)):
             say(f"land: fetch {remote} main")
+            ops_mark("fetch")
             land_git(root, "fetch", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
             say(f"land: rebase {branch} on {remote}/main")
+            ops_mark("rebase")
             claims = missing_claims(root, [iid] + bl.descendants(iid), start, upstream, branch)
             if claims:  # claimed after the branch was cut, or never pushed: the claim goes under the worker's commits
                 say(f"land: carry the claim commit(s) {', '.join(c[:10] for c in claims)} under {branch}")
@@ -535,6 +608,7 @@ def cmd_land(bl, a):
         need(bl, iid)
         family = [iid] + bl.descendants(iid)
         late, _, owners = unlanded_code(root, family)
+        LAND_OPS["lane"] = "code" if late else "content"
         if late == ["(no such ref)"]:
             raise land_stop("fetch", f"{upstream} does not exist after the fetch")
         if late:
@@ -559,6 +633,7 @@ def cmd_land(bl, a):
                     "not run again")
             else:
                 say("land: done --commit")
+                ops_mark("done")
                 try:
                     cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer))
                 except Refused as e:
