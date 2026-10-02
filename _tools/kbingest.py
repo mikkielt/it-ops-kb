@@ -901,21 +901,22 @@ def under_worktree(path, root):
     return False
 
 
-def scrub_env(base=None, windows=None, root=None):
+def scrub_env(base=None, windows=None, root=None, repo=None):
     """The environment of a mapper command: the caller's, without credentials and proxies, plus NETWORK_OFF. On
     Windows (WINDOWS, by default os.name) it also sets NoDefaultCurrentDirectoryInExePath: cmd.exe, which runs an npm
     cmd-shim (tsc.cmd, npm.cmd), otherwise looks for a bare `node` in the working folder before PATH, and that folder
     is the repository's (https://learn.microsoft.com/windows/win32/api/processenv/nf-processenv-needcurrentdirectoryforexepathw:
     the variable's existence, not its value, drops the current directory from cmd.exe's search).
-    PATH keeps only its absolute entries outside the worktree ROOT: a child resolves a relative entry (`.`,
-    `node_modules/.bin`, an empty one) against its own working folder, the repository's, so `#!/usr/bin/env node` or a
-    rustup proxy there would run the repository's program."""
+    PATH keeps only its absolute entries outside the worktree ROOT and outside the source repository REPO (its own
+    clone, which the operator's PATH can name too: a `node_modules/.bin` there, a direnv-added bin folder): a child
+    resolves a relative entry (`.`, `node_modules/.bin`, an empty one) against its own working folder, the repository's,
+    so `#!/usr/bin/env node` or a rustup proxy there would run the repository's program."""
     env = {k: v for k, v in (os.environ if base is None else base).items()
            if not SECRET_ENV.search(k) and not PROXY_ENV.match(k)}
     env.update(NETWORK_OFF)
     for k in [k for k in env if k.upper() == "PATH"]:
         env[k] = os.pathsep.join(e for e in env[k].split(os.pathsep) if e and Path(e).is_absolute()
-                                 and not (root is not None and under_worktree(e, root)))
+                                 and not any(top is not None and under_worktree(e, top) for top in (root, repo)))
     if os.name == "nt" if windows is None else windows:
         env["NoDefaultCurrentDirectoryInExePath"] = "1"
     return env
@@ -1728,7 +1729,7 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
     doc = {"format": MAP_FORMAT, "repo": Path(repo).name, "commit": commit, "rev": rev, "tools": {}, "packages": [],
            "imports": [], "entry_points": [], "notes": []}
     with scratch_worktree(repo, commit) as root:
-        env = scrub_env(base_env, root=root)
+        env = scrub_env(base_env, root=root, repo=repo)
         for m in MAPPERS:
             if langs and m.language not in langs:
                 continue
