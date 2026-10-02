@@ -8,6 +8,11 @@ on:
     branches: ["**"]
     tags: ["**"]
   workflow_dispatch:
+    inputs:
+      range:
+        description: "check-lanes range (A..B or a revision); empty checks the ref's history"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -92,3 +97,25 @@ jobs:
           fi
           python3 _tools/doc2query.py stale
           python3 _tools/fetch.py --offline
+
+  # Code-lane commits no merged pull request introduced (kb/_self/git.md, Lanes), started by hand only
+  # (workflow_dispatch): the pushed range is not known then, so the optional input `range` (A..B or a revision) names
+  # it and an empty one checks the history of the chosen ref. It detects after the fact and never blocks a push. The
+  # run's own read-only token reads the association API; no secret, nothing is published.
+  check-lanes:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    container: python:3.14
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: kbgit.py check-lanes over the range
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          LANE_RANGE: ${{ inputs.range }}
+        run: python3 _tools/kbgit.py check-lanes --forge github ${LANE_RANGE:+"$LANE_RANGE"}

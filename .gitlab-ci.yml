@@ -149,3 +149,21 @@ kb-trailers:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH
       when: manual
       allow_failure: true
+
+# Code-lane commits no merged merge request introduced (kbgit.py check-lanes, kb/_self/git.md, Lanes) on the pushed
+# range, as kb-trailers reads it. It detects after the fact and never blocks a push. The forge's association API is
+# read with the job's own CI_JOB_TOKEN; exit 1 lists the commits, exit 2 means the API could not be read. GIT_DEPTH 0:
+# a shallow clone may miss the before sha.
+check-lanes:
+  stage: test
+  tags: [docker-linux]
+  image: python:3.14
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - python3 _tools/kbgit.py check-lanes --forge gitlab
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH
+      when: manual
+      allow_failure: true
