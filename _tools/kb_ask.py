@@ -11,8 +11,8 @@
                                         if the facts are only about something related it answers INSUFFICIENT and
                                         the question goes on to step 4 (the verdict counts words, not meaning);
                                      4. a pack routed web (the kb lacks the question) -> one Sonnet researcher at low
-                                        effort with the live-docs servers and WebSearch/WebFetch, no kb server; it gets
-                                        the question, the pack's `kb lacks:` line and up to three nearest article titles
+                                        effort with WebSearch/WebFetch and the kb server's cached docs_search and
+                                        docs_fetch (its live docs; no kb search tools); it gets the question, the pack's `kb lacks:` line and up to three nearest article titles
                                         as leads to verify; its `--output-format json` result is printed (an error
                                         result's errors go to stderr, exit 1);
                                      5. a pack routed split (the kb has part of it) -> the Haiku reader answers the `kb has:`
@@ -51,7 +51,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbfacts  # noqa: E402
 import ql_capture  # noqa: E402
 
-HOME = kbfacts.kbcommon.HOME  # this repository: the docs servers' config, the kb server, the sessions' cwd
+HOME = kbfacts.kbcommon.HOME  # this repository: the kb server, the sessions' cwd
 # the researcher's live docs come through the kb server's docs_search and docs_fetch (kb_mcp.py), which keep each
 # answer 7 days on disk, as ql_research.research_argv does; the docs servers themselves cache nothing
 DOCS = ["mcp__kb__docs_search", "mcp__kb__docs_fetch"]
@@ -276,7 +276,8 @@ def parse_result(stdout):
 
 
 def research(model, system, user):
-    """The researcher's (text, cost, ok): a claude -p with the docs servers and WebSearch/WebFetch."""
+    """The researcher's (text, cost, ok): a claude -p with WebSearch/WebFetch and the kb server's cached
+    docs_search and docs_fetch (see docs_mcp_config and DOCS), not the docs servers themselves."""
     argv = claude_argv(model, tools=True, output="json") + ["--append-system-prompt", system]
     p = subprocess.run(argv, cwd=HOME, input=user, capture_output=True, text=True, encoding="utf-8")
     got = parse_result(p.stdout)
