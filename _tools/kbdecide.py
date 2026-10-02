@@ -37,6 +37,11 @@ R is a root's name (`python3 _tools/kbroot.py list`) or `_self` for kb/_self; th
 lands in a root by omission. The rows go to the root's `_decisions.csv`; its format and rules are in kbcommon
 (DECISION_COLS, DECISION_STATUS, CONTEXT_KINDS) and `kb/_self/content-rules.md`, Decisions.
 
+The row store is shared: a `Ledger` names the file, columns, id form and check of one kind of rows, and `Store(name,
+ledger)`, `load`, `save`, `find`, `need`, `mark_invalidated` and `sweep` work over any of them. DECISIONS is this
+tool's; LOGS (`_logs.csv`, `kb/_self/content-rules.md`, Logs) is kblog.py's, which has its own commands and no copy of
+the store.
+
   - A decision's id is `D-` and 8 base32 characters of the sha256 of its text and context, so the same decision
     proposed twice is one id and the second is refused.
   - `source` is where the decision was made, and it is required; a source id in it must be one the root may cite.
@@ -94,10 +99,29 @@ class Refused(Exception):
     """A request the tool will not carry out; the message says why."""
 
 
-class Store:
-    """Where one root's (or kb/_self's) decisions are kept: `root` is a kbcommon.Root, None for kb/_self."""
+class Ledger:
+    """One kind of row file the store keeps in a root or in kb/_self: its `noun` (as a refusal says it), `file`, `cols`,
+    `id_form` (a compiled regex) with the `prefix` of its ids, its `status` values, the `check` that judges it (check.py's, run over a
+    root as check.check_decisions is), the `text_max` of one free-text cell (None: no limit), and `fact_gone`: what a
+    context `fact:` that no fact has any more does to a row, `flag` (a relink line, the row stays) or `invalidate`."""
 
-    def __init__(self, name):
+    def __init__(self, noun, file, cols, id_form, prefix, status, check, text_max=None, fact_gone="flag"):
+        self.noun, self.file, self.cols, self.id_form, self.prefix, self.status = noun, file, cols, id_form, prefix, status
+        self.check, self.text_max, self.fact_gone = check, text_max, fact_gone
+
+
+DECISIONS = Ledger("decision", kbcommon.DECISIONS, kbcommon.DECISION_COLS, kbcommon.DECISION_ID, kbcommon.DECISION_PREFIX,
+                   kbcommon.DECISION_STATUS, check.check_decisions)
+LOGS = Ledger("log row", check.LOGS, check.LOG_COLS, check.LOG_ID, check.LOG_PREFIX, check.LOG_STATUS, check.check_logs,
+              text_max=check.LOG_TEXT_MAX, fact_gone="invalidate")
+
+
+class Store:
+    """Where one root's (or kb/_self's) rows of one ledger (default: decisions) are kept: `root` is a kbcommon.Root,
+    None for kb/_self."""
+
+    def __init__(self, name, ledger=DECISIONS):
+        self.ledger = ledger
         if name == SELF_ROOT:
             self.name, self.root, self.base = SELF_ROOT, None, Path(kbcommon.SELF)
             return
@@ -111,34 +135,34 @@ class Store:
 
     @property
     def path(self):
-        return self.base / kbcommon.DECISIONS
+        return self.base / self.ledger.file
 
     @property
     def label(self):
-        return "kb/_self/" + kbcommon.DECISIONS if self.root is None else kbcommon.qualify(self.root, kbcommon.DECISIONS)
+        return "kb/_self/" + self.ledger.file if self.root is None else kbcommon.qualify(self.root, self.ledger.file)
 
 
-def stores(name=None):
+def stores(name=None, ledger=DECISIONS):
     """The Store of `name`, or every root's and kb/_self's when `name` is None."""
     if name is not None:
-        return [Store(name)]
+        return [Store(name, ledger)]
     try:
-        return [Store(r.name) for r in kbcommon.roots()] + [Store(SELF_ROOT)]
+        return [Store(r.name, ledger) for r in kbcommon.roots()] + [Store(SELF_ROOT, ledger)]
     except kbcommon.RootError as e:
         raise Refused(str(e))
 
 
 def load(store):
-    """The rows of the store's _decisions.csv ([] when it has none): Refused when it cannot be read or its header is
-    not kbcommon.DECISION_COLS."""
+    """The rows of the store's file ([] when it has none): Refused when it cannot be read or its header is not the
+    ledger's columns."""
     if not store.path.is_file():
         return []
     try:
         header, rows = kbcommon.load_csv(str(store.path))
     except kbcommon.CsvError as e:
         raise Refused(str(e))
-    if header != kbcommon.DECISION_COLS:
-        raise Refused(f"{store.label}: header is {','.join(header or [])!r}, not {','.join(kbcommon.DECISION_COLS)!r}")
+    if header != store.ledger.cols:
+        raise Refused(f"{store.label}: header is {','.join(header or [])!r}, not {','.join(store.ledger.cols)!r}")
     return rows
 
 
@@ -155,20 +179,20 @@ def known_sources():
 
 
 def problems(store):
-    """The errors check.py finds in the store's decision files as they are on disk now."""
+    """The errors check.py finds in the store's files (the ledger's check) as they are on disk now."""
     owner = {r.id_prefix: r for r in kbcommon.roots()}
     check.errors.clear()
-    check.check_decisions(store.root, owner, known_sources())
+    store.ledger.check(store.root, owner, known_sources())
     found = list(check.errors)
     check.errors.clear()
     return found
 
 
 def save(store, rows, path=None, cols=None):
-    """Write the rows (of _decisions.csv, or of `path` with the columns `cols`), then check the files: a change that
+    """Write the rows (of the store's file, or of `path` with the columns `cols`), then check the files: a change that
     adds an error to what check.py found before is undone and refused, so no row kbdecide writes fails check.py. The
     file is replaced whole, never half written."""
-    path, cols = path or store.path, cols or kbcommon.DECISION_COLS
+    path, cols = path or store.path, cols or store.ledger.cols
     before = problems(store)
     old = path.read_bytes() if path.is_file() else None
     kbcommon.write_csv(str(path), cols, rows, atomic=True)
@@ -230,11 +254,16 @@ def read_makers(base):
             if (r.get("id") or "").strip() != kbcommon.POLICY_ROW}
 
 
+def row_id(ledger, *parts):
+    """The ledger's prefix, `-` and the first 8 base32 characters of the sha256 of the parts joined by line breaks, as a
+    source id is made from its url (kbid.source_id)."""
+    digest = hashlib.sha256("\n".join(parts).encode("utf-8")).digest()
+    return f"{ledger.prefix}-" + base64.b32encode(digest).decode("ascii").lower()[:8]
+
+
 def decision_id(text, context):
-    """`D-` and the first 8 base32 characters of the sha256 of the decision's text and context, as a source id is made
-    from its url (kbid.source_id)."""
-    digest = hashlib.sha256(f"{text}\n{context}".encode("utf-8")).digest()
-    return f"{kbcommon.DECISION_PREFIX}-" + base64.b32encode(digest).decode("ascii").lower()[:8]
+    """`D-` and the first 8 base32 characters of the sha256 of the decision's text and context."""
+    return row_id(DECISIONS, text, context)
 
 
 def day(text):
@@ -251,23 +280,24 @@ def day(text):
 
 
 def find(rows, did, store):
-    """The row of decision `did`; Refused when the id is malformed or the file has no such decision."""
-    if not kbcommon.DECISION_ID.fullmatch(did or ""):
-        raise Refused(f"{did!r} is not a decision id (D-<8 base32>)")
+    """The row `did`; Refused when the id is malformed or the file has no such row."""
+    noun = store.ledger.noun
+    if not store.ledger.id_form.fullmatch(did or ""):
+        raise Refused(f"{did!r} is not a {noun} id ({store.ledger.prefix}-<8 base32>)")
     for r in rows:
         if (r.get("id") or "").strip() == did:
             return r
-    raise Refused(f"no decision {did} in {store.label}")
+    raise Refused(f"no {noun} {did} in {store.label}")
 
 
 def field(row, key):
     return (row.get(key) or "").strip()
 
 
-def need(row, status, did, what):
-    """Refused unless the decision's status is one of `status` (a tuple): `what` is what was asked of it."""
+def need(row, status, did, what, noun="decision"):
+    """Refused unless the row's status is one of `status` (a tuple): `what` is what was asked of it."""
     if field(row, "status") not in status:
-        raise Refused(f"{did} is {field(row, 'status') or 'without a status'}: only {' or '.join(status)} decisions can be {what}")
+        raise Refused(f"{did} is {field(row, 'status') or 'without a status'}: only {' or '.join(status)} {noun}s can be {what}")
 
 
 def cmd_propose(a):
@@ -293,6 +323,7 @@ def cmd_propose(a):
 
 
 def need_operator(a, what):
+    """Refused unless `--by` is the operator: `what` is what only the operator does."""
     if a.by != OPERATOR:
         raise Refused(f"only the operator {what}: run it with --by {OPERATOR} once the operator has said so")
 
@@ -383,18 +414,35 @@ def cmd_supersede(a):
     return 0
 
 
-def cmd_invalidate(a):
-    store = Store(a.root)
+def mark_invalidated(store, row, reason, when):
+    """Set the row invalidated with its reason, kept in the file. A ledger with an `invalidated_date` column takes the
+    day there; another notes it in `links` when the cell has room."""
+    row.update(status="invalidated", invalidated_reason=reason)
+    if "invalidated_date" in store.ledger.cols:
+        row["invalidated_date"] = when
+        return
+    note = "; ".join(filter(None, [field(row, "links"), f"invalidated {when}"]))
+    if store.ledger.text_max is None or len(note) <= store.ledger.text_max:
+        row["links"] = note
+
+
+def invalidate(a, ledger=DECISIONS):
+    """Withdraw a proposed or active row of the ledger, keeping it (`--reason` says why)."""
+    store = Store(a.root, ledger)
     rows = load(store)
     row = find(rows, a.id, store)
-    need(row, ("proposed", "active"), a.id, "invalidated")  # a rejected proposal names no maker: check.py takes that of an invalidated row
+    need(row, ("proposed", "active"), a.id, "invalidated", ledger.noun)  # a rejected proposal names no maker: check.py takes that of an invalidated row
     reason = " ".join(a.reason.split())
     if not reason:
-        raise Refused("--reason is empty: say why the decision no longer holds")
-    row.update(status="invalidated", invalidated_reason=reason, invalidated_date=day(a.date))
+        raise Refused(f"--reason is empty: say why the {ledger.noun} no longer holds")
+    mark_invalidated(store, row, reason, day(a.date))
     save(store, rows)
     print(f"{a.id}\tinvalidated\t{store.name}")
     return 0
+
+
+def cmd_invalidate(a):
+    return invalidate(a)
 
 
 def cmd_restore(a):
@@ -474,8 +522,9 @@ def gone(store, kind, value):
     return not ((where / f"{rel}.md").is_file() if kind == "article" else (where / rel).is_dir())
 
 
-def broken(store, row, ctx, today):
-    """The reasons, `<ref> <what>`, why the context of decision `row` no longer holds; [] when it holds."""
+def broken(store, row, ctx, today, facts=None):
+    """The reasons, `<ref> <what>`, why the context of the row no longer holds; [] when it holds. A ledger whose
+    `fact_gone` is `invalidate` (not `flag`) also takes each `fact:` of `facts` (a Facts) that no fact has any more."""
     out = []
     for kind, value in kbcommon.context_refs(row.get("context")):
         if kind == "item" and ctx.item_status(value) == "dropped":
@@ -484,6 +533,8 @@ def broken(store, row, ctx, today):
             out.append(f"source:{value} superseded by {ctx.superseded_by(store, value)}")
         elif kind in ("article", "domain") and gone(store, kind, value):
             out.append(f"{kind}:{value} is gone")
+    if store.ledger.fact_gone == "invalidate" and facts is not None:
+        out += [f"fact:{key} is gone" for key in gone_facts(row, facts)]
     review = field(row, "review_by")
     if review and review < today:  # ISO dates compare as text; a malformed review_by is check.py's to report
         out.append(f"review_by {review} passed")
@@ -642,16 +693,24 @@ def relink_line(store, row, key, hit):
     return "\t".join([field(row, "id"), "relink", store.name, f"fact:{key}", f"{hit['path']}:{hit['line']}" if hit else "-", text])
 
 
-def cmd_sweep(a):
+def clip_reason(store, why):
+    """`why` cut to the ledger's free-text limit, so a long list of broken references never makes the file fail."""
+    cap = store.ledger.text_max
+    return why if cap is None or len(why) <= cap else why[:cap - 3] + "..."
+
+
+def sweep(a, ledger=DECISIONS):
+    """Invalidate every proposed or active row of the ledger, in the root `a.root` or in all, whose context is broken
+    (the rules in the docstring); a decision whose only fault is a `fact:` that is gone is flagged for `relink`."""
     today, ctx, facts, refused, n, flagged = day(a.date), Context(), Facts(), [], 0, 0
-    for store in stores(a.root):
+    for store in stores(a.root, ledger):
         rows, hit, flag = load(store), [], []
         for r in rows:
             if field(r, "status") not in ("proposed", "active"):
                 continue
-            if why := broken(store, r, ctx, today):
+            if why := broken(store, r, ctx, today, facts):
                 hit.append((r, "; ".join(why)))
-            else:  # a context that holds apart from a fact that is gone is flagged, its row left as it is
+            elif ledger.fact_gone == "flag":  # a context that holds apart from a fact that is gone is flagged, its row left as it is
                 flag += [(r, key) for key in gone_facts(r, facts)]
         for r, key in flag:
             print(relink_line(store, r, key, suggest(store, r, key, facts)))
@@ -660,7 +719,7 @@ def cmd_sweep(a):
             continue
         for r, why in hit:
             print(f"{field(r, 'id')}\t{'would invalidate' if a.dry_run else 'invalidated'}\t{store.name}\t{why}")
-            r.update(status="invalidated", invalidated_reason=why, invalidated_date=today)
+            mark_invalidated(store, r, clip_reason(store, why), today)
         if not a.dry_run:
             try:
                 save(store, rows)
@@ -669,10 +728,15 @@ def cmd_sweep(a):
                 continue
         n += len(hit)
     print(f"{'would_invalidate' if a.dry_run else 'invalidated'}={n}")
-    print(f"relink={flagged}")
+    if ledger.fact_gone == "flag":
+        print(f"relink={flagged}")
     for why in refused:
         print(f"refused: {why}")
     return 2 if refused else 0
+
+
+def cmd_sweep(a):
+    return sweep(a)
 
 
 def cmd_relink(a):
@@ -783,7 +847,7 @@ def parser():
     p.add_argument("--dry-run", action="store_true", help="print what would be invalidated and write nothing")
     p.add_argument("--date", help="YYYY-MM-DD, the day taken as today (default: today)")
     p = add("list", "the decisions of one root or of all", root_required=False)
-    p.add_argument("--status", choices=kbcommon.DECISION_STATUS)
+    p.add_argument("--status", choices=DECISIONS.status)
     p.add_argument("--context", help="only the decisions whose context names this kind:value (or bare value)")
     return ap
 
