@@ -5211,3 +5211,46 @@ def test_gate_option_names_its_command(repo):
     assert "warnings=0" in b(repo, "check")[1]
     edit(repo, sid, gates=[gates[0]], status="done")
     assert "warnings=0" in b(repo, "check")[1]
+
+
+def referrer_repo(sprint):
+    repo = Path(sprint["repo"])
+    for rel, text in {"lib/mod.py": "def helper_fn():\n    pass\n", "lib/user.py": "import mod\nmod.helper_fn()\n",
+                      "docs/n.md": "see lib/mod.py and `helper_fn`\nhelper_fn_other is another\n",
+                      "src/t.txt": "lib/mod.py\n", "docs/none.md": "nothing\n"}.items():
+        (repo / rel).parent.mkdir(exist_ok=True)
+        (repo / rel).write_text(text, encoding="utf-8", newline="\n")
+    commit(repo, "files")
+    return repo
+
+
+def test_backlog_referrers_lists_each_file_that_names_a_moved_file_or_symbol(sprint):
+    repo = referrer_repo(sprint)
+    code, out = b(repo, "referrers", "lib/mod.py", "helper_fn", "no_such_symbol")
+    assert code == 0, out
+    assert out.splitlines() == ["lib/mod.py  docs/n.md:1  1 line", "lib/mod.py  lib/user.py:1  2 lines",
+                                "lib/mod.py  src/t.txt:1  1 line",
+                                "helper_fn  docs/n.md:1  1 line", "helper_fn  lib/mod.py:1  1 line",
+                                "helper_fn  lib/user.py:2  1 line",
+                                "no_such_symbol  no tracked file names it"], out
+
+
+def test_backlog_referrers_item_marks_the_files_outside_its_touches(sprint):
+    repo = referrer_repo(sprint)
+    code, out = b(repo, "referrers", "lib/mod.py", "--item", sprint["tk"])  # the task's touches are src/**
+    assert code == 1, out
+    assert "lib/mod.py  src/t.txt:1  1 line\n" in out + "\n" and "src/t.txt:1  1 line  outside" not in out, out
+    assert "docs/n.md:1  1 line  outside touches" in out and "lib/user.py:1  2 lines  outside touches" in out, out
+    edit(repo, sprint["tk"], touches=["src/**", "docs/n.md", "lib/user.py"])
+    code, out = b(repo, "referrers", "lib/mod.py", "--item", sprint["tk"])
+    assert code == 0 and "outside" not in out, out
+    assert b(repo, "referrers", "x", "--item", "TK-zzzzzzzz")[0] == 2
+
+
+def test_backlog_referrers_planted_failure_of_the_scope_rule_is_caught(sprint, capsys, monkeypatch):
+    """A scope rule that holds every path (planted) hides the stray files, and the check sees it."""
+    repo = referrer_repo(sprint)
+    monkeypatch.setattr(backlog, "in_scope", lambda path, globs: True)  # planted
+    code = backlog.main(["--root", str(repo), "referrers", "lib/mod.py", "--item", sprint["tk"]])
+    out = capsys.readouterr().out
+    assert code == 0 and "outside touches" not in out  # the stray files go unmarked: the test above would fail
