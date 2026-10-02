@@ -2,7 +2,7 @@
   "id": "ST-2ceybba2",
   "kind": "story",
   "title": "Order tasks that share a file without a depends_on that blocks one session from claiming both",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-6eifcza6",
   "priority": "P3",
@@ -24,5 +24,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orch-fourth-w17"
+  "evidence": {
+    "commit": "71c0a645e9329b0efd499edcf1e0e62e21d0f487",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "claim_accepts_own_claimed_dependency"
+        ],
+        "exit": 0,
+        "sha256": "9b0b2bff78042845"
+      }
+    ]
+  }
 }
