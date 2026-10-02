@@ -2,7 +2,7 @@
   "id": "TK-ehgunyr4",
   "kind": "task",
   "title": "kb-sprint run --headless records gates and stops after K landed items",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ng7igc4l",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "TK-3hphkfbg"
-  ]
+  ],
+  "claimed_by": "mac-first-w2"
 }
