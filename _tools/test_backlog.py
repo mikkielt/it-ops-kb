@@ -5170,3 +5170,44 @@ def test_backlog_state_paths_check_warns_of_unchecked_ways_state_changes(repo):
     edit(repo, sw, goal=goal, status="done")
     code, out = b(repo, "check")
     assert "warnings=0" in out and "state changes" not in out, out
+
+
+def test_gate_option_names_its_command(repo):
+    """check warns of an unanswered blocking gate of an open item whose options carry no do; an argv or an item id
+    on an option, an answer, a provisional gate and a done item are quiet; do is validated against the options."""
+    assert b(repo, "new", "story", "--title", "Decide", "--goal", "Pick a name", "--touch", "src/**",
+             "--check", "python3 -c pass")[0] == 0
+    sid = item(repo, "Decide")["id"]
+    args = ("gate", "add", sid, "--question", "Which name?", "--option", "keep", "--option", "rename",
+            "--recommendation", "keep")
+    assert b(repo, *args)[0] == 0
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=1" in out and "blocking gate g1 has no `do`" in out and sid in out, out
+    # a do naming no option is refused, as is one with neither an argv nor an existing item
+    assert b(repo, "gate", "add", sid, "--id", "g2", "--question", "Other?", "--option", "a", "--option", "b",
+             "--recommendation", "a", "--do", "c=echo hi")[0] == 2
+    assert b(repo, "gate", "add", sid, "--id", "g2", "--question", "Other?", "--option", "a", "--option", "b",
+             "--recommendation", "a", "--do", "a=")[0] == 2
+    gates = item(repo, "Decide")["gates"]
+    edit(repo, sid, gates=[dict(gates[0], do={"rename": "ST-aaaaaaaa"})])
+    code, out = b(repo, "check")
+    assert code == 1 and "needs an argv" in out, out
+    edit(repo, sid, gates=[dict(gates[0], do={"rename": ["git", "mv", "a", "b"]})])
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out, out
+    # the same gate given its do by gate add on a fresh item
+    assert b(repo, "new", "story", "--title", "Decide two", "--goal", "Pick again", "--touch", "src/**",
+             "--check", "python3 -c pass")[0] == 0
+    two = item(repo, "Decide two")["id"]
+    assert b(repo, "gate", "add", two, "--question", "Which?", "--option", "keep", "--option", "drop",
+             "--recommendation", "keep", "--do", f"drop={sid}", "--do", "keep=echo ok")[0] == 0
+    assert item(repo, "Decide two")["gates"][0]["do"] == {"drop": sid, "keep": ["echo", "ok"]}
+    code, out = b(repo, "check")
+    assert "warnings=0" in out, out
+    # provisional, answered and done are quiet
+    edit(repo, sid, gates=[dict(gates[0], kind="provisional")])
+    assert "warnings=0" in b(repo, "check")[1]
+    edit(repo, sid, gates=[dict(gates[0], answer="keep", by="operator")])
+    assert "warnings=0" in b(repo, "check")[1]
+    edit(repo, sid, gates=[gates[0]], status="done")
+    assert "warnings=0" in b(repo, "check")[1]
