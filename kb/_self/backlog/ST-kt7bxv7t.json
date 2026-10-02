@@ -15,12 +15,27 @@
         "-k",
         "land_checks_stale_before_stress"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_brief_self_reviewed_in_last_paragraph"
+      ]
     }
   ],
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/maintaining.md"
+  ],
+  "notes": "Merged finding: the cause of the late stale failure in two sessions is a worker brief that puts the Self-Reviewed trailer in a paragraph of its own before KB-Work; git reads trailers from the last paragraph only, so the gate saw no Self-Reviewed (a rerun of a full land, about 25 minutes, and about two retries over a doc another session edited). The worker brief states that Self-Reviewed goes inside the last trailer paragraph with KB-Work, and a test fails when the kb-worker definition or the kb-sprint brief text lacks it."
 }
