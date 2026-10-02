@@ -1323,7 +1323,7 @@ class CargoMapper(Mapper):
     """`cargo metadata --format-version 1 --no-deps --offline --locked` at the worktree root: the workspace members
     (name, directory), their dependencies as imports and their `bin` targets as entry points. `--no-deps` fetches
     nothing and `--locked` refuses to change Cargo.lock; the command reads manifests and builds nothing, so no build
-    script runs."""
+    script runs. A repository cargo configuration that names a program (see `config_program`) is not run under."""
     language = "rust"
     name = "cargo"
     tool = "cargo"
@@ -1365,6 +1365,43 @@ class CargoMapper(Mapper):
                             why = "sets path (a toolchain from the directory it names)"
             if why:
                 return f"{rel}: {why}, Cargo not mapped and no cargo command run"
+        for rel in (".cargo/config.toml", ".cargo/config"):
+            why = self.config_program(ctx, rel)
+            if why:
+                return f"{rel}: {why}, Cargo not mapped and no cargo command run"
+        return None
+
+    def config_program(self, ctx, rel):
+        """Why the cargo configuration file REL at the worktree root (cargo reads `.cargo/config.toml`, and the
+        deprecated `.cargo/config`, from the working directory and its parents) is not safe to run cargo under, or
+        None. Whether `cargo metadata --no-deps` starts `rustc` or one of these programs is not settled in the kb
+        (`_gaps.md`), so the command is not run under a file that names one: `build.rustc`, `build.rustc-wrapper`,
+        `build.rustc-workspace-wrapper`, `build.rustdoc`, a `target.<triple>.runner` or `.linker`, or an `include` of
+        another file (not followed). A file that is not a regular file, cannot be read or is not TOML declines too."""
+        path = ctx.root / rel
+        if rel not in ctx.links and not path.is_symlink() and not path.exists():
+            return None
+        p = ctx.readable(rel)
+        if p is None:
+            return "not a regular file"
+        try:
+            doc = toml_of(p.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, ValueError, RecursionError) as e:
+            return f"not read ({type(e).__name__})"
+        found = []
+        build = doc.get("build")
+        if isinstance(build, dict):
+            found += [f"build.{k}" for k in ("rustc", "rustc-wrapper", "rustc-workspace-wrapper", "rustdoc")
+                      if k in build]
+        target = doc.get("target")
+        if isinstance(target, dict):
+            for triple, table in sorted(target.items()):
+                if isinstance(table, dict):
+                    found += [f"target.{triple}.{k}" for k in ("runner", "linker") if k in table]
+        if "include" in doc:
+            found.append("include")
+        if found:
+            return f"names {', '.join(found)} (a program the repository chooses)"
         return None
 
     def map(self, ctx, files):
