@@ -22,7 +22,8 @@ How a path maps (first rule that applies):
   heading a skill reads fails the change that renames it.
 - a deleted test file or runner: nothing.
 Every selection short of all adds the repository-wide leak scan (LEAKS), and a tool module's adds the tests that read
-every tool module by glob, not by import, so no edge of the graph reaches them (TOOL_SCANS: ruff, the import layers).
+every tool source as text, by glob, not by import, so no edge of the graph reaches them (TOOL_SCANS: ruff, the import layers,
+the remote-role scan, the `claude -p` count, the navigation names; `source_scans()` derives them).
 - other paths under `_tools/`, `.claude/`, `.githooks/`, `.claude-plugin/`, `.github/`, `.gitlab-ci.yml`: the test files
   and modules whose string constants name the path, its file name or its directory (SEARCH_TOKENS), and for
   `.claude/` and `.githooks/` also the content classes; all tests when nothing names it.
@@ -47,9 +48,14 @@ CONTENT_TESTS = ["_tools/test_kb_cohesion.py::TestCohesion", "_tools/test_kb_coh
                  "_tools/test_kb_leaks.py::TestLeaks", "_tools/test_kb_cohesion.py::TestToolChecks",
                  "_tools/test_route.py::TestRouteEvalSet", "_tools/test_kb_mcp.py::TestKbServer", "_tools/test_kbfacts_imports.py"]
 LEAKS = "_tools/test_kb_leaks.py::TestLeaks"  # the repository-wide leak scan: part of every selection short of all
-# the tests that read every _tools/*.py by glob, not by import: part of every tool change's selection; ruff over every
-# tool, and the import layers of kb/_self/code.md parsed over every module
-TOOL_SCANS = ["_tools/test_kb_cohesion.py::TestCohesion", "_tools/test_layout.py"]
+# the tests that read every _tools/*.py as text, by glob or over the tracked files, not by import: part of every tool
+# change's selection; ruff over every tool (TestCohesion), the import layers of kb/_self/code.md parsed over every module,
+# the remote-role scan (TestRemoteRoles), the `claude -p` count of the query-log pipeline (TestNoHooks) and the navigation
+# prompts' names (test_benchmarks.py, whole: a node of a file a tool reaches is absorbed by it anyway);
+# `source_scans()` derives the readers from the test files and a test keeps this list complete
+TOOL_SCANS = ["_tools/test_kb_cohesion.py::TestCohesion", "_tools/test_layout.py", "_tools/test_kbpublic.py::TestRemoteRoles",
+              "_tools/test_ql_capture.py::TestNoHooks",
+              "_tools/test_benchmarks.py"]
 # selfdoc's map of every _tools/*.py symbol and its test over this repository: any change to a tool, a test file or a
 # suite's runner can move a line or a name, so each selects it (the class, not test_selfdoc.py whole)
 TOOLS_MAP = "_tools/test_selfdoc.py::TestSelfdocToolsMap"
@@ -98,6 +104,43 @@ def strings_and_imports(path):
         elif isinstance(n, ast.ImportFrom) and n.module and not n.level:
             imps.append(n.module.split(".")[0])
     return tuple(strs), tuple(imps)
+
+
+@functools.lru_cache(maxsize=None)
+def source_scans():
+    """The nodes of the test files that read the tool sources as text: a top-level class or test function holding a glob
+    of a `*.py` pattern (`Path(TOOLS).glob("*.py")`, `glob.glob(... "ql_*.py")`) or a call of the `tracked()` or `authored()`
+    helpers (git ls-files); a helper function that does is its whole file's, since the tests that call it are not named
+    here."""
+    got = set()
+    for t in test_files():
+        try:
+            with open(os.path.join(TOOLS, t), encoding="utf-8") as f:
+                tree = ast.parse(f.read())
+        except (OSError, SyntaxError, ValueError):
+            continue
+        for top in tree.body:
+            if not isinstance(top, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for n in ast.walk(top):
+                if not isinstance(n, ast.Call):
+                    continue
+                f = n.func
+                name = f.attr if isinstance(f, ast.Attribute) else getattr(f, "id", "")
+                if name in ("tracked", "authored") or (name in ("glob", "rglob") and any(
+                        isinstance(a, ast.Constant) and isinstance(a.value, str) and "*" in a.value and a.value.endswith(".py")
+                        for a in n.args)):
+                    whole = isinstance(top, ast.ClassDef) or top.name.startswith("test_")
+                    got.add(f"_tools/{t}::{top.name}" if whole else f"_tools/{t}")
+                    break
+    return got
+
+
+def scans_missing(nodes=None):
+    """The readers `source_scans()` finds that no selection of a tool change carries: not in TOOL_SCANS, not a whole file
+    of it, and not the leak scan or the tools-map test, which every change or tool change selects anyway."""
+    have = set(TOOL_SCANS) | {LEAKS, TOOLS_MAP}
+    return sorted(n for n in (source_scans() if nodes is None else nodes) if n not in have and n.split("::")[0] not in have)
 
 
 def direct_refs(path, mods):
@@ -169,7 +212,7 @@ def place(path):
     if rel.startswith("_tools/") and rel.endswith(".py") and "/" not in rel[len("_tools/"):]:
         m = rel[len("_tools/"):-3]
         hits = {f"_tools/{t}" for t, ms in reach.items() if m in ms}
-        return (hits | set(TOOL_SCANS) | {TOOLS_MAP}, f"test files that reach {m}") if hits else (ALL, f"no test file reaches {m}: every test")
+        return (hits | set(TOOL_SCANS) | {TOOLS_MAP}, f"test files that reach {m}, and the tests that read every tool source as text") if hits else (ALL, f"no test file reaches {m}: every test")
     if rel.startswith(NO_TESTS):
         return NONE, "backlog items and the query log store: the gate's own check"
     if rel.startswith(SEARCHED) or rel == ".gitlab-ci.yml":
