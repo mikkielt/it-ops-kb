@@ -20,7 +20,9 @@
     "_tools/selfdoc.py",
     "_tools/test_kb_cohesion.py",
     "kb/_self/tools.md",
-    "kb/_self/README.md"
+    "kb/_self/README.md",
+    "kb/_self/plugin.md",
+    "kb/_self/web-sources.md"
   ],
   "claimed_by": "mac-sixth"
 }
