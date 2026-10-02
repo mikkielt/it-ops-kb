@@ -1,0 +1,34 @@
+{
+  "id": "BG-obefzeor",
+  "kind": "bug",
+  "title": "autopilot.py names the remote origin instead of asking kbpublic.integration_remote, so main is red",
+  "status": "todo",
+  "sprint": "SP-4xngzagf",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "autopilot.prepare_worktree takes the integration remote from kbpublic.integration_remote(root) and its main ref from that name, so no tool holds the string origin and test_kbpublic.py::TestRemoteRoles::test_no_tool_holds_the_string_origin passes on main again; the autopilot tests still pass",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "_tools/test_kbpublic.py",
+      "-k",
+      "test_no_tool_holds_the_string_origin"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot.py"
+  ]
+}
