@@ -2,7 +2,7 @@
   "id": "ST-7d7i4x3z",
   "kind": "story",
   "title": "Lookups show active LOG lines beside facts as evidence, never as coverage",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-auko2fyn",
   "sprint": "SP-parnkbr7",
   "priority": "P3",
@@ -69,5 +69,29 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "433e84b25acc8329bb966aa005011e27b93193a4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "lookup_shows_log_lines"
+        ],
+        "exit": 0,
+        "sha256": "b04c66e54055c9e5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "log_not_counted_in_coverage"
+        ],
+        "exit": 0,
+        "sha256": "5c07774d7bbea675"
+      }
+    ]
+  }
 }
