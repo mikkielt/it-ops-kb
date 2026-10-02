@@ -2,7 +2,7 @@
   "id": "ST-ylp4m7q3",
   "kind": "story",
   "title": "Review sprint: The autopilot manager runs sprints within its authority",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4xngzagf",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "seventh-review"
+  "evidence": {
+    "commit": "afc923cec2de6f8c0651283492b592c0154344ba",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "a005626bdb2454af"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "dcebcccbbb8fc5e6"
+      }
+    ]
+  }
 }
