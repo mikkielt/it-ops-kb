@@ -4,10 +4,9 @@ item file must meet, the knowledge an item names (`KbAtHead`, `knowledge_check`)
 the repro and no-op warnings (`text_only_repro`, `trivial_command`, `noop_output`, `noop_warnings`, the warnings
 `check` prints) and the commands `check` and `selectors`.
 
-Standard library only; imports `bl_base` and never `backlog`. The rules about code and its docs
-(`stale_touches`, `docs_after_code`, `docs_warnings`) are still `backlog.py`'s: it hands them to `bind_docs` once, and
-`check` reads them there, so this module reaches them without importing it. `backlog.py` registers `check` and
-`selectors` with `bl_cli`, in its usage order, with the handlers defined here."""
+Standard library only; imports `bl_base` and `bl_plan` (the rules about code and its docs, which `check` runs) and
+never `backlog`; `bl_plan` never imports this module. `backlog.py` registers `check` and `selectors` with `bl_cli`, in
+its usage order, with the handlers defined here."""
 import re
 import shlex
 import subprocess
@@ -18,6 +17,7 @@ from bl_base import (
     PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED, canonical,
     host_user_pieces, items_holding_names, research_in_planned, say, withhold_names,
 )
+from bl_plan import docs_after_code, docs_warnings, stale_touches
 
 
 # ------------------------------------------------------------------ validation
@@ -756,22 +756,13 @@ def host_bound_accepted(it):
     return g.get("by") == "operator" and str(g.get("answer", "")).strip().lower() in HOST_BOUND_ACCEPTS
 
 
-DOCS = {}  # the code-and-docs rules `check` runs, by name (stale_touches, docs_after_code, docs_warnings); see bind_docs
-
-
-def bind_docs(stale_touches, docs_after_code, docs_warnings):
-    """Hand `check` the code-and-docs rules, which backlog.py still defines: `stale_touches(bl)` and
-    `docs_after_code(bl, ids)` give errors, `docs_warnings(bl)` warnings."""
-    DOCS.update(stale_touches=stale_touches, docs_after_code=docs_after_code, docs_warnings=docs_warnings)
-
-
 def cmd_check(bl, a):
     pieces = host_user_pieces()
     planned = [i for sid, sp in bl.items.items() if sp.get("kind") == "sprint" and sp.get("status") == "planned"
                for i in bl.sprint_items(sid)]
-    errs = validate(bl, pieces) + DOCS["stale_touches"](bl) + DOCS["docs_after_code"](bl, planned)
+    errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned)
     stale = stale_knowledge(bl)
-    warns = DOCS["docs_warnings"](bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
+    warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
         + gate_do_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either

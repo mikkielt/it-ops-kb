@@ -55,6 +55,8 @@ Items describe the present, never a history: no dated logs, no "tried X on Monda
 
 `_tools/bl_check.py` owns the checks: `validate` (the rules above), the knowledge an item names and its state, the host and user name findings, the repro and no-op warnings, and the `check` and `selectors` commands, which `backlog.py` registers with `bl_cli` in the usage order; `_tools/test_bl_check.py` holds their tests, which patch the names in `bl_check`, where the code looks them up (`-k bl_split_check` holds that `backlog.py` defines none of it, that `bl_check` never imports `backlog`, and that no check test is left in `test_backlog.py`).
 
+`_tools/bl_plan.py` owns the plan side: the rules about code and its docs (`stale_touches`, `docs_after_code`, `docs_warnings`, with `touch_paths`, `dependencies` and `dependents`, which they share), the host-check gates, where a dependency outside a sprint stands (`outside_deps`) and the `start` command, which `backlog.py` registers with `bl_cli` in the usage order; `bl_check` imports `bl_plan` for the rules `check` runs and `bl_plan` never imports `bl_check`, so the two form no cycle; `_tools/test_bl_plan.py` holds the start, host-check and docs-rule tests, which patch the names in `bl_plan` (`-k bl_split_plan` holds that `backlog.py` defines none of it, that `bl_plan` never imports `backlog`, that no `bl_` module imports another in a cycle, and that no start or plan test is left in `test_backlog.py`).
+
 ## Status and readiness
 
 Only `draft`, `todo`, `doing`, `done` and `dropped` are stored. Whether an item is ready or waiting is computed on every call, never stored, so it cannot go stale. `backlog.py show ID` prints what an item waits on. An item is ready when all of these hold:
