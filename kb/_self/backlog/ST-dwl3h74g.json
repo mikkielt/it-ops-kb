@@ -2,7 +2,7 @@
   "id": "ST-dwl3h74g",
   "kind": "story",
   "title": "kblog.py proposes LOG rows from the ops store",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-auko2fyn",
   "sprint": "SP-parnkbr7",
   "priority": "P3",
@@ -50,5 +50,6 @@
       "answer": "add",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
