@@ -2,7 +2,7 @@
   "id": "ST-7uluagq6",
   "kind": "story",
   "title": "querylog.py export names its fields as OTLP-JSON and keeps one flat event namespace",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -29,5 +29,6 @@
   ],
   "depends_on": [
     "ST-xsxyq4wi"
-  ]
+  ],
+  "claimed_by": "seventh-w19"
 }
