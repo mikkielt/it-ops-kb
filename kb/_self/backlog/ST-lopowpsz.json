@@ -2,7 +2,7 @@
   "id": "ST-lopowpsz",
   "kind": "story",
   "title": "Subagent start and stop leave ops rows",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -51,5 +51,19 @@
     }
   ],
   "notes": "SubagentStart can fire more than once for one agent id, so a start row is not a dispatch count. A worker is counted under other in kbusage today.",
-  "claimed_by": "seventh-w12"
+  "evidence": {
+    "commit": "50d80ac6b69f04c9b2d68a8897b3dbe3bde6d0fd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_agent_rows"
+        ],
+        "exit": 0,
+        "sha256": "663b7fa87946c057"
+      }
+    ]
+  }
 }
