@@ -2,7 +2,7 @@
   "id": "TK-ztjx5tik",
   "kind": "task",
   "title": "land appends a land.step row per step and a land.end row, and warns when the item has no work rows",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-2fxtyrr5",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "336047b10afb1ac0a0de98a554730b856a6aba6d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_land_rows"
+        ],
+        "exit": 0,
+        "sha256": "cab4981c69541c16"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_warns_when_item_has_no_work_rows"
+        ],
+        "exit": 0,
+        "sha256": "0ae60c778bb4e0a9"
+      }
+    ]
+  }
 }
