@@ -2,7 +2,7 @@
   "id": "TK-7pwnplew",
   "kind": "task",
   "title": "The six single-lookup e2e scenarios run in two shared clones, keeping their class and test ids",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-7ihohi2u",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,42 @@
   "depends_on": [
     "TK-62clbs52"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "eb8e80a409718c9422069780adae0888a4e1af36",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "exit": 0,
+        "sha256": "cc13d74eac5ef1a1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestAnswered or TestToolRows or TestRedaction or TestFetches or TestFixedSince or TestSessions"
+        ],
+        "exit": 0,
+        "sha256": "734b54740a904379"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_scope_groups"
+        ],
+        "exit": 0,
+        "sha256": "3f6784f391b3a441"
+      }
+    ]
+  }
 }
