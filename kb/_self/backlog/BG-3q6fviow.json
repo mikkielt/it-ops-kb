@@ -15,6 +15,16 @@
       "import sys; sys.path.insert(0,'_tools'); import bl_intake; ids=['TK-a','TK-b','TK-c','TK-d','TK-e','TK-f']; seen=set(); [seen.update(bl_intake.rotated(ids, 100+3*r)[:2]) for r in range(1,51)]; missing=sorted(set(ids)-seen); assert not missing, missing"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_drift_rotation_any_step"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_intake.py",
     "_tools/test_intake.py",
