@@ -17,6 +17,6 @@
   },
   "touches": [
     "_tools/tests.py",
-    "_tools/test_testmap.py"
+    "_tools/test_tests_lock.py"
   ]
 }
