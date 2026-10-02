@@ -30,7 +30,7 @@ decision_conflicts() lists active decisions that share a context (audit).
 
 Snippets. A bullet that starts `SNIPPET:` introduces the fenced code block right below it: `- SNIPPET: <what it does>;
 context: <versions, prerequisites>; checked: no|syntax|run [DER S1: ...]`. It is an ordinary fact unit (the pack
-shows the bullet with path:line; `show` prints the block) and must carry an evidence tag other than UNK.
+shows the bullet with path:line and the code block indented below it; `show` prints the block) and must carry an evidence tag other than UNK.
 
 Fact units. In an article (a .md with `topic:` front matter): a bullet with its continuation lines, a table row, or
 a paragraph line that carries at least one tag. In a data .csv: a row. Each unit has its path, first line, section,
@@ -1513,6 +1513,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         for s, u in picked:
             text = clip(u["text"], 420)
             line = f"- {u['path']}:{u['line']} {text}" + ("" if u["tags"] else " (no tag)")
+            line += ("\n" + snippet_code(u)) if snippet_code(u) else ""
             new_ids = [i for p in u["tags"] for i in p["ids"]] + ID.findall(text)
             # the root prefix of the path (`public/`) is not counted: a pack chooses the same lines in any layout
             cost = len(line) - (len(u["path"]) - len(bare(u["path"]))) + url_cost * len(set(new_ids) - set(cited))
@@ -1649,6 +1650,27 @@ def freshness(question, missing, meta):
         [f"the kb never names {', '.join(versions)}"] if versions else [])
     return (f"freshness: {'; '.join(said) or 'a kb fact is as of its retrieval'}. A newer release may exist: check the "
             "cited source live and say which version your answer is for.")
+
+
+def snippet_code(u):
+    """The fenced code block right below a `SNIPPET:` bullet unit, as indented lines ("" for any other unit or a
+    bullet with no block): a pack that picks the bullet gives the reader the code its words describe."""
+    if not u["text"].startswith("SNIPPET:"):
+        return ""
+    body = (read(u["path"]) or "").splitlines()
+    i = u["line"]  # the line after the bullet's first line
+    while i < len(body) and body[i].strip() and not body[i].lstrip().startswith(("```", "~~~")):
+        i += 1  # the bullet's continuation lines
+    while i < len(body) and not body[i].strip():
+        i += 1
+    if i >= len(body) or not body[i].lstrip().startswith(("```", "~~~")):
+        return ""
+    code = []
+    for ln in body[i + 1:]:
+        if ln.lstrip().startswith(("```", "~~~")):
+            return "\n".join("  " + c for c in code)
+        code.append(ln.rstrip())
+    return ""
 
 
 def clip(text, n):

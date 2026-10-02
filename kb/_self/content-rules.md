@@ -45,7 +45,7 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 
 - A code example is a bullet that starts `SNIPPET:`, directly above its fenced block: `- SNIPPET: <what it does>; context: <versions, prerequisites>; checked: no|syntax|run [DER <id>, <id>: parameters from the cmdlet page]`.
 - The bullet carries an evidence tag other than `UNK`: a snippet nobody can back stays out. `checked:` says what was verified: `no`, `syntax` (parsed: the lint re-parses json, toml and python blocks), or `run` (executed in the stated context; say where in the note).
-- Placeholders only, as in every example. The pack shows the bullet with `path:line`; `rag.py show` prints the block.
+- Placeholders only, as in every example. The pack shows the bullet with `path:line` and its code block indented below it, counted in the budget; `rag.py show` prints the block too.
 - A block without a `SNIPPET:` bullet is illustration only (Reference and Examples may keep them) and carries no evidence.
 - A reader checking a snippet reads each parameter's reference page before dropping it: an article's own sources not showing a parameter does not mean it does not exist.
 
