@@ -2,7 +2,7 @@
   "id": "ST-pvu4ecpv",
   "kind": "story",
   "title": "A planner lists the files that name a moved file or symbol",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6eifcza6",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,19 @@
     "kb/_self/maintaining.md",
     "AGENTS.md"
   ],
-  "claimed_by": "orch-fourth-w16"
+  "evidence": {
+    "commit": "a81e60450d749e31224ae9564928c83c48699401",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_referrers"
+        ],
+        "exit": 0,
+        "sha256": "3ce175ab80dab7aa"
+      }
+    ]
+  }
 }
