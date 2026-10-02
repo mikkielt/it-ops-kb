@@ -745,6 +745,46 @@ def test_kbingest_map_cargo_toolchain_path(tmp_path, monkeypatch):
 
 
 @requires_git
+def test_kbingest_map_cargo_config_rustc(tmp_path, monkeypatch):
+    """Planted: a repository `.cargo/config.toml` (or the deprecated `.cargo/config`) that names a program cargo may
+    start (build.rustc, a wrapper, a target runner or linker, an include), is not TOML or is a link; no cargo command
+    runs, not even the version. A config with only unrelated keys still maps."""
+    log = install_lang(tmp_path, monkeypatch, ("cargo",))
+    crate = {"Cargo.toml": "[package]\nname = 'app'\n", "src/main.rs": "fn main() {}\n"}
+    declined = (
+        ("rustc", ".cargo/config.toml", '[build]\nrustc = "tools/rustc"\n', "names build.rustc"),
+        ("wrapper", ".cargo/config.toml", '[build]\nrustc-wrapper = "tools/w"\njobs = 2\n', "names build.rustc-wrapper"),
+        ("wswrapper", ".cargo/config", '[build]\nrustc-workspace-wrapper = "w"\n', "names build.rustc-workspace-wrapper"),
+        ("rustdoc", ".cargo/config.toml", '[build]\nrustdoc = "d"\n', "names build.rustdoc"),
+        ("runner", ".cargo/config.toml", "[target.'cfg(unix)']\nrunner = 'tools/run'\n",
+         "names target.cfg(unix).runner"),
+        ("linker", ".cargo/config.toml", "[target.x86_64-unknown-linux-gnu]\nlinker = 'tools/ld'\n",
+         "names target.x86_64-unknown-linux-gnu.linker"),
+        ("include", ".cargo/config.toml", 'include = "more.toml"\n', "names include"),
+        ("broken", ".cargo/config.toml", "[build\nrustc = 'x'\n", "not read (TOMLDecodeError)"))
+    for name, rel, text, why in declined:
+        r = commit_files(tmp_path / name, {**crate, rel: text})
+        code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.CargoMapper())
+        assert code == 0
+        assert calls_of(log) == [], name  # not even cargo --version
+        assert len(notes_of(doc)) == 1 and notes_of(doc)[0].startswith(f"{rel}: {why}"), name
+        assert notes_of(doc)[0].endswith(", Cargo not mapped and no cargo command run"), name
+        assert doc["tools"] == {} and doc["packages"] == []
+    link = commit_files(tmp_path / "link", crate)  # a link out of the worktree, mode 120000 however it is checked out
+    (tmp_path / "target.txt").write_text("../outside/config.toml", encoding="utf-8")
+    blob = link.git("hash-object", "-w", str(tmp_path / "target.txt")).strip()
+    link.git("update-index", "--add", "--cacheinfo", f"120000,{blob},.cargo/config.toml")
+    link.git("commit", "-q", "-m", "link")
+    code, doc = fake_map(link, tmp_path, monkeypatch, kbingest.CargoMapper())
+    assert code == 0 and calls_of(log) == []
+    assert notes_of(doc)[-1] == ".cargo/config.toml: not a regular file, Cargo not mapped and no cargo command run"
+    ok = commit_files(tmp_path / "ok", {**crate, ".cargo/config.toml": '[build]\njobs = 2\n[net]\noffline = true\n'})
+    code, doc = fake_map(ok, tmp_path, monkeypatch, kbingest.CargoMapper())
+    assert code == 0 and [c["args"] for c in calls_of(log)] == CARGO_CALLS
+    assert doc["tools"]["rust"]["tool"] == "cargo"
+
+
+@requires_git
 def test_kbingest_map_go_and_rust_are_registered_and_selected_by_lang(langrepo, tmp_path, monkeypatch):
     log = install_lang(tmp_path, monkeypatch)
     out = tmp_path / "both.json"
