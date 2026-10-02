@@ -2,7 +2,8 @@
   "id": "BG-k5dql2np",
   "kind": "bug",
   "title": "The test-id baseline still spells a test BG-7lmqjumx renamed, so perfcheck ids reports it missing",
-  "status": "draft",
+  "status": "doing",
+  "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -37,5 +38,6 @@
   ],
   "touches": [
     "_tools/test_ids_baseline.txt"
-  ]
+  ],
+  "claimed_by": "mac-third"
 }
