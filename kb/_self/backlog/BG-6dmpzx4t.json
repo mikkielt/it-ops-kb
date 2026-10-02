@@ -1,0 +1,33 @@
+{
+  "id": "BG-6dmpzx4t",
+  "kind": "bug",
+  "title": "The landed-with-no-work-rows warning fires on items claimed and worked normally, because it reads only this host's spool",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land's no-work-rows warning does not fire for an item whose work rows distill already consumed from the spool (it reads the store as well as the spool), with a test named no_work_rows_after_distill that plants a consumed spool. Observed on both lands of TK-ftucvr5v and on ST-6untv3xn's, although all were claimed normally.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -n \"spool\" _tools/bl_land.py | grep -q no_work_rows_ignores_consumed"
+    ]
+  },
+  "repro_reason": "the false positive needs a consumed spool and a landed item, which only the new test can plant; the text match only shows the consumed-spool case is not handled",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "no_work_rows_after_distill"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_bl_land_workrows.py",
+    "kb/_self/backlog.md"
+  ]
+}

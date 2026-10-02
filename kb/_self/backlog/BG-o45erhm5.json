@@ -1,0 +1,31 @@
+{
+  "id": "BG-o45erhm5",
+  "kind": "bug",
+  "title": "test_kb_hook_latency_with_capture fails under host load, so a land stops at the stress gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "test_kb_hook_latency_with_capture in _tools/test_stress.py compares the capture-on and capture-off medians with a bound that scales with the host load, or skips with a stated reason when the load makes the ratio meaningless, with a planted-load test named hook_latency_load_scaled; a land no longer stops there on a busy host. Found by BG-qd5u4sdu's first land.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -n hook_latency_load_scaled _tools/test_stress.py | grep -q ."
+    ]
+  },
+  "repro_reason": "the failure appears only under host load (load average about 27 with capture 447 ms against 283 ms off); the text match shows the load-scaled test is absent",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "hook_latency_load_scaled"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_stress.py"
+  ]
+}
