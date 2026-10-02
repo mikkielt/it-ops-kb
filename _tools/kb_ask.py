@@ -52,9 +52,9 @@ import kbcommon, kbfacts  # noqa: E402
 import ql_capture  # noqa: E402
 
 HOME = kbfacts.kbcommon.HOME  # this repository: the docs servers' config, the kb server, the sessions' cwd
-DOCS_MCP = os.path.join(HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
-DOCS = ["mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch",
-        "mcp__claude-code-docs__search_claude_code_docs", "mcp__mcp-docs__search_model_context_protocol"]
+# the researcher's live docs come through the kb server's docs_search and docs_fetch (kb_mcp.py), which keep each
+# answer 7 days on disk, as ql_research.research_argv does; the docs servers themselves cache nothing
+DOCS = ["mcp__kb__docs_search", "mcp__kb__docs_fetch"]
 # claude -p without the user's plugins and MCP servers (project and local settings still apply) and with every hook
 # off, so the query log's capture hooks never log kb_ask.py's own session (it writes its own row)
 LEAN = ["--setting-sources", "project,local", "--strict-mcp-config", *kbcommon.NO_HOOKS]
@@ -236,14 +236,20 @@ def web_prompt(question, p, whole=False):
     return "\n".join(out)
 
 
+def docs_mcp_config():
+    """The researcher's --mcp-config JSON: the kb stdio server alone, without --roots, so it serves the live docs."""
+    server = {"command": sys.executable, "args": [os.path.join(HOME, "_tools", "kb_mcp.py")]}
+    return json.dumps({"mcpServers": {"kb": server}}, separators=(",", ":"))
+
+
 def claude_argv(model, tools, output=None):
     """The claude -p argument list. tools=False: the reader (no tools, no --effort). tools=True: the researcher, the lean
-    start: the docs servers' config only (no kb server), built-in tools limited to WebSearch and WebFetch (`--tools`;
+    start: this copy's kb server alone (kb_mcp.py), only its cached docs_search and docs_fetch allowed, built-in tools limited to WebSearch and WebFetch (`--tools`;
     `--allowedTools` only approves), `--effort low`. output="json" adds `--output-format json` (one result object with
     `result`, `total_cost_usd`, `is_error`); left out, the caller sets its own format."""
     argv = ["claude", "-p", "--no-session-persistence", "--model", model, *LEAN]
     if tools:
-        argv += ["--mcp-config", DOCS_MCP, "--tools", ",".join(WEB), "--effort", "low", "--allowedTools", *WEB, *DOCS]
+        argv += ["--mcp-config", docs_mcp_config(), "--tools", ",".join(WEB), "--effort", "low", "--allowedTools", *WEB, *DOCS]
     else:
         argv += ["--tools", ""]
     if output:

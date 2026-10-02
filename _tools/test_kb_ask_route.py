@@ -198,12 +198,22 @@ class TestKbAskRoute:
         assert flag(argv, "--tools") == "WebSearch,WebFetch" and flag(argv, "--output-format") == "json"
         assert all_values(argv, "--allowedTools")[:2] == ["WebSearch", "WebFetch"]
         assert all_values(argv, "--allowedTools")[2:] == kb_ask.DOCS
-        assert argv.count("--mcp-config") == 1 and flag(argv, "--mcp-config") == kb_ask.DOCS_MCP, "the docs servers only"
+        assert argv.count("--mcp-config") == 1 and flag(argv, "--mcp-config") == kb_ask.docs_mcp_config()
         assert "--strict-mcp-config" in argv and "--setting-sources" in argv
         blob = " ".join(argv)
-        assert "mcp__kb" not in blob and "kb_mcp" not in blob and '"kb"' not in blob, "no kb server"
         assert "submit_feedback" not in blob
         assert '"disableAllHooks"' in blob, "hooks off"
+
+    def test_kb_ask_researcher_cached_docs(self):
+        """The researcher gets the kb server's cached docs tools, not the docs servers' own (as ql_research.research_argv)."""
+        argv = kb_ask.claude_argv("sonnet", True, output="json")
+        assert all_values(argv, "--allowedTools")[2:] == ["mcp__kb__docs_search", "mcp__kb__docs_fetch"]
+        cfg = json.loads(flag(argv, "--mcp-config"))
+        assert list(cfg["mcpServers"]) == ["kb"], "the kb server alone"
+        assert cfg["mcpServers"]["kb"]["args"][-1].endswith("kb_mcp.py") and "--roots" not in cfg["mcpServers"]["kb"]["args"]
+        blob = " ".join(argv)
+        for direct in ("microsoft-learn", "claude-code-docs", "mcp-docs", "it-ops-kb-docs"):
+            assert direct not in blob, direct
 
     def test_researcher_argv_leaves_the_output_format_to_a_caller_that_sets_its_own(self):
         assert "--output-format" not in kb_ask.claude_argv("sonnet", True)  # agent_bench.route adds stream-json
@@ -247,7 +257,7 @@ class TestKbAskRoute:
         assert "total_cost_usd=0.0123" in err
         (argv, stdin), = claude.calls
         assert flag(argv, "--model") == "sonnet" and flag(argv, "--effort") == "low" and flag(argv, "--output-format") == "json"
-        assert flag(argv, "--append-system-prompt") == kb_ask.WEB_RESEARCHER and "mcp__kb" not in " ".join(argv)
+        assert flag(argv, "--append-system-prompt") == kb_ask.WEB_RESEARCHER
         assert stdin == kb_ask.web_prompt(Q, kb_ask.plan(Q))
         assert row["route"] == "web" and "cost" not in row and not any("cost" in k for k in row), row
 
@@ -285,7 +295,7 @@ class TestKbAskRoute:
         assert r_in == kb_ask.split_prompt(Q, p) and SPLIT_PACK in r_in
         assert "Answer only the part the kb has: LAPS, password" in r_in and "The kb lacks: Okta, rotation" in r_in
         assert flag(w_argv, "--model") == "sonnet" and flag(w_argv, "--effort") == "low"
-        assert flag(w_argv, "--append-system-prompt") == kb_ask.WEB_RESEARCHER and "mcp__kb" not in " ".join(w_argv)
+        assert flag(w_argv, "--append-system-prompt") == kb_ask.WEB_RESEARCHER
         assert w_in == kb_ask.web_prompt(Q, p) and "kb_evidence" not in w_in and "The kb lacks: Okta, rotation" in w_in
         assert "reader haiku total_cost_usd=0.001" in err and "researcher sonnet total_cost_usd=0.02" in err
         assert "total_cost_usd=0.021 (reader + researcher)" in err
@@ -421,5 +431,5 @@ class TestKbAskRoute:
         code, out, _, row = ask(monkeypatch, capsys, Q)
         assert code == 0 and out == "the answer\n" and row["escalated"] is True and row["model"] == "sonnet"
         (_, _), (argv2, stdin2) = claude.calls
-        assert flag(argv2, "--model") == "sonnet" and "--tools" in argv2 and "mcp__kb" not in " ".join(argv2)
+        assert flag(argv2, "--model") == "sonnet" and "--tools" in argv2
         assert stdin2.startswith(kb_ask.prompt(Q, GOOD_PACK)) and "INSUFFICIENT: the port" in stdin2

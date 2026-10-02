@@ -2,7 +2,7 @@
   "id": "BG-prx3jw34",
   "kind": "bug",
   "title": "kb_ask.py's headless researcher calls the docs servers directly and bypasses the 7-day live-docs cache",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
@@ -16,11 +16,22 @@
     ]
   },
   "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_ask_researcher_cached_docs"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kb_ask.py",
     "_tools/test_kb_ask_route.py",
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/design.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
