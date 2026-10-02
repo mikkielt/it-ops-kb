@@ -2,7 +2,7 @@
   "id": "ST-6sujnopr",
   "kind": "story",
   "title": "Autopilot answers gates within its authority as recorded decisions",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -56,5 +56,6 @@
       "answer": "autopilot decision role, ratified or reverted by the operator from a digest; an operator decision supersedes",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "seventh-w30"
 }
