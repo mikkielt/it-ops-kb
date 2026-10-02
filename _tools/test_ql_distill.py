@@ -717,6 +717,27 @@ class TestWorkSidecar:
         assert said[0].endswith("work=1"), said
         assert jsonl(work_sidecar_of(q, "20260928T130000Z-0000abce"))[1]["prompts"] == 1
 
+    def test_work_sidecar_a_delivered_entry_leaves_a_closed_work_session_not_yet_counted(self, tmp_path):
+        """W1 (claim, done, usage) closed after the pass that read the spool; W4 is a closed kb-only session whose
+        entry is delivered. spool_delivered drops W4's file, keeps W1's, and the next distill counts W1."""
+        q = tmp_path / "querylog"
+        plant_work(q, W4, [((), 3, False, True)])
+        cfg = auto_config(q, "auto")
+        rc = ql_distill.distill(qdir=q, cfg=cfg, haiku=echo, now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40,
+                                out=lambda m: None, deliver=lambda qdir, out: 0)
+        assert rc == 0 and (q / "spool" / f"{W4}.jsonl").exists()  # the entry's rows stay until delivered
+        ids = {e["id"] for e in jsonl(next((q / "store").rglob(f"{RUN_ID}.jsonl")))[1:]}
+        assert ids, "no entry planted"
+        plant_work(q, W1, [(("claim:" + WA,), 1, False, False), (("done:" + WA,), 2, False, False)])  # closed since
+        assert ql_distill.spool_delivered(q, ids, NOW) == len(ids)
+        assert not (q / "spool" / f"{W4}.jsonl").exists()  # the kb-only session is settled
+        assert (q / "spool" / f"{W1}.jsonl").exists()  # planted: the settle step deleted it before it was counted
+        rc, said = run_distill(q, echo)
+        assert rc == 0 and said[0].endswith("work=1"), said
+        assert jsonl(work_sidecar_of(q))[0] == {"item": WA, "prompts": 2, "main": work_main(1, 2)} or \
+            any(ln.get("item") == WA and ln["prompts"] == 2 for ln in jsonl(work_sidecar_of(q)))
+        assert not (q / "spool" / f"{W1}.jsonl").exists()  # counted: now it goes
+
     def test_work_sidecar_the_record_of_counted_prompts_drops_sessions_that_left_the_spool(self, tmp_path):
         q = tmp_path / "querylog"
         plant_work(q, W1, PLAN_ONE)
