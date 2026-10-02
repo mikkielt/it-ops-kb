@@ -2,7 +2,7 @@
   "id": "BG-d4tdmifi",
   "kind": "bug",
   "title": "A backlog.py done piped into another command is recorded as a done work row although a refused done exits non-zero inside the pipe",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rrrrggw7",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "seventh-w8"
+  "evidence": {
+    "commit": "00b4d92083ac4fde3a861d8040783dc849aa25bb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import ql_capture; sys.exit(0 if ql_capture.work_action('python3 _tools/backlog.py done TK-aaaaaaaa | tail -3') is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
