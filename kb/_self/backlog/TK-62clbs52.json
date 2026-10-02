@@ -2,7 +2,7 @@
   "id": "TK-62clbs52",
   "kind": "task",
   "title": "TestCaps, TestModesAuto[default] and TestResearch's cap and off runs are gone, and test_ids_dropped.txt names exactly those four ids",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-7ihohi2u",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,6 @@
   "touches": [
     "_tools/test_querylog_e2e.py",
     "_tools/test_ids_dropped.txt"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
