@@ -2,7 +2,7 @@
   "id": "BG-5utnrar6",
   "kind": "bug",
   "title": "kb_change_router.py exits 1 with a traceback on a non-string prompt",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ld5jtjhm",
   "priority": "P3",
   "rank": 0,
@@ -20,5 +20,6 @@
     "_tools/test_change_router.py",
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "claimed_by": "seventh-w15"
 }
