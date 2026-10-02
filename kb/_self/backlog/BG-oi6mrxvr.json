@@ -18,7 +18,8 @@
   },
   "repro_reason": "the defect is a missing allow rule in a settings file, and Claude Code's permission matching cannot run offline, so the repro reads the file",
   "touches": [
-    ".claude/settings.json"
+    ".claude/settings.json",
+    "kb/_self/maintaining.md"
   ],
   "claimed_by": "mac-sixth"
 }
