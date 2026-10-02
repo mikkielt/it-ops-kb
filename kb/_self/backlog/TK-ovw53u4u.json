@@ -35,7 +35,8 @@
     "_tools/kg_history.py",
     "_tools/kg_bridge.py",
     "_tools/kg_hooks.py",
-    "_tools/kg_lane.py"
+    "_tools/kg_lane.py",
+    "_tools/test_research_merge.py"
   ],
   "depends_on": [
     "TK-5sjw6qpg"
