@@ -1454,7 +1454,23 @@ def test_started_sprint_work_state():
     assert ["not claimed" in x for x in state("TK-bbbbbbbb")] == [True]  # planted: unclaimed
     assert state("ST-bbbbbbbb") == ["ST-bbbbbbbb is not in a started sprint (SP-bbbbbbbb is planned)"]  # planted
     assert state("BG-aaaaaaaa") == ["BG-aaaaaaaa is not in a started sprint (no sprint)"]  # planted: no sprint
-    assert state("TK-bbbbbbbb, ST-bbbbbbbb", ["kb/_self/backlog/TK-bbbbbbbb.json"]) == []  # a backlog-planning commit
+    assert state("TK-bbbbbbbb", ["kb/_self/backlog/TK-bbbbbbbb.json"]) == []  # a backlog-planning commit
+
+
+def test_check_trailers_planning_commit_names_item():
+    """A backlog-planning commit passes the started-sprint rules, but must change the file of every item its KB-Work
+    names. Planted: a commit naming two items that changes one is refused for the other, whichever order they are named
+    in; naming both with both files changed, or an id with no item file, leaves nothing to report here."""
+    files = {"TK-aaaaaaaa": {"kind": "task", "status": "todo"}, "ST-aaaaaaaa": {"kind": "story", "status": "todo"}}
+    load = lambda rel: json.dumps(files[Path(rel).stem]) if Path(rel).stem in files else None  # noqa: E731
+    one = ["kb/_self/backlog/TK-aaaaaaaa.json"]
+    both = one + ["kb/_self/backlog/ST-aaaaaaaa.json"]
+    out = kbgit.work_state(["TK-aaaaaaaa, ST-aaaaaaaa"], one, load)
+    assert len(out) == 1 and out[0].startswith("ST-aaaaaaaa:") and "backlog.py set" in out[0], out  # planted
+    out = kbgit.work_state(["ST-aaaaaaaa, TK-aaaaaaaa"], one, load)
+    assert len(out) == 1 and out[0].startswith("ST-aaaaaaaa:"), out  # planted: the order does not matter
+    assert kbgit.work_state(["TK-aaaaaaaa, ST-aaaaaaaa"], both, load) == []
+    assert kbgit.work_state(["TK-aaaaaaaa, TK-zzzzzzzz"], one, load) == []  # no item file: work_ok reports it
 
 
 def test_started_sprint_check_trailers_refuses_unclaimed_work(sprint, monkeypatch):
