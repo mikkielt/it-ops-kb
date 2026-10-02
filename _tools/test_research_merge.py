@@ -21,7 +21,7 @@ import csv, io, os, re, shutil
 
 import pytest
 
-import kbgit, kbid
+import build_index, kbgit, kbid
 from conftest import KB, P, Q, Repo, git_env, requires_git
 
 A_URLS = [f"https://learn.microsoft.com/en-us/power-apps/maker/data-platform/research-merge-a{i}" for i in range(1, 6)]
@@ -31,7 +31,7 @@ Q_B = "Research-merge test: can Keeper Secrets Manager hold agent tokens?"
 ARTICLE_A = "powerbi/research-merge-test-dataverse.md"
 ARTICLE_B = "agents/api-tokens-issue-and-store.md"
 FILE_A, FILE_B = P(ARTICLE_A), P(ARTICLE_B)  # the articles' repository paths (ARTICLE_*: root-relative, as the kb names them)
-COVERAGE_PAGE = kbgit.FB(kbgit.build_index.COVERAGE_MD)
+COVERAGE_PAGE = kbgit.FB(build_index.COVERAGE_MD)
 KEEPER = "### Research-merge test: Keeper Secrets Manager"
 FOOTER = "_Agent: kb-research_"
 

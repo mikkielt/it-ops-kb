@@ -1,6 +1,7 @@
 """The git hooks of kbgit.py (kb/_self/git.md, Commands): the hook scripts the clone installs (`install-hooks`), whether
-core.hooksPath runs them in a checkout, and the pre-push hook (the push guard, the code-lane refusal and the sync gate
-before a plain `git push`). Runs git in KB, this module's own copy of the repository directory (a caller may point it
+core.hooksPath runs them in a checkout, the pre-push hook (the push guard, the code-lane refusal and the sync gate
+before a plain `git push`) and the `hook` command that runs the three (prepare-commit-msg notes an --amend, commit-msg
+adds the KB-* trailers). Runs git in KB, this module's own copy of the repository directory (a caller may point it
 at a scratch clone). Standard library only; kbgit.py imports it, and it imports no facade: the gate and the dirty paths
 come in as arguments.
 """
@@ -12,10 +13,13 @@ import kbpublic
 import kg_lane
 import kg_merge
 from kg_base import KB
+from kg_trailers import (INDEX, KEY_LINE, STRAY_WORK, WORK, apply_trailers, blob, changed_paths, compute, message_trailers,
+                         stray_work, valid_date, work_state)
 
 HOOKS_DIR = ".githooks"
 HOOKS = ("prepare-commit-msg", "commit-msg", "pre-push")
 ZERO = "0" * 40
+AMEND_MARK = "kb-trailers-base"
 
 
 def git(*args, stdin=None):
@@ -170,4 +174,61 @@ def cmd_install_hooks(a):
         print("git config core.hooksPath failed")
         return 2
     print(f"installed: core.hooksPath={HOOKS_DIR} ({', '.join(HOOKS)}); kb commits now get KB-* trailers")
+    return 0
+
+
+def hook_prepare(args):
+    """Note an --amend (git passes `commit HEAD`; -c/-C pass `commit <rev>`), so commit-msg diffs against HEAD's parent, not HEAD."""
+    mark = git_path(AMEND_MARK)
+    if mark and os.path.exists(mark):
+        os.remove(mark)
+    if mark and len(args) >= 3 and args[1] == "commit" and rev_parse(args[2]) == rev_parse("HEAD"):
+        parents = (git("rev-list", "--parents", "-n", "1", "HEAD") or "").split()[1:]
+        with open(mark, "w", encoding="utf-8", newline="\n") as f:
+            f.write("merge" if len(parents) > 1 else (parents[0] if parents else "root"))
+
+
+def hook_commit_msg(args):
+    mark, base = git_path(AMEND_MARK), None
+    if mark and os.path.exists(mark):
+        with open(mark, encoding="utf-8") as f:
+            base = f.read().strip()
+        os.remove(mark)
+    if base == "merge" or rev_parse("MERGE_HEAD"):
+        return  # merge commits carry no trailers
+    with open(args[0], encoding="utf-8", errors="replace", newline="") as f:
+        msg = f.read()
+    rebasing = any(os.path.isdir(p or "") for p in (git_path("rebase-merge"), git_path("rebase-apply")))
+    if rebasing and any(KEY_LINE.match(ln) for ln in msg.splitlines()):
+        return
+    if base is None:
+        base = rev_parse("HEAD") or ""
+    elif base == "root":
+        base = ""
+    verified = os.environ.get("KB_VERIFIED", "").strip() or None
+    if verified and not valid_date(verified):
+        print(f"kbgit.py: KB_VERIFIED={verified!r} is not YYYY-MM-DD; not added", file=sys.stderr)
+        verified = None
+    new = apply_trailers(msg, compute(base, INDEX), verified)
+    if new != msg:
+        with open(args[0], "w", encoding="utf-8", newline="") as f:
+            f.write(new)
+    if stray_work(new):  # warnings only: the commit goes through, and check-trailers refuses it before a push
+        print(f"kbgit.py commit-msg: {STRAY_WORK}; check-trailers (the pre-push hook, sync's gate) refuses this "
+              "commit", file=sys.stderr)
+    work = message_trailers(new)[1].get(WORK, [])
+    if len(work) == 1:
+        staged = lambda rel: blob(INDEX, rel) if blob(INDEX, rel) is not None else blob(base, rel)  # noqa: E731
+        for why in work_state(work, changed_paths(base, INDEX), staged):
+            print(f"kbgit.py commit-msg: {WORK}: {why}; check-trailers (the pre-push hook, sync's gate) refuses this "
+                  "commit: work lands only for a claimed item of a started sprint", file=sys.stderr)
+
+
+def cmd_hook(a, gate, dirty_paths):
+    if a.name == "pre-push":
+        return hook_pre_push(a.args, sys.stdin.read(), gate, dirty_paths)
+    try:
+        (hook_prepare if a.name == "prepare-commit-msg" else hook_commit_msg)(a.args)
+    except Exception as e:  # noqa: BLE001 - a hook must never block a commit
+        print(f"kbgit.py {a.name}: KB trailers not added ({type(e).__name__}: {e})", file=sys.stderr)
     return 0
