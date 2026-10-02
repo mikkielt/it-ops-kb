@@ -212,3 +212,58 @@ def test_change_router_once_hook_protocol():
     finally:
         if os.path.exists(marker):
             os.remove(marker)
+
+
+def test_reset_removes_only_that_sessions_marker(tmp_path):
+    """After a compaction or clear the routing line is gone from the conversation: the reset drops that session's marker,
+    so the same request is routed again, and another session's marker stays."""
+    m = str(tmp_path)
+    first = router.emit({"prompt": "commit and push this", "session_id": "s1"}, m)
+    router.emit({"prompt": "commit and push this", "session_id": "s2"}, m)
+    assert router.emit({"prompt": "commit it", "session_id": "s1"}, m) is None  # the defect: silent after compaction
+    router.reset({"session_id": "s1", "source": "compact"}, m)
+    assert os.listdir(m) == ["s2.txt"]
+    assert router.emit({"prompt": "commit it", "session_id": "s1"}, m) == first
+    assert router.emit({"prompt": "commit it", "session_id": "s2"}, m) is None
+
+
+@pytest.mark.parametrize("event", [{"session_id": "nope"}, {"session_id": "../s1"}, {"session_id": ["s1"]},
+                                   {"session_id": None}, {}, [], None, "s1", 5])
+def test_reset_of_an_unknown_or_unsafe_session_is_a_no_op(event, tmp_path):
+    """No marker, no directory, an unsafe or malformed session id: nothing is removed, nothing raised."""
+    (tmp_path / "s1.txt").write_text("kb-git-sync\n", encoding="utf-8")
+    router.reset(event, str(tmp_path))
+    assert os.listdir(tmp_path) == ["s1.txt"]
+    router.reset({"session_id": "s1"}, str(tmp_path / "missing"))  # a missing cache directory
+    router.reset({"session_id": "s1"}, str(tmp_path / "s1.txt" / "below"))  # a directory that is a file
+
+
+def test_reset_hook_protocol_is_silent_and_removes_the_marker():
+    """Through stdin, as the SessionStart hook runs it: no stdout (it would become context), exit 0, the session's marker
+    gone; a missing marker, an unsafe id and input that is not JSON are silent exit 0 too."""
+    sid = f"test-reset-{os.getpid()}"
+    marker = os.path.join(router.MARKERS, sid + ".txt")
+    run = lambda data: subprocess.run([sys.executable, HOOK, "--reset"], input=data, capture_output=True, text=True,  # noqa: E731
+                                      encoding="utf-8", timeout=30)
+    try:
+        os.makedirs(router.MARKERS, exist_ok=True)
+        with open(marker, "w", encoding="utf-8", newline="\n") as f:
+            f.write("kb-git-sync\n")
+        for data in (json.dumps({"session_id": sid, "source": "compact"}), json.dumps({"session_id": sid}), "not json",
+                     json.dumps({"session_id": "../x"}), "[" * 100000):
+            p = run(data)
+            assert (p.returncode, p.stdout) == (0, ""), p.stderr[-300:]
+            assert "Traceback" not in p.stderr, p.stderr
+            if data == json.dumps({"session_id": sid, "source": "compact"}):
+                assert not os.path.exists(marker)
+    finally:
+        if os.path.exists(marker):
+            os.remove(marker)
+
+
+def test_reset_is_registered_for_compact_and_clear():
+    """settings.json runs the reset on SessionStart sources compact and clear, and not on startup, which a new session's
+    own marker never needs."""
+    hooks = json.load(open(os.path.join(KB, ".claude", "settings.json"), encoding="utf-8"))["hooks"]["SessionStart"]
+    found = [g.get("matcher") for g in hooks for h in g["hooks"] if "kb_change_router.py --reset" in h["command"]]
+    assert found == ["compact|clear"], found

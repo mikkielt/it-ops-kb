@@ -16,6 +16,10 @@ routing deterministic instead of relying on the model to match a skill descripti
   "Another Claude session")
                   -> no output: the prompt goes to the model unchanged
 
+`--reset` (a SessionStart hook with matcher compact|clear): removes that session's marker, so the first change request
+after /compact or /clear is routed again (the conversation no longer holds the earlier routing line); always silent,
+exit 0, nothing on stdout (a SessionStart hook's stdout becomes context), and a missing marker or directory is a no-op.
+
 `--test "<prompt>"` prints what the hook would add, for a check from a shell (no session, so no marker).
 """
 import json, os, re, sys
@@ -111,6 +115,17 @@ def emit(event, markers=MARKERS):
     return out
 
 
+def reset(event, markers=MARKERS):
+    """Remove the event's session marker (a compaction or clear dropped the routing line from the conversation).
+    Nothing else is touched; an unsafe or missing session id, a missing marker or an unreadable directory is a no-op."""
+    sid = event.get("session_id") if isinstance(event, dict) else None
+    if isinstance(sid, str) and SAFE_SESSION.fullmatch(sid):
+        try:
+            os.remove(os.path.join(markers, sid + ".txt"))
+        except OSError:
+            pass
+
+
 def main():
     # the hook's JSON is UTF-8 on every OS; Windows would otherwise read and write the locale code page (cp1252)
     sys.stdin.reconfigure(encoding="utf-8", errors="replace")
@@ -122,6 +137,9 @@ def main():
         event = json.load(sys.stdin)
     except (ValueError, RecursionError):
         return  # not our input: never block a prompt on a parse error
+    if sys.argv[1:2] == ["--reset"]:
+        reset(event)
+        return  # silent: a SessionStart hook's stdout becomes context
     out = emit(event)
     if out is not None:
         print(json.dumps(out, ensure_ascii=False))
