@@ -26,7 +26,7 @@
                    public home (git config kb.publishRemote); a clone without one pushes it; the pre-push hook of a kb
                    clone refuses a plain push to the public home.
 """
-import argparse, ast, hashlib, json, os, shutil
+import argparse, ast, hashlib, json, os, re, shutil
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -849,3 +849,54 @@ class TestBridge(SyncScenario):
         w.a.write("README.md", "dirty\n")
         r = w.a.kbgit("bridge", "feature", "--push")
         assert r.returncode == 2 and "uncommitted changes" in r.stdout
+
+
+def tree_guid_hits(cwd):
+    """[(path, line)] of every GUID the publish scan (kbpublic.file_hits) flags in the files `git ls-files` lists at CWD,
+    the way publish reads them: the paths a projection drops, files of internal roots and a vendor export's or pinned
+    artifact's GUIDs are left out, and the tree's _tools/tests_allowlist.txt is the allow set. A value is never returned."""
+    import kbcommon
+    files = [x for x in kbpublic.run(["ls-files", "-z"], cwd)[1].decode("utf-8", "replace").split("\0") if x]
+    private = tuple(f"{p}/" for p in kbpublic.PRIVATE)
+    files = [x for x in files if not x.startswith(private) and not kbpublic.FORBIDDEN_RE.search(x)
+             and x.rsplit("/", 1)[-1] not in kbpublic.PRIVATE_NAMES]
+    internal = tuple(kbpublic.root_dir(x) + "/" for x in files if x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE
+                     and re.search(r"^visibility:\s*internal\s*$", (Path(cwd) / x).read_text(encoding="utf-8"), re.M))
+    allow_file = Path(cwd) / kbpublic.ALLOWLIST_PATH
+    allow = kbpublic.parse_allowlist(allow_file.read_text(encoding="utf-8") if allow_file.is_file() else "")
+    pinned = kbpublic.pinned_paths("HEAD", files, cwd)
+    res = []
+    for x in files:
+        if x.startswith(internal):
+            continue
+        try:
+            text = (Path(cwd) / x).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for kind, value in kbpublic.file_hits(x, text, allow, pinned):
+            if kind == "guid":
+                res += [(x, n) for n, ln in enumerate(text.splitlines(), 1) if value.lower() in ln.lower()][:1]
+    return sorted(set(res))
+
+
+class TestPublishTreeGuid:
+    """The tracked tree passes publish's GUID scan, so a first publish is not refused (`-k publish_tree_guid_clean`)."""
+
+    PLANT = "-".join(("bf9679e7", "0de6", "11d0", "a285", "00aa003049e3"))  # built from parts: this file holds no GUID
+
+    def test_publish_tree_guid_clean(self):
+        from conftest import KB
+        hits = tree_guid_hits(KB)
+        assert not hits, "unallowlisted GUIDs (add a reviewed entry to _tools/tests_allowlist.txt, never a real id): " + \
+            ", ".join(f"{p}:{n}" for p, n in hits)
+
+    def test_publish_tree_guid_clean_planted(self, tmp_path):
+        r = Repo(tmp_path / "t")
+        os.makedirs(r.path)
+        r.git("init", "-q", "-b", "main")
+        files = {"kb/public/notes.md": f"x {self.PLANT}\n", "kb/_querylog/a.jsonl": f"{self.PLANT}\n",
+                 "kb/public/_logs.csv": f"{self.PLANT}\n", "kb/public/ok.md": "no id\n"}
+        commit(r, files, "plant")
+        assert tree_guid_hits(r.path) == [("kb/public/notes.md", 1)]  # the dropped paths are not scanned
+        commit(r, {"_tools/tests_allowlist.txt": f"guid {self.PLANT.upper()}  # reviewed\n"}, "allow")
+        assert tree_guid_hits(r.path) == []
