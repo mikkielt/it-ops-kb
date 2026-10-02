@@ -39,7 +39,9 @@
     "_tools/test_bl_land.py",
     "_tools/test_sync.py",
     "_tools/test_layout.py",
-    "_tools/test_kb_leaks.py"
+    "_tools/test_kb_leaks.py",
+    "_tools/kg_lock.py",
+    "_tools/test_autopilot_two_runners.py"
   ],
   "depends_on": [
     "ST-zkotxvdl"
