@@ -378,10 +378,12 @@ def fetch_target(tool, args):
 
 
 def shell_segments(command):
-    """The pieces of a shell command between unquoted `;`, `&`, `|` and newlines: a separator inside quotes stays in
-    its piece, so a quoted sentence that mentions a command is no command."""
+    """(piece, separator) pairs of a shell command split at unquoted `;`, `&`, `|` and newlines; the separator is
+    the character that ended the piece ("" for the last). A separator inside quotes stays in its piece, so a quoted
+    sentence that mentions a command is no command. An `&` that belongs to a redirect (`2>&1`, `&>file`) is no
+    separator."""
     out, cur, quote = [], [], None
-    for ch in command:
+    for n, ch in enumerate(command):
         if quote:
             cur.append(ch)
             if ch == quote:
@@ -389,12 +391,14 @@ def shell_segments(command):
         elif ch in "\"'":
             quote = ch
             cur.append(ch)
+        elif ch == "&" and (command[n - 1:n] in (">", "<") or command[n + 1:n + 2] == ">"):
+            cur.append(ch)
         elif ch in ";&|\n":
-            out.append("".join(cur))
+            out.append(("".join(cur), ch))
             cur = []
         else:
             cur.append(ch)
-    return [*out, "".join(cur)]
+    return [*out, ("".join(cur), "")]
 
 
 def work_action(command):
@@ -402,15 +406,16 @@ def work_action(command):
     Only the command's own shape counts: the script's name after nothing but an interpreter, a launcher, its flags
     and environment assignments (a path, `python3`, `py -3`, `sh .../kbpy`, a PowerShell `&` call), then an optional
     `--root DIR`, the action and the item id, with any `--by`, `--commit` or `--trailer` after it. `done --dry-run`
-    changes nothing and is none; so is a mention in a quoted text, in `echo`, `git commit -m` or a search. Never
-    the command's other text."""
+    changes nothing and is none; so is a mention in a quoted text, in `echo`, `git commit -m` or a search, and a
+    command piped into another (`done ID | tail`, `done ID || echo`: the exit code is the last command's, so a
+    refusal would read as a success). Never the command's other text."""
     def unquote(t):
         return t[1:-1] if len(t) > 1 and t[0] == t[-1] and t[0] in "\"'" else t
 
     def base(t):
         return re.split(r"[/\\]", t)[-1]
 
-    for piece in shell_segments(command):
+    for piece, sep in shell_segments(command):
         toks = [unquote(t) for t in SHELL_TOKEN.findall(piece)]
         at = next((n for n, t in enumerate(toks) if base(t) == "backlog.py"), None)
         if at is None or not all(WORK_LAUNCHER.fullmatch(t) or WORK_LAUNCHER.fullmatch(base(t)) for t in toks[:at]):
@@ -431,7 +436,8 @@ def work_action(command):
             elif not t.startswith("-") and item is None:
                 item = t
         if item and WORK_ITEM.fullmatch(item) and not {"--dry-run", "-h", "--help"} & set(flags):
-            return item, rest[0]
+            # a pipeline's exit code is its last command's: a refused `done` piped on would be read as a success
+            return None if sep == "|" else (item, rest[0])
     return None
 
 

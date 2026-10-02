@@ -290,7 +290,19 @@ class TestWorkRows:
     @pytest.mark.parametrize("command,expected", [
         ("python3 _tools/backlog.py claim TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
         ("cd /repo && python3 _tools/backlog.py done TK-aaaaaaaa --commit", ("TK-aaaaaaaa", "done")),
-        ("python3 _tools/backlog.py done TK-aaaaaaaa --commit 2>&1 | tail -3", ("TK-aaaaaaaa", "done")),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa --commit 2>&1", ("TK-aaaaaaaa", "done")),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa &> /dev/null", ("TK-aaaaaaaa", "done")),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa --commit 2>&1 | tail -3", None),  # a pipe: the last exit code
+        ("python3 _tools/backlog.py done TK-aaaaaaaa | tail -3", None),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa | tee out.txt", None),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa |& tee out.txt", None),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa || echo refused", None),
+        ("python3 _tools/backlog.py claim TK-aaaaaaaa | tail -3", None),
+        ("cd /repo && python3 _tools/backlog.py done TK-aaaaaaaa 2>&1 | tail -3", None),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa > out.txt", ("TK-aaaaaaaa", "done")),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa && echo ok | tail -1", ("TK-aaaaaaaa", "done")),
+        ("echo 'x | y' | python3 _tools/backlog.py done TK-aaaaaaaa", ("TK-aaaaaaaa", "done")),
+        ("python3 _tools/backlog.py done TK-aaaaaaaa --trailer 'Note: a | b'", ("TK-aaaaaaaa", "done")),
         ("python3 /home/jan.kowalski/it-ops-kb/_tools/backlog.py release EP-eeeeeeee", ("EP-eeeeeeee", "release")),
         ("python3 _tools/backlog.py --root /repo claim TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
         ("python3 _tools/backlog.py claim --by worker-x TK-aaaaaaaa", ("TK-aaaaaaaa", "claim")),
@@ -353,6 +365,20 @@ class TestWorkRows:
         hook(tmp_path, tool("Bash", {"command": "python3 _tools/backlog.py done TK-aaaaaaaa"}, {"stdout": "done"}))
         (row,) = lines(tmp_path)
         assert (row["surface"], row["item"], row["action"]) == ("work", "TK-aaaaaaaa", "done")
+
+    def test_work_row_piped_done_writes_none(self, tmp_path):
+        """A pipeline's exit code is its last command's: `done ID | tail` exits 0 whether `done` was refused or not
+        (a success event) and `done ID | false` exits 1 whatever `done` did (a failure event). Neither writes a
+        row. Planted: the same `done` run alone writes `done` on success and `refused` on `Exit code 1`."""
+        for n, tail in enumerate(("| tail -3", "2>&1 | tee out.txt", "|& tail", "|| echo no")):
+            cmd = f"python3 _tools/backlog.py done TK-aaaaaaaa {tail}"
+            hook(tmp_path, tool("Bash", {"command": cmd}, {"stdout": "x"}, pid=f"s{n}"))
+            hook(tmp_path, tool("Bash", {"command": cmd}, ok=False, error="Exit code 1\nx", pid=f"f{n}"))
+        assert lines(tmp_path) == []
+        alone = "python3 _tools/backlog.py done TK-aaaaaaaa"
+        hook(tmp_path, tool("Bash", {"command": alone}, {"stdout": "x"}, pid="a"))
+        hook(tmp_path, tool("Bash", {"command": alone}, ok=False, error="Exit code 1\nx", pid="b"))
+        assert [r["action"] for r in lines(tmp_path)] == ["done", "refused"]
 
     def test_work_refused_a_failed_claim_or_release_writes_none(self, tmp_path):
         """Only a done is a refusal worth a row. Planted: the same `Exit code 1` on a done writes one."""

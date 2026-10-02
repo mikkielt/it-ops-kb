@@ -20,5 +20,33 @@
     "_tools/test_ql_capture.py",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does the pipe rule in ql_capture.work_action cover claim and release as well as done?",
+      "options": [
+        "done, claim and release",
+        "done only"
+      ],
+      "recommendation": "done, claim and release",
+      "do": {
+        "done, claim and release": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_work_row_piped_done_writes_none"
+        ],
+        "done only": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_work_row_command_forms"
+        ]
+      },
+      "answer": "done, claim and release",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "seventh-w8"
 }
