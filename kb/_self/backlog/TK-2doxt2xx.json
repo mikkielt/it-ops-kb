@@ -2,7 +2,7 @@
   "id": "TK-2doxt2xx",
   "kind": "task",
   "title": "kg_sync.py holds the sync run, its gate and its push",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -26,5 +26,6 @@
   ],
   "depends_on": [
     "TK-vekgp5gc"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
