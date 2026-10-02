@@ -2,7 +2,7 @@
   "id": "ST-4xvsdot3",
   "kind": "story",
   "title": "The manager's tick starts with a self-check of its tools, rules, hooks and host",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-rrrrggw7",
   "priority": "P1",
@@ -57,5 +57,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Its state output is the one capped command of ST-nrhwbodb; each failed check names a remedy a stalled item uses too (A1)."
+  "notes": "Its state output is the one capped command of ST-nrhwbodb; each failed check names a remedy a stalled item uses too (A1).",
+  "claimed_by": "orch-fourth-s2"
 }
