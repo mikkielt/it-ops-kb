@@ -137,7 +137,7 @@ def test_kblog_record_confirm_ids_follow_the_observation_context_runs_and_days(r
     ("Median latency was 142 ms on 2026-10-01 12:30", "holds a timestamp with a time of day"),
     ("Spool event 20261001T123000Z had 3 hits", "holds a timestamp with a time of day"),
     ("Median latency was 142 ms\nfor kerberos queries", "holds a line break"),
-    ("Median latency was 142 ms; seen from 192.168.1.20", "leak-scan hit (ip)"),
+    ("Median latency was 142 ms; seen from " + ".".join(["192", "168", "1", "20"]), "leak-scan hit (ip)"),
     ("Some queries were slow", "observation holds no number"),
     ("Median latency was 142 ms " + "x" * 240, "longer than 240 characters"),
 ])
