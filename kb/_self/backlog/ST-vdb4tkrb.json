@@ -2,7 +2,7 @@
   "id": "ST-vdb4tkrb",
   "kind": "story",
   "title": "A sprint starts only once its research is done",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -49,5 +49,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "seventh-w31"
+  "evidence": {
+    "commit": "1e6a712eda299fe34bf11f035934c8a654ad6182",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "research_gated_start"
+        ],
+        "exit": 0,
+        "sha256": "b9aaed1f0ddab121"
+      }
+    ]
+  }
 }
