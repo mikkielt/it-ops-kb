@@ -30,6 +30,7 @@ import argparse, datetime, json, os, re, subprocess, sys
 from pathlib import Path
 
 import bl_base
+import kbpublic
 from bl_intake import end_tree
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -107,21 +108,23 @@ def prepare_worktree(root, sprint):
     else reused. A clean one is fast-forwarded to origin/main (one already ahead of it is kept as it is); one with
     uncommitted files, or whose branch diverged from origin/main, is refused."""
     wt, branch = worktree_path(root, sprint), branch_name(sprint)
-    bl_base.git(root, "fetch", "origin")
+    remote = kbpublic.integration_remote(str(root))  # never the name origin: the remote with the integration role
+    main = f"{remote}/main"
+    bl_base.git(root, "fetch", remote)
     if not wt.exists():
         have = git_ok(root, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
-        add = ["worktree", "add", str(wt), branch] if have else ["worktree", "add", "-b", branch, str(wt), "origin/main"]
+        add = ["worktree", "add", str(wt), branch] if have else ["worktree", "add", "-b", branch, str(wt), main]
         bl_base.git(root, *add)
     dirty = [ln[3:] for ln in bl_base.git(wt, "status", "--porcelain", "-uall").splitlines() if ln.strip()]
     if dirty:
         more = f" and {len(dirty) - DIRTY_FILES} more" if len(dirty) > DIRTY_FILES else ""
-        raise bl_base.Refused(f"the runner's worktree {wt} has uncommitted files, so it is not brought to origin/main: "
+        raise bl_base.Refused(f"the runner's worktree {wt} has uncommitted files, so it is not brought to {main}: "
                               + ", ".join(dirty[:DIRTY_FILES]) + more)
-    if not git_ok(wt, "merge-base", "--is-ancestor", "origin/main", "HEAD"):  # not at or ahead of origin/main
-        if not git_ok(wt, "merge-base", "--is-ancestor", "HEAD", "origin/main"):
-            raise bl_base.Refused(f"the runner's worktree {wt} (branch {branch}) has commits origin/main lacks and "
-                                  "lacks commits origin/main has: bring it to origin/main by hand")
-        bl_base.git(wt, "merge", "--ff-only", "origin/main")
+    if not git_ok(wt, "merge-base", "--is-ancestor", main, "HEAD"):  # not at or ahead of the integration main
+        if not git_ok(wt, "merge-base", "--is-ancestor", "HEAD", main):
+            raise bl_base.Refused(f"the runner's worktree {wt} (branch {branch}) has commits {main} lacks and "
+                                  f"lacks commits {main} has: bring it to {main} by hand")
+        bl_base.git(wt, "merge", "--ff-only", main)
     return wt, bl_base.git(wt, "rev-parse", "HEAD").strip()
 
 
