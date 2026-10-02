@@ -471,6 +471,7 @@ class TestCohesion:
                                     "```\n## Fenced\n```\n")
         w(self_dir / "rules.md", "# Rules\n\n## Ledgers and retrieval data\n\nSee (`kb/_self/querylog.md`, Learn and Apply)"
                                  " and (querylog.md, Capture).\n")
+        w(tmp_path / "README.md", "# Readme\n")  # the repository's own file, so a bare name for it is no dead doc
         w(tmp_path / "AGENTS.md", "Rules (`kb/_self/rules.md`, Ledgers); files (README.md, AGENTS.md).\n")
         w(tmp_path / ".claude" / "skills" / "kb-x" / "SKILL.md", "Read (kb/_self/querylog.md, Delivery) first.\n")
         w(tmp_path / "_tools" / "t.py", '"""Tool (kb/_self/querylog.md,\n    Fenced)."""\n'
@@ -489,6 +490,36 @@ class TestCohesion:
         n = sum(1 for f, parts in selfdoc.ref_sources(KB, set(tracked())) for _, t in parts for m in selfdoc.SECTION_REF_RX.finditer(t)
                 if m["sec"].split()[0] in ("Learn", "Apply"))
         assert n >= 2, "the query log's Learn and Apply references are no longer read as section references"
+
+    def test_selfdoc_flags_dead_doc_odd_section_text_and_subdirectory_references(self, tmp_path):
+        """A bare reference to a kb/_self doc that no longer exists and has no namesake elsewhere, a section text holding
+        parentheses, a backtick, a colon or a semicolon or wrapping onto the next line, and a reference into a
+        kb/_self subdirectory are each read; a bare name that is another file of the repository, and a heading named
+        whole with its note, pass."""
+        import selfdoc
+        self_dir = tmp_path / SELF_REL
+        (self_dir / "reports").mkdir(parents=True)
+        (tmp_path / "docs").mkdir()
+        w = lambda p, s: p.write_text(s, encoding="utf-8", newline="\n")  # noqa: E731
+        w(self_dir / "a.md", "# A\n\n## Real\n\n## Capture (`a.py capture`)\n\n## Wrapped heading text\n")
+        w(self_dir / "reports" / "r.md", "# R\n\n## Findings\n")
+        w(tmp_path / "docs" / "README.md", "# Readme\n")
+        w(tmp_path / "AGENTS.md",
+          "Dead doc (gone.md, Real). Parens (a.md, Missing (note)). Colon (a.md, Gone: x). Semicolon (a.md, Real; more).\n"
+          "Wrapped (a.md, Wrapped\nmissing text). Subdir (kb/_self/reports/r.md, Absent).\n"
+          "Fine: (a.md, Real) (a.md, Capture (`a.py capture`)) (kb/_self/reports/r.md, Findings) (README.md, Setup)\n"
+          "(kb/_self/gone2.md, Real).\n")
+        got = selfdoc.dead_section_refs(str(tmp_path), {"AGENTS.md", f"{SELF_REL}/a.md", f"{SELF_REL}/reports/r.md",
+                                                       "docs/README.md"})
+        assert got == [
+            "AGENTS.md:1: (gone.md, Real) names a doc that does not exist",
+            f"AGENTS.md:1: (a.md, Missing (note)) names no heading of {SELF_REL}/a.md",
+            f"AGENTS.md:1: (a.md, Gone: x) names no heading of {SELF_REL}/a.md",
+            f"AGENTS.md:1: (a.md, Real; more) names no heading of {SELF_REL}/a.md",
+            f"AGENTS.md:2: (a.md, Wrapped missing text) names no heading of {SELF_REL}/a.md",
+            f"AGENTS.md:3: (kb/_self/reports/r.md, Absent) names no heading of {SELF_REL}/reports/r.md",
+            "AGENTS.md:5: (kb/_self/gone2.md, Real) names a doc that does not exist",
+        ], got
 
     def test_selfdoc_short_name_must_end_at_a_heading_separator(self):
         """A leading word that cuts a phrase (`The` for `The research queue`, `Store` and `Tests` for `Store layout` and
