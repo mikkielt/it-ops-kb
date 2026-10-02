@@ -2,7 +2,7 @@
   "id": "ST-hwua72bg",
   "kind": "story",
   "title": "A sprint close, a CI read and an intake run leave an ops row",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -71,5 +71,39 @@
     }
   ],
   "notes": "Failures it answers: close deletes the items, so per-sprint facts survive only in the commit body (a retrospective had to read git); red-pipeline made up to 100 job-list calls unseen (BG-h4wygoak); drift skipped items for want of coverage data (BG-3q6fviow).",
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "8f40ee4558901f8e7a0d08fd404d4f7748c6b4d9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_sprint_close_row"
+        ],
+        "exit": 0,
+        "sha256": "d5c47f13e7c4e9f7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_ci_pipeline_row"
+        ],
+        "exit": 0,
+        "sha256": "4fc10b5a64ecc89d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_intake_row"
+        ],
+        "exit": 0,
+        "sha256": "ff09be44ac186a16"
+      }
+    ]
+  }
 }
