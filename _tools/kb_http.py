@@ -39,8 +39,10 @@ DNS rebinding, and recommends a loopback bind for a local server):
                   few KB) and bounds the memory one request can make a serving thread hold
   chunked body    a POST sent with `Transfer-Encoding: chunked` (and no Content-Length) is read chunk by chunk up
                   to --max-body; one that runs past it gets 413 as an over-long body does, when the limit is
-                  reached. The limit counts every byte read, chunk-size lines, extensions and trailers included,
-                  plus a 4 KiB allowance for the framing; the drain of a refused body is bounded the same way. Any other transfer coding gets 501 Not Implemented; both Transfer-Encoding and
+                  reached. The limit counts the data bytes only; the framing (size lines, extensions, trailers) has
+                  its own allowance, 4 KiB plus 32 bytes a chunk, one line at most 8 KiB: a body at the limit is
+                  served whatever its chunk size, a flood of framing gets 413, and the drain of a refused body is
+                  bounded the same way. Any other transfer coding gets 501 Not Implemented; both Transfer-Encoding and
                   Content-Length, or broken chunk framing, get 400 Bad Request
   stalled body    a connection that sends nothing for 30 seconds (a body announced and not sent) is dropped.
   A refusal is plain text and closes the connection. A refused body up to 64 KiB is read and dropped first, so the
@@ -90,8 +92,9 @@ JSON_TYPE = "application/json"
 ROOTS = ("public",)  # served when --roots is not given: the module docstring says why
 DRAIN = 64 << 10  # a refused body up to this size is read and dropped before the refusal is sent
 CHUNK_SIZE = re.compile(rb"[0-9A-Fa-f]{1,16}")  # a chunk-size line's size, before any chunk extension
-LINE_MAX = 64 << 10  # the longest chunk-size or trailer line read
-CHUNK_SLACK = 4 << 10  # what a chunked request may make the server read beyond its limit: size lines, extensions, trailers
+LINE_MAX = 8 << 10  # the longest chunk-size line (extension included) or trailer line read
+CHUNK_SLACK = 4 << 10  # framing (size lines, extensions, chunk-ending CRLFs, trailers) a chunked request may bring, flat
+CHUNK_FRAME = 32  # and this much more for each chunk: a body at its limit in small chunks is served, never refused
 LOGGED_METHODS = frozenset({"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"})  # a method named in a log line
 MODERN_STATUS = {-32022: HTTPStatus.BAD_REQUEST, -32602: HTTPStatus.BAD_REQUEST, -32601: HTTPStatus.NOT_FOUND}
 _HANDLE_LOCK = threading.Lock()
@@ -177,11 +180,13 @@ class Handler(BaseHTTPRequestHandler):
         return self.headers.get("Transfer-Encoding") is not None
 
     def read_chunked(self, limit):
-        """The body of a chunked request, or None when it runs past `limit` bytes (reading stops there). Every byte
-        read counts, chunk-size lines, extensions and trailers included, against `limit` plus CHUNK_SLACK.
+        """The body of a chunked request, or None when its data runs past `limit` bytes or its framing (chunk-size
+        lines, extensions, chunk-ending CRLFs, trailers) past CHUNK_SLACK plus CHUNK_FRAME for each chunk (reading
+        stops there). A body whose data is within `limit` is served whatever its chunk size; one framing line past
+        LINE_MAX is refused the same way. Chunks carry data, so their number is bounded by `limit`, and so is what is read.
         ValueError when the chunk framing is broken or the connection ends inside it."""
         body = bytearray()
-        left = limit + CHUNK_SLACK  # bytes this request may still make the server read
+        left = CHUNK_SLACK  # framing bytes this request may still make the server read
 
         def take(line):
             nonlocal left
@@ -189,8 +194,9 @@ class Handler(BaseHTTPRequestHandler):
             return left >= 0
 
         while True:
-            line = self.rfile.readline(min(LINE_MAX, left) + 1)
-            if not take(line):
+            left += CHUNK_FRAME  # this chunk's share
+            line = self.rfile.readline(min(LINE_MAX + 1, left + 1))
+            if not take(line) or len(line) > LINE_MAX:
                 return None
             if not line.endswith(b"\n"):
                 raise ValueError("chunk-size line cut off or too long")
@@ -200,17 +206,18 @@ class Handler(BaseHTTPRequestHandler):
             n = int(size, 16)
             if n == 0:
                 break
-            if len(body) + n > limit or n + 2 > left:
+            if len(body) + n > limit:
                 return None
             data = self.rfile.read(n)
             end = self.rfile.readline(3)
-            left -= len(data) + len(end)
             if len(data) != n or end not in (b"\r\n", b"\n"):
                 raise ValueError("chunk data cut off or not ended by CRLF")
+            if not take(end):
+                return None
             body += data
         for _ in range(100):  # the trailer section: header lines up to an empty one, which are dropped
-            line = self.rfile.readline(min(LINE_MAX, left) + 1)
-            if not take(line):
+            line = self.rfile.readline(min(LINE_MAX + 1, left + 1))
+            if not take(line) or len(line) > LINE_MAX:
                 return None
             if not line.endswith(b"\n"):
                 raise ValueError("trailer cut off or too long")
