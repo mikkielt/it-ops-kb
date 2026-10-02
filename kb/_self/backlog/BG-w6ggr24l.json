@@ -2,7 +2,7 @@
   "id": "BG-w6ggr24l",
   "kind": "bug",
   "title": "Gate class derivation misses touch spellings, directory touches, kbpublic.py, wordings and an empty question, and a sprint start gate ignores its items' touches",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
@@ -32,5 +32,6 @@
     "_tools/backlog.py",
     "_tools/test_bl_authority_derivation.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
