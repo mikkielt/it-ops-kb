@@ -2,7 +2,7 @@
   "id": "TK-qbdgkdpy",
   "kind": "task",
   "title": "bl_cost.py holds the cost report",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,6 @@
   ],
   "depends_on": [
     "TK-f5swu7tm"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
