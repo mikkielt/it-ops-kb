@@ -28,7 +28,13 @@
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py",
     "kb/_self/map.csv",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/bl_base.py",
+    "_tools/bl_cli.py",
+    "_tools/bl_testkit.py",
+    "_tools/bl_cost.py",
+    "_tools/test_bl_cost.py",
+    "_tools/test_kb_leaks.py"
   ],
   "depends_on": [
     "TK-f5swu7tm"
