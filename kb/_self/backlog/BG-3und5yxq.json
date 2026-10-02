@@ -2,7 +2,7 @@
   "id": "BG-3und5yxq",
   "kind": "bug",
   "title": "kb_http.py logs each request's client address and request line to stderr",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -24,5 +24,18 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "seventh-w4"
+  "evidence": {
+    "commit": "8fc453ba1e86c3052586175d9acdca8e25823aca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,io;sys.path.insert(0,'_tools');import kb_http;a='.'.join(['203','0','113','7']);h=object.__new__(kb_http.Handler);h.client_address=(a,5555);h.server=type('S',(),{'quiet':False})();buf=io.StringIO();sys.stderr=buf;h.log_message('%s','GET /x HTTP/1.1');sys.stderr=sys.__stderr__;sys.exit(1 if a in buf.getvalue() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
