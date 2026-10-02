@@ -2,7 +2,7 @@
   "id": "ST-g73vlg44",
   "kind": "story",
   "title": "tests.py caps its pytest workers so concurrent sessions do not oversubscribe the host",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gfoakqar",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "_tools/tests.py",
     "_tools/test_testmap.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "seventh-w9"
 }
