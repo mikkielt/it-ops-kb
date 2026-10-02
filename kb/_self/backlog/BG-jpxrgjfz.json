@@ -2,7 +2,7 @@
   "id": "BG-jpxrgjfz",
   "kind": "bug",
   "title": "kbingest map's machine-name check takes the environment user and lets a short host name inside a longer value pass",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
