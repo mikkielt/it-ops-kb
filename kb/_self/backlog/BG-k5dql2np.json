@@ -2,7 +2,7 @@
   "id": "BG-k5dql2np",
   "kind": "bug",
   "title": "The test-id baseline still spells a test BG-7lmqjumx renamed, so perfcheck ids reports it missing",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -39,5 +39,41 @@
   "touches": [
     "_tools/test_ids_baseline.txt"
   ],
-  "claimed_by": "mac-third"
+  "evidence": {
+    "commit": "a4cd6a905f97437c7a5c44f3f09cf41b372b79e2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt"
+        ],
+        "exit": 0,
+        "sha256": "c1837b58cb9d9f71"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "perfcheck"
+        ],
+        "exit": 0,
+        "sha256": "00138e862696bccb"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt"
+        ],
+        "exit": 0,
+        "sha256": "c1837b58cb9d9f71"
+      }
+    ]
+  }
 }
