@@ -2,7 +2,7 @@
   "id": "TK-5sjw6qpg",
   "kind": "task",
   "title": "kg_hooks.py holds the pre-push hook and the hook install",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -34,5 +34,6 @@
   ],
   "depends_on": [
     "TK-i2x2csig"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
