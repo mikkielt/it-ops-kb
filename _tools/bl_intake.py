@@ -20,8 +20,9 @@ the part that does not touch the backlog's files:
 - `lines(candidate)`: the lines the command prints for one candidate;
 - the `drift` detector (`scan_drift`, `drift_detector`): items whose state disagrees with their commits. Its item
   checks run within a total budget (DRIFT_BUDGET_S, each check at most CHECK_TIMEOUT_S), the items taken in id order
-  rotated by the commit count of main's tip (`rotation`), so each new tip starts from the next item and every
-  eligible item is reached within as many runs as there are, each check as a process group of
+  started after the last item the previous run reached (`rotated`, `read_cursor`, `write_cursor`; the commit count of
+  main's tip, `rotation`, only seeds the first run), so every eligible item is reached within as many runs as there
+  are whatever moved the tip between them, each check as a process group of
   its own that a timeout or this process's exit ends whole (`end_tree`, `end_live`), and a check that runs the whole
   test suite (`heavy_check`: `_tools/tests.py` or pytest with no narrowing `-k`, `stress_test.py`, a wrapper such as
   `perfcheck.py`, also inside `sh -c '...'`) never runs; the items those leave unchecked are counted in the story's
@@ -245,13 +246,15 @@ class Drift:
     `passing` {draft or todo item id: how many checks it has} (all of its checks pass on HEAD), `timed_out` the ids of
     items with a check that exceeded the timeout, `heavy` the ids of items left unchecked because a check runs the
     whole test suite or the stress tests, `over_budget` the ids of items left unchecked once the budget was spent,
-    `ran` how many items had their checks run."""
+    `ran` how many items had their checks run, `last` the id of the last item reached in the run's order before the
+    budget was spent (the next run starts after it)."""
     stale: dict = field(default_factory=dict)
     passing: dict = field(default_factory=dict)
     timed_out: list = field(default_factory=list)
     heavy: list = field(default_factory=list)
     over_budget: list = field(default_factory=list)
     ran: int = 0
+    last: str = ""
 
 
 def git_out(root, *args):
@@ -503,12 +506,45 @@ def rotation(root):
         return 0
 
 
-def rotated(ids, index):
-    """`ids` (sorted) started at position `index` modulo their number and wrapped round: every id leads within
-    len(ids) successive indexes."""
+def cursor_path(root):
+    """The file (in the git directory, so never tracked) that keeps the last item a drift run reached."""
+    try:
+        return (Path(root) / git_out(root, "rev-parse", "--git-path", "kb-intake-drift").strip()).resolve()
+    except RuntimeError:
+        return None
+
+
+def read_cursor(root):
+    """The id of the last item the previous drift run reached, or None."""
+    p = cursor_path(root)
+    try:
+        return p.read_text(encoding="utf-8").strip() or None
+    except (OSError, AttributeError):
+        return None
+
+
+def write_cursor(root, iid):
+    """Keep `iid` as the last item reached; a failed write only loses the place."""
+    p = cursor_path(root)
+    if p is None or not iid:
+        return
+    try:
+        p.write_text(iid + "\n", encoding="utf-8", newline="\n")
+    except OSError:
+        pass
+
+
+def rotated(ids, index, after=None):
+    """`ids` (sorted) wrapped round to start after the id `after` (the first id above it when it is gone), so every id
+    is reached within len(ids) runs whatever moved the tip between them. Without `after` the start is a hash of
+    `index`, not `index` modulo the number: a step between indexes that shares a factor with the number of ids
+    would otherwise revisit the same few starts forever."""
     if not ids:
         return []
-    k = index % len(ids)
+    if after is not None:
+        k = sum(1 for i in ids if i <= after) % len(ids)
+    else:
+        k = int.from_bytes(hashlib.sha256(str(index).encode()).digest()[:8], "big") % len(ids)
     return ids[k:] + ids[:k]
 
 
@@ -529,21 +565,25 @@ def passing_open(root, items, timeout, drift, budget):
     """Run the checks of each draft or todo item that has touches and checks and whose touches changed since its file
     did; an item is reported when all its checks pass, left out when one fails, left out and counted when one
     exceeds `timeout` (or the budget left), when one is a heavy check (not run), or when the `budget` seconds for all
-    the checks were spent before its turn (not run). The items are taken in id order rotated by `rotation(root)`, so
-    a budget that covers only some of them reaches a different first item on each new tip of main and every eligible
-    item within as many runs as there are eligible items."""
+    the checks were spent before its turn (not run). The items are taken in id order starting after the last item the
+    previous run reached (`rotation(root)` seeds the start when there is none), so a budget that covers only some of
+    them still reaches every eligible item within as many runs as there are eligible items."""
     start = time.monotonic()
     found = eligible(root, items)
-    order = rotated([iid for iid, _ in found], rotation(root))
+    order = rotated([iid for iid, _ in found], rotation(root), read_cursor(root))
     checks_of = dict(found)
+    spent = False
     for iid in order:
         checks = checks_of[iid]
         if any(heavy_check(c) for c in checks):
             drift.heavy.append(iid)
+            drift.last = drift.last if spent else iid
             continue
         if time.monotonic() - start >= budget:
             drift.over_budget.append(iid)
+            spent = True
             continue
+        drift.last = drift.last if spent else iid
         drift.ran += 1
         results = []
         for c in checks:
@@ -579,6 +619,7 @@ def drift_detector(root):
     the notes list the items found. Items left unchecked (a timeout, a heavy check, the spent
     budget) are counted in the notes and never reported."""
     d = scan_drift(root)
+    write_cursor(root, d.last)
     ids = sorted(set(d.stale) | set(d.passing))
     if not ids:
         return []
