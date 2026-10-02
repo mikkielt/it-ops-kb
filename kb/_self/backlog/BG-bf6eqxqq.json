@@ -2,7 +2,7 @@
   "id": "BG-bf6eqxqq",
   "kind": "bug",
   "title": "token-efficiency.md says the dropped brief saved no tokens, but it saved 1.1% in one run",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,18 @@
   "touches": [
     "kb/_self/token-efficiency.md"
   ],
-  "claimed_by": "sixth-w3"
+  "evidence": {
+    "commit": "ffdf67c98a562f813de5722e279994f34f4768cc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(1 if 'saved none' in open('kb/_self/token-efficiency.md',encoding='utf-8').read() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
