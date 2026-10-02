@@ -288,6 +288,11 @@ def test_the_scenario_records_each_cases_route_arms_and_bar():
     assert "0.91x" in bench_report.table(b.rows, "route-by-verdict", ["limit_ratio"], cases=["s5_none"])
 
 
+def test_navigation_files_read_one_decimal_like_turns_and_tool_calls():
+    assert [bench_report.fmt(m, "1.666667") for m in ("files_read", "turns", "tool_calls")] == ["1.7"] * 3
+    assert bench_report.fmt("files_read", "2.0") == "2" and bench_report.fmt("files_read", "5.666667") == "5.7"
+
+
 def test_the_scenario_says_no_data_when_an_arm_failed():
     runs = [_run("router-pinned", "s5_none", 0.05, ["pack:web"]), {"cfg": "web-sonnet-5-5", "scen": "s5_none", "error": "x"},
             _run("sonnet-5-5", "s5_none", 0.06)]
