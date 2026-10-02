@@ -35,6 +35,11 @@
                            and files one bug item, and the next run files none; research (ql_research) and ingest
                            (kbingest.py) push nothing and start no `git push` or `git commit`; a planted direct push,
                            through the pusher's `run` or around it, and a planted push in a writer's source fail.
+  TestSyncPushRetries      (`tests.py -k sync_push_retries_backoff` and `-k push_retry_skips_gates_when_rebase_touches_no_gate_path`)
+                           a push rejected because origin/main moved is tried again with a doubling pause up to a bound, the
+                           pause schedule and the bound over a range of values with sleeping patched out, and against a bare
+                           remote whose pre-receive hook rejects the first pushes; the gates are not re-run when the rebase
+                           changed no path a gate reads, and the one that reads a changed path is.
   TestSyncGateTests        (`tests.py -k sync_gate_`) the gate's tests.py run keeps the git scenarios of the test files a
                            changed tool selects: a planted tool change that breaks one fails the gate (real pytest over a
                            planted tree), a content-only change leaves its own out; a change to kbgit.py or querylog.py
@@ -84,6 +89,7 @@ class TestSyncRules:
     def test_push_rejection_patterns(self):
         assert kg_sync.REJECTED.search(" ! [rejected]        HEAD -> main (fetch first)")
         assert kg_sync.REJECTED.search("Updates were rejected because the tip ... non-fast-forward")
+        assert kg_sync.REJECTED.search("remote: error: cannot lock ref 'refs/heads/main': is at 1478 but expected f8d8")  # main moved mid-push
         assert not kg_sync.REJECTED.search("fatal: Could not read from remote repository.")
 
 
@@ -325,6 +331,172 @@ SESSION_A, SESSION_B = "session_01AAAAAAAAAAAAAAAAAAAAAAAA", "session_01BBBBBBBB
 
 def session_url(s):
     return f"https://claude.ai/code/{s}"
+
+
+class TestSyncPushRetries:
+    """Backoff of a rejected push (`tests.py -k sync_push_retries_backoff`): sync_rounds over a stubbed round, no sleeping."""
+
+    @pytest.fixture
+    def rounds(self, monkeypatch):
+        for k in ("KB_SYNC_PUSH_TRIES", "KB_SYNC_PUSH_PAUSE_S", "KB_SYNC_PUSH_PAUSE_MAX_S"):
+            monkeypatch.delenv(k, raising=False)
+        slept = []
+        monkeypatch.setattr(kg_sync.time, "sleep", slept.append)
+
+        def run(rejections):
+            calls = []
+            slept.clear()
+
+            def once(a, r, host):
+                calls.append(1)
+                return "retry" if len(calls) <= rejections else 0
+            monkeypatch.setattr(kg_sync, "sync_once", once)
+            r = {"notes": []}
+            a = type("A", (), dict(remote="origin", branch="main"))()
+            return kg_sync.sync_rounds(a, r, None), r, slept, calls
+        return run
+
+    def test_sync_push_retries_backoff_until_the_bound_for_any_number_of_rejections(self, rounds):
+        bound = kg_sync.push_tries()
+        assert bound > 2
+        for rejected in range(0, bound + 3):
+            code, r, slept, calls = rounds(rejected)
+            if rejected < bound:
+                assert (code, r["tries"], len(calls)) == (0, rejected + 1, rejected + 1), rejected
+            else:
+                assert (code, r["tries"], len(calls)) == (1, bound, bound), rejected
+                assert r["pushed"] == f"no (rejected {bound} times)"
+            assert slept == [kg_sync.push_pause(n) for n in range(1, min(rejected, bound - 1) + 1)], rejected
+
+    def test_sync_push_retries_backoff_pause_grows_and_is_capped(self, rounds, monkeypatch):
+        pauses = [kg_sync.push_pause(n) for n in range(1, 12)]
+        assert pauses == sorted(pauses) and pauses[0] < pauses[1] < pauses[2]
+        assert max(pauses) == kg_sync.PUSH_PAUSE_MAX_S and pauses[-1] == pauses[-2]
+        monkeypatch.setenv("KB_SYNC_PUSH_PAUSE_S", "0")
+        assert [kg_sync.push_pause(n) for n in (1, 5)] == [0, 0]
+
+    def test_sync_push_retries_backoff_environment_sets_the_bound_and_pause(self, rounds, monkeypatch):
+        monkeypatch.setenv("KB_SYNC_PUSH_TRIES", "3")
+        monkeypatch.setenv("KB_SYNC_PUSH_PAUSE_S", "0.5")
+        code, r, slept, calls = rounds(10)
+        assert (code, r["tries"], len(calls), slept) == (1, 3, 3, [0.5, 1.0])
+        monkeypatch.setenv("KB_SYNC_PUSH_TRIES", "junk")
+        assert kg_sync.push_tries() == kg_sync.PUSH_TRIES
+        monkeypatch.setenv("KB_SYNC_PUSH_TRIES", "0")
+        assert kg_sync.push_tries() == 1
+
+    def test_sync_push_retries_backoff_planted_two_tries_would_fail(self, rounds):
+        """The old rule gave up after two rejections: a third round must run and succeed."""
+        code, r, _, calls = rounds(2)
+        assert code == 0 and len(calls) == 3 and r["tries"] == 3
+
+
+REJECT_N = """#!/bin/sh
+d=$(dirname "$0")/..
+n=$(cat "$d/reject-left" 2>/dev/null || echo 0)
+if [ "$n" -gt 0 ]; then
+  echo $((n - 1)) > "$d/reject-left"
+  echo "! non-fast-forward (planted)" >&2
+  exit 1
+fi
+"""
+
+MOVE_MAIN = """#!/bin/sh
+# A's pre-push hook: before A's first push another session's commit lands on origin/main, so git rejects the push itself.
+if [ -f "{flag}" ]; then
+  rm "{flag}"
+  unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+  git -C "{other}" push -q --no-verify origin HEAD:refs/heads/main
+fi
+"""
+
+
+@requires_git
+@pytest.mark.git
+class TestSyncPushRetriesInGit(SyncScenario):
+    """A bare remote whose pre-receive hook rejects the first pushes as a moved main does, `sync --push` of clone A."""
+
+    @pytest.fixture
+    def world(self, tmp_path, kb_seed):
+        env = git_env(KB_SYNC_NO_TESTS="1", KB_SYNC_PUSH_PAUSE_S="0")
+        remote, (a, b), base = clones(kb_seed, str(tmp_path), env, ("a", "b"))
+        w = type("World", (), {})()
+        w.env, w.remote, w.a, w.b, w.base, w.bare = env, remote, a, b, base, Repo(remote, env)
+        url = "https://learn.microsoft.com/en-us/sync-test/retry-a"
+        self.add_source(a, "S-", url, "retry-a")
+        self.article(a, "retry-a", [kbid.source_id(url)], ["Retry fact."])
+        self.commit(a, "docs(kb): retry test a")
+        return w
+
+    @staticmethod
+    def reject(w, n):
+        hook = Path(w.remote) / "hooks" / "pre-receive"
+        hook.write_text(REJECT_N, encoding="utf-8", newline="\n")
+        hook.chmod(0o755)
+        (Path(w.remote) / "reject-left").write_text(f"{n}\n", encoding="utf-8", newline="\n")
+
+    def move_main_at_first_push(self, w, content):
+        """B commits (content, or nothing but an empty commit) and its commit lands on origin/main just before A's first
+        push, so that push is rejected for real (fetch first)."""
+        if content:
+            url = "https://learn.microsoft.com/en-us/sync-test/retry-b"
+            self.add_source(w.b, "S-", url, "retry-b")
+            self.article(w.b, "retry-b", [kbid.source_id(url)], ["Other fact."])
+            self.commit(w.b, "docs(kb): retry test b")
+        else:
+            w.b.git("commit", "-q", "--allow-empty", "-m", "chore: nothing changed")
+        hooks = Path(w.a.path).parent / "a-hooks"
+        hooks.mkdir()
+        flag = hooks / "move-main"
+        flag.write_text("1\n", encoding="utf-8", newline="\n")
+        hook = hooks / "pre-push"
+        hook.write_text(MOVE_MAIN.format(flag=flag.as_posix(), other=Path(w.b.path).as_posix()), encoding="utf-8", newline="\n")
+        hook.chmod(0o755)
+        w.a.git("config", "core.hooksPath", hooks.as_posix())
+        return w.b.rev("HEAD")
+
+    def test_sync_push_retries_backoff_succeeds_on_the_fourth_try_and_says_so(self, world):
+        w = world
+        self.reject(w, 3)
+        r = w.a.kbgit("sync", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "sync: exit 0, 4 push tries" in r.stdout, r.stdout
+        assert "pushed: yes" in r.stdout
+        assert w.bare.git("rev-parse", "main").strip() == w.a.rev("HEAD")
+
+    def test_sync_push_retries_backoff_gives_up_at_the_bound_it_names(self, world):
+        w = world
+        self.reject(w, 50)
+        env = {"KB_SYNC_PUSH_TRIES": "3"}
+        r = w.a.tool("kbgit.py", "sync", "--push", env=env)
+        assert r.returncode == 1, r.stdout + r.stderr
+        assert "push rejected 3 times" in r.stdout and "pushed: no (rejected 3 times)" in r.stdout, r.stdout
+        assert "sync: exit 1, 3 push tries" in r.stdout
+        assert w.bare.git("rev-parse", "main").strip() == w.base
+
+    def test_push_retry_skips_gates_when_rebase_touches_no_gate_path(self, world):
+        w = world
+        theirs = self.move_main_at_first_push(w, content=False)
+        r = w.a.kbgit("sync", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "sync: exit 0, 2 push tries" in r.stdout, r.stdout
+        assert "gate check.py: skipped: no path it reads changed" in r.stdout, r.stdout
+        assert "gate check-trailers origin/main..HEAD: ok" in r.stdout
+        assert "gates not re-run after the rejected push" in r.stdout
+        assert w.bare.git("rev-parse", "main").strip() == w.a.rev("HEAD") and "push rejected (origin/main moved)" in r.stdout
+        assert w.bare.git("merge-base", "--is-ancestor", theirs, "main") == ""
+
+    def test_push_retry_skips_gates_when_rebase_touches_no_gate_path_planted_gate_path_reruns(self, world):
+        """Planted: the incoming commit changes kb content, which check.py reads: it runs again."""
+        w = world
+        theirs = self.move_main_at_first_push(w, content=True)
+        r = w.a.kbgit("sync", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "sync: exit 0, 2 push tries" in r.stdout, r.stdout
+        assert re.search(r"gate check.py: ok", r.stdout), r.stdout
+        assert "gates not re-run after the rejected push" not in r.stdout
+        assert "push rejected (origin/main moved)" in r.stdout
+        assert w.bare.git("merge-base", "--is-ancestor", theirs, "main") == ""
 
 
 class TestSyncSessionRules:
