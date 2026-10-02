@@ -101,6 +101,7 @@ kb/_self/tools.md,_tools/factdiff.py
 kb/_self/tools.md,_tools/factdiff.toml
 kb/_self/content-rules.md,_tools/factdiff.py
 kb/_self/tools.md,_tools/kbingest.py
+.claude/skills/kb-ingest/SKILL.md,_tools/kbingest.py
 kb/_self/plugin.md,.claude/skills/kb-ingest/SKILL.md
 kb/_self/tools.md,_tools/kbpy
 kb/_self/plugin.md,_tools/kbpy
