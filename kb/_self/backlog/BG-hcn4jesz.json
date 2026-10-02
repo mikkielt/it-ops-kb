@@ -2,7 +2,7 @@
   "id": "BG-hcn4jesz",
   "kind": "bug",
   "title": "codebase-mapping lists dotnet package list --no-restore as a read-only form",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,18 @@
     "kb/public/agents/codebase-mapping.md",
     "kb/public/agents/codebase-mapping.csv"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "01360366cabe39e50e89023b42d47690c96639af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib, sys; sys.exit('read-only forms are `GOTOOLCHAIN=local`, `--no-restore`' in pathlib.Path('kb/public/agents/codebase-mapping.md').read_text(encoding='utf-8'))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
