@@ -1580,6 +1580,33 @@ def repro_text_warnings(bl):
     return out
 
 
+STATE_READER = re.compile(r"\bitems?'?s?\s+(?:status|presence)\b|\b(?:status|presence) of (?:an?|each|every|the)? ?items?\b"
+                          r"|\bbacklog state\b|\breads? (?:the )?backlog\b", re.I)
+STATE_PATHS = (("done", r"(?<![a-z])done(?![a-z])"),
+               ("drop inside a sprint", r"drop\w*[\s_-]*(?:in|inside)[\s_-]*(?:a[\s_-]*)?sprint"),
+               ("drop outside a sprint", r"drop\w*[\s_-]*(?:out|outside)"),
+               ("close", r"(?<![a-z])close(?![a-z])"), ("release", r"(?<![a-z])release(?![a-z])"))
+
+
+def state_path_warnings(bl):
+    """check's warnings: an open story, task or bug whose goal says its code reads an item's status or presence
+    (STATE_READER) and whose checks name fewer than every way that state changes (STATE_PATHS: done, a drop inside and
+    outside a sprint, close, release), each way found by its words in the checks' commands (a -k selector names a
+    test by them). It answers SP-jtfo4ael, where a sweep passed checks that never dropped an item outside a sprint."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        if it.get("kind") not in ("story", "task", "bug") or it.get("status") not in OPEN_STATUSES \
+                or not isinstance(it.get("goal"), str) or not STATE_READER.search(it["goal"]):
+            continue
+        text = " ".join(" ".join(c["run"]) for c in it.get("checks", []) if _check_ok(c)).lower()
+        absent = [name for name, rx in STATE_PATHS if not re.search(rx, text)]
+        if absent:
+            out.append(f"{bl.label(iid)}: its goal reads an item's status or presence, and its checks name no test "
+                       f"for these ways the state changes: {', '.join(absent)} (a check per path, "
+                       "`-k` selectors naming them: kb/_self/backlog.md, planning)")
+    return out
+
+
 def is_test_run(argv):
     """True when a check runs tests: tests.py or pytest, so it exercises the code it proves."""
     return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
@@ -1775,7 +1802,7 @@ def cmd_check(bl, a):
                for i in bl.sprint_items(sid)]
     errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned)
     stale = stale_knowledge(bl)
-    warns = docs_warnings(bl) + repro_text_warnings(bl)
+    warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
