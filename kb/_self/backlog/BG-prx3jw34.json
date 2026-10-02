@@ -2,7 +2,7 @@
   "id": "BG-prx3jw34",
   "kind": "bug",
   "title": "kb_ask.py's headless researcher calls the docs servers directly and bypasses the 7-day live-docs cache",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,28 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/design.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "bf4ae28bbca5efc2a059e13810e51e1cefa1c45d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_ask_researcher_cached_docs"
+        ],
+        "exit": 0,
+        "sha256": "b7eb849ccd62ad8a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if 'mcp__kb__docs_search' in open('_tools/kb_ask.py',encoding='utf-8').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
