@@ -30,5 +30,20 @@
     "ST-ng7igc4l",
     "ST-2jojzufm"
   ],
+  "gates": [
+    {
+      "id": "lock-scope",
+      "kind": "provisional",
+      "question": "PreCompact blocks while the land or sync lock is held: any holder on the host, or only a holder of this session's own clone?",
+      "options": [
+        "only a live holder of this clone (CLAUDE_PROJECT_DIR); any other holder, a gone pid or an error lets compaction run",
+        "any live holder on the host"
+      ],
+      "recommendation": "only a live holder of this clone (CLAUDE_PROJECT_DIR); any other holder, a gone pid or an error lets compaction run",
+      "class": "agents-rule",
+      "answer": "only a live holder of this clone (CLAUDE_PROJECT_DIR); any other holder, a gone pid or an error lets compaction run",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "mac-first"
 }

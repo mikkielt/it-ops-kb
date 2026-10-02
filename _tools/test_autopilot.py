@@ -648,3 +648,114 @@ def test_autopilot_status_a_corrupt_state_file_is_not_an_error(tmp_path, monkeyp
     (d / "state.json").write_text(body, encoding="utf-8")
     code, out = run_status(root)
     assert code == 0 and "unavailable" not in out
+
+
+# ---------------------------------------------------------------- the compaction hooks
+
+def plant_main_lock(lock_dir, pid, clone, step="kbgit.py sync --push"):
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    (lock_dir / "kb-main.lock").write_text(f"pid={pid}\nclone={clone}\nstarted=2026-10-02T12:00:00Z\nstep={step}\n",
+                                           encoding="utf-8")
+
+
+def gone_pid():
+    """The pid of a process that has ended."""
+    import subprocess
+    p = subprocess.Popen([sys.executable, "-c", "pass"])
+    p.wait()
+    return p.pid
+
+
+@pytest.fixture
+def hook_env(tmp_path, monkeypatch):
+    locks, clone = tmp_path / "hostlocks", tmp_path / "clone"
+    clone.mkdir()
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(locks))
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(clone))
+    return locks, clone
+
+
+def run_precompact(capsys, payload='{"trigger": "auto"}'):
+    import io
+    code = autopilot.precompact(stdin=io.StringIO(payload))
+    return code, capsys.readouterr().err
+
+
+def test_autopilot_status_precompact_blocks_while_this_clones_land_or_sync_holds_the_main_lock(hook_env, capsys):
+    locks, clone = hook_env
+    plant_main_lock(locks, os.getpid(), clone, "backlog.py land: fetch and rebase")
+    code, err = run_precompact(capsys)
+    assert code == 2
+    assert "backlog.py land: fetch and rebase" in err and str(os.getpid()) in err and "(auto)" in err
+
+
+@pytest.mark.parametrize("plant", ["none", "gone", "other clone", "torn"])
+def test_autopilot_status_precompact_lets_compaction_run_without_a_live_holder_of_this_clone(hook_env, capsys,
+                                                                                            tmp_path, plant):
+    locks, clone = hook_env
+    if plant == "gone":
+        plant_main_lock(locks, gone_pid(), clone)
+    elif plant == "other clone":
+        (tmp_path / "other").mkdir()
+        plant_main_lock(locks, os.getpid(), tmp_path / "other")
+    elif plant == "torn":
+        locks.mkdir()
+        (locks / "kb-main.lock").write_text("pid=", encoding="utf-8")
+    assert run_precompact(capsys) == (0, "")
+
+
+@pytest.mark.parametrize("payload", ["", "not json", "[1]"])
+def test_autopilot_status_precompact_reads_any_stdin_and_still_judges_the_lock(hook_env, capsys, payload):
+    locks, clone = hook_env
+    assert run_precompact(capsys, payload)[0] == 0
+    plant_main_lock(locks, os.getpid(), clone)
+    assert run_precompact(capsys, payload)[0] == 2
+
+
+def test_autopilot_status_precompact_an_error_never_blocks(hook_env, capsys, monkeypatch):
+    locks, clone = hook_env
+    plant_main_lock(locks, os.getpid(), clone)
+    monkeypatch.setattr(autopilot, "main_lock_holder", lambda clone: 1 / 0)
+    assert run_precompact(capsys) == (0, "")
+
+
+SETTINGS = Path(__file__).resolve().parent.parent / ".claude" / "settings.json"
+STATUS_HOOK = "_tools/autopilot.py status --hook"
+PRECOMPACT_HOOK = "_tools/autopilot.py precompact"
+
+
+def compaction_hook_problems(settings):
+    """What the compaction hooks lack: status --hook on SessionStart under a matcher holding `compact`, precompact on
+    PreCompact for every trigger (no matcher), each with a timeout."""
+    hooks = settings.get("hooks", {})
+    out = []
+    starts = [h for g in hooks.get("SessionStart", []) if "compact" in (g.get("matcher") or "").split("|")
+              for h in g.get("hooks", []) if STATUS_HOOK in h.get("command", "")]
+    if not starts:
+        out.append("no SessionStart compact hook runs status --hook")
+    pre = [(g, h) for g in hooks.get("PreCompact", []) for h in g.get("hooks", [])
+           if PRECOMPACT_HOOK in h.get("command", "")]
+    if not pre:
+        out.append("no PreCompact hook runs precompact")
+    elif any(g.get("matcher") not in (None, "", "*") for g, _ in pre):
+        out.append("the PreCompact hook is limited to one trigger")
+    if any(not h.get("timeout") for h in starts + [h for _, h in pre]):
+        out.append("a compaction hook has no timeout")
+    return out
+
+
+def test_autopilot_status_compaction_hooks_are_in_settings():
+    assert compaction_hook_problems(json.loads(SETTINGS.read_text(encoding="utf-8"))) == []
+
+
+@pytest.mark.parametrize("plant, want", [
+    (lambda s: s["hooks"].pop("PreCompact"), "no PreCompact hook runs precompact"),
+    (lambda s: s["hooks"]["PreCompact"][0].update(matcher="manual"), "the PreCompact hook is limited to one trigger"),
+    (lambda s: [g.update(matcher="startup") for g in s["hooks"]["SessionStart"] if g.get("matcher") == "compact"],
+     "no SessionStart compact hook runs status --hook"),
+    (lambda s: s["hooks"]["PreCompact"][0]["hooks"][0].pop("timeout"), "a compaction hook has no timeout"),
+])
+def test_autopilot_status_compaction_hooks_a_planted_change_fails(plant, want):
+    s = json.loads(SETTINGS.read_text(encoding="utf-8"))
+    plant(s)
+    assert want in compaction_hook_problems(s)
