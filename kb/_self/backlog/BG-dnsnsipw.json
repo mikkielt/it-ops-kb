@@ -2,7 +2,7 @@
   "id": "BG-dnsnsipw",
   "kind": "bug",
   "title": "The end-to-end fixture's about text names the deleted test_kb.py",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-djri7fqp",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,18 @@
   "touches": [
     "_tools/fixtures/querylog/e2e.json"
   ],
-  "claimed_by": "sixth-w1"
+  "evidence": {
+    "commit": "a075225ab691d52e18fa895722419a9fc24dff8e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; from pathlib import Path; sys.exit(1 if 'test_kb.py' in Path('_tools/fixtures/querylog/e2e.json').read_text(encoding='utf-8') else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
