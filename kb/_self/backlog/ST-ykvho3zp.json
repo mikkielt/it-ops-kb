@@ -13,15 +13,13 @@
       "run": [
         "python3",
         "_tools/tests.py"
-      ],
-      "exit": 0
+      ]
     },
     {
       "run": [
         "python3",
         "_tools/stress_test.py"
-      ],
-      "exit": 0
+      ]
     },
     {
       "run": [
@@ -30,8 +28,7 @@
         "ids",
         "--against",
         "_tools/test_ids_baseline.txt"
-      ],
-      "exit": 0
+      ]
     },
     {
       "run": [
@@ -39,19 +36,17 @@
         "_tools/tests.py",
         "-k",
         "template_untouched"
-      ],
-      "exit": 0
+      ]
     },
     {
       "run": [
         "python3",
         "_tools/perfcheck.py",
         "time",
-        "stress",
-        "--max",
+        "--stress",
+        "--max-seconds",
         "300"
-      ],
-      "exit": 0
+      ]
     }
   ],
   "touches": [
