@@ -937,9 +937,13 @@ def work_state(values, paths, load):
     Exempt: a backlog-planning commit (it changes only item files: new items, claims, gates, a sprint's plan, start
     or close), and the sprint and review items themselves. A research item of a planned sprint (its own touches all
     inside kb roots, backlog.research_touches) may land claimed, on a commit that changes only kb content and item
-    files. An id with no item file is work_ok's to report."""
+    files. An id with no item file is work_ok's to report. A backlog-planning commit must change the item file of
+    every id it names: one naming two items and changing one is refused for the other."""
+    ids = [x.strip() for x in values[0].split(",") if x.strip()]
     if paths and all(BACKLOG_FILE.fullmatch(p) for p in paths):
-        return []
+        return [f"{i}: a backlog-planning commit names it but does not change {BACKLOG}/{i}.json (edit items with "
+                f"backlog.py set, or drop the id from KB-Work)"
+                for i in ids if f"{BACKLOG}/{i}.json" not in paths and load(f"{BACKLOG}/{i}.json")]
     import backlog
     cache = {}
 
@@ -953,7 +957,7 @@ def work_state(values, paths, load):
         return cache[i] if isinstance(cache[i], dict) else None
 
     out = []
-    for i in (x.strip() for x in values[0].split(",") if x.strip()):
+    for i in ids:
         it = get(i)
         if it is None or it.get("kind") == "sprint" or it.get("review"):
             continue
