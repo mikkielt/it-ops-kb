@@ -416,6 +416,23 @@ class TestWorkSidecar:
 
 # ---------------------------------------------------------------- misses: an alias, an expansion, a gap entry
 
+class TestDistillHelp:
+    """`querylog.py distill --help` names every file a distill run writes, the work and the ops sidecar among them."""
+
+    @staticmethod
+    def help_text():
+        p = subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "querylog.py"), "distill", "--help"],
+                           capture_output=True, text=True, encoding="utf-8", timeout=60)
+        assert p.returncode == 0, p.stderr
+        return p.stdout.lower()
+
+    def test_help_names_the_work_and_the_ops_sidecar(self):
+        text = self.help_text()
+        for part in ("run file", "usage sidecar", "work sidecar", "ops sidecar", "item lines", "shared lines",
+                     "overhead lines"):
+            assert part in text, part
+
+
 class TestFixes:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
