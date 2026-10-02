@@ -127,8 +127,9 @@ the ql_*.py modules beside it.
                         logging is off, the week is empty or reading the store took over DIGEST_BUDGET_S. Exit 0
   querylog.py export --format jsonl [--since DAY] [--event E] [--with-question] [--store DIR]
                         the store's entries, findings, usage, work and ops rows (default: the committed store) as JSON
-                        Lines, one record shaped like an OpenTelemetry log record (timestamp, severity, event name,
-                        record id, resource, closed attributes, null body) in the order of time, event and id, for a
+                        Lines, one record in the OTLP-JSON field names of a log record (timeUnixNano,
+                        severityNumber and severityText, eventName, empty body, attributes as key and value pairs,
+                        resource attributes) in the order of time, event name and id, for a
                         tool that reads logs. Read-only; redaction at read time: unknown keys are dropped, each value
                         is checked in its closed shape and by the leak scan, a row that fails is left out and counted
                         on stderr, and an entry's question is left out unless --with-question. Exit 0, 2 refused
@@ -351,8 +352,8 @@ def main(argv=None):
         ap = argparse.ArgumentParser(prog="querylog.py export")
         ap.add_argument("--format", default="jsonl", help="the output format: jsonl")
         ap.add_argument("--since", metavar="DAY", help="only records from this day (YYYY-MM-DD) on")
-        ap.add_argument("--event", metavar="E", help="only records of this event name (entry.<surface>, "
-                        "finding.<kind>, usage, work.item, work.shared, work.overhead, ops.<event>)")
+        ap.add_argument("--event", metavar="E", help="only records of this event name (entry_<surface>, "
+                        "finding_<kind>, usage, work_item, work_shared, work_overhead, ops_<event> with _ for the dot)")
         ap.add_argument("--with-question", action="store_true", help="keep each entry's question (left out by default)")
         ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")
         a = ap.parse_args(argv[1:])

@@ -1,7 +1,8 @@
 """The query log's export (kb/_self/querylog.md, Reporting): the store's entries, findings, usage, work and ops rows
-printed as JSON Lines, one record shaped like an OpenTelemetry log record, for a tool that reads logs.
+printed as JSON Lines, one record in the OTLP-JSON field names of an OpenTelemetry log record, for a tool that reads logs.
 
-  {"timestamp", "severity_text", "severity_number", "event_name", "record_id", "resource", "attributes", "body": null}
+  {"timeUnixNano", "severityNumber", "severityText", "eventName", "body": {}, "attributes": [{"key", "value"}],
+   "resource": {"attributes": [{"key": "service.name", ...}, {"key": "kb.run", ...}]}}
 
 Read-only: no file of the store is written, no model, no git and no network. Redaction happens at read time, row by
 row, with the store's own gates: a key the row's format does not have is dropped, the row's values are checked in their
@@ -10,7 +11,7 @@ an ops row is ql_capture.ops_problems), and the leak scan (redact.scan) runs ove
 check or the scan, or that cannot be read, is left out and counted on stderr by its file and line, never by a value.
 The question of an entry is left out unless asked for. The order is the records' time, event and id.
 """
-import datetime, json, sys
+import calendar, datetime, json, sys
 from pathlib import Path
 
 import ql_store
@@ -22,8 +23,16 @@ SERVICE = "it-ops-kb"
 SEVERITY = {"INFO": 9, "WARN": 13}  # OpenTelemetry's severity numbers
 NOT_SCANNED = ("id", "entry", "run", "kb_commit")  # identifiers that name runs, entries and findings
 WORK_KEYS = ql_store.WORK_ITEM_KEYS + ql_store.WORK_SHARED_KEYS + ql_store.WORK_OVERHEAD_KEYS
-EVENTS = (tuple(f"entry.{s}" for s in ql_store.SURFACES) + tuple(f"finding.{k}" for k in ql_store.FINDING_KINDS)
-          + ("usage", "work.item", "work.shared", "work.overhead") + tuple(f"ops.{e}" for e in OPS_EVENTS))
+
+
+def event_name(family, kind=None):
+    """The flat event name of a row: its family and its surface, kind or ops event joined by underscores, no dot."""
+    return family if kind is None else f"{family}_{kind}".replace(".", "_")
+
+
+EVENTS = tuple(event_name(f, k) for f, ks in (
+    ("entry", ql_store.SURFACES), ("finding", ql_store.FINDING_KINDS), ("usage", (None,)),
+    ("work", ("item", "shared", "overhead")), ("ops", tuple(OPS_EVENTS))) for k in ks)
 
 
 def run_time(run):
@@ -72,19 +81,53 @@ def leaks(attributes, k):
     return any(redact.scan(v, k) for v in strings({a: b for a, b in attributes.items() if a not in NOT_SCANNED}))
 
 
-def severity(event, attributes):
+def severity(family, kind, attributes):
     """WARN for a row that records a failure (a refused done, a nonzero exit, an apply that failed), else INFO."""
-    if event == "ops.done.refused" or attributes.get("state") == ql_store.APPLY_FAILED:
+    if kind == "done.refused" or attributes.get("state") == ql_store.APPLY_FAILED:
         return "WARN"
     code = attributes.get("exit")
-    return "WARN" if event.startswith("ops.") and type(code) is int and code != 0 else "INFO"
+    return "WARN" if family == "ops" and type(code) is int and code != 0 else "INFO"
 
 
-def record(timestamp, event, rid, run, attributes):
-    sev = severity(event, attributes)
-    return {"timestamp": timestamp, "severity_text": sev, "severity_number": SEVERITY[sev], "event_name": event,
-            "record_id": rid, "resource": {"service.name": SERVICE, "kb.run": run}, "attributes": attributes,
-            "body": None}
+def nanos(iso):
+    """The decimal string of the nanoseconds since the epoch of `yyyy-mm-ddThh:mm:ss[.fff]Z` (OTLP-JSON's int64)."""
+    whole, _, frac = iso.rstrip("Z").partition(".")
+    t = datetime.datetime.strptime(whole, "%Y-%m-%dT%H:%M:%S")
+    return str(calendar.timegm(t.timetuple()) * 10**9 + int((frac + "000000000")[:9]))
+
+
+def any_value(v):
+    """`v` as an OTLP AnyValue: bool, int (a decimal string, as OTLP-JSON writes an int64), float, string, array, map;
+    null is the empty AnyValue."""
+    if isinstance(v, bool):
+        return {"boolValue": v}
+    if isinstance(v, int):
+        return {"intValue": str(v)}
+    if isinstance(v, float):
+        return {"doubleValue": v}
+    if isinstance(v, str):
+        return {"stringValue": v}
+    if isinstance(v, (list, tuple)):
+        return {"arrayValue": {"values": [any_value(x) for x in v]}}
+    if isinstance(v, dict):
+        return {"kvlistValue": {"values": key_values(v)}}
+    return {}
+
+
+def key_values(d):
+    return [{"key": str(k), "value": any_value(v)} for k, v in d.items()]
+
+
+def record(timestamp, family, kind, rid, run, attributes):
+    """(the ISO time, the event name, the record id, the OTLP-JSON record). The family and the original surface, kind
+    or ops event stay as attributes `kb.record` and `kb.type`, the id as `kb.id`."""
+    sev = severity(family, kind, attributes)
+    name = event_name(family, kind)
+    own = {"kb.record": family, **({"kb.type": kind} if kind else {}), "kb.id": rid}
+    return (timestamp, name, rid, {
+        "timeUnixNano": nanos(timestamp), "severityNumber": SEVERITY[sev], "severityText": sev, "eventName": name,
+        "body": {}, "attributes": key_values({**own, **attributes}),
+        "resource": {"attributes": key_values({"service.name": SERVICE, "kb.run": run})}})
 
 
 def keep(obj, keys):
@@ -133,7 +176,7 @@ def rows(store, with_question, k):
                 kept.pop("question", None)
             attrs = {a: b for a, b in kept.items() if a != "id"}
             add(where, lambda: checked(ql_store.entry_problems(kept, where, k), attrs, lambda: record(
-                f"{kept['day']}T00:00:00Z", f"entry.{kept['surface']}", kept["id"], p.stem, attrs)))
+                f"{kept['day']}T00:00:00Z", "entry", kept["surface"], kept["id"], p.stem, attrs)))
     for p in ql_store.findings_files(store):
         for n, r in lines_of(p):
             where = f"{p.relative_to(store).as_posix()}:{n}"
@@ -143,7 +186,7 @@ def rows(store, with_question, k):
             kept = keep(r, ql_store.FINDING_KEYS)
             attrs = {a: b for a, b in kept.items() if a != "id"}
             add(where, lambda: checked(ql_store.record_problems(kept, where, entry_ids, k), attrs, lambda: record(
-                run_time(p.stem), f"finding.{kept['kind']}", f"{kept['id']}/{p.stem}", p.stem, attrs)))
+                run_time(p.stem), "finding", kept["kind"], f"{kept['id']}/{p.stem}", p.stem, attrs)))
     for p in ql_store.usage_files(store):
         for n, u in lines_of(p):
             where = f"{p.relative_to(store).as_posix()}:{n}"
@@ -153,7 +196,7 @@ def rows(store, with_question, k):
             kept = keep(u, ql_store.USAGE_KEYS)
             attrs = {"entry": kept.get("id"), **{a: b for a, b in kept.items() if a != "id"}}
             add(where, lambda: checked(ql_store.usage_line_problems(kept, where), attrs, lambda: record(
-                run_time(p.stem), "usage", kept["id"], p.stem, attrs)))
+                run_time(p.stem), "usage", None, kept["id"], p.stem, attrs)))
     for p in ql_store.work_files(store):
         for n, w in lines_of(p):
             where = f"{p.relative_to(store).as_posix()}:{n}"
@@ -163,7 +206,7 @@ def rows(store, with_question, k):
             kept = keep(w, WORK_KEYS)
             kind = "item" if "item" in kept else "overhead" if "overhead" in kept else "shared"
             add(where, lambda: checked(ql_store.work_line_problems(kept, where), kept, lambda: record(
-                run_time(p.stem), f"work.{kind}", f"{p.stem}:{n}", p.stem, kept)))
+                run_time(p.stem), "work", kind, f"{p.stem}:{n}", p.stem, kept)))
     for p in ql_store.ops_files(store):
         for n, o in lines_of(p):
             where = f"{p.relative_to(store).as_posix()}:{n}"
@@ -174,7 +217,7 @@ def rows(store, with_question, k):
             kept = keep(o, ql_store.OPS_LINE_KEYS + tuple(spec or ()))
             attrs = {a: b for a, b in kept.items() if a not in ql_store.OPS_LINE_KEYS}
             add(where, lambda: checked(ql_store.ops_line_problems(kept, where), attrs, lambda: record(
-                kept["ts"], f"ops.{kept['event']}", kept["id"], p.stem, attrs)))
+                kept["ts"], "ops", kept["event"], kept["id"], p.stem, attrs)))
     return out, refused
 
 
@@ -202,10 +245,9 @@ def export(store=None, fmt="jsonl", since=None, event=None, with_question=False,
         return 2
     import redact
     records, refused = rows(store, with_question, redact.known())
-    records = [r for r in records if (since is None or r["timestamp"][:10] >= since)
-               and (event is None or r["event_name"] == event)]
-    for r in sorted(records, key=lambda r: (r["timestamp"], r["event_name"], r["record_id"])):
-        out(json.dumps(r, separators=(",", ":")))
+    records = [r for r in records if (since is None or r[0][:10] >= since) and (event is None or r[1] == event)]
+    for r in sorted(records, key=lambda r: r[:3]):
+        out(json.dumps(r[3], separators=(",", ":")))
     if refused:
         err(f"export: left out {len(refused)} row(s) that fail a gate of the store or the leak scan")
         for where, why in sorted(refused)[:20]:

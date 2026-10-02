@@ -30,5 +30,33 @@
   "depends_on": [
     "ST-xsxyq4wi"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Flat event names and value mapping of the OTLP-JSON export: family and surface/kind joined by underscores (entry_prompt, ops_land_step), the original type in kb.record and kb.type attributes, severity numbers INFO 9 and WARN 13, body the empty AnyValue, intValue as a decimal string?",
+      "options": [
+        "underscore-joined names with kb.record and kb.type attributes",
+        "dotted-free names without family prefix where unique"
+      ],
+      "recommendation": "underscore-joined names with kb.record and kb.type attributes",
+      "do": {
+        "underscore-joined names with kb.record and kb.type attributes": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_export_otlp_names"
+        ],
+        "dotted-free names without family prefix where unique": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_export_otlp_names"
+        ]
+      },
+      "answer": "underscore-joined names with kb.record and kb.type attributes",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "seventh-w19"
 }
