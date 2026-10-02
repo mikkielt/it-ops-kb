@@ -28,7 +28,13 @@
   "touches": [
     "_tools/kbfacts.py",
     "_tools/test_kbfacts.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "_tools/test_kb_leaks.py",
+    "_tools/test_selfdoc.py",
+    "_tools/test_testmap.py",
+    "_tools/kbpublic.py",
+    "_tools/test_kbpublic.py"
   ],
   "claimed_by": "orch-fourth-s2"
 }
