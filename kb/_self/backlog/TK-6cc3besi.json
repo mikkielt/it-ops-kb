@@ -2,7 +2,7 @@
   "id": "TK-6cc3besi",
   "kind": "task",
   "title": "The mode scenarios (off, disabled, unreadable, local, auto) run in one shared clone, keeping their ids",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-7ihohi2u",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   ],
   "depends_on": [
     "TK-7pwnplew"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
