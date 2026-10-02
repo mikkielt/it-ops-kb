@@ -3,6 +3,8 @@
 
   tests.py                         every test module in _tools/ but the stress suite, in parallel
   tests.py -k Leak                 only tests whose name matches (pytest -k); other pytest arguments pass through
+  tests.py PATH [PATH ...]         only those test files or directories (and their `::` nodes), not _tools/; -k and other pytest
+                                   arguments pass through
   tests.py --changed [REV]         only the test files a change from REV's merge base (default HEAD: the working tree)
                                    can break, from testmap.py's map; none when no test can be affected
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
@@ -440,6 +442,23 @@ def wants_host_lock(args):
     return not inside_test() and not any(a == "-k" or a.startswith("-k") for a in args) and worker_count(args) > 1
 
 
+VALUE_OPTIONS = {"-k", "-m", "-n", "-p", "-c", "-o", "--dist", "--maxfail", "--deselect", "--ignore", "--rootdir",
+                 "--junitxml", "--durations", "--timeout"}  # pytest options whose next argument is their value
+
+
+def path_args(args):
+    """The arguments that name a test file or directory (an existing path, with an optional `::node`), not the value of
+    an option such as -k or -m; relative to the clone or to the working directory."""
+    out = []
+    for i, a in enumerate(args):
+        if a.startswith("-") or (i and args[i - 1] in VALUE_OPTIONS):
+            continue
+        base = a.split("::")[0]
+        if base and (os.path.exists(os.path.join(KB, base)) or os.path.exists(base)):
+            out.append(a)
+    return out
+
+
 def main(argv):
     with run_registered():
         if wants_host_lock(argv):
@@ -468,9 +487,10 @@ def run_main(argv):
             n = sum(len(nodes) for nodes, _ in runs)
             slow = f", the git scenarios of {len(runs[0][0])} kept" if fast and runs[0][1] == FULL_M else ""
             print(f"tests.py --changed {rev or 'HEAD'}: {n} of {len(testmap.test_files())} test files or classes{slow}")
+    named = not changed and bool(path_args(args))  # tests.py PATH: only the named files, not every test file beside them
     code, report, start = 0, [], time.monotonic()
     for nodes, m in runs:
-        got = run_pytest(([TOOLS] if nodes == EVERY else [target(n) for n in nodes])
+        got = run_pytest(([] if named else [TOOLS] if nodes == EVERY else [target(n) for n in nodes])
                          + ([] if "-m" in args else ["-m", m]) + args, report=report)
         code = code or (0 if got == 5 and nodes != EVERY else got)  # 5: every selected test was deselected by -m
     for e in report:  # a deselected-to-nothing run is a pass here, and so is its row's exit
