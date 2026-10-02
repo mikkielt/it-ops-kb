@@ -45,7 +45,7 @@ from pathlib import Path
 
 import pytest
 
-import kbgit, kbid
+import kbgit, kbid, kg_lane
 from conftest import TOOLS, P, Repo, git_env, requires_git
 
 
@@ -911,9 +911,30 @@ class TestCodeLaneSync(SyncScenario):
         w = world
         self.code(w.a, 7, work="TK-aaaaaaaa")
         self.code(w.a, 8, work="TK-bbbbbbbb")
-        monkeypatch.setattr(kbgit, "KB", w.a.path)
-        assert kbgit.lane_plan(w.base, "HEAD") == ("code", "code/TK-aaaaaaaa")
-        assert kbgit.lane_plan(w.a.rev("HEAD"), "HEAD") == ("content", None)
+        assert kg_lane.lane_plan(w.a.path, w.base, "HEAD") == ("code", "code/TK-aaaaaaaa")
+        assert kg_lane.lane_plan(w.a.path, w.a.rev("HEAD"), "HEAD") == ("content", None)
+
+    def test_kg_lane_takes_root(self, world, tmp_path):
+        """The branch is named for the root it is given, not a module global: a worktree root and the clone root of
+        one repository (kbgit.KB pointing elsewhere) each get the name of the range their checkout holds. Planted
+        failure: the clone's name asked of the worktree root is not the worktree's."""
+        w = world
+        self.code(w.a, 20, work="TK-aaaaaaaa")
+        wt = str(tmp_path / "wt")
+        w.a.git("worktree", "add", "-q", "--detach", wt, w.base)
+        sh = lambda *a: subprocess.run(["git", *a], cwd=wt, check=True, capture_output=True, text=True)  # noqa: E731
+        sh("-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "--allow-empty", "-m", "x")
+        (Path(wt) / "_tools").mkdir(exist_ok=True)
+        (Path(wt) / "_tools" / "wt_code.txt").write_text("c\n", encoding="utf-8")
+        sh("add", "-A")
+        sh("-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m",
+           "chore(tools): wt code\n\nKB-Work: TK-bbbbbbbb")
+        assert kbgit.KB not in (wt, w.a.path)
+        assert kg_lane.lane_plan(wt, w.base, "HEAD") == ("code", "code/TK-bbbbbbbb")
+        assert kg_lane.lane_plan(w.a.path, w.base, "HEAD") == ("code", "code/TK-aaaaaaaa")
+        assert kg_lane.lane_plan(wt, w.base, "HEAD", "other") == (None, None)
+        with pytest.raises(AssertionError):
+            assert kg_lane.code_branch(w.a.path, w.base, "HEAD") == kg_lane.code_branch(wt, w.base, "HEAD")
 
     @staticmethod
     def claim(d, i):
@@ -936,28 +957,27 @@ class TestCodeLaneSync(SyncScenario):
         def names_code_item(branch):
             assert branch == "code/TK-bbbbbbbb", branch
 
-        names_code_item(kbgit.code_branch(w.base, "HEAD"))
-        assert kbgit.lane_plan(w.base, "HEAD") == ("code", "code/TK-bbbbbbbb")
+        names_code_item(kg_lane.code_branch(w.a.path, w.base, "HEAD"))
+        assert kg_lane.lane_plan(w.a.path, w.base, "HEAD") == ("code", "code/TK-bbbbbbbb")
         out = kbgit.git("log", "--reverse", "--format=%(trailers:key=KB-Work,valueonly,unfold)", *rng)
-        old_rule = kbgit.CODE_BRANCH_PREFIX + re.split(r"[,\s]+", out.strip())[0]
+        old_rule = kg_lane.CODE_BRANCH_PREFIX + re.split(r"[,\s]+", out.strip())[0]
         with pytest.raises(AssertionError):
             names_code_item(old_rule)
         real = kbgit.kblane.commit_lanes
         with monkeypatch.context() as m:
             m.setattr(kbgit.kblane, "commit_lanes", lambda repo, spec: [(h, "code", c) for h, _, c in real(repo, spec)])
             with pytest.raises(AssertionError):
-                names_code_item(kbgit.code_branch(w.base, "HEAD"))
+                names_code_item(kg_lane.code_branch(w.a.path, w.base, "HEAD"))
 
     def test_code_branch_falls_back_to_the_range(self, world, monkeypatch):
         """A code commit without KB-Work: the range's first KB-Work id (the claim's), and with none, HEAD's short hash."""
         w = world
-        monkeypatch.setattr(kbgit, "KB", w.a.path)
         self.code(w.a, 10)
-        assert kbgit.code_branch(w.base, "HEAD") == f"code/{w.a.rev('HEAD')[:9]}"
+        assert kg_lane.code_branch(w.a.path, w.base, "HEAD") == f"code/{w.a.rev('HEAD')[:9]}"
         self.claim(w.a, "TK-aaaaaaaa")
         self.code(w.a, 11)
-        assert kbgit.code_branch(w.base, "HEAD") == "code/TK-aaaaaaaa"
-        assert kbgit.code_branch(w.a.rev("HEAD~1"), "HEAD~1") is None  # an empty range has no code-lane commit
+        assert kg_lane.code_branch(w.a.path, w.base, "HEAD") == "code/TK-aaaaaaaa"
+        assert kg_lane.code_branch(w.a.path, w.a.rev("HEAD~1"), "HEAD~1") is None  # an empty range has no code-lane commit
 
     def test_only_code_branches_are_pushed_this_way(self, world, monkeypatch, capsys):
         w = world
@@ -974,8 +994,8 @@ CONTENT_RETURN = "        return kblane.CONTENT, None\n"
 @requires_git
 @pytest.mark.git
 class TestSyncReexec(SyncScenario):
-    """A rebase inside sync that changes kbgit.py's push decision (`tests.py -k sync_reexec_after_kbgit_rebase`): B
-    pushes a kbgit.py whose lane_plan routes every push to PLANTED_LANE, A (behind, one content commit) runs
+    """A rebase inside sync that changes the push decision (kg_lane.py here) (`tests.py -k sync_reexec_after_kbgit_rebase`): B
+    pushes a kg_lane.py whose lane_plan routes every push to PLANTED_LANE, A (behind, one content commit) runs
     `sync --push`. The re-run with the rebased code decides: A's commit goes to PLANTED_LANE, main stays B's. The planted
     failure: the same run with the re-run disabled (KB_SYNC_REEXEC=1, as inside a re-run) does not route it there."""
 
@@ -989,9 +1009,9 @@ class TestSyncReexec(SyncScenario):
         for name, extra in (("reexec", {}), ("disabled", {kbgit.REEXEC_ENV: "1"})):
             os.makedirs(os.path.join(tmp, name))
             remote, (a, b), _ = clones(kb_seed, os.path.join(tmp, name), env, ("a", "b"))
-            src = b.read("_tools/kbgit.py")
+            src = b.read("_tools/kg_lane.py")
             assert src.count(CONTENT_RETURN) == 1
-            b.write("_tools/kbgit.py", src.replace(CONTENT_RETURN, f"        return kblane.CODE, {PLANTED_LANE!r}\n"))
+            b.write("_tools/kg_lane.py", src.replace(CONTENT_RETURN, f"        return kblane.CODE, {PLANTED_LANE!r}\n"))
             b.git("commit", "-q", "-am", "chore(tools): planted lane rule")
             b.git("push", "-q", "--no-verify", "origin", "HEAD:main", env={"KB_GATE_DONE": "1"})
             url = "https://learn.microsoft.com/en-us/sync-test/reexec"
@@ -1010,7 +1030,7 @@ class TestSyncReexec(SyncScenario):
     def assert_new_code_decided(run):
         r, heads, theirs, head = run
         assert r.returncode == 0, r.stdout + r.stderr
-        assert "the rebase changed the code sync runs: _tools/kbgit.py" in r.stdout, r.stdout
+        assert "the rebase changed the code sync runs: _tools/kg_lane.py" in r.stdout, r.stdout
         assert "re-running sync once with the rebased code" in r.stdout, r.stdout
         assert heads.get(PLANTED_LANE) == head, (heads, r.stdout)
         assert heads["main"] == theirs  # the old code would have pushed A's commit to main
@@ -1030,7 +1050,7 @@ class TestSyncReexec(SyncScenario):
 
     def test_sync_reexec_after_kbgit_rebase_watches_imported_modules(self):
         loaded = kbgit.loaded_tools()
-        for rel in ("_tools/kbgit.py", "_tools/kblane.py", "_tools/kbpublic.py", "_tools/kg_merge.py", "_tools/kg_base.py",
+        for rel in ("_tools/kbgit.py", "_tools/kblane.py", "_tools/kbpublic.py", "_tools/kg_merge.py", "_tools/kg_lane.py", "_tools/kg_base.py",
                     "_tools/kbcommon.py"):
             assert rel in loaded
         assert all(p.startswith("_tools/") and p.endswith(".py") for p in loaded)

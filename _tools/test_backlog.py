@@ -2742,17 +2742,36 @@ if os.environ.get("LAND_FAIL") == NAME:
 print(NAME + ": ok")
 """
 # sync's stand-in: pushes by lane as kbgit.py sync --push does, the lane and the code/<id> branch from the real
-# kbgit.lane_plan (LAND_TOOLS: this _tools/ directory), the one helper sync and land name the branch with
+# kg_lane.lane_plan (LAND_TOOLS: this _tools/ directory), the one helper sync and land name the branch with
 SYNC_STUB = STEP_STUB.format(name="sync") + """import subprocess
 def git(*a):
     return subprocess.run(["git", *a], capture_output=True, text=True, check=True).stdout
 git("fetch", "-q", "origin")
 sys.path.insert(0, os.environ["LAND_TOOLS"])
-import kbgit
-kbgit.KB = os.getcwd()
-_, branch = kbgit.lane_plan("refs/remotes/origin/main", "HEAD")
+import kg_lane
+_, branch = kg_lane.lane_plan(os.getcwd(), "refs/remotes/origin/main", "HEAD")
 git("push", "-q", "origin", "HEAD:refs/heads/" + (branch or "main"))
 """
+
+
+def swaps_kbgit_kb(source):
+    """Whether the source assigns kbgit.KB (the module global land once swapped around lane_plan)."""
+    import ast
+    for node in ast.walk(ast.parse(source)):
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target] if isinstance(node, ast.AugAssign) else []
+        for t in targets:
+            for sub in ast.walk(t):
+                if isinstance(sub, ast.Attribute) and sub.attr == "KB" and getattr(sub.value, "id", "") == "kbgit":
+                    return True
+    return False
+
+
+def test_bl_split_land_does_not_swap_kb():
+    """land names the branch through kg_lane.lane_plan(root, ...) and never sets kbgit.KB. Planted failure: the old swap."""
+    assert not swaps_kbgit_kb(Path(backlog.__file__).read_text(encoding="utf-8"))
+    assert swaps_kbgit_kb("kb, kbgit.KB = kbgit.KB, str(root)\n")
+    assert swaps_kbgit_kb("kbgit.KB = kb\n")
+    assert not swaps_kbgit_kb("x = kbgit.KB\n")
 
 
 class TestBacklogLand:
@@ -2945,7 +2964,7 @@ class TestBacklogLand:
         assert code == 0 and "landed" in out, out
         assert self.head_ref(ld) is None and self.out(ld["repo"], "rev-parse", "HEAD").strip() == start, out
 
-    # land names the code/<id> branch it waits on with kbgit.lane_plan, as sync names the branch it opens: a story's
+    # land names the code/<id> branch it waits on with kg_lane.lane_plan, as sync names the branch it opens: a story's
     # range that begins with a content commit of another item (a bug filed with new --commit) is recognised on a
     # re-run before the merge. Planted: the bug's own code commit comes first, so sync opens code/<bug>, a branch
     # land's old naming (the item's own id) never looked for.
