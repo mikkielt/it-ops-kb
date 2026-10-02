@@ -2,7 +2,7 @@
   "id": "TK-vekgp5gc",
   "kind": "task",
   "title": "kg_lane.py holds the code/<id> branch name and the lane plan, taking the root",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -40,5 +40,29 @@
   "depends_on": [
     "TK-cilkikzk"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "4e2551cc80a3e65cba981948c7eaf1451ff812ab",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kg_lane_takes_root"
+        ],
+        "exit": 0,
+        "sha256": "1c0614fce88facb1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_land_does_not_swap_kb"
+        ],
+        "exit": 0,
+        "sha256": "526a9dfa45bfd8b5"
+      }
+    ]
+  }
 }
