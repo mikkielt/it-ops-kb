@@ -2,7 +2,7 @@
   "id": "TK-2doxt2xx",
   "kind": "task",
   "title": "kg_sync.py holds the sync run, its gate and its push",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-pkprc4oy",
   "priority": "P1",
   "rank": 0,
@@ -35,5 +35,19 @@
   "depends_on": [
     "TK-vekgp5gc"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "bb46a9f4d548d7b37602c61673b7f8822b958d32",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kg_split_sync"
+        ],
+        "exit": 0,
+        "sha256": "2f98fba49e19ac3a"
+      }
+    ]
+  }
 }
