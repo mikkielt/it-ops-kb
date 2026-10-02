@@ -1,0 +1,34 @@
+{
+  "id": "BG-jdbdrqww",
+  "kind": "bug",
+  "title": "PIPELINE_VERSION is not bumped for the agent.run ops lines distill now writes",
+  "status": "todo",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "ql_base.PIPELINE_VERSION is raised above its current value, with the golden fixture header and the PIPELINE_VERSION row of the defaults table in kb/_self/querylog.md, because distill writes the agent.run ops lines (ST-lopowpsz) and the table says the version changes when what distill writes changes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_base;sys.exit(0 if ql_base.PIPELINE_VERSION>=7 else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pipeline_version_covers_agent_run_lines"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_base.py",
+    "_tools/fixtures/querylog/golden.jsonl",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ]
+}
