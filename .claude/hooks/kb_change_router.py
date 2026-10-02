@@ -65,7 +65,9 @@ ALWAYS = ("Any change: /kb-verify before committing, then `python3 _tools/kbgit.
 
 def routes(prompt):
     """The (skill, when) pairs a change request's words name, at most three; [] for anything else."""
-    p = (prompt or "").strip()
+    if not isinstance(prompt, str):
+        return []  # a malformed event (a number, a list, null) carries no request
+    p = prompt.strip()
     if not p or p.startswith("/") or re.match(r"kb\+?\s*:", p, re.I) or HARNESS.match(p) or not CHANGE.search(p) \
             or QUESTION.match(p):
         return []
@@ -118,7 +120,7 @@ def main():
         return
     try:
         event = json.load(sys.stdin)
-    except ValueError:
+    except (ValueError, RecursionError):
         return  # not our input: never block a prompt on a parse error
     out = emit(event)
     if out is not None:
