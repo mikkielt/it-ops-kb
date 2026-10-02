@@ -39,7 +39,7 @@
       "recommendation": "every 15 minutes (/loop 15m /kb-autopilot)",
       "class": "agents-rule",
       "answer": "every 15 minutes (/loop 15m /kb-autopilot)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "triage-keeps",
@@ -52,7 +52,7 @@
       "recommendation": "a draft that names a failure that happened with its evidence and has no near-duplicate",
       "class": "agents-rule",
       "answer": "a draft that names a failure that happened with its evidence and has no near-duplicate",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "json-keys",
@@ -65,7 +65,7 @@
       "recommendation": "triage keep, drop, merge, why; review verdict, confirm, change, gaps; retrospective stories, no_change; plan sprint, goal, items, stop; research sprint, done, gaps",
       "class": "agents-rule",
       "answer": "triage keep, drop, merge, why; review verdict, confirm, change, gaps; retrospective stories, no_change; plan sprint, goal, items, stop; research sprint, done, gaps",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "retro-pick",
@@ -78,7 +78,7 @@
       "recommendation": "each story filed as a draft with a take or leave gate, answered take by the autopilot and recorded",
       "class": "agents-rule",
       "answer": "each story filed as a draft with a take or leave gate, answered take by the autopilot and recorded",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

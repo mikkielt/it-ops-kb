@@ -53,7 +53,7 @@
       "recommendation": "one prompt (promptId) of the manager transcript, one /loop firing, numbered per transcript",
       "class": "secrets",
       "answer": "one prompt (promptId) of the manager transcript, one /loop firing, numbered per transcript",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -66,7 +66,7 @@
       "recommendation": "uncached input plus cache write plus cache read plus output, once per request, with a tick's subagent transcripts included",
       "class": "secrets",
       "answer": "uncached input plus cache write plus cache read plus output, once per request, with a tick's subagent transcripts included",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -79,7 +79,7 @@
       "recommendation": "an earlier autopilot decision in force with the same gate id and the same class has a different answer",
       "class": "secrets",
       "answer": "an earlier autopilot decision in force with the same gate id and the same class has a different answer",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

@@ -115,7 +115,7 @@
       "recommendation": "wrappers installed by bl_bounds",
       "class": "agents-rule",
       "answer": "wrappers installed by bl_bounds",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -128,7 +128,7 @@
       "recommendation": "only a sprint whose start gate the autopilot answered",
       "class": "agents-rule",
       "answer": "only a sprint whose start gate the autopilot answered",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -142,7 +142,7 @@
       "recommendation": "items landed: the runner's --landed K",
       "class": "secrets",
       "answer": "items landed: the runner's --landed K",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -155,7 +155,7 @@
       "recommendation": "links origin KIND SP and evidence KIND REF; no close row: the guard does not judge",
       "class": "agents-rule",
       "answer": "links origin KIND SP and evidence KIND REF; no close row: the guard does not judge",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "The failure it answers: closing a sprint turns every accepted review or retro finding into a story, so one sprint's close filed ten drafts (SP-x2pvljz6) and another six (SP-5cwekumc), with the operator as the only brake; an autopilot that answers for the operator has no brake. The existing process rule (backlog.md, Changing this process: a new mechanism only for a failure that happened) becomes a check. The limits gate holds the numbers. The story is large: /kb-item splits it into tasks (what a sprint gains and what findings file; the caps and the inflow guard; the manager's stop conditions and the docs).",
