@@ -91,6 +91,7 @@ kb/_self/backlog.md,_tools/bl_*.py
 kb/_self/backlog.md,.claude/skills/kb-backlog/SKILL.md
 kb/_self/backlog.md,.claude/skills/kb-sprint/SKILL.md
 kb/_self/backlog.md,.claude/skills/kb-item/SKILL.md
+kb/_self/backlog.md,.claude/skills/kb-autopilot/SKILL.md
 kb/_self/tools.md,_tools/backlog.py
 kb/_self/tools.md,_tools/bl_*.py
 kb/_self/tools.md,_tools/provider.py
