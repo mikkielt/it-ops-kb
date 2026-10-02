@@ -2,7 +2,7 @@
   "id": "BG-pnns4uro",
   "kind": "bug",
   "title": "querylog.py distill help text does not mention the work sidecar",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rrrrggw7",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,6 @@
   "depends_on": [
     "ST-6zcqkjfm"
   ],
-  "notes": "Waits for the ops sidecar story so the help text names the work and the ops sidecar."
+  "notes": "Waits for the ops sidecar story so the help text names the work and the ops sidecar.",
+  "claimed_by": "mac-sixth"
 }
