@@ -36,6 +36,62 @@
     "kb/_self/tools.md",
     "kb/_self/map.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is the baseline _tools/test_ids_baseline.txt refreshed when tests are added?",
+      "options": [
+        "append: whoever adds tests regenerates it with perfcheck.py ids --write, ids only grow; a removal needs an --allow-removed file",
+        "pin: the file is fixed at the epic's start and never rewritten"
+      ],
+      "recommendation": "append: whoever adds tests regenerates it with perfcheck.py ids --write, ids only grow; a removal needs an --allow-removed file",
+      "do": {
+        "append: whoever adds tests regenerates it with perfcheck.py ids --write, ids only grow; a removal needs an --allow-removed file": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt"
+        ],
+        "pin: the file is fixed at the epic's start and never rewritten": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt"
+        ]
+      },
+      "answer": "append: whoever adds tests regenerates it with perfcheck.py ids --write, ids only grow; a removal needs an --allow-removed file",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What counts as the tests.py and stress_test.py selections whose ids perfcheck collects?",
+      "options": [
+        "two selections: tests.py (_tools, -m \"not stress\") and stress_test.py (test_stress.py, -m stress), fixed as constants checked by a test against both runners",
+        "every id pytest collects with no -m filter"
+      ],
+      "recommendation": "two selections: tests.py (_tools, -m \"not stress\") and stress_test.py (test_stress.py, -m stress), fixed as constants checked by a test against both runners",
+      "do": {
+        "two selections: tests.py (_tools, -m \"not stress\") and stress_test.py (test_stress.py, -m stress), fixed as constants checked by a test against both runners": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "perfcheck_selections"
+        ],
+        "every id pytest collects with no -m filter": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "perfcheck_selections"
+        ]
+      },
+      "answer": "two selections: tests.py (_tools, -m \"not stress\") and stress_test.py (test_stress.py, -m stress), fixed as constants checked by a test against both runners",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/_self/reports/test-suite-speed.md",
     "kb/public/python/pytest.md (--collect-only -q, pytest @file, exit code 5)"

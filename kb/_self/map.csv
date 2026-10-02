@@ -35,6 +35,7 @@ kb/_self/tools.md,_tools/selfdoc.py
 kb/_self/tools.md,_tools/stress_test.py
 kb/_self/tools.md,_tools/tests.py
 kb/_self/tools.md,_tools/testmap.py
+kb/_self/tools.md,_tools/perfcheck.py
 kb/_self/tools.md,_tools/conftest.py
 kb/_self/tools.md,_tools/kbcommon.py
 kb/_self/tools.md,.claude/skills/kb-verify/lint.py
