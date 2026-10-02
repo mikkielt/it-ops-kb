@@ -1,12 +1,15 @@
 """The lane plan of kbgit.py (kb/_self/git.md): which lane a commit range is in and the code/<id> branch a range with
-a code-lane commit goes to. Reads git in the root it is given, never a module global, so `kbgit.py sync` (its clone) and
+a code-lane commit goes to. The plan reads git in the root it is given, never a module global, so `kbgit.py sync` (its clone) and
 `backlog.py land` (a worktree or clone root) name the same branch through the same helper. Standard library only;
-kbgit.py and backlog.py import it, and it imports no facade.
+kbgit.py and backlog.py import it, and it imports no facade. Its `lane` and `check-lanes` commands
+read git in KB, this module's own copy of the repository directory (a caller may point it at a scratch clone); the
+default range comes in as an argument.
 """
-import re
+import os, re
 
 import kblane
 import kg_merge
+from kg_base import KB
 
 WORK = "KB-Work"  # the backlog items a commit works on (kb/_self/backlog.md); written by the agent, never computed
 CODE_BRANCH_PREFIX = "code/"  # a range with a code-lane commit goes to code/<id>, never to main
@@ -50,3 +53,32 @@ def lane_plan(root, up, rev, target=LANE_BRANCH):
     if branch is None:
         return kblane.CONTENT, None
     return kblane.CODE, branch
+
+
+def cmd_lane(a, default_range):
+    rng = a.range or default_range()
+    lanes = kblane.commit_lanes(KB, kblane.spec_of(rng))
+    if lanes is None:
+        print(f"{rng}: not a valid revision range here")
+        return 2
+    for short, lane, code in lanes:
+        print(f"{short} {lane}" + (f" {' '.join(code)}" if code else ""))
+    return 0
+
+
+def cmd_check_lanes(a, default_range):
+    rng = a.range or default_range()
+    try:
+        bad = kblane.check_lanes(KB, kblane.spec_of(rng), kblane.forge_associate(a.forge, os.environ))
+    except kblane.ForgeError as e:
+        print(f"check-lanes {rng}: cannot read the forge's association API, so nothing passes: {e}")
+        return 2
+    if bad is None:
+        print(f"{rng}: not a valid revision range here")
+        return 2
+    for short, code in bad:
+        print(f"{short} code {' '.join(code)}: no merged merge request or pull request introduced it")
+    print(f"check-lanes {rng}: unmerged_code_commits={len(bad)}")
+    if bad:
+        print("code goes to main through a merge request: python3 _tools/kbgit.py sync --push")
+    return 1 if bad else 0

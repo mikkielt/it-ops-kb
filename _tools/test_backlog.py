@@ -20,6 +20,7 @@ import pytest
 
 import backlog
 import kbgit
+import kg_hooks
 import kg_trailers
 import ql_deliver
 from test_ql_deliver import job_of, job_states, state_id  # the job-state table's rows
@@ -1507,6 +1508,7 @@ def test_check_trailers_flags_kb_work_outside_trailers(sprint, monkeypatch, caps
     sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
     monkeypatch.setattr(kbgit, "KB", str(repo))
     monkeypatch.setattr(kg_trailers, "KB", str(repo))
+    monkeypatch.setattr(kg_hooks, "KB", str(repo))
     kg_trailers._WANT.clear()
     stray = f"write c\n\nKB-Work: {bg}\n\nCo-Authored-By: A <a@example.com>\n"
     (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
@@ -1520,7 +1522,7 @@ def test_check_trailers_flags_kb_work_outside_trailers(sprint, monkeypatch, caps
     msg = repo / "MSG"
     msg.write_text(stray, encoding="utf-8")
     sh(repo, "git", "reset", "-q", "--soft", "HEAD^")
-    kbgit.hook_commit_msg([str(msg)])
+    kg_hooks.hook_commit_msg([str(msg)])
     assert "outside the trailer block" in capsys.readouterr().err
     sh(repo, "git", "commit", "-qm", stray)
     sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")

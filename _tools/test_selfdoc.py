@@ -621,7 +621,7 @@ class TestSelfdocInGit:
                 monkeypatch.setattr(kg_hooks, "lane_refusals", lambda *_a, **_k: [])
                 monkeypatch.setattr(kg_hooks, "rev_parse", lambda _rev: head)
                 monkeypatch.setattr(kg_hooks, "git", lambda *_a, **_k: "")
-                monkeypatch.setattr(kbgit, "dirty_paths", lambda: ([], []))
+                monkeypatch.setattr(kg_sync, "dirty_paths", lambda: ([], []))
                 stdin = f"refs/heads/main {head} refs/heads/main {up}\n"
                 assert kbgit.hook_pre_push(["origin"], stdin) == 0
             return calls

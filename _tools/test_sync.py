@@ -45,7 +45,7 @@ from pathlib import Path
 
 import pytest
 
-import kbgit, kbid, kg_hooks, kg_lane, kg_sync, kg_trailers
+import build_index, kbgit, kbid, kblane, kg_bridge, kg_history, kg_hooks, kg_lane, kg_merge, kg_sync, kg_trailers
 from conftest import TOOLS, P, Repo, git_env, requires_git
 
 
@@ -70,7 +70,7 @@ def rows(text):
 class TestSyncRules:
     def test_mechanical_paths(self):
         for p in [P(f) for f in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_conflicts.md",
-                                 "_coverage.csv")] + ["_tools/lint_baseline.txt", kbgit.FB(kbgit.build_index.COVERAGE_MD)]:
+                                 "_coverage.csv")] + ["_tools/lint_baseline.txt", kbgit.FB(build_index.COVERAGE_MD)]:
             assert p in kg_sync.MECHANICAL
         for p in (P("auth/kerberos.md"), "_tools/kbgit.py", "AGENTS.md", "README.md", ".gitattributes", P("_artifacts.csv")):
             assert p not in kg_sync.MECHANICAL
@@ -952,20 +952,20 @@ class TestCodeLaneSync(SyncScenario):
         self.code(w.a, 9, work="TK-bbbbbbbb")
         monkeypatch.setattr(kbgit, "KB", w.a.path)
         rng = [f"{w.base}..HEAD"]
-        assert [lane for _, lane, _ in kbgit.kblane.commit_lanes(w.a.path, rng)] == ["content", "code"]
+        assert [lane for _, lane, _ in kblane.commit_lanes(w.a.path, rng)] == ["content", "code"]
 
         def names_code_item(branch):
             assert branch == "code/TK-bbbbbbbb", branch
 
         names_code_item(kg_lane.code_branch(w.a.path, w.base, "HEAD"))
         assert kg_lane.lane_plan(w.a.path, w.base, "HEAD") == ("code", "code/TK-bbbbbbbb")
-        out = kbgit.git("log", "--reverse", "--format=%(trailers:key=KB-Work,valueonly,unfold)", *rng)
+        out = kg_merge.git("log", "--reverse", "--format=%(trailers:key=KB-Work,valueonly,unfold)", *rng, kb=w.a.path)
         old_rule = kg_lane.CODE_BRANCH_PREFIX + re.split(r"[,\s]+", out.strip())[0]
         with pytest.raises(AssertionError):
             names_code_item(old_rule)
-        real = kbgit.kblane.commit_lanes
+        real = kblane.commit_lanes
         with monkeypatch.context() as m:
-            m.setattr(kbgit.kblane, "commit_lanes", lambda repo, spec: [(h, "code", c) for h, _, c in real(repo, spec)])
+            m.setattr(kblane, "commit_lanes", lambda repo, spec: [(h, "code", c) for h, _, c in real(repo, spec)])
             with pytest.raises(AssertionError):
                 names_code_item(kg_lane.code_branch(w.a.path, w.base, "HEAD"))
 
@@ -1372,7 +1372,8 @@ def test_kg_split_trailers_run_git_in_their_own_kb(tmp_path, monkeypatch):
         assert kg_trailers.git("rev-parse", "--is-inside-work-tree") is None
 
 
-MOVED_TO_HOOKS = ("HOOKS_DIR", "HOOKS", "ZERO", "worktree_tops", "hooks_path_is_ours", "lane_refusals", "cmd_install_hooks")
+MOVED_TO_HOOKS = ("HOOKS_DIR", "HOOKS", "ZERO", "worktree_tops", "hooks_path_is_ours", "lane_refusals", "cmd_install_hooks",
+                  "hook_prepare", "hook_commit_msg")
 
 
 def test_kg_split_hooks_live_in_kg_hooks_and_kbgit_imports_them():
@@ -1383,7 +1384,8 @@ def test_kg_split_hooks_live_in_kg_hooks_and_kbgit_imports_them():
     hooks_src = Path(TOOLS, "kg_hooks.py").read_text(encoding="utf-8")
     assert defined_in(hooks_src, MOVED_TO_HOOKS + ("hook_pre_push",)) == set(MOVED_TO_HOOKS + ("hook_pre_push",))
     assert defined_in(kbgit_src, MOVED_TO_HOOKS) == set()
-    assert "kg_hooks.hook_pre_push(args, stdin, gate, dirty_paths)" in kbgit_src
+    assert "kg_hooks.hook_pre_push(args, stdin, gate, kg_sync.dirty_paths)" in kbgit_src
+    assert "kg_hooks.cmd_hook(a, gate, kg_sync.dirty_paths)" in kbgit_src
     for name in ("hooks_path_is_ours", "cmd_install_hooks", "HOOKS"):
         assert getattr(kbgit, name) is getattr(kg_hooks, name)
     imports = {a.name for n in ast.walk(ast.parse(hooks_src)) if isinstance(n, ast.Import) for a in n.names}
@@ -1403,3 +1405,77 @@ def test_kg_split_hooks_run_git_in_their_own_kb(tmp_path, monkeypatch):
     with monkeypatch.context() as m:
         m.setattr(kg_hooks, "KB", str(tmp_path))
         assert kg_hooks.git("rev-parse", "--is-inside-work-tree") is None
+
+
+MOVED_TO_HISTORY = ("user_path", "with_legacy", "id_regex", "split_arg", "classify", "cmd_log", "blame_line", "cmd_blame",
+                    "cmd_asof", "census_message", "cmd_tag_census")
+MOVED_TO_BRIDGE = ("BRIDGE_PREFIX", "bridge_dry_run", "cmd_bridge")
+MOVED_TO_LANE_COMMANDS = ("cmd_lane", "cmd_check_lanes")
+
+
+def test_kg_split_history_bridge_and_lane_commands_live_in_their_modules():
+    """kg_history defines the log, blame, asof and tag-census commands with the paths they take, kg_bridge the bridge
+    command and kg_lane the lane commands; kbgit.py defines none of the history and bridge names, keeps only the thin
+    wrappers cmd_bridge, cmd_lane and cmd_check_lanes, and none of the three modules imports a facade. Planted failure:
+    a moved name put back into kbgit.py is reported."""
+    kbgit_src = Path(TOOLS, "kbgit.py").read_text(encoding="utf-8")
+    for module, moved in (("kg_history", MOVED_TO_HISTORY), ("kg_bridge", MOVED_TO_BRIDGE),
+                          ("kg_lane", MOVED_TO_LANE_COMMANDS)):
+        src = Path(TOOLS, module + ".py").read_text(encoding="utf-8")
+        assert defined_in(src, moved) == set(moved), module
+        imports = {a.name for n in ast.walk(ast.parse(src)) if isinstance(n, ast.Import) for a in n.names}
+        assert "kbgit" not in imports, module
+    assert defined_in(kbgit_src, MOVED_TO_HISTORY) == set()
+    assert defined_in(kbgit_src, MOVED_TO_BRIDGE) == {"cmd_bridge"}
+    assert defined_in(kbgit_src, MOVED_TO_LANE_COMMANDS) == set(MOVED_TO_LANE_COMMANDS)
+    for call in ("kg_bridge.cmd_bridge(a, cmd_sync)", "kg_lane.cmd_lane(a, default_range)",
+                 "kg_lane.cmd_check_lanes(a, default_range)"):
+        assert call in kbgit_src
+    for name in ("cmd_log", "cmd_blame", "cmd_asof", "cmd_tag_census"):
+        assert getattr(kbgit, name) is getattr(kg_history, name)
+    planted = kbgit_src + "\n\ndef classify(arg):\n    return None\n"
+    assert defined_in(planted, MOVED_TO_HISTORY) == {"classify"}
+
+
+@requires_git
+def test_kg_split_history_bridge_and_lane_commands_run_git_in_their_own_kb(tmp_path, monkeypatch):
+    """kg_history, kg_bridge and kg_lane run git in their own KB: a patch of the module's KB moves its git calls to a
+    directory that is no repository. Planted failure: the same patch on kbgit.KB leaves them in this repository."""
+    probes = {kg_history: lambda: kg_history.git("rev-parse", "--is-inside-work-tree"),
+              kg_bridge: lambda: kg_bridge.git("rev-parse", "--is-inside-work-tree"),
+              kg_lane: lambda: kg_merge.git("rev-parse", "--is-inside-work-tree", kb=kg_lane.KB)}
+    for module, probe in probes.items():
+        assert probe() is not None
+        with monkeypatch.context() as m:
+            m.setattr(kbgit, "KB", str(tmp_path))
+            assert probe() is not None
+        with monkeypatch.context() as m:
+            m.setattr(module, "KB", str(tmp_path))
+            assert probe() is None
+
+
+FACADE_ALLOWED = {"main", "sync_host", "gate", "cmd_sync", "hook_pre_push", "cmd_hook", "cmd_lane", "cmd_check_lanes",
+                  "cmd_bridge"}  # kb/_self/git.md, "kbgit.py keeps": the dispatch and the thin wrappers
+FACADE_WRAPPER_LINES = 8  # a wrapper hands its arguments to a kg_ module; anything longer holds code of its own
+
+
+def facade_extras(source):
+    """The functions of SOURCE a facade may not define: a name outside FACADE_ALLOWED, or a wrapper (everything but
+    main) longer than FACADE_WRAPPER_LINES lines."""
+    out = set()
+    for n in ast.parse(source).body:
+        if isinstance(n, ast.FunctionDef) and (n.name not in FACADE_ALLOWED
+                                               or (n.name != "main" and n.end_lineno - n.lineno + 1 > FACADE_WRAPPER_LINES)):
+            out.add(n.name)
+    return out
+
+
+def test_bl_split_kbgit_facade_only():
+    """kbgit.py defines main, the cmd_* wrappers and the thin sync wrappers, and no other function: what the allowed list
+    names is the keep-whole verdict of kb/_self/git.md. Planted failures: a function outside the list and a wrapper
+    that grew past the wrapper size are reported."""
+    kbgit_src = Path(TOOLS, "kbgit.py").read_text(encoding="utf-8")
+    assert facade_extras(kbgit_src) == set()
+    assert facade_extras(kbgit_src + "\n\ndef classify(arg):\n    return None\n") == {"classify"}
+    fat = "def cmd_lane(a):\n" + "    x = 1\n" * FACADE_WRAPPER_LINES + "    return x\n"
+    assert facade_extras(fat) == {"cmd_lane"}
