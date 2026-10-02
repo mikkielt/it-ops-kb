@@ -2,7 +2,7 @@
   "id": "BG-jpxrgjfz",
   "kind": "bug",
   "title": "kbingest map's machine-name check takes the environment user and lets a short host name inside a longer value pass",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "_tools/test_kbingest.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "1bd5e10bc46f083880ff0eddc4848a342b51a851",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_machine_names_passwd_and_short_host"
+        ],
+        "exit": 0,
+        "sha256": "ec3f17481e30d85e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/kbingest.py',encoding='utf-8').read();sys.exit(0 if 'getpwuid' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
