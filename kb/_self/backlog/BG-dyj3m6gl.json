@@ -2,7 +2,7 @@
   "id": "BG-dyj3m6gl",
   "kind": "bug",
   "title": "code.md says each query-log stage has its own test_ql_<stage>.py, but ql_apply's tests live in test_ql_deliver.py",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "sixth-w4"
 }
