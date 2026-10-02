@@ -2,7 +2,7 @@
   "id": "BG-6l57la6y",
   "kind": "bug",
   "title": "A CODE pointer cannot name an extensionless script such as src/adr-new",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "f729126db9fc4a7395c2eef652c1d9b816c2f33c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import kbfacts; p = kbfacts.tags_in('- x [CODE S1: src/adr-new#newid]'); sys.exit(0 if kbfacts.code_pointer(p[0]) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
