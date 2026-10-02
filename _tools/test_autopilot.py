@@ -13,7 +13,7 @@ SP = "SP-abcdefgh"
 STORY, T1, T2, T3, OUTSIDE = "ST-aaaaaaaa", "TK-bbbbbbbb", "TK-cccccccc", "TK-dddddddd", "TK-zzzzzzzz"
 
 FAKE = '''import json, os, sys, time
-seen = {"argv": sys.argv[1:], "cwd": os.getcwd()}
+seen = {"argv": sys.argv[1:], "cwd": os.getcwd(), "headless": os.environ.get("KB_HEADLESS_RUNNER")}
 open(os.environ["FAKE_SEEN"], "w", encoding="utf-8").write(json.dumps(seen))
 out = sys.stdout.buffer
 for ln in open(os.environ["FAKE_STREAM"], "rb").read().splitlines(keepends=True):
@@ -145,6 +145,46 @@ def test_autopilot_runner_start_passes_settings_and_plugins_explicitly_and_no_pe
     assert plugins == [str(wt), str(wt / ".claude-plugin" / "docs")]  # the project, then each plugin under .claude-plugin
     assert not permission_flags(argv)
     assert Path(seen["cwd"]).resolve() == wt.resolve()
+    assert seen["headless"] == "1"  # the run's publish --hook pushes nothing
+
+
+def runner_denies(argv):
+    """The deny rules the run's --disallowedTools carries (the arguments after it up to the next flag)."""
+    if "--disallowedTools" not in argv:
+        return []
+    rest = argv[argv.index("--disallowedTools") + 1:]
+    return [a for a in rest[:next((i for i, a in enumerate(rest) if a.startswith("--")), len(rest))]]
+
+
+def test_autopilot_runner_denies_the_run_an_answer_recorded_as_the_operators(world):
+    world.stream(stream())
+    world.start()
+    denies = runner_denies(world.seen()["argv"])
+    for shell in ("Bash", "PowerShell"):
+        for by in ("--by operator", "--by=operator"):
+            assert f"{shell}(python3 _tools/backlog.py answer * {by}*)" in denies
+    # the project's settings, which the operator-present manager session reads, deny it nowhere
+    settings = json.loads((Path(__file__).resolve().parent.parent / ".claude" / "settings.json").read_text("utf-8"))
+    assert not [r for r in settings["permissions"].get("deny", []) if "--by" in r]
+
+
+def test_autopilot_runner_denies_a_planted_run_without_them_fails_the_check(world, monkeypatch):
+    world.stream(stream())
+    monkeypatch.setattr(autopilot, "RUNNER_DENY", ())
+    world.start()
+    assert not runner_denies(world.seen()["argv"])  # what the test above refuses
+
+
+def test_autopilot_runner_publish_hook_does_nothing_in_a_headless_run(monkeypatch, capsys):
+    import kbpublic
+    monkeypatch.setattr(kbpublic, "publish_remote", lambda cwd: "public")
+    called = []
+    monkeypatch.setattr(kbpublic, "cmd_publish", lambda a, cwd: called.append(cwd))
+    a = type("A", (), {"remote": None})()
+    monkeypatch.setenv(kbpublic.HEADLESS_ENV, "1")
+    assert kbpublic.cmd_publish_hook(a, ".") == 0 and called == []
+    monkeypatch.delenv(kbpublic.HEADLESS_ENV)
+    assert kbpublic.cmd_publish_hook(a, ".") == 0 and called == ["."]  # the planted contrast: an interactive session
 
 
 def permission_flags(argv):
