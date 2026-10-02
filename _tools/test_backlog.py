@@ -5141,3 +5141,32 @@ def test_backlog_cost_research_planted_failure_of_the_order_and_shape_is_caught(
     with pytest.raises(AssertionError):
         check_research_text(researched, capsys)
         check_research_json_shape(researched, capsys)
+
+
+def test_backlog_state_paths_check_warns_of_unchecked_ways_state_changes(repo):
+    """check warns of an open item whose goal reads an item's status or presence when its checks name fewer than
+    every way the state changes (BG-qks4ikyr planted: a sweep checked only done); naming all five, a goal that reads no
+    state, and a done item are quiet."""
+    cmd = lambda k: argstr(["python3", "_tools/tests.py", "-k", k])  # noqa: E731
+    goal = "A sweep reads each item's status and presence"
+    assert b(repo, "new", "story", "--title", "Sweep", "--goal", goal, "--check", cmd("sweep_done"))[0] == 0
+    sw = item(repo, "Sweep")["id"]
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=1" in out and sw in out, out
+    for way in ("drop inside a sprint", "drop outside a sprint", "close", "release"):
+        assert way in out, out
+    assert "state changes: done," not in out, out  # the path its check names is not listed missing
+    edit(repo, sw, checks=[{"run": ["python3", "_tools/tests.py", "-k",
+                                    "sweep_done or sweep_drop_in_sprint or sweep_drop_outside or sweep_close "
+                                    "or sweep_release"]}])
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out, out
+    edit(repo, sw, checks=[{"run": ["python3", "_tools/tests.py", "-k", "sweep_done or sweep_close"]}])
+    code, out = b(repo, "check")
+    assert "warnings=1" in out and "drop inside a sprint" in out and "release" in out, out
+    edit(repo, sw, goal="A sweep prints a table")
+    code, out = b(repo, "check")
+    assert "warnings=0" in out, out
+    edit(repo, sw, goal=goal, status="done")
+    code, out = b(repo, "check")
+    assert "warnings=0" in out and "state changes" not in out, out
