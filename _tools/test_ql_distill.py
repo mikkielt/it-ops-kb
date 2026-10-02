@@ -1339,6 +1339,15 @@ def plant_agents(qdir, rows, sid=W1, closed=True):
 
 
 class TestAgentRows:
+    def test_pipeline_version_covers_agent_run_lines(self, tmp_path):
+        """distill has written agent.run lines since version 7: the version and the golden run file's header say so"""
+        assert ql_base.PIPELINE_VERSION >= 7
+        assert jsonl(FIXTURES / "golden.jsonl")[0]["pipeline"] == ql_base.PIPELINE_VERSION
+        q = tmp_path / "querylog"
+        plant_agents(q, [agent_row(1, "agent-start", AG1, 0, item=WA), agent_row(2, "agent-stop", AG1, 5, item=WA)])
+        assert run_distill(q, echo)[0] == 0
+        assert [g["event"] for g in jsonl(ops_sidecar_of(q))[1:]] == ["agent.run"]
+
     def test_ops_agent_rows_a_pair_is_one_agent_run_line(self, tmp_path):
         q = tmp_path / "querylog"
         f = plant_agents(q, [agent_row(1, "agent-start", AG1, 0, item=WA), agent_row(2, "agent-stop", AG1, 61234, item=WA),
