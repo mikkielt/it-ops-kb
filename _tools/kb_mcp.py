@@ -62,7 +62,7 @@ import urllib.error, urllib.request
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
-import rag, kbcommon, kbfacts  # noqa: E402
+import rag, kbcommon, kbfacts, kbpublic  # noqa: E402
 
 NAME, VERSION = "kb", "1.5.0"
 MODERN = "2026-07-28"
@@ -449,14 +449,16 @@ def status():
 
 def upstream(repo, commit, plugin):
     """How far `commit` is behind the branch its copy follows, from local refs only (the tools never contact a
-    remote): a clone's upstream branch (or origin/HEAD, origin/main), or the HEAD of the marketplace clone Claude
+    remote): a clone's upstream branch (else the HEAD or main of its integration remote, the one
+    kbpublic.integration_remote names), or the HEAD of the marketplace clone Claude
     Code keeps for an installed plugin, which marketplace updates move. {} when there is none. `stale` is True when
     it is behind; `update`, the command that brings it level, only on an unlimited server (limited()), since it
     names the clone's path. A clone detached at a census tag is told to check out the newest census tag, not to
     pull."""
     target = git("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}", cwd=repo)
     if not target:
-        target = "HEAD" if plugin else next((r for r in ("origin/HEAD", "origin/main")
+        remote = kbpublic.integration_remote(repo)
+        target = "HEAD" if plugin else next((r for r in (f"{remote}/HEAD", f"{remote}/main")
                                              if git("rev-parse", "--verify", "-q", r, cwd=repo)), None)
     counts = git("rev-list", "--left-right", "--count", f"{commit}...{target}", cwd=repo) if target else None
     if not counts:

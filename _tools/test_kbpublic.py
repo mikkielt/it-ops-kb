@@ -531,7 +531,6 @@ ROLE_SKIP = {  # _tools files that may hold the string constant 'origin', each w
     "census.py": "the remote of a source repository's own clone, not this repository's",
     "kbingest.py": "the remote of an ingested repository's own clone, not this repository's",
     "bench_core.py": "a fixture clone's remote",
-    "kb_mcp.py": "upstream() falls back to origin/HEAD: BG-kpv2cxxw",
 }
 
 
