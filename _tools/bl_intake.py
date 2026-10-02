@@ -123,22 +123,40 @@ def problem(c):
     return None
 
 
-def collect(root, only=None, network=False):
+DETECT_STATS = {}  # {detector: {"budget": bool, "coverage": int}}: what a detector with a budget says of its own run
+
+
+def record_detect(name, found, stats):
+    """Append the `intake.detect` ops row of detector `name` (`ql_deliver.ops_row`: best effort, nothing is raised):
+    `found` candidates kept, and `budget` (true when the detector's budget ran out before it reached every item it
+    could check) and `coverage` (the items it checked) for a detector that reports them."""
+    try:
+        from ql_deliver import ops_row
+        fields = {k: stats[k] for k in ("budget", "coverage") if k in stats}
+        ops_row("intake.detect", detector=name, found=found, **fields)
+    except Exception:  # noqa: BLE001 - intake never fails for its log
+        pass
+
+
+def collect(root, only=None, network=False, record=False):
     """(candidates, failures) over the registry: the candidates of every detector (or the one named `only`) sorted by
     detector name, then fingerprint, each with `detector` and `fp` set, a finding reported twice kept once; the
     failures as `detector: why` lines (a detector that raised, a candidate that `problem` refuses). A detector of
-    NETWORK_DETECTORS runs only with `network`, or when it is the one named `only`."""
+    NETWORK_DETECTORS runs only with `network`, or when it is the one named `only`. With `record`, a detector that
+    found a candidate or ran out of its budget appends an `intake.detect` ops row (`record_detect`)."""
     out, failures, seen = [], [], set()
     for name in sorted(DETECTORS):
         if only is not None and name != only:
             continue
         if name in NETWORK_DETECTORS and not (network or only == name):
             continue
+        DETECT_STATS.pop(name, None)
         try:
             found = list(DETECTORS[name](Path(root)))
         except Exception as e:  # noqa: BLE001 - one broken detector must not hide the others' findings
             failures.append(f"{name}: raised {type(e).__name__}: {e}")
             continue
+        kept = 0
         for c in found:
             why = problem(c)
             if why:
@@ -148,6 +166,10 @@ def collect(root, only=None, network=False):
             if c.fp not in seen:
                 seen.add(c.fp)
                 out.append(c)
+                kept += 1
+        stats = DETECT_STATS.pop(name, {})
+        if record and (kept or stats.get("budget")):
+            record_detect(name, kept, stats)
     out.sort(key=lambda c: (c.detector, c.fp))
     return out, failures
 
@@ -620,6 +642,7 @@ def drift_detector(root):
     the notes list the items found. Items left unchecked (a timeout, a heavy check, the spent
     budget) are counted in the notes and never reported."""
     d = scan_drift(root)
+    DETECT_STATS["drift"] = {"budget": bool(d.over_budget), "coverage": d.ran}  # collect's intake.detect row
     write_cursor(root, d.last)
     ids = sorted(set(d.stale) | set(d.passing))
     if not ids:
@@ -898,9 +921,9 @@ def latest_pipeline(root, job=None, run=None):
     On GitLab a pipeline waiting on manual jobs counts as finished, and one whose status is no failure is read by its
     jobs (`ql_deliver.job_verdict`): red when a job someone started failed, else `unverified` says how each gate job
     did not succeed. `how` names the choice for the message."""
-    run = run or run_argv
-    from ql_deliver import (GITHUB_RED, RAN_AND_FAILED, any_ran, forge_list, gitlab_jobs, job_decided, job_verdict,
-                            latest_jobs, origin_forge)
+    from ql_deliver import (GITHUB_RED, RAN_AND_FAILED, any_ran, counting, forge_list, gitlab_jobs, job_decided,
+                            job_verdict, latest_jobs, origin_forge)
+    run, calls = counting(run or run_argv)  # `calls` is the pipeline's `calls`: the job-list calls this read made
     import kbpublic
     remote = kbpublic.integration_remote(root)
     code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
@@ -954,14 +977,14 @@ def latest_pipeline(root, job=None, run=None):
                 verdict, _, unpassed = job_verdict(jobs)
                 p["red"] = verdict == "red"
                 p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
-        return red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run, job), note
+        return dict(red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run, job), calls=calls[0]), note
     if newest:
         p, jobs = newest
         verdict, _, unpassed = job_verdict(jobs)
         p["red"] = verdict == "red"
         p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
         p["how"] = f"no job ran in the last {MAIN_PIPELINES}; the newest finished"
-        return red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run), note
+        return dict(red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run), calls=calls[0]), note
     which = f"in which {job} ran" if job else "finished"
     return None, f"no pipeline of main {which} among the last {MAIN_PIPELINES} on {host} ({cli})"
 

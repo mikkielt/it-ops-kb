@@ -8,7 +8,7 @@ it), a rebase conflict, a dirty tree, a worker's worktree with a process still r
 behind a skipped pipeline, and a sprint closed with an item still open. The patches name the module where the code
 looks the name up, `bl_land`.
 """
-import json, os, shlex, subprocess, sys
+import argparse, json, os, shlex, subprocess, sys, time
 from pathlib import Path
 
 import pytest
@@ -392,6 +392,122 @@ def test_close_drops_depends_on(sprint):
     assert code == 0 and "errors=0" in out, out
     code, out = b(repo, "horizon")
     assert code == 0 and sprint["bg"] not in out, out
+
+
+# --- the ops row `sprint.close` (ST-hwua72bg): the sprint's facts, written before close deletes the items ---
+
+@pytest.fixture
+def ops_spool(tmp_path_factory, monkeypatch):
+    """The ops capture of this test on: rows go to a spool of its own (never the clone's), and the guard that keeps a
+    test run's rows out of the real spool is lifted. Returns the spool directory."""
+    import ql_capture, ql_deliver
+    spool = tmp_path_factory.mktemp("querylog") / "spool"
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: spool)
+    monkeypatch.setattr(ql_deliver, "inside_test", lambda: False)
+    return spool
+
+
+def spool_rows(spool, event):
+    out = []
+    for f in sorted(Path(spool).glob("*.jsonl")) if Path(spool).is_dir() else []:
+        out += [r for r in (json.loads(ln) for ln in f.read_text(encoding="utf-8").splitlines())
+                if r.get("surface") == "ops" and r.get("event") == event]
+    return out
+
+
+def planned_sprint(sprint, monkeypatch, age_s=5400):
+    """The fixture's sprint committed `age_s` seconds ago, its items in the statuses a finished sprint has: the story,
+    task and review done, the bug dropped with a provisional gate an operator confirmed."""
+    repo = sprint["repo"]
+    when = f"{int(time.time()) - age_s} +0000"
+    monkeypatch.setenv("GIT_COMMITTER_DATE", when)
+    monkeypatch.setenv("GIT_AUTHOR_DATE", when)
+    commit(repo, "plan the sprint")
+    monkeypatch.delenv("GIT_COMMITTER_DATE")
+    monkeypatch.delenv("GIT_AUTHOR_DATE")
+    for iid in (sprint["st"], sprint["tk"], sprint["rv"]):
+        edit(repo, iid, status="done")
+    edit(repo, sprint["bg"], status="dropped",
+         gates=[{"id": "G1", "kind": "provisional", "question": "Name c?", "recommendation": "c.txt",
+                 "answer": "c.txt", "by": "operator"},
+                {"id": "G2", "kind": "provisional", "question": "Name d?", "recommendation": "d.txt",
+                 "answer": "d.txt", "by": "agent"}])
+    return repo
+
+
+def close_in_process(repo, sprint_id, **kw):
+    ns = argparse.Namespace(sprint=sprint_id, summary=False, commit=False, trailer=[], **kw)
+    return bl_land.cmd_close(backlog.Backlog(repo), ns)
+
+
+def plant_refused(spool, item_id, row_id):
+    spool.mkdir(parents=True, exist_ok=True)
+    row = {"id": row_id, "ts": "2026-10-01T10:00:00.000Z", "surface": "ops", "v": 1, "event": "done.refused",
+           "item": item_id, "reasons": ["status"], "ms": 5}
+    with open(spool / "tools-2026-10-01.jsonl", "a", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(row) + "\n")
+
+
+def test_ops_sprint_close_row_counts_the_sprint_before_its_items_go(sprint, ops_spool, monkeypatch):
+    repo, sp = planned_sprint(sprint, monkeypatch), sprint["sp"]
+    plant_refused(ops_spool, sprint["tk"], "11111111-1111-4111-8111-111111111111")
+    plant_refused(ops_spool, sprint["tk"], "11111111-1111-4111-8111-111111111111")  # the same row, read twice
+    plant_refused(ops_spool, sprint["bg"], "22222222-2222-4222-8222-222222222222")
+    plant_refused(ops_spool, "TK-aaaaaaaa", "33333333-3333-4333-8333-333333333333")  # an item of no sprint here
+    assert close_in_process(repo, sp) == 0
+    (row,) = spool_rows(ops_spool, "sprint.close")
+    assert (row["sprint"], row["landed"], row["dropped"], row["bugs"], row["confirmed"], row["refused"]) == (
+        sp, 3, 1, 1, 1, 2), row
+    assert 5400 * 1000 <= row["ms"] <= 5400 * 1000 + 120_000, row  # planned to closed, from the planning commit
+    assert not (repo / backlog.REL_DIR / f"{sp}.json").exists()  # and the sprint is closed
+
+
+def test_ops_sprint_close_row_is_written_while_the_items_still_exist(sprint, ops_spool, monkeypatch):
+    import ql_deliver
+    repo = planned_sprint(sprint, monkeypatch)
+    seen = []
+    real = ql_deliver.ops_row
+    monkeypatch.setattr(ql_deliver, "ops_row", lambda event, **f: seen.append(
+        (event, [(repo / backlog.REL_DIR / f"{i}.json").exists() for i in (sprint["sp"], sprint["tk"], sprint["st"])]))
+        or real(event, **f))
+    assert close_in_process(repo, sprint["sp"]) == 0
+    assert seen == [("sprint.close", [True, True, True])], seen
+
+
+def test_ops_sprint_close_row_summary_writes_none(sprint, ops_spool, monkeypatch):
+    repo = planned_sprint(sprint, monkeypatch)
+    ns = argparse.Namespace(sprint=sprint["sp"], summary=True, commit=False, trailer=[])
+    assert bl_land.cmd_close(backlog.Backlog(repo), ns) == 0
+    assert spool_rows(ops_spool, "sprint.close") == [] and (repo / backlog.REL_DIR / f"{sprint['sp']}.json").exists()
+
+
+def test_ops_sprint_close_row_failing_log_never_fails_the_close(sprint, ops_spool, monkeypatch):
+    import ql_deliver
+    repo = planned_sprint(sprint, monkeypatch)
+
+    def broken(event, **fields):
+        raise OSError("the spool is read-only")
+    monkeypatch.setattr(ql_deliver, "ops_row", broken)
+    assert close_in_process(repo, sprint["sp"]) == 0
+    assert not (repo / backlog.REL_DIR / f"{sprint['sp']}.json").exists()
+
+
+def test_ops_sprint_close_row_logging_off_writes_none_and_closes(sprint, ops_spool, monkeypatch):
+    import ql_capture
+    repo = planned_sprint(sprint, monkeypatch)
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: None)  # mode off, or the DISABLED marker
+    assert close_in_process(repo, sprint["sp"]) == 0
+    assert spool_rows(ops_spool, "sprint.close") == []
+
+
+def test_ops_sprint_close_row_a_sprint_never_committed_writes_none_and_closes(sprint, ops_spool, monkeypatch):
+    """The planning commit is the start of `ms`: a sprint file git never saw has none, so there is no row to write."""
+    repo = sprint["repo"]
+    for iid in (sprint["st"], sprint["tk"], sprint["bg"], sprint["rv"]):
+        edit(repo, iid, status="dropped")
+    assert bl_land.close_row(backlog.Backlog(repo), sprint["sp"], backlog.Backlog(repo).sprint_items(sprint["sp"])) is None
+    assert close_in_process(repo, sprint["sp"]) == 0
+    assert spool_rows(ops_spool, "sprint.close") == []
 
 
 class TestDoneLane:

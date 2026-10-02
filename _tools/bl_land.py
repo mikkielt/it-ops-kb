@@ -9,7 +9,7 @@ colour codes) and never `backlog`. The branch `land` expects sync to open for co
 `kg_lane.lane_plan`, the one helper sync uses. `backlog.py` registers `done`, `land` and `close` with `bl_cli`, each in
 its usage position, with the handlers defined here, and `host-check` and the repro rules there call `run_check` from
 here."""
-import argparse, hashlib, json, os, re, shlex, shutil, subprocess, sys
+import argparse, hashlib, json, os, re, shlex, shutil, subprocess, sys, time
 from pathlib import Path
 
 from bl_base import (
@@ -598,6 +598,56 @@ def summary_line(bl, iid, gone):
     return f"{'  ' * depth}- {bl.label(iid)} ({it.get('kind', '')}): {it.get('status', '')}{at}"
 
 
+def refused_dones(root, ids):
+    """How many `done.refused` ops rows name one of `ids`: the rows of the local spool's tools files and of the
+    committed ops sidecars (`kb/_querylog/ops/`), each row id once."""
+    import ql_capture, ql_store
+    rows = []
+    spool = ql_capture.spool_dir()
+    for f in sorted(Path(spool).glob("tools-*.jsonl")) if spool is not None else []:
+        for ln in f.read_text(encoding="utf-8", errors="replace").splitlines():
+            try:
+                rows.append(json.loads(ln))
+            except ValueError:
+                continue
+    for _, objs in ql_store.records(ql_store.ops_files(Path(root) / "kb" / "_querylog")):
+        rows += [o for _, o in objs]
+    return len({r.get("id") for r in rows if isinstance(r, dict) and r.get("event") == "done.refused"
+                and r.get("item") in ids})
+
+
+def close_row(bl, sid, items):
+    """The keys of the `sprint.close` ops row of sprint `sid` whose item ids are `items`, or None when the sprint's
+    planning commit cannot be read: the items `landed` (done) and `dropped`, the `bugs` among them, the provisional
+    gates of the items and the sprint that an operator or the autopilot `confirmed`, the `refused` dones the ops rows
+    name for them (`refused_dones`) and `ms` from the commit that added the sprint's file to now."""
+    its = [bl.items[i] for i in items]
+    gates = [g for it in its + [bl.items[sid]] for g in it.get("gates", [])]
+    added = [int(x) for x in git(bl.root, "log", "--diff-filter=A", "--format=%ct", "--",
+                                 f"{REL_DIR}/{sid}.json").split()]
+    if not added:
+        return None
+    return {"sprint": sid,
+            "landed": sum(1 for it in its if it.get("status") == "done"),
+            "dropped": sum(1 for it in its if it.get("status") == "dropped"),
+            "bugs": sum(1 for it in its if it.get("kind") == "bug"),
+            "confirmed": sum(1 for g in gates if g.get("kind") == "provisional" and g.get("by") in ("operator", "autopilot")),
+            "refused": refused_dones(bl.root, set(items)),
+            "ms": max(0, (int(time.time()) - min(added)) * 1000)}
+
+
+def record_close(bl, sid, items):
+    """Append the `sprint.close` ops row (`ql_deliver.ops_row`) before close deletes the items; best effort: whatever
+    goes wrong, close goes on."""
+    try:
+        from ql_deliver import ops_row
+        fields = close_row(bl, sid, items)
+        if fields is not None:
+            ops_row("sprint.close", **fields)
+    except Exception:  # noqa: BLE001 - a close never fails for its log
+        pass
+
+
 def cmd_close(bl, a):
     if a.summary and a.commit:
         raise Refused("close --summary only prints and commits nothing: run close --commit without --summary")
@@ -619,6 +669,7 @@ def cmd_close(bl, a):
             say(x)
         return 0
     title = bl.items[sid].get("title", "")
+    record_close(bl, sid, items)  # the facts of the sprint that the deletion below takes from the tree
     for i in gone:
         say(f"deleted {line(bl, i)}")
     # a remaining item's relates_to is information only, and a depends_on on a deleted item that is not dropped is

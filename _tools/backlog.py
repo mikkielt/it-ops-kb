@@ -1219,6 +1219,12 @@ def cmd_red_pipeline(bl, a):
     unpassed = p.get("unverified") or []
     state = "red" if p["red"] else "unverified" if unpassed else "green"
     why = f": a gate job did not pass: {', '.join(unpassed)}" if state == "unverified" else ""
+    if not getattr(a, "job", None):  # the ops row `ci.pipeline`, only when this pipeline's state changed
+        try:
+            import ql_deliver
+            ql_deliver.record_pipeline(p.get("id"), state, p.get("calls"), p.get("sha"))
+        except Exception:  # noqa: BLE001 - red-pipeline never fails for its log
+            pass
     if a.status:
         say(f"red-pipeline: {p['how']} pipeline {p['id']} of main is {state}{why} ({note})")
         return 0 if state == "green" else 1
@@ -1261,7 +1267,7 @@ def cmd_intake(bl, a):
     if a.status is not None and a.file:
         print("intake: --status and --file do not go together", file=sys.stderr)
         return 2
-    found, failures = bl_intake.collect(bl.root, network=a.network)
+    found, failures = bl_intake.collect(bl.root, network=a.network, record=a.status is None)
     for why in failures:
         print(withhold(f"intake: detector failed: {why}"), file=sys.stderr)
     if a.status is not None:
@@ -1311,7 +1317,7 @@ def hook_intake(bl, a, budget=None):
             if name in bl_intake.NETWORK_DETECTORS and not a.network:
                 continue
             try:
-                found.extend(bl_intake.collect(bl.root, only=name)[0])
+                found.extend(bl_intake.collect(bl.root, only=name, record=True)[0])
             except Exception:  # noqa: BLE001 - a session starts whatever the detectors do
                 pass
 
