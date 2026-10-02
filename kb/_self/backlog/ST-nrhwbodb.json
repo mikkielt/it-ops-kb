@@ -2,7 +2,7 @@
   "id": "ST-nrhwbodb",
   "kind": "story",
   "title": "The manager's state is one capped command and survives compaction",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -29,5 +29,6 @@
   "depends_on": [
     "ST-ng7igc4l",
     "ST-2jojzufm"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
