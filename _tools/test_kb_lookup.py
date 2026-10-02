@@ -150,6 +150,18 @@ class TestLookup:
             code, found = errors(tag)
             assert code == 1 and len(found) == 1 and rule in found[0] and "fixture/print/queues.md" in found[0], (tag, found)
 
+    def test_code_pointer_extensionless_script(self):
+        import kbfacts
+        ptr = lambda tag: kbfacts.code_pointer(kbfacts.parse_tag(tag)[0])  # noqa: E731
+        assert ptr("[CODE S1: src/adr-new#newid]") == ("src/adr-new", "newid")
+        assert ptr("[CODE S1: bin/tools/deploy#L10-L20]") == ("bin/tools/deploy", "L10-L20")
+        assert ptr("[CODE S1: src/x.py#f]") == ("src/x.py", "f")
+        for tag in ("[CODE S1: adr-new#newid]",  # a plain word, no directory and no extension
+                    "[CODE S1: src/#newid]",  # a directory
+                    "[CODE S1: https://example.com/docs/page#frag]",  # a url
+                    "[CODE S1: see the script]"):
+            assert ptr(tag) is None, tag
+
     def test_code_kind_pointer_and_pinned_sources(self):
         import kbfacts
         part = kbfacts.parse_tag("[CODE S-abcdefgh: crates/ruff_linter/src/settings/mod.rs#DEFAULT_SELECTORS]")[0]
