@@ -3161,6 +3161,7 @@ bl_cli.register("referrers", cmd_referrers, args_referrers)
 import bl_cost  # noqa: F401 - registers `cost` here, so the usage text keeps its order
 bl_cli.register("red-pipeline", cmd_red_pipeline, args_red_pipeline)
 bl_cli.register("intake", cmd_intake, args_intake)
+import bl_procs  # noqa: F401 - registers procs
 
 
 def main(argv=None):

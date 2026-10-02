@@ -236,7 +236,7 @@ def test_bl_split_base_planted_failures_fail():
 
 SUBCOMMANDS = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
                "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "drop", "start",
-               "host-check", "close", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake")
+               "host-check", "close", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs")
 
 
 def add_parser_calls(source, func):
@@ -255,7 +255,8 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     usage = ap.format_usage()
     assert "{" + ",".join(SUBCOMMANDS) + "}" in usage
     import bl_cost
-    owner = {"cost": bl_cost}  # a command a bl_ module owns: its handler is that module's, not backlog's
+    import bl_procs
+    owner = {"cost": bl_cost, "procs": bl_procs}  # a command a bl_ module owns: its handler is that module's, not backlog's
     assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
     for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit
         sub = next(a for a in ap._actions if a.dest == "cmd").choices[n]
