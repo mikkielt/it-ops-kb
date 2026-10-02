@@ -463,3 +463,82 @@ def test_autopilot_runner_status_reads_its_run_from_the_status_file_not_the_stre
     assert "exit cause blocked" in autopilot.status_text(SP, world.root)
     monkeypatch.setattr(bl_base, "git", lambda *a, **k: (_ for _ in ()).throw(bl_base.Refused("boom")))
     assert "git: boom" in autopilot.status_text(SP, world.root)  # an unreadable repository degrades, never raises
+
+
+# ---------------------------------------------------------------- the skill's headless path
+
+SKILL = Path(__file__).resolve().parent.parent / ".claude" / "skills" / "kb-sprint" / "SKILL.md"
+NEVER_ASK = re.compile(r"never call AskUserQuestion", re.I)
+
+
+def skill_sections(text):
+    """(level, heading, body) per Markdown heading, outside code fences."""
+    out, fence = [], False
+    for line in text.splitlines():
+        if line.startswith("```"):
+            fence = not fence
+        m = None if fence else re.match(r"^(#+) (.*)$", line)
+        if m:
+            out.append([len(m.group(1)), m.group(2), []])
+        elif out:
+            out[-1][2].append(line)
+    return [(lv, h, "\n".join(b)) for lv, h, b in out]
+
+
+def headless_problems(skill_text, prompt):
+    """What is wrong with the skill's headless path against the prompt the runner sends: the prompt's subcommand and
+    its flag must name a section the skill holds (the flag's section under the subcommand's), and that section may
+    name AskUserQuestion only to forbid it."""
+    words = prompt.split()
+    sub = words[1:2] and words[1]
+    flags = [w for w in words if w.startswith("--")]
+    if prompt.split()[0] != "/kb-sprint" or not sub or not flags:
+        return [f"the prompt {prompt!r} is not '/kb-sprint SUB --FLAG ...'"]
+    sections, found = skill_sections(skill_text), None
+    for i, (lv, heading, _) in enumerate(sections):
+        if lv == 2 and heading.split()[0] == sub:
+            for lv2, h2, body in sections[i + 1:]:
+                if lv2 <= 2:
+                    break
+                if flags[0] in h2:
+                    found = (h2, body)
+    if not found:
+        return [f"no section under '## {sub}' names {flags[0]}"]
+    heading, body = found
+    problems = [f"the section {heading!r} does not name {need!r}" for need in (
+        "--landed", "gate add", "--provisional", "horizon", "next", *(autopilot.CAUSE_MARKER.format(cause=c)
+                                                                      for c in autopilot.CAUSES_FROM_RESULT))
+        if need not in body]
+    if "AskUserQuestion" in NEVER_ASK.sub("", body):
+        problems.append(f"the section {heading!r} names an AskUserQuestion call")
+    return problems
+
+
+def test_autopilot_runner_skill_headless(world):
+    world.stream(stream())
+    assert world.start(5) == 0
+    prompt = world.seen()["argv"][1]  # what runner start sent
+    assert "--headless" in prompt and "--landed 5" in prompt
+    text = SKILL.read_text(encoding="utf-8")
+    assert headless_problems(text, prompt) == []
+    for sprint, landed in ((SP, ""), (SP, autopilot.LANDED_FLAG.format(k=1)), ("SP-zzzzzzzz", autopilot.LANDED_FLAG.format(k=40))):
+        assert headless_problems(text, autopilot.PROMPT.format(sprint=sprint, landed=landed)) == []
+
+
+@pytest.mark.parametrize("how", ["no section", "ask", "ask elsewhere in the section", "renamed flag", "no cause"])
+def test_autopilot_runner_skill_headless_a_planted_failure_fails_the_check(how):
+    prompt = autopilot.PROMPT.format(sprint=SP, landed=autopilot.LANDED_FLAG.format(k=2))
+    text = SKILL.read_text(encoding="utf-8")
+    assert headless_problems(text, prompt) == []
+    if how == "no section":
+        planted = text.replace("### Headless (--headless)", "### Unattended")
+    elif how == "ask":
+        planted = text.replace("Never call AskUserQuestion", "Call AskUserQuestion")
+    elif how == "ask elsewhere in the section":
+        planted = text.replace("## review SP\n", "Use AskUserQuestion to confirm a gate.\n\n## review SP\n", 1)
+    elif how == "renamed flag":
+        planted = text.replace("### Headless (--headless)", "### Headless (--unattended)")
+    else:
+        planted = text.replace("sprint-runner: blocked", "sprint-runner: stuck")
+    assert planted != text
+    assert headless_problems(planted, prompt)

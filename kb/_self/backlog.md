@@ -188,6 +188,8 @@ A sprint is a goal and the stories and bugs committed to it. It ends when its go
 
 Several sprints may be active at once. Each has its own horizon.
 
+A manager session runs a sprint without an operator at hand through the autopilot runner: `python3 _tools/autopilot.py runner start SP [--landed K]` starts one headless `/kb-sprint run SP --headless [--landed K]` in a worktree of its own and keeps its stream, and `python3 _tools/autopilot.py runner-status SP` prints, in under 1000 characters, what the run landed, the gates it added or left open, the bugs it filed and why it ended (`landed-limit`, `sprint-done`, `blocked`, `compaction` or `error`; `kb/_self/tools.md`, The autopilot runner). The run asks no one: a choice only the operator can make is recorded as a blocking gate, its items wait and the run goes on with the rest, a provisional gate takes its recommendation, and a refused command blocks its item instead of being worked around (`.claude/skills/kb-sprint/SKILL.md`, Headless). The operator's gates go to the manager session, and a relaunched run starts from `horizon` and `next`, so it continues where the last one stopped (`tests.py -k autopilot_runner_skill_headless`).
+
 ## Working on items
 
 - **One item** (`/kb-item ID`, or `/kb-item` for `next --any`):
