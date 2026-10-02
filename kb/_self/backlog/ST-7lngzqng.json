@@ -2,7 +2,7 @@
   "id": "ST-7lngzqng",
   "kind": "story",
   "title": "A goal that says every or whatever is tested over its input range",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,19 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
-  "claimed_by": "seventh-w18"
+  "evidence": {
+    "commit": "213070a9dd42ee60055bae8a271978de1267a139",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "goal_every_needs_range_test"
+        ],
+        "exit": 0,
+        "sha256": "28d9ebb3ba9d0608"
+      }
+    ]
+  }
 }
