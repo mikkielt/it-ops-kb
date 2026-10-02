@@ -2,7 +2,7 @@
   "id": "BG-b3tmj3p6",
   "kind": "bug",
   "title": "The sprint cost report's shared figure and session total include the sessions of research items although research lines are left out",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,18 @@
   "touches": [
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "924853d620b444a5fa7093707915ed303ced0ba6",
+    "checks": [
+      {
+        "run": [
+          "sh",
+          "-c",
+          "grep -qi 'sessions that worked research' kb/_self/backlog.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
