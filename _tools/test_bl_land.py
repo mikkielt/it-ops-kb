@@ -902,10 +902,61 @@ class TestBacklogLand:
         path = self.worker_tree(ld, lock="on a removable disk")  # planted: not Claude Code's lock
         self.refused_kept(ld, path, "locked (on a removable disk)")
 
-    def test_unlocked_worker_worktree_unlocked_never(self, landing):
+    def test_land_removes_clean_unlocked_worker_worktree(self, landing):
         ld = landing
-        path = self.worker_tree(ld, lock=None)  # not locked: the orchestrator removes it, as before
-        self.refused_kept(ld, path, "not locked")
+        path = self.worker_tree(ld, lock=None)  # an agent-* worktree Claude Code did not lock: agents may not remove it
+        code, out = self.land(ld)
+        assert code == 0 and "removed the finished worker's worktree" in out and "it was not locked" in out, out
+        assert not path.exists() and not self.worktree_listed(ld, path), out
+
+    def test_land_keeps_unlocked_worktree_not_a_workers(self, landing):
+        ld = landing
+        path = self.worker_tree(ld, lock=None, where=ld["repo"] / ".claude" / "worktrees" / "runner-SP")  # planted
+        self.refused_kept(ld, path, "not a worker's (agent-*)")
+
+    def test_land_deletes_the_landed_work_branch(self, landing):
+        ld = landing
+        branch = f"work/{ld['tk']}"
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        sh(ld["repo"], "git", "checkout", "-q", "main")
+        code, out = self.land(ld)
+        assert code == 0 and "landed" in out and f"deleted the landed branch {branch}" in out, out
+        assert not self.out(ld["repo"], "branch", "--list", branch).strip(), out
+        assert self.head_ref(ld) == "refs/heads/main", out
+
+    def test_land_deletes_the_removed_workers_agent_branch(self, landing):
+        ld = landing
+        repo, tk = ld["repo"], ld["tk"]
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        sh(repo, "git", "checkout", "-q", "main")
+        sh(repo, "git", "branch", "worktree-agent-a0", "main")  # the Agent tool's branch of the worker's worktree
+        (repo / ".git" / "info").mkdir(exist_ok=True)
+        (repo / ".git" / "info" / "exclude").write_text(".claude/worktrees/\n", encoding="utf-8")
+        path = repo / ".claude" / "worktrees" / "agent-a0"
+        sh(repo, "git", "worktree", "add", "-q", str(path), f"work/{tk}")
+        code, out = self.land(ld)
+        assert code == 0 and "landed" in out and not path.exists(), out
+        for branch in (f"work/{tk}", "worktree-agent-a0"):
+            assert f"deleted the landed branch {branch}" in out, out
+            assert not self.out(repo, "branch", "--list", branch).strip(), out
+
+    def test_land_keeps_the_branch_it_runs_on(self, landing):
+        ld = landing
+        branch = f"work/{ld['tk']}"
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")  # land run from the landed branch itself
+        code, out = self.land(ld)
+        assert code == 0 and "landed" in out and "deleted the landed branch" not in out, out
+        assert self.out(ld["repo"], "branch", "--list", branch).strip(), out
+
+    def test_land_keeps_a_work_branch_with_commits_main_lacks(self, landing, capsys):
+        ld = landing
+        repo, branch = ld["repo"], f"work/{ld['tk']}"
+        self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")  # planted: a commit no remote main holds
+        sh(repo, "git", "checkout", "-q", "main")
+        sh(repo, "git", "fetch", "-q", "origin")
+        bl_land.delete_landed_branch(repo, branch, "refs/remotes/origin/main")
+        assert "has commits" in capsys.readouterr().out
+        assert self.out(repo, "branch", "--list", branch).strip()
 
     def test_outside_worker_worktree_unlocked_never(self, landing):
         ld = landing
