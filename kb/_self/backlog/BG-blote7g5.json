@@ -2,7 +2,7 @@
   "id": "BG-blote7g5",
   "kind": "bug",
   "title": "The change router's once-per-session marker survives /compact and /clear, so a later change request after compaction gets no routing",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-ld5jtjhm",
   "priority": "P2",
@@ -22,5 +22,6 @@
     ".claude/settings.json",
     "_tools/test_change_router.py",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "seventh-w16"
 }
