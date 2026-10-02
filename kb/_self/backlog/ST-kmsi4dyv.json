@@ -7,7 +7,7 @@
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
   "rank": 0,
-  "goal": "tests.py appends one ops test.run row per run: mode (full, changed, fast or stress), selected and total test files, workers, milliseconds, exit, counts of passed, failed and skipped, the slowest files with their milliseconds and, for a full run, every file's; failed test ids are shape-checked and capped; _tools/test_durations.json of ST-t7xxgt47 is derived from these rows.",
+  "goal": "tests.py appends one ops test.run row per run: mode (full, changed, fast or stress), selected and total test files, workers, milliseconds, exit, counts of passed, failed and skipped, the slowest files with their milliseconds and, for a full run, every file's; failed test file names (never test ids) are shape-checked and capped; _tools/test_durations.json of ST-t7xxgt47 is derived from these rows.",
   "checks": [
     {
       "run": [
