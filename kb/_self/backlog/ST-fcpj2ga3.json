@@ -2,7 +2,7 @@
   "id": "ST-fcpj2ga3",
   "kind": "story",
   "title": "The tracked tree passes publish's GUID scan, so a first publish is not refused",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-42bn4vz7",
   "priority": "P1",
@@ -22,5 +22,6 @@
     "_tools/tests_allowlist.txt",
     "_tools/test_kbpublic.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "seventh-w26"
 }
