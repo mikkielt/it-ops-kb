@@ -665,17 +665,22 @@ class FakeClock:
         return "pass"
 
 
-def rotation_runs(world, monkeypatch, runs, ids):
-    """The items checked on each of `runs` successive tips of main, with a budget of two checks per run."""
+def rotation_runs(world, monkeypatch, runs, ids, persist=True, step=1):
+    """The items checked on each of `runs` successive tips of main (`step` commits apart), with a budget of two checks
+    per run; `persist` keeps the place the run reached, as the detector does (planted: without it every run starts
+    from the commit count alone)."""
     clock = FakeClock()
     monkeypatch.setattr(bl_intake, "time", clock)
     monkeypatch.setattr(bl_intake, "check_result", clock.check_result)
     out = []
     for n in range(runs):
-        world.commit(3 + n, f"feat: work {n}", {"src/a.txt": f"{n}\n"})
+        for m in range(step):
+            world.commit(3 + n * step + m, f"feat: work {n}.{m}", {"src/a.txt": f"{n}.{m}\n"})
         world.publish()
         clock.checked, clock.now = [], 0.0
         d = bl_intake.scan_drift(world.root, budget=2)
+        if persist:
+            bl_intake.write_cursor(world.root, d.last)
         assert d.ran == 2 and len(d.over_budget) == len(ids) - 2  # the budget covers two of the eligible items
         out.append(list(clock.checked))
     return out
@@ -714,8 +719,45 @@ def test_intake_drift_rotates_planted_fixed_start_misses_items(world, monkeypatc
     ids = [f"TK-{c * 8}" for c in "abcdefg"]
     for iid in ids:
         world.item(1, iid, "todo", touches=["src/**"], checks=[{"run": ["python3", "-c", "pass", iid]}])
-    runs = rotation_runs(world, monkeypatch, len(ids), ids)
-    assert {i for r in runs for i in r} == set(ids[:2])
+    runs = rotation_runs(world, monkeypatch, len(ids), ids, persist=False)
+    assert len({i for r in runs for i in r}) == 2 < len(ids)  # the same two items every run
+
+
+def test_intake_drift_rotation_any_step(world, monkeypatch):
+    """Every eligible item is checked within len(ids) runs whatever number of commits lands between two runs (a
+    sprint landing moves the tip by 3, which shares a factor with 6 items), and each step reaches every item."""
+    ids = [f"TK-{c * 8}" for c in "abcdef"]
+    for iid in ids:
+        world.item(1, iid, "todo", touches=["src/**"], checks=[{"run": ["python3", "-c", "pass", iid]}])
+    for step in (1, 2, 3, 4, 6, 9):
+        runs = rotation_runs(world, monkeypatch, len(ids), ids, step=step)
+        assert {i for r in runs for i in r} == set(ids), step
+
+
+def test_intake_drift_rotation_any_step_planted_commit_count_misses_items():
+    """The planted failure: the commit count taken modulo the number of items, a step of 3 over 6 items, never leads
+    with half of them."""
+    ids = ["TK-a", "TK-b", "TK-c", "TK-d", "TK-e", "TK-f"]
+    seen = {ids[(100 + 3 * r) % 6] for r in range(1, 51)}
+    assert seen != set(ids)
+    assert {bl_intake.rotated(ids, 100 + 3 * r)[0] for r in range(1, 51)} == set(ids)
+
+
+def test_intake_drift_detector_keeps_the_last_item_reached_outside_the_tree(world):
+    world.item(1, "TK-aaaaaaaa", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.item(1, "TK-bbbbbbbb", "todo", touches=["src/**"], checks=[PASS_CHECK])
+    world.commit(2, "feat: work", {"src/a.txt": "b\n"})
+    assert bl_intake.read_cursor(world.root) is None
+    drift_candidates(world)
+    assert bl_intake.read_cursor(world.root) in ("TK-aaaaaaaa", "TK-bbbbbbbb")
+    assert not world.repo.git("status", "--porcelain").strip()
+
+
+def test_intake_drift_rotated_starts_after_the_last_reached_item():
+    ids = ["TK-a", "TK-c", "TK-e"]
+    assert bl_intake.rotated(ids, 7, "TK-a") == ["TK-c", "TK-e", "TK-a"]
+    assert bl_intake.rotated(ids, 7, "TK-b") == ["TK-c", "TK-e", "TK-a"]  # a gone item: the next one above it
+    assert bl_intake.rotated(ids, 7, "TK-e") == ids and bl_intake.rotated(ids, 7, "TK-z") == ids
 
 
 def test_intake_drift_rotates_wraps_round():
@@ -918,6 +960,7 @@ def test_intake_stable_fingerprint_a_drift_scan_whose_budget_reaches_different_i
     (reached,), _ = drift_candidates(world)
     assert "TK-bbbbbbbb" in reached.goal and "TK-cccccccc" in reached.goal
     monkeypatch.setattr(bl_intake, "DRIFT_BUDGET_S", 1)  # the slow check spends it: TK-bbbbbbbb is not reached
+    bl_intake.write_cursor(world.root, "TK-")  # start at the first item, the slow one
     (cut,), _ = drift_candidates(world)
     assert "TK-bbbbbbbb" not in cut.goal and "TK-cccccccc" in cut.goal
     assert cut.fp == reached.fp == bl_intake.fingerprint("drift", bl_intake.WHOLE_KEY)
