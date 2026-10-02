@@ -2,7 +2,7 @@
   "id": "ST-anaj5uls",
   "kind": "story",
   "title": "backlog.py land verifies its done commit reached main, carries the claim commit and keeps the done commit after a rejected push",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,39 @@
     "_tools/bl_land.py",
     "_tools/test_bl_land.py"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "f2cda284ccf312bc4b4614e065b66d33a093d38e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_verifies_done_commit_on_integration_main"
+        ],
+        "exit": 0,
+        "sha256": "4713404fc3823441"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_carries_claim_commit_under_worker_commit"
+        ],
+        "exit": 0,
+        "sha256": "697d87847f8e0fdf"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_keeps_done_commit_after_rejected_push"
+        ],
+        "exit": 0,
+        "sha256": "5bcb38782c3a862e"
+      }
+    ]
+  }
 }
