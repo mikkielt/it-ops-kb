@@ -1,0 +1,32 @@
+{
+  "id": "BG-zxe2gkbb",
+  "kind": "bug",
+  "title": "code_pointer rejects a valid path whose first segment ends in a host-like tail, such as Contoso.Web.App/Program.cs#Main",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbfacts.code_pointer returns the pointer for Contoso.Web.App/Program.cs#Main, Foo.Net/Bar.cs#X and README.org#x and refuses only a scheme-less URL shape (a first segment followed by /blob/, /tree/, /-/ or /raw/) and a prose pair, with a test named code_pointer_valid_lookalikes that plants those valid look-alikes beside the rejected shapes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts as k;sys.exit(0 if k.code_pointer({'note':'Contoso.Web.App/Program.cs#Main'}) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "code_pointer_valid_lookalikes"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_kbfacts.py",
+    "kb/_self/tools.md"
+  ]
+}
