@@ -61,7 +61,7 @@
       ],
       "recommendation": "one row per event and context: row count, nonzero-exit count, ms median and range",
       "answer": "one row per event and context: row count, nonzero-exit count, ms median and range",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -74,7 +74,7 @@
       ],
       "recommendation": "the item or sprint the event names; an event with none is left out unless --context names one",
       "answer": "the item or sprint the event names; an event with none is left out unless --context names one",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

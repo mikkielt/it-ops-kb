@@ -63,7 +63,7 @@
         ]
       },
       "answer": "append: whoever adds tests regenerates it with perfcheck.py ids --write, ids only grow; a removal needs an --allow-removed file",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -89,7 +89,7 @@
         ]
       },
       "answer": "two selections: tests.py (_tools, -m \"not stress\") and stress_test.py (test_stress.py, -m stress), fixed as constants checked by a test against both runners",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

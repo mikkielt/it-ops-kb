@@ -79,8 +79,8 @@
           "ops_export_unified"
         ]
       },
-      "answer": "this shape",
-      "by": "agent"
+      "answer": "OTLP-JSON field names and one flat event namespace",
+      "by": "operator"
     }
   ],
   "notes": "No endpoint is built: observability tools read the exported JSON Lines, and an OTLP-JSON form is added only when the operator names a tool that needs it. The command needs an allow rule in .claude/settings.json (BG-oi6mrxvr).",

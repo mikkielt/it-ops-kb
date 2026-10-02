@@ -1,0 +1,33 @@
+{
+  "id": "ST-7uluagq6",
+  "kind": "story",
+  "title": "querylog.py export names its fields as OTLP-JSON and keeps one flat event namespace",
+  "status": "todo",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py export prints each record with OTLP-JSON field names (timeUnixNano, severityText, body, attributes, resource attributes service.name and kb.run) and one flat event namespace instead of entry.<surface>, finding.<kind>, usage, work.<kind> and ops.<event>, with a test named ops_export_otlp_names that plants one store row and one ops row and asserts the names. Operator decision on ST-xsxyq4wi g1; the landed snake_case shape is replaced, not kept beside it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_export_otlp_names"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/querylog.py",
+    "_tools/ql_export.py",
+    "_tools/test_ql_export.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-xsxyq4wi"
+  ]
+}

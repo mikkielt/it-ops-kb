@@ -82,7 +82,7 @@
       ],
       "recommendation": "all nine events, with the keys their goals name, and failed_files (test file names) in place of failed test ids",
       "answer": "all nine events, with the keys their goals name, and failed_files (test file names) in place of failed test ids",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "The store is a sidecar of kb/_querylog/, so it inherits the query log redaction class, its gates, its GitLab-only delivery and its exclusion from the public projection. A second pusher is not added: kbgit.py sync gives up after two rejected pushes.",

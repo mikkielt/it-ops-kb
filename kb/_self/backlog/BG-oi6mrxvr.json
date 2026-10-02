@@ -31,8 +31,8 @@
         "do not allow it (a headless run asks)"
       ],
       "recommendation": "allow kbid.py add",
-      "answer": "allow kbid.py add",
-      "by": "agent"
+      "answer": "do not allow it (a headless run asks)",
+      "by": "operator"
     }
   ],
   "evidence": {

@@ -81,7 +81,7 @@
       ],
       "recommendation": "L-<8 base32>, prefix L reserved, column source_run_ids",
       "answer": "L-<8 base32>, prefix L reserved, column source_run_ids",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "The DECISION tag in CSV data rows has the same resolution gap (BG-juqwx7nf); one fix serves both tags.",

@@ -64,7 +64,7 @@
       ],
       "recommendation": "invalidate the row",
       "answer": "invalidate the row",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -76,7 +76,7 @@
       ],
       "recommendation": "observation, context, runs and dates",
       "answer": "observation, context, runs and dates",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Related defects in the store it reuses: BG-qks4ikyr and BG-2i46kz3z.",
