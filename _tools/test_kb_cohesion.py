@@ -367,6 +367,29 @@ class TestCohesion:
             assert self.push_check_problems(backlog_skill.replace(need, "x"), runbook), need
             assert self.push_check_problems(backlog_skill, runbook.replace(need, "x")), need
 
+    @staticmethod
+    def shared_file_move_problems(skill, runbook):
+        """Problems with how a task that moves code out of a shared file is run: each text names the announce, the
+        drain, the check and the atomic commit."""
+        run = skill.split("## run", 1)[-1].split("\n## review", 1)[0]
+        steps = runbook.split("## Working on items", 1)[-1].split("\n## ", 1)[0]
+        problems = []
+        for name, part in (("kb-sprint run", run), ("backlog.md Working on items", steps)):
+            for need in ("moves code out of a file other items edit", "announced first", "drain",
+                         "held --overlaps ID --ref origin/main", "one atomic commit per file moved"):
+                if need not in part:
+                    problems.append(f"{name}: no `{need}`")
+        return problems
+
+    def test_sprint_shared_file_move_rule(self):
+        skill, runbook = text(".claude/skills/kb-sprint/SKILL.md"), text("kb/_self/backlog.md")
+        assert self.shared_file_move_problems(skill, runbook) == []
+        # planted failures: each part removed from each text
+        for need in ("moves code out of a file other items edit", "announced first", "drain",
+                     "held --overlaps ID --ref origin/main", "one atomic commit per file moved"):
+            assert self.shared_file_move_problems(skill.replace(need, "x"), runbook), need
+            assert self.shared_file_move_problems(skill, runbook.replace(need, "x")), need
+
     def test_python_passes_ruff_when_installed(self):
         """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""
         try:
