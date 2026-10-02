@@ -13,7 +13,7 @@
     "run": [
       "sh",
       "-c",
-      "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; python3 _tools/kbdecide.py record --root _self --source \"backlog item BG-3i46pccw gate g1\" --context item:BG-3i46pccw --by operator --maker operator -- \"Keep the rustc check\" >/dev/null; python3 _tools/backlog.py drop BG-3i46pccw --why test >/dev/null; git -c user.name=t -c user.email=t@example.com commit -qam drop --no-verify; python3 _tools/kbdecide.py sweep --root _self --dry-run | grep -q \"would_invalidate=1\""
+      "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; f=$(grep -L '\"sprint\"' kb/_self/backlog/BG-*.json | head -1); id=$(basename \"$f\" .json); python3 _tools/kbdecide.py record --root _self --source \"backlog item $id gate g1\" --context item:$id --by operator --maker operator -- \"Keep the rustc check\" >/dev/null; python3 _tools/backlog.py drop $id --why test >/dev/null; git -c user.name=t -c user.email=t@example.com commit -qam drop --no-verify; python3 _tools/kbdecide.py sweep --root _self --dry-run | grep -q \"would_invalidate=1\""
     ]
   },
   "touches": [
