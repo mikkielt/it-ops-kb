@@ -2,7 +2,7 @@
   "id": "BG-4fxy6kju",
   "kind": "bug",
   "title": "Two observed-run DER facts name no version",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "touches": [
     "kb/public/agents/doc-lookup-sources.md",
     "kb/public/gitlab/git-history-queries.md"
-  ]
+  ],
+  "claimed_by": "sixth-w2"
 }
