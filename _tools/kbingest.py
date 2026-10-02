@@ -77,7 +77,7 @@ Exit: 0 done (`drift`: no finding), 1 `map` could not create its worktree or `dr
 git repository, an unknown REV, `url` with no pinned url form, `map` with an unknown language or an --out under kb/,
 `drift` with an unknown --root or a repository with no remote and no --remote).
 """
-import argparse, contextlib, json, os, posixpath, re, shutil, signal, subprocess, sys, tempfile
+import argparse, contextlib, getpass, json, os, posixpath, re, shutil, signal, socket, subprocess, sys, tempfile
 from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import quote, unquote, urlsplit
@@ -1473,6 +1473,33 @@ DOTNET_SHAPES = {
     "ProjectReference": re.compile(r"(?:[\w.()+ -]+[\\/])*[\w.()+ -]+\.\w*proj"),  # relative: no drive, no root
 }
 DOTNET_MAX_VALUE = 260
+MACHINE_NAME_MIN = 4  # a name this long or longer is also left out when it is only part of a value
+MACHINE_ENV = ("COMPUTERNAME", "HOSTNAME", "USERNAME", "USER", "LOGNAME")  # Windows, then the shells that export them
+
+
+def machine_names():
+    """The lower-case host and user names of the machine mapping: the environment's computer and user variables, the
+    socket host name (whole and its first label) and the login name. A property function can set a property from
+    one (`$([System.Environment]::GetEnvironmentVariable('COMPUTERNAME'))`), and a single token such as a target
+    framework moniker or a package id has a shape any name fits."""
+    names = [os.environ.get(k, "") for k in MACHINE_ENV]
+    try:
+        host = socket.gethostname()
+        names += [host, host.split(".")[0]]
+    except OSError:
+        pass
+    try:
+        names.append(getpass.getuser())
+    except Exception:  # noqa: BLE001 - no login name found: nothing to guard
+        pass
+    return {n.strip().lower() for n in names if n and n.strip()}
+
+
+def holds_machine_name(value):
+    """True when VALUE, compared without case (Windows host names), equals one of machine_names() or, for a name of
+    MACHINE_NAME_MIN characters or more, contains it."""
+    low = value.lower()
+    return any(low == n or (len(n) >= MACHINE_NAME_MIN and n in low) for n in machine_names())
 
 
 class DotnetMapper(Mapper):
@@ -1492,7 +1519,8 @@ class DotnetMapper(Mapper):
     each asks for, not a resolved one: `dotnet package list` is not run, because once ProjectAssetsFile names an
     existing file (a committed obj/project.assets.json) it builds NuGet's collection targets, and with them the
     project's InitialTargets and any repository target hooked to them (kb agents/codebase-mapping). Each evaluated
-    value is kept only when it has its shape (DOTNET_SHAPES), else left out with a note."""
+    value is kept only when it has its shape (DOTNET_SHAPES) and holds neither the host name nor the user name of
+    the machine mapping (holds_machine_name), else left out with a note."""
     language = "dotnet"
     name = "dotnet"
     tool = "dotnet"
@@ -1587,15 +1615,19 @@ class DotnetMapper(Mapper):
 
     @staticmethod
     def shaped(ctx, proj, key, value, what=None):
-        """True when VALUE is a non-empty string of KEY's shape (DOTNET_SHAPES). A missing or empty value is False
-        without a note; any other is False with a note naming the project and the property, never the value, since
-        evaluation may have filled it from a file or the environment."""
+        """True when VALUE is a non-empty string of KEY's shape (DOTNET_SHAPES) that holds no host or user name of
+        this machine. A missing or empty value is False without a note; any other is False with a note naming the
+        project and the property, never the value, since evaluation may have filled it from a file or the
+        environment. A shape alone accepts any single token, so a name read from the environment passes it."""
         if not isinstance(value, str) or not value:
             return False
-        if len(value) <= DOTNET_MAX_VALUE and DOTNET_SHAPES[key].fullmatch(value):
-            return True
-        ctx.note(f"{proj}: {what or key}: the evaluated value is not of its shape, left out")
-        return False
+        if len(value) > DOTNET_MAX_VALUE or not DOTNET_SHAPES[key].fullmatch(value):
+            ctx.note(f"{proj}: {what or key}: the evaluated value is not of its shape, left out")
+            return False
+        if holds_machine_name(value):
+            ctx.note(f"{proj}: {what or key}: the evaluated value holds this machine's host or user name, left out")
+            return False
+        return True
 
 
 class NodeMapper(Mapper):
