@@ -2,7 +2,7 @@
   "id": "BG-qd5u4sdu",
   "kind": "bug",
   "title": "An autopilot-answered start passes a ref that reads partial, though the operator's gate says every ref must be sufficient",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_backlog_research.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "seventh-w32"
 }
