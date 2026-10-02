@@ -2,7 +2,7 @@
   "id": "ST-xsxyq4wi",
   "kind": "story",
   "title": "querylog.py export prints the store and the ops rows as one record format",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -56,5 +56,6 @@
       "by": "operator"
     }
   ],
-  "notes": "No endpoint is built: observability tools read the exported JSON Lines, and an OTLP-JSON form is added only when the operator names a tool that needs it. The command needs an allow rule in .claude/settings.json (BG-oi6mrxvr)."
+  "notes": "No endpoint is built: observability tools read the exported JSON Lines, and an OTLP-JSON form is added only when the operator names a tool that needs it. The command needs an allow rule in .claude/settings.json (BG-oi6mrxvr).",
+  "claimed_by": "seventh-w13"
 }
