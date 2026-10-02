@@ -1,10 +1,9 @@
 """Two parallel research branches with colliding ids, merged the documented way (`python3 _tools/tests.py -k research`).
 
 TestResearchMergeInGit (marker git) replays a two-researcher merge in a temp dir, never against the real origin:
-  - the kb as it is now (the working tree, as one root commit: a blob:none partial clone lacks the older blobs a push
-    of its history would need) is committed; a fork commit before it narrows one article's
-    `files:` line, and the working tree on top of it (the upstream edit made since the fork) is pushed as `main`
-    to a throwaway bare remote;
+  - the remote is a bare clone of the run's shared kb seed (conftest.kb_seed: the kb as it is now, one commit, without
+    _fetch_state.csv and the query log store); a fork commit on a clone of it narrows one article's
+    `files:` line, and the upstream edit that restores it is pushed on top as `main`;
   - research-a and research-b fork from that fork commit (today's _sources.csv layout and tools) and both take the
     next legacy ids (S2205.. today) for different urls and the same answer id, with the same `_Agent: kb-research_`
     footer, hand-edited coverage rows, and (B) a front-matter edit next to the upstream one;
@@ -70,29 +69,13 @@ def answer(q, bullets, see):
 class TestResearchMergeInGit:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory):
+    def scenario(cls, tmp_path_factory, kb_seed):
         cls.tmp = str(tmp_path_factory.mktemp("kb-research-merge"))
         cls.env = git_env(KB_SYNC_NO_TESTS="1", GIT_EDITOR="true")
         top = Repo(cls.tmp, cls.env)
         src, cls.remote = Repo(os.path.join(cls.tmp, "src"), cls.env), os.path.join(cls.tmp, "remote.git")
-        top.git("clone", "-q", "--no-hardlinks", KB, src.path)
-        src.git("checkout", "-q", "--orphan", "scenario")
-        for name in os.listdir(src.path):  # the working tree as it is now (tools under test included), over HEAD
-            if name != ".git":
-                p = src.file(name)
-                shutil.rmtree(p) if os.path.isdir(p) and not os.path.islink(p) else os.remove(p)
-        patterns, claude = shutil.ignore_patterns("__pycache__", "_fetch_state.csv"), os.path.normcase(os.path.join(KB, ".claude"))
-
-        def ignore(d, names):  # and Claude Code's worktrees (sprint subagents), as conftest.copy_kb: each is a second kb
-            return set(patterns(d, names)) | ({"worktrees"} if os.path.normcase(d) == claude else set())
-        for name in os.listdir(KB):
-            if name in (".git", "_cache", "_private", "__pycache__", "_fetch_state.csv"):
-                continue
-            s, d = os.path.join(KB, name), src.file(name)
-            shutil.copytree(s, d, symlinks=True, ignore=ignore) if os.path.isdir(s) else shutil.copy2(s, d)
-        src.git("add", "-A")
-        if src.git("status", "--porcelain").strip():
-            src.git("commit", "-q", "--no-verify", "-m", "the working tree under test")
+        top.git("clone", "-q", "--bare", str(kb_seed[0]), cls.remote)  # the remote: the shared seed, the kb as it is now
+        top.git("clone", "-q", cls.remote, src.path)
         now = src.read(FILE_B)
         assert FILES_NOW in now, f"{ARTICLE_B} no longer lists {FILES_NOW.strip()}: update the test"
         src.write(FILE_B, now.replace(FILES_NOW, FILES_FORK, 1))
@@ -100,7 +83,6 @@ class TestResearchMergeInGit:
         fork = src.git("rev-parse", "HEAD").strip()
         src.write(FILE_B, now)
         src.git("commit", "-q", "--no-verify", "-am", "docs(kb): the upstream edit made since the fork")
-        top.git("init", "-q", "--bare", "-b", "main", cls.remote)
         src.git("push", "-q", cls.remote, "HEAD:refs/heads/main")
         cls.main0 = src.git("rev-parse", "HEAD").strip()
         for name, build in (("research-a", cls.research_a), ("research-b", cls.research_b)):
