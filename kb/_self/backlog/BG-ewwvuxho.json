@@ -2,7 +2,7 @@
   "id": "BG-ewwvuxho",
   "kind": "bug",
   "title": "tests.py given a test file still runs every test file",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4i5quwba",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/maintaining.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "01fb75049dc346f321bd086e0a7d08ca4636e757",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "tests_py_file_argument_runs_only_that_file"
+        ],
+        "exit": 0,
+        "sha256": "aaf99ed0eb6ff00d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import tests as t;s={};t.run_pytest=lambda a,**k:s.setdefault('a',a) and 0;t.main(['_tools/test_testmap.py']);assert t.TOOLS not in s['a'],'tests.py runs every test file when given one'"
+        ],
+        "exit": 0,
+        "sha256": "94ffde776ed5b17e"
+      }
+    ]
+  }
 }
