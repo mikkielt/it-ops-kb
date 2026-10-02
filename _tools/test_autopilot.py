@@ -1,0 +1,465 @@
+"""_tools/autopilot.py without a paid run: `runner start` against a fake claude that prints a recorded-shape stream
+(with and without a compact_boundary) in a throwaway clone with a local origin, and `runner-status` over the commits
+a run left in its worktree. The tests named autopilot_runner_* are the item's checks."""
+import json, os, re, sys, time
+from pathlib import Path
+
+import pytest
+
+import autopilot, bl_base
+from conftest import Repo, git_env
+
+SP = "SP-abcdefgh"
+STORY, T1, T2, T3, OUTSIDE = "ST-aaaaaaaa", "TK-bbbbbbbb", "TK-cccccccc", "TK-dddddddd", "TK-zzzzzzzz"
+
+FAKE = '''import json, os, sys, time
+seen = {"argv": sys.argv[1:], "cwd": os.getcwd()}
+open(os.environ["FAKE_SEEN"], "w", encoding="utf-8").write(json.dumps(seen))
+out = sys.stdout.buffer
+for ln in open(os.environ["FAKE_STREAM"], "rb").read().splitlines(keepends=True):
+    out.write(ln)
+    out.flush()
+    if os.environ.get("FAKE_PAUSE"):
+        time.sleep(float(os.environ.pop("FAKE_PAUSE")))
+    if os.environ.get("FAKE_HANG_AFTER") and os.environ["FAKE_HANG_AFTER"].encode() in ln:
+        if os.environ.get("FAKE_IGNORE_TERM"):
+            import signal
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        time.sleep(60)
+sys.exit(int(os.environ.get("FAKE_EXIT", "0")))
+'''
+
+
+def ev(**kw):
+    return json.dumps(kw, ensure_ascii=False) + "\n"
+
+
+def result(text, **kw):
+    return ev(type="result", subtype="success", is_error=False, result=text, session_id="s1", num_turns=7,
+              total_cost_usd=0.42, **kw)
+
+
+def stream(*, boundary=False, final="Landed two items.\nsprint-runner: landed-limit", tail=True):
+    """A recorded-shape stream: init, an assistant turn with a tool call, its result, optionally a compact_boundary
+    and the final result."""
+    s = ev(type="system", subtype="init", session_id="s1", cwd="/w", tools=["Bash", "Agent"], model="m")
+    s += ev(type="assistant", message={"role": "assistant", "content": [
+        {"type": "text", "text": "Starting zażółć"}, {"type": "tool_use", "id": "t1", "name": "Bash",
+                                                        "input": {"command": "python3 _tools/backlog.py horizon"}}]})
+    s += ev(type="user", message={"role": "user", "content": [{"type": "tool_result", "tool_use_id": "t1", "content": "ok"}]})
+    if boundary:
+        s += ev(type="system", subtype="compact_boundary", session_id="s1",
+                compact_metadata={"trigger": "auto", "pre_tokens": 168000})
+    if tail:
+        s += ev(type="assistant", message={"role": "assistant", "content": [{"type": "text", "text": "after"}]})
+        s += result(final) if final is not None else ""
+    return s
+
+
+class World:
+    """A clone with a local origin holding a sprint, a story and tasks, the fake claude and its environment."""
+
+    def __init__(self, tmp_path, monkeypatch):
+        self.tmp, self.mp = tmp_path, monkeypatch
+        env = git_env()
+        self.origin = Repo(tmp_path / "origin.git", env)
+        (tmp_path / "origin.git").mkdir()
+        self.origin.git("init", "--bare", "-b", "main")
+        self.root = Path(tmp_path / "clone")
+        self.root.mkdir()
+        self.repo = Repo(self.root, env)
+        self.repo.git("init", "-b", "main")
+        self.repo.git("remote", "add", "origin", str(tmp_path / "origin.git"))
+        self.repo.write(".claude/settings.json", "{}\n")
+        self.repo.write(".claude-plugin/plugin.json", '{"name": "main"}\n')
+        self.repo.write(".claude-plugin/docs/.claude-plugin/plugin.json", '{"name": "docs"}\n')
+        self.repo.write(".claude-plugin/not-a-plugin/readme.txt", "x\n")
+        self.item(SP, kind="sprint", status="active")
+        self.item(STORY, kind="story", status="todo", sprint=SP)
+        for t in (T1, T2, T3):
+            self.item(t, kind="task", status="doing", parent=STORY)
+        self.item(OUTSIDE, kind="task", status="doing", parent="ST-yyyyyyyy")
+        self.commit("seed")
+        self.repo.git("push", "origin", "main")
+        self.fake = tmp_path / "fake_claude.py"
+        self.fake.write_text(FAKE, encoding="utf-8", newline="\n")
+        for k, v in git_env().items():
+            monkeypatch.setenv(k, v)
+        monkeypatch.setenv("FAKE_SEEN", str(tmp_path / "seen.json"))
+        monkeypatch.setenv("FAKE_STREAM", str(tmp_path / "stream.jsonl"))
+        for k in ("FAKE_HANG_AFTER", "FAKE_IGNORE_TERM", "FAKE_EXIT", "FAKE_PAUSE"):
+            monkeypatch.delenv(k, raising=False)
+        monkeypatch.setattr(autopilot, "CLAUDE", [sys.executable, str(self.fake)])
+
+    def item(self, iid, **kw):
+        self.repo.write(f"kb/_self/backlog/{iid}.json", json.dumps({"id": iid, "title": "t " + iid, **kw}, indent=2) + "\n")
+
+    def commit(self, msg):
+        self.repo.git("add", "-A")
+        self.repo.git("commit", "-q", "--allow-empty", "-m", msg)
+
+    def stream(self, text, **env):
+        (self.tmp / "stream.jsonl").write_bytes(text.encode("utf-8"))
+        for k, v in env.items():
+            self.mp.setenv("FAKE_" + k.upper(), str(v))
+
+    def start(self, landed=None):
+        return autopilot.runner_start(SP, landed, self.root)
+
+    def status(self):
+        return json.loads((autopilot.cache_dir(self.root, SP) / "status.json").read_text(encoding="utf-8"))
+
+    def seen(self):
+        return json.loads((self.tmp / "seen.json").read_text(encoding="utf-8"))
+
+    def wt(self):
+        return autopilot.worktree_path(self.root, SP)
+
+    def streams(self):
+        return sorted(autopilot.cache_dir(self.root, SP).glob("*.jsonl"))
+
+    def origin_main(self):
+        return self.repo.rev("origin/main")
+
+
+@pytest.fixture
+def world(tmp_path, monkeypatch):
+    return World(tmp_path, monkeypatch)
+
+
+# ---------------------------------------------------------------- the command the runner starts
+
+@pytest.mark.parametrize("landed", [None, 1, 3, 12])
+def test_autopilot_runner_start_passes_settings_and_plugins_explicitly_and_no_permission_flag(world, landed):
+    world.stream(stream())
+    assert world.start(landed) == 0
+    seen, wt = world.seen(), world.wt()
+    argv = seen["argv"]
+    want = f"/kb-sprint run {SP} --headless" + (f" --landed {landed}" if landed else "")
+    assert argv[0] == "-p" and argv[1] == want == autopilot.PROMPT.format(
+        sprint=SP, landed=autopilot.LANDED_FLAG.format(k=landed) if landed else "")
+    assert argv[argv.index("--output-format") + 1] == "stream-json" and "--verbose" in argv
+    assert argv[argv.index("--settings") + 1] == str(wt / ".claude" / "settings.json")
+    plugins = [argv[i + 1] for i, a in enumerate(argv) if a == "--plugin-dir"]
+    assert plugins == [str(wt), str(wt / ".claude-plugin" / "docs")]  # the project, then each plugin under .claude-plugin
+    assert not permission_flags(argv)
+    assert Path(seen["cwd"]).resolve() == wt.resolve()
+
+
+def permission_flags(argv):
+    return [a for a in argv if "permission" in a or "dangerously" in a]
+
+
+def test_autopilot_runner_start_a_planted_permission_flag_fails_the_check(world, monkeypatch):
+    world.stream(stream())
+    real = autopilot.claude_argv
+    monkeypatch.setattr(autopilot, "claude_argv", lambda *a, **k: real(*a, **k) + ["--permission-mode", "bypassPermissions"])
+    world.start()
+    assert permission_flags(world.seen()["argv"])  # what the test above refuses
+
+
+def test_autopilot_runner_plugin_dirs_are_the_manifests_only(tmp_path):
+    (tmp_path / ".claude-plugin" / "a" / ".claude-plugin").mkdir(parents=True)
+    (tmp_path / ".claude-plugin" / "a" / ".claude-plugin" / "plugin.json").write_text("{}", encoding="utf-8")
+    (tmp_path / ".claude-plugin" / "b").mkdir()
+    assert autopilot.plugin_dirs(tmp_path) == [str(tmp_path / ".claude-plugin" / "a")]  # no manifest at the top: not a plugin
+    (tmp_path / ".claude-plugin" / "plugin.json").write_text("{}", encoding="utf-8")
+    assert autopilot.plugin_dirs(tmp_path) == [str(tmp_path), str(tmp_path / ".claude-plugin" / "a")]
+
+
+# ---------------------------------------------------------------- the stream and the exit cause
+
+@pytest.mark.parametrize("cause", ["landed-limit", "sprint-done", "blocked"])
+def test_autopilot_runner_keeps_the_stream_and_records_the_cause_of_the_final_result(world, cause):
+    text = stream(final=f"Done for now.\nsprint-runner: {cause}")
+    world.stream(text)
+    assert world.start() == 0
+    kept = world.streams()
+    assert len(kept) == 1 and re.fullmatch(r"\d{8}T\d{6}Z\.jsonl", kept[0].name)
+    assert kept[0].read_bytes() == text.encode("utf-8")  # every line, byte for byte
+    st = world.status()
+    assert st["cause"] == cause and st["exit_code"] == 0 and st["stream"] == kept[0].name
+    assert st["start_ref"] == world.origin_main() and st["sprint"] == SP and st["landed_limit"] is None
+
+
+def test_autopilot_runner_stream_lines_are_written_as_they_arrive(world, tmp_path):
+    """The first line is in the file while the child still runs (it pauses after it), not when it exits."""
+    world.stream(stream(), pause=1.5)
+    times = []
+
+    class Keep:
+        def write(self, line):
+            times.append(time.monotonic())
+
+        def flush(self):
+            pass
+
+    with open(tmp_path / "err", "w", encoding="utf-8") as err:
+        autopilot.supervise(autopilot.CLAUDE, tmp_path, Keep(), err)
+    assert len(times) == 5 and times[1] - times[0] >= 1.0 and times[-1] - times[1] < 1.0
+
+
+@pytest.mark.parametrize("hang_after, ignore_term", [("compact_boundary", False),
+                                                       pytest.param("compact_boundary", True, marks=pytest.mark.skipif(
+                                                           os.name != "posix", reason="a child ignoring SIGTERM is POSIX"))])
+def test_autopilot_runner_ends_the_child_at_the_first_compact_boundary(world, hang_after, ignore_term):
+    text = stream(boundary=True)
+    world.stream(text, hang_after=hang_after, **({"ignore_term": 1} if ignore_term else {}))
+    world.mp.setattr(autopilot, "GRACE_S", 0.5)
+    t = time.monotonic()
+    code = world.start(landed=5)
+    assert time.monotonic() - t < 30  # the child sleeps 60 s after the boundary: it was ended, not awaited
+    kept = world.streams()[0].read_text(encoding="utf-8")
+    assert '"compact_boundary"' in kept and "after" not in kept and '"type": "result"' not in kept
+    st = world.status()
+    assert code == 0 and st["cause"] == "compaction" and st["landed_limit"] == 5 and st["exit_code"] != 0
+
+
+def test_autopilot_runner_a_boundary_named_in_text_does_not_end_the_run(world):
+    s = ev(type="system", subtype="init", session_id="s1")
+    s += ev(type="assistant", message={"content": [{"type": "text", "text": '{"type": "system", "subtype": "compact_boundary"}'}]})
+    s += ev(type="system", subtype="status", status="compacting")  # a system event that is no boundary
+    s += "not json at all, with compact_boundary in it\n"
+    s += result("fine\nsprint-runner: sprint-done")
+    world.stream(s)
+    assert world.start() == 0
+    assert world.status()["cause"] == "sprint-done" and world.streams()[0].read_bytes() == s.encode("utf-8")
+
+
+def test_autopilot_runner_the_first_boundary_wins_over_a_result_before_it(world):
+    s = stream() + ev(type="system", subtype="compact_boundary", session_id="s1")
+    world.stream(s)
+    world.start()
+    assert world.status()["cause"] == "compaction"
+
+
+@pytest.mark.parametrize("text, exit_code, why", [
+    (stream(final="all fine"), 0, "names no cause"),  # a result with no sprint-runner line
+    (stream(final="sprint-runner: sprint-done", ), 3, "sprint-done"),  # a non-zero exit is an error whatever it says
+    (stream(final=None), 0, "no result event"),
+    (stream(final="sprint-runner: made-up"), 0, "names no cause"),
+    (stream(final="note: sprint-runner: sprint-done and more"), 0, "names no cause"),  # the marker is a whole line
+])
+def test_autopilot_runner_an_error_when_the_result_and_exit_code_name_no_cause(world, text, exit_code, why):
+    world.stream(text, exit=exit_code)
+    assert world.start() == 1
+    st = world.status()
+    assert st["cause"] == "error" and st["exit_code"] == exit_code
+    if exit_code == 0:
+        assert why in st["detail"]
+
+
+def test_autopilot_runner_an_error_result_is_an_error_with_its_text(world):
+    world.stream(stream(tail=False) + ev(type="result", subtype="error_max_turns", is_error=True, result="Max turns reached\nsprint-runner: sprint-done"),
+                 exit=1)
+    assert world.start() == 1
+    assert world.status()["cause"] == "error" and "Max turns" in world.status()["detail"]
+
+
+def test_autopilot_runner_a_claude_that_cannot_start_is_an_error_with_a_status(world, monkeypatch):
+    monkeypatch.setattr(autopilot, "CLAUDE", [str(world.tmp / "no-such-claude")])
+    assert world.start() == 1
+    st = world.status()
+    assert st["cause"] == "error" and "cannot start" in st["detail"] and st["ended"]
+
+
+def test_autopilot_runner_status_is_running_until_the_child_ends(world, monkeypatch):
+    seen = {}
+
+    def peek(argv, cwd, keep, stderr):
+        seen.update(world.status())
+        return {"compaction": False, "result": None, "exit_code": 0}
+
+    monkeypatch.setattr(autopilot, "supervise", peek)
+    world.start()
+    assert seen["cause"] == "running" and seen["start_ref"] == world.origin_main() and seen["ended"] is None
+
+
+def test_autopilot_runner_two_runs_in_one_second_keep_two_streams(world, monkeypatch):
+    monkeypatch.setattr(autopilot, "now", lambda: __import__("datetime").datetime(2026, 10, 2, 8, 30, 15,
+                                                                                  tzinfo=__import__("datetime").timezone.utc))
+    world.stream(stream())
+    world.start()
+    world.start()
+    assert [p.name for p in world.streams()] == ["20261002T083015Z-2.jsonl", "20261002T083015Z.jsonl"]
+    assert world.status()["stream"] == "20261002T083015Z-2.jsonl"
+
+
+# ---------------------------------------------------------------- the worktree
+
+def test_autopilot_runner_worktree_is_made_at_origin_main_and_fast_forwarded_when_clean(world):
+    world.stream(stream())
+    first = world.origin_main()
+    world.start()
+    wt = Repo(world.wt(), git_env())
+    assert wt.rev("HEAD") == first and wt.git("branch", "--show-current").strip() == "orch/" + SP
+    world.repo.write("kb/x.md", "x\n")
+    world.commit("on main")
+    world.repo.git("push", "origin", "main")
+    second = world.repo.rev("HEAD")
+    world.start()  # reused, fast-forwarded to the new origin/main
+    assert wt.rev("HEAD") == second and world.status()["start_ref"] == second
+
+
+def test_autopilot_runner_worktree_ahead_of_origin_main_is_kept(world):
+    world.stream(stream())
+    world.start()
+    wt = Repo(world.wt(), git_env())
+    wt.git("commit", "-q", "--allow-empty", "-m", "claim")
+    ahead = wt.rev("HEAD")
+    world.start()
+    assert wt.rev("HEAD") == ahead and world.status()["start_ref"] == ahead
+
+
+def test_autopilot_runner_dirty_worktree_is_refused_naming_its_files(world, capsys, monkeypatch):
+    world.stream(stream())
+    world.start()
+    before = world.status()
+    seen = world.tmp / "seen.json"
+    seen.unlink()
+    (world.wt() / "kb" / "_self" / "backlog" / f"{T1}.json").write_text("{}\n", encoding="utf-8")  # modified
+    (world.wt() / "stray.txt").write_text("x\n", encoding="utf-8")  # untracked
+    monkeypatch.setattr(autopilot, "ROOT", world.root)
+    assert autopilot.main(["runner", "start", SP]) == 2
+    err = capsys.readouterr().err
+    assert f"{T1}.json" in err and "stray.txt" in err and "uncommitted" in err
+    assert not seen.exists() and world.status() == before  # no claude run, no status written
+
+
+def test_autopilot_runner_diverged_worktree_is_refused(world, capsys, monkeypatch):
+    world.stream(stream())
+    world.start()
+    Repo(world.wt(), git_env()).git("commit", "-q", "--allow-empty", "-m", "local")
+    world.repo.write("kb/y.md", "y\n")
+    world.commit("remote")
+    world.repo.git("push", "origin", "main")
+    monkeypatch.setattr(autopilot, "ROOT", world.root)
+    assert autopilot.main(["runner", "start", SP]) == 2
+    assert "by hand" in capsys.readouterr().err
+
+
+def test_autopilot_runner_without_the_settings_file_is_refused(world, capsys, monkeypatch):
+    world.repo.git("rm", "-q", ".claude/settings.json")
+    world.commit("no settings")
+    world.repo.git("push", "origin", "main")
+    monkeypatch.setattr(autopilot, "ROOT", world.root)
+    assert autopilot.main(["runner", "start", SP]) == 2
+    assert "settings.json" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("args", [["SP-short"], ["../x"], ["TK-abcdefgh"], ["SP-ABCDEFGH"], [""], [SP, "--landed", "0"],
+                                  [SP, "--landed", "x"]])
+def test_autopilot_runner_a_bad_argument_is_a_usage_error(args):
+    with pytest.raises(SystemExit) as e:
+        autopilot.main(["runner", "start", *args])
+    assert e.value.code == 2
+
+
+# ---------------------------------------------------------------- runner-status
+
+def assert_short(text):
+    assert len(text) < autopilot.STATUS_MAX, f"{len(text)} characters"
+
+
+def done(world, iid):
+    wt = Repo(world.wt(), git_env())
+    wt.git("commit", "-q", "--allow-empty", "-m", f'chore(backlog): done {iid} "t"\n\nKB-Work: {iid}')
+
+
+def test_autopilot_runner_status_reports_landed_items_gates_bugs_and_the_cause(world, capsys, monkeypatch):
+    world.stream(stream(final="x\nsprint-runner: landed-limit"))
+    world.start(landed=2)
+    wt = Repo(world.wt(), git_env())
+    done(world, T1)
+    done(world, T2)
+    done(world, OUTSIDE)  # not an item of the sprint
+    wt.git("commit", "-q", "--allow-empty", "-m", f"feat: work on {T3}\n\nKB-Work: {T3}")  # no done commit
+    wt.write("kb/_self/backlog/" + T3 + ".json", json.dumps({"id": T3, "kind": "task", "title": "t", "status": "doing",
+             "parent": STORY, "gates": [{"id": "name", "kind": "provisional", "question": "q", "answer": "recommend",
+                                          "by": "agent"}, {"id": "ask", "kind": "blocking", "question": "q"}]}, indent=2) + "\n")
+    wt.write("kb/_self/backlog/BG-eeeeeeee.json", json.dumps({"id": "BG-eeeeeeee", "kind": "bug", "title": "b",
+                                                              "status": "todo"}) + "\n")
+    wt.write("kb/_self/backlog/ST-ffffffff.json", json.dumps({"id": "ST-ffffffff", "kind": "story", "title": "s"}) + "\n")
+    wt.git("add", "-A")
+    wt.git("commit", "-q", "-m", "gates and a bug")
+    monkeypatch.setattr(autopilot, "ROOT", world.root)
+    assert autopilot.main(["runner-status", SP]) == 0
+    out = capsys.readouterr().out
+    assert_short(out)
+    assert f"{SP} exit cause landed-limit" in out
+    assert f"landed 2: {T1}, {T2}" in out and OUTSIDE not in out and T3 not in out.split("gates")[0]
+    assert f"gates 2: {T3}/name=recommend, {T3}/ask=open" in out
+    assert "bugs 1: BG-eeeeeeee" in out and "ST-ffffffff" not in out
+    assert world.status()["start_ref"][:10] in out
+
+
+def test_autopilot_runner_status_without_a_run_exits_1(world, capsys, monkeypatch):
+    monkeypatch.setattr(autopilot, "ROOT", world.root)
+    assert autopilot.main(["runner-status", SP]) == 1
+    assert "no run recorded" in capsys.readouterr().out
+
+
+def test_autopilot_runner_status_of_a_run_in_progress_says_running(world, monkeypatch):
+    monkeypatch.setattr(autopilot, "supervise", lambda *a: {"compaction": False, "result": None, "exit_code": 0})
+    world.start()
+    st = world.status()
+    st.update(cause="running", ended=None)
+    (autopilot.cache_dir(world.root, SP) / "status.json").write_text(json.dumps(st), encoding="utf-8")
+    assert "exit cause running" in autopilot.status_text(SP, world.root)
+
+
+@pytest.mark.parametrize("n", [0, 1, 7, 18, 19, 60, 140])
+def test_autopilot_runner_status_stays_under_the_limit_whatever_the_run_did(world, n):
+    """n landed items, n open gates and n bugs, with a long detail: the report is cut by section, never past the cap."""
+    world.stream(stream(final="x" * 400), exit=1)
+    world.start()
+    wt = Repo(world.wt(), git_env())
+    ids = [f"TK-{chr(97 + i // 26 % 26)}{chr(97 + i % 26)}{'q' * 6}" for i in range(n)]
+    for iid in ids:
+        wt.write(f"kb/_self/backlog/{iid}.json", json.dumps({"id": iid, "kind": "task", "title": "t", "status": "doing",
+                 "parent": STORY, "gates": [{"id": "g", "kind": "blocking", "question": "q"}]}) + "\n")
+    for i in range(n):
+        wt.write(f"kb/_self/backlog/BG-{chr(97 + i // 26 % 26)}{chr(97 + i % 26)}{'w' * 6}.json",
+                 json.dumps({"id": f"BG-{chr(97 + i // 26 % 26)}{chr(97 + i % 26)}{'w' * 6}", "kind": "bug", "title": "b"}) + "\n")
+    wt.git("add", "-A")
+    wt.git("commit", "-q", "--allow-empty", "-m", "items")
+    for iid in ids:
+        done(world, iid)
+    text = autopilot.status_text(SP, world.root)
+    assert_short(text)
+    assert f"landed {n}" in text and f"gates {n}" in text and f"bugs {n}" in text
+    assert text.splitlines()[0].startswith(f"{SP} exit cause error")  # the 400-character error text is cut
+
+
+@pytest.mark.parametrize("n", range(0, 70))
+@pytest.mark.parametrize("width", [4, 11, 23])
+def test_autopilot_runner_fit_never_passes_its_budget_and_counts_every_item(n, width):
+    items = [("x" * width + str(i))[:width + 1] for i in range(n)]
+    for budget in (60, 160, 240):
+        line = autopilot.fit("things", items, budget)
+        assert line.startswith(f"things {n}") and (len(line) <= budget or n == 0 or len(line) <= len(f"things {n}: +{n} more"))
+        shown = line.split(": ", 1)[1] if ": " in line else ""
+        assert len(set(re.findall(r"x+\d+", shown))) <= n
+
+
+def test_autopilot_runner_status_that_prints_the_raw_stream_fails_the_length_test(world):
+    world.stream(stream(final="y" * 3000))
+    world.start()
+    raw = world.streams()[0].read_text(encoding="utf-8")
+
+    def planted(sprint, root):  # a runner-status that dumps the stream instead of reporting it
+        return raw
+
+    assert_short(autopilot.status_text(SP, world.root))
+    with pytest.raises(AssertionError):
+        assert_short(planted(SP, world.root))
+    assert len(raw) > autopilot.STATUS_MAX
+
+
+def test_autopilot_runner_status_reads_its_run_from_the_status_file_not_the_stream(world, monkeypatch):
+    world.stream(stream(final="x\nsprint-runner: blocked"))
+    world.start()
+    world.streams()[0].write_text("", encoding="utf-8")  # the stream is gone: the report still has its cause
+    assert "exit cause blocked" in autopilot.status_text(SP, world.root)
+    monkeypatch.setattr(bl_base, "git", lambda *a, **k: (_ for _ in ()).throw(bl_base.Refused("boom")))
+    assert "git: boom" in autopilot.status_text(SP, world.root)  # an unreadable repository degrades, never raises

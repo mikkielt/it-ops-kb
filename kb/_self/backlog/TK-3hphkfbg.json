@@ -22,5 +22,69 @@
     "kb/_self/tools.md",
     "kb/_self/map.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which branch does the runner's worktree .claude/worktrees/runner-SP use?",
+      "options": [
+        "orch/SP",
+        "runner/SP"
+      ],
+      "recommendation": "orch/SP",
+      "answer": "orch/SP",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the runner find the plugins to pass with --plugin-dir?",
+      "options": [
+        "the project itself when .claude-plugin/plugin.json exists, then each directory under .claude-plugin/ with its own .claude-plugin/plugin.json",
+        "a fixed list in autopilot.py",
+        "only the directories under .claude-plugin/"
+      ],
+      "recommendation": "the project itself when .claude-plugin/plugin.json exists, then each directory under .claude-plugin/ with its own .claude-plugin/plugin.json",
+      "answer": "the project itself when .claude-plugin/plugin.json exists, then each directory under .claude-plugin/ with its own .claude-plugin/plugin.json",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does the runner tell landed-limit, sprint-done and blocked apart in the run's final result?",
+      "options": [
+        "the last line of the result text is 'sprint-runner: <cause>' (the skill's headless path writes it; a result without it is error)",
+        "infer from backlog state after the run (landed count, next --sprint)"
+      ],
+      "recommendation": "the last line of the result text is 'sprint-runner: <cause>' (the skill's headless path writes it; a result without it is error)",
+      "answer": "the last line of the result text is 'sprint-runner: <cause>' (the skill's headless path writes it; a result without it is error)",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "What UTC stamp names a run's stream file?",
+      "options": [
+        "YYYYMMDDTHHMMSSZ (a second run in the same second takes -2)",
+        "ISO 8601 with colons"
+      ],
+      "recommendation": "YYYYMMDDTHHMMSSZ (a second run in the same second takes -2)",
+      "answer": "YYYYMMDDTHHMMSSZ (a second run in the same second takes -2)",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "A clean runner worktree already ahead of origin/main (an earlier run's unpushed commits): reuse it as it is, or refuse?",
+      "options": [
+        "reuse it as it is (a relaunched runner continues from there); only a diverged one is refused",
+        "refuse any worktree not at origin/main"
+      ],
+      "recommendation": "reuse it as it is (a relaunched runner continues from there); only a diverged one is refused",
+      "answer": "reuse it as it is (a relaunched runner continues from there); only a diverged one is refused",
+      "by": "agent"
+    }
+  ],
+  "notes": "Allow rules a headless \"/kb-sprint run\" needs that .claude/settings.json (permissions.allow) lacks, for the operator to add or refuse; none was added. The run passes no permission flag, so a command with no rule is refused. Already allowed: every python3 _tools/backlog.py command (claim, land, done, horizon, next, held, gate, answer), tests.py, stress_test.py, rag.py, check.py, selfdoc.py section, lint.py. Missing, as Bash rules (the PowerShell mirror of each is PowerShell(<same text>) for a Windows host): \"Bash(python3 _tools/kbgit.py *)\" (the claim sync kbgit.py sync --push, workers: kbgit.py fix --check, check-trailers); \"Bash(python3 _tools/selfdoc.py stale *)\" (workers); \"Bash(git fetch *)\"; \"Bash(git status *)\"; \"Bash(git log *)\"; \"Bash(git show *)\"; \"Bash(git diff *)\"; \"Bash(git add *)\"; \"Bash(git commit *)\"; \"Bash(git rebase *)\"; \"Bash(git merge-base *)\"; \"Bash(git checkout *)\"; \"Bash(git branch *)\"; \"Bash(git cherry *)\"; \"Bash(git worktree *)\"; \"Bash(git -C *)\"; \"Bash(glab mr view *)\"; \"Bash(glab mr merge *)\" (the code/<id> merge request, SKILL.md run step 4). Missing, as tool rules: \"Agent\" (the kb-worker subagents), \"Edit\" and \"Write\" (subagents change files in their worktrees), \"SendMessage\" (a subagent sent back to fix a gate or a refused done). For the manager session, not the runner: \"Bash(python3 _tools/autopilot.py *)\" (runner start, runner-status). Whether the harness already allows the read-only git commands (status, log, show, diff, merge-base, cherry) by default is not confirmed here; they are listed so a headless run does not depend on it.",
   "claimed_by": "mac-first-w1"
 }
