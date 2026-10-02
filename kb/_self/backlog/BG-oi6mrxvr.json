@@ -21,5 +21,19 @@
     ".claude/settings.json",
     "kb/_self/maintaining.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Is the writing command kbid.py add allowed by a Bash and a PowerShell rule in .claude/settings.json?",
+      "options": [
+        "allow kbid.py add",
+        "do not allow it (a headless run asks)"
+      ],
+      "recommendation": "allow kbid.py add",
+      "answer": "allow kbid.py add",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "mac-sixth"
 }
