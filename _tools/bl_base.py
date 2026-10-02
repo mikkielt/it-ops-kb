@@ -29,7 +29,7 @@ PARENTS = {"epic": (), "story": ("epic",), "bug": ("epic",), "task": ("story", "
 IN_SPRINT = ("story", "bug")  # the kinds a sprint commits to; their tasks and subtasks come with them
 NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
-ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "priority", "rank", "severity", "goal",
+ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "goal_research", "priority", "rank", "severity", "goal",
          "repro", "repro_reason", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "knowledge",
          "links", "notes", "recurs", "claimed_by", "evidence")
 FIELDS = set(ORDER)
@@ -53,6 +53,7 @@ STOP_WORDS = frozenset("""a an and are as at be by for from has have in into is 
     then there these this those to was were what when which with without""".split())
 RECURRING_MIN = 2  # start: an open P1 item with this many sprint ids in its recurs list belongs in the sprint
 REVIEW_CHECKS = [{"run": ["python3", "_tools/backlog.py", "check"]}, {"run": ["python3", "_tools/tests.py"]}]
+RESEARCH_CHECKS = [{"run": ["python3", "_tools/check.py"]}]  # the goal research story's: the kb it wrote passes the checks
 
 
 class Refused(Exception):
@@ -334,6 +335,11 @@ def research_touches(touches):
     (KB_CONTENT_RE). kbgit.py check-trailers reads an item's own touches with it."""
     return bool(touches) and all(isinstance(t, str) and KB_CONTENT_RE.fullmatch(t) and ".." not in t.split("/")
                                  for t in touches)
+
+
+def research_story(bl, sid):
+    """The id of sprint SID's goal research story (the story `new sprint` files with `goal_research: true`), or None."""
+    return next((i for i in bl.sprint_items(sid) if bl.items[i].get("goal_research")), None)
 
 
 def research_in_planned(bl, iid):

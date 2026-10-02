@@ -19,7 +19,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Whenever you name an item (in chat, a question, a subagent brief, a commit), give its id and its title together, never a bare id.
 
 ## plan "<goal>"
-1. Run `python3 _tools/backlog.py new sprint --title T --goal G`. It creates the sprint, its blocking `start` gate and its review story.
+1. Run `python3 _tools/backlog.py new sprint --title T --goal G`. It creates the sprint, its blocking `start` gate, its review story and its goal research story (a research item: claim and work it first, with the kb tools and the live docs for gaps, writing kb facts and gap entries through the kb skills, then `done`).
 2. Check what covers the goal with `python3 _tools/backlog.py find WORDS`, then pick the stories and bugs with `python3 _tools/backlog.py tree --open` and `python3 _tools/backlog.py list --kind bug`: every `S1` and `P1`, then by priority and rank, as far as the goal needs. Put each in the sprint with `python3 _tools/backlog.py set ID --sprint SP` (every item edit goes through `set`, never a hand edit of its JSON; the planning commit names in `KB-Work` only the items whose files it changes). Break stories into tasks as `/kb-backlog` does, with `touches` and `checks` (`new task --parent ID --touch G --check CMD`, later `set ID --touch G --add`); a task that changes code carries the `kb/_self/` docs `kb/_self/map.csv` maps to it in its own `touches`, not a later docs task. A change to how agents read docs or call a tool puts every consumer of that route (skills, `.claude/agents/` definitions, `AGENTS.md`, headless runs such as `_tools/ql_research.py`) in some item's `touches`.
    Paths other sessions hold: after `git fetch`, `python3 _tools/backlog.py held --ref origin/main` (each claimed item's touches, claimer and sprint), never messages to those sessions.
 3. Map the goal's clauses to items. Split the goal into its clauses and name, for each, the committed item that carries it (its `goal` or `touches`). A clause no item carries is either already met in the tree, so drop it from the goal and name the earlier item that delivered it (`git log --grep 'KB-Work: ID'`), or work still to plan: add an item for it. Never leave a clause with no item: `close --summary` could not name one for it.
@@ -31,6 +31,8 @@ Whenever you name an item (in chat, a question, a subagent brief, a commit), giv
 Only on the operator's approval in this conversation:
 1. `python3 _tools/backlog.py answer SP start --answer approve --by operator`.
 2. `python3 _tools/backlog.py start SP`. It prints `warning:` lines for a sprint item whose mapped docs sit outside its `touches` (an item planned before `check` warned of it): before any claim, ask the operator to move each named doc into that item's `touches` (`set ID --touch G --add`), and rerun `backlog.py check`. It refuses while an answered gate with a host check has no passing `host-check` record: run `backlog.py host-check SP` first.
+
+A start gate answered `--by autopilot` runs `start` only once that research story is done and every committed story and bug has `knowledge` asks or refs that read sufficient or partial: `start` refuses, naming each cause, otherwise.
 
 Never answer the start gate yourself.
 

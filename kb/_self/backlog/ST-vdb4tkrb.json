@@ -27,7 +27,9 @@
     "kb/_self/tools.md",
     "kb/_self/maintaining.md",
     "AGENTS.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_backlog_research.py",
+    "_tools/test_bl_land.py"
   ],
   "depends_on": [
     "ST-6sujnopr"

@@ -148,6 +148,8 @@ def sprint(repo):
     ep = item(repo, "Epic")["id"]
     b(repo, "new", "sprint", "--title", "Sprint", "--goal", "ship b")
     sp = item(repo, "Sprint")["id"]
+    rs = item(repo, "Research sprint goal: Sprint")["id"]
+    edit(repo, rs, status="dropped")  # these tests plan no research
     b(repo, "new", "story", "--title", "Story", "--parent", ep, "--sprint", sp, "--goal", "b exists",
       "--check", argstr(is_file("src/b.txt")))
     st = item(repo, "Story")["id"]
@@ -159,5 +161,5 @@ def sprint(repo):
     code, out = b(repo, "start", sp)
     assert code == 0, out
     return {"repo": repo, "ep": ep, "sp": sp, "st": st, "tk": item(repo, "Task")["id"], "bg": item(repo, "Bug")["id"],
-            "rv": item(repo, "Review sprint: Sprint")["id"]}
+            "rv": item(repo, "Review sprint: Sprint")["id"], "rs": rs}
 
