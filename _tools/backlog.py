@@ -1587,6 +1587,7 @@ bl_cli.register("red-pipeline", cmd_red_pipeline, args_red_pipeline)
 bl_cli.register("intake", cmd_intake, args_intake)
 import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
+import bl_selfcheck  # noqa: F401 - registers `selfcheck`
 
 
 def main(argv=None):
