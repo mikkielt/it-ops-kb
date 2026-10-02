@@ -32,7 +32,8 @@
     "_tools/bl_base.py",
     "_tools/bl_cli.py",
     "_tools/bl_testkit.py",
-    "_tools/test_kb_leaks.py"
+    "_tools/test_kb_leaks.py",
+    "_tools/test_ql_store.py"
   ],
   "depends_on": [
     "TK-f5swu7tm"
