@@ -6,7 +6,7 @@ keeps no names), an internal root `team`, and kb/_self with its central register
 runs as a process; every success is followed by check.py over the whole repository, and every refusal plants the
 failure it names and finds the file as it was.
 """
-import base64, hashlib, json, os, shutil, subprocess, sys
+import base64, hashlib, json, os, re, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
@@ -1250,3 +1250,53 @@ def test_autopilot_ratify_digest_rewrites_the_default_file(repo):
     code, out = repo.decide("digest")
     assert code == 0, out
     assert "ST-aaaaaaaa" in (repo.path / "kb" / "_self" / "reports" / "autopilot-digest.md").read_text(encoding="utf-8")
+
+
+def disagreement_lines(repo):
+    text = read_digest(repo)[0]
+    return [ln for ln in text.splitlines() if ln.startswith("- Reverted") or ln.startswith("- Contradicting")], text
+
+
+def test_autopilot_rot_metrics_digest_counts_reverts_and_contradictions_exactly(repo):
+    first = autopilot_decision(repo, "ST-aaaaaaaa", "yes, delete them", "2026-09-01")
+    second = autopilot_decision(repo, "ST-bbbbbbbb", "no, keep them", "2026-09-02")  # same gate id and class, another answer
+    other = autopilot_decision(repo, "ST-cccccccc", "use the short name", "2026-09-03", "Which name does it take?", ())  # another class
+    own = propose(repo, "_self")  # a decision of the operator's is none of the autopilot's
+    assert repo.decide("confirm", own, "--root", "_self", "--by", "operator", "--maker", "operator")[0] == 0
+    lines, _ = disagreement_lines(repo)
+    assert lines == ["- Reverted by the operator: 0 of 3 (0%) autopilot decisions",
+                     "- Contradicting an earlier decision of the same gate and class: 1 of 3 (33%) autopilot decisions"], lines
+    assert repo.decide("revert", first, "--by", "operator", "--why", "wrong", "--date", "2026-10-06")[0] == 0
+    assert repo.decide("ratify", other, "--by", "operator", "--date", "2026-10-07")[0] == 0  # ratified: still one the autopilot made
+    lines, text = disagreement_lines(repo)
+    assert lines == ["- Reverted by the operator: 1 of 3 (33%) autopilot decisions",
+                     "- Contradicting an earlier decision of the same gate and class: 1 of 3 (33%) autopilot decisions"], lines
+    assert "1 unratified" not in text and second in text  # the section sits above the list, which keeps its entries
+
+
+def counts(repo):
+    """(made, reverted, contradicting) as the digest's two lines print them."""
+    lines, _ = disagreement_lines(repo)
+    got = [tuple(map(int, re.search(r"(\d+) of (\d+)", ln).groups())) for ln in lines]
+    assert got[0][1] == got[1][1]
+    return got[1][1], got[0][0], got[1][0]
+
+
+def test_autopilot_rot_metrics_contradiction_rule(repo):
+    """A later decision counts once when any earlier one of its gate id and class has another answer; the order is the day
+    made; whitespace and case of an answer do not make another answer; another class never contradicts."""
+    autopilot_decision(repo, "ST-aaaaaaaa", "Yes, delete them", "2026-09-01")
+    autopilot_decision(repo, "ST-bbbbbbbb", "yes,   DELETE them", "2026-09-02")
+    assert counts(repo) == (2, 0, 0), "same answer apart from case and spacing"
+    autopilot_decision(repo, "ST-cccccccc", "no", "2026-09-03")
+    autopilot_decision(repo, "ST-dddddddd", "no", "2026-09-04")  # differs from the first two: once, not twice
+    autopilot_decision(repo, "ST-eeeeeeee", "maybe", "2026-09-05", "Which name does it take?", ())
+    assert counts(repo) == (5, 0, 2)
+    autopilot_decision(repo, "ST-ffffffff", "yes", "2026-08-01")  # made first: it is the earlier one the rest differ from
+    assert counts(repo) == (6, 0, 4)
+
+
+def test_autopilot_rot_metrics_empty_ledger_prints_zero_of_zero(repo):
+    lines, text = disagreement_lines(repo)
+    assert lines == ["- Reverted by the operator: 0 of 0 autopilot decisions",
+                     "- Contradicting an earlier decision of the same gate and class: 0 of 0 autopilot decisions"], text

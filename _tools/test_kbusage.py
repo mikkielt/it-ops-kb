@@ -728,7 +728,7 @@ class TestTree:
         assert "git status" in full and "python3 _tools/rag.py pack" in full and "more rows" not in full
         out = run_tree(main, "--format", "json").stdout
         j = json.loads(out)
-        assert sorted(j) == ["check", "rows", "totals", "usage"]
+        assert sorted(j) == ["check", "rot", "rows", "totals", "usage"]
         assert all(sorted(r) == ["calls", "chars", "errors", "group", "key"] for r in j["rows"])
         assert out == run_tree(main, "--format", "json").stdout
         for text in (p.stdout, full, out):
@@ -744,3 +744,97 @@ class TestTree:
         p = subprocess.run([sys.executable, str(Path(TOOLS) / "kbusage.py"), str(SESSION), "--prompt", "p2"],
                            capture_output=True, text=True, encoding="utf-8", check=True)
         assert json.loads(p.stdout) == {"prompt": 1, **P2}
+
+
+def reading(rid, path, out=5):
+    """An assistant record of one request (in 1, cache write 100, cache read 50, `out` output) that reads PATH."""
+    r = tool_use(rid, "u" + rid, "Read", {"file_path": path}, cwd="/home/jan.kowalski/proj")
+    r["message"]["usage"]["output_tokens"] = out
+    return r
+
+
+def boundary(pre):
+    return {"type": "system", "subtype": "compact_boundary", "compactMetadata": {"trigger": "auto", "preTokens": pre}}
+
+
+def prompt(pid):
+    return {"type": "user", "promptId": pid, "message": {"content": "PRIVATE-TEXT"}}
+
+
+def rot_session(tmp_path):
+    """Three manager ticks of known numbers: t1 one compaction (150000) and a.md read three times, b.md once; t2 none
+    and one read, its one request written twice (the larger output counts); t3 two compactions (100, 200) and a
+    subagent of 9 tokens. Every request is 156 tokens with output 5."""
+    main = write_jsonl(tmp_path / "m.jsonl", [
+        prompt("t1"), reading("r1", "/home/jan.kowalski/proj/a.md"), reading("r2", "/home/jan.kowalski/proj/a.md"),
+        reading("r2b", "/home/jan.kowalski/proj/b.md"), boundary(150000),
+        reading("r3", "/home/jan.kowalski/proj/.claude/worktrees/w1/a.md"),  # a worktree's path is the project's
+        prompt("t2"), reading("r4", "/home/jan.kowalski/proj/c.md"), reading("r4", "/home/jan.kowalski/proj/c.md", out=9),
+        prompt("t3"), boundary(100), reading("r5", "/home/jan.kowalski/proj/a.md"), boundary(200),
+        {"type": "assistant", "isSidechain": True, "requestId": "side", "message": {"usage": {"output_tokens": 999}}}])
+    d = tmp_path / "m" / "subagents"
+    write_jsonl(d / "agent-s.jsonl", [
+        {"type": "user", "promptId": "t3", "isSidechain": True, "message": {"content": "x"}},
+        {"type": "assistant", "requestId": "s1", "isSidechain": True, "message": {
+            "model": "claude-haiku-4-5", "usage": {"input_tokens": 2, "output_tokens": 7}, "content": []}}])
+    return main
+
+
+def event(**kw):
+    return kw
+
+
+def stream_run(*extra):
+    """A runner's stream of known numbers, 156 tokens a message: m1 (its event written twice, the larger output counts)
+    and m2 both read a.md; a subagent's (parent tool use T) m3 reads a.md too (another agent: not repeated), m4 and m5
+    read b.md (repeated); then EXTRA, a boundary in the stream's spelling."""
+    def msg(mid, path, out=5, parent=None):
+        return event(type="assistant", parent_tool_use_id=parent, message={
+            "id": mid, "model": "claude-opus-5-5", "usage": {"input_tokens": 1, "cache_creation_input_tokens": 100,
+                                                            "cache_read_input_tokens": 50, "output_tokens": out},
+            "content": [{"type": "tool_use", "id": "u" + mid, "name": "Read", "input": {"file_path": path}}]})
+    return [event(type="system", subtype="init"), msg("m1", "/w/a.md", 1), msg("m1", "/w/a.md"), msg("m2", "/w/a.md"),
+            msg("m3", "/w/a.md", parent="T"), msg("m4", "/w/b.md", parent="T"), msg("m5", "/w/b.md", parent="T"), *extra]
+
+
+def test_autopilot_rot_metrics_per_tick_compactions_tokens_and_repeated_reads(tmp_path):
+    rows = kbusage.tick_rows(rot_session(tmp_path))
+    assert [(r["compactions"], r["pre_tokens"], r["tokens"], r["requests"], r["reads"], r["repeated_reads"],
+             r["repeated_files"]) for r in rows] == [
+        (1, [150000], 4 * 156, 4, 4, 2, 1),   # r1, r2, r2b, r3: a.md three times (one worktree path), b.md once
+        (0, [], 160, 1, 1, 0, 0),             # no compaction: 0, not blank; the request counted once with output 9
+        (2, [100, 200], 156 + 9, 2, 1, 0, 0)]  # the main sidechain record is left out; the subagent's request counts
+
+
+def test_autopilot_rot_metrics_per_runner_numbers_and_agents(tmp_path):
+    base = tmp_path / "autopilot"
+    boundary_ev = event(type="system", subtype="compact_boundary", compact_metadata={"trigger": "auto", "pre_tokens": 168000})
+    write_jsonl(base / "SP-aaaaaaaa" / "20261001T000000Z.jsonl", stream_run(boundary_ev))
+    write_jsonl(base / "SP-bbbbbbbb" / "20261002T000000Z.jsonl", stream_run()[:1])
+    (base / "SP-aaaaaaaa" / "status.json").write_text("{}", encoding="utf-8", newline="\n")
+    got = kbusage.rot_rows([], base)["runners"]
+    assert [(r["sprint"], r["run"]) for r in got] == [("SP-aaaaaaaa", "20261001T000000Z"), ("SP-bbbbbbbb", "20261002T000000Z")]
+    a, b = got
+    assert (a["compactions"], a["pre_tokens"], a["tokens"], a["requests"], a["reads"], a["repeated_reads"], a["repeated_files"]) == (
+        1, [168000], 5 * 156, 5, 5, 2, 2)  # main: a.md twice (m1's repeated event is one call); T: a.md once, b.md twice
+    assert (b["compactions"], b["pre_tokens"], b["tokens"], b["reads"]) == (0, [], 0, 0)
+
+
+def test_autopilot_rot_metrics_tree_command_prints_both_tables(tmp_path):
+    main = rot_session(tmp_path)
+    base = tmp_path / "autopilot"
+    write_jsonl(base / "SP-aaaaaaaa" / "20261001T000000Z.jsonl", stream_run(
+        event(type="system", subtype="compact_boundary", compact_metadata={"pre_tokens": 168000})))
+    write_jsonl(base / "SP-bbbbbbbb" / "20261002T000000Z.jsonl", stream_run()[:1])
+    p = run_tree(main, "--runners", str(base))
+    assert p.returncode in (0, 1), p.stderr
+    lines = p.stdout.splitlines()
+    assert any(ln.startswith("by tick:") for ln in lines) and any(ln.startswith("by runner:") for ln in lines)
+    tick_rows = [ln for ln in lines if ln.endswith(("  t1.1", "  t1.2", "  t1.3"))]
+    assert [ln.split()[:2] for ln in tick_rows] == [["1", "150000"], ["0", "0"], ["2", "100,200"]]
+    runner_rows = [ln for ln in lines if "SP-" in ln]
+    assert [ln.split()[:2] for ln in runner_rows] == [["1", "168000"], ["0", "0"]]
+    rep = json.loads(run_tree(main, "--runners", str(base), "--format", "json").stdout)
+    assert [r["compactions"] for r in rep["rot"]["ticks"]] == [1, 0, 2] and len(rep["rot"]["runners"]) == 2
+    assert run_tree(main, "--runners", str(tmp_path / "nowhere")).returncode == 2
+    assert "by runner" not in run_tree(main).stdout  # without --runners the transcript's ticks only

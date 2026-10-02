@@ -38,7 +38,9 @@
                                          refused without `--by operator`
   kbdecide.py digest [--out PATH]        write kb/_self/reports/autopilot-digest.md: the autopilot's decisions not yet
                                          ratified, the restricted classes (secrets, push, querylog, agents-rule, delete)
-                                         first, each group oldest first, with item, gate, answer and `review_by`
+                                         first, each group oldest first, with item, gate, answer and `review_by`;
+                                         above them, the share of every autopilot decision the operator reverted and
+                                         the number contradicting an earlier one of the same gate and class
   kbdecide.py sweep [--root R] [--dry-run] [--date DATE]
                                          invalidate every proposed or active decision whose context is broken (rules
                                          below), naming the context in the reason; open to agents
@@ -573,27 +575,76 @@ def digest_group(cls):
     return 0 if cls in RESTRICTED else 1
 
 
+def gate_class_of(row):
+    """(class, item id, item title, gate id) of the gate an autopilot decision answered, the class in force."""
+    import bl_authority  # only the digest reads a gate's class: a scratch repository without the backlog still has the rest
+    iid, gate = origin(row)
+    item = read_item(iid) if iid else None
+    g = next((g for g in (item or {}).get("gates") or [] if isinstance(g, dict) and g.get("id") == gate), None)
+    cls = bl_authority.gate_class(item or {}, g or {"id": gate, "question": field(row, "text")})
+    return cls, iid, (item or {}).get("title") or "item file gone", gate
+
+
 def unratified(store):
     """[(class, item id, item title, gate, row)] of the store's active autopilot decisions, the restricted classes first,
     each group oldest first (then by id)."""
-    import bl_authority  # only the digest reads a gate's class: a scratch repository without the backlog still has the rest
     out = []
     for row in load(store):
         if field(row, "status") != "active" or field(row, "by") != AUTOPILOT:
             continue
-        iid, gate = origin(row)
-        item = read_item(iid) if iid else None
-        g = next((g for g in (item or {}).get("gates") or [] if isinstance(g, dict) and g.get("id") == gate), None)
-        cls = bl_authority.gate_class(item or {}, g or {"id": gate, "question": field(row, "text")})
-        out.append((cls, iid, (item or {}).get("title") or "item file gone", gate, row))
+        cls, iid, title, gate = gate_class_of(row)
+        out.append((cls, iid, title, gate, row))
     return sorted(out, key=lambda x: (digest_group(x[0]), field(x[4], "date"), field(x[4], "id")))
 
 
-def digest_text(entries):
+MADE = re.compile(r"made by the autopilot (\d{4}-\d{2}-\d{2})")  # what `ratify` keeps in `links` of a decision it takes over
+REVERTED = "reverted by the operator:"  # the start of the reason `revert` invalidates a decision with
+
+
+def made_date(row):
+    """The day the autopilot made the decision: its `date`, or, for one the operator ratified (its maker and date are the
+    operator's then), the day `links` keeps; '' for a decision the autopilot did not make."""
+    m = MADE.search(field(row, "links"))
+    if m:
+        return m.group(1)
+    return field(row, "date") if field(row, "by") == AUTOPILOT else ""
+
+
+def disagreement(store):
+    """{"made", "reverted", "contradicting"} over every autopilot decision of the store, whatever its status now but
+    `proposed` (the autopilot proposes nothing): `made` all of them, ratified ones included; `reverted` those the
+    operator reverted (invalidated with a reason that starts `reverted by the operator:`); `contradicting` those whose
+    answer differs from that of an earlier one (by day made, then id) on the same gate id with the same class in force,
+    each counted once however many earlier ones it differs from. Answers compare with whitespace collapsed, case
+    ignored."""
+    made = [(made_date(r), r) for r in load(store) if field(r, "status") != "proposed" and made_date(r)]
+    made.sort(key=lambda x: (x[0], field(x[1], "id")))
+    seen, contradicting = {}, 0
+    for _, row in made:
+        cls, _, _, gate = gate_class_of(row)
+        answer = " ".join(field(row, "text").split()).casefold()
+        earlier = seen.setdefault((gate, cls), [])
+        contradicting += any(a != answer for a in earlier)
+        earlier.append(answer)
+    reverted = sum(1 for _, r in made if field(r, "status") == "invalidated" and field(r, "invalidated_reason").startswith(REVERTED))
+    return {"made": len(made), "reverted": reverted, "contradicting": contradicting}
+
+
+def share(n, of):
+    """`N of M` and, when M is not 0, the share in whole percent: '0 of 0' for an empty ledger, never a division."""
+    return f"{n} of {of}" + (f" ({round(100 * n / of)}%)" if of else "")
+
+
+def digest_text(entries, stats=None):
     lines = ["# Autopilot digest", "",
              "The autopilot's decisions the operator has not ratified, written by `python3 _tools/kbdecide.py digest`: the "
              "restricted classes first, each group oldest first. Ratify one with `python3 _tools/kbdecide.py ratify ID --by "
              f"{OPERATOR}`, or revert it with `python3 _tools/kbdecide.py revert ID --by {OPERATOR} --why TEXT`.", ""]
+    if stats is not None:
+        lines += ["## Disagreement", "",
+                  f"- Reverted by the operator: {share(stats['reverted'], stats['made'])} autopilot decisions",
+                  f"- Contradicting an earlier decision of the same gate and class: {share(stats['contradicting'], stats['made'])} "
+                  "autopilot decisions", ""]
     if not entries:
         return "\n".join(lines + ["No unratified autopilot decisions.", ""])
     for heading, group in (("Restricted classes (" + ", ".join(RESTRICTED) + ")", 0), ("Other classes", 1)):
@@ -609,10 +660,11 @@ def digest_text(entries):
 
 
 def cmd_digest(a):
-    entries = unratified(Store(SELF_ROOT))
+    store = Store(SELF_ROOT)
+    entries = unratified(store)
     path = Path(a.out) if a.out else DIGEST
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(digest_text(entries), encoding="utf-8", newline="\n")
+    path.write_text(digest_text(entries, disagreement(store)), encoding="utf-8", newline="\n")
     print(f"digest\t{len(entries)} unratified\t{path}")
     return 0
 
