@@ -543,3 +543,108 @@ def test_autopilot_runner_skill_headless_a_planted_failure_fails_the_check(how):
         planted = text.replace("sprint-runner: blocked", "sprint-runner: stuck")
     assert planted != text
     assert headless_problems(planted, prompt)
+
+
+# ---------------------------------------------------------------- status: the manager's state in one capped command
+
+def plant(root, iid, **kw):
+    d = Path(root) / "kb" / "_self" / "backlog"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"{iid}.json").write_text(json.dumps({"id": iid, "title": "t " + iid, **kw}), encoding="utf-8")
+
+
+def sealed(tmp_path, monkeypatch):
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path / "hostlocks"))
+    (tmp_path / "hostlocks").mkdir()
+    return tmp_path / "clone"
+
+
+def run_status(root, hook=False):
+    import io, contextlib
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = autopilot.status(hook, root)
+    return code, buf.getvalue()
+
+
+def test_autopilot_status_prints_runner_sprint_gate_decision_and_tick(tmp_path, monkeypatch):
+    root = sealed(tmp_path, monkeypatch)
+    plant(root, SP, kind="sprint", status="active")
+    plant(root, STORY, kind="story", status="todo", sprint=SP)
+    plant(root, T1, kind="task", status="done", parent=STORY)
+    plant(root, T2, kind="task", status="todo", parent=STORY)
+    plant(root, T3, kind="task", status="todo", parent=STORY,
+          gates=[{"id": "g1", "kind": "blocking", "question": "q", "options": ["a", "b"]}])
+    (root / "kb" / "_self").mkdir(parents=True, exist_ok=True)
+    (root / "kb" / "_self" / "_decisions.csv").write_text(
+        "id,text,by,status\nD-aaaaaaaa,x,autopilot,active\nD-bbbbbbbb,y,operator,active\nD-cccccccc,z,autopilot,superseded\n",
+        encoding="utf-8")
+    bl_base.runner_record_path(os.getpid()).write_text(
+        json.dumps({"pid": os.getpid(), "sprint": SP, "clone": str(root), "started": "2026-01-01T00:00:00Z"}), encoding="utf-8")
+    ended = autopilot.cache_dir(root, "SP-zzzzzzzz")
+    ended.mkdir(parents=True)
+    (ended / "status.json").write_text(json.dumps({"cause": "blocked"}), encoding="utf-8")
+    state = root / "_cache" / "autopilot" / "state.json"
+    state.write_text(json.dumps({"tick": 7, "actions": ["answered gate", {"action": "started sprint"}]}), encoding="utf-8")
+    code, out = run_status(root)
+    assert code == 0
+    assert f"runners 2: {SP} pid {os.getpid()} alive" in out and "SP-zzzzzzzz ended blocked" in out
+    assert f"sprints 1: {SP} 1/4 done" in out and "next TK-" in out
+    assert f"gates 1: {T3}/g1" in out
+    assert "unratified 1: D-aaaaaaaa" in out
+    assert "tick 7 actions 2: answered gate, started sprint" in out
+
+
+def test_autopilot_status_ticks_file_is_read_when_state_is_missing(tmp_path, monkeypatch):
+    root = sealed(tmp_path, monkeypatch)
+    d = root / "_cache" / "autopilot"
+    d.mkdir(parents=True)
+    (d / "ticks.jsonl").write_text('{"tick": 1, "actions": ["old"]}\n{"tick": 2, "actions": ["new"]}\nnot json\n', encoding="utf-8")
+    assert "tick 2 actions 1: new" in run_status(root)[1]
+
+
+def test_autopilot_status_caps_a_long_list(tmp_path, monkeypatch):
+    root = sealed(tmp_path, monkeypatch)
+    for n in range(40):
+        plant(root, f"TK-{n:08d}", kind="task", status="todo",
+              gates=[{"id": "g", "kind": "blocking", "question": "q", "options": ["a", "b"]}])
+    d = root / "_cache" / "autopilot"
+    d.mkdir(parents=True)
+    (d / "state.json").write_text(json.dumps({"tick": 1, "actions": [f"act{n}" for n in range(30)]}), encoding="utf-8")
+    out = run_status(root)[1]
+    assert "gates 40: TK-00000000/g, TK-00000001/g, TK-00000002/g +37 more" in out
+    assert "actions 30: act0, act1, act2 +27 more" in out
+    assert "act3" not in out and "TK-00000003" not in out
+    hook = run_status(root, hook=True)[1]
+    assert "TK-00000002" not in hook and "+38 more" in hook
+
+
+def test_autopilot_status_hook_is_under_1000_characters_and_exits_0_with_no_state(tmp_path, monkeypatch):
+    root = sealed(tmp_path, monkeypatch)
+    code, out = run_status(root, hook=True)
+    assert code == 0 and 0 < len(out) < autopilot.HOOK_MAX
+    monkeypatch.setattr(autopilot, "ROOT", root / "missing")
+    assert autopilot.main(["status", "--hook"]) == 0
+    assert not (root / "_cache").exists() and not (root / "missing").exists()
+
+
+def test_autopilot_status_hook_truncates_with_dots_and_never_fails(tmp_path, monkeypatch):
+    root = sealed(tmp_path, monkeypatch)
+    d = root / "_cache" / "autopilot"
+    d.mkdir(parents=True)
+    (d / "state.json").write_text(json.dumps({"tick": 1, "actions": ["x" * 500, "y" * 500, "z"]}), encoding="utf-8")
+    monkeypatch.setattr(autopilot, "one_line", lambda t, n=0: str(t))
+    code, out = run_status(root, hook=True)
+    assert code == 0 and len(out.rstrip("\n")) < autopilot.HOOK_MAX and out.rstrip("\n").endswith("...")
+    monkeypatch.setattr(autopilot, "status_report", lambda *a: 1 / 0)
+    assert run_status(root, hook=True) == (0, "autopilot status unavailable\n")
+
+
+@pytest.mark.parametrize("body", ["{not json", "[1, 2]", '{"tick": 3, "actions": 5}', '{"actions": [null, 4, {"x": 1}]}'])
+def test_autopilot_status_a_corrupt_state_file_is_not_an_error(tmp_path, monkeypatch, body):
+    root = sealed(tmp_path, monkeypatch)
+    d = root / "_cache" / "autopilot"
+    d.mkdir(parents=True)
+    (d / "state.json").write_text(body, encoding="utf-8")
+    code, out = run_status(root)
+    assert code == 0 and "unavailable" not in out

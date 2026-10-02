@@ -32,6 +32,18 @@ Exit codes: `runner start` 0 the run ended with a named cause other than `error`
 bad sprint id, no git clone, a dirty or diverged worktree, no settings file, two runners already live, a sprint held by
 a runner, touches that overlap another runner's); `runner-status` 0
 printed, 1 no run was recorded for the sprint, 2 a bad sprint id. Standard library only.
+
+  autopilot.py status [--hook]                the manager's state in one capped command: runners (live records of the host
+                                              lock directory, and the cause of each ended run's status.json), each active
+                                              sprint (done of all, reachable, next item), the operator's open blocking
+                                              gates, the autopilot's active decisions the operator has not ratified, and the
+                                              last tick's actions. Each section prints a count and its first entries; a
+                                              section with nothing prints nothing. --hook prints the same under 1000
+                                              characters (cut with `...`), reads only, always exits 0, and prints the one
+                                              line `autopilot status unavailable` when anything fails.
+  The last tick is read from _cache/autopilot/state.json, `{"tick": N, "actions": [str or {"action"|"text": str}]}`, else
+  from the last line of _cache/autopilot/ticks.jsonl of the same shape; a missing, corrupt or differently shaped file
+  is not an error and prints nothing.
 """
 import argparse, datetime, json, os, re, subprocess, sys
 from pathlib import Path
@@ -378,6 +390,131 @@ def runner_status(sprint, root=ROOT):
     return 0
 
 
+# ---------------------------------------------------------------- status: the manager's state
+
+HOOK_MAX = 1000  # `status --hook` prints at most this many characters, `...` included
+SHOW = 3  # entries a section of `status` names; the rest is a count
+HOOK_SHOW = 2
+TICK_TAIL = 65536  # bytes of ticks.jsonl read from its end
+
+
+def listing(label, items, show):
+    """`LABEL N: a, b, c +K more`: the count, then the first SHOW entries."""
+    if not items:
+        return None
+    shown = items[:show]
+    more = f" +{len(items) - len(shown)} more" if len(items) > len(shown) else ""
+    return f"{label} {len(items)}: " + ", ".join(shown) + more
+
+
+def runner_lines(root, show):
+    """Live runner records (read, never removed) and the cause of each ended run recorded under _cache/autopilot."""
+    live, items = set(), []
+    for p in sorted(bl_base.runner_dir().glob(bl_base.RUNNER_PREFIX + "*.json")):
+        try:
+            rec = json.loads(p.read_text(encoding="utf-8"))
+            pid = int(rec["pid"])
+            if bl_base.pid_alive(pid):
+                live.add(str(rec.get("sprint")))
+                items.append(f"{rec.get('sprint')} pid {pid} alive worktree {Path(str(rec.get('clone'))).name}")
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
+            continue
+    for p in sorted((Path(root) / "_cache" / "autopilot").glob("SP-*/status.json")):
+        sp = p.parent.name
+        st = read_status(root, sp)
+        if st and sp not in live and SPRINT_ID.match(sp) and st.get("cause") != "running":
+            items.append(f"{sp} ended {st.get('cause')}")
+    return [listing("runners", items, show)]
+
+
+def sprint_lines(root, show):
+    import backlog  # the facade holds horizon and ready; loaded here so a failure costs only this section
+    bl = bl_base.Backlog(root)
+    out = []
+    for sid in sorted(i for i, it in bl.items.items() if it.get("kind") == "sprint" and it.get("status") == "active"):
+        items = bl.sprint_items(sid)
+        done = sum(1 for i in items if bl.items[i].get("status") in ("done", "dropped"))
+        reach = backlog.horizon(bl, sid)[0]
+        nxt = backlog.ready(bl, sid)
+        out.append(f"{sid} {done}/{len(items)} done, {len(reach)} reachable" + (f", next {nxt[0]}" if nxt else ""))
+    return [listing("sprints", out, show)]
+
+
+def gate_lines(root, show):
+    """The operator's open blocking gates, and the autopilot's active decisions (kb/_self/_decisions.csv) that no
+    operator decision has superseded yet."""
+    import csv
+    bl = bl_base.Backlog(root)
+    gates = [f"{i}/{g.get('id')}" for i, it in sorted(bl.items.items()) if it.get("status") not in ("done", "dropped")
+             for g in bl_base.open_gates(it)]
+    out = [listing("gates", gates, show)]
+    try:
+        with open(Path(root) / "kb" / "_self" / "_decisions.csv", encoding="utf-8", newline="") as f:
+            rows = [r for r in csv.DictReader(f) if r.get("status") == "active" and r.get("by") == "autopilot"]
+    except OSError:
+        rows = []
+    return out + [listing("unratified", [r.get("id", "?") for r in rows], show)]
+
+
+def last_tick(root):
+    """The newest tick record: state.json, else the last readable line of ticks.jsonl; None when neither gives a dict."""
+    base = Path(root) / "_cache" / "autopilot"
+    try:
+        data = json.loads((base / "state.json").read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            return data
+    except (OSError, ValueError):
+        pass
+    try:
+        with open(base / "ticks.jsonl", "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - TICK_TAIL))
+            lines = f.read().decode("utf-8", "replace").splitlines()
+    except OSError:
+        return None
+    for ln in reversed(lines):
+        try:
+            data = json.loads(ln)
+        except ValueError:
+            continue
+        if isinstance(data, dict):
+            return data
+    return None
+
+
+def tick_lines(root, show):
+    data = last_tick(root)
+    acts = data.get("actions") if data else None
+    if not isinstance(acts, list) or not acts:
+        return []
+    names = [one_line(a.get("action") or a.get("text") or "" if isinstance(a, dict) else a, 60) for a in acts]
+    return [listing(f"tick {one_line(data.get('tick', '?'), 12)} actions", names, show)]
+
+
+def status_report(root, show):
+    """The status sections as lines; a section that fails prints `NAME unavailable` and leaves the others."""
+    lines = []
+    for name, fn in (("runners", runner_lines), ("sprints", sprint_lines), ("gates", gate_lines), ("tick", tick_lines)):
+        try:
+            lines += [x for x in fn(root, show) if x]
+        except Exception as e:  # noqa: BLE001 - one section never takes the others down
+            lines.append(f"{name} unavailable: {one_line(e, 60)}")
+    return lines or ["autopilot idle: no runner, active sprint, pending gate or tick"]
+
+
+def status(hook=False, root=ROOT):
+    """Print the state. `--hook`: under HOOK_MAX characters, always 0, on any error one line and 0."""
+    try:
+        text = "\n".join(status_report(root, HOOK_SHOW if hook else SHOW))
+        if hook and len(text) >= HOOK_MAX:
+            text = text[:HOOK_MAX - 4] + "..."
+        print(text)
+    except Exception:  # noqa: BLE001
+        print("autopilot status unavailable")
+        return 0 if hook else 1
+    return 0
+
+
 # ---------------------------------------------------------------- the command line
 
 def sprint_arg(text):
@@ -401,8 +538,12 @@ def main(argv=None):
     st.add_argument("--landed", type=positive, metavar="K", help="the run stops after K landed items")
     rs = sub.add_parser("runner-status", help="what the recorded run did, in under 1000 characters")
     rs.add_argument("sprint", type=sprint_arg)
+    sa = sub.add_parser("status", help="the manager's state in one capped command")
+    sa.add_argument("--hook", action="store_true", help="under 1000 characters, never fails")
     a = ap.parse_args(argv)
     try:
+        if a.cmd == "status":
+            return status(a.hook, ROOT)
         if a.cmd == "runner-status":
             return runner_status(a.sprint, ROOT)
         return runner_start(a.sprint, a.landed, ROOT)
