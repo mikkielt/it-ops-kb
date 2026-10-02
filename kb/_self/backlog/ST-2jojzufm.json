@@ -2,7 +2,7 @@
   "id": "ST-2jojzufm",
   "kind": "story",
   "title": "Two sprint runners share one host without stepping on each other",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -61,5 +61,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "a71e1bf6c4b314bf5912cf13e6a55a4e200ef0bf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_two_runners"
+        ],
+        "exit": 0,
+        "sha256": "a5d6658945e68f9c"
+      }
+    ]
+  }
 }
