@@ -2,7 +2,7 @@
   "id": "BG-zd6wok57",
   "kind": "bug",
   "title": "kb_http read_chunked answers 413 to a body under --max-body when its chunks are small, because the framing allowance is a flat 4 KiB",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3siaqxdf",
   "priority": "P3",
   "rank": 0,
@@ -20,5 +20,6 @@
     "_tools/test_kb_http.py",
     "kb/_self/design.md",
     "kb/_self/hosting.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
