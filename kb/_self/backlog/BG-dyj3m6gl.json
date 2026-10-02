@@ -2,7 +2,7 @@
   "id": "BG-dyj3m6gl",
   "kind": "bug",
   "title": "code.md says each query-log stage has its own test_ql_<stage>.py, but ql_apply's tests live in test_ql_deliver.py",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-djri7fqp",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,18 @@
   "touches": [
     "kb/_self/code.md"
   ],
-  "claimed_by": "sixth-w4"
+  "evidence": {
+    "commit": "a5310c60e2b195e0c7d89b75129d779fe968ccf6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open('kb/_self/code.md',encoding='utf-8').read(); sys.exit(1 if 'for each stage' in t and 'test_ql_' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
