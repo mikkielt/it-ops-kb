@@ -37,7 +37,8 @@
     "_tools/test_bl_plan.py",
     "_tools/test_bl_check.py",
     "_tools/test_kb_leaks.py",
-    "_tools/kg_lane.py"
+    "_tools/kg_lane.py",
+    "_tools/test_bl_procs.py"
   ],
   "depends_on": [
     "TK-gefod47d",
