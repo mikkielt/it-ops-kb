@@ -135,3 +135,47 @@ def test_import_layers_a_planted_violation_fails_on_the_real_tree():
     # and a listed pair stops being one when the reach goes away
     assert ("kbpublic", "kbcommon", "_meta") in EXCEPTIONS
     assert ("kbpublic", "kbcommon", "_meta") not in {v[1:] for v in violations(dict(tree, kbpublic=""))}
+
+
+def from_kit(node):
+    """An assignment whose value is `bl_testkit.NAME` (or a tuple of them): the kit's own object bound by name."""
+    v = node.value
+    return all(isinstance(x, ast.Attribute) and isinstance(x.value, ast.Name) and x.value.id == "bl_testkit"
+               for x in (v.elts if isinstance(v, ast.Tuple) else [v]))
+
+
+def kit_names(source):
+    """The public names a module defines at its top level: functions, classes and assigned names, but not a name
+    bound to the kit's own object (`repo = bl_testkit.repo`, a fixture bound where its tests ask for it)."""
+    names = set()
+    for n in ast.parse(source).body:
+        if isinstance(n, (ast.FunctionDef, ast.ClassDef)):
+            names.add(n.name)
+        elif isinstance(n, (ast.Assign, ast.AnnAssign)) and not (n.value and from_kit(n)):
+            for t in n.targets if isinstance(n, ast.Assign) else [n.target]:
+                names |= {x.id for x in ast.walk(t) if isinstance(x, ast.Name)}
+    return {x for x in names if not x.startswith("_")}
+
+
+def own_copies(kit, tests):
+    """(test file, name) for each top-level definition in a test file that bl_testkit defines too."""
+    shared = kit_names(kit)
+    return sorted((f, n) for f, src in tests.items() for n in kit_names(src) & shared)
+
+
+def backlog_test_sources():
+    paths = sorted(set(Path(TOOLS).glob("test_*backlog*.py")) | set(Path(TOOLS).glob("test_bl_*.py")))
+    return {p.name: p.read_text(encoding="utf-8") for p in paths}
+
+
+def test_bl_split_testkit_no_test_file_keeps_its_own_copy_of_a_builder():
+    kit = (Path(TOOLS) / "bl_testkit.py").read_text(encoding="utf-8")
+    assert {"repo", "sprint", "b", "item", "edit", "commit"} <= kit_names(kit)
+    assert own_copies(kit, backlog_test_sources()) == [], "import it from bl_testkit instead of defining it again"
+
+
+def test_bl_split_testkit_planted_copy_of_a_builder_fails():
+    kit = "def b(root, *a):\n    return 0\n\n" + "@pytest.fixture\ndef repo(tmp_path):\n    return tmp_path\n\nPASS = 1\n_own = 2\n"
+    tests = {"test_bl_planted.py": "import bl_testkit\nrepo, sprint = bl_testkit.repo, bl_testkit.sprint\ndef b(root, *a):\n    return 1\nPASS = 2\n_own = 3\n",
+             "test_bl_clean.py": "from bl_testkit import b\ndef helper(root):\n    return b(root)\n"}
+    assert own_copies(kit, tests) == [("test_bl_planted.py", "PASS"), ("test_bl_planted.py", "b")]

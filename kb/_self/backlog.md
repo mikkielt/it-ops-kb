@@ -279,4 +279,4 @@ An item is published with the repository, so it never holds this host's computer
 
 ## Changing this process
 
-A new field, state, command or rule is added only for a failure that happened, and its commit names that failure. A mechanism that no longer catches anything is removed the same way. `_tools/test_backlog.py` has one planted failure per refusal. `backlog.py check` runs in the tests, so a broken item file fails the gate.
+A new field, state, command or rule is added only for a failure that happened, and its commit names that failure. A mechanism that no longer catches anything is removed the same way. `_tools/test_backlog.py` has one planted failure per refusal; the builders its tests share (the throwaway repository, the started sprint, `b` which runs `backlog.py` in it, the item readers and writers) live in `_tools/bl_testkit.py`, which never imports `backlog` (the test file hands it the module with `bl_testkit.bind`), and a test file that defines a builder the kit holds fails `-k bl_split_testkit`. `backlog.py check` runs in the tests, so a broken item file fails the gate.
