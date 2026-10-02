@@ -23,6 +23,12 @@ def start_approved(sp):
     return g.get("by") in ("operator", "autopilot") and str(g.get("answer", "")).strip().lower() in APPROVALS
 
 
+def started_by_autopilot(sp):
+    """True when the sprint's start gate was answered by the autopilot."""
+    g = next((g for g in sp.get("gates", []) if g.get("id") == START_GATE), {})
+    return g.get("by") == "autopilot" and start_approved(sp)
+
+
 CODE_DIRS = ("_tools/", ".claude/", ".claude-plugin/")  # with CODE_FILES: the paths whose change needs /kb-self
 CODE_FILES = (".gitlab-ci.yml",)
 EVERY_TOOL = "_tools/*.py"  # a map pattern that matches this glob, read as a path, covers every tool: a standard doc
@@ -220,6 +226,8 @@ def runner_conflicts(bl, sid):
             + ", ".join(f"{m} meets {t}" for m, t in hits)
             for rec, hits in runner_overlaps(bl, sid, live_runners())]
 
+AUTOPILOT_START_CAUSES = []  # functions (bl, sprint id) -> [cause text]; `bl_check` registers its own: they hold back a start the autopilot approved
+
 
 def cmd_start(bl, a):
     sid = need(bl, a.sprint)
@@ -229,6 +237,11 @@ def cmd_start(bl, a):
     g = next(g for g in sp["gates"] if g["id"] == START_GATE)
     if not start_approved(sp):
         raise Refused(f"{bl.label(sid)}: the operator has not approved it (gate {START_GATE}: {g.get('answer', 'open')})")
+    if started_by_autopilot(sp):
+        causes = [c for cause in AUTOPILOT_START_CAUSES for c in cause(bl, sid)]
+        if causes:
+            raise Refused(f"{bl.label(sid)}: the autopilot starts a sprint only once its research is done:\n  "
+                          + "\n  ".join(causes))
     items = bl.sprint_items(sid)
     if len(items) < 2:
         raise Refused(f"{bl.label(sid)} commits to no item besides its review")

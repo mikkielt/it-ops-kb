@@ -219,7 +219,7 @@ import bl_land
 import bl_plan
 from bl_base import (
     Backlog, COMMITS, IN_SPRINT, KINDS, OPEN, OUTPUT_ROOT, PRIORITIES,
-    REL_DIR, REVIEW_CHECKS, ROOT, Refused, Rejected, SEVERITIES, SIMILAR_MIN, SIMILAR_SHOWN,
+    REL_DIR, RESEARCH_CHECKS, REVIEW_CHECKS, ROOT, Refused, Rejected, SEVERITIES, SIMILAR_MIN, SIMILAR_SHOWN,
     SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, TEXT_MAX, canonical, commit_written, git, in_scope,
     line, need, new_id, open_gates, research_in_planned, run, say, scope, trailer_problem, waits, withhold,
 )
@@ -339,8 +339,16 @@ def cmd_new(bl, a):
                       "and a fresh-context review of the sprint's diff found no unfiled defect.",
               "checks": REVIEW_CHECKS}
         bl.save(rv)
-        say(f"new sprint {bl.label(it['id'])}, review story {bl.label(rv['id'])}")
-        commit_written(bl, a, "file", it["id"], [it["id"], rv["id"]])
+        rs = {"id": new_id("story"), "kind": "story", "title": f"Research sprint goal: {it['title']}"[:TEXT_MAX],
+              "status": "draft", "sprint": it["id"], "goal_research": True, "priority": "P1", "rank": 0,
+              "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for "
+                      "the gaps, and the findings are written as kb facts and gap entries through the kb skills, so "
+                      "each committed item can name the knowledge it needs.",
+              "checks": RESEARCH_CHECKS, "touches": ["kb/public/**"]}
+        bl.save(rs)
+        say(f"new sprint {bl.label(it['id'])}, review story {bl.label(rv['id'])}, "
+            f"research story {bl.label(rs['id'])}")
+        commit_written(bl, a, "file", it["id"], [it["id"], rv["id"], rs["id"]])
         return 0
     if a.sprint and kind not in IN_SPRINT:
         raise Rejected(f"new {kind} refuses --sprint: only stories and bugs name a sprint; a {kind} follows its parent's")

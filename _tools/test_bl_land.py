@@ -264,7 +264,8 @@ def test_close_summary_lists_every_item_with_its_evidence_commit(sprint):
     assert f"      - {sb} “Sub” (subtask): dropped, no evidence commit" in body
     assert f"- {bg} “Bug” (bug): done at {work[:10]}" in body
     assert any(x.startswith(f"- {rv} “Review sprint: Sprint” (story): done at ") for x in body)
-    assert len(body) == 6, body  # one line per deleted item, no more
+    assert f"- {sprint['rs']} “Research sprint goal: Sprint” (story): dropped, no evidence commit" in body
+    assert len(body) == 7, body  # one line per deleted item, no more
     assert body.index(f"  - {st} “Story” (story): done at {work[:10]}") < body.index(
         f"    - {tk} “Task” (task): done at {work[:10]}")  # a child under its parent
 
@@ -299,7 +300,7 @@ def test_backlog_close_summary_leaves_every_item_file_and_close_deletes(sprint):
     repo, sp = sprint["repo"], sprint["sp"]
     finish(sprint)
     before = item_files(repo)
-    assert len(before) == 6
+    assert len(before) == 7
     code, out = b(repo, "close", sp, "--summary")
     assert code == 0 and out.startswith(f"delivered by {sp} “Sprint”:"), out
     check_summary_changed_nothing(repo, before, out)
@@ -457,7 +458,7 @@ def test_ops_sprint_close_row_counts_the_sprint_before_its_items_go(sprint, ops_
     assert close_in_process(repo, sp) == 0
     (row,) = spool_rows(ops_spool, "sprint.close")
     assert (row["sprint"], row["landed"], row["dropped"], row["bugs"], row["confirmed"], row["refused"]) == (
-        sp, 3, 1, 1, 1, 2), row
+        sp, 3, 2, 1, 1, 2), row  # dropped: the bug and the goal research story the fixture drops
     assert 5400 * 1000 <= row["ms"] <= 5400 * 1000 + 120_000, row  # planned to closed, from the planning commit
     assert not (repo / backlog.REL_DIR / f"{sp}.json").exists()  # and the sprint is closed
 

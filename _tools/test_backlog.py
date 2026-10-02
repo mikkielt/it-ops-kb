@@ -254,7 +254,7 @@ def test_horizon_start_unanswered_is_the_operators_question(repo):
     sp = planned_sprint(repo)
     code, out = b(repo, "horizon", "--sprint", sp)
     assert code == 0, out
-    assert "the sprint's start gate:" in out and "2 wait on the operator or a trigger" in out, out
+    assert "the sprint's start gate:" in out and "3 wait on the operator or a trigger" in out, out
     assert "approved, not started" not in out and "wait on backlog.py start" not in out, out
     # a change answer is no approval: still the operator's question (planted: an answer read as approval)
     edit(repo, sp, gates=[dict(g, answer="change: drop the bug", by="operator") if g["id"] == "start" else g
@@ -263,7 +263,7 @@ def test_horizon_start_unanswered_is_the_operators_question(repo):
     assert "the sprint's start gate:" in out and "approved, not started" not in out, out
     code, out = b(repo, "horizon", "--sprint", sp, "--hook")
     ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-    assert "2 wait on the operator" in ctx and "backlog.py start" not in ctx.split("Goals and")[0], ctx
+    assert "3 wait on the operator" in ctx and "backlog.py start" not in ctx.split("Goals and")[0], ctx
 
 
 def test_horizon_start_approved_waits_on_backlog_start_not_the_operator(repo):
@@ -272,11 +272,11 @@ def test_horizon_start_approved_waits_on_backlog_start_not_the_operator(repo):
     code, out = b(repo, "horizon", "--sprint", sp)
     assert code == 0, out
     assert f"approved, not started; run python3 _tools/backlog.py start {sp}" in out, out
-    assert f"2 wait on backlog.py start {sp}; 0 wait on the operator or a trigger" in out, out
+    assert f"3 wait on backlog.py start {sp}; 0 wait on the operator or a trigger" in out, out
     assert "Approve this sprint" not in out, out
     code, out = b(repo, "horizon", "--sprint", sp, "--hook")
     ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
-    assert "2 wait on backlog.py start" in ctx and "wait on the operator" not in ctx, ctx
+    assert "3 wait on backlog.py start" in ctx and "wait on the operator" not in ctx, ctx
     assert "approved, not started" in ctx and "Approve this sprint" not in ctx, ctx
     code, out = b(repo, "horizon", "--hook")  # no active sprint: the planned list names the approval
     assert "(approved, not started)" in json.loads(out)["systemMessage"], out
@@ -284,7 +284,7 @@ def test_horizon_start_approved_waits_on_backlog_start_not_the_operator(repo):
     bg = item(repo, "Planned bug")["id"]
     edit(repo, bg, gates=[{"id": "G1", "kind": "blocking", "question": "Fix or drop?", "recommendation": "fix"}])
     code, out = b(repo, "horizon", "--sprint", sp)
-    assert "1 wait on backlog.py start" in out and "1 wait on the operator or a trigger" in out, out
+    assert "2 wait on backlog.py start" in out and "1 wait on the operator or a trigger" in out, out
 
 
 HOOK_LIMIT = 1000  # characters of the SessionStart hook's whole stdout, which every session in a clone reads
@@ -1217,7 +1217,8 @@ class TestBacklogCommitFlag:
         code, out = b(repo, "new", "sprint", "--title", "Next", "--goal", "later", "--commit", "--trailer", self.CO)
         assert code == 0, out
         sp, rv = item(repo, "Next")["id"], item(repo, "Review sprint: Next")["id"]
-        self.assert_commit(repo, "file", sp, "Next", [sp, rv], self.rel(sp, rv), monkeypatch)
+        rs = item(repo, "Research sprint goal: Next")["id"]
+        self.assert_commit(repo, "file", sp, "Next", [sp, rv, rs], self.rel(sp, rv, rs), monkeypatch)
 
     def test_backlog_commit_flag_start_commits_the_sprint_and_its_items(self, repo, monkeypatch):
         b(repo, "new", "sprint", "--title", "Sprint", "--goal", "ship b")
@@ -1225,14 +1226,15 @@ class TestBacklogCommitFlag:
         b(repo, "new", "bug", "--title", "Bug", "--sprint", sp, "--severity", "S3", "--repro",
           argstr(is_file("src/c.txt")), "--goal", "c exists", "--touch", "src/**")
         bg, rv = item(repo, "Bug")["id"], item(repo, "Review sprint: Sprint")["id"]
+        rs = item(repo, "Research sprint goal: Sprint")["id"]
         assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
         commit(repo, "plan")
         code, out = b(repo, "start", sp, "--commit", "--trailer", self.CO)
         assert code == 0, out
-        self.assert_commit(repo, "start", sp, "Sprint", [sp], self.rel(bg, rv, sp), monkeypatch)
+        self.assert_commit(repo, "start", sp, "Sprint", [sp], self.rel(bg, rv, rs, sp), monkeypatch)
 
     def test_backlog_commit_flag_close_commits_the_deletions_with_the_summary(self, sprint, monkeypatch):
-        repo, tk, st, bg, rv, ep, sp = (sprint[k] for k in ("repo", "tk", "st", "bg", "rv", "ep", "sp"))
+        repo, tk, st, bg, rv, ep, sp, rs = (sprint[k] for k in ("repo", "tk", "st", "bg", "rv", "ep", "sp", "rs"))
         (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
         (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
         commit(repo, "b and c", f"{tk}, {bg}")
@@ -1245,7 +1247,7 @@ class TestBacklogCommitFlag:
         commit(repo, "done all")
         code, out = b(repo, "close", sp, "--commit", "--trailer", self.CO)
         assert code == 0, out
-        self.assert_commit(repo, "close", sp, "Sprint", [sp], self.rel(ep, st, tk, bg, rv, sp), monkeypatch)
+        self.assert_commit(repo, "close", sp, "Sprint", [sp], self.rel(ep, st, tk, bg, rv, rs, sp), monkeypatch)
         body = self.out(repo, "log", "-1", "--format=%b").split("\n\n")[0]
         assert body.startswith(f"delivered by {sp} “Sprint”:") and f"- {bg} “Bug” (bug): done at " in body, body
 

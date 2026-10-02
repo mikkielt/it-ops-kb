@@ -16,8 +16,9 @@ import bl_authority
 from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS, PREFIX_KIND,
     PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED, canonical,
-    host_user_pieces, items_holding_names, research_in_planned, say, withhold_names,
+    host_user_pieces, items_holding_names, research_in_planned, research_story, say, withhold_names,
 )
+import bl_plan
 from bl_plan import docs_after_code, docs_warnings, stale_touches
 
 
@@ -376,10 +377,9 @@ class KnowledgeState:
         return "unknown", "no such topic"
 
 
-def knowledge_lines(bl, iid, indent="  "):
-    """One line per ask and per ref of an item's `knowledge`: `knowledge <state> ask|ref: <text>` and, for any state
-    but sufficient, why. [] for an item with no asks or refs, without loading the pack (a malformed field is
-    `check`'s to report)."""
+def knowledge_states(bl, iid):
+    """[(kind, text, state, why)] for each ask and each ref of an item's `knowledge`, `kind` `ask` or `ref`; [] for an
+    item with no asks or refs, without loading the pack (a malformed field is `check`'s to report)."""
     know = bl.items[iid].get("knowledge")
     if not isinstance(know, dict):
         return []
@@ -392,8 +392,45 @@ def knowledge_lines(bl, iid, indent="  "):
     out = []
     for kind, text in todo:
         state, why = bl.state.of_ask(text) if kind == "ask" else bl.state.of_ref(text)
-        out.append(f"{indent}knowledge {state:<11} {kind}: {text.strip()}" + (f" ({why})" if why else ""))
+        out.append((kind, text.strip(), state, why))
     return out
+
+
+def knowledge_lines(bl, iid, indent="  "):
+    """One line per ask and per ref of an item's `knowledge`: `knowledge <state> ask|ref: <text>` and, for any state
+    but sufficient, why. [] for an item with no asks or refs (knowledge_states)."""
+    return [f"{indent}knowledge {state:<11} {kind}: {text}" + (f" ({why})" if why else "")
+            for kind, text, state, why in knowledge_states(bl, iid)]
+
+
+UNSOUND = ("unknown", "stale", "conflicting")  # the states that keep an autopilot-answered start from running
+
+
+def autopilot_start_causes(bl, sid):
+    """The causes that refuse `start` of sprint SID when its start gate was answered by the autopilot, one text each:
+    no goal research story, or one not done; a committed story or bug (the review and research stories, dropped and
+    done items left out) with no knowledge asks or refs; each ask or ref of one that reads unknown, stale or
+    conflicting."""
+    out = []
+    rs = research_story(bl, sid)
+    if rs is None:
+        out.append("the sprint has no goal research story (`backlog.py new sprint` files one)")
+    elif bl.items[rs].get("status") != "done":
+        out.append(f"the goal research story {bl.label(rs)} is {bl.items[rs].get('status')}, not done")
+    for i in sorted(bl.sprint_items(sid), key=bl.order_key):
+        it = bl.items[i]
+        if it.get("kind") not in IN_SPRINT or it.get("review") or it.get("goal_research") \
+                or it.get("status") in ("done", "dropped"):
+            continue
+        found = knowledge_states(bl, i)
+        if not found:
+            out.append(f"{bl.label(i)} has no knowledge asks or refs (set `knowledge` on it)")
+        out.extend(f"{bl.label(i)}: knowledge {state} {kind}: {text} ({why})" for kind, text, state, why in found
+                   if state in UNSOUND)
+    return out
+
+
+bl_plan.AUTOPILOT_START_CAUSES.append(autopilot_start_causes)
 
 
 def validate(bl, pieces=None):
@@ -464,6 +501,9 @@ def validate(bl, pieces=None):
                 e(f"sprint {s} does not exist")
         if it.get("review") and (kind != "story" or not it.get("sprint")):
             e("a review item is a story in a sprint")
+        if "goal_research" in it and (it["goal_research"] is not True or kind != "story" or not it.get("sprint")
+                                 or it.get("review")):
+            e("goal_research is true on the goal research story of a sprint, a story in it that is not the review")
         if kind == "bug":
             if it.get("severity") not in SEVERITIES:
                 e(f"a bug needs a severity {SEVERITIES}")
