@@ -1469,7 +1469,8 @@ def test_backlog_set_gate_add_blocks_until_answered(sprint):
     code, out = b(repo, "gate", "add", tk, *GATE)
     assert code == 0 and "g1 (blocking) added" in out, out
     assert item_json(repo, tk)["gates"] == [{"id": "g1", "kind": "blocking", "question": "Which way?",
-                                              "options": ["left", "right"], "recommendation": "left"}]
+                                              "options": ["left", "right"], "recommendation": "left",
+                                              "class": "design"}]
     assert b(repo, "check")[0] == 0
     assert "waits on" in b(repo, "show", tk)[1]
     assert b(repo, "answer", tk, "g1", "--answer", "left", "--by", "operator")[0] == 0

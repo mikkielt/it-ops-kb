@@ -54,12 +54,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (a research item of a planned sprint, one whose touches are all inside kb
                                           roots: claimed from draft, released to draft; check accepts it doing or
                                           done, and done proves it before the sprint starts)
-  backlog.py answer ID GATE (--answer TEXT --by operator|agent [--record] | --provisional | --confirm)
+  backlog.py answer ID GATE (--answer TEXT --by operator|agent|autopilot [--record] | --provisional | --confirm)
                                           record a gate's answer: --provisional takes the recommendation as the
                                           agent's answer (provisional gates only); --confirm makes an agent's answer
                                           the operator's; --record (with --by operator) also writes it as an active
                                           decision of kb/_self through kbdecide.py, its context the item (exit 2 with
-                                          --provisional, --confirm or a --by other than operator)
+                                          --provisional, --confirm or a --by other than operator or autopilot);
+                                          --by autopilot answers any gate but one of class secrets or push (exit 2,
+                                          the item unchanged) and --record then writes the decision with maker
+                                          autopilot and a review_by, which an operator's answer supersedes
   backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
                  [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--add] [--clear FIELD]...
                                           change an item after new: each list option replaces its list (--add:
@@ -205,9 +208,10 @@ stored, and no part of readiness. An item without `knowledge` costs nothing: the
 Every line that names an item prints its id and its title together, except a title check found holding a piece of
 this host's computer or user name, which is withheld.
 """
-import argparse, copy, json, os, re, shlex, subprocess, sys, threading
+import argparse, copy, csv, json, os, re, shlex, subprocess, sys, threading
 from pathlib import Path
 
+import bl_authority
 import bl_check
 import bl_cli
 import bl_intake
@@ -602,17 +606,44 @@ def cmd_release(bl, a):
     return 0
 
 
-def record_decision(bl, iid, gate, text):
-    """Keep the operator's answer to a gate as an active decision of kb/_self (`kbdecide.py record`, so check.py guards
-    the write): its source names the item and the gate, its context is the item. Refused with kbdecide's reason."""
+def autopilot_rows(bl, iid, gate):
+    """The active decisions of kb/_self the autopilot made as the answer to a gate (its source names the item and the gate)."""
+    path = Path(bl.root) / "kb" / "_self" / "_decisions.csv"
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            rows = list(csv.DictReader(f))
+    except OSError:
+        return []
+    return [r for r in rows if r.get("status") == "active" and r.get("by") == bl_authority.AUTOPILOT
+            and r.get("source") == f"backlog item {iid} gate {gate}"]
+
+
+def run_decide(bl, *argv):
     tool = Path(bl.root) / "_tools" / "kbdecide.py"
-    argv = [sys.executable, str(tool), "record", "--root", "_self", "--source", f"backlog item {iid} gate {gate}",
-            "--context", f"item:{iid}", "--by", "operator", "--maker", "operator", "--", text]
-    p = subprocess.run(argv, cwd=str(bl.root), capture_output=True, text=True, encoding="utf-8", errors="replace",
-                       timeout=120)
+    p = subprocess.run([sys.executable, str(tool), *argv], cwd=str(bl.root), capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", timeout=120)
     if p.returncode:
         raise Refused(f"--record: {(p.stdout + p.stderr).strip()}")
-    say(p.stdout.strip())
+    return p.stdout.strip()
+
+
+def record_decision(bl, iid, gate, text, by="operator"):
+    """Keep a gate's answer as an active decision of kb/_self (`kbdecide.py record`, so check.py guards the write): its
+    source names the item and the gate, its context is the item. The autopilot's carries a review_by and its maker
+    `autopilot`; the operator's supersedes each active autopilot decision on the same gate (`kbdecide.py supersede`),
+    its text ending ` (ratified)` when it repeats theirs, as the same text and context make the same decision id.
+    Refused with kbdecide's reason."""
+    old = autopilot_rows(bl, iid, gate) if by == "operator" else []
+    if any(r.get("text") == text for r in old):
+        text += " (ratified)"
+    argv = ["record", "--root", "_self", "--source", f"backlog item {iid} gate {gate}", "--context", f"item:{iid}",
+            "--by", by, "--maker", by]
+    if by == bl_authority.AUTOPILOT:
+        argv += ["--review-by", bl_authority.review_by()]
+    out = run_decide(bl, *argv, "--", text)
+    for r in old:
+        run_decide(bl, "supersede", r["id"], out.split("\t")[0], "--root", "_self", "--by", "operator")
+    say(out)
 
 
 def cmd_answer(bl, a):
@@ -621,25 +652,31 @@ def cmd_answer(bl, a):
     g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
     if g is None:
         raise Refused(f"{bl.label(iid)} has no gate {a.gate}")
-    if a.record and (a.provisional or a.confirm or a.by != "operator" or not a.answer):
-        raise Rejected("--record keeps the operator's answer as a decision: --answer TEXT --by operator, "
-                       "never --provisional or --confirm")
+    if a.record and (a.provisional or a.confirm or a.by not in ("operator", "autopilot") or not a.answer):
+        raise Rejected("--record keeps the operator's or the autopilot's answer as a decision: --answer TEXT --by "
+                       "operator|autopilot, never --provisional or --confirm")
+    if a.by == "autopilot":
+        ok, cls = bl_authority.autopilot_may_answer(it, g)
+        if not ok:
+            raise Rejected(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it")
+        if g.get("by") == "operator":
+            raise Rejected(f"gate {a.gate} of {bl.label(iid)} has the operator's answer: the autopilot does not replace it")
     if a.confirm:
         if g.get("by") != "agent":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} has no agent answer to confirm")
-        g["by"] = "operator"
+        g["by"] = "autopilot" if a.by == "autopilot" else "operator"
     elif a.provisional:
         if g["kind"] != "provisional":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} is blocking: only the operator answers it")
-        g.update(answer=g["recommendation"], by="agent")
+        g.update(answer=g["recommendation"], by="autopilot" if a.by == "autopilot" else "agent")
     else:
         if not a.answer or not a.by:
-            raise Refused("--answer TEXT and --by operator|agent")
-        if g["kind"] == "blocking" and a.by != "operator":
+            raise Refused("--answer TEXT and --by operator|agent|autopilot")
+        if g["kind"] == "blocking" and a.by not in ("operator", "autopilot"):
             raise Refused(f"gate {a.gate} of {bl.label(iid)} is blocking: only the operator answers it")
         g.update(answer=a.answer, by=a.by)
         if a.record:
-            record_decision(bl, iid, a.gate, a.answer)
+            record_decision(bl, iid, a.gate, a.answer, a.by)
     bl.save(it)
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
     return 0
@@ -866,6 +903,7 @@ def cmd_gate(bl, a):
                        f"and not {START_GATE!r}, the sprint's own")
     gate = {"id": gid, "kind": a.kind, "question": a.question.strip(), "options": options,
             "recommendation": a.recommendation.strip()}
+    gate["class"] = bl_authority.derived_class(it, gate)
     if a.do:
         gate["do"] = {}
         for d in a.do:
@@ -883,7 +921,7 @@ def cmd_gate(bl, a):
     same = [g for g in gates if g.get("question") == gate["question"] or g.get("id") == gid]
     if same:
         known = same[0]
-        if len(same) > 1 or any(known.get(k) != v for k, v in gate.items() if k != "id") \
+        if len(same) > 1 or any(known.get(k) != v for k, v in gate.items() if k not in ("id", "class")) \
                 or (a.gate_id and known.get("id") != gid):  # an answer it already has does not make it different
             raise Rejected(f"gate add refuses a different gate with the question or id of gate {known.get('id')} "
                            f"of {bl.label(iid)}: it already has one (its answer is not overwritten)")
@@ -1414,10 +1452,10 @@ def args_answer(p):
     p.add_argument("id")
     p.add_argument("gate")
     p.add_argument("--answer")
-    p.add_argument("--by", choices=("operator", "agent"))
+    p.add_argument("--by", choices=("operator", "agent", "autopilot"))
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
-    p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator: keep the answer as an active decision")
+    p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator|autopilot: keep the answer as an active decision")
 
 
 def args_set(p):
