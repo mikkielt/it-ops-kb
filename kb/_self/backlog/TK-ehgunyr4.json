@@ -24,5 +24,31 @@
   "depends_on": [
     "TK-3hphkfbg"
   ],
+  "gates": [
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which exit cause does a headless run name when only items whose code/<id> merge request has not merged remain?",
+      "options": [
+        "blocked: the item waits on a request, so nothing is ready",
+        "sprint-done: the run's own work is finished"
+      ],
+      "recommendation": "blocked: the item waits on a request, so nothing is ready",
+      "answer": "blocked: the item waits on a request, so nothing is ready",
+      "by": "agent"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does a headless run work the sprint's review story?",
+      "options": [
+        "No: the review story is the operator's, and a run with only it left ends sprint-done",
+        "Yes: the run claims and works the review story like any item"
+      ],
+      "recommendation": "No: the review story is the operator's, and a run with only it left ends sprint-done",
+      "answer": "No: the review story is the operator's, and a run with only it left ends sprint-done",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "mac-first-w2"
 }
