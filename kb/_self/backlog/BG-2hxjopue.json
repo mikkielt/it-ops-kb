@@ -1,0 +1,35 @@
+{
+  "id": "BG-2hxjopue",
+  "kind": "bug",
+  "title": "done can never close an item whose only touches are item files, so a planning-data fix has no way to finish",
+  "status": "todo",
+  "sprint": "SP-xdzgepun",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/backlog.md (Working on items) says an item whose touches are item files only is closed with backlog.py drop --why naming the fixing commit, since done requires a KB-Work commit that changes a file other than item files; backlog.py new and check warn when a bug or story's touches are item files only and name that route, so a worker does not claim an item it cannot finish; found when BG-plvwei5i's fix of an epic's text was refused by done",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'item files only' in t else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a missing rule in the runbook and a missing warning; the behaviour test (a temp backlog whose item touches only an item file) is the item's own check, still to be written",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "new_warns_item_files_only_touches"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
