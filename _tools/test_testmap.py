@@ -210,3 +210,81 @@ def test_testmap_review_gaps_root_files_run_check_py():
 
 def test_gate_without_a_base_runs_every_check():
     assert ran(None) == {"check", "fetch", "doc2query", "selfdoc", "backlog", "querylog"}
+
+
+JUNIT = """<?xml version="1.0"?><testsuites><testsuite>
+<testcase classname="_tools.test_a.TestX" name="t1" time="1.5"/>
+<testcase classname="_tools.test_a" name="t2" time="0.25"><failure message="a free text, with a path /x/y"/></testcase>
+<testcase classname="_tools.test_b" name="t3" time="3"><skipped/></testcase>
+<testcase classname="_tools.test_b" name="t4" time="2"/>
+<testcase classname="free text here" name="t5" time="9"/>
+<testcase classname="_tools.test_Weird-Name" name="t6" time="9"/>
+</testsuite></testsuites>"""
+
+
+@pytest.fixture
+def spool(tmp_path, monkeypatch):
+    import ql_capture
+    monkeypatch.setattr(tests_py, "inside_test", lambda: False)  # the guard has its own test
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
+    return tmp_path / "spool"
+
+
+def ops_rows(spool):
+    import json
+    return [json.loads(ln) for f in spool.glob("*.jsonl") for ln in f.read_text(encoding="utf-8").splitlines()]
+
+
+def test_ops_test_run_row_records_scope_counts_and_per_file_times(tmp_path, spool):
+    import ql_capture
+    xml = tmp_path / "r.xml"
+    xml.write_text(JUNIT, encoding="utf-8")
+    files = tests_py.junit_files(str(xml))
+    assert files == {"test_a.py": [1750, 1, 1, 0], "test_b.py": [5000, 1, 0, 1]}, files  # no free text, no odd name
+    row = tests_py.record_run("full", [{"exit": 1, "ms": 7, "files": files}], [], 4321)
+    assert row is not None and ops_rows(spool) == [row]
+    fields = {k: v for k, v in row.items() if k not in ("id", "ts", "surface", "v")}
+    assert ql_capture.ops_problems(fields) == [], fields
+    assert (fields["mode"], fields["ms"], fields["exit"], fields["selected"]) == ("full", 4321, 1, 2), fields
+    assert (fields["passed"], fields["failed"], fields["skipped"]) == (2, 1, 1), fields
+    assert fields["failed_files"] == ["test_a.py"] and fields["workers"] >= 1, fields
+    assert fields["slow"] == [{"file": "test_b.py", "ms": 5000}, {"file": "test_a.py", "ms": 1750}], fields
+    assert fields["files"] == [{"file": "test_a.py", "ms": 1750}, {"file": "test_b.py", "ms": 5000}], fields
+    assert "files" not in tests_py.run_fields("changed", [{"exit": 0, "files": files}], None, 2, False, 1)
+    assert "files" not in tests_py.record_run("full", [{"exit": 0, "ms": 1, "files": files}], ["-k", "x"], 1)
+
+
+def test_ops_test_run_row_refuses_an_unknown_key_and_free_text(spool):
+    """Planted: the row's closed shape, which the writer meets, refuses a key the event lacks and free text where a test
+    file name goes (a node id, a message, a path)."""
+    import ql_capture
+    good = {"mode": "full", "ms": 1, "exit": 0}
+    assert ql_capture.record("ops", event="test.run", **good) is not None
+    for bad in ({"note": "free text"}, {"failed_files": ["test_a.py::TestX::test_t1"]},
+                {"failed_files": ["a free text message"]}, {"slow": [{"file": "/abs/test_a.py", "ms": 1}]},
+                {"mode": "everything"}):
+        assert ql_capture.record("ops", event="test.run", **{**good, **bad}) is None, bad
+        assert ql_capture.ops_problems({"event": "test.run", **good, **bad}), bad
+    assert len(ops_rows(spool)) == 1
+
+
+def test_ops_test_run_row_never_breaks_a_run(tmp_path, spool, monkeypatch):
+    """Best effort: capture off, a failing writer and a run inside a test (a scenario clone's) raise nothing, and the
+    last two write nothing."""
+    import ql_capture
+    entry = {"exit": 0, "ms": 1, "files": {"test_a.py": [1, 1, 0, 0]}}
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: None)  # logging off
+    assert tests_py.record_run("full", [entry], [], 1) is None
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
+
+    def boom(*a, **k):
+        raise OSError("disk")
+    monkeypatch.setattr(ql_capture, "record", boom)
+    assert tests_py.record_run("full", [entry], [], 1) is None
+    monkeypatch.undo()
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
+    assert tests_py.inside_test()  # this very test: pytest's variable, which a scenario clone's subprocess inherits
+    assert tests_py.record_run("full", [entry], [], 1) is None and ops_rows(tmp_path / "spool") == []
+    assert tests_py.junit_files(str(tmp_path / "missing.xml")) == {}
+    (tmp_path / "bad.xml").write_text("<a", encoding="utf-8")
+    assert tests_py.junit_files(str(tmp_path / "bad.xml")) == {}

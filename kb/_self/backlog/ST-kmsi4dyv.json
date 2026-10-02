@@ -31,6 +31,20 @@
     "ST-t7xxgt47",
     "ST-g73vlg44"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a tests.py run map to test.run rows and modes?",
+      "options": [
+        "one row per tests.py invocation",
+        "one row per pytest subprocess"
+      ],
+      "recommendation": "one row per tests.py invocation",
+      "answer": "one row per tests.py invocation",
+      "by": "agent"
+    }
+  ],
   "notes": "Failure it answers: the suite's run times and load timeouts are known only from reports written by hand (EP-hlnsqx4f); tests.py also changes in ST-g73vlg44 and ST-t7xxgt47, so these run one after another.",
   "claimed_by": "seventh-w5"
 }
