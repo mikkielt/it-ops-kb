@@ -29,6 +29,7 @@
     "_tools/ql_base.py",
     "_tools/fixtures/querylog/golden.jsonl",
     "kb/_self/querylog.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "_tools/test_ql_distill.py"
   ]
 }
