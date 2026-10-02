@@ -2,7 +2,7 @@
   "id": "BG-tm3g5pha",
   "kind": "bug",
   "title": "tests.py given one test file and no -k takes the host lock and records a full run",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3siaqxdf",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "touches": [
     "_tools/tests.py",
     "_tools/test_tests_lock.py"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
