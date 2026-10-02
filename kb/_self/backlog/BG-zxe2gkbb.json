@@ -2,7 +2,7 @@
   "id": "BG-zxe2gkbb",
   "kind": "bug",
   "title": "code_pointer rejects a valid path whose first segment ends in a host-like tail, such as Contoso.Web.App/Program.cs#Main",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7irdeeel",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/kbfacts.py",
     "_tools/test_kbfacts.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
