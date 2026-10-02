@@ -1,0 +1,22 @@
+{
+  "id": "SP-itmjxudu",
+  "kind": "sprint",
+  "title": "The autopilot runs unattended safely",
+  "status": "active",
+  "goal": "The autopilot's gate classes cover every spelling of a touch and the sprint start gate, a killed or compacted runner ends cleanly and is recovered by the next tick, a headless child has a turn and wall-clock bound, the tick files findings through bounds and runs bounds stop before it refills, and the allow rules cover exactly the commands the tick runs",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}
