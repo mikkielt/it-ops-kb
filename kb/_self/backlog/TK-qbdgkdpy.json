@@ -2,7 +2,7 @@
   "id": "TK-qbdgkdpy",
   "kind": "task",
   "title": "bl_cost.py holds the cost report",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -38,5 +38,19 @@
   "depends_on": [
     "TK-f5swu7tm"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "49589e02f65206cd5a8397a7046c14cfb6ea3de2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_cost"
+        ],
+        "exit": 0,
+        "sha256": "68df14e4c75138b9"
+      }
+    ]
+  }
 }
