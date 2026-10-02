@@ -1,0 +1,27 @@
+{
+  "id": "TK-ftucvr5v",
+  "kind": "task",
+  "title": "autopilot.py status prints the manager's state in one capped command, and --hook under 1000 characters",
+  "status": "todo",
+  "parent": "ST-nrhwbodb",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "autopilot.py status prints the runners (sprint, worktree, pid, alive or exit cause, from what runner-status reads), each active sprint's counts and next item (backlog.py horizon data), the operator's pending gates, the unratified autopilot decisions and the last tick's actions from _cache/autopilot/state.json and ticks.jsonl when those files exist (a missing file prints nothing for that part and is not an error), capped (a count and the first few per section); autopilot.py status --hook prints the same in under 1000 characters, always exits 0, never writes a file and never fails the session; tests in _tools/test_autopilot.py name autopilot_status: a planted runner record, sprint, pending gate and tick file print each part, the cap holds on a long list, --hook stays under 1000 characters and exits 0 with no state at all. The SessionStart hook and the PreCompact block in .claude/settings.json are a separate task that needs the user's explicit yes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_status"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md"
+  ]
+}
