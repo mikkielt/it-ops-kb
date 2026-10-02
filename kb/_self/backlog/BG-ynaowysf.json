@@ -1,0 +1,37 @@
+{
+  "id": "BG-ynaowysf",
+  "kind": "bug",
+  "title": "gate_do_warnings stays silent for an option without a command when another option of the gate has one",
+  "status": "todo",
+  "sprint": "SP-xdzgepun",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py check warns for each option of a blocking gate that has no do entry, so one option with a command no longer silences the warning for the others; the test plants a gate with two options and one do and expects one warning; found in the review of SP-6eifcza6 (ST-bpj4kuz5)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();i=t.index('def gate_do_warnings');b=t[i:i+1500];sys.exit(0 if 'for o in' in b or 'for opt' in b else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a loop that is missing; a planted two-option gate is the item's own test, still to be written, and the repro reads the source until it exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "gate_do_warns_per_option"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "_tools/test_backlog.py",
+    "_tools/test_bl_*.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

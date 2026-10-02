@@ -1,0 +1,37 @@
+{
+  "id": "BG-bfivioo3",
+  "kind": "bug",
+  "title": "start accepts a host check recorded on another host: host_checked.ok is committed and nothing ties it to the host",
+  "status": "todo",
+  "sprint": "SP-xdzgepun",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py start re-runs a gate's host check itself or reads a git-ignored per-host record, so a pass committed from one host or clone does not satisfy start on another; a test plants a record from another host; found in the review of SP-6eifcza6 (ST-26w7hg5u)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();sys.exit(1 if 'g.get(\"host_checked\", {}).get(\"ok\")' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a committed record that any host can satisfy; the cross-host scenario is the item's own test, still to be written, and the repro reads the source for the trusting read of host_checked",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "start_ignores_a_host_check_from_another_host"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "_tools/test_backlog.py",
+    "_tools/test_bl_*.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

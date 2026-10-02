@@ -1,0 +1,36 @@
+{
+  "id": "BG-ncpteupy",
+  "kind": "bug",
+  "title": "backlog.py referrers matches the bare stem of a moved .py file in every item that says the word, and misses a moved doc's file name",
+  "status": "todo",
+  "sprint": "SP-xdzgepun",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py referrers lists a moved .py file's importers and its script name and no item file that merely says the word (the stem matches in import form or as <stem>.py), and for a moved non-.py file it also matches the file name word-bounded; so referrers on _tools/backlog.py prints no item file and --item exits 0; found in the review of SP-6eifcza6 (ST-pvu4ecpv)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/backlog.py','referrers','_tools/backlog.py'],capture_output=True,text=True).stdout.splitlines();sys.exit(1 if [l for l in o if '  kb/_self/backlog/' in l] else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "referrers_ignores_item_files_and_matches_doc_names"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "_tools/test_backlog.py",
+    "_tools/test_bl_*.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

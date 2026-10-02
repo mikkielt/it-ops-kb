@@ -1,0 +1,37 @@
+{
+  "id": "BG-qyhgmm52",
+  "kind": "bug",
+  "title": "The docs-after-code check misses a docs task that waits on a code story or through its parent",
+  "status": "todo",
+  "sprint": "SP-xdzgepun",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py dependencies follows the depends_on of an item and of its ancestors and reads a dependency's scope through its descendants, so a docs task that depends on a code story whose touches sit in its tasks is refused at start and flagged by check; a test plants the story case and the parent case; found in the review of SP-6eifcza6 (ST-enbiym2z)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();i=t.index('def dependencies');b=t[i:i+3000];sys.exit(0 if 'ancestors' in b else 1)"
+    ]
+  },
+  "repro_reason": "the fix changes which items dependencies() walks; a planted story-to-task scenario is the item's own test, still to be written, and the repro reads the source until it exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "docs_after_code_story_and_parent"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "_tools/test_backlog.py",
+    "_tools/test_bl_*.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
