@@ -1,0 +1,23 @@
+{
+  "id": "ST-qc4vvlgs",
+  "kind": "story",
+  "title": "A navigation benchmark run keeps its raw claude stream-json beside the parsed row",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_lookup.nav_run writes each run's raw stdout to a file beside the row of navigation-<date>-runs.jsonl in the benchmark scratch directory, so a recorded stream exists to turn into a redacted fixture; a test plants a fake claude and sees the stdout kept; found by BG-nhfhifpe, which waits on a recorded stream",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "nav_run_keeps_raw_stdout"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_lookup.py",
+    "_tools/test_benchmarks.py"
+  ]
+}

@@ -40,7 +40,18 @@
         "Change bench_lookup.nav_run to keep each run's raw stdout beside the parsed row (a separate item), so the next paid navigation run records a stream",
         "Drop the bug: nav_result stays tested on synthetic streams only"
       ],
-      "recommendation": "Run one paid navigation case now with its raw stdout kept, then redact and trim it into _tools/fixtures/navigation"
+      "recommendation": "Run one paid navigation case now with its raw stdout kept, then redact and trim it into _tools/fixtures/navigation",
+      "do": {
+        "Run one paid navigation case now with its raw stdout kept, then redact and trim it into _tools/fixtures/navigation": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "navigation",
+          "--reps",
+          "1"
+        ],
+        "Change bench_lookup.nav_run to keep each run's raw stdout beside the parsed row (a separate item), so the next paid navigation run records a stream": "ST-qc4vvlgs"
+      }
     }
   ]
 }
