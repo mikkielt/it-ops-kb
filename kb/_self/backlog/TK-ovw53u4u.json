@@ -28,7 +28,14 @@
     "_tools/test_kbpublic.py",
     "_tools/test_merge.py",
     "_tools/kblane.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_history.py",
+    "_tools/test_backlog.py",
+    "_tools/test_sync.py",
+    "_tools/kg_history.py",
+    "_tools/kg_bridge.py",
+    "_tools/kg_hooks.py",
+    "_tools/kg_lane.py"
   ],
   "depends_on": [
     "TK-5sjw6qpg"
