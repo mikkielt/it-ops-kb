@@ -39,6 +39,14 @@
         "-k",
         "worker_brief_runs_leak_scan_for_new_test_files"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_brief_names_trailer_order_and_no_done"
+      ]
     }
   ],
   "touches": [
@@ -53,5 +61,5 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/maintaining.md"
   ],
-  "notes": "Merged finding: the cause of the late stale failure in two sessions is a worker brief that puts the Self-Reviewed trailer in a paragraph of its own before KB-Work; git reads trailers from the last paragraph only, so the gate saw no Self-Reviewed (a rerun of a full land, about 25 minutes, and about two retries over a doc another session edited). The worker brief states that Self-Reviewed goes inside the last trailer paragraph with KB-Work, and a test fails when the kb-worker definition or the kb-sprint brief text lacks it. Merged finding, second brief clause: kb-worker workers stalled more than once with changes staged, no commit and their test run gone, because they waited for a background-run completion notice that never arrived (ST-pvu4ecpv; the orchestrator finished it by hand, hours lost on a chain that holds the fleet's shared files). The worker brief says to run the item's checks and tests in the foreground with a timeout and never to wait for a background completion notice; a test fails when the kb-worker definition lacks it. Merged finding, third brief clause: a worker whose -k set omits test_kb_leaks misses the repository-wide leak scan for a new test file (ST-c35i7vjx's first land failed at the sync gate on a home-directory path literal in its new test file, one lost land run). The worker brief says to add -k leaks to the item's own checks whenever it adds or changes a test or fixture file; a test fails when the kb-worker definition lacks it."
+  "notes": "Merged finding: the cause of the late stale failure in two sessions is a worker brief that puts the Self-Reviewed trailer in a paragraph of its own before KB-Work; git reads trailers from the last paragraph only, so the gate saw no Self-Reviewed (a rerun of a full land, about 25 minutes, and about two retries over a doc another session edited). The worker brief states that Self-Reviewed goes inside the last trailer paragraph with KB-Work, and a test fails when the kb-worker definition or the kb-sprint brief text lacks it. Merged finding, second brief clause: kb-worker workers stalled more than once with changes staged, no commit and their test run gone, because they waited for a background-run completion notice that never arrived (ST-pvu4ecpv; the orchestrator finished it by hand, hours lost on a chain that holds the fleet's shared files). The worker brief says to run the item's checks and tests in the foreground with a timeout and never to wait for a background completion notice; a test fails when the kb-worker definition lacks it. Merged finding, third brief clause: a worker whose -k set omits test_kb_leaks misses the repository-wide leak scan for a new test file (ST-c35i7vjx's first land failed at the sync gate on a home-directory path literal in its new test file, one lost land run). The worker brief says to add -k leaks to the item's own checks whenever it adds or changes a test or fixture file; a test fails when the kb-worker definition lacks it. Merged finding (SP-djri7fqp retro): the worker brief template names the trailer order (Co-Authored-By, Session, Self-Reviewed, KB-Work last in one paragraph), tells the worker to run selfdoc stale, read the docs and add Self-Reviewed, and not to run done itself (the commit-msg hook refused KB-Work not last; one worker ran done)."
 }

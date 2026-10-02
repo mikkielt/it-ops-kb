@@ -24,6 +24,14 @@
         "-k",
         "ops_sync_gate_row"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_warns_when_item_has_no_work_rows"
+      ]
     }
   ],
   "touches": [
@@ -42,5 +50,5 @@
     "ST-zkotxvdl",
     "BG-7ods5qqd"
   ],
-  "notes": "Failures it answers: gates and lands that waited about 40 minutes with no record of which step or whose run (ST-zkotxvdl), and a gate that dropped its git scenarios with nothing printed about the selected scope (BG-7ods5qqd)."
+  "notes": "Failures it answers: gates and lands that waited about 40 minutes with no record of which step or whose run (ST-zkotxvdl), and a gate that dropped its git scenarios with nothing printed about the selected scope (BG-7ods5qqd). Merged finding (SP-djri7fqp retro): a sprint cost report printed zeros for eleven items worked in hand-made worktrees without capture hooks, so the review could show nothing. land warns when an item lands with no work rows in the ops rows, so a missing hook is caught at the landing and not at the review."
 }
