@@ -2,7 +2,7 @@
   "id": "BG-44tj4tsq",
   "kind": "bug",
   "title": "test_selfdoc's backlog row test passes although kb/_self/tools.md has no row for fire, fmt, goal, list or release",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-djri7fqp",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,28 @@
     "_tools/test_selfdoc.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "b77c3c166771b8c7a80aa42a70a4ebf021d1ba6f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_row_for_every_subcommand"
+        ],
+        "exit": 0,
+        "sha256": "00bd1bf7e72a8398"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,re;h=subprocess.run([sys.executable,'_tools/backlog.py','-h'],capture_output=True,text=True).stdout;names=re.search(r'\\{([a-z,-]+)\\}',h).group(1).split(',');t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(1 if [n for n in names if '`python3 _tools/backlog.py '+n+'`' not in t] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
