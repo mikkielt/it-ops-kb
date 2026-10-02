@@ -67,4 +67,5 @@ Work is planned and tracked in the backlog (`kb/_self/backlog.md`); a commit tha
   - after reworded or removed facts, `python3 _tools/doc2query.py stale` (the gate runs it for article changes).
 - `tests.py` scans tracked files only: stage new files (`git add`) before running it, or they pass unchecked.
 - Every `tests.py` run records an ops row `test.run` (mode, selected and total files, milliseconds, exit, counts, the slowest files; `kb/_self/tools.md`) in the query log's spool: the suite's times are read from those rows, not from reports written by hand.
+- A full `tests.py`, a `--changed` run with more than one worker and `stress_test.py` take a host-wide lock and wait for another such run on the same host, naming its pid and clone (`kb/_self/tools.md`): sessions sharing a host need no message to avoid overlapping runs.
 - Commit messages: conventional prefix (`docs(kb):`, `fix(kb):`, `feat(kb):`, `chore:`), imperative, body explaining why; your own trailers (e.g. `Co-Authored-By`) in the last paragraph, and the hook appends the KB-* ones after them. Commit only when asked. Push with `python3 _tools/kbgit.py sync --push` (`kb/_self/git.md`).
