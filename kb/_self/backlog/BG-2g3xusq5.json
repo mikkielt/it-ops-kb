@@ -1,0 +1,34 @@
+{
+  "id": "BG-2g3xusq5",
+  "kind": "bug",
+  "title": "A runner killed by procs --end or a manager exit leaves status.json running, vanishes from status, and a dirty or diverged orch worktree refuses forever",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "autopilot.py runner start installs SIGTERM and SIGHUP handlers that end the child's process tree and write a status with its cause, status shows a record whose cause is running while no live runner holds it as ended with the cause error instead of dropping it, and the manager tick has a recovery step (name the cause, end or reset the stale worktree) for a prepare_worktree refusal (dirty or diverged orch/SP) so the refusal does not repeat every tick; planted-failure tests cover each; found by the SP-4xngzagf review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,json,tempfile,pathlib;sys.path.insert(0,\"_tools\");import autopilot;r=pathlib.Path(tempfile.mkdtemp());d=r/\"_cache\"/\"autopilot\"/\"SP-aaaaaaaa\";d.mkdir(parents=True);(d/\"status.json\").write_text(json.dumps({\"sprint\":\"SP-aaaaaaaa\",\"cause\":\"running\",\"pid\":999999}));out=autopilot.runner_lines(str(r),9);print(out);sys.exit(0 if any(x and \"SP-aaaaaaaa\" in x for x in out) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_runner_ends_cleanly"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot_runner_ends.py",
+    ".claude/skills/kb-autopilot/SKILL.md",
+    "kb/_self/tools.md"
+  ]
+}
