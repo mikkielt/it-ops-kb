@@ -254,9 +254,10 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     ap = bl_cli.build_parser("d", "r")
     usage = ap.format_usage()
     assert "{" + ",".join(SUBCOMMANDS) + "}" in usage
+    import bl_check
     import bl_cost
     import bl_procs
-    owner = {"cost": bl_cost, "procs": bl_procs}  # a command a bl_ module owns: its handler is that module's, not backlog's
+    owner = {"cost": bl_cost, "procs": bl_procs, "check": bl_check, "selectors": bl_check}  # a command a bl_ module owns: its handler is that module's, not backlog's
     assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
     for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit
         sub = next(a for a in ap._actions if a.dest == "cmd").choices[n]
@@ -347,3 +348,64 @@ def test_bl_split_cost_planted_failures_fail():
         assert unexcused({"backlog": "", "bl_cost": body}) == [("facade", "bl_cost", "backlog", "backlog")], body
     assert any(isinstance(n, ast.FunctionDef) and n.name.startswith("test_backlog_cost_")
                for n in ast.parse("def test_backlog_cost_left_behind():\n    pass\n").body)
+
+
+CHECK_MOVED = ("validate", "KnowledgeState", "KbAtHead", "knowledge_check", "knowledge_lines", "stale_knowledge",
+               "selector_of", "collected", "selector_rows", "noop_output", "trivial_command", "text_only_repro",
+               "repro_text_warnings", "state_path_warnings", "gate_do_warnings", "is_test_run", "noop_warnings",
+               "host_bound_accepted", "cmd_check", "cmd_selectors")
+
+
+def check_defs(source):
+    """The public names a module defines at its top level that belong to the checks."""
+    return {n for n in kit_names(source) if n in CHECK_MOVED}
+
+
+def test_bl_split_check_bl_check_holds_the_checks_and_backlog_defines_none_of_them():
+    assert set(CHECK_MOVED) <= check_defs(tool_source("bl_check.py"))
+    assert check_defs(tool_source("backlog.py")) == set(), "backlog.py imports the checks, it does not define them"
+
+
+def test_bl_split_check_bl_check_never_imports_backlog_at_any_depth():
+    src = tool_source("bl_check.py")
+    tree = ast.parse(src)
+    assert not imported_from(src, "backlog")
+    assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(tree))
+
+
+def test_bl_split_check_check_and_selectors_are_registered_through_bl_cli_with_bl_check_handlers():
+    import backlog
+    import bl_check
+    import bl_cli
+    assert backlog.bl_cli is bl_cli
+    names = list(bl_cli.COMMANDS)
+    assert names.index("check") < names.index("fmt") < names.index("selectors"), "the usage order is unchanged"
+    assert bl_cli.handler_of("check") is bl_check.cmd_check and bl_cli.handler_of("selectors") is bl_check.cmd_selectors
+    tree = ast.parse(tool_source("bl_check.py"))
+    assert not any(isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "add_parser" for n in ast.walk(tree)), \
+        "a parser is added through bl_cli"
+    assert set(bl_check.DOCS) == {"stale_touches", "docs_after_code", "docs_warnings"}, "backlog.py binds the docs rules"
+
+
+def test_bl_split_check_check_tests_are_in_test_bl_check_and_none_are_left_in_test_backlog():
+    def check_tests(src):
+        return {n.name for n in ast.parse(src).body if isinstance(n, ast.FunctionDef)
+                and n.name.startswith(("test_knowledge_", "test_item_holds_host_names", "test_backlog_selectors_"))}
+    sources = backlog_test_sources()
+    assert len(check_tests(sources["test_bl_check.py"])) >= 25
+    assert check_tests(sources["test_backlog.py"]) == set()
+    for needle in ("backlog.validate", "backlog.KnowledgeState", "backlog.selector_of", "backlog.noop_output"):
+        assert needle not in sources["test_bl_check.py"], needle
+
+
+def test_bl_split_check_planted_failures_fail():
+    # a moved name put back in backlog.py, a bl_check that imports backlog (at any depth), a check test left behind,
+    # a builder copied into test_bl_check.py
+    assert check_defs("def validate(bl):\n    return []\n") == {"validate"}
+    assert check_defs("from bl_check import validate\n") == set()
+    for body in ("import backlog\n", "from backlog import say\n", "def late():\n    from backlog import say\n"):
+        assert unexcused({"backlog": "", "bl_check": body}) == [("facade", "bl_check", "backlog", "backlog")], body
+    assert any(isinstance(n, ast.FunctionDef) and n.name.startswith("test_knowledge_")
+               for n in ast.parse("def test_knowledge_left_behind():\n    pass\n").body)
+    kit = (Path(TOOLS) / "bl_testkit.py").read_text(encoding="utf-8")
+    assert own_copies(kit, {"test_bl_check.py": "def b(root, *a):\n    return 1\n"}) == [("test_bl_check.py", "b")]
