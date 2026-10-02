@@ -1,0 +1,21 @@
+{
+  "id": "BG-tm3g5pha",
+  "kind": "bug",
+  "title": "tests.py given one test file and no -k takes the host lock and records a full run",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/tests.py _tools/test_x.py [-q] (named files, no -k) takes no host lock and records its run as a file-scoped run, not mode full with per-file times of a full run, so a reviewer's or an item's single-file run neither queues behind the fleet's heavy runs nor pollutes the full-run timings; a test plants a path argument and sees both; found by the SP-4i5quwba review of BG-ewwvuxho",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import tests as t;sys.exit(1 if t.wants_host_lock(['_tools/test_kb_http.py','-q']) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_testmap.py"
+  ]
+}

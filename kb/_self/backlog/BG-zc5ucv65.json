@@ -1,0 +1,22 @@
+{
+  "id": "BG-zc5ucv65",
+  "kind": "bug",
+  "title": "kb_ask.py's module and research() docstrings still say the researcher has the docs servers and no kb server",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The docstrings of _tools/kb_ask.py (module header and research()) say the researcher reads live docs through the kb server's cached docs_search and docs_fetch, as the code since BG-prx3jw34 does, and no line of _tools or kb/_self says 'no kb server' of the researcher; found by the SP-4i5quwba review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1 if 'no kb server' in open('_tools/kb_ask.py',encoding='utf-8').read() else 0)"
+    ]
+  },
+  "repro_reason": "the defect is wrong text in a docstring: no behaviour runs differently, so the only proof is the text",
+  "touches": [
+    "_tools/kb_ask.py",
+    "kb/_self/design.md"
+  ]
+}
