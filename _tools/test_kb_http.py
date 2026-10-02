@@ -682,6 +682,26 @@ def test_kb_http_chunked_body(guarded, port):
     assert wire(port, gz)[0][0] == 501
 
 
+def test_kb_http_small_chunks_served(guarded, port):
+    """A body whose data is at --max-body is served whatever its chunk size (1 MiB in 256-byte chunks carries about 28
+    KiB of size lines); a flood of extensions or trailers over the same limit is still refused."""
+    import io
+    limit = 1 << 20
+    small = b"".join(b"100\r\n" + b"x" * 256 + b"\r\n" for _ in range(limit // 256)) + b"0\r\n\r\n"
+    h = object.__new__(kb_http.Handler)
+    h.rfile = io.BytesIO(small)
+    assert h.read_chunked(limit) == b"x" * limit
+    h.rfile = io.BytesIO(small)
+    assert h.read_chunked(limit - 1) is None  # one data byte over is still refused
+    ext_body = b"".join(b"1;" + b"x" * (60 << 10) + b"\r\nA\r\n" for _ in range(200)) + b"0\r\n\r\n"
+    trailers = b"0\r\n" + b"".join(b"X-T: " + b"y" * (60 << 10) + b"\r\n" for _ in range(99)) + b"\r\n"
+    flood = b"".join(b"1;" + b"x" * 2000 + b"\r\nA\r\n" for _ in range(2000)) + b"0\r\n\r\n"  # many lines, each in cap
+    for body in (ext_body, trailers, flood):
+        h.rfile = io.BytesIO(body)
+        assert h.read_chunked(limit) is None
+        assert h.rfile.tell() < len(body) // 4
+
+
 def test_kb_http_chunk_extensions_capped(guarded, port):
     """Every byte a chunked request makes the server read counts against --max-body (plus a small allowance), chunk
     extensions and trailers included; the drain of a refused or 404 body is bounded the same way."""
@@ -694,10 +714,10 @@ def test_kb_http_chunk_extensions_capped(guarded, port):
         h = object.__new__(kb_http.Handler)
         h.rfile = io.BytesIO(body)
         assert h.read_chunked(limit) is None
-        assert h.rfile.tell() <= limit + kb_http.CHUNK_SLACK + 1  # one byte read to see it is over
+        assert h.rfile.tell() <= kb_http.CHUNK_SLACK + kb_http.LINE_MAX + 2  # the first line over the allowance ends it
         h.rfile = io.BytesIO(body)
         assert h.read_chunked(kb_http.DRAIN) is None
-        assert h.rfile.tell() <= kb_http.DRAIN + kb_http.CHUNK_SLACK + 1
+        assert h.rfile.tell() <= kb_http.CHUNK_SLACK + kb_http.LINE_MAX + 2
     # framing within the allowance still passes
     h = object.__new__(kb_http.Handler)
     h.rfile = io.BytesIO(b"2;a=b\r\n{}\r\n0\r\nX: 1\r\n\r\n")
