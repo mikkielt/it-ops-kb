@@ -2,7 +2,7 @@
   "id": "ST-d6aozshf",
   "kind": "story",
   "title": "The autopilot's own work has an end: a definition of done for sprints, retros and the backlog it fills",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-rrrrggw7",
   "priority": "P1",
@@ -104,5 +104,6 @@
       "by": "operator"
     }
   ],
-  "notes": "The failure it answers: closing a sprint turns every accepted review or retro finding into a story, so one sprint's close filed ten drafts (SP-x2pvljz6) and another six (SP-5cwekumc), with the operator as the only brake; an autopilot that answers for the operator has no brake. The existing process rule (backlog.md, Changing this process: a new mechanism only for a failure that happened) becomes a check. The limits gate holds the numbers. The story is large: /kb-item splits it into tasks (what a sprint gains and what findings file; the caps and the inflow guard; the manager's stop conditions and the docs)."
+  "notes": "The failure it answers: closing a sprint turns every accepted review or retro finding into a story, so one sprint's close filed ten drafts (SP-x2pvljz6) and another six (SP-5cwekumc), with the operator as the only brake; an autopilot that answers for the operator has no brake. The existing process rule (backlog.md, Changing this process: a new mechanism only for a failure that happened) becomes a check. The limits gate holds the numbers. The story is large: /kb-item splits it into tasks (what a sprint gains and what findings file; the caps and the inflow guard; the manager's stop conditions and the docs).",
+  "claimed_by": "mac-sixth"
 }
