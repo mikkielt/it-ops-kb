@@ -2,7 +2,7 @@
   "id": "TK-k5harfxm",
   "kind": "task",
   "title": "bl_testkit.py holds test_backlog.py's shared fixtures",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -30,5 +30,6 @@
   ],
   "depends_on": [
     "TK-cilkikzk"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
