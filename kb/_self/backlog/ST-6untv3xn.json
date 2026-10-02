@@ -2,7 +2,7 @@
   "id": "ST-6untv3xn",
   "kind": "story",
   "title": "settings.json allows the commands a headless sprint runner and its manager run",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -58,5 +58,6 @@
       "answer": "add all as listed (Bash rules with PowerShell mirrors, tools Agent Edit Write SendMessage, manager autopilot.py)",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
