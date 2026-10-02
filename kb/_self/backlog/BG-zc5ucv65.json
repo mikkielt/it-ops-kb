@@ -2,7 +2,7 @@
   "id": "BG-zc5ucv65",
   "kind": "bug",
   "title": "kb_ask.py's module and research() docstrings still say the researcher has the docs servers and no kb server",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3siaqxdf",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,27 @@
     "_tools/kb_ask.py",
     "kb/_self/design.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "48b5db81aaeff69bd207c195e0f274b0d9701bc7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(1 if 'no kb server' in open('_tools/kb_ask.py',encoding='utf-8').read() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(1 if 'no kb server' in open('_tools/kb_ask.py',encoding='utf-8').read() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
