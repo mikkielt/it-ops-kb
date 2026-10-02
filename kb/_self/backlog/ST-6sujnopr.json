@@ -2,7 +2,7 @@
   "id": "ST-6sujnopr",
   "kind": "story",
   "title": "Autopilot answers gates within its authority as recorded decisions",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -85,5 +85,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "seventh-w30"
+  "evidence": {
+    "commit": "45e29f589842ad4aa90093ad711f0012bd715f4e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_authority"
+        ],
+        "exit": 0,
+        "sha256": "98306e45d510668c"
+      }
+    ]
+  }
 }
