@@ -2,7 +2,7 @@
   "id": "TK-gqf6xtho",
   "kind": "task",
   "title": "test_research_merge builds on the shared kb seed and keeps its fork commit",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-7ihohi2u",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,32 @@
   "touches": [
     "_tools/test_research_merge.py"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "a9b09cde07257bb64731f2c47d1cbeaa213b8b01",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "exit": 0,
+        "sha256": "df81e07e7ff5f5ad"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestResearchMergeInGit"
+        ],
+        "exit": 0,
+        "sha256": "bfb7e0bc24cf3343"
+      }
+    ]
+  }
 }
