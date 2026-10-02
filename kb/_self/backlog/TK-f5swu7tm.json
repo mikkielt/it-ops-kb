@@ -2,7 +2,7 @@
   "id": "TK-f5swu7tm",
   "kind": "task",
   "title": "Each bl_ module registers its own parsers",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -31,5 +31,6 @@
   ],
   "depends_on": [
     "TK-jnijg64s"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
