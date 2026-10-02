@@ -2,7 +2,7 @@
   "id": "BG-zc5ucv65",
   "kind": "bug",
   "title": "kb_ask.py's module and research() docstrings still say the researcher has the docs servers and no kb server",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3siaqxdf",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,6 @@
   "touches": [
     "_tools/kb_ask.py",
     "kb/_self/design.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
