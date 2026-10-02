@@ -232,3 +232,67 @@ def test_bl_split_base_planted_failures_fail():
         assert unexcused({"backlog": "", "bl_base": body}) == [("facade", "bl_base", "backlog", "backlog")], body
     # a copy of a bl_base constant in bl_intake.py is seen
     assert "TEXT_MAX" in kit_names("TEXT_MAX = 2000\n") and "TEXT_MAX" not in kit_names("from bl_base import TEXT_MAX\n")
+
+
+SUBCOMMANDS = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
+               "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "drop", "start",
+               "host-check", "close", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake")
+
+
+def add_parser_calls(source, func):
+    """The `add_parser` calls inside the function `func` of `source`."""
+    fn = next(n for n in ast.walk(ast.parse(source)) if isinstance(n, ast.FunctionDef) and n.name == func)
+    return [n for n in ast.walk(fn) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+            and n.func.attr == "add_parser"]
+
+
+def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_parser():
+    import backlog
+    import bl_cli
+    assert add_parser_calls(tool_source("backlog.py"), "main") == []
+    assert tuple(bl_cli.COMMANDS) == SUBCOMMANDS, "the registry keeps the order argparse prints"
+    ap = bl_cli.build_parser("d", "r")
+    usage = ap.format_usage()
+    assert "{" + ",".join(SUBCOMMANDS) + "}" in usage
+    assert all(bl_cli.handler_of(n) is getattr(backlog, "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
+    for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit
+        sub = next(a for a in ap._actions if a.dest == "cmd").choices[n]
+        assert ("--commit" in sub._option_string_actions) == (n in backlog.COMMITS), n
+
+
+def test_bl_split_parser_registry_refuses_a_second_registration_of_a_name():
+    import bl_cli
+    reg = {}
+    bl_cli.register("one", print, registry=reg)
+    try:
+        bl_cli.register("one", print, registry=reg)
+    except ValueError as e:
+        assert "registered twice" in str(e)
+    else:
+        raise AssertionError("a duplicate subcommand name was accepted")
+    try:
+        bl_cli.register("show", print)  # the real registry holds it
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a duplicate of a real subcommand was accepted")
+    assert tuple(bl_cli.COMMANDS) == SUBCOMMANDS
+
+
+def test_bl_split_parser_registry_planted_failures_fail():
+    import bl_cli
+    # an add_parser call put back in main is seen
+    planted = "def main(argv=None):\n    p = sub.add_parser('new')\n"
+    assert len(add_parser_calls(planted, "main")) == 1
+    assert add_parser_calls("def main(argv=None):\n    ap = bl_cli.build_parser('d', 'r')\n", "main") == []
+    # a registry built in another order prints another usage
+    reg = {}
+    for n in reversed(SUBCOMMANDS):
+        bl_cli.register(n, print, registry=reg)
+    assert "{" + ",".join(SUBCOMMANDS) + "}" not in bl_cli.build_parser("d", "r", registry=reg).format_usage()
+    # a registered command with no arguments still parses, one with a help line shows it
+    reg = {}
+    bl_cli.register("zero", print, registry=reg, help="does nothing")
+    assert "does nothing" in bl_cli.build_parser("d", "r", registry=reg).format_help()
+    # bl_cli never imports backlog
+    assert not imported_from(tool_source("bl_cli.py"), "backlog")
