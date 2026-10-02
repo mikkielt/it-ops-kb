@@ -2,7 +2,7 @@
   "id": "ST-xm7ddxwu",
   "kind": "story",
   "title": "intake's drift budget test holds on a loaded host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -20,5 +20,19 @@
   "touches": [
     "_tools/test_intake.py"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "9c055a51b03eeecc263e8cae3d52164e11d4b7af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_drift_budget_under_load"
+        ],
+        "exit": 0,
+        "sha256": "58d063fc11e44bc4"
+      }
+    ]
+  }
 }
