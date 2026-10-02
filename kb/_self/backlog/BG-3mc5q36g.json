@@ -2,7 +2,7 @@
   "id": "BG-3mc5q36g",
   "kind": "bug",
   "title": "kbingest map's scrubbed environment and cargo config check still let a clone-controlled toolchain setting name clone code",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6tg672en",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "_tools/test_kbingest.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "b19b730e8cb510f51aa8c36b7b3fa2fffb718dd6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_scrubs_toolchain_hooks"
+        ],
+        "exit": 0,
+        "sha256": "99b0469c55d99230"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/kbingest.py',encoding='utf-8').read();sys.exit(0 if 'RUSTC_WRAPPER' in t and 'DOTNET_STARTUP_HOOKS' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
