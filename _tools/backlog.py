@@ -81,7 +81,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           reason is printed, never written to the item
   backlog.py gate add ID --question Q --option O... --recommendation R [--kind blocking|provisional] [--id GATE]
                                           add a gate (kind blocking unless given; two or more options, the
-                                          recommendation one of them; the id defaults to g1, g2, ...), validated as
+                                          recommendation one of them; a gate about a capped file (AGENTS.md,
+                                          README.md) needs each option to state the file's measured size, as
+                                          'N bytes'; the id defaults to g1, g2, ...), validated as
                                           check does; the same gate again changes nothing, a different gate with an
                                           existing question or id is refused, as is one on a done or dropped item
                                           (exit 2); `answer` answers it
@@ -2299,6 +2301,9 @@ def cmd_reopen(bl, a):
 
 
 GATE_ID_RE = re.compile(r"[a-z0-9][a-z0-9-]{0,39}")
+CAPPED_FILE_RE = re.compile(r"\b(?:AGENTS|README)\.md\b")
+SIZE_WORD_RE = re.compile(r"\b(?:cap|capped|bytes|size|limit)\b", re.I)
+MEASURED_SIZE_RE = re.compile(r"\b\d[\d,]*\s*bytes\b", re.I)
 
 
 def cmd_gate(bl, a):
@@ -2312,6 +2317,12 @@ def cmd_gate(bl, a):
         raise Rejected("gate add: --option twice or more, each different and not empty")
     if a.recommendation.strip() not in options:
         raise Rejected("gate add: --recommendation must be one of the --option values")
+    about = " ".join([a.question, *options])
+    if CAPPED_FILE_RE.search(about) and SIZE_WORD_RE.search(about):
+        bare = [o for o in options if not MEASURED_SIZE_RE.search(o)]
+        if bare:  # a size cap: the operator is asked once, on each option's measured result
+            raise Rejected("gate add: the gate is about a capped file (AGENTS.md, README.md), so each --option states "
+                           f"the file's measured size after it (`wc -c`, as 'N bytes'); without one: {', '.join(bare)}")
     gates = it.get("gates", [])
     gid = a.gate_id or next(f"g{n}" for n in range(1, len(gates) + 2) if f"g{n}" not in {g.get("id") for g in gates})
     if not GATE_ID_RE.fullmatch(gid) or gid == START_GATE:

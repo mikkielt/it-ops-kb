@@ -3414,6 +3414,29 @@ def test_backlog_set_gate_add_refuses(sprint, args, rule):
     refused_unchanged(repo, tk, "gate", "add", tk, *args, rule=rule)
 
 
+@pytest.mark.parametrize("options", [
+    ("fold into maintaining.md", "drop a row"),  # no measured size
+    ("fold into maintaining.md: 3990 bytes", "drop a row"),  # one option without
+])
+def test_gate_size_cap_measured_refuses_an_option_without_a_size(sprint, options):
+    repo, tk = sprint["repo"], sprint["tk"]
+    args = ["--question", "How does AGENTS.md stay under its cap?", "--recommendation", options[0]]
+    for o in options:
+        args += ["--option", o]
+    code, out = b(repo, "gate", "add", tk, *args)
+    assert code == 2 and "each --option states the file's measured size" in out, out
+    assert "gates" not in item_json(repo, tk)
+
+
+def test_gate_size_cap_measured_accepts_sizes_and_leaves_other_gates_alone(sprint):
+    repo, tk = sprint["repo"], sprint["tk"]
+    args = ["--question", "How does AGENTS.md stay under its cap?", "--option", "fold: 4001 bytes",
+            "--option", "drop a row: 4,090 bytes", "--recommendation", "fold: 4001 bytes"]
+    assert b(repo, "gate", "add", tk, *args)[0] == 0
+    assert b(repo, "gate", "add", tk, "--question", "Name of the flag in AGENTS.md?", "--option", "a",
+             "--option", "b", "--recommendation", "a")[0] == 0  # names the file, not a cap
+
+
 def test_backlog_set_gate_add_refuses_a_done_item_and_an_unknown_one(sprint):
     repo, tk = sprint["repo"], sprint["tk"]
     edit(repo, tk, status="done", evidence={"commit": "abc", "checks": []})
