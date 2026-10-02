@@ -44,6 +44,13 @@ printed, 1 no run was recorded for the sprint, 2 a bad sprint id. Standard libra
   The last tick is read from _cache/autopilot/state.json, `{"tick": N, "actions": [str or {"action"|"text": str}]}`, else
   from the last line of _cache/autopilot/ticks.jsonl of the same shape; a missing, corrupt or differently shaped file
   is not an error and prints nothing.
+  autopilot.py precompact                     the PreCompact hook: reads the hook's JSON on stdin and exits 2, naming
+                                              the holder and its step on stderr, while a live process of this clone
+                                              (CLAUDE_PROJECT_DIR, else the repository) holds the host main lock
+                                              (kg_lock: land's fetch and rebase, sync --push); 0 when the lock is
+                                              free, its holder's pid is gone, the holder is another clone's, or
+                                              anything fails, so a session is never kept from compacting past that step.
+  .claude/settings.json runs `status --hook` on SessionStart with the `compact` matcher and `precompact` on PreCompact.
 """
 import argparse, datetime, json, os, re, subprocess, sys
 from pathlib import Path
@@ -515,6 +522,43 @@ def status(hook=False, root=ROOT):
     return 0
 
 
+def main_lock_holder(clone):
+    """The live holder of the host main lock (kg_lock: `backlog.py land`'s fetch and rebase, `kbgit.py sync --push`)
+    whose clone is CLONE, as {pid, clone, started, step}; None when the lock is free, its record unreadable, its pid
+    gone or its clone another one."""
+    import kg_lock
+    import tests as tests_py  # the lock's helpers, as kg_lock uses them
+    path = os.path.join(tests_py.host_lock_dir(), kg_lock.LOCK_NAME)
+    text = tests_py.read_lock(path)
+    holder = tests_py.parse_holder(text) if text else None
+    if not holder or not tests_py.pid_alive(holder["pid"]):
+        return None
+    try:
+        same = os.path.samefile(holder["clone"], clone)
+    except OSError:
+        same = False
+    return {**holder, "step": kg_lock.holder_step(text)} if same else None
+
+
+def precompact(root=ROOT, stdin=None):
+    """The PreCompact hook: exit 2, saying why on stderr, while a land or sync of this clone holds the host main lock,
+    so the session that runs it keeps its state through the step; else 0. Bounded: a free lock, a holder whose pid is
+    gone, another clone's holder or any error lets compaction run."""
+    try:
+        try:
+            trigger = json.loads((stdin or sys.stdin).read() or "{}").get("trigger", "?")
+        except (ValueError, AttributeError):
+            trigger = "?"
+        held = main_lock_holder(str(os.environ.get("CLAUDE_PROJECT_DIR") or root))
+    except Exception:  # noqa: BLE001 - a hook that fails never blocks compaction
+        return 0
+    if not held:
+        return 0
+    print(f"compaction ({trigger}) waits: this clone's {held['step']} holds the host main lock (pid {held['pid']}, "
+          f"since {held['started']}); it is released when that step ends", file=sys.stderr)
+    return 2
+
+
 # ---------------------------------------------------------------- the command line
 
 def sprint_arg(text):
@@ -540,10 +584,13 @@ def main(argv=None):
     rs.add_argument("sprint", type=sprint_arg)
     sa = sub.add_parser("status", help="the manager's state in one capped command")
     sa.add_argument("--hook", action="store_true", help="under 1000 characters, never fails")
+    sub.add_parser("precompact", help="the PreCompact hook: exit 2 while a land or sync of this clone holds the lock")
     a = ap.parse_args(argv)
     try:
         if a.cmd == "status":
             return status(a.hook, ROOT)
+        if a.cmd == "precompact":
+            return precompact(ROOT)
         if a.cmd == "runner-status":
             return runner_status(a.sprint, ROOT)
         return runner_start(a.sprint, a.landed, ROOT)
