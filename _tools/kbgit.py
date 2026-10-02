@@ -170,6 +170,7 @@ import kbcommon, kbid  # noqa: E402
 import build_index  # noqa: E402
 import kbpublic  # noqa: E402
 import kblane  # noqa: E402
+import kg_lane  # noqa: E402
 import kg_merge  # noqa: E402
 from kg_base import BASELINE, KB, Problem, repo_roots  # noqa: E402
 from kg_merge import FB, canon_csv, has_markers, id_key, lf, run, strip_markers  # noqa: E402,F401
@@ -229,7 +230,7 @@ KEYS = ("KB-Topics", "KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Super
 VERIFIED = "KB-Verified"
 AUTO = "KB-Auto"  # querylog.py's automatic commits (kb/_self/querylog.md, Delivery)
 AUTO_VALUES = ("querylog", "eval", "alias", "expansion", "gap", "research", "revert")
-WORK = "KB-Work"  # the backlog items a commit works on (kb/_self/backlog.md); written by the agent, never computed
+WORK = kg_lane.WORK  # the backlog items a commit works on (kb/_self/backlog.md); written by the agent, never computed
 WORK_ID = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")
 BACKLOG = "kb/_self/backlog"
 WORK_LINE = re.compile(r"KB-Work\s*:\s*(.*\S)\s*$", re.I)
@@ -612,7 +613,7 @@ def lane_refusals(remote, stdin):
     res = []
     for ln in stdin.splitlines():
         parts = ln.split()
-        if len(parts) != 4 or parts[2] != f"refs/heads/{LANE_BRANCH}" or parts[1] == ZERO:
+        if len(parts) != 4 or parts[2] != f"refs/heads/{kg_lane.LANE_BRANCH}" or parts[1] == ZERO:
             continue
         _, local_sha, ref, remote_sha = parts
         if remote_sha != ZERO and git("cat-file", "-e", remote_sha + "^{commit}") is not None:
@@ -641,7 +642,7 @@ def hook_pre_push(args, stdin):
     for ref, short, code in refused:
         print(f"kb pre-push: refused: {short} is a code-lane commit ({' '.join(code)}) and {ref} of {remote} is main; "
               "code reaches main through a merge request: python3 _tools/kbgit.py sync --push sends it as a "
-              f"{CODE_BRANCH_PREFIX}<id> branch", file=sys.stderr)
+              f"{kg_lane.CODE_BRANCH_PREFIX}<id> branch", file=sys.stderr)
     if refused:
         return 1
     if os.environ.get("KB_GATE_DONE") == "1":
@@ -1602,9 +1603,6 @@ def gate(r, up, fix_check=False):
     return all(ok for _, _, ok in results)
 
 
-CODE_BRANCH_PREFIX = "code/"  # a range with a code-lane commit goes to code/<id>, never to main
-LANE_BRANCH = "main"  # lanes route a push to this branch only; a push to another branch (a cloud session's working
-# branch, which its git proxy allows alone) goes to that branch whatever its lane
 NO_PUSH_OPTIONS = re.compile(r"receiving end does not support push options", re.I)
 
 
@@ -1614,46 +1612,12 @@ def push_options(target):
             "merge_request.remove_source_branch"]
 
 
-def code_branch(up, rev):
-    """code/<id> of the commits up..REV (all of REV's history without UP) when any of them is code-lane, else None
-    (None too when git fails). <id> names the item whose code the range carries: the first KB-Work id of the first
-    code-lane commit that has one, so a content commit of another item riding along (its claim, an item file) does not
-    name the branch; else the first KB-Work id of the range; else REV's short hash. The one place the name is chosen:
-    sync and bridge (lane_plan) and backlog.py land call it."""
-    spec = [f"{up}..{rev}"] if up else [rev]
-    lanes = kblane.commit_lanes(KB, spec)
-    if not lanes or not any(lane == kblane.CODE for _, lane, _ in lanes):
-        return None
-    out = git("log", "--reverse", f"--format=%h%x00%(trailers:key={WORK},valueonly,unfold)%x1e", *spec) or ""
-    work = {}
-    for rec in out.split("\x1e"):
-        h, _, ids = rec.strip("\n").partition("\0")
-        if h:
-            work[h] = [x for x in re.split(r"[,\s]+", ids) if x]
-    in_code = [i for h, lane, _ in lanes if lane == kblane.CODE for i in work.get(h, [])]
-    in_range = [i for h, _, _ in lanes for i in work.get(h, [])]
-    ids = in_code or in_range
-    return CODE_BRANCH_PREFIX + (ids[0] if ids else short(rev_parse(rev)))
-
-
-def lane_plan(up, rev, target=LANE_BRANCH):
-    """(lane, branch) of the commits up..REV (all of REV's history without UP): the branch is code_branch's code/<id>
-    for a range with a code-lane commit, else None. A push to a TARGET branch other than LANE_BRANCH is not routed:
-    (None, None)."""
-    if target != LANE_BRANCH:
-        return None, None
-    branch = code_branch(up, rev)
-    if branch is None:
-        return kblane.CONTENT, None
-    return kblane.CODE, branch
-
-
 def push_branch(a, r, branch, target):
     """Push HEAD as BRANCH (code/<id>) with the merge-request push options; a server without push options gets the
     same push without them. An existing branch that is not an ancestor of HEAD is replaced with a lease on the tip
     fetched here (code/* only: main is never forced). Returns an exit code."""
-    if not branch.startswith(CODE_BRANCH_PREFIX):
-        print(f"refused: {branch} is not a {CODE_BRANCH_PREFIX}* branch")
+    if not branch.startswith(kg_lane.CODE_BRANCH_PREFIX):
+        print(f"refused: {branch} is not a {kg_lane.CODE_BRANCH_PREFIX}* branch")
         return 2
     ref = f"refs/heads/{branch}"
     tracking = f"refs/remotes/{a.remote}/{branch}"
@@ -1729,7 +1693,7 @@ def sync_once(a, r):
         return 1
 
     if a.dry_run:
-        lane, branch = lane_plan(up, orig, a.branch)
+        lane, branch = kg_lane.lane_plan(KB, up, orig, a.branch)
         print(f"lane: {lane or f'not routed (a push to {a.branch})'}; " + (f"would push branch {branch} with merge-request push options, {a.branch} would not move"
                                     if branch else f"would push to {target}"))
         if behind:
@@ -1781,7 +1745,7 @@ def sync_once(a, r):
     if not now_ahead:
         r["pushed"] = "nothing to push"
         return 0
-    lane, branch = lane_plan(up, "HEAD", a.branch)
+    lane, branch = kg_lane.lane_plan(KB, up, "HEAD", a.branch)
     if branch:
         print(f"lane: code; pushing branch {branch}, {a.branch} does not move")
         return push_branch(a, r, branch, target)
@@ -1870,7 +1834,7 @@ BRIDGE_PREFIX = "bridge/"
 def bridge_dry_run(a, pub, main, tip, commits):
     """What bridge would do, from the public commits alone: their lane and the target branch."""
     print(f"dry run: {len(commits)} commit(s) of {pub}/{a.branch} not on {pub}/main")
-    lane, branch = lane_plan(main, tip)
+    lane, branch = kg_lane.lane_plan(KB, main, tip)
     print(f"lane: {lane}; " + (f"would push branch {branch} with merge-request push options, main would not move"
                               if branch else f"would push to {a.remote}/main"))
     print("nothing checked out, rebased, fixed, committed or pushed")
