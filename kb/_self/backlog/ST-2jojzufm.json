@@ -2,7 +2,7 @@
   "id": "ST-2jojzufm",
   "kind": "story",
   "title": "Two sprint runners share one host without stepping on each other",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -47,5 +47,6 @@
       "answer": "2, each with up to 4 workers",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
