@@ -71,6 +71,18 @@
       "recommendation": "approve: names, exits, milliseconds, item ids, short shas, test file names and closed reason classes only",
       "answer": "approve: names, exits, milliseconds, item ids, short shas, test file names and closed reason classes only",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which events and keys does the ops sidecar's closed set start with? The sibling stories write land.step, land.end, sync.gate, done.refused, sprint.close, ci.pipeline, intake.detect, test.run and agent.run rows, and only ST-lopowpsz touches ql_capture.py, so a sibling cannot add an event or key itself. ST-kmsi4dyv's goal also says test.run keeps failed test ids, which the approved scope (no test node ids) does not allow.",
+      "options": [
+        "all nine events, with the keys their goals name, and failed_files (test file names) in place of failed test ids",
+        "only the mechanism and the events of this story's tests; each sibling adds its event to ql_capture.OPS_EVENTS"
+      ],
+      "recommendation": "all nine events, with the keys their goals name, and failed_files (test file names) in place of failed test ids",
+      "answer": "all nine events, with the keys their goals name, and failed_files (test file names) in place of failed test ids",
+      "by": "agent"
     }
   ],
   "notes": "The store is a sidecar of kb/_querylog/, so it inherits the query log redaction class, its gates, its GitLab-only delivery and its exclusion from the public projection. A second pusher is not added: kbgit.py sync gives up after two rejected pushes.",

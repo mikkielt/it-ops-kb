@@ -24,6 +24,14 @@
                     with and without it passes, a block that is not a block, one with a field outside `prompts`, `main`
                     and `sub`, counts outside the line shapes, counts above the line's own, one on a sprint's line or
                     on a shared line
+  TestOpsGates      the ops sidecar gates (`-k ops_sidecar`), each with a planted failure: a header other than run and
+                    counts, a run id that names another file or month, no run file beside it, a count that does not
+                    match the lines, an id that is not a row id or twice across sidecars, a time that is not the
+                    spool's, an event outside the closed set, a key the event does not have or lacks, and a value
+                    outside its shape (free text in a name, a node id or a path in a test file, a flag for a count,
+                    a reason of its own); an empty file or one that is not JSON lines; the leak scan finds an
+                    identifier in a value that passes the shape (`-k ops_sidecar_refuses_free_text` covers the
+                    values); `querylog.py check` runs them all
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub. The helpers the classes share are in
 ql_testkit.py.
@@ -566,3 +574,159 @@ class TestWorkReworkGates:
         p = subprocess.run([sys.executable, QL, "check", str(bad)], capture_output=True, text=True, encoding="utf-8",
                            timeout=120)
         assert p.returncode == 1 and "rework prompts exceed the line's" in p.stdout, p.stdout
+
+
+OPS_RUN = RUN_ID
+OPS_ROWS = [
+    {"id": "11111111-1111-4111-8111-111111111111", "ts": "2026-09-28T11:00:00.000Z", "event": "land.step",
+     "item": "ST-aaaaaaaa", "step": "rebase", "exit": 0, "ms": 1200},
+    {"id": "22222222-2222-4222-8222-222222222222", "ts": "2026-09-28T11:00:05.000Z", "event": "test.run",
+     "mode": "changed", "ms": 90000, "exit": 1, "selected": 3, "total": 120, "workers": 4, "failed": 1,
+     "slow": [{"file": "test_ql_store.py", "ms": 41000}], "failed_files": ["test_ql_store.py"]},
+    {"id": "33333333-3333-4333-8333-333333333333", "ts": "2026-09-28T11:00:09.000Z", "event": "done.refused",
+     "item": "ST-aaaaaaaa", "reasons": ["check-failed", "uncommitted"], "ms": 30, "checks": ["tests-ops-sidecar"]},
+]
+
+
+def ops_store(tmp_path, change=None, rows=None, layout=None):
+    """The golden run file with an ops sidecar of `rows` (default OPS_ROWS, written by write_ops): `change(objects)`
+    edits its header and lines, `layout(store)` the files. (the store, the ops problems)."""
+    store = golden_store(tmp_path / "store")
+    ql_store.write_ops(store, OPS_RUN, [ql_store.ops_line(r) for r in (rows or OPS_ROWS)])
+    path = ql_store.ops_files(store)[0]
+    objs = jsonl(path)
+    if change:
+        change(objs)
+    path.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
+    if layout:
+        layout(store)
+    return store, ql_store.ops_sidecar_problems(store)
+
+
+def ops_path(store):
+    return store / "ops" / "2026-09" / f"{OPS_RUN}.jsonl"
+
+
+def secret_shaped():
+    return "glpat" + "-" + "a" * 20  # a token the leak scan flags, built here so this file holds none
+
+
+class TestOpsGates:
+    """The ops sidecar gates (`-k ops_sidecar`), each with a planted failure."""
+
+    def test_ops_sidecar_gates_pass_on_a_written_sidecar(self, tmp_path):
+        store, problems = ops_store(tmp_path)
+        assert problems == [] and ql_store.store_problems(store) == []
+        assert [p.relative_to(store).as_posix() for p in ql_store.ops_files(store)] == [f"ops/2026-09/{OPS_RUN}.jsonl"]
+        assert ql_store.run_ids(store) == [OPS_RUN]
+        objs = jsonl(ops_path(store))
+        assert objs[0] == {"run": OPS_RUN, "counts": {"rows": 3}} and objs[1:] == OPS_ROWS
+        assert ql_store.ops_ids(store) == {r["id"] for r in OPS_ROWS}
+
+    def test_ops_sidecar_not_written_without_a_line(self, tmp_path):
+        assert ql_store.write_ops(tmp_path / "store", OPS_RUN, []) is None and not (tmp_path / "store").exists()
+
+    def test_ops_sidecar_a_spool_row_is_its_line(self):
+        row = {**OPS_ROWS[0], "surface": "ops", "v": 1}
+        assert ql_store.ops_line(row) == OPS_ROWS[0]
+        assert list(ql_store.ops_line({**row, "step": "rebase", "exit": 0})) == ["id", "ts", "event", "item", "step", "exit", "ms"]
+        for bad in ({**row, "session_id": "x"}, {**row, "event": "land.nothing"}, {**row, "ms": "1"}, {**row, "step": "a b"},
+                    {k: v for k, v in row.items() if k != "ts"}, "not a row"):
+            assert ql_store.ops_line(bad) is None, bad
+
+    @pytest.mark.parametrize("change,needle", [
+        (at([0, "session_id"], "3f2a4c1e-0000-4000-8000-00000000abcd"), "an ops header is exactly"),
+        (at([0, "counts"], {"rows": 2}), "counts.rows is 2, the file has 3"),
+        (at([0, "counts"], {"rows": "3"}), "counts are not rows as counts"),
+        (at([0, "run"], "20260928T120000Z-0000abce"), "run id does not name this file"),
+        (at([1, "id"], "ops-1"), "ops id is not a row id"),
+        (at([1, "ts"], "yesterday"), "ops ts is not a UTC time"),
+        (lambda o: o[1].pop("ts"), "ops ts is not a UTC time"),
+        (at([1, "event"], "land.nothing"), "event 'land.nothing' is not one of"),
+        (lambda o: o[1].pop("event"), "is not one of"),
+        (at([1, "session_id"], "3f2a4c1e-0000-4000-8000-00000000abcd"), "keys event land.step never has: session_id"),
+        (at([1, "command"], "backlog.py done ST-aaaaaaaa"), "keys event land.step never has: command"),
+        (lambda o: o[1].pop("exit"), "event land.step lacks exit"),
+        (at([1, "step"], "fix the rebase and try again"), "step of land.step is not a closed token value"),
+        (at([1, "step"], "Rebase"), "step of land.step is not a closed token value"),
+        (at([1, "item"], "item 1"), "item of land.step is not a closed item value"),
+        (at([1, "ms"], True), "ms of land.step is not a closed ms value"),
+        (at([1, "ms"], -5), "ms of land.step is not a closed ms value"),
+        (at([1, "exit"], "0"), "exit of land.step is not a closed exit value"),
+        (at([2, "mode"], "everything"), "mode of test.run is not a closed mode value"),
+        (at([2, "failed_files"], ["test_ql_store.py::test_ops_sidecar"]), "failed_files of test.run is not a closed list value"),
+        (at([2, "slow"], [{"file": "_tools/test_ql_store.py", "ms": 5}]), "slow of test.run is not a closed rows value"),
+        (at([2, "slow"], [{"file": "test_ql_store.py", "ms": 5, "note": "slow"}]), "slow of test.run is not a closed rows value"),
+        (at([2, "selected"], 1.5), "selected of test.run is not a closed count value"),
+        (at([3, "reasons"], ["the item was not ready"]), "reasons of done.refused is not a closed list value"),
+        (at([3, "checks"], ["Check 1: fix it"]), "checks of done.refused is not a closed list value"),
+    ])
+    def test_ops_sidecar_planted(self, tmp_path, change, needle):
+        problems = ops_store(tmp_path, change)[1]
+        assert any(needle in p for p in problems), problems
+
+    def test_ops_sidecar_refuses_free_text(self, tmp_path):
+        """free text has no key of its own and no value that passes a closed shape"""
+        for key, value, needle in (("step", "I could not rebase because main moved", "step of land.step is not a closed token"),
+                                   ("note", "main moved", "keys event land.step never has: note"),
+                                   ("summary", "rebase", "keys event land.step never has: summary"),
+                                   ("item", "the rebase item", "item of land.step is not a closed item")):
+            problems = ops_store(tmp_path / key, at([1, key], value))[1]
+            assert any(needle in p for p in problems), problems
+        problems = ops_store(tmp_path / "list", at([3, "checks"], ["tests", "it failed because of the network"]))[1]
+        assert any("checks of done.refused is not a closed list value" in p for p in problems), problems
+        assert all("because of the network" not in p for p in problems)  # a refusal repeats only the start of a value
+
+    def test_ops_sidecar_the_same_row_twice_across_sidecars(self, tmp_path):
+        store, _ = ops_store(tmp_path)
+        other = "20260929T120000Z-0000abcd"
+        golden_store(store, [{**jsonl(FIXTURES / "golden.jsonl")[0], "run": other,
+                              "counts": {"entries": 0, "dropped": 0, "waiting": 0}}], name=other)
+        ql_store.write_ops(store, other, [OPS_ROWS[0]])
+        problems = ql_store.ops_sidecar_problems(store)
+        assert any(f"duplicate ops id {OPS_ROWS[0]['id']} (also ops/2026-09/{OPS_RUN}.jsonl:2)" in p for p in problems), problems
+        assert ql_store.write_ops(store, other, [{**OPS_ROWS[0], "id": "44444444-4444-4444-8444-444444444444"}])
+        assert ql_store.ops_sidecar_problems(store) == []
+
+    def test_ops_sidecar_no_run_file_beside_it(self, tmp_path):
+        problems = ops_store(tmp_path, layout=lambda s: (s / "2026-09" / f"{OPS_RUN}.jsonl").unlink())[1]
+        assert any(f"no run file {OPS_RUN} beside it" in p for p in problems), problems
+
+    def test_ops_sidecar_in_the_wrong_month_directory(self, tmp_path):
+        def move(store):
+            (store / "ops" / "2026-10").mkdir()
+            ops_path(store).rename(store / "ops" / "2026-10" / ops_path(store).name)
+        problems = ops_store(tmp_path, layout=move)[1]
+        assert any("run id does not name this file" in p for p in problems), problems
+
+    def test_ops_sidecar_empty_and_not_json(self, tmp_path):
+        problems = ops_store(tmp_path, layout=lambda s: ops_path(s).write_text("", encoding="utf-8"))[1]
+        assert any("empty ops sidecar" in p for p in problems), problems
+        problems = ops_store(tmp_path / "b", layout=lambda s: ops_path(s).write_text("not json\n", encoding="utf-8"))[1]
+        assert any("not an ops sidecar" in p for p in problems), problems
+
+    def test_ops_sidecar_the_leak_scan_finds_an_identifier_that_has_the_shape_of_a_name(self, tmp_path):
+        """a secret-shaped value is a valid `token`: only the leak scan stops it, in check and in the push's scan"""
+        assert ql_capture_token_ok(secret_shaped())
+        store, problems = ops_store(tmp_path, at([1, "step"], secret_shaped()))
+        assert problems and all("the leak scan flags an identifier (secret)" in p for p in problems), problems
+        rel = f"ops/2026-09/{OPS_RUN}.jsonl"
+        assert ql_store.leak_problems(store, [rel]) == [f"{rel}:2: the leak scan flags an identifier (secret)"]
+        assert ql_store.ops_line_leaks(jsonl(ops_path(store))[1]) == ["secret"]
+        assert ql_store.ops_line_leaks(OPS_ROWS[0]) == []
+
+    def test_ops_sidecar_check_runs_the_gates(self, tmp_path):
+        store, _ = ops_store(tmp_path)
+        p = subprocess.run([sys.executable, QL, "check", str(store)], capture_output=True, text=True, encoding="utf-8",
+                           timeout=120)
+        assert (p.returncode, p.stdout) == (0, "querylog check: problems=0\n"), p.stdout
+        for n, change in enumerate((at([1, "step"], "fix it now"), at([1, "step"], secret_shaped()))):
+            bad, _ = ops_store(tmp_path / f"bad{n}", change)
+            p = subprocess.run([sys.executable, QL, "check", str(bad)], capture_output=True, text=True,
+                               encoding="utf-8", timeout=120)
+            assert p.returncode == 1 and ("is not a closed token value" in p.stdout or "leak scan flags" in p.stdout), p.stdout
+
+
+def ql_capture_token_ok(value):
+    import ql_capture
+    return ql_capture.OPS_KINDS["token"](value)

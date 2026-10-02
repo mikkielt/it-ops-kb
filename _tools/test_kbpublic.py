@@ -3,6 +3,8 @@
   TestProjection   (marker git) a small repository whose history adds, edits and removes kb/_querylog: the projection
                    drops it from every tree, keeps the commits before it and their hashes, drops store-only commits,
                    keeps authors and messages, and is the same when computed twice.
+                   The ops sidecar (kb/_querylog/ops/) is part of that path: the projection drops it, check-public and
+                   the push guard name it, and kbgit.py's gate treats it as the query log store (`-k ops_sidecar`).
   TestProjectionReuse (marker git) the projection cache: a second projection of a longer source rewrites only the
                    new commits and gives the shas a projection from scratch gives; a corrupt cache is the full walk; a
                    cached projected commit missing from the object store is computed again.
@@ -91,6 +93,30 @@ class TestProjection:
         assert r.git("rev-list", p).split()[-2:] == [shas[1], shas[0]]  # the history before the store keeps its hashes
         assert r.git("diff", "--name-only", shas[-1], p).split() == ["kb/_querylog/2026-09/r2.jsonl"]
         assert r.git("log", "-1", "--format=%an %ae %ad", p) == r.git("log", "-1", "--format=%an %ae %ad", shas[-1])
+
+    def test_ops_sidecar_cut_from_publish(self, tmp_path):
+        """an ops sidecar is under kb/_querylog/, so it never reaches the public home: it is in no projected tree, a
+        commit of nothing else is gone, one that also holds public content keeps the content and drops the sidecar"""
+        r = Repo(tmp_path / "ops")
+        os.makedirs(r.path)
+        r.git("init", "-q", "-b", "main")
+        ops = "kb/_querylog/ops/2026-10/20261002T100000Z-0000abcd.jsonl"
+        shas = [commit(r, {"kb/public/a.md": "fact\n"}, "public"),
+                commit(r, {ops: "{}\n"}, "ops only"),
+                commit(r, {ops.replace("0000abcd", "0000abce"): "{}\n", "kb/public/b.md": "b\n"}, "mixed")]
+        p = kbpublic.project(shas[-1], r.path)
+        assert [x for x in r.git("ls-tree", "-r", "--name-only", p).split() if "_querylog" in x] == []
+        assert r.git("log", "--format=%s", p).split("\n")[:-1] == ["mixed", "public"]  # the ops-only commit is gone
+        assert r.git("show", f"{p}:kb/public/b.md") == "b\n"
+        assert kbpublic.private_commits(p, r.path) == []
+        assert kbpublic.private_commits(shas[-1], r.path) and kbpublic.private_commits(shas[1], r.path)
+        r.git("remote", "add", "pub", str(tmp_path / "x.git"))
+        r.git("config", "kb.publishRemote", "pub")
+        assert kbpublic.guard_push("pub", None, [("refs/heads/main", shas[1])], r.path)
+        assert kbpublic.guard_push("pub", None, [("refs/heads/main", shas[0])], r.path) == []
+        needs = kbgit.gate_needs([ops])  # kbgit.py's gate: the query log store's check, no kb content or doc check
+        assert needs["querylog"] and not any(needs[k] for k in ("check", "fetch", "doc2query", "selfdoc", "backlog")), needs
+        assert kbgit.gate_needs(["kb/_querylog/work/2026-10/x.jsonl"])["querylog"]  # the same as its sibling sidecars
 
     def test_clean_history_is_its_own(self, src):
         r, shas = src

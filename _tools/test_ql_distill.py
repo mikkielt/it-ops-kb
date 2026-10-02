@@ -36,6 +36,12 @@
   TestOverheadSidecar the counts of the distill's own Haiku calls (`--output-format json`, `modelUsage`) are the run's
                     `distill` overhead line in the work sidecar (`-k overhead_sidecar`): summed over calls and models,
                     no item, session or text, none for an injected Haiku, a result without counts or a failed call
+  TestOpsSidecar    distill writes the ops sidecar beside the run file (`-k ops_sidecar`): the `ops` rows of the tools
+                    files, in time order, as lines of id, time, event and the event's keys, with no surface or format; a
+                    run file of no entry when nothing else was written; a row outside the closed shape or one the leak
+                    scan flags is dropped and counted as skipped; a row is read once (the tools file keeps it until
+                    its day is over, and `consumed.json` lists it) and, when a sidecar of an earlier run holds its id,
+                    written no second time; an ops row joins no prompt, so an entry does not change for it
   TestLock         a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
                     of several processes taking the lock at once exactly one gets it
   TestLaunch        SessionEnd marks its session closed; the launcher returns within the 1.5-second budget with its
@@ -1169,6 +1175,118 @@ class TestOverheadSidecar:
     def test_overhead_sidecar_haiku_result_error_is_oserror(self, result):
         with pytest.raises(OSError):
             ql_distill.haiku_result(result)
+
+
+def ops_row(n, event="land.step", day="2026-09-28", **fields):
+    """The nth ops row of a tools file as capture writes it (the closed fields of a land.step unless given)."""
+    fields = fields or {"item": WA, "step": "rebase", "exit": 0, "ms": 100 + n}
+    return {"id": f"{n:08x}-1111-4111-8111-111111111111", "ts": f"{day}T10:00:{n:02d}.000Z", "surface": "ops", "v": 1,
+            "event": event, **fields}
+
+
+def plant_ops(qdir, rows, day="2026-09-28"):
+    sp = Path(qdir) / "spool"
+    sp.mkdir(parents=True, exist_ok=True)
+    f = sp / f"tools-{day}.jsonl"
+    f.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+    return f
+
+
+def ops_sidecar_of(q, run_id=RUN_ID):
+    return Path(q) / "store" / "ops" / f"{run_id[:4]}-{run_id[4:6]}" / f"{run_id}.jsonl"
+
+
+class TestOpsSidecar:
+    def test_ops_sidecar_written_beside_the_run_file(self, tmp_path):
+        q = tmp_path / "querylog"
+        rows = [ops_row(3), ops_row(1), ops_row(2, "test.run", mode="fast", ms=5, exit=0,
+                                                 slow=[{"file": "test_x.py", "ms": 3}])]
+        f = plant_ops(q, rows)
+        rc, said = run_distill(q, echo)
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 ops=3"], said
+        got = jsonl(ops_sidecar_of(q))
+        assert got[0] == {"run": RUN_ID, "counts": {"rows": 3}}
+        assert [g["id"] for g in got[1:]] == [r["id"] for r in sorted(rows, key=lambda r: r["ts"])]
+        assert got[2] == {k: v for k, v in rows[2].items() if k not in ("surface", "v")}
+        assert list(got[1]) == ["id", "ts", "event", "item", "step", "exit", "ms"]
+        (run,) = [x for x in store_files(q) if x.parent.parent.name not in ("ops", "work", "usage")]
+        assert jsonl(run) == [{**jsonl(run)[0], "counts": {"entries": 0, "dropped": 0, "waiting": 0}}]
+        assert ql_store.store_problems(q / "store") == []
+        text = ops_sidecar_of(q).read_text(encoding="utf-8")
+        assert text.endswith("\n") and "\r" not in text and '"surface"' not in text and '"v"' not in text
+        assert f.exists()  # today's tools file stays until its day is over
+        assert sorted(json.loads((q / ql_distill.CONSUMED_NAME).read_text(encoding="utf-8"))[f.name]) == sorted(r["id"] for r in rows)
+
+    def test_ops_sidecar_a_row_is_read_once(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_ops(q, [ops_row(1)])
+        run_distill(q, echo)
+        before = {p: p.read_bytes() for p in store_files(q)}
+        rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abce")
+        assert rc == 0 and said == ["distill: nothing to write (waiting=0)"], said
+        assert {p: p.read_bytes() for p in store_files(q)} == before
+        plant_ops(q, [ops_row(1), ops_row(2)])  # a second row arrives in the same file
+        rc, said = run_distill(q, echo, run_id="20260928T140000Z-0000abcf")
+        assert said == ["distill: run=20260928T140000Z-0000abcf entries=0 dropped=0 waiting=0 ops=1"], said
+        assert [g["id"] for g in jsonl(ops_sidecar_of(q, "20260928T140000Z-0000abcf"))[1:]] == [ops_row(2)["id"]]
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_ops_sidecar_a_row_a_sidecar_holds_is_not_written_twice(self, tmp_path):
+        """the run that wrote it died before recording its consumption: the next one finds the id in the store"""
+        q = tmp_path / "querylog"
+        plant_ops(q, [ops_row(1)])
+        run_distill(q, echo)
+        (q / ql_distill.CONSUMED_NAME).unlink()
+        rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abce")
+        assert said == ["distill: nothing to write (waiting=0)"], said
+        assert len(list((q / "store" / "ops").rglob("*.jsonl"))) == 1 and ql_store.store_problems(q / "store") == []
+        assert (q / ql_distill.CONSUMED_NAME).exists()  # and it is recorded now
+
+    def test_ops_sidecar_a_finished_days_file_goes_once_read(self, tmp_path):
+        q = tmp_path / "querylog"
+        f = plant_ops(q, [ops_row(1, day="2026-09-27")], day="2026-09-27")
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 ops=1"], said
+        assert not f.exists()
+
+    def test_ops_sidecar_a_row_outside_the_closed_shape_is_dropped_and_counted(self, tmp_path):
+        q = tmp_path / "querylog"
+        free = "I could not rebase because main moved"
+        key = "glpat" + "-" + "a" * 20  # a valid name the leak scan flags
+        rows = [ops_row(1), ops_row(2, step=free, item=WA, exit=0, ms=1), ops_row(3, event="no.such", ms=1),
+                ops_row(4, item=WA, step=key, exit=0, ms=1), {**ops_row(5), "prompt": free}, {**ops_row(6), "session_id": SID}]
+        plant_ops(q, rows)
+        rc, said = run_distill(q, echo)
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 skipped=5 ops=1"], said
+        assert [g["id"] for g in jsonl(ops_sidecar_of(q))[1:]] == [ops_row(1)["id"]]
+        run = [x for x in store_files(q) if x.parent.parent.name not in ("ops", "work", "usage")][0]
+        assert jsonl(run)[0]["counts"] == {"entries": 0, "dropped": 0, "waiting": 0, "skipped": 5}
+        text = "".join(x.read_text(encoding="utf-8") for x in store_files(q))
+        assert free not in text and key not in text
+        assert ql_store.store_problems(q / "store") == []
+        before = {p: p.read_bytes() for p in store_files(q)}
+        assert run_distill(q, echo, run_id="20260928T130000Z-0000abce")[1] == ["distill: nothing to write (waiting=0)"]
+        assert {p: p.read_bytes() for p in store_files(q)} == before  # dropped rows are not read again
+
+    def test_ops_sidecar_only_dropped_rows_still_write_a_run_file_with_the_count(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_ops(q, [ops_row(1, event="no.such", ms=1)])
+        rc, said = run_distill(q, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 skipped=1"], said
+        assert not (q / "store" / "ops").exists() and ql_store.store_problems(q / "store") == []
+
+    def test_ops_sidecar_an_ops_row_joins_no_prompt(self, tmp_path):
+        """the fixture spool distills to the same entries with an ops row inside a session's window"""
+        base, with_ops = tmp_path / "base", tmp_path / "with"
+        for q in (base, with_ops):
+            plant_spool(q)
+        tools = with_ops / "spool" / "tools-2026-09-27.jsonl"  # the day of the first session, which began at 09:00:00
+        row = {**ops_row(1, day="2026-09-27"), "ts": "2026-09-27T09:00:00.500Z"}
+        tools.write_text(tools.read_text(encoding="utf-8") + json.dumps(row) + "\n", encoding="utf-8", newline="\n")
+        for q in (base, with_ops):
+            assert run_distill(q, lambda p: echo(p))[0] == 0
+        assert jsonl(ql_store.run_files(with_ops / "store")[0]) == jsonl(ql_store.run_files(base / "store")[0])
+        assert len(jsonl(ops_sidecar_of(with_ops))) == 2 and not (base / "store" / "ops").exists()
 
 
 class TestLock:
