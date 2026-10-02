@@ -19,6 +19,7 @@
   ],
   "touches": [
     "_tools/kb_mcp.py",
-    "_tools/test_kb_mcp.py"
+    "_tools/test_kb_mcp.py",
+    "kb/_self/embedding.md"
   ]
 }
