@@ -226,7 +226,7 @@ def test_review_needs_confirmed_provisional_answers_and_close_deletes(sprint):
     commit(repo, "state")
     code, out = b(repo, "done", sprint["rv"])
     assert code == 1 and "provisional answer to confirm" in out
-    assert b(repo, "answer", bg, "G1", "--confirm")[0] == 0
+    assert b(repo, "answer", bg, "G1", "--confirm", "--by", "operator")[0] == 0
     assert b(repo, "done", sprint["rv"])[0] == 0
     assert b(repo, "done", sprint["ep"])[0] == 0
     code, out = b(repo, "close", sprint["sp"])

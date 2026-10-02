@@ -56,10 +56,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           done, and done proves it before the sprint starts)
   backlog.py answer ID GATE (--answer TEXT --by operator|agent|autopilot [--record] | --provisional | --confirm)
                                           record a gate's answer: --provisional takes the recommendation as the
-                                          agent's answer (provisional gates only); --confirm makes an agent's answer
-                                          the operator's; --record (with --by operator) also writes it as an active
+                                          agent's answer (provisional gates only); --confirm --by operator makes an
+                                          agent's answer the operator's (no --by: exit 2);
+                                          --record (with --by operator) also writes it as an active
                                           decision of kb/_self through kbdecide.py, its context the item (exit 2 with
                                           --provisional, --confirm or a --by other than operator or autopilot);
+                                          a gate of class secrets or push takes
+                                          an answer only with --by operator (--provisional, --confirm included);
                                           --by autopilot answers any gate but one of class secrets or push (exit 2,
                                           the item unchanged) and --record then writes the decision with maker
                                           autopilot and a review_by, which an operator's answer supersedes
@@ -676,6 +679,15 @@ def cmd_answer(bl, a):
             raise Rejected(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it")
         if g.get("by") == "operator":
             raise Rejected(f"gate {a.gate} of {bl.label(iid)} has the operator's answer: the autopilot does not replace it")
+    if a.confirm and not a.by:
+        raise Rejected(f"gate {a.gate} of {bl.label(iid)}: --confirm needs --by operator, which an agent passes only "
+                       "after the operator said so")
+    if a.by != "operator" and (a.by or a.provisional):
+        cls = bl_authority.derived_class(it, g)
+        if cls in bl_authority.AUTOPILOT_REFUSED:
+            refuse = Rejected if a.provisional or a.confirm else Refused  # --answer by an agent: exit 1, as a blocking gate
+            raise refuse(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it "
+                         "(--by operator)")
     if a.confirm:
         if g.get("by") != "agent":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} has no agent answer to confirm")
@@ -919,6 +931,9 @@ def cmd_gate(bl, a):
     gate = {"id": gid, "kind": a.kind, "question": a.question.strip(), "options": options,
             "recommendation": a.recommendation.strip()}
     gate["class"] = bl_authority.derived_class(it, gate)
+    if gate["class"] in bl_authority.AUTOPILOT_REFUSED and gate["kind"] != "blocking":
+        gate["kind"] = "blocking"
+        say(f"gate {gid} of {bl.label(iid)} is class {gate['class']}: made blocking, only the operator answers it")
     if a.do:
         gate["do"] = {}
         for d in a.do:

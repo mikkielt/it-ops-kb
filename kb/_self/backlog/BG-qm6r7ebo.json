@@ -33,5 +33,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Backlog check now errors on provisional gates of the two operator-only classes in other items: convert those gates to blocking in a separate follow-up before this lands?",
+      "options": [
+        "yes",
+        "no"
+      ],
+      "recommendation": "yes",
+      "class": "design",
+      "do": {
+        "yes": [
+          "true"
+        ],
+        "no": [
+          "true"
+        ]
+      },
+      "answer": "yes",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "seventh-w34"
 }
