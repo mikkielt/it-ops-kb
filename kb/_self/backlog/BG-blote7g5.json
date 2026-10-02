@@ -2,7 +2,7 @@
   "id": "BG-blote7g5",
   "kind": "bug",
   "title": "The change router's once-per-session marker survives /compact and /clear, so a later change request after compaction gets no routing",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-ld5jtjhm",
   "priority": "P2",
@@ -23,5 +23,18 @@
     "_tools/test_change_router.py",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "seventh-w16"
+  "evidence": {
+    "commit": "4b1f71251eadc97f50755d9d297330137c02bc78",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys; s=json.load(open('.claude/settings.json'))['hooks'].get('SessionStart',[]); sys.exit(not any('change_router' in h.get('command','') for m in s for h in m.get('hooks',[])))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
