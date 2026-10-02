@@ -2,7 +2,7 @@
   "id": "BG-ghvb2cxr",
   "kind": "bug",
   "title": "benchmarks report prints files_read with five decimals",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "d6529b6a1da218a21807fe5786330c5ec7514102",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_report as b;sys.exit(0 if b.fmt('files_read','1.666667')=='1.7' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
