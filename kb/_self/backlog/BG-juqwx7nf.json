@@ -2,7 +2,7 @@
   "id": "BG-juqwx7nf",
   "kind": "bug",
   "title": "check.py does not resolve DECISION tags in CSV data rows",
-  "status": "todo",
+  "status": "dropped",
   "parent": "EP-v56iwyry",
   "sprint": "SP-ld5jtjhm",
   "priority": "P2",
@@ -23,5 +23,6 @@
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "notes": "Dropped: fixed by e478d7064 (ST-gj5mbwdi): check.py resolves DECISION tags in CSV data rows; its repro passes on HEAD and test_decision_tag_in_csv_data_row_is_resolved holds it"
 }
