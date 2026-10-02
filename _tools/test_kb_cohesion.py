@@ -15,7 +15,7 @@ import csv, glob, json, os, re, subprocess, sys
 import pytest
 
 import kbcommon, kbfacts
-from conftest import KB, P, SELF_REL, TOOLS, allowlist, authored, copy_kb, fmt, run, text, tracked
+from conftest import KB, P, SELF_REL, TOOLS, allowlist, authored, copy_kb, fmt, git_env, requires_git, run, text, tracked
 from test_kb_root import SID, make_root
 
 PUBLIC = kbcommon.PUBLIC  # the public root: ledgers, articles, retrieval data (KB here is the repository)
@@ -149,6 +149,25 @@ class TestCohesion:
         assert "tests.py --changed" in text and "kbgit.py sync --push" in text
         assert "about 60 s" not in text and "stress_test.py (~35 s)" not in text
 
+    @requires_git
+    @pytest.mark.git
+    def test_git_env_no_maintenance(self, tmp_path):
+        """A commit in a git_env repository starts no gc or maintenance child, and git_env keeps the caller's
+        GIT_CONFIG_COUNT entries: the trace of the commit names no `gc` or `maintenance` command."""
+        base = {"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "safe.directory", "GIT_CONFIG_VALUE_0": "*"}
+        env = git_env(**base)
+        assert (env["GIT_CONFIG_KEY_0"], env["GIT_CONFIG_VALUE_0"]) == ("safe.directory", "*")
+        assert env["GIT_CONFIG_COUNT"] == "3"
+        trace = tmp_path / "trace.json"
+        repo = tmp_path / "r"
+        repo.mkdir()
+        for args in (["init", "-q"], ["commit", "-q", "--allow-empty", "-m", "x"]):
+            e = {**env, "GIT_TRACE2_EVENT": str(trace)} if args[0] == "commit" else env
+            subprocess.run(["git", *args], cwd=repo, env=e, check=True, capture_output=True)
+        started = [json.loads(l).get("argv") for l in trace.read_text(encoding="utf-8").splitlines() if '"child_start"' in l]
+        assert not [a for a in started if a and any(w in ("gc", "maintenance") for w in a)], started
+        got = subprocess.run(["git", "config", "--get-all", "maintenance.auto"], cwd=repo, env=env, capture_output=True, text=True)
+        assert got.stdout.split() == ["false"], got
 
     def test_generated_indexes_up_to_date(self):
         """_coverage.csv, the _coverage.md table and used_in are generated; a hand edit or a missed rebuild fails."""
