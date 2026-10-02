@@ -230,8 +230,12 @@ def check(root=KB):
 
 
 # A section reference: `(kb/_self/querylog.md, Delivery)` or `(querylog.md, Spool and Distill)`, the doc in backticks
-# or not, the section a capitalised heading text up to the closing parenthesis (a `;` before the doc is allowed).
-SECTION_REF_RX = re.compile(r"(?<![\w/.-])`?(?P<doc>(?:kb/_self/)?[\w-]+\.md)`?,\s+(?P<sec>[A-Z][^()`;:\n]{0,60}?)\)")
+# or not, a doc in a kb/_self subdirectory (`kb/_self/reports/x.md`) by its full path, the section a capitalised
+# heading text up to the closing parenthesis: it may hold one level of parentheses, backticks, `:` or `;`, and wrap
+# onto the next line (a heading such as `Capture (`querylog.py capture`)` is named whole).
+SECTION_REF_RX = re.compile(
+    r"(?<![\w/.-])`?(?P<doc>(?:kb/_self/(?:[\w-]+/)*)?[\w-]+\.md)`?,\s+"
+    r"(?P<sec>[A-Z](?:[^()\n]|\n(?!\s*\n)|\([^()]{0,60}\)){0,80}?)\)")
 
 
 def ref_sources(root, files):
@@ -293,7 +297,9 @@ def names_heading(sec, keys):
 
 def dead_section_refs(root=KB, files=None):
     """`path:line: (doc, Section)` problems for each section reference whose doc under kb/_self has no heading of that
-    text. `Spool and Distill` or `Routing, Packs` name several sections: each must exist when the whole does not."""
+    text, whose doc is gone, or that name a doc in a kb/_self subdirectory with no such heading. A bare name that is no
+    kb/_self doc is dead only when no file of that name is in the repository. `Spool and Distill` or `Routing, Packs`
+    name several sections: each must exist when the whole does not."""
     if files is None:
         files = set(lines(git(root, "ls-files"))) | set(lines(git(root, "ls-files", "--others", "--exclude-standard")))
     cache, problems = {}, []
@@ -312,9 +318,9 @@ def dead_section_refs(root=KB, files=None):
                 sec = " ".join(m["sec"].split())
                 line = first + text.count("\n", 0, m.start())
                 if keys is None:
-                    if doc.startswith(SELF_REL + "/"):
+                    if doc.startswith(SELF_REL + "/") or not any(pathlib.PurePosixPath(x).name == doc for x in files):
                         problems.append(f"{f}:{line}: ({doc}, {sec}) names a doc that does not exist")
-                    continue  # a bare name that is no kb/_self doc (README.md of the repository, say) is not ours
+                    continue  # a bare name of another file in the repository (its README.md, say) is not ours
                 if re.search(r"\.\w", sec):
                     continue  # `(README.md, AGENTS.md)`: a list of files, not a section
                 if names_heading(sec, keys) or all(names_heading(p, keys) for p in re.split(r",\s*|\s+and\s+", sec) if p.strip()):
