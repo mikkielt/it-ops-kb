@@ -494,13 +494,13 @@ class TestOverheadGates:
 
     def test_overhead_sidecar_does_not_make_the_cost_report_skip_the_file(self, tmp_path):
         """backlog.py cost skips a sidecar that breaks a work gate whole: a valid overhead line must not."""
-        import backlog
+        import bl_cost
         store, problems = work_store(tmp_path, lines=overhead_lines())
         assert problems == []
         root = tmp_path / "root"
         (root / "kb").mkdir(parents=True)
         store.rename(root / "kb" / "_querylog")
-        lines, skipped = backlog.cost_lines(root, None)
+        lines, skipped = bl_cost.cost_lines(root, None)
         assert skipped == [] and {ln["item"] for ln in lines if "item" in ln} == {WORK_A, WORK_B}
 
 

@@ -254,7 +254,9 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     ap = bl_cli.build_parser("d", "r")
     usage = ap.format_usage()
     assert "{" + ",".join(SUBCOMMANDS) + "}" in usage
-    assert all(bl_cli.handler_of(n) is getattr(backlog, "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
+    import bl_cost
+    owner = {"cost": bl_cost}  # a command a bl_ module owns: its handler is that module's, not backlog's
+    assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
     for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit
         sub = next(a for a in ap._actions if a.dest == "cmd").choices[n]
         assert ("--commit" in sub._option_string_actions) == (n in backlog.COMMITS), n
@@ -296,3 +298,51 @@ def test_bl_split_parser_registry_planted_failures_fail():
     assert "does nothing" in bl_cli.build_parser("d", "r", registry=reg).format_help()
     # bl_cli never imports backlog
     assert not imported_from(tool_source("bl_cli.py"), "backlog")
+
+
+COST_MOVED = ("COST_KEYS", "COST_GROUPS", "cost_add", "cost_models", "cost_lines", "cost_scope", "history_parse",
+              "history_items", "cost_view", "cost_report", "cost_row", "cost_figures", "cost_block", "cost_overhead",
+              "cost_research", "cmd_cost", "args_cost")
+
+
+def cost_defs(source):
+    """The public names a module defines at its top level that belong to the cost report."""
+    return {n for n in kit_names(source) if n in COST_MOVED}
+
+
+def test_bl_split_cost_bl_cost_holds_the_report_and_backlog_defines_none_of_it():
+    assert set(COST_MOVED) <= cost_defs(tool_source("bl_cost.py"))
+    assert cost_defs(tool_source("backlog.py")) == set(), "backlog.py imports the cost report, it does not define it"
+
+
+def test_bl_split_cost_bl_cost_never_imports_backlog_at_any_depth_and_registers_cost_through_bl_cli():
+    import bl_cli
+    import bl_cost
+    src = tool_source("bl_cost.py")
+    tree = ast.parse(src)
+    assert not imported_from(src, "backlog")
+    assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(tree))
+    assert bl_cli.COMMANDS["cost"][0] is bl_cost.cmd_cost and bl_cli.COMMANDS["cost"][1] is bl_cost.args_cost
+    assert not any(isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "add_parser" for n in ast.walk(tree)), \
+        "the parser is added through bl_cli"
+    registers = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "register"
+                 and n.args and isinstance(n.args[0], ast.Constant) and n.args[0].value == "cost"]
+    assert len(registers) == 1
+
+
+def test_bl_split_cost_cost_tests_are_in_test_bl_cost_and_none_are_left_in_test_backlog():
+    def cost_tests(src):
+        return {n.name for n in ast.parse(src).body if isinstance(n, ast.FunctionDef) and n.name.startswith("test_backlog_cost_")}
+    assert len(cost_tests(backlog_test_sources()["test_bl_cost.py"])) >= 40
+    assert cost_tests(backlog_test_sources()["test_backlog.py"]) == set()
+    assert "backlog.cost_" not in backlog_test_sources()["test_backlog.py"]
+
+
+def test_bl_split_cost_planted_failures_fail():
+    # a moved name put back in backlog.py, a bl_cost that imports backlog (at any depth), a cost test left behind
+    assert cost_defs("def cost_report(bl, iid):\n    return 1\n") == {"cost_report"}
+    assert cost_defs("from bl_cost import cost_report\n") == set()
+    for body in ("import backlog\n", "from backlog import say\n", "def late():\n    from backlog import say\n"):
+        assert unexcused({"backlog": "", "bl_cost": body}) == [("facade", "bl_cost", "backlog", "backlog")], body
+    assert any(isinstance(n, ast.FunctionDef) and n.name.startswith("test_backlog_cost_")
+               for n in ast.parse("def test_backlog_cost_left_behind():\n    pass\n").body)
