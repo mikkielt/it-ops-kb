@@ -463,6 +463,26 @@ SYNC_STUB = STEP_STUB.format(name="sync") + """import subprocess
 def git(*a):
     return subprocess.run(["git", *a], capture_output=True, text=True, check=True).stdout
 git("fetch", "-q", "origin")
+if os.environ.get("LAND_NOPUSH"):  # planted: exits 0 without pushing, as a sync that gave up quietly would
+    sys.exit(0)
+if os.environ.get("LAND_REJECT"):  # planted: other sessions push main between sync's fetch and push, twice; each round
+    import tempfile  # rebases HEAD onto the fetched main, as sync does, and its push is rejected
+    for n in range(2):
+        git("rebase", "-q", "refs/remotes/origin/main")
+        other = os.path.join(tempfile.mkdtemp(), "other")
+        git("clone", "-q", git("remote", "get-url", "origin").strip(), other)
+        open(os.path.join(other, f"other-{n}.txt"), "w").write("x\\n")
+        subprocess.run(["git", "-C", other, "add", "-A"], check=True)
+        subprocess.run(["git", "-C", other, "-c", "user.name=o", "-c", "user.email=o@example.com", "commit", "-qm",
+                        f"other {n}"], check=True)
+        subprocess.run(["git", "-C", other, "push", "-q", "origin", "HEAD:main"], check=True)
+        pushed = subprocess.run(["git", "push", "-q", "origin", "HEAD:refs/heads/main"], capture_output=True, text=True)
+        assert pushed.returncode and "rejected" in pushed.stderr, pushed.stderr
+        git("fetch", "-q", "origin")
+    if os.environ.get("LAND_DROP_DONE"):  # planted: the rebase is said to have taken the done commit away
+        git("reset", "-q", "--hard", "HEAD^")
+    print("pushed: no (rejected twice)")
+    sys.exit(1)
 sys.path.insert(0, os.environ["LAND_TOOLS"])
 import kg_lane
 _, branch = kg_lane.lane_plan(os.getcwd(), "refs/remotes/origin/main", "HEAD")
@@ -930,6 +950,71 @@ class TestBacklogLand:
         del legacy["detailed_merge_status"]  # a GitLab without the detailed field: merge_status decides
         assert bl_land.mr_stuck(legacy)
         assert not bl_land.mr_stuck(dict(legacy, merge_status="cannot_be_merged"))
+
+    # land verifies what it reports: its done commit is on the integration main after sync --push, fetched again; a
+    # sync that exits 0 without pushing (planted: LAND_NOPUSH) must not end in "landed"
+    def test_land_verifies_done_commit_on_integration_main(self, landing, monkeypatch):
+        ld = landing
+        self.orchestrate(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        monkeypatch.setenv("LAND_NOPUSH", "1")
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step verify" in out and "landed" not in out, out
+        assert self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"]  # nothing reached main
+        assert self.head_ref(ld) == "refs/heads/orch", out
+        monkeypatch.delenv("LAND_NOPUSH")
+        code, out = self.land(ld)  # the run after it: the branch kept its done commit, and the push goes through
+        assert code == 0 and self.remote_item(ld)["status"] == "done", out
+        assert self.out(ld["remote"], "log", "--format=%s", "main").count(f"chore(backlog): done {ld['tk']}") == 1
+
+    # a worker branch cut before the claim, the claim on the orchestrator's branch and never pushed: land puts it
+    # under the worker's commit, so what it pushes holds claim, then work (src/ is the code lane: the branch is
+    # code/<id>, where sync sends it, and a re-run before the merge carries nothing twice)
+    def test_land_carries_claim_commit_under_worker_commit(self, landing):
+        ld = landing
+        repo, tk = ld["repo"], ld["tk"]
+        sh(repo, "git", "checkout", "-q", "-b", "orch")  # the claim commit made on the orchestrator's branch
+        sh(repo, "git", "checkout", "-q", f"work/{tk}")
+        sh(repo, "git", "reset", "-q", "--hard", "main")  # the worker's branch was cut before it
+        (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+        commit(repo, "work", tk)
+        sh(repo, "git", "checkout", "-q", "orch")
+        code, out = self.land(ld)
+        assert code == 0 and "carry the claim commit" in out and "not done yet" in out, out
+        branch = f"code/{tk}"
+        subjects = self.out(ld["remote"], "log", "--reverse", "--format=%s", f"main..{branch}").splitlines()
+        assert subjects == [f'chore(backlog): claim {tk} "Task"', "work"], subjects
+        assert self.remote_item(ld, branch)["status"] == "doing"
+        assert self.head_ref(ld) == "refs/heads/orch"
+        code, out = self.land(ld)  # again, before the merge: the claim is on the branch now, nothing is carried
+        assert code == 0 and "waits for its merge request" in out and "carry" not in out, out
+        assert self.out(ld["remote"], "log", "--format=%s", f"main..{branch}").count("claim") == 1
+
+    # a push rejected twice ends the land; the done commit is not lost with it: the run after it finds it (planted:
+    # the failed sync took it off the branch) and does not run the item's checks again
+    def rejected_push_land(self, ld, monkeypatch, drop):
+        self.orchestrate(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
+        monkeypatch.setenv("LAND_REJECT", "1")
+        if drop:
+            monkeypatch.setenv("LAND_DROP_DONE", "1")
+        code, out = self.land(ld)
+        assert code == 1 and "rejected twice" in out and "landed" not in out, out
+        assert self.head_ref(ld) == "refs/heads/orch", out
+        monkeypatch.delenv("LAND_REJECT")
+        code, out = self.land(ld)
+        assert code == 0 and "landed" in out and "land: done --commit" not in out and "ok   exit=" not in out, out
+        assert self.remote_item(ld)["status"] == "done"
+        assert self.out(ld["remote"], "log", "--format=%s", "main").count(f"chore(backlog): done {ld['tk']}") == 1
+        assert not self.out(ld["repo"], "for-each-ref", "refs/land")  # the kept commit goes once it is verified
+        return out
+
+    def test_land_keeps_done_commit_after_rejected_push(self, landing, monkeypatch):
+        out = self.rejected_push_land(landing, monkeypatch, drop=True)
+        assert "has its done commit from the last run" in out, out
+
+    def test_branch_land_keeps_done_commit_after_rejected_push(self, landing, monkeypatch):
+        """The usual case, which held before: the rebased done commit is still on the branch."""
+        out = self.rejected_push_land(landing, monkeypatch, drop=False)
+        assert "done already" in out, out
 
     def test_land_stuck_auto_merge_skips_a_local_remote(self, landing, monkeypatch):
         """The landing fixture's origin is a bare repository on disk: no forge to ask, no glab call."""
