@@ -2,7 +2,7 @@
   "id": "ST-7imqoift",
   "kind": "story",
   "title": "Review sprint: LOG is a kb type",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-parnkbr7",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "578398f2ae18d38da78eff8dbb36035cbc79101a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "5e21abac0a9c95ac"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "81437af4e87a7bdf"
+      }
+    ]
+  }
 }
