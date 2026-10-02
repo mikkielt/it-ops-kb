@@ -137,6 +137,19 @@ def test_tests_py_changed_passes_the_selection_to_pytest(monkeypatch):
     assert not any(os.path.basename(t) == "test_backlog.py" for t in targets), seen
 
 
+def test_tests_py_file_argument_runs_only_that_file(monkeypatch):
+    seen = []
+    monkeypatch.setattr(tests_py, "run_pytest", lambda args, **k: seen.append(args) or 0)
+    assert tests_py.main(["_tools/test_testmap.py"]) == 0
+    assert tests_py.TOOLS not in seen[-1] and "_tools/test_testmap.py" in seen[-1]
+    assert tests_py.main(["-k", "x", "_tools/test_testmap.py", "_tools/test_backlog.py::Foo", "-q"]) == 0
+    assert tests_py.TOOLS not in seen[-1] and "-q" in seen[-1] and "_tools/test_backlog.py::Foo" in seen[-1]
+    assert tests_py.main(["-k", "testmap"]) == 0  # an -k value is no path: every test file
+    assert tests_py.TOOLS in seen[-1]
+    assert tests_py.main(["-q"]) == 0
+    assert tests_py.TOOLS in seen[-1]
+
+
 def test_tests_py_changed_treats_all_selected_tests_deselected_as_a_pass(monkeypatch):
     """Exit 5 (nothing left after -m) is a pass for a selection, never for the whole suite."""
     monkeypatch.setattr(testmap, "changed", lambda rev: ["_tools/kb_http.py"])
