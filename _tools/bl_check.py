@@ -556,6 +556,13 @@ def validate(bl, pieces=None):
                   "item's touches and its question give it")
             if g.get("by") == "autopilot" and not bl_authority.autopilot_may_answer(it, g)[0]:
                 e(f"gate {g['id']} is class {bl_authority.gate_class(it, g)}: only the operator answers it")
+            if bl_authority.derived_class(it, g) in bl_authority.AUTOPILOT_REFUSED:
+                if g["kind"] == "provisional" and g.get("by") != "operator":  # one the operator answered stands
+                    e(f"gate {g['id']} is class {bl_authority.derived_class(it, g)} and provisional: it is blocking, "
+                      "only the operator answers it")
+                if g.get("by") == "agent":
+                    e(f"gate {g['id']} is class {bl_authority.derived_class(it, g)}: an answer by agent is not "
+                      "the operator's")
             if g["kind"] == "blocking" and g.get("by") == "agent":
                 e(f"gate {g['id']} is blocking: only the operator answers it")
             hc = g.get("host_check")
