@@ -2,7 +2,8 @@
   "id": "ST-73c5rhb5",
   "kind": "story",
   "title": "backlog.py goal prints the answered gates of an item's ancestors",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py goal ID prints the answered gates of the item's parent chain beside its own goal, so a worker brief built from it cannot contradict an answer; SP-fvztfmtm's TK-ymbmdww4 was briefed for per-row keys against the answered shared-counts gate of ST-mn4j4fis and only the worker's reading of the story caught it",
@@ -15,5 +16,11 @@
         "goal_prints_ancestor_gates"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

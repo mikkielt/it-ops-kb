@@ -2,7 +2,8 @@
   "id": "BG-akfsrmly",
   "kind": "bug",
   "title": "PIPELINE_VERSION is not bumped although distill now writes work sidecars, overhead and rework",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-rrrrggw7",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -17,5 +18,9 @@
   "touches": [
     "_tools/ql_base.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "depends_on": [
+    "ST-6zcqkjfm"
+  ],
+  "notes": "Waits for the ops sidecar story so one bump covers both sidecars."
 }
