@@ -1,0 +1,34 @@
+{
+  "id": "BG-2sii6tie",
+  "kind": "bug",
+  "title": "close deletes an item that an answered gate's do still names, and check then refuses that gate",
+  "status": "todo",
+  "sprint": "SP-ummegr5o",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py close removes or repoints every gate do entry that names an item the close deletes, as it does for relates_to and depends_on, so a sync gate does not refuse the close push; a test named close_cleans_gate_do plants a gate whose do names a closing sprint's item. Found by SP-3siaqxdf's close, where BG-nhfhifpe g1 named ST-qc4vvlgs and the close push was refused.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -rn cleanup_gate_do _tools/backlog.py _tools/bl_*.py | grep -q def"
+    ]
+  },
+  "repro_reason": "the defect needs a throwaway repository with a closed sprint, and the worktree-isolation hook refuses git in a temp repository from a repro; the text match only shows the cleanup step is absent",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_cleans_gate_do"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}
