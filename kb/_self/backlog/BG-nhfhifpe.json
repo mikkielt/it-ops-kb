@@ -2,7 +2,7 @@
   "id": "BG-nhfhifpe",
   "kind": "bug",
   "title": "benchmarks.py nav_result parses claude stream-json tested only on synthetic streams",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4i5quwba",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/fixtures/navigation",
     "_tools/test_benchmarks.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
