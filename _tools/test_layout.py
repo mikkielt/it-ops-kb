@@ -236,7 +236,7 @@ def test_bl_split_base_planted_failures_fail():
 
 SUBCOMMANDS = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
                "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "drop", "start",
-               "host-check", "close", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs")
+               "host-check", "close", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled")
 
 
 def add_parser_calls(source, func):
@@ -259,7 +259,8 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     import bl_land
     import bl_plan
     import bl_procs
-    owner = {"cost": bl_cost, "procs": bl_procs, "check": bl_check, "selectors": bl_check, "start": bl_plan,
+    import bl_stall
+    owner = {"cost": bl_cost, "procs": bl_procs, "stalled": bl_stall, "check": bl_check, "selectors": bl_check, "start": bl_plan,
              "done": bl_land, "land": bl_land, "close": bl_land}  # a command a bl_ module owns: its handler is that module's, not backlog's
     assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
     for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit

@@ -561,7 +561,9 @@ class TestOpsRows:
                  "slow": [{"file": "test_ql_store.py", "ms": 900}], "failed_files": ["test_ql_store.py"]},
                 {"event": "ci.pipeline", "state": "failed", "calls": 3, "sha": "0123abc"},
                 {"event": "agent.run", "group": "kb-worker", "ms": 5, "agent": "0123456789abcdef", "item": "ST-aaaaaaaa"},
-                {"event": "intake.detect", "detector": "drift", "found": 2, "budget": False}]
+                {"event": "intake.detect", "detector": "drift", "found": 2, "budget": False},
+                {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "claim-no-commit", "remedy": "retry-narrower",
+                 "count": 1}]
         for r in rows:
             assert ql_capture.record("ops", **r) is not None, r
         assert [{k: v for k, v in r.items() if k in rows[i]} for i, r in enumerate(self.rows())] == rows
@@ -682,6 +684,22 @@ class TestAgentRows:
         monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
         assert ql_capture.record("ops", **fields) is None and not (tmp_path / "spool").exists()
         ok = {"event": "agent.run", "group": "kb-worker", "ms": 5, "agent": "0123456789ab", "item": "ST-lopowpsz"}
+        assert ql_capture.record("ops", **ok) is not None  # planted counterpart: the closed shapes are written
+
+
+    @pytest.mark.parametrize("fields", [
+        {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "claim no commit", "remedy": "retry-narrower", "count": 1},
+        {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "Ask the operator", "count": 1},
+        {"event": "stall.remedy", "item": "work/ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator", "count": 1},
+        {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator", "count": -1},
+        {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator"},
+        {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator", "count": 1,
+         "why": "free text"},
+        {"event": "stall.remedies", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator", "count": 1}])
+    def test_ops_stall_remedy_refuses_free_text_and_an_event_outside_the_set(self, tmp_path, monkeypatch, fields):
+        monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
+        assert ql_capture.record("ops", **fields) is None and not (tmp_path / "spool").exists()
+        ok = {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator", "count": 2}
         assert ql_capture.record("ops", **ok) is not None  # planted counterpart: the closed shapes are written
 
 

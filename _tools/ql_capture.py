@@ -111,6 +111,7 @@ OPS_EVENTS = {  # the closed set of events, each with its closed keys
                        "files": ("rows", OPS_LIST_MAX, _FILE_MS),
                        "failed_files": ("list", OPS_LIST_MAX, "test_file")}),
     "agent.run": _spec({"group": "token", "ms": "ms"}, {"agent": "agent", "item": "item"}),
+    "stall.remedy": _spec({"item": "item", "signal": "token", "remedy": "token", "count": "count"}),
 }
 
 

@@ -188,6 +188,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           detectors, stops waiting for them after
                                           INTAKE_HOOK_BUDGET_S and files what the finished ones found, as uncommitted
                                           drafts, never commits or pushes
+  backlog.py stalled [--json | --ladder | --took ID SIGNAL REMEDY]
+                                          each claimed or ready item with its stall signals and the next remedy of
+                                          the ladder (bl_stall.py); --took records a remedy taken as an ops row and
+                                          an autopilot decision
 
 claim, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit the
 item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
@@ -1582,6 +1586,7 @@ import bl_cost  # noqa: F401 - registers `cost` here, so the usage text keeps it
 bl_cli.register("red-pipeline", cmd_red_pipeline, args_red_pipeline)
 bl_cli.register("intake", cmd_intake, args_intake)
 import bl_procs  # noqa: F401 - registers procs
+import bl_stall  # noqa: F401 - registers stalled
 
 
 def main(argv=None):
