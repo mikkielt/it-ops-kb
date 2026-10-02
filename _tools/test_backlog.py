@@ -20,6 +20,7 @@ import pytest
 
 import backlog
 import kbgit
+import kg_trailers
 import ql_deliver
 from test_ql_deliver import job_of, job_states, state_id  # the job-state table's rows
 
@@ -1395,11 +1396,11 @@ def test_glob_scope():
 
 def test_work_trailer(monkeypatch):
     have = {("abc", "kb/_self/backlog/TK-aaaaaaaa.json")}
-    monkeypatch.setattr(kbgit, "blob", lambda rev, rel: "{}" if (rev, rel) in have else None)
-    assert kbgit.work_ok("abc", ["TK-aaaaaaaa"])
-    assert not kbgit.work_ok("abc", ["TK-bbbbbbbb"])  # no such item
-    assert not kbgit.work_ok("abc", ["task 7"])  # not an id
-    assert not kbgit.work_ok("abc", ["TK-aaaaaaaa", "TK-aaaaaaaa"])  # a second line
+    monkeypatch.setattr(kg_trailers, "blob", lambda rev, rel: "{}" if (rev, rel) in have else None)
+    assert kg_trailers.work_ok("abc", ["TK-aaaaaaaa"])
+    assert not kg_trailers.work_ok("abc", ["TK-bbbbbbbb"])  # no such item
+    assert not kg_trailers.work_ok("abc", ["task 7"])  # not an id
+    assert not kg_trailers.work_ok("abc", ["TK-aaaaaaaa", "TK-aaaaaaaa"])  # a second line
 
 
 def test_started_sprint_check_refuses_worked_item_of_planned_sprint(repo):
@@ -1434,7 +1435,7 @@ def test_active_sprint_item_is_todo(sprint):
 
 
 def test_started_sprint_work_state():
-    """kbgit.work_state judges a KB-Work id by its item at the commit: claimed, in an active sprint."""
+    """kg_trailers.work_state judges a KB-Work id by its item at the commit: claimed, in an active sprint."""
     files = {
         "SP-aaaaaaaa": {"kind": "sprint", "status": "active"},
         "SP-bbbbbbbb": {"kind": "sprint", "status": "planned"},
@@ -1448,7 +1449,7 @@ def test_started_sprint_work_state():
     }
     load = lambda rel: json.dumps(files[Path(rel).stem]) if Path(rel).stem in files else None  # noqa: E731
     code = ["src/a.txt", "kb/_self/backlog/TK-aaaaaaaa.json"]
-    state = lambda ids, paths=code: kbgit.work_state([ids], paths, load)  # noqa: E731
+    state = lambda ids, paths=code: kg_trailers.work_state([ids], paths, load)  # noqa: E731
     assert state("TK-aaaaaaaa, BG-bbbbbbbb") == []  # claimed or done, in an active sprint (the task through its story)
     assert state("SP-aaaaaaaa, SP-bbbbbbbb, ST-cccccccc") == []  # the sprint and review items themselves
     assert ["not claimed" in x for x in state("TK-bbbbbbbb")] == [True]  # planted: unclaimed
@@ -1465,12 +1466,12 @@ def test_check_trailers_planning_commit_names_item():
     load = lambda rel: json.dumps(files[Path(rel).stem]) if Path(rel).stem in files else None  # noqa: E731
     one = ["kb/_self/backlog/TK-aaaaaaaa.json"]
     both = one + ["kb/_self/backlog/ST-aaaaaaaa.json"]
-    out = kbgit.work_state(["TK-aaaaaaaa, ST-aaaaaaaa"], one, load)
+    out = kg_trailers.work_state(["TK-aaaaaaaa, ST-aaaaaaaa"], one, load)
     assert len(out) == 1 and out[0].startswith("ST-aaaaaaaa:") and "backlog.py set" in out[0], out  # planted
-    out = kbgit.work_state(["ST-aaaaaaaa, TK-aaaaaaaa"], one, load)
+    out = kg_trailers.work_state(["ST-aaaaaaaa, TK-aaaaaaaa"], one, load)
     assert len(out) == 1 and out[0].startswith("ST-aaaaaaaa:"), out  # planted: the order does not matter
-    assert kbgit.work_state(["TK-aaaaaaaa, ST-aaaaaaaa"], both, load) == []
-    assert kbgit.work_state(["TK-aaaaaaaa, TK-zzzzzzzz"], one, load) == []  # no item file: work_ok reports it
+    assert kg_trailers.work_state(["TK-aaaaaaaa, ST-aaaaaaaa"], both, load) == []
+    assert kg_trailers.work_state(["TK-aaaaaaaa, TK-zzzzzzzz"], one, load) == []  # no item file: work_ok reports it
 
 
 def test_started_sprint_check_trailers_refuses_unclaimed_work(sprint, monkeypatch):
@@ -1479,19 +1480,20 @@ def test_started_sprint_check_trailers_refuses_unclaimed_work(sprint, monkeypatc
     repo, tk = sprint["repo"], sprint["tk"]
     commit(repo, "plan")
     monkeypatch.setattr(kbgit, "KB", str(repo))
-    kbgit._WANT.clear()
+    monkeypatch.setattr(kg_trailers, "KB", str(repo))
+    kg_trailers._WANT.clear()
     (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
     commit(repo, "write b", tk)  # planted: the task is todo, not claimed
-    _, _, bad = kbgit.trailer_audit("HEAD", quiet=True)
+    _, _, bad = kg_trailers.trailer_audit("HEAD", quiet=True)
     assert len(bad) == 1 and any("not claimed" in ln for ln in bad[0][1]), bad
-    assert kbgit.trailer_audit("HEAD", quiet=True, work_state_on=False)[2] == []
+    assert kg_trailers.trailer_audit("HEAD", quiet=True, work_state_on=False)[2] == []
     sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
-    assert kbgit.trailer_audit("HEAD", quiet=True)[2] == []  # history stays as it is
+    assert kg_trailers.trailer_audit("HEAD", quiet=True)[2] == []  # history stays as it is
     assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
     commit(repo, "claim", tk)  # a backlog-planning commit
     (repo / "src" / "b.txt").write_text("b2\n", encoding="utf-8")
     commit(repo, "write b again", tk)
-    assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
+    assert kg_trailers.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
 
 
 def test_check_trailers_flags_kb_work_outside_trailers(sprint, monkeypatch, capsys):
@@ -1504,16 +1506,17 @@ def test_check_trailers_flags_kb_work_outside_trailers(sprint, monkeypatch, caps
     commit(repo, "claim", bg)
     sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
     monkeypatch.setattr(kbgit, "KB", str(repo))
-    kbgit._WANT.clear()
+    monkeypatch.setattr(kg_trailers, "KB", str(repo))
+    kg_trailers._WANT.clear()
     stray = f"write c\n\nKB-Work: {bg}\n\nCo-Authored-By: A <a@example.com>\n"
     (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
     sh(repo, "git", "add", "-A")
     sh(repo, "git", "commit", "-qm", stray)
-    _, _, bad = kbgit.trailer_audit("origin/main..HEAD", quiet=True)
+    _, _, bad = kg_trailers.trailer_audit("origin/main..HEAD", quiet=True)
     assert len(bad) == 1 and any("outside the trailer block" in ln for ln in bad[0][1]), bad
-    assert kbgit.stray_work(stray)
-    assert not kbgit.stray_work(f"write c\n\nCo-Authored-By: A <a@example.com>\nKB-Work: {bg}\n")
-    assert not kbgit.stray_work("write c\n\nno work here\n")
+    assert kg_trailers.stray_work(stray)
+    assert not kg_trailers.stray_work(f"write c\n\nCo-Authored-By: A <a@example.com>\nKB-Work: {bg}\n")
+    assert not kg_trailers.stray_work("write c\n\nno work here\n")
     msg = repo / "MSG"
     msg.write_text(stray, encoding="utf-8")
     sh(repo, "git", "reset", "-q", "--soft", "HEAD^")
@@ -1521,12 +1524,12 @@ def test_check_trailers_flags_kb_work_outside_trailers(sprint, monkeypatch, caps
     assert "outside the trailer block" in capsys.readouterr().err
     sh(repo, "git", "commit", "-qm", stray)
     sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
-    kbgit._WANT.clear()
-    assert kbgit.trailer_audit("HEAD", quiet=True)[2] == []  # history stays as it is
+    kg_trailers._WANT.clear()
+    assert kg_trailers.trailer_audit("HEAD", quiet=True)[2] == []  # history stays as it is
     (repo / "src" / "d.txt").write_text("d\n", encoding="utf-8")
     sh(repo, "git", "add", "-A")
     sh(repo, "git", "commit", "-qm", f"write d\n\nCo-Authored-By: A <a@example.com>\nKB-Work: {bg}")
-    assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
+    assert kg_trailers.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
 
 
 def test_claim_committed_before_work(sprint, monkeypatch):
@@ -1538,7 +1541,8 @@ def test_claim_committed_before_work(sprint, monkeypatch):
     commit(repo, "plan")
     sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
     monkeypatch.setattr(kbgit, "KB", str(repo))
-    kbgit._WANT.clear()
+    monkeypatch.setattr(kg_trailers, "KB", str(repo))
+    kg_trailers._WANT.clear()
 
     def only(path, msg):
         sh(repo, "git", "add", "--", path)
@@ -1547,14 +1551,14 @@ def test_claim_committed_before_work(sprint, monkeypatch):
     assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
     (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
     only("src/b.txt", "write b")  # planted: the claim is still uncommitted
-    _, _, bad = kbgit.trailer_audit("origin/main..HEAD", quiet=True)
+    _, _, bad = kg_trailers.trailer_audit("origin/main..HEAD", quiet=True)
     assert len(bad) == 1 and any("not claimed" in ln for ln in bad[0][1]), bad
 
     sh(repo, "git", "reset", "-q", "origin/main")  # keeps the claim and the work in the working tree
-    kbgit._WANT.clear()
+    kg_trailers._WANT.clear()
     only(rel, "claim")  # the claim commit: a backlog-planning commit
     only("src/b.txt", "write b")
-    assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
+    assert kg_trailers.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
 
 
 @pytest.fixture
@@ -1570,7 +1574,8 @@ def research(repo, monkeypatch):
     commit(repo, "plan")
     land(repo)
     monkeypatch.setattr(kbgit, "KB", str(repo))
-    kbgit._WANT.clear()
+    monkeypatch.setattr(kg_trailers, "KB", str(repo))
+    kg_trailers._WANT.clear()
     return {"repo": repo, "sp": sp, "rs": item(repo, "Research")["id"], "cs": item(repo, "Code")["id"]}
 
 
@@ -1599,8 +1604,8 @@ def test_research_lands_before_sprint_start_claim_commit_done(research):
     (repo / "kb" / "public").mkdir(parents=True)
     (repo / "kb" / "public" / "r.md").write_text("r\n", encoding="utf-8")
     commit(repo, "write r", rs)
-    kbgit._WANT.clear()
-    assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
+    kg_trailers._WANT.clear()
+    assert kg_trailers.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
     code, out = b(repo, "done", rs)
     assert code == 0, out
     assert item(repo, "Research")["status"] == "done" and item(repo, "Planned")["status"] == "planned"
@@ -1618,16 +1623,16 @@ def test_research_lands_before_sprint_start_refuses_tools_commit(research):
     (repo / "_tools").mkdir()
     (repo / "_tools" / "x.py").write_text("x = 1\n", encoding="utf-8")
     commit(repo, "write r and a tool", rs)
-    kbgit._WANT.clear()
-    _, _, bad = kbgit.trailer_audit("HEAD^..HEAD", quiet=True)
+    kg_trailers._WANT.clear()
+    _, _, bad = kg_trailers.trailer_audit("HEAD^..HEAD", quiet=True)
     assert len(bad) == 1 and any("research item of a planned sprint" in ln and "_tools/x.py" in ln
                                  for ln in bad[0][1]), bad
     sh(repo, "git", "reset", "-q", "--hard", "HEAD^")
     (repo / "kb" / "_self").mkdir(parents=True, exist_ok=True)
     (repo / "kb" / "_self" / "doc.md").write_text("d\n", encoding="utf-8")
     commit(repo, "write a process doc", rs)
-    kbgit._WANT.clear()
-    _, _, bad = kbgit.trailer_audit("HEAD^..HEAD", quiet=True)
+    kg_trailers._WANT.clear()
+    _, _, bad = kg_trailers.trailer_audit("HEAD^..HEAD", quiet=True)
     assert len(bad) == 1 and any("kb/_self/doc.md" in ln for ln in bad[0][1]), bad
 
 
@@ -1640,15 +1645,15 @@ def test_research_lands_before_sprint_start_non_research_still_refused(research)
     (repo / "kb" / "public").mkdir(parents=True)
     (repo / "kb" / "public" / "r.md").write_text("r\n", encoding="utf-8")
     commit(repo, "write r unclaimed", rs)
-    kbgit._WANT.clear()
-    _, _, bad = kbgit.trailer_audit("HEAD^..HEAD", quiet=True)
+    kg_trailers._WANT.clear()
+    _, _, bad = kg_trailers.trailer_audit("HEAD^..HEAD", quiet=True)
     assert len(bad) == 1 and any("not claimed" in ln for ln in bad[0][1]), bad
     edit(repo, cs, status="doing", claimed_by="agent-1")
     commit(repo, "force claim", cs)
     (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
     commit(repo, "write c", cs)
-    kbgit._WANT.clear()
-    _, _, bad = kbgit.trailer_audit("HEAD^..HEAD", quiet=True)
+    kg_trailers._WANT.clear()
+    _, _, bad = kg_trailers.trailer_audit("HEAD^..HEAD", quiet=True)
     assert len(bad) == 1 and any(f"not in a started sprint ({sp} is planned)" in ln for ln in bad[0][1]), bad
     code, out = b(repo, "check")
     assert code == 1 and f"{cs} “Code”: status doing while its sprint" in out, out
@@ -2616,8 +2621,9 @@ class TestBacklogCommitFlag:
         changed = self.out(repo, "show", "--name-only", "--format=", rev).split()
         assert sorted(changed) == sorted(paths), changed
         monkeypatch.setattr(kbgit, "KB", str(repo))
-        kbgit._WANT.clear()
-        assert kbgit.trailer_audit(rev, quiet=True)[2] == []
+        monkeypatch.setattr(kg_trailers, "KB", str(repo))
+        kg_trailers._WANT.clear()
+        assert kg_trailers.trailer_audit(rev, quiet=True)[2] == []
 
     @staticmethod
     def rel(*ids):

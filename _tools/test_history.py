@@ -11,7 +11,7 @@ import argparse, os, re, shutil, subprocess, sys
 
 import pytest
 
-import kbgit, kbid
+import kbgit, kbid, kg_trailers
 from conftest import KB, TOOLS, SOURCES_HEADER as HEADER, P, Q, Repo, git_env, requires_git
 COVERAGE = ("topic,priority,status,files,n_sources\n"
             "windows/demo,P1,partial,windows/demo.md;windows/demo.csv,1\n"
@@ -21,13 +21,13 @@ ROOT_MD = "---\nroot: public\nid_prefix: S\nvisibility: public\ndescription: tes
 
 def team(rel):
     """A repository path in a second root `team` (kb/team/), beside the public root."""
-    return f"{kbgit.KB_DIR_REL}/team/{rel}"
+    return f"{kg_trailers.KB_DIR_REL}/team/{rel}"
 
 
 @requires_git
 @pytest.mark.git
 class TestRevisionReadsWithoutGitShow:
-    """kbgit.show, kbgit.blob and `asof` (cmd_asof) read a file at a revision with `git cat-file blob REV:PATH`: `git show
+    """kbgit.show, kg_trailers.blob and `asof` (cmd_asof) read a file at a revision with `git cat-file blob REV:PATH`: `git show
     REV:PATH` checks its argument as a file name and fails as "Filename too long" on Windows in a deep checkout. The runner
     here fails every `git show REV:PATH` that way (as TestHeldOnLongPaths does for ql_deliver); the content is still read."""
     OLD, NEW = "old text\n", "new text\n"
@@ -44,6 +44,7 @@ class TestRevisionReadsWithoutGitShow:
         r.write("notes/a.txt", self.NEW)
         r.git("commit", "-q", "-a", "-m", "two", env={"GIT_AUTHOR_DATE": "2026-03-01T12:00:00+00:00", "GIT_COMMITTER_DATE": "2026-03-01T12:00:00+00:00"})
         monkeypatch.setattr(kbgit, "KB", r.path)
+        monkeypatch.setattr(kg_trailers, "KB", r.path)
         return r
 
     @pytest.fixture
@@ -67,11 +68,11 @@ class TestRevisionReadsWithoutGitShow:
         assert kbgit.show("HEAD", "notes/absent.txt") is None
 
     def test_blob_reads_a_file_at_a_revision_and_in_the_index(self, repo, windows):
-        assert kbgit.blob(repo.first, "notes/a.txt") == self.OLD
+        assert kg_trailers.blob(repo.first, "notes/a.txt") == self.OLD
         repo.write("notes/a.txt", "staged text\n")
         repo.git("add", "-A")
-        assert kbgit.blob(kbgit.INDEX, "notes/a.txt") == "staged text\n"
-        assert kbgit.blob("", "notes/a.txt") is None and kbgit.blob("HEAD", "notes/absent.txt") is None
+        assert kg_trailers.blob(kg_trailers.INDEX, "notes/a.txt") == "staged text\n"
+        assert kg_trailers.blob("", "notes/a.txt") is None and kg_trailers.blob("HEAD", "notes/absent.txt") is None
 
     def test_asof_reads_a_file_at_a_revision(self, repo, windows, capfd):
         assert kbgit.cmd_asof(argparse.Namespace(when="2026-02-01", path="notes/a.txt")) == 0
@@ -87,7 +88,7 @@ class TestRevisionReadsWithoutGitShow:
 class TestTrailerRules:
     def compute(self, old, new):
         paths = sorted(p for p in set(old) | set(new) if old.get(p) != new.get(p))
-        return kbgit.trailers_from(paths, old.get, new.get)
+        return kg_trailers.trailers_from(paths, old.get, new.get)
 
     def test_topics_from_the_coverage_mapping(self):
         old = {P("_coverage.csv"): COVERAGE, P("windows/demo.csv"): "a\n1\n", P("dsc/raw/x.json"): "{}",
@@ -111,7 +112,7 @@ class TestTrailerRules:
         flat_old = {"_sources.csv": HEADER, "windows/loose.md": "---\ntopic: windows/loose\n---\n"}
         flat_new = {**flat_old, "windows/loose.md": "---\ntopic: windows/loose\n---\nx\n"}
         assert self.compute(flat_old, flat_new) == {"KB-Topics": [Q("windows/loose")]}
-        assert kbgit.values_match(["windows/loose"], [Q("windows/loose")])  # trailers written before topics were qualified
+        assert kg_trailers.values_match(["windows/loose"], [Q("windows/loose")])  # trailers written before topics were qualified
 
     def test_sources_added_changed_superseded(self):
         u = "https://learn.microsoft.com/en-us/x"
@@ -130,17 +131,17 @@ class TestTrailerRules:
         assert self.compute(old, new) == {"KB-Answers": ["Q1", "QK-new-one"]}
 
     def test_format_threshold_and_matching(self):
-        many = [f"S{n}" for n in range(100, 100 + kbgit.MAX_IDS + 1)]
-        lines = kbgit.trailer_lines({"KB-Topics": ["b/y", "a/x"], "KB-Sources-Added": many}, "2026-09-25")
+        many = [f"S{n}" for n in range(100, 100 + kg_trailers.MAX_IDS + 1)]
+        lines = kg_trailers.trailer_lines({"KB-Topics": ["b/y", "a/x"], "KB-Sources-Added": many}, "2026-09-25")
         assert lines == ["KB-Topics: b/y, a/x", f"KB-Sources-Added: {len(many)} ids (see diff)", "KB-Verified: 2026-09-25"]
-        have = kbgit.parse_trailers("\n".join(lines) + "\nCo-Authored-By: x <noreply@example.com>\nkb-answers: QK-a")
-        assert kbgit.values_match(have["KB-Sources-Added"], many)
-        assert not kbgit.values_match(have["KB-Sources-Added"], many[:-1])
-        assert kbgit.values_match(have["KB-Topics"], ["a/x", "b/y"])
+        have = kg_trailers.parse_trailers("\n".join(lines) + "\nCo-Authored-By: x <noreply@example.com>\nkb-answers: QK-a")
+        assert kg_trailers.values_match(have["KB-Sources-Added"], many)
+        assert not kg_trailers.values_match(have["KB-Sources-Added"], many[:-1])
+        assert kg_trailers.values_match(have["KB-Topics"], ["a/x", "b/y"])
         assert have["KB-Answers"] == ["QK-a"]  # keys are case-insensitive
-        assert kbgit.values_match(None, []) and not kbgit.values_match(None, ["a/x"])
-        assert not kbgit.values_match(["a/x", "a/x"], ["a/x"])  # a key twice is wrong
-        assert kbgit.valid_date("2026-02-28") and not kbgit.valid_date("2026-02-30") and not kbgit.valid_date("26-1-1")
+        assert kg_trailers.values_match(None, []) and not kg_trailers.values_match(None, ["a/x"])
+        assert not kg_trailers.values_match(["a/x", "a/x"], ["a/x"])  # a key twice is wrong
+        assert kg_trailers.valid_date("2026-02-28") and not kg_trailers.valid_date("2026-02-30") and not kg_trailers.valid_date("26-1-1")
 
 
 @requires_git
@@ -223,7 +224,7 @@ class TestHistoryInGit:
         return cls.repo.kbgit(*args)
 
     def trailers(self, r):
-        return kbgit.parse_trailers(self.repo.git("log", "-1", "--format=%(trailers:only,unfold)", r))
+        return kg_trailers.parse_trailers(self.repo.git("log", "-1", "--format=%(trailers:only,unfold)", r))
 
     def test_install_is_idempotent(self):
         assert [p.returncode for p in self.install] == [0, 0], [p.stdout for p in self.install]

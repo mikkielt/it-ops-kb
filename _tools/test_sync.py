@@ -45,7 +45,7 @@ from pathlib import Path
 
 import pytest
 
-import kbgit, kbid, kg_lane, kg_sync
+import kbgit, kbid, kg_lane, kg_sync, kg_trailers
 from conftest import TOOLS, P, Repo, git_env, requires_git
 
 
@@ -1337,3 +1337,36 @@ def test_kg_split_sync_imports_no_facade_and_runs_git_in_its_own_kb(tmp_path, mo
     with monkeypatch.context() as m:
         m.setattr(kg_sync, "KB", str(tmp_path))
         assert kg_sync.git("rev-parse", "--is-inside-work-tree") is None
+
+
+MOVED_TO_TRAILERS = ("trailer_audit", "trailers_from", "work_state", "work_ok", "cmd_check_trailers", "cmd_trailers",
+                     "apply_trailers", "compute", "blob", "changed_paths")
+
+
+def test_kg_split_trailers_live_in_kg_trailers_and_kbgit_imports_them():
+    """kg_trailers defines the trailer audit, the trailer computation and the work state; kbgit.py defines none of
+    them (it imports what its hooks, sync and the command line need), and kg_trailers imports no facade. Planted
+    failure: a moved name put back into kbgit.py is reported."""
+    kbgit_src = Path(TOOLS, "kbgit.py").read_text(encoding="utf-8")
+    trailers_src = Path(TOOLS, "kg_trailers.py").read_text(encoding="utf-8")
+    assert defined_in(trailers_src, MOVED_TO_TRAILERS) == set(MOVED_TO_TRAILERS)
+    assert defined_in(kbgit_src, MOVED_TO_TRAILERS) == set()
+    for name in ("trailer_audit", "work_state", "cmd_check_trailers"):
+        assert getattr(kbgit, name) is getattr(kg_trailers, name)
+    imports = {a.name for n in ast.walk(ast.parse(trailers_src)) if isinstance(n, ast.Import) for a in n.names}
+    assert "kbgit" not in imports
+    planted = kbgit_src + "\n\ndef work_state(values, paths, load):\n    return []\n"
+    assert defined_in(planted, MOVED_TO_TRAILERS) == {"work_state"}
+
+
+@requires_git
+def test_kg_split_trailers_run_git_in_their_own_kb(tmp_path, monkeypatch):
+    """kg_trailers runs git in its own KB: a patch of kg_trailers.KB moves its git calls to a directory that is no
+    repository. Planted failure: the same patch on kbgit.KB leaves them in this repository."""
+    assert kg_trailers.git("rev-parse", "--is-inside-work-tree") is not None
+    with monkeypatch.context() as m:
+        m.setattr(kbgit, "KB", str(tmp_path))
+        assert kg_trailers.git("rev-parse", "--is-inside-work-tree") is not None
+    with monkeypatch.context() as m:
+        m.setattr(kg_trailers, "KB", str(tmp_path))
+        assert kg_trailers.git("rev-parse", "--is-inside-work-tree") is None
