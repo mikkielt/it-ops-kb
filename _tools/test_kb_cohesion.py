@@ -15,7 +15,7 @@ import csv, glob, json, os, re, subprocess, sys
 import pytest
 
 import kbcommon, kbfacts
-from conftest import KB, P, SELF_REL, TOOLS, allowlist, authored, copy_kb, fmt, git_env, requires_git, run, text, tracked
+from conftest import KB, KbTemplate, P, SELF_REL, TOOLS, allowlist, authored, copy_kb, fmt, git_env, requires_git, run, text, tracked
 from test_kb_root import SID, make_root
 
 PUBLIC = kbcommon.PUBLIC  # the public root: ledgers, articles, retrieval data (KB here is the repository)
@@ -42,6 +42,35 @@ class TestToolChecks:
     def test_check_py_passes(self):
         code, out = run(os.path.join(TOOLS, "check.py"))
         assert code == 0, out[-3000:]
+
+    def test_kb_copies_template_untouched_check_sees_a_write_through_a_link(self, tmp_path, monkeypatch):
+        """Kb copies link the files of conftest.LINKED_DIRS to one template: a planted write through a link fails the
+        template's end-of-run check, an untouched template, a write to a real copy and the link-less fallback pass."""
+        src = tmp_path / "src"
+        (src / "_census").mkdir(parents=True)
+        (src / "notes").mkdir()
+        (src / "_census" / "S1.txt").write_text("snapshot\n", encoding="utf-8")
+        (src / "notes" / "a.md").write_text("article\n", encoding="utf-8")
+        t = KbTemplate(str(src), None)
+        try:
+            d = t.copy_to(tmp_path / "one")
+            assert os.path.samefile(d / "_census" / "S1.txt", t.root + "/_census/S1.txt")
+            assert not os.path.samefile(d / "notes" / "a.md", t.root + "/notes/a.md"), "an article is a real copy"
+            assert t.changed() == [], "an untouched template passes"
+            (d / "notes" / "a.md").write_text("edited\n", encoding="utf-8")
+            assert t.changed() == [], "a write to a real copy leaves the template as it was"
+            real = t.copy_to(tmp_path / "two", copy=("_census",))
+            (real / "_census" / "S1.txt").write_text("edited\n", encoding="utf-8")
+            assert t.changed() == [], "a path in `copy` is a real copy"
+            monkeypatch.setattr(os, "link", lambda *a, **k: (_ for _ in ()).throw(OSError("cross-device")))
+            fallback = t.copy_to(tmp_path / "three")
+            monkeypatch.undo()
+            (fallback / "_census" / "S1.txt").write_text("edited\n", encoding="utf-8")
+            assert t.changed() == [], "where a link fails the file is copied"
+            (d / "_census" / "S1.txt").write_text("planted\n", encoding="utf-8")  # through the link
+            assert t.changed() == ["_census/S1.txt"], "a write through a link is found"
+        finally:
+            t.remove()
 
     def test_check_py_reads_a_tag_wrapped_after_its_kind(self, tmp_path):
         # `[DOC\n  S-id]` (a fact wrapped by the editor) must still be checked for unknown ids

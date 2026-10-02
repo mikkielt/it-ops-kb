@@ -2,7 +2,7 @@
   "id": "ST-ykvho3zp",
   "kind": "story",
   "title": "Test kb copies are hard links of a scanned per-session template",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
@@ -59,7 +59,8 @@
     "_tools/test_stress.py",
     "_tools/test_kb_cohesion.py",
     "_tools/test_kb_lookup.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_factdiff.py"
   ],
   "depends_on": [
     "ST-c35i7vjx"
@@ -84,5 +85,6 @@
     "kb/public/defender/asr-and-antivirus.md (what not to exclude)",
     "kb/public/gitlab/git-test-repositories.md (local clones hard-link objects)"
   ],
-  "notes": "Measured: the first read of a fresh clone's 1,841 files takes 18.9 s and the second 0.3 s; a plain copy's first read 19.4 s, a hard-linked copy's 0.4 s. check.py on a fresh copy takes 15.3 s, on a read one 1.4 s. The stress suite makes about 96 copies per run (88 tests plus 8 per-worker bases). Expected saving: up to 1,600 of stress_test.py's 3,495 worker-seconds, and a similar share of the tests' plain copies. NTFS allows at most 1,023 hard links to one file; a run keeps its passing copies until the session ends (tmp_path_retention_policy failed), so the copy count per run must stay under that. The attribution of the first-open cost to Defender is inferred, not recorded; ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator” records it. Kept as a draft: the operator has not scheduled the test-speed epic EP-hlnsqx4f. Its checks name _tools/perfcheck.py and _tools/test_ids_baseline.txt, which ST-c35i7vjx \"A tool proves a test-suite speed-up lost no test\" creates, so that story comes first."
+  "notes": "Measured: the first read of a fresh clone's 1,841 files takes 18.9 s and the second 0.3 s; a plain copy's first read 19.4 s, a hard-linked copy's 0.4 s. check.py on a fresh copy takes 15.3 s, on a read one 1.4 s. The stress suite makes about 96 copies per run (88 tests plus 8 per-worker bases). Expected saving: up to 1,600 of stress_test.py's 3,495 worker-seconds, and a similar share of the tests' plain copies. NTFS allows at most 1,023 hard links to one file; a run keeps its passing copies until the session ends (tmp_path_retention_policy failed), so the copy count per run must stay under that. The attribution of the first-open cost to Defender is inferred, not recorded; ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator” records it. Kept as a draft: the operator has not scheduled the test-speed epic EP-hlnsqx4f. Its checks name _tools/perfcheck.py and _tools/test_ids_baseline.txt, which ST-c35i7vjx \"A tool proves a test-suite speed-up lost no test\" creates, so that story comes first.",
+  "claimed_by": "mac-third-worker"
 }
