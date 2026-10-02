@@ -8,7 +8,7 @@ the class named), a class an agent wrote lower than the derived one (the autopil
 it), an item whose touches raise the class of a gate with a harmless question, and a decision the autopilot records
 with no review date or with an operator's maker. The decision files are those of a throwaway repository, never this
 one's."""
-import csv, os, shutil, subprocess, sys
+import csv, datetime, os, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
@@ -224,6 +224,21 @@ def test_autopilot_authority_record_writes_an_active_decision_with_a_review_date
     assert (row["status"], row["by"], row["by_ref"], row["context"]) == ("active", "autopilot", "autopilot", f"item:{bg}")
     assert row["review_by"] == bl_authority.review_by() and f"{bg} gate way" in row["source"]
     assert tool(r, "check.py")[0] == 0
+
+
+def test_autopilot_authority_review_days_fourteen(decide):
+    """the operator chose 14 days: the written review_by is 14 days after the recorded date, not a literal in this test"""
+    assert bl_authority.REVIEW_DAYS == 14
+    assert bl_authority.review_by(datetime.date(2026, 10, 1)) == "2026-10-15"
+    r, bg = decide["repo"], decide["bg"]
+    assert b(r, "answer", bg, "way", "--answer", "left", "--by", "autopilot", "--record")[0] == 0
+    (row,) = decisions(r)
+    today = datetime.date.fromisoformat(row["date"])
+    assert row["review_by"] == (today + datetime.timedelta(days=14)).isoformat(), row
+
+
+def test_autopilot_authority_review_days_fourteen_planted_failure_thirty_is_refused():
+    assert bl_authority.review_by(datetime.date(2026, 10, 1), days=30) != bl_authority.review_by(datetime.date(2026, 10, 1))
 
 
 def test_autopilot_authority_an_operator_answer_supersedes_the_autopilots(decide):

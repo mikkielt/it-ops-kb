@@ -17,7 +17,7 @@ from bl_base import START_GATE
 AUTOPILOT = "autopilot"  # the `by` of an answer the autopilot gave, and its decision maker in kb/_self
 CLASSES = ("secrets", "push", "start", "querylog", "agents-rule", "delete", "design")
 AUTOPILOT_REFUSED = ("secrets", "push")  # the classes only the operator answers
-REVIEW_DAYS = 30  # an autopilot decision's `review_by`: the operator ratifies or supersedes it by then
+REVIEW_DAYS = 14  # an autopilot decision's `review_by`: the operator ratifies or supersedes it by then
 
 # Paths whose change makes a gate about the item one of the class: a directory ends with `/`, a file is exact. A touch
 # names one when it is the path, a directory above it, or a glob that matches it.
