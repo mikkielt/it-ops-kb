@@ -2,7 +2,7 @@
   "id": "ST-fb2hxf6s",
   "kind": "story",
   "title": "The autopilot inventories processes its agents left running and ends its own",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-rrrrggw7",
   "priority": "P1",
@@ -77,5 +77,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Reuse: live_processes (cwd check, never signals), the process-tree end of the intake drift check (os.killpg, taskkill /T /F), and land's refusal of a worktree with a live process. Windows lists no working directories, so there it reports that it cannot check. Merged finding (SP-4i5quwba retro): workers leave locked worktrees and stray sleep shells; land refuses without naming the process. land names the pid and command of each live process in a worktree it refuses to remove, and the brief requires a worker to end its monitors."
+  "notes": "Reuse: live_processes (cwd check, never signals), the process-tree end of the intake drift check (os.killpg, taskkill /T /F), and land's refusal of a worktree with a live process. Windows lists no working directories, so there it reports that it cannot check. Merged finding (SP-4i5quwba retro): workers leave locked worktrees and stray sleep shells; land refuses without naming the process. land names the pid and command of each live process in a worktree it refuses to remove, and the brief requires a worker to end its monitors.",
+  "claimed_by": "mac-sixth"
 }
