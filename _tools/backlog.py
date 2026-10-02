@@ -1213,8 +1213,10 @@ def open_gates(it, kinds=("blocking",)):
     return [g for g in it.get("gates", []) if g.get("kind") in kinds and "answer" not in g]
 
 
-def waits(bl, iid, any_sprint=False):
-    """Why an item cannot be worked on now ([] = ready): its status, sprint, dependencies, gates, trigger, children."""
+def waits(bl, iid, any_sprint=False, by=None):
+    """Why an item cannot be worked on now ([] = ready): its status, sprint, dependencies, gates, trigger, children.
+    With `by`, a dependency that is `doing` and claimed by that session does not wait (`claim --by`: one session works
+    both items in order)."""
     it = bl.items[iid]
     out = []
     if it.get("kind") in ("sprint", "epic"):
@@ -1232,7 +1234,10 @@ def waits(bl, iid, any_sprint=False):
         if t and not t.get("fired"):
             out.append(f"trigger on {bl.label(i)}: {t['when']}")
         for d in a.get("depends_on", []):
-            if bl.items.get(d, {}).get("status") != "done":
+            dep = bl.items.get(d, {})
+            if dep.get("status") == "doing" and by is not None and dep.get("claimed_by") == by:
+                continue
+            if dep.get("status") != "done":
                 out.append(f"depends on {bl.label(d)}" + (f" (through {bl.label(i)})" if i != iid else ""))
     if it.get("review"):
         for s in bl.sprint_items(sp):
@@ -2035,7 +2040,7 @@ def cmd_claim(bl, a):
     it = bl.items[iid]
     # a research item of a planned sprint is claimed from draft: its kb content lands before the sprint starts
     ok = ("status doing", "status draft") if research_in_planned(bl, iid) else ("status doing",)
-    w = [x for x in waits(bl, iid, any_sprint=True) if not x.startswith(ok)]
+    w = [x for x in waits(bl, iid, any_sprint=True, by=a.by) if not x.startswith(ok)]
     if w:
         raise Refused(f"{bl.label(iid)} is not ready:\n  " + "\n  ".join(w))
     if it.get("status") == "doing" and it.get("claimed_by") != a.by:
