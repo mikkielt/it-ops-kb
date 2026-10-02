@@ -2,7 +2,7 @@
   "id": "ST-5q5b5qtz",
   "kind": "story",
   "title": "Workers start the longest test scopes first",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
@@ -50,5 +50,39 @@
     "kb/public/python/pytest-xdist.md (loadscope reorder, worksteal, -n auto without psutil, PYTEST_XDIST_AUTO_NUM_WORKERS)"
   ],
   "notes": "Measured: under loadscope the git scenario classes (100-520 s of class setup each) start 500-1,050 s into the run, and 1,124-1,288 worker-seconds sit idle at the end; --no-loadscope-reorder (file order) gave 1,190 s against 1,106-1,203 s, no gain. Expected saving: 120-160 s of wall time from ordering the heaviest scopes first. -n auto starts 8 workers on this 4-core, 8-thread host because uv.lock has no psutil; the worker-count runs are in the report. Kept as a draft: the operator has not scheduled the test-speed epic EP-hlnsqx4f. Its checks name _tools/perfcheck.py and _tools/test_ids_baseline.txt, which ST-c35i7vjx \"A tool proves a test-suite speed-up lost no test\" creates, so that story comes first.",
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "ef97e35fb2835cc5f209531714a762233b6f4e72",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "0871a9ef3268ca4f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt"
+        ],
+        "exit": 0,
+        "sha256": "b6a6ea3120bf5098"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "time",
+          "--max-seconds",
+          "900"
+        ],
+        "exit": 0,
+        "sha256": "be6f715e345ef041"
+      }
+    ]
+  }
 }
