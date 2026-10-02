@@ -40,9 +40,10 @@ DNS rebinding, and recommends a loopback bind for a local server):
   chunked body    a POST sent with `Transfer-Encoding: chunked` (and no Content-Length) is read chunk by chunk up
                   to --max-body; one that runs past it gets 413 as an over-long body does, when the limit is
                   reached. The limit counts the data bytes only; the framing (size lines, extensions, trailers) has
-                  its own allowance, 4 KiB plus 32 bytes a chunk, one line at most 8 KiB: a body at the limit is
-                  served whatever its chunk size, a flood of framing gets 413, and the drain of a refused body is
-                  bounded the same way. Any other transfer coding gets 501 Not Implemented; both Transfer-Encoding and
+                  its own allowance, CHUNK_SLACK (4 KiB) plus CHUNK_FRAME (32 bytes) a chunk, the per-chunk
+                  part capped at a quarter of the limit, one line at most 8 KiB: a body at the limit in chunks of
+                  256 bytes or more is served, a flood of tiny chunks or of framing gets 413, and the drain of a
+                  refused body is bounded the same way. Any other transfer coding gets 501 Not Implemented; both Transfer-Encoding and
                   Content-Length, or broken chunk framing, get 400 Bad Request
   stalled body    a connection that sends nothing for 30 seconds (a body announced and not sent) is dropped.
   A refusal is plain text and closes the connection. A refused body up to 64 KiB is read and dropped first, so the
@@ -94,7 +95,8 @@ DRAIN = 64 << 10  # a refused body up to this size is read and dropped before th
 CHUNK_SIZE = re.compile(rb"[0-9A-Fa-f]{1,16}")  # a chunk-size line's size, before any chunk extension
 LINE_MAX = 8 << 10  # the longest chunk-size line (extension included) or trailer line read
 CHUNK_SLACK = 4 << 10  # framing (size lines, extensions, chunk-ending CRLFs, trailers) a chunked request may bring, flat
-CHUNK_FRAME = 32  # and this much more for each chunk: a body at its limit in small chunks is served, never refused
+CHUNK_FRAME = 32  # and this much more for each chunk, up to a quarter of the data limit in all (CHUNK_SHARE)
+CHUNK_SHARE = 4  # the per-chunk allowances together never pass the data limit divided by this
 LOGGED_METHODS = frozenset({"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"})  # a method named in a log line
 MODERN_STATUS = {-32022: HTTPStatus.BAD_REQUEST, -32602: HTTPStatus.BAD_REQUEST, -32601: HTTPStatus.NOT_FOUND}
 _HANDLE_LOCK = threading.Lock()
@@ -182,11 +184,14 @@ class Handler(BaseHTTPRequestHandler):
     def read_chunked(self, limit):
         """The body of a chunked request, or None when its data runs past `limit` bytes or its framing (chunk-size
         lines, extensions, chunk-ending CRLFs, trailers) past CHUNK_SLACK plus CHUNK_FRAME for each chunk (reading
-        stops there). A body whose data is within `limit` is served whatever its chunk size; one framing line past
-        LINE_MAX is refused the same way. Chunks carry data, so their number is bounded by `limit`, and so is what is read.
+        stops there). The framing allowance is CHUNK_SLACK plus CHUNK_FRAME for each chunk, the per-chunk part capped
+        at `limit` // CHUNK_SHARE: what is read is at most the data (up to `limit`) plus that allowance plus one line of
+        LINE_MAX, however many chunks come. A body at `limit` in chunks of 256 bytes or more is served; a flood of
+        tiny chunks, whose framing passes the cap, is refused. One framing line past LINE_MAX is refused the same way.
         ValueError when the chunk framing is broken or the connection ends inside it."""
         body = bytearray()
         left = CHUNK_SLACK  # framing bytes this request may still make the server read
+        share = limit // CHUNK_SHARE  # what the chunks may add to it, all together
 
         def take(line):
             nonlocal left
@@ -194,7 +199,9 @@ class Handler(BaseHTTPRequestHandler):
             return left >= 0
 
         while True:
-            left += CHUNK_FRAME  # this chunk's share
+            add = min(CHUNK_FRAME, share)  # this chunk's share, until the chunks together have added the cap
+            share -= add
+            left += add
             line = self.rfile.readline(min(LINE_MAX + 1, left + 1))
             if not take(line) or len(line) > LINE_MAX:
                 return None
