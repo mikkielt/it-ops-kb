@@ -2,7 +2,7 @@
   "id": "ST-6zcqkjfm",
   "kind": "story",
   "title": "The query log keeps operational rows in a gated ops sidecar",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-rrrrggw7",
   "priority": "P2",
@@ -86,5 +86,39 @@
     }
   ],
   "notes": "The store is a sidecar of kb/_querylog/, so it inherits the query log redaction class, its gates, its GitLab-only delivery and its exclusion from the public projection. A second pusher is not added: kbgit.py sync gives up after two rejected pushes.",
-  "claimed_by": "seventh-w1"
+  "evidence": {
+    "commit": "fdddb8afc341f224200e4356250fae2302bf6730",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_sidecar"
+        ],
+        "exit": 0,
+        "sha256": "b6c9ec4a2623e87a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_sidecar_refuses_free_text"
+        ],
+        "exit": 0,
+        "sha256": "f8fa4caf13214030"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_sidecar_cut_from_publish"
+        ],
+        "exit": 0,
+        "sha256": "39e6e767beb7b654"
+      }
+    ]
+  }
 }
