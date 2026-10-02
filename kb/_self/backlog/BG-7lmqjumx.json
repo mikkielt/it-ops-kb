@@ -2,7 +2,7 @@
   "id": "BG-7lmqjumx",
   "kind": "bug",
   "title": "agent_bench.py's route() docstring and a test name in test_agent_bench.py still say no-kb researcher",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3siaqxdf",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,6 @@
   "touches": [
     "_tools/agent_bench.py",
     "_tools/test_agent_bench.py"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
