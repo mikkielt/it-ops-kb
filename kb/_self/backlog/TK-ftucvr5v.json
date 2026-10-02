@@ -2,7 +2,7 @@
   "id": "TK-ftucvr5v",
   "kind": "task",
   "title": "autopilot.py status prints the manager's state in one capped command, and --hook under 1000 characters",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-nrhwbodb",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,19 @@
     "kb/_self/maintaining.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "d1e1437407c95b1f487dfa874aa34420a3ecb668",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_status"
+        ],
+        "exit": 0,
+        "sha256": "d23c25ad20a3a49d"
+      }
+    ]
+  }
 }
