@@ -2,7 +2,7 @@
   "id": "TK-6cc3besi",
   "kind": "task",
   "title": "The mode scenarios (off, disabled, unreadable, local, auto) run in one shared clone, keeping their ids",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-7ihohi2u",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,32 @@
   "depends_on": [
     "TK-7pwnplew"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "0f3ddabc8c6464046df8d3864c7863a49aa3922d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "exit": 0,
+        "sha256": "5ad788c66dae066b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestModesOff or TestModesLocal or TestModesAuto"
+        ],
+        "exit": 0,
+        "sha256": "30e60c3cfc783a45"
+      }
+    ]
+  }
 }
