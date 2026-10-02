@@ -2,7 +2,7 @@
   "id": "BG-rawpqr3t",
   "kind": "bug",
   "title": "The kb-autopilot tick runs kbdecide.py digest and list, PushNotification and ToolSearch, which settings.json does not allow, so an unattended loop stalls on a permission prompt",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
@@ -33,5 +33,28 @@
     "kb/_self/plugin.md",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "5f1d533d1a8d91bbb7103e65363569c0874abde2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "settings_allow_tick_commands"
+        ],
+        "exit": 0,
+        "sha256": "e7d1f27457163943"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys;a=json.load(open(\".claude/settings.json\"))[\"permissions\"][\"allow\"];need=[\"Bash(python3 _tools/kbdecide.py digest)\",\"Bash(python3 _tools/kbdecide.py list *)\",\"PushNotification\",\"ToolSearch\"];miss=[n for n in need if n not in a];print(miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
