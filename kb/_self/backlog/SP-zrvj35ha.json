@@ -1,0 +1,22 @@
+{
+  "id": "SP-zrvj35ha",
+  "kind": "sprint",
+  "title": "tests.py recording and benchmark follow-ups",
+  "status": "active",
+  "goal": "tests.py records the mode it ran, a glob of every test file takes the host lock, a failed navigation run names its raw stream, reports/benchmarks.md says what the researcher has, and the worker count is measured",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

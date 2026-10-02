@@ -2,7 +2,8 @@
   "id": "BG-amcsfoms",
   "kind": "bug",
   "title": "factdiff drop_citation loses the id of a DECISION or LOG part in the tag it rewrites",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-tt4tibyn",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +14,20 @@
       "-c",
       "import os,sys,tempfile; d=tempfile.mkdtemp(); os.makedirs(d+'/print'); open(d+'/_root.md','w').write('---\\nroot: fixture\\nid_prefix: FXT\\nvisibility: internal\\ndescription: x\\n---\\n'); open(d+'/print/queues.md','w').write('---\\ntopic: print/queues\\n---\\n\\n## Facts\\n- Jobs are kept 14 days. [DOC S1208, S1209; LOG L-aaaaaaaa]\\n'); os.environ['KB_ROOTS']=d; sys.path.insert(0,'_tools'); import factdiff,kbcommon,kbfacts; factdiff.ROOT=kbcommon.root('fixture'); key=next(kbfacts.fact_key(u['text']) for u in kbfacts.units('fixture') if '14 days' in u['text']); factdiff.drop_citation('print/queues.md',key,'S1208','gone'); sys.exit(0 if 'LOG L-aaaaaaaa' in open(d+'/print/queues.md').read() else 1)"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "drop_citation_keeps_decision_and_log_ids"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_factdiff_ids.py",
+    "kb/_self/tools.md"
+  ]
 }
