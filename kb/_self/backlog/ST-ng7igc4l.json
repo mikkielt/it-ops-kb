@@ -28,8 +28,5 @@
     "kb/_self/maintaining.md",
     "AGENTS.md",
     "kb/_self/code.md"
-  ],
-  "depends_on": [
-    "ST-6fb6kzoa"
   ]
 }
