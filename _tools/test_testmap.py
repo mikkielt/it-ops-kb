@@ -17,8 +17,8 @@ def fresh_graph():
 
 
 def test_a_tool_change_selects_the_test_files_that_reach_it():
-    sel, _ = testmap.select(["_tools/backlog.py"])
-    assert "_tools/test_backlog.py" in sel and "_tools/test_kb_http.py" not in sel, sel
+    sel, _ = testmap.select(["_tools/kbingest.py"])
+    assert "_tools/test_kbingest.py" in sel and "_tools/test_kb_http.py" not in sel, sel
     own = "_tools/test_testmap.py"  # names every tool it plants, so it reaches them too
     assert [f for f in testmap.select(["_tools/kb_http.py"])[0] if f != own] ==         sorted(["_tools/test_kb_http.py", testmap.LEAKS, testmap.TOOLS_MAP] + testmap.TOOL_SCANS)
 

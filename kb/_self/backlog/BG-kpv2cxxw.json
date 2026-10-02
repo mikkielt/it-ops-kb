@@ -2,7 +2,7 @@
   "id": "BG-kpv2cxxw",
   "kind": "bug",
   "title": "kb_mcp.py upstream() falls back to origin/HEAD instead of the integration remote",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
   "rank": 0,
@@ -16,6 +16,16 @@
     ]
   },
   "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_status_follows_the_integration_remote_not_origin"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kb_mcp.py",
     "_tools/test_kb_mcp.py",
@@ -23,6 +33,8 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/embedding.md"
-  ]
+    "kb/_self/embedding.md",
+    "_tools/test_testmap.py"
+  ],
+  "claimed_by": "mac-third-worker"
 }

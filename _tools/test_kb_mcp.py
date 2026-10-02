@@ -1202,6 +1202,28 @@ def test_status_says_how_far_a_clone_is_behind_its_remote(tmp_path):
     assert f"to update: git -C {repo.path} pull --ff-only.\n\ncoverage: good" in p.stdout, p.stdout[:300]
 
 
+@pytest.mark.git
+def test_status_follows_the_integration_remote_not_origin(tmp_path):
+    """A clone with no upstream branch whose integration remote is `integ` (kb.integrationRemote) measures its
+    distance against integ/main, even when an origin/main level with HEAD exists; with no remote branch of the
+    integration remote it reports none, and integ/HEAD is preferred over integ/main."""
+    from conftest import Repo, copy_kb
+    repo = Repo(copy_kb(str(tmp_path / "kb")))
+    repo.git("init", "-q", "-b", "main")
+    repo.git("add", "README.md")
+    repo.git("commit", "-q", "-m", "kb")
+    repo.git("config", "kb.integrationRemote", "integ")
+    repo.git("update-ref", "refs/remotes/origin/main", repo.rev("HEAD"))  # a decoy, level with HEAD
+    assert "upstream:" not in _status(repo.path, tmp_path)
+    repo.git("update-ref", "refs/remotes/integ/main", _ahead(repo, 3))
+    out = _status(repo.path, tmp_path)
+    assert "upstream: integ/main" in out and "behind_upstream: 3 commits\n" in out and "origin" not in out, out
+    repo.git("update-ref", "refs/remotes/integ/other", _ahead(repo, 1))
+    repo.git("symbolic-ref", "refs/remotes/integ/HEAD", "refs/remotes/integ/other")
+    out = _status(repo.path, tmp_path)
+    assert "upstream: integ/HEAD" in out and "behind_upstream: 1 commits\n" in out, out
+
+
 def _behind_clone(tmp_path, n=3):
     """A kb copy committed as a clone whose origin/main is n commits ahead of its HEAD (as of its last fetch)."""
     from conftest import Repo, copy_kb
