@@ -17,7 +17,7 @@ TestSelfdocInGit   (marker git) a throwaway repo with a map, two docs and the fi
                    check `stale --work ID` fails only on a doc its own commits left stale, never on another
                    item's (`-k foreign_stale_doc`).
 """
-import functools, glob, os, pathlib, re, shlex
+import functools, glob, os, pathlib, re, shlex, subprocess, sys
 
 import pytest
 
@@ -482,6 +482,22 @@ class TestSelfdocToolsMap:
         merged = "| `python3 _tools/backlog.py new\\|find\\|check\\|show\\|next\\|claim\\|done` | the backlog |"
         assert self.backlog_row_problems(self.backlog_rows(merged), known), "planted: one row for many subcommands"
         assert self.backlog_row_problems(self.backlog_rows(text.replace("backlog.py find`", "backlog.py findx`")), known)
+
+    @staticmethod
+    def backlog_subcommands_without_row(text, subcommands):
+        """The subcommands with no row of their own in tools.md: the text `python3 _tools/backlog.py <name>` in
+        backticks, the row's command cell, so a name shared in another row's cell (`show\\|next`) does not count."""
+        return {n for n in subcommands if f"| `python3 _tools/backlog.py {n}` |" not in text}
+
+    def test_tools_md_backlog_row_for_every_subcommand(self):
+        """Every subcommand `backlog.py -h` lists has a row in tools.md. Planted: a row renamed away leaves its
+        subcommand unnamed."""
+        helptext = subprocess.run([sys.executable, str(pathlib.Path(selfdoc.KB, "_tools", "backlog.py")), "-h"], capture_output=True, text=True, encoding="utf-8", check=True).stdout
+        subcommands = re.search(r"\{([a-z,-]+)\}", helptext).group(1).split(",")
+        assert len(subcommands) > 12
+        text = pathlib.Path(selfdoc.KB, S, "tools.md").read_text(encoding="utf-8")
+        assert self.backlog_subcommands_without_row(text, subcommands) == set()
+        assert self.backlog_subcommands_without_row(text.replace("backlog.py find`", "backlog.py findx`"), subcommands) == {"find"}, "planted: a row renamed away"
 
     def test_tools_map_this_repository_tampered_map_fails(self):
         lines = selfdoc.map_tools("selfdoc")
