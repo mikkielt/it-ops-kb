@@ -2,7 +2,7 @@
   "id": "TK-gefod47d",
   "kind": "task",
   "title": "bl_plan.py holds the plan and start helpers that move together",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -40,5 +40,19 @@
   "depends_on": [
     "TK-ldhzhsc2"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "556bd6f2447a0f0a40a024cf1370eb8735294d1a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_plan"
+        ],
+        "exit": 0,
+        "sha256": "5125b5b1fcebb52e"
+      }
+    ]
+  }
 }
