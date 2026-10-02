@@ -14,6 +14,9 @@ test_kb_http_roots_*  the script as a subprocess with the test_kb_root.py fixtur
                 is process-wide, so it never runs in this process): by default only public is served over HTTP
                 (kb_pack and kb_status leave the fixture out), --roots public,fixture serves both, and an unknown
                 or empty --roots stops the start with exit 2 and nothing bound.
+test_kb_http_log_*  one `kb_http: METHOD STATUS MSms` line per answered request on stderr, never the client address,
+                the path, the query or the question (a bad request line and a 404 included), nothing when quiet;
+                the planted failure puts the base class's access line back and the check sees the address.
 test_kb_http_no_local_path  the script started from a kb clone planted 3 commits behind its origin/main: kb_pack
                 still says the copy is behind, but no answer names the clone's path or a git command.
 test_kb_http_parity_*  the same initialize, tools/list and tools/call of kb_pack, kb_search and kb_show sent to
@@ -21,7 +24,7 @@ test_kb_http_parity_*  the same initialize, tools/list and tools/call of kb_pack
                 JSON-RPC replies are identical, the HTTP ones match _tools/fixtures/kb_mcp_contract.json (the
                 contract of test_kb_mcp.py's test_embed_contract_*), and a changed or missing reply is caught.
 """
-import copy, hashlib, http.client, json, os, re, subprocess, sys, threading
+import copy, hashlib, http.client, http.server, json, os, re, socket, subprocess, sys, threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -674,3 +677,60 @@ def test_kb_http_chunked_body(guarded, port):
     assert wire(port, chunked_post("/mcp", chunks(ping), b"Content-Length: %d\r\n" % len(ping)))[0][0] == 400
     gz = chunked_post("/mcp", chunks(ping)).replace(b"Transfer-Encoding: chunked", b"Transfer-Encoding: gzip, chunked")
     assert wire(port, gz)[0][0] == 501
+
+
+LOG_LINE = re.compile(r"kb_http: (GET|POST|DELETE|-) \d{3} \d+ms")
+SECRETS = ("203.0.113.7", "127.0.0.1", "pl-secret-question", "pl-secret-path", "HTTP/1.1")
+
+
+def logged(capsys, requests, quiet=False):
+    """The stderr text a server (not quiet unless asked) writes while `requests(port)` runs against it."""
+    httpd = kb_http.build(0, quiet=quiet)
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    try:
+        capsys.readouterr()
+        requests(httpd.server_address[1])
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+    return capsys.readouterr().err
+
+
+def some_requests(port):
+    rpc(port, {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+        "name": "kb_search", "arguments": {"query": "pl-secret-question"}}})
+    call(port, "GET", path="/mcp?q=pl-secret-question")
+    call(port, "POST", body={"jsonrpc": "2.0", "id": 2, "method": "ping"}, path="/pl-secret-path")
+    with socket.create_connection(("127.0.0.1", port), timeout=10) as c:  # a request line no HTTP parser accepts
+        c.sendall(b"GET /pl-secret-path pl-secret-question\r\n\r\n")
+        c.recv(4096)
+
+
+def test_kb_http_log_is_one_structured_line_per_request(capsys):
+    err = logged(capsys, some_requests)
+    lines = err.splitlines()
+    assert len(lines) == 4 and all(LOG_LINE.fullmatch(x) for x in lines), lines
+    assert [x.split()[2] for x in lines] == ["200", "405", "404", "400"], lines
+    assert not any(secret in err for secret in SECRETS), err
+
+
+def test_kb_http_log_quiet_writes_nothing(capsys):
+    assert logged(capsys, some_requests, quiet=True) == ""
+
+
+def test_kb_http_log_message_drops_what_it_is_given(capsys):
+    h = object.__new__(kb_http.Handler)
+    h.client_address = ("203.0.113.7", 5555)
+    h.server = type("S", (), {"quiet": False})()
+    h.log_message("%s", "GET /pl-secret-path HTTP/1.1")
+    h.log_error("code %d, message %s", 400, "Bad request syntax ('pl-secret-question')")
+    assert capsys.readouterr().err == ""
+
+
+def test_kb_http_log_planted_failure_base_access_line_is_seen(capsys, monkeypatch):
+    """The check catches the leak it guards: with the base class's logging back, the address and request line show."""
+    monkeypatch.setattr(kb_http.Handler, "log_request", http.server.BaseHTTPRequestHandler.log_request)
+    monkeypatch.setattr(kb_http.Handler, "log_message", http.server.BaseHTTPRequestHandler.log_message)
+    err = logged(capsys, some_requests)
+    assert "127.0.0.1" in err and "pl-secret-path" in err and not LOG_LINE.fullmatch(err.splitlines()[0]), err

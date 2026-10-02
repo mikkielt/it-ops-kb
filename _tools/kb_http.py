@@ -62,10 +62,14 @@ Stateless: the server keeps no protocol session. It never mints an `Mcp-Session-
 sends. Requests are served on threads (ThreadingHTTPServer); the calls into kb_mcp run one at a time, because the
 tools redirect the process-wide stdout while they work.
 
+Log: one line per answered request on stderr, `kb_http: METHOD STATUS MSms` (the method, the status, the milliseconds
+since the request line was read). Never the client address, the path or the request line, so a host journal holds
+no personal data and no question; the base class's own access and error lines are dropped.
+
 Exit codes: 0 after an interrupt, 1 when the address cannot be bound, 2 for a bad option (a non-loopback --bind
 without --bind-any, and a --roots name that is no root, among them).
 """
-import argparse, ipaddress, json, re, socket, sys, threading
+import argparse, ipaddress, json, re, socket, sys, threading, time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -84,6 +88,7 @@ ROOTS = ("public",)  # served when --roots is not given: the module docstring sa
 DRAIN = 64 << 10  # a refused body up to this size is read and dropped before the refusal is sent
 CHUNK_SIZE = re.compile(rb"[0-9A-Fa-f]{1,16}")  # a chunk-size line's size, before any chunk extension
 LINE_MAX = 64 << 10  # the longest chunk-size or trailer line read
+LOGGED_METHODS = frozenset({"GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"})  # a method named in a log line
 MODERN_STATUS = {-32022: HTTPStatus.BAD_REQUEST, -32602: HTTPStatus.BAD_REQUEST, -32601: HTTPStatus.NOT_FOUND}
 _HANDLE_LOCK = threading.Lock()
 
@@ -280,9 +285,25 @@ class Handler(BaseHTTPRequestHandler):
         if data:
             self.wfile.write(data)
 
-    def log_message(self, format, *args):  # noqa: A002 - the base class's signature
+    def parse_request(self):
+        """The base class's, after noting when the request line was read: log_request measures from here."""
+        self._started = time.monotonic()
+        return super().parse_request()
+
+    def log_request(self, code="-", size="-"):
+        """One structured line per answered request on stderr: the method, the status and the milliseconds since
+        its request line was read. The client address, the path and the request line are never logged: a host
+        journal then holds no personal data, nor the question a client asked."""
+        started = getattr(self, "_started", None)
+        ms = 0 if started is None else int((time.monotonic() - started) * 1000)
+        method = self.command if self.command in LOGGED_METHODS else "-"
+        status = int(code) if str(code).isdigit() else "-"
         if not getattr(self.server, "quiet", False):
-            super().log_message(format, *args)
+            print(f"kb_http: {method} {status} {ms}ms", file=sys.stderr, flush=True)
+
+    def log_message(self, format, *args):  # noqa: A002 - the base class's signature
+        """The base class's address-and-text line, dropped: its arguments carry the client address, a request line
+        or a client's own words (a malformed request's error text). log_request writes the one line kept."""
 
 
 def norm_origin(origin):
