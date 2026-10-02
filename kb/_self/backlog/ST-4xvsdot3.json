@@ -45,7 +45,8 @@
     "_tools/test_kb_leaks.py",
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py",
-    "_tools/test_kbdecide.py"
+    "_tools/test_kbdecide.py",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-aqpalijz",
