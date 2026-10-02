@@ -2,7 +2,7 @@
   "id": "BG-qxoozn4n",
   "kind": "bug",
   "title": "kb_http read_chunked caps only chunk data at --max-body, so chunk extensions and trailers let one request make the server read far past the limit",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4i5quwba",
   "priority": "P2",
@@ -34,5 +34,28 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "ba38cae54b9a800f63e4319f44019c5727884d7a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http_chunk_extensions_capped"
+        ],
+        "exit": 0,
+        "sha256": "be69ec0201c4f62e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,io;sys.path.insert(0,'_tools');import kb_http;h=object.__new__(kb_http.Handler);ext=b';'+b'x'*(60<<10);body=b''.join(b'1'+ext+b'\\r\\nA\\r\\n' for _ in range(200))+b'0\\r\\n'+b''.join(b'X-T: '+b'y'*(60<<10)+b'\\r\\n' for _ in range(99))+b'\\r\\n';h.rfile=io.BytesIO(body);r=h.read_chunked(1<<20);sys.exit(0 if h.rfile.tell()<=(1<<20)+(64<<10) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
