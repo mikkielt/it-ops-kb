@@ -2,7 +2,7 @@
   "id": "ST-c5l2j4af",
   "kind": "story",
   "title": "kblog.py records, confirms and invalidates LOG rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-auko2fyn",
   "sprint": "SP-parnkbr7",
   "priority": "P3",
@@ -55,5 +55,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Related defects in the store it reuses: BG-qks4ikyr and BG-2i46kz3z."
+  "notes": "Related defects in the store it reuses: BG-qks4ikyr and BG-2i46kz3z.",
+  "claimed_by": "mac-sixth"
 }
