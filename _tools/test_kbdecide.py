@@ -52,7 +52,7 @@ def make_root(base, name, prefix, visibility):
 def template(tmp_path_factory):
     """The repository every test starts from."""
     repo = tmp_path_factory.mktemp("kbdecide") / "repo"
-    backlog = ["backlog.py"] + [f"bl_{m}.py" for m in ("authority", "base", "check", "cli", "cost", "intake", "land", "plan", "procs", "stall")]
+    backlog = ["backlog.py"] + [f"bl_{m}.py" for m in ("authority", "base", "check", "cli", "cost", "intake", "land", "plan", "procs", "selfcheck", "stall")]
     for name in ("kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py", *backlog):
         (repo / "_tools").mkdir(parents=True, exist_ok=True)
         shutil.copy(TOOLS / name, repo / "_tools" / name)
