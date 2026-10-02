@@ -30,7 +30,14 @@
     ".claude/settings.json",
     "_tools/test_settings_allow.py",
     "kb/_self/maintaining.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "_tools/autopilot.py",
+    "_tools/test_autopilot.py",
+    "_tools/kbpublic.py",
+    "kb/_self/tools.md",
+    "kb/_self/git.md",
+    "_tools/bl_selfcheck.py",
+    ".claude/skills/kb-sprint/SKILL.md"
   ],
   "claimed_by": "mac-first"
 }

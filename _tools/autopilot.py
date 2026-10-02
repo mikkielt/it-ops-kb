@@ -8,7 +8,9 @@ report of what the run did.
                                               there. The worktree's own .claude/settings.json is passed by
                                               --settings and each plugin the project loads by --plugin-dir; no
                                               --permission-mode and no --dangerously-skip-permissions, so the
-                                              project's allow rules govern the run. Every line of the stream is
+                                              project's allow and deny rules govern the run, with RUNNER_DENY added
+                                              by --disallowedTools (no answer recorded as the operator's) and
+                                              KB_HEADLESS_RUNNER set (no publish). Every line of the stream is
                                               written, as it arrives, to _cache/autopilot/SP/<UTC stamp>.jsonl. The
                                               runner ends the child at the first system compact_boundary event, and
                                               records the end in _cache/autopilot/SP/status.json with the start ref.
@@ -68,6 +70,11 @@ PROMPT = "/kb-sprint run {sprint} --headless{landed}"
 LANDED_FLAG = " --landed {k}"
 # The last line of the run's final result names why the run ended, one of CAUSES_FROM_RESULT.
 CAUSE_MARKER = "sprint-runner: {cause}"
+# Deny rules for the headless run only (--disallowedTools): an agent there never records an answer as the operator's.
+# The project's settings leave it to the operator-present manager session, which records the operator's answers.
+RUNNER_DENY = tuple(f"{shell}(python3 _tools/backlog.py answer * {by}*)" for shell in ("Bash", "PowerShell")
+                    for by in ("--by operator", "--by=operator"))
+HEADLESS_ENV = kbpublic.HEADLESS_ENV  # set in the run's environment, so its session's publish --hook pushes nothing
 CAUSES_FROM_RESULT = ("landed-limit", "sprint-done", "blocked")
 CAUSE_LINE = re.compile(r"^sprint-runner: (" + "|".join(CAUSES_FROM_RESULT) + r")[ \t]*$", re.M)
 SPRINT_ID = re.compile(r"^SP-[a-z2-7]{8}$")
@@ -171,7 +178,7 @@ def claude_argv(worktree, sprint, landed=None):
     by --plugin-dir, all explicit. No permission flag: the project's allow rules govern the run."""
     prompt = PROMPT.format(sprint=sprint, landed=LANDED_FLAG.format(k=landed) if landed else "")
     argv = [*CLAUDE, "-p", prompt, "--output-format", "stream-json", "--verbose",
-            "--settings", str(Path(worktree) / ".claude" / "settings.json")]
+            "--settings", str(Path(worktree) / ".claude" / "settings.json"), "--disallowedTools", *RUNNER_DENY]
     for d in plugin_dirs(worktree):
         argv += ["--plugin-dir", d]
     return argv
@@ -189,7 +196,8 @@ def supervise(argv, cwd, keep, stderr):
     and on any interrupt. Returns {"compaction": bool, "result": the last result event or None, "exit_code": int}."""
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     proc = subprocess.Popen(argv, cwd=str(cwd), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=stderr,
-                            text=True, encoding="utf-8", errors="replace", **group)
+                            text=True, encoding="utf-8", errors="replace", env={**os.environ, HEADLESS_ENV: "1"},
+                            **group)
     out = {"compaction": False, "result": None}
     try:
         for line in proc.stdout:
