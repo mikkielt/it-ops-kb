@@ -35,7 +35,7 @@ def num(v):
 
 
 FORMATS = {"cost": "${:.3f}", "cost_est": "${:.3f}", "wall_s": "{:.0f} s", "api_s": "{:.0f} s", "input": "{:,.0f}",
-           "out": "{:,.0f}", "turns": "g1", "tool_calls": "g1", "requests": "g1", "start_ctx": "{:,.0f}",
+           "out": "{:,.0f}", "turns": "g1", "tool_calls": "g1", "files_read": "g1", "requests": "g1", "start_ctx": "{:,.0f}",
            "effective_input": "{:,.0f}", "chars_per_s": "{:,.0f}", "median_us": "{:.1f} us", "size_mb": "{:.1f} MB",
            "input_per_entry": "{:,.0f}", "out_per_entry": "{:,.0f}", "cost_per_fact": "${:.3f}",
            "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%", "ratio": "{:.2f}x"}

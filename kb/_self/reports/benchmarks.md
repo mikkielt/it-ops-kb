@@ -1014,14 +1014,14 @@ Each question asks for function and test names only, and an answer is checked by
 <!-- bench:table navigation metrics=turns,tool_calls,files_read,input,cost,wall_s,checks -->
 | case | arm | turns | tool_calls | files_read | input | cost | wall_s | checks |
 |---|---|---|---|---|---|---|---|---|
-| N1 | before | 4.3 | 3.3 | 1.66667 | 100,548 | $0.094 | 12 s | 6/6 |
-| N2 | before | 6.3 | 5.3 | 2.33333 | 140,379 | $0.076 | 15 s | 6/6 |
-| N3 | before | 4.3 | 3.3 | 1.66667 | 100,096 | $0.063 | 14 s | 6/6 |
-| N1-N3 | before | 15 | 12 | 5.66667 | 341,022 | - | - | - |
+| N1 | before | 4.3 | 3.3 | 1.7 | 100,548 | $0.094 | 12 s | 6/6 |
+| N2 | before | 6.3 | 5.3 | 2.3 | 140,379 | $0.076 | 15 s | 6/6 |
+| N3 | before | 4.3 | 3.3 | 1.7 | 100,096 | $0.063 | 14 s | 6/6 |
+| N1-N3 | before | 15 | 12 | 5.7 | 341,022 | - | - | - |
 | N1 | after | 4.7 | 3.7 | 2 | 112,620 | $0.100 | 12 s | 6/6 |
-| N2 | after | 6 | 5 | 2.66667 | 131,700 | $0.073 | 14 s | 6/6 |
+| N2 | after | 6 | 5 | 2.7 | 131,700 | $0.073 | 14 s | 6/6 |
 | N3 | after | 6 | 5 | 2 | 112,320 | $0.074 | 13 s | 6/6 |
-| N1-N3 | after | 16.7 | 13.7 | 6.66667 | 356,640 | - | - | - |
+| N1-N3 | after | 16.7 | 13.7 | 6.7 | 356,640 | - | - | - |
 <!-- /bench -->
 
 What it shows:
