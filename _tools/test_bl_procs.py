@@ -12,6 +12,7 @@ import time
 import pytest
 
 import backlog  # first: it registers the other subcommands, and `procs` after them (bl_cli's registry keeps the order)
+import bl_land
 import bl_procs
 from bl_testkit import TOOL
 from conftest import git_env, timeout_s
@@ -379,16 +380,16 @@ def test_land_names_pid_of_process_in_worktree(tmp_path, herd, monkeypatch):
     lock = "claude agent agent-x (pid 1)"
     git("worktree", "lock", "--reason", lock, str(path))
     child = herd.child(path.resolve())
-    other = backlog.checked_out_elsewhere(repo, "work/TK-xxxxxxxx")
+    other = bl_land.checked_out_elsewhere(repo, "work/TK-xxxxxxxx")
     assert other is not None and other[1] == lock
-    why = backlog.release_worker_worktree(repo, *other)
+    why = bl_land.release_worker_worktree(repo, *other)
     assert why and re.search(rf"pid {child} \(\S+\)", why) and "a process still runs there" in why, why
     assert path.exists(), "the worktree stays while a process runs in it"
     # the same process, as `procs` lists it: a foreign one in the worker's worktree
     assert kinds(repo)[child] == bl_procs.FOREIGN
     # planted: a process check blind to it removes the worktree, and the assertions above catch it
-    monkeypatch.setattr(backlog, "live_processes", lambda p: ([], None))
-    blind = backlog.release_worker_worktree(repo, *other)
+    monkeypatch.setattr(bl_land, "live_processes", lambda p: ([], None))
+    blind = bl_land.release_worker_worktree(repo, *other)
     with pytest.raises(AssertionError):
         assert blind and f"pid {child} (" in blind
     assert not path.exists()

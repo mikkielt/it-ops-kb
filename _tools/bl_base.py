@@ -1,6 +1,7 @@
 """The shared ground of backlog.py's modules (kb/_self/backlog.md): the constants, the two refusals, the Backlog class
 that reads and writes the item files, git and the command runner, the scope helpers, the host and user name guard
-behind everything the tool prints, and the helpers that commit the item files a command wrote. Standard library only;
+behind everything the tool prints, the helpers that commit the item files a command wrote, and what an item waits on
+(`waits`, `open_gates`) with the one-line `line` that names it. Standard library only;
 backlog.py and the bl_ modules import it, and it imports no bl_ module at load and never backlog (`run`
 reaches bl_intake.run_argv by an import in the function, so a caller that patches the reader is heard).
 """
@@ -430,3 +431,51 @@ def need(bl, iid):
     if iid not in bl.items:
         raise KeyError(iid)
     return iid
+
+
+# ------------------------------------------------------------------ readiness
+
+def open_gates(it, kinds=("blocking",)):
+    return [g for g in it.get("gates", []) if g.get("kind") in kinds and "answer" not in g]
+
+
+def waits(bl, iid, any_sprint=False, by=None):
+    """Why an item cannot be worked on now ([] = ready): its status, sprint, dependencies, gates, trigger, children.
+    With `by`, a dependency that is `doing` and claimed by that session does not wait (`claim --by`: one session works
+    both items in order)."""
+    it = bl.items[iid]
+    out = []
+    if it.get("kind") in ("sprint", "epic"):
+        return ["not a work item"]
+    if it.get("status") not in ("todo", "doing"):
+        out.append(f"status {it.get('status')}")
+    sp = bl.sprint_of(iid)
+    if not any_sprint and (not sp or bl.items.get(sp, {}).get("status") != "active"):
+        out.append("not in an active sprint")
+    for i in [iid] + bl.ancestors(iid):  # an ancestor's gates, trigger and dependencies hold its descendants too
+        a = bl.items[i]
+        for g in open_gates(a):
+            out.append(f"gate {i}/{g['id']}: {g['question']}")
+        t = a.get("trigger")
+        if t and not t.get("fired"):
+            out.append(f"trigger on {bl.label(i)}: {t['when']}")
+        for d in a.get("depends_on", []):
+            dep = bl.items.get(d, {})
+            if dep.get("status") == "doing" and by is not None and dep.get("claimed_by") == by:
+                continue
+            if dep.get("status") != "done":
+                out.append(f"depends on {bl.label(d)}" + (f" (through {bl.label(i)})" if i != iid else ""))
+    if it.get("review"):
+        for s in bl.sprint_items(sp):
+            if s != iid and bl.items[s].get("kind") in IN_SPRINT and bl.items[s].get("status") not in ("done", "dropped"):
+                out.append(f"review waits on {bl.label(s)}")
+    open_children = [c for c in bl.children(iid) if bl.items[c].get("status") not in ("done", "dropped")]
+    if open_children:
+        out.append(f"{len(open_children)} open child item(s)")
+    return out
+
+
+def line(bl, iid):
+    it = bl.items[iid]
+    extra = f" {it['severity']}" if it.get("severity") else ""
+    return f"{iid}  {it['kind']:<7} {it.get('status', ''):<7} {it.get('priority', ''):<2}{extra}  {it.get('title', '')}"

@@ -256,9 +256,11 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     assert "{" + ",".join(SUBCOMMANDS) + "}" in usage
     import bl_check
     import bl_cost
+    import bl_land
     import bl_plan
     import bl_procs
-    owner = {"cost": bl_cost, "procs": bl_procs, "check": bl_check, "selectors": bl_check, "start": bl_plan}  # a command a bl_ module owns: its handler is that module's, not backlog's
+    owner = {"cost": bl_cost, "procs": bl_procs, "check": bl_check, "selectors": bl_check, "start": bl_plan,
+             "done": bl_land, "land": bl_land, "close": bl_land}  # a command a bl_ module owns: its handler is that module's, not backlog's
     assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
     for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit
         sub = next(a for a in ap._actions if a.dest == "cmd").choices[n]
@@ -522,3 +524,86 @@ def test_bl_split_plan_planted_failures_fail():
         ["bl_a", "bl_b", "bl_c", "bl_a"]
     assert any(isinstance(n, ast.FunctionDef) and n.name.startswith(PLAN_TEST_PREFIXES)
                for n in ast.parse("def test_start_left_behind():\n    pass\n").body)
+
+
+LAND_MOVED = ("item_commits", "unlanded_code", "blob_id", "out_of_scope", "colourless_env", "run_check", "noop_proof",
+              "cmd_done", "land_stop", "land_run", "land_git", "has_ref", "checked_out_elsewhere", "live_processes",
+              "release_worker_worktree", "mr_stuck", "stuck_merge_request", "cmd_land", "summary_key", "summary_line",
+              "cmd_close", "args_done", "args_land", "args_close", "LAND_HEAVY", "LAND_SYNC", "WORKER_LOCK")
+LAND_USAGE = ("done", "land", "close")  # registered in their usage positions, not together
+
+
+def land_defs(source):
+    """The public names a module defines at its top level that belong to done, land and close."""
+    return {n for n in kit_names(source) if n in LAND_MOVED}
+
+
+def test_bl_split_land_bl_land_holds_land_done_and_close_and_backlog_defines_none_of_them():
+    assert set(LAND_MOVED) <= land_defs(tool_source("bl_land.py"))
+    assert land_defs(tool_source("backlog.py")) == set(), "backlog.py imports them, it does not define them"
+    assert {"waits", "open_gates", "line"} <= kit_names(tool_source("bl_base.py")), "the readiness rules sit below bl_land"
+
+
+def test_bl_split_land_bl_land_never_imports_backlog_at_any_depth_and_no_bl_module_cycles():
+    src = tool_source("bl_land.py")
+    tree = ast.parse(src)
+    assert not imported_from(src, "backlog")
+    assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(tree))
+    graph = {m: {d for d in deps if (m, d) not in LAZY_EDGES} for m, deps in bl_graph(tool_sources()).items()}
+    assert import_cycle(graph) is None, import_cycle(graph)
+    assert "bl_land" in graph and not any("bl_land" in deps for deps in graph.values())
+
+
+def test_bl_split_land_done_land_and_close_keep_their_usage_positions_with_bl_land_handlers():
+    import backlog
+    import bl_base
+    import bl_cli
+    import bl_land
+    names = list(bl_cli.COMMANDS)
+    assert names.index("gate") < names.index("fire") < names.index("done") < names.index("land") < names.index("drop")
+    assert names.index("host-check") < names.index("close") < names.index("horizon"), "close keeps its own position"
+    for n in LAND_USAGE:
+        assert bl_cli.handler_of(n) is getattr(bl_land, "cmd_" + n)
+        assert bl_cli.COMMANDS[n][1] is getattr(bl_land, "args_" + n)
+    assert backlog.run_check is bl_land.run_check and backlog.waits is bl_base.waits
+
+
+def test_bl_split_land_land_names_the_branch_through_kg_lane_and_never_sets_kbgit_kb():
+    src = tool_source("bl_land.py")
+    assert "kg_lane.lane_plan" in src and "kbgit.KB" not in src
+    assert not imported_from(src, "kbgit")
+    assert not any(isinstance(n, ast.Import) and any(a.name == "kbgit" for a in n.names)
+                   for n in ast.walk(ast.parse(src)))
+
+
+LAND_TEST_PREFIXES = ("test_done_", "test_close_", "test_backlog_close_", "test_check_interpreter_", "TestBacklogLand",
+                      "TestDoneLane", "test_bl_split_land_does_not_swap_kb",
+                      "test_review_needs_confirmed_provisional_answers_and_close_deletes")
+
+
+def test_bl_split_land_land_done_and_close_tests_are_in_test_bl_land_and_none_are_left_in_test_backlog():
+    def land_tests(src):
+        return {n.name for n in ast.parse(src).body if isinstance(n, (ast.FunctionDef, ast.ClassDef))
+                and n.name.startswith(LAND_TEST_PREFIXES)}
+    sources = backlog_test_sources()
+    assert len(land_tests(sources["test_bl_land.py"])) >= 20
+    assert land_tests(sources["test_backlog.py"]) == set()
+    for needle in ("backlog.live_processes", "backlog.stuck_merge_request", "backlog.release_worker_worktree"):
+        assert needle not in sources["test_bl_land.py"], needle
+
+
+def test_bl_split_land_planted_failures_fail():
+    # a moved name put back in backlog.py, a bl_land that imports backlog (at any depth) or closes a cycle, a land
+    # test left behind, a builder copied into test_bl_land.py
+    assert land_defs("def cmd_land(bl, a):\n    return 0\n") == {"cmd_land"}
+    assert land_defs("from bl_land import cmd_land\n") == set()
+    for body in ("import backlog\n", "from backlog import say\n", "def late():\n    from backlog import say\n"):
+        assert unexcused({"backlog": "", "bl_land": body}) == [("facade", "bl_land", "backlog", "backlog")], body
+    for body in ("import bl_land\n", "from bl_land import run_check\n", "def late():\n    import bl_land\n"):
+        assert import_cycle(bl_graph({"bl_land": "import bl_check\n", "bl_check": body})) == \
+            ["bl_check", "bl_land", "bl_check"], body
+    assert any(isinstance(n, ast.ClassDef) and n.name.startswith(LAND_TEST_PREFIXES)
+               for n in ast.parse("class TestBacklogLand:\n    pass\n").body)
+    kit = (Path(TOOLS) / "bl_testkit.py").read_text(encoding="utf-8")
+    assert own_copies(kit, {"test_bl_land.py": "def finish_task(repo, tk):\n    return 1\n"}) == \
+        [("test_bl_land.py", "finish_task")]
