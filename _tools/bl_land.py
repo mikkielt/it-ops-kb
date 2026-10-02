@@ -301,8 +301,21 @@ def land_run(root, step, argv, whole=False):
         raise land_stop(step, f"python3 {shlex.join(argv)} exited {code}")
 
 
+def land_git_network(root, step, *args):
+    """A git network call (fetch, push, ls-remote) with the bounded wait of kg_lock.run_git_bounded; a timeout
+    stops the land at STEP, the main lock released by the block it leaves. Returns the CompletedProcess."""
+    import kg_lock
+    try:
+        return kg_lock.run_git_bounded(args, root, step)
+    except kg_lock.GitNetworkTimeout as e:
+        raise land_stop(step, str(e)) from None
+
+
 def land_git(root, step, *args):
-    p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if args and args[0] in ("fetch", "push", "ls-remote"):
+        p = land_git_network(root, step, *args)
+    else:
+        p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if p.returncode:
         raise land_stop(step, f"git {' '.join(args)}: {(p.stderr or p.stdout).strip()}")
     return p.stdout
@@ -616,8 +629,8 @@ def cmd_land(bl, a):
             _, code_branch = kg_lane.lane_plan(str(root), upstream, "HEAD")
             code_branch = code_branch or "code/" + (owners[0] if owners else iid)  # git failed: the item's own id
             tracking = f"refs/remotes/{remote}/{code_branch}"
-            fetched = subprocess.run(["git", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}"],
-                                     cwd=root, capture_output=True).returncode == 0
+            fetched = land_git_network(root, "fetch", "fetch", "--quiet", remote,
+                                       f"+refs/heads/{code_branch}:{tracking}").returncode == 0
             if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
                 say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
                     f"pushed with this content): merge it, then run backlog.py land {iid} again")

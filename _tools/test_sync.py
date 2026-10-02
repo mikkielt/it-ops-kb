@@ -1069,7 +1069,7 @@ class TestCodeLaneSync(SyncScenario):
         w.a.git("rebase", "-q", "origin/main")  # not an ancestor of the remote branch any more
         theirs = w.b.rev("HEAD")
         w.b.git("checkout", "-q", "-b", "other")
-        real, moved = kg_sync.gitx, []
+        real, moved = kg_sync.gitx_net, []
 
         def racing(*args, **kw):
             if args and args[0] == "push" and not moved:
@@ -1078,7 +1078,7 @@ class TestCodeLaneSync(SyncScenario):
             return real(*args, **kw)
 
         monkeypatch.setattr(kg_sync, "KB", w.a.path)
-        monkeypatch.setattr(kg_sync, "gitx", racing)
+        monkeypatch.setattr(kg_sync, "gitx_net", racing)
         ns = type("A", (), dict(remote="origin", branch="main"))()
         r = {"notes": []}
         assert kg_sync.push_branch(ns, r, branch, "origin/main") == 1
