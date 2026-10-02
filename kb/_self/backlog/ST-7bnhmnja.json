@@ -2,7 +2,7 @@
   "id": "ST-7bnhmnja",
   "kind": "story",
   "title": "The operator ratifies or reverts autopilot decisions from a digest",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-4xngzagf",
   "priority": "P1",
@@ -36,5 +36,19 @@
   "depends_on": [
     "ST-6sujnopr"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "5d47bf8effe9e12b8aed934cda949833fd20825f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_ratify"
+        ],
+        "exit": 0,
+        "sha256": "687d30d72e38e29d"
+      }
+    ]
+  }
 }
