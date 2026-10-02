@@ -38,6 +38,10 @@ TOOL = os.path.join(TOOLS, "backlog.py")
 # Windows PATH outside Git Bash, where the check would fail to start and the item could never be done.
 IS_FILE = "import pathlib, sys; sys.exit(not pathlib.Path(sys.argv[1]).is_file())"
 PASS = ["python3", "-c", "pass"]
+# BG-qtphqxt2's repro planted: it read a script's text for the literal '>&2', which a fix met by writing '>& 2'.
+TEXT_REPRO = "import sys; sys.exit(1 if '>&2' in open('tool.sh', encoding='utf-8').read() else 0)"
+SOURCE_REPRO = ("import pathlib, re, sys; s = pathlib.Path('_tools/tool.py').read_text(encoding='utf-8'); "
+                "sys.exit(0 if re.search(r'worktrees', s) else 1)")  # BG-rrht7uts's grep for 'worktrees'
 
 
 def is_file(rel):

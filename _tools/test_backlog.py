@@ -13,29 +13,23 @@ the same way (one bug) or differently (a second), red-pipeline over the job-stat
 item (warned of) and a recurring P1 item a started sprint leaves out (warned of), and a malformed `recurs`. The repository's
 own backlog must pass `backlog.py check`.
 """
-import argparse, json, os, re, shlex, shutil, subprocess, sys
+import json, os, re, shlex, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
 
 import backlog
-import bl_base
 import kbgit
 import kg_hooks
 import kg_trailers
 import ql_deliver
 from test_ql_deliver import job_of, job_states, state_id  # the job-state table's rows
 import bl_testkit
-from bl_testkit import argstr, b, commit, edit, is_file, item, land, PASS, sh, TOOL, TOOLS
+from bl_testkit import argstr, b, commit, edit, is_file, item, land, PASS, sh, TEXT_REPRO, TOOL, TOOLS
 
 bl_testkit.bind(backlog)
 # the kit's fixtures, bound by name where this module's tests ask for them (an import would shadow the arguments)
 repo, sprint, no_git_location, gate_jobs = bl_testkit.repo, bl_testkit.sprint, bl_testkit.no_git_location, bl_testkit.gate_jobs
-
-
-def test_new_items_validate(sprint):
-    code, out = b(sprint["repo"], "check")
-    assert code == 0 and "errors=0" in out, out
 
 
 def test_bug_repro_must_fail_now(repo):
@@ -125,18 +119,6 @@ def test_repro_fails_for_its_own_error_classifier():
     assert f(["python3", "t.py"], None, "Command 't.py' timed out after 1800 seconds") is None
 
 
-def test_check_finds_planted_errors(sprint):
-    repo = sprint["repo"]
-    f = Path(repo) / backlog.REL_DIR / f"{sprint['tk']}.json"
-    f.write_text(json.dumps(json.loads(f.read_text(encoding="utf-8"))) + "\n", encoding="utf-8")
-    edit(repo, sprint["bg"], depends_on=[sprint["st"]])
-    edit(repo, sprint["st"], depends_on=[sprint["bg"]])
-    code, out = b(repo, "check")
-    assert code == 1
-    assert "canonical form" in out and "cycle" in out
-    assert f"{sprint['tk']} “Task”" in out  # an id is never printed without its title
-
-
 def test_backlog_stale_touches_names_a_file_git_deleted(sprint):
     """Planted: an open task whose touches name a committed file that a later commit moved away; check exits 1 and
     names the item and the path. A path no commit had (still to be created), a glob and a path the tree has again
@@ -157,49 +139,6 @@ def test_backlog_stale_touches_names_a_file_git_deleted(sprint):
     edit(repo, tk, touches=["src/a.txt"], status="dropped")
     code, out = b(repo, "check")
     assert code == 0 and "errors=0" in out and "working tree lacks" not in out, out
-
-
-def tests_check(*args):
-    return {"run": ["python3", "_tools/tests.py", *args]}
-
-
-def test_backlog_selectors_parse_the_selector_of_a_check():
-    """Only a tests.py run with -k is a selector; its targets and -m ride along, --changed and other tools are none."""
-    sel = backlog.selector_of
-    assert sel(["python3", "_tools/tests.py", "-k", "a or b"]) == ("-k 'a or b'", [], "a or b", "not stress")
-    assert sel(["python3", "C:\\kb\\_tools\\tests.py", "-k", "x"])[2] == "x"
-    assert sel(["python3", "_tools/tests.py", "_tools/test_x.py", "-k", "x", "-m", "git"]) == \
-        ("_tools/test_x.py -k x -m git", ["_tools/test_x.py"], "x", "git")
-    assert sel(["python3", "_tools/tests.py", "--changed", "origin/main", "-k", "x"]) is None
-    assert sel(["python3", "_tools/tests.py"]) is None
-    assert sel(["grep", "-c", "-k ruff", "f"]) is None and sel(["python3", "-c", "pass"]) is None
-
-
-def test_backlog_selectors_count_the_tests_each_k_collects(sprint):
-    """Planted: a selector that collects two known tests, one that collects nothing and one pytest cannot parse, on
-    open items; selectors prints each with its count, item id and title, marks the zero and the error, lists them
-    first, and exits 0. A done item's selector, a --changed run and a check that is no tests.py run are left out."""
-    repo, tk, st, bg = sprint["repo"], sprint["tk"], sprint["st"], sprint["bg"]
-    (repo / "_tools").mkdir()
-    (repo / "_tools" / "test_planted.py").write_text(
-        "def test_known_thing_one():\n    pass\n\n\ndef test_known_thing_two():\n    pass\n", encoding="utf-8")
-    edit(repo, tk, checks=[tests_check("-k", "known_thing"), tests_check("-k", "no_such_planted_test"),
-                           tests_check("--changed", "origin/main", "-k", "no_such_planted_test"), is_file("src/b.txt")])
-    edit(repo, st, checks=[tests_check("-k", "known_thing_one"), tests_check("-k", "(")])
-    edit(repo, bg, status="done", checks=[tests_check("-k", "done_items_never_listed")])
-    code, out = b(repo, "selectors")
-    assert code == 0, out
-    lines = out.splitlines()
-    assert len(lines) == 5, out
-    assert lines[0].split()[:2] == ["?", "error"] and "-k '('" in lines[0] and "pytest exit 4" in lines[0] and f"{st} “Story”" in lines[0], out
-    assert lines[1].split()[:2] == ["0", "NONE"] and "-k no_such_planted_test" in lines[1] \
-        and f"{tk} “Task”" in lines[1], out
-    assert lines[2].split()[0] == "1" and "NONE" not in lines[2] and "-k known_thing_one  " in lines[2] \
-        and f"{st} “Story”" in lines[2], out
-    assert lines[3].split()[0] == "2" and "NONE" not in lines[3] and "-k known_thing  " in lines[3] \
-        and f"{tk} “Task”" in lines[3], out
-    assert "done_items_never_listed" not in out and "src/b.txt" not in out and "--changed" not in out, out
-    assert lines[4] == "backlog selectors: checks=4 selectors=4 none=1 errors=1", out
 
 
 DOC_MAP ="doc,pattern\nkb/_self/tools.md,_tools/x.py\nkb/_self/plugin.md,.claude-plugin/**\n"
@@ -267,12 +206,6 @@ def test_backlog_docs_skip_standard_doc(mapped):
     assert code == 0 and "warnings=1" in out, out
     assert f"{tk} “Task”: touches code whose kb/_self/map.csv docs are in no item's touches: kb/_self/tools.md " in out, out
     assert "kb/_self/code.md" not in out, out
-
-
-def test_task_needs_parent_and_touches(repo):
-    b(repo, "new", "epic", "--title", "E", "--goal", "g")
-    code, out = b(repo, "new", "task", "--title", "Orphan", "--goal", "g")
-    assert "needs a parent" in out and "touches missing" in out
 
 
 def test_only_operator_answers_blocking_gates_and_starts_sprints(repo):
@@ -500,47 +433,6 @@ def test_next_orders_s1_bugs_first(sprint):
     assert sprint["rv"] not in out  # the review waits on every other item
 
 
-def test_done_flags_noop_check_classifier():
-    """noop_output, trivial_command and is_test_run on outputs and commands of each kind, the BG-uqmjlqfl output
-    (publish --dry-run in a clone with no public remote) first."""
-    f, t, tr = backlog.noop_output, backlog.trivial_command, backlog.is_test_run
-    assert "no public remote" in f("note: no public remote (git config kb.publishRemote <remote>); nothing published\n")
-    assert "nothing published" in f("bridge: nothing published\n")
-    assert "no test can be affected" in f("tests.py --changed HEAD: no test can be affected by the changed paths\n")
-    assert "skipped" in f("ss\n2 skipped in 0.03s\n") and "skipped" in f("===== 3 skipped, 1 deselected in 0.10s =====\n")
-    for out in ("..s\n2 passed, 1 skipped in 0.20s\n", "1 failed, 1 skipped in 0.20s\n", "red-pipeline: nothing to file",
-                "", "ok\n"):
-        assert f(out) is None, out
-    for argv in (["true"], ["/usr/bin/echo", "ok"], PASS, ["python3", "-c", "import sys; sys.exit(0)"],
-                 ["python3", "-c", "print('ok')"], ["sh", "-c", "exit 0"], ["cmd", "/c", "exit 0"]):
-        assert t(argv), argv
-    for argv in (is_file("x"), ["python3", "-c", "import sys; sys.exit(not 1)"], ["python3", "_tools/tests.py", "-k", "x"],
-                 ["git", "grep", "-q", "-e", "x", "--", "f"], ["sh", "-c", "set -e; python3 t.py"]):
-        assert t(argv) is None, argv
-    assert tr(["python3", "_tools/tests.py", "-k", "x"]) and tr(["python3", "-m", "pytest", "t.py"]) and tr(["pytest"])
-    assert not tr(["python3", "_tools/kbgit.py", "publish", "--dry-run"]) and not tr(["python3", "-c", "import tests"])
-
-
-def test_done_flags_noop_check_real_publish_output(repo, capsys):
-    """The real code: publish --dry-run in a clone with no public remote passes doing nothing, and its own output is
-    what noop_output flags."""
-    import kbpublic
-    assert kbpublic.cmd_publish(argparse.Namespace(remote=None, dry_run=True), str(repo)) == 0
-    out = capsys.readouterr().out
-    assert "no public remote" in backlog.noop_output(out), out
-
-
-def test_done_flags_noop_check_real_backlog_commands():
-    """Real inputs: no check or repro of the repository's own items runs nothing (trivial_command flags none)."""
-    flagged = []
-    for f in (Path(TOOLS).parent / backlog.REL_DIR).glob("*.json"):
-        it = json.loads(f.read_text(encoding="utf-8"))
-        for c in it.get("checks", []) + ([it["repro"]] if it.get("repro") else []):
-            if backlog.trivial_command(c["run"]):
-                flagged.append((it["id"], c["run"]))
-    assert not flagged, flagged
-
-
 NOOP_TOOL = """import pathlib, sys
 if not pathlib.Path('remote.cfg').is_file():
     print('note: no public remote (git config kb.publishRemote <remote>); nothing published')
@@ -599,48 +491,6 @@ def test_done_flags_noop_check_passes_with_a_test_run(sprint):
     assert code == 0 and "warning:" in out and "no public remote" in out, out
 
 
-def test_done_flags_noop_check_new_and_done_warn_of_a_trivial_check(sprint):
-    """A check that runs no test or tool code is warned of by new and by done; done still passes on it."""
-    repo, tk = sprint["repo"], sprint["tk"]
-    code, out = b(repo, "set", tk, "--add", "--check", argstr(PASS))
-    assert code == 0, out
-    code, out = b(repo, "new", "story", "--title", "Trivial", "--goal", "g", "--check", argstr(PASS))
-    assert code == 0 and "warning:" in out and "proves nothing" in out, out
-    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
-    commit(repo, "write b", tk)
-    code, out = b(repo, "done", tk)
-    assert code == 0 and "passed without doing its work" in out and "only passes" in out, out
-
-
-# BG-qtphqxt2's repro planted: it read a script's text for the literal '>&2', which a fix met by writing '>& 2'.
-TEXT_REPRO = "import sys; sys.exit(1 if '>&2' in open('tool.sh', encoding='utf-8').read() else 0)"
-SOURCE_REPRO = ("import pathlib, re, sys; s = pathlib.Path('_tools/tool.py').read_text(encoding='utf-8'); "
-                "sys.exit(0 if re.search(r'worktrees', s) else 1)")  # BG-rrht7uts's grep for 'worktrees'
-
-
-def test_repro_needs_behaviour_or_reason_classifier():
-    """text_only_repro flags a grep, a shell of greps and a python -c that only reads a file and tests its text
-    (BG-qtphqxt2's literal, BG-g6qpxe5x's regex over a test's text); a test run, a tool, a script, a planted-input
-    command and python code that runs other code are behaviour."""
-    t = backlog.text_only_repro
-    for argv in (["grep", "-q", "worktrees", "_tools/backlog.py"], ["git", "grep", "-q", "-e", "x", "--", "f.md"],
-                 ["/usr/bin/git", "grep", "x"], ["rg", "x"], ["findstr", "x", "f"],
-                 ["sh", "-c", "set -e; grep -q x f && ! grep -q y g"], ["python3", "-c", TEXT_REPRO],
-                 ["python3", "-c", SOURCE_REPRO],
-                 ["python3", "-c", "import re,sys; sys.exit(not re.search(r'>\\s*&2', open('_tools/test_x.py').read()))"]):
-        assert t(argv), argv
-    assert "reading source of _tools/tool.py" in t(["python3", "-c", SOURCE_REPRO])
-    assert "reading source of _tools/backlog.py" in t(["grep", "-q", "worktrees", "_tools/backlog.py"])
-    assert "reading source" not in t(["python3", "-c", TEXT_REPRO])
-    for argv in ([], PASS, is_file("x"), ["python3", "_tools/tests.py", "-k", "x"], ["python3", "_tools/backlog.py",
-                 "red-pipeline", "--status"], ["python3", "repro.py"], ["sh", "-c", "set -e; python3 t.py"],
-                 ["sh", "-c", "grep -q x f; python3 t.py"],
-                 ["python3", "-c", "import subprocess, sys; sys.exit(subprocess.call(['x'], stdin=open('in.txt')))"],
-                 ["python3", "-c", "import sys; sys.path.insert(0, '_tools'); import backlog; open('x')"],
-                 ["python3", "-c", "import backlog, sys; sys.exit(backlog.main(['check']) or 'x' in open('f').read())"]):
-        assert t(argv) is None, argv
-
-
 def test_new_task_refuses_sprint(repo):
     """new task|subtask --sprint exits 2 naming the rule and writes nothing; a story may still name a sprint."""
     _, out = b(repo, "new", "sprint", "--title", "Sp")
@@ -674,54 +524,6 @@ def test_repro_needs_behaviour_or_reason_new_refuses_then_files(repo):
     assert code == 2 and "for a bug's --repro" in out, out
     code, out = b(repo, "check")
     assert code == 0 and "errors=0" in out and "only matches text" not in out, out
-
-
-def test_repro_reads_source_check_warns(repo):
-    """check warns of an open bug whose repro only reads a _tools/ source file for a string and states no reason
-    (BG-rrht7uts planted); a reason, or the bug done, clears it; a malformed reason, or one on a story, is an error."""
-    (repo / "_tools").mkdir()
-    (repo / "_tools" / "tool.py").write_text("ROOT = 'checkout'\n", encoding="utf-8")
-    code, out = b(repo, "new", "bug", "--title", "Grep fix", "--severity", "S3", "--goal", "x",
-                  "--repro", argstr(["python3", "-c", SOURCE_REPRO]), "--repro-reason", "planted")
-    assert code == 0, out
-    bg = item(repo, "Grep fix")["id"]
-    it = item(repo, "Grep fix")
-    del it["repro_reason"]
-    (Path(repo) / backlog.REL_DIR / f"{bg}.json").write_text(backlog.canonical(it), encoding="utf-8", newline="\n")
-    code, out = b(repo, "check")
-    assert code == 0 and "warnings=1" in out and bg in out and "reading source of _tools/tool.py" in out, out
-    assert "repro_reason" in out, out
-    edit(repo, bg, repro_reason="the defect is a constant's spelling, read by no test")
-    code, out = b(repo, "check")
-    assert code == 0 and "warnings=0" in out, out
-    edit(repo, bg, repro_reason=" ")
-    code, out = b(repo, "check")
-    assert code == 1 and "repro_reason must be text" in out, out
-    it = item(repo, "Grep fix")
-    del it["repro_reason"]
-    it["status"] = "done"
-    (Path(repo) / backlog.REL_DIR / f"{bg}.json").write_text(backlog.canonical(it), encoding="utf-8", newline="\n")
-    code, out = b(repo, "check")
-    assert "warnings=0" in out, out  # a done bug's repro is history
-    assert b(repo, "new", "story", "--title", "Story", "--goal", "g", "--check", argstr(is_file("src/a.txt")))[0] == 0
-    edit(repo, item(repo, "Story")["id"], repro_reason="x")
-    code, out = b(repo, "check")
-    assert code == 1 and "for bugs only" in out, out
-
-
-def test_repro_reads_source_real_backlog():
-    """Real inputs: no repro or check of the repository's own items that runs tests or a tool script is read as
-    text-only, and every warning check gives names an open bug with no repro_reason."""
-    real = backlog.Backlog(Path(TOOLS).parent)
-    for f in (Path(TOOLS).parent / backlog.REL_DIR).glob("*.json"):
-        it = json.loads(f.read_text(encoding="utf-8"))
-        for c in it.get("checks", []) + ([it["repro"]] if it.get("repro") else []):
-            run = c["run"]
-            if backlog.is_test_run(run) or (len(run) > 1 and run[1].endswith(".py")):
-                assert backlog.text_only_repro(run) is None, (it["id"], run)
-    for w in backlog.repro_text_warnings(real):
-        it = real.items[w.split()[0]]
-        assert it["kind"] == "bug" and it.get("status") in backlog.OPEN_STATUSES and not it.get("repro_reason"), w
 
 
 def test_done_refuses_failing_check_and_scope_then_passes(sprint):
@@ -1311,22 +1113,6 @@ def test_work_trailer(monkeypatch):
     assert not kg_trailers.work_ok("abc", ["TK-aaaaaaaa", "TK-aaaaaaaa"])  # a second line
 
 
-def test_started_sprint_check_refuses_worked_item_of_planned_sprint(repo):
-    """A planned sprint's items stay draft until start: a task under its story is created draft, and check reports a
-    todo, doing or done item of it (planted: the story set to todo)."""
-    b(repo, "new", "sprint", "--title", "Planned", "--goal", "g")
-    sp = item(repo, "Planned")["id"]
-    b(repo, "new", "story", "--title", "S", "--sprint", sp, "--goal", "g", "--check", argstr(PASS))
-    st = item(repo, "S")["id"]
-    b(repo, "new", "task", "--title", "T", "--parent", st, "--goal", "g", "--touch", "src/**", "--check", argstr(PASS))
-    assert item(repo, "T")["status"] == "draft"
-    assert b(repo, "check")[0] == 0
-    edit(repo, st, status="todo")
-    code, out = b(repo, "check")
-    assert code == 1 and f"{st} “S”: status todo while its sprint {sp} “Planned” is planned" in out, out
-    assert "not in a started sprint" in out
-
-
 def test_active_sprint_item_is_todo(sprint):
     """A bug filed into an active sprint is ready at once (todo); one filed into a planned sprint stays draft."""
     repo = sprint["repo"]
@@ -1566,450 +1352,6 @@ def test_research_lands_before_sprint_start_non_research_still_refused(research)
     assert len(bad) == 1 and any(f"not in a started sprint ({sp} is planned)" in ln for ln in bad[0][1]), bad
     code, out = b(repo, "check")
     assert code == 1 and f"{cs} “Code”: status doing while its sprint" in out, out
-
-
-def test_repository_backlog_is_valid():
-    code, out = b(os.path.dirname(TOOLS), "check")
-    assert code == 0, out
-
-
-# ---- host and user names: read from the environment, planted here as placeholders, never printed
-
-PLANTED_HOST, PLANTED_USER = "PL-LT-00123", "jan.kowalski"
-PLANTED_PIECES = ("pl-lt-00123", "pllt00123", "pllt00~", "jan.kowalski", "jankowalski", "jankow~", "kowalski")
-
-
-@pytest.fixture
-def planted_names(monkeypatch):
-    """This host is PL-LT-00123 and its user jan.kowalski, in this process and in the backlog.py it starts."""
-    for k in bl_base.HOST_ENV + bl_base.USER_ENV + bl_base.PROFILE_ENV:
-        monkeypatch.delenv(k, raising=False)
-    monkeypatch.setenv("COMPUTERNAME", PLANTED_HOST)
-    monkeypatch.setenv("USERNAME", PLANTED_USER)
-    monkeypatch.setattr(bl_base.socket, "gethostname", lambda: PLANTED_HOST)
-
-
-def no_planted_piece(out):
-    low = out.lower()
-    return not any(p in low for p in PLANTED_PIECES)
-
-
-def test_item_holds_host_names_pieces_of_a_name():
-    assert bl_base.name_pieces(PLANTED_HOST) == {"pl-lt-00123", "pllt00123", "pllt00~"}  # pl, lt: too short; 00123: no letter
-    assert bl_base.name_pieces(PLANTED_USER) == {"jan.kowalski", "jankowalski", "jankow~", "kowalski"}
-    assert bl_base.name_pieces("JanKowalskiCorp") == {"jankowalskicorp", "jankow~", "kowalski"}  # CamelCase parts
-    assert bl_base.name_pieces("PL-SRV-0042") == {"pl-srv-0042", "plsrv0042", "plsrv0~"}
-    assert bl_base.name_pieces("XYZ-PC01") == {"xyz-pc01", "xyzpc01", "pc01"}  # 4 characters with a digit
-    for generic in ("runner", "root", "user", "admin", "container", "localhost", "DESKTOP"):
-        assert bl_base.name_pieces(generic) == set(), generic
-    # a GitLab runner's host name: only its token and the whole name are pieces, not project or concurrent
-    assert bl_base.name_pieces("runner-ab12cd34-project-42-concurrent-0") == {
-        "runner-ab12cd34-project-42-concurrent-0", "runnerab12cd34project42concurrent0", "ab12cd34"}
-
-
-def test_item_holds_host_names_read_from_the_environment(planted_names):
-    pieces = backlog.host_user_pieces()
-    assert set(pieces) == set(PLANTED_PIECES)
-    assert pieces["kowalski"] == "user" and pieces["pllt00123"] == "host"
-    assert backlog.host_user_pieces({"COMPUTERNAME": "runner", "USERNAME": "root"}) == {"pl-lt-00123": "host",
-                                                                                        "pllt00123": "host", "pllt00~": "host"}
-
-
-def test_item_holds_host_names_refused_without_the_piece(sprint, planted_names, capsys):
-    repo = sprint["repo"]
-    edit(repo, sprint["st"], goal="b exists on \\\\PL-LT-00123\\share")
-    edit(repo, sprint["tk"], title="Task for Kowalski", gates=[{"id": "g", "kind": "blocking",
-                                                                "question": "ask jan.kowalski first"}])
-    assert backlog.main(["--root", str(repo), "check"]) == 1
-    out = capsys.readouterr().out
-    assert no_planted_piece(out), "a planted name was printed"
-    # the id with its title withheld, which may hold the name too, and the field
-    assert f"{sprint['st']} (title withheld" in out and "“Story”" not in out, out
-    assert "field goal holds a piece of this host's computer name" in out
-    assert f"{sprint['tk']} (title withheld" in out and "field title holds a piece of this host's user name" in out
-    assert "field gates[0].question holds a piece of this host's user name" in out
-    code, out = b(repo, "check")  # the command line, the push gate's form
-    assert code == 1 and "errors=3" in out and no_planted_piece(out), "a planted name was printed"
-
-
-def test_item_holds_host_names_clean_item_passes(sprint, planted_names, capsys):
-    edit(sprint["repo"], sprint["st"], goal="b exists on \\\\PL-SRV-0042\\share for kowal")  # other names, a short one
-    assert backlog.main(["--root", str(sprint["repo"]), "check"]) == 0, capsys.readouterr().out
-    assert b(sprint["repo"], "check")[0] == 0
-
-
-def test_item_holds_host_names_short_form(planted_names):
-    """Windows' 8.3 form of a long profile name (a TEMP path's JANKOW~1 profile folder) is a piece too, and
-    the profile folder's name counts as the user's."""
-    assert "jankow~" in bl_base.name_pieces("jan.kowalski") and "jankow~" in bl_base.name_pieces("JanKowalskiCorp")
-    assert not any("~" in p for p in bl_base.name_pieces("kowal12"))  # 8 characters or fewer: never shortened
-    pieces = backlog.host_user_pieces({"USERNAME": "x", "USERPROFILE": "C:/Users/<profile>/jan.kowalski"})
-    assert "kowalski" in pieces and any(p in "c:/users/jankow~1/appdata/local/temp" for p in pieces)
-
-
-def test_item_holds_host_names_never_printed_by_any_command(sprint, planted_names):
-    """list, tree, show and claim print a named item's title and fields with the name withheld, not only check."""
-    repo = sprint["repo"]
-    edit(repo, sprint["tk"], title="Task for Kowalski on PL-LT-00123")
-    for argv in (["list"], ["tree"], ["show", sprint["tk"]], ["claim", sprint["tk"], "--by", "w"]):
-        code, out = b(repo, *argv)
-        assert sprint["tk"] in out and no_planted_piece(out), (argv, out)
-
-
-def test_name_check_exempts_project_path(sprint, planted_names, capsys):
-    """A namespace equal to the user's name: the repository path (read from the remotes) is no hit, the name
-    elsewhere still is."""
-    repo = sprint["repo"]
-    subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
-    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", "git@gitlab.com:jan.kowalski/it-ops-kb.git"], check=True)
-    subprocess.run(["git", "-C", str(repo), "remote", "add", "pub", "https://github.com/Jan.Kowalski/it-ops-kb"], check=True)
-    assert bl_base.project_paths(repo) == {"jan.kowalski/it-ops-kb", "jan.kowalski%2fit-ops-kb"}
-    edit(repo, sprint["st"], goal="glab api projects/jan.kowalski%2Fit-ops-kb/runners, see Jan.Kowalski/it-ops-kb")
-    assert backlog.main(["--root", str(repo), "check"]) == 0, capsys.readouterr().out
-    edit(repo, sprint["st"], goal="projects/jan.kowalski%2Fit-ops-kb, ask jan.kowalski")
-    assert backlog.main(["--root", str(repo), "check"]) == 1
-    out = capsys.readouterr().out
-    assert "field goal holds a piece of this host's user name" in out and no_planted_piece(out)
-
-
-def test_item_holds_host_names_real_backlog_passes_on_this_host():
-    """The names of the host running the tests, never spelled here: the real backlog holds no piece of them. (Not
-    the planted ones: the backlog writes those placeholders on purpose.)"""
-    assert backlog.items_holding_names(backlog.Backlog(os.path.dirname(TOOLS))) == {}
-    code, out = b(os.path.dirname(TOOLS), "check")
-    assert code == 0, out
-
-
-# ---- knowledge: an item's asks and kb references, resolved against the kb of the clone
-
-FACT = "Demo tools print their version. [DOC S100]"
-ARTICLE = f"---\ntopic: demo/tool\nstatus: partial\n---\n\n# Demo tool\n\n## Facts\n- {FACT}\n"
-CSV = "name,source,tag\nalpha,S100,DOC\n"
-
-
-@pytest.fixture
-def kb(repo):
-    """The repository gets a public kb root: a source, a QK answer, an article with one fact and a data file; a
-    story to carry `knowledge`."""
-    root = repo / "kb" / "public"
-    (root / "demo").mkdir(parents=True)
-    (root / "_root.md").write_text("---\nroot: public\nid_prefix: S\nvisibility: public\n---\n\n# public\n",
-                                   encoding="utf-8", newline="\n")
-    (root / "_sources.csv").write_text("id,url\nS100,https://example.com/a\nS-abcdefgh,https://example.com/b\n",
-                                       encoding="utf-8", newline="\n")
-    (root / "_answers.md").write_text("# Answers\n\n## QK-demo-question. What does the demo print?\n- It prints. "
-                                      "[DOC S100]\n", encoding="utf-8", newline="\n")
-    (root / "demo" / "tool.md").write_text(ARTICLE, encoding="utf-8", newline="\n")
-    (root / "demo" / "rows.csv").write_text(CSV, encoding="utf-8", newline="\n")
-    b(repo, "new", "epic", "--title", "Carrier", "--goal", "carries knowledge")
-    commit(repo, "kb")
-    return repo, item(repo, "Carrier")["id"]
-
-
-def key(text=FACT):
-    import kbfacts
-    return kbfacts.fact_key(text)
-
-
-def test_knowledge_refs_of_every_kind_resolve(kb):
-    repo, iid = kb
-    refs = ["demo/tool", "public/demo/tool", "QK-demo-question", "public:QK-demo-question", "S100", "S-abcdefgh",
-            f"public/demo/tool.md#{key()}", f"demo/tool.md#{key()}"]
-    edit(repo, iid, knowledge={"ask": ["What does the demo print?"], "refs": refs})
-    code, out = b(repo, "check")
-    assert code == 0 and "errors=0 stale=0" in out, out
-
-
-@pytest.mark.parametrize("ref, why", [
-    ("demo/absent", "no such topic"),
-    ("demo/tool.md", "no such topic"),  # a topic id has no extension
-    ("public/_answers", "no such topic"),  # a ledger is no article
-    ("QK-no-such-answer", "no such answer"),
-    ("other:QK-demo-question", "no kb root"),
-    ("S999", "no such source id"),
-    ("S-zzzzzzzz", "no such source id"),
-    ("public/demo/absent.md#" + "0" * 12, "no article or data file"),
-    ("public/demo/tool.md#abc", "12 lowercase hex"),
-    ("free text", "not a topic id"),
-])
-def test_knowledge_refs_missing_from_the_kb_are_refused(kb, ref, why):
-    repo, iid = kb
-    edit(repo, iid, knowledge={"refs": [ref]})
-    code, out = b(repo, "check")
-    assert code == 1 and why in out and f"{iid} “Carrier”: knowledge ref" in out, out
-
-
-def test_knowledge_refs_fact_of_a_data_file_and_a_reworded_fact(kb):
-    """A csv row's key resolves; the article's fact reworded (planted) is stale: printed, counted apart, exit 0."""
-    repo, iid = kb
-    csv_key = key("name=alpha; source=S100; tag=DOC")
-    edit(repo, iid, knowledge={"refs": [f"public/demo/rows.csv#{csv_key}", f"public/demo/tool.md#{key()}"]})
-    assert b(repo, "check")[0] == 0
-    art = repo / "kb" / "public" / "demo" / "tool.md"
-    art.write_text(ARTICLE.replace("print their version", "print their build"), encoding="utf-8", newline="\n")
-    code, out = b(repo, "check")
-    assert code == 0 and "errors=0 stale=1" in out, out
-    assert f"{iid} “Carrier”: stale knowledge: fact {key()} is no longer in public/demo/tool.md" in out
-    art.unlink()  # planted: the article removed is missing, not stale
-    code, out = b(repo, "check")
-    assert code == 1 and "no article or data file" in out, out
-
-
-def test_knowledge_refs_shape_is_checked(kb):
-    repo, iid = kb
-    for bad in ("text", {"asks": []}, {"ask": "one question"}, {"ask": [""]}, {"refs": [1]}):
-        edit(repo, iid, knowledge=bad)
-        code, out = b(repo, "check")
-        assert code == 1 and "knowledge" in out, (bad, out)
-    edit(repo, iid, knowledge={"ask": ["What does the demo print?"], "refs": []})
-    assert b(repo, "check")[0] == 0
-
-
-def test_knowledge_refs_without_a_kb_are_refused(repo):
-    b(repo, "new", "epic", "--title", "Carrier", "--goal", "g")
-    edit(repo, item(repo, "Carrier")["id"], knowledge={"refs": ["S100"]})
-    code, out = b(repo, "check")
-    assert code == 1 and "no such source id" in out, out
-
-
-# ---- knowledge state: show, next and horizon run the pack on each ask and ref of an item's `knowledge`
-
-KS_TOOLS = ("backlog.py", "bl_base.py", "bl_cli.py", "bl_cost.py", "bl_intake.py", "bl_procs.py", "kbcommon.py", "kbfacts.py", "kbid.py", "ql_base.py", "aliases.csv")
-KS_SOURCES = ("id,url,title,superseded_by,used_in\n"
-              "S100,https://example.com/a,Zorbex agent guide,,demo/tool.md\n"
-              "S101,https://example.com/b,Plimt gadget firmware notes,,demo/gadget.md\n")
-KS_SUPERSEDED = KS_SOURCES.replace("Zorbex agent guide,,", "Zorbex agent guide,S101,")
-KS_FACTS = ["The zorbex agent prints its build number at startup.", "The zorbex agent retries failed uploads three times."]
-KS_GOOD = "How many times does the zorbex agent retry failed uploads?"
-KS_CHECK = KS_GOOD[:-1] + " for Plimt?"  # `good`, with a `check:` line: the lead article never mentions Plimt
-KS_WEAK = "Does the zorbex agent retry uploads with plimt firmware in quasar flash?"
-KS_NONE = "How do I configure the wumpus frobnicator?"
-
-
-def ks_article(topic, title, facts, source="S100"):
-    return (f"---\ntopic: {topic}\nstatus: partial\n---\n\n# {title}\n\n## Facts\n"
-            + "".join(f"- {f} [DOC {source}]\n" for f in facts))
-
-
-def ks_fact(n):
-    """The `<root>/<path>#<key>` ref of the n-th fact of the zorbex article."""
-    return f"public/demo/tool.md#{key(KS_FACTS[n] + ' [DOC S100]')}"
-
-
-def ks_states(out):
-    """{text: state} of the `knowledge <state> ask|ref: <text>` lines of an output (a trailing `(why)` cut off)."""
-    found = {}
-    for ln in out.splitlines():
-        m = re.match(r"\s*knowledge (\w+)\s+(?:ask|ref): (.*)$", ln)
-        if m:
-            found[re.sub(r" \([^()]*\)$", "", m.group(2))] = m.group(1)
-    return found
-
-
-class Ks:
-    """A started sprint (the `sprint` fixture) with its own copy of the tools and a small kb of invented words, so the
-    pack that show, next and horizon run answers from a corpus the test controls: two articles (zorbex, plimt) among
-    twelve filler ones, one QK answer, two sources and an empty conflicts ledger."""
-
-    def __init__(self, sprint):
-        self.repo, self.tk, self.bg, self.sp = sprint["repo"], sprint["tk"], sprint["bg"], sprint["sp"]
-        self.root = self.repo / "kb" / "public"
-        (self.repo / "_tools").mkdir()
-        for f in KS_TOOLS:
-            shutil.copy(os.path.join(TOOLS, f), self.repo / "_tools" / f)
-        (self.root / "demo").mkdir(parents=True)
-        files = {
-            "_root.md": "---\nroot: public\nid_prefix: S\nvisibility: public\n---\n\n# public\n",
-            "_sources.csv": KS_SOURCES,
-            "_answers.md": f"# Answers\n\n## QK-zorbex-retries. {KS_GOOD}\n- Three times. [DOC S100]\n",
-            "_conflicts.md": "# Conflicts\n",
-            "demo/tool.md": ks_article("demo/tool", "Zorbex sync agent", KS_FACTS),
-            "demo/gadget.md": ks_article("demo/gadget", "Plimt gadget", [
-                "The plimt gadget stores firmware in quasar flash.", "The plimt gadget resets after a wobble timeout."],
-                                         "S101"),
-            **{f"demo/filler{i}.md": ks_article(f"demo/filler{i}", f"Filler {i}", [
-                f"Filler{i}a widget{i}b gizmo{i}c runs {i}d.", f"Sprocket{i}e flange{i}f."]) for i in range(12)},
-        }
-        for rel, text in files.items():
-            self.write(rel, text)
-        self.env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")} | {
-            "KB_INDEX": "0"}
-
-    def write(self, rel, text):
-        (self.root / rel).write_text(text, encoding="utf-8", newline="\n")
-
-    def run(self, *a):
-        """The copy of backlog.py in the repository, whose own kb is the one its pack reads."""
-        p = subprocess.run([sys.executable, str(self.repo / "_tools" / "backlog.py"), *a], cwd=self.repo,
-                           capture_output=True, text=True, encoding="utf-8", env=self.env)
-        return p.returncode, p.stdout + p.stderr
-
-    def know(self, asks=(), refs=(), item=None):
-        edit(self.repo, item or self.tk, knowledge={"ask": list(asks), "refs": list(refs)})
-
-    def show(self):
-        code, out = self.run("show", self.tk)
-        assert code == 0, out
-        return out
-
-
-@pytest.fixture
-def ks(sprint):
-    return Ks(sprint)
-
-
-def test_knowledge_state_each_ask_has_one_of_five_states(ks):
-    """A planted ask for each coverage: good, a good with a check line, weak and none."""
-    ks.know(asks=[KS_GOOD, KS_CHECK, KS_WEAK, KS_NONE])
-    out = ks.show()
-    assert ks_states(out) == {KS_GOOD: "sufficient", KS_CHECK: "partial", KS_WEAK: "partial", KS_NONE: "unknown"}, out
-    assert "check: line flags a possible false good" in out and "coverage weak" in out
-    assert "the kb does not cover it" in out
-
-
-def test_knowledge_state_refs_of_every_kind_are_sufficient_when_the_kb_covers_them(ks):
-    refs = ["demo/tool", "public/demo/tool", "QK-zorbex-retries", "S100", ks_fact(1)]
-    ks.know(refs=refs)
-    out = ks.show()
-    assert ks_states(out) == dict.fromkeys(refs, "sufficient"), out
-
-
-def test_knowledge_state_reworded_fact_is_stale_and_a_missing_ref_is_unknown(ks):
-    """The fact reworded (planted) is stale; an article, answer or source the kb lacks is unknown, never stale."""
-    ks.know(refs=[ks_fact(1), "demo/absent", "QK-no-answer", "S999"])
-    assert ks_states(ks.show())[ks_fact(1)] == "sufficient"
-    art = ks.root / "demo" / "tool.md"
-    ks.write("demo/tool.md", art.read_text(encoding="utf-8").replace("three times", "five times"))
-    out = ks.show()
-    assert ks_states(out) == {ks_fact(1): "stale", "demo/absent": "unknown", "QK-no-answer": "unknown",
-                              "S999": "unknown"}, out
-    assert f"fact {ks_fact(1).rpartition('#')[2]} is no longer in public/demo/tool.md" in out
-
-
-def test_knowledge_state_superseded_source_makes_refs_and_asks_stale(ks):
-    """S100 superseded (planted): the source, a fact citing it and an ask whose pack cites it are stale; the source
-    S101 that nothing supersedes is not."""
-    ks.know(asks=[KS_GOOD], refs=["S100", "S101", ks_fact(0)])
-    assert set(ks_states(ks.show()).values()) == {"sufficient"}
-    ks.write("_sources.csv", KS_SUPERSEDED)
-    out = ks.show()
-    assert ks_states(out) == {KS_GOOD: "stale", "S100": "stale", "S101": "sufficient", ks_fact(0): "stale"}, out
-    assert "source S100 is superseded by S101" in out
-
-
-def test_knowledge_state_open_conflict_entry_makes_the_article_conflicting_until_settled(ks):
-    """An open `_conflicts.md` entry naming demo/tool (planted): the topic, its fact, an ask its article answers and
-    a source the entry names are conflicting, another article is not. A `Resolved` note closes the entry."""
-    ks.know(asks=[KS_GOOD], refs=["demo/tool", ks_fact(0), "S100", "demo/gadget"])
-    entry = "- The two pages disagree on the retry count (S100). (topic: demo/tool)\n"
-    ks.write("_conflicts.md", "# Conflicts\n\n" + entry)
-    out = ks.show()
-    assert ks_states(out) == {KS_GOOD: "conflicting", "demo/tool": "conflicting", ks_fact(0): "conflicting",
-                              "S100": "conflicting", "demo/gadget": "sufficient"}, out
-    assert "open entry at public/_conflicts.md:3" in out
-    ks.write("_conflicts.md", "# Conflicts\n\n" + entry + "  - Resolved 2026-09-29: the later page settles it.\n")
-    assert set(ks_states(ks.show()).values()) == {"sufficient"}
-
-
-def test_knowledge_state_reviewed_note_closes_only_when_not_a_source_disagreement(ks):
-    """A `Reviewed <date>, not a source disagreement` note closes an entry like `Resolved`; a `Reviewed <date>, still
-    open` note leaves it open (both planted)."""
-    ks.know(refs=["demo/tool"])
-    entry = "- The two pages disagree on the retry count (S100). (topic: demo/tool)\n"
-    ks.write("_conflicts.md", "# Conflicts\n\n" + entry + "  - Reviewed 2026-09-28, still open: not re-read.\n")
-    assert ks_states(ks.show()) == {"demo/tool": "conflicting"}
-    ks.write("_conflicts.md", "# Conflicts\n\n" + entry
-             + "  - Reviewed 2026-09-28, not a source disagreement: two quantities; closed.\n")
-    assert ks_states(ks.show()) == {"demo/tool": "sufficient"}
-
-
-def test_knowledge_state_stale_wins_over_conflicting_and_both_over_coverage(ks):
-    ks.know(refs=["demo/tool", ks_fact(0)])
-    ks.write("_conflicts.md", "# Conflicts\n\n- Disagreement. (topic: demo/tool)\n")
-    assert set(ks_states(ks.show()).values()) == {"conflicting"}
-    ks.write("_sources.csv", KS_SUPERSEDED)
-    assert set(ks_states(ks.show()).values()) == {"stale"}
-
-
-def test_knowledge_state_next_and_horizon_print_it_and_the_hook_runs_no_pack(ks, monkeypatch, capsys):
-    ks.know(asks=[KS_GOOD, KS_NONE], refs=["demo/tool"])
-    ks.know(asks=[KS_GOOD, KS_NONE], refs=["demo/tool"], item=ks.bg)  # whichever of the two is next
-    want = {KS_GOOD: "sufficient", KS_NONE: "unknown", "demo/tool": "sufficient"}
-    for cmd in (("next", "--sprint", ks.sp, "--all"), ("horizon", "--sprint", ks.sp)):
-        code, out = ks.run(*cmd)
-        assert code == 0 and ks_states(out) == want, (cmd, out)
-    code, out = ks.run("horizon", "--sprint", ks.sp, "--hook")
-    assert code == 0 and "knowledge" not in out, out
-    # in this process with the pack counted: the hook asks it nothing, horizon asks it once per ask and ref
-    calls = []
-
-    def canned(self, question):
-        calls.append(question)
-        return {"verdict": "good", "sources": [], "paths": [], "unmatched": [], "spread": None}
-
-    monkeypatch.setattr(backlog.KnowledgeState, "pack", canned)
-    bl = backlog.Backlog(ks.repo)
-    backlog.cmd_horizon(bl, argparse.Namespace(sprint=ks.sp, hook=True))
-    assert calls == [] and "knowledge" not in capsys.readouterr().out
-    backlog.cmd_horizon(bl, argparse.Namespace(sprint=ks.sp, hook=False))
-    assert len(calls) == 3, calls
-    assert "knowledge sufficient" in capsys.readouterr().out
-
-
-def test_knowledge_state_is_reported_never_stored_and_never_changes_readiness(ks):
-    ready = ks.run("next", "--sprint", ks.sp, "--all")[1]
-    ks.know(asks=[KS_NONE], refs=["demo/absent"])  # every state a non-sufficient one: still nothing it waits on
-    before = {p.name: p.read_bytes() for p in (ks.repo / backlog.REL_DIR).glob("*.json")}
-    with_state = ks.run("next", "--sprint", ks.sp, "--all")[1]
-    assert [ln for ln in with_state.splitlines() if not ln.strip().startswith("knowledge")] == ready.splitlines()
-    assert ks_states(with_state) == {KS_NONE: "unknown", "demo/absent": "unknown"}
-    assert ks.show().rstrip().endswith("ready")
-    ks.run("horizon")
-    assert {p.name: p.read_bytes() for p in (ks.repo / backlog.REL_DIR).glob("*.json")} == before
-
-
-def test_knowledge_state_costs_nothing_for_items_without_knowledge(sprint):
-    """No item carries knowledge: next and horizon never load the pack (kbfacts stays unimported)."""
-    code = ("import sys; sys.path.insert(0, %r); import backlog\n"
-            "for cmd in (['next', '--all'], ['horizon']):\n"
-            "    backlog.main(['--root', %r] + cmd)\n"
-            "print('LOADED' if 'kbfacts' in sys.modules else 'NOT LOADED')\n") % (TOOLS, str(sprint["repo"]))
-    p = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, encoding="utf-8")
-    assert p.returncode == 0 and p.stdout.strip().endswith("NOT LOADED"), p.stdout + p.stderr
-
-
-def test_knowledge_state_against_the_repositorys_own_kb(sprint):
-    """The real pack of this clone (`--root` names only where the backlog is): an eval-set question it answers `good`
-    with no check line, in an article with no open conflict entry, is sufficient; one about nothing the kb holds is
-    unknown. The ledger entries are the kb's own state, so the question is picked, not named."""
-    import rag
-
-    class Clone:
-        root, items = backlog.ROOT, {}
-
-    state = backlog.KnowledgeState(Clone())
-    good = next(c["question"] for _, c in rag.eval_cases() if c["expect_verdict"] == "good"
-                and state.of_ask(c["question"])[0] == "sufficient")
-    edit(sprint["repo"], sprint["tk"], knowledge={"ask": [good, KS_NONE]})
-    code, out = b(sprint["repo"], "show", sprint["tk"])
-    assert code == 0 and ks_states(out) == {good: "sufficient", KS_NONE: "unknown"}, out
-
-
-def test_knowledge_state_judge_maps_every_verdict(monkeypatch):
-    """The mapping alone, the pack canned: none -> unknown, weak -> partial, good -> sufficient, and a good with a
-    check line (an unmatched name, or facts spread apart) -> partial."""
-    class Empty:
-        root, items = "/nonexistent", {}
-
-    ks = backlog.KnowledgeState(Empty())
-    base = {"sources": [], "paths": [], "unmatched": [], "spread": None}
-    table = [({"verdict": "none"}, "unknown"), ({"verdict": "weak"}, "partial"), ({"verdict": "good"}, "sufficient"),
-             ({"verdict": "good", "unmatched": ["plimt"]}, "partial"),
-             ({"verdict": "good", "spread": (1, 4)}, "partial")]
-    for res, state in table:
-        monkeypatch.setattr(ks, "pack", lambda q, res=res: base | res)
-        assert ks.of_ask("q")[0] == state, res
-    assert {s for _, s in table} == set(backlog.STATES) - {"stale", "conflicting"}
 
 
 # ---- red-pipeline: a planted red and a green pipeline on origin's main, glab and gh replaced (no network)
@@ -3746,76 +3088,6 @@ def test_host_setup_gate_checked_refuses_a_malformed_host_check(repo):
     code, out = b(repo, "gate", "add", st, "--question", "Other?", "--option", "a", "--option", "b",
                   "--recommendation", "a", "--host-check", "  ")
     assert code == 2 and "--host-check needs a command" in out, out
-
-
-def test_backlog_state_paths_check_warns_of_unchecked_ways_state_changes(repo):
-    """check warns of an open item whose goal reads an item's status or presence when its checks name fewer than
-    every way the state changes (BG-qks4ikyr planted: a sweep checked only done); naming all five, a goal that reads no
-    state, and a done item are quiet."""
-    cmd = lambda k: argstr(["python3", "_tools/tests.py", "-k", k])  # noqa: E731
-    goal = "A sweep reads each item's status and presence"
-    assert b(repo, "new", "story", "--title", "Sweep", "--goal", goal, "--check", cmd("sweep_done"))[0] == 0
-    sw = item(repo, "Sweep")["id"]
-    code, out = b(repo, "check")
-    assert code == 0 and "warnings=1" in out and sw in out, out
-    for way in ("drop inside a sprint", "drop outside a sprint", "close", "release"):
-        assert way in out, out
-    assert "state changes: done," not in out, out  # the path its check names is not listed missing
-    edit(repo, sw, checks=[{"run": ["python3", "_tools/tests.py", "-k",
-                                    "sweep_done or sweep_drop_in_sprint or sweep_drop_outside or sweep_close "
-                                    "or sweep_release"]}])
-    code, out = b(repo, "check")
-    assert code == 0 and "warnings=0" in out, out
-    edit(repo, sw, checks=[{"run": ["python3", "_tools/tests.py", "-k", "sweep_done or sweep_close"]}])
-    code, out = b(repo, "check")
-    assert "warnings=1" in out and "drop inside a sprint" in out and "release" in out, out
-    edit(repo, sw, goal="A sweep prints a table")
-    code, out = b(repo, "check")
-    assert "warnings=0" in out, out
-    edit(repo, sw, goal=goal, status="done")
-    code, out = b(repo, "check")
-    assert "warnings=0" in out and "state changes" not in out, out
-
-
-def test_gate_option_names_its_command(repo):
-    """check warns of an unanswered blocking gate of an open item whose options carry no do; an argv or an item id
-    on an option, an answer, a provisional gate and a done item are quiet; do is validated against the options."""
-    assert b(repo, "new", "story", "--title", "Decide", "--goal", "Pick a name", "--touch", "src/**",
-             "--check", "python3 -c pass")[0] == 0
-    sid = item(repo, "Decide")["id"]
-    args = ("gate", "add", sid, "--question", "Which name?", "--option", "keep", "--option", "rename",
-            "--recommendation", "keep")
-    assert b(repo, *args)[0] == 0
-    code, out = b(repo, "check")
-    assert code == 0 and "warnings=1" in out and "blocking gate g1 has no `do`" in out and sid in out, out
-    # a do naming no option is refused, as is one with neither an argv nor an existing item
-    assert b(repo, "gate", "add", sid, "--id", "g2", "--question", "Other?", "--option", "a", "--option", "b",
-             "--recommendation", "a", "--do", "c=echo hi")[0] == 2
-    assert b(repo, "gate", "add", sid, "--id", "g2", "--question", "Other?", "--option", "a", "--option", "b",
-             "--recommendation", "a", "--do", "a=")[0] == 2
-    gates = item(repo, "Decide")["gates"]
-    edit(repo, sid, gates=[dict(gates[0], do={"rename": "ST-aaaaaaaa"})])
-    code, out = b(repo, "check")
-    assert code == 1 and "needs an argv" in out, out
-    edit(repo, sid, gates=[dict(gates[0], do={"rename": ["git", "mv", "a", "b"]})])
-    code, out = b(repo, "check")
-    assert code == 0 and "warnings=0" in out, out
-    # the same gate given its do by gate add on a fresh item
-    assert b(repo, "new", "story", "--title", "Decide two", "--goal", "Pick again", "--touch", "src/**",
-             "--check", "python3 -c pass")[0] == 0
-    two = item(repo, "Decide two")["id"]
-    assert b(repo, "gate", "add", two, "--question", "Which?", "--option", "keep", "--option", "drop",
-             "--recommendation", "keep", "--do", f"drop={sid}", "--do", "keep=echo ok")[0] == 0
-    assert item(repo, "Decide two")["gates"][0]["do"] == {"drop": sid, "keep": ["echo", "ok"]}
-    code, out = b(repo, "check")
-    assert "warnings=0" in out, out
-    # provisional, answered and done are quiet
-    edit(repo, sid, gates=[dict(gates[0], kind="provisional")])
-    assert "warnings=0" in b(repo, "check")[1]
-    edit(repo, sid, gates=[dict(gates[0], answer="keep", by="operator")])
-    assert "warnings=0" in b(repo, "check")[1]
-    edit(repo, sid, gates=[gates[0]], status="done")
-    assert "warnings=0" in b(repo, "check")[1]
 
 
 def referrer_repo(sprint):
