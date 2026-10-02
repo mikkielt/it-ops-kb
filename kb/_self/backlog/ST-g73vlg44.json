@@ -22,5 +22,27 @@
     "_tools/test_testmap.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What is the default worker count, and what counts as another live tests.py run?",
+      "options": [
+        "share-of-live-runs",
+        "fixed-half-cpus"
+      ],
+      "recommendation": "share-of-live-runs",
+      "do": {
+        "share-of-live-runs": [
+          "true"
+        ],
+        "fixed-half-cpus": [
+          "true"
+        ]
+      },
+      "answer": "share-of-live-runs",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "seventh-w9"
 }

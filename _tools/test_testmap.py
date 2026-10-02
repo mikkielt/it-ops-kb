@@ -358,6 +358,7 @@ def test_host_test_lock_waits_is_released_on_an_error(tmp_path, monkeypatch):
 
 
 def test_host_test_lock_waits_applies_to_full_and_many_worker_runs_only(monkeypatch):
+    monkeypatch.setenv("KB_TEST_WORKERS", "4")  # the default count, not this host's load
     monkeypatch.setattr(tests_py, "inside_test", lambda: False)
     assert tests_py.wants_host_lock([]) and tests_py.wants_host_lock(["--changed", "-n", "4"])
     assert not tests_py.wants_host_lock(["--changed", "-n", "1"]) and not tests_py.wants_host_lock(["-n0"])
@@ -384,3 +385,61 @@ def test_host_test_lock_waits_planted_failure_a_live_foreign_holder_is_not_clear
     (tmp_path / tests_py.HOST_LOCK_NAME).unlink()  # the holder releases
     t.join(30)
     assert got
+
+
+def test_workers_capped_env_override_wins_over_the_share(monkeypatch):
+    monkeypatch.setenv("KB_TEST_WORKERS", "3")
+    assert tests_py.default_workers(others=5, cpus=16) == 3 and tests_py.worker_count([], others=5) == 3
+    monkeypatch.setenv("KB_TEST_WORKERS", "junk")  # not a number: the share applies
+    assert tests_py.default_workers(others=1, cpus=16) == 8
+
+
+def test_workers_capped_default_is_a_share_of_the_cpus_among_live_runs(monkeypatch):
+    monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
+    assert tests_py.default_workers(others=0, cpus=12) == 12  # alone: every CPU
+    assert tests_py.default_workers(others=1, cpus=12) == 6 and tests_py.default_workers(others=3, cpus=12) == 3
+    assert tests_py.worker_count([], others=2) == max((os.cpu_count() or 1) // 3, 1)
+    assert tests_py.xdist_args()[0] == "-n"
+
+
+def test_workers_capped_explicit_n_wins_and_the_lock_follows_the_count(monkeypatch):
+    monkeypatch.setenv("KB_TEST_WORKERS", "2")
+    assert tests_py.worker_count(["-n", "5"]) == 5 and tests_py.worker_count(["-n7"]) == 7
+    assert tests_py.worker_count(["-n", "auto"]) == (os.cpu_count() or 1)
+    monkeypatch.setattr(tests_py, "inside_test", lambda: False)
+    assert tests_py.wants_host_lock([])  # two workers: a full run takes the lock
+    monkeypatch.setenv("KB_TEST_WORKERS", "1")
+    assert not tests_py.wants_host_lock([]) and tests_py.wants_host_lock(["-n", "3"])
+
+
+def test_workers_capped_never_below_one(monkeypatch):
+    monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
+    assert tests_py.default_workers(others=99, cpus=4) == 1 and tests_py.default_workers(others=0, cpus=0) == 1
+    monkeypatch.setenv("KB_TEST_WORKERS", "0")
+    assert tests_py.default_workers(others=0, cpus=8) == 1
+    assert tests_py.worker_count(["-n", "0"]) == 1
+
+
+def test_workers_capped_counts_only_live_other_runs(tmp_path, monkeypatch):
+    import subprocess, sys
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path))
+    dead = subprocess.Popen([sys.executable, "-c", "pass"])
+    dead.wait()
+    for pid in (os.getpid(), dead.pid):
+        (tmp_path / f"{tests_py.RUN_PREFIX}{pid}").write_text("x", encoding="utf-8")
+    (tmp_path / f"{tests_py.RUN_PREFIX}notapid").write_text("x", encoding="utf-8")
+    monkeypatch.setattr(tests_py, "pid_alive", lambda pid: pid == os.getpid() or pid == 1)
+    assert tests_py.live_runs() == 0 and not (tmp_path / f"{tests_py.RUN_PREFIX}{dead.pid}").exists()  # self is not "other"
+    (tmp_path / f"{tests_py.RUN_PREFIX}1").write_text("x", encoding="utf-8")
+    assert tests_py.live_runs() == 1
+    monkeypatch.setattr(tests_py, "inside_test", lambda: False)
+    with tests_py.run_registered():
+        assert (tmp_path / f"{tests_py.RUN_PREFIX}{os.getpid()}").exists()
+    assert not (tmp_path / f"{tests_py.RUN_PREFIX}{os.getpid()}").exists()
+
+
+def test_workers_capped_planted_failure_a_one_per_cpu_default_is_caught(monkeypatch):
+    """The gate's planted failure: were the default one worker per CPU whatever else runs, three other live runs on
+    twelve CPUs would still get twelve workers; the share must give three."""
+    monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
+    assert tests_py.default_workers(others=3, cpus=12) != 12
