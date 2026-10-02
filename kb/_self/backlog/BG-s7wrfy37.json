@@ -1,0 +1,40 @@
+{
+  "id": "BG-s7wrfy37",
+  "kind": "bug",
+  "title": "kb_http.py's internal-error line prints the exception text, which can hold request content",
+  "status": "todo",
+  "parent": "EP-5sc7hr36",
+  "sprint": "SP-rrrrggw7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "answer in kb_http.py writes the exception class and no exception message to stderr when kb_mcp.handle raises, so a request's content (a question, a path, a name) never reaches a host journal; a test raises an error carrying a marker text and asserts the marker is absent from stderr",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,io;sys.path.insert(0,'_tools');import kb_http,kb_mcp;kb_mcp.handle=lambda m:(_ for _ in ()).throw(ValueError('request-content-marker'));buf=io.StringIO();sys.stderr=buf;kb_http.answer({'id':1,'method':'x'});sys.stderr=sys.__stderr__;sys.exit(1 if 'request-content-marker' in buf.getvalue() else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_http_internal_error_hides_message"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_http.py",
+    "_tools/test_kb_http.py",
+    "kb/_self/hosting.md",
+    "kb/_self/design.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-3und5yxq"
+  ]
+}
