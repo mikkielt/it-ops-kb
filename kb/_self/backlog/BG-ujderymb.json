@@ -2,7 +2,7 @@
   "id": "BG-ujderymb",
   "kind": "bug",
   "title": "The kb-autopilot tick files review and retro items with backlog.py new instead of bounds file, and never runs bounds stop, so the refill loop has no bound",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
@@ -31,5 +31,6 @@
     ".claude/skills/kb-autopilot/SKILL.md",
     "_tools/test_autopilot_skill_bounds.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
