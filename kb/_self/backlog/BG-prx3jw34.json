@@ -16,6 +16,16 @@
     ]
   },
   "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_ask_researcher_cached_docs"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kb_ask.py",
     "_tools/test_kb_ask_route.py",
