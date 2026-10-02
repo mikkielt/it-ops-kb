@@ -19,7 +19,7 @@ OPEN_STATUSES = OPEN  # the statuses of an item still to do
 def start_approved(sp):
     """True when the operator answered the sprint's start gate with an approval."""
     g = next((g for g in sp.get("gates", []) if g.get("id") == START_GATE), {})
-    return g.get("by") == "operator" and str(g.get("answer", "")).strip().lower() in APPROVALS
+    return g.get("by") in ("operator", "autopilot") and str(g.get("answer", "")).strip().lower() in APPROVALS
 
 
 CODE_DIRS = ("_tools/", ".claude/", ".claude-plugin/")  # with CODE_FILES: the paths whose change needs /kb-self

@@ -28,7 +28,8 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/content-rules.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_backlog_authority.py"
   ],
   "gates": [
     {
@@ -55,6 +56,33 @@
       "recommendation": "autopilot decision role, ratified or reverted by the operator from a digest",
       "answer": "autopilot decision role, ratified or reverted by the operator from a digest; an operator decision supersedes",
       "by": "operator"
+    },
+    {
+      "id": "review-days",
+      "kind": "provisional",
+      "question": "How long until an autopilot decision falls due for the operator's review?",
+      "options": [
+        "30 days",
+        "14 days",
+        "90 days"
+      ],
+      "recommendation": "30 days",
+      "class": "design",
+      "answer": "30 days",
+      "by": "agent"
+    },
+    {
+      "id": "class-derivation",
+      "kind": "provisional",
+      "question": "How is a gate's class derived: strictest of the item's touches and the question's keywords, stored class only a floor?",
+      "options": [
+        "strictest of touches and question words, stored class a floor",
+        "touches only"
+      ],
+      "recommendation": "strictest of touches and question words, stored class a floor",
+      "class": "design",
+      "answer": "strictest of touches and question words, stored class a floor",
+      "by": "agent"
     }
   ],
   "claimed_by": "seventh-w30"

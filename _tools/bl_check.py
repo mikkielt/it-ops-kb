@@ -12,6 +12,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
+import bl_authority
 from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS, PREFIX_KIND,
     PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED, canonical,
@@ -506,8 +507,15 @@ def validate(bl, pieces=None):
             gate_ids.add(g.get("id"))
             if g["kind"] == "provisional" and not g.get("recommendation"):
                 e(f"provisional gate {g['id']} needs a recommendation")
-            if "answer" in g and g.get("by") not in ("operator", "agent"):
-                e(f"gate {g['id']}: an answer needs by: operator|agent")
+            if "answer" in g and g.get("by") not in ("operator", "agent", "autopilot"):
+                e(f"gate {g['id']}: an answer needs by: operator|agent|autopilot")
+            if "class" in g and g["class"] not in bl_authority.CLASSES:
+                e(f"gate {g['id']}: class {g['class']!r} is not one of {', '.join(bl_authority.CLASSES)}")
+            elif bl_authority.lowered(it, g):
+                e(f"gate {g['id']}: class {g['class']} is lower than {bl_authority.derived_class(it, g)}, which its "
+                  "item's touches and its question give it")
+            if g.get("by") == "autopilot" and not bl_authority.autopilot_may_answer(it, g)[0]:
+                e(f"gate {g['id']} is class {bl_authority.gate_class(it, g)}: only the operator answers it")
             if g["kind"] == "blocking" and g.get("by") == "agent":
                 e(f"gate {g['id']} is blocking: only the operator answers it")
             hc = g.get("host_check")
