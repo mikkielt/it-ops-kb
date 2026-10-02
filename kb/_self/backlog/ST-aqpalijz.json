@@ -2,7 +2,7 @@
   "id": "ST-aqpalijz",
   "kind": "story",
   "title": "The autopilot detects stalled or hampered work and works through a ladder of remedies",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-rrrrggw7",
   "priority": "P1",
@@ -104,5 +104,29 @@
     }
   ],
   "notes": "It reads claims and git with held and horizon, which exist; the stall limits are named in the work, not guessed here. Evidence for the stall signals: a worker with staged changes, no commit and no live test process (it waits for a background-run completion notice that never arrives) stalled a chain in the first fleet night; the orchestrator finished the item itself. The ladder's first remedy for that signal is to finish the last steps in the orchestrator, then to run the checks in the foreground.",
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "9f5c8729fe93f261a3ed8e1edc1e2716d8565577",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "stalled_items_by_signal"
+        ],
+        "exit": 0,
+        "sha256": "d50179b4fc580c7a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "stall_ladder_files_blocker_and_moves_on"
+        ],
+        "exit": 0,
+        "sha256": "d4576777d50d29ec"
+      }
+    ]
+  }
 }
