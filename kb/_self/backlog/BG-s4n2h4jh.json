@@ -12,13 +12,14 @@
     "run": [
       "python3",
       "-c",
-      "import pathlib,sys; s=pathlib.Path('_tools/kbgit.py').read_text(encoding='utf-8'); i=s.index('were made by another Claude session'); sys.exit(0 if '--session' in s[i:i+600] else 1)"
+      "import pathlib,sys; s=pathlib.Path('_tools/kg_sync.py').read_text(encoding='utf-8'); i=s.index('were made by another Claude session'); sys.exit(0 if '--session' in s[i:i+600] else 1)"
     ]
   },
   "repro_reason": "the refusal only shows in a git fixture whose local range holds another session's commit; the test that builds it is part of the fix, so the repro reads the message text sync prints until then",
   "touches": [
     "_tools/kbgit.py",
     "_tools/test_sync.py",
-    "kb/_self/git.md"
+    "kb/_self/git.md",
+    "_tools/kg_sync.py"
   ]
 }
