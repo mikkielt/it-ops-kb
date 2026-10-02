@@ -248,6 +248,35 @@ class TestLookup:
         hits = [ln for ln in p.stdout.splitlines() if "rests on a run or probe but names no version" in ln]
         assert len(hits) == 1 and hits[0].startswith("WARN") and "Probe A" in hits[0], p.stdout
 
+    def test_lint_observed_run_needs_a_real_version_and_a_real_run(self):
+        """A measurement (2.5 s, TLS 1.2) is no version, and 'in the long run' or 'in a pipeline run' is no run of ours."""
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "kb_verify_lint", os.path.join(KB, ".claude", "skills", "kb-verify", "lint.py"))
+        lint = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(lint)
+        der = {"DER"}
+        warns = [
+            "- Observed on PL-LT-00123: the wait took 2.5 s. [DER S1]",
+            "- Observed on PL-LT-00123: TLS 1.2 was negotiated. [DER S1]",
+            "- Observed on PL-LT-00123 over TLS version 1.2, the wait took about 2.5. [DER S1]",
+            "- Measured with 120 devices: the sync took 3.2 % longer. [DER S1]",
+            "- In the headless runs the child outlived the parent. [DER S1]",
+            "- In two runs the child outlived the parent. [DER S1]"]
+        quiet = [
+            "- In the long run the cache wins. [DER S1]",
+            "- In a pipeline run the job reads the variable. [DER S1]",
+            "- Observed on Claude Code 2.1.285 the wait took 2.5 s. [DER S1]",
+            "- Observed on PowerShell 7.4: the call failed. [DER S1]",
+            "- Measured with git 2.43 and TLS 1.2: 2.5 s. [DER S1]",
+            "- Observed on version 3: the call failed. [DER S1]",
+            "- In the headless runs of v3.3 the child outlived the parent. [DER S1]"]
+        for item in warns:
+            assert lint.unversioned_run(item, der), item
+        for item in quiet:
+            assert not lint.unversioned_run(item, der), item
+        assert not lint.unversioned_run("- Observed on PL-LT-00123: the wait took 2.5 s. [DOC S1]", {"DOC"}), "DER facts only"
+
     def test_ledger_topic_markers_link_entries(self):
         import kbfacts
         from conftest import Q
