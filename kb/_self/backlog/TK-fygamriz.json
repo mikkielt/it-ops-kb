@@ -2,7 +2,7 @@
   "id": "TK-fygamriz",
   "kind": "task",
   "title": "The kb-autopilot skill runs one manager tick under /loop",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-mdwkhv7k",
   "priority": "P2",
   "rank": 0,
@@ -81,5 +81,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "mac-first-w3"
+  "evidence": {
+    "commit": "2a40b1af525c4b28920aaaba9e0876051b646bbf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_skill"
+        ],
+        "exit": 0,
+        "sha256": "5972a89be9f55892"
+      }
+    ]
+  }
 }
