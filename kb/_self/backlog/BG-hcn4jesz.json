@@ -2,7 +2,7 @@
   "id": "BG-hcn4jesz",
   "kind": "bug",
   "title": "codebase-mapping lists dotnet package list --no-restore as a read-only form",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eqmblr7t",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
   "touches": [
     "kb/public/agents/codebase-mapping.md",
     "kb/public/agents/codebase-mapping.csv"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
