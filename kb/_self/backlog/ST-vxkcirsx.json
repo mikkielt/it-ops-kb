@@ -63,7 +63,7 @@
         ]
       },
       "answer": "6 rounds, pause 2s doubling to 30s",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Merged finding: a light second land can leave its done commit unpushed when the push is rejected twice, and the next land reports done already without pushing; two items (ST-pvu4ecpv, ST-2ceybba2) stayed doing on main for hours while their runner believed them done. The story also makes backlog.py land verify that its done commit is on the integration main before it prints landed, and retry the push with the same backoff. Merged finding (SP-djri7fqp retro): a land whose push is rejected gives up after two tries while its gates take up to 14 minutes under the host lock and origin/main moves; about nine reruns and an hour of wall time in one sprint. After a rejected push, land and sync fetch, rebase and push again without re-running the gates when the rebase changes no path a gate reads; a gate wait has a cap before the push. Merged finding (SP-4i5quwba retro): the first land of an item needs the claim commit under the worker commit or check-trailers refuses the branch; two lands were cherry-picked by hand. land carries the claim commit under the worker commit itself. Evidence (SP-tpulmoxh): a light land whose push is rejected twice loses its done commit when sync rebases it away; land must be rerun, three times (ST-pvu4ecpv, TK-i2x2csig, TK-5sjw6qpg). Land checks the done commit is on the pushed tip. Split: the three land_* checks moved to ST-anaj5uls (backlog.py land); this story keeps the sync half.",

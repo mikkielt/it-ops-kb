@@ -61,7 +61,9 @@
           "-k",
           "TestHostRefusalsInGit"
         ]
-      }
+      },
+      "answer": "drop the four ids and list them in _tools/test_ids_dropped.txt",
+      "by": "operator"
     }
   ]
 }
