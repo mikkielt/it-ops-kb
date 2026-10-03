@@ -93,6 +93,7 @@ REUSE = {
 }
 PREFIX = re.compile(r"[A-Z]{1,4}")  # a root's source id prefix: its ids are <prefix>-<8 base32 chars>
 RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL", "D", "L"}  # tag kinds, answer, eval, decision and log ids, placeholders
+RESERVED_FOR = {"D": "decision ids", "L": "log row ids"}  # the one-letter reserved prefixes and whose ids they are
 # Decisions. Any root, and kb/_self, may keep two files (check.py checks them; kb/_self/content-rules.md, Decisions):
 # _decisions.csv holds the operator's decisions, one row each, and decision-makers.csv who may make them; the file in
 # kb/_self is the central register that a root's `by_ref` may name when the root keeps no row for the maker itself.
@@ -355,7 +356,8 @@ def load_root(path):
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) or name == "kb":
         raise RootError(f"{path}/{ROOT_FILE}: `root` must be a lowercase name (a-z, 0-9, -), got {name!r}")
     if not PREFIX.fullmatch(prefix) or prefix in RESERVED_PREFIXES:
-        raise RootError(f"{path}/{ROOT_FILE}: `id_prefix` must be 1-4 capital letters, not one of "
+        why = f"id_prefix {prefix!r} is reserved for {RESERVED_FOR[prefix]}: " if prefix in RESERVED_FOR else ""
+        raise RootError(f"{path}/{ROOT_FILE}: {why}`id_prefix` must be 1-4 capital letters, not one of "
                         f"{', '.join(sorted(RESERVED_PREFIXES))}; got {prefix!r}")
     vis = meta.get("visibility", "internal")
     if vis not in ("public", "internal"):
