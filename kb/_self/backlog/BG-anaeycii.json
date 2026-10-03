@@ -1,0 +1,35 @@
+{
+  "id": "BG-anaeycii",
+  "kind": "bug",
+  "title": "The worker-capture routing of BG-cyjmhnvv is path-based and its limits (a worktree outside .claude/worktrees, a worker naming two items or none, a worker killed before its first command) are undocumented, and its test name overclaims",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/usage.md and .claude/agents/kb-worker.md state the limits of the path-based worker routing (such workers stay in `sub` and read zero for the item without a warning), the kb-worker brief makes the worker's first command name its worktree path, and the test worker_capture_hooks_run_in_worktree is renamed to say it tests the usage routing; found by the SP-nq5avzrl review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"kb/_self/usage.md\",encoding=\"utf-8\").read();ok=\"outside .claude/worktrees\" in t;print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the missing statement of limits in docs and the worker brief; the repro reads usage.md for the first limit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_routing_limits_documented"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/usage.md",
+    ".claude/agents/kb-worker.md",
+    "_tools/test_usage_routing_docs.py",
+    "kb/_self/code.md"
+  ]
+}
