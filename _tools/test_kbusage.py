@@ -40,8 +40,15 @@ from pathlib import Path
 
 import pytest
 
-import kbusage, ql_distill, ql_deliver, ql_report, ql_store
+import kbpublic, kbusage, ql_distill, ql_deliver, ql_report, ql_store
 from conftest import TOOLS, querylog_env
+
+
+@pytest.fixture(autouse=True)
+def not_headless(monkeypatch):
+    """The launcher does nothing in a headless runner (KB_HEADLESS_RUNNER): these tests run it as an operator's session does."""
+    monkeypatch.delenv(kbpublic.HEADLESS_ENV, raising=False)
+
 
 FIX = Path(TOOLS) / "fixtures" / "kbusage"
 SESSION = FIX / "session.jsonl"
