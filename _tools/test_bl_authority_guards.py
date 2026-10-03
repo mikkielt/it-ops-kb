@@ -2,7 +2,7 @@
 record, lane routing, sync, the local settings) is of a class the autopilot may not answer as design, and so is a gate
 whose question speaks of uploading, deploying, merge requests, GitLab, PATs, ssh, passphrases or bearer tokens: with
 Edit, Write and glab mr merge allowed, an unattended sprint could otherwise approve and merge changes to its own guards
-(kb/_self/backlog.md, Classes and the autopilot)."""
+(the gate classes of kb/_self/backlog.md)."""
 import pytest
 
 import bl_authority as a
