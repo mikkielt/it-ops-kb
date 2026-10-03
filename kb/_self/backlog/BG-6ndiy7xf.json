@@ -2,7 +2,7 @@
   "id": "BG-6ndiy7xf",
   "kind": "bug",
   "title": "The guard code (autopilot.py, bl_authority.py, kb_hook.py, kblane.py, settings.local.json) and push or credential wordings derive class design, which the autopilot may answer",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -33,5 +33,28 @@
     "_tools/test_backlog_authority.py",
     "_tools/test_bl_authority_derivation.py"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "5b2bb07eb07201299e16038d47d6b9cbc773a426",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "gate_class_covers_the_guard_code"
+        ],
+        "exit": 0,
+        "sha256": "fb9536c3240587bf"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;g={\"id\":\"g\",\"question\":\"ok?\",\"options\":[]};bad=[t for t in ([\"_tools/autopilot.py\"],[\"_tools/bl_authority.py\"],[\"_tools/kb_hook.py\"],[\"_tools/kblane.py\"],[\".claude/settings.local.json\"]) if a.derived_class({\"touches\":t},g)==\"design\"];w=[x for x in (\"Upload the commits to the git host\",\"Open a merge request to main\",\"Use a PAT\",\"Change the ssh keys\",\"Deploy this\",\"Sync to gitlab\",\"What passphrase do we use?\") if a.derived_class({\"touches\":[]},{\"id\":\"g\",\"question\":x,\"options\":[]})==\"design\"];print(bad,w);sys.exit(1 if bad or w else 0)"
+        ],
+        "exit": 0,
+        "sha256": "7a88ba9df5a620a9"
+      }
+    ]
+  }
 }
