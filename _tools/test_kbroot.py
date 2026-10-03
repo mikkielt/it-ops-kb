@@ -62,6 +62,13 @@ def test_add_refuses_taken_or_bad(kb):
     assert code == 0 and "team\tprefix=T\tinternal" in out and "roots=2" in out, out
 
 
+@pytest.mark.parametrize("prefix", ["L", "D"])  # log and decision ids (L-..., D-...) are no root's
+def test_add_refuses_reserved_prefix_log(kb, prefix):
+    code, out = run(kb, "kbroot.py", "add", "logs", "--prefix", prefix)
+    assert code == 2 and "refused" in out and "not one of" in out, out
+    assert not os.path.exists(os.path.join(kb, "kb", "logs")), out
+
+
 def test_new_root_passes_the_checks(kb):
     sid = SID
     assert sid.startswith("T-")
