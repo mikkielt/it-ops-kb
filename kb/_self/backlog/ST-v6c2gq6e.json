@@ -1,0 +1,25 @@
+{
+  "id": "ST-v6c2gq6e",
+  "kind": "story",
+  "title": "The scratch file of the first supervised run has a second line",
+  "status": "draft",
+  "sprint": "SP-7kbrqaol",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/autopilot-throwaway.md keeps its heading and first sentence and gains a second sentence saying a second item added it after the first landed; nothing else in the repository changes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; t=pathlib.Path(\"kb/_self/reports/autopilot-throwaway.md\").read_text(encoding=\"utf-8\"); sys.exit(0 if t.startswith(\"# Autopilot throwaway\") and \"scratch file\" in t and \"second item\" in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/autopilot-throwaway.md"
+  ],
+  "depends_on": [
+    "ST-6hquudym"
+  ]
+}

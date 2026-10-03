@@ -1,0 +1,22 @@
+{
+  "id": "ST-6hquudym",
+  "kind": "story",
+  "title": "The scratch file of the first supervised run exists",
+  "status": "draft",
+  "sprint": "SP-7kbrqaol",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/autopilot-throwaway.md exists with the heading line '# Autopilot throwaway' and one sentence saying it is the scratch file of the first supervised autopilot run and safe for the operator to delete; nothing else in the repository changes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; t=pathlib.Path(\"kb/_self/reports/autopilot-throwaway.md\").read_text(encoding=\"utf-8\"); sys.exit(0 if t.startswith(\"# Autopilot throwaway\") and \"scratch file\" in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/autopilot-throwaway.md"
+  ]
+}
