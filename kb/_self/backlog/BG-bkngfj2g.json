@@ -1,0 +1,31 @@
+{
+  "id": "BG-bkngfj2g",
+  "kind": "bug",
+  "title": "autopilot-container.md predates the runner's deploy-key ssh and overstates the key's forge scope",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/autopilot-container.md says how the runner's child pushes since ST-xiyvkjro: section 4 mounts the deploy key at /run/secrets/runner_deploy_key with KB_RUNNER_DEPLOY_KEY naming it (or at the default ~/.config/it-ops-kb/runner_deploy_key), and child_env's list sets GIT_SSH_COMMAND (the key only, the system ssh config alone, which keeps the image's ssh_config.d timeouts), drops GIT_SSH, and offers no key without the file; the key's scope is stated as the forge sets it (main and code/* protected for it, other branch names not bounded on a plan without push rules); its autopilot.py and autopilot-test.md references match the current files; last level: no retrospective follows from this item",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys;sys.exit(0 if 'KB_RUNNER_DEPLOY_KEY' in pathlib.Path('kb/_self/autopilot-container.md').read_text(encoding='utf-8') else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a doc's wording, which no tool behaviour reads",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/autopilot-container.md"
+  ]
+}
