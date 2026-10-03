@@ -273,40 +273,71 @@ The commands below are run by the operator, in this order, in the manager's own 
    python3 _tools/autopilot_rehearse.py
    ```
 
-   The last line must be `rehearse: ok (N steps)` with exit 0. On `rehearse: FAILED at step NAME: CAUSE` (exit 1) do not start the autopilot: the step names what is wrong. The rehearsal runs the clone's committed tools (`HEAD`), so commit or pull a change before rehearsing it (`kb/_self/tools.md`, The autopilot runner).
-2. **Start a manager session** in that clone, with its own project settings and no flags: the session loads the clone's `.claude/settings.json`, skills and agents, and `--plugin-dir` is left off, since a plugin loaded in a clone loads the project's skills a second time (`kb/_self/maintaining.md`). The runners need nothing from you: `autopilot.py runner start` passes each run the worktree's `.claude/settings.json` by `--settings` and each plugin the project loads by `--plugin-dir`, with no permission flag, so the project's allow and deny rules govern a run.
+   The last line must be `rehearse: ok (N steps)` with exit 0. On `rehearse: FAILED at step NAME: CAUSE` (exit 1) do not start the autopilot: the step names what is wrong. The rehearsal runs the clone's committed tools (`HEAD`), so commit or pull a change before rehearsing it (`kb/_self/tools.md`, The autopilot runner). Passing it proves the tick's own commands work against a scratch clone, and no more: it does not test permissions (the stub `claude` asks for none, so the allow and deny rules of `.claude/settings.json` are never evaluated), hooks, `backlog.py land`, the sync gate, a real `kb-worker`, the code lane and its merge request, `glab` or ssh authentication, the manager skill's subagents (triage, review, retrospective, plan, research), plugin and MCP loading, compaction, or the real host and backlog. Steps 2 and 3 cover what the first unattended run needs from those.
+2. **Start a manager session** in that clone, with its own project settings and no flags: the session loads the clone's `.claude/settings.json`, skills and agents, and `--plugin-dir` is left off, since a plugin loaded in a clone loads the project's skills a second time (`kb/_self/maintaining.md`). The runners need nothing from you: `autopilot.py runner start` passes each run the worktree's `.claude/settings.json` by `--settings` and each plugin the project loads by `--plugin-dir`, with no permission flag, so the project's allow and deny rules govern a run. Before the first start, check each prerequisite, one command at a time; the rehearsal checks none of them:
+   - **A clean checkout on `main`.** The tick syncs the clone first and `kbgit.py sync` refuses a tracked change left uncommitted:
+
+     ```
+     git branch --show-current
+     git status --short
+     ```
+
+     The first prints `main`, the second nothing (an untracked file is fine; a modified tracked file is not).
+   - **An integration remote that works unattended.** A push that waits for an ssh passphrase, or a `glab` that is not signed in, stalls a tick with nobody to answer. The ssh key must be usable without a prompt (loaded into the agent or without a passphrase), and `glab mr merge`, which the code lane's landing runs, needs a signed-in `glab`:
+
+     ```
+     git ls-remote origin HEAD
+     glab auth status
+     ```
+
+     The first prints a commit id without asking for anything; the second names the signed-in host.
+   - **A trusted workspace and the MCP servers connected.** Run `claude` once in the clone yourself and accept the trust dialog, and approve each MCP server it asks about. Until you accept it, the project's allow rules in `.claude/settings.json` are not used, so each command of an unattended tick would wait for a permission prompt; `claude mcp list` also does not count the repository's own approvals before that (live docs, not in the kb: https://code.claude.com/docs/en/permissions#what-runs-before-you-trust-a-folder and https://code.claude.com/docs/en/mcp#project-server-approvals-and-workspace-trust, read 2026-10-03). Then:
+
+     ```
+     claude mcp list
+     ```
+
+     It must show `kb` and the three documentation servers `Connected`.
+   - **`/kb-setup` done** in this clone (the commit hooks, the MCP servers registered at local scope, `check.py`; `kb/_self/maintaining.md`).
+
+   Then start the session:
 
    ```
    cd <your clone>
    claude
    ```
 
-   Export `KB_NO_PUBLISH_HOOK=1` before `claude` (`KB_NO_PUBLISH_HOOK=1 claude`) so this unattended session's SessionStart hook never publishes to the public home (`kb/_self/git.md`, Public home); do not use `KB_HEADLESS_RUNNER` for it, which would block your `--by operator` answers.
+   Export `KB_NO_PUBLISH_HOOK=1` before `claude` (`KB_NO_PUBLISH_HOOK=1 claude`) so this unattended session's SessionStart hook never publishes to the public home (`kb/_self/git.md`, Public home). Do not use `KB_HEADLESS_RUNNER` for it: that variable is the runner's, it makes every `--by operator` and `--confirm` answer refuse, and the manager session must keep them for you.
 3. **Run the self-check** before the first tick, in the session or the shell:
 
    ```
    python3 _tools/backlog.py selfcheck
    ```
 
-   Healthy is `selfcheck: ok (6 checks passed)`, or `selfcheck: 0 failed, 1 unknown of 6 checks` with the one line `UNKNOWN main: no ci.pipeline row read` under it (no failure: the forge was not asked), both with exit 0. A `FAIL` line names its check and its remedy; fix it before the loop (`.claude/skills/kb-sprint/SKILL.md`, Self-check).
-4. **Start the loop**, typed in the manager session; each firing is one tick (`.claude/skills/kb-autopilot/SKILL.md`):
+   Healthy is `selfcheck: ok (6 checks passed)`, or `selfcheck: 0 failed, 1 unknown of 6 checks` with the one line `UNKNOWN main: no ci.pipeline row read` under it, both with exit 0: the check reads no network, so with no pipeline row it cannot know `main`'s state, and that is no failure (`python3 _tools/backlog.py red-pipeline --status` reads it from the forge). A `FAIL` line names its check and its remedy; fix it before the loop (`.claude/skills/kb-sprint/SKILL.md`, Self-check). The `host` and `orphans` checks read the real host, so a busy host (load, a held test lock, live runners) fails `host`: retry later.
+4. **Start the loop**, typed in the manager session; each firing is one tick (`.claude/skills/kb-autopilot/SKILL.md`). First read what the first tick will find:
+
+   ```
+   python3 _tools/autopilot.py status
+   ```
+
+   Its active sprints are the ones you started: step 5.1 of a tick takes "a started sprint with ready work and no live runner" before it plans anything, up to two runners, so the first tick starts runners on them. There is no per-sprint switch to hold one back. What the code does let you check, read only, is what a tick would decide for a sprint: `python3 _tools/backlog.py next --sprint <SPRINT> --all` lists its ready items and `python3 _tools/backlog.py bounds stop --sprint <SPRINT>` prints `bounds: go` or the cause that stops a runner. To keep a started sprint out of the first tick, do not start the loop while it is active. Do not hold it back by adding a blocking gate to its items: the tick answers an open gate with its recommendation unless the gate is of class `secrets` or `push` (step 4 of a tick). Whether the tick skips a sprint for any other reason is not stated by the skill or the tools, and is unknown here. Then:
 
    ```
    /loop 15m /kb-autopilot
    ```
 
-   The interval is the operator's recorded choice. A fixed-interval loop expires seven days after it was created (live docs, not in the kb: https://code.claude.com/docs/en/scheduled-tasks#seven-day-expiry, read 2026-10-03), so start it again then.
-5. **Read what it did**, in any shell of the clone:
+   The interval is the operator's recorded choice. A scheduled prompt fires between turns, never while the session is mid-response (live docs, not in the kb: https://code.claude.com/docs/en/scheduled-tasks#how-scheduled-tasks-run, read 2026-10-03), so a tick waits for an idle session, and a permission prompt left unanswered stalls the loop, since the later ticks wait behind it: watch the first ticks and answer or fix each prompt (an allow rule missing from `.claude/settings.json` is a bug to file, not a rule to widen at the prompt). A fixed-interval loop expires seven days after it was created (live docs, not in the kb: https://code.claude.com/docs/en/scheduled-tasks#seven-day-expiry, read 2026-10-03), so start it again then.
+5. **Read what it did**, in any shell of the clone. Read the committed `kb/_self/reports/autopilot-digest.md` (the autopilot's decisions you have not ratified, restricted classes first; each tick writes and commits it), and run:
 
    ```
-   python3 _tools/kbdecide.py digest
    python3 _tools/backlog.py stalled
    python3 _tools/autopilot.py status
    ```
 
-   `digest` rewrites `kb/_self/reports/autopilot-digest.md`, the autopilot's decisions you have not ratified, restricted classes first (each tick also commits it); ratify or revert from the commands that file names. `stalled` lists, read only, each item that shows a stall signal and its next remedy. `status` is the manager's state in one capped command: the runners, the active sprints, your open blocking gates (the kept gates), the unratified decisions and the last tick. For one sprint's run, `python3 _tools/autopilot.py runner-status SP`.
+   `stalled` lists, read only, each item that shows a stall signal and its next remedy. `status` is the manager's state in one capped command: the runners, the active sprints, your open blocking gates (the kept gates), the unratified decisions and the last tick. For one sprint's run, `python3 _tools/autopilot.py runner-status SP`. Run `python3 _tools/kbdecide.py digest` only while the loop is stopped: it rewrites the tracked digest file, which dirties the manager's clone, and the next `kbgit.py sync --push` of a tick refuses a tracked change left uncommitted (a tick's own `digest --commit` commits that file alone). Ratify or revert a decision from the commands the digest names.
 6. **Stop it**, in this order:
-   1. Stop the loop: ask the session to cancel its scheduled `/kb-autopilot` task (`Esc` stops only a self-paced loop, not a fixed-interval one; live docs, same page, `#stop-a-loop`), then leave the session with `/exit`.
+   1. Stop the loop: ask the session to cancel its scheduled `/kb-autopilot` task (`Esc` stops only a self-paced loop, not a fixed-interval one; live docs, same page, `#stop-a-loop`), then leave the session with `/exit`. Leaving the session ends the runner starts it ran in the background: a runner whose session is gone is recorded as `ended error`, or is still listed `alive` when it outlived the session (sub-steps 2 and 3).
    2. End each runner: `python3 _tools/autopilot.py status` prints `SP pid N alive`; `kill N` (SIGTERM) makes the runner end its child's whole process tree and write the status `error` with `runner ended by SIGTERM`, so `status` then prints `SP ended error`.
    3. List what still runs in the clone:
 
@@ -314,10 +345,21 @@ The commands below are run by the operator, in this order, in the manager's own 
    python3 _tools/backlog.py procs
    ```
 
-   The same command with `--end` ends an owned orphan, after its grace, and never a process of another session.
+   A runner the manager recorded (`procs --record`) whose parent is gone is an `owned orphan`: `procs --end` (the command above with `--end`) ends it after its grace, and never a process of another session. A runner killed with SIGKILL cannot end its child: that child, and any process nobody recorded, is listed as an `orphan` and is never signaled by `--end`: check its command name and age in the listing, then end it by hand with `kill` and its pid.
 
    Left behind, by design: the runner's worktree `.claude/worktrees/runner-SP` on `orch/SP` and its streams in `_cache/autopilot/SP/` (`python3 _tools/autopilot.py runner reset SP` frees the worktree; a later `runner start SP` reuses it); each item the run claimed stays `doing` until a later run lands or releases it (`python3 _tools/backlog.py release ID`, `backlog.py stalled` names them); a started sprint stays active, and the open gates and the committed digest stay as they are.
-7. **What the autopilot may never do**: answer a gate of class `secrets` or `push` (it leaves it open and notifies you; `--by operator` is never its), and push or publish for you (no push anywhere but the integration `main` and a `code/<id>` branch, no `kbgit.py publish`; a runner has `KB_HEADLESS_RUNNER` set, so no publish). The classes are the Classes and the autopilot paragraph of Dependencies, gates and triggers, above; the sprint's start gate is yours too when its items touch `secrets`, `push` or `agents-rule` paths.
+7. **What the autopilot may never do**, and which of it the code enforces. The classes are the Classes and the autopilot paragraph of Dependencies, gates and triggers, above; the sprint's start gate is yours too when its items touch `secrets`, `push` or `agents-rule` paths.
+
+   Enforced today, by code or a deny rule:
+   - `backlog.py answer --by autopilot` refuses (exit 2, the gate left open) a gate of class `secrets` or `push`, a sprint's start gate when the sprint's items touch `secrets`, `push` or `agents-rule` paths, and a gate with no question text. The class comes from the item's `touches` (the push code, CI files and hooks are `push`; the guard code, `.claude/`, `AGENTS.md` and `CLAUDE.md` are `agents-rule`) and from the gate's wording (`_tools/bl_authority.py`). Any other gate the autopilot may answer, an `agents-rule` one included: the digest lists the restricted classes first for you to ratify or revert.
+   - A headless runner (`KB_HEADLESS_RUNNER` set, which `autopilot.py runner start` does) cannot act as the operator: `backlog.py answer --by operator` and `--confirm`, and the `kbdecide.py` forms that act as the operator (confirm, ratify, revert, supersede, restore, `record` not `--by autopilot`) refuse; the publish hook does nothing; `kbgit.py sync` refuses `--remote` and a `--branch` other than `main`, so a runner pushes to the integration remote's `main` and the `code/<id>` lane only.
+   - A headless runner's `Edit`, `Write`, `MultiEdit` or `NotebookEdit` of `.claude/settings*.json`, `.claude/hooks/` or `.claude-plugin/`, or of a gate's answer or `by` in an item file, is denied by the `kb_hook.py` PreToolUse hook.
+   - `.claude/settings.json` denies to every session `kbgit.py publish`, `git push`, `git branch -D`, `git worktree remove`, `git checkout --`, `git rebase` with `--exec` or `-x`, and `git commit` with `--no-verify` or `-n`.
+
+   Not enforced, so held by the skill's text and your own watching:
+   - The guards of the second and third items bind a runner, not the manager session: it is operator-present, has no `KB_HEADLESS_RUNNER`, and nothing in the code stops it running `--by operator`, `sync --push --branch B` or an edit of its own settings. The manager skill says it never does; the digest and the commit history are how you see whether it did.
+   - `Edit` and `Write` are allowed outright in `.claude/settings.json`, and the headless guard above covers only the settings, hooks, plugin and gate answers: a run can edit any other file of its worktree, `_tools/` and the skills among them. A gate class limits what the autopilot may answer, not what it may write.
+   - What the autopilot lands reaches the integration `main`, or a `code/<id>` merge request that `glab mr merge` merges: your review of the digest and of `git log origin/main` is the check after the fact.
 
 ## Bounds of the autopilot's work
 
