@@ -1,0 +1,92 @@
+{
+  "id": "ST-32b46kff",
+  "kind": "story",
+  "title": "The autopilot container is built from a pinned file and passes Stage C of the test plan",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Following kb/_self/autopilot-container.md and the operator's answers to this item's gates: a Dockerfile with digests and checksums read from their sources by a person, the start/stop/status wrapper that maps runner commands to docker exec inside ONE container, the egress proxy on an internal network, the secret files (never in docker inspect), and Stage C of kb/_self/autopilot-test.md passing on this Mac with the measured limits written back to the plan. Edits of autopilot.py, the wrapper and the settings are agents-rule and push work: an operator-present session does them, never a headless run. The resolved unconfirmed points of the plan (docker exec -d parentage against bl_procs, lock liveness in one pid namespace, headless trust and MCP approvals, glab token scope, claude host list, AWS_ACCESS_KEY_ID in child_env) are each checked and written back.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/autopilot-container.md",
+    "kb/_self/autopilot-test.md"
+  ],
+  "depends_on": [
+    "ST-6txsaokt"
+  ],
+  "gates": [
+    {
+      "id": "forge",
+      "kind": "blocking",
+      "question": "Which forge credentials does the container hold?",
+      "options": [
+        "runner deploy key and minimal project token",
+        "operator's own key and token",
+        "a key that can push any branch"
+      ],
+      "recommendation": "runner deploy key and minimal project token",
+      "class": "secrets",
+      "answer": "runner deploy key and minimal project token",
+      "by": "operator"
+    },
+    {
+      "id": "model",
+      "kind": "blocking",
+      "question": "Which model credential does the container hold?",
+      "options": [
+        "dedicated API key in its own workspace",
+        "subscription token from claude setup-token",
+        "Bedrock"
+      ],
+      "recommendation": "dedicated API key in its own workspace",
+      "class": "secrets",
+      "answer": "subscription token from claude setup-token",
+      "by": "operator"
+    },
+    {
+      "id": "pushedit",
+      "kind": "blocking",
+      "question": "What may the container push and what may its runner edit?",
+      "options": [
+        "main and code/* only; edit as a headless run today",
+        "container commits only, the manager pushes",
+        "content only, read-only clone except kb/"
+      ],
+      "recommendation": "main and code/* only; edit as a headless run today",
+      "class": "push",
+      "answer": "main and code/* only; edit as a headless run today",
+      "by": "operator"
+    },
+    {
+      "id": "netimage",
+      "kind": "blocking",
+      "question": "Which network allow-list enforcement and image source?",
+      "options": [
+        "two hosts through an egress proxy; image built locally",
+        "two hosts through firewall rules; image built locally",
+        "image from the project registry by digest"
+      ],
+      "recommendation": "two hosts through an egress proxy; image built locally",
+      "class": "design",
+      "answer": "two hosts through an egress proxy; image built locally",
+      "by": "operator"
+    }
+  ]
+}
