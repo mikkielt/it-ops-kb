@@ -10,12 +10,12 @@
   "goal": "_tools/test_kbdecide.py make_root copies every bl_*.py file (a glob) into its temp repository instead of a hand-listed tuple, so a new bl_ module needs no edit there; a test named make_root_copies_all_bl_modules plants a new bl_ file and sees it copied. Found twice by ST-fb2hxf6s and ST-aqpalijz.",
   "repro": {
     "run": [
-      "sh",
-      "-c",
-      "grep -n \"bl_\\*\" _tools/test_kbdecide.py | grep -q ."
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "make_root_copies_all_bl_modules"
     ]
   },
-  "repro_reason": "the defect shows only when a new bl_ module is added and imported; the text match shows the list is not derived from the bl_*.py files",
   "checks": [
     {
       "run": [
