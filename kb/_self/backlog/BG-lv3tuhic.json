@@ -2,7 +2,7 @@
   "id": "BG-lv3tuhic",
   "kind": "bug",
   "title": "land leaves the finished worker's worktree in a headless runner and the landing needs an extra round trip with the worker, because release_worker_worktree takes the runner's own worktree as the clone",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_land_worker_worktree_sibling.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
