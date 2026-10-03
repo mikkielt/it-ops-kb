@@ -25,8 +25,10 @@ the part that does not touch the backlog's files:
   are whatever moved the tip between them, each check as a process group of
   its own that a timeout or this process's exit ends whole (`end_tree`, `end_live`), and a check that runs the whole
   test suite (`heavy_check`: `_tools/tests.py` or pytest with no narrowing `-k`, `stress_test.py`, a wrapper such as
-  `perfcheck.py`, also inside `sh -c '...'`) never runs; the items those leave unchecked are counted in the story's
-  notes, never reported as passing. The budget is the detector's one reading of time, so an
+  `perfcheck.py`, also inside `sh -c '...'`) never runs, nor one that is not of drift's read-only forms
+  (`check_program_refusal` with `inline=False`: exactly python3 on one of DRIFT_SCRIPTS, so a committed `git push`,
+  publish, sync or runner start never runs in a session's hook); the items those leave unchecked are counted in the
+  story's notes, the refused ones apart from the heavy ones, never reported as passing. The budget is the detector's one reading of time, so an
   intake stays short enough for a SessionStart hook;
 - the `trailers` detector (`trailer_findings`, `trailers_detector`, at the end): commits of main whose KB-Work line git
   does not read, or that change code with no KB-Work and no KB-Auto trailer;
@@ -276,13 +278,15 @@ class Drift:
     """What `scan_drift` found: `stale` {doing item id: (work commit, hours it is older than the tip of main)},
     `passing` {draft or todo item id: how many checks it has} (all of its checks pass on HEAD), `timed_out` the ids of
     items with a check that exceeded the timeout, `heavy` the ids of items left unchecked because a check runs the
-    whole test suite or the stress tests, `over_budget` the ids of items left unchecked once the budget was spent,
-    `ran` how many items had their checks run, `last` the id of the last item reached in the run's order before the
-    budget was spent (the next run starts after it)."""
+    whole test suite or the stress tests, `refused` the ids of items left unchecked because a check is not one of
+    drift's read-only forms (check_program_refusal), `over_budget` the ids of items left unchecked once the budget was
+    spent, `ran` how many items had their checks run, `last` the id of the last item reached in the run's order before
+    the budget was spent (the next run starts after it)."""
     stale: dict = field(default_factory=dict)
     passing: dict = field(default_factory=dict)
     timed_out: list = field(default_factory=list)
     heavy: list = field(default_factory=list)
+    refused: list = field(default_factory=list)
     over_budget: list = field(default_factory=list)
     ran: int = 0
     last: str = ""
@@ -639,11 +643,15 @@ def passing_open(root, items, timeout, drift, budget):
     spent = False
     for iid in order:
         checks = checks_of[iid]
-        # a heavy check never runs here, nor one whose program is not python3 on a _tools/ script: drift runs the
-        # committed checks of every item in every session's hook, so a planted `git push` or publish check would run
-        # with that session's credentials; such items are left unchecked, as heavy ones are
-        if any(heavy_check(c) or check_program_refusal(c.get("run"), inline=DRIFT_ALLOWS_INLINE) for c in checks):
+        # a heavy check never runs here, nor one that is not of drift's read-only forms: drift runs the committed
+        # checks of every item in every session's hook, so a planted `git push` or publish check would run with that
+        # session's credentials; such items are left unchecked and counted apart from the heavy ones
+        if any(heavy_check(c) for c in checks):
             drift.heavy.append(iid)
+            drift.last = drift.last if spent else iid
+            continue
+        if any(check_program_refusal(c.get("run"), inline=DRIFT_ALLOWS_INLINE) for c in checks):
+            drift.refused.append(iid)
             drift.last = drift.last if spent else iid
             continue
         if time.monotonic() - start >= budget:
@@ -662,7 +670,7 @@ def passing_open(root, items, timeout, drift, budget):
             drift.timed_out.append(iid)
         elif results[-1] == "pass":
             drift.passing[iid] = len(checks)
-    for ids in (drift.timed_out, drift.heavy, drift.over_budget):
+    for ids in (drift.timed_out, drift.heavy, drift.refused, drift.over_budget):
         ids.sort()
 
 
@@ -683,8 +691,8 @@ def drift_detector(root):
     """One story listing the items that disagree with their commits: each doing item whose newest work commit on main
     is older than DRIFT_HOURS (no done followed it), and each draft or todo item with touches whose own checks already
     pass on HEAD. The key is WHOLE_KEY, so the fingerprint stays the same whichever items drift or the budget reached;
-    the notes list the items found. Items left unchecked (a timeout, a heavy check, the spent
-    budget) are counted in the notes and never reported."""
+    the notes list the items found. Items left unchecked (a timeout, a heavy check, a check that is not one of
+    drift's read-only forms, the spent budget) are counted in the notes and never reported."""
     d = scan_drift(root)
     DETECT_STATS["drift"] = {"budget": bool(d.over_budget), "coverage": d.ran}  # collect's intake.detect row
     write_cursor(root, d.last)
@@ -700,6 +708,9 @@ def drift_detector(root):
     if d.heavy:
         notes.append(f"{len(d.heavy)} item(s) had a check that runs the whole test suite or the stress tests, "
                      "not run, and were left out")
+    if d.refused:
+        notes.append(f"{len(d.refused)} item(s) had a check drift does not run (not one of its read-only forms: "
+                     f"{', '.join(DRIFT_SCRIPTS)}), and were left out: {', '.join(d.refused)}")
     if d.over_budget:
         notes.append(f"{len(d.over_budget)} item(s) were not checked: the {DRIFT_BUDGET_S} s budget for checks was "
                      "spent, and were left out")

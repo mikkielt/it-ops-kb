@@ -2,7 +2,7 @@
   "id": "BG-7oyx4rma",
   "kind": "bug",
   "title": "Items left unchecked by drift's program allowlist are reported as heavy whole-suite checks, and the docstring never mentions the allowlist",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-j6hh2ib2",
   "priority": "P3",
   "rank": 0,
@@ -31,6 +31,8 @@
   "touches": [
     "_tools/bl_intake.py",
     "_tools/test_drift_refused.py",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "_tools/test_check_program_allowlist.py"
+  ],
+  "claimed_by": "mac-first"
 }
