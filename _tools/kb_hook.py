@@ -313,7 +313,7 @@ def raw_read_nudge(event):
 HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # kbpublic.HEADLESS_ENV: set by autopilot.py runner start in its headless run
 WRITE_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 GUARDED = (re.compile(r"\.claude/settings[^/]*\.json"), re.compile(r"\.claude/hooks/.+"), re.compile(r"\.claude-plugin/.+"))
-ITEM_FILE = re.compile(r"kb/_self/backlog/[^/]+\.json")
+ITEM_FILE = re.compile(r"kb/_self/backlog/[^/]+\.json")  # matched against matched_path(): lower-case
 GATE_KEYS = re.compile(r'"(answer|by)"\s*:')
 
 
@@ -334,6 +334,21 @@ def gate_answers(text):
         return {g.get("id"): (g.get("answer"), g.get("by")) for g in gates if isinstance(g, dict)}
     except (ValueError, AttributeError):
         return None
+
+
+def repeated_gate_id(text):
+    """The first gate id an item file's TEXT holds more than once (readers take the first gate with an id, so a
+    prepended answered copy would hide the real one), else None; also None when TEXT is not an item's JSON."""
+    try:
+        seen = set()
+        for g in json.loads(text).get("gates") or []:
+            gid = g.get("id") if isinstance(g, dict) else None
+            if gid in seen:
+                return gid
+            seen.add(gid)
+    except (ValueError, AttributeError, TypeError):
+        pass
+    return None
 
 
 def edited_text(text, tool, tool_input):
@@ -365,7 +380,8 @@ def item_gate_change(path, tool, tool_input):
         current = None
     before = {} if current is None and tool == "Write" else gate_answers(current or "")
     if tool == "Write":
-        after = gate_answers(tool_input.get("content") or "")
+        applied = tool_input.get("content") or ""
+        after = gate_answers(applied)
     else:
         edits = tool_input.get("edits") if tool == "MultiEdit" else [tool_input]
         for e in edits if isinstance(edits, list) else []:
@@ -375,10 +391,43 @@ def item_gate_change(path, tool, tool_input):
         if applied is None:
             return "its edit cannot be applied to the file's current text"
         after = gate_answers(applied)
+    if repeated_gate_id(applied) is not None:
+        return f"its gates hold the id {repeated_gate_id(applied)!r} more than once"
     if after is None or before is None or any(v != before.get(k, (None, None)) for k, v in after.items()) \
             or any(k not in after and v != (None, None) for k, v in before.items()):
         return "it writes a gate's answer or by field"
     return None
+
+
+def matched_path(rel):
+    """REL (a project path with / separators) as the guard matches it: lower-case, with every leading
+    .claude/worktrees/<name>/ prefix stripped (nested ones too), so a path in a worktree, in another case or in a
+    worktree of a worktree is judged by its place in a project."""
+    low = re.sub(r"/{2,}", "/", rel.replace("\\", "/").lower())
+    while True:
+        m = re.match(r"(?:\./)*\.claude/worktrees/[^/]+/(.+)", low)
+        if not m:
+            return re.sub(r"^(?:\./)+", "", low)
+        low = m.group(1)
+
+
+def existing_path(full):
+    """FULL, or the existing file whose path equals it ignoring case (a case-sensitive file system holds the item
+    under its own spelling); FULL when none."""
+    if os.path.exists(full):
+        return full
+    drive, tail = os.path.splitdrive(os.path.abspath(full))
+    cur = drive + os.sep
+    parts = [x for x in tail.split(os.sep) if x]
+    for part in parts:
+        try:
+            hit = next((n for n in os.listdir(cur) if n.lower() == part.lower()), None)
+        except OSError:
+            return full
+        if hit is None:
+            return full
+        cur = os.path.join(cur, hit)
+    return cur
 
 
 def guard_paths():
@@ -393,9 +442,7 @@ def guard_paths():
 def guarded_file(rel):
     """Why the project path REL is the guard's own or one of guard_paths(), else None. Compared lower-case (a
     case-insensitive file system), and a copy in a worktree under .claude/worktrees/ by its place there."""
-    low = rel.lower()
-    m = re.match(r"\.claude/worktrees/[^/]+/(.+)", low)
-    low = m.group(1) if m else low
+    low = matched_path(rel)
     for g in guard_paths():
         g = g.lower()
         if low == g or (g.endswith("/") and low.startswith(g)) or (g.endswith("_") and low.startswith(g)) \
@@ -424,15 +471,16 @@ def headless_guard(event):
         path = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
         if not isinstance(path, str) or not path:
             raise ValueError("no path")
-        rel, full = repo_path(path)
+        rel, full = repo_path(re.sub(r"/{2,}", "/", path.replace("\\", "/")))
+        low = None if rel is None else matched_path(rel)
         if rel is None:
             why = f"{path} is outside the project"
-        elif any(rx.fullmatch(rel) for rx in GUARDED):
+        elif any(rx.fullmatch(low) for rx in GUARDED):
             why = f"{rel} holds the rules this run works under"
         elif guarded_file(rel):
             why = guarded_file(rel)
-        elif ITEM_FILE.fullmatch(rel):
-            change = item_gate_change(full, tool, tool_input)
+        elif ITEM_FILE.fullmatch(low):
+            change = item_gate_change(existing_path(full), tool, tool_input)
             if not change:
                 return None
             why = f"{rel}: {change}"
