@@ -1,0 +1,33 @@
+{
+  "id": "BG-ay24ps2p",
+  "kind": "bug",
+  "title": "test_autopilot_bound counts every live threading.Timer, so a cancelled deadline timer or another test's timer fails a land gate",
+  "status": "todo",
+  "sprint": "SP-itmjxudu",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "autopilot.supervise joins its deadline Timer after cancelling it (timer.join with a short bound), and test_autopilot_bound checks only the timers its own run started (not a process-wide threading.enumerate), so the test no longer fails under load or beside another test's timer; a test named supervise_joins_deadline_timer plants a slow-to-exit timer. Found by BG-toq44n2c's land gate: 3785 passed, 1 failed on the within-deadline test at line 150. It can fail any runner's land.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -n \"timer.join\" _tools/autopilot.py | grep -q ."
+    ]
+  },
+  "repro_reason": "the failure is a race: a cancelled timer thread is still alive when the test counts threads under load; the text match shows supervise does not join the timer after cancelling it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "supervise_joins_deadline_timer"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot_bound.py"
+  ]
+}
