@@ -2,7 +2,7 @@
   "id": "BG-v7ptowb2",
   "kind": "bug",
   "title": "An item check runs any program, so a headless run can publish or push through backlog.py done, and the check lands on main where every session's intake drift runs it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zihqagoi",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,6 @@
     "_tools/bl_base.py",
     "_tools/test_check_program_allowlist.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
