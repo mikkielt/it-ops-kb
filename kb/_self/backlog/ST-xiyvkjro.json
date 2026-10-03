@@ -2,7 +2,7 @@
   "id": "ST-xiyvkjro",
   "kind": "story",
   "title": "The autopilot runner has its own credentials: a deploy key limited to code/* and main, branch protection on both repos, a separate OS user or the reason it cannot be set up",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -36,5 +36,30 @@
     "_tools/test_autopilot_credentials.py"
   ],
   "notes": "Operator 2026-10-03: a Docker container is preferred to a separate OS user (planned in ST docker story of this sprint). Do the deploy key and branch protection now; SKIP goal part 3 (the OS user, no sudo); record it as replaced by the container plan.",
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "b5848751ca857f10ad19348733a1bca2330f9f73",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "1",
+          "-k",
+          "runner_deploy_key"
+        ],
+        "exit": 0,
+        "sha256": "0940f3b5395353ef"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "selfcheck"
+        ],
+        "exit": 0,
+        "sha256": "d155561c7a2a1604"
+      }
+    ]
+  }
 }
