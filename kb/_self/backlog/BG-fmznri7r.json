@@ -2,7 +2,7 @@
   "id": "BG-fmznri7r",
   "kind": "bug",
   "title": "A closing agent cannot remove the closed sprint's runner worktree and branches, because git worktree remove and git branch -D are denied to agents, so every autopilot sprint leaves them behind",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,28 @@
     "kb/_self/tools.md",
     "kb/_self/autopilot-container.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "5b8bd52dcabdf79e5cf0fab16d16d227f3ea8e4d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "close_removes_runner_leftovers"
+        ],
+        "exit": 0,
+        "sha256": "f28163034d3681e6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if 'def clean_runner_leftovers' in open('_tools/bl_land.py').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
