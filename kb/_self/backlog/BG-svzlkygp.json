@@ -29,7 +29,9 @@
     "_tools/kb_hook.py",
     "_tools/test_headless_guard.py",
     "kb/_self/autopilot.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/autopilot-container.md",
+    "kb/_self/backlog.md"
   ],
   "claimed_by": "mac-third-worker"
 }
