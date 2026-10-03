@@ -568,9 +568,9 @@ def test_workers_capped_env_override_wins_over_the_share(monkeypatch):
 
 def test_workers_capped_default_is_a_share_of_the_cpus_among_live_runs(monkeypatch):
     monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
-    assert tests_py.default_workers(others=0, cpus=12) == 12  # alone: every CPU
+    assert tests_py.default_workers(others=0, cpus=6) == 6  # alone: every CPU up to the cap
     assert tests_py.default_workers(others=1, cpus=12) == 6 and tests_py.default_workers(others=3, cpus=12) == 3
-    assert tests_py.worker_count([], others=2) == max((os.cpu_count() or 1) // 3, 1)
+    assert tests_py.worker_count([], others=2) == max(min((os.cpu_count() or 1) // 3, tests_py.DEFAULT_WORKER_CAP), 1)
     assert tests_py.xdist_args()[0] == "-n"
 
 
