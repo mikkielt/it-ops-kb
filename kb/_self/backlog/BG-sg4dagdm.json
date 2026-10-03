@@ -2,7 +2,7 @@
   "id": "BG-sg4dagdm",
   "kind": "bug",
   "title": "cost --rework reads zero for a sprint whose orchestrator session is still open, because the work sidecar is read only from closed sessions, so the review and the retrospective have no figures",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-nq5avzrl",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
     "_tools/ql_distill.py",
     "_tools/test_cost_open_session.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "seventh-w40"
 }
