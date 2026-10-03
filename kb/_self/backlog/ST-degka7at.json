@@ -19,5 +19,40 @@
   "touches": [
     "kb/_self/reports/autopilot-throwaway.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Should the throwaway probe read a credential?",
+      "options": [
+        "yes",
+        "no"
+      ],
+      "recommendation": "no",
+      "class": "secrets"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Should the throwaway probe push to a remote?",
+      "options": [
+        "yes",
+        "no"
+      ],
+      "recommendation": "no",
+      "class": "push"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Should the throwaway probe change a rule of the agents?",
+      "options": [
+        "yes",
+        "no"
+      ],
+      "recommendation": "no",
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "stage6-probe"
 }
