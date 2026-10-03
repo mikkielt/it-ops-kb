@@ -10,6 +10,7 @@ import bl_authority as a
 GUARD_PATHS = {
     "_tools/autopilot.py": "agents-rule", "_tools/bl_authority.py": "agents-rule", "_tools/bl_bounds.py": "agents-rule",
     "_tools/bl_selfcheck.py": "agents-rule", "_tools/kb_hook.py": "agents-rule", "_tools/kbdecide.py": "agents-rule",
+    "_tools/bl_cost.py": "agents-rule", "_tools/tests.py": "agents-rule", "_tools/conftest.py": "agents-rule",
     ".claude/settings.local.json": "agents-rule", "_tools/kblane.py": "push", "_tools/kg_sync.py": "push",
 }
 WORDINGS = {
@@ -44,9 +45,10 @@ def test_gate_class_covers_the_guard_code_planted_missing_path_fails(monkeypatch
 
 
 def test_gate_class_covers_the_guard_code_by_a_glob():
-    """A glob over the bl_ modules names bl_authority.py, bl_bounds.py and bl_selfcheck.py: agents-rule, closed."""
+    """A glob over the bl_ modules names every bl_ module (the tests run them): agents-rule, closed."""
     assert a.derived_class({"touches": ["_tools/bl_*.py"]}, gate()) == "agents-rule"
-    assert a.derived_class({"touches": ["_tools/bl_plan*.py"]}, gate()) == "design"
+    assert a.derived_class({"touches": ["_tools/bl_plan*.py"]}, gate()) == "agents-rule"
+    assert a.derived_class({"touches": ["_tools/bla*.py"]}, gate()) == "design"
 
 
 def test_gate_class_covers_the_guard_code_ordinary_wordings_stay_design():

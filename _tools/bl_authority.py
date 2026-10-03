@@ -29,11 +29,12 @@ PATHS = {
              ".githooks/"),
     "querylog": ("kb/_querylog/",),
     # the rules agents run under, and the code that guards the autopilot itself: a sprint may not approve a change to
-    # its own runner, gate classes, bounds, self-check, edit guard or decision record
+    # its own runner, gate classes, bounds, self-check, edit guard or decision record, nor to the code the tests run
+    # (the bl_ modules, the test runner and its conftest)
     "agents-rule": ("AGENTS.md", "CLAUDE.md", ".claude/agents/", ".claude/skills/", ".claude/hooks/",
                     ".claude/settings.json", ".claude/settings.local.json", ".claude-plugin/", "_tools/autopilot.py",
-                    "_tools/bl_authority.py", "_tools/bl_bounds.py", "_tools/bl_selfcheck.py", "_tools/kb_hook.py",
-                    "_tools/kbdecide.py", "_tools/backlog.py", "_tools/kbpy"),
+                    "_tools/bl_", "_tools/tests.py", "_tools/conftest.py", "_tools/kb_hook.py", "_tools/kbdecide.py",
+                    "_tools/backlog.py", "_tools/kbpy"),
 }
 SECRET_WORDS = re.compile(r"secret|credential|password|\.env\b|token|private[-_ ]?key", re.I)
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and

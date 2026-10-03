@@ -176,8 +176,7 @@ def test_headless_pretooluse_guard_review_guard_files_are_denied(project, guard,
         assert denied(guard(tool, tool_input)), (tool, path)
 
 
-@pytest.mark.parametrize("path", ["kb/public/x.md", "_tools/tests.py", "_tools/test_headless_guard.py",
-                                  ".claude/worktrees/w1/kb/public/x.md", "_cache/x.json", "x.txt"])
+@pytest.mark.parametrize("path", ["kb/public/x.md", "_tools/kbusage.py", ".claude/worktrees/w1/kb/public/x.md", "_cache/x.json", "x.txt"])
 def test_headless_pretooluse_guard_review_ordinary_project_files_are_allowed(project, guard, path):
     assert guard("Write", {"file_path": path, "content": "x"}) is None
 
@@ -276,7 +275,7 @@ def test_headless_guard_case_dup_worktree_an_existing_duplicate_is_not_waved_thr
 
 
 def test_headless_guard_case_dup_worktree_ordinary_in_project_writes_are_allowed(project, guard):
-    for path in ("kb/public/x.md", "_tools/tests.py", "kb/_self/BACKLOG-notes.md", ".claude/worktrees/a/.claude/worktrees/b/x.md",
+    for path in ("kb/public/x.md", "_tools/kbusage.py", "kb/_self/BACKLOG-notes.md", ".claude/worktrees/a/.claude/worktrees/b/x.md",
                  "kb/_self/backlog/sub/x.txt", "KB/Public/X.md", "x\\y.txt"):
         assert guard("Write", {"file_path": path, "content": "x"}) is None, path
 
@@ -301,3 +300,68 @@ def test_headless_guard_case_dup_worktree_check_refuses_an_item_with_a_duplicate
     assert code == 1 and ep in out and f"gate id {gate['id']!r} is repeated" in out, out
     edit(repo, ep, gates=[gate])
     assert b(repo, "check")[0] == 0
+
+
+# The test runner's code: a headless run plants nothing tests.py would run (the bl_ modules, tests.py, conftest.py, a
+# new test file). An existing _tools/test_*.py file stays editable, as before.
+RUNNER_PATHS = ["_tools/bl_cost.py", "_tools/bl_authority.py", "_tools/bl_x.py", "_tools/tests.py", "_tools/conftest.py"]
+# the path as written, with ./, with .. in it, with backslashes, in upper case
+RUNNER_SPELLINGS = [lambda p: p, lambda p: "./" + p, lambda p: "_tools/../" + p, lambda p: p.replace("/", "\\"),
+                    lambda p: p.upper()]
+
+
+@pytest.fixture
+def runner(project, monkeypatch):
+    """The guard run in process as a headless run of PROJECT, which holds _tools/ with one existing test file."""
+    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(project / "lock"))
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(project))
+    monkeypatch.setenv("KB_HEADLESS_RUNNER", "1")
+    monkeypatch.syspath_prepend(str(TOOLS))
+    (project / "_tools").mkdir()
+    (project / "_tools" / "test_old.py").write_text("def test_a():\n    pass\n", encoding="utf-8")
+    import kb_hook
+
+    def run(tool, tool_input, headless=True):
+        if not headless:
+            monkeypatch.delenv("KB_HEADLESS_RUNNER")
+        return kb_hook.headless_guard({"tool_name": tool, "tool_input": tool_input})
+    return run
+
+
+@pytest.mark.parametrize("path", RUNNER_PATHS)
+@pytest.mark.parametrize("i", range(5))
+@pytest.mark.parametrize("tool", ["Write", "Edit", "MultiEdit"])
+def test_headless_guard_test_runner_code_is_denied_in_every_spelling(runner, tool, i, path):
+    p = RUNNER_SPELLINGS[i](path)
+    ti = {"file_path": p, "content": "x"} if tool == "Write" else {"file_path": p, "old_string": "a", "new_string": "b"} \
+        if tool == "Edit" else {"file_path": p, "edits": [{"old_string": "a", "new_string": "b"}]}
+    out = runner(tool, ti)
+    assert denied(out), (p, out)
+    assert path.split("/")[-1].lower() in out["hookSpecificOutput"]["permissionDecisionReason"].lower()
+    assert runner(tool, ti, headless=False) is None  # the contrast: the operator-present session
+
+
+@pytest.mark.parametrize("tool, ti", [
+    ("Write", {"file_path": "_tools/test_new.py", "content": "import os\n"}),
+    ("Edit", {"file_path": "_tools/test_new.py", "old_string": "", "new_string": "import os\n"}),
+    ("Write", {"file_path": "./_tools/../_tools/TEST_new.py", "content": "x"}),
+    ("Write", {"file_path": "_tools\\test_new.py", "content": "x"}),
+])
+def test_headless_guard_test_runner_new_test_file_is_denied(runner, tool, ti):
+    out = runner(tool, ti)
+    assert denied(out) and "new test file" in out["hookSpecificOutput"]["permissionDecisionReason"], out
+    assert runner(tool, ti, headless=False) is None
+
+
+@pytest.mark.parametrize("tool, ti", [
+    ("Edit", {"file_path": "_tools/test_old.py", "old_string": "pass", "new_string": "assert 1"}),  # exists: allowed
+    ("Write", {"file_path": "_tools/test_old.py", "content": "x"}),
+    ("Write", {"file_path": "kb/test_x.py", "content": "x"}),  # not in _tools/
+    ("Write", {"file_path": "_tools/helper_test.py", "content": "x"}),
+    ("Write", {"file_path": "_tools/blame.py", "content": "x"}),  # no bl_ prefix
+    ("Write", {"file_path": "docs/tests.py.md", "content": "x"}),
+    ("Write", {"file_path": "docs/conftest.py", "content": "x"}),
+    ("Write", {"file_path": "kb/public/bl_notes.md", "content": "x"}),
+])
+def test_headless_guard_test_runner_other_paths_are_not_over_matched(runner, tool, ti):
+    assert not denied(runner(tool, ti))

@@ -52,7 +52,7 @@ def test_gate_class_derivation_hardened_other_paths_and_directories(touch, want)
 
 
 @pytest.mark.parametrize("touches", [
-    ["src/**"], ["docs/readme.md"], ["_tools/bl_plan*.py"], ["_tools/test_x.py"], ["kb/_self/backlog.md"], ["./_tools/bl_plan.py"],
+    ["src/**"], ["docs/readme.md"], ["_tools/ql_store*.py"], ["_tools/test_x.py"], ["kb/_self/backlog.md"], ["./_tools/ql_store.py"],
     ["_tools/kbgitx.py"], ["_toolsx/"], ["kb/public/x.md"], [".claude/other/"], ["src/"], ["_tools/kbgit"],
 ])
 def test_gate_class_derivation_hardened_a_neutral_touch_stays_unclassed(touches):
@@ -163,7 +163,7 @@ def test_gate_class_derivation_hardened_a_start_gate_is_the_strictest_over_its_i
 def test_gate_class_derivation_hardened_a_start_gate_of_docs_and_tool_items_may_be_answered():
     sp = {"id": "SP-aaaaaaaa", "kind": "sprint", "touches": []}
     start = {"id": "start", "kind": "blocking", "question": "Approve?", "options": ["approve"]}
-    members = [{"touches": ["kb/_self/x.md"]}, {"touches": ["src/**", "_tools/bl_plan*.py"]}]
+    members = [{"touches": ["kb/_self/x.md"]}, {"touches": ["src/**", "_tools/ql_store*.py"]}]
 
     def may(ms):
         return bl_authority.autopilot_may_answer(bl_authority.sprint_scope(sp, start, ms), start)
