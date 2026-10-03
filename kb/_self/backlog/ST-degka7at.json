@@ -11,8 +11,8 @@
     {
       "run": [
         "python3",
-        "-c",
-        "import sys; sys.exit(0)"
+        "_tools/backlog.py",
+        "check"
       ]
     }
   ],
