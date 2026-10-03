@@ -182,14 +182,33 @@ def git_ok(repo, *args):
     return subprocess.run(["git", *args], cwd=repo, capture_output=True).returncode == 0
 
 
+RUNNER_KEY_ENV = "KB_RUNNER_DEPLOY_KEY"  # the runner's deploy key file; a test points it at a stub
+RUNNER_KEY_DEFAULT = "~/.config/it-ops-kb/runner_deploy_key"  # outside every clone (kb/_self/autopilot-test.md)
+SYSTEM_SSH_CONFIG = "/etc/ssh/ssh_config"  # read alone (with its ssh_config.d includes), never ~/.ssh/config
+
+
+def runner_ssh_command(environ):
+    """The GIT_SSH_COMMAND of the claude child: ssh with only the runner's deploy key (RUNNER_KEY_ENV, else
+    RUNNER_KEY_DEFAULT), no agent and the system ssh config alone (SYSTEM_SSH_CONFIG, its timeouts kept; never the
+    user's ~/.ssh/config, whose IdentityFile lines could name the operator's key), so git never falls back to the
+    operator's ~/.ssh keys. Without the key file it offers no key at all: a push fails instead of using the operator's
+    identity."""
+    import shlex
+    key = os.path.expanduser(environ.get(RUNNER_KEY_ENV) or RUNNER_KEY_DEFAULT)
+    config = SYSTEM_SSH_CONFIG if os.path.isfile(SYSTEM_SSH_CONFIG) else "/dev/null"
+    base = f"ssh -F {config} -o IdentitiesOnly=yes -o IdentityAgent=none"
+    return f"{base} -i {shlex.quote(key)}" if os.path.isfile(key) else f"{base} -o IdentityFile=/dev/null"
+
+
 def child_env(environ=None):
     """The environment of the claude child: ENVIRON (the runner's own when None) without CREDENTIAL_NAMES, the
-    CREDENTIAL_PREFIXES and any name CREDENTIAL_RE matches, except the MODEL_AUTH_PREFIXES; GIT_TERMINAL_PROMPT=0
-    and HEADLESS_ENV set."""
-    env = {k: v for k, v in (os.environ if environ is None else environ).items()
-           if k.startswith(MODEL_AUTH_PREFIXES)
-           or not (k.upper() in CREDENTIAL_NAMES or k.upper().startswith(CREDENTIAL_PREFIXES) or CREDENTIAL_RE.search(k))}
-    return {**env, "GIT_TERMINAL_PROMPT": "0", HEADLESS_ENV: "1"}
+    CREDENTIAL_PREFIXES and any name CREDENTIAL_RE matches, except the MODEL_AUTH_PREFIXES; GIT_TERMINAL_PROMPT=0,
+    HEADLESS_ENV and GIT_SSH_COMMAND (runner_ssh_command: the deploy key only) set, GIT_SSH dropped."""
+    source = os.environ if environ is None else environ
+    env = {k: v for k, v in source.items()
+           if k != "GIT_SSH" and (k.startswith(MODEL_AUTH_PREFIXES) or not (
+               k.upper() in CREDENTIAL_NAMES or k.upper().startswith(CREDENTIAL_PREFIXES) or CREDENTIAL_RE.search(k)))}
+    return {**env, "GIT_TERMINAL_PROMPT": "0", HEADLESS_ENV: "1", "GIT_SSH_COMMAND": runner_ssh_command(source)}
 
 
 def block_public_push(root, wt):
