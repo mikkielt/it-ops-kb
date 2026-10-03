@@ -2,7 +2,7 @@
   "id": "BG-mgc5z6hz",
   "kind": "bug",
   "title": "perfcheck ids against the test-id baseline exits 1 on main: 232 ids moved with the backlog split and count as removed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3zuasxl5",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
     "_tools/perfcheck.py",
     "_tools/test_perfcheck_moved.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
