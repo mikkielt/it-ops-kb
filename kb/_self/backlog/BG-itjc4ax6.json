@@ -2,7 +2,7 @@
   "id": "BG-itjc4ax6",
   "kind": "bug",
   "title": "A headless runner's querylog.py launch starts a detached distill outside the runner's process group and deadline, which can apply --push to main",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-j6hh2ib2",
   "priority": "P3",
@@ -41,5 +41,30 @@
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "479d1bb6b8edc16f67f179a3c348ceded9550f59",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "2",
+          "-k",
+          "launch_skipped_when_headless"
+        ],
+        "exit": 0,
+        "sha256": "859173cc09d986f7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import ql_distill;sys.exit(0 if hasattr(ql_distill,'HEADLESS_ENV') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
