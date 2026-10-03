@@ -2,7 +2,7 @@
   "id": "ST-lptu6q7g",
   "kind": "story",
   "title": "Review sprint: Follow-ups from the overnight reviews",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-nq5avzrl",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "seventh-review"
+  "evidence": {
+    "commit": "5557b082fe80c29e9a9673fde5a1187a8ea61dc2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "6c17644f4d783db9"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "884011f691952f2b"
+      }
+    ]
+  }
 }
