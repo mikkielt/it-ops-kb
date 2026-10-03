@@ -2,7 +2,7 @@
   "id": "ST-6hquudym",
   "kind": "story",
   "title": "The scratch file of the first supervised run exists",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7kbrqaol",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/_self/reports/autopilot-throwaway.md"
-  ]
+  ],
+  "claimed_by": "runner-SP-7kbrqaol"
 }
