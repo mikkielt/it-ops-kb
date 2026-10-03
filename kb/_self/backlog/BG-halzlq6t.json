@@ -2,7 +2,7 @@
   "id": "BG-halzlq6t",
   "kind": "bug",
   "title": "kbingest names_clone_code drops a drive-less rooted Windows path, and tools.md and hosting.md state stale facts about kbingest and kb_http",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3zuasxl5",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,6 @@
     "kb/_self/tools.md",
     "kb/_self/hosting.md",
     ".claude/skills/kb-ingest/SKILL.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }

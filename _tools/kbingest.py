@@ -915,14 +915,25 @@ def under_worktree(path, root):
     return False
 
 
+def drive_less_rooted(piece):
+    """True on Windows path semantics when PIECE is rooted but names no drive and is not UNC: one `\\` or `/` first,
+    then no second separator (`\\Users\\x`, HOMEPATH). Such a piece is not `os.path.isabs` in older Pythons, and the
+    tops are drive-qualified, so it cannot lie inside one."""
+    return (os.path.sep == "\\" and piece[:1] in ("\\", "/") and piece[1:2] not in ("\\", "/")
+            and not os.path.splitdrive(piece)[0])
+
+
 def names_clone_code(value, tops):
     """True when the environment value VALUE names code of the clone: a path inside one of TOPS (the worktree and the
     source clone, None ones skipped), or a relative one with a folder part (`tools/w`, `./hook.js`), which the child
     resolves against its working folder, the worktree. VALUE is split on the path-list separator, white space, `=`
     and quotes, so `--require=/clone/hook.js` and a list of paths all show their pieces; an absolute piece counts when
-    it lies inside a top."""
+    it lies inside a top. A drive-less rooted piece on Windows (`drive_less_rooted`: HOMEPATH `\\Users\\x`) is exempt: it
+    is no relative path, and no top is drive-less; a UNC piece (`\\\\server\\share`) is not exempt."""
     for piece in re.split("[\\s=\"'" + re.escape(os.pathsep) + "]+", value):
         if not piece:
+            continue
+        if drive_less_rooted(piece):
             continue
         if os.path.isabs(piece):
             if any(top is not None and under_worktree(piece, top) for top in tops):
