@@ -11,6 +11,10 @@ The kb-sprint skill tells the orchestrator when to run each form.
                                `inflow-guard` (a cap of the report is passed) or `no-ready` (no item of SP is
                                ready that is not at its rework cap). Exit 1 when it stops, 0 when work goes on; the
                                first line is `bounds: stop CAUSE: DETAIL` or `bounds: go: ...`, which the digest quotes
+  bounds reset-runs --sprint SP
+                               clears the sprint's run history (runs.jsonl) once the operator has fixed what made its
+                               runs land nothing, so `no-progress` no longer stops it; it deletes the file, says how
+                               many runs it held, and a second call finds none
   bounds file --origin review|retro|mid-sprint --sprint SP --title T --goal G --evidence KIND:REF
               [--kind story|bug] [--severity S --repro CMD] [--check CMD] [--touch GLOB]
                                what a review, a retro or a mid-sprint finding becomes: an item only when it names a
@@ -66,7 +70,7 @@ OPEN_DRAFTS_MAX = 60
 ORIGINS = ("review", "retro", "mid-sprint", "intake")
 RETRO_FREE_ORIGINS = ("review", "retro")  # a sprint made only of items these filed has no retro of its own
 EVIDENCE_KINDS = ("commit", "test", "ops", "fingerprint")
-MODES = ("report", "stop", "file")
+MODES = ("report", "stop", "file", "reset-runs")
 NO_PROGRESS_RUNS = 2  # consecutive runs of a sprint that landed nothing, the last ones, after which it is not restarted
 STOPS = ("sprint-budget", "no-progress", "inflow-guard", "no-ready")  # the causes `stop` names, in the order it reports them
 ORIGIN_LINK = re.compile(r"origin (review|retro|mid-sprint) (SP-[a-z2-7]{8})")
@@ -570,7 +574,8 @@ def file_intake(bl, a, found, failures=()):
 
 
 def args_bounds(p):
-    p.add_argument("mode", nargs="?", choices=MODES, default="report", help="report (default), stop or file")
+    p.add_argument("mode", nargs="?", choices=MODES, default="report",
+                   help="report (default), stop, file or reset-runs")
     p.add_argument("--sprint", help="the sprint to report on, to stop on, or the one a finding came from")
     p.add_argument("--budget", type=int, help="stop: the items the run may land (the runner's --landed)")
     p.add_argument("--landed", type=int, default=0, help="stop: the items landed so far")
@@ -590,6 +595,18 @@ def args_bounds(p):
                    help="file: commit:<sha>, test:<test id> or ops:<row id> (repeatable)")
 
 
+def reset_runs(bl, sprint):
+    """Delete SPRINT's run history (bl_base.runs_path) and return how many lines it held: 0 when there is none, so a
+    second call changes nothing."""
+    path = bl_base.runs_path(bl.root, sprint)
+    try:
+        held = sum(1 for ln in path.read_bytes().splitlines() if ln.strip())
+    except FileNotFoundError:
+        return 0
+    path.unlink()
+    return held
+
+
 def cmd_bounds(bl, a):
     if a.mode == "file":
         file_finding(bl, a)
@@ -598,6 +615,12 @@ def cmd_bounds(bl, a):
         bl_base.need(bl, a.sprint)
         if bl.items[a.sprint].get("kind") != "sprint":
             raise Rejected(f"bounds: {bl.label(a.sprint)} is not a sprint")
+    if a.mode == "reset-runs":
+        if not a.sprint:
+            raise Rejected("bounds reset-runs: --sprint SP is required")
+        n = reset_runs(bl, a.sprint)
+        say(f"bounds: reset-runs {a.sprint}: cleared {n} run(s)")
+        return 0
     rows = ops_rows(bl.root)
     if a.mode == "stop":
         if not a.sprint:
