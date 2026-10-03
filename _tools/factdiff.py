@@ -1211,6 +1211,14 @@ def last_capture(url):
     return f"https://web.archive.org/web/{rows[-1][0]}/{url}" if len(rows) > 1 else ""
 
 
+def part_text(p, ids=None):
+    """One parsed tag part as it is written: its kind, then its source ids (`ids` replaces them), or the id of its
+    DECISION or LOG (kept apart from `ids` by parse_tag), then `: note`."""
+    refs = p["ids"] if ids is None else ids
+    ident = ", ".join(refs) or p.get("decision") or p.get("log") or ""
+    return f"{p['kind']} {ident}".strip() + (f": {p['note']}" if p["note"] else "")
+
+
 def drop_citation(path, key, sid, why):
     """In the fact `key` of a root file: remove `sid` from its tag, or turn the part into `UNK: why` when `sid` was its
     only id. True when the file changed."""
@@ -1229,9 +1237,9 @@ def drop_citation(path, key, sid, why):
             for p in parts:
                 if sid in p["ids"]:
                     ids = [i for i in p["ids"] if i != sid]
-                    out.append(f"{p['kind']} {', '.join(ids)}" + (f": {p['note']}" if p["note"] else "") if ids else f"UNK: {why}")
+                    out.append(part_text(p, ids) if ids else f"UNK: {why}")
                 else:
-                    out.append(f"{p['kind']} {', '.join(p['ids'])}".strip() + (f": {p['note']}" if p["note"] else ""))
+                    out.append(part_text(p))
             lines[j] = lines[j].replace(m, "[" + "; ".join(out) + "]")
             with open(full, "w", encoding="utf-8", newline="") as f:
                 f.write("\n".join(lines))
