@@ -1,0 +1,23 @@
+{
+  "id": "ST-rmgs774t",
+  "kind": "story",
+  "title": "The autopilot test plan says how Stage 2's permission deny rule row is exercised, or says it is only read",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/autopilot-test.md Stage 2 names, for the git checkout REV -- path deny rule, either a command an operator-agent can run that makes a headless agent attempt it and records the refusal, or says that the settings tests read the rule's text and the plan does not exercise it; found by the first supervised run (ST-opjydjc3): the row cannot be run by hand from an operator-present session, so it was recorded as read from the settings only",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_test_deny_rule_row_is_stated"
+      ]
+    }
+  ],
+  "links": [
+    "origin retro SP-7kbrqaol",
+    "evidence commit c77141a25"
+  ]
+}

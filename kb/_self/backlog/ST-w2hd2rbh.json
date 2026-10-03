@@ -1,0 +1,23 @@
+{
+  "id": "ST-w2hd2rbh",
+  "kind": "story",
+  "title": "Stage 2 of the autopilot test plan is safe to run when a guard fails: its attempts name harmless targets",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/autopilot-test.md Stage 2 gives each attempt a target that does no harm if the guard does not refuse it (a remote name that does not exist for sync --push --remote, a merge of an item with no open merge request, a throwaway item and gate for the answer attempts) and says to export the runner's variables in the shell before the commands; found by the first supervised run (ST-opjydjc3): run as written, sync --push --branch scratch and merge BG-xxxxxxxx would push a branch to, or merge a request of, the real integration remote when a guard failed, and the variables as a command prefix did not work in zsh",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_test_stage2_targets_are_harmless"
+      ]
+    }
+  ],
+  "links": [
+    "origin retro SP-7kbrqaol",
+    "evidence commit c77141a25"
+  ]
+}
