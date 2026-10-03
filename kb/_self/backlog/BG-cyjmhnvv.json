@@ -2,7 +2,7 @@
   "id": "BG-cyjmhnvv",
   "kind": "bug",
   "title": "A kb-worker subagent of a hand-made worktree records no work rows, so cost and rework read zero and land warns",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-nq5avzrl",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
     ".claude/hooks/kb_hook.py",
     "_tools/test_worker_capture.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
