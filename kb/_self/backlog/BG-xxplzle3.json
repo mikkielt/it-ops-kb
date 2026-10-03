@@ -30,7 +30,8 @@
     ".githooks/pre-push",
     "kb/_self/git.md",
     "_tools/test_ops_land.py",
-    "_tools/test_private_label_gaps.py"
+    "_tools/test_private_label_gaps.py",
+    "_tools/test_sync.py"
   ],
   "claimed_by": "mac-third-worker"
 }

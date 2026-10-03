@@ -1662,13 +1662,15 @@ def test_bl_split_kbgit_facade_only():
 
 # ---------------------------------------------------------------- the private paths, named where they are explained
 
-def private_label_gaps(helps, workflow_comment):
+def private_label_gaps(helps, workflow_comment, docs=None):
     """Which texts that explain what never reaches the public home name kb/_querylog without the _logs.csv files
-    kbpublic.PRIVATE_LABEL names beside it (whitespace normalised, since argparse wraps help)."""
+    kbpublic.PRIVATE_LABEL names beside it (whitespace normalised, since argparse wraps help). DOCS maps a name to a text
+    (the pre-push hook comment, the git.md rows) that must name `_logs.csv` itself, whatever else it says."""
     import kbpublic
     out = [name for name, text in helps.items() if "_querylog" in text and "_logs.csv" not in " ".join(text.split())]
     if "_logs.csv" not in workflow_comment:
         out.append("kb.yml kb-public comment")
+    out += [name for name, text in (docs or {}).items() if "_logs.csv" not in " ".join(text.split())]
     assert "_logs.csv" in kbpublic.PRIVATE_LABEL  # the label the help strings name
     return out
 
@@ -1685,8 +1687,44 @@ def kb_yml_public_comment():
     return text.split("kb-public:", 1)[0].rsplit("\n\n", 1)[-1]
 
 
+def hook_private_comment():
+    lines = Path(TOOLS).parent.joinpath(".githooks", "pre-push").read_text(encoding="utf-8").splitlines()
+    return "\n".join(ln for ln in lines if ln.startswith("#"))
+
+
+GIT_MD_PRIVATE_ROWS = {"git.md Publish": "- **Publish.**", "git.md publish/check-public row": "| `python3 _tools/kbgit.py publish",
+                       "git.md guard": "- **The guard:**"}
+
+
+def git_md_private_rows():
+    """The git.md rows that say what stays off the public home, by name: each begins with its marker."""
+    lines = Path(TOOLS).parent.joinpath("kb", "_self", "git.md").read_text(encoding="utf-8").splitlines()
+    out = {}
+    for name, start in GIT_MD_PRIVATE_ROWS.items():
+        rows = [ln for ln in lines if ln.startswith(start)]
+        assert len(rows) == 1, (name, len(rows))
+        out[name] = rows[0]
+    return out
+
+
+def private_docs():
+    return {"pre-push comment": hook_private_comment(), **git_md_private_rows()}
+
+
 def test_private_label_in_help():
     assert private_label_gaps(kbgit_helps(), kb_yml_public_comment()) == []
+
+
+def test_private_label_gaps_hook_comment_and_git_md_rows():
+    """The pre-push comment and the three git.md rows name `_logs.csv` beside kb/_querylog (planted: the old wording
+    that names only kb/_querylog, in each place, is reported by name)."""
+    docs = private_docs()
+    assert all("_querylog" in text for text in docs.values())
+    assert private_label_gaps(kbgit_helps(), kb_yml_public_comment(), docs) == []
+    old = {name: text.replace("_logs.csv", "_gone") for name, text in docs.items()}
+    assert private_label_gaps(kbgit_helps(), kb_yml_public_comment(), old) == list(docs)
+    one = {**docs, "git.md guard": "a ref whose history touches `kb/_querylog/` is refused by the pre-push hook"}
+    assert private_label_gaps(kbgit_helps(), kb_yml_public_comment(), one) == ["git.md guard"]
 
 
 def test_private_label_in_help_planted_querylog_only_fails():
