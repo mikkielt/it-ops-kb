@@ -2,7 +2,7 @@
   "id": "BG-cwhuevxm",
   "kind": "bug",
   "title": "A sprint whose items touch a new _tools/test_*.py file is not refused as operator-present only, so the headless run stalls on the guard that denies that new file",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -31,5 +31,6 @@
     "_tools/test_bl_authority_derivation.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
