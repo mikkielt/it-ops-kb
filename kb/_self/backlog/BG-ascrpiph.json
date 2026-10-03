@@ -2,7 +2,7 @@
   "id": "BG-ascrpiph",
   "kind": "bug",
   "title": "kbgit.py help strings and the kb.yml comment still say the private path is only kb/_querylog",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tt4tibyn",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,28 @@
     ".github/workflows/kb.yml",
     "kb/_self/git.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "b294056cee8dc3358a1ac9d3462a295ba7a719a5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "private_label_in_help"
+        ],
+        "exit": 0,
+        "sha256": "653b4143a07924ec"
+      },
+      {
+        "run": [
+          "sh",
+          "-c",
+          "python3 _tools/kbgit.py -h | grep -q _logs.csv"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
