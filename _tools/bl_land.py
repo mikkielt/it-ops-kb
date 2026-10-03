@@ -18,6 +18,7 @@ from bl_base import (
     scope, waits,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
+import bl_intake
 from bl_intake import ANSI_RE
 
 
@@ -91,6 +92,10 @@ def run_check(root, c):
     codes taken out. A check that names python3 or python runs with the interpreter running this tool: on a host
     whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
     argv = list(c["run"])
+    if os.environ.get(bl_intake.HEADLESS_ENV):  # a headless run's done and land: no shell, git, glab or publish check
+        why = bl_intake.check_program_refusal(argv)
+        if why:
+            return False, None, f"refused in a headless run: {why}"
     if argv and argv[0] in ("python3", "python"):
         argv[0] = sys.executable
     try:
