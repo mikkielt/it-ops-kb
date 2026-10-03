@@ -1,0 +1,34 @@
+{
+  "id": "BG-v75r53iu",
+  "kind": "bug",
+  "title": "intake --file --hook, the async SessionStart form, writes its drafts outside bounds: no origin, no fingerprint evidence, no 60-draft cap",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "hook_intake in _tools/backlog.py (dispatched before the command registry, so bl_bounds.install's wrapper never sees it) files each candidate through the same bounded filing as intake --file (bl_bounds.file_intake: origin intake, the fingerprint as evidence, the near-duplicate merge, the 60-open-draft cap): at the cap it files nothing and still prints nothing and returns 0 as the hook always does; a test named intake_hook_files_through_bounds (new file _tools/test_bl_bounds_intake_hook.py) plants 60 open drafts and a detector finding and sees no draft filed by the hook, and plants a finding below the cap and sees a draft with origin intake; found by BG-mk3e3wwu, which bounded only the command-line --file path",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect;sys.path.insert(0,'_tools');import backlog;src=inspect.getsource(backlog.hook_intake);sys.exit(0 if 'file_intake' in src or 'bl_bounds' in src else 1)"
+    ]
+  },
+  "repro_reason": "the hook runs async at session start, prints nothing and returns 0 whatever happens, so the defect shows only in the drafts it writes; the repro reads hook_intake's source for the bounded filing until the item's own test (intake_hook_files_through_bounds) exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_hook_files_through_bounds"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_bounds.py",
+    "_tools/test_bl_bounds_intake_hook.py",
+    "kb/_self/backlog.md"
+  ]
+}
