@@ -41,7 +41,7 @@ DNS rebinding, and recommends a loopback bind for a local server):
                   to --max-body; one that runs past it gets 413 as an over-long body does, when the limit is
                   reached. The limit counts the data bytes only; the framing (size lines, extensions, trailers) has
                   its own allowance, CHUNK_SLACK (4 KiB) plus CHUNK_FRAME (32 bytes) a chunk, the per-chunk
-                  part capped at a quarter of the limit, one line at most 8 KiB: a body at the limit in chunks of
+                  part capped at a quarter of the limit, and one framing line over 8 KiB (LINE_MAX) gets 413: a body at the limit in chunks of
                   256 bytes or more is served, a flood of tiny chunks or of framing gets 413, and the drain of a
                   refused body is bounded the same way. Any other transfer coding gets 501 Not Implemented; both Transfer-Encoding and
                   Content-Length, or broken chunk framing, get 400 Bad Request
