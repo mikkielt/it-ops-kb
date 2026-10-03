@@ -29,7 +29,8 @@
   "touches": [
     ".claude/settings.json",
     "_tools/test_settings_allow.py",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md"
   ],
   "claimed_by": "mac-first"
 }

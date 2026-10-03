@@ -19,7 +19,11 @@ RUNNER_COMMANDS = [
     "git fetch",
     "git fetch --quiet",
     "git fetch origin",
-    *(f"git {c} *" for c in ("status", "log", "show", "diff", "add", "commit", "rebase", "merge-base", "cherry")),
+    *(f"git {c} *" for c in ("status", "log", "show", "diff", "add", "merge-base", "cherry")),
+    *(f"git commit {o} *" for o in ("-m", "-q", "-F", "--amend")),  # never a bare `git commit *`: --no-verify is denied
+    "git rebase origin/main",  # never `git rebase *`: --exec and -x run any command
+    "git rebase --continue",
+    "git rebase --abort",
     "git checkout -b *",
     "git checkout work/*",
     "git checkout orch/*",
@@ -41,6 +45,10 @@ TICK_COMMANDS = ["python3 _tools/kbdecide.py digest", "python3 _tools/kbdecide.p
 TICK_TOOLS = ["PushNotification", "ToolSearch"]
 DENIED_COMMANDS = ["python3 _tools/kbgit.py publish *", "git push *", "git -C * push *", "git branch -D *",
                    "git worktree remove *", "git checkout -- *"]
+# a rebase that runs a command, and a commit that skips the hooks (--no-verify, or its short form -n): denied whatever
+# allow rule matches the leading words
+REBASE_COMMIT_DENIED = ["git rebase * --exec *", "git rebase * -x *", "git commit * --no-verify*",
+                        "git commit --no-verify*", "git commit * -n *", "git commit -n *"]
 SHELLS = ("Bash", "PowerShell")
 
 
@@ -54,7 +62,8 @@ def runner_problems(perms):
     have = set(allow)
     out = [f"missing {s}({c})" for c in RUNNER_COMMANDS for s in SHELLS if f"{s}({c})" not in have]
     out += [f"missing {t}" for t in RUNNER_TOOLS if t not in have]
-    out += [f"not denied {s}({c})" for c in DENIED_COMMANDS for s in SHELLS if f"{s}({c})" not in deny]
+    out += [f"not denied {s}({c})" for c in DENIED_COMMANDS + REBASE_COMMIT_DENIED for s in SHELLS
+            if f"{s}({c})" not in deny]
     out += [f"missing {s}({c})" for c in TICK_COMMANDS for s in SHELLS if f"{s}({c})" not in have]
     out += [f"missing {t}" for t in TICK_TOOLS if t not in have]
     listed = {f"{s}({c})" for c in RUNNER_COMMANDS + TICK_COMMANDS for s in SHELLS}
@@ -100,7 +109,8 @@ def _allow(f):
 
 
 @pytest.mark.parametrize("plant, want", [
-    (_allow(lambda a: [r for r in a if r != "PowerShell(git rebase *)"]), "missing PowerShell(git rebase *)"),
+    (_allow(lambda a: [r for r in a if r != "PowerShell(git rebase --continue)"]),
+     "missing PowerShell(git rebase --continue)"),
     (_allow(lambda a: [r for r in a if r != "SendMessage"]), "missing SendMessage"),
     (_allow(lambda a: a + ["Bash(git push *)"]), "beyond the list: Bash(git push *)"),
     (_allow(lambda a: a + ["Bash(python3 _tools/kbgit.py *)"]), "beyond the list: Bash(python3 _tools/kbgit.py *)"),
@@ -112,4 +122,23 @@ def _allow(f):
       for c in DENIED_COMMANDS for s in SHELLS],
 ])
 def test_settings_allow_headless_runner_refuses_a_planted_change(plant, want):
+    assert want in runner_problems(plant(permissions(text(".claude/settings.json"))))
+
+
+def test_settings_allow_rebase_commit_narrow():
+    """Rebase and commit are allowed only in the forms a headless run uses, and a rebase that runs a command or a
+    commit that skips the hooks is denied, for both shells."""
+    perms = permissions(text(".claude/settings.json"))
+    assert runner_problems(perms) == []
+    for s in SHELLS:
+        assert f"{s}(git rebase *)" not in perms["allow"] and f"{s}(git commit *)" not in perms["allow"]
+
+
+@pytest.mark.parametrize("plant, want", [
+    *[(_allow(lambda a, r=r: a + [r]), f"beyond the list: {r}")
+      for r in ("Bash(git rebase *)", "PowerShell(git commit *)", "Bash(git rebase -i *)")],
+    *[(lambda p, r=f"{s}({c})": {**p, "deny": [x for x in p["deny"] if x != r]}, f"not denied {s}({c})")
+      for c in REBASE_COMMIT_DENIED for s in SHELLS],
+])
+def test_settings_allow_rebase_commit_narrow_refuses_a_planted_change(plant, want):
     assert want in runner_problems(plant(permissions(text(".claude/settings.json"))))
