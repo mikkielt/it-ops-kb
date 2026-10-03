@@ -48,6 +48,9 @@ SUBCOMMANDS = ("git", "gh", "glab", "docker", "kubectl", "npm", "pip", "pip3", "
 SUBWORD = re.compile(r"[a-z][a-z-]*")
 WORKTREE = re.compile(r"/\.claude/worktrees/[^/]+")
 WORK_BRANCH = re.compile(r"work/((?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8})")  # a worker's branch: `work/` and backlog.py's id
+# a hand-made worker worktree in a command: `<clone>/.claude/worktrees/<id>` (a worker whose working directory stays its
+# session's, so no record of it names a work branch)
+WORK_WORKTREE = re.compile(r"[/\\]\.claude[/\\]worktrees[/\\]((?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8})(?![\w-])")
 TOOL_GROUP = re.compile(r"kb_\w{1,40}|docs:(?:microsoft-learn|claude-code-docs|mcp-docs)|mcp:other|other|"
                         + "|".join(BUILTIN))
 
@@ -268,13 +271,24 @@ def read_all(path):
 def work_item(records):
     """The item id of a subagent transcript's records: the one `work/<id>` branch they name in `gitBranch` (the
     branch a worker's worktree is on; a worker's earlier records name the branch it started on, which is no work
-    branch). None when they name none or two different ones. The branch is read in memory; only the id leaves."""
+    branch). A worker whose worktree was made by hand keeps its session's working directory, so no record names a work
+    branch: then the one item whose `.claude/worktrees/<id>` directory its shell commands name. None when they name
+    none or two different ones. The branch and the commands are read in memory; only the id leaves."""
     ids = set()
     for r in records:
         b = r.get("gitBranch")
         m = WORK_BRANCH.fullmatch(b) if isinstance(b, str) else None
         if m:
             ids.add(m.group(1))
+    if ids:
+        return next(iter(ids)) if len(ids) == 1 else None
+    for r in records:
+        msg = r.get("message")
+        for block in msg.get("content") if isinstance(msg, dict) and isinstance(msg.get("content"), list) else ():
+            cmd = block.get("input", {}).get("command") if isinstance(block, dict) and block.get("type") == "tool_use" \
+                and isinstance(block.get("input"), dict) else None
+            if isinstance(cmd, str):
+                ids.update(WORK_WORKTREE.findall(cmd))
     return next(iter(ids)) if len(ids) == 1 else None
 
 
