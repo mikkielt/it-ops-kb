@@ -1,0 +1,37 @@
+{
+  "id": "BG-halzlq6t",
+  "kind": "bug",
+  "title": "kbingest names_clone_code drops a drive-less rooted Windows path, and tools.md and hosting.md state stale facts about kbingest and kb_http",
+  "status": "todo",
+  "sprint": "SP-3zuasxl5",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbingest.names_clone_code exempts a drive-less rooted path on nt (HOMEPATH, \\Users\\x) as the docs promise, with a test named names_clone_code_drive_less_rooted that plants HOMEPATH through ntpath; the tools.md kbingest map row lists registry.credential-provider, registries.<name>.credential-provider, global-credential-providers and doc.browser; kb_http.py and hosting.md say the framing allowance binds at about 4.1 KiB (CHUNK_SLACK), not 8 KiB. Found by the SP-7irdeeel review (D2, D3 and a stale statement).",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -n drive_less_rooted _tools/kbingest.py | grep -q ."
+    ]
+  },
+  "repro_reason": "the Windows path case needs ntpath semantics that a repro on this Mac cannot run; the text match shows no drive-less rooted exemption",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "names_clone_code_drive_less_rooted"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest_windows.py",
+    "_tools/kb_http.py",
+    "kb/_self/tools.md",
+    "kb/_self/hosting.md",
+    ".claude/skills/kb-ingest/SKILL.md"
+  ]
+}
