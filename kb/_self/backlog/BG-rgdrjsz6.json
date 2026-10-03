@@ -1,0 +1,34 @@
+{
+  "id": "BG-rgdrjsz6",
+  "kind": "bug",
+  "title": "A run that landed an item through the code lane records and prints landed 0, because the count reads the runner worktree's HEAD and the done commit is only on origin/main",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "run_landed and runner-status count the sprint items whose done commits lie between the run's start and the integration main it landed them on (origin/main after a fetch, not the runner branch HEAD), so a run that landed one item through a code/<id> merge request records landed 1 in runs.jsonl and prints landed 1; a planted test has the done commit only on origin/main; found by the first supervised run (ST-opjydjc3): the run stopped with cause landed-limit while runs.jsonl and runner-status said landed 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import base64;exec(base64.b64decode('aW1wb3J0IHN1YnByb2Nlc3MsIHN5cywgdGVtcGZpbGUsIHR5cGVzCnN5cy5wYXRoLmluc2VydCgwLCAiX3Rvb2xzIikKaW1wb3J0IGF1dG9waWxvdApkID0gdGVtcGZpbGUubWtkdGVtcCgpCmcgPSBsYW1iZGEgKmE6IHN1YnByb2Nlc3MucnVuKFsiZ2l0IiwgIi1jIiwgInVzZXIubmFtZT10IiwgIi1jIiwgInVzZXIuZW1haWw9dEBleGFtcGxlLmNvbSIsICphXSwgY3dkPWQsIGNoZWNrPVRydWUsIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkuc3Rkb3V0LnN0cmlwKCkKZygiaW5pdCIsICItcSIsICItYiIsICJvcmNoIikKZygiY29tbWl0IiwgIi1xIiwgIi0tYWxsb3ctZW1wdHkiLCAiLW0iLCAic3RhcnQiKQpzdGFydCA9IGcoInJldi1wYXJzZSIsICJIRUFEIikKZygiY29tbWl0IiwgIi1xIiwgIi0tYWxsb3ctZW1wdHkiLCAiLW0iLCAiY2hvcmUoYmFja2xvZyk6IGNsYWltIFNULWFhYWFhYWFhIHhcblxuS0ItV29yazogU1QtYWFhYWFhYWEiKQpoZWFkID0gZygicmV2LXBhcnNlIiwgIkhFQUQiKQpnKCJjb21taXQiLCAiLXEiLCAiLS1hbGxvdy1lbXB0eSIsICItbSIsICJjaG9yZShiYWNrbG9nKTogZG9uZSBTVC1hYWFhYWFhYSB4XG5cbktCLVdvcms6IFNULWFhYWFhYWFhIikKZygidXBkYXRlLXJlZiIsICJyZWZzL3JlbW90ZXMvb3JpZ2luL21haW4iLCBnKCJyZXYtcGFyc2UiLCAiSEVBRCIpKQpnKCJyZXNldCIsICItcSIsICItLWhhcmQiLCBoZWFkKQpibCA9IHR5cGVzLlNpbXBsZU5hbWVzcGFjZShzcHJpbnRfaXRlbXM9bGFtYmRhIHM6IFsiU1QtYWFhYWFhYWEiXSkKbiA9IGF1dG9waWxvdC5ydW5fbGFuZGVkKGQsIGJsLCAiU1AteHh4eHh4eHgiLCBzdGFydCkKcHJpbnQoImxhbmRlZCBjb3VudGVkOiIsIG4pCnN5cy5leGl0KDAgaWYgbiA9PSAxIGVsc2UgMSkK'))"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "run_landed_counts_origin_main"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot_run_landed.py",
+    "kb/_self/autopilot.md",
+    "kb/_self/tools.md"
+  ]
+}

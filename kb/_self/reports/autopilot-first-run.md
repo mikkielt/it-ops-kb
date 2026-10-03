@@ -30,6 +30,8 @@ Scope given by the manager: the host stages only; the container stages are skipp
 | 0 dry look at a tick | `autopilot.py status`, `backlog.py next --sprint SP --all`, `backlog.py bounds stop --sprint SP` | PASS | `status` exit 0 with its sections; `next` names `ST-6hquudym`; `bounds: go: 1 item(s) ready of SP-7kbrqaol`, exit 0 |
 | 1 one runner, watched | `autopilot.py runner start SP-7kbrqaol --landed 1`, `runner-status` | PASS by the plan's words, FAIL in effect | exit 0, cause `blocked`, `landed 0`; the worktree `.claude/worktrees/runner-SP-7kbrqaol`, the stream, `status.json` and the tool-written `runs.jsonl` line are there; `runner-status` is under 1000 characters; the runner claimed the item, pushed its claim to the integration main, started a worker, was refused, released the item and pushed the release (the push path works) |
 | 1 again, in a real clone | a standalone clone of the integration remote (own `.git`, clean on `main`, commit hooks installed, `check.py` errors=0, `fetch.py --offline` mismatch=0, `selfcheck` 0 failed 1 unknown, a focused test created the venv), then the same `runner start SP-7kbrqaol --landed 1` | PASS by the plan's words, FAIL in effect | exit 0, cause `blocked`, `landed 0`, about 90 seconds; claim and release pushed to the integration main again; the worker's worktree was now `.claude/worktrees/agent-...` of that clone, and its Write was denied by the headless guard as "outside the project" |
+| 1 third run, after the guard fix `BG-svzlkygp` | `runner start SP-7kbrqaol --landed 1` from the standalone clone, host load 8 | PASS with one defect | exit 0, cause `landed-limit`, about 3 minutes; the runner claimed `ST-6hquudym`, the worker wrote the scratch file (the guard now lets it), committed, the runner landed it through the `code/ST-6hquudym` merge request (merged, no `merge_error`) and a second `land` made the item done on the integration main; the change on main is exactly the scratch file and the item file; but `runner-status` and the tool-written `runs.jsonl` line say `landed 0` for that run: filed `BG-rgdrjsz6` |
+| 3 land and worker worktrees | read from the same run's stream and the clone afterwards | FAIL | the first `land` stopped at step `branch`: `it is not locked but not under .claude/worktrees/ of the clone`, so no `land: removed the finished worker's worktree` line; the runner asked the worker to `git checkout --detach` and landed on the second pass (the plan's abort is a repeated stop: it did not repeat); the branch `work/ST-6hquudym` was deleted after landing, but the worker's `agent-*` worktree is still there: filed `BG-lv3tuhic` |
 
 ### Stage 1 finding
 
@@ -39,4 +41,19 @@ The worker the runner started got its isolation worktree under the operator's ma
 
 The linked-worktree diagnosis above was a cause but not the cause. In a standalone clone the worker is still refused: the guard's project is the runner's own worktree (`CLAUDE_PROJECT_DIR` = `.claude/worktrees/runner-SP-xxxxxxxx`), and the Agent tool puts a worker's isolation worktree at `.claude/worktrees/agent-...` of the clone's root, a sibling of the runner's worktree and so outside the project. Every worker of every headless runner is refused its first write, in any clone, so no item can land. Filed `BG-svzlkygp` (S1, SP-rq4t477t) with a repro that runs the guard on exactly that pair of paths and fails now. `BG-7tqa65mp` stays filed with its notes corrected; the manager decides whether to keep it.
 
-Process note, for the retrospective: the runner's release commit took three amends because the commit-msg hook asks for `KB-Work` in the trailer paragraph but refuses it for an item that is no longer claimed.
+### Residual of the guard fix (from its author)
+
+After `BG-svzlkygp` a directory `agent-*` directly under the clone's `.claude/worktrees` counts as the project for the runner's guard. Any such directory is trusted, and the `agent-*` worktrees are not isolated from each other: one worker can write into another's. Other names, other clones, `..` and symlinks stay denied, and the guarded paths stay denied inside them.
+
+### Bugs filed by the run
+
+- `BG-7tqa65mp` (S2, kept, waits): selfcheck and runner start refuse a manager clone that is a linked worktree of another checkout.
+- `BG-svzlkygp` (S1, fixed by another session and on main): the guard refused every worker's write in its sibling worktree.
+- `BG-rgdrjsz6` (S3): a run that landed through the code lane records and prints `landed 0`; the count reads the runner worktree's `HEAD`, the done commit is on `origin/main`.
+- `BG-lv3tuhic` (S2): `land` takes the runner's own worktree as the clone, so it never removes a worker's sibling worktree.
+
+### Retrospective findings
+
+1. The commit-msg hook asks for `KB-Work` in the last paragraph but refuses it for an item that is not claimed, and the claimed-item message does not say a release or a bug-filing commit must name an item the committer holds: the runner's release commit took three amends (first with the trailer after a blank line, then with an unclaimed `KB-Work`, then without it), and a commit that filed a new bug took one more.
+2. A blocked run leaves the worker's `work/<id>` branch and `worktree-agent-*` branches in the clone; the next worker's `git checkout -b work/<id>` then fails ("a branch named ... already exists") and its `-B` retry silently resets the old branch. Releasing an item should remove an empty `work/<id>` branch, or the worker's brief should say to use `-B` knowingly.
+3. `land` refuses a branch that is checked out in the worker's worktree, and the runner has no way to remove that worktree itself (agents' shells may not run `git worktree remove`), so it spends a message round trip asking the worker to detach; the worker brief should tell the worker to run `git checkout --detach` after its last commit, until `BG-lv3tuhic` makes `land` do it.
