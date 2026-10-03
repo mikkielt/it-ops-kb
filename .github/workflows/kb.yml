@@ -60,8 +60,8 @@ jobs:
       - run: pip install --quiet uv
       - run: python3 _tools/stress_test.py
 
-  # The public home never gets the query log's store (kb/_self/git.md, Public home): a pushed ref whose history
-  # touches kb/_querylog fails. Runs only where the repository variable KB_PUBLIC_HOME is `true`; a clone hosted
+  # The public home never gets the query log's store or a root's observed signals (kb/_self/git.md, Public home): a
+  # pushed ref whose history touches kb/_querylog or any _logs.csv fails. Runs only where the repository variable KB_PUBLIC_HOME is `true`; a clone hosted
   # elsewhere without it keeps its store.
   kb-public:
     if: vars.KB_PUBLIC_HOME == 'true'

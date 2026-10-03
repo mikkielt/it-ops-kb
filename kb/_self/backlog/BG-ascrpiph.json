@@ -2,7 +2,7 @@
   "id": "BG-ascrpiph",
   "kind": "bug",
   "title": "kbgit.py help strings and the kb.yml comment still say the private path is only kb/_querylog",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tt4tibyn",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_sync.py",
     ".github/workflows/kb.yml",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }

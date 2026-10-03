@@ -1658,3 +1658,37 @@ def test_bl_split_kbgit_facade_only():
     assert facade_extras(kbgit_src + "\n\ndef classify(arg):\n    return None\n") == {"classify"}
     fat = "def cmd_lane(a):\n" + "    x = 1\n" * FACADE_WRAPPER_LINES + "    return x\n"
     assert facade_extras(fat) == {"cmd_lane"}
+
+
+# ---------------------------------------------------------------- the private paths, named where they are explained
+
+def private_label_gaps(helps, workflow_comment):
+    """Which texts that explain what never reaches the public home name kb/_querylog without the _logs.csv files
+    kbpublic.PRIVATE_LABEL names beside it (whitespace normalised, since argparse wraps help)."""
+    import kbpublic
+    out = [name for name, text in helps.items() if "_querylog" in text and "_logs.csv" not in " ".join(text.split())]
+    if "_logs.csv" not in workflow_comment:
+        out.append("kb.yml kb-public comment")
+    assert "_logs.csv" in kbpublic.PRIVATE_LABEL  # the label the help strings name
+    return out
+
+
+def kbgit_helps():
+    def run(*a):
+        return subprocess.run(["python3", str(Path(TOOLS, "kbgit.py")), *a], capture_output=True, text=True,
+                              encoding="utf-8").stdout
+    return {"kbgit.py -h": run("-h"), "publish -h": run("publish", "-h"), "check-public -h": run("check-public", "-h")}
+
+
+def kb_yml_public_comment():
+    text = Path(TOOLS).parent.joinpath(".github", "workflows", "kb.yml").read_text(encoding="utf-8")
+    return text.split("kb-public:", 1)[0].rsplit("\n\n", 1)[-1]
+
+
+def test_private_label_in_help():
+    assert private_label_gaps(kbgit_helps(), kb_yml_public_comment()) == []
+
+
+def test_private_label_in_help_planted_querylog_only_fails():
+    helps = {**kbgit_helps(), "publish -h": "push the projection of the integration main (no kb/_querylog)"}
+    assert private_label_gaps(helps, "touches kb/_querylog fails") == ["publish -h", "kb.yml kb-public comment"]
