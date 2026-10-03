@@ -31,7 +31,8 @@
     "_tools/kbdecide.py",
     "_tools/test_backlog_record_clean.py",
     "kb/_self/tools.md",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-autopilot/SKILL.md"
   ],
   "gates": [
     {
@@ -43,7 +44,7 @@
         "always commit"
       ],
       "recommendation": "--commit flag (the tick passes it)",
-      "class": "design",
+      "class": "agents-rule",
       "answer": "--commit flag (the tick passes it)",
       "by": "agent"
     }
