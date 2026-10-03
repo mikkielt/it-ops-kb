@@ -30,7 +30,9 @@
     "_tools/autopilot.py",
     "_tools/bl_land.py",
     "_tools/test_autopilot_status_order.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_autopilot.py",
+    "_tools/test_autopilot_runner_ends.py"
   ],
   "claimed_by": "mac-sixth"
 }
