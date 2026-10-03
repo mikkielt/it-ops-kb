@@ -1,0 +1,24 @@
+{
+  "id": "ST-xiyvkjro",
+  "kind": "story",
+  "title": "The autopilot runner has its own credentials: a deploy key limited to code/* and main, branch protection on both repos, a separate OS user or the reason it cannot be set up",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The operator authorized an agent to set this up (message of 2026-10-03, recorded here; it covers this item only). Done when: (1) a deploy key for the runner exists on the integration project whose push is limited to main and code/* by protected-branch rules set through glab api, the private key lives outside the repository and outside every clone (never committed, never printed), the runner child uses it instead of the operator's credentials; (2) protected-branch rules on both repositories deny force-push and deletion of main and refuse any push to main by the runner key except through the lane the kb already uses, and the public GitHub repository takes no push from the runner key at all; (3) a separate OS user for the runner exists, or the item records exactly which step needs the human's sudo password and stops there; (4) autopilot.py selfcheck and a planted failure for each (a push to another branch, a push to the public remote, a read of the operator's home) show the runner refused, using placeholders only; (5) every setting and its place is listed for the operator in kb/_self/autopilot-test.md's pre-run checklist, with how to undo it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/autopilot.py",
+        "selfcheck"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/autopilot-test.md",
+    "kb/_self/backlog.md",
+    "kb/_self/hosting.md"
+  ]
+}
