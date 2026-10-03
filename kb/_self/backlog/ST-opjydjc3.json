@@ -2,7 +2,7 @@
   "id": "ST-opjydjc3",
   "kind": "story",
   "title": "The first supervised autopilot run is executed stage by stage by an operator-agent, and every failure is filed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,6 @@
   ],
   "depends_on": [
     "ST-eoxpdaep"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
