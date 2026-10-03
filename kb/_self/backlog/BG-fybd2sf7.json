@@ -2,7 +2,7 @@
   "id": "BG-fybd2sf7",
   "kind": "bug",
   "title": "A headless run can start nested runners with autopilot.py runner start, whose claude child outlives the outer run's deadline",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zihqagoi",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,6 @@
     "_tools/autopilot.py",
     "_tools/test_autopilot_headless.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
