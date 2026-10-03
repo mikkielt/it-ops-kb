@@ -699,6 +699,9 @@ def cmd_answer(bl, a):
     g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
     if g is None:
         raise Refused(f"{bl.label(iid)} has no gate {a.gate}")
+    if bl_authority.headless() and a.by == "autopilot":  # a runner answers --by agent only: the autopilot's own answer is the manager's
+        raise Rejected(f"gate {a.gate} of {bl.label(iid)} unchanged: --by autopilot is refused while "
+                       f"{bl_authority.HEADLESS_ENV} is set: a headless runner answers --by agent only")
     if bl_authority.headless():  # the parsed values, so no argument order or abbreviation of --by gets past it
         what = "--by operator" if a.by == "operator" else "--confirm" if a.confirm and a.by != "autopilot" else ""
         if what:  # --confirm records the operator's confirmation unless --by autopilot
@@ -815,6 +818,19 @@ def appended(old, values):
     return old + [v for i, v in enumerate(values) if v not in old and v not in values[:i]]
 
 
+def reclass_gate(item, gate):
+    """Store the stricter of the gate's class and the one `item`'s touches and the gate's text derive now, so widened
+    touches re-class a gate already written; a class never goes down here. An unanswered provisional gate that
+    becomes one only the operator answers is made blocking, as `gate add` does."""
+    stored = gate.get("class")
+    d = bl_authority.derived_class(item, gate)
+    if stored not in bl_authority.CLASSES or bl_authority.rank(d) < bl_authority.rank(stored):
+        gate["class"] = d
+    if bl_authority.gate_class(item, gate) in bl_authority.AUTOPILOT_REFUSED and gate.get("kind") != "blocking" \
+            and "answer" not in gate:
+        gate["kind"] = "blocking"
+
+
 def cmd_set(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -859,6 +875,9 @@ def cmd_set(bl, a):
                 new[f] = v
         for f in a.clear:
             new.pop(f, None)
+        if "touches" in given or "touches" in a.clear:  # new touches may put a gate in a stricter class: store it
+            for g in new.get("gates", []) or []:
+                reclass_gate(new, g)
 
     if changed_item(bl, iid, edit):
         say(f"set {bl.label(iid)}: {', '.join(named)}")

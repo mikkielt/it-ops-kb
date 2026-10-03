@@ -5,7 +5,7 @@ Every gate has a class, one of CLASSES, listed from the most restricted to the l
 it from the item's `touches` and the gate's question and id: the strictest class any of them names, `design` when none
 does. A class a gate stores (`gate add` writes it) is read as a floor for nothing but the record: the class in force is
 the stricter of the stored and the derived, so an agent that writes a lower class into an item file changes nothing,
-and `lowered` names it for `check`. The autopilot answers every class but AUTOPILOT_REFUSED; the operator answers all.
+and `lowered` names it for `check`. The autopilot answers every class but AUTOPILOT_REFUSED (secrets, push and agents-rule); the operator answers all.
 
 Standard library only; imports `bl_base` and never `backlog`, `bl_check` or `bl_plan`."""
 import datetime
@@ -18,7 +18,7 @@ from bl_base import START_GATE
 
 AUTOPILOT = "autopilot"  # the `by` of an answer the autopilot gave, and its decision maker in kb/_self
 CLASSES = ("secrets", "push", "start", "querylog", "agents-rule", "delete", "design")
-AUTOPILOT_REFUSED = ("secrets", "push")  # the classes only the operator answers
+AUTOPILOT_REFUSED = ("secrets", "push", "agents-rule")  # the classes only the operator answers
 HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # set (non-empty) in every headless runner's environment: kbpublic.HEADLESS_ENV, kbdecide.py's copy
 REVIEW_DAYS = 14  # an autopilot decision's `review_by`: the operator ratifies or supersedes it by then
 
@@ -33,7 +33,7 @@ PATHS = {
     "agents-rule": ("AGENTS.md", "CLAUDE.md", ".claude/agents/", ".claude/skills/", ".claude/hooks/",
                     ".claude/settings.json", ".claude/settings.local.json", ".claude-plugin/", "_tools/autopilot.py",
                     "_tools/bl_authority.py", "_tools/bl_bounds.py", "_tools/bl_selfcheck.py", "_tools/kb_hook.py",
-                    "_tools/kbdecide.py"),
+                    "_tools/kbdecide.py", "_tools/backlog.py", "_tools/kbpy"),
 }
 SECRET_WORDS = re.compile(r"secret|credential|password|\.env\b|token|private[-_ ]?key", re.I)
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
@@ -130,7 +130,7 @@ def autopilot_may_answer(item, gate):
     cls = gate_class(item, gate)
     if gate.get("id") == START_GATE:  # a sprint that changes the push path, secrets or the rules is started by the operator
         held = derived_class(item, {**gate, "id": "", "question": "-"})
-        if held in AUTOPILOT_REFUSED + ("agents-rule",):
+        if held in AUTOPILOT_REFUSED:
             return False, held
     return cls not in AUTOPILOT_REFUSED, cls
 
@@ -161,4 +161,4 @@ def headless_operator_refusal(what):
     """The message that refuses `what` (an act recorded as the operator's) in a headless run; the guard that holds when
     a permission rule's text match misses an argument order or an option abbreviation."""
     return (f"{what} is the operator's and {HEADLESS_ENV} is set: only an operator-present session answers as the "
-            "operator (--by agent, --by autopilot and --provisional are open to a headless run)")
+            "operator (--by agent and --provisional are open to a headless run, --by autopilot is not: a runner answers --by agent only)")

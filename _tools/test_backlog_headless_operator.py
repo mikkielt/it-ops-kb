@@ -88,22 +88,32 @@ def test_backlog_headless_refuses_operator_answers_an_empty_variable_is_unset(th
 
 
 def test_backlog_headless_refuses_operator_answers_keeps_agent_autopilot_and_provisional(throwaway_repo, monkeypatch):
+    """Tightened (test_bl_authority_trust.py): a headless runner answers --by agent and --provisional only; the
+    `--by autopilot` forms it used to keep (--confirm, --answer, --record) now exit 2 with the variable set, the
+    autopilot's answers being the operator-present manager session's."""
     r, bg = throwaway_repo["repo"], throwaway_repo["bg"]
     monkeypatch.setenv(ENV, "1")
     edit(r, bg, gates=[gate_of("Which way?", kind="provisional")])
     code, out = b(r, "answer", bg, "way", "--provisional")
     assert code == 0 and item_json(r, bg)["gates"][0]["by"] == "agent", out
+    before = text_of(r, bg)
     code, out = b(r, "answer", bg, "way", "--confirm", "--by", "autopilot")
-    assert code == 0 and item_json(r, bg)["gates"][0]["by"] == "autopilot", out
+    assert code == 2 and "--by agent only" in out and text_of(r, bg) == before, out
     code, out = b(r, "answer", "--by", "agent", "--answer", "right", bg, "way")
     assert code == 0 and item_json(r, bg)["gates"][0]["by"] == "agent", out
     edit(r, bg, gates=[gate_of("Which way?")])
+    before = text_of(r, bg)
     code, out = b(r, "answer", "--by", "autopilot", "--answer", "right", "--record", bg, "way")
-    assert code == 0 and [d["by"] for d in decisions(r)] == ["autopilot"], out
-    # existing class checks still hold: a push gate is refused to the autopilot with the variable set
+    assert code == 2 and decisions(r) == [] and text_of(r, bg) == before, out
+    # existing class checks still hold with the variable set: a push gate is refused to the autopilot
     edit(r, bg, gates=[gate_of("Push to which remote?")])
     code, out = b(r, "answer", "--by", "autopilot", "--answer", "left", bg, "way")
-    assert code == 2 and "class push" in out, out
+    assert code == 2, out
+    # and with the variable unset the manager session's autopilot answer is recorded as before
+    monkeypatch.delenv(ENV)
+    edit(r, bg, gates=[gate_of("Which way?")])
+    code, out = b(r, "answer", "--by", "autopilot", "--answer", "right", "--record", bg, "way")
+    assert code == 0 and [d["by"] for d in decisions(r)] == ["autopilot"], out
 
 
 def test_backlog_headless_refuses_operator_answers_the_guard_reads_the_parsed_value(throwaway_repo, monkeypatch):

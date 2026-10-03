@@ -106,12 +106,14 @@ def test_autopilot_authority_class_follows_the_touches(touches, cls):
 
 
 def test_autopilot_authority_strictest_class_wins_and_the_start_gate_is_start():
+    """The classes the autopilot may answer no longer hold agents-rule: it joined secrets and push in
+    AUTOPILOT_REFUSED (test_bl_authority_trust.py), so a gate about a rule or a guard file is the operator's."""
     it = {"touches": ["AGENTS.md", "_tools/kbgit.py"]}
     assert bl_authority.derived_class(it, gate_of("Which password?")) == "secrets"
     assert bl_authority.derived_class(it, gate_of("Which name?")) == "push"
     assert bl_authority.derived_class({}, {"id": "start", "question": "Approve?", "options": ["approve", "no"]}) == "start"
     assert [c for c in bl_authority.CLASSES if c not in bl_authority.AUTOPILOT_REFUSED] == [
-        "start", "querylog", "agents-rule", "delete", "design"]
+        "start", "querylog", "delete", "design"]
 
 
 @pytest.mark.parametrize("question,cls", [("Which password do we rotate?", "secrets"), ("Push to which remote?", "push")])
@@ -177,9 +179,11 @@ def test_autopilot_authority_gate_add_stores_the_derived_class(decide):
     assert code == 0 and "unchanged" in out, out
 
 
-@pytest.mark.parametrize("question", ["Which query log mode?", "Which rule goes in AGENTS.md?",
-                                      "Delete the old kb articles?", "Which name for the flag?"])
+@pytest.mark.parametrize("question", ["Which query log mode?", "Delete the old kb articles?",
+                                      "Which name for the flag?"])
 def test_autopilot_authority_answers_the_other_classes(decide, question):
+    """Not "Which rule goes in AGENTS.md?" any more: that gate is class agents-rule, which the autopilot is refused
+    (test_bl_authority_trust.py asserts the refusal)."""
     r, bg = decide["repo"], decide["bg"]
     edit(r, bg, gates=[gate_of(question)])
     code, out = b(r, "answer", bg, "way", "--answer", "left", "--by", "autopilot")
