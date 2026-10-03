@@ -1,6 +1,7 @@
 """land's ops rows (bl_land.py; kb/_self/tools.md, backlog.py land): `backlog.py land` appends one `land.step` row per
 step it runs (item, step token, exit, milliseconds) and one `land.end` row at every end (item, exit, total, lane), and
-warns when the item has no `work` row in this host's spool.
+warns when the item has no `work` row in this host's spool or in the committed work sidecars
+(`kb/_querylog/work`).
 
   ops_land_rows                              a content landing writes a row for fetch, rebase, done and the sync
                                              step, then `land.end` with lane content and exit 0; a stop at a heavy
