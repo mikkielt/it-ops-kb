@@ -1623,6 +1623,8 @@ def main(argv=None):
     OUTPUT_ROOT[0] = a.root
     for s in (sys.stdout, sys.stderr):  # refusals go to stderr; on Windows a pipe defaults to the ANSI code page
         s.reconfigure(encoding="utf-8")
+    if a.cmd in ("red-pipeline", "intake") and a.hook and bl_intake.headless_runner():
+        return 0  # a headless runner's worktree stays clean: these hooks write uncommitted drafts
     if a.cmd == "red-pipeline" and a.hook:  # async SessionStart: files a bug at most, prints nothing, never fails
         try:
             cmd_red_pipeline(Backlog(a.root), a)
