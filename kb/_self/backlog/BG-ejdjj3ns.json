@@ -1,0 +1,36 @@
+{
+  "id": "BG-ejdjj3ns",
+  "kind": "bug",
+  "title": "The autopilot can answer any gate of class agents-rule but the start gate, a headless run may answer --by autopilot, and widened touches never re-class a gate",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "bl_authority refuses the autopilot an answer to any gate of class agents-rule (AUTOPILOT_REFUSED holds it, not only the start gate), backlog.py answer refuses --by autopilot when KB_HEADLESS_RUNNER is set (a runner answers --by agent only), backlog.py set --touch re-derives every gate's class and stores the stricter, and PATHS adds _tools/backlog.py and _tools/kbpy to agents-rule; planted-failure tests cover each; found by the SP-zihqagoi review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if 'agents-rule' in a.AUTOPILOT_REFUSED else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "2",
+        "-k",
+        "authority_trust_boundary"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/backlog.py",
+    "_tools/test_bl_authority_trust.py",
+    "kb/_self/backlog.md"
+  ]
+}
