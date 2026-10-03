@@ -403,9 +403,17 @@ def assert_short(text):
     assert len(text) < autopilot.STATUS_MAX, f"{len(text)} characters"
 
 
-def done(world, iid):
+def land(world):
+    """Put the worktree's commits on the integration main, where the count of landed items reads them."""
+    Repo(world.wt(), git_env()).git("push", "-q", "origin", "HEAD:main")
+
+
+def done(world, iid, push=True):
+    """A done commit of IID in the runner's worktree, pushed to the integration main unless PUSH is false."""
     wt = Repo(world.wt(), git_env())
     wt.git("commit", "-q", "--allow-empty", "-m", f'chore(backlog): done {iid} "t"\n\nKB-Work: {iid}')
+    if push:
+        land(world)
 
 
 def test_autopilot_runner_status_reports_landed_items_gates_bugs_and_the_cause(world, capsys, monkeypatch):
@@ -466,7 +474,8 @@ def test_autopilot_runner_status_stays_under_the_limit_whatever_the_run_did(worl
     wt.git("add", "-A")
     wt.git("commit", "-q", "--allow-empty", "-m", "items")
     for iid in ids:
-        done(world, iid)
+        done(world, iid, push=False)
+    land(world)
     text = autopilot.status_text(SP, world.root)
     assert_short(text)
     assert f"landed {n}" in text and f"gates {n}" in text and f"bugs {n}" in text
