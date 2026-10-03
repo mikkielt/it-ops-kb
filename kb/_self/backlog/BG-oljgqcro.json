@@ -2,7 +2,7 @@
   "id": "BG-oljgqcro",
   "kind": "bug",
   "title": "A failed navigation benchmark run keeps its raw stream with no row naming it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zrvj35ha",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,37 @@
     "_tools/bench_lookup.py",
     "_tools/test_benchmarks.py"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "0a8ddf2a12835ea22bb8e57ec43a7361cd7a1d2d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "failed_nav_run_names_its_stream"
+        ],
+        "exit": 0,
+        "sha256": "8ac8f84c7ab97b99"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_benchmarks.py"
+        ],
+        "exit": 0,
+        "sha256": "2f09fd668efe3502"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile,pathlib;sys.path.insert(0,'_tools');import bench_lookup as b,bench_core as c;t=pathlib.Path(tempfile.mkdtemp());f=t/'f.py';f.write_text('import sys;sys.stdin.read();print(1)');runs=t/'navigation-2026-10-02-runs.jsonl';c.RAW['path']=runs;r=b.nav_run([sys.executable,str(f)],'q',t);kept=[p.name for p in t.glob('*-stream-*')];rows=runs.read_text() if runs.exists() else '';assert all(k in rows for k in kept), 'a failed run kept '+str(kept)+' and no row in the runs file names it'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
