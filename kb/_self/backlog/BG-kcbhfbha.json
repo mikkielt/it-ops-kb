@@ -2,7 +2,7 @@
   "id": "BG-kcbhfbha",
   "kind": "bug",
   "title": "The manager session's SessionStart publish --hook publishes to the public home at every start and compaction; an unattended /loop manager has no way to switch it off",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
     "_tools/test_kbpublic_hook_env.py",
     "kb/_self/git.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "seventh-w37"
 }
