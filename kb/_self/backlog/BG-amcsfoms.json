@@ -2,7 +2,7 @@
   "id": "BG-amcsfoms",
   "kind": "bug",
   "title": "factdiff drop_citation loses the id of a DECISION or LOG part in the tag it rewrites",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tt4tibyn",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,28 @@
     "_tools/test_factdiff_ids.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "d25f498a4823aa93a61bdadfd0578ad5a7ebacb6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "drop_citation_keeps_decision_and_log_ids"
+        ],
+        "exit": 0,
+        "sha256": "8469c66b9b4fac8c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,tempfile; d=tempfile.mkdtemp(); os.makedirs(d+'/print'); open(d+'/_root.md','w').write('---\\nroot: fixture\\nid_prefix: FXT\\nvisibility: internal\\ndescription: x\\n---\\n'); open(d+'/print/queues.md','w').write('---\\ntopic: print/queues\\n---\\n\\n## Facts\\n- Jobs are kept 14 days. [DOC S1208, S1209; LOG L-aaaaaaaa]\\n'); os.environ['KB_ROOTS']=d; sys.path.insert(0,'_tools'); import factdiff,kbcommon,kbfacts; factdiff.ROOT=kbcommon.root('fixture'); key=next(kbfacts.fact_key(u['text']) for u in kbfacts.units('fixture') if '14 days' in u['text']); factdiff.drop_citation('print/queues.md',key,'S1208','gone'); sys.exit(0 if 'LOG L-aaaaaaaa' in open(d+'/print/queues.md').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
