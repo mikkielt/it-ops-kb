@@ -2,7 +2,7 @@
   "id": "BG-svzlkygp",
   "kind": "bug",
   "title": "Every worker of a headless runner is refused its first write: the guard's project is the runner's worktree and the worker's isolation worktree is a sibling under the clone's .claude/worktrees",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,28 @@
     "kb/_self/autopilot-container.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "5c31eb7c67ba52cf9291f08177b9d16c4276c4f0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "headless_guard_worker_worktree"
+        ],
+        "exit": 0,
+        "sha256": "62337688a3dc0920"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys; os.environ['KB_HEADLESS_RUNNER']='1'; os.environ['CLAUDE_PROJECT_DIR']='/tmp/clone-x/.claude/worktrees/runner-SP-xxxxxxxx'; sys.path.insert(0,'_tools'); import kb_hook; r=kb_hook.headless_guard({'tool_name':'Write','tool_input':{'file_path':'/tmp/clone-x/.claude/worktrees/agent-a1/kb/_self/reports/t.md','content':'x'}}); sys.exit(0 if r is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
