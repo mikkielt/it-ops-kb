@@ -505,19 +505,21 @@ def release_worker_worktree(root, path, lock, branch=None):
     return None
 
 
-def delete_landed_branch(root, branch, upstream):
+def delete_landed_branch(root, branch, upstream, extra=(), who="land"):
     """Delete the local work/<id> BRANCH, or the worktree-agent-* branch the Agent tool made a removed worker's
-    worktree on, once every commit of it is on UPSTREAM (`git cherry` lists no `+` line), with `git branch -D` (a
-    branch landed by a rebase is not an ancestor, so -d refuses it): agents' shells may not delete a branch. Any other
-    branch, one with a commit UPSTREAM lacks, or one checked out anywhere is kept, and land says why."""
-    if not branch.startswith((WORK_PREFIX, AGENT_BRANCH + WORKER_NAME)) or not has_ref(root, f"refs/heads/{branch}"):
-        return
+    worktree on (or a branch starting with one of EXTRA), once every commit of it is on UPSTREAM (`git cherry` lists
+    no `+` line), with `git branch -D` (a branch landed by a rebase is not an ancestor, so -d refuses it): agents'
+    shells may not delete a branch. Any other branch, one with a commit UPSTREAM lacks, or one checked out anywhere is
+    kept, and WHO says why. Returns True once it is deleted."""
+    if not branch.startswith((WORK_PREFIX, AGENT_BRANCH + WORKER_NAME, *extra)) or not has_ref(root, f"refs/heads/{branch}"):
+        return False
     code, out, err = run(["git", "cherry", upstream, branch], cwd=root)
     if code or any(ln.startswith("+") for ln in out.splitlines()):
-        say(f"land: kept {branch}: {'git cherry failed' if code else 'it has commits ' + upstream + ' lacks'}")
-        return
+        say(f"{who}: kept {branch}: {'git cherry failed' if code else 'it has commits ' + upstream + ' lacks'}")
+        return False
     code, out, err = run(["git", "branch", "-D", branch], cwd=root)
-    say(f"land: deleted the landed branch {branch}" if not code else f"land: kept {branch}: {(err or out).strip()}")
+    say(f"{who}: deleted the landed branch {branch}" if not code else f"{who}: kept {branch}: {(err or out).strip()}")
+    return not code
 
 
 # head pipeline states after which GitLab's auto-merge ("merge when the pipeline succeeds") never fires
@@ -854,6 +856,136 @@ def prune_runner_cache(root, sid):
         say(f"removed {d.relative_to(root).as_posix()}")
 
 
+ORCH_PREFIX = "orch/"  # the branch of a headless runner's worktree: orch/<sprint id>
+
+
+def worktree_entries(root):
+    """[{path, head, branch, lock}] of `git worktree list --porcelain` in ROOT: branch is None when detached, lock
+    None when not locked (a lock with no reason is "")."""
+    code, text, _ = run(["git", "worktree", "list", "--porcelain"], cwd=root)
+    out = []
+    for block in text.split("\n\n") if not code else []:
+        lines = block.strip().splitlines()
+        if not lines or not lines[0].startswith("worktree "):
+            continue
+        e = {"path": Path(lines[0][len("worktree "):]).resolve(), "head": "", "branch": None, "lock": None}
+        for ln in lines[1:]:
+            if ln.startswith("HEAD "):
+                e["head"] = ln[len("HEAD "):]
+            elif ln.startswith("branch refs/heads/"):
+                e["branch"] = ln[len("branch refs/heads/"):]
+            elif ln == "locked" or ln.startswith("locked "):
+                e["lock"] = ln[len("locked "):]
+        out.append(e)
+    return out
+
+
+def merged_into(root, rev, upstream):
+    """True when every commit of REV is on UPSTREAM (`git cherry` lists no `+` line: a rebased landing counts)."""
+    code, out, _ = run(["git", "cherry", upstream, rev], cwd=root)
+    return not code and not any(ln.startswith("+") for ln in out.splitlines())
+
+
+def runner_worktree_kept(root, entry, upstream):
+    """Why the runner's worktree ENTRY stays, or None when it may go: it is the directory close runs in (or holds the
+    current directory), locked, has uncommitted changes, a process in it, or a commit UPSTREAM lacks."""
+    path = entry["path"]
+    here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    cwd = Path.cwd().resolve()
+    if path == here or path == cwd or path in cwd.parents:
+        return "it is the worktree close runs in"
+    if entry["lock"] is not None:
+        return f"it is locked ({entry['lock'] or 'no reason given'})"
+    code, out, err = run(["git", "status", "--porcelain"], cwd=path)
+    if code or out.strip():
+        return "it has uncommitted changes" if not code else f"git status failed: {err.strip()}"
+    procs, unchecked = live_processes(path)
+    if procs:
+        return "a process still runs there: " + ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
+    if not merged_into(root, entry["head"], upstream):
+        return f"it has commits {upstream} lacks"
+    return None
+
+
+def clean_runner_leftovers(root, sid, ids):
+    """Remove what the closed sprint SID's headless runner left in the clone ROOT, as a process of its own because
+    agents' shells may not run `git worktree remove` or `git branch -D` (.claude/settings.json): the runner's worktree
+    `runner-<SID>` under the clone's .claude/worktrees/ and its `orch/<SID>` branch, the clean `agent-*` worktrees of
+    the sprint's items IDS (on `work/<id>`, or detached at a commit whose KB-Work trailer names one), the sprint's
+    `work/<id>` branches and the `worktree-agent-*` branches whose tip is on the integration main, and
+    _cache/autopilot/<SID>. Worktrees go before branches; never with --force. A branch with a commit the integration
+    main lacks, a locked, dirty or process-holding worktree, another sprint's runner, or the worktree close runs in
+    is kept, and `close: kept ...: reason` says why. Returns the number kept."""
+    import kbpublic
+    kept = 0
+
+    def keep(what, why):
+        nonlocal kept
+        kept += 1
+        say(f"close: kept {what}: {why}")
+
+    if not ID_RE.fullmatch(sid):
+        keep(sid, "not a sprint id")
+        return kept
+    remote = kbpublic.integration_remote(root)
+    upstream = f"refs/remotes/{remote}/main"
+    if not has_ref(root, upstream):
+        upstream = "refs/heads/main"
+    if not has_ref(root, upstream):
+        keep("the runner leftovers", "no integration main to compare against")
+        return kept
+    dirs = worker_dirs(root)
+    entries = [e for e in worktree_entries(root) if e["path"].parent in dirs]
+    wanted = {f"{WORK_PREFIX}{i}" for i in ids}
+    for e in entries:  # the sprint's workers first
+        name = e["path"].name
+        if not name.startswith(WORKER_NAME):
+            continue
+        on_branch = e["branch"] in wanted
+        trailer = ""
+        if e["branch"] is None or not on_branch:
+            _, trailer, _ = run(["git", "log", "-1", "--format=%(trailers:key=KB-Work,valueonly)", e["head"]], cwd=root)
+        named = {t.strip() for t in re.split(r"[,\s]+", trailer) if t.strip()}
+        if not (on_branch or (e["branch"] is None and named & set(ids))):
+            continue
+        if not merged_into(root, e["head"], upstream):
+            keep(e["path"], f"it has commits {upstream} lacks")
+            continue
+        why = release_worker_worktree(root, e["path"], e["lock"], branch=e["branch"] if on_branch else None)
+        if why:
+            keep(e["path"], why)
+    for e in entries:  # then the runner's own
+        if e["path"].name != f"{RUNNER_NAME}{sid}":
+            continue
+        why = runner_worktree_kept(root, e, upstream)
+        if why:
+            keep(e["path"], why)
+            continue
+        code, out, err = run(["git", "worktree", "remove", str(e["path"])], cwd=root)
+        if code:
+            keep(e["path"], f"git worktree remove: {(err or out).strip()}")
+        else:
+            say(f"close: removed the runner's worktree {e['path']}")
+    here = {e["branch"] for e in worktree_entries(root) if e["branch"]}
+    code, out, _ = run(["git", "for-each-ref", "--format=%(refname:short) %(objectname)", "refs/heads"], cwd=root)
+    for ln in out.splitlines() if not code else []:
+        branch, _, tip = ln.partition(" ")
+        if branch in here:
+            if branch == f"{ORCH_PREFIX}{sid}":
+                keep(branch, "it is checked out in a worktree")
+            continue
+        if branch == f"{ORCH_PREFIX}{sid}" or branch in wanted:
+            delete_landed_branch(root, branch, upstream, extra=(ORCH_PREFIX,), who="close")
+        elif branch.startswith(AGENT_BRANCH + WORKER_NAME):
+            anc = run(["git", "merge-base", "--is-ancestor", tip, upstream], cwd=root)[0] == 0
+            if anc:
+                delete_landed_branch(root, branch, upstream, who="close")
+    for base in {Path(root).resolve(), Path(git(root, "rev-parse", "--path-format=absolute",
+                                                 "--git-common-dir").strip()).resolve().parent}:
+        prune_runner_cache(base, sid)
+    return kept
+
+
 def cmd_close(bl, a):
     if a.summary and a.commit:
         raise Refused("close --summary only prints and commits nothing: run close --commit without --summary")
@@ -910,6 +1042,10 @@ def cmd_close(bl, a):
     prune_runner_cache(bl.root, sid)
     # the body is the summary: the retrospective's findings, written by hand, go in with git commit --amend
     commit_written(bl, a, "close", sid, body="\n".join(summary), title=title)
+    try:  # the runner's leftovers go last, and whatever goes wrong there never undoes or fails the close
+        clean_runner_leftovers(bl.root, sid, sorted(gone))
+    except Exception as e:  # noqa: BLE001
+        say(f"close: kept the runner leftovers of {sid}: {e}")
     return 0
 
 
