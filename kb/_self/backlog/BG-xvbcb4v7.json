@@ -2,7 +2,7 @@
   "id": "BG-xvbcb4v7",
   "kind": "bug",
   "title": "reports/benchmarks.md still says the researcher has the docs servers and no kb server",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zrvj35ha",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,27 @@
   "touches": [
     "kb/_self/reports/benchmarks.md"
   ],
-  "claimed_by": "mac-third"
+  "evidence": {
+    "commit": "70f4f3322fb4adbcf1864bd4c86b9505020a363f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib;assert 'no kb server' not in pathlib.Path('kb/_self/reports/benchmarks.md').read_text(encoding='utf-8'), 'benchmarks.md still says no kb server'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
