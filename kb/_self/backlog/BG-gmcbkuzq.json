@@ -40,7 +40,8 @@
     "_tools/test_kb_leaks.py",
     "kb/_self/code.md",
     "kb/_self/plugin.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "kb/_self/autopilot-container.md"
   ],
   "claimed_by": "orch-fourth-s2"
 }
