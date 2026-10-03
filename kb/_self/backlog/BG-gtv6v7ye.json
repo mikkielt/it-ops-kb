@@ -1,0 +1,35 @@
+{
+  "id": "BG-gtv6v7ye",
+  "kind": "bug",
+  "title": "A headless agent can write by:operator into an item file or edit settings and hooks: Edit and Write are allowed without path limits and nothing checks the writer",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb_hook.py (a PreToolUse hook registered in .claude/settings.json) refuses, when KB_HEADLESS_RUNNER is set, an Edit or Write of kb/_self/backlog/*.json that changes a gate's answer or by field, and of .claude/settings*.json, .claude/hooks/ and .claude-plugin/; a planted-failure test runs the hook on each tool call; the operator-present manager session is unaffected; found by the SP-itmjxudu review: bl_check cannot tell an operator answer from a forged one",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys;s=json.load(open(\".claude/settings.json\"));h=json.dumps(s.get(\"hooks\",{}).get(\"PreToolUse\",[]));ok=(\"backlog\" in h and \"KB_HEADLESS_RUNNER\" in open(\".claude/hooks/kb_hook.py\",encoding=\"utf-8\").read()) ;print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "a PreToolUse hook runs inside Claude Code at tool-call time; the repro reads the registration and the hook's headless check",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "headless_pretooluse_guard"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    ".claude/hooks/kb_hook.py",
+    "_tools/test_headless_guard.py",
+    "kb/_self/plugin.md"
+  ]
+}
