@@ -10,9 +10,9 @@
   "goal": "backlog.py unlanded_code treats a commit that changes .gitattributes only between the pinned markers as content, as kblane.commit_paths does since BG-ha4u5dxz, so done does not demand a code merge request for it, with a test named unlanded_code_pinned_block that plants such a commit",
   "repro": {
     "run": [
-      "sh",
+      "python3",
       "-c",
-      "grep -q \"pinned:start\" _tools/backlog.py"
+      "import sys;sys.exit(0 if 'pinned:start' in open('_tools/backlog.py',encoding='utf-8').read() else 1)"
     ]
   },
   "repro_reason": "the defect needs a planted commit that changes only the pinned block of .gitattributes in a throwaway repository, which only the new test can build; the text match only shows the lane rule is absent from backlog.py",
