@@ -2,7 +2,7 @@
   "id": "BG-gm6ryou4",
   "kind": "bug",
   "title": "A CODE tag whose note is a documentation URL passes kb-verify lint, because code_pointer now accepts scheme-less URLs as pointers",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3zuasxl5",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,6 @@
     ".claude/skills/kb-verify/lint.py",
     "_tools/test_lint_code_pointer.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "seventh-w38"
 }
