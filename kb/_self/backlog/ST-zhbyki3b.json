@@ -2,7 +2,7 @@
   "id": "ST-zhbyki3b",
   "kind": "story",
   "title": "Review sprint: The autopilot trust boundary",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-j6hh2ib2",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "seventh-w40"
 }
