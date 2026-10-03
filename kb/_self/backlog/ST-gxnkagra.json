@@ -2,7 +2,7 @@
   "id": "ST-gxnkagra",
   "kind": "story",
   "title": "Review sprint: The autopilot's first unattended night",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zihqagoi",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
