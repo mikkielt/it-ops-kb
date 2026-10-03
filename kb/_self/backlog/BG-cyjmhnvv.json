@@ -1,0 +1,35 @@
+{
+  "id": "BG-cyjmhnvv",
+  "kind": "bug",
+  "title": "A kb-worker subagent of a hand-made worktree records no work rows, so cost and rework read zero and land warns",
+  "status": "todo",
+  "sprint": "SP-nq5avzrl",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A kb-worker subagent started in a hand-made worktree under .claude/worktrees records its prompts as work rows (the capture hooks run for it, or the worker brief starts them), so cost --rework reports work for the item and land stops warning 'landed with no work rows' for normal worker runs, with a test named worker_capture_hooks_run_in_worktree. Evidence: SP-tt4tibyn and the other sprints of the night show zero prompts and the warning on every land.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -n worker_capture_hooks .claude/agents/kb-worker.md | grep -q ."
+    ]
+  },
+  "repro_reason": "the capture hooks of a subagent started in a hand-made worktree cannot be observed from a repro; the text match shows the worker definition does not name the capture requirement",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_capture_hooks_run_in_worktree"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    ".claude/hooks/kb_hook.py",
+    "_tools/test_worker_capture.py",
+    "kb/_self/querylog.md"
+  ]
+}

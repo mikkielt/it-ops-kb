@@ -1,0 +1,34 @@
+{
+  "id": "BG-5ykz2dte",
+  "kind": "bug",
+  "title": "The prepare-commit-msg hook puts a blank line before KB-Work on an amend, splitting the trailer paragraph",
+  "status": "todo",
+  "sprint": "SP-nq5avzrl",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The prepare-commit-msg hook does not insert a blank line before KB-Work when the message's last paragraph already holds trailers (an amend keeps one trailer paragraph), with a test named prepare_commit_msg_amend_keeps_trailers that amends a commit in a throwaway repository. Found twice by BG-6dmpzx4t and BG-76xfour5 (workers rewrote with commit --amend -F).",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -n trailer_paragraph .githooks/prepare-commit-msg | grep -q ."
+    ]
+  },
+  "repro_reason": "the hook runs on commit --amend, which a repro cannot drive without a repository; the text match shows no trailer-paragraph check in the hook",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "prepare_commit_msg_amend_keeps_trailers"
+      ]
+    }
+  ],
+  "touches": [
+    ".githooks/prepare-commit-msg",
+    "_tools/test_prepare_commit_msg.py",
+    "kb/_self/git.md"
+  ]
+}

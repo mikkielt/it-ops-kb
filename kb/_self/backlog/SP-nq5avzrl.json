@@ -1,0 +1,22 @@
+{
+  "id": "SP-nq5avzrl",
+  "kind": "sprint",
+  "title": "Follow-ups from the overnight reviews",
+  "status": "active",
+  "goal": "The private-path wording, the worker work rows and the amend trailers are right in hooks, docs and the worker definition, each with a planted-failure test",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

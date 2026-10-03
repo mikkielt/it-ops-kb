@@ -1,0 +1,35 @@
+{
+  "id": "BG-xxplzle3",
+  "kind": "bug",
+  "title": "The pre-push hook comment and git.md still name only kb/_querylog as the private path, and test_ops_land's docstring still says the spool only",
+  "status": "todo",
+  "sprint": "SP-nq5avzrl",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The pre-push hook comment (.githooks/pre-push line 4), kb/_self/git.md lines 10, 32 and 75 and the test_ops_land.py docstring say the private paths are kb/_querylog and any _logs.csv (and that check-public exits 1 for a _logs.csv in the history too) and that the no-work-rows warning reads the spool or the committed work sidecars, and private_label_gaps in test_kbgit's private_label_in_help extends to the hook comment and the git.md rows; a planted old wording fails it. Found by the SP-tt4tibyn review (G1 and G2).",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "grep -n _logs.csv .githooks/pre-push | grep -q ."
+    ]
+  },
+  "repro_reason": "the gap is wording in a hook comment and docs; the text match shows the hook comment does not name _logs.csv",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "private_label_gaps"
+      ]
+    }
+  ],
+  "touches": [
+    ".githooks/pre-push",
+    "kb/_self/git.md",
+    "_tools/test_ops_land.py",
+    "_tools/test_private_label_gaps.py"
+  ]
+}
