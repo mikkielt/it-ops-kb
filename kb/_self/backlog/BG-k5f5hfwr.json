@@ -1,0 +1,37 @@
+{
+  "id": "BG-k5f5hfwr",
+  "kind": "bug",
+  "title": "A headless run can answer a push or secrets gate as the operator: the --by operator deny matches one argument order only",
+  "status": "todo",
+  "sprint": "SP-itmjxudu",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "when KB_HEADLESS_RUNNER is set (every headless runner), backlog.py answer and kbdecide.py refuse `--by operator`, `--confirm` without `--by`, and `--record` with `--by operator`, whatever the argument order or option abbreviation (exit 2, item unchanged, the message names the variable); the RUNNER_DENY rule in autopilot.py stays as a second layer but no test or doc treats it as the guard; planted-failure tests run the reordered form (`answer --by operator ID GATE ...`), the abbreviation (`--b operator`) and `--confirm` with the variable set, plus the positives with it unset (the operator-present manager session keeps recording interview answers with --by operator); found by the SP-itmjxudu review",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; f=$(grep -L '\"sprint\"' kb/_self/backlog/BG-*.json | head -1); id=$(basename \"$f\" .json); python3 _tools/backlog.py gate add \"$id\" --kind blocking --id pushgate --question \"Push the commits to the public remote?\" --option yes --option no --recommendation yes --do \"yes=true\" --do \"no=true\" >/dev/null; if KB_HEADLESS_RUNNER=1 python3 _tools/backlog.py answer --by operator --answer yes \"$id\" pushgate >/dev/null 2>&1; then exit 1; fi"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "headless_refuses_operator_answers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_authority.py",
+    "_tools/kbdecide.py",
+    "_tools/autopilot.py",
+    "_tools/test_backlog_headless_operator.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
