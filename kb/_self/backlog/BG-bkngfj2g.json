@@ -2,7 +2,7 @@
   "id": "BG-bkngfj2g",
   "kind": "bug",
   "title": "autopilot-container.md predates the runner's deploy-key ssh and overstates the key's forge scope",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,27 @@
   "touches": [
     "kb/_self/autopilot-container.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "a6985e171b4da13439f6938a52fc3527eda78de2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;sys.exit(0 if 'KB_RUNNER_DEPLOY_KEY' in pathlib.Path('kb/_self/autopilot-container.md').read_text(encoding='utf-8') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
