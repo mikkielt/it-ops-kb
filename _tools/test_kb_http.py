@@ -703,8 +703,10 @@ def test_kb_http_small_chunks_served(guarded, port):
 
 
 def test_kb_http_chunk_extensions_capped(guarded, port):
-    """Every byte a chunked request makes the server read counts against --max-body (plus a small allowance), chunk
-    extensions and trailers included; the drain of a refused or 404 body is bounded the same way."""
+    """Every byte a chunked request makes the server read counts against --max-body (plus an allowance), chunk
+    extensions and trailers included; the drain of a refused or 404 body is bounded the same way. The framing
+    allowance is CHUNK_SLACK plus CHUNK_FRAME for each chunk, the per-chunk part capped at the limit divided by
+    CHUNK_SHARE, so a flood of tiny chunks is refused after about that much framing."""
     import io
     limit = 1 << 20
     ext = b";" + b"x" * (60 << 10)
@@ -730,6 +732,29 @@ def test_kb_http_chunk_extensions_capped(guarded, port):
     got = wire(port, chunked_post("/nope", more))
     assert not got or (got[0][0] == 404 and got[0][1]["connection"] == "close"), got
     assert wire(port, chunked_post("/mcp", chunks(json.dumps(PING).encode("utf-8"))))[0][0] == 200
+
+
+def test_kb_http_tiny_chunk_flood_refused(guarded, port):
+    """A flood of 1-byte chunks with short extensions is refused once its framing passes the allowance, whatever the
+    limit and chunk count (limits that share factors with the line size included); a body at the limit in 256-byte
+    chunks is still served exactly, and a refused body's drain stays near DRAIN."""
+    import io
+    line = b"1;x=" + b"a" * 22 + b"\r\nA\r\n"
+    for limit in (1000, 4096, 65536, 65537, 100000, 1 << 20):
+        body = line * (limit * 3) + b"0\r\n\r\n"
+        h = object.__new__(kb_http.Handler)
+        h.rfile = io.BytesIO(body)
+        assert h.read_chunked(limit) is None
+        bound = limit + kb_http.CHUNK_SLACK + limit // kb_http.CHUNK_SHARE + kb_http.LINE_MAX + 2
+        assert h.rfile.tell() <= bound and h.rfile.tell() < len(body) // 2, (limit, h.rfile.tell())
+        served = b"".join(b"100\r\n" + b"x" * 256 + b"\r\n" for _ in range(limit // 256)) + b"0\r\n\r\n"
+        h.rfile = io.BytesIO(served)
+        assert h.read_chunked(limit) == b"x" * (limit // 256 * 256)
+    flood = line * 65536 + b"0\r\n\r\n"
+    h = object.__new__(kb_http.Handler)
+    h.rfile = io.BytesIO(flood)
+    assert h.read_chunked(kb_http.DRAIN) is None
+    assert h.rfile.tell() <= kb_http.DRAIN + kb_http.CHUNK_SLACK + kb_http.DRAIN // kb_http.CHUNK_SHARE + kb_http.LINE_MAX + 2
 
 
 LOG_LINE = re.compile(r"kb_http: (GET|POST|DELETE|-) \d{3} \d+ms")
