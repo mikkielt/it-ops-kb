@@ -423,6 +423,56 @@ def live_runners():
     return sorted(out, key=lambda r: (str(r.get("started")), int(r["pid"])))
 
 
+RUNS_FILE = "runs.jsonl"  # _cache/autopilot/<SP>/runs.jsonl: one line per ended run, written by the runner, never by a model
+NO_RUNS_EVIDENCE = 2  # runs of no progress an unreadable or wholly malformed non-empty history stands for
+
+
+def runs_path(root, sprint):
+    return Path(root) / "_cache" / "autopilot" / sprint / RUNS_FILE
+
+
+def append_run(root, sprint, cause, landed, time):
+    """Add the end of a run of SPRINT to its history as one line `{"sprint","cause","landed","time"}`, in a single
+    append-mode write (a line is never rewritten, and two writers never interleave inside one)."""
+    path = runs_path(root, sprint)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    line = json.dumps({"sprint": sprint, "cause": str(cause), "landed": int(landed), "time": str(time)},
+                      sort_keys=True) + "\n"
+    fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
+    try:
+        os.write(fd, line.encode("utf-8"))
+    finally:
+        os.close(fd)
+
+
+def read_runs(root, sprint):
+    """[(landed, cause)] of SPRINT's runs, oldest first, from its history file. A line that is not a JSON object of
+    this sprint with a cause and a count of landed items is ignored, and so is another sprint's line. A missing or
+    empty file has no runs; a file that exists, is not empty and gives none (it cannot be read, or every line is
+    malformed) stands for NO_RUNS_EVIDENCE runs of cause `unreadable` that landed nothing, so damage never restarts
+    an idle sprint."""
+    path = runs_path(root, sprint)
+    try:
+        raw = path.read_bytes()
+    except FileNotFoundError:
+        return []
+    except OSError:
+        return [(0, "unreadable")] * NO_RUNS_EVIDENCE
+    out = []
+    for text in raw.decode("utf-8", errors="replace").splitlines():
+        try:
+            rec = json.loads(text)
+        except ValueError:
+            continue
+        n = rec.get("landed") if isinstance(rec, dict) else None
+        if (isinstance(rec, dict) and rec.get("sprint") == sprint and isinstance(rec.get("cause"), str)
+                and isinstance(n, int) and not isinstance(n, bool) and n >= 0):
+            out.append((n, rec["cause"]))
+    if not out and raw.strip():
+        return [(0, "unreadable")] * NO_RUNS_EVIDENCE
+    return out
+
+
 def runner_record_path(pid):
     return runner_dir() / f"{RUNNER_PREFIX}{pid}.json"
 

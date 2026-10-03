@@ -575,7 +575,8 @@ def args_bounds(p):
     p.add_argument("--budget", type=int, help="stop: the items the run may land (the runner's --landed)")
     p.add_argument("--landed", type=int, default=0, help="stop: the items landed so far")
     p.add_argument("--runs-landed", metavar="N[:CAUSE],...",
-                   help="stop: the items each run of the sprint landed, oldest first (with its end cause)")
+                   help="stop: replace the sprint's history file (runs.jsonl, which the runner writes and stop reads "
+                        "by default) with these runs: the items each landed, oldest first, with its end cause")
     p.add_argument("--json", action="store_true", help="report and stop: print one JSON object")
     p.add_argument("--origin", choices=ORIGINS, help="file: what found it")
     p.add_argument("--kind", choices=("story", "bug"), default="story", help="file: the item to file")
@@ -601,7 +602,8 @@ def cmd_bounds(bl, a):
     if a.mode == "stop":
         if not a.sprint:
             raise Rejected("bounds stop: --sprint SP is required")
-        st = stop_state(bl, a.sprint, a.budget, a.landed, rows, parse_runs(a.runs_landed) if a.runs_landed else ())
+        runs = parse_runs(a.runs_landed) if a.runs_landed else bl_base.read_runs(bl.root, a.sprint)
+        st = stop_state(bl, a.sprint, a.budget, a.landed, rows, runs)
         if a.json:
             print(json.dumps(st, indent=2, sort_keys=True))
         elif st["stop"]:
