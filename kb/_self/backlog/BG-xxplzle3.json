@@ -2,7 +2,7 @@
   "id": "BG-xxplzle3",
   "kind": "bug",
   "title": "The pre-push hook comment and git.md still name only kb/_querylog as the private path, and test_ops_land's docstring still says the spool only",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-nq5avzrl",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
     "kb/_self/git.md",
     "_tools/test_ops_land.py",
     "_tools/test_private_label_gaps.py"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
