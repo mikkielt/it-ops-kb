@@ -35,7 +35,6 @@ RUNNER_COMMANDS = [
     "git -C * fetch origin",
     "git -C * worktree add *",
     "glab mr view *",
-    "glab mr merge code/*",  # only the code/<id> lane's requests, never another runner's or a bridged branch
 ]
 RUNNER_TOOLS = ["Agent", "Edit", "Write", "SendMessage"]
 # The kb-autopilot tick's own: the decision digest and list (read forms only: digest without --out, which writes to
@@ -147,18 +146,20 @@ def test_settings_allow_rebase_commit_narrow_refuses_a_planted_change(plant, wan
 
 
 def test_settings_allow_review_gaps():
-    """The SP-zihqagoi review's settings gaps: glab mr merge only for code/* branches, a checkout of paths from another
-    revision denied, and the tick's `kbdecide.py digest --commit` allowed, for both shells."""
+    """The SP-zihqagoi review's settings gaps: no `glab mr merge` at all (an agent merges with `backlog.py merge ID`,
+    its own code/ID only), a checkout of paths from another revision denied, and the tick's `kbdecide.py digest
+    --commit` allowed, for both shells."""
     perms = permissions(text(".claude/settings.json"))
     assert runner_problems(perms) == []
     for s in SHELLS:
-        assert f"{s}(glab mr merge *)" not in perms["allow"] and f"{s}(glab mr merge code/*)" in perms["allow"]
+        assert not [r for r in perms["allow"] if r.startswith(f"{s}(glab mr merge")]
         assert f"{s}(git checkout * -- *)" in perms["deny"]
         assert f"{s}(python3 _tools/kbdecide.py digest --commit)" in perms["allow"]
 
 
 @pytest.mark.parametrize("plant, want", [
     (_allow(lambda a: a + ["Bash(glab mr merge *)"]), "beyond the list: Bash(glab mr merge *)"),
+    (_allow(lambda a: a + ["PowerShell(glab mr merge code/*)"]), "beyond the list: PowerShell(glab mr merge code/*)"),
     (_allow(lambda a: [r for r in a if r != "PowerShell(python3 _tools/kbdecide.py digest --commit)"]),
      "missing PowerShell(python3 _tools/kbdecide.py digest --commit)"),
     *[(lambda p, r=f"{s}(git checkout * -- *)": {**p, "deny": [x for x in p["deny"] if x != r]},

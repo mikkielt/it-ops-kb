@@ -94,6 +94,7 @@ CAUSE_MARKER = "sprint-runner: {cause}"
 RUNNER_DENY = tuple(f"{shell}(python3 _tools/backlog.py answer * {by}*)" for shell in ("Bash", "PowerShell")
                     for by in ("--by operator", "--by=operator"))
 HEADLESS_ENV = kbpublic.HEADLESS_ENV  # set in the run's environment, so its session's publish --hook pushes nothing
+RUNNER_SPRINT_ENV = "KB_RUNNER_SPRINT"  # the sprint the run works: backlog.py merge (bl_land) merges only its items
 # The child's environment holds no way to authenticate to a git host, an agent or a registry: child_env drops these
 # names and any name CREDENTIAL_RE matches, so code the child runs cannot push or publish with the operator's session.
 CREDENTIAL_NAMES = frozenset({"SSH_AUTH_SOCK", "SSH_AGENT_PID", "GIT_ASKPASS", "SSH_ASKPASS", "SSH_ASKPASS_REQUIRE",
@@ -319,15 +320,16 @@ def one_line(text, n=DETAIL_CHARS):
     return " ".join(str(text).split())[:n]
 
 
-def supervise(argv, cwd, keep, stderr, deadline=None):
+def supervise(argv, cwd, keep, stderr, deadline=None, sprint=None):
     """Run ARGV in CWD with its stdout read line by line into the open file KEEP (each line written and flushed as it
     arrives) and its stderr into the open file STDERR. The child is ended at the first system compact_boundary event,
     after DEADLINE seconds (deadline_s() when None: SIGTERM, then its process tree after GRACE_S), and on any
-    interrupt. Returns {"compaction": bool, "timeout": bool, "result": the last result event or None, "exit_code": int}."""
+    interrupt. SPRINT, when given, is the child's RUNNER_SPRINT_ENV (backlog.py merge reads it). Returns
+    {"compaction": bool, "timeout": bool, "result": the last result event or None, "exit_code": int}."""
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    env = {**child_env(), **({RUNNER_SPRINT_ENV: sprint} if sprint else {})}
     proc = subprocess.Popen(argv, cwd=str(cwd), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=stderr,
-                            text=True, encoding="utf-8", errors="replace", env=child_env(),
-                            **group)
+                            text=True, encoding="utf-8", errors="replace", env=env, **group)
     out = {"compaction": False, "timeout": False, "result": None}
 
     def expire():  # runs in a timer thread: the child has outlived its deadline
@@ -560,7 +562,7 @@ def run_in_slot(sprint, landed, root, record, kept=None):
     try:
         with keep, open(directory / (name[:-len(".jsonl")] + ".stderr"), "w", encoding="utf-8", newline="\n") as err:
             try:
-                run = supervise(argv, wt, keep, err)
+                run = supervise(argv, wt, keep, err, sprint=sprint)
                 run["deadline_s"] = status["deadline_s"]
                 detail = None
             except OSError as e:  # claude not found, or not runnable

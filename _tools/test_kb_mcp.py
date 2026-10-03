@@ -469,7 +469,7 @@ def test_sprint_worker_starts_from_orchestrator_tip_planted_failures(i, old, new
 
 KB_ITEM = ".claude/skills/kb-item/SKILL.md"
 MR_VIEW = "`glab mr view code/<id> -F json -R <project url>`"
-MR_MERGE = "`glab mr merge code/<id> --auto-merge=false --yes -R <project url>`"
+MR_MERGE = "`python3 _tools/backlog.py merge <id>`"
 
 
 def code_mr_merge_retry_problems(sprint, item, runbook):
@@ -517,7 +517,7 @@ def test_code_mr_merge_retry():
     (0, "`state` `opened` with a `merge_error`", "a request still open"),
     (0, "retry once with", "retry with"),
     (0, "and name the error in your report", "and go on"),
-    (1, "`glab mr merge code/<id> --auto-merge=false --yes -R <project url>`", "`glab mr merge code/<id>`"),
+    (1, "`python3 _tools/backlog.py merge <id>`", "`glab mr merge code/<id>`"),
     (1, "never tried a third time", "tried again"),
     (2, "reads the request itself, `glab mr view code/<id> -F json -R <project url>`", "waits"),
     (2, "retries once", "retries"),

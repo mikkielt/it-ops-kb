@@ -87,7 +87,7 @@ SKILL_COMMANDS = (
     "git worktree add path -b branch origin/main",
     "git -C clone fetch origin",
     "glab mr view code/ST-00000000 -F json",
-    "glab mr merge code/ST-00000000 --yes",
+    "python3 _tools/backlog.py merge ST-00000000",
 )
 SKILL_TOOLS = ("Agent", "SendMessage", "Edit", "Write")  # tools the sprint's loop calls: each needs an allow rule
 
