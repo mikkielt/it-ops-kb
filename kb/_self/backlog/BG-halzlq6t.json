@@ -2,7 +2,7 @@
   "id": "BG-halzlq6t",
   "kind": "bug",
   "title": "kbingest names_clone_code drops a drive-less rooted Windows path, and tools.md and hosting.md state stale facts about kbingest and kb_http",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3zuasxl5",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,28 @@
     "kb/_self/hosting.md",
     ".claude/skills/kb-ingest/SKILL.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "13eb0943b50797a67b294d9c18b9d6ff78e8dd2c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "names_clone_code_drive_less_rooted"
+        ],
+        "exit": 0,
+        "sha256": "29b6fe522dac3287"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(0 if 'drive_less_rooted' in open('_tools/kbingest.py',encoding='utf-8').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
