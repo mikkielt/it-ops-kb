@@ -1,5 +1,5 @@
 """A kb-worker started in a hand-made worktree is counted for its item (`python3 _tools/tests.py -k worker_capture`).
-  worker_capture_hooks_run_in_worktree  a subagent whose working directory stays its session's (the Agent tool gives it
+  worker_usage_routing_by_worktree_path  a subagent whose working directory stays its session's (the Agent tool gives it
                     no directory of its own) and whose shell commands run in `<clone>/.claude/worktrees/<id>` is
                     routed to that item by `kbusage.prompt_usage`, for every kind of id and either path separator; a
                     worker that names no worktree, two items' or a directory only like one stays in `sub`; a work
@@ -53,7 +53,7 @@ def counts(n):
 @pytest.mark.parametrize("n", [1, 2, 3, 5, 6])
 @pytest.mark.parametrize("form", ["git -C {p} status", "python3 {p}/_tools/check.py", "cd {p} && git log -1",
                                   "git -C {p}", "ls {p}/kb"])
-def test_worker_capture_hooks_run_in_worktree(tmp_path, kind, n, form):
+def test_worker_usage_routing_by_worktree_path(tmp_path, kind, n, form):
     """Planted scenario: the worker's records name `main` (its directory is the session's) and its n commands run in
     the hand-made worktree of the item: the counts are the item's, not the session's."""
     item = f"{kind}-abcdefg{'234567'[n - 1]}"
@@ -91,4 +91,4 @@ def test_worker_capture_work_branch_wins(tmp_path):
 
 def test_worker_capture_definition_names_the_requirement():
     text = (Path(TOOLS).parent / ".claude" / "agents" / "kb-worker.md").read_text(encoding="utf-8")
-    assert "worker_capture_hooks_run_in_worktree" in text
+    assert "worker_usage_routing_by_worktree_path" in text
