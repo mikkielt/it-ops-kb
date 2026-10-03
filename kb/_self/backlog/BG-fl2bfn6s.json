@@ -2,7 +2,7 @@
   "id": "BG-fl2bfn6s",
   "kind": "bug",
   "title": "land refuses to remove a finished worker's worktree when the clone it runs in is itself a linked worktree, so the autopilot runner's workers are never cleaned up",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j6hh2ib2",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,28 @@
     "kb/_self/tools.md",
     "kb/_self/autopilot-container.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "317aea1b7674c6de559485aa0ee0317e3b46dba3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_removes_worker_worktree_of_a_linked_clone"
+        ],
+        "exit": 0,
+        "sha256": "791dcbed351f3997"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if 'common.parent.joinpath(*WORKER_DIR)' not in open('_tools/bl_land.py').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
