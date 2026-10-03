@@ -2,7 +2,7 @@
   "id": "BG-gtv6v7ye",
   "kind": "bug",
   "title": "A headless agent can write by:operator into an item file or edit settings and hooks: Edit and Write are allowed without path limits and nothing checks the writer",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -38,5 +38,31 @@
     "_tools/test_kb_lookup.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "bb3eb0fc0ab61abb27c0c7eabe266b73d84cf78a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "headless_pretooluse_guard"
+        ],
+        "exit": 0,
+        "sha256": "49f54d122848fa69"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "2",
+          "-k",
+          "headless_pretooluse_guard"
+        ],
+        "exit": 0,
+        "sha256": "2afae3d514357282"
+      }
+    ]
+  }
 }
