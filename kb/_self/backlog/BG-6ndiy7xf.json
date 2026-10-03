@@ -2,7 +2,7 @@
   "id": "BG-6ndiy7xf",
   "kind": "bug",
   "title": "The guard code (autopilot.py, bl_authority.py, kb_hook.py, kblane.py, settings.local.json) and push or credential wordings derive class design, which the autopilot may answer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -30,5 +30,6 @@
     "_tools/bl_authority.py",
     "_tools/test_bl_authority_guards.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
