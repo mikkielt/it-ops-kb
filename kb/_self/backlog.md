@@ -263,6 +263,60 @@ The manager is the `/kb-autopilot` skill (`.claude/skills/kb-autopilot/SKILL.md`
 - Changing an item's JSON (claim, set, gate add, gate answers, done) goes in the same commit as the work, or in its own commit with the same trailer.
 - `--commit` on `claim`, `done`, `new`, `start` and `close` makes that commit: only the item files the command wrote or deleted (`git commit --only`: changes staged before it stay staged and out of it), the subject `chore(backlog): claim|done|file|start|close ID "title"`, and a last paragraph of `KB-Work: <ids>` (the item; a new sprint and its review story) followed by the session's own trailers, each passed as `--trailer 'KEY: VALUE'` (a `KB-*` key is refused: the command writes `KB-Work` and the hook the others). `check-trailers` passes on it.
 
+## Starting the autopilot
+
+The commands below are run by the operator, in this order, in the manager's own clone (a clone no other session works in, set up as `kb/_self/maintaining.md` says: commit hooks installed, `python3 _tools/check.py` printing `errors=0`, `claude` on `PATH`, and a push to `origin` allowed to your account, since each tick syncs).
+
+1. **Rehearse first.** It runs one manager tick on a scratch sprint in a throwaway clone with a stub `claude` (no network, no model, no real remote) and cleans up after itself:
+
+   ```
+   python3 _tools/autopilot_rehearse.py
+   ```
+
+   The last line must be `rehearse: ok (N steps)` with exit 0. On `rehearse: FAILED at step NAME: CAUSE` (exit 1) do not start the autopilot: the step names what is wrong. The rehearsal runs the clone's committed tools (`HEAD`), so commit or pull a change before rehearsing it (`kb/_self/tools.md`, The autopilot runner).
+2. **Start a manager session** in that clone, with its own project settings and no flags: the session loads the clone's `.claude/settings.json`, skills and agents, and `--plugin-dir` is left off, since a plugin loaded in a clone loads the project's skills a second time (`kb/_self/maintaining.md`). The runners need nothing from you: `autopilot.py runner start` passes each run the worktree's `.claude/settings.json` by `--settings` and each plugin the project loads by `--plugin-dir`, with no permission flag, so the project's allow and deny rules govern a run.
+
+   ```
+   cd <your clone>
+   claude
+   ```
+3. **Run the self-check** before the first tick, in the session or the shell:
+
+   ```
+   python3 _tools/backlog.py selfcheck
+   ```
+
+   Healthy is `selfcheck: ok (6 checks passed)`, or `selfcheck: 0 failed, 1 unknown of 6 checks` with the one line `UNKNOWN main: no ci.pipeline row read` under it (no failure: the forge was not asked), both with exit 0. A `FAIL` line names its check and its remedy; fix it before the loop (`.claude/skills/kb-sprint/SKILL.md`, Self-check).
+4. **Start the loop**, typed in the manager session; each firing is one tick (`.claude/skills/kb-autopilot/SKILL.md`):
+
+   ```
+   /loop 15m /kb-autopilot
+   ```
+
+   The interval is the operator's recorded choice. A fixed-interval loop expires seven days after it was created (live docs, not in the kb: https://code.claude.com/docs/en/scheduled-tasks#seven-day-expiry, read 2026-10-03), so start it again then.
+5. **Read what it did**, in any shell of the clone:
+
+   ```
+   python3 _tools/kbdecide.py digest
+   python3 _tools/backlog.py stalled
+   python3 _tools/autopilot.py status
+   ```
+
+   `digest` rewrites `kb/_self/reports/autopilot-digest.md`, the autopilot's decisions you have not ratified, restricted classes first (each tick also commits it); ratify or revert from the commands that file names. `stalled` lists, read only, each item that shows a stall signal and its next remedy. `status` is the manager's state in one capped command: the runners, the active sprints, your open blocking gates (the kept gates), the unratified decisions and the last tick. For one sprint's run, `python3 _tools/autopilot.py runner-status SP`.
+6. **Stop it**, in this order:
+   1. Stop the loop: ask the session to cancel its scheduled `/kb-autopilot` task (`Esc` stops only a self-paced loop, not a fixed-interval one; live docs, same page, `#stop-a-loop`), then leave the session with `/exit`.
+   2. End each runner: `python3 _tools/autopilot.py status` prints `SP pid N alive`; `kill N` (SIGTERM) makes the runner end its child's whole process tree and write the status `error` with `runner ended by SIGTERM`, so `status` then prints `SP ended error`.
+   3. List what still runs in the clone:
+
+   ```
+   python3 _tools/backlog.py procs
+   ```
+
+   The same command with `--end` ends an owned orphan, after its grace, and never a process of another session.
+
+   Left behind, by design: the runner's worktree `.claude/worktrees/runner-SP` on `orch/SP` and its streams in `_cache/autopilot/SP/` (`python3 _tools/autopilot.py runner reset SP` frees the worktree; a later `runner start SP` reuses it); each item the run claimed stays `doing` until a later run lands or releases it (`python3 _tools/backlog.py release ID`, `backlog.py stalled` names them); a started sprint stays active, and the open gates and the committed digest stay as they are.
+7. **What the autopilot may never do**: answer a gate of class `secrets` or `push` (it leaves it open and notifies you; `--by operator` is never its), and push or publish for you (no push anywhere but the integration `main` and a `code/<id>` branch, no `kbgit.py publish`; a runner has `KB_HEADLESS_RUNNER` set, so no publish). The classes are the Classes and the autopilot paragraph of Dependencies, gates and triggers, above; the sprint's start gate is yours too when its items touch `secrets`, `push` or `agents-rule` paths.
+
 ## Bounds of the autopilot's work
 
 The autopilot's own work has an end (`_tools/bl_bounds.py`; the kb-sprint skill, Bounds). It answers a sprint whose close filed ten drafts of its own findings (SP-x2pvljz6) and another that filed six (SP-5cwekumc), with the operator as the only brake: an autopilot that answers for the operator has none. The limits are named constants of `bl_bounds.py`:
