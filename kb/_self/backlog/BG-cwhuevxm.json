@@ -2,7 +2,7 @@
   "id": "BG-cwhuevxm",
   "kind": "bug",
   "title": "A sprint whose items touch a new _tools/test_*.py file is not refused as operator-present only, so the headless run stalls on the guard that denies that new file",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -36,5 +36,28 @@
     "kb/_self/code.md",
     "_tools/test_headless_start_guarded.py"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "b70eed905094c7faafc7fb38da12a57af82c7f05",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "guarded_touches_new_test_file"
+        ],
+        "exit": 0,
+        "sha256": "4575979b0c3fdd1d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bl_authority as b; sys.exit(0 if b.guarded_touches({'touches':['_tools/test_brand_new.py']}) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
