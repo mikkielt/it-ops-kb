@@ -643,7 +643,7 @@ class TestBacklogLand:
                               check=True).stdout
 
     @pytest.fixture
-    def landing(self, sprint, monkeypatch):
+    def landing(self, sprint, monkeypatch, tmp_path_factory):
         repo, tk = sprint["repo"], sprint["tk"]
         stubs = {"_tools/stress_test.py": STEP_STUB.format(name="stress_test.py"),
                  "_tools/rag.py": STEP_STUB.format(name="rag.py eval"),
@@ -653,14 +653,18 @@ class TestBacklogLand:
             (repo / rel).write_text(text, encoding="utf-8")
         commit(repo, "plan and step stubs")
         sh(repo, "git", "branch", "-M", "main")
-        remote = repo.parent / f"{repo.name}-remote.git"
+        side = tmp_path_factory.mktemp("land")  # unique per test: tmp_path names cut at 30 characters can repeat
+        remote = side / "remote.git"
         sh(repo, "git", "init", "-q", "--bare", str(remote))
         sh(repo, "git", "remote", "add", "origin", str(remote))
         sh(repo, "git", "push", "-q", "origin", "main")
-        log = repo.parent / f"{repo.name}-land.log"
+        log = side / "land.log"
         monkeypatch.setenv("LAND_LOG", str(log))
         monkeypatch.setenv("LAND_TOOLS", TOOLS)
         monkeypatch.delenv("LAND_FAIL", raising=False)
+        monkeypatch.delenv("KB_TESTS_FAST", raising=False)
+        monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
+        monkeypatch.setenv("KB_HOST_LOCK_DIR", str(side / "locks"))
         sh(repo, "git", "checkout", "-q", "-b", f"work/{tk}")
         assert b(repo, "claim", tk, "--by", "worker", "--commit")[0] == 0
         return {"repo": repo, "tk": tk, "remote": remote, "log": log,
@@ -963,6 +967,75 @@ class TestBacklogLand:
         where = ld["repo"].parent / f"{ld['repo'].name}-wt"  # planted: not under .claude/worktrees/
         path = self.worker_tree(ld, where=where)
         self.refused_kept(ld, path, "not under .claude/worktrees/")
+
+    # land run in a clone that is itself a linked worktree (the autopilot runner's): the clone is the toplevel of the
+    # directory land runs in, so the workers under that clone's own .claude/worktrees are its workers, not the main
+    # checkout's
+    def linked_clone(self, ld):
+        """A linked worktree of the landing repo on a branch at the item's work commit, ready to run land in."""
+        repo, tk = ld["repo"], ld["tk"]
+        self.work(ld, ["src/b.txt"], "src/b.txt")
+        sh(repo, "git", "checkout", "-q", "main")
+        clone = ld["remote"].parent / "linked-clone"
+        sh(repo, "git", "worktree", "add", "-q", "-b", "runner", str(clone), f"work/{tk}")
+        (repo / ".git" / "info").mkdir(exist_ok=True)
+        (repo / ".git" / "info" / "exclude").write_text(".claude/worktrees/\n", encoding="utf-8")
+        return clone
+
+    def linked_worker(self, ld, clone, name="agent-a0", lock=AGENT_LOCK, branch=None):
+        path = clone / ".claude" / "worktrees" / name
+        sh(ld["repo"], "git", "worktree", "add", "-q", str(path), branch or f"work/{ld['tk']}")
+        if lock is not None:
+            sh(ld["repo"], "git", "worktree", "lock", "--reason", lock, str(path))
+        return path
+
+    def land_in(self, ld, clone):
+        return b(clone, "land", ld["tk"], "--trailer", self.CO)
+
+    def test_land_removes_worker_worktree_of_a_linked_clone(self, landing):
+        ld = landing
+        clone = self.linked_clone(ld)
+        sh(clone, "git", "checkout", "-q", "--detach")
+        path = self.linked_worker(ld, clone)
+        code, out = self.land_in(ld, clone)
+        assert code == 0 and "removed the finished worker's worktree" in out, out
+        assert not path.exists() and not self.worktree_listed(ld, path), out
+
+    def test_land_removes_worker_worktree_of_a_linked_clone_named_by_item_id(self, landing):
+        ld = landing
+        clone = self.linked_clone(ld)
+        sh(clone, "git", "checkout", "-q", "--detach")
+        path = self.linked_worker(ld, clone, name=ld["tk"], lock=None)
+        code, out = self.land_in(ld, clone)
+        assert code == 0 and "removed the finished worker's worktree" in out and "it was not locked" in out, out
+        assert not path.exists() and not self.worktree_listed(ld, path), out
+
+    def test_land_removes_worker_worktree_of_a_linked_clone_keeps_one_under_the_main_checkout(self, landing):
+        ld = landing
+        clone = self.linked_clone(ld)
+        sh(clone, "git", "checkout", "-q", "--detach")
+        path = self.linked_worker(ld, ld["repo"])  # planted: under the main checkout, land runs in another clone
+        code, out = self.land_in(ld, clone)
+        assert code == 1 and "land stopped at step branch" in out and "not under .claude/worktrees/" in out, out
+        assert path.exists() and self.worktree_listed(ld, path), out
+
+    def test_land_removes_worker_worktree_of_a_linked_clone_keeps_a_dirty_one(self, landing):
+        ld = landing
+        clone = self.linked_clone(ld)
+        sh(clone, "git", "checkout", "-q", "--detach")
+        path = self.linked_worker(ld, clone)
+        (path / "src" / "b.txt").write_text("unsaved\n", encoding="utf-8")  # planted: uncommitted work
+        code, out = self.land_in(ld, clone)
+        assert code == 1 and "land stopped at step branch" in out and "uncommitted changes" in out, out
+        assert path.exists() and (path / "src" / "b.txt").read_text(encoding="utf-8") == "unsaved\n", out
+
+    def test_land_removes_worker_worktree_of_a_linked_clone_keeps_another_items_branch(self, landing):
+        ld = landing
+        clone = self.linked_clone(ld)
+        sh(ld["repo"], "git", "branch", "work/ST-other000", f"work/{ld['tk']}")
+        path = self.linked_worker(ld, clone, branch="work/ST-other000")  # planted: another item's worker
+        why = bl_land.release_worker_worktree(clone, path, self.AGENT_LOCK, branch=f"work/{ld['tk']}")
+        assert why and "not on work/" in why and path.exists() and self.worktree_listed(ld, path), why
 
     # a worker that left a background command running in its worktree: land refuses to remove the worktree from
     # under it, naming the pid; planted: a process check blind to it removes the worktree, which the check catches.
