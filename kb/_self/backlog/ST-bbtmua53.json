@@ -2,7 +2,7 @@
   "id": "ST-bbtmua53",
   "kind": "story",
   "title": "Review sprint: Review follow-ups: server framing, code pointers and the kbingest environment stay exact",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7irdeeel",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
