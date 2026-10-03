@@ -2,7 +2,7 @@
   "id": "BG-fybd2sf7",
   "kind": "bug",
   "title": "A headless run can start nested runners with autopilot.py runner start, whose claude child outlives the outer run's deadline",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zihqagoi",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,30 @@
     "_tools/test_autopilot_headless.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "598655a5371e0c7c4836f5a8e40290a24bf98033",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "2",
+          "-k",
+          "runner_refused_when_headless"
+        ],
+        "exit": 0,
+        "sha256": "8a2109cf9aeb5fe7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import autopilot;sys.exit(0 if hasattr(autopilot,'headless_refusal') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
