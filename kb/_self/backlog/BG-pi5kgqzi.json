@@ -2,7 +2,7 @@
   "id": "BG-pi5kgqzi",
   "kind": "bug",
   "title": "test_kbdecide builds its temp repository from a hand-listed set of bl_ modules, so every new module breaks it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tt4tibyn",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,29 @@
     "_tools/test_kbdecide.py"
   ],
   "notes": "mac-fourth found a glob in test_kbdecide's make_root trips the testmap scan check (source_scans); derive the list another way (read bl_*.py names from the backlog.py import lines) or declare the scan.",
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "898fc2b237840bf8c61f87407c3ea44b1ef01a8c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "make_root_copies_all_bl_modules"
+        ],
+        "exit": 0,
+        "sha256": "fb71be634a879369"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "make_root_copies_all_bl_modules"
+        ],
+        "exit": 0,
+        "sha256": "df75f647720a78ca"
+      }
+    ]
+  }
 }
