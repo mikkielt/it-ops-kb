@@ -56,7 +56,9 @@
         "Bedrock"
       ],
       "recommendation": "dedicated API key in its own workspace",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "subscription token from claude setup-token",
+      "by": "operator"
     },
     {
       "id": "pushedit",
