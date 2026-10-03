@@ -2,7 +2,7 @@
   "id": "BG-mewv4st5",
   "kind": "bug",
   "title": "A headless run can restore older settings and hooks with git checkout of a path or of an old revision, since its settings file sits in its own worktree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-j6hh2ib2",
   "priority": "P1",
   "rank": 0,
@@ -35,5 +35,6 @@
     "_tools/test_settings_allow.py",
     "kb/_self/tools.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
