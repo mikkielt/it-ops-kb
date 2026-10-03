@@ -2,7 +2,7 @@
   "id": "BG-ut7rqjtn",
   "kind": "bug",
   "title": "land stops on a clean unlocked worker worktree under .claude/worktrees, which no session may now remove",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
   "rank": 0,
@@ -29,7 +29,12 @@
   "touches": [
     "_tools/bl_land.py",
     "_tools/test_bl_land_worktree.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "_tools/test_bl_land.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
   ],
-  "notes": "Operator order: workers must be able to remove their worktrees in autopilot mode: land (python, not an agent shell) also deletes the merged local work/<id> branch after the worktree, since git worktree remove and git branch -D are denied to every session; kb-sprint run/close steps stop asking the operator to remove them by hand."
+  "notes": "Operator order: workers must be able to remove their worktrees in autopilot mode: land (python, not an agent shell) also deletes the merged local work/<id> branch after the worktree, since git worktree remove and git branch -D are denied to every session; kb-sprint run/close steps stop asking the operator to remove them by hand.",
+  "claimed_by": "mac-first"
 }

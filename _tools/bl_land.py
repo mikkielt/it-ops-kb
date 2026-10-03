@@ -2,7 +2,8 @@
 item's checks and records the evidence, `land`, which rebases a worker's branch and runs the steps to the integration
 main, and `close`, which deletes a finished sprint; with what they share: the commits an item's trailers name
 (`item_commits`, `unlanded_code`, `out_of_scope`), the runner of a check (`run_check`), the worker's worktree
-(`live_processes`, `release_worker_worktree`) and the stuck merge request line.
+(`live_processes`, `release_worker_worktree`), the landed work/<id> branch (`delete_landed_branch`) and the stuck merge
+request line.
 
 Standard library only; imports `bl_base`, `bl_check` (the no-op rules `done` applies), `bl_cli` and `bl_intake` (the
 colour codes) and never `backlog`. The branch `land` expects sync to open for code commits is named by
@@ -343,6 +344,9 @@ def checked_out_elsewhere(root, branch):
 # the lock Claude Code puts on a subagent's worktree, which outlives the agent when it left background work running
 WORKER_LOCK = "claude agent"
 WORKER_DIR = (".claude", "worktrees")  # under the clone's main checkout
+WORKER_NAME = "agent-"  # how the Agent tool names a worker's isolation worktree: an unlocked one is removed only so
+WORK_PREFIX = "work/"  # the local branch a worker commits on: land deletes it once it has landed
+AGENT_BRANCH = "worktree-"  # + the worktree's name: the branch the Agent tool made the worker's worktree on
 
 
 def live_processes(path):
@@ -393,41 +397,63 @@ def live_processes(path):
 
 
 def release_worker_worktree(root, path, lock):
-    """Remove the finished worker's worktree PATH that holds the branch land needs: unlocked, then `git worktree
-    remove` (never --force). Only a worktree under the clone's .claude/worktrees/ whose lock reason starts with
-    WORKER_LOCK and that has no uncommitted changes. Returns None once it is removed, else why it was left as it was
-    (a remove that fails puts the lock back)."""
+    """Remove the finished worker's worktree PATH that holds the branch land needs, with `git worktree remove` (never
+    --force), unlocking it first when Claude Code locked it: agents' shells may not remove a worktree
+    (.claude/settings.json denies it), so land, a process of its own, does. Only a worktree under the clone's
+    .claude/worktrees/ that is not the one land runs in, has no uncommitted changes and no live process, and is
+    either locked by a Claude Code agent (WORKER_LOCK) or, unlocked, named as the Agent tool names a worker's
+    (WORKER_NAME, `agent-*`; the test land_removes_clean_unlocked_worker_worktree). Returns None once it is removed,
+    else why it was left as it was (a remove that fails puts the lock back)."""
     def run_git(*args, cwd=root):
         p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")
         return p.returncode, (p.stdout if not p.returncode else (p.stderr or p.stdout)).strip()
 
-    if lock is None:
-        return "it is not locked"
-    if not lock.startswith(WORKER_LOCK):
+    state = "not locked" if lock is None else f"locked ({lock})"
+    if lock is not None and not lock.startswith(WORKER_LOCK):
         return f"it is locked ({lock or 'no reason given'}), not by a Claude Code agent"
     common = (Path(root) / git(root, "rev-parse", "--git-common-dir").strip()).resolve()
     if path.parent != common.parent.joinpath(*WORKER_DIR).resolve():
-        return f"it is locked ({lock}) but not under {'/'.join(WORKER_DIR)}/ of the clone"
+        return f"it is {state} but not under {'/'.join(WORKER_DIR)}/ of the clone"
+    if path.resolve() == Path(root).resolve():
+        return f"it is {state} and is the worktree land runs in"
+    if lock is None and not path.name.startswith(WORKER_NAME):
+        return f"it is not locked and not a worker's ({WORKER_NAME}*)"
     code, out = run_git("status", "--porcelain", cwd=path)
     if code or out:
-        return (f"it is locked ({lock}) and has uncommitted changes: commit or discard them there, then "
-                f"git worktree unlock and git worktree remove it")
+        return f"it is {state} and has uncommitted changes: commit or discard them there, then run land again"
     procs, unchecked = live_processes(path)
     if procs:  # the worker left background work running there: removing the worktree would pull it from under it
         named = ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
-        return (f"it is locked ({lock}) and a process still runs there: {named}; end it (the worker ends every "
+        return (f"it is {state} and a process still runs there: {named}; end it (the worker ends every "
                 f"background command and monitor it started), then run land again")
     if unchecked:
         say(f"land: could not check {path} for live processes ({unchecked}); removing it as a clean worker's")
-    code, out = run_git("worktree", "unlock", str(path))
-    if code:
-        return f"git worktree unlock: {out}"
+    if lock is not None:
+        code, out = run_git("worktree", "unlock", str(path))
+        if code:
+            return f"git worktree unlock: {out}"
     code, out = run_git("worktree", "remove", str(path))
     if code:
-        run_git("worktree", "lock", "--reason", lock, str(path))
+        if lock is not None:
+            run_git("worktree", "lock", "--reason", lock, str(path))
         return f"git worktree remove: {out}"
-    say(f"land: removed the finished worker's worktree {path} (unlocked; its lock was: {lock})")
+    say(f"land: removed the finished worker's worktree {path} ({'unlocked; its lock was: ' + lock if lock else 'it was not locked'})")
     return None
+
+
+def delete_landed_branch(root, branch, upstream):
+    """Delete the local work/<id> BRANCH, or the worktree-agent-* branch the Agent tool made a removed worker's
+    worktree on, once every commit of it is on UPSTREAM (`git cherry` lists no `+` line), with `git branch -D` (a
+    branch landed by a rebase is not an ancestor, so -d refuses it): agents' shells may not delete a branch. Any other
+    branch, one with a commit UPSTREAM lacks, or one checked out anywhere is kept, and land says why."""
+    if not branch.startswith((WORK_PREFIX, AGENT_BRANCH + WORKER_NAME)) or not has_ref(root, f"refs/heads/{branch}"):
+        return
+    code, out, err = run(["git", "cherry", upstream, branch], cwd=root)
+    if code or any(ln.startswith("+") for ln in out.splitlines()):
+        say(f"land: kept {branch}: {'git cherry failed' if code else 'it has commits ' + upstream + ' lacks'}")
+        return
+    code, out, err = run(["git", "branch", "-D", branch], cwd=root)
+    say(f"land: deleted the landed branch {branch}" if not code else f"land: kept {branch}: {(err or out).strip()}")
 
 
 # head pipeline states after which GitLab's auto-merge ("merge when the pipeline succeeds") never fires
@@ -585,16 +611,19 @@ def cmd_land(bl, a):
     remote = kbpublic.integration_remote(root)
     branch = a.branch or f"work/{iid}"
     upstream = f"refs/remotes/{remote}/main"
+    landed = False  # set once the item is done on the integration main: then its work/<id> branch is deleted
     if git(root, "status", "--porcelain").strip():
         raise land_stop("clean tree", "uncommitted changes: commit or stash them first (git status --short)")
     if not has_ref(root, f"refs/heads/{branch}"):
         raise land_stop("branch", f"no local branch {branch} (--branch names another)")
     other = checked_out_elsewhere(root, branch)
-    if other:  # a finished worker's worktree, clean and locked by Claude Code, is removed; any other refuses
+    agent_branch = None
+    if other:  # a finished worker's clean worktree, locked by Claude Code or an unlocked agent-*, is removed
         why = release_worker_worktree(root, *other)
         if why:
             raise land_stop("branch", f"{branch} is checked out in the worktree {other[0]} and {why}: land it from "
                                       "there, or remove that worktree first")
+        agent_branch = AGENT_BRANCH + other[0].name  # the Agent tool's branch of that worktree, deleted once landed
     start = git(root, "rev-parse", "HEAD").strip()
     start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
                                encoding="utf-8", errors="replace").stdout.strip()
@@ -664,6 +693,7 @@ def cmd_land(bl, a):
             verify_landed(root, remote, upstream, iid)
             subprocess.run(["git", "update-ref", "-d", f"{LAND_REF}/{iid}"], cwd=root, capture_output=True)
             say(f"land: {bl.label(iid)} landed")
+            landed = True
         return 0
     finally:  # back to where land started, whatever happened after the rebase switched to BRANCH
         back = (["switch", "-q", start_ref[len("refs/heads/"):]] if start_ref.startswith("refs/heads/")
@@ -672,6 +702,10 @@ def cmd_land(bl, a):
                            errors="replace")
         if p.returncode:
             say(f"land: could not return to {start_ref or start[:10]}: {(p.stderr or p.stdout).strip()}")
+        elif landed:  # the worker's branches, landed: never the one land runs on
+            for done_branch in (branch, agent_branch):
+                if done_branch and start_ref != f"refs/heads/{done_branch}":
+                    delete_landed_branch(root, done_branch, upstream)
 
 
 def summary_key(bl, iid):
