@@ -2,7 +2,7 @@
   "id": "BG-xwqrlvpp",
   "kind": "bug",
   "title": "Two doc statements contradict the code: backlog.md says Edit and Write are allowed outright in settings, and git.md says a headless run pushes to code/<id> lane branches",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j6hh2ib2",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,30 @@
     "_tools/test_docs_headless_statements.py"
   ],
   "notes": "Merged from BG-54dzvk7e: the goal of BG-v7ptowb2 and check_program_refusal docstring disagree on inline python3 -c; decided: inline python3 -c stays allowed (the repros of BG-lemd7ahg are python3 -c), the docstring is right, so the wording that says every check is a python3 script under _tools/ is corrected here.",
-  "claimed_by": "seventh-w39"
+  "evidence": {
+    "commit": "868c26dc433d84fc5a1ad7c57c50c8e19fa71fe5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "1",
+          "-k",
+          "docs_headless_statements_match_code"
+        ],
+        "exit": 0,
+        "sha256": "ca9b90e1f2f4c867"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(1 if 'allowed outright' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
