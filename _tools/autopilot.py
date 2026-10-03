@@ -14,6 +14,11 @@ report of what the run did.
                                               written, as it arrives, to _cache/autopilot/SP/<UTC stamp>.jsonl. The
                                               runner ends the child at the first system compact_boundary event, and
                                               records the end in _cache/autopilot/SP/status.json with the start ref.
+                                              The child is bounded: --max-turns MAX_TURNS in its command and a
+                                              wall-clock deadline DEADLINE_S from its start, past which the runner
+                                              ends its process tree and records the cause `timeout`; the
+                                              environment variables KB_RUNNER_MAX_TURNS and KB_RUNNER_DEADLINE_S
+                                              replace the two (a value that is not a positive number is ignored).
   autopilot.py runner reset SP                free the worktree a refused start names: refused while a live runner holds SP;
                                               a worktree with uncommitted files has them kept in a git stash of the clone
                                               (`autopilot reset SP STAMP`), one whose branch diverged from the integration
@@ -25,23 +30,26 @@ report of what the run did.
                                               open on them, the bugs filed since the start ref and the exit cause
 
 Exit cause (status.json `cause`): `compaction` (the child was ended at its first compact_boundary), else read from the
-run's own final result and the child's exit code: `error` (the child could not start, no result, an error result or a
-non-zero exit, or a result that names no cause), else the cause the result's last `sprint-runner: <cause>` line names: `landed-limit` (K
+run's own final result and the child's exit code: `timeout` (the child was ended at its deadline), `error` (the child
+could not start, no result, an error result, which a run past its turn limit gives, a non-zero exit, or a result that
+names no cause), else the cause the result's last `sprint-runner: <cause>` line names: `landed-limit` (K
 items landed), `sprint-done` (nothing ready is left) or `blocked` (what is ready waits on a gate or trigger). While the
 run lives the cause is `running`. A runner that gets SIGTERM or SIGHUP (`backlog.py procs --end`, its manager's exit)
 ends the child's process tree and writes `error` with the signal's name as the detail.
 
 At most bl_base.MAX_RUNNERS runners live on a host, whatever their clone. Each records itself while it runs in the host
 lock directory (`kb-runner.<pid>.json`: pid, sprint, clone, start time and the touches of the sprint's open items), and
-status.json carries the same pid. A third `runner start` is refused naming the two, a start of a sprint a live runner
+status.json carries the same pid, the run's start, its deadline and its turn limit. A third `runner start` is refused naming the two, a start of a sprint a live runner
 holds is refused, and so is one whose committed touches overlap those of another sprint's runner, naming the globs and
 the holder (the same check `backlog.py start` makes). A record whose process is gone is ignored and removed.
 
-Exit codes: `runner start` 0 the run ended with a named cause other than `error`, 1 it ended in `error`, 2 refused (a
+Exit codes: `runner start` 0 the run ended with a named cause other than `error` and `timeout`, 1 it ended in one of
+those two, 2 refused (a
 bad sprint id, no git clone, a dirty or diverged worktree, no settings file, two runners already live, a sprint held by
 a runner, touches that overlap another runner's); `runner reset` 0 reset or nothing to reset, 2 refused (a bad sprint
 id, a live runner holds the sprint, git failed); `runner-status` 0 printed, 1 no run was recorded for the sprint, 2 a bad
-sprint id. Standard library only.
+sprint id. `runner-status` and `status` show a run's age (`age 2h05m`, from the child's start; `ran ...` once it ended)
+and mark a run still `running` past its deadline `stalled`. Standard library only.
 
   autopilot.py status [--hook]                the manager's state in one capped command: runners (live records of the host
                                               lock directory, and the cause of each ended run's status.json; a status.json that says `running` while no live
@@ -63,7 +71,7 @@ sprint id. Standard library only.
                                               anything fails, so a session is never kept from compacting past that step.
   .claude/settings.json runs `status --hook` on SessionStart with the `compact` matcher and `precompact` on PreCompact.
 """
-import argparse, contextlib, datetime, json, os, re, signal, subprocess, sys
+import argparse, contextlib, datetime, json, os, re, signal, subprocess, sys, threading
 from pathlib import Path
 
 import bl_base
@@ -89,6 +97,11 @@ CAUSE_LINE = re.compile(r"^sprint-runner: (" + "|".join(CAUSES_FROM_RESULT) + r"
 SPRINT_ID = re.compile(r"^SP-[a-z2-7]{8}$")
 STATUS_MAX = 1000  # runner-status prints fewer characters than this
 GRACE_S = 5  # seconds a child gets to end after SIGTERM before its process group is killed
+MAX_TURNS = 500  # --max-turns of the headless child: a loop guard well above what a run takes before its first compaction
+DEADLINE_S = 6 * 3600  # seconds a child lives at most; past it the runner ends its process tree (cause `timeout`)
+TURNS_ENV = "KB_RUNNER_MAX_TURNS"  # environment overrides of the two bounds, for tests and a host that wants other ones
+DEADLINE_ENV = "KB_RUNNER_DEADLINE_S"
+FAIL_CAUSES = ("error", "timeout")  # the causes `runner start` exits 1 for
 DETAIL_CHARS = 120
 DIRTY_FILES = 8  # files a dirty-worktree refusal names
 DONE_SUBJECT = "chore(backlog): done "
@@ -226,11 +239,29 @@ def plugin_dirs(worktree):
     return [str(d) for d in found]
 
 
+def bound(env_name, default, cast):
+    """The positive number the environment variable ENV_NAME holds, as CAST makes it; DEFAULT when unset, unreadable or
+    not above zero (a bad override never stops a run)."""
+    try:
+        value = cast(os.environ.get(env_name, ""))
+    except ValueError:
+        return default
+    return value if value > 0 and value == value and value != float("inf") else default
+
+
+def max_turns():
+    return bound(TURNS_ENV, MAX_TURNS, int)
+
+
+def deadline_s():
+    return bound(DEADLINE_ENV, DEADLINE_S, float)
+
+
 def claude_argv(worktree, sprint, landed=None):
-    """The `claude -p` command of a run: the prompt, stream-json output, the worktree's settings file and each plugin
-    by --plugin-dir, all explicit. No permission flag: the project's allow rules govern the run."""
+    """The `claude -p` command of a run: the prompt, stream-json output, the turn limit, the worktree's settings file
+    and each plugin by --plugin-dir, all explicit. No permission flag: the project's allow rules govern the run."""
     prompt = PROMPT.format(sprint=sprint, landed=LANDED_FLAG.format(k=landed) if landed else "")
-    argv = [*CLAUDE, "-p", prompt, "--output-format", "stream-json", "--verbose",
+    argv = [*CLAUDE, "-p", prompt, "--output-format", "stream-json", "--verbose", "--max-turns", str(max_turns()),
             "--settings", str(Path(worktree) / ".claude" / "settings.json"), "--disallowedTools", *RUNNER_DENY]
     for d in plugin_dirs(worktree):
         argv += ["--plugin-dir", d]
@@ -243,15 +274,31 @@ def one_line(text, n=DETAIL_CHARS):
     return " ".join(str(text).split())[:n]
 
 
-def supervise(argv, cwd, keep, stderr):
+def supervise(argv, cwd, keep, stderr, deadline=None):
     """Run ARGV in CWD with its stdout read line by line into the open file KEEP (each line written and flushed as it
     arrives) and its stderr into the open file STDERR. The child is ended at the first system compact_boundary event,
-    and on any interrupt. Returns {"compaction": bool, "result": the last result event or None, "exit_code": int}."""
+    after DEADLINE seconds (deadline_s() when None: SIGTERM, then its process tree after GRACE_S), and on any
+    interrupt. Returns {"compaction": bool, "timeout": bool, "result": the last result event or None, "exit_code": int}."""
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     proc = subprocess.Popen(argv, cwd=str(cwd), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=stderr,
                             text=True, encoding="utf-8", errors="replace", env={**os.environ, HEADLESS_ENV: "1"},
                             **group)
-    out = {"compaction": False, "result": None}
+    out = {"compaction": False, "timeout": False, "result": None}
+
+    def expire():  # runs in a timer thread: the child has outlived its deadline
+        if out["compaction"]:
+            return
+        out["timeout"] = True
+        proc.terminate()
+        try:
+            proc.wait(GRACE_S)
+        except subprocess.TimeoutExpired:
+            pass
+        end_tree(proc)  # the child's group in any case: a subagent or a shell command it left holds the pipe open
+
+    timer = threading.Timer(deadline_s() if deadline is None else deadline, expire)
+    timer.daemon = True
+    timer.start()
     try:
         for line in proc.stdout:
             keep.write(line if line.endswith("\n") else line + "\n")
@@ -275,6 +322,7 @@ def supervise(argv, cwd, keep, stderr):
         if not out["compaction"]:
             proc.wait()
     finally:
+        timer.cancel()
         end_tree(proc)  # the child's process group, which subagents and shell commands belong to
         proc.wait()
     out["exit_code"] = proc.returncode
@@ -320,6 +368,8 @@ def exit_cause(run):
     its final result and exit code."""
     if run["compaction"]:
         return "compaction", ""
+    if run.get("timeout"):
+        return "timeout", f"the child was ended at its deadline of {run.get('deadline_s'):g}s"
     res = run["result"]
     if res is None:
         return "error", f"no result event, exit {run['exit_code']}"
@@ -330,6 +380,48 @@ def exit_cause(run):
     if named:
         return named[-1], ""
     return "error", "the final result names no cause: its last line is not " + CAUSE_MARKER.format(cause="<cause>")
+
+
+def parse_time(text):
+    """The datetime of `YYYY-MM-DDTHH:MM:SSZ`; None when TEXT is not one."""
+    try:
+        return datetime.datetime.strptime(str(text), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+    except ValueError:
+        return None
+
+
+def seconds_since(started, end=None):
+    """Whole seconds from STARTED (`YYYY-MM-DDTHH:MM:SSZ`) to END (the same form, default now), never below 0; None when
+    either does not read."""
+    t0, t1 = parse_time(started), (now() if end is None else parse_time(end))
+    return None if t0 is None or t1 is None else max(0, int((t1 - t0).total_seconds()))
+
+
+def age_text(seconds):
+    """A span as `45s`, `7m`, `2h05m` or `3d04h`."""
+    if seconds < 60:
+        return f"{seconds}s"
+    if seconds < 3600:
+        return f"{seconds // 60}m"
+    if seconds < 86400:
+        return f"{seconds // 3600}h{seconds % 3600 // 60:02d}m"
+    return f"{seconds // 86400}d{seconds % 86400 // 3600:02d}h"
+
+
+def age_label(st, pid=None):
+    """`age 2h05m` of the run status.json ST records while it runs (with `stalled` past its deadline), `ran 2h05m` once it
+    ended; `` when the run's start or end does not read, or PID is given and is not the runner that wrote ST."""
+    if not isinstance(st, dict) or (pid is not None and st.get("pid") != pid):
+        return ""
+    if st.get("cause") == "running":
+        age = seconds_since(st.get("started"))
+        if age is None:
+            return ""
+        deadline = st.get("deadline_s")
+        past = isinstance(deadline, (int, float)) and not isinstance(deadline, bool) and age > deadline
+        return f"age {age_text(age)}" + (" stalled" if past else "")
+    age = seconds_since(st.get("started"), st.get("ended")) if st.get("ended") else None
+    return "" if age is None else f"ran {age_text(age)}"
 
 
 def register_runner(root, sprint):
@@ -391,7 +483,8 @@ def run_in_slot(sprint, landed, root, record):
     name, keep = open_stream(directory, started.strftime("%Y%m%dT%H%M%SZ"))
     status = {"sprint": sprint, "pid": os.getpid(), "worktree": str(wt), "branch": branch_name(sprint), "start_ref": start,
               "started": started.strftime("%Y-%m-%dT%H:%M:%SZ"), "stream": name, "landed_limit": landed,
-              "cause": "running", "detail": "", "exit_code": None, "ended": None}
+              "cause": "running", "detail": "", "exit_code": None, "ended": None, "deadline_s": deadline_s(),
+              "max_turns": max_turns()}
     write_status(directory / "status.json", status)
     argv = claude_argv(wt, sprint, landed)
     run = {"compaction": False, "result": None, "exit_code": -1}
@@ -400,6 +493,7 @@ def run_in_slot(sprint, landed, root, record):
         with keep, open(directory / (name[:-len(".jsonl")] + ".stderr"), "w", encoding="utf-8", newline="\n") as err:
             try:
                 run = supervise(argv, wt, keep, err)
+                run["deadline_s"] = status["deadline_s"]
                 detail = None
             except OSError as e:  # claude not found, or not runnable
                 detail = one_line(f"cannot start {argv[0]}: {e}")
@@ -411,7 +505,7 @@ def run_in_slot(sprint, landed, root, record):
                       ended=now().strftime("%Y-%m-%dT%H:%M:%SZ"))
         write_status(directory / "status.json", status)
     print(f"{sprint}: {cause}" + (f" ({why})" if why else "") + f"; stream {directory / name}")
-    return 1 if cause == "error" else 0
+    return 1 if cause in FAIL_CAUSES else 0
 
 
 # ---------------------------------------------------------------- the report
@@ -477,7 +571,8 @@ def status_text(sprint, root=ROOT):
         return None
     cause = str(st.get("cause") or "unknown")
     head = f"{sprint} exit cause {cause}" + (f": {one_line(st['detail'])}" if st.get("detail") else "")
-    lines = [head, f"start {str(st.get('start_ref') or '')[:10]}, started {st.get('started')}"]
+    lines = [head, f"start {str(st.get('start_ref') or '')[:10]}, started {st.get('started')}"
+             + "".join(", " + x for x in [age_label(st)] if x)]
     repo = Path(st["worktree"]) if st.get("worktree") and Path(st["worktree"]).is_dir() else Path(root)
     try:
         bl = bl_base.Backlog(repo)
@@ -525,7 +620,10 @@ def runner_lines(root, show):
             pid = int(rec["pid"])
             if bl_base.pid_alive(pid):
                 live.add(str(rec.get("sprint")))
-                items.append(f"{rec.get('sprint')} pid {pid} alive worktree {Path(str(rec.get('clone'))).name}")
+                sp = str(rec.get("sprint"))
+                age = age_label(read_status(root, sp), pid) if SPRINT_ID.match(sp) else ""
+                items.append(f"{rec.get('sprint')} pid {pid} alive worktree {Path(str(rec.get('clone'))).name}"
+                             + (f" {age}" if age else ""))
         except (OSError, ValueError, KeyError, TypeError, AttributeError):
             continue
     for p in sorted((Path(root) / "_cache" / "autopilot").glob("SP-*/status.json")):
