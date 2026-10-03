@@ -271,6 +271,15 @@ def test_kbingest_map_symlink_is_not_followed(tmp_path):
     assert any(n["note"].startswith("pkg/link.py: not a regular file") for n in doc["notes"]), doc["notes"]
 
 
+@pytest.fixture(autouse=True)
+def fake_env_passes(monkeypatch):
+    """The fake toolchains take their settings (KB_FAKE_LOG, KB_FAKE_MODE, KB_TEST_MARK, KB_TEST_KEEP) from the
+    environment, which the mapper's allow-list drops: these names pass here, in every test of the file, and no other
+    KB_ one (the allow-list's own tests plant names that none of these prefixes begins)."""
+    monkeypatch.setattr(kbingest, "ENV_KEEP_PREFIX",
+                        (*kbingest.ENV_KEEP_PREFIX, "KB_FAKE_", "KB_TEST_MARK", "KB_TEST_KEEP"))
+
+
 # The fake toolchain: `fakemap` on PATH is a shim over fixtures/kbingest/fakemap.py.
 
 def install_fake(tmp_path, monkeypatch, name="fakemap"):
@@ -380,7 +389,7 @@ def test_kbingest_map_mapper_crash_is_a_note_and_the_worktree_goes(pyrepo, tmp_p
 
 @requires_git
 def test_kbingest_map_environment_is_network_off(pyrepo, tmp_path, monkeypatch):
-    """Planted: a credential and a proxy in the caller's environment, and a harmless variable that must pass."""
+    """Planted: a credential and a proxy in the caller's environment, and a variable the file's fixture lets pass."""
     install_fake(tmp_path, monkeypatch)
     monkeypatch.setenv("KB_TEST_API_TOKEN", "planted-token")
     monkeypatch.setenv("KB_TEST_KEEP", "kept")
@@ -402,8 +411,9 @@ def test_kbingest_map_environment_is_network_off(pyrepo, tmp_path, monkeypatch):
 def test_kbingest_map_scrub_env():
     bindir = os.path.abspath(os.sep + "bin")  # absolute on Windows too (a drive)
     env = kbingest.scrub_env({"PATH": bindir, "GITLAB_TOKEN": "t", "AWS_SECRET_ACCESS_KEY": "s", "Https_Proxy": "p",
-                              "HOME": "/home/jan.kowalski", "GOTOOLCHAIN": "auto"})
+                              "HOME": "/home/jan.kowalski", "GOTOOLCHAIN": "auto", "KB_TEST_UNLISTED": "x"})
     assert env["PATH"] == bindir and env["HOME"] == "/home/jan.kowalski"
+    assert "KB_TEST_UNLISTED" not in env  # a name nobody listed is not passed on
     assert "GITLAB_TOKEN" not in env and "AWS_SECRET_ACCESS_KEY" not in env and "Https_Proxy" not in env
     assert env["GOTOOLCHAIN"] == "local"  # offline settings win over the caller's
 
@@ -448,48 +458,128 @@ def test_kbingest_map_path_absolute_only_scrub_env(tmp_path):
 
 
 def test_kbingest_map_scrubs_toolchain_hooks_env(tmp_path):
-    """Planted: toolchain variables that name a program or hook inside the worktree or the source clone (an absolute
-    path, one piece of a list or of `--require=PATH`, a relative path with a folder part, a link to the worktree)
-    are dropped from the child's environment; the same variables naming nothing of the clone, and unrelated
-    ones, stay."""
+    """Planted: kept names (a home, a temporary folder, the locale, a toolchain home) whose values name code of the
+    worktree or the source clone (an absolute path, one piece of a list, a relative path with a folder part, a link
+    to the worktree) are dropped from the child's environment; the same names naming nothing of the clone stay."""
     root, repo, out = tmp_path / "tree", tmp_path / "clone", tmp_path / "toolchain"
     for folder in (root, repo, out):
         folder.mkdir()
     sep = os.pathsep
     planted = {
-        "NODE_OPTIONS": f"--max-old-space-size=64 --require={repo / 'hook.js'}",
-        "DOTNET_STARTUP_HOOKS": sep.join([str(out / "ok.dll"), str(root / "hook.dll")]),
+        "HOME": str(repo / "home"),
+        "TMPDIR": os.path.join("tmp", "x"),
+        "TEMP": "./t",
+        "LANG": f"--{repo / 'hook.js'}",
+        "Lc_All": sep.join([str(out / "ok"), str(root / "hook")]),  # the spelling is not compared
         "DOTNET_ROOT": str(repo / "dotnet"),
         "CARGO_HOME": str(root / ".cargo-home"),
-        "RUSTC": str(repo / "bin" / "rustc"),
-        "RUSTC_WRAPPER": os.path.join("tools", "w"),
-        "RUSTC_WORKSPACE_WRAPPER": "./w",
-        "Node_Options": f'"--require={root / "x.js"}"',  # the spelling is not compared
-        "PL_TOOL_DIR": str(repo / "tools"),  # not a toolchain name: any variable naming the clone goes
+        "RUSTUP_HOME": os.path.join(".rustup"),  # relative: not a path outside the clone
+        "GOPATH": "go",
     }
     try:
         os.symlink(root, tmp_path / "alias", target_is_directory=True)
-        planted["NODE_PATH"] = str(tmp_path / "alias" / "node_modules")
+        planted["GOMODCACHE"] = str(tmp_path / "alias" / "mod")
     except (OSError, NotImplementedError):
         pass  # no symbolic links here (Windows without the privilege)
     kept = {
-        "HOME": "/home/jan.kowalski", "LANG": "C", "PATH": str(out / "bin"), "PL_NOTE": "tools/w",
-        "NODE_OPTIONS_LIMIT": "--max-old-space-size=64", "DOTNET_ROOT_X64": str(out / "dotnet"),
-        "CARGO_HOME_NOTE": str(out / ".cargo"), "RUSTC_NOTE": "sccache", "RUSTDOC": "rustdoc",
-        "PL_TOOL_HOME": str(tmp_path),  # an ancestor of the clone is not inside it
+        "LANG": "C.UTF-8", "LC_ALL": "C", "PATH": str(out / "bin"), "TMPDIR": str(out / "tmp"),
+        "HOME": str(tmp_path),  # an ancestor of the clone is not inside it
+        "DOTNET_ROOT": str(out / "dotnet"), "CARGO_HOME": str(out / ".cargo"), "RUSTUP_HOME": str(out / ".rustup"),
+        "GOROOT": str(out / "go"),
     }
-    env = kbingest.scrub_env({**planted, **kept}, root=root, repo=repo)
+    env = kbingest.scrub_env({**planted, **{k: v for k, v in kept.items() if k not in planted and k.upper() not in
+                                            {p.upper() for p in planted}}}, root=root, repo=repo)
     for name in planted:
         assert name not in env, name
+    clean = kbingest.scrub_env(kept, root=root, repo=repo)
+    assert {k: clean[k] for k in kept} == kept
+    bare = kbingest.scrub_env(planted)  # without a worktree or clone only a relative value goes
+    for name in ("TMPDIR", "TEMP", "RUSTUP_HOME", "GOPATH"):
+        assert name not in bare, name
+    assert bare["DOTNET_ROOT"] == planted["DOTNET_ROOT"] and bare["HOME"] == planted["HOME"]
+
+
+# toolchain hooks that name a program or a library to load, by the name a toolchain reads; a value outside the clone
+# and one inside it, which a deny-list of values or of names alone each misses for some of them
+HOOKS = {
+    "CARGO_BUILD_RUSTC_WRAPPER": "tools/w", "CARGO_BUILD_RUSTC": "tools/rustc", "CARGO_BUILD_RUSTDOC": "./doc",
+    "CARGO_BUILD_RUSTFLAGS": "-C linker=tools/ld", "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER": "tools/ld",
+    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER": "tools/run", "CARGO_HTTP_SSL_VERSION": "tlsv1.2",
+    "CARGO_REGISTRY_CREDENTIAL_PROVIDER": "tools/cred", "CARGO_DOC_BROWSER": "tools/browser", "RUSTFLAGS": "-C linker=tools/ld",
+    "RUSTC_WRAPPER": "/opt/sccache", "GOFLAGS": "-toolexec=tools/w", "GOTOOLCHAIN": "go1.99", "GOEXPERIMENT": "x",
+    "RUBYOPT": "-rtools/hook", "PERL5OPT": "-Mtools::Hook", "PERL5LIB": "/opt/perl", "JAVA_TOOL_OPTIONS": "-javaagent:/opt/a.jar",
+    "_JAVA_OPTIONS": "-Dx=1", "BASH_ENV": "/opt/rc", "ENV": "/opt/rc", "GIT_EXEC_PATH": "/opt/git-core",
+    "GIT_CONFIG_GLOBAL": "/opt/gitconfig", "GIT_SSH_COMMAND": "ssh -F tools/c", "GIT_SSH": "/opt/ssh", "GIT_ASKPASS": "/opt/ask",
+    "npm_config_userconfig": "/opt/npmrc", "NPM_CONFIG_SCRIPT_SHELL": "/opt/sh", "LD_LIBRARY_PATH": "/opt/lib",
+    "LD_PRELOAD": "/opt/p.so", "DYLD_INSERT_LIBRARIES": "/opt/p.dylib", "DYLD_LIBRARY_PATH": "/opt/lib",
+    "NODE_OPTIONS": "--max-old-space-size=64", "NODE_PATH": "/opt/modules", "DOTNET_STARTUP_HOOKS": "/opt/h.dll",
+    "DOTNET_ADDITIONAL_DEPS": "/opt/d.json", "MSBUILDEXTENSIONSPATH": "/opt/ext", "NUGET_PLUGIN_PATHS": "/opt/plugin",
+    "PYTHONSTARTUP": "/opt/s.py", "PYTHONPATH": "/opt/py", "PYTHONHOME": "/opt/home", "PYTHONUSERBASE": "/opt/user",
+    "PIP_INDEX_URL": "https://pypi.example.com/", "EDITOR": "tools/ed", "SHELL": "/bin/sh", "BROWSER": "tools/b",
+    "SSH_AUTH_SOCK": "/opt/agent", "KB_TEST_UNLISTED": "x",
+}
+
+
+def planted_env(tmp_path):
+    """The whole of HOOKS, a kept name beside them and the clone's own paths."""
+    return {**HOOKS, "PATH": str(tmp_path / "bin"), "HOME": str(tmp_path / "home"), "LANG": "C.UTF-8", "LC_CTYPE": "C",
+            "TMPDIR": str(tmp_path / "tmp"), "SystemRoot": str(tmp_path / "win"),
+            "COMSPEC": str(tmp_path / "win" / "cmd.exe"), "PATHEXT": ".COM;.EXE", "USERPROFILE": str(tmp_path / "jan.kowalski"),
+            "NUMBER_OF_PROCESSORS": "4"}
+
+
+def test_kbingest_map_scrub_env_allowlist(tmp_path):
+    """Planted: every toolchain hook of HOOKS, whatever its value (a path inside the clone, a relative program, one
+    outside), is dropped, and so is a name nobody listed; the variables a build needs (PATH, a home, a temporary
+    folder, the locale, the Windows system and profile variables) stay under every spelling, with only the offline
+    settings added; a hook that NETWORK_OFF sets (GOFLAGS, GOTOOLCHAIN) has the offline value, never the planted one."""
+    root, repo = tmp_path / "tree", tmp_path / "clone"
+    root.mkdir()
+    repo.mkdir()
+    base = planted_env(tmp_path)
+    env = kbingest.scrub_env(base, windows=False, root=root, repo=repo)
+    for name, value in HOOKS.items():
+        assert env.get(name, None) != value, f"{name} reached the child"
+        assert name in kbingest.NETWORK_OFF or name not in env, name
+    assert env["GOFLAGS"] == "-mod=readonly" and env["GOTOOLCHAIN"] == "local"
+    kept = {k: v for k, v in base.items() if k not in HOOKS}
     assert {k: env[k] for k in kept} == kept
-    # outside the clone the same names stay, and without a worktree or clone only a relative path goes
-    outside = {"NODE_OPTIONS": "--max-old-space-size=64", "DOTNET_STARTUP_HOOKS": str(out / "ok.dll"),
-               "DOTNET_ROOT": str(out / "dotnet"), "CARGO_HOME": str(out / ".cargo"), "RUSTC": "rustc",
-               "RUSTC_WRAPPER": "sccache"}
-    assert {k: v for k, v in kbingest.scrub_env(outside, root=root, repo=repo).items() if k in outside} == outside
-    bare = kbingest.scrub_env(planted)
-    assert "RUSTC_WRAPPER" not in bare and "RUSTC_WORKSPACE_WRAPPER" not in bare
-    assert bare["DOTNET_ROOT"] == planted["DOTNET_ROOT"] and bare["NODE_OPTIONS"] == planted["NODE_OPTIONS"]
+    assert set(env) == set(kept) | set(kbingest.NETWORK_OFF)  # nothing else came along
+    # the same hooks inside the clone, and under another spelling of the name, go as well
+    inside = {name: str(repo / "hook") for name in HOOKS}
+    inside |= {name.lower(): str(root / "hook") for name in HOOKS}
+    assert set(kbingest.scrub_env({**inside, "PATH": base["PATH"]}, windows=False, root=root, repo=repo)) == (
+        {"PATH"} | set(kbingest.NETWORK_OFF))
+    # a toolchain home stays only as an absolute path outside the clone
+    homes = {"CARGO_HOME": str(tmp_path / "cargo"), "RUSTUP_HOME": str(tmp_path / "rustup"), "GOROOT": str(tmp_path / "go"),
+             "GOPATH": str(tmp_path / "gopath"), "GOMODCACHE": str(tmp_path / "mod"), "GOCACHE": str(tmp_path / "cache"),
+             "DOTNET_ROOT": str(tmp_path / "dotnet")}
+    assert {k: v for k, v in kbingest.scrub_env(homes, root=root, repo=repo).items() if k in homes} == homes
+    for k in homes:
+        assert k not in kbingest.scrub_env({k: str(repo / "x")}, root=root, repo=repo), k
+        assert k not in kbingest.scrub_env({k: os.path.join("x", "y")}, root=root, repo=repo), k
+        assert k not in kbingest.scrub_env({k: "x"}, root=root, repo=repo), k
+
+
+@requires_git
+def test_kbingest_map_scrub_env_allowlist_reaches_the_child(pyrepo, tmp_path, monkeypatch):
+    """Planted: the hooks of HOOKS in the process environment of a real `map` run; the environment a mapper's commands
+    get (its context's) holds none of them."""
+    install_fake(tmp_path, monkeypatch)
+    for name, value in HOOKS.items():
+        monkeypatch.setenv(name, value)
+
+    class Seen(FakeMapper):
+        def map(self, ctx, files):
+            self.seen["env"] = dict(ctx.env)
+
+    m = Seen("env")
+    code, _doc = fake_map(pyrepo, tmp_path, monkeypatch, m)
+    assert code == 0
+    got = m.seen["env"]
+    for name, value in HOOKS.items():
+        assert got.get(name) != value, f"{name} reached the mapper's commands"
+    assert got["GOFLAGS"] == "-mod=readonly" and "PATH" in got
 
 
 PLANTED = "kb-planted-node"  # a repository's node_modules/.bin/node, by a name no host has
@@ -897,6 +987,42 @@ def test_kbingest_map_scrubs_toolchain_hooks_cargo_config(tmp_path, monkeypatch)
         assert doc["tools"] == {} and doc["packages"] == [], name
     ok = commit_files(tmp_path / "ok", {**crate, ".cargo/config.toml":
                                         "[term]\nquiet = true\n[net]\noffline = true\n"})
+    code, doc = fake_map(ok, tmp_path, monkeypatch, kbingest.CargoMapper())
+    assert code == 0 and [c["args"] for c in calls_of(log)] == CARGO_CALLS
+    assert doc["tools"]["rust"]["tool"] == "cargo"
+
+
+@requires_git
+def test_kbingest_map_scrub_env_allowlist_cargo_config(tmp_path, monkeypatch):
+    """Planted: a `.cargo/config.toml` (or `.cargo/config`) with a `credential-provider` of `[registry]`, a
+    `global-credential-providers` list, a `credential-provider` of a `[registries.<name>]` table (cargo starts the
+    program to authenticate) or `doc.browser` (the program `cargo doc --open` runs); no cargo command runs. A config
+    with a registry's index and no provider still maps."""
+    log = install_lang(tmp_path, monkeypatch, ("cargo",))
+    crate = {"Cargo.toml": "[package]\nname = 'app'\n", "src/main.rs": "fn main() {}\n"}
+    declined = (
+        ("registry-provider", ".cargo/config.toml", "[registry]\ncredential-provider = 'tools/cred'\n",
+         "names registry.credential-provider"),
+        ("registry-provider-list", ".cargo/config.toml", "[registry]\ncredential-provider = ['tools/cred', '--x']\n",
+         "names registry.credential-provider"),
+        ("registry-global", ".cargo/config.toml", "[registry]\nglobal-credential-providers = ['tools/cred']\n",
+         "names registry.global-credential-providers"),
+        ("registries-provider", ".cargo/config", "[registries.corp]\nindex = 'sparse+https://corp.example.com/'\n"
+         "credential-provider = ['tools/cred', '--x']\n", "names registries.corp.credential-provider"),
+        ("registries-two", ".cargo/config.toml", "[registries.a]\ncredential-provider = 'cargo:token'\n"
+         "[registries.b]\ncredential-provider = 'tools/cred'\n",
+         "names registries.a.credential-provider, registries.b.credential-provider"),
+        ("doc-browser", ".cargo/config.toml", "[doc]\nbrowser = 'tools/browser'\n", "names doc.browser"),
+        ("doc-browser-list", ".cargo/config", "[doc]\nbrowser = ['tools/browser', '--x']\n", "names doc.browser"))
+    for name, rel, text, why in declined:
+        r = commit_files(tmp_path / name, {**crate, rel: text})
+        code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.CargoMapper())
+        assert code == 0
+        assert calls_of(log) == [], name  # not even cargo --version
+        assert len(notes_of(doc)) == 1 and notes_of(doc)[0].startswith(f"{rel}: {why}"), name
+        assert doc["tools"] == {} and doc["packages"] == [], name
+    ok = commit_files(tmp_path / "ok", {**crate, ".cargo/config.toml": "[registry]\ndefault = 'corp'\n"
+                                        "[registries.corp]\nindex = 'sparse+https://x.example.com/'\n"})
     code, doc = fake_map(ok, tmp_path, monkeypatch, kbingest.CargoMapper())
     assert code == 0 and [c["args"] for c in calls_of(log)] == CARGO_CALLS
     assert doc["tools"]["rust"]["tool"] == "cargo"

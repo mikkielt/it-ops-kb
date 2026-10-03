@@ -875,15 +875,22 @@ NETWORK_OFF = {
     "MSBUILDDISABLENUGETSDKRESOLVER": "1", "PIP_NO_INDEX": "1", "GIT_TERMINAL_PROMPT": "0",
     "PYTHONDONTWRITEBYTECODE": "1",
 }
-SECRET_ENV = re.compile(r"(?i)token|secret|passw|credential|api[_-]?key|private[_-]?key|auth|cookie|session")
-PROXY_ENV = re.compile(r"(?i)^(?:https?|all|ftp|no)_proxy$")
-# variables a toolchain reads as a program, a hook to load or its own home: node preloads NODE_OPTIONS' `--require`,
-# the .NET host starts the assemblies of DOTNET_STARTUP_HOOKS and loads the runtime from DOTNET_ROOT, cargo runs
-# RUSTC_WRAPPER, RUSTC_WORKSPACE_WRAPPER, RUSTC and RUSTDOC and reads its config and binaries under CARGO_HOME
-HOOK_ENV = frozenset((
-    "NODE_OPTIONS", "NODE_PATH", "DOTNET_STARTUP_HOOKS", "DOTNET_ROOT", "DOTNET_ADDITIONAL_DEPS", "DOTNET_SHARED_STORE",
-    "CARGO_HOME", "RUSTC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTDOC", "RUSTUP_HOME", "LD_PRELOAD",
-    "DYLD_INSERT_LIBRARIES", "PYTHONSTARTUP", "PYTHONPATH"))
+# the variables a mapper command keeps of the caller's environment, an allow-list: everything else is dropped, so a
+# toolchain hook nobody listed (CARGO_BUILD_RUSTC_WRAPPER, CARGO_TARGET_<triple>_LINKER, RUSTFLAGS, GOFLAGS, RUBYOPT,
+# PERL5OPT, JAVA_TOOL_OPTIONS, BASH_ENV, GIT_EXEC_PATH, GIT_CONFIG_GLOBAL, GIT_SSH_COMMAND, npm_config_userconfig,
+# LD_LIBRARY_PATH, NODE_OPTIONS, ...) never reaches a child that resolves a relative program against the repository.
+# Compared without case (Windows spells them either way). Plain names: PATH (scrubbed below), where a home, a temporary
+# folder and the locale are; on Windows the system and profile folders a process starts with
+ENV_KEEP = frozenset((
+    "PATH", "HOME", "TMPDIR", "TMP", "TEMP", "LANG", "LANGUAGE",
+    "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "COMSPEC", "PATHEXT", "OS", "USERPROFILE", "HOMEDRIVE", "HOMEPATH", "APPDATA",
+    "LOCALAPPDATA", "PROGRAMDATA", "ALLUSERSPROFILE", "PROGRAMFILES", "PROGRAMFILES(X86)", "PROGRAMW6432",
+    "COMMONPROGRAMFILES", "COMMONPROGRAMFILES(X86)", "COMMONPROGRAMW6432", "NUMBER_OF_PROCESSORS",
+    "PROCESSOR_ARCHITECTURE"))
+ENV_KEEP_PREFIX = ("LC_",)  # the locale categories
+# the folders where a toolchain lives, kept only as an absolute path outside the worktree and the source clone: a
+# toolchain installed away from its default, which a child could not find otherwise
+ENV_HOMES = frozenset(("CARGO_HOME", "RUSTUP_HOME", "DOTNET_ROOT", "GOROOT", "GOPATH", "GOMODCACHE", "GOCACHE"))
 
 
 def under_worktree(path, root):
@@ -908,29 +915,38 @@ def under_worktree(path, root):
     return False
 
 
-def names_clone_code(name, value, tops):
-    """True when the environment variable NAME, set to VALUE, names a path inside one of TOPS (the worktree and the
-    source clone, None ones skipped). VALUE is split on the path-list separator, white space, `=` and quotes, so
-    `NODE_OPTIONS=--require=/clone/hook.js`, a `DOTNET_STARTUP_HOOKS` list and a `RUSTC_WRAPPER` all show their paths;
-    an absolute piece counts when it lies inside a top. A variable in HOOK_ENV, which names a program, a hook or a
-    toolchain home the child loads, also counts for a relative piece with a folder part (`tools/w`, `./hook.js`): the
-    child resolves it against its working folder, the worktree. Any other variable keeps its relative pieces: only
-    a variable the child reads as a path can name code, and an absolute one is the caller's own choice outside the
-    clone."""
-    hook = name.upper() in HOOK_ENV
+def names_clone_code(value, tops):
+    """True when the environment value VALUE names code of the clone: a path inside one of TOPS (the worktree and the
+    source clone, None ones skipped), or a relative one with a folder part (`tools/w`, `./hook.js`), which the child
+    resolves against its working folder, the worktree. VALUE is split on the path-list separator, white space, `=`
+    and quotes, so `--require=/clone/hook.js` and a list of paths all show their pieces; an absolute piece counts when
+    it lies inside a top."""
     for piece in re.split("[\\s=\"'" + re.escape(os.pathsep) + "]+", value):
         if not piece:
             continue
         if os.path.isabs(piece):
             if any(top is not None and under_worktree(piece, top) for top in tops):
                 return True
-        elif hook and (re.search(r"[\\/]", piece) or piece in (".", "..")):
+        elif re.search(r"[\\/]", piece) or piece in (".", ".."):
             return True
     return False
 
 
+def kept_env(name, value, tops):
+    """True when the mapper child keeps the variable NAME set to VALUE: it is in ENV_KEEP or begins with an
+    ENV_KEEP_PREFIX and names no code of the clone (`names_clone_code`), or it is in ENV_HOMES and is an absolute path
+    outside the clone. PATH is kept here and cleaned by `scrub_env`."""
+    up = name.upper()
+    if up == "PATH":
+        return True
+    if up in ENV_HOMES:
+        return os.path.isabs(value) and not names_clone_code(value, tops)
+    return (up in ENV_KEEP or up.startswith(ENV_KEEP_PREFIX)) and not names_clone_code(value, tops)
+
+
 def scrub_env(base=None, windows=None, root=None, repo=None):
-    """The environment of a mapper command: the caller's, without credentials and proxies, plus NETWORK_OFF. On
+    """The environment of a mapper command: an allow-list of the caller's (`kept_env`: ENV_KEEP, ENV_KEEP_PREFIX and
+    ENV_HOMES, so no credential, proxy or toolchain hook whatever its name) plus NETWORK_OFF. On
     Windows (WINDOWS, by default os.name) it also sets NoDefaultCurrentDirectoryInExePath: cmd.exe, which runs an npm
     cmd-shim (tsc.cmd, npm.cmd), otherwise looks for a bare `node` in the working folder before PATH, and that folder
     is the repository's (https://learn.microsoft.com/windows/win32/api/processenv/nf-processenv-needcurrentdirectoryforexepathw:
@@ -938,19 +954,14 @@ def scrub_env(base=None, windows=None, root=None, repo=None):
     PATH keeps only its absolute entries outside the worktree ROOT and outside the source repository REPO (its own
     clone, which the operator's PATH can name too: a `node_modules/.bin` there, a direnv-added bin folder): a child
     resolves a relative entry (`.`, `node_modules/.bin`, an empty one) against its own working folder, the repository's,
-    so `#!/usr/bin/env node` or a rustup proxy there would run the repository's program.
-    Every other variable whose value names a path inside ROOT or REPO is dropped (`names_clone_code`), and with it
-    the toolchain's own hooks in HOOK_ENV (NODE_OPTIONS, DOTNET_STARTUP_HOOKS, DOTNET_ROOT, CARGO_HOME, RUSTC_WRAPPER,
-    RUSTC, ...) that name a relative path: a direnv-loaded or exported setting of the clone would otherwise make
-    node, dotnet or cargo load the clone's code, whatever PATH holds."""
+    so `#!/usr/bin/env node` or a rustup proxy there would run the repository's program. A kept variable whose value
+    names a path inside ROOT or REPO, or a relative path with a folder part, is dropped too."""
     tops = (root, repo)
-    env = {k: v for k, v in (os.environ if base is None else base).items()
-           if not SECRET_ENV.search(k) and not PROXY_ENV.match(k)
-           and (k.upper() == "PATH" or not names_clone_code(k, v, tops))}
+    env = {k: v for k, v in (os.environ if base is None else base).items() if kept_env(k, v, tops)}
     env.update(NETWORK_OFF)
     for k in [k for k in env if k.upper() == "PATH"]:
         env[k] = os.pathsep.join(e for e in env[k].split(os.pathsep) if e and Path(e).is_absolute()
-                                 and not any(top is not None and under_worktree(e, top) for top in (root, repo)))
+                                 and not any(top is not None and under_worktree(e, top) for top in tops))
     if os.name == "nt" if windows is None else windows:
         env["NoDefaultCurrentDirectoryInExePath"] = "1"
     return env
@@ -1416,8 +1427,10 @@ class CargoMapper(Mapper):
         `build.rustc-workspace-wrapper`, `build.rustdoc`, a `target.<triple>.runner` or `.linker`, or an `include` of
         another file (not followed), any key of `[env]` (set in the environment of the programs cargo starts, build
         scripts and rustc among them, RUSTC_WRAPPER too), a `rustflags` of `[build]` or of a target (`-C linker=`,
-        `-Z` and plugin flags that name a program) and any key of `[host]`. A file that is not a regular file, cannot be
-        read or is not TOML declines too."""
+        `-Z` and plugin flags that name a program), any key of `[host]`, a `credential-provider` of `[registry]` or of
+        a `[registries.<name>]` table (and `global-credential-providers`), which cargo starts to authenticate, and
+        `doc.browser`, a program `cargo doc --open` runs. A file that is not a regular file, cannot be read or is not
+        TOML declines too."""
         path = ctx.root / rel
         if rel not in ctx.links and not path.is_symlink() and not path.exists():
             return None
@@ -1438,6 +1451,15 @@ class CargoMapper(Mapper):
             for triple, table in sorted(target.items()):
                 if isinstance(table, dict):
                     found += [f"target.{triple}.{k}" for k in ("runner", "linker", "rustflags") if k in table]
+        for section, keys in (("registry", ("credential-provider", "global-credential-providers")), ("doc", ("browser",))):
+            table = doc.get(section)
+            if isinstance(table, dict):
+                found += [f"{section}.{k}" for k in keys if k in table]
+        registries = doc.get("registries")
+        if isinstance(registries, dict):
+            for reg, table in sorted(registries.items()):
+                if isinstance(table, dict) and "credential-provider" in table:
+                    found.append(f"registries.{reg}.credential-provider")
         for section in ("env", "host"):
             table = doc.get(section)
             if isinstance(table, dict):
