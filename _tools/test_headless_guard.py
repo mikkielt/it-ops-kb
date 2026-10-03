@@ -365,3 +365,106 @@ def test_headless_guard_test_runner_new_test_file_is_denied(runner, tool, ti):
 ])
 def test_headless_guard_test_runner_other_paths_are_not_over_matched(runner, tool, ti):
     assert not denied(runner(tool, ti))
+
+
+@pytest.fixture
+def clone(tmp_path):
+    """(the runner's project, its clone): <clone>/.claude/worktrees/runner-SP-xxxxxxxx, a runner's worktree."""
+    run = tmp_path / "clone-x" / ".claude" / "worktrees" / "runner-SP-xxxxxxxx"
+    run.mkdir(parents=True)
+    return run, run.parent.parent.parent
+
+
+def worker_write(run, path):
+    return hook(run, "Write", {"file_path": str(path), "content": "x"})
+
+
+@pytest.mark.parametrize("rel", ["kb/_self/reports/t.md", "x.txt", "_tools/kbusage.py", ".claude/worktrees/n1/kb/public/x.md"])
+def test_headless_guard_worker_worktree_sibling_agent_write_is_allowed(clone, rel):
+    run, root = clone
+    assert worker_write(run, root / ".claude" / "worktrees" / "agent-a1" / rel) is None
+
+
+def test_headless_guard_worker_worktree_sibling_agent_write_in_other_case_is_allowed(clone):
+    run, root = clone
+    assert worker_write(run, root / ".claude" / "worktrees" / "Agent-A1" / "x.txt") is None
+
+
+def test_headless_guard_worker_worktree_another_clone_is_denied(clone, tmp_path):
+    run, root = clone
+    other = tmp_path / "clone-y" / ".claude" / "worktrees" / "agent-a1"
+    other.mkdir(parents=True)
+    assert denied(worker_write(run, other / "x.txt"))
+    assert denied(worker_write(run, tmp_path / "clone-y" / "x.txt"))
+    assert denied(worker_write(run, root / "x.txt"))  # the clone root itself is not the project
+
+
+@pytest.mark.parametrize("rel", ["../x.txt", "../../x.txt", "../../../../x.txt", "kb/../../x.txt", "../agent-a1/../../x.txt"])
+def test_headless_guard_worker_worktree_dotdot_escape_is_denied(clone, rel):
+    run, root = clone
+    agent = root / ".claude" / "worktrees" / "agent-a1"
+    agent.mkdir()
+    assert denied(worker_write(run, str(agent) + "/" + rel)), rel
+
+
+def test_headless_guard_worker_worktree_symlink_escape_is_denied(clone, tmp_path):
+    run, root = clone
+    away = tmp_path / "away"
+    away.mkdir()
+    agent = root / ".claude" / "worktrees" / "agent-a1"
+    agent.mkdir()
+    (agent / "link").symlink_to(away, target_is_directory=True)
+    (root / ".claude" / "worktrees" / "agent-a2").symlink_to(away, target_is_directory=True)
+    assert denied(worker_write(run, agent / "link" / "x.txt"))
+    assert denied(worker_write(run, root / ".claude" / "worktrees" / "agent-a2" / "x.txt"))
+
+
+@pytest.mark.parametrize("rel", [
+    "_tools/kb_hook.py", ".claude/settings.json", ".claude/settings.local.json", ".claude/hooks/x.py", ".claude-plugin/plugin.json",
+    "_tools/bl_land.py", "_tools/tests.py", "_tools/conftest.py", "_tools/test_new_thing.py", "AGENTS.md",
+    "_TOOLS/KB_HOOK.PY", ".claude/worktrees/n1/_tools/kb_hook.py",
+])
+def test_headless_guard_worker_worktree_guard_files_inside_it_are_denied(clone, rel):
+    run, root = clone
+    assert denied(worker_write(run, root / ".claude" / "worktrees" / "agent-a1" / rel)), rel
+
+
+def test_headless_guard_worker_worktree_item_gate_change_inside_it_is_denied(clone):
+    run, root = clone
+    path = root / ".claude" / "worktrees" / "agent-a1" / ITEM_PATH
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps(ITEM, indent=2) + "\n", encoding="utf-8")
+    assert denied(hook(run, "Write", {"file_path": str(path), "content": answered()}))
+    assert hook(run, "Write", {"file_path": str(path), "content": json.dumps({**ITEM, "title": "u"})}) is None
+
+
+@pytest.mark.parametrize("name", ["worker-a1", "runner-SP-yyyyyyyy", "agent", "agent-", "agents-a1", "xagent-a1", "a1"])
+def test_headless_guard_worker_worktree_sibling_not_named_agent_is_denied(clone, name):
+    run, root = clone
+    assert denied(worker_write(run, root / ".claude" / "worktrees" / name / "x.txt")), name
+
+
+def test_headless_guard_worker_worktree_deeper_or_elsewhere_agent_dir_is_denied(clone, tmp_path):
+    run, root = clone
+    assert denied(worker_write(run, root / ".claude" / "worktrees" / "n1" / "agent-a1" / "x.txt"))
+    assert denied(worker_write(run, root / ".claude" / "agent-a1" / "x.txt"))
+    assert denied(worker_write(run, root / "agent-a1" / "x.txt"))
+    assert denied(worker_write(run, root / ".claude" / "worktrees" / "agent-a1"))  # the worktree itself, no file
+
+
+def test_headless_guard_worker_worktree_plain_project_sibling_is_not_newly_allowed(tmp_path):
+    proj = tmp_path / "clone-x" / ".claude" / "worktrees" / "w1"  # not runner-*
+    proj.mkdir(parents=True)
+    assert denied(worker_write(proj, proj.parent / "agent-a1" / "x.txt"))
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    assert denied(worker_write(plain, tmp_path / "agent-a1" / "x.txt"))
+    assert denied(worker_write(plain, plain.parent / ".claude" / "worktrees" / "agent-a1" / "x.txt"))
+    nodir = tmp_path / "clone-z" / "worktrees" / "runner-SP-xxxxxxxx"  # not under .claude/
+    nodir.mkdir(parents=True)
+    assert denied(worker_write(nodir, nodir.parent / "agent-a1" / "x.txt"))
+
+
+def test_headless_guard_worker_worktree_without_the_variable_nothing_is_answered(clone):
+    run, root = clone
+    assert hook(run, "Write", {"file_path": str(root / "x.txt"), "content": "x"}, headless=False) is None

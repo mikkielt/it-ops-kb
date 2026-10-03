@@ -2,7 +2,7 @@
   "id": "BG-svzlkygp",
   "kind": "bug",
   "title": "Every worker of a headless runner is refused its first write: the guard's project is the runner's worktree and the worker's isolation worktree is a sibling under the clone's .claude/worktrees",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -29,6 +29,9 @@
     "_tools/kb_hook.py",
     "_tools/test_headless_guard.py",
     "kb/_self/autopilot.md",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "kb/_self/autopilot-container.md",
+    "kb/_self/backlog.md"
+  ],
+  "claimed_by": "mac-third-worker"
 }
