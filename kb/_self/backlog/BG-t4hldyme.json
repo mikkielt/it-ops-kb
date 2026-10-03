@@ -1,0 +1,34 @@
+{
+  "id": "BG-t4hldyme",
+  "kind": "bug",
+  "title": "A headless run can push the integration history to any branch or remote with kbgit.py sync --push --branch B --remote R",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "when KB_HEADLESS_RUNNER is set, `kbgit.py sync` refuses `--remote` and `--branch` (it pushes to the integration remote's main and the code/<id> lane branches only), exit 2 with the cause named and nothing pushed; planted-failure tests run `--push --branch scratch` and `--remote <second bare>` with the variable set (refused) and without it (unchanged); the public remote is already refused by the private-history rule; found by the SP-itmjxudu review",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; if KB_HEADLESS_RUNNER=1 python3 _tools/kbgit.py sync --push --dry-run --branch scratch >/dev/null 2>&1; then exit 1; fi"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "headless_sync_pushes_only_the_integration_main"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/kbgit.py",
+    "_tools/test_sync_headless.py",
+    "kb/_self/git.md"
+  ]
+}
