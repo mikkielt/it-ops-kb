@@ -2,7 +2,7 @@
   "id": "ST-lptu6q7g",
   "kind": "story",
   "title": "Review sprint: Follow-ups from the overnight reviews",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-nq5avzrl",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "seventh-review"
 }
