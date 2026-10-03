@@ -33,7 +33,13 @@
     "_tools/querylog.py",
     "_tools/ql_distill.py",
     "_tools/test_ql_headless.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "_tools/conftest.py",
+    "_tools/test_ql_distill.py",
+    "_tools/test_kbusage.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md"
   ],
   "claimed_by": "mac-sixth"
 }
