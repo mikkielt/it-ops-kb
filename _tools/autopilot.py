@@ -320,16 +320,14 @@ def one_line(text, n=DETAIL_CHARS):
     return " ".join(str(text).split())[:n]
 
 
-def supervise(argv, cwd, keep, stderr, deadline=None, sprint=None):
+def supervise(argv, cwd, keep, stderr, deadline=None):
     """Run ARGV in CWD with its stdout read line by line into the open file KEEP (each line written and flushed as it
     arrives) and its stderr into the open file STDERR. The child is ended at the first system compact_boundary event,
     after DEADLINE seconds (deadline_s() when None: SIGTERM, then its process tree after GRACE_S), and on any
-    interrupt. SPRINT, when given, is the child's RUNNER_SPRINT_ENV (backlog.py merge reads it). Returns
-    {"compaction": bool, "timeout": bool, "result": the last result event or None, "exit_code": int}."""
+    interrupt. Returns {"compaction": bool, "timeout": bool, "result": the last result event or None, "exit_code": int}."""
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
-    env = {**child_env(), **({RUNNER_SPRINT_ENV: sprint} if sprint else {})}
     proc = subprocess.Popen(argv, cwd=str(cwd), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=stderr,
-                            text=True, encoding="utf-8", errors="replace", env=env, **group)
+                            text=True, encoding="utf-8", errors="replace", env=child_env(), **group)
     out = {"compaction": False, "timeout": False, "result": None}
 
     def expire():  # runs in a timer thread: the child has outlived its deadline
@@ -562,7 +560,15 @@ def run_in_slot(sprint, landed, root, record, kept=None):
     try:
         with keep, open(directory / (name[:-len(".jsonl")] + ".stderr"), "w", encoding="utf-8", newline="\n") as err:
             try:
-                run = supervise(argv, wt, keep, err, sprint=sprint)
+                before = os.environ.get(RUNNER_SPRINT_ENV)
+                os.environ[RUNNER_SPRINT_ENV] = sprint  # child_env passes it on: backlog.py merge reads it
+                try:
+                    run = supervise(argv, wt, keep, err)
+                finally:
+                    if before is None:
+                        os.environ.pop(RUNNER_SPRINT_ENV, None)
+                    else:
+                        os.environ[RUNNER_SPRINT_ENV] = before
                 run["deadline_s"] = status["deadline_s"]
                 detail = None
             except OSError as e:  # claude not found, or not runnable
