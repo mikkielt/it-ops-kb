@@ -2,7 +2,7 @@
   "id": "ST-6txsaokt",
   "kind": "story",
   "title": "A plan exists to run the autopilot in a Docker container instead of a separate OS user",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -28,5 +28,6 @@
     "kb/_self/autopilot-container.md",
     "kb/_self/map.csv",
     "kb/_self/README.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
