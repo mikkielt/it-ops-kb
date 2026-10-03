@@ -2,7 +2,7 @@
   "id": "BG-gmcbkuzq",
   "kind": "bug",
   "title": "A headless run can edit bl_ modules, tests.py, conftest.py or add a _tools test file and run it through tests.py, which executes any code",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j6hh2ib2",
   "priority": "P1",
   "rank": 0,
@@ -43,5 +43,30 @@
     "kb/_self/maintaining.md",
     "kb/_self/autopilot-container.md"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "cc46cda1261e3873fa1ca4527091012544f6a70c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "2",
+          "-k",
+          "headless_guard_test_runner"
+        ],
+        "exit": 0,
+        "sha256": "5c7bb92c65804039"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if a.derived_class({'touches':['_tools/tests.py']},{'id':'g','question':'q?','options':[]})!='design' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
