@@ -2,7 +2,7 @@
   "id": "BG-6dmpzx4t",
   "kind": "bug",
   "title": "The landed-with-no-work-rows warning fires on items claimed and worked normally, because it reads only this host's spool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tt4tibyn",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "8fecf1ac684542ad072a1cff730612508cb2ea7d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "no_work_rows_after_distill"
+        ],
+        "exit": 0,
+        "sha256": "ec8ae3180828a81d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "no_work_rows_after_distill"
+        ],
+        "exit": 0,
+        "sha256": "34cc47cc839a475c"
+      }
+    ]
+  }
 }
