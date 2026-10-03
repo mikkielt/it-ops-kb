@@ -21,5 +21,18 @@
   ],
   "depends_on": [
     "ST-6hquudym"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Should the second sentence of the throwaway scratch file say the second item added it?",
+      "options": [
+        "yes",
+        "no"
+      ],
+      "recommendation": "yes",
+      "class": "design"
+    }
   ]
 }
