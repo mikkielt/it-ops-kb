@@ -2,7 +2,7 @@
   "id": "BG-di5pwdrg",
   "kind": "bug",
   "title": "A run's report lists the bugs it filed and the gates it added from the runner worktree, so a bug filed and landed through the code lane is missing from runner-status and the digest",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,6 @@
     "_tools/test_autopilot.py",
     "kb/_self/autopilot-test.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
