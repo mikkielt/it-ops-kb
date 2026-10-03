@@ -1,0 +1,40 @@
+{
+  "id": "BG-lemd7ahg",
+  "kind": "bug",
+  "title": "Seven planned bugs have sh or git grep repros a headless done now refuses, so a runner can never close them",
+  "status": "todo",
+  "sprint": "SP-j6hh2ib2",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The repros of BG-2i46kz3z, BG-2sii6tie, BG-4y2lhglg, BG-57n4r577, BG-6a7jiylf, BG-dvs4vzr6 and BG-ykxthe5x are python3 _tools/ forms (a tests.py -k selection of a planted test, or a python3 _tools/ tool run) that fail now for the same defect, so bl_intake.check_program_refusal admits them and a headless done can run them; a test reads every open item's repro and check and asserts none is refused headless (test named open_repros_run_headless); found by the SP-zihqagoi re-review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,json,glob;sys.path.insert(0,'_tools');import bl_intake as b;bad=[p for p in glob.glob('kb/_self/backlog/*.json') if json.load(open(p)).get('status') in ('todo','draft','doing') and json.load(open(p)).get('repro') and b.check_program_refusal(json.load(open(p))['repro']['run'])];print(len(bad));sys.exit(1 if bad else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "2",
+        "-k",
+        "open_repros_run_headless"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog/BG-2i46kz3z.json",
+    "kb/_self/backlog/BG-2sii6tie.json",
+    "kb/_self/backlog/BG-4y2lhglg.json",
+    "kb/_self/backlog/BG-57n4r577.json",
+    "kb/_self/backlog/BG-6a7jiylf.json",
+    "kb/_self/backlog/BG-dvs4vzr6.json",
+    "kb/_self/backlog/BG-ykxthe5x.json",
+    "_tools/test_open_repros_headless.py"
+  ]
+}
