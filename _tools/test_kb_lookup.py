@@ -860,7 +860,8 @@ class TestRawReadNudge:
     def test_raw_read_nudge_hook_is_registered_on_bash_and_powershell(self):
         # one entry per tool: Bash through sh, PowerShell through `shell: powershell` (no sh without Git Bash);
         # test_portability.py gates the launcher forms and that each call fires the hint once
-        entries = json.loads(text(".claude/settings.json"))["hooks"]["PreToolUse"]
+        entries = [e for e in json.loads(text(".claude/settings.json"))["hooks"]["PreToolUse"]
+                   if e["matcher"] in ("Bash", "PowerShell")]  # the write tools' entry is the headless guard's
         assert [e["matcher"] for e in entries] == ["Bash", "PowerShell"], entries
         hooks = [h for e in entries for h in e["hooks"]]
         assert hooks[0]["command"] == 'sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/kb_hook.py', hooks
