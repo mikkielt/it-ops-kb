@@ -265,6 +265,8 @@ The manager is the `/kb-autopilot` skill (`.claude/skills/kb-autopilot/SKILL.md`
 
 ## Starting the autopilot
 
+The checklist and staged test plan of the first supervised run, with what its supervisor records and how it stops, are in `kb/_self/autopilot-test.md`.
+
 The commands below are run by the operator, in this order, in the manager's own clone (a clone no other session works in, set up as `kb/_self/maintaining.md` says: commit hooks installed, `python3 _tools/check.py` printing `errors=0`, `claude` on `PATH`, and a push to `origin` allowed to your account, since each tick syncs).
 
 1. **Rehearse first.** It runs one manager tick on a scratch sprint in a throwaway clone with a stub `claude` (no network, no model, no real remote) and cleans up after itself:
