@@ -2,7 +2,7 @@
   "id": "BG-wdh6fcau",
   "kind": "bug",
   "title": "cost --rework run in a clone reads only the clone's spool, so a session started in the main checkout gives a silent zero marked as 'no work rows read'",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-3zuasxl5",
   "priority": "P2",
@@ -34,5 +34,28 @@
     "_tools/test_cost_open_session_main.py",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "seventh-w41"
+  "evidence": {
+    "commit": "3337de3bc3a97394df91b4028da976c1a20f0740",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cost_open_session_main_spool"
+        ],
+        "exit": 0,
+        "sha256": "075a2e7d30d9d697"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"_tools/bl_cost.py\",encoding=\"utf-8\").read();ok=\"main_worktree_spool\" in t;print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
