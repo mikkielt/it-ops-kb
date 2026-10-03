@@ -2,7 +2,7 @@
   "id": "BG-gm6ryou4",
   "kind": "bug",
   "title": "A CODE tag whose note is a documentation URL passes kb-verify lint, because code_pointer now accepts scheme-less URLs as pointers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3zuasxl5",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,28 @@
     "_tools/test_lint_code_pointer.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "seventh-w38"
+  "evidence": {
+    "commit": "38c58b5a14c0d3973d652b0f02053ba5c9a394d2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "lint_code_pointer_matches_source_path"
+        ],
+        "exit": 0,
+        "sha256": "a34b2c84886eaf51"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(0 if 'pinned_path_suffix' in open('.claude/skills/kb-verify/lint.py',encoding='utf-8').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
