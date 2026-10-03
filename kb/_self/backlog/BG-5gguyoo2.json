@@ -1,0 +1,38 @@
+{
+  "id": "BG-5gguyoo2",
+  "kind": "bug",
+  "title": "The no-progress counter lives in model-written state.json, so a tick that drops it restarts an idle sprint forever",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "autopilot.py runner start appends each run's end (sprint, cause, landed count, time) to _cache/autopilot/<SP>/runs.jsonl itself, and bounds stop's no-progress cause and the tick read that file instead of state.json's runs, counting error and blocked runs too; planted-failure tests write runs and read the stop; found by the SP-zihqagoi review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import autopilot;sys.exit(0 if hasattr(autopilot,'RUNS_FILE') else 1)"
+    ]
+  },
+  "repro_reason": "the stall shows only over several real ticks; the repro checks the tool-kept history exists, the check plants runs",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "2",
+        "-k",
+        "runs_history_in_tool_code"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/bl_bounds.py",
+    "_tools/test_autopilot_runs.py",
+    ".claude/skills/kb-autopilot/SKILL.md",
+    "kb/_self/tools.md"
+  ]
+}
