@@ -34,7 +34,9 @@
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py",
     "_tools/kbpublic.py",
-    "_tools/test_kbpublic.py"
+    "_tools/test_kbpublic.py",
+    "kb/_self/content-rules.md",
+    "_tools/test_kb_lookup.py"
   ],
   "claimed_by": "orch-fourth-s2"
 }
