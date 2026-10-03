@@ -2,7 +2,7 @@
   "id": "BG-jzb3h4cw",
   "kind": "bug",
   "title": "settings.json allows `git rebase *` and `git commit *`, so `git rebase --exec` runs any command, push included, and --no-verify skips the commit hooks",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-itmjxudu",
   "priority": "P1",
   "rank": 0,
@@ -29,6 +29,8 @@
   "touches": [
     ".claude/settings.json",
     "_tools/test_settings_allow.py",
-    "kb/_self/plugin.md"
-  ]
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md"
+  ],
+  "claimed_by": "mac-first"
 }
