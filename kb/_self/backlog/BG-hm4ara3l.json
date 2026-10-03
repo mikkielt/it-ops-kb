@@ -42,7 +42,7 @@
         "1000 turns and 12 hours"
       ],
       "recommendation": "500 turns and 6 hours",
-      "class": "design",
+      "class": "agents-rule",
       "answer": "500 turns and 6 hours",
       "by": "agent"
     },
@@ -55,7 +55,7 @@
         "0, like any named cause"
       ],
       "recommendation": "1, like error",
-      "class": "design",
+      "class": "agents-rule",
       "answer": "1, like error",
       "by": "agent"
     }
