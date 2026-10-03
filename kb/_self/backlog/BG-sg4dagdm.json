@@ -32,5 +32,35 @@
     "_tools/test_cost_open_session.py",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which behaviour does cost --rework take for a sprint whose session is still open?",
+      "options": [
+        "open-figures",
+        "stated-wait"
+      ],
+      "recommendation": "open-figures",
+      "class": "design",
+      "do": {
+        "open-figures": [
+          "python3",
+          "_tools/backlog.py",
+          "cost",
+          "--rework",
+          "SP"
+        ],
+        "stated-wait": [
+          "python3",
+          "_tools/backlog.py",
+          "cost",
+          "SP"
+        ]
+      },
+      "answer": "open-figures",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "seventh-w40"
 }
