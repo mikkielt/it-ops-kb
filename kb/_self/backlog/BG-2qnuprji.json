@@ -30,7 +30,8 @@
     "_tools/backlog.py",
     "_tools/kbdecide.py",
     "_tools/test_backlog_record_clean.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_backlog.py"
   ],
   "claimed_by": "mac-sixth"
 }
