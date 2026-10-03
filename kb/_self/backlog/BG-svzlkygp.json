@@ -1,0 +1,34 @@
+{
+  "id": "BG-svzlkygp",
+  "kind": "bug",
+  "title": "Every worker of a headless runner is refused its first write: the guard's project is the runner's worktree and the worker's isolation worktree is a sibling under the clone's .claude/worktrees",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "headless_guard allows a write inside a worker's isolation worktree .claude/worktrees/agent-* of the same clone as the runner's project (CLAUDE_PROJECT_DIR is .claude/worktrees/runner-SP-*), and still denies any path outside the clone and outside that worktrees directory; a planted test covers the sibling, a path outside the clone, a path in another clone's worktrees, and a .. escape; found by the first supervised run (ST-opjydjc3), Stage 1 repeated in a real clone: exit 0, cause blocked, nothing landed, and it blocks every item of every sprint, so no unattended run can land work until it is fixed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys; os.environ['KB_HEADLESS_RUNNER']='1'; os.environ['CLAUDE_PROJECT_DIR']='/tmp/clone-x/.claude/worktrees/runner-SP-xxxxxxxx'; sys.path.insert(0,'_tools'); import kb_hook; r=kb_hook.headless_guard({'tool_name':'Write','tool_input':{'file_path':'/tmp/clone-x/.claude/worktrees/agent-a1/kb/_self/reports/t.md','content':'x'}}); sys.exit(0 if r is None else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "headless_guard_worker_worktree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/test_headless_guard.py",
+    "kb/_self/autopilot.md",
+    "kb/_self/tools.md"
+  ]
+}
