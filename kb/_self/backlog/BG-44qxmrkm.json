@@ -1,0 +1,33 @@
+{
+  "id": "BG-44qxmrkm",
+  "kind": "bug",
+  "title": "Two test_bl_procs tests that end owned orphans failed once in a loaded land gate and pass alone: they mix fake process tables with the real pid, the real process table and real waits",
+  "status": "todo",
+  "sprint": "SP-gfoakqar",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "test_procs_ends_only_own_after_the_grace_and_takes_the_tree and test_procs_ends_only_own_leaves_one_whose_parent_returned_or_whose_pid_was_reused in _tools/test_bl_procs.py no longer depend on the host: their fake pids (500 to 800, 4) cannot equal the test process's own pid or one of its ancestors (os.getpid and its ancestry feed end_owned_orphans' protected set), bl_procs.gone and process_table are injected or faked so no real process table or wait is read, and a failing assertion prints the table and the said lines; a planted test runs them with the test process's pid set to one of the fake pids and still passes. Evidence: the first land gate of BG-di5pwdrg failed on exactly these two (2 failed, 4475 passed, a 10-minute gate under host load) and both passed alone (10 passed) and on one retry; the first failure's text was lost to the retry's output, so the cause is unconfirmed: the suspects are the real pid or ancestry colliding with a fake pid after the host's pid space wrapped, and gone() reading the real table; found by BG-di5pwdrg's land.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "! grep -q \"500: (1, 50\" _tools/test_bl_procs.py"
+    ]
+  },
+  "repro_reason": "the failure appears only in a loaded gate; the text match fails while the tests use the small fake pids 500 to 800 and passes once the pids are chosen above the host's range",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "procs_ends_only_own_host_independent"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_bl_procs.py",
+    "_tools/bl_procs.py"
+  ]
+}
