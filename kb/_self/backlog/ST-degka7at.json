@@ -2,7 +2,7 @@
   "id": "ST-degka7at",
   "kind": "story",
   "title": "Stall probe: a claimed item that gets no work commit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7kbrqaol",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/_self/reports/autopilot-throwaway.md"
-  ]
+  ],
+  "claimed_by": "stage6-probe"
 }
