@@ -49,9 +49,25 @@ def alive_soon_gone(pid, wait=5.0):
     return bl_base.pid_alive(pid)
 
 
+def own_timers(mp, cls=threading.Timer):
+    """The deadline timers the run under test starts, as a list it fills: autopilot.TIMER replaced by a subclass of
+    CLS that records each one, so a check never counts another test's or another thread's timer."""
+    started = []
+
+    class Recorded(cls):
+        def __init__(self, *a, **k):
+            super().__init__(*a, **k)
+            started.append(self)
+
+    mp.setattr(autopilot, "TIMER", Recorded)
+    return started
+
+
 def run_sleeper(world, life, deadline, ignore_term=False):
     """Run the sprint against a child that starts a grandchild and then sleeps LIFE seconds, with the deadline DEADLINE.
-    Returns (exit code, seconds the run took, the child's and the grandchild's pids)."""
+    Returns (exit code, seconds the run took, the child's and the grandchild's pids); the run's own deadline timers
+    are in world.timers."""
+    world.timers = own_timers(world.mp)
     script = world.tmp / "sleeper_claude.py"
     script.write_text(SLEEPER, encoding="utf-8", newline="\n")
     pids = world.tmp / "pids.txt"
@@ -137,7 +153,7 @@ def test_autopilot_run_is_bounded_the_deadline_ends_a_sleeping_child_and_its_tre
     assert f"{deadline:g}s" in st["detail"] and st["deadline_s"] == deadline
     assert not alive_soon_gone(child) and not alive_soon_gone(grandchild)  # the process tree is gone, not just the child
     assert not bl_base.runner_record_path(os.getpid()).exists()  # the host slot is free again
-    assert not [t for t in threading.enumerate() if isinstance(t, threading.Timer)]  # the deadline's timer is gone
+    assert world.timers and not [t for t in world.timers if t.is_alive()]  # the run's deadline timer is gone
     text = autopilot.status_text(SP, world.root)
     assert text.startswith(f"{SP} exit cause timeout") and ", ran " in text
 
@@ -147,7 +163,40 @@ def test_autopilot_run_is_bounded_a_run_within_its_deadline_is_not_ended_and_is_
     assert took >= 1.5  # it lived its life
     st = world.status()
     assert st["cause"] == "error" and "no result event" in st["detail"] and code == 1  # the child ended by itself
-    assert not [t for t in threading.enumerate() if isinstance(t, threading.Timer)]  # nothing is left waiting 600 seconds
+    assert world.timers and not [t for t in world.timers if t.is_alive()]  # nothing is left waiting 600 seconds
+
+
+class SlowToEnd(threading.Timer):
+    """A timer whose thread, once cancelled, takes a moment to end: as a loaded host schedules a thread late."""
+
+    def run(self):
+        self.finished.wait(self.interval)
+        time.sleep(0.5)
+        if not self.finished.is_set():
+            self.function(*self.args, **self.kwargs)
+        self.finished.set()
+
+
+def test_autopilot_bound_supervise_joins_deadline_timer(world):
+    """supervise joins its cancelled deadline timer: on return the run's timer thread is gone even when it ends late."""
+    timers = own_timers(world.mp, SlowToEnd)
+    world.stream(stream())
+    world.start()
+    assert timers and not [t for t in timers if t.is_alive()]
+
+
+def test_autopilot_bound_supervise_joins_deadline_timer_planted_no_join_fails(world, monkeypatch):
+    """Planted: a timer whose join returns at once leaves its thread alive on return, which the check above refuses."""
+    class NoJoin(SlowToEnd):
+        def join(self, timeout=None):
+            return None
+
+    timers = own_timers(world.mp, NoJoin)
+    world.stream(stream())
+    world.start()
+    assert [t for t in timers if t.is_alive()]
+    for t in timers:
+        threading.Thread.join(t, 5)
 
 
 def test_autopilot_run_is_bounded_a_planted_end_that_leaves_the_tree_alive_fails_the_check(world, monkeypatch):
