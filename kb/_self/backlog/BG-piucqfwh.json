@@ -2,7 +2,7 @@
   "id": "BG-piucqfwh",
   "kind": "bug",
   "title": "The private-path wording of five docs and the kb-setup skill names only kb/_querylog/ where kbpublic.PRIVATE_LABEL also names _logs.csv, _private and _cache, and the wording test cannot see them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-3zuasxl5",
   "priority": "P3",
@@ -32,5 +32,6 @@
     "kb/_self/maintaining.md",
     ".claude/skills/kb-setup/SKILL.md",
     "_tools/test_sync.py"
-  ]
+  ],
+  "claimed_by": "seventh-w36"
 }
