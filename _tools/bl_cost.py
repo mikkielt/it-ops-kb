@@ -98,10 +98,12 @@ def open_lines(root, rework=True):
     runs for a closed session (`ql_distill.plan_work`, one session at a time), as report lines named `open-<session>`.
     Reads the clone's spool and the main worktree's when it is another directory (`bl_base.main_worktree_spool`), a
     session in both once: no sidecar, no marker, no row is written, and a session that claimed no item gives
-    nothing. `worked` is the set of items the session claimed and `missing` its window prompts with no usable
+    nothing. The prompts `worked.json` beside a spool lists (what a sidecar already counted, distill's ledger) are
+    left out, so a session distilled after an idle close that then reopened adds only its later prompts. `worked` is the set of items the session claimed and `missing` its window prompts with no usable
     `usage` row (a prompt is counted once its Stop row has written its usage). No spool directory: nothing."""
     import time
 
+    import ql_base
     import ql_capture
     import ql_distill
     own = ql_capture.spool_dir()
@@ -111,10 +113,14 @@ def open_lines(root, rework=True):
     main = bl_base.main_worktree_spool(root)  # a session started in the main checkout writes its rows there
     if main is not None and not (spools[0].exists() and main.exists() and os.path.samefile(spools[0], main)):
         spools.append(main)
-    sessions = {}
+    sessions, ledger = {}, {}
     for d in (d for d in spools if d.is_dir()):
         for sid, s in ql_distill.read_spool(d, time.time())[0].items():
             sessions.setdefault(sid, s)  # a session in both spools is read once, from the clone's own
+        held = ql_base.read_json(d.parent / ql_distill.WORKED_NAME, {})  # the prompts a sidecar already counted
+        for sid, ids in (held.items() if isinstance(held, dict) else ()):
+            if isinstance(ids, list):
+                ledger.setdefault(sid, set()).update(i for i in ids if isinstance(i, str))
     if not sessions:
         return [], []
     sprint_of = ql_distill.sprint_finder(Path(root) / REL_DIR)
@@ -124,7 +130,7 @@ def open_lines(root, rework=True):
         worked = ql_distill.work_windows(s["rows"])[1]
         if s["closed"] or not worked:
             continue
-        lines, missing, _ = ql_distill.plan_work({sid: {**s, "closed": True}}, {}, sprint_of)
+        lines, missing, _ = ql_distill.plan_work({sid: {**s, "closed": True}}, ledger, sprint_of)
         run = OPEN_RUN + sid[:8]
         out += [r for r in (cost_row_of(run, w, None, rework) for w in lines) if r]
         info.append({"session": sid, "worked": worked, "missing": missing})
