@@ -1,0 +1,32 @@
+{
+  "id": "ST-6txsaokt",
+  "kind": "story",
+  "title": "A plan exists to run the autopilot in a Docker container instead of a separate OS user",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb/_self/autopilot-container.md is a plan, no code yet, that answers: why a container replaces the separate OS user (what each isolates and what it does not, honest limits); the image (base, python3, git, claude CLI, glab, no host tools), built from a pinned Dockerfile kept in the repo; what is mounted (a fresh clone of the integration project only, never the operator's home, SSH agent or main checkout) and what is read-only; credentials (the runner deploy key and token of ST-xiyvkjro passed as secrets at start, never baked in, never printed; the Claude auth path and how the Bedrock token stays stripped); network (allowed hosts only: the git remote, the model API; GitHub denied); resource limits (memory, CPU, pids) sized for the load problems seen; how the tick and runner map onto container start, status, stop and reset, and how backlog.py procs and land cleanup behave inside it; how worktree removal by land works with the container as the only writer; macOS specifics (Docker Desktop or Colima, file-event cost on bind mounts: the fseventsd growth seen on this host); a staged rollout that reuses the test plan stages of kb/_self/autopilot-test.md; and the operator-only gates (credentials, push, agents-rule) as gates with options and a recommendation. Cites code and docs lines, placeholders only, mapped in kb/_self/map.csv.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/autopilot-container.md",
+    "kb/_self/map.csv",
+    "kb/_self/README.md"
+  ]
+}

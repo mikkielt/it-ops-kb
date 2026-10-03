@@ -20,5 +20,6 @@
     "kb/_self/autopilot-test.md",
     "kb/_self/backlog.md",
     "kb/_self/hosting.md"
-  ]
+  ],
+  "notes": "Operator 2026-10-03: a Docker container is preferred to a separate OS user (planned in ST docker story of this sprint). Do the deploy key and branch protection now; SKIP goal part 3 (the OS user, no sudo); record it as replaced by the container plan."
 }
