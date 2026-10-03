@@ -2,7 +2,7 @@
   "id": "ST-6itc6her",
   "kind": "story",
   "title": "Review sprint: Cost figures and wording follow-ups",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3zuasxl5",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "92a7452bc2ee42381e4fab472c7c26d7b412190c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "0dff69bcc00ad2af"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "ba4957fa79d157a0"
+      }
+    ]
+  }
 }
