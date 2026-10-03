@@ -280,6 +280,8 @@ The commands below are run by the operator, in this order, in the manager's own 
    cd <your clone>
    claude
    ```
+
+   Export `KB_NO_PUBLISH_HOOK=1` before `claude` (`KB_NO_PUBLISH_HOOK=1 claude`) so this unattended session's SessionStart hook never publishes to the public home (`kb/_self/git.md`, Public home); do not use `KB_HEADLESS_RUNNER` for it, which would block your `--by operator` answers.
 3. **Run the self-check** before the first tick, in the session or the shell:
 
    ```
