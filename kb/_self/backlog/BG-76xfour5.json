@@ -2,7 +2,7 @@
   "id": "BG-76xfour5",
   "kind": "bug",
   "title": "Stale status.json files of closed sprints crowd live ones out of `autopilot.py status`, and `close` never prunes _cache/autopilot/SP-*",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -35,5 +35,28 @@
     "_tools/test_autopilot_runner_ends.py",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "165a17e8237ff6d14eabc98e1aff782f27c65319",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_status_hides_no_failed_run"
+        ],
+        "exit": 0,
+        "sha256": "5bbeb72fb7fc6aaf"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,tempfile,pathlib;sys.path.insert(0,\"_tools\");import autopilot;r=pathlib.Path(tempfile.mkdtemp());w=[(\"SP-aaaaaaaa\",\"sprint-done\"),(\"SP-bbbbbbbb\",\"sprint-done\"),(\"SP-cccccccc\",\"sprint-done\"),(\"SP-dddddddd\",\"error\")];[((r/\"_cache\"/\"autopilot\"/s).mkdir(parents=True),(r/\"_cache\"/\"autopilot\"/s/\"status.json\").write_text(json.dumps({\"sprint\":s,\"cause\":c}))) for s,c in w];out=autopilot.runner_lines(str(r),3);print(out);sys.exit(0 if any(x and \"dddddddd\" in x for x in out) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "fa4f613b5e61cced"
+      }
+    ]
+  }
 }
