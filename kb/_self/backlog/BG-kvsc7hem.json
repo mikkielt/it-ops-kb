@@ -2,7 +2,7 @@
   "id": "BG-kvsc7hem",
   "kind": "bug",
   "title": "kbingest map's environment scrub leaves toolchain variables that name relative clone programs, and its cargo credential-provider settings pass",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7irdeeel",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_kbingest.py",
     "kb/_self/tools.md",
     ".claude/skills/kb-ingest/SKILL.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
