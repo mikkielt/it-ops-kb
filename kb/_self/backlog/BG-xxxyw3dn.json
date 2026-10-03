@@ -2,7 +2,7 @@
   "id": "BG-xxxyw3dn",
   "kind": "bug",
   "title": "A headless runner cannot edit the files of an item that touches guard paths, and sprint start does not say so: the run stalls twice and no-progress stops it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j6hh2ib2",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,30 @@
     ".claude/skills/kb-autopilot/SKILL.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "4e880fbf81805418e5a203ea7eecb1309ecc12fd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "1",
+          "-k",
+          "headless_start_guarded_items"
+        ],
+        "exit": 0,
+        "sha256": "fd4be7f7f8e44c53"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/bl_plan.py',encoding='utf-8').read();sys.exit(0 if 'headless' in t and 'guard' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
