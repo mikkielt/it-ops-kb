@@ -36,6 +36,15 @@ def test_parse_counts_tools_and_finds_urls_fetched_again():
     assert seen["refetched"] == ["learn.microsoft.com/entra/identity/monitoring-health/reference-reports-data-retention"]
 
 
+def test_agent_bench_parse_skips_non_object_lines():
+    lines = ["1", '"text"', "[1, 2]", "null", '{"type": "assist',
+             ev("assistant", [{"type": "tool_use", "id": "9", "name": "Read", "input": {}}]),
+             json.dumps({"type": "result", "result": "done"})]
+    seen, res = ab.parse("\n".join(lines))
+    assert seen["tools"] == {"Read": 1} and res["result"] == "done"
+    assert ab.parse("1")[1] is None
+
+
 def test_norm_url_ignores_scheme_locale_query_and_slash():
     assert ab.norm_url("https://www.Learn.microsoft.com/en-us/a/b/?view=x#y") == ab.norm_url("http://learn.microsoft.com/a/b")
 
