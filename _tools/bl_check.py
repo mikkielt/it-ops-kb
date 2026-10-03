@@ -191,6 +191,7 @@ def stale_knowledge(bl):
 
 
 OPEN_STATUSES = ("draft", "todo", "doing")  # the statuses of an item still to do
+CLOSED_STATUSES = ("done", "dropped")  # an item whose gates cannot be answered again
 
 
 # ------------------------------------------------------------------ selectors
@@ -554,9 +555,11 @@ def validate(bl, pieces=None):
             elif bl_authority.lowered(it, g):
                 e(f"gate {g['id']}: class {g['class']} is lower than {bl_authority.derived_class(it, g)}, which its "
                   "item's touches and its question give it")
-            if g.get("by") == "autopilot" and not bl_authority.autopilot_may_answer(it, g)[0]:
+            settled = it.get("status") in CLOSED_STATUSES and g.get("by") in ("agent", "autopilot") \
+                and "answer" in g  # a warning (refused_answer_warnings), not an error
+            if g.get("by") == "autopilot" and not bl_authority.autopilot_may_answer(it, g)[0] and not settled:
                 e(f"gate {g['id']} is class {bl_authority.gate_class(it, g)}: only the operator answers it")
-            if bl_authority.derived_class(it, g) in bl_authority.AUTOPILOT_REFUSED:
+            if bl_authority.derived_class(it, g) in bl_authority.AUTOPILOT_REFUSED and not settled:
                 if g["kind"] == "provisional" and g.get("by") != "operator":  # one the operator answered stands
                     e(f"gate {g['id']} is class {bl_authority.derived_class(it, g)} and provisional: it is blocking, "
                       "only the operator answers it")
@@ -763,6 +766,24 @@ def state_path_warnings(bl):
     return out
 
 
+def refused_answer_warnings(bl):
+    """check's warnings: a gate of a done or dropped item, of a class the autopilot is refused, that an agent or the
+    autopilot answered. An open item's such gate is an error (validate); a closed item's cannot be answered again by
+    the item's work, so the operator re-confirms it. `answer` stays strict: a new answer in such a class is refused."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        if it.get("status") not in CLOSED_STATUSES:
+            continue
+        for g in it.get("gates", []):
+            if not isinstance(g, dict) or g.get("by") not in ("agent", "autopilot") or "answer" not in g:
+                continue
+            cls = bl_authority.derived_class(it, g)
+            if cls in bl_authority.AUTOPILOT_REFUSED:
+                out.append(f"{bl.label(iid)}: gate {g.get('id')} class {cls}: answered by {g['by']} in a refused "
+                           "class: the operator re-confirms")
+    return out
+
+
 def gate_do_warnings(bl):
     """check's warnings: an unanswered blocking gate of an open item whose options carry no `do` (the argv that
     carries an option out, or the id of the item whose work adds that command), so an answer would wait on a command
@@ -818,7 +839,7 @@ def cmd_check(bl, a):
     errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned)
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
-        + gate_do_warnings(bl)
+        + gate_do_warnings(bl) + refused_answer_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
