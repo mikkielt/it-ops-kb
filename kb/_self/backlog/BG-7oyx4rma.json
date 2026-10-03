@@ -1,0 +1,35 @@
+{
+  "id": "BG-7oyx4rma",
+  "kind": "bug",
+  "title": "Items left unchecked by drift's program allowlist are reported as heavy whole-suite checks, and the docstring never mentions the allowlist",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_intake's drift note reports items refused by the program allowlist (check_program_refusal with DRIFT_ALLOWS_INLINE) apart from heavy ones, e.g. in a separate field drift.refused or a distinct note, and the module docstring names the allowlist; a test named drift_refused_apart_from_heavy plants one of each; found by the SP-zihqagoi review of BG-wg7ir37i (open items with backlog.py and perfcheck.py checks are never drift-checked and the note blames a heavy test run)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/bl_intake.py',encoding='utf-8').read();sys.exit(0 if 'drift.refused' in t or 'refused: list' in t else 1)"
+    ]
+  },
+  "repro_reason": "the mislabel shows only in drift's printed note over a committed check the allowlist refuses; the repro reads bl_intake for a separate refused field until the item's own test exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "1",
+        "-k",
+        "drift_refused_apart_from_heavy"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_drift_refused.py",
+    "kb/_self/backlog.md"
+  ]
+}

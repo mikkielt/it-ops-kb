@@ -1,0 +1,35 @@
+{
+  "id": "BG-xwqrlvpp",
+  "kind": "bug",
+  "title": "Two doc statements contradict the code: backlog.md says Edit and Write are allowed outright in settings, and git.md says a headless run pushes to code/<id> lane branches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/backlog.md no longer says Edit and Write are 'allowed outright' in .claude/settings.json (the permission rule allows them, the headless guard denies an edit of the settings), and kb/_self/git.md and kg_sync.headless_target_refusal's docstring say the headless run's sync pushes main only, the code/<id> lane branches coming from sync's own internal push; found by the SP-zihqagoi review of BG-t4hldyme and BG-gtv6v7ye",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(1 if 'allowed outright' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is wording in docs and a docstring: no behaviour runs differently, so the repro reads the doc text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "1",
+        "-k",
+        "docs_headless_statements_match_code"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/git.md",
+    "_tools/kg_sync.py"
+  ]
+}

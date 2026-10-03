@@ -1,0 +1,36 @@
+{
+  "id": "BG-p4qdpbir",
+  "kind": "bug",
+  "title": "The no-progress stop of a sprint is permanent: nothing clears the recorded runs after the operator fixes the cause",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bounds stop's no-progress cause can be cleared: the kb-autopilot skill and backlog.md say how (a command or a documented edit of the sprint's runs in state.json that the operator or the manager runs after the cause is fixed, e.g. backlog.py bounds reset-runs SP), with a test named no_progress_reset_clears_the_stop; found by the SP-zihqagoi review of BG-4irnmsbs",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/bl_bounds.py',encoding='utf-8').read();sys.exit(0 if 'reset-runs' in t or 'runs-reset' in t or 'clear-runs' in t else 1)"
+    ]
+  },
+  "repro_reason": "the permanence shows over a sprint's recorded runs in state.json across ticks; the repro reads bl_bounds for a reset command until the item's own test exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "1",
+        "-k",
+        "no_progress_reset_clears_the_stop"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_bounds.py",
+    ".claude/skills/kb-autopilot/SKILL.md",
+    "_tools/test_autopilot_no_progress_reset.py",
+    "kb/_self/backlog.md"
+  ]
+}

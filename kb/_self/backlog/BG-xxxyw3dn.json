@@ -1,0 +1,35 @@
+{
+  "id": "BG-xxxyw3dn",
+  "kind": "bug",
+  "title": "A headless runner cannot edit the files of an item that touches guard paths, and sprint start does not say so: the run stalls twice and no-progress stops it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bl_plan start (and the autopilot's start) names, for each item of the sprint whose touches are guard-class (bl_authority PATHS agents-rule or push, the files headless_guard denies a headless Edit/Write of), that a headless runner cannot edit them, and the manager does not start such a sprint headless: it reports the sprint as operator-present only (a scan of the live backlog finds about 60 open items touching guarded paths); found by the SP-zihqagoi review (a contradiction between BG-6ndiy7xf, BG-6roybevi and BG-4irnmsbs: a sprint of guarded items would be restarted until no-progress stops it)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/bl_plan.py',encoding='utf-8').read();sys.exit(0 if 'headless' in t and 'guard' in t else 1)"
+    ]
+  },
+  "repro_reason": "the stall shows only over a started sprint with guard-class items and several runner restarts; the repro reads bl_plan for any start-time guard notice until the item's own test (headless_start_guarded_items) exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "1",
+        "-k",
+        "headless_start_guarded_items"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_headless_start_guarded.py",
+    "kb/_self/backlog.md"
+  ]
+}
