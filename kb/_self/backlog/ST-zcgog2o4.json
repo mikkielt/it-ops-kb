@@ -2,7 +2,7 @@
   "id": "ST-zcgog2o4",
   "kind": "story",
   "title": "Review sprint: The autopilot runs unattended safely",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-itmjxudu",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "seventh-review"
+  "evidence": {
+    "commit": "1aaca5acddc61f67ce374aed4ed09378c8739571",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "559a4c04b7e6fe5a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "79ec1eb695f1b9b3"
+      }
+    ]
+  }
 }
