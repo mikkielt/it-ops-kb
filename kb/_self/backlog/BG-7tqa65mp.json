@@ -1,0 +1,35 @@
+{
+  "id": "BG-7tqa65mp",
+  "kind": "bug",
+  "title": "A runner started in a clone that is a linked worktree of another checkout blocks every item: its workers get worktrees in that checkout and the headless guard refuses their writes",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py selfcheck and autopilot.py runner start refuse a manager clone whose git-common-dir is not its own git-dir (a linked worktree of another checkout), naming the other checkout and saying to use a real clone, so a runner never starts where Claude Code puts its workers' isolation worktrees outside the runner's project; a planted test builds a repository with a linked worktree and sees the refusal; found by the first supervised run (ST-opjydjc3), Stage 1: exit 0, cause blocked, nothing landed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; g=lambda *a: subprocess.run(['git',*a],capture_output=True,text=True).stdout.strip(); linked=g('rev-parse','--git-common-dir')!=g('rev-parse','--git-dir'); out=subprocess.run([sys.executable,'_tools/backlog.py','selfcheck'],capture_output=True,text=True).stdout; sys.exit(0 if (not linked) or 'linked worktree' in out else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_refuses_linked_worktree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/bl_selfcheck.py",
+    "_tools/test_autopilot_linked_worktree.py",
+    "kb/_self/autopilot-test.md",
+    "kb/_self/tools.md"
+  ]
+}
