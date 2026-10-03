@@ -2,7 +2,7 @@
   "id": "ST-degka7at",
   "kind": "story",
   "title": "Stall probe: a claimed item that gets no work commit",
-  "status": "doing",
+  "status": "dropped",
   "sprint": "SP-7kbrqaol",
   "priority": "P3",
   "rank": 0,
@@ -54,5 +54,5 @@
       "class": "agents-rule"
     }
   ],
-  "claimed_by": "stage6-probe"
+  "notes": "Dropped: the stall probe of the first supervised run has done its job: stage 6 saw the claim-no-commit signal and took two remedies"
 }
