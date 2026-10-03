@@ -2,7 +2,7 @@
   "id": "BG-iyciwkae",
   "kind": "bug",
   "title": "kg_lock.main_lock waits for a live holder with no bound, so a hung land or sync holds every runner until its deadline",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-j6hh2ib2",
   "priority": "P3",
@@ -33,5 +33,6 @@
     "_tools/kg_lock.py",
     "_tools/test_kg_lock_bound.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
