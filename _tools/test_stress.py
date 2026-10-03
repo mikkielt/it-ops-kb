@@ -218,19 +218,47 @@ def test_search_is_deterministic(base):
 
 
 HOOK_RUNS, HOOK_MARGIN, HOOK_SLACK_S = 11, 1.25, 0.03
+HOOK_SKIP_FACTOR = 3.0  # past this load factor the on/off ratio says more about the host than the hook: skip, saying so
+
+
+def hook_once(kb, prompt):
+    """Wall time of one kb_hook.py run of one UserPromptSubmit event."""
+    ev = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "0" * 8, "prompt_id": "p", "prompt": prompt})
+    t = time.perf_counter()
+    p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "kb_hook.py")], input=ev, capture_output=True,
+                       text=True, encoding="utf-8", timeout=TIMEOUT * load_factor())
+    assert p.returncode == 0, p.stderr
+    return time.perf_counter() - t
 
 
 def hook_median(kb, prompt):
     """Median wall time of kb_hook.py over HOOK_RUNS runs of one UserPromptSubmit event."""
-    ev = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "0" * 8, "prompt_id": "p", "prompt": prompt})
-    ts = []
-    for _ in range(HOOK_RUNS):
-        t = time.perf_counter()
-        p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "kb_hook.py")], input=ev, capture_output=True,
-                           text=True, encoding="utf-8", timeout=TIMEOUT * load_factor())
-        ts.append(time.perf_counter() - t)
-        assert p.returncode == 0, p.stderr
-    return statistics.median(ts)
+    return statistics.median(hook_once(kb, prompt) for _ in range(HOOK_RUNS))
+
+
+def hook_off_on_medians(kb, prompt, cfg):
+    """(capture off, capture on) medians over HOOK_RUNS runs each, taken in alternation (off, on, off, on, ...), so a
+    burst of load the 1-minute load average does not yet show slows both alike instead of one of the two."""
+    off, on = [], []
+    try:
+        for _ in range(HOOK_RUNS):
+            write(kb, os.path.relpath(cfg, kb), '{"mode": "off"}')
+            off.append(hook_once(kb, prompt))
+            os.remove(cfg)
+            on.append(hook_once(kb, prompt))
+    finally:
+        if os.path.exists(cfg):
+            os.remove(cfg)
+    return statistics.median(off), statistics.median(on)
+
+
+def hook_latency_load_scaled(f):
+    """The reason to skip the hook latency check under load factor f, or None to run it: past HOOK_SKIP_FACTOR the
+    ratio measures the host, and a land on a busy host must not stop at it."""
+    if f > HOOK_SKIP_FACTOR:
+        return (f"host load factor {f:.1f} is past {HOOK_SKIP_FACTOR:g}: the capture on/off ratio would measure the "
+                "host, not the hook")
+    return None
 
 
 def hook_problems(off, on, plain, f):
@@ -252,17 +280,16 @@ def test_kb_hook_latency_with_capture(base):
     q = "kb: intune win32 app detection rule"
     cfg = os.path.join(base, "_private", "querylog.json")
     f = load_factor()
-    try:
-        hook_median(base, q)  # the index is built or opened once, outside the timing
-        write(base, os.path.relpath(cfg, base), '{"mode": "off"}')
-        off = hook_median(base, q)
-        os.remove(cfg)
-        on = hook_median(base, q)
-        plain = hook_median(base, "fix the build please")
-    finally:
-        if os.path.exists(cfg):
-            os.remove(cfg)
+    why = hook_latency_load_scaled(f)
+    if why:
+        pytest.skip(why)
+    hook_once(base, q)  # the index is built or opened once, outside the timing
+    off, on = hook_off_on_medians(base, q, cfg)
+    plain = hook_median(base, "fix the build please")
     f = max(f, load_factor())
+    why = hook_latency_load_scaled(f)
+    if why:
+        pytest.skip(why)
     print(f"kb_hook.py median: capture off {off * 1000:.0f} ms, on {on * 1000:.0f} ms, plain prompt {plain * 1000:.0f} ms"
           f", load factor {f:.1f}")
     why = hook_problems(off, on, plain, f)
@@ -319,22 +346,49 @@ def test_stress_under_load_hook_latency(tmp_path, monkeypatch):
     """test_kb_hook_latency_with_capture with planted medians as a loaded host gives them (capture on twice as slow,
     a plain prompt as slow as off): it fails idle (the planted failure) and passes at load 64 on 8 CPUs; a capture
     far slower than the load explains still fails."""
-    mod = sys.modules[__name__]
-
-    def medians(off, on, plain):
-        seq = iter([off, off, on, plain])
-        monkeypatch.setattr(mod, "hook_median", lambda kb, prompt: next(seq))
-    medians(0.2, 0.4, 0.2)
+    plant_medians(monkeypatch, 0.2, 0.34, 0.2)
     plant_load(monkeypatch, 4.0)
     with pytest.raises(AssertionError, match="capture on"):
         test_kb_hook_latency_with_capture(str(tmp_path))
-    medians(0.2, 0.4, 0.2)
-    plant_load(monkeypatch, 64.0)
+    plant_load(monkeypatch, 20.0)  # factor 2.5: within the scaled margin
     test_kb_hook_latency_with_capture(str(tmp_path))
-    medians(0.2, 0.2 * 40, 0.1)
+    plant_medians(monkeypatch, 0.2, 0.2 * 40, 0.1)
     with pytest.raises(AssertionError, match="capture on"):
         test_kb_hook_latency_with_capture(str(tmp_path))
-    assert hook_problems(0.2, 0.2, 0.3, 1.0) and not hook_problems(0.2, 0.2, 0.3, 8.0)
+    assert hook_problems(0.2, 0.2, 0.3, 1.0) and not hook_problems(0.2, 0.2, 0.3, 2.0)
+
+
+def plant_medians(monkeypatch, off, on, plain):
+    """The timings test_kb_hook_latency_with_capture reads, planted: no kb_hook.py runs."""
+    mod = sys.modules[__name__]
+    monkeypatch.setattr(mod, "hook_once", lambda kb, prompt: 0.0)
+    monkeypatch.setattr(mod, "hook_off_on_medians", lambda kb, prompt, cfg: (off, on))
+    monkeypatch.setattr(mod, "hook_median", lambda kb, prompt: plain)
+
+
+def test_stress_hook_latency_load_scaled(tmp_path, monkeypatch):
+    """Past HOOK_SKIP_FACTOR the latency check skips, naming the load factor, whatever the timings (a capture forty
+    times slower included): a land on a busy host does not stop there. At or under it the check runs, and a slow
+    capture still fails (the planted failure the skip must not hide on a quiet host)."""
+    plant_medians(monkeypatch, 0.2, 0.2 * 40, 0.1)
+    plant_load(monkeypatch, 64.0)  # factor 8
+    with pytest.raises(pytest.skip.Exception, match="load factor 8.0"):
+        test_kb_hook_latency_with_capture(str(tmp_path))
+    plant_load(monkeypatch, 8.0 * HOOK_SKIP_FACTOR)  # exactly at the bound: still checked
+    with pytest.raises(AssertionError, match="capture on"):
+        test_kb_hook_latency_with_capture(str(tmp_path))
+    assert hook_latency_load_scaled(1.0) is None and "4.0" in hook_latency_load_scaled(4.0)
+
+
+def test_stress_hook_off_on_medians_alternate(tmp_path, monkeypatch):
+    """Capture off and on are timed in alternation, the mode file written before each off run and removed before each
+    on run, and removed at the end."""
+    mod = sys.modules[__name__]
+    cfg = os.path.join(str(tmp_path), "_private", "querylog.json")
+    seen = []
+    monkeypatch.setattr(mod, "hook_once", lambda kb, prompt: seen.append(os.path.exists(cfg)) or 0.1)
+    off, on = hook_off_on_medians(str(tmp_path), "kb: q", cfg)
+    assert seen == [True, False] * HOOK_RUNS and (off, on) == (0.1, 0.1) and not os.path.exists(cfg)
 
 
 # ---------------------------------------------------------------- malformed kb content: each mutation on a fresh copy

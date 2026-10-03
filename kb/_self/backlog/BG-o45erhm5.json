@@ -20,7 +20,7 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
+        "_tools/stress_test.py",
         "-k",
         "hook_latency_load_scaled"
       ]
