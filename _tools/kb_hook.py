@@ -27,8 +27,10 @@ PowerShell Get-Content, gc, cat, type, Select-String or sls, a backslash or slas
 naming the rag.py tools that print only the lines a lookup needs (raw_read_nudge). It never sets a permission decision,
 so the command runs as it would without the hook; any other command, and any input it cannot read, gets no output.
 On an Edit, Write, MultiEdit or NotebookEdit event of a headless sprint run (KB_HEADLESS_RUNNER, set by autopilot.py
-runner start) it denies a write to .claude/settings*.json, .claude/hooks/ or .claude-plugin/, and one that changes a
-gate's answer or by field in a kb/_self/backlog/*.json item (headless_guard); without the variable it answers nothing.
+runner start) it denies a write to .claude/settings*.json, .claude/hooks/ or .claude-plugin/, to any path outside the
+project, to its own files and the files bl_authority.PATHS gives the agents-rule and push classes, and one that changes
+a gate's answer or by field in a kb/_self/backlog/*.json item, an Edit judged on the file's text after it (headless_guard);
+without the variable it answers nothing.
 
 Claude Code runs it from .claude/settings.json (a clone) and from the plugin's plugin.json (an installed plugin); it
 reads the hook's JSON on stdin and prints the hook's JSON answer on stdout. `--test "kb: question"` prints what the
@@ -334,43 +336,101 @@ def gate_answers(text):
         return None
 
 
-def item_gate_change(path, tool, tool_input):
-    """Why an Edit or Write of the item file PATH changes a gate's answer or by field, else None."""
-    if tool == "Write":
-        try:
-            with open(path, encoding="utf-8") as f:
-                before = gate_answers(f.read())
-        except OSError:
-            before = {}
-        after = gate_answers(tool_input.get("content") or "")
-        if after is None or before is None or any(v != before.get(k, (None, None)) for k, v in after.items()):
-            return "it writes a gate's answer or by field"
-        return None
+def edited_text(text, tool, tool_input):
+    """TEXT after an Edit or MultiEdit of it, as the tool applies it (each edit in order; one match unless
+    replace_all); None when an edit cannot be applied cleanly (old_string empty, absent or ambiguous)."""
     edits = tool_input.get("edits") if tool == "MultiEdit" else [tool_input]
-    for e in edits if isinstance(edits, list) else []:
-        if isinstance(e, dict) and any(GATE_KEYS.search(str(e.get(k) or "")) for k in ("old_string", "new_string")):
-            return "it edits a gate's answer or by field"
+    if not isinstance(edits, list) or not edits:
+        return None
+    for e in edits:
+        if not isinstance(e, dict) or not isinstance(e.get("old_string"), str) or not e["old_string"] \
+                or not isinstance(e.get("new_string"), str):
+            return None
+        n = text.count(e["old_string"])
+        if n == 0 or (n > 1 and e.get("replace_all") is not True):
+            return None
+        text = text.replace(e["old_string"], e["new_string"]) if e.get("replace_all") is True \
+            else text.replace(e["old_string"], e["new_string"], 1)
+    return text
+
+
+def item_gate_change(path, tool, tool_input):
+    """Why an Edit, MultiEdit or Write of the item file PATH changes a gate's answer or by field (compared before and
+    after the change is applied to the file's current text, so a value-only edit counts), or cannot be checked; else
+    None."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            current = f.read()
+    except OSError:
+        current = None
+    before = {} if current is None and tool == "Write" else gate_answers(current or "")
+    if tool == "Write":
+        after = gate_answers(tool_input.get("content") or "")
+    else:
+        edits = tool_input.get("edits") if tool == "MultiEdit" else [tool_input]
+        for e in edits if isinstance(edits, list) else []:
+            if isinstance(e, dict) and any(GATE_KEYS.search(str(e.get(k) or "")) for k in ("old_string", "new_string")):
+                return "it edits a gate's answer or by field"
+        applied = edited_text(current, tool, tool_input) if current is not None else None
+        if applied is None:
+            return "its edit cannot be applied to the file's current text"
+        after = gate_answers(applied)
+    if after is None or before is None or any(v != before.get(k, (None, None)) for k, v in after.items()) \
+            or any(k not in after and v != (None, None) for k, v in before.items()):
+        return "it writes a gate's answer or by field"
+    return None
+
+
+def guard_paths():
+    """The project paths a headless run never writes: the guard's own files and the files bl_authority.PATHS gives the
+    agents-rule and push classes (a directory ends with /, a family of files with _). Imported here, so a missing
+    module raises and the call is denied."""
+    import bl_authority
+    return ("_tools/kb_hook.py", "_tools/kbpy", ".githooks/") + tuple(
+        p for cls in ("agents-rule", "push") for p in bl_authority.PATHS[cls])
+
+
+def guarded_file(rel):
+    """Why the project path REL is the guard's own or one of guard_paths(), else None. Compared lower-case (a
+    case-insensitive file system), and a copy in a worktree under .claude/worktrees/ by its place there."""
+    low = rel.lower()
+    m = re.match(r"\.claude/worktrees/[^/]+/(.+)", low)
+    low = m.group(1) if m else low
+    for g in guard_paths():
+        g = g.lower()
+        if low == g or (g.endswith("/") and low.startswith(g)) or (g.endswith("_") and low.startswith(g)) \
+                or low.startswith(g + "/"):
+            return f"{rel} is a file of the guard or of what it protects ({g})"
     return None
 
 
 def headless_guard(event):
-    """The PreToolUse answer that denies a headless run's (HEADLESS_ENV) Edit or Write of .claude/settings*.json,
-    .claude/hooks/, .claude-plugin/, or of an item file's gate answer or by field: a headless agent never answers as
-    the operator nor rewrites the rules it runs under; it records a gate with backlog.py gate add and answers within
-    its authority with backlog.py answer. None for any other call, and always when HEADLESS_ENV is not set (the
+    """The PreToolUse answer that denies a headless run's (HEADLESS_ENV) Edit, MultiEdit, Write or NotebookEdit of a
+    path outside the project (CLAUDE_PROJECT_DIR, else this clone; symlinks and .. resolved), of .claude/settings*.json,
+    .claude/hooks/, .claude-plugin/, of the guard's own files and the files bl_authority.PATHS gives the agents-rule and
+    push classes, and of an item file's gate answer or by field (the edit applied to the file's current text and the
+    gates compared before and after; an edit that cannot be applied is denied): a headless agent never answers as the
+    operator nor rewrites the rules it runs under; it records a gate with backlog.py gate add and answers within its
+    authority with backlog.py answer. None for any other call, and always when HEADLESS_ENV is not set (the
     operator-present session), so the guard costs nothing there."""
     if not os.environ.get(HEADLESS_ENV):
         return None
     try:
         tool, tool_input = event.get("tool_name"), event.get("tool_input")
-        if tool not in WRITE_TOOLS or not isinstance(tool_input, dict):
+        if tool not in WRITE_TOOLS:
             return None
+        if not isinstance(tool_input, dict):
+            raise ValueError("no tool input")
         path = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
-        rel, full = repo_path(path) if path else (None, None)
+        if not isinstance(path, str) or not path:
+            raise ValueError("no path")
+        rel, full = repo_path(path)
         if rel is None:
-            return None
-        if any(rx.fullmatch(rel) for rx in GUARDED):
+            why = f"{path} is outside the project"
+        elif any(rx.fullmatch(rel) for rx in GUARDED):
             why = f"{rel} holds the rules this run works under"
+        elif guarded_file(rel):
+            why = guarded_file(rel)
         elif ITEM_FILE.fullmatch(rel):
             change = item_gate_change(full, tool, tool_input)
             if not change:
@@ -378,8 +438,8 @@ def headless_guard(event):
             why = f"{rel}: {change}"
         else:
             return None
-    except Exception:  # an unreadable call to a guarded path is refused, not waved through
-        why = "the call could not be read"
+    except Exception:  # an unreadable call, or a guard that cannot load, is refused, not waved through
+        why = "the call could not be checked"
     return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
                                    "permissionDecisionReason": f"headless run ({HEADLESS_ENV}): {why}; record a gate with "
                                    "backlog.py gate add and answer only within the autopilot's authority with "
