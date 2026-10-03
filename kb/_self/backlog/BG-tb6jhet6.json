@@ -2,7 +2,7 @@
   "id": "BG-tb6jhet6",
   "kind": "bug",
   "title": "The runbook Starting the autopilot, the bounds docstring and the tools.md bounds row describe the old agent key, settings source, merge command and no-progress input",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,28 @@
     "_tools/bl_bounds.py",
     "_tools/test_docs_headless_statements.py"
   ],
-  "claimed_by": "seventh-w41"
+  "evidence": {
+    "commit": "a93b00652fae1fde4e0bf21a108bd7708f6ea1e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "docs_match_runner_credentials_and_runs"
+        ],
+        "exit": 0,
+        "sha256": "bbcbda607a8668a9"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if 'reset-runs' in open('kb/_self/tools.md').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
