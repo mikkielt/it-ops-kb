@@ -2,7 +2,7 @@
   "id": "BG-ay24ps2p",
   "kind": "bug",
   "title": "test_autopilot_bound counts every live threading.Timer, so a cancelled deadline timer or another test's timer fails a land gate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-itmjxudu",
   "priority": "P1",
   "rank": 0,
@@ -30,5 +30,28 @@
     "_tools/autopilot.py",
     "_tools/test_autopilot_bound.py"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "2bcb38df9b5802f5b9dfb482a8bfc0a75d527a8f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "supervise_joins_deadline_timer"
+        ],
+        "exit": 0,
+        "sha256": "e3cd49a9cf4dbd30"
+      },
+      {
+        "run": [
+          "sh",
+          "-c",
+          "grep -n \"timer.join\" _tools/autopilot.py | grep -q ."
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
