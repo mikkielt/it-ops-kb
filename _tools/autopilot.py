@@ -5,7 +5,9 @@ report of what the run did.
   autopilot.py runner start SP [--landed K]   make or reuse the worktree .claude/worktrees/runner-SP on the branch
                                               orch/SP (a clean one is brought to origin/main by a fast-forward; one
                                               with uncommitted files is refused, naming them) and run the sprint
-                                              there. The worktree's own .claude/settings.json is passed by
+                                              there. A copy of the worktree's .claude/settings.json, written at each
+                                              start to _cache/autopilot/SP/settings.json outside the worktree (so no
+                                              checkout there changes it), is passed by
                                               --settings and each plugin the project loads by --plugin-dir; no
                                               --permission-mode and no --dangerously-skip-permissions, so the
                                               project's allow and deny rules govern the run, with RUNNER_DENY added
@@ -308,12 +310,31 @@ def deadline_s():
     return bound(DEADLINE_ENV, DEADLINE_S, float)
 
 
-def claude_argv(worktree, sprint, landed=None):
-    """The `claude -p` command of a run: the prompt, stream-json output, the turn limit, the worktree's settings file
-    and each plugin by --plugin-dir, all explicit. No permission flag: the project's allow rules govern the run."""
+def runner_settings_path(root, sprint):
+    """The settings file a run of SPRINT reads (--settings): a copy under the clone ROOT's _cache/autopilot/SPRINT/, outside
+    the runner's worktree, so a `git checkout` of a path or of an old revision there cannot change the rules the run reads."""
+    return cache_dir(root, sprint) / "settings.json"
+
+
+def copy_runner_settings(root, sprint, worktree):
+    """Write runner_settings_path(ROOT, SPRINT) from the settings file of WORKTREE, whole or not at all, each start afresh
+    (the worktree's file as of the start, the integration main's once prepare_worktree has brought it there). Returns
+    the copy's path."""
+    target = runner_settings_path(root, sprint)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_name(target.name + ".tmp")
+    tmp.write_bytes((Path(worktree) / ".claude" / "settings.json").read_bytes())
+    os.replace(tmp, target)
+    return target
+
+
+def claude_argv(worktree, sprint, landed=None, root=ROOT):
+    """The `claude -p` command of a run: the prompt, stream-json output, the turn limit, the settings copy kept outside the
+    worktree (runner_settings_path of ROOT) and each plugin by --plugin-dir, all explicit. No permission flag: the project's
+    allow rules govern the run."""
     prompt = PROMPT.format(sprint=sprint, landed=LANDED_FLAG.format(k=landed) if landed else "")
     argv = [*CLAUDE, "-p", prompt, "--output-format", "stream-json", "--verbose", "--max-turns", str(max_turns()),
-            "--settings", str(Path(worktree) / ".claude" / "settings.json"), "--disallowedTools", *RUNNER_DENY]
+            "--settings", str(runner_settings_path(root, sprint)), "--disallowedTools", *RUNNER_DENY]
     for d in plugin_dirs(worktree):
         argv += ["--plugin-dir", d]
     return argv
@@ -586,6 +607,7 @@ def run_in_slot(sprint, landed, root, record, kept=None):
         raise bl_base.Refused(f"{wt / '.claude' / 'settings.json'} is missing: a run takes the project's own settings")
     directory = cache_dir(root, sprint)
     directory.mkdir(parents=True, exist_ok=True)
+    copy_runner_settings(root, sprint, wt)
     started = now()
     name, keep = open_stream(directory, started.strftime("%Y%m%dT%H%M%SZ"))
     status = {"sprint": sprint, "pid": os.getpid(), "worktree": str(wt), "branch": branch_name(sprint), "start_ref": start,
@@ -593,7 +615,7 @@ def run_in_slot(sprint, landed, root, record, kept=None):
               "cause": "running", "detail": "", "exit_code": None, "ended": None, "deadline_s": deadline_s(),
               "max_turns": max_turns()}
     write_status(directory / "status.json", status)
-    argv = claude_argv(wt, sprint, landed)
+    argv = claude_argv(wt, sprint, landed, root)
     run = {"compaction": False, "result": None, "exit_code": -1}
     detail = "the runner stopped before the child ended"
     if kept is not None:

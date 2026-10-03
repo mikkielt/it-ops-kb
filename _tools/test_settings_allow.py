@@ -24,7 +24,7 @@ RUNNER_COMMANDS = [
     "git rebase origin/main",  # never `git rebase *`: --exec and -x run any command
     "git rebase --continue",
     "git rebase --abort",
-    "git checkout -b *",
+    "git checkout -b work/*",  # never `-b *`: a start point (an old revision) after the name is denied below
     "git checkout work/*",
     "git checkout orch/*",
     "git branch --list *",
@@ -49,7 +49,9 @@ DENIED_COMMANDS = ["python3 _tools/kbgit.py publish *", "git push *", "git -C * 
 # allow rule matches the leading words
 REBASE_COMMIT_DENIED = ["git rebase * --exec *", "git rebase * -x *", "git commit * --no-verify*",
                         "git commit --no-verify*", "git commit * -n *", "git commit -n *",
-                        "git checkout * -- *"]  # a checkout of paths from another revision: an older settings file
+                        "git checkout * -- *",  # a checkout of paths from another revision: an older settings file
+                        # a path after a branch, and a start point after -b: the same, without the `--`
+                        "git checkout work/* *", "git checkout orch/* *", "git checkout -b * *"]
 SHELLS = ("Bash", "PowerShell")
 
 
