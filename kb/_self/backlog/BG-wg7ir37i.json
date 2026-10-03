@@ -1,0 +1,36 @@
+{
+  "id": "BG-wg7ir37i",
+  "kind": "bug",
+  "title": "Intake drift runs any _tools/ script a committed check names, kbgit.py sync --push and autopilot.py runner start included, and accepts any executable named python3",
+  "status": "todo",
+  "sprint": "SP-zihqagoi",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "bl_intake.check_program_refusal with inline=False (drift) admits only an allowlist of read-only forms: tests.py with a -k, -n or test-file selection, rag.py, check.py, selfdoc.py and .claude/skills/kb-verify/lint.py; every other _tools/ script (kbgit.py sync, autopilot.py, backlog.py writers) is refused there and its item counted unchecked; and for every caller argv[0] must be exactly python3, python or sys.executable, so a kb/x/python3 script named python3 is refused; planted-failure tests cover a sync --push --branch check, an autopilot runner start check and a ./kb/x/python3 program in drift (tests named drift_allowlist_read_only); found by the SP-zihqagoi re-review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_intake as b;r=b.check_program_refusal(['python3','_tools/kbgit.py','sync','--push','--branch','x'],inline=False);sys.exit(0 if r else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "2",
+        "-k",
+        "drift_allowlist_read_only"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_check_program_allowlist.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
