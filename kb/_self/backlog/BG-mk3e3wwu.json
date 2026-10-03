@@ -44,7 +44,7 @@
         "merge into any near-duplicate"
       ],
       "recommendation": "skip same-detector items",
-      "class": "design",
+      "class": "agents-rule",
       "answer": "skip same-detector items",
       "by": "agent"
     },
@@ -57,7 +57,7 @@
         "yes to both"
       ],
       "recommendation": "no to both: intake drafts go to the backlog, outside the inflow guard",
-      "class": "design",
+      "class": "agents-rule",
       "answer": "no to both: intake drafts go to the backlog, outside the inflow guard",
       "by": "agent"
     }

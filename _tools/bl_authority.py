@@ -25,20 +25,26 @@ REVIEW_DAYS = 14  # an autopilot decision's `review_by`: the operator ratifies o
 # Paths whose change makes a gate about the item one of the class: a directory ends with `/`, a file is exact. A touch
 # names one when it is the path, a directory above it, or a glob that matches it.
 PATHS = {
-    "push": ("_tools/kbgit.py", "_tools/kbpublic.py", "_tools/kg_", ".gitlab-ci.yml", ".github/", ".githooks/"),
+    "push": ("_tools/kbgit.py", "_tools/kbpublic.py", "_tools/kg_", "_tools/kblane.py", ".gitlab-ci.yml", ".github/",
+             ".githooks/"),
     "querylog": ("kb/_querylog/",),
+    # the rules agents run under, and the code that guards the autopilot itself: a sprint may not approve a change to
+    # its own runner, gate classes, bounds, self-check, edit guard or decision record
     "agents-rule": ("AGENTS.md", "CLAUDE.md", ".claude/agents/", ".claude/skills/", ".claude/hooks/",
-                    ".claude/settings.json", ".claude-plugin/"),
+                    ".claude/settings.json", ".claude/settings.local.json", ".claude-plugin/", "_tools/autopilot.py",
+                    "_tools/bl_authority.py", "_tools/bl_bounds.py", "_tools/bl_selfcheck.py", "_tools/kb_hook.py",
+                    "_tools/kbdecide.py"),
 }
 SECRET_WORDS = re.compile(r"secret|credential|password|\.env\b|token|private[-_ ]?key", re.I)
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
 # `release` are word-bounded (`original` is not `origin`) and take their endings (`releases`, `released`, `mirrored`),
 # so a gate about a release note is `push` too: the classifier fails closed.
 QUESTION_WORDS = {
-    "secrets": re.compile(r"secret|credential|password|token|api[- ]key|private key|\.env\b|rotat\w*\s+(?:\w+\s+){0,2}keys?\b",
-                          re.I),
-    "push": re.compile(r"\bpush(?:ing)?\b|publish|force[- ]push|\bremote\b|\bgithub\b|\borigin\b|\bmirror(?:s|ed|ing)?\b|"
-                       r"\breleas(?:e|es|ed|ing)\b|public[- ]repositor(?:y|ies)", re.I),
+    "secrets": re.compile(r"secret|credential|password|passphrase|token|\bPATs?\b|\bbearer\b|\bssh\b|api[- ]key|"
+                          r"private key|\.env\b|rotat\w*\s+(?:\w+\s+){0,2}keys?\b", re.I),
+    "push": re.compile(r"\bpush(?:ing)?\b|publish|force[- ]push|\bremote\b|\bgithub\b|\bgitlab\b|\borigin\b|"
+                       r"\bmirror(?:s|ed|ing)?\b|\breleas(?:e|es|ed|ing)\b|public[- ]repositor(?:y|ies)|"
+                       r"\buploa(?:d|ds|ded|ding)\b|\bdeploy(?:s|ed|ing|ment)?\b|merge[- ]requests?\b", re.I),
     "querylog": re.compile(r"query[- ]?log|querylog|redact", re.I),
     "agents-rule": re.compile(r"AGENTS\.md|CLAUDE\.md|\brule\b|\bskill\b|\bagent definition", re.I),
     "delete": re.compile(r"\bdelet|\bremov(?:e|ing) .*(?:kb|content|history)|purge|erase", re.I),
