@@ -1,0 +1,37 @@
+{
+  "id": "BG-itjc4ax6",
+  "kind": "bug",
+  "title": "A headless runner's querylog.py launch starts a detached distill outside the runner's process group and deadline, which can apply --push to main",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "querylog.py launch does nothing when KB_HEADLESS_RUNNER is set (the manager or an operator session distills the spool), so no process a runner starts outlives its deadline or pushes outside the runner's land; a planted-failure test runs launch with the variable set and finds no process started; found by the SP-zihqagoi review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_distill;sys.exit(0 if hasattr(ql_distill,'HEADLESS_ENV') else 1)"
+    ]
+  },
+  "repro_reason": "the escape shows only in a real runner session; the repro checks the headless skip exists, the check runs launch with the variable",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "2",
+        "-k",
+        "launch_skipped_when_headless"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/querylog.py",
+    "_tools/ql_distill.py",
+    "_tools/test_ql_headless.py",
+    "kb/_self/querylog.md"
+  ]
+}
