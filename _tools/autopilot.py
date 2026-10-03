@@ -97,6 +97,8 @@ CAUSE_LINE = re.compile(r"^sprint-runner: (" + "|".join(CAUSES_FROM_RESULT) + r"
 SPRINT_ID = re.compile(r"^SP-[a-z2-7]{8}$")
 STATUS_MAX = 1000  # runner-status prints fewer characters than this
 GRACE_S = 5  # seconds a child gets to end after SIGTERM before its process group is killed
+TIMER = threading.Timer  # the deadline's timer class; a test replaces it to watch only the timers its own run started
+TIMER_JOIN_S = GRACE_S + 5  # supervise waits this long for its cancelled deadline timer's thread to end
 MAX_TURNS = 500  # --max-turns of the headless child: a loop guard well above what a run takes before its first compaction
 DEADLINE_S = 6 * 3600  # seconds a child lives at most; past it the runner ends its process tree (cause `timeout`)
 TURNS_ENV = "KB_RUNNER_MAX_TURNS"  # environment overrides of the two bounds, for tests and a host that wants other ones
@@ -296,7 +298,7 @@ def supervise(argv, cwd, keep, stderr, deadline=None):
             pass
         end_tree(proc)  # the child's group in any case: a subagent or a shell command it left holds the pipe open
 
-    timer = threading.Timer(deadline_s() if deadline is None else deadline, expire)
+    timer = TIMER(deadline_s() if deadline is None else deadline, expire)
     timer.daemon = True
     timer.start()
     try:
@@ -325,6 +327,7 @@ def supervise(argv, cwd, keep, stderr, deadline=None):
         timer.cancel()
         end_tree(proc)  # the child's process group, which subagents and shell commands belong to
         proc.wait()
+        timer.join(TIMER_JOIN_S)  # the cancelled timer's thread is gone, or a fired expire() has finished, on return
     out["exit_code"] = proc.returncode
     return out
 
