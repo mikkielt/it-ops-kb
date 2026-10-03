@@ -2,7 +2,7 @@
   "id": "ST-vyosyurg",
   "kind": "story",
   "title": "Review sprint: Throwaway: the first supervised autopilot run",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7kbrqaol",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "9b45f256c428af95067aef28e595ae5d08eb1513",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "fbf55ce0fa257595"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "84ac1154c36fbbc0"
+      }
+    ]
+  }
 }
