@@ -230,11 +230,19 @@ def worktree_state(wt, main):
     return dirty, diverged
 
 
+def headless_refusal(command):
+    """Refuse COMMAND (bl_base.Refused) inside a headless run (HEADLESS_ENV): only the manager session starts or resets
+    runners, so no runner's child is started outside its parent's process group and deadline."""
+    if os.environ.get(HEADLESS_ENV):
+        raise bl_base.Refused(f"{command} runs only in the manager session, not inside a headless run ({HEADLESS_ENV})")
+
+
 def reset_worktree(root, sprint):
     """The recovery for a start prepare_worktree refused: name the cause and free the worktree without losing what is in
     it. Uncommitted files go into a git stash of the clone; a diverged branch is kept as `stale/SP-STAMP` and the
     worktree removed, so the next start makes both afresh at the integration main. A worktree that is clean and not
-    diverged is left as it is. Refused while a live runner holds SP. Returns 0."""
+    diverged is left as it is. Refused while a live runner holds SP, and in a headless run. Returns 0."""
+    headless_refusal("runner reset")
     held = [r for r in bl_base.live_runners() if r.get("sprint") == sprint]
     if held:
         raise bl_base.Refused(f"{sprint} has a live runner (pid {held[0].get('pid')}, clone {held[0].get('clone')}): "
@@ -501,7 +509,9 @@ def write_early_status(root, sprint, name):
 
 
 def runner_start(sprint, landed=None, root=ROOT):
-    """Run the sprint headless in its worktree; returns the exit code (the module docstring)."""
+    """Run the sprint headless in its worktree; returns the exit code (the module docstring). Refused inside a headless
+    run (headless_refusal)."""
+    headless_refusal("runner start")
     root = Path(root)
     kept = []  # run_in_slot adds to it once its own status is kept, from then on the status names the end itself
     try:
