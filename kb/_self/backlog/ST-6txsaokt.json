@@ -2,7 +2,7 @@
   "id": "ST-6txsaokt",
   "kind": "story",
   "title": "A plan exists to run the autopilot in a Docker container instead of a separate OS user",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,28 @@
     "kb/_self/map.csv",
     "kb/_self/README.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "f4aa64393d855e025029dba65fdd1876dc00a2ca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cohesion"
+        ],
+        "exit": 0,
+        "sha256": "b91b443f3460ad3a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
