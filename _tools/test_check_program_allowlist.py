@@ -3,7 +3,7 @@
 There a check runs only as python3 on a _tools/ script, never kbgit.py publish, bridge, install-hooks or hook, nor a
 shell, git or glab; drift also refuses python3 -c. An operator session's done keeps running the read-only sh and git
 repros items carry (kb/_self/backlog.md)."""
-import os, sys
+import sys
 
 import pytest
 
