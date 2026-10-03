@@ -1,0 +1,34 @@
+{
+  "id": "BG-sg4dagdm",
+  "kind": "bug",
+  "title": "cost --rework reads zero for a sprint whose orchestrator session is still open, because the work sidecar is read only from closed sessions, so the review and the retrospective have no figures",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py cost --rework SP, run inside the orchestrator session that is still open, reports the prompts and tokens of the items' work windows from the open session's spool (marked as an open-session figure) or says plainly that the figures wait for the session's end, so a review and a retrospective that run in the same session are not shown all zeros as if no work happened; a test named cost_open_session_figures plants an open session with work rows and sees them or the stated wait. Evidence: cost --rework SP-tt4tibyn and SP-itmjxudu printed 0 prompts and 0 tokens while the orchestrator session was open (kb/_self/querylog.md, The work sidecar: read from closed sessions, never an open one; ql_distill.SESSION_IDLE_CLOSED_S 86400); found by the SP-tt4tibyn review.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "! grep -q \"never an open one\" kb/_self/querylog.md"
+    ]
+  },
+  "repro_reason": "the zero figure needs an open orchestrator session with work rows, which only the new test can plant; the text match fails while the doc says the open session is never read and passes once that sentence is replaced",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cost_open_session_figures"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_cost.py",
+    "_tools/ql_distill.py",
+    "_tools/test_cost_open_session.py",
+    "kb/_self/querylog.md"
+  ]
+}
