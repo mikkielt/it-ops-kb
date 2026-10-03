@@ -48,12 +48,45 @@ def make_root(base, name, prefix, visibility):
     return sid
 
 
+def bl_imports(tools, start="backlog.py"):
+    """The bl_ modules START imports, at any depth, as file names: read from the import lines, so a new bl_ module
+    backlog.py comes to import needs no edit here."""
+    import ast
+    seen, todo = set(), [start]
+    while todo:
+        tree = ast.parse((Path(tools) / todo.pop()).read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            names = ([a.name for a in node.names] if isinstance(node, ast.Import)
+                     else [node.module or ""] if isinstance(node, ast.ImportFrom) else [])
+            for n in names:
+                f = f"{n.split('.')[0]}.py"
+                if f.startswith("bl_") and f not in seen and (Path(tools) / f).exists():
+                    seen.add(f)
+                    todo.append(f)
+    return sorted(seen)
+
+
+def copied_tools(tools=TOOLS):
+    """The _tools files the temp repository needs: kbdecide.py and what it imports, and backlog.py with every bl_
+    module it imports."""
+    return ["kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py", "backlog.py", *bl_imports(tools)]
+
+
+def test_make_root_copies_all_bl_modules(tmp_path):
+    (tmp_path / "backlog.py").write_text("import bl_base\nfrom bl_new_module import x\n", encoding="utf-8")
+    (tmp_path / "bl_base.py").write_text("", encoding="utf-8")
+    (tmp_path / "bl_new_module.py").write_text("import bl_deeper\n", encoding="utf-8")  # planted: no list names it
+    (tmp_path / "bl_deeper.py").write_text("", encoding="utf-8")
+    (tmp_path / "bl_unused.py").write_text("", encoding="utf-8")  # nothing imports it: not needed
+    assert bl_imports(tmp_path) == ["bl_base.py", "bl_deeper.py", "bl_new_module.py"]
+    assert "bl_base.py" in copied_tools() and "bl_land.py" in copied_tools()  # the real backlog.py's, read the same way
+
+
 @pytest.fixture(scope="module")
 def template(tmp_path_factory):
     """The repository every test starts from."""
     repo = tmp_path_factory.mktemp("kbdecide") / "repo"
-    backlog = ["backlog.py"] + [f"bl_{m}.py" for m in ("authority", "base", "check", "cli", "cost", "intake", "land", "plan", "procs", "selfcheck", "stall", "bounds")]
-    for name in ("kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py", *backlog):
+    for name in copied_tools():
         (repo / "_tools").mkdir(parents=True, exist_ok=True)
         shutil.copy(TOOLS / name, repo / "_tools" / name)
     make_root(repo / "kb" / "public", "public", "S", "public")
