@@ -435,8 +435,7 @@ def guard_paths():
     agents-rule and push classes (a directory ends with /, a family of files with _). Imported here, so a missing
     module raises and the call is denied."""
     import bl_authority
-    return ("_tools/kb_hook.py", "_tools/kbpy", ".githooks/") + tuple(
-        p for cls in ("agents-rule", "push") for p in bl_authority.PATHS[cls])
+    return bl_authority.guard_paths()
 
 
 def guarded_file(rel):

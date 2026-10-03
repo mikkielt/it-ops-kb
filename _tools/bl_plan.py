@@ -229,6 +229,25 @@ def runner_conflicts(bl, sid):
 AUTOPILOT_START_CAUSES = []  # functions (bl, sprint id) -> [cause text]; `bl_check` registers its own: they hold back a start the autopilot approved
 
 
+def guarded_items(bl, sid):
+    """[(id, guard-class touches)] of the sprint's items not yet done or dropped whose touches a headless runner may
+    not edit (bl_authority.guarded_touches: the files kb_hook.headless_guard denies it). Shared by `start` (the
+    warning) and `autopilot.py runner start` (the refusal)."""
+    import bl_authority
+    out = []
+    for i in bl.sprint_items(sid):
+        if bl.items[i].get("status") in ("done", "dropped"):
+            continue
+        g = bl_authority.guarded_touches(bl.items[i])
+        if g:
+            out.append((i, g))
+    return out
+
+
+def guarded_line(bl, i, touches):
+    return f"{bl.label(i)} touches {', '.join(touches)}: a headless runner cannot edit them (operator-present session only)"
+
+
 def cmd_start(bl, a):
     sid = need(bl, a.sprint)
     sp = bl.items[sid]
@@ -270,6 +289,8 @@ def cmd_start(bl, a):
     say(f"started {bl.label(sid)}: {sp['goal']}")
     for w in docs_warnings(bl, set(items)):
         say(f"  warning: {w}")
+    for i, g in guarded_items(bl, sid):
+        say(f"  warning: {guarded_line(bl, i, g)}")
     for i, d, where in outside_deps(bl, sid):
         say(f"  warning: {bl.label(i)} depends on {bl.label(d)}, outside this sprint ({where})")
     for i in recurring_left_out(bl, sid):

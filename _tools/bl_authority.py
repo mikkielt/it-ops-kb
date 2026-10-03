@@ -71,6 +71,30 @@ def touch_names(touch, path):
     return under or t == path or fnmatch.fnmatchcase(path, t)
 
 
+# Files kb_hook.headless_guard denies a headless Edit/Write beside the PATHS of the agents-rule and push classes.
+GUARD_EXTRA = ("_tools/kb_hook.py", "_tools/kbpy", ".githooks/")
+
+
+def guard_paths():
+    """The project paths a headless run never writes (kb_hook.guard_paths returns this): the guard's own files and the
+    files PATHS gives the agents-rule and push classes (a directory ends with /, a family of files with _)."""
+    return GUARD_EXTRA + tuple(p for cls in ("agents-rule", "push") for p in PATHS[cls])
+
+
+def guarded_touches(item):
+    """The item's touches a headless run may not edit: each names a guard_paths() entry (the path, a directory above
+    it, a glob that matches it) or lies inside one (`_tools/kbpy/x.py`). `backlog.py start` names them and
+    `autopilot.py runner start` refuses a sprint that has any."""
+    found = []
+    for t in item.get("touches", []) or []:
+        if not isinstance(t, str) or not t.strip():
+            continue
+        n = norm(t)
+        if any(touch_names(t, p) or n.startswith(p.lower() + "/") for p in guard_paths()):
+            found.append(t)
+    return found
+
+
 def command_words(gate):
     """The words of a gate's `do` and `host_check` commands (argv lists, or a string)."""
     out = []
