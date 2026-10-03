@@ -32,7 +32,9 @@
         "no"
       ],
       "recommendation": "yes",
-      "class": "design"
+      "class": "design",
+      "answer": "yes",
+      "by": "operator"
     }
   ]
 }
