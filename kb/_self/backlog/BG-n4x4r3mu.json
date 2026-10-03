@@ -20,13 +20,22 @@
       "run": [
         "python3",
         "_tools/tests.py",
+        "-k",
+        "named_files_glob_takes_lock"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
         "_tools/test_tests_lock.py"
       ]
     }
   ],
   "touches": [
     "_tools/tests.py",
-    "_tools/test_tests_lock.py"
+    "_tools/test_tests_lock.py",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "mac-third-worker"
 }

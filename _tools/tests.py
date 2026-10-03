@@ -23,8 +23,10 @@ A full run, a --changed run with more than one worker and stress_test.py take a 
 O_EXCL file in KB_HOST_LOCK_DIR (default /tmp, or the public directory on Windows) holding the pid, clone and start time.
 A second run prints who holds it and waits; a holder whose pid no longer runs is cleared by one waiter (an atomic claim),
 an empty lock file only after KB_HOST_LOCK_GRACE seconds (default 10). A -k run, a run inside a test,
-a run that names only test files (no --changed) and a one-worker run (-n 1) take none; the run that names only test
-files records mode files and no file times, so mode full holds only runs of the whole selection.
+a run that names only a few test files (at most NAMED_FILES_LOCK_FREE, 4; no --changed) and a one-worker run (-n 1)
+take none; the run that names only a few test files records mode files and no file times, so mode full holds only
+runs of the whole selection. A run that names more files (a shell glob of every test file) is a full run: it takes the
+lock and records mode full with every file's time.
 
 The default worker count is capped, not one per CPU: KB_TEST_WORKERS (a number) when set, else the CPUs divided among
 this run and the other live tests.py runs (each run holds a kb-tests-run.PID file beside the lock while it runs; a dead
@@ -464,14 +466,19 @@ def path_args(args):
     return out
 
 
+NAMED_FILES_LOCK_FREE = 4  # a handful of named files is cheap enough to skip the host lock; a shell glob of every test file is not
+
+
 def named_files_only(args):
-    """True when the arguments name at least one path and every one is a file (optionally `::node`), and the run is not
-    `--changed`: a targeted run of the named files. A named directory, or no path, is a full-scope run."""
+    """True when the arguments name at least one path, every one a file (optionally `::node`), at most
+    NAMED_FILES_LOCK_FREE distinct files, and the run is not `--changed`: a cheap targeted run of a few files. A named
+    directory, no path, or more files than that (a shell glob of the test files) is a full-scope run."""
     if "--changed" in args:
         return False
     paths = path_args(args)
-    return bool(paths) and all(os.path.isfile(os.path.join(KB, a.split("::")[0])) or os.path.isfile(a.split("::")[0])
-                               for a in paths)
+    files = {a.split("::")[0] for a in paths}
+    return (bool(paths) and len(files) <= NAMED_FILES_LOCK_FREE
+            and all(os.path.isfile(os.path.join(KB, f)) or os.path.isfile(f) for f in files))
 
 
 def main(argv):
