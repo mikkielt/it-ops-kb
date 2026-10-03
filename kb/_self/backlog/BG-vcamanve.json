@@ -28,7 +28,8 @@
   "touches": [
     "_tools/kbcommon.py",
     "_tools/test_kbroot.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md"
   ],
   "claimed_by": "mac-first"
 }

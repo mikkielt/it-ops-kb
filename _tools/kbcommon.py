@@ -92,7 +92,7 @@ REUSE = {
     "unknown": "the terms could not be read or determined: treated as paraphrase",
 }
 PREFIX = re.compile(r"[A-Z]{1,4}")  # a root's source id prefix: its ids are <prefix>-<8 base32 chars>
-RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL", "D"}  # tag kinds, answer, eval and decision ids, placeholders
+RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL", "D", "L"}  # tag kinds, answer, eval, decision and log ids, placeholders
 # Decisions. Any root, and kb/_self, may keep two files (check.py checks them; kb/_self/content-rules.md, Decisions):
 # _decisions.csv holds the operator's decisions, one row each, and decision-makers.csv who may make them; the file in
 # kb/_self is the central register that a root's `by_ref` may name when the root keeps no row for the maker itself.
