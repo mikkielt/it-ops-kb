@@ -1,0 +1,35 @@
+{
+  "id": "BG-piucqfwh",
+  "kind": "bug",
+  "title": "The private-path wording of five docs and the kb-setup skill names only kb/_querylog/ where kbpublic.PRIVATE_LABEL also names _logs.csv, _private and _cache, and the wording test cannot see them",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/git.md (the Public home lines that name what publish leaves out), kb/_self/maintaining.md and .claude/skills/kb-setup/SKILL.md name the private paths as kbpublic.PRIVATE_LABEL does (_logs.csv, _private and _cache in any directory, with kb/_querylog/), and the wording test in test_sync.py (GIT_MD_PRIVATE_ROWS / private_docs) covers those lines so a planted old wording fails; found by the SP-nq5avzrl review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;bad=[(f,n) for f in (\"kb/_self/git.md\",\"kb/_self/maintaining.md\",\".claude/skills/kb-setup/SKILL.md\") for n,l in enumerate(open(f,encoding=\"utf-8\"),1) if \"kb/_querylog/\" in l and re.search(\"public home|publish\",l) and \"_logs.csv\" not in l];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of docs read by a person setting up the public remote; the repro reads the lines for the full private-path list",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "private_label_gaps_docs"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/git.md",
+    "kb/_self/maintaining.md",
+    ".claude/skills/kb-setup/SKILL.md",
+    "_tools/test_sync.py"
+  ]
+}
