@@ -4,3 +4,5 @@ _tools/test_querylog_e2e.py::TestResearch::test_research_over_its_cap
 _tools/test_querylog_e2e.py::TestResearch::test_research_off
 # replaced by test_land_removes_clean_unlocked_worker_worktree when land began removing an unlocked worker worktree (commit 691dffd5d)
 _tools/test_backlog.py::TestBacklogLand::test_unlocked_worker_worktree_unlocked_never
+# its parameter, the old `glab mr merge code/<id> --auto-merge=false ...` text, was replaced by `python3 _tools/backlog.py merge <id>` when an agent began merging only its item's own code/<id> (commit c0cfa67c)
+_tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[1-`glab mr merge code/<id> --auto-merge=false --yes -R <project url>`-`glab mr merge code/<id>`]
