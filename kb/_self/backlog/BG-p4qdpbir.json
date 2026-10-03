@@ -32,7 +32,8 @@
     "_tools/bl_bounds.py",
     ".claude/skills/kb-autopilot/SKILL.md",
     "_tools/test_autopilot_no_progress_reset.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/autopilot-test.md"
   ],
   "claimed_by": "mac-third-worker"
 }
