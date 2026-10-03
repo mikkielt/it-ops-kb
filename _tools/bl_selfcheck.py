@@ -6,13 +6,16 @@
   selfcheck --full     the same without the cap on the output
   selfcheck --json     the results as one JSON object
 
-The six checks, each independent and each a result {name, state, detail, remedy}, `state` being `ok`, `fail` or
+The seven checks, each independent and each a result {name, state, detail, remedy}, `state` being `ok`, `fail` or
 `unknown` (an input that cannot be read, never a guess and never a failure):
 
   allow-rules  every command the skills run (`SKILL_COMMANDS`, the list this module keeps as the source of truth, and
                `SKILL_TOOLS`) is covered by an allow rule of `.claude/settings.json` or `.claude/settings.local.json`;
                a `Bash(PATTERN)` rule covers a command that PATTERN matches whole, `*` standing for any text and a
                trailing ` *` also for no arguments, as Claude Code reads it; a `deny` rule is not read; a bare `Bash` rule covers every command
+  checkout     the manager clone is no linked worktree of another checkout (`git rev-parse --git-common-dir` is its own
+               `--git-dir`): a runner there gets its workers' isolation worktrees in that other checkout, where
+               the headless guard refuses their writes; `autopilot.py runner start` makes the same check
   hooks        `core.hooksPath` runs this checkout's `.githooks` (or the `.githooks` of another worktree of the clone)
                and each hook script is there; the plugin manifest parses and the files it names exist
   host         the 5-minute load average is under LOAD_PER_CORE times the cores, no host lock (`kb-tests.lock`,
@@ -95,6 +98,7 @@ SKILL_TOOLS = ("Agent", "SendMessage", "Edit", "Write")  # tools the sprint's lo
 REMEDY = {
     "allow-rules": "ask-operator: the settings are the operator's; release the item, name the refused command, "
                    "never edit them (Headless, rule 4)",
+    "checkout": "use a standalone `git clone` as the manager clone",
     "hooks": "run /kb-setup (`python3 _tools/kbgit.py install-hooks`) before any commit",
     "host-load": "retry-narrower: dispatch fewer workers and give the tests a `-k` selection, which takes no host lock",
     "host-lock": "lock-wait: retry-narrower, then file-blocker; end the holder only when it is yours and stuck",
@@ -163,6 +167,36 @@ def check_allow(root, commands=SKILL_COMMANDS, tools=SKILL_TOOLS):
         return result("allow-rules", "fail", f"{len(missing)} of {len(commands) + len(tools)} not covered: "
                       + listing(missing), REMEDY["allow-rules"])
     return result("allow-rules", "ok", f"{len(commands) + len(tools)} covered")
+
+
+# ---------------------------------------------------------------- the checkout
+
+def linked_worktree_of(root):
+    """The other checkout (the parent of the common git dir) when ROOT is a linked worktree of it, else None; None too
+    when git cannot say. Paths are resolved against ROOT, as `git rev-parse` may print them relative."""
+    dirs = []
+    for opt in ("--git-common-dir", "--git-dir"):
+        p = subprocess.run(["git", "rev-parse", opt], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
+        if p.returncode != 0 or not p.stdout.strip():
+            return None
+        dirs.append((Path(root) / p.stdout.strip()).resolve())
+    return dirs[0].parent if dirs[0] != dirs[1] else None
+
+
+def linked_worktree_message(root):
+    """What is wrong when ROOT is a linked worktree of another checkout, else None."""
+    other = linked_worktree_of(root)
+    if other is None:
+        return None
+    return f"this clone is a linked worktree of the checkout {other}, so a runner's workers land there"
+
+
+def check_checkout(root):
+    msg = linked_worktree_message(root)
+    if msg:
+        return result("checkout", "fail", msg, REMEDY["checkout"])
+    return result("checkout", "ok", "the clone is not a linked worktree")
 
 
 # ---------------------------------------------------------------- the commit hooks and the plugin
@@ -294,14 +328,14 @@ def check_main(report):
 
 
 def run_checks(bl, now=None):
-    """The six results, in the order above. One `bl_stall.collect` serves the claims and main."""
+    """The seven results, in the order above. One `bl_stall.collect` serves the claims and main."""
     root = str(bl.root)
     try:
         report = bl_stall.collect(bl, now)
     except Exception as e:  # noqa: BLE001 - a read that fails is unknown, never an error of the check
         report = None
         why = type(e).__name__
-    out = [check_allow(root), check_hooks(root), check_host(now)]
+    out = [check_allow(root), check_checkout(root), check_hooks(root), check_host(now)]
     out += [check_claims(report), check_orphans(root), check_main(report)] if report else [
         result("claims", "unknown", f"the claims could not be read ({why})", REMEDY["claims"]),
         check_orphans(root),

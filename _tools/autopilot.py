@@ -577,6 +577,10 @@ def runner_start(sprint, landed=None, root=ROOT):
     run (headless_refusal)."""
     headless_refusal("runner start")
     root = Path(root)
+    import bl_selfcheck  # the selfcheck's own checkout check, so the two refuse alike
+    linked = bl_selfcheck.linked_worktree_message(root)
+    if linked:
+        raise bl_base.Refused(f"{linked}; {bl_selfcheck.REMEDY['checkout']}")
     held = guarded_refusal(root, sprint)
     if held:
         print(f"refused: {sprint} is operator-present only: a headless runner cannot edit the files of its items:\n  "

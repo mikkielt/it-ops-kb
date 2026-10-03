@@ -2,7 +2,7 @@
   "id": "BG-7tqa65mp",
   "kind": "bug",
   "title": "A runner started in a clone that is a linked worktree of another checkout blocks every item: its workers get worktrees in that checkout and the headless guard refuses their writes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -30,7 +30,11 @@
     "_tools/bl_selfcheck.py",
     "_tools/test_autopilot_linked_worktree.py",
     "kb/_self/autopilot-test.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "_tools/test_bl_selfcheck.py"
   ],
-  "notes": "Stage 1 repeated in a real clone (own .git) still blocked: the guard refused the worker because its isolation worktree is a sibling of the runner's worktree. A linked-worktree manager clone is a real hazard (workers land in the other checkout) but not the only cause; the first cause to fix is BG-svzlkygp. Keep, lower the priority, or drop once BG-svzlkygp is fixed and Stage 1 lands in a linked clone: the manager decides."
+  "notes": "Stage 1 repeated in a real clone (own .git) still blocked: the guard refused the worker because its isolation worktree is a sibling of the runner's worktree. A linked-worktree manager clone is a real hazard (workers land in the other checkout) but not the only cause; the first cause to fix is BG-svzlkygp. Keep, lower the priority, or drop once BG-svzlkygp is fixed and Stage 1 lands in a linked clone: the manager decides.",
+  "claimed_by": "mac-third-worker"
 }

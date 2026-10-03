@@ -1,4 +1,4 @@
-"""Tests of `backlog.py selfcheck` (bl_selfcheck.py): the six checks (allow rules, hooks and plugin, host, claims,
+"""Tests of `backlog.py selfcheck` (bl_selfcheck.py): the seven checks (allow rules, checkout, hooks and plugin, host, claims,
 owned orphans, main), each failing with the remedy the kb-sprint skill names, and the capped output. The tests named
 selfcheck_names_remedy_* and selfcheck_capped_* are the item's checks. Every failure is planted: a settings file that
 lacks a rule, a clone with no hooks, a lock held for hours, a third runner, a stale claim, an owned orphan, a red
@@ -217,13 +217,13 @@ def test_selfcheck_names_remedy_command_in_a_scratch_clone_fails_with_remedies(r
     code, out = b(repo, "selfcheck", "--json")
     data = json.loads(out)
     assert code == 1 and data["ok"] is False and [c["name"] for c in data["checks"]] == [
-        "allow-rules", "hooks", "host", "claims", "orphans", "main"]
+        "allow-rules", "checkout", "hooks", "host", "claims", "orphans", "main"]
     assert b(repo, "selfcheck", "--full", "--json")[0] == 2  # alternatives
 
 
 def test_selfcheck_names_remedy_a_passing_host_prints_one_line():
-    results = [sc.result(n, "ok", "fine") for n in ("allow-rules", "hooks", "host", "claims", "orphans", "main")]
-    assert sc.render(results) == ["selfcheck: ok (6 checks passed)"]
+    results = [sc.result(n, "ok", "fine") for n in ("allow-rules", "checkout", "hooks", "host", "claims", "orphans", "main")]
+    assert sc.render(results) == ["selfcheck: ok (7 checks passed)"]
 
 
 # ---------------------------------------------------------------- the cap
