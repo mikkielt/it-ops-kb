@@ -1707,8 +1707,23 @@ def git_md_private_rows():
     return out
 
 
+PUBLIC_HOME_DOC_LINES = {"maintaining.md git hooks step": ("kb/_self/maintaining.md", "4. **Git hooks:**"),
+                         "kb-setup SKILL.md public remote": (".claude/skills/kb-setup/SKILL.md", "- Ask whether this clone has a public remote")}
+
+
+def public_home_doc_lines():
+    """The maintaining.md step and the kb-setup bullet that tell a person what publish leaves out: one line each."""
+    out = {}
+    for name, (rel, start) in PUBLIC_HOME_DOC_LINES.items():
+        lines = Path(TOOLS).parent.joinpath(*rel.split("/")).read_text(encoding="utf-8").splitlines()
+        rows = [ln for ln in lines if ln.startswith(start)]
+        assert len(rows) == 1, (name, len(rows))
+        out[name] = rows[0]
+    return out
+
+
 def private_docs():
-    return {"pre-push comment": hook_private_comment(), **git_md_private_rows()}
+    return {"pre-push comment": hook_private_comment(), **git_md_private_rows(), **public_home_doc_lines()}
 
 
 def test_private_label_in_help():
@@ -1716,7 +1731,7 @@ def test_private_label_in_help():
 
 
 def test_private_label_gaps_hook_comment_and_git_md_rows():
-    """The pre-push comment and the three git.md rows name `_logs.csv` beside kb/_querylog (planted: the old wording
+    """The pre-push comment, the three git.md rows, the maintaining.md step and the kb-setup bullet name `_logs.csv` beside kb/_querylog (planted: the old wording
     that names only kb/_querylog, in each place, is reported by name)."""
     docs = private_docs()
     assert all("_querylog" in text for text in docs.values())
@@ -1725,6 +1740,22 @@ def test_private_label_gaps_hook_comment_and_git_md_rows():
     assert private_label_gaps(kbgit_helps(), kb_yml_public_comment(), old) == list(docs)
     one = {**docs, "git.md guard": "a ref whose history touches `kb/_querylog/` is refused by the pre-push hook"}
     assert private_label_gaps(kbgit_helps(), kb_yml_public_comment(), one) == ["git.md guard"]
+
+
+def test_private_label_gaps_docs_name_every_private_path():
+    """git.md's Public home lines, the maintaining.md step and the kb-setup bullet that name kb/_querylog/ also name
+    `_logs.csv` (planted: the old wording, kb/_querylog/ alone, in each, is reported by name)."""
+    import re
+    root = Path(TOOLS).parent
+    for rel in ("kb/_self/git.md", "kb/_self/maintaining.md", ".claude/skills/kb-setup/SKILL.md"):
+        for n, line in enumerate(root.joinpath(*rel.split("/")).read_text(encoding="utf-8").splitlines(), 1):
+            if "kb/_querylog/" in line and re.search("public home|publish", line):
+                assert "_logs.csv" in line, (rel, n)
+    docs = public_home_doc_lines()
+    assert all("kb/_querylog/" in text and "_logs.csv" in text for text in docs.values())
+    assert private_label_gaps({}, "_logs.csv", docs) == []
+    old = {name: text.replace("_logs.csv", "_gone") for name, text in docs.items()}
+    assert private_label_gaps({}, "_logs.csv", old) == list(docs)
 
 
 def test_private_label_in_help_planted_querylog_only_fails():
