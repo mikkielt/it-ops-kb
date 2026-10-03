@@ -2,7 +2,7 @@
   "id": "BG-mk3e3wwu",
   "kind": "bug",
   "title": "intake --file files drafts outside bounds, so an intake draft carries no origin, evidence or cap",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
   "rank": 0,
@@ -62,5 +62,28 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "6093bc385558395bc3d944f76200e202d1df070b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_files_through_bounds"
+        ],
+        "exit": 0,
+        "sha256": "4c3beadb52576eb9"
+      },
+      {
+        "run": [
+          "sh",
+          "-c",
+          "grep -n \"intake\" _tools/bl_bounds.py | grep -q ORIGINS"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
