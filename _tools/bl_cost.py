@@ -48,6 +48,23 @@ def cost_models(w, field):
     return out
 
 
+def cost_row_of(run, w, ids, rework):
+    """The report row of one work line of run `run`, or None when it names none of `ids` (every line when None)."""
+    if "item" in w and (ids is None or w["item"] in ids):  # a shared line has `items`, no `item`
+        row = {"run": run, "item": w["item"], "prompts": w["prompts"],
+               **{key: cost_models(w, field) for key, field, _ in COST_GROUPS}}
+        if rework and "rework" in w:
+            row["rework"] = {"prompts": w["rework"]["prompts"],
+                             **{key: cost_models(w["rework"], field) for key, field, _ in COST_GROUPS}}
+        return row
+    if "items" in w and (ids is None or ids.intersection(w["items"])):
+        both = {}
+        for _, field, _ in COST_GROUPS:
+            cost_add(both, cost_models(w, field))
+        return {"run": run, "items": w["items"], "prompts": w["prompts"], COST_SHARED: both}
+    return None
+
+
 def cost_lines(root, ids, rework=False):
     """([line], [skipped run id]): the lines of the work sidecars under root/kb/_querylog that name one of `ids`
     (every line when `ids` is None), oldest run first: an item line {run, item, prompts, <report key>: {model:
@@ -66,20 +83,40 @@ def cost_lines(root, ids, rework=False):
         if not objs or any(ql_store.work_line_problems(w, p.stem) for w in lines):
             skipped.append(p.stem)
             continue
-        for w in lines:
-            if "item" in w and (ids is None or w["item"] in ids):  # a shared line has `items`, no `item`
-                row = {"run": p.stem, "item": w["item"], "prompts": w["prompts"],
-                       **{key: cost_models(w, field) for key, field, _ in COST_GROUPS}}
-                if rework and "rework" in w:
-                    row["rework"] = {"prompts": w["rework"]["prompts"],
-                                     **{key: cost_models(w["rework"], field) for key, field, _ in COST_GROUPS}}
-                out.append(row)
-            elif "items" in w and (ids is None or ids.intersection(w["items"])):
-                both = {}
-                for _, field, _ in COST_GROUPS:
-                    cost_add(both, cost_models(w, field))
-                out.append({"run": p.stem, "items": w["items"], "prompts": w["prompts"], COST_SHARED: both})
+        out += [r for r in (cost_row_of(p.stem, w, ids, rework) for w in lines) if r]
     return out, skipped
+
+
+OPEN_RUN = "open-"  # the run name of a line read from an open session's spool (`open_lines`), never a sidecar's
+
+
+def open_lines(root, rework=True):
+    """([line], [{session, worked, missing}]): the work of the sessions whose spool has no end marker and is not idle
+    (`ql_distill.read_spool`: not closed), computed from their spool rows with the pure work-window code distill
+    runs for a closed session (`ql_distill.plan_work`, one session at a time), as report lines named `open-<session>`.
+    Reads the spool only: no sidecar, no marker, no row is written, and a session that claimed no item gives
+    nothing. `worked` is the set of items the session claimed and `missing` its window prompts with no usable
+    `usage` row (a prompt is counted once its Stop row has written its usage). No spool directory: nothing."""
+    import time
+
+    import ql_capture
+    import ql_distill
+    spool = ql_capture.spool_dir()
+    if spool is None or not Path(spool).is_dir():
+        return [], []
+    sessions = ql_distill.read_spool(spool, time.time())[0]
+    sprint_of = ql_distill.sprint_finder(Path(root) / REL_DIR)
+    out, info = [], []
+    for sid in sorted(sessions):
+        s = sessions[sid]
+        worked = ql_distill.work_windows(s["rows"])[1]
+        if s["closed"] or not worked:
+            continue
+        lines, missing, _ = ql_distill.plan_work({sid: {**s, "closed": True}}, {}, sprint_of)
+        run = OPEN_RUN + sid[:8]
+        out += [r for r in (cost_row_of(run, w, None, rework) for w in lines) if r]
+        info.append({"session": sid, "worked": worked, "missing": missing})
+    return out, info
 
 
 def cost_scope(bl, iid):
@@ -240,9 +277,12 @@ def cost_report(bl, iid, rework=False):
     `attributed` and `session_total`, which are the item work, and `overhead` (`cost_overhead`), in no figure of
     either; `run_lines` keeps every item line. With `rework`, the report also has `rework_split` (cost_split) of the
     item work lines, research left out as in the figures above; without it, no line and no key of the report
-    differs from a report that never heard of rework."""
+    differs from a report that never heard of rework. With `rework` the report also has `open`: the sessions still open
+    with work in the scope (`open_lines`), their prompts and the `split` of their figures, kept apart from every figure
+    above, which stay the sidecars'."""
     all_lines, skipped = cost_lines(bl.root, None, rework=True) if rework else cost_lines(bl.root, None)
-    named = {i for w in all_lines for i in (w["items"] if "items" in w else [w["item"]])}
+    extra, opened = open_lines(bl.root) if rework else ([], [])  # sessions still open: no sidecar line yet
+    named = {i for w in all_lines + extra for i in (w["items"] if "items" in w else [w["item"]])}
     view, restored, unresolved = cost_view(bl, named | {iid})
     if iid not in view.items:
         raise KeyError(iid)
@@ -263,6 +303,10 @@ def cost_report(bl, iid, rework=False):
     rep["items"] = work["items"]
     if rework:
         rep["rework_split"] = cost_split([w for w in lines if w["item"] not in research])
+        mine = [o for o in opened if o["worked"] & keep]
+        own = [w for w in extra if w.get("item") in keep and w["item"] not in research]
+        rep["open"] = {"sessions": len(mine), "missing": sum(o["missing"] for o in mine),
+                       "prompts": cost_sum(own)["prompts"], "split": cost_split(own)}
     rep["restored"] = sorted(({w["item"] for w in lines} | {iid}) & set(restored))
     if sprint:
         res = cost_sum([w for w in lines if w["item"] in research])
@@ -618,6 +662,8 @@ def cmd_cost(bl, a):
         out.update({k: rep[k] for k in ("research", "overhead") if k in rep})  # a sprint's report only
         if a.rework:
             out["rework_split"] = cost_split_json(rep["rework_split"])
+            out["open_sessions"] = {**{k: rep["open"][k] for k in ("sessions", "missing", "prompts")},
+                                    "rework_split": cost_split_json(rep["open"]["split"])}
         if a.runs:
             out["run_lines"] = rep["run_lines"]
             out["shared_lines"] = rep["shared_lines"]
@@ -635,6 +681,15 @@ def cmd_cost(bl, a):
     if a.rework:
         for x in cost_split_text(rep["rework_split"], view):
             say(x)
+        o = rep["open"]
+        if o["sessions"]:
+            say(f"open session figures (the session has not closed: provisional until it does): {o['sessions']} open "
+                f"session(s) with work in this scope, {o['prompts']} prompt(s) read from their spool, not in the "
+                f"figures above, {o['missing']} window prompt(s) without a usage row yet")
+            if not o["prompts"]:
+                say("no figure yet: the zeros mean the open session has no usage rows to read, not that no work happened")
+            for x in cost_split_text(o["split"], view):
+                say("  " + x)
     if rep["items"] not in ([], [iid]):
         say("by item:")
         for i in rep["items"]:
