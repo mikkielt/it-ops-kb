@@ -32,7 +32,8 @@
     "_tools/autopilot.py",
     "_tools/test_backlog_headless_operator.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_autopilot.py"
   ],
   "claimed_by": "seventh-w36"
 }
