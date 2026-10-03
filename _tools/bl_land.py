@@ -14,8 +14,8 @@ import argparse, hashlib, json, os, re, shlex, shutil, subprocess, sys, time
 from pathlib import Path
 
 from bl_base import (
-    Backlog, ID_RE, CHECK_TIMEOUT_S, REL_DIR, Refused, commit_written, git, in_scope, item_file, line, need, run, say,
-    scope, waits,
+    Backlog, ID_RE, CHECK_TIMEOUT_S, REL_DIR, Refused, commit_written, git, in_scope, item_file, line, main_worktree_spool,
+    need, run, say, scope, waits,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 import bl_intake
@@ -247,16 +247,6 @@ def ops_mark(label):
     """The next step starts: the one before it passed."""
     ops_close()
     LAND_OPS.update(step=ops_token(label), t=time.monotonic(), exit=1)
-
-
-def main_worktree_spool(root):
-    """The spool of the main worktree of the git common dir `root` belongs to, where a session started in the main
-    checkout writes the rows of the clone it orchestrates: `_cache/querylog/spool` there. None when git cannot say."""
-    try:
-        common = (Path(root) / git(root, "rev-parse", "--git-common-dir").strip()).resolve()
-    except (Refused, OSError):
-        return None
-    return common.parent / "_cache" / "querylog" / "spool"
 
 
 def ops_no_work_rows(root, iid):

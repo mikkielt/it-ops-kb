@@ -302,6 +302,16 @@ def git(root, *args):
     return p.stdout
 
 
+def main_worktree_spool(root):
+    """The spool of the main worktree of the git common dir `root` belongs to, where a session started in the main
+    checkout writes the rows of the clone it orchestrates: `_cache/querylog/spool` there. None when git cannot say."""
+    try:
+        common = (Path(root) / git(root, "rev-parse", "--git-common-dir").strip()).resolve()
+    except (Refused, OSError):
+        return None
+    return common.parent / "_cache" / "querylog" / "spool"
+
+
 def glob_re(pattern):
     out, i = "", 0
     while i < len(pattern):

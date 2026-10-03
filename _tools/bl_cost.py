@@ -7,12 +7,14 @@ at the end), and `backlog.py` imports it at its registration point so the usage 
 store (`ql_store`) is imported where it is read."""
 import copy
 import json
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 import bl_cli
+import bl_base
 from bl_base import ID_RE, REL_DIR, RESEARCH_KINDS, Rejected, research_touches, say, scope
 
 
@@ -94,17 +96,27 @@ def open_lines(root, rework=True):
     """([line], [{session, worked, missing}]): the work of the sessions whose spool has no end marker and is not idle
     (`ql_distill.read_spool`: not closed), computed from their spool rows with the pure work-window code distill
     runs for a closed session (`ql_distill.plan_work`, one session at a time), as report lines named `open-<session>`.
-    Reads the spool only: no sidecar, no marker, no row is written, and a session that claimed no item gives
+    Reads the clone's spool and the main worktree's when it is another directory (`bl_base.main_worktree_spool`), a
+    session in both once: no sidecar, no marker, no row is written, and a session that claimed no item gives
     nothing. `worked` is the set of items the session claimed and `missing` its window prompts with no usable
     `usage` row (a prompt is counted once its Stop row has written its usage). No spool directory: nothing."""
     import time
 
     import ql_capture
     import ql_distill
-    spool = ql_capture.spool_dir()
-    if spool is None or not Path(spool).is_dir():
+    own = ql_capture.spool_dir()
+    if own is None:
         return [], []
-    sessions = ql_distill.read_spool(spool, time.time())[0]
+    spools = [Path(own)]
+    main = bl_base.main_worktree_spool(root)  # a session started in the main checkout writes its rows there
+    if main is not None and not (spools[0].exists() and main.exists() and os.path.samefile(spools[0], main)):
+        spools.append(main)
+    sessions = {}
+    for d in (d for d in spools if d.is_dir()):
+        for sid, s in ql_distill.read_spool(d, time.time())[0].items():
+            sessions.setdefault(sid, s)  # a session in both spools is read once, from the clone's own
+    if not sessions:
+        return [], []
     sprint_of = ql_distill.sprint_finder(Path(root) / REL_DIR)
     out, info = [], []
     for sid in sorted(sessions):
