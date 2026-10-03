@@ -2,7 +2,7 @@
   "id": "BG-bkngfj2g",
   "kind": "bug",
   "title": "autopilot-container.md predates the runner's deploy-key ssh and overstates the key's forge scope",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,6 @@
   ],
   "touches": [
     "kb/_self/autopilot-container.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
