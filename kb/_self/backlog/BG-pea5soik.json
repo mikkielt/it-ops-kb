@@ -2,7 +2,7 @@
   "id": "BG-pea5soik",
   "kind": "bug",
   "title": "The runbook Starting the autopilot lacks the prerequisites of a first unattended run and overstates what is enforced",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-itmjxudu",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,6 @@
   "touches": [
     "kb/_self/backlog.md",
     "_tools/test_autopilot_runbook.py"
-  ]
+  ],
+  "claimed_by": "seventh-w38"
 }
