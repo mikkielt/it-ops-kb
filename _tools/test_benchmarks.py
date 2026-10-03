@@ -455,6 +455,46 @@ def test_nav_run_keeps_raw_stdout_fails_for_a_run_that_drops_it(tmp_path, monkey
         _assert_streams_kept(stream, rows, tmp_path / "raw")
 
 
+FAKE_FAILURES = {
+    "no_result": "import sys\nsys.stdin.read()\nprint(1)\n",
+    "is_error": "import sys\nsys.stdin.read()\nprint('{\"type\": \"result\", \"is_error\": true, \"result\": \"limit hit\"}')\n",
+    "timeout": "import sys, time\nsys.stdin.read()\nprint('partial', flush=True)\ntime.sleep(30)\n",
+}
+
+
+@pytest.mark.parametrize("kind", sorted(FAKE_FAILURES))
+def test_failed_nav_run_names_its_stream(tmp_path, monkeypatch, kind):
+    for k in ("KB_TESTS_FAST", "KB_TEST_WORKERS"):
+        monkeypatch.delenv(k, raising=False)
+    fake = tmp_path / "fake_claude.py"
+    fake.write_text(FAKE_FAILURES[kind], encoding="utf-8", newline="\n")
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    runs = raw / "navigation-2026-10-02-runs.jsonl"
+    monkeypatch.setitem(bench_core.RAW, "path", runs)
+    monkeypatch.setattr(bench_lookup, "NAV_TIMEOUT_S", 1)
+    r = bench_lookup.nav_run([sys.executable, str(fake)], "q", tmp_path)
+    assert "error" in r and "stream" in r
+    kept = sorted(p.name for p in raw.glob("*-stream-*"))
+    assert kept == [r["stream"]]
+    rows = [json.loads(ln) for ln in runs.read_text(encoding="utf-8").splitlines()]
+    assert [x["stream"] for x in rows] == kept and rows[0]["error"] == r["error"] and rows[0]["prompt"] == "q"
+    if kind == "timeout":
+        assert r["error"] == "timed out after 1 s" and (raw / kept[0]).read_text(encoding="utf-8") == "partial\n"
+    if kind == "is_error":
+        assert r["error"].startswith("limit hit")
+
+
+def test_failed_nav_run_names_its_stream_fails_for_a_row_without_it(tmp_path, monkeypatch):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    monkeypatch.setitem(bench_core.RAW, "path", raw / "navigation-2026-10-02-runs.jsonl")
+    (raw / "navigation-2026-10-02-stream-001.jsonl").write_text("1\n", encoding="utf-8")  # planted: kept, never named
+    runs = raw / "navigation-2026-10-02-runs.jsonl"
+    rows = runs.read_text(encoding="utf-8") if runs.exists() else ""
+    assert not all(p.name in rows for p in raw.glob("*-stream-*"))
+
+
 def _nav_bench(tmp_path, arm="before", reps=1):
     b = bench_core.Bench.__new__(bench_core.Bench)  # no claude call: the record's identity is planted
     b.rows, b.reps, b.date, b.record, b.commit, b.cc, b.topics = [], reps, "2026-09-30", "2026-09-30", "abc1234", "2.1.290", "280"

@@ -20,6 +20,14 @@
       "run": [
         "python3",
         "_tools/tests.py",
+        "-k",
+        "failed_nav_run_names_its_stream"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
         "_tools/test_benchmarks.py"
       ]
     }
