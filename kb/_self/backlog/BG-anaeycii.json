@@ -2,7 +2,7 @@
   "id": "BG-anaeycii",
   "kind": "bug",
   "title": "The worker-capture routing of BG-cyjmhnvv is path-based and its limits (a worktree outside .claude/worktrees, a worker naming two items or none, a worker killed before its first command) are undocumented, and its test name overclaims",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-3zuasxl5",
   "priority": "P3",
@@ -35,5 +35,28 @@
     "_tools/test_worker_capture.py",
     "_tools/test_ids_baseline.txt"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "3337de3bc3a97394df91b4028da976c1a20f0740",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "worker_routing_limits_documented"
+        ],
+        "exit": 0,
+        "sha256": "2f7cde07c250a675"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"kb/_self/usage.md\",encoding=\"utf-8\").read();ok=\"outside .claude/worktrees\" in t;print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
