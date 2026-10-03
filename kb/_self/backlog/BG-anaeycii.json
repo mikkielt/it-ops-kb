@@ -31,7 +31,9 @@
     "kb/_self/usage.md",
     ".claude/agents/kb-worker.md",
     "_tools/test_usage_routing_docs.py",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_worker_capture.py",
+    "_tools/test_ids_baseline.txt"
   ],
   "claimed_by": "mac-sixth"
 }
