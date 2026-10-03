@@ -19,5 +19,6 @@
   "links": [
     "origin retro SP-7kbrqaol",
     "evidence commit 26582706"
-  ]
+  ],
+  "notes": "Merged from ST-dx57occz: a released or blocked item leaves no stale work/<id> or worktree-agent-* branch (the next worker's checkout -b fails, -B silently resets), and the worker brief says to git checkout --detach after its last commit. BG-lv3tuhic (land removes the sibling agent worktree) lands first; this story is what remains in brief and release."
 }
