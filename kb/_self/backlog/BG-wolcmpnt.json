@@ -2,7 +2,7 @@
   "id": "BG-wolcmpnt",
   "kind": "bug",
   "title": "A headless runner's child inherits the session's SSH agent and push credentials, so code it edits and then runs can publish or push anywhere",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-j6hh2ib2",
   "priority": "P1",
@@ -33,5 +33,6 @@
     "_tools/autopilot.py",
     "_tools/test_autopilot_credentials.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }

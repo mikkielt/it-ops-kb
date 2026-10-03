@@ -94,6 +94,17 @@ CAUSE_MARKER = "sprint-runner: {cause}"
 RUNNER_DENY = tuple(f"{shell}(python3 _tools/backlog.py answer * {by}*)" for shell in ("Bash", "PowerShell")
                     for by in ("--by operator", "--by=operator"))
 HEADLESS_ENV = kbpublic.HEADLESS_ENV  # set in the run's environment, so its session's publish --hook pushes nothing
+# The child's environment holds no way to authenticate to a git host, an agent or a registry: child_env drops these
+# names and any name CREDENTIAL_RE matches, so code the child runs cannot push or publish with the operator's session.
+CREDENTIAL_NAMES = frozenset({"SSH_AUTH_SOCK", "SSH_AGENT_PID", "GIT_ASKPASS", "SSH_ASKPASS", "SSH_ASKPASS_REQUIRE",
+                              "GITLAB_TOKEN", "GITHUB_TOKEN", "GH_TOKEN", "GLAB_TOKEN", "GITLAB_ACCESS_TOKEN",
+                              "CI_JOB_TOKEN", "NPM_TOKEN"})
+CREDENTIAL_PREFIXES = ("PYPI_", "TWINE_")
+CREDENTIAL_RE = re.compile(r"(?i)(token|secret|password|passwd|credential|api[_-]?key|private[_-]?key)")
+# Kept although CREDENTIAL_RE matches (CLAUDE_CODE_OAUTH_TOKEN, ANTHROPIC_API_KEY): the claude child needs them to
+# authenticate to the model, and without them the headless run cannot start.
+MODEL_AUTH_PREFIXES = ("CLAUDE_", "ANTHROPIC_")
+NO_PUSH_URL = "file:///dev/null/no-push-from-a-runner"  # the pushurl of the public remote in the runner's worktree
 CAUSES_FROM_RESULT = ("landed-limit", "sprint-done", "blocked")
 CAUSE_LINE = re.compile(r"^sprint-runner: (" + "|".join(CAUSES_FROM_RESULT) + r")[ \t]*$", re.M)
 SPRINT_ID = re.compile(r"^SP-[a-z2-7]{8}$")
@@ -163,6 +174,27 @@ def git_ok(repo, *args):
     return subprocess.run(["git", *args], cwd=repo, capture_output=True).returncode == 0
 
 
+def child_env(environ=None):
+    """The environment of the claude child: ENVIRON (the runner's own when None) without CREDENTIAL_NAMES, the
+    CREDENTIAL_PREFIXES and any name CREDENTIAL_RE matches, except the MODEL_AUTH_PREFIXES; GIT_TERMINAL_PROMPT=0
+    and HEADLESS_ENV set."""
+    env = {k: v for k, v in (os.environ if environ is None else environ).items()
+           if k.startswith(MODEL_AUTH_PREFIXES)
+           or not (k.upper() in CREDENTIAL_NAMES or k.upper().startswith(CREDENTIAL_PREFIXES) or CREDENTIAL_RE.search(k))}
+    return {**env, "GIT_TERMINAL_PROMPT": "0", HEADLESS_ENV: "1"}
+
+
+def block_public_push(root, wt):
+    """Give the worktree WT, for the public remote of the clone ROOT, a pushurl that fails: in the worktree's own config
+    (`extensions.worktreeConfig`, `git config --worktree`), as a worktree shares the clone's `.git/config` and the clone's
+    own `kbgit.py publish` must still push. Does nothing without a public remote, or when it is the integration one."""
+    public = kbpublic.publish_remote(str(root))
+    if not public or public == kbpublic.integration_remote(str(root)) or public not in bl_base.git(root, "remote").split():
+        return
+    bl_base.git(root, "config", "extensions.worktreeConfig", "true")
+    bl_base.git(wt, "config", "--worktree", f"remote.{public}.pushurl", NO_PUSH_URL)
+
+
 def prepare_worktree(root, sprint):
     """The runner's worktree at origin/main and the ref it starts from: made on the branch orch/SP when missing,
     else reused. A clean one is fast-forwarded to origin/main (one already ahead of it is kept as it is); one with
@@ -175,6 +207,7 @@ def prepare_worktree(root, sprint):
         have = git_ok(root, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
         add = ["worktree", "add", str(wt), branch] if have else ["worktree", "add", "-b", branch, str(wt), main]
         bl_base.git(root, *add)
+    block_public_push(root, wt)
     dirty = [ln[3:] for ln in bl_base.git(wt, "status", "--porcelain", "-uall").splitlines() if ln.strip()]
     if dirty:
         more = f" and {len(dirty) - DIRTY_FILES} more" if len(dirty) > DIRTY_FILES else ""
@@ -285,7 +318,7 @@ def supervise(argv, cwd, keep, stderr, deadline=None):
     interrupt. Returns {"compaction": bool, "timeout": bool, "result": the last result event or None, "exit_code": int}."""
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     proc = subprocess.Popen(argv, cwd=str(cwd), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=stderr,
-                            text=True, encoding="utf-8", errors="replace", env={**os.environ, HEADLESS_ENV: "1"},
+                            text=True, encoding="utf-8", errors="replace", env=child_env(),
                             **group)
     out = {"compaction": False, "timeout": False, "result": None}
 
