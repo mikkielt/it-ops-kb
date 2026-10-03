@@ -2,7 +2,7 @@
   "id": "BG-amcsfoms",
   "kind": "bug",
   "title": "factdiff drop_citation loses the id of a DECISION or LOG part in the tag it rewrites",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tt4tibyn",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/factdiff.py",
     "_tools/test_factdiff_ids.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
