@@ -31,5 +31,20 @@
     "kb/_self/tools.md",
     ".claude/skills/kb-ingest/SKILL.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which variables does the kbingest map allow-list keep, and are toolchain homes (CARGO_HOME, RUSTUP_HOME, DOTNET_ROOT, GOROOT, GOPATH, GOMODCACHE, GOCACHE) kept?",
+      "options": [
+        "homes-kept",
+        "no-homes"
+      ],
+      "recommendation": "homes-kept",
+      "class": "agents-rule",
+      "answer": "homes-kept",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "mac-sixth"
 }
