@@ -2,7 +2,7 @@
   "id": "BG-pea5soik",
   "kind": "bug",
   "title": "The runbook Starting the autopilot lacks the prerequisites of a first unattended run and overstates what is enforced",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-itmjxudu",
   "priority": "P1",
   "rank": 0,
@@ -30,5 +30,28 @@
     "kb/_self/backlog.md",
     "_tools/test_autopilot_runbook.py"
   ],
-  "claimed_by": "seventh-w38"
+  "evidence": {
+    "commit": "6d641ae57a3e6c14824f989912e67d0027e771bb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_runbook_first_run"
+        ],
+        "exit": 0,
+        "sha256": "430d4f99e0ce34e9"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib,re;t=pathlib.Path(\"kb/_self/backlog.md\").read_text(encoding=\"utf-8\");i=t.index(\"Starting the autopilot\");s=t[i:i+9000];need=[\"KB_NO_PUBLISH_HOOK\",\"glab auth status\",\"claude mcp list\",\"does not test\",\"hold\"];miss=[n for n in need if n not in s];print(miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
