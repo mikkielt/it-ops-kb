@@ -2,7 +2,7 @@
   "id": "BG-di5pwdrg",
   "kind": "bug",
   "title": "A run's report lists the bugs it filed and the gates it added from the runner worktree, so a bug filed and landed through the code lane is missing from runner-status and the digest",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,28 @@
     "kb/_self/autopilot-test.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "6a5083b281013c56aa474fec45ec12874ff5f2d4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "run_report_reads_integration_tip"
+        ],
+        "exit": 0,
+        "sha256": "1e80086277a3f68a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,inspect;sys.path.insert(0,'_tools');import autopilot as a;sys.exit(0 if all('tip' in inspect.signature(f).parameters for f in (a.bugs_filed,a.gates_of_run)) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
