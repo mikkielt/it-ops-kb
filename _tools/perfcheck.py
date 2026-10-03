@@ -5,6 +5,7 @@
                                                 tree), one per line, sorted
   perfcheck.py ids --write FILE                 write them to FILE (the baseline); a second run changes nothing
   perfcheck.py ids --against FILE               compare them with the ids in FILE; a baseline id not collected now fails
+                                                unless its test now lives in another file (reported as `moved:`)
   perfcheck.py ids --base REV                   compare them with the ids collected at git revision REV, in a temporary
                                                 worktree that is removed afterwards (the working tree is never touched)
   --allow-removed FILE                          ids in FILE (one per line, `#` comments) may be missing
@@ -15,6 +16,11 @@
 The ids are what `pytest --collect-only -q` prints for the two selections the runners use: `_tools` with -m "not stress"
 (tests.py) and `_tools/test_stress.py` with -m stress (stress_test.py). Nothing runs and nothing touches the network.
 Ids added since the baseline are listed and do not fail; the baseline file is appended to by whoever adds tests.
+A test that moved to another file keeps its class and name: a baseline id missing at head whose part after the file path
+(`Class::test_name[param]`, or `test_name[param]`) is the same as that of an id added in another file is reported as
+`moved:` and does not fail, so a split of a test module needs no baseline edit. Each added id answers one missing id (two
+files that each gained `Class::test_name` cover two missing ids, not three), and a test that only lost its file's copy while
+the same class and name still exists in a file the baseline already held stays MISSING.
 
 Exit codes: 0 no id lost (or the run was within its bound); 1 an id is missing and not allowed, or a run was over its
 bound or failed; 2 it could not do what was asked (bad arguments, an unreadable file, a failed collection, not a clone).
@@ -127,12 +133,37 @@ def read_ids(path):
     return ids
 
 
+def test_key(test_id):
+    """The part of an id after the file path: `Class::test_name[param]`, or `test_name[param]`."""
+    return test_id.split("::", 1)[-1]
+
+
+def match_moved(missing, added):
+    """(moved, still_missing, new): split the baseline ids `missing` at head by whether an id in `added` (new at head) has the
+    same class and test name in another file. Each added id answers one missing id, in sorted order, so the same input gives
+    the same split. `moved` holds (old id, new id) pairs; `new` the added ids no missing id claimed."""
+    free = {}
+    for a in sorted(added):
+        free.setdefault(test_key(a), []).append(a)
+    moved, left = [], []
+    for m in sorted(missing):
+        found = free.get(test_key(m))
+        if found:
+            moved.append((m, found.pop(0)))
+        else:
+            left.append(m)
+    return moved, left, sorted(i for ids in free.values() for i in ids)
+
+
 def compare(baseline, head, allowed=()):
-    """(removed, added, allowed_removed): baseline ids missing at head and not allowed, ids new at head, baseline ids missing
-    at head that the allow list names."""
+    """(removed, added, allowed_removed, moved): baseline ids missing at head that are not allowed and did not move to another
+    file, ids new at head (those a moved id came from included), baseline ids missing at head that the allow list names, and
+    the (old id, new id) pairs of the ids that moved."""
     base, now, ok = set(baseline), set(head), set(allowed)
     missing = base - now
-    return sorted(missing - ok), sorted(now - base), sorted(missing & ok)
+    added = now - base
+    moved, removed, _ = match_moved(missing - ok, added)
+    return removed, sorted(added), sorted(missing & ok), moved
 
 
 def write_baseline(path, ids):
@@ -153,15 +184,20 @@ def run_ids(a, collect=collect_ids, root=ROOT):
             sys.stdout.write("".join(i + "\n" for i in head))
         return 0
     baseline = read_ids(a.against) if a.against else collect_at(a.base, collect, root)
-    removed, added, allowed = compare(baseline, head, read_ids(a.allow_removed) if a.allow_removed else ())
+    removed, added, allowed, moved = compare(baseline, head, read_ids(a.allow_removed) if a.allow_removed else ())
+    came_from = {new for _, new in moved}
     for i in added:
-        print(f"added: {i}")
+        if i not in came_from:
+            print(f"added: {i}")
+    for old, new in moved:
+        print(f"moved: {old} -> {new}")
     for i in allowed:
         print(f"removed (allowed): {i}")
     for i in removed:
         print(f"MISSING: {i}")
     where = a.against or f"revision {a.base}"
-    print(f"perfcheck ids: {len(removed)} missing, {len(added)} added, {len(allowed)} removed on the allow list, against {where}")
+    print(f"perfcheck ids: {len(removed)} missing, {len(added) - len(moved)} added, {len(moved)} moved to another file, "
+          f"{len(allowed)} removed on the allow list, against {where}")
     return 1 if removed else 0
 
 
