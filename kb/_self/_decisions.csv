@@ -7,3 +7,4 @@ D-xvxvhny3,push notification for kept gates plus the committed digest; the manag
 D-rvbderx6,runner deploy key and minimal project token,operator,operator,backlog item ST-32b46kff gate forge,2026-10-03,item:ST-32b46kff,active,,,,,
 D-xk65w44m,subscription token from claude setup-token,operator,operator,backlog item ST-32b46kff gate model,2026-10-03,item:ST-32b46kff,active,,,,,
 D-pcp6l6qm,main and code/* only; edit as a headless run today,operator,operator,backlog item ST-32b46kff gate pushedit,2026-10-03,item:ST-32b46kff,active,,,,,
+D-2glafpjp,two hosts through an egress proxy; image built locally,operator,operator,backlog item ST-32b46kff gate netimage,2026-10-03,item:ST-32b46kff,active,,,,,
