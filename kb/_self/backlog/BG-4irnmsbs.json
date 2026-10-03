@@ -2,7 +2,7 @@
   "id": "BG-4irnmsbs",
   "kind": "bug",
   "title": "A sprint whose runs end compaction or landed-limit without landing anything is restarted by every tick forever: no no-progress counter",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -31,6 +31,9 @@
     ".claude/skills/kb-autopilot/SKILL.md",
     "_tools/bl_bounds.py",
     "_tools/test_autopilot_no_progress.py",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "claimed_by": "mac-third-worker"
 }
