@@ -26,6 +26,9 @@ kb article whole (cat, head, tail, sed -n or grep -n on a `kb/<root>/**/*.md` pa
 PowerShell Get-Content, gc, cat, type, Select-String or sls, a backslash or slash in the path) gets additionalContext
 naming the rag.py tools that print only the lines a lookup needs (raw_read_nudge). It never sets a permission decision,
 so the command runs as it would without the hook; any other command, and any input it cannot read, gets no output.
+On an Edit, Write, MultiEdit or NotebookEdit event of a headless sprint run (KB_HEADLESS_RUNNER, set by autopilot.py
+runner start) it denies a write to .claude/settings*.json, .claude/hooks/ or .claude-plugin/, and one that changes a
+gate's answer or by field in a kb/_self/backlog/*.json item (headless_guard); without the variable it answers nothing.
 
 Claude Code runs it from .claude/settings.json (a clone) and from the plugin's plugin.json (an installed plugin); it
 reads the hook's JSON on stdin and prints the hook's JSON answer on stdout. `--test "kb: question"` prints what the
@@ -305,6 +308,84 @@ def raw_read_nudge(event):
     return None
 
 
+HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # kbpublic.HEADLESS_ENV: set by autopilot.py runner start in its headless run
+WRITE_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
+GUARDED = (re.compile(r"\.claude/settings[^/]*\.json"), re.compile(r"\.claude/hooks/.+"), re.compile(r"\.claude-plugin/.+"))
+ITEM_FILE = re.compile(r"kb/_self/backlog/[^/]+\.json")
+GATE_KEYS = re.compile(r'"(answer|by)"\s*:')
+
+
+def repo_path(path):
+    """(PATH relative to the project with / separators, its full path); the project is CLAUDE_PROJECT_DIR, else this
+    clone. (None, full) outside it."""
+    root = os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(os.path.dirname(
+        os.path.realpath(__file__))))
+    full = os.path.realpath(path if os.path.isabs(path) else os.path.join(root, path))
+    rel = os.path.relpath(full, root)
+    return (None if rel == ".." or rel.startswith(".." + os.sep) else rel.replace(os.sep, "/")), full
+
+
+def gate_answers(text):
+    """{gate id: (answer, by)} of an item file's text; None when it is not an item's JSON."""
+    try:
+        gates = json.loads(text).get("gates") or []
+        return {g.get("id"): (g.get("answer"), g.get("by")) for g in gates if isinstance(g, dict)}
+    except (ValueError, AttributeError):
+        return None
+
+
+def item_gate_change(path, tool, tool_input):
+    """Why an Edit or Write of the item file PATH changes a gate's answer or by field, else None."""
+    if tool == "Write":
+        try:
+            with open(path, encoding="utf-8") as f:
+                before = gate_answers(f.read())
+        except OSError:
+            before = {}
+        after = gate_answers(tool_input.get("content") or "")
+        if after is None or before is None or any(v != before.get(k, (None, None)) for k, v in after.items()):
+            return "it writes a gate's answer or by field"
+        return None
+    edits = tool_input.get("edits") if tool == "MultiEdit" else [tool_input]
+    for e in edits if isinstance(edits, list) else []:
+        if isinstance(e, dict) and any(GATE_KEYS.search(str(e.get(k) or "")) for k in ("old_string", "new_string")):
+            return "it edits a gate's answer or by field"
+    return None
+
+
+def headless_guard(event):
+    """The PreToolUse answer that denies a headless run's (HEADLESS_ENV) Edit or Write of .claude/settings*.json,
+    .claude/hooks/, .claude-plugin/, or of an item file's gate answer or by field: a headless agent never answers as
+    the operator nor rewrites the rules it runs under; it records a gate with backlog.py gate add and answers within
+    its authority with backlog.py answer. None for any other call, and always when HEADLESS_ENV is not set (the
+    operator-present session), so the guard costs nothing there."""
+    if not os.environ.get(HEADLESS_ENV):
+        return None
+    try:
+        tool, tool_input = event.get("tool_name"), event.get("tool_input")
+        if tool not in WRITE_TOOLS or not isinstance(tool_input, dict):
+            return None
+        path = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
+        rel, full = repo_path(path) if path else (None, None)
+        if rel is None:
+            return None
+        if any(rx.fullmatch(rel) for rx in GUARDED):
+            why = f"{rel} holds the rules this run works under"
+        elif ITEM_FILE.fullmatch(rel):
+            change = item_gate_change(full, tool, tool_input)
+            if not change:
+                return None
+            why = f"{rel}: {change}"
+        else:
+            return None
+    except Exception:  # an unreadable call to a guarded path is refused, not waved through
+        why = "the call could not be read"
+    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
+                                   "permissionDecisionReason": f"headless run ({HEADLESS_ENV}): {why}; record a gate with "
+                                   "backlog.py gate add and answer only within the autopilot's authority with "
+                                   "backlog.py answer, or stop and report"}}
+
+
 def main():
     # the hook's JSON is UTF-8 on every OS; Windows would otherwise read and write the locale code page (cp1252)
     sys.stdin.reconfigure(encoding="utf-8", errors="replace")
@@ -318,7 +399,7 @@ def main():
         return  # not our input: never block a prompt on a parse error
     event = event if isinstance(event, dict) else {}
     if event.get("hook_event_name") == "PreToolUse" or "tool_input" in event:
-        out = raw_read_nudge(event)
+        out = headless_guard(event) or raw_read_nudge(event)
         if out is not None:
             print(json.dumps(out, ensure_ascii=False))
         return
