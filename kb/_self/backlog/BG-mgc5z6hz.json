@@ -32,7 +32,9 @@
   "touches": [
     "_tools/perfcheck.py",
     "_tools/test_perfcheck_moved.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_ids_baseline.txt",
+    "_tools/test_ids_dropped.txt"
   ],
   "claimed_by": "mac-sixth"
 }
