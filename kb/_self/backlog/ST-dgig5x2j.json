@@ -2,7 +2,7 @@
   "id": "ST-dgig5x2j",
   "kind": "story",
   "title": "The autopilot manager rehearses one full tick on a scratch sprint, and a runbook says how to start it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-itmjxudu",
   "priority": "P1",
@@ -25,5 +25,19 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "seventh-w35"
+  "evidence": {
+    "commit": "68a7c8fd5b886e9935f3a62267f59d2a42b49bcf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_rehearse"
+        ],
+        "exit": 0,
+        "sha256": "9da42ff051b67417"
+      }
+    ]
+  }
 }
