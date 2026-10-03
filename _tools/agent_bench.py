@@ -147,6 +147,8 @@ def parse(stdout):
             ev = json.loads(line)
         except ValueError:
             continue
+        if not isinstance(ev, dict):
+            continue
         content = (ev.get("message") or {}).get("content", []) if isinstance(ev.get("message"), dict) else []
         if ev.get("type") == "assistant":
             for c in content:

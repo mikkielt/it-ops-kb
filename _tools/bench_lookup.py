@@ -528,23 +528,10 @@ def nav_uses(stdout):
     return out
 
 
-def nav_objects(stdout):
-    """The lines of a stream that parse to a JSON object: agent_bench.parse reads every line as an event, so a line
-    holding a bare number or string (a claude that fails with stray output) would raise there."""
-    keep = []
-    for line in stdout.splitlines():
-        try:
-            if isinstance(json.loads(line), dict):
-                keep.append(line)
-        except ValueError:
-            pass
-    return "\n".join(keep)
-
-
 def nav_result(stdout, root, wall=0.0):
     """One navigation run read from its stream: agent_bench's result fields (cost, turns, input, output, tool counts,
     answer) and `files_read`, or {"error": ...} when the run has no result or was refused."""
-    seen, res = agent_bench.parse(nav_objects(stdout))
+    seen, res = agent_bench.parse(stdout)
     if not res:
         return {"error": "no result event"}
     if res.get("is_error"):
