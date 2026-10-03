@@ -212,7 +212,7 @@ LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is sho
 
 
 # land's ops rows (kb/_self/querylog.md, ops events): a `land.step` row per step, a `land.end` row at every end, and
-# a warning when the item's work left no `work` row in this host's spool. Best effort: nothing here changes land's
+# a warning when the item's work left no `work` row in this host's spool or the committed work sidecars. Best effort: nothing here changes land's
 # exit or output beyond the warning line.
 LAND_OPS = {"step": None, "t": 0.0, "exit": 0, "lane": None, "item": None}
 
@@ -245,16 +245,20 @@ def ops_mark(label):
 
 
 def ops_no_work_rows(root, iid):
-    """Whether this host's spool holds no `work` row (claim, done, release) of the item or of a descendant of it;
+    """Whether neither this host's spool nor the committed work sidecars hold a `work` row (claim, done, release) of
+    the item or of a descendant of it: distill moves the spool's work rows into the sidecars (an item line, or a
+    shared line naming the item), so a consumed spool is not an item that was worked without the capture hooks.
     False when capture is off or anything cannot be read."""
     try:
-        import ql_capture, ql_distill
+        import bl_cost, ql_capture, ql_distill
         spool = ql_capture.spool_dir()
         if spool is None or not Path(spool).is_dir():
             return False
         ids = {iid, *Backlog(root).descendants(iid)}
-        return not any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in ql_capture.WORK_ACTIONS
-                       for p in Path(spool).glob("*.jsonl") for r in ql_distill.spool_rows(p)[0])
+        if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in ql_capture.WORK_ACTIONS
+               for p in Path(spool).glob("*.jsonl") for r in ql_distill.spool_rows(p)[0]):
+            return False
+        return not bl_cost.cost_lines(root, ids)[0]
     except Exception:  # noqa: BLE001
         return False
 
