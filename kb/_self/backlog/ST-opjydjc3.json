@@ -2,7 +2,7 @@
   "id": "ST-opjydjc3",
   "kind": "story",
   "title": "The first supervised autopilot run is executed stage by stage by an operator-agent, and every failure is filed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -17,10 +17,24 @@
     }
   ],
   "touches": [
-    "kb/_self/reports/autopilot-first-run.md"
+    "kb/_self/reports/autopilot-first-run.md",
+    "kb/_self/_decisions.csv"
   ],
   "depends_on": [
     "ST-eoxpdaep"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "0539368ebb6e32e29e5f8f6cad7f9391a0c55468",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "086cd558451048ad"
+      }
+    ]
+  }
 }
