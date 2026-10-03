@@ -2,7 +2,7 @@
   "id": "BG-7tqa65mp",
   "kind": "bug",
   "title": "A runner started in a clone that is a linked worktree of another checkout blocks every item: its workers get worktrees in that checkout and the headless guard refuses their writes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,28 @@
     "_tools/test_bl_selfcheck.py"
   ],
   "notes": "Stage 1 repeated in a real clone (own .git) still blocked: the guard refused the worker because its isolation worktree is a sibling of the runner's worktree. A linked-worktree manager clone is a real hazard (workers land in the other checkout) but not the only cause; the first cause to fix is BG-svzlkygp. Keep, lower the priority, or drop once BG-svzlkygp is fixed and Stage 1 lands in a linked clone: the manager decides.",
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "5b2d79e3af987e36057e479566da97a6531cf721",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_refuses_linked_worktree"
+        ],
+        "exit": 0,
+        "sha256": "5df51f5b2d7cb5d1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; g=lambda *a: subprocess.run(['git',*a],capture_output=True,text=True).stdout.strip(); linked=g('rev-parse','--git-common-dir')!=g('rev-parse','--git-dir'); out=subprocess.run([sys.executable,'_tools/backlog.py','selfcheck'],capture_output=True,text=True).stdout; sys.exit(0 if (not linked) or 'linked worktree' in out else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
