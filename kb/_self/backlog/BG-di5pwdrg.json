@@ -1,0 +1,36 @@
+{
+  "id": "BG-di5pwdrg",
+  "kind": "bug",
+  "title": "A run's report lists the bugs it filed and the gates it added from the runner worktree, so a bug filed and landed through the code lane is missing from runner-status and the digest",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "autopilot.gates_of_run and autopilot.bugs_filed read the sprint's item files at autopilot.integration_tip (the integration main the run landed on), the same tip landed_items counts to, and not from the runner worktree's HEAD and working tree, so a bug a worker files and lands through a code/<id> merge request, and a gate it adds, appear in the run report (runner-status) and the digest; a planted test has the bug's item file and the gate only on the integration main and finds both, and a blocked run finds none; found by BG-rgdrjsz6, which fixed the landed count the same way.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect;sys.path.insert(0,'_tools');import autopilot as a;sys.exit(0 if all('tip' in inspect.signature(f).parameters for f in (a.bugs_filed,a.gates_of_run)) else 1)"
+    ]
+  },
+  "repro_reason": "the miss shows only for a bug filed and landed through the code lane, which only the new test plants; the repro checks that both readers take the integration tip",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "run_report_reads_integration_tip"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot_run_report.py",
+    "_tools/test_autopilot.py",
+    "kb/_self/autopilot-test.md",
+    "kb/_self/tools.md"
+  ]
+}
