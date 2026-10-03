@@ -2,7 +2,7 @@
   "id": "BG-wg7ir37i",
   "kind": "bug",
   "title": "Intake drift runs any _tools/ script a committed check names, kbgit.py sync --push and autopilot.py runner start included, and accepts any executable named python3",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zihqagoi",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,30 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "d371724effcbbcd79641dd04a061a96f6441cf2a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "2",
+          "-k",
+          "drift_allowlist_read_only"
+        ],
+        "exit": 0,
+        "sha256": "d20a65fb2fc6fdc7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_intake as b;r=b.check_program_refusal(['python3','_tools/kbgit.py','sync','--push','--branch','x'],inline=False);sys.exit(0 if r else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
