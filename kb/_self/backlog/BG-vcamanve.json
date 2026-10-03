@@ -2,7 +2,7 @@
   "id": "BG-vcamanve",
   "kind": "bug",
   "title": "kbcommon.RESERVED_PREFIXES lacks L, so kbroot.py add --prefix L creates a root that only check.py later refuses",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tt4tibyn",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "68a7c8fd5b886e9935f3a62267f59d2a42b49bcf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "reserved_prefix_log"
+        ],
+        "exit": 0,
+        "sha256": "6aefea07cbbd1476"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbcommon;sys.exit(0 if 'L' in kbcommon.RESERVED_PREFIXES else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
