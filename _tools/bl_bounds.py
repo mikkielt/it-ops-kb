@@ -17,6 +17,8 @@ The kb-sprint skill tells the orchestrator when to run each form.
                                near-duplicate gets the finding in its notes, no evidence leaves it for the close
                                commit body; an item is a draft outside any sprint (an S1 bug joins the running sprint),
                                and carries its origin and evidence as links
+  intake --file                the detectors' drafts are filed through the same rules (`file_intake`, origin `intake`,
+                               below); `bounds file --origin intake` itself is refused: only `intake --file` has a draft
 
 The rules, with their limits as named constants (the limits gate of the item that added this module):
 
@@ -26,6 +28,16 @@ The rules, with their limits as named constants (the limits gate of the item tha
   OUTFLOW_SPRINTS       the sprints whose `sprint.close` rows give the done outflow draft inflow is held under
   OPEN_DRAFTS_MAX       open drafts, of any origin
 
+An intake draft has an origin of `intake` and no sprint: the origin is not a link of its own (that would change the
+links `intake --file` has always written) but what the draft already carries, a `detector NAME` link beside its
+`fingerprint HEX` link, and its evidence is that fingerprint (`origin_of`, `evidence_of`). `intake --file` files each
+candidate through `file_finding`: a candidate a near-duplicate open item covers is merged into that item's notes (once:
+a second run adds nothing; an item of the same detector is no duplicate, for a detector words its findings alike and
+each has its own fingerprint), and one that would pass OPEN_DRAFTS_MAX is refused with the cap message and exit 1.
+FINDINGS_PER_SPRINT does not apply to it (no sprint), the draft inflow guard does not count it (the detectors feed the
+backlog; a retro's findings are what the guard weighs against the done outflow), and an intake origin is not in
+RETRO_FREE_ORIGINS: its drafts go to the backlog, and a sprint made of them still has a retro.
+
 A sprint whose start gate the autopilot answered gains no story or bug after its start but an S1 bug: `new` refuses
 one, `check` reports one that came by `set` or `move`, `close` refuses while `check` would. `check` also reports an
 origin without evidence or in the wrong shape and a sprint with more findings than the cap.
@@ -34,6 +46,7 @@ Standard library only; imports `bl_base` and `bl_cli` at load and never `backlog
 modules and the query log are imported where used. It registers `bounds` when imported and puts the rules in front of
 `check`, `new` and `close` (`install`), so `backlog.py` carries only the import.
 """
+import argparse
 import json
 import re
 import subprocess
@@ -48,37 +61,59 @@ FINDINGS_PER_SPRINT = 5
 REWORK_CAP = 3
 OUTFLOW_SPRINTS = 3
 OPEN_DRAFTS_MAX = 60
-ORIGINS = ("review", "retro", "mid-sprint")
+ORIGINS = ("review", "retro", "mid-sprint", "intake")
 RETRO_FREE_ORIGINS = ("review", "retro")  # a sprint made only of items these filed has no retro of its own
-EVIDENCE_KINDS = ("commit", "test", "ops")
+EVIDENCE_KINDS = ("commit", "test", "ops", "fingerprint")
 MODES = ("report", "stop", "file")
 STOPS = ("sprint-budget", "inflow-guard", "no-ready")  # the causes `stop` names, in the order it reports them
 ORIGIN_LINK = re.compile(r"origin (review|retro|mid-sprint) (SP-[a-z2-7]{8})")
-EVIDENCE_LINK = re.compile(r"evidence (commit|test|ops) (\S+)")
+EVIDENCE_LINK = re.compile(r"evidence (commit|test|ops|fingerprint) (\S+)")
+FINGERPRINT_LINK = re.compile(r"fingerprint ([0-9a-f]{12})")
+DETECTOR_LINK = re.compile(r"detector \S+")
 COMMIT_REF = re.compile(r"[0-9a-f]{7,40}")
+FP_RE = re.compile(r"[0-9a-f]{12}")
 SIMILAR_NEAR = re.compile(r"^\s*\d+\.\d+\s+\d+\s+near\s+((?:EP|ST|TK|SB|BG)-[a-z2-7]{8})\b", re.M)
-ORIGINAL = {}  # command name -> the handler this module put its rules in front of
+ORIGINAL = {}  # command name -> the handler this module put its rules in front of (check, new, close)
+INTAKE = {}  # "handler" -> the `intake` handler whose `--file` this module takes over
 
 
 # ---------------------------------------------------------------- what an item carries: its origin and its evidence
 
+def intake_fingerprint(it):
+    """The detector fingerprint of an item `intake --file` filed (a `detector NAME` link and a `fingerprint HEX` link),
+    or None: a bug `red-pipeline` files has the second and no first."""
+    links = [x for x in it.get("links") or [] if isinstance(x, str)]
+    if not any(DETECTOR_LINK.fullmatch(x) for x in links):
+        return None
+    return next((m.group(1) for x in links if (m := FINGERPRINT_LINK.fullmatch(x))), None)
+
+
+def detector_of(it):
+    """The name in the item's `detector NAME` link, or None."""
+    return next((x.split(" ", 1)[1] for x in it.get("links") or [] if isinstance(x, str)
+                 and DETECTOR_LINK.fullmatch(x)), None)
+
+
 def origin_of(it):
-    """(kind, sprint id) of the item's `origin <kind> <SP>` link, or None."""
+    """(kind, sprint id) of the item's `origin <kind> <SP>` link, or None; an item filed by intake is
+    (`intake`, None)."""
     for x in it.get("links") or []:
         m = ORIGIN_LINK.fullmatch(x) if isinstance(x, str) else None
         if m:
             return m.group(1), m.group(2)
-    return None
+    return ("intake", None) if intake_fingerprint(it) else None
 
 
 def evidence_of(it):
-    """[(kind, ref)] of the item's `evidence <kind> <ref>` links."""
-    return [m.groups() for x in it.get("links") or [] if isinstance(x, str) and (m := EVIDENCE_LINK.fullmatch(x))]
+    """[(kind, ref)] of the item's `evidence <kind> <ref>` links; an intake draft's is its detector fingerprint."""
+    out = [m.groups() for x in it.get("links") or [] if isinstance(x, str) and (m := EVIDENCE_LINK.fullmatch(x))]
+    fp = intake_fingerprint(it)
+    return out + [("fingerprint", fp)] if fp and not out else out
 
 
 def findings(bl, sid):
     """The ids of the items an origin link of sprint `sid` names, in id order."""
-    return sorted(i for i, it in bl.items.items() if (origin_of(it) or (None, None))[1] == sid)
+    return sorted(i for i, it in bl.items.items() if sid and (origin_of(it) or (None, None))[1] == sid)
 
 
 def is_bounded(bl, sid):
@@ -202,8 +237,9 @@ def outflow(rows):
 
 
 def inflow(bl):
-    """The drafts that findings filed and nobody has taken into a sprint yet."""
-    return sum(1 for it in bl.items.values() if origin_of(it) and it.get("status") == "draft")
+    """The drafts that a sprint's findings filed and nobody has taken into a sprint yet (intake's drafts come from no
+    sprint and are not counted)."""
+    return sum(1 for it in bl.items.values() if (origin_of(it) or (None, None))[1] and it.get("status") == "draft")
 
 
 def open_drafts(bl):
@@ -217,7 +253,7 @@ def guard_trips(bl, rows):
     counts = {}
     for it in bl.items.values():
         o = origin_of(it)
-        if o:
+        if o and o[1]:
             counts[o[1]] = counts.get(o[1], 0) + 1
     trips += [f"{sid} has {n} findings filed (at most {FINDINGS_PER_SPRINT})" for sid, n in sorted(counts.items())
               if n > FINDINGS_PER_SPRINT]
@@ -241,7 +277,7 @@ def item_problems(bl, iid, it):
         errs.append(f"{bl.label(iid)}: its origin link is not one `origin review|retro|mid-sprint SP-xxxxxxxx`")
     for x in links:
         if x.startswith("evidence ") and not EVIDENCE_LINK.fullmatch(x):
-            errs.append(f"{bl.label(iid)}: the link {x!r} is not `evidence commit|test|ops REF`")
+            errs.append(f"{bl.label(iid)}: the link {x!r} is not `evidence commit|test|ops|fingerprint REF`")
     if origin_of(it) and not evidence_of(it):
         errs.append(f"{bl.label(iid)}: a finding that a review, a retro or a sprint filed names the failure's evidence "
                     "(a link `evidence commit|test|ops REF`), or it is kept in the close commit body only")
@@ -271,7 +307,7 @@ def problems(bl):
     for iid, it in sorted(bl.items.items()):
         errs += item_problems(bl, iid, it)
     sprints = {i for i, it in bl.items.items() if it.get("kind") == "sprint"}
-    named = {o[1] for it in bl.items.values() if (o := origin_of(it))}
+    named = {o[1] for it in bl.items.values() if (o := origin_of(it)) and o[1]}
     for sid in sorted(sprints):
         errs += late_errors(bl, sid)
     for sid in sorted(sprints | named):
@@ -326,6 +362,8 @@ def evidence_exists(root, kind, ref, rows):
     `file.py::name`) defined in a `_tools/test_*.py`, the ops row by its id."""
     if kind == "commit":
         return bool(COMMIT_REF.fullmatch(ref)) and git_out(root, "cat-file", "-e", f"{ref}^{{commit}}") is not None
+    if kind == "fingerprint":
+        return bool(FP_RE.fullmatch(ref))
     if kind == "test":
         file, _, name = ref.rpartition("::")
         files = [Path(root) / "_tools" / file] if file else sorted((Path(root) / "_tools").glob("test_*.py"))
@@ -357,17 +395,29 @@ def near_duplicates(root, title, goal):
     return SIMILAR_NEAR.findall(out)
 
 
-def file_finding(bl, a, rows=None):
-    """File, merge or keep one finding of a review, a retro or a running sprint. Returns (outcome, id or None) with
-    the outcome `filed`, `merged` (into the near-duplicate with that id) or `kept` (in the close commit body only).
-    Refused when an evidence ref is not there or a cap would be passed."""
-    if a.origin not in ORIGINS or not a.sprint or not (a.title or "").strip() or not (a.goal or "").strip():
+def file_finding(bl, a, rows=None, draft=None):
+    """File, merge or keep one finding of a review, a retro, a running sprint or intake. Returns (outcome, id or None)
+    with the outcome `filed`, `merged` (into the near-duplicate with that id) or `kept` (in the close commit body
+    only). Refused when an evidence ref is not there or a cap would be passed. An intake finding (`a.origin` intake,
+    no sprint) comes with `draft`, the item intake built for the candidate, which is saved as it is; its evidence is
+    the fingerprint that item carries."""
+    intake = a.origin == "intake"
+    if a.origin not in ORIGINS or not (a.sprint or intake) or not (a.title or "").strip() \
+            or not (a.goal or "").strip():
         raise Rejected("bounds file: --origin, --sprint, --title and --goal are required")
-    sid = bl_base.need(bl, a.sprint)
-    if bl.items[sid].get("kind") != "sprint":
+    if intake and draft is None:
+        raise Rejected("bounds file: an intake finding is filed by `backlog.py intake --file`, which has its draft")
+    if not intake and draft is not None:
+        raise Rejected("bounds file: only an intake finding takes a prebuilt draft")
+    sid = None if intake else bl_base.need(bl, a.sprint)
+    if sid and bl.items[sid].get("kind") != "sprint":
         raise Rejected(f"bounds file: {bl.label(sid)} is not a sprint")
     rows = ops_rows(bl.root) if rows is None else rows
     refs = [parse_evidence(e) for e in a.evidence or []]
+    if intake and (len(refs) != 1 or refs[0][0] != "fingerprint" or refs[0][1] != intake_fingerprint(draft)):
+        raise Rejected("bounds file: an intake finding's evidence is its draft's detector fingerprint")
+    if not intake and any(k == "fingerprint" for k, _ in refs):
+        raise Rejected("bounds file: a fingerprint is the evidence of an intake finding only")
     missing = [f"{k}:{r}" for k, r in refs if not evidence_exists(bl.root, k, r, rows)]
     if missing:
         raise Refused(f"bounds file: the evidence is not there: {', '.join(missing)}")
@@ -376,10 +426,17 @@ def file_finding(bl, a, rows=None):
             "a test id or an ops row)")
         return "kept", None
     dups = near_duplicates(bl.root, a.title, a.goal)
+    if intake:  # a detector words its findings alike (`Red main pipeline N`): its own drafts are distinct findings
+        mine = detector_of(draft)
+        dups = [d for d in dups if not mine or detector_of(bl.items[d]) != mine]
     if dups:
         it = bl.items[dups[0]]
-        note = f"Found again by the {a.origin} of {sid}: {a.title.strip()}. {a.goal.strip()} (" \
+        by = "intake" if intake else f"{a.origin} of {sid}"
+        note = f"Found again by the {by}: {a.title.strip()}. {a.goal.strip()} (" \
                + ", ".join(f"{k} {r}" for k, r in refs) + ")"
+        if intake and note in (it.get("notes") or ""):  # the same finding on a later run adds nothing
+            say(f"bounds: already in the notes of {bl.label(dups[0])}, a near-duplicate")
+            return "merged", dups[0]
         text = f"{it['notes']}\n{note}" if it.get("notes") else note
         if len(text) > TEXT_MAX:
             raise Refused(f"bounds file: the notes of {bl.label(dups[0])} are full; keep the finding in the close "
@@ -389,15 +446,19 @@ def file_finding(bl, a, rows=None):
         say(f"bounds: merged into the notes of {bl.label(dups[0])}, a near-duplicate")
         return "merged", dups[0]
     n = len(findings(bl, sid))
-    if n >= FINDINGS_PER_SPRINT:
+    if not intake and n >= FINDINGS_PER_SPRINT:
         raise Refused(f"bounds file: {bl.label(sid)} has {n} findings filed already (at most {FINDINGS_PER_SPRINT}): "
                       "keep this one in the close commit body only")
     if open_drafts(bl) >= OPEN_DRAFTS_MAX:
         raise Refused(f"bounds file: {open_drafts(bl)} open drafts (at most {OPEN_DRAFTS_MAX}): triage before filing")
     out, _ = outflow(rows)
-    if out is not None and inflow(bl) + 1 > out:
+    if not intake and out is not None and inflow(bl) + 1 > out:
         raise Refused(f"bounds file: draft inflow would pass the done outflow {out} of the last {OUTFLOW_SPRINTS} "
                       f"sprints ({inflow(bl)} drafts from findings now): keep this one in the close commit body only")
+    if intake:
+        bl.save(draft)
+        say(f"bounds: filed {bl.label(draft['id'])} from intake")
+        return "filed", draft["id"]
     argv = ["new", a.kind, "--title", a.title.strip(), "--goal", a.goal.strip()]
     if a.kind == "bug":
         argv += ["--severity", a.severity or "", "--repro", a.repro or ""]
@@ -424,7 +485,7 @@ def file_finding(bl, a, rows=None):
 def report(bl, sid, rows):
     """The numbers of the report, as one dict."""
     out, n = outflow(rows)
-    sprints = [sid] if sid else sorted({o[1] for it in bl.items.values() if (o := origin_of(it))})
+    sprints = [sid] if sid else sorted({o[1] for it in bl.items.values() if (o := origin_of(it)) and o[1]})
     items = {}
     for i, it in sorted(bl.items.items()):
         if it.get("status") in ("todo", "doing", "draft") and (not sid or bl.sprint_of(i) == sid) \
@@ -436,6 +497,45 @@ def report(bl, sid, rows):
                        "outflow_sprints": OUTFLOW_SPRINTS, "open_drafts_max": OPEN_DRAFTS_MAX},
             "open_drafts": open_drafts(bl), "inflow": inflow(bl), "outflow": out, "outflow_sprints": n,
             "findings": {s: len(findings(bl, s)) for s in sprints}, "rework": items, "trips": guard_trips(bl, rows)}
+
+
+def file_intake(bl, a, found, failures=()):
+    """`intake --file`: each candidate a detector found, that no open item's fingerprint covers, is filed through
+    `file_finding` as an intake draft. Prints what `intake` prints for a candidate and, for the finding, the bounds
+    line (filed, merged or refused). Exit 1 when a detector failed or a finding was refused (the cap message goes to
+    stderr), else 0; a refusal at the open-drafts cap ends the filing, for it holds for every later candidate."""
+    import bl_intake
+    rows = ops_rows(bl.root)
+    new = skipped = refused = 0
+    stop = ""
+    for c in found:
+        dup = bl_intake.open_with_fingerprint(bl.items, c.fp) or bl_intake.named_by(bl.items, c)
+        for ln in bl_intake.lines(c, bl.label(dup) if dup else None):
+            say(ln)
+        if dup:
+            skipped += 1
+            continue
+        if stop:
+            refused += 1
+            continue
+        draft = bl_intake.item_of(c, bl_base.new_id(c.kind))
+        f = argparse.Namespace(origin="intake", sprint=None, kind=c.kind, title=bl_intake.one(c.title),
+                               goal=bl_intake.one(c.goal), severity=None, repro=None, check=None, touch=None,
+                               evidence=[f"fingerprint:{c.fp}"])
+        try:
+            if file_finding(bl, f, rows, draft)[0] == "filed":
+                new += 1
+            else:
+                skipped += 1  # merged into a near-duplicate's notes
+        except Rejected:
+            raise
+        except Refused as e:
+            refused += 1
+            stop = str(e)
+            print(bl_base.withhold(stop), file=sys.stderr)
+    say(f"intake: {len(found)} candidate(s), {new} new filed, {skipped} skipped"
+        + (f", {refused} refused by the bounds" if refused else "") if found else "intake: no candidates")
+    return 1 if failures or refused else 0
 
 
 def args_bounds(p):
@@ -516,6 +616,17 @@ def cmd_check(bl, a):
     return 1 if errs else code
 
 
+def cmd_intake(bl, a):
+    """`intake --file` files its drafts through the bounds; plain `intake` and `--status` are read-only and unchanged."""
+    if not a.file or a.status is not None:
+        return INTAKE["handler"](bl, a)
+    import bl_intake
+    found, failures = bl_intake.collect(bl.root, network=a.network, record=True)
+    for why in failures:
+        print(bl_base.withhold(f"intake: detector failed: {why}"), file=sys.stderr)
+    return file_intake(bl, a, found, failures)
+
+
 def cmd_new(bl, a):
     if a.kind in IN_SPRINT and a.sprint and is_bounded(bl, a.sprint) and not (a.kind == "bug" and a.severity == "S1"):
         raise Refused(f"new: {bl.label(a.sprint)} is a running sprint the autopilot started: it gains no item after its "
@@ -539,16 +650,19 @@ def cmd_close(bl, a):
 
 
 def install(registry=None):
-    """Put the rules in front of `check`, `new` and `close`: the registered handler becomes this module's, and the
-    module that owns `check` and `close` names the same function, so what reads either finds one handler. A command
-    not registered yet, or already wrapped, is left as it is."""
+    """Put the rules in front of `check`, `new` and `close`, and the filing of `intake --file` through them: the
+    registered handler becomes this module's, and the module that owns `check` and `close` names the same function, so
+    what reads either finds one handler. A command not registered yet, or already wrapped, is left as it is."""
     registry = bl_cli.COMMANDS if registry is None else registry
-    mine = {"check": cmd_check, "new": cmd_new, "close": cmd_close}
+    mine = {"check": cmd_check, "new": cmd_new, "close": cmd_close, "intake": cmd_intake}
     for name, wrapper in mine.items():
         if name not in registry or registry[name][0] is wrapper:
             continue
         handler, add_arguments, help = registry[name]
-        ORIGINAL[name] = handler
+        if name == "intake":
+            INTAKE["handler"] = handler
+        else:
+            ORIGINAL[name] = handler
         registry[name] = (wrapper, add_arguments, help)
         owner = sys.modules.get({"check": "bl_check", "close": "bl_land"}.get(name, ""))
         if owner is not None and registry is bl_cli.COMMANDS:

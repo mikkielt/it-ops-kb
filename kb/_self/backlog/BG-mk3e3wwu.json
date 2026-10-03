@@ -2,7 +2,7 @@
   "id": "BG-mk3e3wwu",
   "kind": "bug",
   "title": "intake --file files drafts outside bounds, so an intake draft carries no origin, evidence or cap",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
   "rank": 0,
@@ -30,6 +30,37 @@
     "_tools/bl_bounds.py",
     "_tools/bl_intake.py",
     "_tools/test_bl_bounds_intake.py",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "_tools/test_layout.py",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does intake's near-duplicate merge skip open items of the same detector (a detector words its findings alike, each fingerprint is a distinct finding)?",
+      "options": [
+        "skip same-detector items",
+        "merge into any near-duplicate"
+      ],
+      "recommendation": "skip same-detector items",
+      "class": "design",
+      "answer": "skip same-detector items",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Is an intake draft kind one of RETRO_FREE_ORIGINS, and does an intake draft count in the draft inflow guard?",
+      "options": [
+        "no to both: intake drafts go to the backlog, outside the inflow guard",
+        "yes to both"
+      ],
+      "recommendation": "no to both: intake drafts go to the backlog, outside the inflow guard",
+      "class": "design",
+      "answer": "no to both: intake drafts go to the backlog, outside the inflow guard",
+      "by": "agent"
+    }
+  ],
+  "claimed_by": "mac-third-worker"
 }
