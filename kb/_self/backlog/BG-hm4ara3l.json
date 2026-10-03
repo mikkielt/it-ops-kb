@@ -2,7 +2,7 @@
   "id": "BG-hm4ara3l",
   "kind": "bug",
   "title": "The headless claude child of a runner has no turn or wall-clock bound, so a hung or looping run holds one of the two runner slots forever",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-itmjxudu",
   "priority": "P2",
@@ -60,5 +60,28 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "02ce2246f4348c31f8b48b96421313b2ec0090f6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_run_is_bounded"
+        ],
+        "exit": 0,
+        "sha256": "79a2a1ad19a442d8"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib;sys.path.insert(0,\"_tools\");import autopilot;argv=autopilot.claude_argv(pathlib.Path(\".\"),\"SP-aaaaaaaa\");print(argv);sys.exit(0 if any(a.startswith(\"--max-turns\") for a in argv) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d4e477ff5accefc1"
+      }
+    ]
+  }
 }
