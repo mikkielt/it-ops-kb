@@ -2,7 +2,7 @@
   "id": "BG-kbgc6mff",
   "kind": "bug",
   "title": "A SIGTERM or SIGHUP that reaches runner start before its child runs writes no status, so the manager gets no signal and a previous run's status stays",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -31,5 +31,28 @@
     "_tools/test_autopilot_early_signal.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "0ec8f5dede76dbbeee0b5a0733a373e9e2e7e580",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autopilot_early_signal_writes_status"
+        ],
+        "exit": 0,
+        "sha256": "884363503823c058"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib,tempfile;sys.path.insert(0,\"_tools\");import autopilot;r=pathlib.Path(tempfile.mkdtemp());autopilot.register_runner=lambda root,sprint:(_ for _ in ()).throw(autopilot.RunnerEnded(\"SIGTERM\"));autopilot.runner_start(\"SP-aaaaaaaa\",root=r);sys.exit(0 if list(r.rglob(\"status.json\")) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8b71770132557791"
+      }
+    ]
+  }
 }
