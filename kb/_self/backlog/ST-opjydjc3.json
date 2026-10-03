@@ -1,0 +1,25 @@
+{
+  "id": "ST-opjydjc3",
+  "kind": "story",
+  "title": "The first supervised autopilot run is executed stage by stage by an operator-agent, and every failure is filed",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "After SP-j6hh2ib2 and SP-zihqagoi have closed, an interactive agent session acting as the operator (the operator's own order, recorded in the sprint notes) runs kb/_self/autopilot-test.md stage by stage against a throwaway sprint with the runner supervised, writes the per-stage pass/fail log to kb/_self/reports/, files each failure as a bug with a repro and each process finding as a retro finding (at most 5 per sprint, none for a retro), and ends with a go or no-go for an unattended run that names what only the human operator can still set (deploy key, branch protection, separate OS user). It answers no secrets, push or agents-rule gate beyond the throwaway sprint and never runs kbgit.py publish.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/autopilot-first-run.md"
+  ],
+  "depends_on": [
+    "ST-eoxpdaep"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "SP-rq4t477t",
+  "kind": "sprint",
+  "title": "The autopilot's supervised first run is planned and tested",
+  "status": "active",
+  "goal": "A written checklist and test plan exist for the first supervised autopilot run, and a second agent has run it as the operator and filed what failed.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

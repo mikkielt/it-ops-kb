@@ -1,0 +1,33 @@
+{
+  "id": "ST-eoxpdaep",
+  "kind": "story",
+  "title": "A checklist and test plan for the autopilot's first supervised run exist, written from the code and the runbook",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb/_self/autopilot-test.md holds (1) a pre-run checklist: operator-only steps and what each protects (deploy key and token limited to code/* and main, server-side branch protection on both repos, separate OS user or machine account, fseventsd restart, the re-confirm gate list, KB_NO_PUBLISH_HOOK, runner credentials stripped, settings and hook spot-check, autopilot.py selfcheck and the rehearsal result); (2) a test plan in stages with the command, expected output and abort condition for each: dry tick, one runner start on a throwaway sprint, headless guards (edit of a guard file, --by operator, nested runner start, sync to another branch or remote, git checkout of old settings), land and worktree removal by land, no-progress stop and its reset, bounds (findings, rework, inflow), stall remedies, digest and PushNotification kinds, operator gates never answered by the autopilot; (3) what the supervising operator-agent records: a per-stage pass/fail log, and for each failure a bug through backlog.py new bug with a repro and a retro finding through the sprint review path, within the bounds of the autopilot's own limits; (4) the stop and cleanup procedure (runner reset, procs --end for owned orphans, list not kill for foreign ones). It cites the code or runbook line for every claim and uses placeholders only. The doc is mapped in kb/_self/map.csv, linked from backlog.md's Starting the autopilot section in one line, and passes the cohesion and stale checks.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/autopilot-test.md",
+    "kb/_self/map.csv",
+    "kb/_self/backlog.md",
+    "kb/_self/README.md"
+  ]
+}
