@@ -30,7 +30,9 @@
   "touches": [
     "_tools/bl_cost.py",
     "_tools/test_cost_open_session_reopened.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "_tools/test_cost_open_session.py",
+    "_tools/test_cost_open_session_main.py"
   ],
   "claimed_by": "mac-sixth"
 }
