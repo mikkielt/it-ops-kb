@@ -36,11 +36,13 @@
                                          the operator withdraws an autopilot decision: it is invalidated (its row stays)
                                          and a story to undo what it changed is filed with `backlog.py new story`;
                                          refused without `--by operator`
-  kbdecide.py digest [--out PATH]        write kb/_self/reports/autopilot-digest.md: the autopilot's decisions not yet
+  kbdecide.py digest [--out PATH] [--commit]   write kb/_self/reports/autopilot-digest.md: the autopilot's decisions not yet
                                          ratified, the restricted classes (secrets, push, querylog, agents-rule, delete)
                                          first, each group oldest first, with item, gate, answer and `review_by`;
                                          above them, the share of every autopilot decision the operator reverted and
                                          the number contradicting an earlier one of the same gate and class
+                                         (--commit commits that file alone when it changed, so a tick's next
+                                         kbgit.py sync finds a clean tree)
   kbdecide.py sweep [--root R] [--dry-run] [--date DATE]
                                          invalidate every proposed or active decision whose context is broken (rules
                                          below), naming the context in the reason; open to agents
@@ -676,6 +678,28 @@ def cmd_digest(a):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(digest_text(entries, disagreement(store)), encoding="utf-8", newline="\n")
     print(f"digest\t{len(entries)} unratified\t{path}")
+    return commit_digest(path) if a.commit else 0
+
+
+def commit_digest(path):
+    """`digest --commit`: commit the digest file and nothing else (`git commit --only`, so what was staged before stays
+    staged and out of it), when it changed; the commit-msg hook adds the KB-* trailers. Exit 1 with git's reason when
+    git cannot (the file is ignored, or not in a repository). The next `kbgit.py sync` refuses a dirty tree, so a tick
+    that rewrote the tracked digest commits it here."""
+    def git(*args):
+        return subprocess.run(["git", *args], cwd=str(path.resolve().parent), capture_output=True, text=True,
+                              encoding="utf-8", errors="replace")
+    name = path.name
+    p = git("add", "--", name)
+    if p.returncode:
+        print(f"digest --commit: git add {name}: {(p.stderr or p.stdout).strip()}", file=sys.stderr)
+        return 1
+    if git("diff", "--cached", "--quiet", "--", name).returncode == 0:
+        return 0  # unchanged: nothing to commit
+    p = git("commit", "-q", "-m", "chore(kb): autopilot digest", "--only", "--", name)
+    if p.returncode:
+        print(f"digest --commit: git commit: {(p.stderr or p.stdout).strip()}", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -1070,6 +1094,7 @@ def parser():
     p.add_argument("--date", help="YYYY-MM-DD (default: today)")
     p = sub.add_parser("digest", help="write the unratified autopilot decisions to kb/_self/reports/autopilot-digest.md")
     p.add_argument("--out", help="write here instead")
+    p.add_argument("--commit", action="store_true", help="commit the written file (only it) when it changed")
     p = sub.add_parser("makers", help="show or set how a root saves its decision makers")
     p.add_argument("root", help="a root's name")
     p.add_argument("--policy", help=f"{'|'.join(kbcommon.POLICIES)}; the operator's")
