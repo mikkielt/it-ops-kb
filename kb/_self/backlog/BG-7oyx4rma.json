@@ -2,7 +2,7 @@
   "id": "BG-7oyx4rma",
   "kind": "bug",
   "title": "Items left unchecked by drift's program allowlist are reported as heavy whole-suite checks, and the docstring never mentions the allowlist",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j6hh2ib2",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,30 @@
     "kb/_self/backlog.md",
     "_tools/test_check_program_allowlist.py"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "3578d1dbfe2c2a8d1275302d7c5c8def417401a5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "1",
+          "-k",
+          "drift_refused_apart_from_heavy"
+        ],
+        "exit": 0,
+        "sha256": "b386fe6241dcef5a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/bl_intake.py',encoding='utf-8').read();sys.exit(0 if 'drift.refused' in t or 'refused: list' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
