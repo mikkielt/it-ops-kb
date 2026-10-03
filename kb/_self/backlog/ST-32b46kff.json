@@ -84,7 +84,9 @@
         "image from the project registry by digest"
       ],
       "recommendation": "two hosts through an egress proxy; image built locally",
-      "class": "design"
+      "class": "design",
+      "answer": "two hosts through an egress proxy; image built locally",
+      "by": "operator"
     }
   ]
 }
