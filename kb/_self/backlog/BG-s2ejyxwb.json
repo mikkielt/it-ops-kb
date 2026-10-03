@@ -1,0 +1,34 @@
+{
+  "id": "BG-s2ejyxwb",
+  "kind": "bug",
+  "title": "Closing a sprint leaves its runner's worktree, its orch branch and the empty worker branches in the clone the runner ran in, because the close cleanup names only work/<id> and worktree-agent-* branches with a KB-Work trailer",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the cleanup step of /kb-sprint close (and backlog.md where it repeats it) also removes the closed sprint's runner worktree .claude/worktrees/runner-SP-* with its orch/SP-* branch and _cache/autopilot/SP-*, and a worktree-agent-* branch with no commits of its own, never with --force and never another sprint's; a check reads the skill and fails when a runner worktree of a closed sprint is not named; found by the first supervised run (ST-opjydjc3): after the throwaway sprint closed, the runner clone still held the runner worktree, the orch branch, a detached agent-* worktree of a landed item and two empty worktree-agent-* branches, and none of them is matched by the skill's rule",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read(); i=t.index('**Clean up**'); sys.exit(0 if 'runner-' in t[i:] else 1)"
+    ]
+  },
+  "repro_reason": "the cleanup is a list of steps the orchestrating agent follows in the skill, not a command: no tool run shows it, so the repro reads the skill's step for the runner worktree",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_sprint_close_cleans_runner_worktree"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
