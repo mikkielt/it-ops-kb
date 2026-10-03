@@ -34,7 +34,9 @@
     "_tools/kb_hook.py",
     "_tools/test_headless_guard.py",
     "kb/_self/plugin.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "_tools/test_kb_lookup.py",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "mac-first"
 }
