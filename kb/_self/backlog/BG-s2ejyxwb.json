@@ -29,7 +29,8 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_kb_sprint_close_cleanup.py"
   ],
   "claimed_by": "mac-third-worker"
 }
