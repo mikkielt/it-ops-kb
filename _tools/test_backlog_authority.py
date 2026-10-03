@@ -99,7 +99,9 @@ def test_autopilot_authority_class_follows_the_question(question, cls):
     ([".claude/**"], "agents-rule"),
     (["src/credentials.json"], "secrets"),
     (["src/**", "docs/readme.md"], "design"),
-    (["_tools/bl_plan*.py"], "design"),  # `_tools/bl_*.py` names bl_authority.py, guard code: agents-rule
+    (["_tools/bl_plan*.py"], "agents-rule"),  # the bl_ modules are guarded code the tests run
+    (["_tools/bl_plan.py", "_tools/tests.py", "_tools/conftest.py"], "agents-rule"),
+    (["_tools/blame.py", "_tools/test_x.py", "docs/tests.py.md"], "design"),
 ])
 def test_autopilot_authority_class_follows_the_touches(touches, cls):
     assert bl_authority.derived_class({"touches": touches}, gate_of("Which name?")) == cls

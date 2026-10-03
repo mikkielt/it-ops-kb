@@ -314,6 +314,7 @@ HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # kbpublic.HEADLESS_ENV: set by autopilot.p
 WRITE_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 GUARDED = (re.compile(r"\.claude/settings[^/]*\.json"), re.compile(r"\.claude/hooks/.+"), re.compile(r"\.claude-plugin/.+"))
 ITEM_FILE = re.compile(r"kb/_self/backlog/[^/]+\.json")  # matched against matched_path(): lower-case
+NEW_TEST_FILE = re.compile(r"_tools/test_[^/]*\.py")  # matched against matched_path(): a test file tests.py would run
 GATE_KEYS = re.compile(r'"(answer|by)"\s*:')
 
 
@@ -454,8 +455,9 @@ def headless_guard(event):
     """The PreToolUse answer that denies a headless run's (HEADLESS_ENV) Edit, MultiEdit, Write or NotebookEdit of a
     path outside the project (CLAUDE_PROJECT_DIR, else this clone; symlinks and .. resolved), of .claude/settings*.json,
     .claude/hooks/, .claude-plugin/, of the guard's own files and the files bl_authority.PATHS gives the agents-rule and
-    push classes, and of an item file's gate answer or by field (the edit applied to the file's current text and the
-    gates compared before and after; an edit that cannot be applied is denied): a headless agent never answers as the
+    push classes, of a new _tools/test_*.py file (an existing one stays editable), and of an item file's gate answer or
+    by field (the edit applied to the file's current text and the gates compared before and after; an edit that cannot
+    be applied is denied): a headless agent never answers as the
     operator nor rewrites the rules it runs under; it records a gate with backlog.py gate add and answers within its
     authority with backlog.py answer. None for any other call, and always when HEADLESS_ENV is not set (the
     operator-present session), so the guard costs nothing there."""
@@ -478,6 +480,8 @@ def headless_guard(event):
             why = f"{rel} holds the rules this run works under"
         elif guarded_file(rel):
             why = guarded_file(rel)
+        elif NEW_TEST_FILE.fullmatch(low) and not os.path.exists(existing_path(full)):
+            why = f"{rel} would be a new test file, which tests.py runs as code"
         elif ITEM_FILE.fullmatch(low):
             change = item_gate_change(existing_path(full), tool, tool_input)
             if not change:
