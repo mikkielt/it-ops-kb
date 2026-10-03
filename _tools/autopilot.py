@@ -35,7 +35,7 @@ could not start, no result, an error result, which a run past its turn limit giv
 names no cause), else the cause the result's last `sprint-runner: <cause>` line names: `landed-limit` (K
 items landed), `sprint-done` (nothing ready is left) or `blocked` (what is ready waits on a gate or trigger). While the
 run lives the cause is `running`. A runner that gets SIGTERM or SIGHUP (`backlog.py procs --end`, its manager's exit)
-ends the child's process tree and writes `error` with the signal's name as the detail.
+ends the child's process tree and writes `error` with the signal's name as the detail, also before the child runs, over the previous run's status.json.
 
 At most bl_base.MAX_RUNNERS runners live on a host, whatever their clone. Each records itself while it runs in the host
 lock directory (`kb-runner.<pid>.json`: pid, sprint, clone, start time and the touches of the sprint's open items), and
@@ -452,22 +452,40 @@ def register_runner(root, sprint):
     return path
 
 
+def write_early_status(root, sprint, name):
+    """The status of a run a signal ended before run_in_slot kept its own (while the slot was claimed or the worktree
+    prepared): cause `error`, the signal's NAME as the detail, written over the previous run's status.json so it does
+    not stand for this run, in the shape run_in_slot writes."""
+    directory = cache_dir(root, sprint)
+    directory.mkdir(parents=True, exist_ok=True)
+    stamp = now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    write_status(directory / "status.json", {
+        "sprint": sprint, "pid": os.getpid(), "worktree": str(worktree_path(root, sprint)),
+        "branch": branch_name(sprint), "start_ref": None, "started": stamp, "stream": None, "landed_limit": None,
+        "cause": "error", "detail": f"runner ended by {name}", "exit_code": None, "ended": stamp,
+        "deadline_s": deadline_s(), "max_turns": max_turns()})
+    bl_base.runner_record_path(os.getpid()).unlink(missing_ok=True)
+
+
 def runner_start(sprint, landed=None, root=ROOT):
     """Run the sprint headless in its worktree; returns the exit code (the module docstring)."""
     root = Path(root)
+    kept = []  # run_in_slot adds to it once its own status is kept, from then on the status names the end itself
     try:
         with ends_on_signals():
             record = register_runner(root, sprint)
             try:
-                return run_in_slot(sprint, landed, root, record)
+                return run_in_slot(sprint, landed, root, record, kept)
             finally:
                 record.unlink(missing_ok=True)
-    except RunnerEnded as e:  # the signal came where no status was being kept
+    except RunnerEnded as e:
+        if not kept:  # the signal came before the run's own status: this one replaces the previous run's
+            write_early_status(root, sprint, e.name)
         print(f"{sprint}: error (runner ended by {e.name})")
         return 1
 
 
-def run_in_slot(sprint, landed, root, record):
+def run_in_slot(sprint, landed, root, record, kept=None):
     """runner_start's body, once the host's runner slot is held: the worktree, the overlap check against the other
     runners, the run and its status."""
     wt, start = prepare_worktree(root, sprint)
@@ -494,6 +512,8 @@ def run_in_slot(sprint, landed, root, record):
     argv = claude_argv(wt, sprint, landed)
     run = {"compaction": False, "result": None, "exit_code": -1}
     detail = "the runner stopped before the child ended"
+    if kept is not None:
+        kept.append(True)
     try:
         with keep, open(directory / (name[:-len(".jsonl")] + ".stderr"), "w", encoding="utf-8", newline="\n") as err:
             try:
