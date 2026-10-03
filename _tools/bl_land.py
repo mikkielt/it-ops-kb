@@ -244,19 +244,38 @@ def ops_mark(label):
     LAND_OPS.update(step=ops_token(label), t=time.monotonic(), exit=1)
 
 
+def main_worktree_spool(root):
+    """The spool of the main worktree of the git common dir `root` belongs to, where a session started in the main
+    checkout writes the rows of the clone it orchestrates: `_cache/querylog/spool` there. None when git cannot say."""
+    try:
+        common = (Path(root) / git(root, "rev-parse", "--git-common-dir").strip()).resolve()
+    except (Refused, OSError):
+        return None
+    return common.parent / "_cache" / "querylog" / "spool"
+
+
 def ops_no_work_rows(root, iid):
-    """Whether neither this host's spool nor the committed work sidecars hold a `work` row (claim, done, release) of
-    the item or of a descendant of it: distill moves the spool's work rows into the sidecars (an item line, or a
-    shared line naming the item), so a consumed spool is not an item that was worked without the capture hooks.
-    False when capture is off or anything cannot be read."""
+    """Whether neither this host's spool, the spool of the main worktree of the clone's git common dir (read only,
+    and only when it is another directory than this one: a session started in the main checkout that orchestrates a
+    clone writes its rows there) nor the committed work sidecars hold a `work` row (claim, done, release) of the item
+    or of a descendant of it: distill moves the spool's work rows into the sidecars (an item line, or a shared line
+    naming the item), so a consumed spool is not an item that was worked without the capture hooks. False when capture
+    is off, no spool directory exists or anything cannot be read."""
     try:
         import bl_cost, ql_capture, ql_distill
-        spool = ql_capture.spool_dir()
-        if spool is None or not Path(spool).is_dir():
+        own = ql_capture.spool_dir()
+        if own is None:
+            return False
+        spools = [Path(own)]
+        main = main_worktree_spool(root)
+        if main is not None and not (spools[0].exists() and main.exists() and os.path.samefile(spools[0], main)):
+            spools.append(main)
+        spools = [d for d in spools if d.is_dir()]
+        if not spools:
             return False
         ids = {iid, *Backlog(root).descendants(iid)}
         if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in ql_capture.WORK_ACTIONS
-               for p in Path(spool).glob("*.jsonl") for r in ql_distill.spool_rows(p)[0]):
+               for d in spools for p in sorted(d.glob("*.jsonl")) for r in ql_distill.spool_rows(p)[0]):
             return False
         return not bl_cost.cost_lines(root, ids)[0]
     except Exception:  # noqa: BLE001
