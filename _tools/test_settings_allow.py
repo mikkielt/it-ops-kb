@@ -35,20 +35,22 @@ RUNNER_COMMANDS = [
     "git -C * fetch origin",
     "git -C * worktree add *",
     "glab mr view *",
-    "glab mr merge *",
+    "glab mr merge code/*",  # only the code/<id> lane's requests, never another runner's or a bridged branch
 ]
 RUNNER_TOOLS = ["Agent", "Edit", "Write", "SendMessage"]
 # The kb-autopilot tick's own: the decision digest and list (read forms only: digest without --out, which writes to
 # any path), and the tools it notifies with. kbdecide.py's writing forms (record, ratify, revert, supersede,
 # invalidate, ...) are never allowed.
-TICK_COMMANDS = ["python3 _tools/kbdecide.py digest", "python3 _tools/kbdecide.py list *"]
+TICK_COMMANDS = ["python3 _tools/kbdecide.py digest", "python3 _tools/kbdecide.py digest --commit",
+                 "python3 _tools/kbdecide.py list *"]
 TICK_TOOLS = ["PushNotification", "ToolSearch"]
 DENIED_COMMANDS = ["python3 _tools/kbgit.py publish *", "git push *", "git -C * push *", "git branch -D *",
                    "git worktree remove *", "git checkout -- *"]
 # a rebase that runs a command, and a commit that skips the hooks (--no-verify, or its short form -n): denied whatever
 # allow rule matches the leading words
 REBASE_COMMIT_DENIED = ["git rebase * --exec *", "git rebase * -x *", "git commit * --no-verify*",
-                        "git commit --no-verify*", "git commit * -n *", "git commit -n *"]
+                        "git commit --no-verify*", "git commit * -n *", "git commit -n *",
+                        "git checkout * -- *"]  # a checkout of paths from another revision: an older settings file
 SHELLS = ("Bash", "PowerShell")
 
 
@@ -141,4 +143,26 @@ def test_settings_allow_rebase_commit_narrow():
       for c in REBASE_COMMIT_DENIED for s in SHELLS],
 ])
 def test_settings_allow_rebase_commit_narrow_refuses_a_planted_change(plant, want):
+    assert want in runner_problems(plant(permissions(text(".claude/settings.json"))))
+
+
+def test_settings_allow_review_gaps():
+    """The SP-zihqagoi review's settings gaps: glab mr merge only for code/* branches, a checkout of paths from another
+    revision denied, and the tick's `kbdecide.py digest --commit` allowed, for both shells."""
+    perms = permissions(text(".claude/settings.json"))
+    assert runner_problems(perms) == []
+    for s in SHELLS:
+        assert f"{s}(glab mr merge *)" not in perms["allow"] and f"{s}(glab mr merge code/*)" in perms["allow"]
+        assert f"{s}(git checkout * -- *)" in perms["deny"]
+        assert f"{s}(python3 _tools/kbdecide.py digest --commit)" in perms["allow"]
+
+
+@pytest.mark.parametrize("plant, want", [
+    (_allow(lambda a: a + ["Bash(glab mr merge *)"]), "beyond the list: Bash(glab mr merge *)"),
+    (_allow(lambda a: [r for r in a if r != "PowerShell(python3 _tools/kbdecide.py digest --commit)"]),
+     "missing PowerShell(python3 _tools/kbdecide.py digest --commit)"),
+    *[(lambda p, r=f"{s}(git checkout * -- *)": {**p, "deny": [x for x in p["deny"] if x != r]},
+       f"not denied {s}(git checkout * -- *)") for s in SHELLS],
+])
+def test_settings_allow_review_gaps_refuses_a_planted_change(plant, want):
     assert want in runner_problems(plant(permissions(text(".claude/settings.json"))))
