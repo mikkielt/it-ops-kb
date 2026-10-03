@@ -2,7 +2,7 @@
   "id": "ST-eoxpdaep",
   "kind": "story",
   "title": "A checklist and test plan for the autopilot's first supervised run exist, written from the code and the runbook",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -30,5 +30,28 @@
     "kb/_self/backlog.md",
     "kb/_self/README.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "b2c63063d60b96c08400d1ff9b604a44ccc8741b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cohesion"
+        ],
+        "exit": 0,
+        "sha256": "df789f8debe637f6"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
