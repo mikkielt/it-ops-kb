@@ -2,7 +2,7 @@
   "id": "ST-gxnkagra",
   "kind": "story",
   "title": "Review sprint: The autopilot's first unattended night",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zihqagoi",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "a04ae03ac52335ebb7023ec4826ea50812880789",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "23417dc801e44ce7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "9cc68516afb92711"
+      }
+    ]
+  }
 }
