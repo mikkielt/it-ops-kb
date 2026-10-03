@@ -52,3 +52,19 @@ def test_tests_py_longest_scopes_first_loadscope_run_passes_no_reorder(monkeypat
     tests_py.run_pytest(["x"], dist="loadscope")
     tests_py.run_pytest(["x"], dist="load")
     assert "--no-loadscope-reorder" in seen[0] and "--no-loadscope-reorder" not in seen[1]
+
+
+def test_tests_py_worker_count_default_is_the_cpu_share_capped_at_the_best_measured_count(monkeypatch):
+    monkeypatch.delenv("KB_TESTS_FAST", raising=False)
+    monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
+    cap = tests_py.DEFAULT_WORKER_CAP
+    assert cap == 8
+    pick = lambda cpus, others=0: tests_py.default_workers(others=others, cpus=cpus)
+    assert pick(4) == 4 and pick(8) == 8  # alone: every CPU up to the cap
+    assert pick(14) == cap and pick(64) == cap  # more CPUs than measured: the cap
+    assert pick(14, others=1) == 7 and pick(64, others=1) == cap  # the share first, then the cap
+    assert pick(1) == 1 and pick(4, others=9) == 1  # never below one
+    monkeypatch.setenv("KB_TEST_WORKERS", "12")
+    assert pick(4) == 12 and pick(64) == 12  # the override wins, even above the cap
+    monkeypatch.setenv("KB_TEST_WORKERS", "junk")
+    assert pick(14) == cap and pick(14, others=1) == 7  # not a number: the share applies

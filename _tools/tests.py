@@ -30,7 +30,8 @@ lock and records mode full with every file's time.
 
 The default worker count is capped, not one per CPU: KB_TEST_WORKERS (a number) when set, else the CPUs divided among
 this run and the other live tests.py runs (each run holds a kb-tests-run.PID file beside the lock while it runs; a dead
-pid's is removed), at least 1; an explicit -n in the arguments wins.
+pid's is removed), at most DEFAULT_WORKER_CAP (8, the fastest of three timed counts on one 14-core host; a 4-core and an
+8-core host are unmeasured), at least 1; an explicit -n in the arguments wins.
 
 Modules: test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py, test_kb_leaks.py, test_merge.py, test_history.py, test_sync.py, test_census.py,
 test_kb_mcp.py, test_research_merge.py, test_agent_bench.py, test_portability.py, test_redact.py, test_ql_capture.py,
@@ -409,15 +410,23 @@ def run_registered():
                 os.unlink(path)
 
 
+# The most workers a default run starts. Full runs of this suite (5005 tests passed each) on one 14-core, 24 GB macOS
+# host at load 3 to 7 took 769 s at -n 4, 681 s at -n 6 and 642 s at -n 8; no count above 8 was timed, and no 4-core or
+# 8-core host was measured, so 8 is the best count measured on that one host only. A host with fewer CPUs still gets
+# its share, cpus // (others + 1).
+DEFAULT_WORKER_CAP = 8
+
+
 def default_workers(others=None, cpus=None):
     """The workers a run uses when no -n is given: KB_TEST_WORKERS when it is a number (at least 1), else the CPUs
-    divided among this run and the `others` live ones (live_runs() when None), never below 1."""
+    divided among this run and the `others` live ones (live_runs() when None), at most DEFAULT_WORKER_CAP, never
+    below 1."""
     try:
         return max(int(os.environ["KB_TEST_WORKERS"]), 1)
     except (KeyError, ValueError):
         pass
     cpus = cpus if cpus is not None else (os.cpu_count() or 1)
-    return max(cpus // ((live_runs() if others is None else others) + 1), 1)
+    return max(min(cpus // ((live_runs() if others is None else others) + 1), DEFAULT_WORKER_CAP), 1)
 
 
 def worker_count(args, others=None):
