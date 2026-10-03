@@ -43,7 +43,7 @@
       "recommendation": "homes-kept",
       "class": "agents-rule",
       "answer": "homes-kept",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

@@ -46,7 +46,7 @@
       "recommendation": "--commit flag (the tick passes it)",
       "class": "agents-rule",
       "answer": "--commit flag (the tick passes it)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {
