@@ -13,9 +13,9 @@
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
   kbgit.py sync [--push] [--dry-run] [--remote R] [--branch main] [--session S]   fetch, rebase, fix, gate, push
-  kbgit.py publish [--remote R] [--dry-run] [--rewrite] [--hook]    push the integration main without kb/_querylog to the public home
+  kbgit.py publish [--remote R] [--dry-run] [--rewrite] [--hook]    push the integration main without kb/_querylog and any _logs.csv to the public home
   kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]  a public-home branch to the integration remote: rebase, gate, push by lane
-  kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog (kbpublic.py)
+  kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog or a _logs.csv (kbpublic.py)
 
 Roots. Every root in this repository's kb/ (kb/public and any kb/<name>/ with a _root.md; KB_ROOTS roots belong to
 other repositories) has its own ledgers: fix and fmt work on each root in turn, sync treats every root's ledgers and
@@ -65,7 +65,7 @@ message already has KB-* trailers, and never blocks a commit (any error is a war
 notes an --amend so commit-msg diffs against HEAD's parent. `git commit --no-verify` skips commit-msg: CI's
 check-trailers catches that. pre-push runs the sync gate plus `fix --check` before a plain `git push` of the checked-out
 branch and blocks it (exit 1) when a check fails; first, for any push, it refuses a ref whose history touches
-kb/_querylog on its way to the public home (kbpublic.py); the gate skips sync's own push (KB_GATE_DONE=1), tags and deletes, and a
+kb/_querylog or a _logs.csv on its way to the public home (kbpublic.py); the gate skips sync's own push (KB_GATE_DONE=1), tags and deletes, and a
 pushed ref that is not HEAD (with a note: the checks read the working tree). Before the gate (sync's push included) it
 refuses a push to the integration main that carries a code-lane commit. `git push --no-verify` skips it. Fix unpushed commits with `trailers --amend` (HEAD) or
 `git rebase --exec "python3 _tools/kbgit.py trailers --amend" @{upstream}`.
@@ -265,7 +265,7 @@ def main():
                                      "KB_SESSION, else the session's environment; an empty value: unknown)")
     g = sub.add_parser("tag-census", help="annotated tag census-YYYY-MM-DD on HEAD (not pushed)")
     g.add_argument("date", metavar="YYYY-MM-DD")
-    pb = sub.add_parser("publish", help="push the projection of the integration main (no kb/_querylog) to the public home")
+    pb = sub.add_parser("publish", help=f"push the projection of the integration main (no {kbpublic.PRIVATE_LABEL}) to the public home")
     pb.add_argument("--remote", help=f"the public remote (default: git config {kbpublic.CONFIG_KEY})")
     pb.add_argument("--source", help="REMOTE/BRANCH to project (default: the integration remote's main)")
     pb.add_argument("--branch", default="main", help="the public remote's branch (default main)")
@@ -277,7 +277,7 @@ def main():
     br.add_argument("--push", action="store_true", help="push after a green gate (as sync --push); the public home is never written")
     br.add_argument("--dry-run", action="store_true", help="fetch and report the commits and the lane; check out and push nothing")
     br.add_argument("--remote", help=f"the integration remote (default: git config {kbpublic.INTEGRATION_KEY}, else origin)")
-    cp = sub.add_parser("check-public", help="exit 1 listing commits of REV whose history touches kb/_querylog")
+    cp = sub.add_parser("check-public", help=f"exit 1 listing commits of REV whose history touches {kbpublic.PRIVATE_LABEL}")
     cp.add_argument("rev", nargs="?", help="a commit (default HEAD)")
     h = sub.add_parser("hook", help="internal: run by the .githooks scripts")
     h.add_argument("name", choices=HOOKS)
