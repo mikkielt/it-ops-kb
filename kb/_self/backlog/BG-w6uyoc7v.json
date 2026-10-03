@@ -22,11 +22,22 @@
         "_tools/tests.py",
         "_tools/test_tests_lock.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "named_files_mode"
+      ]
     }
   ],
   "touches": [
     "_tools/tests.py",
-    "_tools/test_tests_lock.py"
+    "_tools/test_tests_lock.py",
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "mac-third-worker"
 }
