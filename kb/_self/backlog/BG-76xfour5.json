@@ -2,7 +2,7 @@
   "id": "BG-76xfour5",
   "kind": "bug",
   "title": "Stale status.json files of closed sprints crowd live ones out of `autopilot.py status`, and `close` never prunes _cache/autopilot/SP-*",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -31,5 +31,6 @@
     "_tools/bl_land.py",
     "_tools/test_autopilot_status_order.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
