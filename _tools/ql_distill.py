@@ -17,6 +17,7 @@ from pathlib import Path
 
 import kbusage
 import ql_store as store_
+from kbpublic import HEADLESS_ENV
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
 from ql_capture import AGENT_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines
@@ -1003,8 +1004,12 @@ def launch(event):
     """The PID of the distill a SessionEnd or SessionStart event starts, or None. SessionEnd first marks its session
     closed; when the session has a spool file and the event names its transcript, the distill it starts gets the
     session id and the transcript path (`--session`, `--transcript`) and waits for the lock. Otherwise nothing starts
-    when logging is off, nothing is ready, or a distill holds a fresh lock."""
+    when logging is off, nothing is ready, or a distill holds a fresh lock. In a headless runner (HEADLESS_ENV set)
+    nothing starts and nothing is marked: a detached distill would outlive the runner's deadline and process group
+    and could push; the manager's or an operator's session distills the spool."""
     if not isinstance(event, dict) or event.get("hook_event_name") not in ("SessionEnd", "SessionStart"):
+        return None
+    if os.environ.get(HEADLESS_ENV):
         return None
     qdir, cfg = places()
     if logging_off(qdir, cfg):

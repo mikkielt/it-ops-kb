@@ -55,6 +55,7 @@ for _k in GIT_LOCATION:
 if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
 import kbcommon  # noqa: E402
+import kbpublic  # noqa: E402
 
 
 def P(rel):
@@ -124,6 +125,7 @@ def querylog_env(data, home=KB, base=None, mode="local"):
             cfg.parent.mkdir(parents=True, exist_ok=True)
             cfg.write_text(json.dumps({"mode": mode}), encoding="utf-8", newline="\n")
     env = dict(os.environ if base is None else base)
+    env.pop(kbpublic.HEADLESS_ENV, None)  # a headless runner's tests run the launcher as a session's hook does
     env.update(CLAUDE_PLUGIN_ROOT=str(home), CLAUDE_PLUGIN_DATA=str(data),
                KB_INDEX=env.get("KB_INDEX") or os.path.join(str(home), "_cache"))
     return env
