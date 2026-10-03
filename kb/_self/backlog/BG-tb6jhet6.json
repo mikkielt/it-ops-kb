@@ -1,0 +1,36 @@
+{
+  "id": "BG-tb6jhet6",
+  "kind": "bug",
+  "title": "The runbook Starting the autopilot, the bounds docstring and the tools.md bounds row describe the old agent key, settings source, merge command and no-progress input",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/backlog.md Starting the autopilot says the runner's ssh key is the deploy key (KB_RUNNER_DEPLOY_KEY or the default path; SSH_AUTH_SOCK is dropped, so agent-only keys do not work), that a run reads the origin/main copy of the settings under _cache/autopilot/<SP>/settings.json, and that an agent merges with backlog.py merge ID; the bounds docstring (_tools/bl_bounds.py top) and autopilot-test.md Stage 4 say no-progress stop reads _cache/autopilot/<SP>/runs.jsonl written by the tool (--runs-landed replaces it); the tools.md bounds row lists reset-runs. A test named docs_match_runner_credentials_and_runs greps those sentences. Found by the SP-j6hh2ib2 review (gaps 3 and 4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'reset-runs' in open('kb/_self/tools.md').read() else 1)"
+    ]
+  },
+  "repro_reason": "the defect is wording in docs; the match shows the tools.md bounds row names the reset command",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "docs_match_runner_credentials_and_runs"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/autopilot-test.md",
+    "_tools/bl_bounds.py",
+    "_tools/test_docs_headless_statements.py"
+  ]
+}

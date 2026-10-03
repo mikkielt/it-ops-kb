@@ -25,5 +25,6 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md",
     "kb/_self/content-rules.md"
-  ]
+  ],
+  "notes": "SP-j6hh2ib2 review: the repro plants gate add on BG-3i46pccw, an item deleted since (exit 2 before and after the fix), and answer --by operator is refused headless: replant an item in the temp clone and use --by agent so a runner can close it."
 }
