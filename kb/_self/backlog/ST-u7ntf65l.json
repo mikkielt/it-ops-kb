@@ -2,7 +2,7 @@
   "id": "ST-u7ntf65l",
   "kind": "story",
   "title": "Review sprint: Small fixes the autopilot landings found",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-tt4tibyn",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "5b2bb07eb07201299e16038d47d6b9cbc773a426",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b2deabc9815e3460"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f211e91c16eb8eca"
+      }
+    ]
+  }
 }
