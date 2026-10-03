@@ -2,7 +2,7 @@
   "id": "BG-w6uyoc7v",
   "kind": "bug",
   "title": "tests.py given only test files still records its run as mode full",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zrvj35ha",
   "priority": "P3",
   "rank": 0,
@@ -22,10 +22,22 @@
         "_tools/tests.py",
         "_tools/test_tests_lock.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "named_files_mode"
+      ]
     }
   ],
   "touches": [
     "_tools/tests.py",
-    "_tools/test_tests_lock.py"
-  ]
+    "_tools/test_tests_lock.py",
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "mac-third-worker"
 }

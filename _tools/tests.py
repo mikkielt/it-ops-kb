@@ -22,8 +22,9 @@ slowest files, every file's time for a full run and the names of the test files 
 A full run, a --changed run with more than one worker and stress_test.py take a host-wide lock first (host_lock): an
 O_EXCL file in KB_HOST_LOCK_DIR (default /tmp, or the public directory on Windows) holding the pid, clone and start time.
 A second run prints who holds it and waits; a holder whose pid no longer runs is cleared by one waiter (an atomic claim),
-an empty lock file only after KB_HOST_LOCK_GRACE seconds (default 10). A -k run, a run inside a test
-and a one-worker run (-n 1) take none.
+an empty lock file only after KB_HOST_LOCK_GRACE seconds (default 10). A -k run, a run inside a test,
+a run that names only test files (no --changed) and a one-worker run (-n 1) take none; the run that names only test
+files records mode files and no file times, so mode full holds only runs of the whole selection.
 
 The default worker count is capped, not one per CPU: KB_TEST_WORKERS (a number) when set, else the CPUs divided among
 this run and the other live tests.py runs (each run holds a kb-tests-run.PID file beside the lock while it runs; a dead
@@ -510,7 +511,8 @@ def run_main(argv):
     for e in report:  # a deselected-to-nothing run is a pass here, and so is its row's exit
         if e["exit"] == 5 and runs[0][0] != EVERY:
             e["exit"] = 0
-    record_run("changed" if changed else "fast" if fast else "full", report, args, int((time.monotonic() - start) * 1000))
+    mode = "changed" if changed else "files" if named_files_only(args) else "fast" if fast else "full"
+    record_run(mode, report, args, int((time.monotonic() - start) * 1000))
     return code
 
 

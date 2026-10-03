@@ -49,3 +49,30 @@ def test_tests_py_named_file_no_lock_bare_k_and_directory_keep_behaviour(monkeyp
 
 def test_tests_py_named_file_no_lock_value_options_are_not_paths():
     assert tests_py.path_args(["--basetemp", FILE, "-W", FILE, "--tb", FILE]) == []
+
+
+def _recorded_modes(monkeypatch, tmp_path, argv):
+    """The modes main hands record_run for `argv`, with pytest planted out."""
+    _setup(monkeypatch, tmp_path)
+    got = []
+    monkeypatch.setattr(tests_py, "wants_host_lock", lambda a: False)
+    monkeypatch.setattr(tests_py, "run_pytest", lambda a, report=None: 0)
+    monkeypatch.setattr(tests_py, "record_run", lambda mode, *rest: got.append(mode))
+    tests_py.main(argv)
+    return got
+
+
+def test_tests_py_named_files_mode_is_not_full(monkeypatch, tmp_path):
+    for argv in ([FILE], [FILE, "-q"], [FILE + "::test_x"], [FILE, os.path.join("_tools", "test_tests_lock.py")]):
+        assert _recorded_modes(monkeypatch, tmp_path, argv) == ["files"], argv
+    row = {"event": "test.run", "mode": "files", "ms": 1, "exit": 0}
+    assert ql_capture.ops_problems(row) == []
+
+
+def test_tests_py_named_files_mode_keeps_other_modes(monkeypatch, tmp_path):
+    monkeypatch.delenv("KB_TESTS_FAST", raising=False)  # the sync gate runs the suite with it set
+    assert _recorded_modes(monkeypatch, tmp_path, []) == ["full"]
+    assert _recorded_modes(monkeypatch, tmp_path, ["-k", "x"]) == ["full"]
+    assert _recorded_modes(monkeypatch, tmp_path, ["_tools"]) == ["full"]
+    monkeypatch.setenv("KB_TESTS_FAST", "1")
+    assert _recorded_modes(monkeypatch, tmp_path, []) == ["fast"]

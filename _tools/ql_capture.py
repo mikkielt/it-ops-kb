@@ -62,7 +62,7 @@ OPS_AGENT = re.compile(r"[0-9a-f]{8,16}")  # a salted short hash of an agent id,
 OPS_TEST_FILE = re.compile(r"(?:test_[a-z0-9_]{1,60}|conftest)\.py")  # a test file's name, never a node id or a path
 OPS_REFUSED = ("children-open", "not-ready", "status", "provisional-answer", "uncommitted", "no-work-commit",
                "unlanded-code", "outside-touches", "check-failed", "no-op-proof")  # why a `done` was refused
-OPS_TEST_MODES = ("full", "changed", "fast", "stress")
+OPS_TEST_MODES = ("full", "changed", "fast", "files", "stress")
 
 
 def _number(v, high, low=0):
