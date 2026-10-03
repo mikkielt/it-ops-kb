@@ -11,9 +11,9 @@
   "goal": "Two gates of one item answered with the same text each record their own decision (the gate is part of what makes the decision id distinct), and the second gate's answer is saved.",
   "repro": {
     "run": [
-      "sh",
+      "python3",
       "-c",
-      "set -e; d=$(mktemp -d); git clone -q \"$PWD\" \"$d/r\"; cd \"$d/r\"; python3 _tools/backlog.py gate add BG-3i46pccw --question \"Q1?\" --option yes --option no --recommendation yes --id ga >/dev/null; python3 _tools/backlog.py gate add BG-3i46pccw --question \"Q2?\" --option yes --option no --recommendation yes --id gb >/dev/null; python3 _tools/backlog.py answer BG-3i46pccw ga --answer yes --by operator --record >/dev/null; python3 _tools/backlog.py answer BG-3i46pccw gb --answer yes --by operator --record >/dev/null"
+      "import os,subprocess as s,tempfile;d=tempfile.mkdtemp();r=os.path.join(d,'r');s.run(['git','clone','-q',os.getcwd(),r],check=True);I='BG-3i46pccw';Q=lambda n,i:['gate','add',I,'--question',n,'--option','yes','--option','no','--recommendation','yes','--id',i];A=lambda i:['answer',I,i,'--answer','yes','--by','operator','--record']\nfor a in (Q('Q1?','ga'),Q('Q2?','gb'),A('ga'),A('gb')):\n    c=s.run(['python3','_tools/backlog.py']+a,cwd=r,stdout=s.DEVNULL).returncode\n    if c:raise SystemExit(c)"
     ]
   },
   "touches": [

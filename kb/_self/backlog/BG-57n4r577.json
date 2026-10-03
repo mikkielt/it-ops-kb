@@ -10,13 +10,9 @@
   "goal": "TestBacklogLand has tests that run land on a missing work/<id> and on one checked out by git worktree add, each asserting land stopped at step branch and exit 1",
   "repro": {
     "run": [
-      "git",
-      "grep",
-      "-q",
-      "-e",
-      "stopped at step branch",
-      "--",
-      "_tools/test_backlog.py"
+      "python3",
+      "-c",
+      "import sys;sys.exit(0 if 'stopped at step branch' in open('_tools/test_backlog.py',encoding='utf-8').read() else 1)"
     ]
   },
   "repro_reason": "the defect is an absent test; the only thing to observe is whether the test exists, so the repro reads the test file for its name",

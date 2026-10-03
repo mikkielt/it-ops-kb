@@ -10,13 +10,9 @@
   "goal": "/kb-sprint run step 2 and /kb-item step 1 claim with backlog.py claim --commit --trailer (and push the claim before the worker starts), matching kb/_self/backlog.md Working on items, so land does not stop at clean tree on uncommitted claims; review and close steps use done --commit and close --commit where they fit",
   "repro": {
     "run": [
-      "git",
-      "grep",
-      "-q",
-      "-e",
-      "claim ID --by <subagent name> --commit",
-      "--",
-      ".claude/skills/kb-sprint/SKILL.md"
+      "python3",
+      "-c",
+      "import sys;sys.exit(0 if 'claim ID --by <subagent name> --commit' in open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read() else 1)"
     ]
   },
   "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",

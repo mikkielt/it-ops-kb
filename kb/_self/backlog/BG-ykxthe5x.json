@@ -10,10 +10,9 @@
   "goal": "kb-sprint and kb-backlog name backlog.py move ID --sprint SP|none and reopen ID --why where they tell an agent to move a story between sprints or return a done item to work, instead of only set --sprint, which refuses a draft item in an active sprint",
   "repro": {
     "run": [
-      "grep",
-      "-q",
-      "reopen",
-      ".claude/skills/kb-sprint/SKILL.md"
+      "python3",
+      "-c",
+      "import sys;sys.exit(0 if 'reopen' in open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read() else 1)"
     ]
   },
   "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
