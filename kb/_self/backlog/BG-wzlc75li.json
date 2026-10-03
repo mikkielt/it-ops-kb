@@ -1,0 +1,33 @@
+{
+  "id": "BG-wzlc75li",
+  "kind": "bug",
+  "title": "Two comments of tests.py and the tools.md worker row state less than the code and the spool show: no run above -n 8 was timed, and the lock-free file rule",
+  "status": "todo",
+  "sprint": "SP-gfoakqar",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "tests.py's wants_host_lock docstring says a run naming at most NAMED_FILES_LOCK_FREE test files takes no host lock (a longer list takes it); the worker-count comment in tests.py and the tools.md row say no count above 8 was timed in the controlled series and name the one uncontrolled full -n 14 run found in the spool (570 s, 4783 passed, load unknown, proves nothing about 14 being faster), and write 770 s (not 769) for the -n 4 run. Docs and comments only; the cohesion and stale checks pass. Found by the SP-zrvj35ha review (gaps 1 and 2).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'NAMED_FILES_LOCK_FREE' in open('_tools/tests.py').read().split('def wants_host_lock')[1].split('\\n\\n')[0] else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a docstring; the match shows wants_host_lock's own docstring names the file bound",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "kb/_self/tools.md"
+  ]
+}
