@@ -2,7 +2,7 @@
   "id": "BG-nibkdj5d",
   "kind": "bug",
   "title": "glab mr merge code/* lets a runner merge another item's merge request, or one in another project with -R",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-j6hh2ib2",
   "priority": "P3",
   "rank": 0,
@@ -36,6 +36,13 @@
     "_tools/bl_selfcheck.py",
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "_tools/autopilot.py",
+    "_tools/test_kb_mcp.py",
+    ".claude/skills/kb-item/SKILL.md",
+    "_tools/test_bl_land.py",
+    "_tools/backlog.py",
+    "_tools/test_layout.py"
+  ],
+  "claimed_by": "mac-first"
 }

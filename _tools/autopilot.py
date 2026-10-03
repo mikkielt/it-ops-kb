@@ -94,6 +94,7 @@ CAUSE_MARKER = "sprint-runner: {cause}"
 RUNNER_DENY = tuple(f"{shell}(python3 _tools/backlog.py answer * {by}*)" for shell in ("Bash", "PowerShell")
                     for by in ("--by operator", "--by=operator"))
 HEADLESS_ENV = kbpublic.HEADLESS_ENV  # set in the run's environment, so its session's publish --hook pushes nothing
+RUNNER_SPRINT_ENV = "KB_RUNNER_SPRINT"  # the sprint the run works: backlog.py merge (bl_land) merges only its items
 # The child's environment holds no way to authenticate to a git host, an agent or a registry: child_env drops these
 # names and any name CREDENTIAL_RE matches, so code the child runs cannot push or publish with the operator's session.
 CREDENTIAL_NAMES = frozenset({"SSH_AUTH_SOCK", "SSH_AGENT_PID", "GIT_ASKPASS", "SSH_ASKPASS", "SSH_ASKPASS_REQUIRE",
@@ -326,8 +327,7 @@ def supervise(argv, cwd, keep, stderr, deadline=None):
     interrupt. Returns {"compaction": bool, "timeout": bool, "result": the last result event or None, "exit_code": int}."""
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     proc = subprocess.Popen(argv, cwd=str(cwd), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=stderr,
-                            text=True, encoding="utf-8", errors="replace", env=child_env(),
-                            **group)
+                            text=True, encoding="utf-8", errors="replace", env=child_env(), **group)
     out = {"compaction": False, "timeout": False, "result": None}
 
     def expire():  # runs in a timer thread: the child has outlived its deadline
@@ -560,7 +560,15 @@ def run_in_slot(sprint, landed, root, record, kept=None):
     try:
         with keep, open(directory / (name[:-len(".jsonl")] + ".stderr"), "w", encoding="utf-8", newline="\n") as err:
             try:
-                run = supervise(argv, wt, keep, err)
+                before = os.environ.get(RUNNER_SPRINT_ENV)
+                os.environ[RUNNER_SPRINT_ENV] = sprint  # child_env passes it on: backlog.py merge reads it
+                try:
+                    run = supervise(argv, wt, keep, err)
+                finally:
+                    if before is None:
+                        os.environ.pop(RUNNER_SPRINT_ENV, None)
+                    else:
+                        os.environ[RUNNER_SPRINT_ENV] = before
                 run["deadline_s"] = status["deadline_s"]
                 detail = None
             except OSError as e:  # claude not found, or not runnable

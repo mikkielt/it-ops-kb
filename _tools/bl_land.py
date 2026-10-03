@@ -523,7 +523,7 @@ def stuck_merge_request(root, remote, branch):
             status = mr["head_pipeline"].get("status")
             return (f"land: merge request !{iid} ({mr.get('web_url') or branch}) is mergeable and set to auto-merge, "
                     f"but its pipeline was {status}, so auto-merge will not fire: merge it with "
-                    f"glab mr merge {iid} --auto-merge=false --yes -R https://{host}/{project}")
+                    f"python3 _tools/backlog.py merge {branch[len('code/'):] if branch.startswith('code/') else branch}")
     return None
 
 
@@ -870,6 +870,57 @@ def args_land(p):
     p.add_argument("--branch", help="the local branch to land (default work/ID)")
     p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
                    help="a trailer of the session's own for the done --commit commit (repeatable)")
+
+
+RUNNER_SPRINT_ENV = "KB_RUNNER_SPRINT"  # autopilot.RUNNER_SPRINT_ENV: the sprint a headless run works
+
+
+def item_sprint(bl, iid):
+    """The sprint of item IID: its own `sprint`, else the nearest ancestor's; None outside any sprint."""
+    for x in [iid] + bl.ancestors(iid):
+        if bl.items.get(x, {}).get("sprint"):
+            return bl.items[x]["sprint"]
+    return None
+
+
+def merge_target(bl, iid):
+    """(branch, project url) `backlog.py merge ID` merges: the item's own code/ID on the integration remote's GitLab
+    project; Refused for an unknown item, a remote that names no GitLab project, or, in a headless run, an item
+    outside the run's sprint (RUNNER_SPRINT_ENV)."""
+    import kbpublic
+    from ql_deliver import origin_forge
+    need(bl, iid)
+    if os.environ.get(bl_intake.HEADLESS_ENV):
+        mine, its = os.environ.get(RUNNER_SPRINT_ENV), item_sprint(bl, iid)
+        if not mine or its != mine:
+            raise Refused(f"a headless run merges only its own sprint's items ({mine or 'no sprint named'}); "
+                          f"{iid} is in {its or 'no sprint'}")
+    remote = kbpublic.integration_remote(bl.root)
+    code, url, _ = run(["git", "remote", "get-url", remote], cwd=bl.root)
+    url = (url or "").strip()
+    if code or not url or url.lower().startswith("file:") or Path(url).exists():
+        raise Refused(f"the integration remote {remote} names no GitLab project ({url or 'no url'})")
+    forge, host, project = origin_forge(url)
+    if forge != "gitlab":
+        raise Refused(f"the integration remote {remote} is on {forge}, not GitLab")
+    return f"code/{iid}", f"https://{host}/{project}"
+
+
+def cmd_merge(bl, a):
+    """Merge the item's own code/ID merge request on the integration remote's project, now (`glab mr merge
+    --auto-merge=false --yes`): the one way an agent merges, since .claude/settings.json allows no `glab mr merge`.
+    Another item's branch, another project and, headless, another sprint's item are refused (exit 2)."""
+    branch, project = merge_target(bl, a.id)
+    code, out, err = run(["glab", "mr", "merge", branch, "--auto-merge=false", "--yes", "-R", project], cwd=bl.root)
+    say(f"merge {branch} ({project}): {'merged' if code == 0 else 'failed'}")
+    text = (out or err or "").strip()
+    if text:
+        say(text[-600:])
+    return 0 if code == 0 else 1
+
+
+def args_merge(p):
+    p.add_argument("id", help="the item whose code/ID merge request to merge")
 
 
 def args_close(p):

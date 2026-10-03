@@ -1025,7 +1025,7 @@ class TestBacklogLand:
     # and a skipped pipeline is stuck (auto-merge never fires), and land names the command that merges it
     MR_SAMPLE = Path(TOOLS) / "fixtures" / "forge_mr" / "gitlab-merged-skipped-pipeline.json"
     FORGE_URL = "https://gitlab.corp.example.com/team/kb.git"
-    MERGE_CMD = "glab mr merge 103 --auto-merge=false --yes -R https://gitlab.corp.example.com/team/kb"
+    MERGE_CMD = "python3 _tools/backlog.py merge "  # + the item's id: agents merge only their own code/<id>, never glab
 
     @classmethod
     def recorded_mr(cls):
@@ -1107,7 +1107,7 @@ class TestBacklogLand:
     def test_land_stuck_auto_merge_reports_the_planted_stuck_request(self, tmp_path, monkeypatch):
         self.gitlab(monkeypatch, self.open_mr())
         note = bl_land.stuck_merge_request(tmp_path, "origin", "code/TK-aaaaaaaa")
-        assert note and self.MERGE_CMD in note and "/merge_requests/103" in note, note
+        assert note and self.MERGE_CMD + "TK-aaaaaaaa" in note and "/merge_requests/103" in note, note
 
     def test_land_stuck_auto_merge_reads_the_recorded_sample(self):
         mr = self.recorded_mr()  # merged by hand after its skipped pipeline left auto-merge waiting
