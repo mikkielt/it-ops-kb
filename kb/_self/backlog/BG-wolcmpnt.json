@@ -1,0 +1,36 @@
+{
+  "id": "BG-wolcmpnt",
+  "kind": "bug",
+  "title": "A headless runner's child inherits the session's SSH agent and push credentials, so code it edits and then runs can publish or push anywhere",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "autopilot.py runner start runs its claude child with an environment that holds no SSH_AUTH_SOCK, SSH_AGENT_PID, GIT_ASKPASS, GITLAB_TOKEN, GITHUB_TOKEN, GH_TOKEN or other credential variable (autopilot.child_env), and gives the runner's worktree a failing pushurl for the public remote (git config remote.<public>.pushurl), so code an agent edits and then runs through an allowed command cannot push to the public home or a branch the integration credentials would allow; planted-failure tests read the child's environment and the worktree's config; the operator-only parts (a deploy key or token limited to code/* and main, server-side branch protection) are the operator's and outside this item; found by the SP-zihqagoi review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import autopilot;sys.exit(0 if hasattr(autopilot,'child_env') else 1)"
+    ]
+  },
+  "repro_reason": "the leak shows only when a real runner's child pushes with the operator's SSH agent; the repro checks the scrubbed environment exists, the check plants a credential and reads the child's environment",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "2",
+        "-k",
+        "runner_child_holds_no_credentials"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/test_autopilot_credentials.py",
+    "kb/_self/tools.md"
+  ]
+}
