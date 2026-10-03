@@ -2,7 +2,7 @@
   "id": "BG-jzb3h4cw",
   "kind": "bug",
   "title": "settings.json allows `git rebase *` and `git commit *`, so `git rebase --exec` runs any command, push included, and --no-verify skips the commit hooks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-itmjxudu",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/plugin.md",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "3e0ce9eb523acf501d7aafd9000500008561c42f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "settings_allow_rebase_commit_narrow"
+        ],
+        "exit": 0,
+        "sha256": "b48b474d7cd4c9d6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys;p=json.load(open(\".claude/settings.json\"))[\"permissions\"];a=p[\"allow\"];d=p[\"deny\"];bad=[x for x in (\"Bash(git rebase *)\",\"Bash(git commit *)\") if x in a];need=[n for n in (\"--exec\",\"--no-verify\") if not any(n in x for x in d)];print(bad,need);sys.exit(1 if bad or need else 0)"
+        ],
+        "exit": 0,
+        "sha256": "7a88ba9df5a620a9"
+      }
+    ]
+  }
 }
