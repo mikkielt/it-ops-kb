@@ -66,6 +66,14 @@ NETWORK_DETECTORS = {"ci"}  # detectors that call the network: `collect` runs th
 KINDS = ("bug", "story")
 SEVERITIES = ("S1", "S2", "S3", "S4")
 FP_RE = re.compile(r"[0-9a-f]{12}")
+HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # the variable `autopilot.py runner start` sets in its headless run (kbpublic.HEADLESS_ENV)
+
+
+def headless_runner():
+    """True in a headless runner's session: its SessionStart hooks file nothing, so the runner's worktree stays clean."""
+    return bool(os.environ.get(HEADLESS_ENV))
+
+
 FP_LINK = "fingerprint "  # a link `fingerprint <12 hex>`, the same marker red-pipeline's bugs carry
 DETECTOR_LINK = "detector "  # the last link of an item intake files: `detector <name>`, which the digest counts by
 STATUS_REPRO = ["python3", "_tools/backlog.py", "intake", "--status"]  # + the fingerprint: a filed bug's repro
