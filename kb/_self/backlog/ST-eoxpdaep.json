@@ -2,7 +2,7 @@
   "id": "ST-eoxpdaep",
   "kind": "story",
   "title": "A checklist and test plan for the autopilot's first supervised run exist, written from the code and the runbook",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,6 @@
     "kb/_self/map.csv",
     "kb/_self/backlog.md",
     "kb/_self/README.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
