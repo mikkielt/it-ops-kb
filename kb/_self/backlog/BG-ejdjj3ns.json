@@ -2,7 +2,7 @@
   "id": "BG-ejdjj3ns",
   "kind": "bug",
   "title": "The autopilot can answer any gate of class agents-rule but the start gate, a headless run may answer --by autopilot, and widened touches never re-class a gate",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-j6hh2ib2",
   "priority": "P1",
@@ -33,5 +33,6 @@
     "_tools/backlog.py",
     "_tools/test_bl_authority_trust.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
