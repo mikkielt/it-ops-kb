@@ -2,7 +2,7 @@
   "id": "BG-rgdrjsz6",
   "kind": "bug",
   "title": "A run that landed an item through the code lane records and prints landed 0, because the count reads the runner worktree's HEAD and the done commit is only on origin/main",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_autopilot_run_landed.py",
     "kb/_self/autopilot.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
