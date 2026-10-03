@@ -1,0 +1,22 @@
+{
+  "id": "SP-3zuasxl5",
+  "kind": "sprint",
+  "title": "Cost figures and wording follow-ups",
+  "status": "active",
+  "goal": "cost --rework reads the main worktree spool of a linked clone or says it read this clone only, an idle-closed session is not counted twice, the private-path wording in git.md, maintaining.md and the kb-setup skill matches kbpublic.PRIVATE_LABEL, and the worker routing states its limits",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}
