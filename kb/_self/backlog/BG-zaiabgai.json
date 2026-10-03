@@ -2,7 +2,7 @@
   "id": "BG-zaiabgai",
   "kind": "bug",
   "title": "perfcheck ids against the test-id baseline exits 1 on main again: the test id of the planted code-MR merge retry case is missing since c0cfa67c",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zrvj35ha",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,22 @@
     "_tools/test_ids_dropped.txt",
     "_tools/test_ids_baseline.txt"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "9345814799e999fb432e92c2b43eac41ddc5c252",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "exit": 0,
+        "sha256": "ddad52b9d1e3a619"
+      }
+    ]
+  }
 }
