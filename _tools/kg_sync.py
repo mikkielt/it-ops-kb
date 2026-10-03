@@ -718,8 +718,8 @@ def sync_rounds(a, r, host):
 
 def headless_target_refusal(a):
     """Why a headless sprint run (kbpublic.HEADLESS_ENV, set by autopilot.py runner start) may not sync to A's target,
-    or None: it pushes to the integration remote's main and the code/<id> lane branches only, so a --remote or a
-    --branch other than main is refused before anything is fetched or pushed."""
+    or None: its sync pushes main only, so a --remote or a --branch other than main is refused before anything is
+    fetched or pushed; the code/<id> lane branches come from sync's own internal push."""
     if not os.environ.get(kbpublic.HEADLESS_ENV):
         return None
     named = [f"--remote {a.remote}"] if a.remote else []
