@@ -5,10 +5,10 @@ The tests named autopilot_refuses_linked_worktree* are the item's checks; the pl
 """
 import pytest
 
-import autopilot, bl_base, bl_selfcheck, bl_testkit
+import autopilot, backlog, bl_base, bl_selfcheck, bl_testkit
 from bl_testkit import sh
 
-bl_testkit.bind(__import__("backlog"))
+bl_testkit.bind(backlog)
 repo, no_git_location = bl_testkit.repo, bl_testkit.no_git_location
 
 
