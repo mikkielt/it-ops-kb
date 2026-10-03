@@ -31,8 +31,8 @@ report of what the run did.
                                               the next `runner start` makes it afresh at origin/main; one that is clean and
                                               not diverged is left alone. It names the cause either way.
   autopilot.py runner-status SP               print, in under 1000 characters, the sprint's items the run landed (done
-                                              commits with KB-Work since the start ref), the gates it added or left
-                                              open on them, the bugs filed since the start ref and the exit cause
+                                              commits with KB-Work between the start ref and integration_tip), the gates
+                                              it added or left open, the bugs filed since the start ref and the exit cause
 
 Exit cause (status.json `cause`): `compaction` (the child was ended at its first compact_boundary), else read from the
 run's own final result and the child's exit code: `timeout` (the child was ended at its deadline), `error` (the child
@@ -608,9 +608,9 @@ def record_run(root, sprint, cause, landed, ended=None):
 
 
 def run_landed(repo, bl, sprint, start):
-    """The count of the sprint's items the run landed (landed_items); 0 when git cannot say."""
+    """The count of the sprint's items the run landed (landed_items, up to integration_tip); 0 when git cannot say."""
     try:
-        return len(landed_items(repo, set(bl.sprint_items(sprint)), str(start or "")))
+        return len(landed_items(repo, set(bl.sprint_items(sprint)), str(start or ""), integration_tip(repo)))
     except (bl_base.Refused, OSError, ValueError, KeyError):
         return 0
 
@@ -673,10 +673,31 @@ def run_in_slot(sprint, landed, root, record, kept=None):
 
 # ---------------------------------------------------------------- the report
 
-def landed_items(repo, ids, start):
-    """The sprint items (IDS) whose done commits, with KB-Work, lie between START and HEAD of REPO, oldest first."""
+FETCH_TIMEOUT_S = 30  # seconds integration_tip's fetch may take before the local ref is used as it is
+
+
+def integration_tip(repo):
+    """The revision the items of a run are counted up to: the integration remote's main (`<remote>/main`, the remote of
+    kbpublic.integration_remote) after one fetch of that branch, as a landing through a code/<id> merge request puts
+    the done commit there and never on the runner worktree's HEAD. The fetch is bounded by FETCH_TIMEOUT_S, asks for no
+    password and changes only that remote-tracking ref; when it fails (offline, no such remote) the ref as it is
+    stands, and `HEAD` when that ref is missing too. Never raises."""
+    remote = kbpublic.integration_remote(str(repo))
+    main = f"{remote}/main"
+    try:
+        subprocess.run(["git", "fetch", "--quiet", "--no-tags", remote, "main"], cwd=repo, capture_output=True,
+                       timeout=FETCH_TIMEOUT_S, env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
+    except (OSError, subprocess.SubprocessError):
+        pass
+    ref = f"refs/remotes/{main}"
+    return ref if git_ok(repo, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}") else "HEAD"
+
+
+def landed_items(repo, ids, start, tip="HEAD"):
+    """The sprint items (IDS) whose done commits, with KB-Work, lie between START and TIP (integration_tip; HEAD when
+    not given) of REPO, oldest first."""
     out = []
-    for msg in bl_base.git(repo, "log", "--reverse", "--format=%B%x1e", f"{start}..HEAD").split("\x1e"):
+    for msg in bl_base.git(repo, "log", "--reverse", "--format=%B%x1e", f"{start}..{tip}").split("\x1e"):
         msg = msg.strip()
         if not msg.startswith(DONE_SUBJECT):
             continue
@@ -741,7 +762,7 @@ def status_text(sprint, root=ROOT):
         bl = bl_base.Backlog(repo)
         ids = set(bl.sprint_items(sprint))
         start = str(st.get("start_ref") or "")
-        lines += [fit("landed", landed_items(repo, ids, start), 240), fit("gates", gates_of_run(repo, bl, ids, start), 240),
+        lines += [fit("landed", landed_items(repo, ids, start, integration_tip(repo)), 240), fit("gates", gates_of_run(repo, bl, ids, start), 240),
                   fit("bugs", bugs_filed(repo, bl, start), 160)]
     except bl_base.Refused as e:
         lines.append("git: " + one_line(e, 160))
