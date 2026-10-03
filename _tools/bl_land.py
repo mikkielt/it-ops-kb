@@ -414,13 +414,16 @@ def live_processes(path):
     return sorted(set(out)), None
 
 
-def release_worker_worktree(root, path, lock):
+def release_worker_worktree(root, path, lock, branch=None):
     """Remove the finished worker's worktree PATH that holds the branch land needs, with `git worktree remove` (never
     --force), unlocking it first when Claude Code locked it: agents' shells may not remove a worktree
     (.claude/settings.json denies it), so land, a process of its own, does. Only a worktree under the clone's
-    .claude/worktrees/ that is not the one land runs in, has no uncommitted changes and no live process, and is
-    either locked by a Claude Code agent (WORKER_LOCK) or, unlocked, named as the Agent tool names a worker's
-    (WORKER_NAME, `agent-*`; the test land_removes_clean_unlocked_worker_worktree). Returns None once it is removed,
+    .claude/worktrees/ of the clone land runs in (`git rev-parse --show-toplevel` there: a linked worktree is its own
+    clone, its workers sit under its own directory) that is not the one land runs in, has no uncommitted changes and
+    no live process, is on BRANCH when that is given, and is either locked by a Claude Code agent (WORKER_LOCK) or,
+    unlocked, named as the Agent tool names a worker's (WORKER_NAME, `agent-*`; the test
+    land_removes_clean_unlocked_worker_worktree) or by the item id of BRANCH (`work/<id>`; the test
+    land_removes_worker_worktree_of_a_linked_clone_named_by_item_id). Returns None once it is removed,
     else why it was left as it was (a remove that fails puts the lock back)."""
     def run_git(*args, cwd=root):
         p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -429,13 +432,18 @@ def release_worker_worktree(root, path, lock):
     state = "not locked" if lock is None else f"locked ({lock})"
     if lock is not None and not lock.startswith(WORKER_LOCK):
         return f"it is locked ({lock or 'no reason given'}), not by a Claude Code agent"
-    common = (Path(root) / git(root, "rev-parse", "--git-common-dir").strip()).resolve()
-    if path.parent != common.parent.joinpath(*WORKER_DIR).resolve():
+    clone = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    if path.resolve().parent != clone.joinpath(*WORKER_DIR).resolve():
         return f"it is {state} but not under {'/'.join(WORKER_DIR)}/ of the clone"
     if path.resolve() == Path(root).resolve():
         return f"it is {state} and is the worktree land runs in"
-    if lock is None and not path.name.startswith(WORKER_NAME):
+    item_id = branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None
+    if lock is None and not path.name.startswith(WORKER_NAME) and path.name != item_id:
         return f"it is not locked and not a worker's ({WORKER_NAME}*)"
+    if branch:
+        code, out = run_git("symbolic-ref", "-q", "HEAD", cwd=path)
+        if code or out != f"refs/heads/{branch}":
+            return f"it is {state} but not on {branch}"
     code, out = run_git("status", "--porcelain", cwd=path)
     if code or out:
         return f"it is {state} and has uncommitted changes: commit or discard them there, then run land again"
@@ -637,7 +645,7 @@ def cmd_land(bl, a):
     other = checked_out_elsewhere(root, branch)
     agent_branch = None
     if other:  # a finished worker's clean worktree, locked by Claude Code or an unlocked agent-*, is removed
-        why = release_worker_worktree(root, *other)
+        why = release_worker_worktree(root, *other, branch=branch)
         if why:
             raise land_stop("branch", f"{branch} is checked out in the worktree {other[0]} and {why}: land it from "
                                       "there, or remove that worktree first")
