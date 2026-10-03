@@ -70,7 +70,9 @@
         "content only, read-only clone except kb/"
       ],
       "recommendation": "main and code/* only; edit as a headless run today",
-      "class": "push"
+      "class": "push",
+      "answer": "main and code/* only; edit as a headless run today",
+      "by": "operator"
     },
     {
       "id": "netimage",
