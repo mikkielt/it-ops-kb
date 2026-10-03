@@ -2,7 +2,7 @@
   "id": "BG-6rkaldos",
   "kind": "bug",
   "title": "kb_http read_chunked lets chunk framing grow without bound, so a 1-byte-chunk flood is read at about 31 times --max-body",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7irdeeel",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,27 @@
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "c20061899b58bedf48eec2026c360d453de9fb75",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_kb_http.py"
+        ],
+        "exit": 0,
+        "sha256": "1fdf6c8ac48d730e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,io;sys.path.insert(0,'_tools');import kb_http as k;h=k.Handler.__new__(k.Handler);h.rfile=io.BytesIO(b'1;x=aaaaaaaaaaaaaaaaaaaaaa\\r\\nA\\r\\n'*65536+b'0\\r\\n\\r\\n');assert h.read_chunked(65536) is None, 'served a flood whose framing is 30x the limit'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
