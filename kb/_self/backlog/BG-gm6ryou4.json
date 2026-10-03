@@ -7,12 +7,12 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "lint.py requires a CODE pointer's path to match the pinned path suffix of its source row, as kbingest drift does, so a CODE tag whose note is a docs URL (learn.microsoft.com/en-us/x#y, github.com/o/r/x.py#sym, raw.githubusercontent.com/...) fails lint, while a valid path such as Contoso.Web.App/Program.cs#Main still passes; a test named lint_code_pointer_matches_source_path plants both. Found by the SP-7irdeeel review (D1 of BG-zxe2gkbb).",
+  "goal": "kb-verify lint.py (.claude/skills/kb-verify/lint.py) requires a CODE pointer's path to match the pinned path suffix of its source row, as kbingest drift does, so a CODE tag whose note is a docs URL (learn.microsoft.com/en-us/x#y, github.com/o/r/x.py#sym, raw.githubusercontent.com/...) fails lint, while a valid path such as Contoso.Web.App/Program.cs#Main still passes; a test named lint_code_pointer_matches_source_path plants both. Found by the SP-7irdeeel review (D1 of BG-zxe2gkbb).",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;sys.exit(0 if 'pinned_path_suffix' in open('_tools/lint.py',encoding='utf-8').read() else 1)"
+      "import sys;sys.exit(0 if 'pinned_path_suffix' in open('.claude/skills/kb-verify/lint.py',encoding='utf-8').read() else 1)"
     ]
   },
   "repro_reason": "the gap is a lint rule; the text match shows lint does not compare the pointer path with the source row's pinned path",
@@ -27,7 +27,7 @@
     }
   ],
   "touches": [
-    "_tools/lint.py",
+    ".claude/skills/kb-verify/lint.py",
     "_tools/test_lint_code_pointer.py",
     "kb/_self/tools.md"
   ]
