@@ -1665,8 +1665,7 @@ def test_backlog_answer_record_leaves_the_gate_open_when_kbdecide_refuses(decide
 
 def test_backlog_answer_record_decision_stays_active_after_close_and_sweep(decide):
     repo, tk, st, bg, rv, ep, sp = (decide[k] for k in ("repo", "tk", "st", "bg", "rv", "ep", "sp"))
-    assert b(repo, "answer", bg, "way", "--answer", "left", "--by", "operator", "--record")[0] == 0
-    commit(repo, "the operator's answer")
+    assert b(repo, "answer", bg, "way", "--answer", "left", "--by", "operator", "--record")[0] == 0  # commits its own files
     (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
     (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
     commit(repo, "b and c", f"{tk}, {bg}")

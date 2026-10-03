@@ -65,7 +65,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           an answer only with --by operator (--provisional, --confirm included);
                                           --by autopilot answers any gate but one of class secrets or push (exit 2,
                                           the item unchanged) and --record then writes the decision with maker
-                                          autopilot and a review_by, which an operator's answer supersedes
+                                          autopilot and a review_by, which an operator's answer supersedes;
+                                          --record commits what it wrote, the item file (chore(backlog): answer ID
+                                          "title", KB-Work: ID, then each --trailer 'KEY: VALUE') and the decisions
+                                          row (no KB-Work), so the tree is clean for the next kbgit.py sync
   backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
                  [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--add] [--clear FIELD]...
                                           change an item after new: each list option replaces its list (--add:
@@ -236,7 +239,7 @@ import bl_plan
 from bl_base import (
     Backlog, COMMITS, IN_SPRINT, KINDS, OPEN, OUTPUT_ROOT, PRIORITIES,
     REL_DIR, RESEARCH_CHECKS, REVIEW_CHECKS, ROOT, Refused, Rejected, SEVERITIES, SIMILAR_MIN, SIMILAR_SHOWN,
-    SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, TEXT_MAX, canonical, commit_written, git, in_scope,
+    SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, TEXT_MAX, canonical, commit_message, commit_written, git, in_scope,
     line, need, new_id, open_gates, research_in_planned, run, say, scope, trailer_problem, waits, withhold,
 )
 from bl_check import (  # the checks and the readers of knowledge: bl_check holds them, backlog.py's commands use them
@@ -664,6 +667,32 @@ def record_decision(bl, iid, gate, text, by="operator"):
     say(out)
 
 
+DECISIONS_REL = "kb/_self/_decisions.csv"  # the file `kbdecide.py record` writes: --record commits it with the item file
+
+
+def commit_answer(bl, a, iid, gate):
+    """--record: commit what the answer wrote, as two commits so each passes `kbgit.py check-trailers` for an item that
+    is not claimed: the item file (a backlog-planning commit, subject `chore(backlog): answer ID "title"`, KB-Work: the
+    item, then each --trailer), then the decision row of kb/_self/_decisions.csv (no KB-Work: it is no planning commit
+    and the item's scope is not its work). `git commit --only`, so what was staged before stays staged and out of both.
+    A row left uncommitted would make the next `kbgit.py sync` refuse the dirty tree."""
+    trailers = list(getattr(a, "trailer", None) or ())
+    title = bl.items.get(iid, {}).get("title", "")
+    for paths, msg in (
+            ([p for p in bl.written if (bl.root / p).exists()],
+             commit_message(withhold(f'chore(backlog): answer {iid} "{title}"'), [iid], trailers, f"Gate {gate}.")),
+            ([DECISIONS_REL],
+             "\n\n".join([withhold(f"chore(kb): decision for {iid} gate {gate}")] + (["\n".join(trailers)] if trailers else [])) + "\n")):
+        git(bl.root, "add", "-A", "--", *paths)
+        if not git(bl.root, "status", "--porcelain", "--", *paths).strip():
+            continue
+        p = subprocess.run(["git", "commit", "-q", "-F", "-", "--only", "--", *paths], cwd=bl.root, input=msg,
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if p.returncode != 0:
+            raise Refused(f"--record: the answer and its decision are written but git commit failed: {(p.stderr or p.stdout).strip()}")
+        say(f"committed {git(bl.root, 'rev-parse', '--short=10', 'HEAD').strip()} {msg.splitlines()[0]}")
+
+
 def cmd_answer(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -678,6 +707,12 @@ def cmd_answer(bl, a):
     if a.record and (a.provisional or a.confirm or a.by not in ("operator", "autopilot") or not a.answer):
         raise Rejected("--record keeps the operator's or the autopilot's answer as a decision: --answer TEXT --by "
                        "operator|autopilot, never --provisional or --confirm")
+    if getattr(a, "trailer", None):
+        if not a.record:
+            raise Refused("--trailer goes with --record")
+        why = next(filter(None, map(trailer_problem, a.trailer)), None)
+        if why:
+            raise Refused(why)
     members = [bl.items[i] for i in bl.sprint_items(iid)] if it.get("kind") == "sprint" else []
     scope = bl_authority.sprint_scope(it, g, members)
     if a.by == "autopilot":
@@ -713,6 +748,8 @@ def cmd_answer(bl, a):
             record_decision(bl, iid, a.gate, a.answer, a.by)
     bl.save(it)
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
+    if a.record:
+        commit_answer(bl, a, iid, a.gate)
     return 0
 
 
@@ -1498,7 +1535,9 @@ def args_answer(p):
     p.add_argument("--by", choices=("operator", "agent", "autopilot"))
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
-    p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator|autopilot: keep the answer as an active decision")
+    p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator|autopilot: keep the answer as an active decision, committed with the item file")
+    p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
+                   help="a trailer of the session's own after KB-Work in the --record commit (repeatable)")
 
 
 def args_set(p):

@@ -33,5 +33,20 @@
     "kb/_self/tools.md",
     "_tools/test_backlog.py"
   ],
+  "gates": [
+    {
+      "id": "dg",
+      "kind": "provisional",
+      "question": "Should kbdecide.py digest commit its file by default, or only with --commit?",
+      "options": [
+        "--commit flag (the tick passes it)",
+        "always commit"
+      ],
+      "recommendation": "--commit flag (the tick passes it)",
+      "class": "design",
+      "answer": "--commit flag (the tick passes it)",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "mac-sixth"
 }
