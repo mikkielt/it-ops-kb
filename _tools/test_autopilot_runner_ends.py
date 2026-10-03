@@ -159,7 +159,7 @@ def test_autopilot_runner_ends_cleanly_status_keeps_a_live_runner_and_the_causes
     bl_base.runner_record_path(os.getpid()).write_text(
         json.dumps({"pid": os.getpid(), "sprint": "SP-aaaaaaaa", "clone": str(root), "started": "2026-01-01T00:00:00Z"}), encoding="utf-8")
     (line,) = autopilot.runner_lines(str(root), 9)
-    assert line == f"runners 3: SP-aaaaaaaa pid {os.getpid()} alive worktree clone, SP-bbbbbbbb ended blocked, SP-cccccccc ended error"
+    assert line == f"runners 3: SP-aaaaaaaa pid {os.getpid()} alive worktree clone, SP-cccccccc ended error, SP-bbbbbbbb ended blocked"
 
 
 def test_autopilot_runner_ends_cleanly_the_stale_listing_reads_and_writes_nothing(tmp_path, monkeypatch):

@@ -776,6 +776,15 @@ def record_close(bl, sid, items):
         pass
 
 
+def prune_runner_cache(root, sid):
+    """Remove _cache/autopilot/SID, the autopilot runner's records of the sprint just closed (status.json and the
+    streams): they are untracked and no longer of use, and `autopilot.py status` would list them."""
+    d = Path(root) / "_cache" / "autopilot" / sid
+    if ID_RE.fullmatch(sid) and d.is_dir() and not d.is_symlink():
+        shutil.rmtree(d, ignore_errors=True)
+        say(f"removed {d.relative_to(root).as_posix()}")
+
+
 def cmd_close(bl, a):
     if a.summary and a.commit:
         raise Refused("close --summary only prints and commits nothing: run close --commit without --summary")
@@ -829,6 +838,7 @@ def cmd_close(bl, a):
     label = bl.label(sid)
     bl.delete(sid)
     say(f"closed {label}; its items stay in git history (git log --grep 'KB-Work: <id>')")
+    prune_runner_cache(bl.root, sid)
     # the body is the summary: the retrospective's findings, written by hand, go in with git commit --amend
     commit_written(bl, a, "close", sid, body="\n".join(summary), title=title)
     return 0
