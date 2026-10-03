@@ -362,6 +362,7 @@ def checked_out_elsewhere(root, branch):
 # the lock Claude Code puts on a subagent's worktree, which outlives the agent when it left background work running
 WORKER_LOCK = "claude agent"
 WORKER_DIR = (".claude", "worktrees")  # under the clone's main checkout
+RUNNER_NAME = "runner-"  # a headless sprint runner's own worktree, beside the workers' under the clone root
 WORKER_NAME = "agent-"  # how the Agent tool names a worker's isolation worktree: an unlocked one is removed only so
 WORK_PREFIX = "work/"  # the local branch a worker commits on: land deletes it once it has landed
 AGENT_BRANCH = "worktree-"  # + the worktree's name: the branch the Agent tool made the worker's worktree on
@@ -414,6 +415,40 @@ def live_processes(path):
     return sorted(set(out)), None
 
 
+def worker_dirs(root):
+    """The .claude/worktrees/ directories whose worktrees are the workers of the clone land runs in ROOT: the one of
+    the toplevel there (`git rev-parse --show-toplevel`: a linked worktree is its own clone) and, when ROOT is a
+    runner's worktree (`<clone root>/.claude/worktrees/runner-*` of its own common checkout, the clone kb_hook
+    defines for a runner), the same directory of the clone root, where the Agent tool puts the worker's worktree beside
+    the runner's."""
+    top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    dirs = {top.joinpath(*WORKER_DIR).resolve()}
+    common = Path(git(root, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()).resolve()
+    sibling = common.parent.joinpath(*WORKER_DIR).resolve()
+    if top.parent == sibling and top.name.startswith(RUNNER_NAME):
+        dirs.add(sibling)
+    return dirs
+
+
+def detached_workers(root, branch):
+    """[(path, lock reason or None)] of the worktrees named as the Agent tool names a worker's (WORKER_NAME) that
+    are detached at the tip of BRANCH, other than the one land runs in: a worker that detached to free the branch."""
+    tip = subprocess.run(["git", "rev-parse", "-q", "--verify", f"refs/heads/{branch}"], cwd=root,
+                         capture_output=True, text=True).stdout.strip()
+    here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    out = []
+    for block in git(root, "worktree", "list", "--porcelain").split("\n\n"):
+        lines = block.strip().splitlines()
+        if not tip or not lines or not lines[0].startswith("worktree ") or "detached" not in lines \
+                or f"HEAD {tip}" not in lines:
+            continue
+        path = Path(lines[0][len("worktree "):]).resolve()
+        if path != here and path.name.startswith(WORKER_NAME):
+            lock = next((ln[len("locked "):] for ln in lines if ln == "locked" or ln.startswith("locked ")), None)
+            out.append((path, lock))
+    return out
+
+
 def release_worker_worktree(root, path, lock, branch=None):
     """Remove the finished worker's worktree PATH that holds the branch land needs, with `git worktree remove` (never
     --force), unlocking it first when Claude Code locked it: agents' shells may not remove a worktree
@@ -432,8 +467,7 @@ def release_worker_worktree(root, path, lock, branch=None):
     state = "not locked" if lock is None else f"locked ({lock})"
     if lock is not None and not lock.startswith(WORKER_LOCK):
         return f"it is locked ({lock or 'no reason given'}), not by a Claude Code agent"
-    clone = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
-    if path.resolve().parent != clone.joinpath(*WORKER_DIR).resolve():
+    if path.resolve().parent not in worker_dirs(root):
         return f"it is {state} but not under {'/'.join(WORKER_DIR)}/ of the clone"
     if path.resolve() == Path(root).resolve():
         return f"it is {state} and is the worktree land runs in"
@@ -442,7 +476,11 @@ def release_worker_worktree(root, path, lock, branch=None):
         return f"it is not locked and not a worker's ({WORKER_NAME}*)"
     if branch:
         code, out = run_git("symbolic-ref", "-q", "HEAD", cwd=path)
-        if code or out != f"refs/heads/{branch}":
+        if code:  # detached: accepted only at the branch's tip (the worker detached there to free the branch)
+            head, tip = run_git("rev-parse", "HEAD", cwd=path), run_git("rev-parse", "-q", "--verify", f"refs/heads/{branch}")
+            if head[0] or tip[0] or head[1] != tip[1]:
+                return f"it is {state} but not on {branch}"
+        elif out != f"refs/heads/{branch}":
             return f"it is {state} but not on {branch}"
     code, out = run_git("status", "--porcelain", cwd=path)
     if code or out:
@@ -650,6 +688,13 @@ def cmd_land(bl, a):
             raise land_stop("branch", f"{branch} is checked out in the worktree {other[0]} and {why}: land it from "
                                       "there, or remove that worktree first")
         agent_branch = AGENT_BRANCH + other[0].name  # the Agent tool's branch of that worktree, deleted once landed
+    else:  # a worker detached at the branch's tip holds no branch: remove it too, and go on when it has to stay
+        for path, lock in detached_workers(root, branch):
+            why = release_worker_worktree(root, path, lock, branch=branch)
+            if why:
+                say(f"land: kept the worktree {path}: {why}")
+            else:
+                agent_branch = AGENT_BRANCH + path.name
     start = git(root, "rev-parse", "HEAD").strip()
     start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
                                encoding="utf-8", errors="replace").stdout.strip()
