@@ -39,9 +39,11 @@ def test_runner_child_holds_no_credentials_child_env_drops_each_and_keeps_the_re
     assert env.get("GIT_ASKPASS", None) is None  # removed, not emptied
 
 
-def test_runner_child_holds_no_credentials_child_env_reads_the_given_environment():
-    env = autopilot.child_env({"PATH": "p", "GITHUB_TOKEN": "x", "ANTHROPIC_API_KEY": "y", "ssh_auth_sock": "z"})
-    assert env == {"PATH": "p", "ANTHROPIC_API_KEY": "y", "GIT_TERMINAL_PROMPT": "0", autopilot.HEADLESS_ENV: "1"}
+def test_runner_child_holds_no_credentials_child_env_reads_the_given_environment(tmp_path):
+    key = {autopilot.RUNNER_KEY_ENV: str(tmp_path / "no-key")}  # a stub path: no test reads the real deploy key
+    env = autopilot.child_env({"PATH": "p", "GITHUB_TOKEN": "x", "ANTHROPIC_API_KEY": "y", "ssh_auth_sock": "z", **key})
+    assert env == {"PATH": "p", "ANTHROPIC_API_KEY": "y", "GIT_TERMINAL_PROMPT": "0", autopilot.HEADLESS_ENV: "1", **key,
+                   "GIT_SSH_COMMAND": autopilot.runner_ssh_command(key)}
 
 
 @pytest.fixture

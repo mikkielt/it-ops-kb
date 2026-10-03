@@ -12,7 +12,7 @@ Operator-only steps first, then checks anyone can run. Each says what it protect
 
 | # | step | what it protects | how to check |
 |---|---|---|---|
-| 1 | A deploy key (or project token) for the runner that can push only `code/*` branches and the integration `main`, and branch protection on both the integration and the public repository | everything the text rules cannot stop: code an agent edits and then runs pushes only where the key may | the key's scope in the forge's settings; a push of a scratch branch name with it is refused by the server |
+| 1 | The runner's own deploy key: the private key `~/.config/it-ops-kb/runner_deploy_key` (mode 0600, outside every clone; `KB_RUNNER_DEPLOY_KEY` names another), added to the integration project as the deploy key `kb-runner` with write access; the integration `main` protected with push for Maintainers and that key, force push off; `code/*` protected with push for Maintainers and that key, force push on (land replaces a `code/<id>` branch); the key is never added to the public repository | everything the text rules cannot stop: the runner's child pushes over ssh with this key only (`_tools/autopilot.py`, `runner_ssh_command`: no agent, no user ssh config, no key at all when the file is missing), so code it edits and then runs cannot use the operator's identity | the project's Settings, Repository, Deploy keys and Protected branches; `python3 _tools/tests.py -n 1 -k runner_deploy_key` passes |
 | 2 | The runner runs in its own container (the page autopilot-container.md of kb/_self, once that page exists), not as the operator | the operator's other credentials and files | the container doc's own checks, once it exists |
 | 3 | The host's file-event daemon (fseventsd on macOS) restarted after heavy churn, by the operator | the host's memory: it grows with every worktree and test run | the daemon's resident memory in Activity Monitor is small again |
 | 4 | Gates a runner or the autopilot answered in a class only the operator answers are re-confirmed | that no agent answer stands in the operator's place | `python3 _tools/backlog.py check` prints no `answered by ... in a refused class: the operator re-confirms` warning (`_tools/bl_check.py`, the refused-class check) |
@@ -24,6 +24,14 @@ Operator-only steps first, then checks anyone can run. Each says what it protect
 | 10 | The runbook's start checks hold | a clean `main`, a remote and `glab` that work unattended, MCP servers connected | the commands of `backlog.md`, Starting the autopilot |
 
 The rehearsal does not test permissions, hooks, `land`, the sync gate, compaction or the real backlog (`backlog.md`, Starting the autopilot): the stages below do.
+
+Not closed by row 1, and left to the container of row 2:
+
+- On a GitLab plan without push rules a write deploy key can push any branch that is not protected (a scratch name), so only `main` and `code/*` are bounded by the server.
+- The runner can still read files of the operator's account, the `glab` sign-in among them, which `backlog.py merge` and `land` use for the forge's API.
+- The public repository's `main` carries no branch protection, since the operator's own `kbgit.py publish --rewrite` force-pushes it; the runner never holds a key for it.
+
+Undoing row 1, in the integration project's Settings, Repository: remove the deploy key `kb-runner` (which also takes it out of both protected branches), unprotect `code/*`, and delete the key files under `~/.config/it-ops-kb/`.
 
 ## Test plan
 
