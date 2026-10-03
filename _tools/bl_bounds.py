@@ -4,9 +4,11 @@ The kb-sprint skill tells the orchestrator when to run each form.
   bounds [report] [--sprint SP] [--json]
                                the limits and where the backlog stands against each: findings filed per sprint, open
                                drafts, draft inflow against the done outflow of the last sprints, each item's rework
-  bounds stop --sprint SP [--budget K --landed N] [--json]
+  bounds stop --sprint SP [--budget K --landed N] [--runs-landed N[:CAUSE],...] [--json]
                                whether the manager stops starting work, and why: `sprint-budget` (N of K items
-                               landed), `inflow-guard` (a cap of the report is passed) or `no-ready` (no item of SP is
+                               landed), `no-progress` (the last NO_PROGRESS_RUNS runs of `--runs-landed`, oldest first,
+                               each landed nothing; the tick supplies the landed count of each run it recorded),
+                               `inflow-guard` (a cap of the report is passed) or `no-ready` (no item of SP is
                                ready that is not at its rework cap). Exit 1 when it stops, 0 when work goes on; the
                                first line is `bounds: stop CAUSE: DETAIL` or `bounds: go: ...`, which the digest quotes
   bounds file --origin review|retro|mid-sprint --sprint SP --title T --goal G --evidence KIND:REF
@@ -65,7 +67,8 @@ ORIGINS = ("review", "retro", "mid-sprint", "intake")
 RETRO_FREE_ORIGINS = ("review", "retro")  # a sprint made only of items these filed has no retro of its own
 EVIDENCE_KINDS = ("commit", "test", "ops", "fingerprint")
 MODES = ("report", "stop", "file")
-STOPS = ("sprint-budget", "inflow-guard", "no-ready")  # the causes `stop` names, in the order it reports them
+NO_PROGRESS_RUNS = 2  # consecutive runs of a sprint that landed nothing, the last ones, after which it is not restarted
+STOPS = ("sprint-budget", "no-progress", "inflow-guard", "no-ready")  # the causes `stop` names, in the order it reports them
 ORIGIN_LINK = re.compile(r"origin (review|retro|mid-sprint) (SP-[a-z2-7]{8})")
 EVIDENCE_LINK = re.compile(r"evidence (commit|test|ops|fingerprint) (\S+)")
 FINGERPRINT_LINK = re.compile(r"fingerprint ([0-9a-f]{12})")
@@ -337,13 +340,41 @@ def ready_items(bl, sid, rows):
     return ready, aside
 
 
-def stop_state(bl, sid, budget=None, landed=0, rows=None):
+def parse_runs(text):
+    """[(landed, cause)] from `N[:CAUSE],...` (oldest run first); Rejected for a part that is not a count."""
+    out = []
+    for part in (text or "").split(","):
+        n, _, cause = part.strip().partition(":")
+        if not n.isdigit():
+            raise Rejected(f"bounds stop: --runs-landed takes N[:CAUSE],..., not {part.strip()!r}")
+        out.append((int(n), cause.strip()))
+    return out
+
+
+def no_progress(runs):
+    """The detail when the last NO_PROGRESS_RUNS of `runs` [(landed, cause)] each landed nothing, else None: a run that
+    landed something ends the streak, so only the runs after the newest such run count."""
+    streak = []
+    for n, cause in reversed(runs):
+        if n:
+            break
+        streak.append(cause)
+    if len(streak) < NO_PROGRESS_RUNS:
+        return None
+    causes = ", ".join(dict.fromkeys(c for c in reversed(streak) if c))
+    return f"{len(streak)} consecutive runs landed nothing" + (f" (causes: {causes})" if causes else "")
+
+
+def stop_state(bl, sid, budget=None, landed=0, rows=None, runs=()):
     """Whether the manager stops starting work on sprint `sid`, and why: {stop, cause, causes, detail, ready, aside,
     guard}. `causes` lists every cause that holds, in STOPS order; `cause` is the first."""
     rows = ops_rows(bl.root) if rows is None else rows
     causes = []
     if budget is not None and landed >= budget:
         causes.append(("sprint-budget", f"{landed} of {budget} item(s) landed"))
+    stuck = no_progress(list(runs))
+    if stuck:
+        causes.append(("no-progress", stuck))
     trips = guard_trips(bl, rows)
     if trips:
         causes.append(("inflow-guard", "; ".join(trips)))
@@ -543,6 +574,8 @@ def args_bounds(p):
     p.add_argument("--sprint", help="the sprint to report on, to stop on, or the one a finding came from")
     p.add_argument("--budget", type=int, help="stop: the items the run may land (the runner's --landed)")
     p.add_argument("--landed", type=int, default=0, help="stop: the items landed so far")
+    p.add_argument("--runs-landed", metavar="N[:CAUSE],...",
+                   help="stop: the items each run of the sprint landed, oldest first (with its end cause)")
     p.add_argument("--json", action="store_true", help="report and stop: print one JSON object")
     p.add_argument("--origin", choices=ORIGINS, help="file: what found it")
     p.add_argument("--kind", choices=("story", "bug"), default="story", help="file: the item to file")
@@ -568,7 +601,7 @@ def cmd_bounds(bl, a):
     if a.mode == "stop":
         if not a.sprint:
             raise Rejected("bounds stop: --sprint SP is required")
-        st = stop_state(bl, a.sprint, a.budget, a.landed, rows)
+        st = stop_state(bl, a.sprint, a.budget, a.landed, rows, parse_runs(a.runs_landed) if a.runs_landed else ())
         if a.json:
             print(json.dumps(st, indent=2, sort_keys=True))
         elif st["stop"]:
