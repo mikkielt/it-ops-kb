@@ -440,6 +440,34 @@ def selects_part(seg):
     return expr is not None and narrows(expr)
 
 
+HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # kbpublic.HEADLESS_ENV: set by autopilot.py runner start in its headless run
+KBGIT_REFUSED = ("publish", "bridge", "install-hooks", "hook")  # kbgit.py forms a check never runs: they push or arm hooks
+DRIFT_ALLOWS_INLINE = False  # drift never runs `python3 -c`; the drift tests' planted checks set it, nothing else does
+CHECK_SCRIPT = re.compile(r"_tools/[\w.-]+\.py")
+
+
+def check_program_refusal(argv, inline=True):
+    """Why a check's argv may not run where nothing reviews it, or None: its program must be python3 or python on a
+    `_tools/` script of this repository (never `kbgit.py publish`, `bridge`, `install-hooks` or `hook`), so a check
+    neither pushes nor publishes nor runs a shell. INLINE allows `python3 -c` / `-m` (a headless run's done and land;
+    the runner's own edits bound it, kb/_self/backlog.md); intake's drift passes False, since it runs committed checks
+    in every session with that session's credentials."""
+    argv = [str(a) for a in argv] if isinstance(argv, (list, tuple)) else []
+    if not argv:
+        return "a check with no program"
+    if os.path.basename(argv[0]) not in ("python3", "python") and argv[0] != sys.executable:
+        return f"its program is {argv[0]}, not python3 on a _tools/ script"
+    rest = argv[1:]
+    if rest and rest[0] in ("-c", "-m"):
+        return None if inline else f"python3 {rest[0]} runs inline code"
+    script = rest[0].replace("\\", "/") if rest else ""
+    if not CHECK_SCRIPT.fullmatch(script):
+        return f"{script or 'nothing'} is not a _tools/ script"
+    if script == "_tools/kbgit.py" and rest[1:2] and rest[1] in KBGIT_REFUSED:
+        return f"kbgit.py {rest[1]} pushes or arms hooks"
+    return None
+
+
 def heavy_check(check):
     """True when the check runs `stress_test.py` or a whole-suite wrapper (HEAVY_SCRIPTS), or `_tools/tests.py` or
     pytest with no narrowing `-k` selector (pytest: nor a test file), seen through a shell string such as
@@ -606,7 +634,10 @@ def passing_open(root, items, timeout, drift, budget):
     spent = False
     for iid in order:
         checks = checks_of[iid]
-        if any(heavy_check(c) for c in checks):
+        # a heavy check never runs here, nor one whose program is not python3 on a _tools/ script: drift runs the
+        # committed checks of every item in every session's hook, so a planted `git push` or publish check would run
+        # with that session's credentials; such items are left unchecked, as heavy ones are
+        if any(heavy_check(c) or check_program_refusal(c.get("run"), inline=DRIFT_ALLOWS_INLINE) for c in checks):
             drift.heavy.append(iid)
             drift.last = drift.last if spent else iid
             continue

@@ -28,6 +28,12 @@ from conftest import Repo
 
 
 @pytest.fixture(autouse=True)
+def inline_drift_checks(monkeypatch):
+    """The drift scenarios plant `python3 -c` checks, which drift refuses in a real session (test_check_program_allowlist)."""
+    monkeypatch.setattr(bl_intake, "DRIFT_ALLOWS_INLINE", True)
+
+
+@pytest.fixture(autouse=True)
 def empty_registry(monkeypatch):
     monkeypatch.setattr(bl_intake, "DETECTORS", {})
 
