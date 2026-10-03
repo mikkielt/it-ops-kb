@@ -2,7 +2,7 @@
   "id": "BG-eg5gh67m",
   "kind": "bug",
   "title": "The open-session cost figure can count again the prompts of an idle-closed session that reopens, and its marker says they are not in the figures above",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-3zuasxl5",
   "priority": "P3",
@@ -31,5 +31,6 @@
     "_tools/bl_cost.py",
     "_tools/test_cost_open_session_reopened.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
