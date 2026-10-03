@@ -44,7 +44,7 @@
       "recommendation": "500 turns and 6 hours",
       "class": "agents-rule",
       "answer": "500 turns and 6 hours",
-      "by": "agent"
+      "by": "autopilot"
     },
     {
       "id": "g2",
@@ -57,7 +57,7 @@
       "recommendation": "1, like error",
       "class": "agents-rule",
       "answer": "1, like error",
-      "by": "agent"
+      "by": "autopilot"
     }
   ],
   "evidence": {

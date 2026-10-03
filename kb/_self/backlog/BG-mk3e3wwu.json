@@ -46,7 +46,7 @@
       "recommendation": "skip same-detector items",
       "class": "agents-rule",
       "answer": "skip same-detector items",
-      "by": "agent"
+      "by": "autopilot"
     },
     {
       "id": "g2",
@@ -59,7 +59,7 @@
       "recommendation": "no to both: intake drafts go to the backlog, outside the inflow guard",
       "class": "agents-rule",
       "answer": "no to both: intake drafts go to the backlog, outside the inflow guard",
-      "by": "agent"
+      "by": "autopilot"
     }
   ],
   "evidence": {
