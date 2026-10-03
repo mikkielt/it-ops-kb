@@ -2,7 +2,7 @@
   "id": "BG-o45erhm5",
   "kind": "bug",
   "title": "test_kb_hook_latency_with_capture fails under host load, so a land stops at the stress gate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tt4tibyn",
   "priority": "P3",
   "rank": 0,
@@ -20,7 +20,7 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
+        "_tools/stress_test.py",
         "-k",
         "hook_latency_load_scaled"
       ]
@@ -28,5 +28,6 @@
   ],
   "touches": [
     "_tools/test_stress.py"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
