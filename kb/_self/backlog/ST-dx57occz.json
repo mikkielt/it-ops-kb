@@ -1,0 +1,23 @@
+{
+  "id": "ST-dx57occz",
+  "kind": "story",
+  "title": "A released item leaves no stale work branch, and a worker's brief says how to free its branch for land",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py release deletes the item's empty work/<id> branch and a worktree-agent-* branch with no commits of its own, so the next worker's git checkout -b work/<id> succeeds and nothing is silently reset; the headless worker brief of the sprint run says to run git checkout --detach after its last commit until land frees the worktree itself; found by the first supervised run (ST-opjydjc3): the second and third runs found work/ST-xxxxxxxx and agent branches left by the blocked first run, and land asked the worker to detach by message",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "release_deletes_an_empty_work_branch"
+      ]
+    }
+  ],
+  "links": [
+    "origin retro SP-7kbrqaol",
+    "evidence commit 249f25ac"
+  ]
+}

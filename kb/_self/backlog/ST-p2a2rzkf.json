@@ -1,0 +1,23 @@
+{
+  "id": "ST-p2a2rzkf",
+  "kind": "story",
+  "title": "The commit-msg hook's rule for naming an unclaimed item is findable in one message, so a release or planning commit needs no amends",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py commit-msg tells, in its first refusal, which items a commit may name (claimed items of a started sprint, and for a planning commit only the items whose files it changes) and that a release commit of a released item names none; its text matches what sync's check-trailers gate then does with the same commit; found by the first supervised run (ST-opjydjc3): a runner's release commit took three amends, a planning commit one, and one commit was warned as refused yet pushed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "commit_msg_names_what_an_unclaimed_item_may_do"
+      ]
+    }
+  ],
+  "links": [
+    "origin retro SP-7kbrqaol",
+    "evidence commit c77141a25"
+  ]
+}
