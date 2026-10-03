@@ -2,7 +2,7 @@
   "id": "ST-xiyvkjro",
   "kind": "story",
   "title": "The autopilot runner has its own credentials: a deploy key limited to code/* and main, branch protection on both repos, a separate OS user or the reason it cannot be set up",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,6 @@
     "kb/_self/backlog.md",
     "kb/_self/hosting.md"
   ],
-  "notes": "Operator 2026-10-03: a Docker container is preferred to a separate OS user (planned in ST docker story of this sprint). Do the deploy key and branch protection now; SKIP goal part 3 (the OS user, no sudo); record it as replaced by the container plan."
+  "notes": "Operator 2026-10-03: a Docker container is preferred to a separate OS user (planned in ST docker story of this sprint). Do the deploy key and branch protection now; SKIP goal part 3 (the OS user, no sudo); record it as replaced by the container plan.",
+  "claimed_by": "mac-first"
 }
