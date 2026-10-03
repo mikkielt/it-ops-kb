@@ -2,7 +2,7 @@
   "id": "BG-zxe2gkbb",
   "kind": "bug",
   "title": "code_pointer rejects a valid path whose first segment ends in a host-like tail, such as Contoso.Web.App/Program.cs#Main",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7irdeeel",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,28 @@
     "kb/_self/content-rules.md",
     "_tools/test_kb_lookup.py"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "ee6b4d163115353ec19e6466b2978111a79c8f40",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "code_pointer_valid_lookalikes"
+        ],
+        "exit": 0,
+        "sha256": "11390a178b7a7c16"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts as k;sys.exit(0 if k.code_pointer({'note':'Contoso.Web.App/Program.cs#Main'}) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
