@@ -2,7 +2,7 @@
   "id": "BG-t4hldyme",
   "kind": "bug",
   "title": "A headless run can push the integration history to any branch or remote with kbgit.py sync --push --branch B --remote R",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -31,5 +31,6 @@
     "_tools/kbgit.py",
     "_tools/test_sync_headless.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
