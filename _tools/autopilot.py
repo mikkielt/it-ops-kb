@@ -44,7 +44,8 @@ holds is refused, and so is one whose committed touches overlap those of another
 the holder (the same check `backlog.py start` makes). A record whose process is gone is ignored and removed.
 
 Exit codes: `runner start` 0 the run ended with a named cause other than `error` and `timeout`, 1 it ended in one of
-those two, 2 refused (a
+those two, or it was refused as operator-present only (a not-done item of the sprint touches files that
+`kb_hook.headless_guard` denies a headless run, `bl_authority.guarded_touches`; no worktree, no child), 2 refused (a
 bad sprint id, no git clone, a dirty or diverged worktree, no settings file, two runners already live, a sprint held by
 a runner, touches that overlap another runner's); `runner reset` 0 reset or nothing to reset, 2 refused (a bad sprint
 id, a live runner holds the sprint, git failed); `runner-status` 0 printed, 1 no run was recorded for the sprint, 2 a bad
@@ -508,11 +509,29 @@ def write_early_status(root, sprint, name):
     bl_base.runner_record_path(os.getpid()).unlink(missing_ok=True)
 
 
+def guarded_refusal(root, sprint):
+    """The lines naming each not-done item of SPRINT (read from the clone ROOT, before any worktree is made) whose
+    touches headless_guard denies a headless run, as `backlog.py start` warns of them; [] when there is none, and
+    when the sprint is unknown (a bad id is refused later)."""
+    try:
+        bl = bl_base.Backlog(root)
+        if sprint not in bl.items:
+            return []
+        return [bl_plan.guarded_line(bl, i, g) for i, g in bl_plan.guarded_items(bl, sprint)]
+    except (OSError, ValueError):
+        return []
+
+
 def runner_start(sprint, landed=None, root=ROOT):
     """Run the sprint headless in its worktree; returns the exit code (the module docstring). Refused inside a headless
     run (headless_refusal)."""
     headless_refusal("runner start")
     root = Path(root)
+    held = guarded_refusal(root, sprint)
+    if held:
+        print(f"refused: {sprint} is operator-present only: a headless runner cannot edit the files of its items:\n  "
+              + "\n  ".join(held), file=sys.stderr)
+        return 1
     kept = []  # run_in_slot adds to it once its own status is kept, from then on the status names the end itself
     try:
         with ends_on_signals():
