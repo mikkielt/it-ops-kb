@@ -140,7 +140,7 @@ def test_autopilot_runner_start_passes_settings_and_plugins_explicitly_and_no_pe
     assert argv[0] == "-p" and argv[1] == want == autopilot.PROMPT.format(
         sprint=SP, landed=autopilot.LANDED_FLAG.format(k=landed) if landed else "")
     assert argv[argv.index("--output-format") + 1] == "stream-json" and "--verbose" in argv
-    assert argv[argv.index("--settings") + 1] == str(wt / ".claude" / "settings.json")
+    assert argv[argv.index("--settings") + 1] == str(autopilot.runner_settings_path(world.root, SP))
     plugins = [argv[i + 1] for i, a in enumerate(argv) if a == "--plugin-dir"]
     assert plugins == [str(wt), str(wt / ".claude-plugin" / "docs")]  # the project, then each plugin under .claude-plugin
     assert not permission_flags(argv)

@@ -65,7 +65,7 @@
       "Bash(git rebase --continue)",
       "Bash(git rebase --abort)",
       "Bash(git merge-base *)",
-      "Bash(git checkout -b *)",
+      "Bash(git checkout -b work/*)",
       "Bash(git checkout work/*)",
       "Bash(git checkout orch/*)",
       "Bash(git branch --list *)",
@@ -129,7 +129,7 @@
       "PowerShell(git rebase --continue)",
       "PowerShell(git rebase --abort)",
       "PowerShell(git merge-base *)",
-      "PowerShell(git checkout -b *)",
+      "PowerShell(git checkout -b work/*)",
       "PowerShell(git checkout work/*)",
       "PowerShell(git checkout orch/*)",
       "PowerShell(git branch --list *)",
@@ -178,7 +178,13 @@
       "PowerShell(git commit * -n *)",
       "PowerShell(git commit -n *)",
       "Bash(git checkout * -- *)",
-      "PowerShell(git checkout * -- *)"
+      "PowerShell(git checkout * -- *)",
+      "Bash(git checkout work/* *)",
+      "Bash(git checkout orch/* *)",
+      "Bash(git checkout -b * *)",
+      "PowerShell(git checkout work/* *)",
+      "PowerShell(git checkout orch/* *)",
+      "PowerShell(git checkout -b * *)"
     ]
   },
   "hooks": {
