@@ -2,7 +2,7 @@
   "id": "BG-zaiabgai",
   "kind": "bug",
   "title": "perfcheck ids against the test-id baseline exits 1 on main again: the test id of the planted code-MR merge retry case is missing since c0cfa67c",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zrvj35ha",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
   "touches": [
     "_tools/test_ids_dropped.txt",
     "_tools/test_ids_baseline.txt"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
