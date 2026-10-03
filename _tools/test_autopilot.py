@@ -432,6 +432,7 @@ def test_autopilot_runner_status_reports_landed_items_gates_bugs_and_the_cause(w
     wt.write("kb/_self/backlog/ST-ffffffff.json", json.dumps({"id": "ST-ffffffff", "kind": "story", "title": "s"}) + "\n")
     wt.git("add", "-A")
     wt.git("commit", "-q", "-m", "gates and a bug")
+    land(world)  # the item files are read at the integration main too
     monkeypatch.setattr(autopilot, "ROOT", world.root)
     assert autopilot.main(["runner-status", SP]) == 0
     out = capsys.readouterr().out

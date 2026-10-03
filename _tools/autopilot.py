@@ -708,19 +708,36 @@ def landed_items(repo, ids, start, tip="HEAD"):
     return out
 
 
-def gates_of_run(repo, bl, ids, start):
-    """[`ITEM/GATE=answer-or-open`] for each gate of the sprint items the run added since START or that is still open."""
+def item_at(repo, rev, iid):
+    """The item IID's JSON object as REV (a commit, `refs/...` or HEAD) of REPO holds it, committed and never the working
+    tree; None when REV does not hold it, git cannot say or the file is not a JSON object."""
+    if not rev:
+        return None  # `git show :path` would read the index
+    try:
+        p = subprocess.run(["git", "show", f"{rev}:{bl_base.REL_DIR}/{iid}.json"], cwd=repo, capture_output=True,
+                           text=True, encoding="utf-8", errors="replace")
+        data = json.loads(p.stdout) if p.returncode == 0 else None
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def gates_of(item):
+    """The gate objects of the item object ITEM (None allowed)."""
+    gates = (item or {}).get("gates")
+    return [g for g in gates if isinstance(g, dict)] if isinstance(gates, list) else []
+
+
+def gates_of_run(repo, bl, ids, start, tip="HEAD"):
+    """[`ITEM/GATE=answer-or-open`] for each gate of the sprint items IDS that the run added since START or that is still
+    open, the item files read at TIP (integration_tip, as landed_items; HEAD when not given), not the worktree. BL is
+    kept for the callers' signature and not read. An item TIP does not hold has no gates."""
     out = []
     for iid in sorted(ids):
-        gates = [g for g in bl.items[iid].get("gates") or [] if isinstance(g, dict)]
+        gates = gates_of(item_at(repo, tip, iid))
         if not gates:
             continue
-        p = subprocess.run(["git", "show", f"{start}:{bl_base.REL_DIR}/{iid}.json"], cwd=repo, capture_output=True,
-                           text=True, encoding="utf-8", errors="replace")
-        try:
-            before = {g.get("id") for g in json.loads(p.stdout).get("gates") or []} if p.returncode == 0 else set()
-        except (ValueError, AttributeError):
-            before = set()
+        before = {g.get("id") for g in gates_of(item_at(repo, start, iid))}
         for g in gates:
             answer = g.get("answer")
             if g.get("id") not in before or answer is None:
@@ -728,11 +745,15 @@ def gates_of_run(repo, bl, ids, start):
     return out
 
 
-def bugs_filed(repo, bl, start):
-    """The bug items whose files the run added since START."""
-    names = bl_base.git(repo, "diff", "--name-only", "--diff-filter=A", start, "HEAD", "--", bl_base.REL_DIR)
+def bugs_filed(repo, bl, start, tip="HEAD"):
+    """The bug items whose files the run added between START and TIP (integration_tip; HEAD when not given), the kind
+    read from the file at TIP; [] when git cannot say. BL is kept for the callers' signature and not read."""
+    try:
+        names = bl_base.git(repo, "diff", "--name-only", "--diff-filter=A", start, tip, "--", bl_base.REL_DIR)
+    except (bl_base.Refused, OSError):
+        return []
     ids = sorted(Path(n).stem for n in names.splitlines() if n.endswith(".json"))
-    return [i for i in ids if bl.items.get(i, {}).get("kind") == "bug"]
+    return [i for i in ids if (item_at(repo, tip, i) or {}).get("kind") == "bug"]
 
 
 def fit(label, items, budget):
@@ -762,8 +783,9 @@ def status_text(sprint, root=ROOT):
         bl = bl_base.Backlog(repo)
         ids = set(bl.sprint_items(sprint))
         start = str(st.get("start_ref") or "")
-        lines += [fit("landed", landed_items(repo, ids, start, integration_tip(repo)), 240), fit("gates", gates_of_run(repo, bl, ids, start), 240),
-                  fit("bugs", bugs_filed(repo, bl, start), 160)]
+        tip = integration_tip(repo)  # one fetch for the three sections
+        lines += [fit("landed", landed_items(repo, ids, start, tip), 240), fit("gates", gates_of_run(repo, bl, ids, start, tip), 240),
+                  fit("bugs", bugs_filed(repo, bl, start, tip), 160)]
     except bl_base.Refused as e:
         lines.append("git: " + one_line(e, 160))
     return "\n".join(lines)[:STATUS_MAX - 1]
