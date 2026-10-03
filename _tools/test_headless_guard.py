@@ -7,6 +7,12 @@ from pathlib import Path
 import pytest
 
 from conftest import TOOLS
+import backlog
+import bl_testkit
+from bl_testkit import b, edit, item, item_json
+
+bl_testkit.bind(backlog)
+repo = bl_testkit.repo  # the kit's throwaway git repository fixture, bound by name (an import would shadow the argument)
 
 ITEM = {"id": "ST-aaaaaaaa", "kind": "story", "title": "t", "gates": [
     {"id": "g1", "kind": "blocking", "question": "q?", "options": ["a", "b"], "recommendation": "a"}]}
@@ -186,3 +192,112 @@ def test_headless_pretooluse_guard_review_without_the_variable_nothing_is_answer
 def test_headless_pretooluse_guard_review_a_guard_that_cannot_load_denies(project, guard, monkeypatch):
     monkeypatch.setitem(sys.modules, "bl_authority", None)  # import raises
     assert denied(guard("Write", {"file_path": "kb/public/x.md", "content": "x"}))
+
+
+# The re-review's gaps: an item path in another case or under (nested) worktree prefixes, a duplicate gate id.
+def start_gate(**kw):
+    return {"id": "start", "kind": "blocking", "question": "q?", "options": ["approve", "reject"], **kw}
+
+
+def item_with(gates):
+    return json.dumps({**ITEM, "gates": gates}, indent=2) + "\n"
+
+
+def test_headless_guard_case_dup_worktree_upper_case_item_path_value_only_change_is_denied(project, guard):
+    answered_item(project)
+    change = {"old_string": ': "agent"', "new_string": ': "operator"'}
+    for path in ("kb/_self/BACKLOG/ST-aaaaaaaa.json", "KB/_SELF/backlog/ST-AAAAAAAA.JSON", "kb/_self/Backlog/x.json",
+                 str(project / "kb" / "_self" / "BACKLOG" / "ST-aaaaaaaa.json")):
+        assert denied(guard("Edit", {"file_path": path, **change})), path
+    out = guard("Write", {"file_path": "kb/_self/BACKLOG/ST-aaaaaaaa.json", "content": answered(by="operator")})
+    assert denied(out), out
+    out = guard("Edit", {"file_path": "kb/_self/BACKLOG/ST-aaaaaaaa.json", "old_string": '"title": "t"',
+                         "new_string": '"title": "u"'})
+    assert not denied(out), out  # the same file, another field: allowed as in lower case
+
+
+@pytest.mark.parametrize("path", [
+    ".CLAUDE/Settings.JSON", ".claude/HOOKS/x.py", ".Claude-Plugin/plugin.json", "_TOOLS/KB_HOOK.py",
+    ".claude/worktrees/a/.claude/worktrees/b/_tools/kb_hook.py", ".claude/worktrees/a/.claude/settings.json",
+    ".claude/worktrees/a/.claude/worktrees/b/.claude/hooks/x.py",
+])
+def test_headless_guard_case_dup_worktree_settings_and_guard_paths_in_other_spellings_are_denied(project, guard, path):
+    assert denied(guard("Write", {"file_path": path, "content": "x"})), path
+
+
+def test_headless_guard_case_dup_worktree_nested_worktree_item_path_is_denied(project, guard):
+    for prefix in (".claude/worktrees/a/", ".claude/worktrees/a/.claude/worktrees/b/",
+                   ".claude/worktrees/a/.claude/worktrees/b/.claude/worktrees/c/", ".CLAUDE/Worktrees/a/"):
+        path = prefix + "kb/_self/backlog/ST-aaaaaaaa.json"
+        out = guard("Write", {"file_path": path, "content": answered(by="operator")})
+        assert denied(out), path
+        wt = project / prefix / "kb" / "_self" / "backlog"
+        wt.mkdir(parents=True, exist_ok=True)
+        (wt / "ST-aaaaaaaa.json").write_text(answered(by="agent"), encoding="utf-8")
+        out = guard("Edit", {"file_path": path, "old_string": ': "agent"', "new_string": ': "operator"'})
+        assert denied(out), path  # a value-only change of the worktree's own copy
+
+
+@pytest.mark.parametrize("path", [
+    "./kb/_self/BACKLOG/ST-aaaaaaaa.json", "kb//_self///BACKLOG/ST-aaaaaaaa.json", "kb\\_self\\BACKLOG\\ST-aaaaaaaa.json",
+    "kb/public/../_self/BACKLOG/ST-aaaaaaaa.json", ".claude/worktrees/a/./kb/_self/backlog//ST-aaaaaaaa.json",
+    ".claude/worktrees/a/../b/kb/_self/backlog/ST-aaaaaaaa.json",
+    ".\\.claude\\worktrees\\a\\kb\\_self\\backlog\\ST-aaaaaaaa.json",
+])
+def test_headless_guard_case_dup_worktree_dots_slashes_and_backslashes_in_a_path_are_tolerated(project, guard, path):
+    assert denied(guard("Write", {"file_path": path, "content": answered(by="operator")})), path
+
+
+def test_headless_guard_case_dup_worktree_duplicate_start_gate_is_denied_by_write_and_edit(project, guard):
+    (project / ITEM_PATH).write_text(item_with([start_gate()]), encoding="utf-8")
+    prepended = item_with([start_gate(answer="approve", by="operator"), start_gate()])
+    out = guard("Write", {"file_path": ITEM_PATH, "content": prepended})
+    assert denied(out) and "more than once" in json.dumps(out), out
+    assert denied(guard("Write", {"file_path": ITEM_PATH, "content": item_with([start_gate(), start_gate()])}))
+    assert denied(guard("Write", {"file_path": ITEM_PATH, "content": item_with([start_gate(), start_gate(id="g2"),
+                                                                                start_gate()])}))
+    assert not denied(guard("Write", {"file_path": ITEM_PATH, "content": item_with([start_gate(), start_gate(id="g2")])}))
+    # an Edit whose result repeats the id, naming neither answer nor by
+    extra = json.dumps(start_gate(), indent=2).replace("\n", "\n    ")
+    out = guard("Edit", {"file_path": ITEM_PATH, "old_string": '"gates": [', "new_string": '"gates": [\n    ' + extra + ","})
+    assert denied(out) and "more than once" in json.dumps(out), out
+    out = guard("MultiEdit", {"file_path": ITEM_PATH, "edits": [
+        {"old_string": '"title": "t"', "new_string": '"title": "u"'},
+        {"old_string": '"gates": [', "new_string": '"gates": [\n    ' + extra + ","}]})
+    assert denied(out), out
+    out = guard("Edit", {"file_path": ITEM_PATH, "old_string": '"title": "t"', "new_string": '"title": "u"'})
+    assert not denied(out), out  # a gate id used once: an unrelated edit stays allowed
+
+
+def test_headless_guard_case_dup_worktree_an_existing_duplicate_is_not_waved_through_by_an_unrelated_edit(project, guard):
+    (project / ITEM_PATH).write_text(item_with([start_gate(), start_gate()]), encoding="utf-8")
+    out = guard("Edit", {"file_path": ITEM_PATH, "old_string": '"title": "t"', "new_string": '"title": "u"'})
+    assert denied(out), out
+
+
+def test_headless_guard_case_dup_worktree_ordinary_in_project_writes_are_allowed(project, guard):
+    for path in ("kb/public/x.md", "_tools/tests.py", "kb/_self/BACKLOG-notes.md", ".claude/worktrees/a/.claude/worktrees/b/x.md",
+                 "kb/_self/backlog/sub/x.txt", "KB/Public/X.md", "x\\y.txt"):
+        assert guard("Write", {"file_path": path, "content": "x"}) is None, path
+
+
+def test_headless_guard_case_dup_worktree_without_the_variable_nothing_is_answered(project, guard, monkeypatch):
+    monkeypatch.delenv("KB_HEADLESS_RUNNER")
+    for path in ("kb/_self/BACKLOG/ST-aaaaaaaa.json", ".claude/worktrees/a/.claude/worktrees/b/_tools/kb_hook.py"):
+        assert guard("Write", {"file_path": path, "content": item_with([start_gate(), start_gate()])}) is None
+
+
+def test_headless_guard_case_dup_worktree_check_refuses_an_item_with_a_duplicate_gate_id(repo):
+    """The planted item: a prepended answered gate before the real unanswered one; check names the item and the id."""
+    assert b(repo, "new", "epic", "--title", "Epic", "--goal", "outcome")[0] == 0
+    ep = item(repo, "Epic")["id"]
+    code, out = b(repo, "gate", "add", ep, "--kind", "blocking", "--question", "go?", "--option", "a", "--option", "b",
+                  "--recommendation", "a")
+    assert code == 0, out
+    gate = item_json(repo, ep)["gates"][0]
+    assert b(repo, "check")[0] == 0
+    edit(repo, ep, gates=[{**gate, "answer": "a", "by": "operator"}, gate])
+    code, out = b(repo, "check")
+    assert code == 1 and ep in out and f"gate id {gate['id']!r} is repeated" in out, out
+    edit(repo, ep, gates=[gate])
+    assert b(repo, "check")[0] == 0

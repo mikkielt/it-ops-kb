@@ -543,8 +543,10 @@ def validate(bl, pieces=None):
             if not isinstance(g, dict) or not _text_ok(g.get("question", "")) or g.get("kind") not in GATE_KINDS:
                 e("a gate needs id, kind (blocking|provisional) and question")
                 continue
-            if g.get("id") in gate_ids or not g.get("id"):
-                e(f"gate id {g.get('id')!r} missing or repeated")
+            if not g.get("id"):
+                e("a gate has no id")
+            elif g["id"] in gate_ids:  # readers take the first gate with an id: a repeat can hide the real one
+                e(f"gate id {g['id']!r} is repeated: a gate id names one gate")
             gate_ids.add(g.get("id"))
             if g["kind"] == "provisional" and not g.get("recommendation"):
                 e(f"provisional gate {g['id']} needs a recommendation")
