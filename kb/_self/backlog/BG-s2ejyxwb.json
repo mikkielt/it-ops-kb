@@ -2,7 +2,7 @@
   "id": "BG-s2ejyxwb",
   "kind": "bug",
   "title": "Closing a sprint leaves its runner's worktree, its orch branch and the empty worker branches in the clone the runner ran in, because the close cleanup names only work/<id> and worktree-agent-* branches with a KB-Work trailer",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P3",
   "rank": 0,
@@ -29,6 +29,8 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "_tools/test_kb_sprint_close_cleanup.py"
+  ],
+  "claimed_by": "mac-third-worker"
 }
