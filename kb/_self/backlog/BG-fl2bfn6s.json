@@ -30,7 +30,8 @@
     "_tools/bl_land.py",
     "_tools/test_bl_land.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/autopilot-container.md"
   ],
   "claimed_by": "mac-third-worker"
 }
