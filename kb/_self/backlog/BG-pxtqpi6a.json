@@ -2,7 +2,8 @@
   "id": "BG-pxtqpi6a",
   "kind": "bug",
   "title": "agent_bench.parse raises on a stream line that is a JSON value but not an object",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-zrvj35ha",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +14,21 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import agent_bench;agent_bench.parse('1')"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "agent_bench_parse_skips_non_object_lines"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/agent_bench.py",
+    "_tools/bench_lookup.py",
+    "_tools/test_agent_bench.py",
+    "_tools/test_benchmarks.py"
+  ]
 }
