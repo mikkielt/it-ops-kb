@@ -443,6 +443,9 @@ def selects_part(seg):
 HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # kbpublic.HEADLESS_ENV: set by autopilot.py runner start in its headless run
 KBGIT_REFUSED = ("publish", "bridge", "install-hooks", "hook")  # kbgit.py forms a check never runs: they push or arm hooks
 DRIFT_ALLOWS_INLINE = False  # drift never runs `python3 -c`; the drift tests' planted checks set it, nothing else does
+# the scripts drift runs a committed check with: read-only ones, so no check reaches sync, autopilot or a backlog writer
+DRIFT_SCRIPTS = ("_tools/tests.py", "_tools/rag.py", "_tools/check.py", "_tools/selfdoc.py",
+                 ".claude/skills/kb-verify/lint.py")
 CHECK_SCRIPT = re.compile(r"_tools/[\w.-]+\.py")
 
 
@@ -455,12 +458,14 @@ def check_program_refusal(argv, inline=True):
     argv = [str(a) for a in argv] if isinstance(argv, (list, tuple)) else []
     if not argv:
         return "a check with no program"
-    if os.path.basename(argv[0]) not in ("python3", "python") and argv[0] != sys.executable:
+    if argv[0] not in ("python3", "python") and argv[0] != sys.executable:  # exactly: never a file named python3
         return f"its program is {argv[0]}, not python3 on a _tools/ script"
     rest = argv[1:]
     if rest and rest[0] in ("-c", "-m"):
         return None if inline else f"python3 {rest[0]} runs inline code"
     script = rest[0].replace("\\", "/") if rest else ""
+    if not inline:  # drift: only the read-only forms, whatever else a committed check names
+        return None if script in DRIFT_SCRIPTS else f"{script or 'nothing'} is not one of drift's read-only checks"
     if not CHECK_SCRIPT.fullmatch(script):
         return f"{script or 'nothing'} is not a _tools/ script"
     if script == "_tools/kbgit.py" and rest[1:2] and rest[1] in KBGIT_REFUSED:
