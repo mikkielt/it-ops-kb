@@ -2,3 +2,5 @@ _tools/test_querylog_e2e.py::TestCaps::test_the_rest_wait_and_the_next_runs_take
 _tools/test_querylog_e2e.py::TestModesAuto::test_modes[default]
 _tools/test_querylog_e2e.py::TestResearch::test_research_over_its_cap
 _tools/test_querylog_e2e.py::TestResearch::test_research_off
+# replaced by test_land_removes_clean_unlocked_worker_worktree when land began removing an unlocked worker worktree (commit 691dffd5d)
+_tools/test_backlog.py::TestBacklogLand::test_unlocked_worker_worktree_unlocked_never
