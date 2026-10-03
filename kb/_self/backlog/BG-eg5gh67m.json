@@ -1,0 +1,34 @@
+{
+  "id": "BG-eg5gh67m",
+  "kind": "bug",
+  "title": "The open-session cost figure can count again the prompts of an idle-closed session that reopens, and its marker says they are not in the figures above",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_cost.open_lines passes the prompt ids the sidecar already holds (distill's worked ledger) to plan_work so a reopened idle-closed session is not counted twice, or the marker line says `may repeat prompts already in the figures above when the session reopened after an idle close`; a planted-failure test plants a session that is both in the sidecar and open; found by the SP-nq5avzrl review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"_tools/bl_cost.py\",encoding=\"utf-8\").read();ok=(\"may repeat\" in t) or (\"{}, sprint_of)\" not in t);print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "the double count needs a session distilled and then reopened; the repro reads open_lines for the ledger argument or the marker text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cost_open_session_reopened"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_cost.py",
+    "_tools/test_cost_open_session_reopened.py",
+    "kb/_self/querylog.md"
+  ]
+}
