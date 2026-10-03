@@ -622,6 +622,7 @@ def test_autopilot_status_prints_runner_sprint_gate_decision_and_tick(tmp_path, 
         encoding="utf-8")
     bl_base.runner_record_path(os.getpid()).write_text(
         json.dumps({"pid": os.getpid(), "sprint": SP, "clone": str(root), "started": "2026-01-01T00:00:00Z"}), encoding="utf-8")
+    plant(root, "SP-zzzzzzzz", kind="sprint", status="done")  # status lists only a sprint that still has its item file
     ended = autopilot.cache_dir(root, "SP-zzzzzzzz")
     ended.mkdir(parents=True)
     (ended / "status.json").write_text(json.dumps({"cause": "blocked"}), encoding="utf-8")

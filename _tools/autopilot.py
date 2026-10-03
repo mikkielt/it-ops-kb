@@ -651,12 +651,35 @@ def runner_lines(root, show):
                              + (f" {age}" if age else ""))
         except (OSError, ValueError, KeyError, TypeError, AttributeError):
             continue
-    for p in sorted((Path(root) / "_cache" / "autopilot").glob("SP-*/status.json")):
+    return [listing("runners", items + ended_runs(root, live), show)]
+
+
+def ended_runs(root, live):
+    """`SP ended CAUSE` of each recorded run no live runner holds: the failed ones (`error`, `timeout`; a `running` no live
+    runner holds was killed, so it ended in error) before the others, each group newest first. Where the root has item
+    files, a sprint without its item file (closed) is left out; a root with none (a bare cache) lists every record."""
+    base = Path(root) / "_cache" / "autopilot"
+    try:
+        have = {q.stem for q in (Path(root) / bl_base.REL_DIR).glob("SP-*.json")}
+        filtered = any((Path(root) / bl_base.REL_DIR).glob("*.json"))
+    except OSError:
+        have, filtered = set(), False
+    rows = []
+    for p in base.glob("SP-*/status.json"):
         sp = p.parent.name
         st = read_status(root, sp)
-        if st and sp not in live and SPRINT_ID.match(sp):  # a `running` no live runner holds was killed: it ended in error
-            items.append(f"{sp} ended {'error' if st.get('cause') == 'running' else st.get('cause')}")
-    return [listing("runners", items, show)]
+        if not st or sp in live or not SPRINT_ID.match(sp) or (filtered and sp not in have):
+            continue
+        cause = "error" if st.get("cause") == "running" else st.get("cause")
+        try:
+            stamp = str(st.get("ended") or st.get("started") or "") or datetime.datetime.fromtimestamp(
+                p.stat().st_mtime, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        except OSError:
+            stamp = ""
+        rows.append((stamp, sp, cause))
+    rows.sort(reverse=True)  # newest first, the sprint id breaking a tie
+    rows.sort(key=lambda r: r[2] not in FAIL_CAUSES)  # stable: the failed runs lead
+    return [f"{sp} ended {cause}" for _, sp, cause in rows]
 
 
 def sprint_lines(root, show):
