@@ -29,7 +29,9 @@
     "_tools/autopilot.py",
     "_tools/test_autopilot_run_landed.py",
     "kb/_self/autopilot.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/autopilot-test.md",
+    "_tools/test_autopilot.py"
   ],
   "claimed_by": "mac-sixth"
 }
