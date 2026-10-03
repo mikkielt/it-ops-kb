@@ -336,13 +336,19 @@ def runner_settings_path(root, sprint):
 
 
 def copy_runner_settings(root, sprint, worktree):
-    """Write runner_settings_path(ROOT, SPRINT) from the settings file of WORKTREE, whole or not at all, each start afresh
-    (the worktree's file as of the start, the integration main's once prepare_worktree has brought it there). Returns
-    the copy's path."""
+    """Write runner_settings_path(ROOT, SPRINT) from the committed integration main, `git show origin/main:.claude/settings.json`
+    (the integration remote's main, as prepare_worktree names it, run in WORKTREE), whole or not at all, each start afresh.
+    Never the worktree's own file: a settings change committed in a worktree ahead of the integration main is not read by
+    a run. A file the revision lacks (or a ref that is missing) is a refusal (bl_base.Refused). Returns the copy's path."""
+    remote = kbpublic.integration_remote(str(root))
+    spec = f"{remote}/main:.claude/settings.json"
+    shown = subprocess.run(["git", "show", spec], cwd=str(worktree), capture_output=True)
+    if shown.returncode != 0:
+        raise bl_base.Refused(f"{spec} is missing: a run takes the project's own settings as committed at {remote}/main")
     target = runner_settings_path(root, sprint)
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_name(target.name + ".tmp")
-    tmp.write_bytes((Path(worktree) / ".claude" / "settings.json").read_bytes())
+    tmp.write_bytes(shown.stdout)
     os.replace(tmp, target)
     return target
 
@@ -622,11 +628,9 @@ def run_in_slot(sprint, landed, root, record, kept=None):
     rec["touches"] = sorted({t for i in bl.sprint_items(sprint) if bl.items[i].get("status") not in ("done", "dropped")
                              for t in bl_base.scope(bl, i) if isinstance(t, str) and t})
     write_status(record, rec)
-    if not (wt / ".claude" / "settings.json").is_file():
-        raise bl_base.Refused(f"{wt / '.claude' / 'settings.json'} is missing: a run takes the project's own settings")
+    copy_runner_settings(root, sprint, wt)  # refuses before anything is written when origin/main lacks the file
     directory = cache_dir(root, sprint)
     directory.mkdir(parents=True, exist_ok=True)
-    copy_runner_settings(root, sprint, wt)
     started = now()
     name, keep = open_stream(directory, started.strftime("%Y%m%dT%H%M%SZ"))
     status = {"sprint": sprint, "pid": os.getpid(), "worktree": str(wt), "branch": branch_name(sprint), "start_ref": start,
