@@ -2,7 +2,7 @@
   "id": "BG-y4n53qz2",
   "kind": "bug",
   "title": "The headless child's SessionStart hooks (intake --file --hook, red-pipeline --hook) leave untracked drafts in the runner worktree, so its next restart is refused as dirty",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-zihqagoi",
   "priority": "P2",
@@ -35,5 +35,28 @@
     "_tools/backlog.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "07d17acb612deeab114c793f7597f7a05ed8d8d0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "headless_hooks_file_no_drafts"
+        ],
+        "exit": 0,
+        "sha256": "51ac179dbb621324"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"_tools/bl_intake.py\",encoding=\"utf-8\").read();ok=\"KB_HEADLESS_RUNNER\" in t;print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
