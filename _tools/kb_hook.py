@@ -320,12 +320,24 @@ GATE_KEYS = re.compile(r'"(answer|by)"\s*:')
 
 def repo_path(path):
     """(PATH relative to the project with / separators, its full path); the project is CLAUDE_PROJECT_DIR, else this
-    clone. (None, full) outside it."""
+    clone. When the project is a runner's worktree <clone>/.claude/worktrees/runner-*, a path inside a worker's
+    isolation worktree <clone>/.claude/worktrees/agent-* (a sibling, directly under the same clone) counts too, relative
+    to that worktree. (None, full) outside them."""
     root = os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(os.path.dirname(
         os.path.realpath(__file__))))
     full = os.path.realpath(path if os.path.isabs(path) else os.path.join(root, path))
     rel = os.path.relpath(full, root)
-    return (None if rel == ".." or rel.startswith(".." + os.sep) else rel.replace(os.sep, "/")), full
+    if rel != ".." and not rel.startswith(".." + os.sep):
+        return rel.replace(os.sep, "/"), full
+    base = os.path.dirname(root)
+    if os.path.basename(root).lower().startswith("runner-") and os.path.basename(base) == "worktrees" \
+            and os.path.basename(os.path.dirname(base)) == ".claude":
+        sib = os.path.relpath(full, base)
+        parts = sib.split(os.sep)
+        if len(parts) > 1 and ".." not in parts and not os.path.isabs(sib) and parts[0].lower().startswith("agent-") \
+                and len(parts[0]) > len("agent-"):
+            return "/".join(parts[1:]), full
+    return None, full
 
 
 def gate_answers(text):
