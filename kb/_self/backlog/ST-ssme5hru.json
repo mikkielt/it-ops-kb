@@ -2,7 +2,7 @@
   "id": "ST-ssme5hru",
   "kind": "story",
   "title": "Research sprint goal: The autopilot's supervised first run is planned and tested",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-rq4t477t",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Dropped: The sprint was started on the operator's order; the research gate applies only to autopilot-answered starts (as for the earlier sprints)"
 }

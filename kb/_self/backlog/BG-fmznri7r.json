@@ -1,0 +1,37 @@
+{
+  "id": "BG-fmznri7r",
+  "kind": "bug",
+  "title": "A closing agent cannot remove the closed sprint's runner worktree and branches, because git worktree remove and git branch -D are denied to agents, so every autopilot sprint leaves them behind",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py close (a python process, like land, which already removes worker worktrees and the landed branch) removes the closed sprint's runner leftovers itself: the runner-SP-* worktree under the clone root, the orch/SP branch, the clean detached or work/<id> agent-* worktrees of that sprint, empty worktree-agent-* branches whose tip is on the integration main, and _cache/autopilot/SP; never --force, never another sprint's, never a locked, dirty or process-holding worktree (kept and reported with the reason); the skill step then only reports. Planted tests (name close_removes_runner_leftovers): a throwaway clone with each leftover removed, another sprint's kept, a dirty one kept. Found by the first supervised run (BG-s2ejyxwb) and mac-third's landing: agents are denied the commands, so leftovers accumulate across unattended sprints (file-event churn, disk).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'def clean_runner_leftovers' in open('_tools/bl_land.py').read() else 1)"
+    ]
+  },
+  "repro_reason": "the defect is that the cleanup is a skill instruction run by an agent that may not run the commands; the match shows no python step does it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_removes_runner_leftovers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_plan.py",
+    "_tools/test_bl_land.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
