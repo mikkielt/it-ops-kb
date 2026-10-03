@@ -46,6 +46,7 @@
       "Bash(python3 _tools/kbgit.py check-public *)",
       "Bash(python3 _tools/selfdoc.py stale *)",
       "Bash(python3 _tools/kbdecide.py digest)",
+      "Bash(python3 _tools/kbdecide.py digest --commit)",
       "Bash(python3 _tools/kbdecide.py list *)",
       "Bash(python3 _tools/autopilot.py *)",
       "Bash(git fetch)",
@@ -78,7 +79,7 @@
       "Bash(git -C * fetch origin)",
       "Bash(git -C * worktree add *)",
       "Bash(glab mr view *)",
-      "Bash(glab mr merge *)",
+      "Bash(glab mr merge code/*)",
       "PowerShell(python3 _tools/rag.py *)",
       "PowerShell(python3 _tools/backlog.py *)",
       "PowerShell(python3 _tools/kb_hook.py *)",
@@ -110,6 +111,7 @@
       "PowerShell(python3 _tools/kbgit.py check-public *)",
       "PowerShell(python3 _tools/selfdoc.py stale *)",
       "PowerShell(python3 _tools/kbdecide.py digest)",
+      "PowerShell(python3 _tools/kbdecide.py digest --commit)",
       "PowerShell(python3 _tools/kbdecide.py list *)",
       "PowerShell(python3 _tools/autopilot.py *)",
       "PowerShell(git fetch)",
@@ -142,7 +144,7 @@
       "PowerShell(git -C * fetch origin)",
       "PowerShell(git -C * worktree add *)",
       "PowerShell(glab mr view *)",
-      "PowerShell(glab mr merge *)",
+      "PowerShell(glab mr merge code/*)",
       "Agent",
       "Edit",
       "Write",
@@ -176,7 +178,9 @@
       "PowerShell(git commit * --no-verify*)",
       "PowerShell(git commit --no-verify*)",
       "PowerShell(git commit * -n *)",
-      "PowerShell(git commit -n *)"
+      "PowerShell(git commit -n *)",
+      "Bash(git checkout * -- *)",
+      "PowerShell(git checkout * -- *)"
     ]
   },
   "hooks": {
