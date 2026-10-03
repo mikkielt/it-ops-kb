@@ -2,7 +2,7 @@
   "id": "BG-lemd7ahg",
   "kind": "bug",
   "title": "Seven planned bugs have sh or git grep repros a headless done now refuses, so a runner can never close them",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j6hh2ib2",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,30 @@
     "kb/_self/backlog/BG-halzlq6t.json",
     "kb/_self/backlog/BG-lemd7ahg.json"
   ],
-  "claimed_by": "seventh-w37"
+  "evidence": {
+    "commit": "20c2c6227ee015e85c0e6d00ad7c1407ab0584fc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "2",
+          "-k",
+          "open_repros_run_headless"
+        ],
+        "exit": 0,
+        "sha256": "3e78b26a4a7d96ec"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,glob;sys.path.insert(0,'_tools');import bl_intake as b;bad=[p for p in glob.glob('kb/_self/backlog/*.json') if json.load(open(p)).get('status') in ('todo','draft','doing') and json.load(open(p)).get('repro') and b.check_program_refusal(json.load(open(p))['repro']['run'])];print(len(bad));sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "9a271f2a916b0b6e"
+      }
+    ]
+  }
 }
