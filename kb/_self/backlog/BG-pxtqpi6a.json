@@ -1,0 +1,17 @@
+{
+  "id": "BG-pxtqpi6a",
+  "kind": "bug",
+  "title": "agent_bench.parse raises on a stream line that is a JSON value but not an object",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "agent_bench.parse skips a stream line that parses to a JSON value other than an object (a number, a string, a list) instead of raising AttributeError, so bench_lookup.nav_objects can go; found working BG-oljgqcro",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import agent_bench;agent_bench.parse('1')"
+    ]
+  }
+}
