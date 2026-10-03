@@ -2,7 +2,7 @@
   "id": "BG-ejdjj3ns",
   "kind": "bug",
   "title": "The autopilot can answer any gate of class agents-rule but the start gate, a headless run may answer --by autopilot, and widened touches never re-class a gate",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-j6hh2ib2",
   "priority": "P1",
@@ -39,5 +39,30 @@
     "_tools/test_backlog_headless_operator.py"
   ],
   "notes": "Decision (manager, recorded for the operator's re-confirm in morning.md): check reports a provisional gate of a refused class answered by an agent or the autopilot as an error for open items and as a warning for done items; answer stays strict; the six gates BG-2qnuprji dg, BG-hm4ara3l g1 g2, BG-kvsc7hem g1, BG-mk3e3wwu g1 g2 go to the operator re-confirm list.",
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "d1c346a026e52e5b6a1b8ba39edf30f992ffb920",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "2",
+          "-k",
+          "authority_trust_boundary"
+        ],
+        "exit": 0,
+        "sha256": "31c234418d48c2be"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if 'agents-rule' in a.AUTOPILOT_REFUSED else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
