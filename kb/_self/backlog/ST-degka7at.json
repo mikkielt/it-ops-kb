@@ -1,0 +1,22 @@
+{
+  "id": "ST-degka7at",
+  "kind": "story",
+  "title": "Stall probe: a claimed item that gets no work commit",
+  "status": "todo",
+  "sprint": "SP-7kbrqaol",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/autopilot-throwaway.md is not changed by this item; it exists only to be claimed and left without a commit, so stage 6 sees the claim-no-commit signal, and it is dropped afterwards",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/autopilot-throwaway.md"
+  ]
+}
