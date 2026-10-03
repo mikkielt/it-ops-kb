@@ -2,7 +2,7 @@
   "id": "BG-n4x4r3mu",
   "kind": "bug",
   "title": "tests.py given every test file by a shell glob runs the whole suite without the host lock",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zrvj35ha",
   "priority": "P3",
   "rank": 0,
@@ -20,12 +20,22 @@
       "run": [
         "python3",
         "_tools/tests.py",
+        "-k",
+        "named_files_glob_takes_lock"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
         "_tools/test_tests_lock.py"
       ]
     }
   ],
   "touches": [
     "_tools/tests.py",
-    "_tools/test_tests_lock.py"
-  ]
+    "_tools/test_tests_lock.py",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "mac-third-worker"
 }

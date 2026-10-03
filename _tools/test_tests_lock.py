@@ -1,5 +1,6 @@
 """Which tests.py runs take the host lock and which record a full run: named test files without -k are a cheap
-targeted run (no lock, no per-file full-run times); a bare run, a -k run and a named directory keep their behaviour."""
+targeted run (no lock, no per-file full-run times) up to NAMED_FILES_LOCK_FREE files, more is a full run; a bare run,
+a -k run and a named directory keep their behaviour."""
 import os
 
 import ql_capture
@@ -76,3 +77,31 @@ def test_tests_py_named_files_mode_keeps_other_modes(monkeypatch, tmp_path):
     assert _recorded_modes(monkeypatch, tmp_path, ["_tools"]) == ["full"]
     monkeypatch.setenv("KB_TESTS_FAST", "1")
     assert _recorded_modes(monkeypatch, tmp_path, []) == ["fast"]
+
+
+def _many_files(n):
+    """`n` distinct existing test files, as a shell glob would hand them over."""
+    import glob
+    files = sorted(glob.glob(os.path.join(tests_py.TOOLS, "test_*.py")))
+    assert len(files) >= n
+    return files[:n]
+
+
+def test_tests_py_named_files_glob_takes_lock(monkeypatch, tmp_path):
+    for name in ("KB_TESTS_FAST", "KB_TEST_WORKERS", "KB_HOST_LOCK_DIR"):
+        monkeypatch.delenv(name, raising=False)  # the sync gate runs the suite with KB_TESTS_FAST=1
+    _setup(monkeypatch, tmp_path)
+    few = _many_files(tests_py.NAMED_FILES_LOCK_FREE)
+    many = _many_files(tests_py.NAMED_FILES_LOCK_FREE + 1)
+    assert not tests_py.wants_host_lock(few)
+    assert tests_py.named_files_only(few)
+    assert tests_py.wants_host_lock(many)
+    assert not tests_py.named_files_only(many)
+    assert tests_py.wants_host_lock(many + ["-q"])
+    assert not tests_py.wants_host_lock(many + ["-k", "x"])  # -k stays lock free
+    assert _full_flags(monkeypatch, [("full", many), ("full", few)]) == [True, False]
+    assert _recorded_modes(monkeypatch, tmp_path, few) == ["files"]
+    assert _recorded_modes(monkeypatch, tmp_path, many) == ["full"]
+    monkeypatch.setenv("KB_TESTS_FAST", "1")
+    assert _recorded_modes(monkeypatch, tmp_path, many) == ["fast"]
+    assert _recorded_modes(monkeypatch, tmp_path, few) == ["files"]
