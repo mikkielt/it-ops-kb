@@ -85,4 +85,4 @@ def test_check_program_allowlist_drift_leaves_a_refused_check_unchecked(tmp_path
     drift = bl_intake.Drift(stale=[])
     bl_intake.passing_open(str(tmp_path), {}, 30, drift, 60)
     assert [c["run"] for c in ran] == [["python3", "_tools/check.py"]]
-    assert {"BG-aaaaaaaa", "BG-bbbbbbbb"} <= set(drift.heavy)
+    assert {"BG-aaaaaaaa", "BG-bbbbbbbb"} <= set(drift.refused) and not drift.heavy
