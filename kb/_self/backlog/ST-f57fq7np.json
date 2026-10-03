@@ -2,7 +2,7 @@
   "id": "ST-f57fq7np",
   "kind": "story",
   "title": "tests.py's pytest worker count is chosen from timings at -n 4, 6 and 8 under the host lock",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-zrvj35ha",
   "priority": "P3",
@@ -25,5 +25,19 @@
     "kb/_self/code.md",
     "_tools/test_testmap.py"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "d960e15246abbf7a74451b6f7c8bbe3e72b0c34c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "worker_count_default"
+        ],
+        "exit": 0,
+        "sha256": "5c77b486cbccdc3f"
+      }
+    ]
+  }
 }
