@@ -2,7 +2,7 @@
   "id": "BG-thez4izx",
   "kind": "bug",
   "title": "The runner's settings copy is taken from the worktree file, so a committed settings change in a worktree ahead of origin/main is copied and read",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j6hh2ib2",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,28 @@
     "_tools/test_autopilot_runner_ends.py",
     "kb/_self/autopilot-test.md"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "ece078df45c4cdccb01b03681fa3fe57c1c76d46",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "runner_settings_from_origin_main"
+        ],
+        "exit": 0,
+        "sha256": "e901c0439b4ee83a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if 'origin/main:.claude/settings.json' in open('_tools/autopilot.py').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
