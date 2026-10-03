@@ -101,13 +101,14 @@ the store.
 
 Exit: 0 done, 2 refused (a rule above, an unknown root or id, or a file that cannot be read) or bad arguments.
 """
-import argparse, base64, datetime, difflib, hashlib, json, re, subprocess, sys
+import argparse, base64, datetime, difflib, hashlib, json, os, re, subprocess, sys
 from pathlib import Path
 
 import check, kbcommon, kbfacts
 
 SELF_ROOT = "_self"  # the name that stands for kb/_self, which is no root
 AUTOPILOT = "autopilot"  # the maker `record --by autopilot` names: a decision the operator ratifies or supersedes
+HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # set in a headless runner's environment (kbpublic.HEADLESS_ENV): no act as the operator then
 OPERATOR = "operator"  # what `confirm --by` must be, and the maker of an internal root's decision that names none
 
 
@@ -342,6 +343,15 @@ def need_operator(a, what):
     """Refused unless `--by` is the operator: `what` is what only the operator does."""
     if a.by != OPERATOR:
         raise Refused(f"only the operator {what}: run it with --by {OPERATOR} once the operator has said so")
+    headless_refusal(what)
+
+
+def headless_refusal(what):
+    """Refused in a headless run (the variable is set and not empty): `what` is recorded as the operator's, which only
+    an operator-present session does; the check reads the parsed `--by`, so no argument order or abbreviation gets past."""
+    if os.environ.get(HEADLESS_ENV):
+        raise Refused(f"only an operator-present session {what}: {HEADLESS_ENV} is set, so this headless run does not "
+                      f"act as the operator (record --by {AUTOPILOT} is open to it)")
 
 
 def cmd_confirm(a):

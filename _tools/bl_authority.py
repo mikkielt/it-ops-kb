@@ -11,6 +11,7 @@ Standard library only; imports `bl_base` and never `backlog`, `bl_check` or `bl_
 import datetime
 import fnmatch
 import posixpath
+import os
 import re
 
 from bl_base import START_GATE
@@ -18,6 +19,7 @@ from bl_base import START_GATE
 AUTOPILOT = "autopilot"  # the `by` of an answer the autopilot gave, and its decision maker in kb/_self
 CLASSES = ("secrets", "push", "start", "querylog", "agents-rule", "delete", "design")
 AUTOPILOT_REFUSED = ("secrets", "push")  # the classes only the operator answers
+HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # set (non-empty) in every headless runner's environment: kbpublic.HEADLESS_ENV, kbdecide.py's copy
 REVIEW_DAYS = 14  # an autopilot decision's `review_by`: the operator ratifies or supersedes it by then
 
 # Paths whose change makes a gate about the item one of the class: a directory ends with `/`, a file is exact. A touch
@@ -142,3 +144,15 @@ def sprint_scope(item, gate, members):
     for m in (m for m in members if m.get("status") != "dropped"):
         touches += [t for t in m.get("touches", []) or [] if t not in touches]
     return {**item, "touches": touches}
+
+
+def headless():
+    """True in a headless runner's process (and the children it starts): the variable the runner sets is not empty."""
+    return bool(os.environ.get(HEADLESS_ENV))
+
+
+def headless_operator_refusal(what):
+    """The message that refuses `what` (an act recorded as the operator's) in a headless run; the guard that holds when
+    a permission rule's text match misses an argument order or an option abbreviation."""
+    return (f"{what} is the operator's and {HEADLESS_ENV} is set: only an operator-present session answers as the "
+            "operator (--by agent, --by autopilot and --provisional are open to a headless run)")
