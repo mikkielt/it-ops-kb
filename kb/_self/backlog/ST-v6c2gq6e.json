@@ -2,7 +2,7 @@
   "id": "ST-v6c2gq6e",
   "kind": "story",
   "title": "The scratch file of the first supervised run has a second line",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7kbrqaol",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,6 @@
       "answer": "yes",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "runner-SP-7kbrqaol"
 }
