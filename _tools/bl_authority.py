@@ -13,6 +13,7 @@ import fnmatch
 import posixpath
 import os
 import re
+from pathlib import Path
 
 from bl_base import START_GATE
 
@@ -82,16 +83,39 @@ def guard_paths():
     return GUARD_EXTRA + tuple(p for cls in ("agents-rule", "push") for p in PATHS[cls])
 
 
-def guarded_touches(item):
+NEW_TEST_FILE = re.compile(r"_tools/test_[^/]*\.py")  # kb_hook.NEW_TEST_FILE: a test file tests.py would run as code
+
+
+def project_dir():
+    """The project the guard judges paths against: CLAUDE_PROJECT_DIR, else this clone (kb_hook.repo_path's rule)."""
+    return os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(os.path.dirname(
+        os.path.realpath(__file__))))
+
+
+def new_test_file(touch, root=None):
+    """Whether the touch names a `_tools/test_*.py` that does not exist yet, which kb_hook.headless_guard denies a
+    headless Write of. A path is judged by whether the file exists; a glob by what it matches today (an existing file
+    unguards it, no file at all guards it); an existing test file stays unguarded."""
+    path = posixpath.normpath(touch.strip().replace("\\", "/"))
+    if not NEW_TEST_FILE.fullmatch(path.lower()):
+        return False
+    root = root or project_dir()
+    if any(c in path for c in "*?["):
+        return not any(True for _ in Path(root).glob(path))
+    return not os.path.exists(os.path.join(root, path))
+
+
+def guarded_touches(item, root=None):
     """The item's touches a headless run may not edit: each names a guard_paths() entry (the path, a directory above
-    it, a glob that matches it) or lies inside one (`_tools/kbpy/x.py`). `backlog.py start` names them and
-    `autopilot.py runner start` refuses a sprint that has any."""
+    it, a glob that matches it) or lies inside one (`_tools/kbpy/x.py`), or names a `_tools/test_*.py` that does not
+    exist yet (the headless guard denies creating it). `backlog.py start` names them and `autopilot.py runner start`
+    refuses a sprint that has any, so such a sprint is operator-present only."""
     found = []
     for t in item.get("touches", []) or []:
         if not isinstance(t, str) or not t.strip():
             continue
         n = norm(t)
-        if any(touch_names(t, p) or n.startswith(p.lower() + "/") for p in guard_paths()):
+        if any(touch_names(t, p) or n.startswith(p.lower() + "/") for p in guard_paths()) or new_test_file(t, root):
             found.append(t)
     return found
 

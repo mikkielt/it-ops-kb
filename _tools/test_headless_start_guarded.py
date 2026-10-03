@@ -94,7 +94,7 @@ def concrete(path):
 
 GUARD_SAMPLE = sorted({concrete(p) for p in bl_authority.guard_paths()})
 OTHER_SAMPLE = sorted({concrete(p) for p in bl_authority.PATHS["querylog"]}
-                      | {"kb/public/x.md", "_tools/test_x.py", "_tools/kbpyx.py", "README.md", "kb/_self/backlog.md"})
+                      | {"kb/public/x.md", "_tools/test_headless_start_guarded.py", "_tools/kbpyx.py", "README.md", "kb/_self/backlog.md"})
 
 
 @pytest.mark.parametrize("path", GUARD_SAMPLE + OTHER_SAMPLE)
