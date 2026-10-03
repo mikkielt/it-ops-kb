@@ -2,7 +2,7 @@
   "id": "BG-wg7ir37i",
   "kind": "bug",
   "title": "Intake drift runs any _tools/ script a committed check names, kbgit.py sync --push and autopilot.py runner start included, and accepts any executable named python3",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zihqagoi",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,6 @@
     "_tools/test_check_program_allowlist.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
