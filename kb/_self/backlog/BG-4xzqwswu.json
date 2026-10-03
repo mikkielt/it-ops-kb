@@ -2,7 +2,7 @@
   "id": "BG-4xzqwswu",
   "kind": "bug",
   "title": "settings.json lets a headless run merge any merge request and restore guard files from another revision, and does not allow the tick's digest --commit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zihqagoi",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,6 @@
     ".claude/settings.json",
     "_tools/test_settings_allow.py",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
