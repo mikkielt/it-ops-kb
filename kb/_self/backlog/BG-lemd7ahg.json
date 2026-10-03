@@ -2,7 +2,7 @@
   "id": "BG-lemd7ahg",
   "kind": "bug",
   "title": "Seven planned bugs have sh or git grep repros a headless done now refuses, so a runner can never close them",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-j6hh2ib2",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,6 @@
     "kb/_self/backlog/BG-dvs4vzr6.json",
     "kb/_self/backlog/BG-ykxthe5x.json",
     "_tools/test_open_repros_headless.py"
-  ]
+  ],
+  "claimed_by": "seventh-w37"
 }
