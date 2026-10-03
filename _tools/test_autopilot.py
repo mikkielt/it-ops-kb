@@ -117,7 +117,7 @@ class World:
         return autopilot.worktree_path(self.root, SP)
 
     def streams(self):
-        return sorted(autopilot.cache_dir(self.root, SP).glob("*.jsonl"))
+        return sorted(p for p in autopilot.cache_dir(self.root, SP).glob("*.jsonl") if p.name != autopilot.RUNS_FILE)
 
     def origin_main(self):
         return self.repo.rev("origin/main")

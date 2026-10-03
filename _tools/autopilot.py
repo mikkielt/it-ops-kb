@@ -19,6 +19,9 @@ report of what the run did.
                                               ends its process tree and records the cause `timeout`; the
                                               environment variables KB_RUNNER_MAX_TURNS and KB_RUNNER_DEADLINE_S
                                               replace the two (a value that is not a positive number is ignored).
+                                              Each run's end also adds one line to _cache/autopilot/SP/runs.jsonl
+                                              (`{"sprint", "cause", "landed", "time"}`, one append), the history
+                                              `backlog.py bounds stop` reads for no-progress.
   autopilot.py runner reset SP                free the worktree a refused start names: refused while a live runner holds SP;
                                               a worktree with uncommitted files has them kept in a git stash of the clone
                                               (`autopilot reset SP STAMP`), one whose branch diverged from the integration
@@ -121,6 +124,7 @@ DEADLINE_ENV = "KB_RUNNER_DEADLINE_S"
 FAIL_CAUSES = ("error", "timeout")  # the causes `runner start` exits 1 for
 DETAIL_CHARS = 120
 DIRTY_FILES = 8  # files a dirty-worktree refusal names
+RUNS_FILE = bl_base.RUNS_FILE  # the sprint's history of ended runs in its cache directory (bl_base.append_run)
 DONE_SUBJECT = "chore(backlog): done "
 KB_WORK = re.compile(r"^KB-Work: (.+)$", re.M)
 
@@ -543,8 +547,26 @@ def runner_start(sprint, landed=None, root=ROOT):
     except RunnerEnded as e:
         if not kept:  # the signal came before the run's own status: this one replaces the previous run's
             write_early_status(root, sprint, e.name)
+            record_run(root, sprint, "error", 0)
         print(f"{sprint}: error (runner ended by {e.name})")
         return 1
+
+
+def record_run(root, sprint, cause, landed, ended=None):
+    """Append the end of this run to the sprint's runs.jsonl (bl_base.append_run), by the tool and not the model; a
+    write that fails is said on stderr and never changes the run's exit."""
+    try:
+        bl_base.append_run(root, sprint, cause, landed, ended or now().strftime("%Y-%m-%dT%H:%M:%SZ"))
+    except OSError as e:
+        print(f"{sprint}: cannot record the run in {RUNS_FILE}: {e}", file=sys.stderr)
+
+
+def run_landed(repo, bl, sprint, start):
+    """The count of the sprint's items the run landed (landed_items); 0 when git cannot say."""
+    try:
+        return len(landed_items(repo, set(bl.sprint_items(sprint)), str(start or "")))
+    except (bl_base.Refused, OSError, ValueError, KeyError):
+        return 0
 
 
 def run_in_slot(sprint, landed, root, record, kept=None):
@@ -599,6 +621,7 @@ def run_in_slot(sprint, landed, root, record, kept=None):
         status.update(cause=cause, detail=why, exit_code=run["exit_code"],
                       ended=now().strftime("%Y-%m-%dT%H:%M:%SZ"))
         write_status(directory / "status.json", status)
+        record_run(root, sprint, cause, run_landed(wt, bl, sprint, start), status["ended"])
     print(f"{sprint}: {cause}" + (f" ({why})" if why else "") + f"; stream {directory / name}")
     return 1 if cause in FAIL_CAUSES else 0
 
