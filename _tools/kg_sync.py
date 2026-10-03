@@ -764,8 +764,12 @@ def cmd_sync(a, host, r=None):
               "worktree of it); sync repairs trailers of what it rebases")
     r = r if r is not None else new_report(a.push)
     if a.push and not a.dry_run:  # a push moves the integration main: one runner on the host at a time
-        with kg_lock.guarded("kbgit.py sync --push", clone=KB):
-            code = sync_rounds(a, r, host)
+        try:
+            with kg_lock.guarded("kbgit.py sync --push", clone=KB):
+                code = sync_rounds(a, r, host)
+        except kg_lock.MainLockTimeout as e:  # nothing was fetched, rebased or pushed
+            print(f"kbgit.py sync: {e}")
+            return 1
     else:
         code = sync_rounds(a, r, host)
     if "rerun" in r:
