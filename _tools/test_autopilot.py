@@ -157,6 +157,7 @@ def runner_denies(argv):
 
 
 def test_autopilot_runner_denies_the_run_an_answer_recorded_as_the_operators(world):
+    """The second layer: the text rule for the common order; the guard is the tool's own (test_backlog_headless_operator.py)."""
     world.stream(stream())
     world.start()
     denies = runner_denies(world.seen()["argv"])

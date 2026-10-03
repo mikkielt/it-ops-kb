@@ -87,8 +87,10 @@ PROMPT = "/kb-sprint run {sprint} --headless{landed}"
 LANDED_FLAG = " --landed {k}"
 # The last line of the run's final result names why the run ended, one of CAUSES_FROM_RESULT.
 CAUSE_MARKER = "sprint-runner: {cause}"
-# Deny rules for the headless run only (--disallowedTools): an agent there never records an answer as the operator's.
-# The project's settings leave it to the operator-present manager session, which records the operator's answers.
+# A second layer, not the guard: a deny rule matches text, so it misses an argument order (`answer --by operator ID ...`)
+# and an option abbreviation (`--b operator`). The guard is `backlog.py answer` and `kbdecide.py` themselves, which refuse
+# the operator's acts whenever HEADLESS_ENV is set, whatever the text. The project's settings leave the answers to the
+# operator-present manager session, which has the variable unset.
 RUNNER_DENY = tuple(f"{shell}(python3 _tools/backlog.py answer * {by}*)" for shell in ("Bash", "PowerShell")
                     for by in ("--by operator", "--by=operator"))
 HEADLESS_ENV = kbpublic.HEADLESS_ENV  # set in the run's environment, so its session's publish --hook pushes nothing
