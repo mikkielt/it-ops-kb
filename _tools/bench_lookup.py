@@ -528,10 +528,23 @@ def nav_uses(stdout):
     return out
 
 
+def nav_objects(stdout):
+    """The lines of a stream that parse to a JSON object: agent_bench.parse reads every line as an event, so a line
+    holding a bare number or string (a claude that fails with stray output) would raise there."""
+    keep = []
+    for line in stdout.splitlines():
+        try:
+            if isinstance(json.loads(line), dict):
+                keep.append(line)
+        except ValueError:
+            pass
+    return "\n".join(keep)
+
+
 def nav_result(stdout, root, wall=0.0):
     """One navigation run read from its stream: agent_bench's result fields (cost, turns, input, output, tool counts,
     answer) and `files_read`, or {"error": ...} when the run has no result or was refused."""
-    seen, res = agent_bench.parse(stdout)
+    seen, res = agent_bench.parse(nav_objects(stdout))
     if not res:
         return {"error": "no result event"}
     if res.get("is_error"):
@@ -550,9 +563,10 @@ def nav_argv():
 
 
 def keep_stream(stdout):
-    """The run's raw claude stream-json, byte for byte, in a file beside the runs file (the scratch directory, never a
-    tracked path), named <runs stem>-stream-NNN.jsonl with the first free number: created exclusively, so a run never
-    overwrites another's. Returns the relative file name, or None when no runs file is set."""
+    """The run's claude stream-json text, as Python read it from the pipe (text mode turns CRLF into LF, so the file is
+    not byte for byte what claude wrote), in a UTF-8 file beside the runs file (the scratch directory, never a tracked
+    path), named <runs stem>-stream-NNN.jsonl with the first free number: created exclusively, so a run never
+    overwrites another's. Returns the relative file name, or None when no runs file is set or the stream is empty."""
     if not RAW.get("path") or not stdout:
         return None
     runs = Path(RAW["path"])
@@ -568,26 +582,41 @@ def keep_stream(stdout):
             n += 1
 
 
+NAV_TIMEOUT_S = 900
+
+
+def nav_row(prompt, r):
+    """Append a run's row to the runs file, when one is set: the prompt's first 300 characters and the row."""
+    if RAW.get("path"):
+        with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps({"prompt": prompt[:300], **r}) + "\n")
+
+
 def nav_run(argv, prompt, cwd):
-    """One `claude -p` run of a navigation question in `cwd`, hooks off, through nav_result. The raw stdout is kept
-    beside the row (keep_stream) and the row names it in `stream`."""
+    """One `claude -p` run of a navigation question in `cwd`, hooks off, through nav_result. The stdout it had is kept
+    beside the row (keep_stream) and the row names it in `stream`. A failed run (no result event, is_error, a timeout)
+    gets an error row in the runs file too, with the error text and the stream it kept, so no kept stream is unnamed."""
     t = time.time()
     try:
         p = subprocess.run(argv, cwd=str(cwd), input=prompt, capture_output=True, text=True, encoding="utf-8",
-                           env=no_plugin_env(), timeout=900)
-    except subprocess.TimeoutExpired:
-        return {"error": "timed out after 900 s"}
+                           env=no_plugin_env(), timeout=NAV_TIMEOUT_S)
+    except subprocess.TimeoutExpired as e:
+        out = e.stdout.decode("utf-8", "replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
+        r = {"error": f"timed out after {NAV_TIMEOUT_S} s"}
+        kept = keep_stream(out)
+        if kept:
+            r["stream"] = kept
+        nav_row(prompt, r)
+        return r
     r = nav_result(p.stdout, cwd, time.time() - t)
     kept = keep_stream(p.stdout)
     if kept:
         r["stream"] = kept
     if "error" in r:
         r["error"] += (": " + p.stderr.strip()[-300:]) if p.stderr.strip() else ""
-        return r
-    spent_run(r)
-    if RAW.get("path"):
-        with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
-            f.write(json.dumps({"prompt": prompt[:300], **r}) + "\n")
+    else:
+        spent_run(r)
+    nav_row(prompt, r)
     return r
 
 
