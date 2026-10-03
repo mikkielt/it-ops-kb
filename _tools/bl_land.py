@@ -713,6 +713,8 @@ def cmd_land(bl, a):
             say(f"land: {bl.label(iid)} landed")
             landed = True
         return 0
+    except kg_lock.MainLockTimeout as e:  # a live holder kept the main lock for the whole bound: report blocked
+        raise land_stop("fetch and rebase", str(e)) from None
     finally:  # back to where land started, whatever happened after the rebase switched to BRANCH
         back = (["switch", "-q", start_ref[len("refs/heads/"):]] if start_ref.startswith("refs/heads/")
                 else ["switch", "-q", "--detach", start])

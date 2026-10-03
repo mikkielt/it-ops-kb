@@ -1,6 +1,7 @@
 """The host-wide main lock (kb/_self/git.md, Two runners on one host): one O_EXCL file `kb-main.lock` in the host lock
 directory (KB_HOST_LOCK_DIR, else /tmp), held while a process moves the integration main: `backlog.py land`'s fetch and
-rebase, and `kbgit.py sync --push`. A second process prints who holds it and what it is doing, and waits. It is the
+rebase, and `kbgit.py sync --push`. A second process prints who holds it and what it is doing, and waits at most
+MAIN_LOCK_MAX_WAIT_S (KB_MAIN_LOCK_MAX_WAIT_S) for a live holder, then raises MainLockTimeout. It is the
 test lock's mechanism (`tests.py`: the holder record, the grace for an unwritten record, the atomic clearing of a
 holder whose pid no longer runs), on its own file.
 
@@ -22,6 +23,8 @@ HELD_ENV = "KB_MAIN_LOCK_HELD"
 TIMEOUT_ENV = "KB_GIT_NETWORK_TIMEOUT"
 DEFAULT_TIMEOUT = 120.0
 TERM_GRACE = 2.0
+MAIN_LOCK_MAX_WAIT_S = 1800.0  # the longest a process waits for a live holder of the main lock
+MAX_WAIT_ENV = "KB_MAIN_LOCK_MAX_WAIT_S"
 HOLD = {"step": None}  # the step this process took the main lock with (None: it holds none)
 
 
@@ -96,6 +99,30 @@ class LockOrderError(RuntimeError):
     """The main lock was asked for by a process that holds the test lock: the one order is main, then test."""
 
 
+class MainLockTimeout(RuntimeError):
+    """A live process still held the main lock after the bounded wait; the message names it and ends `: blocked`."""
+
+
+def max_wait():
+    """The bound in seconds of the wait for a live holder: KB_MAIN_LOCK_MAX_WAIT_S, else MAIN_LOCK_MAX_WAIT_S; the
+    default when it is unset, not a number or not positive. Read at each call."""
+    try:
+        n = float(os.environ.get(MAX_WAIT_ENV, ""))
+    except ValueError:
+        return float(MAIN_LOCK_MAX_WAIT_S)
+    return n if n > 0 and n != float("inf") else float(MAIN_LOCK_MAX_WAIT_S)
+
+
+def holder_age(started):
+    """A holder's age from its `started` stamp, as `N min` (`<1 min` under a minute); '?' when it cannot be read."""
+    try:
+        t = datetime.datetime.strptime(started, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+    except (TypeError, ValueError):
+        return "?"
+    mins = int((datetime.datetime.now(datetime.timezone.utc) - t).total_seconds() // 60)
+    return f"{mins} min" if mins >= 1 else "<1 min"
+
+
 def wanted():
     """Whether this process takes the lock: not inside a test (PYTEST_CURRENT_TEST), whose repositories are scratch
     clones that move no real main, and which may already hold the test lock."""
@@ -114,7 +141,8 @@ def holder_step(text):
 def main_lock(step, label="kbgit.py", poll=None, clone=None, on_stale=None):
     """Hold the main lock for the block: STEP names what the holder does (it is written in the record and printed to
     a waiter). Takes it by exclusive create, prints the holder and its step and waits while a live process holds it,
-    clears a holder whose pid no longer runs, and releases on exit, on an error and on SIGTERM. Inside a process the
+    clears a holder whose pid no longer runs, gives up with MainLockTimeout once it has waited max_wait() seconds
+    for live holders, and releases on exit, on an error and on SIGTERM. Inside a process the
     holder started (HELD_ENV names the pid the file records) it takes nothing. on_stale(label) is called after a lock
     is judged stale and before it is cleared (a test's hook)."""
     import tests as tests_py  # the test lock's helpers: one mechanism, a second file
@@ -137,6 +165,8 @@ def main_lock(step, label="kbgit.py", poll=None, clone=None, on_stale=None):
     me = (f"pid={os.getpid()}\nclone={clone or os.getcwd()}\n"
           f"started={datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}\nstep={step}\n")
     told = None
+    waited = 0.0  # seconds slept for a LIVE holder: a cleared stale lock or an unwritten record does not count
+    bound = max_wait()
     while True:
         try:
             fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
@@ -164,7 +194,13 @@ def main_lock(step, label="kbgit.py", poll=None, clone=None, on_stale=None):
                 print(f"{label}: waiting for the host main lock held by pid {holder['pid']} "
                       f"(clone {holder['clone']}, started {holder['started']}, {holder_step(text)})", flush=True)
                 told = holder
+            if waited >= bound:
+                raise MainLockTimeout(
+                    f"host main lock still held by pid {holder['pid']} (clone {holder['clone']}, step "
+                    f"{holder_step(text)}, age {holder_age(holder['started'])}) after {bound:g} s: blocked")
+            began = time.monotonic()
             time.sleep(poll)
+            waited += time.monotonic() - began
             continue
         with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
             f.write(me)

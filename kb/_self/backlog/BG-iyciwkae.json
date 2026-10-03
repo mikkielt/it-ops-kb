@@ -32,7 +32,9 @@
   "touches": [
     "_tools/kg_lock.py",
     "_tools/test_kg_lock_bound.py",
-    "kb/_self/git.md"
+    "kb/_self/git.md",
+    "_tools/bl_land.py",
+    "_tools/kg_sync.py"
   ],
   "claimed_by": "mac-third-worker"
 }
