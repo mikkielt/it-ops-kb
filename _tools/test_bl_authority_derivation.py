@@ -192,3 +192,65 @@ def test_gate_class_derivation_hardened_the_autopilot_cannot_start_a_sprint_of_r
     code, out = b(repo, "answer", sp, "start", "--answer", "approve", "--by", "autopilot")
     assert code == 2 and "class push" in out, out
     assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+
+
+# ---- guarded_touches: a touch of a _tools/test_*.py that does not exist yet (the headless guard denies creating it)
+
+
+@pytest.fixture
+def scratch_project(tmp_path, monkeypatch):
+    """A project of its own with one existing test file; the guard judges paths against CLAUDE_PROJECT_DIR."""
+    (tmp_path / "_tools").mkdir()
+    (tmp_path / "_tools" / "test_exists.py").write_text("x = 1\n", encoding="utf-8")
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(tmp_path))
+    return tmp_path
+
+
+def guarded(*touches):
+    return bl_authority.guarded_touches({"touches": list(touches)})
+
+
+def test_guarded_touches_new_test_file_a_missing_test_file_is_guarded_an_existing_one_is_not(scratch_project):
+    assert guarded("_tools/test_brand_new.py") == ["_tools/test_brand_new.py"]
+    assert guarded("_tools/test_exists.py") == []  # planted: an existing test file stays editable for a headless run
+    assert guarded("_tools/test_exists.py", "_tools/test_other_new.py") == ["_tools/test_other_new.py"]
+
+
+@pytest.mark.parametrize("touch", ["./_tools/test_new.py", "_tools/Test_New.py", "_tools\\test_new.py", " _tools/test_new.py ",
+                                   "_tools//test_new.py", "_tools/./test_new.py"])
+def test_guarded_touches_new_test_file_every_spelling_of_a_missing_file_is_guarded(scratch_project, touch):
+    assert guarded(touch) == [touch]
+
+
+@pytest.mark.parametrize("touch", ["_tools/test_exists.py", "./_tools/test_exists.py", "_tools\\test_exists.py"])
+def test_guarded_touches_new_test_file_every_spelling_of_an_existing_file_is_unguarded(scratch_project, touch):
+    assert guarded(touch) == []
+
+
+def test_guarded_touches_new_test_file_a_glob_is_judged_by_what_it_matches_today(scratch_project):
+    assert guarded("_tools/test_*.py") == []  # matches test_exists.py today
+    assert guarded("_tools/test_ex*.py") == []
+    assert guarded("_tools/test_zzq*.py") == ["_tools/test_zzq*.py"]  # matches nothing: it would create files
+    assert guarded("_tools/test_?ew.py") == ["_tools/test_?ew.py"]
+    (scratch_project / "_tools" / "test_zzq_made.py").write_text("x = 1\n", encoding="utf-8")
+    assert guarded("_tools/test_zzq*.py") == []  # now it matches a file
+
+
+@pytest.mark.parametrize("touch", ["docs/test_new.py", "_tools/sub/test_new.py", "_tools/test_new.txt", "kb/_self/test_new.py",
+                                   "_tools/other.py", "tests/test_new.py", "test_new.py"])
+def test_guarded_touches_new_test_file_other_paths_are_not_over_matched(scratch_project, touch):
+    assert guarded(touch) == []
+
+
+def test_guarded_touches_new_test_file_the_guard_paths_stay_guarded_and_blank_touches_are_ignored(scratch_project):
+    assert guarded("_tools/kb_hook.py", "", "  ", "_tools/test_exists.py") == ["_tools/kb_hook.py"]
+    assert bl_authority.guarded_touches({"touches": [5, None, "_tools/test_new.py"]}) == ["_tools/test_new.py"]
+
+
+def test_guarded_touches_new_test_file_agrees_with_the_headless_guard(scratch_project, monkeypatch):
+    """The sprint-start refusal and the guard use one rule: what start calls guarded is what the guard denies."""
+    import kb_hook
+    monkeypatch.setenv("KB_HEADLESS_RUNNER", "1")
+    for rel, want in (("_tools/test_brand_new.py", True), ("_tools/test_exists.py", False)):
+        out = kb_hook.headless_guard({"tool_name": "Write", "tool_input": {"file_path": rel, "content": "x"}})
+        assert bool(out) == want == bool(guarded(rel)), (rel, out)
