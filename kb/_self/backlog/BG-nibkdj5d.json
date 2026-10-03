@@ -42,7 +42,8 @@
     ".claude/skills/kb-item/SKILL.md",
     "_tools/test_bl_land.py",
     "_tools/backlog.py",
-    "_tools/test_layout.py"
+    "_tools/test_layout.py",
+    "kb/_self/maintaining.md"
   ],
   "claimed_by": "mac-first"
 }
