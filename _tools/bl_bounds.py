@@ -6,8 +6,9 @@ The kb-sprint skill tells the orchestrator when to run each form.
                                drafts, draft inflow against the done outflow of the last sprints, each item's rework
   bounds stop --sprint SP [--budget K --landed N] [--runs-landed N[:CAUSE],...] [--json]
                                whether the manager stops starting work, and why: `sprint-budget` (N of K items
-                               landed), `no-progress` (the last NO_PROGRESS_RUNS runs of `--runs-landed`, oldest first,
-                               each landed nothing; the tick supplies the landed count of each run it recorded),
+                               landed), `no-progress` (the last NO_PROGRESS_RUNS runs of the sprint's history, oldest first,
+                               each landed nothing; the history is _cache/autopilot/SP/runs.jsonl, which the runner
+                               writes at each run's end, and `--runs-landed` replaces it for one call),
                                `inflow-guard` (a cap of the report is passed) or `no-ready` (no item of SP is
                                ready that is not at its rework cap). Exit 1 when it stops, 0 when work goes on; the
                                first line is `bounds: stop CAUSE: DETAIL` or `bounds: go: ...`, which the digest quotes
