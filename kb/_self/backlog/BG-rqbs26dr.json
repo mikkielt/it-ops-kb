@@ -2,7 +2,7 @@
   "id": "BG-rqbs26dr",
   "kind": "bug",
   "title": "backlog.py close leaves other items' depends_on and relates_to naming the items it deleted, so check fails",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-xdzgepun",
   "priority": "P3",
@@ -20,5 +20,19 @@
   "touches": [
     "_tools/test_bl_land.py"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "3ccb772566b2a7ed36a3d2cf8113bb71157175c5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "close_drops_links_to_deleted_items"
+        ],
+        "exit": 0,
+        "sha256": "1841884d2a01ba09"
+      }
+    ]
+  }
 }
