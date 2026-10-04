@@ -6,3 +6,8 @@ _tools/test_querylog_e2e.py::TestResearch::test_research_off
 _tools/test_backlog.py::TestBacklogLand::test_unlocked_worker_worktree_unlocked_never
 # its parameter, the old `glab mr merge code/<id> --auto-merge=false ...` text, was replaced by `python3 _tools/backlog.py merge <id>` when an agent began merging only its item's own code/<id> (commit c0cfa67c)
 _tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[1-`glab mr merge code/<id> --auto-merge=false --yes -R <project url>`-`glab mr merge code/<id>`]
+# the in-git host runs keep one refusal and one non-refusal case; TestHostRules proves the other refusal texts and the connection-refused text
+_tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[gitlab-protected]
+_tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[github-denied]
+_tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[github-gh006]
+_tools/test_ql_deliver.py::TestHostNoRefusalInGit::test_case[unreachable-at-push]

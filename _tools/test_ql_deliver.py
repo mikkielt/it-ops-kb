@@ -35,10 +35,11 @@ and the other classes below).
                     host's apply names its data directory for research
   TestHost*InGit    (marker git) a plugin host in mode `auto` with a fake plugins directory and a local bare remote:
                     the push runs from the managed clone under the data directory and lands on main (TestHostInGit);
-                    a remote whose pre-receive hook refuses with GitLab's or GitHub's message writes DISABLED and
-                    deletes the spool, and distill then logs nothing (TestHostRefusalsInGit); planted: an unreachable
-                    remote at clone and a red gate (TestHostInGit), a generic declined hook and an unreachable remote
-                    at push (TestHostNoRefusalInGit) write no DISABLED and keep the spool
+                    a remote whose pre-receive hook refuses with GitLab's project-rule message writes DISABLED and
+                    deletes the spool, and distill then logs nothing (TestHostRefusalsInGit; the protected-branch,
+                    GitHub denied and GH006 texts are proven by TestHostRules); planted: an unreachable remote at
+                    clone and a red gate (TestHostInGit) and a generic declined hook (TestHostNoRefusalInGit) write no
+                    DISABLED and keep the spool (a connection refused at push is proven by TestHostRules)
   TestCloudInGit    (marker git) a cloud session whose remote takes pushes to the checked-out branch only: the
                     automatic commits land on that branch and main stays; a second run pushes nothing; a detached
                     HEAD is refused
@@ -1041,8 +1042,7 @@ class TestHostRules:
         assert calls[1][-2:] == ["--clone", str(tmp_path / "clone")]
 
 
-HOST_REFUSALS = {"gitlab-project": GITLAB_PROJECT, "gitlab-protected": GITLAB_PROTECTED,
-                 "github-denied": GITHUB_DENIED, "github-gh006": GITHUB_GH006}
+HOST_REFUSALS = {"gitlab-project": GITLAB_PROJECT}  # one refusal end to end; TestHostRules proves the other texts
 
 
 class HostCase:
@@ -1074,9 +1074,6 @@ class HostCase:
             if argv[0] in ("glab", "gh"):
                 return signed_out(argv)
             return run_here(argv, cwd=cwd, env=env)
-        if case == "unreachable-at-push":  # the fetch works, the push meets a closed port
-            clone = ql_deliver.managed_clone(q, bare.path, run, print)
-            Repo(clone, env).git("config", "remote.origin.pushurl", UNREACHABLE)
         said = []
         rc = ql_distill.distill(qdir=q, cfg=auto_config(q), haiku=ql_base.Replay(FIXTURES / "haiku.json"),
                                 now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append,
@@ -1127,7 +1124,7 @@ class TestHostInGit(HostCase):
 @pytest.mark.skipif(not GIT, reason="git is not installed")
 @pytest.mark.git
 class TestHostRefusalsInGit(HostCase):
-    @pytest.mark.parametrize("case", ["gitlab-project", "gitlab-protected", "github-denied", "github-gh006"])
+    @pytest.mark.parametrize("case", ["gitlab-project"])
     def test_case(self, case, kb_seed, tmp_path):
         self.case(case, kb_seed, tmp_path)
 
@@ -1135,7 +1132,7 @@ class TestHostRefusalsInGit(HostCase):
 @pytest.mark.skipif(not GIT, reason="git is not installed")
 @pytest.mark.git
 class TestHostNoRefusalInGit(HostCase):
-    @pytest.mark.parametrize("case", ["push-rule", "unreachable-at-push"])
+    @pytest.mark.parametrize("case", ["push-rule"])
     def test_case(self, case, kb_seed, tmp_path):
         self.case(case, kb_seed, tmp_path)
 
