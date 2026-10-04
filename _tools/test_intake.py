@@ -1543,6 +1543,38 @@ def test_intake_ci_a_covered_unreadable_or_green_pipeline_reports_nothing(tmp_pa
     assert intake(w.root, capsys, "--network") == (0, ["intake: no candidates"], "")
 
 
+RETRIED_JOBS = [{"id": 13, "name": "kb-lint", "status": "success"},  # newest first: the retry passed
+                {"id": 12, "name": "kb-lint", "status": "failed", "failure_reason": "script_failure"},
+                {"id": 11, "name": "kb-tests-windows", "status": "failed", "failure_reason": "script_failure"}]
+
+
+def test_pipeline_failure_skips_a_retried_job_in_latest_pipeline(tmp_path, monkeypatch):
+    """red_detail names the job whose newest attempt failed, not one retried to success (kb-lint sorts first)."""
+    w, calls = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RETRIED_JOBS,
+                        {11: RED_LOGS[11], 12: "FAILED _tools/test_y.py::test_b - x\n"})
+    p, _ = bl_intake.latest_pipeline(w.root)
+    assert p["jobs"] == ["kb-tests-windows"] and p["first"] == "kb-tests-windows", p
+    assert p["fingerprint"] == ci_fp("kb-tests-windows", "_tools/test_x.py::test_a")
+    assert not any(c[-1].endswith("/jobs/12/trace") for c in calls)  # the retried attempt's log is not read
+    p, _ = bl_intake.latest_pipeline(w.root, job="kb-tests-windows")
+    assert p["jobs"] == ["kb-tests-windows"]
+
+
+def test_pipeline_failure_skips_a_retried_job_that_is_the_only_failure_in_latest_pipeline(tmp_path, monkeypatch):
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RETRIED_JOBS[:2])
+    p, _ = bl_intake.latest_pipeline(w.root)
+    assert p["jobs"] == [] and "first" not in p and "failure" not in p, p
+
+
+def test_pipeline_failure_skips_a_retried_job_but_names_a_newest_failed_attempt_in_latest_pipeline(
+        tmp_path, monkeypatch):
+    jobs = [{"id": 12, "name": "kb-lint", "status": "failed", "failure_reason": "script_failure"},
+            {"id": 11, "name": "kb-lint", "status": "failed", "failure_reason": "script_failure"}]
+    w, _ = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], jobs)
+    p, _ = bl_intake.latest_pipeline(w.root)
+    assert p["jobs"] == ["kb-lint"] and p["first"] == "kb-lint", p
+
+
 def test_intake_ci_the_fingerprint_of_a_recorded_real_log_is_red_pipelines(tmp_path, monkeypatch, capsys, ci_register):
     doc = json.loads((FORGE_LOGS / "gitlab-com-kb-tests-windows.json").read_text(encoding="utf-8"))
     log = "".join(doc["lines"])

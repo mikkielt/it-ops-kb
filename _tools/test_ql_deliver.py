@@ -611,6 +611,40 @@ class TestJobVerdict:
         _, fp = ql_deliver.pipeline_failure("https://gitlab.example.com/team/kb.git", pipe, run)
         assert fp and pipe.get("job") == ("kb-tests" if named else None), pipe
 
+    RETRIED = [{"id": 5, "name": "kb-lint", "status": "success"},  # the retry, newest first
+               {"id": 4, "name": "kb-lint", "status": "failed", "failure_reason": "script_failure"},
+               {"id": 3, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure"}]
+
+    def test_pipeline_failure_skips_a_retried_job(self):
+        """A job that failed and was retried to success is not the failed job: its newest attempt passed, so a
+        `--job` repro naming it would be green at once. The other job, whose newest attempt failed, is named."""
+        import backlog
+        calls = []
+        run = fingerprint_forge(self.RETRIED, {3: "FAILED _tools/test_x.py::test_a - assert 1 == 2\n",
+                                               4: "FAILED _tools/test_y.py::test_b - assert 1 == 2\n"})
+        pipe = {"id": 3}
+        failure, fp = ql_deliver.pipeline_failure("https://gitlab.example.com/team/kb.git", pipe,
+                                                  lambda argv, cwd=None: calls.append(argv) or run(argv, cwd))
+        assert pipe["job"] == "kb-tests", pipe  # not kb-lint, which sorts first and whose retry passed
+        assert failure == "_tools/test_x.py::test_a"
+        assert fp == backlog.failure_fingerprint("kb-tests", "_tools/test_x.py::test_a")
+        assert len([c for c in calls if "/jobs?" in c[-1]]) == 1  # one job-list call, not a loop
+
+    def test_pipeline_failure_skips_a_retried_job_that_is_the_only_failure(self):
+        run = fingerprint_forge(self.RETRIED[:2], {4: "FAILED _tools/test_y.py::test_b - x\n"})
+        pipe = {"id": 3}
+        assert ql_deliver.pipeline_failure("https://gitlab.example.com/team/kb.git", pipe, run) == ("", None)
+        assert "job" not in pipe
+
+    def test_pipeline_failure_skips_a_retried_job_but_names_a_newest_failed_attempt(self):
+        """The newest attempt failed (a retry that failed again, or no retry): it is the failed job."""
+        jobs = [{"id": 5, "name": "kb-lint", "status": "failed", "failure_reason": "script_failure"},
+                {"id": 4, "name": "kb-lint", "status": "failed", "failure_reason": "script_failure"}]
+        run = fingerprint_forge(jobs, {5: "FAILED _tools/test_y.py::test_b - x\n"})
+        pipe = {"id": 3}
+        failure, fp = ql_deliver.pipeline_failure("https://gitlab.example.com/team/kb.git", pipe, run)
+        assert pipe["job"] == "kb-lint" and failure == "_tools/test_y.py::test_b"
+
     def test_auto_kinds(self):
         import kbgit
         paths = ["kb/_querylog/findings/2026-09/x.jsonl", "_tools/aliases.csv", "kb/public/_retrieval/lookup_eval.csv",
@@ -1216,7 +1250,7 @@ def fingerprint_forge(jobs, logs):
     def run(argv, cwd=None):
         if argv[1:3] == ["auth", "status"]:
             return 0, "", "Logged in"
-        if "/jobs?scope=failed" in argv[-1]:
+        if "/jobs?" in argv[-1]:  # the pipeline's job list (a list of only failed jobs is a valid one)
             return 0, json.dumps(jobs), ""
         m = re.search(r"/jobs/(\d+)/trace$", argv[-1])
         return (0, logs.get(int(m.group(1)), ""), "") if m else (1, "", "unexpected call")
