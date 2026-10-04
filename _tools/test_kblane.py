@@ -13,6 +13,8 @@
              in, an API failure (status, body, missing variables, no forge) exiting 2 and never passing, and the
              pre-push hook refusing a code-lane commit for the integration main with no API call. The fixture drops
              every forge variable a CI job sets and fails any request off loopback (planted: a GitLab job's variables).
+  TestPrePushLaneEdges  the hook's edges: a merge-pull of content over a merged code request not refused, a merge that
+             brings code refused, a push by url or another remote name judged like origin, an unrelated url not judged.
 """
 import argparse, ast, io, json, re, threading, urllib.error, urllib.parse, urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -389,3 +391,136 @@ class TestCheckLanes:
         repo.git("fetch", "-q", "origin")
         rc, _ = self.hook(repo, capsys, "refs/heads/main", head)
         assert rc == 0
+
+
+class TestPrePushLaneEdges:
+    """The pre-push lane refusal's edges, in a throwaway clone with a bare integration remote: a merge-pull of content
+    over a code merge request that already merged is not refused (a merge is judged on what neither parent brings),
+    a merge that really brings code (a code change made in the merge itself, or a local code side branch) still is; a
+    push of a code commit to the integration remote by its url, or by another remote name with its url, is refused like
+    one to `origin`, and a push to an unrelated url is not judged as integration. No network: every remote is a local
+    directory."""
+
+    @pytest.fixture
+    def repo(self, tmp_path, monkeypatch):
+        for k in ("KB_TESTS_FAST", "KB_TEST_WORKERS"):
+            monkeypatch.delenv(k, raising=False)
+        monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path / "locks"))
+        monkeypatch.setenv("KB_GATE_DONE", "1")  # the gate is skipped, the lane refusal is not
+        for name in ("origin.git", "other.git"):
+            (tmp_path / name).mkdir()
+            Repo(tmp_path / name).git("init", "-q", "--bare", "-b", "main")
+        (tmp_path / "w").mkdir()
+        r = Repo(tmp_path / "w")
+        r.git("init", "-q", "-b", "main")
+        r.origin_url = str(tmp_path / "origin.git")
+        r.other_url = str(tmp_path / "other.git")
+        r.base = commit(r, {"kb/public/a.md": "a\n"}, "base")
+        r.git("remote", "add", "origin", r.origin_url)
+        r.git("push", "-q", "origin", "main")
+        monkeypatch.setattr(kbgit, "KB", r.path)
+        monkeypatch.setattr(kg_hooks, "KB", r.path)
+        monkeypatch.setattr(kg_lane, "KB", r.path)
+        monkeypatch.setattr(kblane, "urllib", None)  # any API call would fail loudly: the hook makes none
+        return r
+
+    def push(self, repo, capsys, local, remote_sha, args=("origin",)):
+        rc = kbgit.hook_pre_push(list(args), f"refs/heads/main {local} refs/heads/main {remote_sha}\n")
+        return rc, capsys.readouterr().err
+
+    def merged_code_request(self, repo):
+        """A code commit that reached the remote's main without the local main, as a merged merge request does."""
+        repo.git("checkout", "-q", "-b", "mr", repo.base)
+        code = commit(repo, {"_tools/merged.py": "1\n"}, "merged code")
+        repo.git("push", "-q", "origin", "mr:main")
+        repo.git("checkout", "-q", "main")
+        repo.git("branch", "-q", "-D", "mr")
+        return code
+
+    @pytest.mark.git
+    @requires_git
+    def test_a_merge_pull_of_content_is_not_refused(self, repo, capsys):
+        merged = self.merged_code_request(repo)
+        local = commit(repo, {"kb/public/b.md": "b\n"}, "content")
+        repo.git("fetch", "-q", "origin")
+        repo.git("merge", "-q", "--no-ff", "-m", "pull", "origin/main")
+        head = repo.rev("HEAD")
+        assert lane_of(repo, head) == ("code", ["_tools/merged.py"])  # against its first parent alone it reads as code
+        assert [(x[0], x[1]) for x in kg_hooks.new_lanes([f"{merged}..{head}"])] == [
+            (local[:7], "content"), (head[:7], "content")]
+        rc, err = self.push(repo, capsys, head, merged)
+        assert rc == 0, err
+        # planted: a plain code commit on top of the pull is refused
+        code = commit(repo, {"_tools/y.py": "y\n"}, "code")
+        rc, err = self.push(repo, capsys, code, merged)
+        assert rc == 1 and "_tools/y.py" in err
+
+    @pytest.mark.git
+    @requires_git
+    def test_a_merge_that_brings_code_is_still_refused(self, repo, capsys):
+        merged = self.merged_code_request(repo)
+        commit(repo, {"kb/public/b.md": "b\n"}, "content")
+        repo.git("fetch", "-q", "origin")
+        # a code change made in the merge itself (an evil merge) is neither parent's
+        repo.git("merge", "-q", "--no-commit", "--no-ff", "origin/main")
+        repo.write("_tools/evil.py", "e\n")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "merge with code")
+        rc, err = self.push(repo, capsys, repo.rev("HEAD"), merged)
+        assert rc == 1 and "_tools/evil.py" in err
+        assert "_tools/merged.py" not in err
+
+    @pytest.mark.git
+    @requires_git
+    def test_a_merge_of_a_local_code_branch_is_refused(self, repo, capsys):
+        repo.git("checkout", "-q", "-b", "side", repo.base)
+        commit(repo, {"_tools/side.py": "s\n"}, "side code")
+        repo.git("checkout", "-q", "main")
+        commit(repo, {"kb/public/b.md": "b\n"}, "content")
+        repo.git("merge", "-q", "--no-ff", "-m", "merge side", "side")
+        rc, err = self.push(repo, capsys, repo.rev("HEAD"), "0" * 40)
+        assert rc == 1 and "_tools/side.py" in err
+
+    @pytest.mark.git
+    @requires_git
+    def test_a_push_by_url_or_by_another_remote_name_is_refused(self, repo, capsys):
+        commit(repo, {"_tools/x.py": "1\n"}, "code")
+        head = repo.rev("HEAD")
+        zero = "0" * 40
+        rc, err = self.push(repo, capsys, head, zero)  # the baseline: by name
+        assert rc == 1 and "_tools/x.py" in err
+        # by the integration remote's url: git passes the url as both arguments
+        assert kg_hooks.to_integration(repo.origin_url, repo.origin_url)
+        rc, err = self.push(repo, capsys, head, zero, (repo.origin_url, repo.origin_url))
+        assert rc == 1 and "_tools/x.py" in err and "sync --push" in err
+        # by another remote name that points at it, with and without the url git passes
+        repo.git("remote", "add", "second", repo.origin_url)
+        for args in (("second", repo.origin_url), ("second",)):
+            rc, err = self.push(repo, capsys, head, zero, args)
+            assert rc == 1 and "_tools/x.py" in err, args
+        # a remote whose push url is the integration remote's is judged the same
+        repo.git("remote", "add", "pushy", repo.other_url)
+        repo.git("remote", "set-url", "--push", "pushy", repo.origin_url)
+        rc, err = self.push(repo, capsys, head, zero, ("pushy", repo.origin_url))
+        assert rc == 1 and "_tools/x.py" in err
+        # the same holds with a remote sha the clone has
+        rc, err = self.push(repo, capsys, head, repo.base, (repo.origin_url, repo.origin_url))
+        assert rc == 1
+
+    @pytest.mark.git
+    @requires_git
+    def test_an_unrelated_url_is_not_judged_as_integration(self, repo, capsys):
+        commit(repo, {"_tools/x.py": "1\n"}, "code")
+        head = repo.rev("HEAD")
+        zero = "0" * 40
+        assert not kg_hooks.to_integration(repo.other_url, repo.other_url)
+        assert kg_hooks.lane_refusals(repo.other_url, f"refs/heads/main {head} refs/heads/main {zero}\n",
+                                      repo.other_url) == []
+        rc, err = self.push(repo, capsys, head, zero, (repo.other_url, repo.other_url))
+        assert rc == 0, err
+        repo.git("remote", "add", "elsewhere", repo.other_url)
+        rc, err = self.push(repo, capsys, head, zero, ("elsewhere", repo.other_url))
+        assert rc == 0, err
+        assert not kg_hooks.to_integration("elsewhere")
+        # planted: a url that merely contains the integration remote's is not it
+        assert not kg_hooks.to_integration(repo.origin_url + "-copy", repo.origin_url + "-copy")
