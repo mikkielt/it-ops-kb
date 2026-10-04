@@ -8,7 +8,7 @@ import pytest
 import bl_authority as a
 
 GUARD_PATHS = {
-    "_tools/autopilot.py": "agents-rule", "_tools/bl_authority.py": "agents-rule", "_tools/bl_bounds.py": "agents-rule",
+    "_tools/bl_authority.py": "agents-rule", "_tools/bl_bounds.py": "agents-rule",
     "_tools/bl_selfcheck.py": "agents-rule", "_tools/kb_hook.py": "agents-rule", "_tools/kbdecide.py": "agents-rule",
     "_tools/bl_cost.py": "agents-rule", "_tools/tests.py": "agents-rule", "_tools/conftest.py": "agents-rule",
     ".claude/settings.local.json": "agents-rule", "_tools/kblane.py": "push", "_tools/kg_sync.py": "push",

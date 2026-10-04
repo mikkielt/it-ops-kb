@@ -133,8 +133,7 @@ def test_backlog_headless_refuses_operator_answers_the_guard_reads_the_parsed_va
 
 
 def test_backlog_headless_refuses_operator_answers_the_runner_sets_the_variable():
-    import autopilot
-    assert autopilot.HEADLESS_ENV == ENV == bl_authority.HEADLESS_ENV
+    assert ENV == bl_authority.HEADLESS_ENV
     import kbdecide
     assert kbdecide.HEADLESS_ENV == ENV
 

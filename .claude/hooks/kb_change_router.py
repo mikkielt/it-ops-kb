@@ -35,16 +35,13 @@ CHANGE = re.compile(r"\b(?:add|create|write|update|edit|change|modify|fix|correc
                     r"investigate|census|verify|bump|upgrade|set ?up|install|ingest|import|put|plan|schedule|triage)\b|"
                     r"\bwork (?:through )?(?:the )?query[ -]?log|\bfile (?:a |an )?(?:bug|defect)\b|"
                     r"\b(?:start|run|close|work on|pick up) (?:(?:the|a|this|next) )*(?:sprint|item|story|task|bug)\b|"
-                    r"\b(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}\b|"
-                    r"\bmanager (?:loop|tick)\b|\b(?:start|run)\b[^.\n]*\bautopilot\b(?!\.py)", re.I)
+                    r"\b(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}\b", re.I)
 QUESTION = re.compile(r"(?:how|what|why|when|where|which|who|does|do|did|is|are|was|can|could|should|would)\b[^\n]*\?\s*$",
                       re.I | re.S)  # a single question ("how do I fix error X?") is a lookup, not a change request
 HARNESS = re.compile(r"[<\[]|Another Claude session sent a message")  # a subagent's report or a task notification,
 # delivered as a prompt: not a person's request
 ROUTES = (  # (skill, when, pattern): the first three that match are named, in this order
     ("kb-sprint", "plan, start, run, review or close a sprint", r"\bsprints?\b"),
-    ("kb-autopilot", "run the backlog as a manager loop, one tick",
-     r"/kb-autopilot\b|\bmanager (?:loop|tick)\b|\b(?:run|start)\b[^.\n]*\bautopilot\b(?!\.py)"),
     ("kb-item", "work on one backlog item", r"\b(?:EP|ST|TK|SB|BG)-[a-z2-7]{8}\b|\b(?:backlog|work) item\b|"
      r"\b(?:work on|pick up) (?:(?:the|a|this|next) )*(?:item|story|task|bug)\b"),
     ("kb-backlog", "plan epics, stories and tasks, file or triage a bug", r"\bbacklog\b|\bepics?\b|\bstor(?:y|ies)\b|"

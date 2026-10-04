@@ -231,8 +231,7 @@ AUTOPILOT_START_CAUSES = []  # functions (bl, sprint id) -> [cause text]; `bl_ch
 
 def guarded_items(bl, sid):
     """[(id, guard-class touches)] of the sprint's items not yet done or dropped whose touches a headless runner may
-    not edit (bl_authority.guarded_touches: the files kb_hook.headless_guard denies it). Shared by `start` (the
-    warning) and `autopilot.py runner start` (the refusal)."""
+    not edit (bl_authority.guarded_touches: the files kb_hook.headless_guard denies it); `start` warns of them."""
     import bl_authority
     out = []
     for i in bl.sprint_items(sid):

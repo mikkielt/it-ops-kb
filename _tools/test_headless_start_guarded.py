@@ -1,17 +1,14 @@
 """A sprint with an item whose touches a headless run may not edit (the files kb_hook.headless_guard denies:
-bl_authority.guarded_touches) is operator-present only: `backlog.py start` warns of each such item, and
-`autopilot.py runner start` refuses the sprint (exit 1, the items and paths named, no worktree, no child). A done item
-does not count. The tests named headless_start_guarded_items are the item's checks; the shared function agrees with
+bl_authority.guarded_touches) is operator-present only: `backlog.py start` warns of each such item. A done item does
+not count. The tests named headless_start_guarded_items are the item's checks; the shared function agrees with
 kb_hook.guarded_file on every path the guard covers, so the notice and the guard cannot drift apart."""
 import pytest
 
-import autopilot
 import backlog
 import bl_authority
 import bl_testkit
 import kb_hook
 from bl_testkit import PASS, argstr, b, item
-from test_autopilot import SP, STORY, T1, T2, T3, World, stream
 
 bl_testkit.bind(backlog)
 repo = bl_testkit.repo
@@ -24,20 +21,6 @@ def host(tmp_path, monkeypatch):
     for k in ("KB_TESTS_FAST", "KB_TEST_WORKERS", "KB_HEADLESS_RUNNER"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path / "hostlocks"))
-
-
-@pytest.fixture
-def world(tmp_path, monkeypatch):
-    return World(tmp_path, monkeypatch)
-
-
-def plant(world, guarded_status="doing"):
-    """T1 touches a guard-class file, T2 a kb article, T3 is done; the committed state is pushed to the clone's origin."""
-    world.item(T1, kind="task", status=guarded_status, parent=STORY, touches=[GUARDED])
-    world.item(T2, kind="task", status="doing", parent=STORY, touches=[PLAIN])
-    world.item(T3, kind="task", status="done", parent=STORY, touches=[PLAIN])
-    world.commit("plant")
-    world.repo.git("push", "origin", "main")
 
 
 def test_headless_start_guarded_items_start_warns_for_the_guarded_item_only(repo):
@@ -56,35 +39,6 @@ def test_headless_start_guarded_items_start_warns_for_the_guarded_item_only(repo
     assert (f"  warning: {tk} “Guarded” touches {GUARDED}: a headless runner cannot edit them "
             "(operator-present session only)") in out, out
     assert out.count("operator-present session only") == 1 and "“Plain”" not in out, out
-
-
-def test_headless_start_guarded_items_runner_start_refuses_and_starts_nothing(world, capsys):
-    plant(world)
-    world.stream(stream())
-    assert world.start() == 1
-    err = capsys.readouterr().err
-    assert T1 in err and GUARDED in err and "operator-present only" in err, err
-    assert T2 not in err and PLAIN not in err, err
-    assert not world.wt().exists() and not (world.tmp / "seen.json").exists()  # no worktree, no child
-    assert not autopilot.cache_dir(world.root, SP).exists()
-
-
-def test_headless_start_guarded_items_runner_start_without_the_guarded_item_starts_as_before(world):
-    plant(world)
-    world.item(T1, kind="task", status="doing", parent=STORY, touches=[PLAIN])
-    world.commit("unguard")
-    world.repo.git("push", "origin", "main")
-    world.stream(stream())
-    assert world.start() == 0
-    assert world.wt().is_dir() and world.seen()["headless"]
-
-
-@pytest.mark.parametrize("status", ["done", "dropped"])
-def test_headless_start_guarded_items_a_finished_guarded_item_does_not_block(world, status):
-    plant(world, guarded_status=status)
-    world.stream(stream())
-    assert world.start() == 0
-    assert world.wt().is_dir()
 
 
 def concrete(path):
