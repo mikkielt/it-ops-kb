@@ -639,6 +639,24 @@ class TestDoneLane:
         code, out = self.done(repo, st)
         assert code == 1 and "not on origin/main" in out and f"code/{tk}" in out, out
 
+    def test_done_lane_rename(self, sprint):
+        """A commit that moves a code-lane path into a content-lane path is a code-lane commit, as kblane.commit_paths
+        counts it for sync and the pre-push hook: done lists both sides of the rename. Planted: the code path is on main,
+        the item's only work is the rename."""
+        repo, tk = sprint["repo"], sprint["tk"]
+        assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+        commit(repo, "claim", tk)
+        (repo / "src").mkdir(exist_ok=True)
+        (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+        commit(repo, "code path of the base")
+        base = self.rev(repo)
+        (repo / "kb" / "public" / "x").mkdir(parents=True, exist_ok=True)
+        sh(repo, "git", "mv", "src/b.txt", "kb/public/x/b.txt")
+        commit(repo, "move b into the content lane", tk)
+        sh(repo, "git", "update-ref", "refs/remotes/origin/main", base)
+        code, out = self.done(repo, tk)
+        assert code == 1 and "not on origin/main" in out and f"code/{tk}" in out, out
+
     def test_content_item_needs_no_integration_main(self, sprint):
         repo, tk = self.worked(sprint, "kb/public/x/a.md")
         edit(repo, tk, checks=[{"run": is_file("kb/public/x/a.md")}], touches=["kb/public/**"])
