@@ -853,6 +853,57 @@ class TestKbServer:
                 assert r["result"].get("resultType") == "complete", r.get("id")
 
 
+# `claude plugin validate` prints each target as a "Validating ..." header, then a section "<mark> Found N warning(s):"
+# or "<mark> Found N error(s):" whose entries start with U+276F (older CLIs: ">"), then a closing verdict line. The
+# warnings this repository accepts, matched by their text and not by how many there are:
+PLUGIN_VALIDATE_ALLOWED_WARNINGS = (
+    "No version specified",
+    "root: CLAUDE.md at the plugin root is not loaded as project context",
+)
+
+
+def plugin_validate_problems(output, returncode):
+    """What makes one `claude plugin validate` run fail: a non-zero exit, no "Validation passed" line, an error
+    section or entry, and each warning entry whose text is none of PLUGIN_VALIDATE_ALLOWED_WARNINGS. [] passes."""
+    problems = []
+    if returncode != 0:
+        problems.append(f"exit code {returncode}")
+    if "Validation passed" not in output:
+        problems.append('no "Validation passed" line')
+    section = "warning"
+    for line in output.splitlines():
+        s = line.strip()
+        if s.startswith("✘") and "Found" in s:  # a failed-check mark opens an error section
+            section = "error"
+            problems.append(f"error: {s}")
+        elif s.startswith("⚠") or s.startswith("✔"):  # a warning mark or a success mark
+            section = "warning"
+        elif s.startswith("❯") or s.startswith(">"):
+            if section == "error":
+                problems.append(f"error: {s}")
+            elif not any(a in s for a in PLUGIN_VALIDATE_ALLOWED_WARNINGS):
+                problems.append(f"unlisted warning: {s}")
+    return problems
+
+
+PLUGIN_VALIDATE_PASSED = "✔ Validation passed with warnings\n"
+PLUGIN_VALIDATE_OK = "Validating plugin: <dir>\n\n" + PLUGIN_VALIDATE_PASSED
+# the output as the CLI printed it for the repository root: the marketplace, the plugin and the root CLAUDE.md
+PLUGIN_VALIDATE_REAL = (
+    "Validating marketplace manifest: <root>/.claude-plugin/marketplace.json\n\n"
+    "⚠ Found 2 warnings:\n\n"
+    "  ❯ plugins[0] plugin.json → version: No version specified. Consider adding a version following semver\n"
+    "  ❯ plugins[1] plugin.json → version: No version specified. Consider adding a version following semver\n\n"
+    "Validating plugin: <root>/.claude-plugin/plugin.json\n\n"
+    "⚠ Found 1 warning:\n\n"
+    "  ❯ version: No version specified. Consider adding a version following semver\n\n"
+    "Validating plugin: <root>/CLAUDE.md\n\n"
+    "⚠ Found 1 warning:\n\n"
+    "  ❯ root: CLAUDE.md at the plugin root is not loaded as project context. To ship context with your plugin, "
+    "use a skill (skills/<name>/SKILL.md) instead.\n\n" + PLUGIN_VALIDATE_PASSED
+)
+
+
 class TestPluginManifest:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
@@ -1137,10 +1188,48 @@ class TestPluginManifest:
     def test_claude_plugin_validate(self):
         for target in (KB, os.path.join(KB, DOCS_PLUGIN)):
             p = subprocess.run(["claude", "plugin", "validate", target], capture_output=True, text=True, encoding="utf-8", timeout=120)
-            assert p.returncode == 0, p.stdout + p.stderr
-            assert "Validation passed" in p.stdout + p.stderr
-            warnings = [ln for ln in (p.stdout + p.stderr).splitlines() if ln.strip().startswith(">") or ln.strip().startswith("\u276f")]
-            assert all("No version specified" in w for w in warnings), "\n".join(warnings)
+            problems = plugin_validate_problems(p.stdout + p.stderr, p.returncode)
+            assert not problems, "\n".join(problems) + "\n" + p.stdout + p.stderr
+
+    def test_plugin_validate_allowed_warnings_unlisted_warning_fails(self):
+        out = PLUGIN_VALIDATE_OK + "\n\u26a0 Found 1 warning:\n\n  \u276f skills[0]: description is missing\n"
+        problems = plugin_validate_problems(out, 0)
+        assert len(problems) == 1 and "skills[0]: description is missing" in problems[0], problems
+        # a ">" marker (the older CLI output) is read the same way
+        assert plugin_validate_problems("  > skills[0]: description is missing\n" + PLUGIN_VALIDATE_PASSED, 0)
+
+    def test_plugin_validate_allowed_warnings_each_alone_and_together_pass(self):
+        for w in PLUGIN_VALIDATE_ALLOWED_WARNINGS:
+            assert plugin_validate_problems(f"\u26a0 Found 1 warning:\n\n  \u276f {w}\n\n{PLUGIN_VALIDATE_PASSED}", 0) == [], w
+        both = "\n".join(f"  \u276f {w}" for w in PLUGIN_VALIDATE_ALLOWED_WARNINGS)
+        assert plugin_validate_problems(f"\u26a0 Found 2 warnings:\n\n{both}\n\n{PLUGIN_VALIDATE_PASSED}", 0) == []
+        # the output as a CLI printed it: three targets, each with its own warning section
+        assert plugin_validate_problems(PLUGIN_VALIDATE_REAL, 0) == []
+        # an allowed warning beside an unlisted one: only the unlisted one is a problem, whatever their count
+        mixed = PLUGIN_VALIDATE_OK + "\n\u26a0 Found 2 warnings:\n\n  \u276f version: No version specified.\n  \u276f hooks: bad entry\n"
+        assert [p for p in plugin_validate_problems(mixed, 0) if "hooks: bad entry" in p]
+
+    def test_plugin_validate_allowed_warnings_error_fails(self):
+        assert any("exit code 1" in p for p in plugin_validate_problems(PLUGIN_VALIDATE_OK, 1))
+        # no "Validation passed" line
+        assert any("Validation passed" in p for p in plugin_validate_problems("", 0))
+        assert any("Validation passed" in p for p in plugin_validate_problems("\u2718 Validation failed\n", 0))
+        # an error section as the CLI prints it for a directory with no manifest: its entry is an error, not a warning
+        failed = ("Validating plugin manifest: <dir>\n\n\u2718 Found 1 error:\n\n"
+                  "  \u276f directory: No manifest found in directory.\n\n\u2718 Validation failed\n")
+        problems = plugin_validate_problems(failed, 1)
+        assert any("directory: No manifest found" in p for p in problems), problems
+        # an error entry whose text is an allowed warning's text stays an error
+        err = PLUGIN_VALIDATE_OK + "\n\u2718 Found 1 error:\n\n  \u276f version: No version specified.\n"
+        assert any("No version specified" in p for p in plugin_validate_problems(err, 0))
+        # an error line fails even with a zero exit and "Validation passed" printed
+        assert plugin_validate_problems("\u2718 Found 1 error:\n" + PLUGIN_VALIDATE_PASSED, 0)
+
+    def test_plugin_validate_allowed_warnings_version_warning_still_allowed(self):
+        out = ("\u26a0 Found 1 warning:\n\n  \u276f plugins[0] plugin.json \u2192 version: No version specified. "
+               "Consider adding a version following semver (e.g., \"1.0.0\")\n\n" + PLUGIN_VALIDATE_PASSED)
+        assert plugin_validate_problems(out, 0) == []
+        assert plugin_validate_problems(PLUGIN_VALIDATE_PASSED, 0) == []
 
 
 @pytest.fixture
