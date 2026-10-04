@@ -2,7 +2,7 @@
   "id": "BG-4y2lhglg",
   "kind": "bug",
   "title": "kb-sprint run and kb-item claim without --commit, so land stops at clean tree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
