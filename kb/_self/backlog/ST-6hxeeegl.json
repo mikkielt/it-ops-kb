@@ -2,7 +2,7 @@
   "id": "ST-6hxeeegl",
   "kind": "story",
   "title": "Research sprint goal: The autopilot is retired and the manual multi-session workflow keeps what it taught",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-ytfb4dc5",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Dropped: The sprint was started on the operator's order; research gate applies only to autopilot-answered starts, and the autopilot is retired"
 }
