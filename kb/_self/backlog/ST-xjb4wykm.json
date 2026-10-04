@@ -38,8 +38,7 @@
   ],
   "depends_on": [
     "ST-4mcoplex",
-    "ST-ykvho3zp",
-    "ST-c35i7vjx"
+    "ST-ykvho3zp"
   ],
   "gates": [
     {

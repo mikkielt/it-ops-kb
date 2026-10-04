@@ -50,9 +50,6 @@
     "_tools/test_ids_dropped.txt",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-c35i7vjx"
-  ],
   "relates_to": [
     "ST-5q5b5qtz"
   ],

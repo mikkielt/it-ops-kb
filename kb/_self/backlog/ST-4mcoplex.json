@@ -59,9 +59,6 @@
     "_tools/test_kb_lookup.py",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-c35i7vjx"
-  ],
   "links": [
     "kb/_self/reports/test-suite-speed.md",
     "kb/public/python/pytest.md (tmp_path_factory, session scope)",

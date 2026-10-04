@@ -4,7 +4,7 @@
   "title": "backlog.py check refuses an open item whose repro or check the live-backlog tests refuse, so a bad item fails its own push",
   "status": "todo",
   "sprint": "SP-42bn4vz7",
-  "priority": "P2",
+  "priority": "P1",
   "rank": 0,
   "goal": "check reports as an error an open item whose repro or check bl_intake.check_program_refusal refuses or bl_check.trivial_command flags, the same predicates test_open_repros_run_headless and test_done_flags_noop_check_real_backlog_commands assert over the live item files; today new only warns and check passes, so an item file pushed through the fast content gate turned main red for every later code land that selected those tests",
   "checks": [

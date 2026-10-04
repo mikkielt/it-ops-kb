@@ -2,7 +2,7 @@
   "id": "ST-jcnbnhl4",
   "kind": "story",
   "title": "A landed item whose merge request waits no longer holds the files it pushed",
-  "status": "todo",
+  "status": "dropped",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-tpulmoxh",
   "priority": "P1",
@@ -42,5 +42,5 @@
   "relates_to": [
     "ST-mf3byq2o"
   ],
-  "notes": "The failure it answers: most of a session's multi-hour wait on a hot file was a merge request waiting to merge, not work, because file-level held keeps an item's files until its code reaches main. Risk to test: the next item builds on unmerged code, so a failed merge request sends both back; the pushed branch is named so the rebase is deliberate. Workers already start from the orchestrator's branch tip, and ST-mf3byq2o gives each commit of a stacked branch its own Self-Reviewed trailer. It waits for the backlog.py split."
+  "notes": "The failure it answers: most of a session's multi-hour wait on a hot file was a merge request waiting to merge, not work, because file-level held keeps an item's files until its code reaches main. Risk to test: the next item builds on unmerged code, so a failed merge request sends both back; the pushed branch is named so the rebase is deliberate. Workers already start from the orchestrator's branch tip, and ST-mf3byq2o gives each commit of a stacked branch its own Self-Reviewed trailer. It waits for the backlog.py split. Dropped: Operator's 2026-10-04 decision after the efficiency analysis: with one agent and no unattended runs this item has no measured pain"
 }

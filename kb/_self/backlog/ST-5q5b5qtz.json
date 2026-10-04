@@ -42,9 +42,6 @@
     "kb/_self/maintaining.md",
     "_tools/test_tests_order.py"
   ],
-  "depends_on": [
-    "ST-c35i7vjx"
-  ],
   "links": [
     "kb/_self/reports/test-suite-speed.md",
     "kb/public/python/pytest-xdist.md (loadscope reorder, worksteal, -n auto without psutil, PYTEST_XDIST_AUTO_NUM_WORKERS)"

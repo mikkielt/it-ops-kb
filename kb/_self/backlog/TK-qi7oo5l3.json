@@ -2,7 +2,7 @@
   "id": "TK-qi7oo5l3",
   "kind": "task",
   "title": "A red end run is bisected over the sprint's landings by backlog.py bisect, and kb-sprint says what to do with the culprit",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-tbi3rras",
   "priority": "P2",
   "rank": 0,
@@ -41,5 +41,6 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "notes": "Dropped: Operator's 2026-10-04 decision after the efficiency analysis: with one agent and no unattended runs this item has no measured pain"
 }

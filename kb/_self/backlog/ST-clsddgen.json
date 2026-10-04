@@ -1,26 +1,27 @@
 {
   "id": "ST-clsddgen",
   "kind": "story",
-  "title": "held --overlaps classifies each overlap and check warns of touches that name a CLI facade with no module behind it",
+  "title": "check warns of an open item whose touches name a CLI facade and no module behind it, naming the module the map gives",
   "status": "todo",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
-  "goal": "held --overlaps ID ends with one verdict line (CLAIMABLE, DOCS-ONLY or BLOCKED by FILE ITEM) and exits 0 for no overlap, 3 for a docs-only one and 1 for a code or test one, so a wrapper reads the class without parsing columns; check warns of an open item whose touches name _tools/backlog.py, _tools/kbgit.py, _tools/querylog.py or _tools/benchmarks.py and no bl_, kg_, ql_ or bench_ module, naming the module the map gives; today held exits 1 for every overlap and stale_touches finds only deleted paths, so facade touches made items overlap by name and missed the real file",
+  "goal": "backlog.py check warns of an open item whose touches name _tools/backlog.py, _tools/kbgit.py, _tools/querylog.py or _tools/benchmarks.py and no bl_, kg_, ql_ or bench_ module, naming the module the map gives; today facade touches make items overlap by name and the check misses the real file. Narrowed on 2026-10-04: no verdict line and no new exit codes for held --overlaps (that mattered only with several concurrent sessions).",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "held_overlap_verdict"
+        "facade_touch_warning"
       ]
     }
   ],
   "touches": [
-    "_tools/backlog.py",
-    "_tools/bl_plan.py",
-    "_tools/bl_check.py"
+    "_tools/bl_check.py",
+    "_tools/test_bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "notes": "Theme: overlap rules and stale touches. Evidence: backlog.py:515-549 cmd_held exits 1 for any overlap and prints no verdict; bl_plan.py:62-84 stale_touches flags only paths the tree lacks, and takes a path no commit had for one to create (kb/_self/autopilot.md in BG-rgdrjsz6, BG-2lj5x3eh, BG-fmznri7r); a held-into-cut pipe hid the exit code twice (mac-third, mac-fourth); facade touches in 5 of 9 items (mac-fourth) and a 7-item replan (mac-seventh); the docs-overlap exception the manager granted verbally is written nowhere. Relates ST-igln3v6y (section-level claims of shared docs)."
 }

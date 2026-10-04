@@ -21,5 +21,6 @@
     "_tools/test_backlog.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "notes": "Merged from ST-zjsmb6ni: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs. Merged from ST-nftaqmb7: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs."
 }

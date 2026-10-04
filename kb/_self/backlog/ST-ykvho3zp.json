@@ -57,9 +57,6 @@
     "kb/_self/tools.md",
     "_tools/test_factdiff.py"
   ],
-  "depends_on": [
-    "ST-c35i7vjx"
-  ],
   "gates": [
     {
       "id": "hardlink-safety",

@@ -2,7 +2,7 @@
   "id": "ST-nftaqmb7",
   "kind": "story",
   "title": "A code task's planned touches carry the docs its code maps to, refused at sprint start",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "relates_to": [
     "BG-iafrnmc3"
-  ]
+  ],
+  "notes": "Dropped: Merged into BG-iafrnmc3 (operator decision 2026-10-04)"
 }

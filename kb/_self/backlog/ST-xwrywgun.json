@@ -3,7 +3,7 @@
   "kind": "story",
   "title": "A pipeline sprint's review shows the pipeline run once on a real spool",
   "status": "todo",
-  "sprint": "SP-rrrrggw7",
+  "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
   "goal": "/kb-sprint review of a sprint that changes what the query log writes runs distill and the delivery once on a copy of a real spool and shows the output and querylog.py check; SP-fvztfmtm ended with backlog.py cost printing zeros because no work sidecar had ever been delivered, and the one loss on the real path (spool_delivered, BG-gop6hqfa) was found only by the reviewer",
