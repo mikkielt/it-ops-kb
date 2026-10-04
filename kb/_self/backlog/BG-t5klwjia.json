@@ -1,0 +1,35 @@
+{
+  "id": "BG-t5klwjia",
+  "kind": "bug",
+  "title": "The _gitlab_com_log test fixture writes the + continuation marker with a space, not the real GitLab.com form",
+  "status": "todo",
+  "sprint": "SP-mguj7foz",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The _gitlab_com_log fixture of test_backlog.py contains the real continuation form (a 00O+ or 01O+ marker followed directly by text, no space) beside the spaced form, and a test_backlog.py test reads the same first_failure and failure_fingerprint from both forms; found by the BG-ngwd6rhi worker",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;t=open('_tools/test_backlog.py',encoding='utf-8').read();sys.exit(0 if re.search(r'[0-9]O[+][A-Za-z]',t) else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a test fixture's input form: the repro reads the fixture source for the no-space continuation marker",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-n",
+        "1",
+        "-k",
+        "gitlab_com_continuation_forms"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_backlog.py",
+    "kb/_self/code.md"
+  ]
+}
