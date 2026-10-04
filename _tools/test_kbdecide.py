@@ -1155,18 +1155,20 @@ PILOT_TITLE = "Delete the retired runbooks"
 
 
 def item_file(repo, iid, gate_question="Delete the retired runbooks?", touches=("kb/public/ops/old.md",)):
-    """A backlog item with one gate the autopilot answered, in the scratch repo."""
+    """A backlog item with one answered gate, in the scratch repo."""
     item = {"id": iid, "kind": "story", "title": PILOT_TITLE, "status": "todo", "priority": "P2", "rank": 0,
             "goal": "The retired runbooks are gone.", "touches": list(touches),
             "gates": [{"id": "g1", "kind": "blocking", "question": gate_question, "options": ["yes", "no"],
-                       "recommendation": "yes", "answer": "yes", "by": "autopilot"}]}
+                       "recommendation": "yes", "answer": "yes", "by": "operator"}]}
     write(repo.path / "kb" / "_self" / "backlog" / f"{iid}.json", json.dumps(item, indent=2) + "\n")
 
 
 def autopilot_decision(repo, iid="ST-aaaaaaaa", text="yes, delete them", day="2026-10-01", question="Delete the retired runbooks?",
                        touches=("kb/public/ops/old.md",)):
+    """An active autopilot decision, as the decision file keeps those made before the autopilot was retired: the
+    operator records it with the autopilot as its maker."""
     item_file(repo, iid, question, touches)
-    code, out = repo.decide("record", "--root", "_self", "--by", "autopilot", "--source", f"backlog item {iid} gate g1",
+    code, out = repo.decide("record", "--root", "_self", "--by", "operator", "--maker", "autopilot", "--source", f"backlog item {iid} gate g1",
                             "--context", f"item:{iid}", "--review-by", "2026-11-01", "--date", day, "--", text)
     assert code == 0, out
     return out.split("\t")[0]

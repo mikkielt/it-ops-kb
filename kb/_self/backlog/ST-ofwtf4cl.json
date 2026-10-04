@@ -70,7 +70,10 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/content-rules.md",
     "kb/_self/usage.md",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "_tools/test_bl_intake_filing.py",
+    "_tools/test_backlog_record_clean.py",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-dh5g3lk7"

@@ -10,8 +10,7 @@ import re
 import subprocess
 
 from bl_base import (
-    APPROVALS, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, in_scope, live_runners, need,
-    runner_overlaps, say, scope,
+    APPROVALS, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, in_scope, need, say, scope,
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
@@ -20,13 +19,7 @@ OPEN_STATUSES = OPEN  # the statuses of an item still to do
 def start_approved(sp):
     """True when the operator answered the sprint's start gate with an approval."""
     g = next((g for g in sp.get("gates", []) if g.get("id") == START_GATE), {})
-    return g.get("by") in ("operator", "autopilot") and str(g.get("answer", "")).strip().lower() in APPROVALS
-
-
-def started_by_autopilot(sp):
-    """True when the sprint's start gate was answered by the autopilot."""
-    g = next((g for g in sp.get("gates", []) if g.get("id") == START_GATE), {})
-    return g.get("by") == "autopilot" and start_approved(sp)
+    return g.get("by") == "operator" and str(g.get("answer", "")).strip().lower() in APPROVALS
 
 
 CODE_DIRS = ("_tools/", ".claude/", ".claude-plugin/")  # with CODE_FILES: the paths whose change needs /kb-self
@@ -219,16 +212,6 @@ def has_scope(bl, iid):
     return bool(kids) and all(has_scope(bl, c) for c in kids)
 
 
-def runner_conflicts(bl, sid):
-    """One line for each live sprint runner of another sprint whose committed touches overlap sprint sid's: the holder
-    sprint, its clone and the pairs of globs (sid's, then the holder's)."""
-    return [f"{rec.get('sprint')} (runner pid {rec.get('pid')}, clone {rec.get('clone')}): "
-            + ", ".join(f"{m} meets {t}" for m, t in hits)
-            for rec, hits in runner_overlaps(bl, sid, live_runners())]
-
-AUTOPILOT_START_CAUSES = []  # functions (bl, sprint id) -> [cause text]; `bl_check` registers its own: they hold back a start the autopilot approved
-
-
 def guarded_items(bl, sid):
     """[(id, guard-class touches)] of the sprint's items not yet done or dropped whose touches a headless runner may
     not edit (bl_authority.guarded_touches: the files kb_hook.headless_guard denies it); `start` warns of them."""
@@ -255,11 +238,6 @@ def cmd_start(bl, a):
     g = next(g for g in sp["gates"] if g["id"] == START_GATE)
     if not start_approved(sp):
         raise Refused(f"{bl.label(sid)}: the operator has not approved it (gate {START_GATE}: {g.get('answer', 'open')})")
-    if started_by_autopilot(sp):
-        causes = [c for cause in AUTOPILOT_START_CAUSES for c in cause(bl, sid)]
-        if causes:
-            raise Refused(f"{bl.label(sid)}: the autopilot starts a sprint only once its research is done:\n  "
-                          + "\n  ".join(causes))
     items = bl.sprint_items(sid)
     if len(items) < 2:
         raise Refused(f"{bl.label(sid)} commits to no item besides its review")
@@ -275,10 +253,6 @@ def cmd_start(bl, a):
     later = docs_after_code(bl, items)
     if later:
         raise Refused(f"{bl.label(sid)} has a task whose docs wait for the code they describe:\n  " + "\n  ".join(later))
-    held = runner_conflicts(bl, sid)
-    if held:
-        raise Refused(f"{bl.label(sid)}'s committed touches overlap those of a sprint a runner holds on this host:\n  "
-                      + "\n  ".join(held))
     for i in items:
         if bl.items[i].get("status") == "draft":
             bl.items[i]["status"] = "todo"

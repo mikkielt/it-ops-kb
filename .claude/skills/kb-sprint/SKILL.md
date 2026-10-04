@@ -32,8 +32,6 @@ Only on the operator's approval in this conversation:
 1. `python3 _tools/backlog.py answer SP start --answer approve --by operator`.
 2. `python3 _tools/backlog.py start SP`. It prints `warning:` lines for a sprint item whose mapped docs sit outside its `touches` (an item planned before `check` warned of it): before any claim, ask the operator to move each named doc into that item's `touches` (`set ID --touch G --add`), and rerun `backlog.py check`. It refuses while an answered gate with a host check has no passing `host-check` record: run `backlog.py host-check SP` first.
 
-A start gate answered `--by autopilot` runs `start` only once that research story is done and every committed story and bug has `knowledge` asks or refs that read sufficient or partial: `start` refuses, naming each cause, otherwise.
-
 Never answer the start gate yourself.
 
 ## run [SP]
@@ -83,7 +81,7 @@ The review story is ready once every other item is done or dropped. Its checks r
 1. Confirm or change each provisional answer with the operator (`answer ID GATE --confirm --by operator`, or a new answer plus a task or bug for the change), the ones workers recorded for choices their goals left open (run step 4.1) among them.
 2. Print what the work cost, one command per id, each on its own: `python3 _tools/backlog.py cost --rework SP`, then the same for each story and each bug of the sprint (`python3 _tools/backlog.py tree --sprint SP` lists them). Keep each output for step 3 and the close retrospective, and show the operator what the sprint's work cost, which items had rework, and where shared tokens stand out. Rework is the tokens an item spent from the prompt that ran its first refused `backlog.py done` (a `done` that exited 1) to its `done`; the output lists each item that has it with its work and rework tokens, and an item with none is not listed. Say it as a measure of the work, never as blame: it names no one and no cause. It reports tokens only, no prices, and a figure whose output names an unresolved id (`no item file and no git history for ...` on stderr) is incomplete: say so with the figure.
 3. Start a fresh-context reviewer subagent on the session model (`subagent_type: "general-purpose"`, no `model`) on the sprint's diff (`git log --grep "KB-Work"` over the sprint's items). Give it each item's goal and the cost outputs of step 2. It reports only gaps that affect correctness or a goal; the cost is context for them, not a gap to report.
-4. File each gap as a bug (`/kb-backlog bug`): `S1` into this sprint, others to the backlog. An autopilot review files each with `python3 _tools/backlog.py bounds file --origin review` (Bounds, below): a gap with no failure and evidence, or a near-duplicate, is not filed.
+4. File each gap as a bug (`/kb-backlog bug`): `S1` into this sprint, others to the backlog.
 5. `python3 _tools/backlog.py done <review id> --commit --trailer 'Co-Authored-By: ...'`, then `python3 _tools/kbgit.py sync --push`.
 
 ## close SP
@@ -95,7 +93,7 @@ The review story is ready once every other item is done or dropped. Its checks r
    - a subagent brief that missed something;
    - a rule in `kb/_self/backlog.md` or a skill that got in the way;
    - what cost more than its size suggested, and the items with rework, from the review's `backlog.py cost --rework` outputs (tokens only; rerun one if the review is not in this session).
-   Show the list to the operator. Each change they accept becomes a backlog story (`/kb-backlog`) naming the failure it answers; an autopilot retro files each with `bounds file --origin retro` (Bounds, below). When `close --summary` or the `close` itself says `bounds: no retrospective`, every item of the sprint was filed by a review or a retro: skip this step. Write nothing into the docs directly.
+   Show the list to the operator. Each change they accept becomes a backlog story (`/kb-backlog`) naming the failure it answers. Write nothing into the docs directly.
 3. `python3 _tools/backlog.py close SP --commit --trailer 'Co-Authored-By: ...'` deletes the sprint, its items and the epics they finished, and commits that with `KB-Work: SP-...` in the last trailer paragraph and a body that lists:
    - the `delivered by` list `close --summary` printed, as it is;
    - the retrospective's findings, each with the story it became or "no change", added above the trailers with `git commit --amend`.
@@ -106,40 +104,32 @@ The review story is ready once every other item is done or dropped. Its checks r
    3. `close` cleans only the clone it ran in: when the runner ran in another clone or a container, name that clone in the report for the operator (its `git worktree list` shows what is left).
 
 ## Self-check
-`python3 _tools/backlog.py selfcheck` (read only, no network, capped) opens every pass of `run`, before `stalled`: one line when all of seven checks hold, else a line for each that failed (`FAIL`, exit 1) or could not be read (`UNKNOWN`, never a failure: read that input by hand), with its remedy. Act on a failure before dispatching, or record why you cannot (a gate, or the digest). The checks and what each does on failure:
-- `allow-rules`: a command the skills run, or a tool the loop calls, has no allow rule in `.claude/settings.json`: `ask-operator`; the settings are the operator's, a run never edits them, and the item that needs the refused command is released and the command named (Headless, rule 4).
-- `checkout`: the manager clone is a linked worktree of another checkout, so a runner's workers land there and the headless guard refuses their writes: use a standalone `git clone` as the manager clone (`runner start` refuses it too).
+`python3 _tools/backlog.py selfcheck` (read only, no network, capped) opens every pass of `run`, before `stalled`: one line when all of seven checks hold, else a line for each that failed (`FAIL`, exit 1) or could not be read (`UNKNOWN`, never a failure: read that input by hand), with its remedy. Act on a failure before dispatching, or record why you cannot (a gate). The checks and what each does on failure:
+- `allow-rules`: a command the skills run, or a tool the loop calls, has no allow rule in `.claude/settings.json`: ask the operator; the settings are the operator's, a run never edits them, and the item that needs the refused command is released and the command named.
+- `checkout`: the orchestrator's clone is a linked worktree of another checkout, so its workers' worktrees land there: use a standalone `git clone` as the orchestrator's clone.
 - `hooks`: the commit hooks or the plugin are not installed: run `/kb-setup` (`python3 _tools/kbgit.py install-hooks`) before any commit.
-- `host`: the load is over its per-core limit, a host lock has been held past `HOST_LOCK_WAIT_S` by a live process, or a third sprint runner lives: for load and a lock the `lock-wait` ladder, `retry-narrower` (fewer workers, a `-k` selection) then `file-blocker`; for a runner, end the extra one.
-- `claims`: a claimed item shows `claim-no-commit`, `returned-no-commit` or `returned-staged`: the next remedy of that signal's ladder (below), `release-redispatch` first for a returned worker.
-- `orphans`: a process the autopilot recorded runs on without its parent: `procs --end`, which ends owned orphans only.
-- `main`: the newest `ci.pipeline` row is red: `file-blocker` (`stalled --took ID red-main file-blocker`), take the next ready item, then `ask-operator`; with no row the check is `UNKNOWN`: `python3 _tools/backlog.py red-pipeline --status` reads the forge.
+- `host`: the load is over its per-core limit, or a host lock has been held past `HOST_LOCK_WAIT_S` by a live process: dispatch fewer workers and give the tests a `-k` selection, which takes no host lock; end a lock's holder only when it is yours and stuck.
+- `claims`: a claimed item shows `claim-no-commit`, `returned-no-commit` or `returned-staged`: act on it as Stalled work says.
+- `orphans`: a process recorded with `procs --record` runs on without its parent: `procs --end`, which ends owned orphans only.
+- `main`: the newest `ci.pipeline` row is red: file it as a bug (`python3 _tools/backlog.py red-pipeline`) and take the next ready item; with no row the check is `UNKNOWN`: `python3 _tools/backlog.py red-pipeline --status` reads the forge.
 
 ## Stalled work
-Stalled work is claimed or ready work that makes no progress, or is hampered. `python3 _tools/backlog.py stalled` lists it (read only, exit 0, no network): each claimed or ready item, its id and title together, with its signals and the next remedy of each. Run it at step 1 of every pass of `run`, before claiming, and act on each listed item with the next remedy of its signal; `stalled --ladder` prints the ladder below from the code (`_tools/bl_stall.py`, whose named limits `CLAIM_NO_COMMIT_S`, `RETURNED_GRACE_S`, `DONE_REFUSED_N`, `CHECK_TIMEOUT_N`, `LAND_SAME_STEP_N` and `HOST_LOCK_WAIT_S` are in `kb/_self/backlog.md`). A signal whose input cannot be read shows as `unknown:<what>`: read that input by hand, never assume it is fine.
+Stalled work is claimed or ready work that makes no progress, or is hampered. `python3 _tools/backlog.py stalled` lists it (read only, exit 0, no network, `--json` for one object): each claimed or ready item, its id and title together, with its signals. Run it at step 1 of every pass of `run`, before claiming. Its named limits (`CLAIM_NO_COMMIT_S`, `RETURNED_GRACE_S`, `DONE_REFUSED_N`, `CHECK_TIMEOUT_N`, `LAND_SAME_STEP_N`, `HOST_LOCK_WAIT_S`) are in `_tools/bl_stall.py` and `kb/_self/backlog.md`. A signal whose input cannot be read shows as `unknown:<what>`: read that input by hand, never assume it is fine.
 
-Each signal has a ladder, taken in order, each remedy once:
-- `claim-no-commit`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (a claim with no work commit past the limit)
-- `returned-no-commit`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (a worker's worktree with no live process and no commit)
-- `returned-staged`: `finish-here` > `release-redispatch` > `file-blocker` > `ask-operator` (the same with staged or modified files left: the worker waited for a background-run completion notice that never came)
-- `done-refused`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (`done` refused repeatedly)
-- `check-timeout`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (a check ran out of its time twice)
-- `land-same-step`: `retry-narrower` > `release-redispatch` > `file-blocker` > `ask-operator` (`land` stopped at the same step twice)
-- `red-main`: `file-blocker` > `ask-operator` (the newest pipeline row is red)
-- `lock-wait`: `retry-narrower` > `file-blocker` > `ask-operator` (the host test lock held past the limit)
+The signals:
+- `claim-no-commit`: a claim with no work commit past the limit.
+- `returned-no-commit`: a worker's worktree with no live process and no commit.
+- `returned-staged`: the same with staged or modified files left: the worker waited for a background-run completion notice that never came.
+- `done-refused`: `done` refused repeatedly.
+- `check-timeout`: a check ran out of its time twice.
+- `land-same-step`: `land` stopped at the same step twice.
+- `red-main`: the newest pipeline row is red.
+- `lock-wait`: the host test lock held past the limit.
 
-The remedies:
-- `finish-here`: finish the last steps in the orchestrator (stage, commit with `KB-Work: <id>` in the last trailer paragraph, run the item's checks), then run the checks in the foreground, never as a background command whose completion notice a session must wait for.
-- `retry-narrower`: send the work back once (SendMessage) with a narrower request: one file, one test selector, a foreground run; for `lock-wait` a `-k` selection, which takes no host lock.
-- `release-redispatch`: `python3 _tools/backlog.py release ID`, then dispatch it again (`run` step 3) with the failure named in the brief.
-- `file-blocker`: file what blocks the item as a story (`stalled --took ID SIGNAL file-blocker` does it and prints the next ready item), release the item, and take the next ready item.
-- `ask-operator`: record a gate (`gate add ID ...`) or put the question in the digest; in a headless run the gate of the headless rules.
+What to do is the orchestrator's call, one step at a time, while a ready item with no signal remains to be taken meanwhile:
+- finish a `returned-staged` item in the orchestrator (stage, commit with `KB-Work: <id>` in the last trailer paragraph), then run its checks in the foreground, never as a background command whose completion notice a session must wait for;
+- send the work back once (SendMessage) with a narrower request: one file, one test selector, a foreground run; for `lock-wait` a `-k` selection, which takes no host lock;
+- `python3 _tools/backlog.py release ID`, then dispatch it again (`run` step 3) with the failure named in the brief;
+- file what blocks the item as a story or a bug (`/kb-backlog`), release the item and take the next ready item;
+- ask the operator, with a gate (`gate add ID ...`) when the answer decides the item's work.
 
-The autopilot never idles while a ready item remains: after `file-blocker`, `release-redispatch` or a spent ladder it takes the next ready item that shows no signal, and it asks only when no such item is left. Record each remedy as it is taken: `python3 _tools/backlog.py stalled --took ID SIGNAL REMEDY` appends one `stall.remedy` ops row (`kb/_self/querylog.md`) and one autopilot decision of `kb/_self` with a `review_by` date, which the next commit carries; a remedy already taken for that item and signal is refused, and the listing then shows the next one.
-
-## Bounds
-The autopilot's own work has an end (`kb/_self/backlog.md`, Bounds of the autopilot's work; `_tools/bl_bounds.py`, which holds the limits as constants). In a sprint the autopilot started:
-- A running sprint gains no story or bug after its start but an S1 bug: `new` refuses `--sprint SP` for another, and a finding goes to the backlog, never into the sprint.
-- A finding of a review, a retro or the run becomes an item only when it names a failure that happened with its evidence, a commit, a test id or an ops row, and `similar` finds no near-duplicate: `python3 _tools/backlog.py bounds file --origin review|retro|mid-sprint --sprint SP --title T --goal G --evidence commit:SHA`. It prints `filed` (a draft carrying its `origin` and `evidence` links), `merged` (into the near-duplicate's notes) or `kept` (no evidence: write it in the close commit body only, with "no change"). A refusal names the cap it would pass (findings per sprint, open drafts, draft inflow within the done outflow of the last sprints); keep the finding in the close commit body then.
-- An item refused at `done` or reopened three times is dropped or escalated with a gate, never dispatched again: `bounds stop` names each one set aside.
-- Before each pass of `run`, `python3 _tools/backlog.py bounds stop --sprint SP --budget K --landed N` (`K` the run's `--landed`, left out with none): exit 1 and a first line `bounds: stop CAUSE: DETAIL` with CAUSE one of `sprint-budget`, `inflow-guard` or `no-ready` means start no more work; the report and the digest give that line as the reason the run ended.

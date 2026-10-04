@@ -8,9 +8,7 @@
   kbdecide.py record --root R TEXT --source S --context C --by operator [--maker M] [--name NAME] [--review-by DATE]
                      [--links TEXT] [--gate G] [--date DATE]
                                          propose and confirm in one write: an `active` decision, with the maker as
-                                         `confirm` records it; refused without `--by operator`, except `--by autopilot`
-                                         (maker `autopilot`, `--review-by` required: the operator ratifies or
-                                         supersedes it)
+                                         `confirm` records it; refused without `--by operator`
   kbdecide.py supersede OLD NEW --root R --by operator
                                          the active decision NEW takes the place of the active decision OLD; refused
                                          without `--by operator`
@@ -41,7 +39,7 @@
                                          first, each group oldest first, with item, gate, answer and `review_by`;
                                          above them, the share of every autopilot decision the operator reverted and
                                          the number contradicting an earlier one of the same gate and class
-                                         (--commit commits that file alone when it changed, so a tick's next
+                                         (--commit commits that file alone when it changed, so the next
                                          kbgit.py sync finds a clean tree)
   kbdecide.py sweep [--root R] [--dry-run] [--date DATE]
                                          invalidate every proposed or active decision whose context is broken (rules
@@ -109,7 +107,7 @@ from pathlib import Path
 import check, kbcommon, kbfacts
 
 SELF_ROOT = "_self"  # the name that stands for kb/_self, which is no root
-AUTOPILOT = "autopilot"  # the maker `record --by autopilot` names: a decision the operator ratifies or supersedes
+AUTOPILOT = "autopilot"  # the maker of an autopilot decision kept from before its retirement: the operator ratifies or reverts it
 HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # set in a headless runner's environment (kbpublic.HEADLESS_ENV): no act as the operator then
 OPERATOR = "operator"  # what `confirm --by` must be, and the maker of an internal root's decision that names none
 
@@ -355,7 +353,7 @@ def headless_refusal(what):
     an operator-present session does; the check reads the parsed `--by`, so no argument order or abbreviation gets past."""
     if os.environ.get(HEADLESS_ENV):
         raise Refused(f"only an operator-present session {what}: {HEADLESS_ENV} is set, so this headless run does not "
-                      f"act as the operator (record --by {AUTOPILOT} is open to it)")
+                      "act as the operator")
 
 
 def cmd_confirm(a):
@@ -374,14 +372,7 @@ def cmd_confirm(a):
 def cmd_record(a):
     """Write an operator's decision as `active` in one step (propose and confirm in one write, so a refusal leaves no
     proposed row behind)."""
-    if a.by == AUTOPILOT:
-        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", (a.review_by or "").strip()):
-            raise Refused("an autopilot decision needs --review-by YYYY-MM-DD: the operator ratifies or supersedes it by then")
-        if a.maker not in (None, AUTOPILOT) or a.name:
-            raise Refused(f"an autopilot decision's maker is {AUTOPILOT!r}: leave out --name and --maker")
-        a.maker = AUTOPILOT
-    else:
-        need_operator(a, "records a decision")
+    need_operator(a, "records a decision")
     store = Store(a.root)
     rows = load(store)
     why = policy_refusal(store, rows)
@@ -1067,7 +1058,7 @@ def parser():
     p.add_argument("--date", help="YYYY-MM-DD (default: today)")
     p = add("record", "the operator's decision, written as active in one step")
     p.add_argument("text", help="the decision")
-    p.add_argument("--by", help=f"must be {OPERATOR}, or {AUTOPILOT} (with --review-by)")
+    p.add_argument("--by", help=f"must be {OPERATOR}")
     p.add_argument("--source", required=True, help="where it was made: a source id of the root, or free text")
     p.add_argument("--context", required=True, help="`;`-separated kind:value references (item, fact, source, article, domain)")
     p.add_argument("--maker", help="the id of a decision maker of the root's decision-makers.csv or the central register")

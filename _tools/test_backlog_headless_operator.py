@@ -87,35 +87,6 @@ def test_backlog_headless_refuses_operator_answers_an_empty_variable_is_unset(th
     assert code == 0 and item_json(r, bg)["gates"][0]["by"] == "operator", out
 
 
-def test_backlog_headless_refuses_operator_answers_keeps_agent_autopilot_and_provisional(throwaway_repo, monkeypatch):
-    """Tightened (test_bl_authority_trust.py): a headless runner answers --by agent and --provisional only; the
-    `--by autopilot` forms it used to keep (--confirm, --answer, --record) now exit 2 with the variable set, the
-    autopilot's answers being the operator-present manager session's."""
-    r, bg = throwaway_repo["repo"], throwaway_repo["bg"]
-    monkeypatch.setenv(ENV, "1")
-    edit(r, bg, gates=[gate_of("Which way?", kind="provisional")])
-    code, out = b(r, "answer", bg, "way", "--provisional")
-    assert code == 0 and item_json(r, bg)["gates"][0]["by"] == "agent", out
-    before = text_of(r, bg)
-    code, out = b(r, "answer", bg, "way", "--confirm", "--by", "autopilot")
-    assert code == 2 and "--by agent only" in out and text_of(r, bg) == before, out
-    code, out = b(r, "answer", "--by", "agent", "--answer", "right", bg, "way")
-    assert code == 0 and item_json(r, bg)["gates"][0]["by"] == "agent", out
-    edit(r, bg, gates=[gate_of("Which way?")])
-    before = text_of(r, bg)
-    code, out = b(r, "answer", "--by", "autopilot", "--answer", "right", "--record", bg, "way")
-    assert code == 2 and decisions(r) == [] and text_of(r, bg) == before, out
-    # existing class checks still hold with the variable set: a push gate is refused to the autopilot
-    edit(r, bg, gates=[gate_of("Push to which remote?")])
-    code, out = b(r, "answer", "--by", "autopilot", "--answer", "left", bg, "way")
-    assert code == 2, out
-    # and with the variable unset the manager session's autopilot answer is recorded as before
-    monkeypatch.delenv(ENV)
-    edit(r, bg, gates=[gate_of("Which way?")])
-    code, out = b(r, "answer", "--by", "autopilot", "--answer", "right", "--record", bg, "way")
-    assert code == 0 and [d["by"] for d in decisions(r)] == ["autopilot"], out
-
-
 def test_backlog_headless_refuses_operator_answers_the_guard_reads_the_parsed_value(throwaway_repo, monkeypatch):
     """No text of the command matters: the abbreviation and the `=` form parse to the same `by`, and the refusal comes
     from `cmd_answer` on that value, with no permission rule involved."""
@@ -144,13 +115,14 @@ def decide_state(r):
 
 @pytest.fixture
 def decided(throwaway_repo, monkeypatch):
-    """kb/_self with a proposed decision and an active autopilot decision, made with the variable unset."""
+    """kb/_self with a proposed decision and an active autopilot decision (one kept from before the autopilot was
+    retired: the operator records it with the autopilot as its maker), made with the variable unset."""
     r = throwaway_repo["repo"]
     monkeypatch.delenv(ENV, raising=False)
     code, out = tool(r, "kbdecide.py", "propose", "--root", "_self", "--source", "test", "--context", f"item:{throwaway_repo['bg']}", "Proposed one")
     assert code == 0, out
     code, out = tool(r, "kbdecide.py", "record", "--root", "_self", "--source", "test", "--context", f"item:{throwaway_repo['st']}",
-                     "--by", "autopilot", "--review-by", "2999-01-01", "Autopilot one")
+                     "--by", "operator", "--maker", "autopilot", "--review-by", "2999-01-01", "Autopilot one")
     assert code == 0, out
     rows = {d["text"]: d["id"] for d in decisions(r)}
     return {"ctx": throwaway_repo["sp"], "repo": r, "proposed": rows["Proposed one"], "auto": rows["Autopilot one"]}
@@ -191,13 +163,3 @@ def test_kbdecide_headless_refuses_operator_answers_unset_works_as_before(decide
     monkeypatch.delenv(ENV, raising=False)
     code, out = tool(r, "kbdecide.py", *decide_acts(decided)[act])
     assert code == 0, out
-
-
-def test_kbdecide_headless_refuses_operator_answers_keeps_the_autopilot_record(decided, monkeypatch):
-    r = decided["repo"]
-    monkeypatch.setenv(ENV, "1")
-    code, out = tool(r, "kbdecide.py", "record", "--root", "_self", "--source", "s", "--context", f"item:{decided['ctx']}", "--by",
-                     "autopilot", "--review-by", "2999-01-01", "Another autopilot one")
-    assert code == 0, out
-    code, out = tool(r, "kbdecide.py", "list", "--root", "_self")
-    assert code == 0 and "Another autopilot one" in out, out

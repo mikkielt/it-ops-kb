@@ -1,5 +1,5 @@
-"""`backlog.py selfcheck`: the manager's check of its own tools, rules, hooks and host, run at the start of every tick of
-`/kb-sprint run` (kb/_self/backlog.md, Working on items; kb/_self/tools.md; the kb-sprint skill, Self-check).
+"""`backlog.py selfcheck`: the orchestrator's check of its own tools, rules, hooks and host, run before `/kb-sprint run`
+dispatches work (kb/_self/backlog.md, Working on items; kb/_self/tools.md; the kb-sprint skill, Self-check).
 
   selfcheck            print, read only, one line when every check passes, else one line for each check that failed
                        or could not be read, with the remedy the kb-sprint skill names (exit 0 passing, 1 a failure)
@@ -13,18 +13,16 @@ The seven checks, each independent and each a result {name, state, detail, remed
                `SKILL_TOOLS`) is covered by an allow rule of `.claude/settings.json` or `.claude/settings.local.json`;
                a `Bash(PATTERN)` rule covers a command that PATTERN matches whole, `*` standing for any text and a
                trailing ` *` also for no arguments, as Claude Code reads it; a `deny` rule is not read; a bare `Bash` rule covers every command
-  checkout     the manager clone is no linked worktree of another checkout (`git rev-parse --git-common-dir` is its own
-               `--git-dir`): a runner there gets its workers' isolation worktrees in that other checkout, where
-               the headless guard refuses their writes
+  checkout     the clone is no linked worktree of another checkout (`git rev-parse --git-common-dir` is its own
+               `--git-dir`): workers dispatched there get their isolation worktrees in that other checkout
   hooks        `core.hooksPath` runs this checkout's `.githooks` (or the `.githooks` of another worktree of the clone)
                and each hook script is there; the plugin manifest parses and the files it names exist
   host         the 5-minute load average is under LOAD_PER_CORE times the cores, no host lock (`kb-tests.lock`,
                `kb-main.lock`) has a live holder older than `bl_stall.HOST_LOCK_WAIT_S` (pid and clone named; a
-               holder that is gone is cleared by the next taker and is no failure), and no more than
-               `bl_base.MAX_RUNNERS` sprint runners live
+               holder that is gone is cleared by the next taker and is no failure)
   claims       no `doing` item shows `claim-no-commit`, `returned-no-commit` or `returned-staged` (`bl_stall.collect`'s
                signals, read from the claims, git and the worktrees' processes)
-  orphans      no process recorded as the autopilot's runs on after its parent is gone (`bl_procs.snapshot`'s `owned
+  orphans      no process recorded by `procs --record` runs on after its parent is gone (`bl_procs.snapshot`'s `owned
                orphan`; an unrecorded orphan or a foreign process is another session's and no failure); `unknown` on
                a host that cannot list working directories
   main         the newest `ci.pipeline` row (`bl_stall.main_state`, the row `red-pipeline` writes) is not red;
@@ -44,7 +42,6 @@ import subprocess
 import time
 from pathlib import Path
 
-import bl_base
 import bl_cli
 import bl_procs
 import bl_stall
@@ -93,19 +90,19 @@ SKILL_COMMANDS = (
 )
 SKILL_TOOLS = ("Agent", "SendMessage", "Edit", "Write")  # tools the sprint's loop calls: each needs an allow rule
 
-# The remedies, in the words of the kb-sprint skill's Stalled work (`stalled --ladder`) and Self-check.
+# The remedies, in the words of the kb-sprint skill's Self-check.
 REMEDY = {
-    "allow-rules": "ask-operator: the settings are the operator's; release the item, name the refused command, "
-                   "never edit them (Headless, rule 4)",
-    "checkout": "use a standalone `git clone` as the manager clone",
+    "allow-rules": "ask the operator: the settings are the operator's; release the item, name the refused command, "
+                   "never edit them",
+    "checkout": "use a standalone `git clone` as the orchestrator's clone",
     "hooks": "run /kb-setup (`python3 _tools/kbgit.py install-hooks`) before any commit",
-    "host-load": "retry-narrower: dispatch fewer workers and give the tests a `-k` selection, which takes no host lock",
-    "host-lock": "lock-wait: retry-narrower, then file-blocker; end the holder only when it is yours and stuck",
-    "host-runners": "end the extra sprint runner (`autopilot.py status` lists them); at most two live on a host",
-    "claims": "the next remedy of its ladder (`stalled`): release-redispatch (`backlog.py release ID`), then "
-              "file-blocker, then ask-operator",
+    "host-load": "dispatch fewer workers and give the tests a `-k` selection, which takes no host lock",
+    "host-lock": "wait for the holder or narrow the tests to a `-k` selection; end the holder only when it is yours "
+                 "and stuck",
+    "claims": "ask its worker, or release it (`backlog.py release ID`) and dispatch it again with the failure named in "
+              "the brief",
     "orphans": "`python3 _tools/backlog.py procs --end`; it ends owned orphans only",
-    "main": "file-blocker: `stalled --took ID red-main file-blocker`, take the next ready item, then ask-operator",
+    "main": "file the red pipeline as a bug (`backlog.py red-pipeline`) and take the next ready item",
     "main-unknown": "read it by hand: `python3 _tools/backlog.py red-pipeline --status` (needs the network)",
 }
 
@@ -188,7 +185,7 @@ def linked_worktree_message(root):
     other = linked_worktree_of(root)
     if other is None:
         return None
-    return f"this clone is a linked worktree of the checkout {other}, so a runner's workers land there"
+    return f"this clone is a linked worktree of the checkout {other}, so its workers' worktrees land there"
 
 
 def check_checkout(root):
@@ -257,16 +254,6 @@ def lock_facts(now, names=LOCKS):
     return found
 
 
-def live_runner_count():
-    n = 0
-    for p in bl_base.runner_dir().glob(bl_base.RUNNER_PREFIX + "*.json"):
-        try:
-            n += bool(bl_base.pid_alive(int(json.loads(p.read_text(encoding="utf-8"))["pid"])))
-        except (OSError, ValueError, KeyError, TypeError):
-            continue
-    return n
-
-
 def check_host(now=None, load=None, cores=None):
     now = time.time() if now is None else now
     try:
@@ -283,16 +270,12 @@ def check_host(now=None, load=None, cores=None):
     if old:
         problems.append(listing(old))
         remedy.append(REMEDY["host-lock"])
-    runners = live_runner_count()
-    if runners > bl_base.MAX_RUNNERS:
-        problems.append(f"{runners} sprint runners live, the limit is {bl_base.MAX_RUNNERS}")
-        remedy.append(REMEDY["host-runners"])
     if problems:
         return result("host", "fail", "; ".join(problems), " | ".join(remedy))
     if load is None:
-        return result("host", "unknown", "no load average on this host; locks and runners are within their limits",
+        return result("host", "unknown", "no load average on this host; the locks are within their limits",
                       REMEDY["host-load"])
-    return result("host", "ok", "within its load, lock and runner limits")
+    return result("host", "ok", "within its load and lock limits")
 
 
 # ---------------------------------------------------------------- the claims, the orphans, main
@@ -390,4 +373,4 @@ def cmd_selfcheck(bl, a):
 
 
 bl_cli.register("selfcheck", cmd_selfcheck, args_selfcheck,
-                help="check the manager's tools, rules, hooks and host; one line when all hold, each failure with its remedy")
+                help="check the orchestrator's tools, rules, hooks and host; one line when all hold, each failure with its remedy")

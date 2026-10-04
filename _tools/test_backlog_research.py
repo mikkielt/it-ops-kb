@@ -1,21 +1,18 @@
-"""A sprint starts only once its research is done (bl_check.autopilot_start_causes, backlog.cmd_start): `new sprint`
-files a goal research story whose touches are kb content, and `start` of a sprint whose start gate the autopilot
-answered refuses, naming each cause, while that story is not done, while a committed story or bug has no knowledge asks
-or refs, or while one of its asks or refs reads unknown, partial, stale or conflicting. An operator's approval starts as before.
+"""A sprint's goal research story (backlog.cmd_new, backlog.cmd_start): `new sprint` files a goal research story whose
+touches are kb content, `check` holds its flag, and the operator's approval starts the sprint whatever the research
+and the knowledge of its items read.
 
-Each refusal has a planted failure over a small kb of invented words (the corpus `test_bl_check.py`'s knowledge-state
-tests use), run through a copy of the tools in the repository so the pack reads that kb."""
+Run over a small kb of invented words (the corpus `test_bl_check.py`'s knowledge-state tests use), through a copy of the
+tools in the repository so the pack reads that kb."""
 import os
 import subprocess
 import sys
-import types
 
 import pytest
 
 import backlog
-import bl_check
 import bl_testkit
-from bl_testkit import PASS, argstr, b, commit, edit, is_file, item, item_json
+from bl_testkit import argstr, commit, edit, is_file, item, item_json
 
 bl_testkit.bind(backlog)
 
@@ -76,18 +73,6 @@ class Plan:
     def know(self, iid, asks=(GOOD,), refs=()):
         edit(self.repo, iid, knowledge={"ask": list(asks), "refs": list(refs)})
 
-    def research_done(self):
-        """The research story claimed, its kb content written under its own id, and done."""
-        edit(self.repo, self.rs, checks=[{"run": PASS}])
-        commit(self.repo, "checks")
-        assert self.run("claim", self.rs, "--by", "agent-1")[0] == 0
-        commit(self.repo, "claim", self.rs)
-        self.write("demo/found.md", article("demo/found", "Found", ["The zorbex agent found a thing."]))
-        commit(self.repo, "research", self.rs)
-        code, out = b(self.repo, "done", self.rs)
-        assert code == 0, out
-        commit(self.repo, "done", self.rs)
-
     def start(self, by):
         assert self.run("answer", self.sp, "start", "--answer", "approve", "--by", by)[0] == 0
         return self.run("start", self.sp)
@@ -97,14 +82,6 @@ class Plan:
 def plan(repo):
     bl_testkit.sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
     return Plan(repo)
-
-
-def refused_unchanged(p, code_out, *causes):
-    code, out = code_out
-    assert code == 1 and "starts a sprint only once its research is done" in out, out
-    for c in causes:
-        assert c in out, (c, out)
-    assert item_json(p.repo, p.sp)["status"] == "planned" and item_json(p.repo, p.st)["status"] == "draft"
 
 
 def test_research_gated_start_new_sprint_files_a_research_story_inside_the_kb_roots(plan):
@@ -119,80 +96,6 @@ def test_research_gated_start_check_refuses_a_research_flag_that_is_not_true_on_
     edit(plan.repo, plan.rs, goal_research="yes")
     code, out = plan.run("check")
     assert code == 1 and "goal_research is true on the goal research story" in out, out
-
-
-def test_research_gated_start_runs_when_research_is_done_and_every_item_is_sufficient(plan):
-    plan.research_done()
-    code, out = plan.start("autopilot")
-    assert code == 0, out
-    assert item_json(plan.repo, plan.sp)["status"] == "active" and item_json(plan.repo, plan.st)["status"] == "todo"
-
-
-def test_research_gated_start_refuses_while_the_research_story_is_not_done(plan):
-    refused_unchanged(plan, plan.start("autopilot"), f"the goal research story {plan.rs}", "draft, not done")
-    plan.research_done()
-    assert plan.run("start", plan.sp)[0] == 0
-
-
-def test_research_gated_start_refuses_a_sprint_without_a_research_story(plan):
-    edit(plan.repo, plan.rs, goal_research=None)
-    code, out = plan.start("autopilot")
-    assert code == 1 and "the sprint has no goal research story" in out, out
-
-
-def test_research_gated_start_refuses_an_item_without_knowledge_asks_or_refs(plan):
-    plan.research_done()
-    edit(plan.repo, plan.st, knowledge={"ask": [], "refs": []})
-    code_out = plan.start("autopilot")
-    refused_unchanged(plan, code_out, f"{plan.st}", "has no knowledge asks or refs")
-    assert f"{plan.bg}" not in code_out[1]
-
-
-@pytest.mark.parametrize("state", ["unknown", "stale", "conflicting"])
-def test_research_gated_start_refuses_a_ref_reading_each_unsound_state(plan, state):
-    plan.research_done()
-    if state == "unknown":
-        plan.know(plan.st, asks=[GOOD, NONE])
-    elif state == "stale":
-        plan.write("_sources.csv", SOURCES.replace("Zorbex agent guide,,", "Zorbex agent guide,S101,"))
-    else:
-        plan.write("_conflicts.md", "# Conflicts\n\n- The pages disagree on retries. (topic: demo/tool)\n")
-    refused_unchanged(plan, plan.start("autopilot"), f"knowledge {state} ask")
-
-
-def partial_sprint():
-    """A sprint whose research story is done and whose one story asks something the kb answers only partially: the
-    states are planted (a `weak` pack is not reproducible over a small kb), the cause list is the code under test."""
-    items = {"SP-aaaaaaaa": {"kind": "sprint"}, "ST-research": {"kind": "story", "goal_research": True, "status": "done"},
-             "ST-work": {"kind": "story", "status": "draft", "knowledge": {"ask": ["an ask"], "refs": ["a ref"]}}}
-    state = types.SimpleNamespace(of_ask=lambda t: ("partial", "coverage weak"), of_ref=lambda t: ("sufficient", ""))
-    return types.SimpleNamespace(items=items, sprint_items=lambda s: [k for k in items if k != s],
-                                 order_key=lambda i: i, label=lambda i: i, state=state)
-
-
-def test_research_gated_start_partial_reading_refuses_like_the_other_unsound_states():
-    causes = bl_check.autopilot_start_causes(partial_sprint(), "SP-aaaaaaaa")
-    assert causes == ["ST-work: knowledge partial ask: an ask (coverage weak)"], causes
-
-
-def test_research_gated_start_partial_a_sufficient_ask_and_ref_do_not_refuse():
-    bl = partial_sprint()
-    bl.state = types.SimpleNamespace(of_ask=lambda t: ("sufficient", ""), of_ref=lambda t: ("sufficient", ""))
-    assert bl_check.autopilot_start_causes(bl, "SP-aaaaaaaa") == []
-
-
-def test_research_gated_start_partial_planted_failure_the_old_states_let_it_through(monkeypatch):
-    monkeypatch.setattr(bl_check, "UNSOUND", ("unknown", "stale", "conflicting"))  # the states before the fix
-    assert bl_check.autopilot_start_causes(partial_sprint(), "SP-aaaaaaaa") == []  # a partial reading ran the start
-
-
-def test_research_gated_start_names_every_cause_at_once(plan):
-    plan.know(plan.st, asks=[NONE])
-    edit(plan.repo, plan.bg, knowledge={"ask": [], "refs": []})
-    code, out = plan.start("autopilot")
-    assert code == 1
-    assert "is draft, not done" in out and f"{plan.st}" in out and "knowledge unknown ask" in out
-    assert f"{plan.bg}" in out and "has no knowledge asks or refs" in out
 
 
 def test_research_gated_start_an_operator_approved_start_is_unchanged(plan):

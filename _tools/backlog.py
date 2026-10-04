@@ -54,18 +54,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (a research item of a planned sprint, one whose touches are all inside kb
                                           roots: claimed from draft, released to draft; check accepts it doing or
                                           done, and done proves it before the sprint starts)
-  backlog.py answer ID GATE (--answer TEXT --by operator|agent|autopilot [--record] | --provisional | --confirm)
+  backlog.py answer ID GATE (--answer TEXT --by operator|agent [--record] | --provisional | --confirm)
                                           record a gate's answer: --provisional takes the recommendation as the
                                           agent's answer (provisional gates only); --confirm --by operator makes an
                                           agent's answer the operator's (no --by: exit 2);
                                           --record (with --by operator) also writes it as an active
                                           decision of kb/_self through kbdecide.py, its context the item (exit 2 with
-                                          --provisional, --confirm or a --by other than operator or autopilot);
-                                          a gate of class secrets or push takes
+                                          --provisional, --confirm or a --by other than operator);
+                                          a gate of class secrets, push or agents-rule takes
                                           an answer only with --by operator (--provisional, --confirm included);
-                                          --by autopilot answers any gate but one of class secrets or push (exit 2,
-                                          the item unchanged) and --record then writes the decision with maker
-                                          autopilot and a review_by, which an operator's answer supersedes;
                                           --record commits what it wrote, the item file (chore(backlog): answer ID
                                           "title", KB-Work: ID, then each --trailer 'KEY: VALUE') and the decisions
                                           row (no KB-Work), so the tree is clean for the next kbgit.py sync
@@ -186,7 +183,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           Writes nothing; a
                                           candidate whose fingerprint an open item's links already carry is marked
                                           skipped. --file writes each new one as a draft item outside any sprint, so a
-                                          second run files nothing. --status FP: exit 1 while a detector still reports
+                                          second run files nothing; one that `similar` calls a near-duplicate of an
+                                          open item of another detector goes into that item's notes once instead, and
+                                          at bl_intake.OPEN_DRAFTS_MAX open drafts the rest are refused (exit 1, the
+                                          cap message on stderr). --status FP: exit 1 while a detector still reports
                                           that fingerprint (or one cannot run), 0 once none does; the repro of every bug
                                           intake files. Exit 1 also when a detector failed, 2 for a bad fingerprint
                                           or --status with --file. --hook (the async SessionStart form, run as
@@ -194,19 +194,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           detectors, stops waiting for them after
                                           INTAKE_HOOK_BUDGET_S and files what the finished ones found, as uncommitted
                                           drafts, never commits or pushes
-  backlog.py stalled [--json | --ladder | --took ID SIGNAL REMEDY]
-                                          each claimed or ready item with its stall signals and the next remedy of
-                                          the ladder (bl_stall.py); --took records a remedy taken as an ops row and
-                                          an autopilot decision
-  backlog.py bounds [report | stop | file] [--sprint SP] [--budget K --landed N] [--json]
-                                          the limits of the autopilot's work (bl_bounds.py): the report counts
-                                          findings per sprint, open drafts, draft inflow against the done outflow of
-                                          the last sprints and each item's rework; `stop` says whether the manager
-                                          stops (sprint-budget, inflow-guard or no-ready; exit 1 when it does);
-                                          `file --origin review|retro|mid-sprint --sprint SP --title T --goal G
-                                          --evidence commit:SHA|test:ID|ops:ID [--kind story|bug --severity S
-                                          --repro CMD --check CMD --touch GLOB]` files a finding as a draft, merges
-                                          it into a near-duplicate's notes, or keeps it for the close commit body
+  backlog.py stalled [--json]               each claimed or ready item with its stall signals (bl_stall.py), read
+                                          only
 
 claim, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit the
 item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
@@ -227,7 +216,7 @@ stored, and no part of readiness. An item without `knowledge` costs nothing: the
 Every line that names an item prints its id and its title together, except a title check found holding a piece of
 this host's computer or user name, which is withheld.
 """
-import argparse, copy, csv, json, re, shlex, subprocess, sys, threading
+import argparse, copy, json, re, shlex, subprocess, sys, threading
 from pathlib import Path
 
 import bl_authority
@@ -578,18 +567,6 @@ def cmd_release(bl, a):
     return 0
 
 
-def autopilot_rows(bl, iid, gate):
-    """The active decisions of kb/_self the autopilot made as the answer to a gate (its source names the item and the gate)."""
-    path = Path(bl.root) / "kb" / "_self" / "_decisions.csv"
-    try:
-        with open(path, encoding="utf-8", newline="") as f:
-            rows = list(csv.DictReader(f))
-    except OSError:
-        return []
-    return [r for r in rows if r.get("status") == "active" and r.get("by") == bl_authority.AUTOPILOT
-            and r.get("source") == f"backlog item {iid} gate {gate}"]
-
-
 def run_decide(bl, *argv):
     tool = Path(bl.root) / "_tools" / "kbdecide.py"
     p = subprocess.run([sys.executable, str(tool), *argv], cwd=str(bl.root), capture_output=True, text=True,
@@ -601,21 +578,10 @@ def run_decide(bl, *argv):
 
 def record_decision(bl, iid, gate, text, by="operator"):
     """Keep a gate's answer as an active decision of kb/_self (`kbdecide.py record`, so check.py guards the write): its
-    source names the item and the gate, its context is the item. The autopilot's carries a review_by and its maker
-    `autopilot`; the operator's supersedes each active autopilot decision on the same gate (`kbdecide.py supersede`),
-    its text ending ` (ratified)` when it repeats theirs, as the same text, context and gate make the same decision id.
-    Refused with kbdecide's reason."""
-    old = autopilot_rows(bl, iid, gate) if by == "operator" else []
-    if any(r.get("text") == text for r in old):
-        text += " (ratified)"
+    source names the item and the gate, its context is the item. Refused with kbdecide's reason."""
     argv = ["record", "--root", "_self", "--source", f"backlog item {iid} gate {gate}", "--context", f"item:{iid}",
             "--gate", gate, "--by", by, "--maker", by]
-    if by == bl_authority.AUTOPILOT:
-        argv += ["--review-by", bl_authority.review_by()]
-    out = run_decide(bl, *argv, "--", text)
-    for r in old:
-        run_decide(bl, "supersede", r["id"], out.split("\t")[0], "--root", "_self", "--by", "operator")
-    say(out)
+    say(run_decide(bl, *argv, "--", text))
 
 
 DECISIONS_REL = "kb/_self/_decisions.csv"  # the file `kbdecide.py record` writes: --record commits it with the item file
@@ -650,17 +616,14 @@ def cmd_answer(bl, a):
     g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
     if g is None:
         raise Refused(f"{bl.label(iid)} has no gate {a.gate}")
-    if bl_authority.headless() and a.by == "autopilot":  # a runner answers --by agent only: the autopilot's own answer is the manager's
-        raise Rejected(f"gate {a.gate} of {bl.label(iid)} unchanged: --by autopilot is refused while "
-                       f"{bl_authority.HEADLESS_ENV} is set: a headless runner answers --by agent only")
     if bl_authority.headless():  # the parsed values, so no argument order or abbreviation of --by gets past it
-        what = "--by operator" if a.by == "operator" else "--confirm" if a.confirm and a.by != "autopilot" else ""
-        if what:  # --confirm records the operator's confirmation unless --by autopilot
+        what = "--by operator" if a.by == "operator" else "--confirm" if a.confirm else ""
+        if what:  # --confirm records the operator's confirmation
             raise Rejected(f"gate {a.gate} of {bl.label(iid)} unchanged: "
                            + bl_authority.headless_operator_refusal(f"answering with {what}"))
-    if a.record and (a.provisional or a.confirm or a.by not in ("operator", "autopilot") or not a.answer):
-        raise Rejected("--record keeps the operator's or the autopilot's answer as a decision: --answer TEXT --by "
-                       "operator|autopilot, never --provisional or --confirm")
+    if a.record and (a.provisional or a.confirm or a.by != "operator" or not a.answer):
+        raise Rejected("--record keeps the operator's answer as a decision: --answer TEXT --by operator, never "
+                       "--provisional or --confirm")
     if getattr(a, "trailer", None):
         if not a.record:
             raise Refused("--trailer goes with --record")
@@ -669,33 +632,27 @@ def cmd_answer(bl, a):
             raise Refused(why)
     members = [bl.items[i] for i in bl.sprint_items(iid)] if it.get("kind") == "sprint" else []
     scope = bl_authority.sprint_scope(it, g, members)
-    if a.by == "autopilot":
-        ok, cls = bl_authority.autopilot_may_answer(scope, g)
-        if not ok:
-            raise Rejected(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it")
-        if g.get("by") == "operator":
-            raise Rejected(f"gate {a.gate} of {bl.label(iid)} has the operator's answer: the autopilot does not replace it")
     if a.confirm and not a.by:
         raise Rejected(f"gate {a.gate} of {bl.label(iid)}: --confirm needs --by operator, which an agent passes only "
                        "after the operator said so")
     if a.by != "operator" and (a.by or a.provisional):
         cls = bl_authority.derived_class(scope, g)
-        if cls in bl_authority.AUTOPILOT_REFUSED:
+        if cls in bl_authority.OPERATOR_CLASSES:
             refuse = Rejected if a.provisional or a.confirm else Refused  # --answer by an agent: exit 1, as a blocking gate
             raise refuse(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it "
                          "(--by operator)")
     if a.confirm:
         if g.get("by") != "agent":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} has no agent answer to confirm")
-        g["by"] = "autopilot" if a.by == "autopilot" else "operator"
+        g["by"] = "operator"
     elif a.provisional:
         if g["kind"] != "provisional":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} is blocking: only the operator answers it")
-        g.update(answer=g["recommendation"], by="autopilot" if a.by == "autopilot" else "agent")
+        g.update(answer=g["recommendation"], by="agent")
     else:
         if not a.answer or not a.by:
-            raise Refused("--answer TEXT and --by operator|agent|autopilot")
-        if g["kind"] == "blocking" and a.by not in ("operator", "autopilot"):
+            raise Refused("--answer TEXT and --by operator|agent")
+        if g["kind"] == "blocking" and a.by != "operator":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} is blocking: only the operator answers it")
         g.update(answer=a.answer, by=a.by)
         if a.record:
@@ -777,7 +734,7 @@ def reclass_gate(item, gate):
     d = bl_authority.derived_class(item, gate)
     if stored not in bl_authority.CLASSES or bl_authority.rank(d) < bl_authority.rank(stored):
         gate["class"] = d
-    if bl_authority.gate_class(item, gate) in bl_authority.AUTOPILOT_REFUSED and gate.get("kind") != "blocking" \
+    if bl_authority.gate_class(item, gate) in bl_authority.OPERATOR_CLASSES and gate.get("kind") != "blocking" \
             and "answer" not in gate:
         gate["kind"] = "blocking"
 
@@ -945,7 +902,7 @@ def cmd_gate(bl, a):
     gate = {"id": gid, "kind": a.kind, "question": a.question.strip(), "options": options,
             "recommendation": a.recommendation.strip()}
     gate["class"] = bl_authority.derived_class(it, gate)
-    if gate["class"] in bl_authority.AUTOPILOT_REFUSED and gate["kind"] != "blocking":
+    if gate["class"] in bl_authority.OPERATOR_CLASSES and gate["kind"] != "blocking":
         gate["kind"] = "blocking"
         say(f"gate {gid} of {bl.label(iid)} is class {gate['class']}: made blocking, only the operator answers it")
     if a.do:
@@ -1324,6 +1281,8 @@ def cmd_intake(bl, a):
             return 1
         say(f"intake: {a.status} is no longer reported")
         return 0
+    if a.file:
+        return bl_intake.file_found(bl, found, failures, say, new_id, withhold)
     new = skipped = 0
     for c in found:
         dup = bl_intake.open_with_fingerprint(bl.items, c.fp) or bl_intake.named_by(bl.items, c)
@@ -1333,12 +1292,7 @@ def cmd_intake(bl, a):
             skipped += 1
             continue
         new += 1
-        if a.file:
-            it = bl_intake.item_of(c, new_id(c.kind))
-            bl.save(it)
-            say(f"  filed {bl.label(it['id'])}")
-    say(f"intake: {len(found)} candidate(s), {new} new{' filed' if a.file else ''}, {skipped} skipped" if found
-        else "intake: no candidates")
+    say(f"intake: {len(found)} candidate(s), {new} new, {skipped} skipped" if found else "intake: no candidates")
     return 1 if failures else 0
 
 
@@ -1502,10 +1456,10 @@ def args_answer(p):
     p.add_argument("id")
     p.add_argument("gate")
     p.add_argument("--answer")
-    p.add_argument("--by", choices=("operator", "agent", "autopilot"))
+    p.add_argument("--by", choices=("operator", "agent"))
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
-    p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator|autopilot: keep the answer as an active decision, committed with the item file")
+    p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator: keep the answer as an active decision, committed with the item file")
     p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
                    help="a trailer of the session's own after KB-Work in the --record commit (repeatable)")
 
@@ -1629,7 +1583,6 @@ bl_cli.register("intake", cmd_intake, args_intake)
 import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
 import bl_selfcheck  # noqa: F401 - registers `selfcheck`
-import bl_bounds  # noqa: F401 - registers bounds
 
 
 def main(argv=None):

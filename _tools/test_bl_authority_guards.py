@@ -1,14 +1,14 @@
-"""A gate about the code that guards the autopilot (its runner, gate classes, bounds, self-check, edit guard, decision
-record, lane routing, sync, the local settings) is of a class the autopilot may not answer as design, and so is a gate
-whose question speaks of uploading, deploying, merge requests, GitLab, PATs, ssh, passphrases or bearer tokens: with
-Edit, Write and glab mr merge allowed, an unattended sprint could otherwise approve and merge changes to its own guards
-(the gate classes of kb/_self/backlog.md)."""
+"""A gate about the code that guards the agents (the gate classes, the stall listing, the self-check, the edit guard,
+the decision record, lane routing, sync, the local settings) is of a class only the operator answers, never design,
+and so is a gate whose question speaks of uploading, deploying, merge requests, GitLab, PATs, ssh, passphrases or
+bearer tokens: with Edit, Write and glab mr merge allowed, a sprint could otherwise approve and merge changes to its
+own guards (the gate classes of kb/_self/backlog.md)."""
 import pytest
 
 import bl_authority as a
 
 GUARD_PATHS = {
-    "_tools/bl_authority.py": "agents-rule", "_tools/bl_bounds.py": "agents-rule",
+    "_tools/bl_authority.py": "agents-rule", "_tools/bl_stall.py": "agents-rule",
     "_tools/bl_selfcheck.py": "agents-rule", "_tools/kb_hook.py": "agents-rule", "_tools/kbdecide.py": "agents-rule",
     "_tools/bl_cost.py": "agents-rule", "_tools/tests.py": "agents-rule", "_tools/conftest.py": "agents-rule",
     ".claude/settings.local.json": "agents-rule", "_tools/kblane.py": "push", "_tools/kg_sync.py": "push",
@@ -37,8 +37,8 @@ def test_gate_class_covers_the_guard_code_wordings(question, cls):
 
 @pytest.mark.parametrize("path", sorted(GUARD_PATHS))
 def test_gate_class_covers_the_guard_code_planted_missing_path_fails(monkeypatch, path):
-    """With the path taken out of PATHS the gate falls to design, which the autopilot may answer: the check above
-    refuses that."""
+    """With the path taken out of PATHS the gate falls to design, which an agent may answer: the check above refuses
+    that."""
     monkeypatch.setattr(a, "PATHS", {k: tuple(p for p in v if p != path and not (path.startswith(p) and p.endswith("_")))
                                      for k, v in a.PATHS.items()})
     assert a.derived_class({"touches": [path]}, gate()) == "design"
