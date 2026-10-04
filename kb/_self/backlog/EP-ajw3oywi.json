@@ -5,9 +5,5 @@
   "status": "draft",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/_querylog/ops/ holds redacted, gated, closed-vocabulary rows of what land, the sync gate, tests, refused dones, CI reads, intake runs, subagents and sprint closes did and took; the existing distill push delivers them; querylog.py export prints them with the query log in one record format; the weekly digest and the sprint review report them; the autopilot reads them to find stalled work, orphaned processes and its own limits.",
-  "relates_to": [
-    "EP-mzzucemv",
-    "EP-np3xwfu4"
-  ]
+  "goal": "kb/_querylog/ops/ holds redacted, gated, closed-vocabulary rows of what land, the sync gate, tests, refused dones, CI reads, intake runs, subagents and sprint closes did and took; the existing distill push delivers them; querylog.py export prints them with the query log in one record format; the weekly digest and the sprint review report them; the autopilot reads them to find stalled work, orphaned processes and its own limits."
 }

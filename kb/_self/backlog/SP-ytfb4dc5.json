@@ -1,0 +1,22 @@
+{
+  "id": "SP-ytfb4dc5",
+  "kind": "sprint",
+  "title": "The autopilot is retired and the manual multi-session workflow keeps what it taught",
+  "status": "active",
+  "goal": "The unattended manager, its runner, tick, skill, bounds, stall remedies, headless guards, test plan and container plan are removed from the repository; land, sync, close, cost, gates and the other tools that sprints with several sessions use keep working, with every removed test listed in test_ids_dropped.txt.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

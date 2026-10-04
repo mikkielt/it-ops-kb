@@ -1,0 +1,57 @@
+{
+  "id": "ST-ofwtf4cl",
+  "kind": "story",
+  "title": "The bounds, the stall remedies, the autopilot selfcheck and the autopilot answer path are removed",
+  "status": "todo",
+  "sprint": "SP-ytfb4dc5",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "After the runner is gone: delete _tools/bl_bounds.py and its tests and the backlog.py bounds command (and its place in bl_cli and bl_check); keep the read-only backlog.py stalled listing of claimed items with no work commit but drop its remedy ladder, its recorded autopilot decisions and its --took path from bl_stall.py; keep selfcheck's generic host checks (claims, checkout, memory) and drop the autopilot ones; remove AUTOPILOT_REFUSED and the --by autopilot answer path from bl_authority.py, backlog.py answer and kbdecide.py (the gate classes and the rule that only the operator answers a gate stay); keep kbdecide ratify/revert/digest for operator decisions. Planted tests for what stays; removed test ids go to test_ids_dropped.txt with the reason 'autopilot retired'. Interactive session; bl_authority.py and kbdecide.py are agents-rule files.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stalled_lists_without_remedies"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_bounds.py",
+    "_tools/bl_stall.py",
+    "_tools/bl_selfcheck.py",
+    "_tools/bl_authority.py",
+    "_tools/bl_cli.py",
+    "_tools/bl_check.py",
+    "_tools/backlog.py",
+    "_tools/kbdecide.py",
+    "_tools/test_bl_stall.py",
+    "_tools/test_bl_selfcheck.py",
+    "_tools/test_ids_dropped.txt",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-dh5g3lk7"
+  ]
+}

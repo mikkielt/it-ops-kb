@@ -1,0 +1,59 @@
+{
+  "id": "ST-dh5g3lk7",
+  "kind": "story",
+  "title": "The autopilot runner, tick, rehearsal, skill, runbook, plans and their tests are removed",
+  "status": "todo",
+  "sprint": "SP-ytfb4dc5",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Operator decision 2026-10-04: the unattended manager is retired. Remove _tools/autopilot.py and _tools/autopilot_rehearse.py; the kb-autopilot skill and every mention in kb-sprint's skill (--headless mode, --only, runner and tick wording), kb-item and kb-backlog skills; kb/_self/autopilot-test.md, autopilot-container.md and reports/autopilot-first-run.md; the runbook sections Starting the autopilot and the manager paragraphs of kb/_self/backlog.md; the autopilot rows of tools.md, code.md, maintaining.md, README.md and plugin.md; their map.csv rows; the runner-only allow and deny rules of .claude/settings.json (tightening only, nothing added); the _cache/autopilot ignore lines; all test_autopilot*.py files, with each removed test id listed in _tools/test_ids_dropped.txt with the reason 'autopilot retired'. land, sync, close, cost, held and the gate rules keep working. An interactive session does it, one landing per coherent step.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/autopilot.py",
+    "_tools/autopilot_rehearse.py",
+    ".claude/skills/kb-autopilot/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/settings.json",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/README.md",
+    "kb/_self/plugin.md",
+    "kb/_self/map.csv",
+    "kb/_self/autopilot-test.md",
+    "kb/_self/autopilot-container.md",
+    "kb/_self/reports/autopilot-first-run.md",
+    "_tools/test_ids_dropped.txt",
+    ".gitignore"
+  ]
+}

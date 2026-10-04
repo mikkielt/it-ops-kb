@@ -1,0 +1,45 @@
+{
+  "id": "ST-f4ra5s7y",
+  "kind": "story",
+  "title": "No file of the tools, skills or docs names the autopilot, and the docs say what sprints with several sessions need",
+  "status": "todo",
+  "sprint": "SP-ytfb4dc5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A sweep after the removals: git grep -il autopilot over _tools, .claude, AGENTS.md, CLAUDE.md and kb/_self (outside kb/_self/_decisions.csv and the backlog item files, which are history) finds nothing; map.csv rows, README.md, plugin.md and maintaining.md skill tables name no removed file or skill; the selfdoc map and cohesion checks pass; and kb/_self/backlog.md gains one short section for sprints run by several sessions: a claim is per item and per task, never per story that spans a sprint's files; the dispatch brief a runner needs (item id and title, touches checked against held, KB_TEST_WORKERS, memory pause); the overlap policy (docs exception, different regions, facade files); save a failing gate's text to a new file before retrying.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; o=subprocess.run(['git','grep','-il','autopilot','--','_tools','.claude','AGENTS.md','CLAUDE.md','kb/_self',':!kb/_self/_decisions.csv',':!kb/_self/backlog/'],capture_output=True,text=True).stdout.strip(); sys.exit(1 if o else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/README.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [],
+  "notes": " Order: runs last of the sprint (after the three removals land); no depends_on because a docs-only task may not depend on the code whose docs it sweeps."
+}

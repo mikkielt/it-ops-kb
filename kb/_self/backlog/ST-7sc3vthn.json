@@ -1,0 +1,50 @@
+{
+  "id": "ST-7sc3vthn",
+  "kind": "story",
+  "title": "The headless-runner guards and the KB_HEADLESS_RUNNER marker are removed from the tools",
+  "status": "todo",
+  "sprint": "SP-ytfb4dc5",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Only the autopilot set KB_HEADLESS_RUNNER, so its guards are dead: remove the marker (bl_intake.HEADLESS_ENV and every reader of it) and the guard code it switches on from kb_hook.py (headless_guard and its PreToolUse wiring in .claude/settings.json), bl_land.py, kg_sync.py (headless target refusal), kbpublic.py, querylog.py (launch does nothing headless), backlog.py, bl_intake.py, kbdecide.py and conftest.py, and the tests that exist only for them (test_headless_guard.py, test_headless_hooks.py, test_headless_start_guarded.py, test_sync_headless.py, test_kbpublic_hook_env.py, test_backlog_headless_operator.py, test_bl_authority_guards.py, test_bl_authority_trust.py, test_docs_headless_statements.py), each removed test id listed in _tools/test_ids_dropped.txt with the reason 'autopilot retired'. Keep the repro rule that an open item's repro runs without a shell (test_open_repros_run_headless) and every interactive behaviour. Nothing may be added to .claude/settings.json. After it, git grep -n KB_HEADLESS_RUNNER finds nothing in _tools, .claude or kb/_self. Interactive session; kb_hook.py, kbpublic.py and the settings are agents-rule files.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/bl_land.py",
+    "_tools/kg_sync.py",
+    "_tools/kbpublic.py",
+    "_tools/querylog.py",
+    "_tools/backlog.py",
+    "_tools/bl_intake.py",
+    "_tools/kbdecide.py",
+    "_tools/conftest.py",
+    ".claude/settings.json",
+    "_tools/test_ids_dropped.txt",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "ST-ofwtf4cl"
+  ]
+}
