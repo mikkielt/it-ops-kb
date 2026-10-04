@@ -48,7 +48,6 @@
       "Bash(python3 _tools/kbdecide.py digest)",
       "Bash(python3 _tools/kbdecide.py digest --commit)",
       "Bash(python3 _tools/kbdecide.py list *)",
-      "Bash(python3 _tools/autopilot.py *)",
       "Bash(git fetch)",
       "Bash(git fetch --quiet)",
       "Bash(git fetch origin)",
@@ -112,7 +111,6 @@
       "PowerShell(python3 _tools/kbdecide.py digest)",
       "PowerShell(python3 _tools/kbdecide.py digest --commit)",
       "PowerShell(python3 _tools/kbdecide.py list *)",
-      "PowerShell(python3 _tools/autopilot.py *)",
       "PowerShell(git fetch)",
       "PowerShell(git fetch --quiet)",
       "PowerShell(git fetch origin)",
@@ -246,27 +244,6 @@
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/kb_change_router.py --reset",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "compact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/autopilot.py status --hook",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/autopilot.py precompact",
             "timeout": 10
           }
         ]
