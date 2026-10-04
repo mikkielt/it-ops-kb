@@ -19,7 +19,7 @@ from bl_base import (
     host_user_pieces, items_holding_names, research_in_planned, research_story, say, withhold_names,
 )
 import bl_plan
-from bl_plan import docs_after_code, docs_warnings, stale_touches
+from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches
 
 
 # ------------------------------------------------------------------ validation
@@ -941,7 +941,7 @@ def cmd_check(bl, a):
     errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned)
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
-        + gate_do_warnings(bl) + refused_answer_warnings(bl)
+        + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")

@@ -296,8 +296,50 @@ def cmd_start(bl, a):
     for i in recurring_left_out(bl, sid):
         say(f"  warning: recurring P1 item {bl.label(i)} (recurs in {len(set(bl.items[i]['recurs']))} sprints) "
             "is not in this sprint")
+    found, n = shared_files(bl, items)
+    for path, ids in found:
+        say(f"  warning: {shared_file_line(path, ids, n)}")
     commit_written(bl, a, "start", sid)
     return 0
+
+
+# A file named in the touches of more than half of a sprint's items makes them run one after another (`held
+# --overlaps`: SP-x2pvljz6's items mostly touched the sprint skill). The docs in SHARED_DOCS are the exception: items
+# edit them by section at the same time, so naming one is no finding. Fewer than SHARED_FILE_MIN items never is.
+SHARED_DOCS = ("kb/_self/backlog.md", "kb/_self/tools.md", "kb/_self/git.md")
+SHARED_FILE_MIN = 3
+
+
+def shared_files(bl, items):
+    """([(path, [item ids])], n): each file in the touches of more than half of the n items of ITEMS that have touches
+    of their own (a review story and a dropped item have none to count) and of at least SHARED_FILE_MIN of them, the
+    most shared first; a path in SHARED_DOCS is left out."""
+    scoped = [i for i in items if not bl.items[i].get("review") and bl.items[i].get("status") != "dropped"
+              and bl.items[i].get("touches")]
+    by = {}
+    for i in scoped:
+        for p in set(bl.items[i]["touches"]):
+            by.setdefault(p, []).append(i)
+    found = [(p, ids) for p, ids in by.items()
+             if p not in SHARED_DOCS and len(ids) >= SHARED_FILE_MIN and 2 * len(ids) > len(scoped)]
+    return sorted(found, key=lambda f: (-len(f[1]), f[0])), len(scoped)
+
+
+def shared_file_line(path, ids, n):
+    return (f"{path} is in the touches of {len(ids)} of {n} items ({', '.join(sorted(ids))}): they run one after "
+            "another; split the edits by section into separate items, or order them up front "
+            "(`backlog.py held --overlaps` shows who holds a file)")
+
+
+def shared_file_warnings(bl):
+    """check's warnings: a file most of a planned sprint's items name in their touches (shared_files), so the plan is
+    split or ordered before the sprint is approved."""
+    out = []
+    for sid, sp in sorted(bl.items.items()):
+        if sp.get("kind") == "sprint" and sp.get("status") == "planned":
+            found, n = shared_files(bl, bl.sprint_items(sid))
+            out.extend(f"{bl.label(sid)}: {shared_file_line(p, ids, n)}" for p, ids in found)
+    return out
 
 
 def where_outside(bl, d):
