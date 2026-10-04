@@ -220,52 +220,138 @@ def row(pid, tab):
     return {"pid": pid, "start": tab[pid][1], "comm": tab[pid][2]}
 
 
-def run_end(snap, grace=7):
+FAKE_PIDS = 10_000_000  # above the pid of any host (Linux caps its pids at 4194304, macOS at 99999)
+
+
+def fake_pid(n):
+    """The pid of the fake process N: far above any pid the host hands out, so it never equals this process's own pid
+    or one above it."""
+    return FAKE_PIDS + n
+
+
+class HostOs:
+    """`bl_procs.os` for a test: the real `os` module, but this process has the pid ME. Only that module sees it."""
+
+    def __init__(self, me):
+        self.me = me
+
+    def getpid(self):
+        return self.me
+
+    def __getattr__(self, name):
+        return getattr(os, name)
+
+
+def run_end(snap, monkeypatch, grace=7, me=fake_pid(9000)):
+    """end_owned_orphans over SNAP with no host in it: this process has the pid ME, and the process table `gone` reads
+    is empty (every ender call succeeds at once, no real wait)."""
+    monkeypatch.setattr(bl_procs, "os", HostOs(me))
+    monkeypatch.setattr(bl_procs, "process_table", lambda: {})
     said, slept, ended = [], [], []
     result = bl_procs.end_owned_orphans("/clone", grace, say=said.append, sleep=slept.append, snap=snap, ender=ended.append)
     return result, said, slept, ended
 
 
-def test_procs_ends_only_own_after_the_grace_and_takes_the_tree():
-    tab = {500: (1, 50, "node"), 501: (500, 51, "sh"), 502: (501, 52, "sleep"), 600: (1, 60, "claude"), 700: (1, 70, "sleep")}
-    rows = [row(500, tab)]
-    result, said, slept, ended = run_end(fake_snap((tab, rows), (tab, rows)))
-    assert result == (1, 0)
-    assert slept == [7], "the grace is slept once, between the two looks"
-    assert ended == [502, 501, 500], "the process tree under it first, deepest first, then the orphan"
+def tree_scenario(monkeypatch, me=fake_pid(9000), base=FAKE_PIDS):
+    """One owned orphan with a process tree under it, an unrecorded orphan and a foreign process; pids BASE + n."""
+    def p(n):
+        return base + n
+    tab = {p(500): (1, 50, "node"), p(501): (p(500), 51, "sh"), p(502): (p(501), 52, "sleep"),
+           p(600): (1, 60, "claude"), p(700): (1, 70, "sleep")}
+    rows = [row(p(500), tab)]
+    return p, tab, run_end(fake_snap((tab, rows), (tab, rows)), monkeypatch, me=me)
+
+
+def check_tree(p, tab, out):
+    result, said, slept, ended = out
     text = "\n".join(said)
-    assert "left pid 600 (claude)" in text and "left pid 700 (sleep)" in text and "never signaled" in text
-    assert all(p not in ended for p in (600, 700)), "an unrecorded orphan and a foreign process are never ended"
+    shown = (tab, said, ended)
+    assert result == (1, 0), shown
+    assert slept == [7], ("the grace is slept once, between the two looks", *shown)
+    assert ended == [p(502), p(501), p(500)], ("the process tree under it first, deepest first, then the orphan", *shown)
+    assert f"left pid {p(600)} (claude)" in text and f"left pid {p(700)} (sleep)" in text and "never signaled" in text, shown
+    assert all(q not in ended for q in (p(600), p(700))), ("an unrecorded orphan and a foreign process are never ended", *shown)
 
 
-def test_procs_ends_only_own_leaves_one_whose_parent_returned_or_whose_pid_was_reused():
-    tab = {500: (1, 50, "node"), 800: (1, 80, "node")}
-    rows = [row(500, tab), row(800, tab)]
-    later = {500: (1, 99, "other"), 800: (4, 80, "node"), 4: (1, 3, "autopilot")}  # 500 reused by another start; 800 has a parent
-    result, said, _, ended = run_end(fake_snap((tab, rows), (later, rows)))
-    assert ended == [] and result == (0, 0), said
+def returned_scenario(monkeypatch, me=fake_pid(9000), base=FAKE_PIDS):
+    """Two owned orphans; after the grace one pid is reused by another start and the other has a parent again."""
+    def p(n):
+        return base + n
+    tab = {p(500): (1, 50, "node"), p(800): (1, 80, "node")}
+    rows = [row(p(500), tab), row(p(800), tab)]
+    later = {p(500): (1, 99, "other"), p(800): (p(4), 80, "node"), p(4): (1, 3, "autopilot")}  # 500 reused by another start; 800 has a parent
+    return p, tab, run_end(fake_snap((tab, rows), (later, rows)), monkeypatch, me=me)
+
+
+def check_returned(p, tab, out):
+    result, said, _, ended = out
     text = "\n".join(said)
-    assert "gone pid 500" in text and "left pid 800 (node): no longer an owned orphan (owned)" in text
+    shown = (tab, said, ended)
+    assert ended == [] and result == (0, 0), shown
+    assert f"gone pid {p(500)}" in text and f"left pid {p(800)} (node): no longer an owned orphan (owned)" in text, shown
 
 
-def test_procs_ends_only_own_never_this_process_or_one_above_it():
+def test_procs_ends_only_own_after_the_grace_and_takes_the_tree(monkeypatch):
+    check_tree(*tree_scenario(monkeypatch))
+
+
+def test_procs_ends_only_own_leaves_one_whose_parent_returned_or_whose_pid_was_reused(monkeypatch):
+    check_returned(*returned_scenario(monkeypatch))
+
+
+def test_procs_ends_only_own_host_independent_whatever_pid_this_process_has(monkeypatch):
+    """The scenarios give the same answer whatever the pid of the test process is, the old small fake pids included."""
+    for me in (500, 501, 502, 600, 700, 800, 4, 1, os.getpid(), fake_pid(9000)):
+        check_tree(*tree_scenario(monkeypatch, me=me))
+        check_returned(*returned_scenario(monkeypatch, me=me))
+
+
+def test_procs_ends_only_own_host_independent_planted_old_pids_fail_when_the_pid_collides(monkeypatch):
+    """Planted failure: with the old small fake pids (500 to 800, 4) and this process having one of them, the same
+    verdicts fail (a process the inventory leaves out as this one is never ended), so the pids above the host's range
+    are what keeps the two tests host-independent."""
+    for me in (500, 501, 502, 600, 700):
+        with pytest.raises(AssertionError):
+            check_tree(*tree_scenario(monkeypatch, me=me, base=0))
+    for me in (500, 800):
+        with pytest.raises(AssertionError):
+            check_returned(*returned_scenario(monkeypatch, me=me, base=0))
+    check_tree(*tree_scenario(monkeypatch, me=9000, base=0))  # no collision: the old pids pass, as they did on most hosts
+    check_returned(*returned_scenario(monkeypatch, me=9000, base=0))
+
+
+def test_procs_ends_only_own_host_independent_no_real_process_table_or_wait(monkeypatch):
+    """Planted: a real running process (this one) is not `gone` by the real table, and is once run_end has put its own
+    empty table in place, so the ends the two tests check never read the host's table or wait on it."""
+    real = bl_procs.process_table()
+    if real is None or os.getpid() not in real:
+        pytest.skip("this host cannot list its processes")
+    start = real[os.getpid()][1]
+    assert not bl_procs.gone(os.getpid(), start, wait=0), "the real table sees this process, so a real read is no fake"
+    _, _, out = tree_scenario(monkeypatch)
+    assert out[0] == (1, 0)
+    assert bl_procs.gone(os.getpid(), start, wait=0), "run_end's table is empty: nothing real is read"
+
+
+def test_procs_ends_only_own_never_this_process_or_one_above_it(monkeypatch):
     me = os.getpid()
     tab = {me: (900, 5, "python"), 900: (901, 4, "zsh"), 901: (1, 3, "claude")}
     rows = [row(901, tab), row(900, tab)]
-    result, said, _, ended = run_end(fake_snap((tab, rows), (tab, rows)))
-    assert ended == [] and result == (0, 0), (ended, said)
-    assert "this process or one above it" in "\n".join(said)
+    result, said, _, ended = run_end(fake_snap((tab, rows), (tab, rows)), monkeypatch, me=me)
+    assert ended == [] and result == (0, 0), (tab, ended, said)
+    assert "this process or one above it" in "\n".join(said), (tab, said)
 
 
-def test_procs_ends_only_own_planted_ender_that_ignores_ownership_ends_a_foreign_one():
-    tab = {600: (1, 60, "claude"), 601: (10, 61, "sleep"), 10: (11, 9, "zsh"), 11: (1, 8, "init")}
-    result, said, _, ended = run_end(fake_snap((tab, []), (tab, [])))
-    assert ended == [] and "no owned orphan to end" in "\n".join(said)
+def test_procs_ends_only_own_planted_ender_that_ignores_ownership_ends_a_foreign_one(monkeypatch):
+    tab = {fake_pid(600): (1, 60, "claude"), fake_pid(601): (fake_pid(10), 61, "sleep"),
+           fake_pid(10): (fake_pid(11), 9, "zsh"), fake_pid(11): (1, 8, "init")}
+    result, said, _, ended = run_end(fake_snap((tab, []), (tab, [])), monkeypatch)
+    assert ended == [] and "no owned orphan to end" in "\n".join(said), (tab, said, ended)
     real = bl_procs.classify
     planted = lambda procs, tab, rows: [dict(p, kind=bl_procs.OWNED_ORPHAN) for p in real(procs, tab, rows)]  # noqa: E731
     try:
         bl_procs.classify = planted
-        _, _, _, ended = run_end(fake_snap((tab, []), (tab, [])))
+        _, _, _, ended = run_end(fake_snap((tab, []), (tab, [])), monkeypatch)
     finally:
         bl_procs.classify = real
     assert ended, "the planted classifier ends processes it does not own: the assertions above would fail"
@@ -273,11 +359,11 @@ def test_procs_ends_only_own_planted_ender_that_ignores_ownership_ends_a_foreign
         assert ended == []
 
 
-def test_procs_ends_only_own_a_host_that_cannot_check_ends_nothing():
+def test_procs_ends_only_own_a_host_that_cannot_check_ends_nothing(monkeypatch):
     def snap(root):
         return None, None, "no /proc, and no lsof and ps, on this host"
-    result, said, slept, ended = run_end(snap)
-    assert result is None and ended == [] and slept == [] and "cannot check this host" in said[0]
+    result, said, slept, ended = run_end(snap, monkeypatch)
+    assert result is None and ended == [] and slept == [] and "cannot check this host" in said[0], (said, slept, ended)
 
 
 @needs_cwd
