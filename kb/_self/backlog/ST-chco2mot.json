@@ -28,5 +28,5 @@
   "depends_on": [
     "ST-6zcqkjfm"
   ],
-  "notes": "Failure it answers: the work sidecar's refused row says only that done exited 1, so the rework a refusal costs cannot be split by cause (ST-2w2bqtjf)."
+  "notes": "Failure it answers: the work sidecar's refused row says only that done exited 1, so the rework a refusal costs cannot be split by cause (ST-2w2bqtjf). OPERATOR ANSWER 2026-10-04 (query-log recorded fields): APPROVED: the new ops row done.refused records the item id and the name of the refusing check, no free text, no values."
 }

@@ -1,0 +1,29 @@
+{
+  "id": "ST-gqpjccob",
+  "kind": "story",
+  "title": "Inside the container a headless runner may edit the bl_ modules and existing tests, as the operator decided",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Operator answer (ST-frbtrpkk g1: widen, container only): when the autopilot runs inside the container of kb/_self/autopilot-container.md, the guard's agents-rule path set (bl_authority.PATHS: _tools/bl_ prefix, tests.py, conftest.py, new test files) is narrowed for that run only, selected by an environment marker the container sets and the host never sets; a host headless run keeps every deny; planted tests: marker set allows an edit of bl_land.py and an existing test file, marker unset denies them, a path outside the clone, settings.json, hooks, kb_hook.py and the guard files stay denied in both. Depends on the container build; an operator-present session writes it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "container_widened_guard"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/kb_hook.py",
+    "_tools/test_headless_guard.py",
+    "kb/_self/autopilot-container.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-32b46kff"
+  ]
+}
