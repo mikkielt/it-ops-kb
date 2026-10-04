@@ -2,7 +2,7 @@
   "id": "BG-44qxmrkm",
   "kind": "bug",
   "title": "Two test_bl_procs tests that end owned orphans failed once in a loaded land gate and pass alone: they mix fake process tables with the real pid, the real process table and real waits",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gfoakqar",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,28 @@
     "_tools/test_bl_procs.py",
     "_tools/bl_procs.py"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "14e94e8ce59ae57cfcff399b299a82a45a9d93be",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "procs_ends_only_own_host_independent"
+        ],
+        "exit": 0,
+        "sha256": "24f0e473a79bd9dd"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(1 if '500: (1, 50' in open('_tools/test_bl_procs.py').read() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
