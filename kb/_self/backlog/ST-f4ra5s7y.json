@@ -54,7 +54,8 @@
     "_tools/test_check_program_allowlist.py",
     "_tools/test_settings_allow.py",
     "_tools/test_backlog_record_clean.py",
-    "_tools/test_kbdecide.py"
+    "_tools/test_kbdecide.py",
+    "kb/_self/reports/decision-digest.md"
   ],
   "depends_on": [
     "ST-7sc3vthn"
