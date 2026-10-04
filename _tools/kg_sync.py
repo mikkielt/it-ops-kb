@@ -5,7 +5,7 @@ git in KB, this module's own copy of the repository directory (a caller may poin
 message of the fix commit, whether the commit hooks are installed) comes in as a `Host` the facade builds, since this
 module imports no facade. Standard library only; kbgit.py imports it.
 """
-import csv, os, re, shlex, subprocess, sys, time
+import csv, json, os, re, shlex, subprocess, sys, time
 from collections import namedtuple
 from pathlib import Path
 
@@ -134,8 +134,9 @@ def gitx_net(*args, env=None):
 
 def tool(name, *args, env=None):
     """(exit code, output) of a kb tool in this checkout (the files on disk, which a rebase may have updated). The
-    re-run marker (REEXEC_ENV) is not passed on: it belongs to this sync, not to a sync a tool starts."""
-    base = {k: v for k, v in os.environ.items() if k != REEXEC_ENV}
+    re-run marker (REEXEC_ENV) and the sides it carries (SIDES_ENV) are not passed on: they belong to this sync, not to
+    a sync a tool starts."""
+    base = {k: v for k, v in os.environ.items() if k not in (REEXEC_ENV, SIDES_ENV)}
     p = subprocess.run([sys.executable, os.path.join(KB, "_tools", name), *args], cwd=KB, capture_output=True,
                        text=True, encoding="utf-8", errors="replace", env={**base, **(env or {})})
     return p.returncode, p.stdout + p.stderr
@@ -146,7 +147,24 @@ def tool(name, *args, env=None):
 # arguments on the rebased tree, so the new rules (lanes, the gate) decide the push that brought them; the re-run finds
 # nothing behind and goes on. REEXEC_ENV marks the re-run: a re-run whose own rebase (the remote moved again) changed
 # the code once more stops with exit 3 instead of a second re-run, and so does a sync with no command line to repeat.
+# The re-run sees its tree already rebased (nothing behind), so it cannot tell the merge's sides: SIDES_ENV carries the
+# rebase's base, upstream and the HEAD it started from, and the re-run gives them to fix while the upstream is the same,
+# so an id both sides added is still renumbered, not left as exit 3 `sides unknown`.
 REEXEC_ENV = "KB_SYNC_REEXEC"
+SIDES_ENV = "KB_SYNC_SIDES"
+
+
+def inherited_sides(up):
+    """(base, orig) the sync that re-ran this one rebased from, when this is a re-run and UP is the upstream that sync
+    rebased onto; else None (the remote moved again, or this is no re-run, or the value is not what rerun_sync wrote)."""
+    if os.environ.get(REEXEC_ENV) != "1":
+        return None
+    try:
+        d = json.loads(os.environ.get(SIDES_ENV, ""))
+    except ValueError:
+        return None
+    ok = isinstance(d, dict) and up and d.get("up") == up and all(isinstance(d.get(k), str) and d[k] for k in ("base", "orig"))
+    return (d["base"], d["orig"]) if ok else None
 
 
 def loaded_tools():
@@ -167,9 +185,10 @@ def code_changed(before, after="HEAD"):
     return sorted(p for p in out.split("\0") if p)
 
 
-def rerun_sync(a, r, changed):
+def rerun_sync(a, r, changed, sides=None):
     """The rebase changed CHANGED, code this process runs: run sync again, once, with the rebased code and return its
-    exit code. Inside a re-run already, or without a command line to repeat (sync started by bridge): exit 3."""
+    exit code. SIDES, (base, upstream, orig) of the rebase, goes to the re-run in SIDES_ENV. Inside a re-run already, or
+    without a command line to repeat (sync started by bridge): exit 3."""
     print("the rebase changed the code sync runs: " + ", ".join(changed))
     argv = getattr(a, "rerun", None)
     if not argv or os.environ.get(REEXEC_ENV) == "1":
@@ -179,7 +198,11 @@ def rerun_sync(a, r, changed):
         return 3
     print("re-running sync once with the rebased code", flush=True)
     sys.stderr.flush()
-    p = subprocess.run([sys.executable, *argv], cwd=KB, env={**os.environ, REEXEC_ENV: "1"})
+    env = {**os.environ, REEXEC_ENV: "1"}
+    env.pop(SIDES_ENV, None)
+    if sides:
+        env[SIDES_ENV] = json.dumps(dict(zip(("base", "up", "orig"), sides)))
+    p = subprocess.run([sys.executable, *argv], cwd=KB, env=env)
     r["rerun"] = p.returncode
     return p.returncode
 
@@ -646,9 +669,10 @@ def sync_once(a, r, host):
         r["rebased"] += ahead
         changed = code_changed(orig)
         if changed:
-            return rerun_sync(a, r, changed)
+            return rerun_sync(a, r, changed, (base, up, orig) if ahead else None)
     both_sides = bool(up and behind and ahead)
-    code, out = tool("kbgit.py", *fix_args(base if both_sides else None, up, orig))
+    fix_base, fix_orig = (base, orig) if both_sides else inherited_sides(up) or (None, orig)
+    code, out = tool("kbgit.py", *fix_args(fix_base, up, fix_orig))
     if code:
         print(out.rstrip())
         print("kbgit.py fix needs a human (listed above); the rebase is complete and nothing was written or pushed. "
