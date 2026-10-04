@@ -1451,6 +1451,28 @@ class TestSyncGateTests:
         assert ok, out
         assert not (tools / "ran-slow").exists()
 
+    def test_sync_gate_all_selection_keeps_git_scenarios(self):
+        """A push that also touches a path selecting every test file (pyproject.toml, uv.lock, conftest.py, tests.py,
+        testmap.py) still keeps the git scenarios of the files each other code path selects, in one run, and runs the
+        rest of the suite without them, each file once; with nothing else to keep, or only kb content beside it, the
+        run stays one fast run of every file, and a run that is not fast stays one full run."""
+        import testmap
+        import tests as tests_py
+        node = "_tools/test_ql_deliver.py"
+        every = {f"_tools/{f}" for f in testmap.test_files()}
+        for pushed in (["_tools/kbgit.py", "pyproject.toml"], ["uv.lock", "_tools/querylog.py"],
+                       ["_tools/kbgit.py", "_tools/querylog.py", "_tools/conftest.py", "kb/public/README.md"]):
+            runs = tests_py.plan(pushed, True)
+            assert runs[0][1] == tests_py.FULL_M and node in runs[0][0], (pushed, runs)
+            assert all(m == tests_py.FAST_M for _, m in runs[1:]), (pushed, runs)
+            files = {n.split("::")[0] for nodes, _ in runs for n in nodes}
+            whole = [n for nodes, _ in runs for n in nodes if "::" not in n]  # a class node may share its file's other run
+            assert files == every and len(whole) == len(set(whole)), (pushed, sorted(every - files))
+        assert tests_py.plan(["pyproject.toml"], True) == [(tests_py.EVERY, tests_py.FAST_M)]
+        assert tests_py.plan(["pyproject.toml", "kb/public/README.md"], True) == [(tests_py.EVERY, tests_py.FAST_M)]
+        assert tests_py.plan(["_tools/kbgit.py", "pyproject.toml"], False) == [(tests_py.EVERY, tests_py.FULL_M)]
+        assert tests_py.plan(["_tools/kbgit.py"], True)[0][1] == tests_py.FULL_M  # a selection short of all: as before
+
     def test_sync_gate_selects_cloud_scenarios(self):
         """A change to kbgit.py or querylog.py: the gate's fast run keeps the git scenarios of test_ql_deliver.py, and
         pytest collects TestCloudInGit with that run's -m (and not with the content run's); kb content alone keeps the
