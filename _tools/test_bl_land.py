@@ -562,6 +562,34 @@ class TestDoneLane:
         code, out = self.done(repo, tk)
         assert code == 1 and "not on origin/main" in out and f"code/{tk}" in out, out
 
+    def test_done_names_the_code_branch_sync_opened(self, sprint, monkeypatch):
+        """done names the branch kg_lane.lane_plan chose for the range sync pushes, the first KB-Work id of the range,
+        as land does. Planted: another item's code commit comes first in the range, so sync opens code/<that item>;
+        a range of the item's own commits still names its own branch."""
+        monkeypatch.delenv("KB_TESTS_FAST", raising=False)
+        monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
+        monkeypatch.setenv("KB_HOST_LOCK_DIR", str(sprint["repo"].parent / "locks"))
+        repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+        assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+        commit(repo, "claim", tk)
+        claimed = self.rev(repo)
+        (repo / "src").mkdir(exist_ok=True)
+        (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+        commit(repo, "the other item's code first", bg)
+        other = self.rev(repo)
+        (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+        commit(repo, "write b", tk)
+        sh(repo, "git", "update-ref", "refs/remotes/origin/main", claimed)  # the range begins with the other item's code
+        code, out = self.done(repo, tk)
+        assert code == 1 and "not on origin/main" in out and f"branch code/{bg}" in out and f"code/{tk}" not in out, out
+        sh(repo, "git", "update-ref", "refs/remotes/origin/main", other)  # the item's own commit alone
+        code, out = self.done(repo, tk)
+        assert code == 1 and "not on origin/main" in out and f"branch code/{tk}" in out and f"code/{bg}" not in out, out
+
+    @staticmethod
+    def rev(repo):
+        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout.strip()
+
     def test_missing_integration_ref_is_refused(self, sprint):
         repo, tk = self.worked(sprint)
         code, out = self.done(repo, tk)

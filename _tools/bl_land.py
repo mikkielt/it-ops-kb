@@ -61,6 +61,14 @@ def unlanded_code(root, ids):
     return [sha[:10] for sha in late], remote, owners
 
 
+def sync_code_branch(root, upstream, owners, iid):
+    """The code/<id> branch sync --push opens for the range UPSTREAM..HEAD, named by kg_lane.lane_plan, the one helper
+    sync uses; the late commits' first owner (else the item's own id) when git cannot say."""
+    import kg_lane
+    _, branch = kg_lane.lane_plan(str(root), upstream, "HEAD")
+    return branch or "code/" + (owners[0] if owners else iid)
+
+
 def blob_id(root, rev, path):
     p = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{rev}:{path}"], cwd=root, capture_output=True,
                        text=True, encoding="utf-8", errors="replace")
@@ -172,9 +180,10 @@ def cmd_done(bl, a):
             problems.append(f"code commits of the item, and refs/remotes/{remote}/main is not fetched: fetch {remote}, "
                             "then run done again")
         elif late:
-            branches = ", ".join("code/" + o for o in owners or [iid])
+            branch = sync_code_branch(bl.root, f"refs/remotes/{remote}/main", owners, iid)
             problems.append(f"code commit(s) {', '.join(late)} are not on {remote}/main: merge the merge request sync "
-                            f"opened for them (branch {branches}), fetch {remote} and run done again")
+                            f"opened for them (branch {branch}, named for the first KB-Work id of the range sync "
+                            f"pushes), fetch {remote} and run done again")
         for sha, path in out_of_scope(bl.root, item_commits(bl.root, family), globs):
             problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
     if problems:
@@ -803,9 +812,7 @@ def cmd_land(bl, a):
         if late == ["(no such ref)"]:
             raise land_stop("fetch", f"{upstream} does not exist after the fetch")
         if late:
-            import kg_lane  # the branch sync --push opens for this range, named by the one helper sync uses
-            _, code_branch = kg_lane.lane_plan(str(root), upstream, "HEAD")
-            code_branch = code_branch or "code/" + (owners[0] if owners else iid)  # git failed: the item's own id
+            code_branch = sync_code_branch(root, upstream, owners, iid)  # the branch sync --push opens for this range
             tracking = f"refs/remotes/{remote}/{code_branch}"
             fetched = land_git_network(root, "fetch", "fetch", "--quiet", remote,
                                        f"+refs/heads/{code_branch}:{tracking}").returncode == 0
