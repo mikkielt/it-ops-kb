@@ -1,0 +1,34 @@
+{
+  "id": "TK-fsvrji77",
+  "kind": "task",
+  "title": "land runs no stress_test.py before sprint end, and the review story's checks run stress_test.py once with the full tests.py",
+  "status": "todo",
+  "parent": "ST-tbi3rras",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land no longer runs stress_test.py (LAND_HEAVY keeps rag.py eval and lint only), and a review story's checks (bl_base.REVIEW_CHECKS and the review story backlog.py writes) run stress_test.py with the full tests.py once before the review and the retro; planted tests: a landing that changes _tools/ runs no stress step, and a review story carries the stress check once",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_runs_no_stress_before_sprint_end"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "review_checks_run_stress_once"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_base.py",
+    "_tools/backlog.py",
+    "_tools/test_land_tiers.py"
+  ]
+}
