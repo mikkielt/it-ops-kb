@@ -49,7 +49,8 @@
     "_tools/test_bl_selfcheck.py",
     "_tools/test_ids_dropped.txt",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    ".claude/skills/kb-sprint/SKILL.md"
   ],
   "depends_on": [
     "ST-dh5g3lk7"

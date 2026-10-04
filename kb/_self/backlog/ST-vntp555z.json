@@ -1,0 +1,30 @@
+{
+  "id": "ST-vntp555z",
+  "kind": "story",
+  "title": "kb-item reads only the runbook sections that working one item needs, and one session works one item",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The reading command at the top of the kb-item skill prints at most 30000 bytes (today about 71 KB, about 18k tokens that stay in context as cache reads on every later turn); the 22 KB of procs, red-pipeline, intake detector, self-check and stalled reference inside 'Working on items' move under their own heading outside that list; step 7 says to run land in the background with the longest timeout (a foreground land is lost at the 10-minute limit); step 8 says the next item starts in a fresh session. Planted test: the section list stays under the byte bound.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; o=subprocess.run(['python3','_tools/selfdoc.py','section','backlog','The item file','backlog','Dependencies, gates and triggers','backlog','Definition of done','backlog','Working on items','backlog','Git','maintaining','Conduct for changes'],capture_output=True,text=True).stdout; sys.exit(0 if len(o.encode())<=30000 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-item/SKILL.md"
+  ]
+}

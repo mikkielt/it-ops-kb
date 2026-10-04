@@ -1,18 +1,18 @@
 {
   "id": "ST-f4ra5s7y",
   "kind": "story",
-  "title": "No file of the tools, skills or docs names the autopilot, and the docs say what sprints with several sessions need",
+  "title": "No file of the tools, skills or docs names the autopilot agent feature, and the Windows Autopilot product is untouched",
   "status": "todo",
   "sprint": "SP-ytfb4dc5",
   "priority": "P2",
   "rank": 0,
-  "goal": "A sweep after the removals: git grep -il autopilot over _tools, .claude, AGENTS.md, CLAUDE.md and kb/_self (outside kb/_self/_decisions.csv and the backlog item files, which are history) finds nothing; map.csv rows, README.md, plugin.md and maintaining.md skill tables name no removed file or skill; the selfdoc map and cohesion checks pass; and kb/_self/backlog.md gains one short section for sprints run by several sessions: a claim is per item and per task, never per story that spans a sprint's files; the dispatch brief a runner needs (item id and title, touches checked against held, KB_TEST_WORKERS, memory pause); the overlap policy (docs exception, different regions, facade files); save a failing gate's text to a new file before retrying.",
+  "goal": "A sweep after the removals, scoped to the AGENT feature only: git grep over _tools, .claude, AGENTS.md, CLAUDE.md and kb/_self finds no autopilot.py, autopilot_rehearse, kb-autopilot, KB_HEADLESS_RUNNER, bl_bounds or '--by autopilot' (outside kb/_self/_decisions.csv, the backlog item files and _tools/test_ids_dropped.txt, which keep history); the map.csv rows, README.md, plugin.md and maintaining.md skill tables name no removed file or skill; the selfdoc map and cohesion checks pass. The Windows/Intune Autopilot product is NEVER touched: kb/public/autopilot/*, the product lists of README.md, plugin.json and the kb-lookup skill, .gitattributes csdl entries and tests_allowlist.txt stay as they are. No new runbook section: one agent works one item at a time.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys; o=subprocess.run(['git','grep','-il','autopilot','--','_tools','.claude','AGENTS.md','CLAUDE.md','kb/_self',':!kb/_self/_decisions.csv',':!kb/_self/backlog/'],capture_output=True,text=True).stdout.strip(); sys.exit(1 if o else 0)"
+        "import subprocess,sys; pat='autopilot[.]py|autopilot_rehearse|kb-autopilot|KB_HEADLESS_RUNNER|bl_bounds|--by autopilot'; o=subprocess.run(['git','grep','-n','-E',pat,'--','_tools','.claude','AGENTS.md','CLAUDE.md','kb/_self',':!kb/_self/_decisions.csv',':!kb/_self/backlog/',':!_tools/test_ids_dropped.txt'],capture_output=True,text=True).stdout.strip(); sys.exit(1 if o else 0)"
       ]
     },
     {

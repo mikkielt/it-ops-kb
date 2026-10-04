@@ -1,0 +1,33 @@
+{
+  "id": "ST-3tgtrzd3",
+  "kind": "story",
+  "title": "backlog.py set replaces an item's title, goal, repro, severity and parent",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py set gains --title, --goal, --repro (a command, with --repro-reason where a text match is all that is possible), --severity and --parent, with the existing refusals kept and a refusal of repro or goal on a done item; so no item file is hand-edited for those fields and fmt/check stay green. Planted test: each flag changes its field and is refused on a done item.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "set_replaces_goal_and_repro"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "set",
+        "-h"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

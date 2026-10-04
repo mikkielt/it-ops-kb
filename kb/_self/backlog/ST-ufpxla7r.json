@@ -1,0 +1,25 @@
+{
+  "id": "ST-ufpxla7r",
+  "kind": "story",
+  "title": "A change to one bl_ module selects only the tests that import the backlog modules",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "testmap.py select for a change to _tools/bl_land.py selects fewer than 60 test files (today 104 of 127), because the import chain through conftest.py -> kbpublic -> ql_deliver -> backlog that pulls every backlog module into most tests is cut or deferred (find the real chain with testmap deps first); the full run at sprint end still covers everything. Planted test: select for bl_land.py stays under the bound and a file that really imports it is still selected.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; o=subprocess.run(['python3','_tools/testmap.py','select','--paths','_tools/bl_land.py'],capture_output=True,text=True).stdout; n=sum(1 for l in o.splitlines() if 'test_' in l); sys.exit(0 if n<60 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/testmap.py",
+    "_tools/test_testmap.py",
+    "_tools/conftest.py",
+    "_tools/kbpublic.py",
+    "_tools/ql_deliver.py"
+  ]
+}
