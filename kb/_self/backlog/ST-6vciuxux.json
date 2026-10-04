@@ -2,7 +2,7 @@
   "id": "ST-6vciuxux",
   "kind": "story",
   "title": "Sprint planning flags a file most of a sprint's items share",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "051ebe14f21f2f6f2b80e22a4db027006917021a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "plan_flags_shared_file"
+        ],
+        "exit": 0,
+        "sha256": "e093a40b0d751106"
+      }
+    ]
+  }
 }
