@@ -69,7 +69,6 @@ SKILL_COMMANDS = (
     "python3 _tools/backlog.py stalled",
     "python3 _tools/backlog.py procs",
     "python3 _tools/backlog.py held --ref origin/main",
-    "python3 _tools/autopilot.py status --hook",
     "python3 _tools/kbgit.py sync --push",
     "python3 _tools/kbgit.py fix --check",
     "python3 _tools/tests.py --changed origin/main",

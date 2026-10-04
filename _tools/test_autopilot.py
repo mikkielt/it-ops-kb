@@ -794,20 +794,3 @@ def compaction_hook_problems(settings):
     if any(not h.get("timeout") for h in starts + [h for _, h in pre]):
         out.append("a compaction hook has no timeout")
     return out
-
-
-def test_autopilot_status_compaction_hooks_are_in_settings():
-    assert compaction_hook_problems(json.loads(SETTINGS.read_text(encoding="utf-8"))) == []
-
-
-@pytest.mark.parametrize("plant, want", [
-    (lambda s: s["hooks"].pop("PreCompact"), "no PreCompact hook runs precompact"),
-    (lambda s: s["hooks"]["PreCompact"][0].update(matcher="manual"), "the PreCompact hook is limited to one trigger"),
-    (lambda s: [g.update(matcher="startup") for g in s["hooks"]["SessionStart"] if g.get("matcher") == "compact"],
-     "no SessionStart compact hook runs status --hook"),
-    (lambda s: s["hooks"]["PreCompact"][0]["hooks"][0].pop("timeout"), "a compaction hook has no timeout"),
-])
-def test_autopilot_status_compaction_hooks_a_planted_change_fails(plant, want):
-    s = json.loads(SETTINGS.read_text(encoding="utf-8"))
-    plant(s)
-    assert want in compaction_hook_problems(s)

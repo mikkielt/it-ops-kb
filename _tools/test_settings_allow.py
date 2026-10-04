@@ -1,4 +1,4 @@
-""".claude/settings.json allows the commands a headless sprint runner (autopilot.py runner start, /kb-sprint run
+""".claude/settings.json allows the commands a headless sprint runner (/kb-sprint run
 --headless) and its manager run, each shell rule as Bash and PowerShell, in the narrow forms the runner uses, and
 nothing broader in the same families: no kbgit.py, git or glab rule beyond the list, no whole-shell rule and no tool
 rule beyond the four the runner needs. It denies, for both shells, what a headless agent must never do without a
@@ -15,7 +15,6 @@ KBGIT_ALLOWED = ("sync", "check-trailers", "check-lanes", "lane", "fix --check",
 RUNNER_COMMANDS = [
     *(f"python3 _tools/kbgit.py {c} *" for c in KBGIT_ALLOWED),
     "python3 _tools/selfdoc.py stale *",
-    "python3 _tools/autopilot.py *",  # the manager's: runner start, runner-status
     "git fetch",
     "git fetch --quiet",
     "git fetch origin",
