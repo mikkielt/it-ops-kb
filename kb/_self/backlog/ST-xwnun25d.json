@@ -1,0 +1,36 @@
+{
+  "id": "ST-xwnun25d",
+  "kind": "story",
+  "title": "Intake has a repeat-reads detector over the call census",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py intake runs a detector that reads the committed call rows and files a draft story naming a file group or command head that many agents read again and again in a week, with the existing section-sized command to use instead when one exists; it has a count budget like the drift detector, files nothing below its threshold, and files each finding once by fingerprint.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_repeat_reads_detector"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_repeat_reads_converges"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-rpdfgu3t"
+  ]
+}

@@ -2272,3 +2272,14 @@ _Agent: kb-research_
 - See agents/decision-records.md, agents/agent-planning-and-done.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-hook-events-give-per-tool-call-log. Which Claude Code hook events give a per-tool-call log for a census of tool calls, and what do they exclude?
+- `PostToolUse` (successful calls) and `PostToolUseFailure` (calls that started and failed) carry the tool name, `tool_use_id`, an optional `duration_ms`, `agent_id` and `agent_type` inside a subagent, and the common `prompt_id`; `PostToolBatch` carries every call of a batch with its `tool_response`. [DOC S743]
+- `duration_ms` leaves out the time in permission prompts and `PreToolUse` hooks, and no `PostToolUse*` event fires for a call refused by validation or permission. [DOC S743]
+- `PermissionRequest` has no `tool_use_id`; `PermissionDenied` fires only when auto mode denies, not for a manual denial, a `PreToolUse` block or a `deny` rule. [DOC S743]
+- `PreCompact`, `PostCompact`, `StopFailure` and `InstructionsLoaded` add compactions, API-error turn ends and the instruction files loaded; `InstructionsLoaded` cannot block and skips a directly read `AGENTS.md`. [DOC S743]
+- Conclusion: hooks give every executed call with its duration and attribution but not its token cost, its permission wait or a refused call; tokens come from the transcript or OpenTelemetry, and transcripts are deleted after `cleanupPeriodDays`, so a census that must outlive them has to be recorded as it happens. [DER S743, S744, S747: fields above; 30-day default of local transcripts]
+- Open: whether `duration_ms` is present on every tool; the docs call it optional and name no tool that lacks it. [UNK]
+- See claude/hooks.md, claude/otel-monitoring.md, claude/data-retention.md.
+
+_Agent: kb-research_

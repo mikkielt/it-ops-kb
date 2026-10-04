@@ -1,0 +1,36 @@
+{
+  "id": "ST-75eg7e2h",
+  "kind": "story",
+  "title": "A hand-written python3 call is classed by purpose in its call row",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The call.tool row of a bare python3 or python3 -c command carries a closed purpose class (kb read, backlog edit, test run, parse, other) taken from the script's first tokens by a deterministic rule, with no script text stored, so a census separates what hand-written scripts do; a planted script holding a secret-shaped string shows nothing of it in the row.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_call_python_purpose"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_call_python_no_text"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/test_ql_capture.py",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-rpdfgu3t"
+  ]
+}

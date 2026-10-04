@@ -1,0 +1,55 @@
+{
+  "id": "ST-mkczg5gs",
+  "kind": "story",
+  "title": "Permission requests and denials, compactions and API-error turn ends leave closed ops rows",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ql_capture writes closed ops rows for the PermissionRequest, PermissionDenied, PreCompact, PostCompact and StopFailure hook events: tool group, trigger or error class, agent group and counts, never a reason text, command, summary or path; a test per event shows the row, and a planted payload with free text in each field shows none of it stored.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_permission_compact_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_hook_event_no_free_text"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_store.py",
+    "_tools/test_ql_capture.py",
+    "kb/_self/querylog.md",
+    ".claude/settings.json",
+    ".claude-plugin/**"
+  ],
+  "depends_on": [
+    "ST-rpdfgu3t"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Approve recording closed rows for permission requests and denials, compactions and API-error turn ends (classes and counts only)?",
+      "options": [
+        "approve",
+        "reject"
+      ],
+      "recommendation": "approve",
+      "class": "agents-rule",
+      "do": {
+        "approve": "ST-mkczg5gs"
+      }
+    }
+  ]
+}

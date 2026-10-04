@@ -1,0 +1,50 @@
+{
+  "id": "ST-zqnngn67",
+  "kind": "story",
+  "title": "OpenTelemetry events of a session go to a local file and join the transcript by id",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A documented setting turns on CLAUDE_CODE_ENABLE_TELEMETRY with a console or file exporter and tool details off, so tool_result and api_request events (duration, sizes, cost, prompt.id, tool_use_id) land in a local file outside the repository; a read-only command joins them to a transcript by tool_use_id and request_id and prints cost per prompt, and no event text reaches the store or the API.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "otel_events_join_transcript"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "otel_events_no_text_stored"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbusage.py",
+    "_tools/test_kbusage.py",
+    "kb/_self/usage.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Turn on Claude Code OpenTelemetry export to a local file for this project, tool details off?",
+      "options": [
+        "yes, local file",
+        "no, transcripts and hooks only"
+      ],
+      "recommendation": "yes, local file",
+      "class": "design",
+      "do": {
+        "yes, local file": "ST-zqnngn67"
+      }
+    }
+  ]
+}
