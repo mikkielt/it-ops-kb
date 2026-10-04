@@ -2,7 +2,7 @@
   "id": "ST-dh5g3lk7",
   "kind": "story",
   "title": "The autopilot runner, tick, rehearsal, skill, runbook, plans and their tests are removed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ytfb4dc5",
   "priority": "P1",
   "rank": 0,
@@ -54,6 +54,17 @@
     "kb/_self/autopilot-container.md",
     "kb/_self/reports/autopilot-first-run.md",
     "_tools/test_ids_dropped.txt",
-    ".gitignore"
-  ]
+    ".gitignore",
+    "_tools/test_*.py",
+    "_tools/*.py",
+    ".claude/skills/**",
+    ".claude/hooks/*.py",
+    ".claude-plugin/plugin.json",
+    ".gitattributes",
+    "_tools/tests_allowlist.txt",
+    "kb/_self/*.md",
+    "kb/_self/reports/*.md",
+    "README.md"
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
