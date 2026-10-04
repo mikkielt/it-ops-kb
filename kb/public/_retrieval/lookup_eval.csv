@@ -266,3 +266,6 @@ EV-sessionstart-hook-stdout-added-context-shown,SessionStart hook stdout added a
 EV-claude-code-web-cloud-session-git,Claude Code on the web cloud session git push origin proxy credentials,gitlab/automated-merge-requests.md,good,
 EV-claude-code-userpromptsubmit-hook-output-additionalcontext,Claude Code UserPromptSubmit hook output additionalContext decision block reason,claude/ci-and-headless.md,good,
 EV-sessionend-hook-input-fields-reason-budget,SessionEnd hook input fields reason budget 1.5 seconds,claude/hooks.md,good,
+EV-hook-input-fields-identify-subagent-posttooluse,Which hook input fields identify a subagent in PostToolUse?,claude/hooks.md,good,
+EV-claude-code-expose-session-id-bash,Does Claude Code expose the session id to a Bash command as an environment variable?,claude/hooks.md,good,
+EV-bash-command-that-exits-non-zero,Does a Bash command that exits non-zero fire PostToolUseFailure?,claude/hooks.md,good,
