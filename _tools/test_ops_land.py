@@ -80,7 +80,7 @@ class TestOpsLand:
         code, out = self.land(ld)
         assert code == 1 and "land stopped at step rag.py eval" in out, out
         assert [(r["step"], r["exit"]) for r in self.rows("land.step")] == [
-            ("fetch", 0), ("rebase", 0), ("checks", 0), ("stale", 0), ("stress_test.py", 0), ("rag.py-eval", 1)]
+            ("fetch", 0), ("rebase", 0), ("checks", 0), ("stale", 0), ("rag.py-eval", 1)]
         (end,) = self.rows("land.end")
         assert (end["exit"], end["lane"]) == (1, "code")
 

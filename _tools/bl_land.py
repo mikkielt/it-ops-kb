@@ -210,8 +210,8 @@ def cmd_done(bl, a):
 
 # land: the steps after a worker's branch comes back, each a command run from the clone's root with this interpreter
 LAND_STALE = ("stale", ["_tools/selfdoc.py", "stale", "--since"])  # + the integration main; seconds, so it runs first
-LAND_HEAVY = (("stress_test.py", ["_tools/stress_test.py"]),  # run once, when the landing changes _tools/
-              ("rag.py eval", ["_tools/rag.py", "eval"]),
+# run once, when the landing changes _tools/; stress_test.py is no step here: it runs once at the sprint's review story
+LAND_HEAVY = (("rag.py eval", ["_tools/rag.py", "eval"]),
               ("lint", [".claude/skills/kb-verify/lint.py"]))
 LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])
 LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
