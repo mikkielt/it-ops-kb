@@ -43,10 +43,10 @@ def test_check_program_allowlist_done_runs_a_shell_repro(tmp_path):
 
 @pytest.mark.parametrize("argv", [
     ["python3", "_tools/kbgit.py", "sync", "--push", "--branch", "x"], ["python3", "_tools/kbgit.py", "sync", "--remote", "pub"],
-    ["python3", "_tools/autopilot.py", "runner", "start", "SP-aaaaaaaa"], ["python3", "_tools/backlog.py", "answer", "x"],
+    ["python3", "_tools/kbdecide.py", "record", "x"], ["python3", "_tools/backlog.py", "answer", "x"],
     ["python3", "_tools/querylog.py", "apply", "--push"]], ids=lambda a: " ".join(a[1:3]))
 def test_drift_allowlist_read_only_refuses_writers(argv):
-    """Drift runs only read-only forms: a committed sync --push, runner start or backlog writer never runs there."""
+    """Drift runs only read-only forms: a committed sync --push, decision record or backlog writer never runs there."""
     assert bl_intake.check_program_refusal(argv, inline=False)
 
 

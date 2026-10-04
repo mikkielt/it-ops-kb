@@ -59,6 +59,19 @@
   "depends_on": [
     "ST-7sc3vthn"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "kbdecide.py digest writes kb/_self/reports/autopilot-digest.md by default (kbdecide.py DIGEST; digest --commit commits that tracked file, which test_backlog_record_clean.py and test_kbdecide.py rely on, and .claude/settings.json allows 'digest' and 'digest --commit'). With the report deleted, where does a bare 'kbdecide.py digest' write?",
+      "options": [
+        "rename: the default becomes kb/_self/reports/decision-digest.md; digest and digest --commit behave as now, the tests and docs name the new path",
+        "no default file: a bare digest prints the digest to stdout, --out PATH writes a file, --commit refuses without --out; the tests, content-rules.md and tools.md say so, and the settings rule 'digest --commit' no longer has a use (the operator's to drop)"
+      ],
+      "recommendation": "rename: the default becomes kb/_self/reports/decision-digest.md; digest and digest --commit behave as now, the tests and docs name the new path",
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Runs last, after the other two removals land. Traps: tests copy fixed tool lists into temp repos and break when a module goes (TOOL_FILES in test_backlog_research.py, KS_TOOLS in test_bl_check.py, copied_tools in test_kbdecide.py, hand lists in test_backlog.py, test_backlog_authority.py, test_bl_stall.py, test_kblog.py): git grep each removed module over _tools/test_*.py before landing. A literal deleted path in an open item's touches is a check error (use globs); done refuses a changed file outside touches (widen on the work branch); an item check `selfdoc.py stale` fails on any stale doc (read it, name it in Self-Reviewed). Use focused `-n 1` test runs; land in the background with the longest timeout; no writes in the clone during land or sync; rm -rf is denied; trailer order Co-Authored-By, Self-Reviewed, KB-Work. The Windows/Intune Autopilot product is never touched (kb/public/**, product lists in README.md, plugin.json, kb-lookup skill, .gitattributes csdl lines, _tools/tests_allowlist.txt).",
   "claimed_by": "worker-f4ra5s7y"
 }

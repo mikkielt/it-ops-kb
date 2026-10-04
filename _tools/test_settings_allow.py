@@ -36,9 +36,9 @@ RUNNER_COMMANDS = [
     "glab mr view *",
 ]
 RUNNER_TOOLS = ["Agent", "Edit", "Write", "SendMessage"]
-# The kb-autopilot tick's own: the decision digest and list (read forms only: digest without --out, which writes to
-# any path), and the tools it notifies with. kbdecide.py's writing forms (record, ratify, revert, supersede,
-# invalidate, ...) are never allowed.
+# The decision digest and list (read forms only: digest without --out, which writes to any path), and the
+# notification and tool-search tools, as the retired decision tick left them in the settings. kbdecide.py's writing
+# forms (record, ratify, revert, supersede, invalidate, ...) are never allowed.
 TICK_COMMANDS = ["python3 _tools/kbdecide.py digest", "python3 _tools/kbdecide.py digest --commit",
                  "python3 _tools/kbdecide.py list *"]
 TICK_TOOLS = ["PushNotification", "ToolSearch"]
@@ -81,8 +81,8 @@ def runner_problems(perms):
 
 
 def test_settings_allow_tick_commands():
-    """The kb-autopilot tick runs kbdecide.py digest and list and calls PushNotification and ToolSearch: each is
-    allowed, for both shells, and no wider kbdecide.py form is."""
+    """kbdecide.py digest and list, PushNotification and ToolSearch are each allowed, for both shells, and no wider
+    kbdecide.py form is."""
     problems = runner_problems(permissions(text(".claude/settings.json")))
     assert problems == []
 
