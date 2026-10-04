@@ -2,7 +2,7 @@
   "id": "ST-4yd2bdnv",
   "kind": "story",
   "title": "Review sprint: red-pipeline reads job states exactly",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mguj7foz",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "seventh-w52"
 }
