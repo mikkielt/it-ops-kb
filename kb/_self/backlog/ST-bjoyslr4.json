@@ -2,7 +2,7 @@
   "id": "ST-bjoyslr4",
   "kind": "story",
   "title": "A failing sync gate keeps the full output of its failed checks in a file and prints the path and the failed test count",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gfoakqar",
   "priority": "P3",
   "rank": 0,
@@ -40,5 +40,6 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "notes": "Theme: lost evidence. Evidence: kg_sync.py:534-537 prints one tail line per check and the last 25 lines of a failed one; mac-sixth lost a second failure of the ST-72yvwtoz gate and BG-di5pwdrg's failure text to a retry; an unattended stall ladder reads the same tail. Second half: the hand-listed tool copies of tests (test_backlog_research.TOOL_FILES, test_kbdecide.copied_tools; audit the other files that mention kbcommon.py) become one helper in bl_testkit that follows imports including function-level ones; evidence: the first land gate of ST-72yvwtoz failed 12 tests that way."
+  "notes": "Theme: lost evidence. Evidence: kg_sync.py:534-537 prints one tail line per check and the last 25 lines of a failed one; mac-sixth lost a second failure of the ST-72yvwtoz gate and BG-di5pwdrg's failure text to a retry; an unattended stall ladder reads the same tail. Second half: the hand-listed tool copies of tests (test_backlog_research.TOOL_FILES, test_kbdecide.copied_tools; audit the other files that mention kbcommon.py) become one helper in bl_testkit that follows imports including function-level ones; evidence: the first land gate of ST-72yvwtoz failed 12 tests that way.",
+  "claimed_by": "mac-sixth"
 }
