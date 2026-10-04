@@ -2,7 +2,7 @@
   "id": "ST-fabsmoj6",
   "kind": "story",
   "title": "The first supervised tick of the autopilot can be limited to named sprints, so its notification half is testable without opening the real backlog",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
@@ -20,6 +20,8 @@
   "touches": [
     ".claude/skills/kb-autopilot/SKILL.md",
     "kb/_self/autopilot-test.md",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "_tools/test_autopilot_skill_only.py"
+  ],
+  "claimed_by": "seventh-w45"
 }
