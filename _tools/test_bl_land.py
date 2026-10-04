@@ -657,6 +657,35 @@ class TestDoneLane:
         code, out = self.done(repo, tk)
         assert code == 1 and "not on origin/main" in out and f"code/{tk}" in out, out
 
+    def test_unlanded_code_pinned_block(self, sprint, monkeypatch):
+        """A commit that changes .gitattributes only between the pinned markers (the block kbgit.py fix regenerates) is
+        content, as kblane.commit_paths counts it: done does not ask for a code merge request. Planted: the block
+        commit is the item's only work and not on main; a commit that also changes a line outside the block still is
+        code."""
+        monkeypatch.delenv("KB_TESTS_FAST", raising=False)
+        monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
+        monkeypatch.setenv("KB_HOST_LOCK_DIR", str(sprint["repo"].parent / "locks"))
+        repo, tk = sprint["repo"], sprint["tk"]
+        assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+        commit(repo, "claim", tk)
+        attrs = repo / ".gitattributes"
+        attrs.write_text("* text=auto\n# pinned:start\na.csv merge=union\n# pinned:end\n*.md text\n", encoding="utf-8")
+        commit(repo, "attributes of the base")
+        base = self.rev(repo)
+        edit(repo, tk, checks=[{"run": is_file(".gitattributes")}], touches=[".gitattributes"])
+        commit(repo, "widen", tk)
+        attrs.write_text("* text=auto\n# pinned:start\na.csv merge=union\nb.csv merge=union\n# pinned:end\n*.md text\n",
+                         encoding="utf-8")
+        commit(repo, "regenerate the pinned block", tk)
+        sh(repo, "git", "update-ref", "refs/remotes/origin/main", base)
+        code, out = self.done(repo, tk)
+        assert code == 0 and "not on origin/main" not in out, out
+        attrs.write_text("* text eol=lf\n# pinned:start\na.csv merge=union\nb.csv merge=union\n# pinned:end\n*.md text\n",
+                         encoding="utf-8")
+        commit(repo, "a line outside the block", tk)
+        code, out = self.done(repo, tk)
+        assert code == 1 and "not on origin/main" in out and f"code/{tk}" in out, out
+
     def test_content_item_needs_no_integration_main(self, sprint):
         repo, tk = self.worked(sprint, "kb/public/x/a.md")
         edit(repo, tk, checks=[{"run": is_file("kb/public/x/a.md")}], touches=["kb/public/**"])

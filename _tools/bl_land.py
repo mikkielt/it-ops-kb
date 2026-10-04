@@ -41,11 +41,15 @@ def unlanded_code(root, ids):
     """(short hashes, remote, owners) of the code-lane KB-Work commits on HEAD naming any of the ids that are not
     ancestors of refs/remotes/<integration>/main as last fetched; the hashes are [] when all are, and ["(no such ref)"]
     when the ref is missing and there is a code-lane commit. The owners are the ids the late commits name, first seen
-    first, for the code/<id> branches sync opened. Content-lane commits never count."""
+    first, for the code/<id> branches sync opened. Content-lane commits never count; a commit's paths are
+    kblane.commit_paths', which leaves out a .gitattributes change confined to the pinned block."""
     import kblane, kbpublic
     remote = kbpublic.integration_remote(root)
-    code = [sha for sha, paths in item_commits(root, ids).items()
-            if kblane.paths_lane(paths)[0] == kblane.CODE]
+    code = []
+    for sha, paths in item_commits(root, ids).items():
+        lane_paths = kblane.commit_paths(root, sha)
+        if kblane.paths_lane(paths if lane_paths is None else lane_paths)[0] == kblane.CODE:
+            code.append(sha)
     if not code:
         return [], remote, []
     ref = f"refs/remotes/{remote}/main"
