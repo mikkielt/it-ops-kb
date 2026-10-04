@@ -23,7 +23,7 @@ The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketp
 
 **`it-ops-kb-docs`** (`.claude-plugin/it-ops-kb-docs/`): the three documentation servers (Microsoft Learn, Claude Code docs, MCP spec), with every `submit_feedback` call blocked by the plugin's PreToolUse hook (a plugin cannot ship permission rules), a shell command that prints why and exits 2, so it needs no interpreter. It is one command that sh and PowerShell both parse (sh runs its first half and exits; PowerShell reads that half as a string and runs the second), with no `shell` field, so it blocks in whichever shell the host gives a hook: sh, Git Bash, or PowerShell on Windows without Git Bash (`kb/public/claude/hooks.md`). Install it only for servers the project does not have already: each adds its name and instructions to every session.
 
-The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-ingest`, `/kb-census`, `/kb-git-sync`, `/kb-self`), the backlog skills (`/kb-backlog`, `/kb-sprint`, `/kb-item`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update.
+The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-ingest`, `/kb-census`, `/kb-git-sync`, `/kb-self`), the backlog skills (`/kb-backlog`, `/kb-sprint`, `/kb-item`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update. A sprint runs tests in three tiers, stated in `kb/_self/backlog.md` (Working on items).
 
 ## 2. Rules for changing the plugin
 

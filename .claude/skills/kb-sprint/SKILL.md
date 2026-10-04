@@ -37,6 +37,8 @@ A start gate answered `--by autopilot` runs `start` only once that research stor
 Never answer the start gate yourself.
 
 ## run [SP]
+Tests run in three tiers (`kb/_self/backlog.md`, Working on items): narrow per task (the workers of step 3), the gate per landing (the `tests.py --changed origin/main` of `sync --push` in step 4) and the heavy suites once at sprint end (`stress_test.py` with the full `tests.py`, the review story's checks, `## review SP`).
+
 You are the orchestrator. Run from your own clone or git worktree, never a checkout another session works in: a second orchestrator starts its own (`kb/_self/backlog.md`, Working on items). Loop:
 1. Run `python3 _tools/backlog.py selfcheck` first (Self-check) and act on each failure before anything is claimed, then `python3 _tools/backlog.py horizon --sprint SP` and `python3 _tools/backlog.py next --sprint SP --all`.
 2. From the ready list, take up to four items whose `touches` do not overlap each other or any item in flight: after `git fetch`, `python3 _tools/backlog.py held --overlaps ID --ref origin/main` lists the claimed items, of every session, whose touches an item would meet (exit 1 when there is one). Before a claim, `grep -rn` the existing tests and run `python3 _tools/selfdoc.py stale` for the behaviour the fix changes, and list what they name in the item's `touches`, with any skill the work edits, up front: `done` refuses a file outside the touches. Right before the claim run `git fetch origin` and check that no local `work/<id>` branch exists: two sessions can pass `held` together and the second push conflicts. Claim each: `python3 _tools/backlog.py claim ID --by <subagent name> --commit --trailer 'Co-Authored-By: ...'`, then push the claims once, the claim sync: `python3 _tools/kbgit.py sync --push`.
@@ -52,7 +54,7 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    - the item's JSON and its `/goal` text (`python3 _tools/backlog.py goal ID`);
    - the runbook's Working on items;
    - the in-flight sibling items (id and title) and the files their `touches` change, so the worker leaves them alone and no test of its reads them;
-   - "run the item's checks and the fast tests, `python3 _tools/tests.py --changed origin/main`; never `python3 _tools/stress_test.py` or the full `tests.py`" (parallel full runs load the host into false timeouts);
+   - "run only the narrow tier: the item's own checks, `python3 _tools/tests.py -k "ruff or tools_map"` and the focused tests of the files you changed; never `tests.py --changed`, `python3 _tools/stress_test.py` or the full `tests.py`" (parallel runs load the host into false timeouts);
    - "commit on a local branch `work/<id>` with `KB-Work: <id>` in the message's last paragraph, with `Co-Authored-By` and the other trailers; never push";
    - the known failing tests: each test you already know fails on the host (its test id), with the bug filed for it (id and title) and its cause, so the worker neither files it again nor guesses a cause; a failure the brief does not name is the worker's to file;
    - "run tests in the foreground, and end every background command and monitor you started before you return": `land` refuses a branch while a process still runs in its worker's worktree, naming each pid and command, and `python3 _tools/backlog.py procs` lists what workers left running in the clone (`procs --end` ends only an owned orphan);
@@ -92,7 +94,7 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    The marker line appears only as that last line.
 
 ## review SP
-The review story is ready once every other item is done or dropped. Its work:
+The review story is ready once every other item is done or dropped. Its checks run the heavy tier once, `stress_test.py` with the full `tests.py`; no worker or landing ran it before. Its work:
 1. Confirm or change each provisional answer with the operator (`answer ID GATE --confirm --by operator`, or a new answer plus a task or bug for the change), the ones workers recorded for choices their goals left open (run step 4.1) among them.
 2. Print what the work cost, one command per id, each on its own: `python3 _tools/backlog.py cost --rework SP`, then the same for each story and each bug of the sprint (`python3 _tools/backlog.py tree --sprint SP` lists them). Keep each output for step 3 and the close retrospective, and show the operator what the sprint's work cost, which items had rework, and where shared tokens stand out. Rework is the tokens an item spent from the prompt that ran its first refused `backlog.py done` (a `done` that exited 1) to its `done`; the output lists each item that has it with its work and rework tokens, and an item with none is not listed. Say it as a measure of the work, never as blame: it names no one and no cause. It reports tokens only, no prices, and a figure whose output names an unresolved id (`no item file and no git history for ...` on stderr) is incomplete: say so with the figure.
 3. Start a fresh-context reviewer subagent on the session model (`subagent_type: "general-purpose"`, no `model`) on the sprint's diff (`git log --grep "KB-Work"` over the sprint's items). Give it each item's goal and the cost outputs of step 2. It reports only gaps that affect correctness or a goal; the cost is context for them, not a gap to report.

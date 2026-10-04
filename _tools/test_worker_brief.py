@@ -35,7 +35,7 @@ def test_worker_brief_runs_tests_in_foreground():
 def test_worker_brief_runs_leak_scan_for_new_test_files():
     """A test or fixture file is checked with the leak selection, and no GUID-shaped literal (a session id counts)
     stays in a test file."""
-    phrases = ["-k 'leaks or test_no_private_ipv4'", "`--changed` may wait on the host lock",
+    phrases = ["-k 'leaks or test_no_private_ipv4'",
                "holds no GUID-shaped literal",
                "a session id counts as one", "build such a value from parts"]
     assert pinned(BRIEF, phrases) == []
