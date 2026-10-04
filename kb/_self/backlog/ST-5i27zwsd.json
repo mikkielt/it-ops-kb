@@ -31,7 +31,9 @@
         "autopilot: revert the code so the autopilot answers agents-rule gates as D-agemmt2y says"
       ],
       "recommendation": "operator-only: supersede D-agemmt2y so agents-rule gates are yours; the skill and the epic say so",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "autopilot: revert the code so the autopilot answers agents-rule gates as D-agemmt2y says",
+      "by": "operator"
     }
   ],
   "notes": "Theme: guard contradictions and what only the operator decides. Evidence: bl_authority.py:22 AUTOPILOT_REFUSED holds agents-rule since ecb3b82a (BG-ejdjj3ns); kb-autopilot SKILL.md steps 4 and 8 name only secrets and push; EP-np3xwfu4's goal and the active operator decision D-agemmt2y (kb/_self/_decisions.csv:2) still give AGENTS.md rules to the autopilot. The code tightening follows the authority-only-shrinks rule, but nothing superseded the decision; the gate on this item asks the operator."
