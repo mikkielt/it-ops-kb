@@ -2,7 +2,7 @@
   "id": "BG-7ods5qqd",
   "kind": "bug",
   "title": "The sync gate drops every git scenario when testmap selects all, even for a kbgit.py change",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P2",
   "rank": 0,
@@ -15,10 +15,21 @@
       "import sys; sys.path.insert(0,'_tools'); import tests; runs=tests.plan(['_tools/kbgit.py','pyproject.toml'], fast=True); print(runs); assert any(m == tests.FULL_M for _, m in runs), 'no run keeps the git scenarios'"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sync_gate_all_selection_keeps_git_scenarios"
+      ]
+    }
+  ],
   "touches": [
     "_tools/tests.py",
     "_tools/test_sync.py",
     "kb/_self/git.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
