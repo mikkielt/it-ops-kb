@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """The operator's decisions of a root or of kb/_self (stdlib only): agents propose them, the operator confirms them.
 
-  kbdecide.py propose --root R TEXT --source S --context C [--review-by DATE] [--links TEXT] [--date DATE]
+  kbdecide.py propose --root R TEXT --source S --context C [--review-by DATE] [--links TEXT] [--gate G] [--date DATE]
                                          add a decision with status `proposed` and print its id
   kbdecide.py confirm ID --root R --by operator [--maker M] [--name NAME] [--date DATE]
                                          make a proposed decision `active`; refused without `--by operator`
   kbdecide.py record --root R TEXT --source S --context C --by operator [--maker M] [--name NAME] [--review-by DATE]
-                     [--links TEXT] [--date DATE]
+                     [--links TEXT] [--gate G] [--date DATE]
                                          propose and confirm in one write: an `active` decision, with the maker as
                                          `confirm` records it; refused without `--by operator`, except `--by autopilot`
                                          (maker `autopilot`, `--review-by` required: the operator ratifies or
@@ -280,9 +280,11 @@ def row_id(ledger, *parts):
     return f"{ledger.prefix}-" + base64.b32encode(digest).decode("ascii").lower()[:8]
 
 
-def decision_id(text, context):
-    """`D-` and the first 8 base32 characters of the sha256 of the decision's text and context."""
-    return row_id(DECISIONS, text, context)
+def decision_id(text, context, gate=""):
+    """`D-` and the first 8 base32 characters of the sha256 of the decision's text and context, and of the gate it
+    answers when it names one (two gates of one item answered alike are two decisions); no gate leaves the id as it
+    was, so a decision recorded without one keeps its id."""
+    return row_id(DECISIONS, text, context, *([gate] if gate else []))
 
 
 def day(text):
@@ -330,7 +332,7 @@ def cmd_propose(a):
     for what, value in (("text", text), ("--source (where the decision was made)", source), ("--context", context)):
         if not value:
             raise Refused(f"a decision needs {what}")
-    did = decision_id(text, context)
+    did = decision_id(text, context, " ".join((a.gate or "").split()))
     if any(field(r, "id") == did for r in rows):
         raise Refused(f"{did} is already in {store.label}: the same text and context (restore or confirm it)")
     row = dict.fromkeys(kbcommon.DECISION_COLS, "")
@@ -390,7 +392,7 @@ def cmd_record(a):
     for what, value in (("text", text), ("--source (where the decision was made)", source), ("--context", context)):
         if not value:
             raise Refused(f"a decision needs {what}")
-    did = decision_id(text, context)
+    did = decision_id(text, context, " ".join((a.gate or "").split()))
     if any(field(r, "id") == did for r in rows):
         raise Refused(f"{did} is already in {store.label}: the same text and context")
     by, by_ref = maker_fields(store, a.maker, a.name)
@@ -1055,6 +1057,7 @@ def parser():
     p.add_argument("--context", required=True, help="`;`-separated kind:value references (item, fact, source, article, domain)")
     p.add_argument("--review-by", help="YYYY-MM-DD, when to look at it again")
     p.add_argument("--links", help="free text")
+    p.add_argument("--gate", help="the gate this answers: part of what makes the id, so another gate's alike answer is its own decision")
     p.add_argument("--date", help="YYYY-MM-DD (default: today)")
     p = add("confirm", "the operator confirms a proposed decision")
     p.add_argument("id")
@@ -1071,6 +1074,7 @@ def parser():
     p.add_argument("--name", help="the maker's name, in a root that keeps names")
     p.add_argument("--review-by", help="YYYY-MM-DD, when to look at it again")
     p.add_argument("--links", help="free text")
+    p.add_argument("--gate", help="the gate this answers: part of what makes the id, so another gate's alike answer is its own decision")
     p.add_argument("--date", help="YYYY-MM-DD (default: today)")
     p = add("supersede", "an active decision takes the place of another")
     p.add_argument("old")

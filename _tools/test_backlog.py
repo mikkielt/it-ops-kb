@@ -1632,6 +1632,26 @@ def test_backlog_answer_record_writes_an_active_decision_of_the_item(decide):
     assert code == 0, out
 
 
+def test_backlog_answer_record_second_gate_same_text(decide):
+    """Two gates of one item answered with the same text are two decisions, and the second answer is saved; the same
+    gate answered alike again is still the same decision (refused)."""
+    repo, bg = decide["repo"], decide["bg"]
+    code, out = b(repo, "gate", "add", bg, "--question", "Which side?", "--option", "left", "--option", "right",
+                  "--recommendation", "left", "--id", "side")
+    assert code == 0, out
+    commit(repo, "second gate")
+    assert b(repo, "answer", bg, "way", "--answer", "left", "--by", "operator", "--record")[0] == 0
+    code, out = b(repo, "answer", bg, "side", "--answer", "left", "--by", "operator", "--record")
+    assert code == 0, out
+    assert [g.get("answer") for g in item_json(repo, bg)["gates"]] == ["left", "left"]
+    rows = decisions(repo)
+    assert len(rows) == 2 and len({r["id"] for r in rows}) == 2, rows  # planted failure: one id means the gate is not in it
+    assert [r["text"] for r in rows] == ["left", "left"] and {r["context"] for r in rows} == {f"item:{bg}"}
+    assert [f"gate {g}" in r["source"] for g, r in zip(("way", "side"), rows)] == [True, True]
+    code, out = tool_run(repo, "check.py")
+    assert code == 0, out
+
+
 def test_backlog_answer_record_without_record_writes_no_decision(decide):
     repo, bg = decide["repo"], decide["bg"]
     assert b(repo, "answer", bg, "way", "--answer", "left", "--by", "operator")[0] == 0
