@@ -2,7 +2,7 @@
   "id": "TK-zcji275w",
   "kind": "task",
   "title": "kb-worker, kb-sprint, kb-item and the docs state the three test tiers: narrow per task, the gate per landing, the heavy suites once at sprint end",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-tbi3rras",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
     "kb/_self/token-efficiency.md",
     "_tools/test_three_tiers_docs.py"
   ],
-  "notes": "Merged from the 2026-10-02..04 co-development feedback (mac-eighth's analysis), the worker-brief rules every runner retyped (about 40 dispatch messages, mac-fifth) that kb-sprint run step 3 does not yet state: KB_TEST_WORKERS for the host, a land or sync started in the background with timeout 7200000 (foreground commands move to the background at 10 min and were killed at their limit: mac-sixth ST-72yvwtoz, mac-seventh BG-xwqrlvpp), no background timers or watchers in a worker (8 duplicate interim notices, BG-ftcxrl7j), and the failing assertion text saved before a retry."
+  "notes": "Merged from the 2026-10-02..04 co-development feedback (mac-eighth's analysis), the worker-brief rules every runner retyped (about 40 dispatch messages, mac-fifth) that kb-sprint run step 3 does not yet state: KB_TEST_WORKERS for the host, a land or sync started in the background with timeout 7200000 (foreground commands move to the background at 10 min and were killed at their limit: mac-sixth ST-72yvwtoz, mac-seventh BG-xwqrlvpp), no background timers or watchers in a worker (8 duplicate interim notices, BG-ftcxrl7j), and the failing assertion text saved before a retry.",
+  "claimed_by": "mac-sixth"
 }
