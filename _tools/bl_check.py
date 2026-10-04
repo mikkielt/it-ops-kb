@@ -16,9 +16,8 @@ import bl_authority
 from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS, PREFIX_KIND,
     PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED, canonical,
-    host_user_pieces, items_holding_names, research_in_planned, research_story, say, withhold_names,
+    host_user_pieces, items_holding_names, research_in_planned, say, withhold_names,
 )
-import bl_plan
 from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches
 
 
@@ -415,36 +414,6 @@ def knowledge_lines(bl, iid, indent="  "):
             for kind, text, state, why in knowledge_states(bl, iid)]
 
 
-UNSOUND = ("unknown", "partial", "stale", "conflicting")  # every state but sufficient: they keep an autopilot-answered start from running
-
-
-def autopilot_start_causes(bl, sid):
-    """The causes that refuse `start` of sprint SID when its start gate was answered by the autopilot, one text each:
-    no goal research story, or one not done; a committed story or bug (the review and research stories, dropped and
-    done items left out) with no knowledge asks or refs; each ask or ref of one that reads anything but
-    sufficient (unknown, partial, stale or conflicting)."""
-    out = []
-    rs = research_story(bl, sid)
-    if rs is None:
-        out.append("the sprint has no goal research story (`backlog.py new sprint` files one)")
-    elif bl.items[rs].get("status") != "done":
-        out.append(f"the goal research story {bl.label(rs)} is {bl.items[rs].get('status')}, not done")
-    for i in sorted(bl.sprint_items(sid), key=bl.order_key):
-        it = bl.items[i]
-        if it.get("kind") not in IN_SPRINT or it.get("review") or it.get("goal_research") \
-                or it.get("status") in ("done", "dropped"):
-            continue
-        found = knowledge_states(bl, i)
-        if not found:
-            out.append(f"{bl.label(i)} has no knowledge asks or refs (set `knowledge` on it)")
-        out.extend(f"{bl.label(i)}: knowledge {state} {kind}: {text} ({why})" for kind, text, state, why in found
-                   if state in UNSOUND)
-    return out
-
-
-bl_plan.AUTOPILOT_START_CAUSES.append(autopilot_start_causes)
-
-
 def item_strings(v, path=""):
     """(field path, text) of every string value of an item's JSON, dict keys left out: `gates[0].question`."""
     if isinstance(v, str):
@@ -601,18 +570,16 @@ def validate(bl, pieces=None):
             gate_ids.add(g.get("id"))
             if g["kind"] == "provisional" and not g.get("recommendation"):
                 e(f"provisional gate {g['id']} needs a recommendation")
-            if "answer" in g and g.get("by") not in ("operator", "agent", "autopilot"):
-                e(f"gate {g['id']}: an answer needs by: operator|agent|autopilot")
+            if "answer" in g and g.get("by") not in ("operator", "agent"):
+                e(f"gate {g['id']}: an answer needs by: operator|agent")
             if "class" in g and g["class"] not in bl_authority.CLASSES:
                 e(f"gate {g['id']}: class {g['class']!r} is not one of {', '.join(bl_authority.CLASSES)}")
             elif bl_authority.lowered(it, g):
                 e(f"gate {g['id']}: class {g['class']} is lower than {bl_authority.derived_class(it, g)}, which its "
                   "item's touches and its question give it")
-            settled = it.get("status") in CLOSED_STATUSES and g.get("by") in ("agent", "autopilot") \
+            settled = it.get("status") in CLOSED_STATUSES and g.get("by") == "agent" \
                 and "answer" in g  # a warning (refused_answer_warnings), not an error
-            if g.get("by") == "autopilot" and not bl_authority.autopilot_may_answer(it, g)[0] and not settled:
-                e(f"gate {g['id']} is class {bl_authority.gate_class(it, g)}: only the operator answers it")
-            if bl_authority.derived_class(it, g) in bl_authority.AUTOPILOT_REFUSED and not settled:
+            if bl_authority.derived_class(it, g) in bl_authority.OPERATOR_CLASSES and not settled:
                 if g["kind"] == "provisional" and g.get("by") != "operator":  # one the operator answered stands
                     e(f"gate {g['id']} is class {bl_authority.derived_class(it, g)} and provisional: it is blocking, "
                       "only the operator answers it")
@@ -869,18 +836,18 @@ def state_path_warnings(bl):
 
 
 def refused_answer_warnings(bl):
-    """check's warnings: a gate of a done or dropped item, of a class the autopilot is refused, that an agent or the
-    autopilot answered. An open item's such gate is an error (validate); a closed item's cannot be answered again by
+    """check's warnings: a gate of a done or dropped item, of a class only the operator answers, that an agent
+    answered. An open item's such gate is an error (validate); a closed item's cannot be answered again by
     the item's work, so the operator re-confirms it. `answer` stays strict: a new answer in such a class is refused."""
     out = []
     for iid, it in sorted(bl.items.items()):
         if it.get("status") not in CLOSED_STATUSES:
             continue
         for g in it.get("gates", []):
-            if not isinstance(g, dict) or g.get("by") not in ("agent", "autopilot") or "answer" not in g:
+            if not isinstance(g, dict) or g.get("by") != "agent" or "answer" not in g:
                 continue
             cls = bl_authority.derived_class(it, g)
-            if cls in bl_authority.AUTOPILOT_REFUSED:
+            if cls in bl_authority.OPERATOR_CLASSES:
                 out.append(f"{bl.label(iid)}: gate {g.get('id')} class {cls}: answered by {g['by']} in a refused "
                            "class: the operator re-confirms")
     return out

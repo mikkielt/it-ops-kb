@@ -1,0 +1,17 @@
+{
+  "id": "BG-eegzggtk",
+  "kind": "bug",
+  "title": "The stall.remedy ops event has no writer since the stall remedies were removed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "ql_capture.OPS_EVENTS holds no stall.remedy event, or keeps it only as a past event whose committed rows stay readable and that no tool writes, kb/_self/querylog.md says which, and test_ql_capture.py plants a stall.remedy row only as that",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import ql_capture; sys.exit('stall.remedy' in ql_capture.OPS_EVENTS)"
+    ]
+  }
+}

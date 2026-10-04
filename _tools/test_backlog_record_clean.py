@@ -1,11 +1,12 @@
 """`backlog.py answer --record` and `kbdecide.py digest --commit` leave a clean tree (`python3 _tools/tests.py -k
-answer_record_leaves_a_clean_tree`): a manager tick answers a gate, writes the digest and runs `kbgit.py sync --push`,
+answer_record_leaves_a_clean_tree`): a session answers a gate, writes the digest and runs `kbgit.py sync --push`,
 which refuses a dirty tree, so each step commits what it wrote.
 
-  scenario (git)  a throwaway clone of a kb copy with its hooks installed: answer --record by the autopilot, then by the
-                  operator (which supersedes it), then digest --commit, then `sync --dry-run --push`, the tree clean
-                  after each step and the planning commit named with KB-Work and check-trailers satisfied; planted: the digest without --commit leaves the
-                  tracked file modified and sync refuses it
+  scenario (git)  a throwaway clone of a kb copy with its hooks installed: answer --record by the operator, then an
+                  autopilot decision kept from before its retirement planted in the decision file, then digest
+                  --commit, then `sync --dry-run --push`, the tree clean after each step and the planning commit named
+                  with KB-Work and check-trailers satisfied; planted: the digest without --commit leaves the tracked
+                  file modified and sync refuses it
 """
 import json
 import os
@@ -42,6 +43,18 @@ def backlog(clone, *args):
     return p.stdout
 
 
+def plant_autopilot_decision(clone, iid):
+    """An active, unratified autopilot decision on the item's gate g9, as the decision file keeps those made before the
+    autopilot was retired: the operator records it with the autopilot as its maker, and it is committed."""
+    p = clone.tool("kbdecide.py", "record", "--root", "_self", "--source", f"backlog item {iid} gate g9", "--context",
+                   f"item:{iid}", "--gate", "g9", "--by", "operator", "--maker", "autopilot", "--review-by", "2999-01-01",
+                   "--", "kept: a")
+    assert p.returncode == 0, p.stdout + p.stderr
+    clone.git("add", "-A")
+    clone.git("commit", "-q", "-m", "chore(kb): an autopilot decision kept from before")
+    assert clean(clone) == ""
+
+
 @requires_git
 @pytest.mark.git
 def test_answer_record_leaves_a_clean_tree(tmp_path, kb_seed):
@@ -54,7 +67,7 @@ def test_answer_record_leaves_a_clean_tree(tmp_path, kb_seed):
     assert clean(a) == ""
     tip = a.rev("HEAD")
 
-    backlog(a, "answer", iid, "g9", "--answer", "a", "--by", "autopilot", "--record")
+    backlog(a, "answer", iid, "g9", "--answer", "a", "--by", "operator", "--record")
     assert clean(a) == "", clean(a)
     assert a.rev("HEAD") != tip
     item_commit, row_commit = a.rev("HEAD~1"), a.rev("HEAD")
@@ -65,9 +78,7 @@ def test_answer_record_leaves_a_clean_tree(tmp_path, kb_seed):
     checked = a.kbgit("check-trailers", f"{tip}..HEAD")  # the item is not claimed: only a planning commit may name it
     assert checked.returncode == 0 and "bad=0" in checked.stdout, checked.stdout + checked.stderr
 
-    backlog(a, "answer", iid, "g9", "--answer", "b", "--by", "operator", "--record")  # supersedes the autopilot's row
-    assert clean(a) == "", clean(a)
-    assert a.rev("HEAD~2") == row_commit  # two more commits: its item file, its row
+    plant_autopilot_decision(a, iid)
     assert a.kbgit("check-trailers", f"{tip}..HEAD").returncode == 0
 
     out = a.tool("kbdecide.py", "digest", "--commit")
@@ -94,8 +105,7 @@ def test_answer_record_leaves_a_clean_tree_planted_digest_without_commit_is_refu
     backlog(a, *GATE, iid, *GATE_ARGS)
     a.git("add", "-A")
     a.git("commit", "-q", "-m", f"chore(backlog): gate\n\nKB-Work: {iid}")
-    backlog(a, "answer", iid, "g9", "--answer", "a", "--by", "autopilot", "--record")
-    assert clean(a) == ""
+    plant_autopilot_decision(a, iid)
     assert a.tool("kbdecide.py", "digest").returncode == 0
     assert clean(a) == f"M {DIGEST}", clean(a)
     dry = a.kbgit("sync", "--dry-run", "--push")

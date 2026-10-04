@@ -1,7 +1,7 @@
 """The backlog's intake: deterministic detectors, each finding a candidate item, filed once by fingerprint.
 
 `backlog.py intake` (the command and its exit codes are in backlog.py's docstring) is the facade; this module holds
-the part that does not touch the backlog's files:
+the detectors and the filing of their candidates:
 
 - the registry `DETECTORS`: detector name -> a function `fn(root: Path) -> iterable of Candidate`, added with the
   `@detector("name")` decorator. A detector reads the repository under `root` and nothing else: no network, no model,
@@ -18,6 +18,12 @@ the part that does not touch the backlog's files:
 - `open_with_fingerprint(items, fp)`: the open item whose links already carry the fingerprint, which skips the
   candidate;
 - `lines(candidate)`: the lines the command prints for one candidate;
+- `file_found(bl, found, ...)`: what `intake --file` does with each candidate no open item's fingerprint covers
+  (`file_draft`): one that `backlog.py similar` calls a near-duplicate of an open item of another detector is merged
+  into that item's notes once, as `Found again by the intake: ... (fingerprint HEX)`, and no draft is filed; one that
+  would pass OPEN_DRAFTS_MAX open drafts is refused with the cap message on stderr and exit 1, and so is every later
+  one; the rest are saved as drafts. This is the one part that writes the backlog's files, through the `Backlog` it
+  is given;
 - the `drift` detector (`scan_drift`, `drift_detector`): items whose state disagrees with their commits. Its item
   checks run within a total budget (DRIFT_BUDGET_S, each check at most CHECK_TIMEOUT_S), the items taken in id order
   started after the last item the previous run reached (`rotated`, `read_cursor`, `write_cursor`; the commit count of
@@ -42,7 +48,7 @@ the part that does not touch the backlog's files:
   NETWORK_DETECTORS and `collect` runs it only when asked (`intake --network`); red-pipeline calls the same reader and
   candidate with its own `run`.
 
-This module imports no tool module but `bl_base` (the backlog's constants) and `kbpublic` (the integration remote's
+This module imports no tool module but `bl_base` (the backlog's constants, and its refusal in the filing) and `kbpublic` (the integration remote's
 name) and, in the functions that read a pipeline, `ql_base` (the command runner) and `ql_deliver` (the forge calls),
 inside the function that needs them; it is below backlog.py, which passes its own `run` to the readers.
 """
@@ -61,7 +67,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from bl_base import REL_DIR, TEXT_MAX
+from bl_base import REL_DIR, TEXT_MAX, Refused
 
 DETECTORS = {}  # name -> fn(root) -> iterable of Candidate; the registry
 NETWORK_DETECTORS = {"ci"}  # detectors that call the network: `collect` runs them only with network=True
@@ -257,6 +263,92 @@ def lines(c, filed=None):
         out.extend("  check: " + " ".join(one(y) for y in x) for x in c.checks)
     out.append("  links: " + ", ".join(one(x) for x in links_of(c)))
     return out
+
+
+# ------------------------------------------------------------------ filing: near-duplicates and the open-drafts cap
+
+OPEN_DRAFTS_MAX = 60  # open drafts, of any origin, past which `intake --file` files no more
+SIMILAR_NEAR = re.compile(r"^\s*\d+\.\d+\s+\d+\s+near\s+((?:EP|ST|TK|SB|BG)-[a-z2-7]{8})\b", re.M)
+
+
+def detector_of(it):
+    """The name in the item's `detector NAME` link, or None."""
+    return next((x[len(DETECTOR_LINK):] for x in it.get("links") or [] if isinstance(x, str)
+                 and x.startswith(DETECTOR_LINK) and " " not in x[len(DETECTOR_LINK):]), None)
+
+
+def open_drafts(items):
+    return sum(1 for it in items.values() if it.get("status") == "draft")
+
+
+def near_duplicates(root, title, goal):
+    """The ids of the open items `backlog.py similar` calls near-duplicates of the finding, best first; Refused when
+    `similar` fails."""
+    p = subprocess.run([sys.executable, str(Path(__file__).with_name("backlog.py")), "--root", str(root), "similar",
+                        title, *(["--goal", goal] if goal else [])], cwd=str(root), capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", timeout=120)
+    if p.returncode:
+        raise Refused(f"intake: similar failed: {(p.stdout + p.stderr).strip()}")
+    return SIMILAR_NEAR.findall(p.stdout)
+
+
+def file_draft(bl, c, draft, say):
+    """File one candidate's draft: merge it into the notes of a near-duplicate open item (once: a second run adds
+    nothing; an item of the same detector is no duplicate, for a detector words its findings alike and each has its
+    own fingerprint), else save the draft. Returns (`filed` or `merged`, id). Refused, the draft not saved, when the
+    near-duplicate's notes are full or OPEN_DRAFTS_MAX open drafts are filed already."""
+    title, goal = one(c.title), one(c.goal)
+    dups = [d for d in near_duplicates(bl.root, title, goal) if detector_of(bl.items[d]) != c.detector]
+    if dups:
+        it = bl.items[dups[0]]
+        note = f"Found again by the intake: {title}. {goal} (fingerprint {c.fp})"
+        if note in (it.get("notes") or ""):
+            say(f"intake: already in the notes of {bl.label(dups[0])}, a near-duplicate")
+            return "merged", dups[0]
+        text = f"{it['notes']}\n{note}" if it.get("notes") else note
+        if len(text) > TEXT_MAX:
+            raise Refused(f"intake: the notes of {bl.label(dups[0])} are full; the finding is not filed")
+        it["notes"] = text
+        bl.save(it)
+        say(f"intake: merged into the notes of {bl.label(dups[0])}, a near-duplicate")
+        return "merged", dups[0]
+    n = open_drafts(bl.items)
+    if n >= OPEN_DRAFTS_MAX:
+        raise Refused(f"intake: {n} open drafts (at most {OPEN_DRAFTS_MAX}): triage before filing")
+    bl.save(draft)
+    say(f"intake: filed {bl.label(draft['id'])}")
+    return "filed", draft["id"]
+
+
+def file_found(bl, found, failures, say, new_id, withhold=str):
+    """`intake --file`: each candidate no open item's fingerprint covers (nor an item that names its lead link) is
+    filed by `file_draft`. Prints what `intake` prints for a candidate and the filing line. Exit 1 when a detector
+    failed or a candidate was refused (the message goes to stderr once), else 0; a refusal at the open-drafts cap ends
+    the filing, for it holds for every later candidate."""
+    new = skipped = refused = 0
+    stop = ""
+    for c in found:
+        dup = open_with_fingerprint(bl.items, c.fp) or named_by(bl.items, c)
+        for ln in lines(c, bl.label(dup) if dup else None):
+            say(ln)
+        if dup:
+            skipped += 1
+            continue
+        if stop:
+            refused += 1
+            continue
+        try:
+            if file_draft(bl, c, item_of(c, new_id(c.kind)), say)[0] == "filed":
+                new += 1
+            else:
+                skipped += 1  # merged into a near-duplicate's notes
+        except Refused as e:
+            refused += 1
+            stop = str(e)
+            print(withhold(stop), file=sys.stderr)
+    say(f"intake: {len(found)} candidate(s), {new} new filed, {skipped} skipped"
+        + (f", {refused} refused" if refused else "") if found else "intake: no candidates")
+    return 1 if failures or refused else 0
 
 
 # ------------------------------------------------------------------ the drift detector

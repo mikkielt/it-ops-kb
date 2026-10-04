@@ -2,17 +2,11 @@
 classifier, so every test here plants the input a looser reading would let through and asserts the stricter class.
 
 Touch spellings (a leading `./`, case, a trailing slash), a directory touch, `_tools/kbpublic.py`, `.claude/hooks/`, the
-words origin, mirror, release, rotate keys, public repository and `.env`, a gate's `do` and `host_check` commands, an
-empty question, and a sprint's start gate over its items' touches; the neutral wording stays `design`."""
+words origin, mirror, release, rotate keys, public repository and `.env`, a gate's `do` and `host_check` commands,
+and a sprint's start gate over its items' touches; the neutral wording stays `design`."""
 import pytest
 
-import backlog
 import bl_authority
-import bl_testkit
-from bl_testkit import b, item
-
-bl_testkit.bind(backlog)
-repo = bl_testkit.repo
 
 NEUTRAL = {"id": "way", "kind": "blocking", "question": "Which name for the flag?", "options": ["left", "right"]}
 
@@ -116,27 +110,17 @@ def test_gate_class_derivation_hardened_an_operator_answered_gate_is_not_reporte
     low = {"class": "design"}
     assert bl_authority.lowered(it, gate(**low)) == "design"  # open: reported
     assert bl_authority.lowered(it, gate(**low, answer="yes", by="agent")) == "design"  # planted: an agent's answer stays reported
-    assert bl_authority.lowered(it, gate(**low, answer="yes", by="autopilot")) == "design"
     assert bl_authority.lowered(it, gate(**low, by="operator")) == "design"  # no answer yet
     assert bl_authority.lowered(it, gate(**low, answer="yes", by="operator")) is None  # the operator answered it
-    # and nothing is loosened: the class in force stays the stricter one, so the autopilot still may not answer it
+    # and nothing is loosened: the class in force stays the stricter one, which only the operator answers
     assert bl_authority.gate_class(it, gate(**low, answer="yes", by="operator")) == "push"
-    assert bl_authority.autopilot_may_answer(it, gate(**low, answer="yes", by="operator"))[0] is False
-
-
-@pytest.mark.parametrize("gate_text", [
-    {}, {"question": ""}, {"question": "   "}, {"question": "\n\t"}, {"question": None}, {"question": 5}, {"question": []},
-    {"question": "", "options": ["a"]},
-])
-def test_gate_class_derivation_hardened_an_empty_or_missing_question_fails_closed(gate_text):
-    for it in ({"touches": []}, {}, {"touches": ["src/**"]}):
-        ok, why = bl_authority.autopilot_may_answer(it, {"id": "g", "options": [], **gate_text})
-        assert ok is False and "no question" in why
+    assert bl_authority.gate_class(it, gate(**low, answer="yes", by="operator")) in bl_authority.OPERATOR_CLASSES
 
 
 def test_gate_class_derivation_hardened_a_question_is_still_answered_when_neutral():
-    assert bl_authority.autopilot_may_answer({"touches": []}, gate("Which name?")) == (True, "design")
-    assert bl_authority.autopilot_may_answer({"touches": ["_tools/"]}, gate("Which name?")) == (False, "push")
+    assert bl_authority.gate_class({"touches": []}, gate("Which name?")) == "design"
+    assert "design" not in bl_authority.OPERATOR_CLASSES
+    assert bl_authority.gate_class({"touches": ["_tools/"]}, gate("Which name?")) == "push"
 
 
 MEMBER_TOUCHES = [
@@ -156,7 +140,8 @@ def test_gate_class_derivation_hardened_a_start_gate_is_the_strictest_over_its_i
     assert bl_authority.derived_class(sp, start) == "start"  # the bare sprint sees nothing: the planted failure
     scoped = bl_authority.sprint_scope(sp, start, members)
     assert bl_authority.derived_class(scoped, start) == ("push" if want == "push" else "start")  # start outranks a rule
-    assert bl_authority.autopilot_may_answer(scoped, start) == (False, want)
+    assert bl_authority.derived_class(scoped, {**start, "id": "", "question": "-"}) == want  # what the items alone give
+    assert want in bl_authority.OPERATOR_CLASSES
     assert sp["touches"] == []  # the sprint item itself is not changed
 
 
@@ -165,14 +150,15 @@ def test_gate_class_derivation_hardened_a_start_gate_of_docs_and_tool_items_may_
     start = {"id": "start", "kind": "blocking", "question": "Approve?", "options": ["approve"]}
     members = [{"touches": ["kb/_self/x.md"]}, {"touches": ["src/**", "_tools/ql_store*.py"]}]
 
-    def may(ms):
-        return bl_authority.autopilot_may_answer(bl_authority.sprint_scope(sp, start, ms), start)
+    def held(ms):
+        """The class the sprint's items give its start gate, the start gate's own `start` left out."""
+        return bl_authority.derived_class(bl_authority.sprint_scope(sp, start, ms), {**start, "id": "", "question": "-"})
 
-    assert may(members) == (True, "start")
-    assert may(members + [{"touches": ["_tools/kbgit.py"], "status": "dropped"}]) == (True, "start")  # not committed
-    assert may(members + [{"touches": ["_tools/kbgit.py"], "status": "open"}]) == (False, "push")
-    assert may(members + [{"touches": [".claude/skills/x/"]}]) == (False, "agents-rule")  # a skill is a rule
-    assert may(members + [{"touches": ["src/.env"]}]) == (False, "secrets")
+    assert held(members) == "design"
+    assert held(members + [{"touches": ["_tools/kbgit.py"], "status": "dropped"}]) == "design"  # not committed
+    assert held(members + [{"touches": ["_tools/kbgit.py"], "status": "open"}]) == "push"
+    assert held(members + [{"touches": [".claude/skills/x/"]}]) == "agents-rule"  # a skill is a rule
+    assert held(members + [{"touches": ["src/.env"]}]) == "secrets"
 
 
 def test_gate_class_derivation_hardened_scope_changes_only_a_sprint_start_gate():
@@ -181,17 +167,6 @@ def test_gate_class_derivation_hardened_scope_changes_only_a_sprint_start_gate()
     members = [{"touches": ["_tools/kbgit.py"]}]
     assert bl_authority.sprint_scope(story, {"id": "start"}, members) is story
     assert bl_authority.sprint_scope({"kind": "sprint"}, other, members) == {"kind": "sprint"}
-
-
-def test_gate_class_derivation_hardened_the_autopilot_cannot_start_a_sprint_of_risky_items(repo):
-    b(repo, "new", "sprint", "--title", "Risky", "--goal", "ship")
-    sp = item(repo, "Risky")["id"]
-    code, out = b(repo, "new", "bug", "--title", "Risky bug", "--sprint", sp, "--severity", "S3", "--repro", "false",
-                  "--goal", "g", "--touch", "./_tools/KBGIT.py")
-    assert code == 0, out
-    code, out = b(repo, "answer", sp, "start", "--answer", "approve", "--by", "autopilot")
-    assert code == 2 and "class push" in out, out
-    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
 
 
 # ---- guarded_touches: a touch of a _tools/test_*.py that does not exist yet (the headless guard denies creating it)

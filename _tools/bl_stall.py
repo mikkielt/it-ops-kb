@@ -1,15 +1,9 @@
-"""`backlog.py stalled`: the claimed and the ready items that show a stall signal, and the ladder of remedies the
-autopilot works through for each (kb/_self/backlog.md, Working on items; kb/_self/tools.md; the kb-sprint skill, Stalled
-work).
+"""`backlog.py stalled`: the claimed and the ready items that show a stall signal (kb/_self/backlog.md, Working on
+items; kb/_self/tools.md; the kb-sprint skill, Stalled work).
 
-  stalled                      list each claimed (doing) or ready item that shows a signal, with its signals and the
-                               next remedy of each signal's ladder (read only; exit 0, also when nothing stalls)
+  stalled                      list each claimed (doing) or ready item that shows a signal, with its signals (read
+                               only; exit 0, also when nothing stalls)
   stalled --json               the same as one JSON object
-  stalled --ladder             print the ladder: each signal and its remedies in order
-  stalled --took ID SIGNAL REMEDY
-                               the autopilot took REMEDY for SIGNAL of ID: record one `stall.remedy` ops row and one
-                               autopilot decision of kb/_self (`remedy_row`); for `file-blocker` also file the blocker
-                               as a story and print the next ready item (`file_blocker`, `next_ready`)
 
 The signals are read from the claims (item files), git and the ops rows of the query log's spool and committed ops
 sidecars (`ql_store` readers; a row's closed keys only, never event text), and never from the network or from a
@@ -27,22 +21,19 @@ process's arguments:
   lock-wait           the host test lock has been held, by a live process, for HOST_LOCK_WAIT_S (claimed items)
 
 A signal whose input cannot be read is `unknown:<what>`, never a guess. Standard library only; imports `bl_base` and
-`bl_cli` at load and never `backlog` (a layer rule); the query log, `tests`, `bl_procs` and `bl_authority` are imported
-where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
+`bl_cli` at load and never `backlog` (a layer rule); the query log, `tests` and `bl_procs` are imported where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
 """
-import csv
 import datetime
 import json
 import os
 import re
 import subprocess
-import sys
 import time
 from pathlib import Path
 
 import bl_base
 import bl_cli
-from bl_base import CHECK_TIMEOUT_S, Refused, Rejected, say
+from bl_base import CHECK_TIMEOUT_S, say
 
 CLAIM_NO_COMMIT_S = 3600  # seconds a claim may go with no work commit before it is a stall
 RETURNED_GRACE_S = 600  # seconds after a claim before a worktree with no live process counts as a returned worker
@@ -54,31 +45,6 @@ LOCK_NAME = "kb-tests.lock"  # tests.py's host lock file (tests.HOST_LOCK_NAME),
 
 SIGNALS = ("claim-no-commit", "returned-no-commit", "returned-staged", "done-refused", "check-timeout",
            "land-same-step", "red-main", "lock-wait")
-# The ladder: each signal's remedies, in the order the autopilot takes them, each once. `file-blocker` is the
-# last but one and `ask-operator` the last: the autopilot files what blocks the item, takes the next ready item and
-# never idles while one remains, and only then asks.
-LADDER = {
-    "claim-no-commit": ("retry-narrower", "release-redispatch", "file-blocker", "ask-operator"),
-    "returned-no-commit": ("retry-narrower", "release-redispatch", "file-blocker", "ask-operator"),
-    "returned-staged": ("finish-here", "release-redispatch", "file-blocker", "ask-operator"),
-    "done-refused": ("retry-narrower", "release-redispatch", "file-blocker", "ask-operator"),
-    "check-timeout": ("retry-narrower", "release-redispatch", "file-blocker", "ask-operator"),
-    "land-same-step": ("retry-narrower", "release-redispatch", "file-blocker", "ask-operator"),
-    "red-main": ("file-blocker", "ask-operator"),
-    "lock-wait": ("retry-narrower", "file-blocker", "ask-operator"),
-}
-REMEDIES = {  # what each remedy is, in the words of the decision it leaves
-    "finish-here": "finish the last steps in the orchestrator, then run the checks in the foreground",
-    "retry-narrower": "send the work back once with a narrower request (one file, one test selector, no background "
-                      "run)",
-    "release-redispatch": "release the item and dispatch it again with the failure named in the brief",
-    "file-blocker": "file the blocker as a story and take the next ready item",
-    "ask-operator": "ask the operator through a gate or the digest",
-}
-EVENT = "stall.remedy"  # the ops event a remedy leaves (kb/_self/querylog.md); its keys: item, signal, remedy, count
-BLOCKER_KIND = "story"  # what `file_blocker` files
-DECISION_ROOT = "_self"  # where the autopilot's decisions go (kbdecide.py --root)
-TOOK = re.compile(r"took the remedy ([a-z-]+)")
 ROW_KEYS = ("id", "ts", "surface", "v")  # the spool row's own keys, which ops_problems does not read
 
 
@@ -297,34 +263,6 @@ def claim_signals(root, iid, now):
     return out, unknown
 
 
-def decisions_of(root, iid, signal):
-    """The remedies already taken for the item's signal, from the active autopilot decisions of kb/_self whose
-    source names them; [] when there is no decision file."""
-    path = Path(root) / "kb" / "_self" / "_decisions.csv"
-    try:
-        with open(path, encoding="utf-8", newline="") as f:
-            rows = list(csv.DictReader(f))
-    except OSError:
-        return []
-    out = []
-    for r in rows:
-        m = TOOK.search(r.get("text", ""))
-        if (m and r.get("status") == "active" and r.get("by") == "autopilot"
-                and r.get("source") == source_of(iid, signal)):
-            out.append(m.group(1))
-    return out
-
-
-def source_of(iid, signal):
-    return f"backlog item {iid} stalled {signal}"
-
-
-def next_remedy(root, iid, signal):
-    """The first remedy of the signal's ladder not yet taken for the item, or None when the ladder is spent."""
-    taken = decisions_of(root, iid, signal)
-    return next((r for r in LADDER.get(signal, ()) if r not in taken), None)
-
-
 def ready_items(bl):
     """The ready items (`next`'s list: todo, nothing it waits on, in an active sprint) in work order."""
     return sorted((i for i in bl.items if bl.items[i].get("status") == "todo" and not bl_base.waits(bl, i)),
@@ -333,7 +271,7 @@ def ready_items(bl):
 
 def collect(bl, now=None):
     """{main, lock, rows, items}: the stall signals of every claimed or ready item. `items` is a list of {id, label,
-    state, claimed_by, signals, unknown, next} in work order, only items with a signal or an unknown."""
+    state, claimed_by, signals, unknown} in work order, only items with a signal or an unknown."""
     now = now_epoch() if now is None else now
     root = str(bl.root)
     try:
@@ -361,111 +299,18 @@ def collect(bl, now=None):
         signals = [s for s in SIGNALS if s in signals]
         if signals or unknown:
             out.append({"id": iid, "label": bl.label(iid), "state": "doing" if iid in doing else "ready",
-                        "claimed_by": bl.items[iid].get("claimed_by"), "signals": signals, "unknown": unknown,
-                        "next": {s: next_remedy(root, iid, s) for s in signals}})
+                        "claimed_by": bl.items[iid].get("claimed_by"), "signals": signals, "unknown": unknown})
     return {"main": {"state": main, "ts": main_ts}, "lock": {"state": lock, "detail": lock_detail},
             "ops_rows": None if rows is None else len(rows), "items": out}
-
-
-# ---------------------------------------------------------------- the remedies
-
-def record_decision(root, iid, signal, remedy, count):
-    """Keep the remedy as an active autopilot decision of kb/_self (`kbdecide.py record --by autopilot`, as
-    `backlog.py answer --record` does for a gate): its source names the item and the signal, its context is the item,
-    its review_by falls due for the operator's review. Returns the decision's id; refused with kbdecide's reason."""
-    import bl_authority
-    tool = Path(root) / "_tools" / "kbdecide.py"
-    text = (f"Stalled work: {iid} showed {signal}; the autopilot took the remedy {remedy} (attempt {count}): "
-            f"{REMEDIES[remedy]}.")
-    p = subprocess.run([sys.executable, str(tool), "record", "--root", DECISION_ROOT, "--source", source_of(iid, signal),
-                        "--context", f"item:{iid}", "--by", "autopilot", "--review-by", bl_authority.review_by(),
-                        "--", text], cwd=str(root), capture_output=True, text=True, encoding="utf-8",
-                       errors="replace", timeout=120)
-    if p.returncode:
-        raise Refused(f"the decision of the remedy: {(p.stdout + p.stderr).strip()}")
-    return p.stdout.split("\t")[0].strip()
-
-
-def remedy_row(root, iid, signal, remedy):
-    """One remedy of the ladder is taken: append the `stall.remedy` ops row (`ql_deliver.ops_row`: item, signal,
-    remedy and `count`, the attempt on this signal's ladder) and record the autopilot decision. Returns {count, ops,
-    decision}; `ops` is the row, or None when capture is off, the event is not in `ql_capture.OPS_EVENTS` or the row
-    breaks its shape. Refused for a signal or a remedy outside LADDER and for a remedy already taken."""
-    if signal not in LADDER:
-        raise Rejected(f"stalled: {signal!r} is not a signal ({', '.join(SIGNALS)})")
-    if remedy not in LADDER[signal]:
-        raise Rejected(f"stalled: {remedy!r} is not a remedy of {signal} ({', '.join(LADDER[signal])})")
-    taken = decisions_of(root, iid, signal)
-    if remedy in taken:
-        raise Refused(f"stalled: {remedy} was taken for {signal} of {iid} already; the ladder goes on with "
-                      f"{next_remedy(root, iid, signal) or 'nothing (it is spent)'}")
-    count = len(taken) + 1
-    decision = record_decision(root, iid, signal, remedy, count)
-    from ql_deliver import ops_row
-    return {"count": count, "decision": decision, "ops": ops_row(EVENT, item=iid, signal=signal, remedy=remedy,
-                                                                 count=count)}
-
-
-def tool_run(root, *argv):
-    """(exit code, output) of this clone's backlog.py run with its own interpreter."""
-    p = subprocess.run([sys.executable, str(Path(__file__).with_name("backlog.py")), "--root", str(root), *argv],
-                       cwd=str(root), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
-    return p.returncode, (p.stdout + p.stderr).strip()
-
-
-def file_blocker(root, iid, signal):
-    """File what blocks the stalled item as a story (`backlog.py new story`) and return its id. The story names the
-    item and the signal; it is not part of any sprint until someone moves it."""
-    before = set(bl_base.Backlog(root).items)
-    code, out = tool_run(root, "new", BLOCKER_KIND, "--title", f"Unblock {iid}: {signal}", "--goal",
-                         f"The work of {iid} no longer shows the signal {signal}.")
-    new = sorted(set(bl_base.Backlog(root).items) - before)
-    if code or len(new) != 1:
-        raise Refused(f"stalled: the blocker of {iid} was not filed: {out}")
-    return new[0]
-
-
-def next_ready(bl, iid):
-    """The ready item to take instead of `iid`: the first of `ready_items` that is not `iid` and has no signal, or
-    None when nothing else is ready. The autopilot idles only when this is None."""
-    quiet = {r["id"] for r in collect(bl)["items"] if r["signals"]}
-    return next((i for i in ready_items(bl) if i != iid and i not in quiet), None)
 
 
 # ---------------------------------------------------------------- the command
 
 def args_stalled(p):
     p.add_argument("--json", action="store_true", help="print the signals as one JSON object")
-    p.add_argument("--ladder", action="store_true", help="print each signal and its remedies in order")
-    p.add_argument("--took", nargs=3, metavar=("ID", "SIGNAL", "REMEDY"),
-                   help="record the remedy the autopilot took: an ops row and an autopilot decision")
-
-
-def ladder_lines():
-    return [f"{s}: " + " > ".join(LADDER[s]) for s in SIGNALS]
 
 
 def cmd_stalled(bl, a):
-    chosen = sum(bool(x) for x in (a.json, a.ladder, a.took))
-    if chosen > 1:
-        raise Rejected("stalled: --json, --ladder and --took are alternatives")
-    if a.ladder:
-        for ln in ladder_lines():
-            say(ln)
-        return 0
-    if a.took:
-        iid, signal, remedy = a.took
-        bl_base.need(bl, iid)
-        got = remedy_row(str(bl.root), iid, signal, remedy)
-        say(f"stalled: took {remedy} for {signal} of {bl.label(iid)} (attempt {got['count']}): decision "
-            f"{got['decision']}, ops row {'written' if got['ops'] else 'not written (capture off, or no stall.remedy event)'}")
-        if remedy == "file-blocker":
-            blocker = file_blocker(str(bl.root), iid, signal)
-            fresh = bl_base.Backlog(bl.root)
-            say(f"stalled: filed {fresh.label(blocker)} for {iid}")
-            nxt = next_ready(fresh, iid)
-            say(f"stalled: take next {fresh.label(nxt)}" if nxt else "stalled: no other item is ready")
-        return 0
     report = collect(bl)
     if a.json:
         print(json.dumps(report, indent=2, sort_keys=True))
@@ -479,13 +324,12 @@ def cmd_stalled(bl, a):
         say(f"stalled: the host test lock is unknown ({lk['detail']})")
     for r in report["items"]:
         words = r["signals"] + r["unknown"]
-        nxt = ", ".join(f"{s}={n or 'spent'}" for s, n in r["next"].items())
         say(f"{r['label']}  {r['state']}" + (f" by {r['claimed_by']}" if r["claimed_by"] else "") +
-            f"  {', '.join(words)}" + (f"  next: {nxt}" if nxt else ""))
+            f"  {', '.join(words)}")
     say(f"stalled: {len(report['items'])} item(s) with a signal"
         + ("" if report["ops_rows"] is not None else "; the ops rows could not be read"))
     return 0
 
 
 bl_cli.register("stalled", cmd_stalled, args_stalled,
-                help="list claimed or ready items that show a stall signal, with the next remedy of each ladder")
+                help="list claimed or ready items that show a stall signal")

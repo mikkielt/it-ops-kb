@@ -1,7 +1,7 @@
 """Tests of `backlog.py selfcheck` (bl_selfcheck.py): the seven checks (allow rules, checkout, hooks and plugin, host, claims,
 owned orphans, main), each failing with the remedy the kb-sprint skill names, and the capped output. The tests named
 selfcheck_names_remedy_* and selfcheck_capped_* are the item's checks. Every failure is planted: a settings file that
-lacks a rule, a clone with no hooks, a lock held for hours, a third runner, a stale claim, an owned orphan, a red
+lacks a rule, a clone with no hooks, a lock held for hours, a stale claim, an owned orphan, a red
 pipeline row; a passing host prints one line. The host's lock directory is the test's own, and the main lock's holder
 variable is cleared (a run inside the sync gate inherits it).
 """
@@ -13,7 +13,6 @@ from pathlib import Path
 import pytest
 
 import backlog
-import bl_base
 import bl_procs
 import bl_selfcheck as sc
 import bl_stall
@@ -24,7 +23,6 @@ from bl_testkit import b, sh
 bl_testkit.bind(backlog)
 repo = bl_testkit.repo
 
-SKILL = Path(__file__).resolve().parent.parent / ".claude" / "skills" / "kb-sprint" / "SKILL.md"
 LONG_AGO = "2020-01-01T00:00:00Z"
 
 
@@ -57,18 +55,13 @@ def report(items=(), main="ok", ts="2026-10-01T10:00:00.000Z"):
             "items": list(items)}
 
 
-def remedy_names(text):
-    """The remedy names of the ladder (bl_stall.REMEDIES) that TEXT uses."""
-    return {r for r in bl_stall.REMEDIES if r in text}
-
-
 # ---------------------------------------------------------------- remedies
 
 def test_selfcheck_names_remedy_allow_rules_missing_rule_is_named(repo):
     settings(repo, covering(skip=("git cherry origin/main branch",)))
     r = sc.check_allow(repo)
     assert r["state"] == "fail" and "git cherry origin/main branch" in r["detail"]
-    assert "ask-operator" in r["remedy"] and "never edit" in r["remedy"]
+    assert "ask the operator" in r["remedy"] and "never edit" in r["remedy"]
     settings(repo, covering())
     assert sc.check_allow(repo)["state"] == "ok"
 
@@ -106,6 +99,14 @@ def test_selfcheck_names_remedy_allow_rules_of_this_repo_cover_the_skill_command
     assert r["state"] == "ok", r
 
 
+def test_selfcheck_names_remedy_checkout_linked_worktree_names_the_other_checkout(repo):
+    assert sc.check_checkout(str(repo))["state"] == "ok"  # a standalone clone
+    wt = repo.parent / "linked"
+    sh(repo, "git", "worktree", "add", "-q", "--detach", str(wt))
+    r = sc.check_checkout(str(wt))
+    assert r["state"] == "fail" and repo.name in r["detail"] and "standalone `git clone`" in r["remedy"], r
+
+
 def test_selfcheck_names_remedy_hooks_not_installed_names_setup(repo):
     r = sc.check_hooks(repo)
     assert r["state"] == "fail" and "core.hooksPath is not set" in r["detail"]
@@ -140,28 +141,18 @@ def test_selfcheck_names_remedy_host_load_lock_and_runners(host_dir):
     ok = sc.check_host(now, load=0.5, cores=4)
     assert ok["state"] == "ok"
     busy = sc.check_host(now, load=sc.LOAD_PER_CORE * 4 + 1, cores=4)
-    assert busy["state"] == "fail" and "-k" in busy["remedy"] and "retry-narrower" in busy["remedy"]
+    assert busy["state"] == "fail" and "-k" in busy["remedy"] and "fewer workers" in busy["remedy"]
     started = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now - bl_stall.HOST_LOCK_WAIT_S - 600))
     lock(host_dir, "kb-tests.lock", os.getpid(), "/clones/other", started)
     held = sc.check_host(now, load=0.1, cores=4)
     assert held["state"] == "fail" and f"pid {os.getpid()}" in held["detail"] and "clone other" in held["detail"]
-    assert "lock-wait" in held["remedy"] and "file-blocker" in held["remedy"]
+    assert "wait for the holder" in held["remedy"] and "yours" in held["remedy"]
     (host_dir / "kb-tests.lock").unlink()
     young = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now - 30))
     lock(host_dir, "kb-main.lock", os.getpid(), "/clones/other", young)
     assert sc.check_host(now, load=0.1, cores=4)["state"] == "ok"  # held, but not for long
     lock(host_dir, "kb-main.lock", 2 ** 22 + 12345, "/clones/gone", LONG_AGO)
     assert sc.check_host(now, load=0.1, cores=4)["state"] == "ok"  # a holder that is gone is cleared by the next taker
-
-
-def test_selfcheck_names_remedy_host_third_runner(host_dir):
-    for i in range(bl_base.MAX_RUNNERS + 1):
-        (host_dir / f"{bl_base.RUNNER_PREFIX}{os.getpid() + 0}.{i}.json").write_text("{}", encoding="utf-8")  # no pid: not live
-    assert sc.check_host(time.time(), load=0.1, cores=4)["state"] == "ok"
-    for i in range(bl_base.MAX_RUNNERS + 1):  # live records: this process's pid, thrice, in files of their own
-        (host_dir / f"{bl_base.RUNNER_PREFIX}{i}.json").write_text(json.dumps({"pid": os.getpid()}), encoding="utf-8")
-    r = sc.check_host(time.time(), load=0.1, cores=4)
-    assert r["state"] == "fail" and f"limit is {bl_base.MAX_RUNNERS}" in r["detail"] and "sprint runner" in r["remedy"]
 
 
 def test_selfcheck_names_remedy_claims_stale_claim_names_its_ladder_step():
@@ -172,7 +163,7 @@ def test_selfcheck_names_remedy_claims_stale_claim_names_its_ladder_step():
     r = sc.check_claims(report([stale, quiet, ready]))
     assert r["state"] == "fail" and "ST-aaaaaaaa" in r["detail"] and "ST-bbbbbbbb" not in r["detail"]
     assert "claim-no-commit" in r["detail"] and "red-main" not in r["detail"]
-    assert {"release-redispatch", "file-blocker", "ask-operator"} <= remedy_names(r["remedy"])
+    assert "backlog.py release ID" in r["remedy"]
     assert sc.check_claims(report([quiet, ready]))["state"] == "ok"
 
 
@@ -191,28 +182,17 @@ def test_selfcheck_names_remedy_orphans_owned_orphan_fails_and_foreign_does_not(
 def test_selfcheck_names_remedy_main_red_names_file_blocker():
     r = sc.check_main(report(main="red"))
     assert r["state"] == "fail" and "red" in r["detail"]
-    assert {"file-blocker", "ask-operator"} <= remedy_names(r["remedy"])
+    assert "red-pipeline" in r["remedy"] and "next ready item" in r["remedy"]
     unk = sc.check_main(report(main="unknown", ts=None))
     assert unk["state"] == "unknown" and "red-pipeline --status" in unk["remedy"]
     assert sc.check_main(report())["state"] == "ok"
-
-
-def test_selfcheck_names_remedy_every_remedy_name_is_in_the_skill():
-    text = SKILL.read_text(encoding="utf-8")
-    used = set()
-    for r in sc.REMEDY.values():
-        used |= remedy_names(r)
-    assert used and used <= set(bl_stall.REMEDIES)
-    for name in used:
-        assert f"`{name}`" in text, name
-    assert "selfcheck" in text and "## Self-check" in text
 
 
 def test_selfcheck_names_remedy_command_in_a_scratch_clone_fails_with_remedies(repo):
     code, out = b(repo, "selfcheck")
     assert code == 1, out
     assert out.splitlines()[0].startswith("selfcheck: ") and "failed" in out.splitlines()[0]
-    assert "FAIL allow-rules" in out and "ask-operator" in out
+    assert "FAIL allow-rules" in out and "ask the operator" in out
     assert "FAIL hooks" in out and "/kb-setup" in out
     code, out = b(repo, "selfcheck", "--json")
     data = json.loads(out)
