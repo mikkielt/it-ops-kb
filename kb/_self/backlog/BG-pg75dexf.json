@@ -2,7 +2,7 @@
   "id": "BG-pg75dexf",
   "kind": "bug",
   "title": "text_only_repro misses a grep through a pipe, awk or sed over a source file and a test -z of grep",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "baa36a96e295c8e35c1ee4955a3d3ad9428c9bd8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "text_only_repro_flags_pipes_awk_sed_and_test_of_grep"
+        ],
+        "exit": 0,
+        "sha256": "e1cccaa3c42294ef"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import backlog; miss=[a for a in (['sh','-c','cat _tools/x.py | grep -q foo'], ['awk','/foo/{f=1} END{exit !f}','_tools/x.py'], ['sh','-c','test -z \"\\$(grep -n foo _tools/x.py)\"']) if not backlog.text_only_repro(a)]; assert not miss, miss"
+        ],
+        "exit": 0,
+        "sha256": "ad7abceb382749d9"
+      }
+    ]
+  }
 }
