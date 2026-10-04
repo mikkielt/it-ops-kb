@@ -2,7 +2,7 @@
   "id": "BG-4tu6biaz",
   "kind": "bug",
   "title": "done names a code/<task> merge request that sync never opened when the range began with another item",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,29 @@
     "kb/_self/autopilot-container.md",
     "_tools/test_bl_land.py"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "9451168bcb2021bc87f24a71052ebaab95d24f58",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "done_names_the_code_branch_sync_opened"
+        ],
+        "exit": 0,
+        "sha256": "7ae0dd5bd37920fa"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "done_names_the_code_branch_sync_opened"
+        ],
+        "exit": 0,
+        "sha256": "f1d1a16892bf65b2"
+      }
+    ]
+  }
 }
