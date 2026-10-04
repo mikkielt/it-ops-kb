@@ -2,7 +2,7 @@
   "id": "BG-ngwd6rhi",
   "kind": "bug",
   "title": "The fingerprint misses GitLab.com's stream marker on a continuation line (01O+ with no space)",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mguj7foz",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "seventh-w46"
+  "evidence": {
+    "commit": "8d8429a2643635f4f140faf5f08eebb3a071a991",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "fingerprint_continuation_stream_marker"
+        ],
+        "exit": 0,
+        "sha256": "db9fa276dc9bf29b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import backlog as b; assert b.first_failure('2026-09-29T01:06:40.9Z 01O+FAILED a.py::t - x')=='a.py::t'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
