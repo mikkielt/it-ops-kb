@@ -2,7 +2,7 @@
   "id": "TK-fsvrji77",
   "kind": "task",
   "title": "land runs no stress_test.py before sprint end, and the review story's checks run stress_test.py once with the full tests.py",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-tbi3rras",
   "priority": "P2",
   "rank": 0,
@@ -41,5 +41,29 @@
     "kb/_self/maintaining.md",
     "_tools/test_kb_mcp.py"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "67fa49fdae78d322a1ebabaf34bc8c719a928e24",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_runs_no_stress_before_sprint_end"
+        ],
+        "exit": 0,
+        "sha256": "a23026b1b2f9e035"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "review_checks_run_stress_once"
+        ],
+        "exit": 0,
+        "sha256": "11350815a929a925"
+      }
+    ]
+  }
 }
