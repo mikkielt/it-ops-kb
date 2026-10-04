@@ -66,5 +66,8 @@
     "kb/_self/reports/*.md",
     "README.md"
   ],
+  "depends_on": [
+    "TK-iu3he3f5"
+  ],
   "claimed_by": "orch-fourth-s2"
 }

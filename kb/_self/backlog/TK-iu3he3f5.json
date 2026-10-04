@@ -1,0 +1,25 @@
+{
+  "id": "TK-iu3he3f5",
+  "kind": "task",
+  "title": "settings.json no longer wires the autopilot's PreCompact and SessionStart hooks or allows autopilot.py, so deleting autopilot.py cannot block compaction",
+  "status": "todo",
+  "parent": "ST-dh5g3lk7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Removal only, nothing added: .claude/settings.json loses (1) the two allow rules Bash(python3 _tools/autopilot.py *) and PowerShell(python3 _tools/autopilot.py *), (2) the SessionStart entry with matcher compact that runs autopilot.py status --hook, (3) the PreCompact entry that runs autopilot.py precompact. Exactly four deletions, valid JSON, nothing reworded; the executor lists the diff in the report. test_settings_allow.py and any test that pins those lines follow. It lands BEFORE the file deletions of ST-dh5g3lk7, because a PreCompact hook that exits 2 blocks compaction for every session in the repository. Authority: the operator approved the retirement plan on 2026-10-04, and its R1 lists these settings removals; every other allow and deny rule stays.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "settings_allow"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "_tools/test_settings_allow.py",
+    "kb/_self/autopilot-container.md"
+  ]
+}
