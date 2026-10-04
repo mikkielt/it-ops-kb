@@ -2,7 +2,7 @@
   "id": "BG-6a7jiylf",
   "kind": "bug",
   "title": "kb-sprint close never recognises the harness's worktree-agent branches, which carry no commits",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "the defect is a doc's wording (a skill, the runbook or a kb article), so there is no behaviour to run; the repro checks the text and a reader confirms the sense",
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md"
-  ]
+  ],
+  "claimed_by": "mac-third-worker"
 }
