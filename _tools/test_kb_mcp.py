@@ -24,8 +24,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 runbook agree. Its fallback (test_kb_worker_fallback*): when the Agent tool does not list kb-worker,
                 the skill and the runbook start the task on general-purpose with model sonnet, pointed at its file.
                 Its load (test_kb_worker_load*): a worker runs its item's checks and the fast tests, never
-                stress_test.py or a second full run; the orchestrator runs stress_test.py once per landing that
-                changed _tools/; each brief names the in-flight sibling items and the files they change.
+                stress_test.py or a second full run; land runs no stress_test.py (the stale check, the lookup eval and the
+                lint), which runs once with the full tests.py at the sprint's review story; each brief names the in-flight sibling items and the files they change.
 test_worker_provisional_gate*  kb-worker records a choice its item's goal leaves open as a provisional gate (gate add
                 --kind provisional, answer --provisional) committed with the work, never report prose only; /kb-sprint
                 run lands an item only after its gates are answered or provisional, read on its branch before
@@ -293,11 +293,11 @@ def kb_worker_load_problems(worker, sprint, runbook):
         problems.append("/kb-sprint run's brief does not give the fast tests and forbid stress_test.py")
     step4 = re.search(r"(?ms)^4\. When a subagent returns.*?(?=^\d+\. )", run)
     land = [l for l in (step4.group(0) if step4 else "").splitlines() if "stress_test.py" in l]
-    if not any("`python3 _tools/stress_test.py` once" in l and "changed `_tools/`" in l for l in land):
-        problems.append("/kb-sprint run's landing does not run stress_test.py once for a change to _tools/")
+    if not any("lookup eval" in l and "`stress_test.py` runs once" in l and "review story" in l for l in land):
+        problems.append("/kb-sprint run's landing does not say land runs the lookup eval and the lint, and stress_test.py once at the review story")
     work = md_section(runbook, "## Working on items")
     line = next((l for l in work.splitlines() if FAST_TESTS in l), "")
-    for phrase in ("never `stress_test.py`", "sibling", "files", "once per landing", "`_tools/`"):
+    for phrase in ("never `stress_test.py`", "sibling", "files", "runs no `stress_test.py`", "review story"):
         if phrase not in line:
             problems.append(f"the runbook's Working on items does not say {phrase!r} with the fast tests")
     return problems
@@ -1090,8 +1090,8 @@ class TestPluginManifest:
 
     def test_kb_worker_load(self):
         """Up to four workers share the host: each runs its item's checks and the fast tests (no stress_test.py, no
-        second full run), the orchestrator runs stress_test.py once per landing that changed _tools/, and each brief
-        names the in-flight sibling items and the files they change."""
+        second full run), land runs no stress_test.py (it runs once with the full tests.py at the sprint's review
+        story), and each brief names the in-flight sibling items and the files they change."""
         assert kb_worker_load_problems(*self.load_texts()) == []
 
     def test_kb_worker_load_planted_failures(self):
@@ -1104,9 +1104,9 @@ class TestPluginManifest:
             (0, "Your brief names the sibling items in flight", "Your brief names the items in flight"),
             (1, "the in-flight sibling items (id and title)", "the items"),
             (1, "; never `python3 _tools/stress_test.py` or the full `tests.py`", ", then `python3 _tools/stress_test.py`"),
-            (1, "`python3 _tools/stress_test.py` once, when the landing changed `_tools/`", "the full tests"),
+            (1, "`stress_test.py` runs once, with the full `tests.py`, at the review story", "the full tests"),
             (2, "never `stress_test.py` or the full `tests.py`", "then `stress_test.py`"),
-            (2, "The orchestrator runs `python3 _tools/stress_test.py` once per landing", "The orchestrator runs it"),
+            (2, "`backlog.py land` runs no `stress_test.py`: it runs once, with the full `tests.py`, at the sprint's review story", "`backlog.py land` runs it"),
         ]
         for i, old, new in plants:
             texts = [worker, sprint, runbook]

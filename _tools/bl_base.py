@@ -52,7 +52,7 @@ SIMILAR_SHOWN = 10
 STOP_WORDS = frozenset("""a an and are as at be by for from has have in into is it its of on or that the their them
     then there these this those to was were what when which with without""".split())
 RECURRING_MIN = 2  # start: an open P1 item with this many sprint ids in its recurs list belongs in the sprint
-REVIEW_CHECKS = [{"run": ["python3", "_tools/backlog.py", "check"]}, {"run": ["python3", "_tools/tests.py"]}]
+REVIEW_CHECKS = [{"run": ["python3", "_tools/backlog.py", "check"]}, {"run": ["python3", "_tools/tests.py"]}, {"run": ["python3", "_tools/stress_test.py"]}]  # once, before review
 RESEARCH_CHECKS = [{"run": ["python3", "_tools/check.py"]}]  # the goal research story's: the kb it wrote passes the checks
 
 

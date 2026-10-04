@@ -632,14 +632,14 @@ def test_bl_split_land_does_not_swap_kb():
 
 
 class TestBacklogLand:
-    """backlog.py land ID in a throwaway clone with a local bare remote; the heavy steps (stress_test.py, rag.py eval,
+    """backlog.py land ID in a throwaway clone with a local bare remote; the heavy steps (rag.py eval,
     the lint) and kbgit.py sync are stubs in the clone that log their names. A content item lands in one run; a code
     item's first run gates and opens code/<id> without moving main, and a re-run after the merge finishes it. Planted
     failures (a failing heavy step, a failing done check, a rebase conflict, a dirty tree) stop land at that step,
     named, with nothing after it run."""
 
     CO = "Co-Authored-By: A <a@example.com>"
-    HEAVY = ["stale", "stress_test.py", "rag.py eval", "lint"]
+    HEAVY = ["stale", "rag.py eval", "lint"]
 
     @staticmethod
     def out(cwd, *a):
@@ -649,7 +649,7 @@ class TestBacklogLand:
     @pytest.fixture
     def landing(self, sprint, monkeypatch, tmp_path_factory):
         repo, tk = sprint["repo"], sprint["tk"]
-        stubs = {"_tools/selfdoc.py": STALE_STUB, "_tools/stress_test.py": STEP_STUB.format(name="stress_test.py"),
+        stubs = {"_tools/selfdoc.py": STALE_STUB, "_tools/stress_test.py": STEP_STUB.format(name="stress_test.py"),  # a stub: a land that ran it would show in the log
                  "_tools/rag.py": STEP_STUB.format(name="rag.py eval"),
                  ".claude/skills/kb-verify/lint.py": STEP_STUB.format(name="lint"), "_tools/kbgit.py": SYNC_STUB}
         for rel, text in stubs.items():
@@ -718,11 +718,11 @@ class TestBacklogLand:
         assert self.remote_item(ld, f"code/{ld['tk']}")["status"] == "doing"
         code, out = self.land(ld)  # before the merge: nothing re-run, nothing pushed
         assert code == 0 and "waits for its merge request" in out, out
-        assert len(self.steps(ld)) == 5
+        assert len(self.steps(ld)) == 4
         sh(ld["remote"], "git", "update-ref", "refs/heads/main", f"refs/heads/code/{ld['tk']}")  # the merge
         code, out = self.land(ld)
         assert code == 0 and "landed" in out, out
-        assert self.steps(ld)[5:] == ["sync"], out  # the item file alone: the heavy steps ran once
+        assert self.steps(ld)[4:] == ["sync"], out  # the item file alone: the heavy steps ran once
         assert self.remote_item(ld)["status"] == "done"
 
     def test_backlog_land_stops_at_the_failing_step_and_names_it(self, landing, monkeypatch):
@@ -731,22 +731,22 @@ class TestBacklogLand:
         monkeypatch.setenv("LAND_FAIL", "rag.py eval")  # planted
         code, out = self.land(ld)
         assert code == 1 and "land stopped at step rag.py eval" in out and "planted failure" in out, out
-        assert self.steps(ld) == self.HEAVY[:3], out  # neither the lint nor sync ran
+        assert self.steps(ld) == self.HEAVY[:2], out  # neither the lint nor sync ran
         assert not self.out(ld["remote"], "branch", "--list", "code/*").strip()
 
     def test_backlog_land_checks_stale_before_stress(self, landing):
         """The selfdoc stale pre-check is the first heavy step and reads the range since the integration main, so a
-        missing Self-Reviewed trailer fails in seconds, before the stress run."""
+        missing Self-Reviewed trailer fails in seconds, before the lookup eval and the lint."""
         ld = landing
         self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
         code, out = self.land(ld)
         assert code == 0, out
-        assert self.steps(ld)[:2] == ["stale", "stress_test.py"], out
+        assert self.steps(ld)[:2] == ["stale", "rag.py eval"], out
         argv = Path(str(ld["log"]) + ".argv").read_text(encoding="utf-8").split()
         assert argv[:2] == ["stale", "--since"] and argv[2].endswith("origin/main"), argv
 
     def test_backlog_land_checks_stale_before_stress_failure_stops_before_stress(self, landing, monkeypatch):
-        """A stale doc stops land at the step named stale: no stress run, no sync, nothing pushed."""
+        """A stale doc stops land at the step named stale: no eval, no lint, no sync, nothing pushed."""
         ld = landing
         self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
         monkeypatch.setenv("LAND_FAIL", "stale")  # planted
@@ -756,7 +756,7 @@ class TestBacklogLand:
         assert not self.out(ld["remote"], "branch", "--list", "code/*").strip()
 
     def test_backlog_land_checks_stale_before_stress_not_for_content_only(self, landing):
-        """A content-only landing has no stress run to wait for: sync's own stale gate is its check."""
+        """A content-only landing has no heavy step to wait for: sync's own stale gate is its check."""
         ld = landing
         self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
         code, out = self.land(ld)
@@ -1216,7 +1216,7 @@ class TestBacklogLand:
         code = backlog.main(["--root", str(ld["repo"]), "land", ld["tk"], "--trailer", self.CO])
         out = capsys.readouterr().out
         assert code == 0 and "waits for its merge request" in out, out
-        assert len(self.steps(ld)) == 5, out  # nothing re-run, nothing pushed
+        assert len(self.steps(ld)) == 4, out  # nothing re-run, nothing pushed
         return out
 
     def test_land_stuck_auto_merge_is_reported(self, landing, monkeypatch, capsys):
