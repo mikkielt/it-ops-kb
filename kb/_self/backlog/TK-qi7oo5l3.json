@@ -1,0 +1,45 @@
+{
+  "id": "TK-qi7oo5l3",
+  "kind": "task",
+  "title": "A red end run is bisected over the sprint's landings by backlog.py bisect, and kb-sprint says what to do with the culprit",
+  "status": "todo",
+  "parent": "ST-tbi3rras",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a new backlog.py subcommand finds the landed commit after which the failing test ids first fail, as a git bisect run script that exits 0, 1 or 125 and counts a step bad only when the failure repeats on a re-run at that commit, holding the host lock; kb-sprint says to file a bug naming that commit's item and dispatch a kb-worker for it at once, or, when the commit's KB-Work trailer names an item outside the sprint, to file it against that item's sprint and tell its owner; planted tests: a red end run finds the culprit landing, a failure that does not repeat on a re-run is not counted bad, and a culprit whose item lies outside the sprint is routed to its owner; the new module follows the new-module rule",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "red_end_run_finds_culprit_landing"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "red_end_run_reruns_before_bad"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "red_end_run_routes_foreign_culprit"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_bisect.py",
+    "_tools/backlog.py",
+    "_tools/test_layout.py",
+    "_tools/test_bl_bisect.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
