@@ -2,7 +2,7 @@
   "id": "ST-27ns3276",
   "kind": "story",
   "title": "sync's re-run after a code-changing rebase keeps the merge sides for fix",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_sync.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "607410b2eaf6b521488e45d8e3d76b0eb7a34a59",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sync_reexec_keeps_merge_sides"
+        ],
+        "exit": 0,
+        "sha256": "7e54e1c8d2e3949f"
+      }
+    ]
+  }
 }
