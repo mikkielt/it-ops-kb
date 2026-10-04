@@ -18,7 +18,6 @@ from bl_base import (
     need, run, say, scope, waits,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
-import bl_intake
 from bl_intake import ANSI_RE
 
 
@@ -104,10 +103,6 @@ def run_check(root, c):
     codes taken out. A check that names python3 or python runs with the interpreter running this tool: on a host
     whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
     argv = list(c["run"])
-    if os.environ.get(bl_intake.HEADLESS_ENV):  # a headless run's done and land: no shell, git, glab or publish check
-        why = bl_intake.check_program_refusal(argv)
-        if why:
-            return False, None, f"refused in a headless run: {why}"
     if argv and argv[0] in ("python3", "python"):
         argv[0] = sys.executable
     try:
@@ -1177,29 +1172,12 @@ def args_land(p):
                    help="a trailer of the session's own for the done --commit commit (repeatable)")
 
 
-RUNNER_SPRINT_ENV = "KB_RUNNER_SPRINT"  # autopilot.RUNNER_SPRINT_ENV: the sprint a headless run works
-
-
-def item_sprint(bl, iid):
-    """The sprint of item IID: its own `sprint`, else the nearest ancestor's; None outside any sprint."""
-    for x in [iid] + bl.ancestors(iid):
-        if bl.items.get(x, {}).get("sprint"):
-            return bl.items[x]["sprint"]
-    return None
-
-
 def merge_target(bl, iid):
     """(branch, project url) `backlog.py merge ID` merges: the item's own code/ID on the integration remote's GitLab
-    project; Refused for an unknown item, a remote that names no GitLab project, or, in a headless run, an item
-    outside the run's sprint (RUNNER_SPRINT_ENV)."""
+    project; Refused for an unknown item or a remote that names no GitLab project."""
     import kbpublic
     from ql_deliver import origin_forge
     need(bl, iid)
-    if os.environ.get(bl_intake.HEADLESS_ENV):
-        mine, its = os.environ.get(RUNNER_SPRINT_ENV), item_sprint(bl, iid)
-        if not mine or its != mine:
-            raise Refused(f"a headless run merges only its own sprint's items ({mine or 'no sprint named'}); "
-                          f"{iid} is in {its or 'no sprint'}")
     remote = kbpublic.integration_remote(bl.root)
     code, url, _ = run(["git", "remote", "get-url", remote], cwd=bl.root)
     url = (url or "").strip()
@@ -1214,7 +1192,7 @@ def merge_target(bl, iid):
 def cmd_merge(bl, a):
     """Merge the item's own code/ID merge request on the integration remote's project, now (`glab mr merge
     --auto-merge=false --yes`): the one way an agent merges, since .claude/settings.json allows no `glab mr merge`.
-    Another item's branch, another project and, headless, another sprint's item are refused (exit 2)."""
+    Another item's branch and another project are refused (exit 2)."""
     branch, project = merge_target(bl, a.id)
     code, out, err = run(["glab", "mr", "merge", branch, "--auto-merge=false", "--yes", "-R", project], cwd=bl.root)
     say(f"merge {branch} ({project}): {'merged' if code == 0 else 'failed'}")

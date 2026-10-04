@@ -69,7 +69,6 @@ CONFIG_KEY = "kb.publishRemote"
 INTEGRATION_KEY = "kb.integrationRemote"
 CLONE_REMOTE = "origin"  # what `git clone` names its source: the integration remote unless INTEGRATION_KEY says otherwise
 PUBLISHED_REF = "refs/kb/published"
-HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # set by autopilot.py runner start in its headless run: publish --hook does nothing
 NO_HOOK_ENV = "KB_NO_PUBLISH_HOOK"  # a non-empty value: publish --hook does nothing (the unattended manager session exports it)
 ZERO_RE = re.compile(r"^0+$")
 FORBIDDEN_RE = re.compile(r"(^|/)(_private|_cache)(/|$)")
@@ -721,8 +720,8 @@ def cmd_publish_hook(a, cwd):
     publish by hand, which has no bound and fills the cache."""
     import contextlib, io
     try:
-        if os.environ.get(HEADLESS_ENV) or os.environ.get(NO_HOOK_ENV) or not (a.remote or publish_remote(cwd)):
-            return 0  # a headless sprint run or a session started with NO_HOOK_ENV never publishes from its hook
+        if os.environ.get(NO_HOOK_ENV) or not (a.remote or publish_remote(cwd)):
+            return 0  # a session started with NO_HOOK_ENV never publishes from its hook
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             cmd_publish(a, cwd)

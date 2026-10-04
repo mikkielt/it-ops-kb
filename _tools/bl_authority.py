@@ -11,15 +11,12 @@ and takes only the operator's answer; the operator answers every class.
 Standard library only; imports `bl_base` and never `backlog`, `bl_check` or `bl_plan`."""
 import fnmatch
 import posixpath
-import os
 import re
-from pathlib import Path
 
 from bl_base import START_GATE
 
 CLASSES = ("secrets", "push", "start", "querylog", "agents-rule", "delete", "design")
 OPERATOR_CLASSES = ("secrets", "push", "agents-rule")  # the classes only the operator answers
-HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # set (non-empty) in every headless runner's environment: kbpublic.HEADLESS_ENV, kbdecide.py's copy
 
 # Paths whose change makes a gate about the item one of the class: a directory ends with `/`, a file is exact. A touch
 # names one when it is the path, a directory above it, or a glob that matches it.
@@ -27,7 +24,7 @@ PATHS = {
     "push": ("_tools/kbgit.py", "_tools/kbpublic.py", "_tools/kg_", "_tools/kblane.py", ".gitlab-ci.yml", ".github/",
              ".githooks/"),
     "querylog": ("kb/_querylog/",),
-    # the rules agents run under, and the code that guards them: the gate classes, the self-check, the edit guard and
+    # the rules agents run under, and the code that guards them: the gate classes, the self-check, the hook script and
     # the decision record, and the code the tests run (the bl_ modules, the test runner and its conftest)
     "agents-rule": ("AGENTS.md", "CLAUDE.md", ".claude/agents/", ".claude/skills/", ".claude/hooks/",
                     ".claude/settings.json", ".claude/settings.local.json", ".claude-plugin/",
@@ -68,52 +65,6 @@ def touch_names(touch, path):
     if path.endswith("_"):  # a family of files: `_tools/kg_` is every `_tools/kg_*.py`
         return under or t.startswith(path) or fnmatch.fnmatchcase(path + "x.py", t)
     return under or t == path or fnmatch.fnmatchcase(path, t)
-
-
-# Files kb_hook.headless_guard denies a headless Edit/Write beside the PATHS of the agents-rule and push classes.
-GUARD_EXTRA = ("_tools/kb_hook.py", "_tools/kbpy", ".githooks/")
-
-
-def guard_paths():
-    """The project paths a headless run never writes (kb_hook.guard_paths returns this): the guard's own files and the
-    files PATHS gives the agents-rule and push classes (a directory ends with /, a family of files with _)."""
-    return GUARD_EXTRA + tuple(p for cls in ("agents-rule", "push") for p in PATHS[cls])
-
-
-NEW_TEST_FILE = re.compile(r"_tools/test_[^/]*\.py")  # kb_hook.NEW_TEST_FILE: a test file tests.py would run as code
-
-
-def project_dir():
-    """The project the guard judges paths against: CLAUDE_PROJECT_DIR, else this clone (kb_hook.repo_path's rule)."""
-    return os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(os.path.dirname(
-        os.path.realpath(__file__))))
-
-
-def new_test_file(touch, root=None):
-    """Whether the touch names a `_tools/test_*.py` that does not exist yet, which kb_hook.headless_guard denies a
-    headless Write of. A path is judged by whether the file exists; a glob by what it matches today (an existing file
-    unguards it, no file at all guards it); an existing test file stays unguarded."""
-    path = posixpath.normpath(touch.strip().replace("\\", "/"))
-    if not NEW_TEST_FILE.fullmatch(path.lower()):
-        return False
-    root = root or project_dir()
-    if any(c in path for c in "*?["):
-        return not any(True for _ in Path(root).glob(path))
-    return not os.path.exists(os.path.join(root, path))
-
-
-def guarded_touches(item, root=None):
-    """The item's touches a headless run may not edit: each names a guard_paths() entry (the path, a directory above
-    it, a glob that matches it) or lies inside one (`_tools/kbpy/x.py`), or names a `_tools/test_*.py` that does not
-    exist yet (the headless guard denies creating it). `backlog.py start` names them, so such a sprint is operator-present only."""
-    found = []
-    for t in item.get("touches", []) or []:
-        if not isinstance(t, str) or not t.strip():
-            continue
-        n = norm(t)
-        if any(touch_names(t, p) or n.startswith(p.lower() + "/") for p in guard_paths()) or new_test_file(t, root):
-            found.append(t)
-    return found
 
 
 def command_words(gate):
@@ -178,14 +129,3 @@ def sprint_scope(item, gate, members):
         touches += [t for t in m.get("touches", []) or [] if t not in touches]
     return {**item, "touches": touches}
 
-
-def headless():
-    """True in a headless runner's process (and the children it starts): the variable the runner sets is not empty."""
-    return bool(os.environ.get(HEADLESS_ENV))
-
-
-def headless_operator_refusal(what):
-    """The message that refuses `what` (an act recorded as the operator's) in a headless run; the guard that holds when
-    a permission rule's text match misses an argument order or an option abbreviation."""
-    return (f"{what} is the operator's and {HEADLESS_ENV} is set: only an operator-present session answers as the "
-            "operator (--by agent and --provisional are open to a headless run)")

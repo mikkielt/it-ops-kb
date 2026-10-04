@@ -10,7 +10,7 @@ the ql_*.py modules beside it.
   querylog.py launch    the SessionEnd and SessionStart hook: marks the ended session closed, then starts a detached
                         `distill --settle LAUNCH_SETTLE_S` when a closed session waits and no distill holds the lock
                         (SessionEnd with the session's transcript: always, with --session and --transcript); prints
-                        nothing and exits 0; does nothing in a headless runner (KB_HEADLESS_RUNNER set)
+                        nothing and exits 0
   querylog.py distill [--replay FILE] [--settle S] [--session ID --transcript PATH]
                         the closed sessions of the spool -> one run file in the local store (the `store` directory
                         beside the spool, laid out as kb/_querylog/): per lookup the question the kb was asked (never

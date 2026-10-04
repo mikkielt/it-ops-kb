@@ -56,8 +56,9 @@ if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
 import kbcommon  # noqa: E402
 import kbpublic  # noqa: E402
-for _k in (kbpublic.NO_HOOK_ENV, kbpublic.HEADLESS_ENV):  # at import, so an xdist worker and every subprocess it starts
-    os.environ.pop(_k, None)  # start without them, whatever the process that ran pytest exported
+# at import, so an xdist worker and every subprocess it starts run without it, whatever the process that ran
+# pytest exported
+os.environ.pop(kbpublic.NO_HOOK_ENV, None)
 
 
 def P(rel):
@@ -77,10 +78,9 @@ SELF_REL = kbcommon.repo_rel(kbcommon.SELF)
 GIT = shutil.which("git")
 requires_git = pytest.mark.skipif(not GIT, reason="git is not installed")
 SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
-# The two variables that make `publish --hook` and the hook launchers do nothing: the manager session exports the
-# first and autopilot.child_env sets the second in every runner, so a test would see them unless it is cleared first.
-# A test that needs one sets it with monkeypatch (or in the env of its own subprocess).
-HOOK_OFF = (kbpublic.NO_HOOK_ENV, kbpublic.HEADLESS_ENV)
+# The variable that makes `publish --hook` do nothing: a session that exports it would reach every test unless it is
+# cleared first. A test that needs it sets it with monkeypatch (or in the env of its own subprocess).
+HOOK_OFF = (kbpublic.NO_HOOK_ENV,)
 LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", *HOOK_OFF, *GIT_LOCATION)
 
 
@@ -131,7 +131,6 @@ def querylog_env(data, home=KB, base=None, mode="local"):
             cfg.parent.mkdir(parents=True, exist_ok=True)
             cfg.write_text(json.dumps({"mode": mode}), encoding="utf-8", newline="\n")
     env = dict(os.environ if base is None else base)
-    env.pop(kbpublic.HEADLESS_ENV, None)  # a headless runner's tests run the launcher as a session's hook does
     env.update(CLAUDE_PLUGIN_ROOT=str(home), CLAUDE_PLUGIN_DATA=str(data),
                KB_INDEX=env.get("KB_INDEX") or os.path.join(str(home), "_cache"))
     return env

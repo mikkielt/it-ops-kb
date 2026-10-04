@@ -1,8 +1,8 @@
-"""An item check's program is checked before it runs where nothing reviews it: a headless run's done and land
-(KB_HEADLESS_RUNNER) and intake's drift detector, which runs committed checks in every session's SessionStart hook.
-There a check runs only as python3 on a _tools/ script, never kbgit.py publish, bridge, install-hooks or hook, nor a
-shell, git or glab; drift also refuses python3 -c. An operator session's done keeps running the read-only sh and git
-repros items carry (kb/_self/backlog.md)."""
+"""An item check's program is checked before it runs where nothing reviews it: intake's drift detector, which runs
+committed checks in every session's SessionStart hook. There a check runs only as python3 on one of drift's read-only
+_tools/ scripts, never kbgit.py publish, bridge, install-hooks or hook, nor a shell, git, glab or python3 -c. The
+form an open item's repro and checks may take (check_program_refusal with inline) also admits python3 -c. A session's
+done keeps running the read-only sh and git repros items carry (kb/_self/backlog.md)."""
 import sys
 
 import pytest
@@ -32,13 +32,11 @@ def test_check_program_allowlist_inline_python_only_outside_drift():
     assert "inline" in bl_intake.check_program_refusal(["python3", "-c", "pass"], inline=False)
 
 
-def test_check_program_allowlist_headless_run_check_refuses_without_running(tmp_path, monkeypatch):
+def test_check_program_allowlist_done_runs_a_shell_repro(tmp_path):
+    """done's run_check is not drift: it runs the sh repro the allowlist refuses."""
     marker = tmp_path / "ran"
     check = {"run": ["sh", "-c", f"touch {marker}"]}
-    monkeypatch.setenv(bl_intake.HEADLESS_ENV, "1")
-    ok, code, out = bl_land.run_check(str(tmp_path), check)
-    assert not ok and code is None and "refused in a headless run" in out and not marker.exists()
-    monkeypatch.delenv(bl_intake.HEADLESS_ENV)  # the planted contrast: an operator session runs the same repro
+    assert bl_intake.check_program_refusal(check["run"])
     ok, code, out = bl_land.run_check(str(tmp_path), check)
     assert ok and code == 0 and marker.exists()
 

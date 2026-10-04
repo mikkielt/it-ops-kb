@@ -1,6 +1,6 @@
 """`backlog.py merge ID` is the one way an agent merges a merge request: only the item's own code/ID, only on the
-integration remote's GitLab project (no -R of another), and in a headless run (KB_HEADLESS_RUNNER) only an item of
-the run's own sprint (KB_RUNNER_SPRINT); .claude/settings.json allows no `glab mr merge` (kb/_self/backlog.md)."""
+integration remote's GitLab project (no -R of another); .claude/settings.json allows no `glab mr merge`
+(kb/_self/backlog.md)."""
 import argparse
 
 import pytest
@@ -11,13 +11,6 @@ import bl_base, bl_land
 class FakeBacklog:
     def __init__(self, root, items):
         self.root, self.items = str(root), items
-
-    def ancestors(self, iid):
-        out, x = [], self.items.get(iid, {}).get("parent")
-        while x:
-            out.append(x)
-            x = self.items.get(x, {}).get("parent")
-        return out
 
 
 ITEMS = {"SP-aaaaaaaa": {"kind": "sprint"}, "ST-aaaaaaaa": {"kind": "story", "sprint": "SP-aaaaaaaa"},
@@ -36,8 +29,6 @@ def world(tmp_path, monkeypatch):
     monkeypatch.setattr(bl_land, "run", run)
     monkeypatch.setattr(bl_land, "say", lambda *a, **k: None)
     monkeypatch.setattr("kbpublic.integration_remote", lambda root: "origin")
-    monkeypatch.delenv(bl_land.bl_intake.HEADLESS_ENV, raising=False)
-    monkeypatch.delenv(bl_land.RUNNER_SPRINT_ENV, raising=False)
     return FakeBacklog(tmp_path, dict(ITEMS)), calls
 
 
@@ -61,18 +52,6 @@ def test_merge_only_own_code_branch_unknown_item_refused(world):
     with pytest.raises(Exception):
         merge(bl, "TK-zzzzzzzz")
     assert not glab_calls(calls)
-
-
-def test_merge_only_own_code_branch_headless_other_sprint_refused(world, monkeypatch):
-    bl, calls = world
-    monkeypatch.setenv(bl_land.bl_intake.HEADLESS_ENV, "1")
-    monkeypatch.setenv(bl_land.RUNNER_SPRINT_ENV, "SP-aaaaaaaa")
-    with pytest.raises(bl_base.Refused, match="own sprint"):
-        merge(bl, "BG-bbbbbbbb")
-    assert merge(bl, "TK-aaaaaaaa") == 0  # its own sprint's task, through its story
-    monkeypatch.delenv(bl_land.RUNNER_SPRINT_ENV)
-    with pytest.raises(bl_base.Refused, match="no sprint named"):
-        merge(bl, "TK-aaaaaaaa")  # a headless run that names no sprint merges nothing
 
 
 def test_merge_only_own_code_branch_no_gitlab_project_refused(world, monkeypatch, tmp_path):

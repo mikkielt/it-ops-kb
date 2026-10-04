@@ -1,4 +1,4 @@
-"""A gate about the code that guards the agents (the gate classes, the stall listing, the self-check, the edit guard,
+"""A gate about the code that guards the agents (the gate classes, the stall listing, the self-check, the hook script,
 the decision record, lane routing, sync, the local settings) is of a class only the operator answers, never design,
 and so is a gate whose question speaks of uploading, deploying, merge requests, GitLab, PATs, ssh, passphrases or
 bearer tokens: with Edit, Write and glab mr merge allowed, a sprint could otherwise approve and merge changes to its

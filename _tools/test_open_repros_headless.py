@@ -1,6 +1,6 @@
-"""An open item's repro and checks run in a headless done (kb/_self/backlog.md): every `run` of a todo, draft or doing
+"""An open item's repro and checks run without a shell (kb/_self/backlog.md): every `run` of a todo, draft or doing
 item in kb/_self/backlog/ is a form `bl_intake.check_program_refusal` admits (python3 on a `_tools/` script or inline),
-never `sh -c`, `git grep` or `grep`, which a runner's done refuses so it could never close the item.
+never `sh -c`, `git grep` or `grep`, so it runs the same way on every host.
 
 Planted failure: a repro of `sh -c true` is refused, so the assertion over the real items would fail on it."""
 import json
