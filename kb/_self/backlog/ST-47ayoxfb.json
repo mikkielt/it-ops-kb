@@ -34,7 +34,9 @@
         "land ST-47ayoxfb and ST-dh5g3lk7 back to back, red only between them"
       ],
       "recommendation": "widen touches to _tools/bl_selfcheck.py and _tools/test_autopilot.py and make the minimal removals in this item",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "widen touches to _tools/bl_selfcheck.py and _tools/test_autopilot.py and make the minimal removals in this item",
+      "by": "operator"
     }
   ],
   "claimed_by": "mac-fifth"
