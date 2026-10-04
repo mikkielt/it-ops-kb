@@ -915,7 +915,6 @@ def run_argv(argv, cwd=None):
 # text follows the `+` directly; a marker without `+` is followed by whitespace)
 LOG_PREFIX_RE = re.compile(r"^\s*(?:\d{4}-\d\d-\d\dT[\d:.]+Z\s+(?:\d\d[OE](?:\+\s*|\s))?\s*)?"
                            r"(?:section_(?:start|end):\d+:\S+\s*)?")
-TEST_ID_RES = (re.compile(r"^(?:FAILED|ERROR)\s+(\S+::\S+)"), re.compile(r"^(\S+::\S+)\s+(?:FAILED|ERROR)\b"))
 ERROR_LINE_RE = re.compile(r"\b(?:error|errors|failed|failure|traceback|exception|fatal)\b", re.I)
 
 
@@ -929,6 +928,39 @@ def normalise_error_line(line, prefix_re=None):
     return " ".join(s.split())[:200]
 
 
+PYTEST_ID_START_RE = re.compile(r"(?:(?:FAILED|ERROR)\s+)?(\S+::)")
+PYTEST_VERDICT_RE = re.compile(r"\s+(?:FAILED|ERROR)\b")
+
+
+def pytest_id_end(ln, start):
+    """The index in `ln` where the pytest id that begins at `start` ends: the next whitespace outside brackets, so
+    an id whose parameter brackets hold spaces (`f[a b]`, nested `f[a[1] b]`) is read up to its closing `]`; the end
+    of the `\\S+` token (the plain reading) when a bracket is never closed. One pass, no backtracking."""
+    depth = 0
+    for i in range(start, len(ln)):
+        c = ln[i]
+        if c == "[":
+            depth += 1
+        elif c == "]" and depth:
+            depth -= 1
+        elif c.isspace() and not depth:
+            return i
+    return len(ln) if not depth else start + len(ln[start:].split(None, 1)[0])
+
+
+def pytest_test_id(ln):
+    """The pytest id a failure line names (`FAILED a.py::t[a b] - msg`, `a.py::t[a b] FAILED`), else ''."""
+    m = PYTEST_ID_START_RE.match(ln)
+    if not m:
+        return ""
+    end = pytest_id_end(ln, m.start(1))
+    if end <= m.end(1):
+        return ""
+    if ln[:m.start(1)] or PYTEST_VERDICT_RE.match(ln, end):
+        return ln[m.start(1):end]
+    return ""
+
+
 def first_failure(log, prefix_re=None):
     """What failed first in a job log: the first failing pytest test id (`FAILED a.py::t`, `a.py::t FAILED`), else the
     normalised first line that names an error or a failure, else ''. `prefix_re` (default LOG_PREFIX_RE) takes the
@@ -936,10 +968,9 @@ def first_failure(log, prefix_re=None):
     prefix_re = prefix_re or LOG_PREFIX_RE
     lines = [prefix_re.sub("", ANSI_RE.sub("", ln)).strip() for ln in (log or "").splitlines()]
     for ln in lines:
-        for r in TEST_ID_RES:
-            m = r.match(ln)
-            if m:
-                return m.group(1)
+        tid = pytest_test_id(ln)
+        if tid:
+            return tid
     for ln in lines:
         if ERROR_LINE_RE.search(ln):
             return normalise_error_line(ln, prefix_re)

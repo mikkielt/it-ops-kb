@@ -1854,3 +1854,40 @@ def test_ops_ci_pipeline_row_a_job_read_leaves_none_and_a_failing_log_never_fail
     assert ci_rows(ops_spool) == []  # the state of a job is not the pipeline's
     monkeypatch.setattr(ql_deliver, "record_pipeline", lambda *a, **k: 1 / 0)
     assert red_pipeline(w.root) == 0 and len(filed(w.root)) == 1  # the bug is still filed
+
+
+def test_intake_core_fingerprint_pytest_id_space_in_brackets_is_read_whole():
+    ff = backlog.first_failure
+    assert ff("FAILED t.py::f[a b] - x") == "t.py::f[a b]"
+    assert ff("FAILED t.py::f[a b] - x") != "t.py::f[a"  # the id is not cut at the first space
+    assert ff("FAILED t.py::f[a b] - x") != ff("FAILED t.py::f[a c] - x")
+    assert backlog.failure_fingerprint("j", ff("FAILED t.py::f[a b]")) != \
+        backlog.failure_fingerprint("j", ff("FAILED t.py::f[a c]"))
+    assert ff("ERROR t.py::C::f[a b c]") == "t.py::C::f[a b c]"
+    # the second form
+    assert ff("t.py::f[a b] FAILED") == "t.py::f[a b]"
+    assert ff("t.py::f[a b] FAILED") != ff("t.py::f[a c] FAILED")
+    assert ff("t.py::f[a b] FAILED [ 5%]") == "t.py::f[a b]"
+    # nested brackets
+    assert ff("FAILED t.py::f[a[1] b] - x [y]") == "t.py::f[a[1] b]"
+    assert ff("FAILED t.py::f[a[1] b] - x") != ff("FAILED t.py::f[a[1] c] - x")
+
+
+def test_intake_core_fingerprint_pytest_id_space_unclosed_bracket_and_plain_ids_keep_old_reading():
+    ff = backlog.first_failure
+    assert ff("FAILED t.py::f[a b - x") == "t.py::f[a"  # never closed: the plain token
+    assert ff("t.py::f[a b FAILED") == "t.py::f[a b FAILED"  # as before: no id, the error line stands
+    assert ff("FAILED t.py::f") == "t.py::f"
+    assert ff("FAILED t.py::f - boom") == "t.py::f"
+    assert ff("FAILED t.py::f[a] - boom") == "t.py::f[a]"
+    assert ff("t.py::f FAILED") == "t.py::f"
+    assert ff("t.py::f PASSED") == ""
+    assert ff("FAILED t.py::f[a b] - x\nFAILED t.py::g") == "t.py::f[a b]"
+
+
+def test_intake_core_fingerprint_pytest_id_space_long_bracket_line_does_not_backtrack():
+    for line in ("FAILED t.py::f" + "[" * 200000, "FAILED " + "[" * 200000, "t.py::" + "[ " * 100000 + " FAILED",
+                 "FAILED t.py::f[" + "a[ " * 50000 + "]"):
+        t0 = time.monotonic()
+        backlog.first_failure(line)
+        assert time.monotonic() - t0 < 2
