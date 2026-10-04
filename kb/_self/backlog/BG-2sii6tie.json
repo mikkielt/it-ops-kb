@@ -2,7 +2,7 @@
   "id": "BG-2sii6tie",
   "kind": "bug",
   "title": "close deletes an item that an answered gate's do still names, and check then refuses that gate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "79978784d044b4ca17faabbd2c194f94abf8295a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "close_cleans_gate_do"
+        ],
+        "exit": 0,
+        "sha256": "6b569caa40b0c5c7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,glob;sys.exit(0 if any('cleanup_gate_do' in l and 'def' in l for p in ['_tools/backlog.py']+glob.glob('_tools/bl_*.py') for l in open(p,encoding='utf-8')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
