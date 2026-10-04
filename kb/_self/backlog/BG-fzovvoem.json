@@ -2,7 +2,7 @@
   "id": "BG-fzovvoem",
   "kind": "bug",
   "title": "A revert's bug can name a job whose retry passed, so its --job repro is green at once",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-mguj7foz",
   "priority": "P3",
@@ -27,5 +27,19 @@
     "_tools/test_ql_deliver.py",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "seventh-w49"
+  "evidence": {
+    "commit": "bf7060597a35d9c05b46efa355dde994ed45c769",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pipeline_failure_skips_a_retried_job"
+        ],
+        "exit": 0,
+        "sha256": "b0da156bc8419618"
+      }
+    ]
+  }
 }
