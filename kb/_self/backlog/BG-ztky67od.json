@@ -19,7 +19,8 @@
   "touches": [
     "_tools/kbgit.py",
     "_tools/test_kblane.py",
-    "kb/_self/git.md"
+    "kb/_self/git.md",
+    "_tools/kg_hooks.py"
   ],
   "claimed_by": "mac-third-worker"
 }
