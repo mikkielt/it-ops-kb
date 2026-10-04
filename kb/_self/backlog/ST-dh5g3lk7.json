@@ -2,7 +2,7 @@
   "id": "ST-dh5g3lk7",
   "kind": "story",
   "title": "The autopilot runner, tick, rehearsal, skill, runbook, plans and their tests are removed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ytfb4dc5",
   "priority": "P1",
   "rank": 0,
@@ -68,5 +68,41 @@
   "depends_on": [
     "ST-47ayoxfb"
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "e3e2ad182e24127a98957a5138985b0e70464cc5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cohesion"
+        ],
+        "exit": 0,
+        "sha256": "07bd30041f75d548"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "exit": 0,
+        "sha256": "c55fa11eb40402f8"
+      }
+    ]
+  }
 }
