@@ -2,7 +2,7 @@
   "id": "BG-ftcxrl7j",
   "kind": "bug",
   "title": "The failure fingerprint cuts a pytest id at a space inside its parameter brackets",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mguj7foz",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "seventh-w47"
+  "evidence": {
+    "commit": "c5e630e40d9dfdf077f8cf015e1c4287c8469b02",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "fingerprint_pytest_id_space"
+        ],
+        "exit": 0,
+        "sha256": "81baf7f930a5d1a2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import backlog as b; assert b.first_failure('FAILED t.py::f[a b] - x') != b.first_failure('FAILED t.py::f[a c] - x')"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
