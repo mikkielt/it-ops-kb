@@ -91,7 +91,6 @@ kb/_self/backlog.md,_tools/bl_*.py
 kb/_self/backlog.md,.claude/skills/kb-backlog/SKILL.md
 kb/_self/backlog.md,.claude/skills/kb-sprint/SKILL.md
 kb/_self/backlog.md,.claude/skills/kb-item/SKILL.md
-kb/_self/backlog.md,.claude/skills/kb-autopilot/SKILL.md
 kb/_self/tools.md,_tools/backlog.py
 kb/_self/tools.md,_tools/bl_*.py
 kb/_self/tools.md,_tools/provider.py
@@ -117,18 +116,6 @@ kb/_self/usage.md,_tools/ql_capture.py
 kb/_self/usage.md,_tools/ql_store.py
 kb/_self/usage.md,_tools/ql_report.py
 kb/_self/tools.md,_tools/kbusage.py
-kb/_self/tools.md,_tools/autopilot.py
-kb/_self/autopilot-test.md,_tools/autopilot.py
-kb/_self/autopilot-test.md,_tools/autopilot_rehearse.py
-kb/_self/autopilot-test.md,.claude/skills/kb-autopilot/SKILL.md
-kb/_self/autopilot-container.md,_tools/autopilot.py
-kb/_self/autopilot-container.md,_tools/kb_hook.py
-kb/_self/autopilot-container.md,_tools/bl_authority.py
-kb/_self/autopilot-container.md,_tools/kg_lock.py
-kb/_self/autopilot-container.md,_tools/bl_land.py
-kb/_self/autopilot-container.md,_tools/bl_base.py
-kb/_self/autopilot-container.md,_tools/bl_procs.py
-kb/_self/autopilot-container.md,.claude/settings.json
 kb/_self/querylog.md,_tools/kbusage.py
 kb/_self/embedding.md,_tools/kb_mcp.py
 kb/_self/embedding.md,_tools/fixtures/kb_mcp_contract.json

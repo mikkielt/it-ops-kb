@@ -12,8 +12,6 @@ Everything an agent needs to run, change and ship this kb, except the lookup rul
 | `kb/_self/code.md` | writing or changing Python in `_tools/`: standard library only, portability, git in tests, deterministic output, exit codes, planted failures, flat prefixed modules behind a CLI facade, import direction | rules |
 | `kb/_self/tools.md` | choosing or running a tool: commands, flags, exit codes, how pack decides | reference |
 | `kb/_self/git.md` | committing, syncing, merging, reading the history | rules |
-| `kb/_self/autopilot-test.md` | the pre-run checklist and staged test plan of the autopilot's first supervised run, its record and its stop | reference |
-| `kb/_self/autopilot-container.md` | the plan to run the autopilot's runners in a Docker container: what it isolates and not, the pinned image, mounts, credentials, network allow-list, limits, the mapping to runner commands, macOS, the staged rollout and the operator's gates | plan |
 | `kb/_self/plugin.md` | changing the plugin, installing it in another project, a team's own roots (`/kb-add-root`, `KB_ROOTS`) | rules and runbook |
 | `kb/_self/embedding.md` | embedding the kb in another team's MCP server: the stdio child's command, roots, re-exposed tools, copied instructions, restarts and the contract test | contract |
 | `kb/_self/runners.md` | setting up, moving or checking the project's two self-hosted GitLab runners (`docker-windows` on the host, `docker-linux` in WSL 2) | runbook |

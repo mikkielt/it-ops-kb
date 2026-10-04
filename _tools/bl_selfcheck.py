@@ -15,7 +15,7 @@ The seven checks, each independent and each a result {name, state, detail, remed
                trailing ` *` also for no arguments, as Claude Code reads it; a `deny` rule is not read; a bare `Bash` rule covers every command
   checkout     the manager clone is no linked worktree of another checkout (`git rev-parse --git-common-dir` is its own
                `--git-dir`): a runner there gets its workers' isolation worktrees in that other checkout, where
-               the headless guard refuses their writes; `autopilot.py runner start` makes the same check
+               the headless guard refuses their writes
   hooks        `core.hooksPath` runs this checkout's `.githooks` (or the `.githooks` of another worktree of the clone)
                and each hook script is there; the plugin manifest parses and the files it names exist
   host         the 5-minute load average is under LOAD_PER_CORE times the cores, no host lock (`kb-tests.lock`,

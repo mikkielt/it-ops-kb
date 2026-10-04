@@ -36,9 +36,6 @@
     }
   ],
   "touches": [
-    "_tools/autopilot.py",
-    "_tools/autopilot_rehearse.py",
-    ".claude/skills/kb-autopilot/SKILL.md",
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md",
     ".claude/skills/kb-backlog/SKILL.md",
@@ -50,9 +47,6 @@
     "kb/_self/README.md",
     "kb/_self/plugin.md",
     "kb/_self/map.csv",
-    "kb/_self/autopilot-test.md",
-    "kb/_self/autopilot-container.md",
-    "kb/_self/reports/autopilot-first-run.md",
     "_tools/test_ids_dropped.txt",
     ".gitignore",
     "_tools/test_*.py",
@@ -64,7 +58,11 @@
     "_tools/tests_allowlist.txt",
     "kb/_self/*.md",
     "kb/_self/reports/*.md",
-    "README.md"
+    "README.md",
+    "_tools/autopilot*.py",
+    ".claude/skills/kb-autopilot/**",
+    "kb/_self/autopilot-*.md",
+    "kb/_self/reports/autopilot-*.md"
   ],
   "depends_on": [
     "ST-47ayoxfb"

@@ -33,7 +33,7 @@ PATHS = {
     # its own runner, gate classes, bounds, self-check, edit guard or decision record, nor to the code the tests run
     # (the bl_ modules, the test runner and its conftest)
     "agents-rule": ("AGENTS.md", "CLAUDE.md", ".claude/agents/", ".claude/skills/", ".claude/hooks/",
-                    ".claude/settings.json", ".claude/settings.local.json", ".claude-plugin/", "_tools/autopilot.py",
+                    ".claude/settings.json", ".claude/settings.local.json", ".claude-plugin/",
                     "_tools/bl_", "_tools/tests.py", "_tools/conftest.py", "_tools/kb_hook.py", "_tools/kbdecide.py",
                     "_tools/backlog.py", "_tools/kbpy"),
 }
@@ -108,8 +108,7 @@ def new_test_file(touch, root=None):
 def guarded_touches(item, root=None):
     """The item's touches a headless run may not edit: each names a guard_paths() entry (the path, a directory above
     it, a glob that matches it) or lies inside one (`_tools/kbpy/x.py`), or names a `_tools/test_*.py` that does not
-    exist yet (the headless guard denies creating it). `backlog.py start` names them and `autopilot.py runner start`
-    refuses a sprint that has any, so such a sprint is operator-present only."""
+    exist yet (the headless guard denies creating it). `backlog.py start` names them, so such a sprint is operator-present only."""
     found = []
     for t in item.get("touches", []) or []:
         if not isinstance(t, str) or not t.strip():

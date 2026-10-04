@@ -418,32 +418,6 @@ def test_procs_ends_only_own_through_the_command(clone, herd):
     assert procs("--record", str(owned_orphan))[0] == 1, "a pid that no longer runs is refused"
 
 
-@pytest.mark.parametrize("blind", [False, True])
-def test_procs_ends_only_own_runner_leaves_none_behind(tmp_path, monkeypatch, blind):
-    """The runner's child leads a group of its own that `supervise` ends whole when it returns: a process the child
-    started in the background does not outlive the run. Planted (`blind`): a supervise that ends no group leaves it."""
-    import autopilot
-    if bl_procs.process_table() is None:
-        pytest.skip("no process table on this host")
-    if blind:
-        monkeypatch.setattr(autopilot, "end_tree", lambda proc: None)
-    pidfile = tmp_path / "bg.pid"
-    code = ("import subprocess, sys; p = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(120)'], "
-            "stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); "
-            f"open({str(pidfile)!r}, 'w').write(str(p.pid))")
-    with open(tmp_path / "s.jsonl", "w", encoding="utf-8") as stream, open(tmp_path / "e.txt", "w", encoding="utf-8") as err:
-        run = autopilot.supervise([sys.executable, "-c", code], tmp_path, stream, err)
-    assert run["exit_code"] == 0
-    pid = int(pidfile.read_text(encoding="utf-8"))
-    try:
-        assert wait_for(lambda: not alive(pid), 2 if blind else 10) != blind, "a background process outlived the run" if not blind else "planted"
-    finally:
-        try:
-            os.kill(pid, 9)
-        except OSError:
-            pass
-
-
 # ---------------------------------------------------------------- land names the process it will not remove a worktree over
 
 @needs_cwd
