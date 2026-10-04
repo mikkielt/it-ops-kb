@@ -387,10 +387,25 @@ ARTICLE = f"---\ntopic: demo/tool\nstatus: partial\n---\n\n# Demo tool\n\n## Fac
 CSV = "name,source,tag\nalpha,S100,DOC\n"
 
 
+def worked_carrier(repo, title="Carrier", sprint_title="Carrier sprint", start=True):
+    """A story in a sprint (started unless START is false) to carry `knowledge`: check validates the refs of a todo or
+    doing item of an active sprint only (bl_check.knowledge_worked). Returns the story's id."""
+    b(repo, "new", "sprint", "--title", sprint_title, "--goal", "carry knowledge")
+    sp = item(repo, sprint_title)["id"]
+    edit(repo, item(repo, f"Research sprint goal: {sprint_title}")["id"], status="dropped")
+    b(repo, "new", "story", "--title", title, "--sprint", sp, "--goal", "carries knowledge", "--touch", "src/**",
+      "--check", argstr(is_file("src/b.txt")))
+    if start:
+        assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+        code, out = b(repo, "start", sp)
+        assert code == 0, out
+    return item(repo, title)["id"]
+
+
 @pytest.fixture
 def kb(repo):
     """The repository gets a public kb root: a source, a QK answer, an article with one fact and a data file; a
-    story to carry `knowledge`."""
+    story of a started sprint to carry `knowledge`."""
     root = repo / "kb" / "public"
     (root / "demo").mkdir(parents=True)
     (root / "_root.md").write_text("---\nroot: public\nid_prefix: S\nvisibility: public\n---\n\n# public\n",
@@ -401,9 +416,9 @@ def kb(repo):
                                       "[DOC S100]\n", encoding="utf-8", newline="\n")
     (root / "demo" / "tool.md").write_text(ARTICLE, encoding="utf-8", newline="\n")
     (root / "demo" / "rows.csv").write_text(CSV, encoding="utf-8", newline="\n")
-    b(repo, "new", "epic", "--title", "Carrier", "--goal", "carries knowledge")
+    carrier = worked_carrier(repo)
     commit(repo, "kb")
-    return repo, item(repo, "Carrier")["id"]
+    return repo, carrier
 
 
 def key(text=FACT):
@@ -465,9 +480,36 @@ def test_knowledge_refs_shape_is_checked(kb):
     assert b(repo, "check")[0] == 0
 
 
+def test_knowledge_refs_active_items_only(kb):
+    """check validates knowledge refs, and counts a reworded fact as stale, only on an item that is todo or doing in an
+    active sprint: a done, dropped or draft item, an item of a planned sprint and an epic outside any sprint keep
+    theirs unchecked, so a kb refresh that renames an article they cite does not turn the gate red."""
+    repo, iid = kb
+    waiting = worked_carrier(repo, "Waiting", "Planned sprint", start=False)
+    epic = b(repo, "new", "epic", "--title", "Outcome", "--goal", "an outcome")[0] == 0 and item(repo, "Outcome")["id"]
+    for who in (iid, waiting, epic):
+        edit(repo, who, knowledge={"refs": ["demo/absent"]})
+    code, out = b(repo, "check")
+    assert code == 1 and out.count("knowledge ref") == 1 and f"{iid} “Carrier”: knowledge ref" in out, out  # planted
+    for status in ("done", "dropped", "draft"):
+        edit(repo, iid, status=status)
+        code, out = b(repo, "check")
+        assert "knowledge ref" not in out and "no such topic" not in out, (status, out)
+    edit(repo, iid, status="doing")
+    assert "no such topic" in b(repo, "check")[1]  # doing counts as worked
+    edit(repo, iid, knowledge={"refs": [f"public/demo/tool.md#{key()}"]}, status="todo")
+    (repo / "kb" / "public" / "demo" / "tool.md").write_text(ARTICLE.replace("print their version", "print their build"),
+                                                              encoding="utf-8", newline="\n")
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0 stale=1" in out, out  # the worked item's reworded fact is counted; the others' refs are not
+    edit(repo, iid, status="dropped")
+    code, out = b(repo, "check")
+    assert "stale=0" in out, out
+
+
 def test_knowledge_refs_without_a_kb_are_refused(repo):
-    b(repo, "new", "epic", "--title", "Carrier", "--goal", "g")
-    edit(repo, item(repo, "Carrier")["id"], knowledge={"refs": ["S100"]})
+    carrier = worked_carrier(repo)
+    edit(repo, carrier, knowledge={"refs": ["S100"]})
     code, out = b(repo, "check")
     assert code == 1 and "no such source id" in out, out
 

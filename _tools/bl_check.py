@@ -185,9 +185,20 @@ def knowledge_check(bl, iid):
     return errs, stale
 
 
+def knowledge_worked(bl, iid):
+    """True when the item is todo or doing in an active sprint (its own `sprint`, or the one of the story or bug above
+    it): the only items whose knowledge refs `check` validates and counts as stale. A draft, a done or a dropped item,
+    or one in a planned sprint, keeps its refs unchecked, so a kb refresh that renames an article they cite does not
+    turn the gate red."""
+    if bl.items[iid].get("status") not in ("todo", "doing"):
+        return False
+    sid = bl.sprint_of(iid)
+    return bool(sid) and bl.items.get(sid, {}).get("status") == "active"
+
+
 def stale_knowledge(bl):
-    """The stale-knowledge findings of every item (knowledge_check)."""
-    return [x for iid in bl.items for x in knowledge_check(bl, iid)[1]]
+    """The stale-knowledge findings of the items `check` validates (knowledge_worked), per knowledge_check."""
+    return [x for iid in bl.items if knowledge_worked(bl, iid) for x in knowledge_check(bl, iid)[1]]
 
 
 OPEN_STATUSES = ("draft", "todo", "doing")  # the statuses of an item still to do
@@ -635,7 +646,8 @@ def validate(bl, pieces=None):
         if trig is not None and not (isinstance(trig, dict) and _text_ok(trig.get("when", ""))
                                      and isinstance(trig.get("fired", False), bool)):
             e("trigger must be {when: text, fired: bool}")
-        errs.extend(knowledge_check(bl, iid)[0])
+        if knowledge_worked(bl, iid):
+            errs.extend(knowledge_check(bl, iid)[0])
         st = it.get("status")
         if st == "doing" and not it.get("claimed_by"):
             e("status doing needs claimed_by")
