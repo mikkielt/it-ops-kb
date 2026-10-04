@@ -2,7 +2,7 @@
   "id": "ST-27ns3276",
   "kind": "story",
   "title": "sync's re-run after a code-changing rebase keeps the merge sides for fix",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -18,8 +18,9 @@
     }
   ],
   "touches": [
-    "_tools/kbgit.py",
+    "_tools/kg_sync.py",
     "_tools/test_sync.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
