@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import pathlib,sys; s=pathlib.Path('_tools/bl_land.py').read_text(encoding='utf-8'); b=s[s.index('def cmd_land'):]; b=b[:b.index(chr(10)+'def ',1)]; sys.exit(0 if 'run_check' in b else 1)"
+      "import pathlib,sys; s=pathlib.Path('_tools/bl_land.py').read_text(encoding='utf-8'); b=s[s.index('def cmd_land'):]; b=b[:b.index(chr(10)+'def ',1)]; sys.exit(0 if 'land_checks(' in b else 1)"
     ]
   },
   "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
