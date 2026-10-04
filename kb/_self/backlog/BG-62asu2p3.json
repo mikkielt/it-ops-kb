@@ -1,0 +1,24 @@
+{
+  "id": "BG-62asu2p3",
+  "kind": "bug",
+  "title": "Trailers: 198 commit(s) on main without a KB-Work trailer git reads",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "No commit of the last 7 days on origin/main has a KB-Work line git reads as no trailer, or changes code with no KB-Work and no KB-Auto trailer.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/backlog.py",
+      "intake",
+      "--status",
+      "100be800a2b5"
+    ]
+  },
+  "links": [
+    "fingerprint 100be800a2b5",
+    "detector trailers"
+  ],
+  "notes": "The commits it counts are history on main and cannot be rewritten; the sync gate's check-trailers refuses new ones. intake counts 99 on main at c413b82f (the title's 198 is an older checkout's count); the newest is from 2026-10-03, so the 7-day window passes the last of them about 2026-10-10. Drop it with backlog.py drop once its repro exits 0; done cannot close it, since no commit fixes it."
+}

@@ -10,9 +10,22 @@
   "checks": [
     {
       "run": [
-        "python3",
-        "_tools/selfdoc.py",
-        "check"
+        "git",
+        "grep",
+        "-q",
+        "search_result",
+        "--",
+        "kb/_self/tools.md"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "search_result",
+        "--",
+        "kb/_self/plugin.md"
       ]
     }
   ],

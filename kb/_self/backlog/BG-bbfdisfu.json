@@ -1,0 +1,52 @@
+{
+  "id": "BG-bbfdisfu",
+  "kind": "bug",
+  "title": "The stranded detector reports no-fix eval findings and route source findings, which no stage or command can move",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "learn re-runs each no-fix eval finding's question with pack on HEAD and records fixed-since when it now passes, as it does for open findings, and the stranded detector leaves out route source findings, which are report-only and listed by querylog.py status; so stranded reports only findings a stage can still move. Planted tests in test_ql_learn.py (a no-fix finding whose question now passes, one that still misses) and test_intake.py (a route source finding older than STRANDED_DAYS) cover each case.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/backlog.py",
+      "intake",
+      "--status",
+      "5966a302d8cc"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "learn_rechecks_no_fix"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stranded_leaves_out_route"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_learn.py",
+    "_tools/test_ql_learn.py",
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "fingerprint 546e1bf45493",
+    "fingerprint 973c56d9484f",
+    "fingerprint 5966a302d8cc"
+  ],
+  "notes": "Premise: python3 _tools/backlog.py intake reports three stranded findings on c413b82f: F-b28d0d79b19b and F-fe10582bc61f, eval findings no-fix since 2026-09-29 (querylog.py show --findings --state no-fix), and F-a69c6dbdf291, a route source finding (WebFetch read code.claude.com and modelcontextprotocol.io; querylog.py status). learn writes a record only for a finding whose last state is open or fixed-since (ql_learn.learn, LEARN_STATES), a route finding is derived again from the store's fetches on every run, and querylog.py close takes gap findings only, so none of the three can leave its state. F-fe10582bc61f's question (GitHub rulesets branch protection public repository) now packs good from public/gitlab/github-branch-rules-and-auto-merge.md while the finding expects public/gitlab/detecting-mr-merges-in-ci.md: what passes for a no-fix finding is the worker's to define and test. The three fingerprint links keep intake from filing a draft per finding while this bug is open."
+}
