@@ -5,7 +5,7 @@ git in KB, this module's own copy of the repository directory (a caller may poin
 message of the fix commit, whether the commit hooks are installed) comes in as a `Host` the facade builds, since this
 module imports no facade. Standard library only; kbgit.py imports it.
 """
-import csv, json, os, re, shlex, subprocess, sys, time
+import csv, datetime, json, os, re, shlex, subprocess, sys, time
 from collections import namedtuple
 from pathlib import Path
 
@@ -442,6 +442,46 @@ def gate_name(label):
     return (re.sub(r"[^a-z0-9_.]+", "-", first.lower()).strip("-") or "check")[:40]
 
 
+GATE_DIR = Path("_cache", "gate")  # under the repository: where a failed check's whole output is kept (git-ignored)
+GATE_KEEP = 10  # files kept there, the newest by modification time
+GATE_TAIL = 25  # lines of a failed check's output printed in the gate's own output
+FAILED_ID = re.compile(r"^(?:FAILED|ERROR) ", re.M)  # a test id line of pytest's short summary
+
+
+def gate_output_file(label, out):
+    """Write OUT, the whole output of the failed check LABEL, to a new file `<UTC time>-<n>-<check>.txt` (n has three digits) under
+    _cache/gate (n counts up until the name is free, so a retry in the same second never overwrites an earlier file),
+    keep the GATE_KEEP newest files there, and return (path, the count of FAILED and ERROR lines in OUT). Best effort:
+    an unwritable directory gives one stderr note and None, never an exception."""
+    try:
+        d = Path(KB) / GATE_DIR
+        d.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        for n in range(1, 1000):
+            path = d / f"{stamp}-{n:03d}-{gate_name(label)}.txt"
+            try:
+                with open(path, "x", encoding="utf-8", newline="\n") as f:
+                    f.write(out)
+                break
+            except FileExistsError:
+                continue
+        else:
+            raise OSError("no free file name")
+        try:
+            old = sorted(d.glob("*.txt"), key=lambda p: (p.stat().st_mtime_ns, p.name), reverse=True)[GATE_KEEP:]
+        except OSError:
+            old = []
+        for p in old:
+            try:
+                p.unlink()
+            except OSError:
+                pass
+        return path, len(FAILED_ID.findall(out))
+    except OSError as e:
+        print(f"note: could not keep the output of {label} under {GATE_DIR.as_posix()}: {e}", file=sys.stderr)
+        return None
+
+
 def gate_mark(r, label, why=None, code=None, since=None):
     """Append the row of one check to r["gate_rows"]: skipped (WHY, a token) or ran (its exit and the ms since SINCE)."""
     row = {"name": gate_name(label), "ran": why is None}
@@ -495,7 +535,7 @@ def gate(r, up, host, fix_check=False, since=None):
     SINCE (a retry after a rejected push): the commit the last green gate judged. Each check then reads only the paths
     that differ between SINCE and HEAD, so a rebase that changed none of them re-runs nothing but check-trailers."""
     results, t_gate = [], time.monotonic()
-    r["gate_rows"], r["scope"] = [], None
+    r["gate_rows"], r["gate_outputs"], r["scope"] = [], [], None
     paths = gate_paths(up)
     if since:
         staged, unstaged = dirty_paths()
@@ -534,7 +574,12 @@ def gate(r, up, host, fix_check=False, since=None):
         tail = [ln for ln in out.strip().splitlines() if ln.strip()][-1:] or [""]
         results.append((label, ("ok" if code == 0 else f"FAILED (exit {code})") + f": {tail[0][:100]}", code == 0))
         if code:
-            print(f"--- {label} output (last lines)\n" + "\n".join(out.strip().splitlines()[-25:]))
+            print(f"--- {label} output (last lines)\n" + "\n".join(out.strip().splitlines()[-GATE_TAIL:]))
+            kept = gate_output_file(label, out)
+            if kept:
+                line = f"{kept[1]} test ids"
+                r["gate_outputs"].append((label, f"{kept[0]} ({line})"))
+                print(f"--- {label} whole output: {kept[0]} ({line})")
     rng = f"{up}..HEAD" if up else "HEAD"
     t0 = time.monotonic()
     audit = host.audit(rng, quiet=True)
@@ -817,6 +862,8 @@ def cmd_sync(a, host, r=None):
         print("note: " + n)
     for label, result, _ in r["gate"]:
         print(f"gate {label}: {result}")
+    for label, kept in r.get("gate_outputs", []):
+        print(f"gate {label} whole output: {kept}")
     if r.get("scope"):
         print(f"gate scope: {r['scope']} ({r['scope_line']})")
     print(f"pushed: {r['pushed']}")

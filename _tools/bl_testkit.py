@@ -7,12 +7,13 @@ The tool and its Python checks: the paths (`TOOLS`, `TOOL`), checks that need no
 file in its canonical form), `commit`, the fixtures `repo` (a repository with one commit) and `sprint` (an approved,
 started sprint with a story, its task and a bug) and the autouse fixtures `no_git_location` and `gate_jobs`. The
 story given touches of its own (`story_with_touches`) and its task done under its own id (`finish_task`) serve the
-tests of done and of the commit flag.
+tests of done and of the commit flag. A test that runs a tool in a temporary repository copies the tool files it needs
+with `copy_tool_closure` (the names `tool_closure` finds), never from a list written by hand.
 
 This module never imports `backlog` (a `bl_` module's layer rule): `item` and `edit` use the backlog's directory and its
 canonical form through `bind(backlog)`, which each test file calls once after importing `backlog`.
 """
-import os, shlex, subprocess, sys
+import ast, os, shlex, shutil, subprocess, sys
 import json
 from pathlib import Path
 
@@ -44,6 +45,41 @@ PASS = ["python3", "-c", "pass"]
 TEXT_REPRO = "import sys; sys.exit(1 if '>&2' in open('tool.sh', encoding='utf-8').read() else 0)"
 SOURCE_REPRO = ("import pathlib, re, sys; s = pathlib.Path('_tools/tool.py').read_text(encoding='utf-8'); "
                 "sys.exit(0 if re.search(r'worktrees', s) else 1)")  # BG-rrht7uts's grep for 'worktrees'
+
+
+def tool_closure(*roots, tools=None):
+    """The `_tools` files ROOTS (file names, `backlog.py`) need: the roots and every `_tools/<name>.py` they import,
+    followed through those modules, as a sorted list of names. Every `import` and `from ... import` counts wherever
+    it stands (a function body, a try block), so a lazy import a module gains needs no list edit in a test; a name
+    that is no file of TOOLS (the standard library, pytest) and a relative import are not followed. Data files (the
+    alias table) are no import: a caller names those itself."""
+    base = Path(TOOLS if tools is None else tools)
+    seen, todo = set(), list(roots)
+    while todo:
+        name = todo.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        for node in ast.walk(ast.parse((base / name).read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Import):
+                mods = [a.name for a in node.names]
+            elif isinstance(node, ast.ImportFrom) and not node.level:
+                mods = [node.module or ""]
+            else:
+                continue
+            todo += [f for f in (f"{m.split('.')[0]}.py" for m in mods) if f not in seen and (base / f).is_file()]
+    return sorted(seen)
+
+
+def copy_tool_closure(dest, *roots, data=(), tools=None):
+    """Copy the closure of ROOTS (tool_closure) and the data files named in DATA from TOOLS into the directory DEST
+    (made when missing), the `_tools` of a temporary repository. Returns the names copied, DATA included."""
+    base, dest = Path(TOOLS if tools is None else tools), Path(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+    names = [*tool_closure(*roots, tools=base), *data]
+    for name in names:
+        shutil.copy(base / name, dest / name)
+    return names
 
 
 def is_file(rel):
