@@ -1034,7 +1034,26 @@ def _gitlab_com_log(failing):
             "2026-09-29T01:06:40.300000Z 01O _tools/test_a.py::test_ok PASSED\n"
             f"2026-09-29T01:06:40.889927Z 01O FAILED {failing} - AssertionError: 1 != 2\n"
             "2026-09-29T01:06:40.900000Z 01O+ continued output\n"
+            "2026-09-29T01:06:40.950000Z 01O+continued output\n"
             "2026-09-29T01:06:41.000000Z 01E ERROR: Job failed: exit code 1\n")
+
+
+def test_gitlab_com_continuation_forms_give_one_failure_and_fingerprint():
+    ts = "2026-09-29T01:06:40.889927Z"
+    tid = "_tools/test_a.py::test_x"
+    forms = {"first line": "01O ", "spaced continuation": "01O+ ", "real continuation": "01O+"}
+    logs = [f"{ts} 00O start\n{ts} {m}FAILED {tid} - x\n" for m in forms.values()]
+    assert [backlog.first_failure(x) for x in logs] == [tid] * 3
+    assert len({backlog.failure_fingerprint("kb-tests-windows", backlog.first_failure(x)) for x in logs}) == 1
+    # the error-line fallback reads the three forms alike
+    errs = [f"{ts} {m}ERROR: Job failed: exit code 1\n" for m in ("01E ", "01E+ ", "01E+")]
+    assert {backlog.first_failure(x) for x in errs} == {"ERROR: Job failed: exit code <n>"}
+    assert len({backlog.failure_fingerprint("kb-tests", backlog.first_failure(x)) for x in errs}) == 1
+    # a marker glued to text without a + is no marker: the id is not read from it
+    assert backlog.first_failure(f"{ts} 01OFAILED {tid} - x\n") != tid
+    # the fixture carries both continuation forms and still reads its failing id
+    assert "01O+continued" in _gitlab_com_log(tid) and "01O+ continued" in _gitlab_com_log(tid)
+    assert backlog.first_failure(_gitlab_com_log(tid)) == tid
 
 
 def test_fingerprint_strips_gitlab_com_timestamp_and_stream_marker():
