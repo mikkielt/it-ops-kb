@@ -1,0 +1,55 @@
+{
+  "id": "ST-enx4hrlr",
+  "kind": "story",
+  "title": "An interrupted tool call is counted per item in the work sidecar",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The call.tool row records whether PostToolUseFailure reported is_interrupt, and the work sidecar's item line holds the count of interrupted calls inside the item's window, so wasted work can be compared between items; the count carries no command, path or text.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "work_sidecar_interrupt_count"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ops_call_interrupt_flag"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "_tools/ql_store.py",
+    "_tools/test_ql_distill.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-rpdfgu3t"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Approve an interrupted-call count on the work sidecar's item line?",
+      "options": [
+        "approve",
+        "reject"
+      ],
+      "recommendation": "approve",
+      "class": "design",
+      "do": {
+        "approve": "ST-enx4hrlr"
+      }
+    }
+  ]
+}
