@@ -411,9 +411,10 @@ def run_registered():
 
 
 # The most workers a default run starts. Full runs of this suite (5005 tests passed each) on one 14-core, 24 GB macOS
-# host at load 3 to 7 took 769 s at -n 4, 681 s at -n 6 and 642 s at -n 8; no count above 8 was timed, and no 4-core or
-# 8-core host was measured, so 8 is the best count measured on that one host only. A host with fewer CPUs still gets
-# its share, cpus // (others + 1).
+# host at load 3 to 7 took 770 s at -n 4, 681 s at -n 6 and 642 s at -n 8; no count above 8 was timed in that series,
+# and no 4-core or 8-core host was measured, so 8 is the best count measured on that one host only. The one full run
+# above 8 in the query log's spool (-n 14, 570 s, 4783 tests passed) was not part of the series and its load is unknown:
+# it does not show that 14 is faster. A host with fewer CPUs still gets its share, cpus // (others + 1).
 DEFAULT_WORKER_CAP = 8
 
 
@@ -451,8 +452,9 @@ def worker_count(args, others=None):
 
 
 def wants_host_lock(args):
-    """A run takes the host lock unless it is inside a test, selects with -k, names only test files (a cheap targeted
-    run; a named directory is still a full-scope run) or uses one worker."""
+    """A run takes the host lock unless it is inside a test, selects with -k, names at most NAMED_FILES_LOCK_FREE test
+    files and no directory (a cheap targeted run; a longer list or a named directory is a full-scope run and takes it;
+    `--changed` never counts as one) or uses one worker."""
     return (not inside_test() and not any(a == "-k" or a.startswith("-k") for a in args) and not named_files_only(args)
             and worker_count(args) > 1)
 
