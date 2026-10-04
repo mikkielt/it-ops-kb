@@ -1,12 +1,12 @@
 {
   "id": "ST-32b46kff",
   "kind": "story",
-  "title": "The autopilot container is built from a pinned file and passes Stage C of the test plan",
+  "title": "The autopilot runs once inside the container with real secrets, supervised, and passes Stages 0 to 3 on a fresh throwaway sprint",
   "status": "todo",
   "sprint": "SP-rq4t477t",
   "priority": "P2",
   "rank": 0,
-  "goal": "Following kb/_self/autopilot-container.md and the operator's answers to this item's gates: a Dockerfile with digests and checksums read from their sources by a person, the start/stop/status wrapper that maps runner commands to docker exec inside ONE container, the egress proxy on an internal network, the secret files (never in docker inspect), and Stage C of kb/_self/autopilot-test.md passing on this Mac with the measured limits written back to the plan. Edits of autopilot.py, the wrapper and the settings are agents-rule and push work: an operator-present session does them, never a headless run. The resolved unconfirmed points of the plan (docker exec -d parentage against bl_procs, lock liveness in one pid namespace, headless trust and MCP approvals, glab token scope, claude host list, AWS_ACCESS_KEY_ID in child_env) are each checked and written back.",
+  "goal": "Activation, after the files exist (ST-jmcialmy) and the pins validate (ST-4k63qxd4). The operator's one human step first: he creates the age key (stored in his macOS Keychain) and fills the sops secrets files with his own `sops edit` (the deploy key moved in, the model credential pasted), so no agent session sees a secret. Then a SUPERVISED agent session acting as operator starts the container through the launcher, files a fresh throwaway sprint of two doc-only items, and runs Stages 0 to 3 of kb/_self/autopilot-test.md inside the container with --only on that sprint, as the first host run did; any surprise stops it and is reported. Digest file only for notification. It answers no secrets, push or agents-rule gate beyond the throwaway sprint, never publishes, and writes the per-stage log to kb/_self/reports/ with every defect filed as a bug. The container widening of the guard (ST-gqpjccob) and any unattended run stay separate items.",
   "checks": [
     {
       "run": [
@@ -29,7 +29,9 @@
     "kb/_self/autopilot-test.md"
   ],
   "depends_on": [
-    "ST-6txsaokt"
+    "ST-4k63qxd4",
+    "ST-6txsaokt",
+    "ST-jmcialmy"
   ],
   "gates": [
     {
@@ -88,5 +90,6 @@
       "answer": "two hosts through an egress proxy; image built locally",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": " | 2026-10-04 operator decisions: the forge token is DROPPED (deploy key only; the container has no glab and no forge API credential; a token may be minted later only if Stage 1 shows skipped-pipeline merge requests that do not auto-merge); secrets handled by sops + age, key read by SOPS_AGE_KEY_CMD from the macOS Keychain, encrypted files outside git, piped into the container's tmpfs; model credential gate g 'model' (subscription token) is UNDER RECONSIDERATION after the terms research (Consumer Terms section 3 forbids automated access except by API key or where Anthropic explicitly permits it; a 15-minute loop on a subscription is not documented as permitted): see the operator's open question."
 }

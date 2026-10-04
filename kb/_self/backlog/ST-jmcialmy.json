@@ -1,0 +1,36 @@
+{
+  "id": "ST-jmcialmy",
+  "kind": "story",
+  "title": "The autopilot container's files exist and Stage C passes with placeholder secrets",
+  "status": "todo",
+  "sprint": "SP-rq4t477t",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "KISS, no feature beyond this list. (1) A Dockerfile in the repo: a Debian slim base pinned by digest, the claude CLI pinned to the version the host runs with its npm integrity hash, python3, git, ssh client, procps, sops, age; no glab, no sudo, an unprivileged uid 10001, read-only root, caps dropped. (2) An egress proxy as a second small container on an internal network that allows only the integration remote's host and the model API's host; the host list is learned in a log-only proxy run, not guessed, then fixed. (3) One wrapper script mapping runner start, runner-status, status, stop and reset onto docker exec in the one container. (4) An entrypoint that makes a fresh clone of the integration project with the deploy key. (5) A launcher that decrypts the sops-encrypted secrets with the age key read by SOPS_AGE_KEY_CMD from the macOS Keychain (the only key command; other platforms later) and pipes each secret through docker exec -i into the container's tmpfs /run/secrets (0700): no secret in a host file at rest, in docker inspect, in argv or in the environment. (6) Docker Desktop's VM set to 4 CPUs, 10 GB memory and no swap through its settings file, the old values recorded in the report and restorable, and the result checked with docker info. (7) Stage C of kb/_self/autopilot-test.md run with PLACEHOLDER secret files: uid 10001, no docker binary or socket, no ssh agent, a read-only root, the allow-list refuses the public home and any other host, docker inspect shows no secret value; the result written to kb/_self/reports/. (8) kb/_self/autopilot-container.md updated to this design: tick and runner commands, secrets path, what was dropped (forge token, glab, per-OS key commands). Planted failures for each check. Interactive session; edits of autopilot.py or the wrapper are agents-rule and push work.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "container_stage_c"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cohesion"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/autopilot-container.md",
+    "kb/_self/autopilot-test.md",
+    "kb/_self/map.csv",
+    "docker/autopilot/Dockerfile",
+    "docker/autopilot/wrapper.py",
+    "_tools/test_container_stage_c.py"
+  ]
+}
