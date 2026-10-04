@@ -23,8 +23,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 override, S1 and S2 bugs and breakdowns on the session model; the review, /kb-census and the
                 runbook agree. Its fallback (test_kb_worker_fallback*): when the Agent tool does not list kb-worker,
                 the skill and the runbook start the task on general-purpose with model sonnet, pointed at its file.
-                Its load (test_kb_worker_load*): a worker runs its item's checks and the fast tests, never
-                stress_test.py or a second full run; land runs no stress_test.py (the stale check, the lookup eval and the
+                Its load (test_kb_worker_load*): a worker runs the narrow tier only (its item's checks, the ruff and tools_map
+                tests and the focused tests of its files), never tests.py --changed, stress_test.py or a second full run; land runs no stress_test.py (the stale check, the lookup eval and the
                 lint), which runs once with the full tests.py at the sprint's review story; each brief names the in-flight sibling items and the files they change.
 test_worker_provisional_gate*  kb-worker records a choice its item's goal leaves open as a provisional gate (gate add
                 --kind provisional, answer --provisional) committed with the work, never report prose only; /kb-sprint
@@ -247,7 +247,7 @@ def kb_worker_fallback_problems(sprint, runbook):
     return problems
 
 
-FAST_TESTS = "python3 _tools/tests.py --changed origin/main"
+NARROW_TESTS = 'python3 _tools/tests.py -k "ruff or tools_map"'
 
 
 def kb_worker_ruff_problems(worker):
@@ -271,15 +271,17 @@ def kb_worker_load_problems(worker, sprint, runbook):
     problems = []
     bar = re.search(r"(?ms)^3\. \*\*Done bar\.\*\*.*?(?=^\d+\. )", worker)
     bar = bar.group(0) if bar else ""
-    if FAST_TESTS not in bar:
-        problems.append(f"kb-worker's done bar does not run the fast tests, `{FAST_TESTS}`")
+    if NARROW_TESTS not in bar or "narrow tier" not in bar:
+        problems.append(f"kb-worker's done bar does not run the narrow tier, `{NARROW_TESTS}`")
     for sentence in re.split(r"(?<=\.) ", bar):
         full = re.search(r"`python3 _tools/tests\.py`", sentence)
-        mine = "never" not in sentence.lower() and "orchestrator" not in sentence.lower()
+        mine = not any(word in sentence.lower() for word in ("never", "orchestrator", "sync gate", "review story"))
         if (full or "stress_test.py" in sentence) and mine:
             problems.append(f"kb-worker's done bar runs the full tests or the stress suite: {sentence.strip()!r}")
-    if not re.search(r"Never run `python3 _tools/stress_test\.py`", bar):
-        problems.append("kb-worker's done bar does not forbid stress_test.py")
+    if not re.search(r"Never run `tests\.py --changed`, `python3 _tools/stress_test\.py` or the full", bar):
+        problems.append("kb-worker's done bar does not forbid tests.py --changed and stress_test.py")
+    if not re.search(r"sync gate runs `tests\.py --changed origin/main` once per landing.*review story runs `stress_test\.py`", bar):
+        problems.append("kb-worker's done bar does not say the sync gate and the review story run the rest")
     if "never a second" not in bar:
         problems.append("kb-worker's done bar does not forbid a second run")
     if "sibling items in flight" not in bar:
@@ -289,17 +291,22 @@ def kb_worker_load_problems(worker, sprint, runbook):
     brief = [l for l in (step3.group(0) if step3 else "").splitlines() if l.lstrip().startswith("- ")]
     if not any("in-flight sibling items" in l and "id and title" in l and "files" in l for l in brief):
         problems.append("/kb-sprint run's brief does not name the in-flight sibling items (id and title) and their files")
-    if not any(FAST_TESTS in l and "never `python3 _tools/stress_test.py`" in l for l in brief):
-        problems.append("/kb-sprint run's brief does not give the fast tests and forbid stress_test.py")
+    if not any(NARROW_TESTS in l and "narrow tier" in l and "never `tests.py --changed`, `python3 _tools/stress_test.py`" in l for l in brief):
+        problems.append("/kb-sprint run's brief does not give the narrow tier and forbid tests.py --changed and stress_test.py")
     step4 = re.search(r"(?ms)^4\. When a subagent returns.*?(?=^\d+\. )", run)
     land = [l for l in (step4.group(0) if step4 else "").splitlines() if "stress_test.py" in l]
     if not any("lookup eval" in l and "`stress_test.py` runs once" in l and "review story" in l for l in land):
         problems.append("/kb-sprint run's landing does not say land runs the lookup eval and the lint, and stress_test.py once at the review story")
     work = md_section(runbook, "## Working on items")
-    line = next((l for l in work.splitlines() if FAST_TESTS in l), "")
-    for phrase in ("never `stress_test.py`", "sibling", "files", "runs no `stress_test.py`", "review story"):
-        if phrase not in line:
-            problems.append(f"the runbook's Working on items does not say {phrase!r} with the fast tests")
+    tiers = "\n".join(l for l in work.splitlines() if "Three test tiers" in l or l.startswith("    - "))
+    for phrase in ("only its item's own `checks`", NARROW_TESTS, "never `tests.py --changed`, the full `tests.py` or `stress_test.py`",
+                   "`tests.py --changed origin/main` is the one mapped run per landing", "and no stress run",
+                   "`stress_test.py` with the full `tests.py` runs once, as the review story's checks"):
+        if phrase not in tiers:
+            problems.append(f"the runbook's Working on items does not say {phrase!r} in its three test tiers")
+    line = next((l for l in work.splitlines() if "sibling" in l and "brief" in l), "")
+    if "files" not in line:
+        problems.append("the runbook's Working on items does not say a worker's brief names the in-flight siblings' files")
     return problems
 
 
@@ -1089,8 +1096,8 @@ class TestPluginManifest:
         return texts
 
     def test_kb_worker_load(self):
-        """Up to four workers share the host: each runs its item's checks and the fast tests (no stress_test.py, no
-        second full run), land runs no stress_test.py (it runs once with the full tests.py at the sprint's review
+        """Up to four workers share the host: each runs the narrow tier (its item's checks, the ruff and tools_map tests
+        and the focused tests of its files: no tests.py --changed, no stress_test.py, no second full run), land runs no stress_test.py (it runs once with the full tests.py at the sprint's review
         story), and each brief names the in-flight sibling items and the files they change."""
         assert kb_worker_load_problems(*self.load_texts()) == []
 
@@ -1098,15 +1105,19 @@ class TestPluginManifest:
         """Each rule fails on a planted copy of the agent, the skill or the runbook."""
         worker, sprint, runbook = self.load_texts()
         plants = [
-            (0, "then the fast tests, `python3 _tools/tests.py --changed origin/main`", "then `python3 _tools/tests.py`"),
-            (0, "Never run `python3 _tools/stress_test.py` or the full", "Also run `python3 _tools/stress_test.py` and the full"),
+            (0, 'then `python3 _tools/tests.py -k "ruff or tools_map"` and', "then `python3 _tools/tests.py --changed origin/main` and"),
+            (0, "Never run `tests.py --changed`, `python3 _tools/stress_test.py` or the full", "Also run `tests.py --changed`, `python3 _tools/stress_test.py` and the full"),
+            (0, "Never run `tests.py --changed`,", "Never run"),
+            (0, "The sync gate runs `tests.py --changed origin/main` once per landing, and the review story runs", "The orchestrator runs"),
             (0, "and never a second run", "and a second run"),
             (0, "Your brief names the sibling items in flight", "Your brief names the items in flight"),
             (1, "the in-flight sibling items (id and title)", "the items"),
-            (1, "; never `python3 _tools/stress_test.py` or the full `tests.py`", ", then `python3 _tools/stress_test.py`"),
+            (1, "; never `tests.py --changed`, `python3 _tools/stress_test.py` or the full `tests.py`", ", then `tests.py --changed origin/main`"),
+            (1, "run only the narrow tier:", "run:"),
             (1, "`stress_test.py` runs once, with the full `tests.py`, at the review story", "the full tests"),
-            (2, "never `stress_test.py` or the full `tests.py`", "then `stress_test.py`"),
-            (2, "`backlog.py land` runs no `stress_test.py`: it runs once, with the full `tests.py`, at the sprint's review story", "`backlog.py land` runs it"),
+            (2, "and never `tests.py --changed`, the full `tests.py` or `stress_test.py`", "then `tests.py --changed origin/main`"),
+            (2, "`tests.py --changed origin/main` is the one mapped run per landing", "`tests.py --changed origin/main` is each worker's run"),
+            (2, "`stress_test.py` with the full `tests.py` runs once, as the review story's checks", "`stress_test.py` runs at each landing"),
         ]
         for i, old, new in plants:
             texts = [worker, sprint, runbook]
