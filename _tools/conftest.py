@@ -56,6 +56,8 @@ if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
 import kbcommon  # noqa: E402
 import kbpublic  # noqa: E402
+for _k in (kbpublic.NO_HOOK_ENV, kbpublic.HEADLESS_ENV):  # at import, so an xdist worker and every subprocess it starts
+    os.environ.pop(_k, None)  # start without them, whatever the process that ran pytest exported
 
 
 def P(rel):
@@ -75,7 +77,11 @@ SELF_REL = kbcommon.repo_rel(kbcommon.SELF)
 GIT = shutil.which("git")
 requires_git = pytest.mark.skipif(not GIT, reason="git is not installed")
 SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
-LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", *GIT_LOCATION)
+# The two variables that make `publish --hook` and the hook launchers do nothing: the manager session exports the
+# first and autopilot.child_env sets the second in every runner, so a test would see them unless it is cleared first.
+# A test that needs one sets it with monkeypatch (or in the env of its own subprocess).
+HOOK_OFF = (kbpublic.NO_HOOK_ENV, kbpublic.HEADLESS_ENV)
+LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", *HOOK_OFF, *GIT_LOCATION)
 
 
 TIMEOUT_FACTOR_VAR = "KB_TEST_TIMEOUT_FACTOR"
@@ -234,6 +240,15 @@ def kb_template(key, ignore, symlinks=False):
     if key not in TEMPLATES:
         TEMPLATES[key] = KbTemplate(KB, ignore, symlinks)
     return TEMPLATES[key]
+
+
+@pytest.fixture(autouse=True)
+def hook_off_cleared():
+    """Neither HOOK_OFF variable is set when a test starts, even if an earlier test or fixture left one in os.environ.
+    No monkeypatch here: an autouse fixture that asks for it makes it set up before every other autouse fixture, so it
+    is undone after theirs, and a test that patches an attribute their teardown reads sees the patch there."""
+    for k in HOOK_OFF:
+        os.environ.pop(k, None)
 
 
 @pytest.fixture(scope="session", autouse=True)
