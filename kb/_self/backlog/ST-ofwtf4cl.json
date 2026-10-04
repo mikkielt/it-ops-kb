@@ -50,7 +50,8 @@
     "_tools/test_ids_dropped.txt",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    ".claude/skills/kb-sprint/SKILL.md"
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/content-rules.md"
   ],
   "depends_on": [
     "ST-dh5g3lk7"
