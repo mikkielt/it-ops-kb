@@ -6,7 +6,7 @@
   "sprint": "SP-ytfb4dc5",
   "priority": "P2",
   "rank": 0,
-  "goal": "A sweep after the removals, scoped to the AGENT feature only: git grep over _tools, .claude, AGENTS.md, CLAUDE.md and kb/_self finds no autopilot.py, autopilot_rehearse, kb-autopilot, KB_HEADLESS_RUNNER, bl_bounds or '--by autopilot' (outside kb/_self/_decisions.csv, the backlog item files and _tools/test_ids_dropped.txt, which keep history); the map.csv rows, README.md, plugin.md and maintaining.md skill tables name no removed file or skill; the selfdoc map and cohesion checks pass. The Windows/Intune Autopilot product is NEVER touched: kb/public/autopilot/*, the product lists of README.md, plugin.json and the kb-lookup skill, .gitattributes csdl entries and tests_allowlist.txt stay as they are. No new runbook section: one agent works one item at a time.",
+  "goal": "A sweep after the removals, scoped to the AGENT feature only: git grep over _tools, .claude, AGENTS.md, CLAUDE.md and kb/_self finds no autopilot.py, autopilot_rehearse, kb-autopilot, KB_HEADLESS_RUNNER, bl_bounds or '--by autopilot' (outside kb/_self/_decisions.csv, the backlog item files and _tools/test_ids_dropped.txt, which keep history); the map.csv rows, README.md, plugin.md and maintaining.md skill tables name no removed file or skill; the selfdoc map and cohesion checks pass. The Windows/Intune Autopilot product is NEVER touched: kb/public/autopilot/*, the product lists of README.md, plugin.json and the kb-lookup skill, .gitattributes csdl entries and tests_allowlist.txt stay as they are. No new runbook section: one agent works one item at a time. Also delete kb/_self/reports/autopilot-digest.md and kb/_self/reports/autopilot-throwaway.md (the operator, 2026-10-04: remove the autopilot scratch file) and every reference to them.",
   "checks": [
     {
       "run": [
@@ -29,6 +29,13 @@
         "_tools/selfdoc.py",
         "stale"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys; sys.exit(1 if any(os.path.exists('kb/_self/reports/'+n) for n in ('autopilot-digest.md','autopilot-throwaway.md')) else 0)"
+      ]
     }
   ],
   "touches": [
@@ -38,8 +45,10 @@
     "kb/_self/README.md",
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/reports/autopilot-digest.md",
+    "kb/_self/reports/autopilot-throwaway.md"
   ],
   "depends_on": [],
-  "notes": " Order: runs last of the sprint (after the three removals land); no depends_on because a docs-only task may not depend on the code whose docs it sweeps."
+  "notes": "Runs last, after the other two removals land. Traps: tests copy fixed tool lists into temp repos and break when a module goes (TOOL_FILES in test_backlog_research.py, KS_TOOLS in test_bl_check.py, copied_tools in test_kbdecide.py, hand lists in test_backlog.py, test_backlog_authority.py, test_bl_stall.py, test_kblog.py): git grep each removed module over _tools/test_*.py before landing. A literal deleted path in an open item's touches is a check error (use globs); done refuses a changed file outside touches (widen on the work branch); an item check `selfdoc.py stale` fails on any stale doc (read it, name it in Self-Reviewed). Use focused `-n 1` test runs; land in the background with the longest timeout; no writes in the clone during land or sync; rm -rf is denied; trailer order Co-Authored-By, Self-Reviewed, KB-Work. The Windows/Intune Autopilot product is never touched (kb/public/**, product lists in README.md, plugin.json, kb-lookup skill, .gitattributes csdl lines, _tools/tests_allowlist.txt)."
 }
