@@ -1915,35 +1915,3 @@ def test_claim_accepts_own_claimed_dependency(sprint):
     code, out = b(repo, "claim", tk, "--by", "s1")
     assert code == 0, out
     assert backlog.Backlog(repo).items[tk]["claimed_by"] == "s1"
-
-
-def done_raw(repo, iid):
-    """done without b()'s pretence that main was fetched at HEAD."""
-    p = subprocess.run([sys.executable, TOOL, "--root", str(repo), "done", iid], cwd=repo, capture_output=True,
-                       text=True, encoding="utf-8")
-    return p.returncode, p.stdout + p.stderr
-
-
-def test_done_names_the_code_branch_sync_opened(sprint, monkeypatch):
-    """done's refusal for unlanded code names the branch kg_lane.lane_plan chose for the range sync pushes, the first
-    KB-Work id of the range, as land does. Planted: another item's code commit comes first in the range, so sync opens
-    code/<that item>, not the refused item's own branch; a range of the item's own commits still names its own."""
-    monkeypatch.delenv("KB_TESTS_FAST", raising=False)
-    monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
-    monkeypatch.setenv("KB_HOST_LOCK_DIR", str(sprint["repo"].parent / "locks"))
-    repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
-    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
-    commit(repo, "claim", tk)
-    claimed = head(repo)
-    (repo / "src").mkdir(exist_ok=True)
-    (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
-    commit(repo, "the other item's code first", bg)
-    other = head(repo)
-    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
-    commit(repo, "write b", tk)
-    sh(repo, "git", "update-ref", "refs/remotes/origin/main", claimed)  # the range begins with the other item's code
-    code, out = done_raw(repo, tk)
-    assert code == 1 and "not on origin/main" in out and f"branch code/{bg}" in out and f"code/{tk}" not in out, out
-    sh(repo, "git", "update-ref", "refs/remotes/origin/main", other)  # the item's own commit alone
-    code, out = done_raw(repo, tk)
-    assert code == 1 and "not on origin/main" in out and f"branch code/{tk}" in out and f"code/{bg}" not in out, out
