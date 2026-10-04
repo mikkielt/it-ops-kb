@@ -1085,7 +1085,10 @@ def red_detail(p, jobs, forge, host, project, quoted, ran_and_failed, run, job=N
     its first failed job by name (among the jobs whose script ran, when there are any; `job` when given), and `first`,
     that job's name, only when its script ran and failed (on GitHub, any failed job): the bug's repro names it with
     `--job`, which reads only a pipeline where the job reached a verdict, so a job that failed without running (such as
-    ci_quota_exceeded or runner_system_failure) gets plain `--status`, which reads the red pipeline itself."""
+    ci_quota_exceeded or runner_system_failure) gets plain `--status`, which reads the red pipeline itself. On GitLab a
+    job counts by its newest attempt (`ql_deliver.latest_jobs`): one that failed and was retried to success is no
+    failed job."""
+    from ql_deliver import latest_jobs
     p["jobs"] = []
     if not p["red"]:
         return p
@@ -1093,7 +1096,7 @@ def red_detail(p, jobs, forge, host, project, quoted, ran_and_failed, run, job=N
         js = jobs if jobs is not None else github_jobs(host, project, p["id"], run) or []
         bad, field = ("failure", "timed_out", "startup_failure"), "conclusion"
     else:
-        js, bad, field = jobs or [], ("failed",), "status"
+        js, bad, field = list(latest_jobs(jobs).values()), ("failed",), "status"  # a retried job's newest attempt
     failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
     failed = [j for j in failed if j.get("failure_reason") in ran_and_failed] or failed  # scripts that ran
     if job:

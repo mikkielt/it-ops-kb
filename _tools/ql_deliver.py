@@ -327,7 +327,8 @@ def pipeline_failure(url, pipe, run):
     The first failed job's name goes into `pipe["job"]`, which the bug's repro names with `--job`, only when its
     script ran and failed (`job_decided`; on GitHub, any failed job): `--job` reads only a pipeline where the job
     reached a verdict, so a job that failed without running (ci_quota_exceeded, runner_system_failure) leaves the
-    repro plain `--status`, which reads the red pipeline itself."""
+    repro plain `--status`, which reads the red pipeline itself. On GitLab a job counts by its newest attempt
+    (`latest_jobs`): one that failed and was retried to success is no failed job."""
     import backlog
     pid = pipe.get("id")
     if pid is None:
@@ -339,11 +340,13 @@ def pipeline_failure(url, pipe, run):
     else:
         quoted = urllib.parse.quote(project, safe="")
         code, o, _ = run(["glab", "api", "--hostname", host,
-                          f"projects/{quoted}/pipelines/{pid}/jobs?scope=failed&per_page=100"])
+                          f"projects/{quoted}/pipelines/{pid}/jobs?per_page=100"])  # all jobs: a retry is in it
         key, bad, field, idkey = None, ("failed",), "status", "id"
     try:
         js = json.loads(o) if code == 0 else []
         js = js.get(key, []) if key and isinstance(js, dict) else js
+        if forge != "github":
+            js = list(latest_jobs(js).values())  # a job that failed and was retried to success is not failed
         failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
     except (ValueError, AttributeError, TypeError):
         failed = []
