@@ -899,7 +899,8 @@ def stranded_detector(root):
 GITLAB_FINISHED = ("success", "failed", "canceled", "skipped", "manual")  # manual: waits on a person, read by its jobs
 S1_JOBS = ("kb-tests",)  # a red one means the gate every push runs fails on main itself: S1; any other job: S2
 PIPELINE_REPRO = ["python3", "_tools/backlog.py", "red-pipeline", "--status"]  # a red-main bug adds --job <its job>
-MAIN_PIPELINES = 100  # pipelines of main read, newest first, to find the newest one in which a job ran
+MAIN_PIPELINES = 100  # pipelines of main listed, newest first, to find the newest one in which a job ran
+IDLE_PIPELINES = 10  # on GitLab the read stops after this many pipelines in a row in which no job ran: one job-list call each
 ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")
 
 
@@ -999,7 +1000,9 @@ def latest_pipeline(root, job=None, run=None):
     """(pipeline, note): a finished pipeline of origin's main as {id, sha, url, red, jobs, unverified, how}, a red
     one with `failure` and `fingerprint` read from the log of its first failed job by name, and `first` (that job's
     name, which the bug's repro names) only when its script ran and failed, or None with the note that says why not (no origin, glab or gh not signed in, a failed call, no such
-    pipeline). Which pipeline, newest first among the last MAIN_PIPELINES:
+    pipeline). Which pipeline, newest first among the last MAIN_PIPELINES (on GitLab, which costs one job-list call
+    for each pipeline read, the read stops after IDLE_PIPELINES pipelines in a row in which no job ran, so a job that ran
+    behind more pipelines no one started is out of reach):
     - with `job`: the newest in which that job succeeded or failed on its own account (`ql_deliver.job_decided`),
       red when it failed: a job started and then canceled, left manual or skipped, or failed without its script
       (ci_quota_exceeded, runner_system_failure) holds no verdict;
@@ -1026,7 +1029,10 @@ def latest_pipeline(root, job=None, run=None):
     if data is None:
         return None, note
     newest = None  # GitLab without `job`: the newest finished pipeline, read when no job ran in any
+    idle = read = 0  # GitLab: the pipelines read in a row in which no job ran, and the pipelines read
     for r in data:
+        if idle >= IDLE_PIPELINES:
+            break
         if not isinstance(r, dict):
             continue
         jobs = None
@@ -1052,6 +1058,8 @@ def latest_pipeline(root, job=None, run=None):
             p = {"id": r.get("id"), "sha": r.get("sha"), "url": r.get("web_url"), "red": r.get("status") == "failed",
                  "unverified": [], "how": "the newest started"}
             jobs = gitlab_jobs(host, quoted, p["id"], run)
+            read += 1
+            idle = idle + 1 if jobs is not None and not any_ran(jobs) else 0
             if job:
                 mine = latest_jobs(jobs).get(job)
                 if jobs is None:
@@ -1074,10 +1082,10 @@ def latest_pipeline(root, job=None, run=None):
         verdict, _, unpassed = job_verdict(jobs)
         p["red"] = verdict == "red"
         p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
-        p["how"] = f"no job ran in the last {MAIN_PIPELINES}; the newest finished"
+        p["how"] = f"no job ran in the last {read}; the newest finished"
         return dict(red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run), calls=calls[0]), note
     which = f"in which {job} ran" if job else "finished"
-    return None, f"no pipeline of main {which} among the last {MAIN_PIPELINES} on {host} ({cli})"
+    return None, f"no pipeline of main {which} among the last {read or MAIN_PIPELINES} on {host} ({cli})"
 
 
 def red_detail(p, jobs, forge, host, project, quoted, ran_and_failed, run, job=None):

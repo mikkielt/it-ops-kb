@@ -1531,6 +1531,49 @@ def test_intake_ci_a_pipeline_nobody_started_is_green_and_files_nothing(tmp_path
     assert code == 0 and out[0].startswith("ci bug ") and "kb-tests-windows" in out[0]
 
 
+def test_red_pipeline_bounds_job_list_calls(tmp_path, monkeypatch):
+    """With 100 pipelines of main none of which started a job (every job manual), the read makes at most
+    bl_intake.IDLE_PIPELINES job-list calls (10, the bound it stops at: that many pipelines in a row with no job
+    run say the newer ones were unstarted, not that a job ran long ago), not one call for each pipeline, and the
+    verdict is the same: the newest finished pipeline. A job that ran within that bound is found, at #3 and at
+    #10; one behind more unstarted pipelines than the bound is out of reach."""
+    from ql_deliver import is_job_list
+    assert bl_intake.IDLE_PIPELINES <= 10
+    manual = [{"id": 15, "name": "kb-tests", "status": "manual", "allow_failure": True}]
+    pipes = [{"id": 1000 - i, "sha": SHA, "status": "manual", "web_url": f"https://x/{1000 - i}"} for i in range(100)]
+    w, calls = ci_world(tmp_path, monkeypatch, pipes, manual)
+    for job in (None, "kb-tests"):
+        calls.clear()
+        p, note = bl_intake.latest_pipeline(w.root, job=job)
+        n = sum(1 for a in calls if is_job_list(a))
+        assert n <= bl_intake.IDLE_PIPELINES, (job, n)
+        if job:
+            assert p is None and "kb-tests" in note
+        else:
+            assert p["id"] == 1000 and p["red"] is False and "no job ran in the last" in p["how"]
+    ran = [{"id": 16, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure",
+            "started_at": "2026-09-01T10:00:00Z"}]
+    by_pipeline = {}
+    real = bl_intake.run_argv
+
+    def fake(argv, cwd=None):
+        if argv[0] == "glab" and "/pipelines/" in argv[-1] and "/jobs?" in argv[-1]:
+            pid = int(argv[-1].split("/pipelines/")[1].split("/")[0])
+            return 0, json.dumps(by_pipeline.get(pid, manual)), ""
+        return real(argv, cwd=cwd)
+
+    monkeypatch.setattr(bl_intake, "run_argv", fake)
+    for index, found in ((2, True), (bl_intake.IDLE_PIPELINES - 1, True), (bl_intake.IDLE_PIPELINES, False),
+                         (59, False)):
+        by_pipeline.clear()
+        by_pipeline[pipes[index]["id"]] = ran  # #3 is index 2
+        for job in (None, "kb-tests"):
+            p, _ = bl_intake.latest_pipeline(w.root, job=job)
+            assert (p is not None and p["id"] == pipes[index]["id"] and p["red"]) is found, (index, job)
+            if not found and not job:
+                assert p["id"] == 1000 and not p["red"]
+
+
 @pytest.mark.parametrize("what", ["covered", "unreadable", "green"])
 def test_intake_ci_a_covered_unreadable_or_green_pipeline_reports_nothing(tmp_path, monkeypatch, capsys, ci_register,
                                                                          what):
