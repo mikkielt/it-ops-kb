@@ -74,16 +74,19 @@
     }
   ],
   "touches": [
-    "_tools/backlog.py",
-    "_tools/test_backlog.py",
-    "kb/_self/backlog.md",
-    "kb/_self/tools.md",
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py",
+    "_tools/test_worker_brief.py",
+    "_tools/test_kb_mcp.py",
+    "_tools/test_kb_cohesion.py",
     ".claude/agents/kb-worker.md",
     ".claude/skills/kb-sprint/SKILL.md",
-    "_tools/test_kb_cohesion.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "kb/_self/autopilot-container.md"
   ],
   "notes": "Worker brief clauses, one test fails when the kb-worker definition lacks one: (1) Self-Reviewed inside the last trailer paragraph, KB-Work last, order Co-Authored-By, Session, Self-Reviewed, KB-Work (git reads trailers from the last paragraph only); (2) run the stale pre-check on the rebased branch and read every doc it lists (the list mixes others' changes); never run done yourself; (3) run checks and tests in the foreground with a timeout, never wait for a background notice; a background land uses timeout 7200000 ms; (4) add -k 'leaks or test_no_private_ipv4' when adding or changing a test or fixture file, since --changed may wait on the lock; (5) map each goal clause to the check or test assertion that proves it (three of five items passed checks narrower than their goals); (6) a bug that adds a rejection rule plants valid look-alikes in its test; (7) no GUID-shaped literal in a test file (the publish tree scan fails the gate); (8) changing a shared test fixture means running every test file that uses it (grep its users), not a guessed -k; (9) a bug's repro runs as a done check: a text-match repro names only something the fix really contains; (10) an amend re-runs the hook and puts a blank line before KB-Work: rewrite with commit --amend -F and run kbgit.py check-trailers. (11) list a skill the work edits in touches up front: done refuses a file outside touches. (12) before claiming, grep the existing tests and run selfdoc.py stale for the behaviour the fix changes and list them in touches. (13) fetch right before a claim and check that no local work/<id> branch exists: two sessions can pass held together and the second push conflicts. (14) a docstring that cites a doc as (file.md, Heading) is checked by cohesion: run -k cohesion when a new file cites a doc. (15) a session id or any literal shaped like a GUID counts as a GUID in the publish tree scan: build it from parts."
 }
