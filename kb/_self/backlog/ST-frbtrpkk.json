@@ -34,7 +34,9 @@
         "pause: keep the autopilot off until the tooling sprints drain"
       ],
       "recommendation": "headless-only: it plans and runs only sprints whose items a headless runner may edit; tooling sprints stay operator-present",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "widen: let a headless runner edit bl_ modules and existing tests, inside the container only",
+      "by": "operator"
     }
   ],
   "notes": "Theme: what the autopilot can run unattended. Evidence: autopilot.guarded_refusal over the active sprints on 2026-10-04: only SP-rq4t477t is headless-runnable, and its next item ST-32b46kff is operator-present by its own gates; bl_authority.guarded_touches flags 49 of 81 open non-epic items; kb-autopilot SKILL.md step 5.1 takes a started sprint with ready work before planning, and 5.3 does not retry an operator-present refusal but says nothing of planning in its place. The gate on this item asks the operator what the autopilot is for."
