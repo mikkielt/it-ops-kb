@@ -1065,6 +1065,30 @@ def clean_runner_leftovers(root, sid, ids):
     return kept
 
 
+def cleanup_gate_do(bl, dead):
+    """Drop every gate `do` entry of a remaining item that names (by item id) an item in DEAD, which close deletes: the
+    work that entry waited for is done or dropped, and check refuses a `do` naming an item that does not exist. An
+    emptied `do` goes with its last entry. Returns [(item id, gate id, option, the deleted item's id)]."""
+    out = []
+    for i, it in sorted(bl.items.items()):
+        if i in dead:
+            continue
+        touched = False
+        for g in it.get("gates") or []:
+            do = g.get("do") if isinstance(g, dict) else None
+            if not isinstance(do, dict):
+                continue
+            hit = [o for o, how in do.items() if isinstance(how, str) and how in dead]
+            for opt in hit:
+                out.append((i, g.get("id"), opt, do.pop(opt)))
+            if hit and not do:
+                g.pop("do")
+            touched = touched or bool(hit)
+        if touched:
+            bl.save(it)
+    return out
+
+
 def cmd_close(bl, a):
     if a.summary and a.commit:
         raise Refused("close --summary only prints and commits nothing: run close --commit without --summary")
@@ -1113,6 +1137,8 @@ def cmd_close(bl, a):
         if cut:
             bl.save(it)
             say(f"dropped {'; '.join(cut)} from {bl.label(i)}")
+    for i, gate, opt, target in cleanup_gate_do(bl, dead):  # a gate's do names an item by id too
+        say(f"dropped gate {gate} do {opt!r} (item {target}) from {bl.label(i)}")
     for i in gone:
         bl.delete(i)
     label = bl.label(sid)
