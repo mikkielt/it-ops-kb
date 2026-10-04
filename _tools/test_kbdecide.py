@@ -69,7 +69,7 @@ def bl_imports(tools, start="backlog.py"):
 def copied_tools(tools=TOOLS):
     """The _tools files the temp repository needs: kbdecide.py and what it imports, and backlog.py with every bl_
     module it imports."""
-    return ["kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py", "backlog.py", *bl_imports(tools)]
+    return ["kbdecide.py", "check.py", "kbcommon.py", "kbid.py", "kbfacts.py", "kbpublic.py", "backlog.py", *bl_imports(tools)]
 
 
 def test_make_root_copies_all_bl_modules(tmp_path):

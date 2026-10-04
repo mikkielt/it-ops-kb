@@ -24,7 +24,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           references of its `knowledge`: a missing one is an error, a fact key no
                                           longer found is reported as stale knowledge; no item may hold a piece of
                                           this host's computer or user name, read from the environment and never
-                                          printed); warns of an open bug whose repro only matches text in a
+                                          printed, and none a leak-scan hit, its kind named and never its value); warns of an open bug whose repro only matches text in a
                                           file (a grep of _tools/ source among them) with no repro_reason; exit 1
                                           on errors
   backlog.py fmt                          rewrite every item in canonical form

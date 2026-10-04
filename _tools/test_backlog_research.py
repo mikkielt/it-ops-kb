@@ -24,7 +24,7 @@ bl_testkit.bind(backlog)
 repo, no_git_location, gate_jobs = bl_testkit.repo, bl_testkit.no_git_location, bl_testkit.gate_jobs
 
 TOOL_FILES = ("backlog.py",) + tuple(sorted(f.name for f in Path(TOOLS).glob("bl_*.py"))) + (
-    "kbcommon.py", "kbfacts.py", "kbid.py", "ql_base.py", "aliases.csv", "selfdoc.py")
+    "kbcommon.py", "kbfacts.py", "kbid.py", "kbpublic.py", "ql_base.py", "aliases.csv", "selfdoc.py")
 SOURCES = "id,url,title,superseded_by,used_in\nS100,https://example.com/a,Zorbex agent guide,,demo/tool.md\n"
 FACTS = ["The zorbex agent prints its build number at startup.", "The zorbex agent retries failed uploads three times."]
 GOOD = "How many times does the zorbex agent retry failed uploads?"

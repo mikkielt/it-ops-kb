@@ -434,8 +434,48 @@ def autopilot_start_causes(bl, sid):
 bl_plan.AUTOPILOT_START_CAUSES.append(autopilot_start_causes)
 
 
+def item_strings(v, path=""):
+    """(field path, text) of every string value of an item's JSON, dict keys left out: `gates[0].question`."""
+    if isinstance(v, str):
+        yield path, v
+    elif isinstance(v, dict):
+        for k, x in v.items():
+            yield from item_strings(x, f"{path}.{k}" if path else k)
+    elif isinstance(v, list):
+        for n, x in enumerate(v):
+            yield from item_strings(x, f"{path}[{n}]")
+
+
+def item_leak_hits(text, allow):
+    """[(kind, value)] the leak scan finds in one text of an item, read as the scan of tracked files reads a file."""
+    import kbpublic
+    return kbpublic.file_hits("item.json", text, allow)
+
+
+def leak_errors(bl):
+    """One error for each field of each item that holds a leak-scan hit, naming the item id, the field and the kinds
+    (secret, home, ip, email, guid), never the value, and withholding the title of an item whose title holds one; the allowlist is the clone's _tools/tests_allowlist.txt."""
+    import kbpublic
+    path = bl.root / kbpublic.ALLOWLIST_PATH
+    try:
+        allow = kbpublic.parse_allowlist(path.read_text(encoding="utf-8")) if path.is_file() else {}
+    except (OSError, UnicodeDecodeError):
+        allow = {}
+    errs = []
+    for iid, it in bl.items.items():
+        for field, text in item_strings(it):
+            kinds = sorted({k for k, _ in item_leak_hits(text, allow)})
+            if kinds:
+                if field == "title":
+                    bl.withheld.add(iid)  # label() prints a title, which holds the hit: no error prints it
+                errs.append(f"{iid}: field {field} has a leak-scan hit ({', '.join(kinds)}; value not "
+                            f"printed): write a placeholder instead (kb/_self/backlog.md, Writing about items)")
+    return errs
+
+
 def validate(bl, pieces=None):
     errs = list(bl.load_errors)
+    errs += leak_errors(bl)
     named = items_holding_names(bl, pieces)
     bl.withheld |= set(named)
     for iid, hits in named.items():
