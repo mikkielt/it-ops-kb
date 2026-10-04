@@ -128,3 +128,5 @@ inter-session,cross-session
 architecture decision record,architecture decision record
 architectural decision record,architecture decision record
 madr,architecture decision record
+precompact,hooks
+hooks,hooks

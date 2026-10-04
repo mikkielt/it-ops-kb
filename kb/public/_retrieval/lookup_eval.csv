@@ -269,3 +269,5 @@ EV-sessionend-hook-input-fields-reason-budget,SessionEnd hook input fields reaso
 EV-hook-input-fields-identify-subagent-posttooluse,Which hook input fields identify a subagent in PostToolUse?,claude/hooks.md,good,
 EV-claude-code-expose-session-id-bash,Does Claude Code expose the session id to a Bash command as an environment variable?,claude/hooks.md,good,
 EV-bash-command-that-exits-non-zero,Does a Bash command that exits non-zero fire PostToolUseFailure?,claude/hooks.md,good,
+EV-precompact-hook-exit-code-2-blocks,PreCompact hook exit code 2 blocks compaction; SessionStart compact matcher stdout added to context,claude/hooks.md,good,
+EV-structured-logging-json-lines-format,structured logging JSON Lines format,logs/otel-log-data-model.md,good,
