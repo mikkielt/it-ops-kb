@@ -2,7 +2,7 @@
   "id": "ST-7sc3vthn",
   "kind": "story",
   "title": "The headless-runner guards and the KB_HEADLESS_RUNNER marker are removed from the tools",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ytfb4dc5",
   "priority": "P1",
   "rank": 0,
@@ -69,5 +69,32 @@
     "ST-ofwtf4cl"
   ],
   "notes": "The PreToolUse wiring runs _tools/kb_hook.py generically, so removing headless_guard needs no settings edit; a settings edit is the operator's: if a test pin forces one, stop and file a bug. Keep test_open_repros_run_headless and all interactive behaviour. Still present: kb_hook.headless_guard and HEADLESS_ENV, kg_sync.headless_target_refusal, kbpublic.HEADLESS_ENV, bl_intake HEADLESS_ENV and check_program_refusal, the querylog launch headless branch. Traps: tests copy fixed tool lists into temp repos and break when a module goes (TOOL_FILES in test_backlog_research.py, KS_TOOLS in test_bl_check.py, copied_tools in test_kbdecide.py, hand lists in test_backlog.py, test_backlog_authority.py, test_bl_stall.py, test_kblog.py): git grep each removed module over _tools/test_*.py before landing. A literal deleted path in an open item's touches is a check error (use globs); done refuses a changed file outside touches (widen on the work branch); an item check `selfdoc.py stale` fails on any stale doc (read it, name it in Self-Reviewed). Use focused `-n 1` test runs; land in the background with the longest timeout; no writes in the clone during land or sync; rm -rf is denied; trailer order Co-Authored-By, Self-Reviewed, KB-Work. The Windows/Intune Autopilot product is never touched (kb/public/**, product lists in README.md, plugin.json, kb-lookup skill, .gitattributes csdl lines, _tools/tests_allowlist.txt).",
-  "claimed_by": "worker-7sc3vthn"
+  "evidence": {
+    "commit": "3922260569e87fc62366ad0a9677a203d5c96721",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cohesion"
+        ],
+        "exit": 0,
+        "sha256": "b29d28556efccc37"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "exit": 0,
+        "sha256": "3bfd625f3b948fa4"
+      }
+    ]
+  }
 }
