@@ -18,8 +18,9 @@
     ]
   },
   "touches": [
-    "_tools/backlog.py",
-    "_tools/test_backlog.py",
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py",
+    "kb/_self/code.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ]
