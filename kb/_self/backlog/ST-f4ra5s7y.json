@@ -49,6 +49,8 @@
     "kb/_self/reports/autopilot-digest.md",
     "kb/_self/reports/autopilot-throwaway.md"
   ],
-  "depends_on": [],
+  "depends_on": [
+    "ST-7sc3vthn"
+  ],
   "notes": "Runs last, after the other two removals land. Traps: tests copy fixed tool lists into temp repos and break when a module goes (TOOL_FILES in test_backlog_research.py, KS_TOOLS in test_bl_check.py, copied_tools in test_kbdecide.py, hand lists in test_backlog.py, test_backlog_authority.py, test_bl_stall.py, test_kblog.py): git grep each removed module over _tools/test_*.py before landing. A literal deleted path in an open item's touches is a check error (use globs); done refuses a changed file outside touches (widen on the work branch); an item check `selfdoc.py stale` fails on any stale doc (read it, name it in Self-Reviewed). Use focused `-n 1` test runs; land in the background with the longest timeout; no writes in the clone during land or sync; rm -rf is denied; trailer order Co-Authored-By, Self-Reviewed, KB-Work. The Windows/Intune Autopilot product is never touched (kb/public/**, product lists in README.md, plugin.json, kb-lookup skill, .gitattributes csdl lines, _tools/tests_allowlist.txt)."
 }
