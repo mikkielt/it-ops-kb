@@ -1,0 +1,31 @@
+{
+  "id": "TK-zcji275w",
+  "kind": "task",
+  "title": "kb-worker, kb-sprint, kb-item and the docs state the three test tiers: narrow per task, the gate per landing, the heavy suites once at sprint end",
+  "status": "todo",
+  "parent": "ST-tbi3rras",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a kb-worker runs only its item's own -k checks plus ruff and tools_map and never --changed or the full suites; the sync gate's tests.py --changed is the one mapped run per landing; stress_test.py with the full tests.py runs once at sprint end before the review; kb-worker.md, kb-sprint SKILL.md, kb-item SKILL.md, backlog.md, tools.md, maintaining.md, plugin.md and token-efficiency.md say so in one place each and agree; a planted test reads each file for the three tiers and fails when one is missing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "three_tiers_documented"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "_tools/test_three_tiers_docs.py"
+  ]
+}
