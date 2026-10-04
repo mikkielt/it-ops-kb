@@ -256,6 +256,59 @@ def test_start_without_docs_warnings_is_quiet(repo):
     assert code == 0 and "warning:" not in out, out
 
 
+SKILL_FILE = ".claude/skills/kb-sprint/SKILL.md"
+
+
+def test_plan_flags_shared_file_in_check_and_start(repo):
+    """Three of a sprint's four items name one file: check warns of the planned sprint naming the file and the items,
+    and start prints the same warning and starts (exit 0); a sprint whose items name different files is quiet."""
+    b(repo, "new", "sprint", "--title", "S", "--goal", "g")
+    sp = item(repo, "S")["id"]
+    edit(repo, item(repo, "Research sprint goal: S")["id"], status="dropped")  # these tests plan no research
+    ids = []
+    for n, touch in enumerate((SKILL_FILE, SKILL_FILE, SKILL_FILE, "_tools/other.py")):
+        b(repo, "new", "story", "--title", f"Edit {n}", "--sprint", sp, "--goal", "g", "--touch", touch,
+          "--check", argstr(PASS))
+        ids.append(item(repo, f"Edit {n}")["id"])
+    code, out = b(repo, "check")
+    assert code == 0 and f"{SKILL_FILE} is in the touches of 3 of 4 items ({', '.join(sorted(ids[:3]))})" in out, out
+    assert out.count("is in the touches of") == 1 and "split the edits by section" in out, out
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    code, out = b(repo, "start", sp)
+    assert code == 0 and item(repo, "S")["status"] == "active", out
+    assert f"  warning: {SKILL_FILE} is in the touches of 3 of 4 items" in out, out
+    code, out = b(repo, "check")
+    assert "is in the touches of" not in out, out  # check names a planned sprint's plan; a started one is past it
+
+
+def test_plan_flags_shared_file_boundaries():
+    """More than half and at least three: half, two of two, the exempt docs, a review story and a dropped item are
+    no finding; the most shared file comes first."""
+    import bl_plan
+
+    class Bl:
+        def __init__(self, items):
+            self.items = items
+    def sprint_of(touches, **kw):
+        items = {f"ST-{n:08d}": {"kind": "story", "status": "todo", "touches": t, **kw} for n, t in enumerate(touches)}
+        return Bl(items), list(items)
+    for touches, want in (([["a"], ["a"], ["a"], ["b"]], [("a", 3)]),
+                          ([["a"], ["a"], ["a"], ["b"], ["b"], ["c"]], []),  # half, not more than half
+                          ([["a"], ["a"]], []),  # two of two: below the minimum
+                          ([["a", "b"], ["a", "b"], ["a"], ["c"]], [("a", 3)]),
+                          ([["kb/_self/backlog.md"]] * 4, []),  # the docs items edit by section
+                          ([["kb/_self/tools.md", "a"], ["kb/_self/tools.md", "a"], ["kb/_self/tools.md", "a"]],
+                           [("a", 3)]),
+                          ([["a", "b"], ["a", "b"], ["a", "b"], ["a"]], [("a", 4), ("b", 3)])):
+        bl, items = sprint_of(touches)
+        found, n = bl_plan.shared_files(bl, items)
+        assert [(p, len(ids)) for p, ids in found] == want and n == len(touches), (touches, found)
+    bl, items = sprint_of([["a"]] * 3)
+    bl.items[items[0]]["review"] = True  # a review story is no work item
+    bl.items[items[1]]["status"] = "dropped"
+    assert bl_plan.shared_files(bl, items) == ([], 1)
+
+
 def test_start_warns_recurring_p1_item_left_out_of_the_sprint(repo):
     """start warns (exit 0) of an open P1 item with two or more recurrences outside the sprint; one recurrence, a
     recurring item already in the sprint, a P2 one and a done one give no warning."""
