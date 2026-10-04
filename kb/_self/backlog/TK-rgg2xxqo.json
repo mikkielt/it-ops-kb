@@ -10,23 +10,27 @@
   "checks": [
     {
       "run": [
-        "git",
-        "grep",
-        "-q",
-        "search_result",
-        "--",
-        "kb/_self/tools.md"
-      ]
+        "python3",
+        "_tools/selfdoc.py",
+        "section",
+        "tools",
+        "Commands",
+        "tools",
+        "How the lookup tools decide"
+      ],
+      "match": "search_result"
     },
     {
       "run": [
-        "git",
-        "grep",
-        "-q",
-        "search_result",
-        "--",
-        "kb/_self/plugin.md"
-      ]
+        "python3",
+        "_tools/selfdoc.py",
+        "section",
+        "plugin",
+        "1. What each plugin ships",
+        "plugin",
+        "5. What it costs and what to watch"
+      ],
+      "match": "search_result"
     }
   ],
   "touches": [
