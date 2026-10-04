@@ -769,6 +769,44 @@ class TestBacklogLand:
         assert code == 1 and "land stopped at step done" in out, out
         assert self.steps(ld) == [] and self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"]
 
+    def remote_branches(self, ld):
+        return self.out(ld["remote"], "branch", "--list", "code/*").strip()
+
+    def test_land_runs_checks_before_auto_merge(self, landing):
+        """A code item whose check (then whose repro) fails stops land at step checks, before the heavy steps and
+        sync: the remote has no code/<id> branch to auto-merge. Once both pass, land goes on and opens it."""
+        ld = landing
+        repo, tk = ld["repo"], ld["tk"]
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/missing.txt")  # planted: the check fails
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step checks" in out and "FAIL" in out, out
+        assert self.steps(ld) == [] and not self.remote_branches(ld), out
+        assert self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"]
+        edit(repo, tk, checks=[{"run": is_file("src/b.txt")}], repro={"run": is_file("src/missing.txt")})  # planted repro
+        commit(repo, "check passes, repro fails", tk)
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step checks" in out and "src/missing.txt" in out, out
+        assert self.steps(ld) == [] and not self.remote_branches(ld), out
+        edit(repo, tk, repro={"run": PASS})
+        commit(repo, "both pass", tk)
+        code, out = self.land(ld)
+        assert code == 0 and "not done yet" in out and "land: checks" in out, out
+        assert self.steps(ld) == self.HEAVY + ["sync"], out
+        assert self.remote_branches(ld) == f"code/{tk}", out
+
+    def test_land_names_zero_test_check(self, landing):
+        """A check whose test run selects no tests (pytest's exit 5) stops the code lane at step checks, named as a
+        malformed check, with nothing pushed."""
+        ld = landing
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        zero = "import sys; print('no tests ran in 0.01s'); sys.exit(5)"  # planted: a -k that matches nothing
+        edit(ld["repo"], ld["tk"], checks=[{"run": ["python3", "-c", zero]}])
+        commit(ld["repo"], "a zero-test check", ld["tk"])
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step checks" in out, out
+        assert "malformed check" in out and "selected no tests" in out, out
+        assert self.steps(ld) == [] and not self.remote_branches(ld), out
+
     def test_backlog_land_stops_at_rebase_and_aborts_it(self, landing):
         ld = landing
         self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")

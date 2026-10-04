@@ -2,7 +2,7 @@
   "id": "BG-kowie6ly",
   "kind": "bug",
   "title": "land pushes an auto-merging code merge request before the item's own checks run",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import pathlib,sys; s=pathlib.Path('_tools/backlog.py').read_text(encoding='utf-8'); b=s[s.index('def cmd_land'):]; b=b[:b.index(chr(10)+'def ',1)]; sys.exit(0 if 'run_check' in b else 1)"
+      "import pathlib,sys; s=pathlib.Path('_tools/bl_land.py').read_text(encoding='utf-8'); b=s[s.index('def cmd_land'):]; b=b[:b.index(chr(10)+'def ',1)]; sys.exit(0 if 'run_check' in b else 1)"
     ]
   },
   "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
@@ -38,7 +38,13 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    "_tools/test_ops_land.py"
   ],
-  "notes": "Retro of SP-w3xmbdra: a check whose pytest selection runs zero tests (exit 5, a malformed perfcheck.py time form in ST-ykvho3zp and ST-5q5b5qtz) passed review of the plan and failed only at land; the land-time run of the item's checks should name a zero-test selection as a malformed check, and a planner runs each check once before a sprint commits the item. Retro of BG-qks4ikyr: a repro naming a concrete item id (BG-3i46pccw) rots once that item closes, so done would fail for its own reason; backlog check could warn on an item id in a repro or check argv."
+  "notes": "Retro of SP-w3xmbdra: a check whose pytest selection runs zero tests (exit 5, a malformed perfcheck.py time form in ST-ykvho3zp and ST-5q5b5qtz) passed review of the plan and failed only at land; the land-time run of the item's checks should name a zero-test selection as a malformed check, and a planner runs each check once before a sprint commits the item. Retro of BG-qks4ikyr: a repro naming a concrete item id (BG-3i46pccw) rots once that item closes, so done would fail for its own reason; backlog check could warn on an item id in a repro or check argv.",
+  "claimed_by": "mac-third-worker"
 }
