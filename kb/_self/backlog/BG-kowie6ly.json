@@ -41,7 +41,8 @@
     "kb/_self/tools.md",
     "_tools/bl_land.py",
     "_tools/test_bl_land.py",
-    ".claude/skills/kb-sprint/SKILL.md"
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md"
   ],
   "notes": "Retro of SP-w3xmbdra: a check whose pytest selection runs zero tests (exit 5, a malformed perfcheck.py time form in ST-ykvho3zp and ST-5q5b5qtz) passed review of the plan and failed only at land; the land-time run of the item's checks should name a zero-test selection as a malformed check, and a planner runs each check once before a sprint commits the item. Retro of BG-qks4ikyr: a repro naming a concrete item id (BG-3i46pccw) rots once that item closes, so done would fail for its own reason; backlog check could warn on an item id in a repro or check argv.",
   "claimed_by": "mac-third-worker"
