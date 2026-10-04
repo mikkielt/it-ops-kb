@@ -2,7 +2,7 @@
   "id": "TK-fsvrji77",
   "kind": "task",
   "title": "land runs no stress_test.py before sprint end, and the review story's checks run stress_test.py once with the full tests.py",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-tbi3rras",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/bl_base.py",
     "_tools/backlog.py",
     "_tools/test_land_tiers.py"
-  ]
+  ],
+  "claimed_by": "mac-sixth"
 }
