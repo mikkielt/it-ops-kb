@@ -2,7 +2,7 @@
   "id": "BG-2vqbjk24",
   "kind": "bug",
   "title": "The full tests.py fails test_kbpublic when KB_NO_PUBLISH_HOOK or KB_HEADLESS_RUNNER is set, so the review story's done fails in the manager session and in a runner",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-np3xwfu4",
   "sprint": "SP-rq4t477t",
   "priority": "P1",
@@ -32,5 +32,28 @@
     "kb/_self/code.md"
   ],
   "notes": "Theme: guard and environment contradictions (analysis of the 2026-10-02..04 co-development, mac-eighth). Evidence: kb/_self/backlog.md:312 tells the manager session to export KB_NO_PUBLISH_HOOK=1; kbpublic.py:724 makes publish --hook do nothing with it or KB_HEADLESS_RUNNER; test_kbpublic.py:236 calls the hook without clearing either; conftest.py:44-54 clears only KB_ROOTS and the git location variables; bl_base.REVIEW_CHECKS runs the full tests.py; reproduced 2026-10-04: the test fails with either variable and passes without. mac-fourth's review done failed 5 test_kbpublic tests this way (ST-vyosyurg, ST-bbtmua53). The review story's done is the tick's step 3, so a sprint could never close unattended.",
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "e619cc0f750af3d946bfc0bafdcd1cd1ed2d3098",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_publishes_silently_when_ahead"
+        ],
+        "exit": 0,
+        "sha256": "ebdc23b7586bb43e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys; sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-n','1','-k','test_publishes_silently_when_ahead'],env={**os.environ,'KB_NO_PUBLISH_HOOK':'1','KB_HEADLESS_RUNNER':'1'}).returncode)"
+        ],
+        "exit": 0,
+        "sha256": "e4261bea3c41753b"
+      }
+    ]
+  }
 }
