@@ -2,7 +2,7 @@
   "id": "BG-4y2lhglg",
   "kind": "bug",
   "title": "kb-sprint run and kb-item claim without --commit, so land stops at clean tree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,18 @@
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "6d5d4e0e5579b988cb856fdca0fb420620e16ef9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(0 if 'claim ID --by <subagent name> --commit' in open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
