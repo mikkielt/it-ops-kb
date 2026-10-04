@@ -2,7 +2,7 @@
   "id": "BG-5rkmjsbr",
   "kind": "bug",
   "title": "backlog.py done misses a code-lane commit that renames a code path into a content path",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,19 @@
     "_tools/bl_land.py",
     "_tools/test_bl_land.py"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "1fb5c99b6b4253755fab6c7792b449fad29ed8e6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_done_lane_rename"
+        ],
+        "exit": 0,
+        "sha256": "72739f17ed347bda"
+      }
+    ]
+  }
 }
