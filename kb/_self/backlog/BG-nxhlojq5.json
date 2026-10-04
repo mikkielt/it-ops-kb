@@ -2,7 +2,7 @@
   "id": "BG-nxhlojq5",
   "kind": "bug",
   "title": "test_claude_plugin_validate fails on main on every host whose claude CLI warns that the root CLAUDE.md is not loaded as project context, so every land gate selecting test_kb_mcp.py is red",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gfoakqar",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,29 @@
   "touches": [
     "_tools/test_kb_mcp.py"
   ],
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "a007ad758b122735ed3e21ec9fc50d66a4179a57",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "plugin_validate_allowed_warnings"
+        ],
+        "exit": 0,
+        "sha256": "5d1100d9eb1bbcb9"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_claude_plugin_validate"
+        ],
+        "exit": 0,
+        "sha256": "1730676664902d72"
+      }
+    ]
+  }
 }
