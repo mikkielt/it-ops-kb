@@ -369,6 +369,34 @@ def test_close_drops_relates_to(sprint):
     assert code == 0 and "errors=0" in out, out
 
 
+def test_close_cleans_gate_do(sprint):
+    """An open item outside the sprint has gates whose do names an item close deletes: close drops that entry (and the
+    do once empty), says so, and check still passes; an argv that merely contains the id, and a do naming an item that
+    stays, are kept."""
+    repo = sprint["repo"]
+    b(repo, "new", "bug", "--title", "Later", "--severity", "S4", "--repro", argstr(is_file("src/z.txt")),
+      "--goal", "z exists")
+    later = item(repo, "Later")["id"]
+    gone, stays = sprint["tk"], sprint["ep"]
+    gates = (("--option", "keep", "--option", "drop", "--do", f"drop={gone}", "--do", "keep=echo ok"),
+             ("--option", "a", "--option", "b", "--do", f"a={sprint['bg']}"),
+             ("--option", "c", "--option", "d", "--do", f"c={stays}", "--do", f"d=echo {gone}"))
+    for n, opts in enumerate(gates):
+        code, out = b(repo, "gate", "add", later, "--question", f"Which option {n}?", "--recommendation", opts[1], *opts)
+        assert code == 0, out
+    for iid in (sprint["st"], sprint["tk"], sprint["bg"], sprint["rv"]):
+        edit(repo, iid, status="dropped")
+    code, out = b(repo, "close", sprint["sp"])
+    assert code == 0, out
+    g = {x["id"]: x for x in item(repo, "Later")["gates"]}
+    assert g["g1"]["do"] == {"keep": ["echo", "ok"]}, g["g1"]
+    assert "do" not in g["g2"], g["g2"]
+    assert g["g3"]["do"] == {"c": stays, "d": ["echo", gone]}, g["g3"]  # a surviving item and an argv stay
+    assert out.count("dropped gate ") == 2 and f"(item {gone})" in out and f"(item {sprint['bg']})" in out, out
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+
+
 def test_close_drops_depends_on(sprint):
     """An open item outside the sprint depends on a done one close deletes: the dependency is satisfied, so close
     drops it (and the key once empty), check still passes and horizon does not count the item as waiting."""
