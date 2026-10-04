@@ -2,7 +2,7 @@
   "id": "BG-t5klwjia",
   "kind": "bug",
   "title": "The _gitlab_com_log test fixture writes the + continuation marker with a space, not the real GitLab.com form",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mguj7foz",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
   "touches": [
     "_tools/test_backlog.py",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "seventh-w51"
 }
