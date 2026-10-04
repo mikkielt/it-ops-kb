@@ -86,6 +86,25 @@ class TestSyncRules:
         out = "  _sources.csv: S9999 collision: https://a.example.com/ -> S-aaaaaaaa (hash id)\n  wrote _sources.csv\n"
         assert kg_sync.renumbered(out) == ["_sources.csv: S9999 collision: https://a.example.com/ -> S-aaaaaaaa (hash id)"]
 
+    def test_sync_reexec_keeps_merge_sides_inherited_only_for_the_same_upstream(self, monkeypatch):
+        """A re-run reads the rebase's base and original HEAD from SIDES_ENV while the upstream is the one that sync
+        rebased onto; no re-run, another upstream, and a value rerun_sync did not write give none."""
+        sides = json.dumps({"base": "b1", "up": "u1", "orig": "o1"})
+        monkeypatch.delenv(kg_sync.REEXEC_ENV, raising=False)
+        monkeypatch.setenv(kg_sync.SIDES_ENV, sides)
+        assert kg_sync.inherited_sides("u1") is None  # no re-run
+        monkeypatch.setenv(kg_sync.REEXEC_ENV, "1")
+        assert kg_sync.inherited_sides("u1") == ("b1", "o1")
+        assert kg_sync.fix_args(*kg_sync.inherited_sides("u1")[:1], "u1", "o1") == ["fix", "--base", "b1", "--upstream", "u1", "--side", "o1"]
+        assert kg_sync.inherited_sides("u2") is None  # the remote moved again
+        assert kg_sync.inherited_sides(None) is None
+        for bad in ("", "not json", "[]", json.dumps({"base": "b1", "up": "u1"}), json.dumps({"base": "", "up": "u1", "orig": "o1"}),
+                    json.dumps({"base": 1, "up": "u1", "orig": "o1"})):
+            monkeypatch.setenv(kg_sync.SIDES_ENV, bad)
+            assert kg_sync.inherited_sides("u1") is None, bad
+        monkeypatch.delenv(kg_sync.SIDES_ENV)
+        assert kg_sync.inherited_sides("u1") is None
+
     def test_push_rejection_patterns(self):
         assert kg_sync.REJECTED.search(" ! [rejected]        HEAD -> main (fetch first)")
         assert kg_sync.REJECTED.search("Updates were rejected because the tip ... non-fast-forward")
@@ -1233,6 +1252,52 @@ class TestSyncReexec(SyncScenario):
                     "_tools/kbcommon.py"):
             assert rel in loaded
         assert all(p.startswith("_tools/") and p.endswith(".py") for p in loaded)
+
+
+@requires_git
+@pytest.mark.git
+class TestSyncReexecKeepsSides(SyncScenario):
+    """A rebase that brings new sync code (kg_lane.py here) while both clones added a source row with the legacy id
+    S9999 (`tests.py -k sync_reexec_keeps_merge_sides`): the re-run, which sees its tree already rebased, still repairs
+    the collision (A's row is renumbered, B's pushed id stays) instead of exiting 3 with `sides unknown`."""
+
+    URL_A = "https://learn.microsoft.com/en-us/sync-test/sides-a"
+    URL_B = "https://learn.microsoft.com/en-us/sync-test/sides-b"
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory, kb_seed):
+        tmp = str(tmp_path_factory.mktemp("kb-sync-sides"))
+        env = git_env(KB_SYNC_NO_TESTS="1")
+        env.pop(kg_sync.REEXEC_ENV, None)
+        cls.remote, (a, b), _ = clones(kb_seed, tmp, env, ("a", "b"))
+        cls.env = env
+        src = b.read("_tools/kg_lane.py")
+        assert src.count(CONTENT_RETURN) == 1
+        b.write("_tools/kg_lane.py", src.replace(CONTENT_RETURN, f"        return kblane.CODE, {PLANTED_LANE!r}\n"))
+        cls.add_source(b, "S9999", cls.URL_B, "sides-b")
+        cls.article(b, "sides-b", ["S9999"], ["Clone b cites its S9999."])
+        b.git("add", "-A")  # no generated files: the rebase then merges the ledger by union, with no conflict for fix
+        b.git("commit", "-q", "-m", "chore(tools): planted lane rule, and b's S9999")
+        b.git("push", "-q", "--no-verify", "origin", "HEAD:main", env={"KB_GATE_DONE": "1"})
+        cls.add_source(a, "S9999", cls.URL_A, "sides-a")
+        cls.article(a, "sides-a", ["S9999"], ["Clone a cites its S9999."])
+        a.git("add", "-A")
+        a.git("commit", "-q", "-m", "docs(kb): a's S9999")
+        cls.r = a.tool("kbgit.py", "sync", "--push", "--session", "session_sides")
+        cls.bare = Repo(cls.remote, env)
+        yield
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_sync_reexec_keeps_merge_sides_renumbers_a_collision(self):
+        r = self.r
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "re-running sync once with the rebased code" in r.stdout, r.stdout
+        assert "sides unknown" not in r.stdout + r.stderr
+        src = rows(self.bare.git("show", f"{PLANTED_LANE}:{P('_sources.csv')}"))
+        assert re.search(r"ids renumbered: .*S9999", r.stdout), r.stdout
+        assert src["S9999"]["url"] == self.URL_B  # the pushed id is never renumbered
+        assert src[kbid.source_id(self.URL_A)]["url"] == self.URL_A  # the incoming row took its hash id
 
 
 def red(pid):
