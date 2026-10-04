@@ -209,6 +209,7 @@ def cmd_done(bl, a):
 
 
 # land: the steps after a worker's branch comes back, each a command run from the clone's root with this interpreter
+LAND_STALE = ("stale", ["_tools/selfdoc.py", "stale", "--since"])  # + the integration main; seconds, so it runs first
 LAND_HEAVY = (("stress_test.py", ["_tools/stress_test.py"]),  # run once, when the landing changes _tools/
               ("rag.py eval", ["_tools/rag.py", "eval"]),
               ("lint", [".claude/skills/kb-verify/lint.py"]))
@@ -756,6 +757,7 @@ def cmd_land(bl, a):
                 land_git(root, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
         changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
+            land_run(root, LAND_STALE[0], [*LAND_STALE[1], upstream])  # a missing Self-Reviewed fails in seconds
             for step, argv in LAND_HEAVY:
                 land_run(root, step, argv)
         land_run(root, *LAND_SYNC, whole=True)
