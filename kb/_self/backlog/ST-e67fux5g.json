@@ -2,7 +2,7 @@
   "id": "ST-e67fux5g",
   "kind": "story",
   "title": "Review sprint: Decisions and the change router stay exact",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ld5jtjhm",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "seventh-w44"
 }
