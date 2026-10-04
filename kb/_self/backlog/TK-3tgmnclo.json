@@ -2,7 +2,7 @@
   "id": "TK-3tgmnclo",
   "kind": "task",
   "title": "The in-git host refusal and non-refusal runs keep one case each; the other cases are proven by TestHostRules",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-7ihohi2u",
   "priority": "P2",
   "rank": 0,
@@ -66,5 +66,32 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-fourth-s2"
+  "evidence": {
+    "commit": "6d851ed094d192bb6e8ee2f5f5aa892f0ef0f84a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--against",
+          "_tools/test_ids_baseline.txt",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "exit": 0,
+        "sha256": "d6006b7c1e80179c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestHostRefusalsInGit or TestHostNoRefusalInGit or TestHostRules"
+        ],
+        "exit": 0,
+        "sha256": "5488dde606d5ce0a"
+      }
+    ]
+  }
 }
