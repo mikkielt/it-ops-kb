@@ -2,7 +2,7 @@
   "id": "ST-e67fux5g",
   "kind": "story",
   "title": "Review sprint: Decisions and the change router stay exact",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ld5jtjhm",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "seventh-w44"
+  "evidence": {
+    "commit": "d2650fb820501a74ce718fbd3cb26841a45bf16c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "0ac8e3317d069837"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "78c6fb234e31d433"
+      }
+    ]
+  }
 }
