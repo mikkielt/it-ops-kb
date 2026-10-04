@@ -25,7 +25,9 @@
     "_tools/bl_check.py",
     "_tools/test_bl_check.py",
     "_tools/test_backlog_leak_scan.py",
-    "_tools/kbcommon.py"
+    "_tools/kbcommon.py",
+    "_tools/test_backlog_research.py",
+    "_tools/test_kbdecide.py"
   ],
   "notes": "backlog.py never calls kbcommon.leak_hits, so an item's text is not scanned before commit.",
   "claimed_by": "mac-sixth"
