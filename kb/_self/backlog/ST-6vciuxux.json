@@ -2,7 +2,7 @@
   "id": "ST-6vciuxux",
   "kind": "story",
   "title": "Sprint planning flags a file most of a sprint's items share",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -18,10 +18,12 @@
     }
   ],
   "touches": [
-    "_tools/backlog.py",
-    "_tools/test_backlog.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_check.py",
+    "_tools/test_bl_plan.py",
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
