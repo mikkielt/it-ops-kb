@@ -911,8 +911,9 @@ def run_argv(argv, cwd=None):
 
 
 # GitLab.com prefixes each log line with a timestamp and a stream marker: a 2-digit stream, O (stdout) or E
-# (stderr), and `+` on a line continued from the one before (`2026-09-29T01:06:40.889927Z 01O `, `00O+`)
-LOG_PREFIX_RE = re.compile(r"^\s*(?:\d{4}-\d\d-\d\dT[\d:.]+Z\s+(?:\d\d[OE]\+?\s)?\s*)?"
+# (stderr), and `+` on a line continued from the one before (`2026-09-29T01:06:40.889927Z 01O `, `00O+`, where the
+# text follows the `+` directly; a marker without `+` is followed by whitespace)
+LOG_PREFIX_RE = re.compile(r"^\s*(?:\d{4}-\d\d-\d\dT[\d:.]+Z\s+(?:\d\d[OE](?:\+\s*|\s))?\s*)?"
                            r"(?:section_(?:start|end):\d+:\S+\s*)?")
 TEST_ID_RES = (re.compile(r"^(?:FAILED|ERROR)\s+(\S+::\S+)"), re.compile(r"^(\S+::\S+)\s+(?:FAILED|ERROR)\b"))
 ERROR_LINE_RE = re.compile(r"\b(?:error|errors|failed|failure|traceback|exception|fatal)\b", re.I)
