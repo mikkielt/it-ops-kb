@@ -2,7 +2,7 @@
   "id": "BG-6a7jiylf",
   "kind": "bug",
   "title": "kb-sprint close never recognises the harness's worktree-agent branches, which carry no commits",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,18 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "66071c207c3670a5a0210bca14a6286bd596d681",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(0 if 'no commits beyond' in open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
