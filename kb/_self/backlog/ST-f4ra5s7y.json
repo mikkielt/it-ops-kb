@@ -2,7 +2,7 @@
   "id": "ST-f4ra5s7y",
   "kind": "story",
   "title": "No file of the tools, skills or docs names the autopilot agent feature, and the Windows Autopilot product is untouched",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ytfb4dc5",
   "priority": "P2",
   "rank": 0,
@@ -76,5 +76,46 @@
     }
   ],
   "notes": "Runs last, after the other two removals land. Traps: tests copy fixed tool lists into temp repos and break when a module goes (TOOL_FILES in test_backlog_research.py, KS_TOOLS in test_bl_check.py, copied_tools in test_kbdecide.py, hand lists in test_backlog.py, test_backlog_authority.py, test_bl_stall.py, test_kblog.py): git grep each removed module over _tools/test_*.py before landing. A literal deleted path in an open item's touches is a check error (use globs); done refuses a changed file outside touches (widen on the work branch); an item check `selfdoc.py stale` fails on any stale doc (read it, name it in Self-Reviewed). Use focused `-n 1` test runs; land in the background with the longest timeout; no writes in the clone during land or sync; rm -rf is denied; trailer order Co-Authored-By, Self-Reviewed, KB-Work. The Windows/Intune Autopilot product is never touched (kb/public/**, product lists in README.md, plugin.json, kb-lookup skill, .gitattributes csdl lines, _tools/tests_allowlist.txt).",
-  "claimed_by": "worker-f4ra5s7y"
+  "evidence": {
+    "commit": "a47ca2aa620e9efb24a16d90b5b49ad95b35aece",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; pat='autopilot[.]py|autopilot_rehearse|kb-autopilot|KB_HEADLESS_RUNNER|bl_bounds|--by autopilot'; r=subprocess.run(['git','grep','-n','-E',pat,'--','_tools','.claude','AGENTS.md','CLAUDE.md','kb/_self',':(exclude)kb/_self/_decisions.csv',':(exclude)kb/_self/backlog/',':(exclude)_tools/test_ids_dropped.txt'],capture_output=True,text=True); print(r.stdout+r.stderr); sys.exit(0 if r.returncode==1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "01ba4719c80b6fe9"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cohesion"
+        ],
+        "exit": 0,
+        "sha256": "56b349d94f09f21f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys; sys.exit(1 if any(os.path.exists('kb/_self/reports/'+n) for n in ('autopilot-digest.md','autopilot-throwaway.md')) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
