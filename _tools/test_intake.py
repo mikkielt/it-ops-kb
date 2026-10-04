@@ -1553,6 +1553,28 @@ def test_intake_ci_the_fingerprint_of_a_recorded_real_log_is_red_pipelines(tmp_p
     assert code == 0 and out[0].startswith(f"ci bug {fp} ") and fp != ci_fp("kb-tests-windows", "")
 
 
+def test_intake_ci_fingerprint_continuation_stream_marker_strips_with_no_space():
+    ts = "2026-09-29T01:06:40.9Z "
+    cases = [
+        ("FAILED a.py::t - x", "a.py::t"),
+        ("a.py::t FAILED", "a.py::t"),
+        ("RuntimeError: boom 42 failed", "RuntimeError: boom <n> failed"),
+    ]
+    for text, want in cases:
+        first = backlog.first_failure(ts + "01O " + text)
+        assert first == want
+        for marker in ("00O+", "01O+", "02E+", "01O+ "):
+            line = ts + marker + text
+            assert backlog.first_failure(line) == first, line
+            assert ci_fp("j", backlog.first_failure(line)) == ci_fp("j", first)
+        assert backlog.normalise_error_line(ts + "01E+" + text) == backlog.normalise_error_line(ts + "01E " + text)
+    # planted: a marker without + glued to text is real text, not stripped
+    assert backlog.first_failure(ts + "01OFAILED a.py::t") == ""
+    assert backlog.normalise_error_line(ts + "02Ofoo failed") == "<n>Ofoo failed"
+    assert backlog.normalise_error_line(ts + "02O+foo failed") == "foo failed"
+    assert backlog.normalise_error_line(ts + "02Efoo") == "<n>Efoo"
+
+
 def test_intake_ci_red_pipeline_files_the_candidate_the_detector_builds(tmp_path, monkeypatch, capsys, ci_register):
     """red-pipeline asks the detector's `pipeline_finding` for the bug: a candidate changed there changes the item."""
     w, _ = ci_world(tmp_path, monkeypatch, [{"id": 901, "sha": SHA, "status": "failed"}], RED_JOBS, RED_LOGS)
