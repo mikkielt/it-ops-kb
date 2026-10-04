@@ -40,13 +40,14 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
      In an interactive session, ask the operator at once as well.
 6. **Commit.** Commit the work with the trailer `KB-Work: ID` in the message's last paragraph, with `Co-Authored-By` and the other trailers (no blank line between them). Then `/kb-verify` on the changed files (and `/kb-self` if tools, skills, hooks or rules changed).
 7. **Prove and land** with one command, never the steps by hand: `python3 _tools/backlog.py land ID --branch <your branch> --trailer 'Co-Authored-By: ...'` (the branch defaults to `work/ID`; `main` if you worked there). Show its output. From a clean tree it fetches, rebases the branch on the integration `main`, then:
-   - a content-only item: `backlog.py done ID --commit` (`status`, `claimed_by` and `evidence` are written only by `claim` and `done`, never edited; `set` refuses them), `stress_test.py`, the lookup eval and the contract lint when the landing changed `_tools/`, and `kbgit.py sync --push`, straight to `main`;
+   - a content-only item: `backlog.py done ID --commit` (`status`, `claimed_by` and `evidence` are written only by `claim` and `done`, never edited; `set` refuses them), `selfdoc.py stale --since origin/main`, `stress_test.py`, the lookup eval and the contract lint when the landing changed `_tools/`, and `kbgit.py sync --push`, straight to `main`;
    - an item with a code-lane commit (`_tools/kblane.py`) not yet on the integration `main`: the same checks, then `sync --push`, which sends the range as a `code/<id>` merge request; `main` does not move and the item is not done yet. Then read the request: `glab mr view code/<id> -F json -R <project url>`. `state` `opened` with a `merge_error` is an auto-merge that failed: retry once with `python3 _tools/backlog.py merge <id>` and name the error in your report; a retry that fails too is reported with its error and left to the operator, never tried a third time. Report that and stop; on a later pass, once the request has merged, run the same `land` again: it rebases onto the merged `main`, runs `done --commit` and pushes the item file (a content-lane commit).
 
    It stops at the first failing step and names it (`land stopped at step <step>`); fix the cause and run it again:
    - `clean tree`: commit or stash your own changes (`git status --short`);
    - `rebase` (aborted, nothing changed): rebase by hand, resolving by meaning as `/kb-git-sync` does;
    - `done`: fix what it names (for an unmerged `code/<id>` request, merge it first) and commit;
+   - `stale`: `land` ran `selfdoc.py stale --since origin/main` over the rebased range first, before the stress run; read each doc it lists, edit it or name it in the `Self-Reviewed` trailer (amend the message whole with `git commit --amend -F`), then run it again;
    - `stress_test.py`, `rag.py eval`, `lint`: fix the cause, never the baseline;
    - `kbgit.py sync --push`: `/kb-git-sync`.
 
