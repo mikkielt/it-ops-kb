@@ -1856,6 +1856,53 @@ def test_ops_ci_pipeline_row_a_job_read_leaves_none_and_a_failing_log_never_fail
     assert red_pipeline(w.root) == 0 and len(filed(w.root)) == 1  # the bug is still filed
 
 
+def github_world(tmp_path, monkeypatch, runs, jobs_by_run):
+    """A repository whose origin is a GitHub project listing `runs` (newest first); `gh run view` answers the jobs in
+    `jobs_by_run` by run id and fails for a run missing from it. Returns the world and the ids of the runs viewed."""
+    tmp_path.mkdir(exist_ok=True)
+    w = World(tmp_path)
+    w.commit(0, "init", {"src/a.txt": "a\n"})
+    w.repo.git("remote", "add", "origin", "https://github.com/team/kb.git")
+    viewed = []
+    real = bl_intake.run_argv
+
+    def fake(argv, cwd=None):
+        if argv[:3] == ["gh", "run", "list"]:
+            return 0, json.dumps(runs), ""
+        if argv[:3] == ["gh", "run", "view"]:
+            viewed.append(int(argv[3]))
+            rid = int(argv[3])
+            return (0, json.dumps({"jobs": jobs_by_run[rid]}), "") if rid in jobs_by_run else (1, "", "HTTP 502")
+        if argv[0] == "gh":
+            return 0, "", ""
+        return real(argv, cwd=cwd)
+
+    monkeypatch.setattr(bl_intake, "run_argv", fake)
+    return w, viewed
+
+
+def test_red_pipeline_job_github_unreadable_is_unverified(tmp_path, monkeypatch, capsys):
+    runs = [{"databaseId": 802, "headSha": SHA, "status": "completed", "conclusion": "success", "url": "u2"},
+            {"databaseId": 801, "headSha": SHA, "status": "completed", "conclusion": "failure", "url": "u1"}]
+    older = [{"name": "kb-tests", "conclusion": "failure"}]  # a verdict, were the older run read
+    w, viewed = github_world(tmp_path, monkeypatch, runs, {801: older})
+    capsys.readouterr()
+    assert red_pipeline(w.root, "--status", "--job", "kb-tests") == 1
+    out = capsys.readouterr().out
+    assert "pipeline 802 of main is unverified" in out and "could not be read" in out, out
+    assert viewed == [802] and "801" not in out  # the older run is not read, and no verdict comes from it
+    # the newest run readable: its job decides, as before
+    w2, viewed = github_world(tmp_path / "ok", monkeypatch, runs, {802: [{"name": "kb-tests", "conclusion": "success"}],
+                                                                   801: older})
+    assert red_pipeline(w2.root, "--status", "--job", "kb-tests") == 0
+    assert "pipeline 802 of main is green" in capsys.readouterr().out and viewed == [802]
+    # a readable newest run without the job still goes on to the older one
+    w3, viewed = github_world(tmp_path / "other", monkeypatch, runs, {802: [{"name": "x", "conclusion": "success"}],
+                                                                      801: older})
+    assert red_pipeline(w3.root, "--status", "--job", "kb-tests") == 1
+    assert "pipeline 801 of main is red" in capsys.readouterr().out and viewed == [802, 801]
+
+
 def test_intake_core_fingerprint_pytest_id_space_in_brackets_is_read_whole():
     ff = backlog.first_failure
     assert ff("FAILED t.py::f[a b] - x") == "t.py::f[a b]"
