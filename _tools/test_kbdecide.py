@@ -1274,7 +1274,7 @@ def test_autopilot_ratify_digest_rewrites_the_default_file(repo):
     autopilot_decision(repo)
     code, out = repo.decide("digest")
     assert code == 0, out
-    assert "ST-aaaaaaaa" in (repo.path / "kb" / "_self" / "reports" / "autopilot-digest.md").read_text(encoding="utf-8")
+    assert "ST-aaaaaaaa" in (repo.path / "kb" / "_self" / "reports" / "decision-digest.md").read_text(encoding="utf-8")
 
 
 def disagreement_lines(repo):

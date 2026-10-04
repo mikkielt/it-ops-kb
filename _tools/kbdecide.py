@@ -34,7 +34,7 @@
                                          the operator withdraws an autopilot decision: it is invalidated (its row stays)
                                          and a story to undo what it changed is filed with `backlog.py new story`;
                                          refused without `--by operator`
-  kbdecide.py digest [--out PATH] [--commit]   write kb/_self/reports/autopilot-digest.md: the autopilot's decisions not yet
+  kbdecide.py digest [--out PATH] [--commit]   write kb/_self/reports/decision-digest.md: the autopilot's decisions not yet
                                          ratified, the restricted classes (secrets, push, querylog, agents-rule, delete)
                                          first, each group oldest first, with item, gate, answer and `review_by`;
                                          above them, the share of every autopilot decision the operator reverted and
@@ -479,7 +479,7 @@ def cmd_restore(a):
 
 ORIGIN = re.compile(r"backlog item (\S+) gate (\S+)")  # the source of a decision `backlog.py answer --record` writes
 RESTRICTED = ("secrets", "push", "querylog", "agents-rule", "delete")  # the classes the digest lists first
-DIGEST = Path(kbcommon.SELF) / "reports" / "autopilot-digest.md"
+DIGEST = Path(kbcommon.SELF) / "reports" / "decision-digest.md"
 
 
 def autopilot_row(rows, did, store, what):
@@ -1077,7 +1077,7 @@ def parser():
     p.add_argument("--by", help=f"must be {OPERATOR}")
     p.add_argument("--why", help="why the operator reverts it")
     p.add_argument("--date", help="YYYY-MM-DD (default: today)")
-    p = sub.add_parser("digest", help="write the unratified autopilot decisions to kb/_self/reports/autopilot-digest.md")
+    p = sub.add_parser("digest", help="write the unratified autopilot decisions to kb/_self/reports/decision-digest.md")
     p.add_argument("--out", help="write here instead")
     p.add_argument("--commit", action="store_true", help="commit the written file (only it) when it changed")
     p = sub.add_parser("makers", help="show or set how a root saves its decision makers")

@@ -4,7 +4,7 @@ The autopilot's decisions the operator has not ratified, written by `python3 _to
 
 ## Disagreement
 
-- Reverted by the operator: 0 of 0 autopilot decisions
-- Contradicting an earlier decision of the same gate and class: 0 of 0 autopilot decisions
+- Reverted by the operator: 0 of 2 (0%) autopilot decisions
+- Contradicting an earlier decision of the same gate and class: 0 of 2 (0%) autopilot decisions
 
 No unratified autopilot decisions.

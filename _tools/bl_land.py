@@ -934,7 +934,7 @@ def record_close(bl, sid, items):
 
 def prune_runner_cache(root, sid):
     """Remove _cache/autopilot/SID, the autopilot runner's records of the sprint just closed (status.json and the
-    streams): they are untracked and no longer of use, and `autopilot.py status` would list them."""
+    streams): they are untracked and no longer of use."""
     d = Path(root) / "_cache" / "autopilot" / sid
     if ID_RE.fullmatch(sid) and d.is_dir() and not d.is_symlink():
         shutil.rmtree(d, ignore_errors=True)

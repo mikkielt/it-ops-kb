@@ -19,7 +19,7 @@ from test_sync import clones
 GATE = ("gate", "add")
 GATE_ARGS = ("--kind", "blocking", "--id", "g9", "--question", "Which colour?", "--option", "a", "--option", "b",
              "--recommendation", "a", "--do", "a=true", "--do", "b=true")
-DIGEST = "kb/_self/reports/autopilot-digest.md"
+DIGEST = "kb/_self/reports/decision-digest.md"
 
 
 def an_item(clone):
