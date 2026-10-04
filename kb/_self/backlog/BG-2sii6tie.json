@@ -2,7 +2,7 @@
   "id": "BG-2sii6tie",
   "kind": "bug",
   "title": "close deletes an item that an answered gate's do still names, and check then refuses that gate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ummegr5o",
   "priority": "P3",
   "rank": 0,
@@ -27,8 +27,9 @@
     }
   ],
   "touches": [
-    "_tools/backlog.py",
-    "_tools/test_backlog.py",
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "orch-fourth-s2"
 }
