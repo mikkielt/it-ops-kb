@@ -2,7 +2,8 @@
   "id": "ST-vntp555z",
   "kind": "story",
   "title": "kb-item reads only the runbook sections that working one item needs, and one session works one item",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-ytfb4dc5",
   "priority": "P1",
   "rank": 0,
   "goal": "The reading command at the top of the kb-item skill prints at most 30000 bytes (today about 71 KB, about 18k tokens that stay in context as cache reads on every later turn); the 22 KB of procs, red-pipeline, intake detector, self-check and stalled reference inside 'Working on items' move under their own heading outside that list; step 7 says to run land in the background with the longest timeout (a foreground land is lost at the 10-minute limit); step 8 says the next item starts in a fresh session. Planted test: the section list stays under the byte bound.",
@@ -25,6 +26,11 @@
   ],
   "touches": [
     "kb/_self/backlog.md",
-    ".claude/skills/kb-item/SKILL.md"
-  ]
+    ".claude/skills/kb-item/SKILL.md",
+    "AGENTS.md"
+  ],
+  "depends_on": [
+    "ST-f4ra5s7y"
+  ],
+  "notes": "Premise: the reading command at the top of the kb-item skill (selfdoc.py section over The item file, Dependencies, gates and triggers, Definition of done, Working on items, Git and Conduct for changes) prints 70888 bytes on origin/main 782d07f1, against the 30000-byte bound of the goal; the item's first check exits 1 until the sections shrink. It waits on ST-f4ra5s7y “No file of the tools, skills or docs names the autopilot agent feature, and the Windows Autopilot product is untouched”, the last retirement edit of kb/_self/backlog.md, so the bound is measured on the runbook without the autopilot text."
 }

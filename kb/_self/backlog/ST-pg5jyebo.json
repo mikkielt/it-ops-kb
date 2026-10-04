@@ -2,8 +2,9 @@
   "id": "ST-pg5jyebo",
   "kind": "story",
   "title": "A Claude session on the Windows host records a run of both suites",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
+  "sprint": "SP-w3xmbdra",
   "priority": "P1",
   "rank": 0,
   "goal": "kb/_self/reports/windows-run.md records the commit, the host and the results of tests.py and stress_test.py as run by a Claude session on the Windows host, and a test fails when the record names a commit that is not an ancestor of HEAD or lacks either suite's result",
@@ -22,5 +23,9 @@
     "_tools/test_kb_cohesion.py",
     "kb/_self/maintaining.md"
   ],
-  "notes": "Kept as a draft: the run it records needs a Claude session on the Windows host, and no sprint runs there; schedule it when such a session exists."
+  "trigger": {
+    "when": "a Claude session runs in a clone on the Windows host and can run tests.py and stress_test.py there",
+    "fired": false
+  },
+  "notes": "Its run needs a Claude session in a clone on the Windows host; the trigger holds it until one exists (fire it with backlog.py fire ST-pg5jyebo), and the same session can run ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator”."
 }
