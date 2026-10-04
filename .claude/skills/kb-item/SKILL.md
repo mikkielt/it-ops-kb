@@ -47,7 +47,8 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    - `clean tree`: commit or stash your own changes (`git status --short`);
    - `rebase` (aborted, nothing changed): rebase by hand, resolving by meaning as `/kb-git-sync` does;
    - `done`: fix what it names (for an unmerged `code/<id>` request, merge it first) and commit;
-   - `stale`: `land` ran `selfdoc.py stale --since origin/main` over the rebased range first, before the stress run; read each doc it lists, edit it or name it in the `Self-Reviewed` trailer (amend the message whole with `git commit --amend -F`), then run it again;
+   - `checks` (a code item): its check or repro failed before anything was pushed; fix the cause and commit;
+   - `stale`: `land` ran `selfdoc.py stale --since origin/main` over the rebased range before the stress run; read each doc it lists, edit it or name it in the `Self-Reviewed` trailer (amend the message whole with `git commit --amend -F`), then run it again;
    - `stress_test.py`, `rag.py eval`, `lint`: fix the cause, never the baseline;
    - `kbgit.py sync --push`: `/kb-git-sync`.
 

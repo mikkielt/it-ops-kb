@@ -663,14 +663,89 @@ def restore_done(root, iid):
     return item_state(root, "HEAD", iid) == "done"
 
 
+SYNTAX_ERROR = re.compile(r"(SyntaxError|IndentationError|TabError)\b")
+FRAME = re.compile(r'File "([^"]*)", line \d+')
+NOT_FOUND = re.compile(r"is not recognized as an internal or external command"
+                       r"|^\S+: (line \d+: )?\S+: command not found$", re.M)
+
+
+def own_code(argv, path):
+    """True when a frame's file is the repro's own code: the -c string, or the script python runs (argv[1])."""
+    if path == "<string>":
+        return True
+    script = argv[1] if len(argv) > 1 and not argv[1].startswith("-") else None
+    if not script:
+        return False
+    p, s = (os.path.normcase(os.path.normpath(x)) for x in (path, script))
+    return p == s or p.endswith(os.sep + s)
+
+
+def own_failure(argv, code, out):
+    """Why a failing repro failed for its own error rather than the defect, or None when its failure may be the
+    defect's: it cannot start (not found; exit 127 or 9009, or a shell's or python -m's lone not-found message);
+    Python cannot compile its own code (a
+    SyntaxError in the -c string or the script it names, before anything is tested); the tool it runs rejects its
+    arguments (argparse's exit 2 with usage: and error:); or a pytest run selected no tests (exit 5, or no tests ran).
+    A failed assertion, a traceback from the code under test or a finding with exit 1 is a failure it accepts."""
+    lines = [ln.strip() for ln in out.strip().splitlines() if ln.strip()]
+    last = lines[-1][:200] if lines else ""
+    alone = len(lines) <= 3  # a shell's or interpreter's one message, not a tool's output that mentions one
+    if ((code is None and out.startswith("cannot start")) or code in (127, 9009)
+            or (alone and NOT_FOUND.search(out)) or (alone and argv[1:2] == ["-m"] and "No module named " in out)):
+        msg = next((ln[:200] for ln in lines if NOT_FOUND.search(ln) or "No module named " in ln), last)
+        return f"the command cannot start ({msg or f'exit {code}'})"
+    if code is None:
+        return None
+    for i, ln in enumerate(lines):
+        if not SYNTAX_ERROR.match(ln):
+            continue
+        frame = next((m for m in map(FRAME.search, reversed(lines[:i])) if m), None)  # the frame it points at
+        if frame and own_code(argv, frame.group(1)):
+            return (f"Python cannot compile the repro's own code ({ln[:200]}): it fails before it tests anything, "
+                    "whatever the defect does (a backslash in a Python string, or newlines lost in --repro's "
+                    "split: use / in paths and ; between statements, or put the code in a script)")
+    if code == 2 and re.search(r"^usage: ", out, re.M) and re.search(r"^\S+: error: ", out, re.M):
+        err = next((ln for ln in lines if re.match(r"\S+: error: ", ln)), last)[:200]
+        return (f"the tool rejects the repro's arguments ({err}): a usage error tests nothing (when the rejection is "
+                "the defect, write a repro that runs the tool and exits 1 on it)")
+    if re.search(r"\bno tests ran\b", out) or (code == 5 and re.search(r"\bdeselected\b", out)):
+        return f"the test run selected no tests (exit {code}: {last}): a -k or path that matches nothing reproduces nothing"
+    return None
+
+
+def land_checks(bl, iid):
+    """The code lane's checks stage: run the item's checks and a bug's repro, as done does, before sync --push opens
+    the auto-merging code/<id> merge request, so nothing is pushed for an item whose proof fails. A check whose test
+    run selected nothing is named as malformed, as a repro's own error is when the bug is filed."""
+    it = bl.items[iid]
+    checks = list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else [])
+    say("land: checks")
+    ops_mark("checks")
+    failed = []
+    for c in checks:
+        ok, code, out = run_check(bl.root, c)
+        say(f"{'ok  ' if ok else 'FAIL'} exit={code} {shlex.join(c['run'])}")
+        if not ok:
+            failed.append((c, code, out))
+    if not failed:
+        return
+    for c, code, out in failed:
+        why = own_failure(c["run"], code, out)
+        tail = "\n".join(out.strip().splitlines()[-8:])
+        say(f"--- {shlex.join(c['run'])} (want exit {c.get('exit', 0)}"
+            + (f", output matching {c['match']!r}" if c.get("match") else "") + ")"
+            + (f" is a malformed check: {why}" if why else "") + f":\n{tail}")
+    raise land_stop("checks", f"{len(failed)} check(s) of {bl.label(iid)} failed: nothing was pushed")
+
+
 @ops_land
 def cmd_land(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
-    heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the heavy checks, sync
-    --push (a code/<id> merge request; main does not move), and a re-run once it has merged finishes it as content
-    does. Stops at the first failing step, naming it. Every run and every stop ends on the branch (or the detached
-    commit) it started on: the rebase switches to the landed branch, and a claim --commit made after land must not
-    ride on it into its merge request."""
+    heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the item's checks and
+    a bug's repro, the heavy checks, sync --push (a code/<id> merge request; main does not move), and a re-run once
+    it has merged finishes it as content does. Stops at the first failing step, naming it. Every run and every stop ends
+    on the branch (or the detached commit) it started on: the rebase switches to the landed branch, and a claim
+    --commit made after land must not ride on it into its merge request."""
     import kbpublic
     import kg_lock  # the host's main lock: the fetch and rebase hold it, the sync --push it runs takes it itself
     iid = need(bl, a.id)
@@ -755,6 +830,8 @@ def cmd_land(bl, a):
                 except Refused as e:
                     raise land_stop("done", str(e)) from None
                 land_git(root, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
+        if late:  # the code lane pushes an auto-merging merge request: its proof runs before that, not after
+            land_checks(bl, iid)
         changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
             land_run(root, LAND_STALE[0], [*LAND_STALE[1], upstream])  # a missing Self-Reviewed fails in seconds
