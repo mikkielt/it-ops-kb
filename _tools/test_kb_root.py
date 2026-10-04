@@ -10,6 +10,8 @@ that root alone (kb_mcp.py --roots) still answers its question `good`.
 """
 import csv, glob, json, os, subprocess, sys
 
+import pytest
+
 import kbcommon, kbid
 from conftest import KB, TOOLS
 
@@ -85,33 +87,43 @@ def run(tool, *args, roots=None, data=None):
     return p.returncode, p.stdout + p.stderr
 
 
-def test_second_root_is_packed_filtered_and_shown(tmp_path):
-    root = str(tmp_path / "team-kb")
+@pytest.fixture(scope="module")
+def read_only_root(tmp_path_factory):
+    """(root, index directory) for the tests that only read the fixture root: one root, and one pack index that the
+    first call builds and the rest reuse, instead of each test parsing the whole kb for every call (about 2.4 s)."""
+    base = tmp_path_factory.mktemp("read-only-root")
+    root = str(base / "team-kb")
     make_root(root)
-    code, out = run("rag.py", "pack", QUESTION, roots=root)
+    return root, str(base / "index")
+
+
+def test_second_root_is_packed_filtered_and_shown(read_only_root):
+    root, data = read_only_root
+    code, out = run("rag.py", "pack", QUESTION, roots=root, data=data)
     assert out.startswith("coverage: good") and "fixture/print/queues.md:" in out and URL in out, out[:600]
     assert f"-> {SID}  {URL}" in out, "the source footer resolves the second root's id"
-    code, out = run("rag.py", "pack", QUESTION, "--root", "public", roots=root)
+    code, out = run("rag.py", "pack", QUESTION, "--root", "public", roots=root, data=data)
     assert "fixture/print/queues.md" not in out, "--root public leaves the fixture root out: " + out[:300]
-    code, out = run("rag.py", "pack", "What is the default Windows LAPS password length?", "--root", "fixture", roots=root)
+    code, out = run("rag.py", "pack", "What is the default Windows LAPS password length?", "--root", "fixture", roots=root,
+                    data=data)
     assert out.startswith("coverage: none"), "--root fixture holds only its own facts: " + out[:300]
     line = next(n for n, ln in enumerate(ARTICLE.splitlines(), start=1) if "14 days" in ln)
-    code, out = run("rag.py", "show", f"fixture/print/queues.md:{line}", "-n", "1", roots=root)
+    code, out = run("rag.py", "show", f"fixture/print/queues.md:{line}", "-n", "1", roots=root, data=data)
     assert code == 0 and "14 days" in out, out
-    code, out = run("rag.py", "src", SID, "--cited", roots=root)
+    code, out = run("rag.py", "src", SID, "--cited", roots=root, data=data)
     assert URL in out and "cited at fixture/print/queues.md:" in out, out
 
 
-def test_second_root_ledgers_signals_and_eval(tmp_path):
-    root = str(tmp_path / "team-kb")
-    make_root(root)
+def test_second_root_ledgers_signals_and_eval(read_only_root):
+    root, data = read_only_root
     code, out = run("rag.py", "audit", "--root", "fixture", "--entries", roots=root)
     assert "| fixture/print/queues.md | partial |" in out and "fixture/print/queues  gaps: fixture/_gaps.md:3" in out, out
     code, out = run("rag.py", "topics-for", "--keywords", "the spooler service", roots=root)
     assert "- fixture/print/queues  spooler" in out, "a root's signals name its own topics: " + out
     code, out = run("rag.py", "facts", "print", roots=root)
     assert "fixture/print/queues.md" in out and "facts=2" in out, "a bare prefix covers the domain in every root: " + out
-    code, out = run("rag.py", "--json", "eval", "--file", os.path.join(root, "_retrieval", "lookup_eval.csv"), roots=root)
+    code, out = run("rag.py", "--json", "eval", "--file", os.path.join(root, "_retrieval", "lookup_eval.csv"), roots=root,
+                    data=data)
     res = json.loads(out[out.index("{"):])
     assert res["passed"] == 1 and res["rows"][0]["found"] == ["fixture/print/queues.md"], res["rows"]
     code, out = run("rag.py", "search", "purges queues task", "--index", "--root", "fixture", roots=root)
