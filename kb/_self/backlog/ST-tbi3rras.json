@@ -60,7 +60,9 @@
     "kb/_self/tools.md",
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py"
   ],
   "notes": "Tiers before the story: a worker runs the item's checks and tests.py --changed origin/main; land runs done, stress_test.py, rag.py eval and lint, then the sync gate runs --changed again; the review story runs the full tests.py once. After it: the worker runs no --changed, stress_test.py runs once at sprint end, and a red end run is bisected over the sprint's landings with its bug fixed by a worker dispatched at once. The story is large: /kb-item splits it into tasks (land and review checks; worker brief and docs; the bisect subcommand and the kb-sprint step). Mid-sprint heavy runs are scheduled by ST-t7xxgt47 from each landing's measured test impact; the bisect runs over the landings since the last heavy run and waits on ST-zkotxvdl's host lock. Each bisect step is recorded as an ops bisect.step row once the ops sidecar exists."
 }

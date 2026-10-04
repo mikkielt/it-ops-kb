@@ -18,5 +18,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Rank 5 of the 5 active sprints. Cuts the full suite's wall time without losing a test: fresh scenario clones reuse the seed's pack index, query-log and git scenarios share their setup and drop proven duplicates, and tests over live data hold at any size. Last because its gain is speed only, and once ST-tbi3rras “Sprint runs test in three tiers: narrow per task, the gate per landing, the heavy suites once at sprint end” lands the full suite runs once per sprint, not once per landing. The exception is ST-2zl2od7q “Tests over the repository's live data do not depend on its size”: it stops a growing backlog or kb from turning main red and can be worked ahead of the rest. ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator” needs the operator on the Windows host, since no agent changes Defender, disks or CPU caps."
 }

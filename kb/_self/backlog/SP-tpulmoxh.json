@@ -18,5 +18,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Rank 2 of the 5 active sprints. Ends the split of the two largest tools: backlog.py and kbgit.py keep only their command line, usage and dispatch, with the code in bl_ and kg_ modules and every test name kept. The kbgit.py split is complete; ST-pkprc4oy “kbgit.py splits along its change boundaries behind the unchanged CLI” and ST-e4nkkkm2 “A split of a shared file lands without blocking other work” have all their tasks done and wait only for done. What is left is TK-dtybnlcg “bl_ci.py holds the CI readers and the red-pipeline command”, TK-urxtzpya “bl_view.py holds horizon and the read-only views” and then TK-xs5zfyo5 “backlog.py is the facade: its commands, usage and dispatch only”, whose test fails when backlog.py defines more than its dispatch. Second because it is short and the two bug sprints after it edit backlog.py: once it lands each fix goes into the module that owns its code, and the facade test keeps new code out of backlog.py. Each move is a shared-file move (kb-sprint run step 2): it starts when no claimed item holds backlog.py."
 }

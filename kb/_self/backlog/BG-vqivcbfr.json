@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "An item that new writes as todo into an active sprint cannot reach done without scope: new refuses a work item into an active sprint without --touch (or done refuses a work item with no touches of its own or under it), matching the rule start enforces; test_backlog.py's test_done_refuses_active_sprint_item_without_touches files, claims and runs done on such a bug with no commit.",
+  "goal": "An item that new writes as todo into an active sprint cannot reach done without scope: new refuses a work item into an active sprint without --touch (or done refuses a work item with no touches of its own or under it), matching the rule start enforces; test_bl_land.py's test_done_refuses_active_sprint_item_without_touches files, claims and runs done on such a bug with no commit.",
   "repro": {
     "run": [
       "python3",
@@ -30,6 +30,8 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py"
   ]
 }

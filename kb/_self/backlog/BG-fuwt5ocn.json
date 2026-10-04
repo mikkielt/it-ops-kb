@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "backlog.py check does not report a stale touch on an open item whose own KB-Work commits deleted that path (the item that removes a file must name it, or done refuses the deletion as outside its scope), and still reports the path on any other open item; a planted test in _tools/test_backlog.py covers both",
+  "goal": "backlog.py check does not report a stale touch on an open item whose own KB-Work commits deleted that path (the item that removes a file must name it, or done refuses the deletion as outside its scope), and still reports the path on any other open item; a planted test in _tools/test_bl_plan.py covers both",
   "repro": {
     "run": [
       "python3",
@@ -19,6 +19,8 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_plan.py",
+    "_tools/test_bl_plan.py"
   ]
 }

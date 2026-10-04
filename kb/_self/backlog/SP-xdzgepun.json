@@ -18,5 +18,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Rank 4 of the 5 active sprints. Makes backlog.py check, new, done, close and horizon refuse or report exactly what breaks the backlog. Every open item is an S3 bug or a P3 story: each has a workaround, but each costs a session a refused done, a false warning or a touch widening when it hits. First in it are the bugs that let an item finish wrongly or not at all: BG-2hxjopue “done can never close an item whose only touches are item files, so a planning-data fix has no way to finish”, BG-vqivcbfr “An item filed into an active sprint without touches is done with no commit” and BG-iafrnmc3 “backlog.py check stays silent when a code task's docs sit in a sibling, an earlier task or its parent”. Fourth because its bugs edit the modules the split and the landing sprint change. Its bugs name in their touches the bl_ module that holds the code they change (bl_land.py for own_failure and done, bl_plan.py for stale_touches and docs_warnings, bl_base.py for the name pieces, bl_check.py for the check warnings) and the test file the split layout tests require for their tests (test_bl_land.py, test_bl_plan.py, test_bl_check.py). BG-iu53ncyj “horizon and its hook do not show an approved planned sprint while another sprint is active” names backlog.py, where horizon lives until TK-urxtzpya “bl_view.py holds horizon and the read-only views” moves it."
 }

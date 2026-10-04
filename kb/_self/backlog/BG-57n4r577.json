@@ -17,6 +17,6 @@
   },
   "repro_reason": "the defect is an absent test; the only thing to observe is whether the test exists, so the repro reads the test file for its name",
   "touches": [
-    "_tools/test_backlog.py"
+    "_tools/test_bl_land.py"
   ]
 }
