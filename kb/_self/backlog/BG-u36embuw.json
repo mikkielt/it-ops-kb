@@ -1,0 +1,17 @@
+{
+  "id": "BG-u36embuw",
+  "kind": "bug",
+  "title": "Close and kbusage still handle the retired autopilot runner's leftovers",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_land.py no longer prunes _cache/autopilot or removes runner-<SP> worktrees and orch/<SP> branches at close (it keeps the agent-* worktree, work/<id> and worktree-agent-* cleanup the manual close uses), kbusage.py reads no runner streams, and the kb-sprint skill's Clean up step and test_kb_sprint_close_cleanup.py name none of them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_land; sys.exit(hasattr(bl_land, 'prune_runner_cache') or hasattr(bl_land, 'RUNNER_SPRINT_ENV'))"
+    ]
+  }
+}
