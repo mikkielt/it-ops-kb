@@ -2,7 +2,7 @@
   "id": "BG-2gpsaosi",
   "kind": "bug",
   "title": "red-pipeline --job on GitHub skips a run whose job list it cannot read",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-mguj7foz",
   "priority": "P3",
@@ -24,5 +24,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "seventh-w48"
+  "evidence": {
+    "commit": "5508ac6d263fe7ee8e80e021b861b9b8f5725d74",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "red_pipeline_job_github_unreadable_is_unverified"
+        ],
+        "exit": 0,
+        "sha256": "dcaf36fbad3e9ac6"
+      }
+    ]
+  }
 }
