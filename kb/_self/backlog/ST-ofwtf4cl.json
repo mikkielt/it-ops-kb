@@ -2,7 +2,7 @@
   "id": "ST-ofwtf4cl",
   "kind": "story",
   "title": "The bounds, the stall remedies, the autopilot selfcheck and the autopilot answer path are removed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ytfb4dc5",
   "priority": "P1",
   "rank": 0,
@@ -37,7 +37,8 @@
     }
   ],
   "touches": [
-    "_tools/bl_bounds.py",
+    "_tools/bl_bounds*.py",
+    "_tools/test_bl_bounds*.py",
     "_tools/bl_stall.py",
     "_tools/bl_selfcheck.py",
     "_tools/bl_authority.py",
@@ -45,16 +46,35 @@
     "_tools/bl_check.py",
     "_tools/backlog.py",
     "_tools/kbdecide.py",
+    "_tools/bl_intake.py",
+    "_tools/bl_base.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_land.py",
+    "_tools/kbusage.py",
     "_tools/test_bl_stall.py",
     "_tools/test_bl_selfcheck.py",
+    "_tools/test_backlog_authority.py",
+    "_tools/test_bl_authority_*.py",
+    "_tools/test_backlog_headless_*.py",
+    "_tools/test_kbdecide.py",
+    "_tools/test_backlog_research.py",
+    "_tools/test_layout.py",
+    "_tools/test_bl_land.py",
+    "_tools/test_kbusage.py",
+    "_tools/test_bl_check.py",
+    "_tools/test_backlog.py",
+    "_tools/test_kblog.py",
     "_tools/test_ids_dropped.txt",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/content-rules.md"
+    "kb/_self/content-rules.md",
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md"
   ],
   "depends_on": [
     "ST-dh5g3lk7"
   ],
-  "notes": "Still present: bl_bounds.py; bl_stall ladder and --took; bl_selfcheck host-runners; bl_authority AUTOPILOT, AUTOPILOT_REFUSED, autopilot_may_answer, REVIEW_DAYS and --by autopilot; kbdecide --by autopilot (keep ratify, revert, digest, gate classes and 'only the operator answers a gate'). Tests naming it: test_backlog_authority.py 60, test_kbdecide.py 53, test_bl_authority_trust.py 32, test_backlog_headless_operator.py 19, test_bl_bounds.py 11, test_backlog_research.py 11. bl_authority.py and kbdecide.py are agents-rule files. Also still present: kbusage.py rot metrics reading _cache/autopilot, bl_land.py prune_runner_cache and clean_runner_leftovers, bl_base live_runners and MAX_RUNNERS: remove or file a bug each if outside touches. Traps: tests copy fixed tool lists into temp repos and break when a module goes (TOOL_FILES in test_backlog_research.py, KS_TOOLS in test_bl_check.py, copied_tools in test_kbdecide.py, hand lists in test_backlog.py, test_backlog_authority.py, test_bl_stall.py, test_kblog.py): git grep each removed module over _tools/test_*.py before landing. A literal deleted path in an open item's touches is a check error (use globs); done refuses a changed file outside touches (widen on the work branch); an item check `selfdoc.py stale` fails on any stale doc (read it, name it in Self-Reviewed). Use focused `-n 1` test runs; land in the background with the longest timeout; no writes in the clone during land or sync; rm -rf is denied; trailer order Co-Authored-By, Self-Reviewed, KB-Work. The Windows/Intune Autopilot product is never touched (kb/public/**, product lists in README.md, plugin.json, kb-lookup skill, .gitattributes csdl lines, _tools/tests_allowlist.txt)."
+  "notes": "Still present: bl_bounds.py; bl_stall ladder and --took; bl_selfcheck host-runners; bl_authority AUTOPILOT, AUTOPILOT_REFUSED, autopilot_may_answer, REVIEW_DAYS and --by autopilot; kbdecide --by autopilot (keep ratify, revert, digest, gate classes and 'only the operator answers a gate'). Tests naming it: test_backlog_authority.py 60, test_kbdecide.py 53, test_bl_authority_trust.py 32, test_backlog_headless_operator.py 19, test_bl_bounds.py 11, test_backlog_research.py 11. bl_authority.py and kbdecide.py are agents-rule files. Also still present: kbusage.py rot metrics reading _cache/autopilot, bl_land.py prune_runner_cache and clean_runner_leftovers, bl_base live_runners and MAX_RUNNERS: remove or file a bug each if outside touches. Traps: tests copy fixed tool lists into temp repos and break when a module goes (TOOL_FILES in test_backlog_research.py, KS_TOOLS in test_bl_check.py, copied_tools in test_kbdecide.py, hand lists in test_backlog.py, test_backlog_authority.py, test_bl_stall.py, test_kblog.py): git grep each removed module over _tools/test_*.py before landing. A literal deleted path in an open item's touches is a check error (use globs); done refuses a changed file outside touches (widen on the work branch); an item check `selfdoc.py stale` fails on any stale doc (read it, name it in Self-Reviewed). Use focused `-n 1` test runs; land in the background with the longest timeout; no writes in the clone during land or sync; rm -rf is denied; trailer order Co-Authored-By, Self-Reviewed, KB-Work. The Windows/Intune Autopilot product is never touched (kb/public/**, product lists in README.md, plugin.json, kb-lookup skill, .gitattributes csdl lines, _tools/tests_allowlist.txt).",
+  "claimed_by": "worker-ofwtf4cl"
 }
