@@ -19,7 +19,7 @@ The same code runs on Linux, macOS and Windows.
 
 ## Git in tests
 
-- **A test never acts on the real repository.** `_tools/conftest.py` removes the variables that name a repository (`GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE` and the others) from the environment before any test, because a git hook sets them and a run it starts would inherit them.
+- **A test never acts on the real repository.** `_tools/conftest.py` removes the variables that name a repository (`GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE` and the others) from the environment before any test, because a git hook sets them and a run it starts would inherit them. It clears `KB_NO_PUBLISH_HOOK` and `KB_HEADLESS_RUNNER` the same way (at import, so in every xdist worker, and again before each test), because the manager session and every runner export them and a test that needs one sets it itself with `monkeypatch`.
 - **A scenario builds its own repository** in a temporary directory, with `git_env()` for its environment: no global or system git config, a fixed author and committer, and none of the variables that leak a CI run or a verification date. The `Repo` helper runs git in such a directory.
 
 ## Output

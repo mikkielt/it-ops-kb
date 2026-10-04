@@ -26,7 +26,7 @@
                    public home (git config kb.publishRemote); a clone without one pushes it; the pre-push hook of a kb
                    clone refuses a plain push to the public home.
 """
-import argparse, ast, hashlib, json, os, re, shutil
+import argparse, ast, hashlib, json, os, re, shutil, subprocess, sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -900,3 +900,32 @@ class TestPublishTreeGuid:
         assert tree_guid_hits(r.path) == [("kb/public/notes.md", 1)]  # the dropped paths are not scanned
         commit(r, {"_tools/tests_allowlist.txt": f"guid {self.PLANT.upper()}  # reviewed\n"}, "allow")
         assert tree_guid_hits(r.path) == []
+
+
+class TestConftestClearsHookOff:
+    """conftest clears KB_NO_PUBLISH_HOOK and KB_HEADLESS_RUNNER before every test, so a run whose parent process had
+    one (the manager session, a runner) gives the same result: a test inside sees neither (`-k conftest_clears`)."""
+
+    def inner(self, tmp_path, var, expect="1"):
+        t = tmp_path / "test_inner.py"
+        t.write_text(f"import os\n\ndef test_inner():\n    assert {var!r} not in os.environ\n", encoding="utf-8")
+        env = {**os.environ, "PYTHONPATH": TOOLS, var: expect, "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"}
+        return subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "conftest", "-p", "no:cacheprovider",
+                               "--rootdir", str(tmp_path), str(t)], cwd=tmp_path, env=env, capture_output=True,
+                              text=True, timeout=120)
+
+    def test_conftest_clears_kb_no_publish_hook_for_every_test(self, tmp_path):
+        r = self.inner(tmp_path, kbpublic.NO_HOOK_ENV)
+        assert r.returncode == 0, r.stdout + r.stderr
+
+    def test_conftest_clears_kb_headless_runner_for_every_test(self, tmp_path):
+        r = self.inner(tmp_path, kbpublic.HEADLESS_ENV)
+        assert r.returncode == 0, r.stdout + r.stderr
+
+    def test_conftest_clearing_is_what_makes_the_inner_test_pass(self, tmp_path):
+        t = tmp_path / "test_inner.py"  # planted: without conftest the same test sees the variable and fails
+        t.write_text("import os\n\ndef test_inner():\n    assert 'KB_NO_PUBLISH_HOOK' not in os.environ\n", encoding="utf-8")
+        env = {**os.environ, kbpublic.NO_HOOK_ENV: "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"}
+        r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "--rootdir", str(tmp_path),
+                            str(t)], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=120)
+        assert r.returncode != 0
