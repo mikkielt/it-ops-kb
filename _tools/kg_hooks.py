@@ -59,13 +59,58 @@ def hooks_path_is_ours(cur):
     return d in others and all((d / h).is_file() for h in HOOKS)
 
 
-def lane_refusals(remote, stdin):
+def to_integration(remote, url=None):
+    """Whether a push to REMOTE (a remote name or a url; URL is the url git pushes to, when known) reaches the
+    integration remote: by its name, or by a url equal to one of its fetch or push urls (the way kbpublic.is_public
+    reads the public home), so a push by url or through another remote name pointing at it is judged like `origin`."""
+    named = kbpublic.integration_remote(KB)
+    if remote == named:
+        return True
+    if url is None:
+        url = (git("remote", "get-url", remote) or "").strip() or remote
+    urls = set()
+    for flags in ((), ("--push",)):
+        urls |= {u.strip() for u in (git("remote", "get-url", "--all", *flags, named) or "").splitlines()}
+    urls.discard("")
+    return bool(urls & {url, remote})
+
+
+def new_lanes(spec):
+    """[(short hash, lane, code paths)] of `git log SPEC`, oldest first, like kblane.commit_lanes except that a merge
+    commit is judged on the paths it changes against every parent: what a side brings is judged in that side's own
+    commits, so a merge-pull of content over a merged code merge request is content. A git failure on a merge counts
+    as code, never as content. None when git fails."""
+    log = git("log", "--reverse", "--format=%H %h %p", *spec)
+    if log is None:
+        return None
+    res = []
+    for ln in log.splitlines():
+        sha, short, *parents = ln.split()
+        if len(parents) < 2:
+            lanes = kblane.commit_lanes(KB, [sha + "^!"])
+            if lanes is None:
+                return None
+            res += lanes
+            continue
+        paths = git("diff-tree", "-r", "--no-renames", "--name-only", "-z", "--no-commit-id", "-c", sha)
+        if paths is None:
+            res.append((short, kblane.CODE, ["(merge unreadable)"]))
+            continue
+        lane, code = kblane.paths_lane([x for x in paths.split("\0") if x])
+        res.append((short, lane, code))
+    return res
+
+
+def lane_refusals(remote, stdin, url=None):
     """[(remote ref, short hash, code paths)] of the new code-lane commits pushed to the integration remote's main
     (pre-push stdin lines `local ref, local sha, remote ref, remote sha`): remote sha..local sha, or for a new ref
     (or a remote sha this clone lacks) the commits no remote-tracking ref of REMOTE reaches. Merge commits already on
-    the remote are not new. No API call. Other remotes and branches are not judged."""
-    if remote != kbpublic.integration_remote(KB):
+    the remote are not new, and a new one is judged on what neither parent brings (new_lanes). The integration remote
+    is reached by its name or by a url equal to its own (to_integration). No API call. Other remotes and branches are
+    not judged."""
+    if not to_integration(remote, url):
         return []
+    named = kbpublic.integration_remote(KB)
     res = []
     for ln in stdin.splitlines():
         parts = ln.split()
@@ -75,8 +120,8 @@ def lane_refusals(remote, stdin):
         if remote_sha != ZERO and git("cat-file", "-e", remote_sha + "^{commit}") is not None:
             spec = [f"{remote_sha}..{local_sha}"]
         else:
-            spec = [local_sha, "--not", f"--remotes={remote}"]
-        for short, lane, code in kblane.commit_lanes(KB, spec) or []:
+            spec = [local_sha, "--not", f"--remotes={named}"]
+        for short, lane, code in new_lanes(spec) or []:
             if lane == kblane.CODE:
                 res.append((ref, short, code))
     return res
@@ -95,7 +140,7 @@ def hook_pre_push(args, stdin, gate, dirty_paths):
               "python3 _tools/kbgit.py publish (kb/_self/git.md, Public home)", file=sys.stderr)
     if blocked:
         return 1
-    refused = lane_refusals(remote, stdin)
+    refused = lane_refusals(remote, stdin, args[1] if len(args) > 1 else None)
     for ref, short, code in refused:
         print(f"kb pre-push: refused: {short} is a code-lane commit ({' '.join(code)}) and {ref} of {remote} is main; "
               "code reaches main through a merge request: python3 _tools/kbgit.py sync --push sends it as a "

@@ -2,7 +2,7 @@
   "id": "BG-ztky67od",
   "kind": "bug",
   "title": "The pre-push lane refusal refuses a merge-pull of content, and misses a push by url or another remote name",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -19,6 +19,8 @@
   "touches": [
     "_tools/kbgit.py",
     "_tools/test_kblane.py",
-    "kb/_self/git.md"
-  ]
+    "kb/_self/git.md",
+    "_tools/kg_hooks.py"
+  ],
+  "claimed_by": "mac-third-worker"
 }
