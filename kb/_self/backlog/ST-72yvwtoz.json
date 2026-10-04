@@ -2,7 +2,7 @@
   "id": "ST-72yvwtoz",
   "kind": "story",
   "title": "backlog.py check refuses a leak-scan hit in an item's text",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gfoakqar",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,19 @@
     "_tools/test_kbdecide.py"
   ],
   "notes": "backlog.py never calls kbcommon.leak_hits, so an item's text is not scanned before commit.",
-  "claimed_by": "mac-sixth"
+  "evidence": {
+    "commit": "08fe63f41fea569d8b0c902289a81349b70ff046",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_backlog_check_refuses_leak_in_item_text"
+        ],
+        "exit": 0,
+        "sha256": "fd10f53444fd291c"
+      }
+    ]
+  }
 }
