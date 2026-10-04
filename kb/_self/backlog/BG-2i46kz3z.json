@@ -2,7 +2,7 @@
   "id": "BG-2i46kz3z",
   "kind": "bug",
   "title": "answer --record refuses a second gate of one item whose answer text repeats the first",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-v56iwyry",
   "sprint": "SP-ld5jtjhm",
   "priority": "P2",
@@ -39,5 +39,30 @@
     "kb/_self/content-rules.md"
   ],
   "notes": "SP-j6hh2ib2 review: the repro plants gate add on BG-3i46pccw, an item deleted since (exit 2 before and after the fix), and answer --by operator is refused headless: replant an item in the temp clone and use --by agent so a runner can close it. Replanted: the repro now copies the working tree to a temp dir and records the same text for two gates of this item through backlog.record_decision with the autopilot maker, which a headless run may do (--by operator is refused headless); it exits 1 before the fix and 0 after.",
-  "claimed_by": "seventh-w43"
+  "evidence": {
+    "commit": "b17f8ea3bfa0ca7de0e3375aea36069b6107a30f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-n",
+          "1",
+          "-k",
+          "answer_record_second_gate_same_text"
+        ],
+        "exit": 0,
+        "sha256": "295225448a39f7d1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,shutil,sys,tempfile,types;d=tempfile.mkdtemp();r=os.path.join(d,'r');shutil.copytree(os.getcwd(),r,ignore=shutil.ignore_patterns('.git','__pycache__','_cache','_private'));sys.path.insert(0,os.path.join(r,'_tools'));import backlog;b=types.SimpleNamespace(root=r)\ntry:\n    for g in ('ga','gb'):backlog.record_decision(b,'BG-2i46kz3z',g,'yes','autopilot')\nfinally:shutil.rmtree(d,ignore_errors=True)"
+        ],
+        "exit": 0,
+        "sha256": "bbba75ccdccf6ac8"
+      }
+    ]
+  }
 }
