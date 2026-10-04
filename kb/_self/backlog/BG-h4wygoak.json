@@ -2,7 +2,7 @@
   "id": "BG-h4wygoak",
   "kind": "bug",
   "title": "red-pipeline makes up to 100 job-list calls in a row when no recent main pipeline was started",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-mguj7foz",
   "priority": "P3",
@@ -26,5 +26,6 @@
     "_tools/ql_deliver.py",
     "_tools/test_ql_deliver.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "seventh-w50"
 }
