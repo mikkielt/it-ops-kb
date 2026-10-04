@@ -172,6 +172,34 @@ def test_repro_needs_behaviour_or_reason_classifier():
         assert t(argv) is None, argv
 
 
+PIPED_GREP = ["sh", "-c", "cat _tools/x.py | grep -q foo"]
+AWK_OVER_SOURCE = ["awk", "/foo/{f=1} END{exit !f}", "_tools/x.py"]
+TEST_OF_GREP = ["sh", "-c", 'test -z "$(grep -n foo _tools/x.py)"']
+TEST_N_OF_GREP = ["sh", "-c", 'test -n "$(grep -n foo _tools/x.py)"']  # fails in the planted repository, as a repro must
+
+
+def test_text_only_repro_flags_pipes_awk_sed_and_test_of_grep(repo):
+    """text_only_repro also flags a pipeline of text filters feeding grep, awk or sed, awk or sed run over a file, and a
+    test -z / -n over a grep's output (BG-pg75dexf: SP-5cwekumc's review found them passing as behaviour); a pipeline
+    that runs a tool, a filter with no matcher, an awk or sed over no file and a test of a tool's output are behaviour;
+    new refuses a flagged repro without a reason, and check warns of an open bug that keeps one."""
+    t = bl_check.text_only_repro
+    for argv in (PIPED_GREP, AWK_OVER_SOURCE, TEST_OF_GREP, TEST_N_OF_GREP, ["sh", "-c", '[ -n "$(git grep -n foo -- f.py)" ]'],
+                 ["sed", "-n", "/foo/p", "_tools/x.py"], ["sh", "-c", "head -n 5 f.py | sed -n /x/p | grep -q y"],
+                 ["bash", "-c", "set -e; cat f.md | awk '/x/{f=1} END{exit !f}'"]):
+        assert t(argv), argv
+    assert "reading source of _tools/x.py" in t(PIPED_GREP) and "reading source of _tools/x.py" in t(AWK_OVER_SOURCE)
+    for argv in (["sh", "-c", "python3 _tools/backlog.py check | grep -q ok"], ["sh", "-c", "cat f | python3 t.py"],
+                 ["sh", "-c", "cat f | wc -l"], ["awk", "BEGIN{exit 1}"], ["sed", "-n", "/x/p"],
+                 ["sh", "-c", 'test -z "$(python3 _tools/x.py)"'], ["sh", "-c", "python3 t.py | awk '/ok/'"],
+                 ["sh", "-c", "grep -q x f; python3 t.py"]):
+        assert t(argv) is None, argv
+    for argv in (PIPED_GREP, AWK_OVER_SOURCE, TEST_N_OF_GREP):
+        code, out = b(repo, "new", "bug", "--title", "Text only", "--severity", "S3", "--goal", "x", "--repro", argstr(argv))
+        assert code == 2 and "only matches text in a file" in out and "--repro-reason" in out, (argv, out)
+        assert not list((Path(repo) / backlog.REL_DIR).glob("*.json")), "a refused repro files nothing"
+
+
 def test_repro_reads_source_check_warns(repo):
     """check warns of an open bug whose repro only reads a _tools/ source file for a string and states no reason
     (BG-rrht7uts planted); a reason, or the bug done, clears it; a malformed reason, or one on a story, is an error."""

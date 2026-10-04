@@ -717,6 +717,11 @@ def trivial_command(argv):
 # _tools/ for 'worktrees' and passed on a fix that did not work. `new` refuses one without a stated reason
 # (--repro-reason, kept as the item's repro_reason) and `check` warns of an open bug's.
 GREP_CMDS = {"grep", "egrep", "fgrep", "rg", "ag", "findstr", "select-string", "sls"}
+TEXT_FILTERS = {"cat", "head", "tail", "tr", "sort", "uniq", "cut", "wc", "nl", "tac", "rev", "fold", "type", "gc",
+                "get-content"}  # read-only filters of a file's text: no match of their own
+MATCHERS = {"awk", "gawk", "mawk", "nawk", "sed"}  # match text like grep does
+SUBSTITUTION = re.compile(r"\$\(\s*!?\s*(git\s+grep|[\w./\\-]+)|`\s*(git\s+grep|[\w./\\-]+)")
+FILE_ARG = re.compile(r"[\w./\\-]+\.\w{1,5}")  # a file named with an extension; an awk or sed program is not one
 READS_FILE = re.compile(r"\bopen\(|\.read_text\(|\.read_bytes\(")
 TEXT_MODULES = {"sys", "re", "json", "csv", "pathlib", "os", "io", "fnmatch", "glob", "ast", "tomllib", "itertools",
                 "functools", "collections", "string"}
@@ -740,10 +745,46 @@ def _is_grep(words):
     return base in GREP_CMDS or (base == "git" and words[1:2] == ["grep"])
 
 
+def _base(words):
+    """The lower-cased program name of a command's words (a leading ! dropped, a directory and .exe removed)."""
+    words = words[1:] if words[:1] == ["!"] else words
+    return re.sub(r"\.exe$", "", Path(words[0]).name.lower()) if words else ""
+
+
+def _substituted(words):
+    """The program names of the commands a segment substitutes with $( ) or backticks (git grep counts as grep)."""
+    out = []
+    for m in SUBSTITUTION.finditer(" ".join(words)):
+        first = (m.group(1) or m.group(2) or "").split()
+        out.append("grep" if first[:1] == ["git"] else re.sub(r"\.exe$", "", Path(first[0]).name.lower()) if first else "")
+    return out
+
+
+def _tests_text(words):
+    """(reads, matches) for a `test` or `[` segment that tests the output of a substituted command: it reads text when
+    that command is a grep, a text filter or a matcher, and matches text when it is a grep or a matcher."""
+    if _base(words) not in ("test", "[", "[["):
+        return False, False
+    subs = _substituted(words)
+    return (any(s in GREP_CMDS | TEXT_FILTERS | MATCHERS for s in subs), any(s in GREP_CMDS | MATCHERS for s in subs))
+
+
+def _reads_text(words):
+    """True when a shell segment only reads text: a grep, a text filter, a matcher, or a test of one's output."""
+    return _is_grep(words) or _base(words) in TEXT_FILTERS | MATCHERS or _tests_text(words)[0]
+
+
+def _matches_text(words):
+    """True when a shell segment matches text: a grep, a matcher, or a test of the output of one."""
+    return _is_grep(words) or _base(words) in MATCHERS or _tests_text(words)[1]
+
+
 def text_only_repro(argv):
     """Why a repro only matches text in a file and runs no behaviour, or None: grep (git grep, rg, findstr,
-    Select-String), a shell -c of nothing but greps, or a python -c that reads a file and imports only text modules
-    (TEXT_MODULES), running no other code. It names a _tools/ source file it reads. A script repro is not judged."""
+    Select-String), awk or sed run over a file, a shell -c of nothing but greps, or of text filters (cat, head, sort...)
+    feeding a grep, awk or sed, or testing the output of one (`test -z "$(grep ...)"`), or a python -c that reads a file
+    and imports only text modules (TEXT_MODULES), running no other code. It names a _tools/ source file it reads. A
+    script repro is not judged."""
     if not argv:
         return None
     base, code = _command_code(argv)
@@ -752,7 +793,14 @@ def text_only_repro(argv):
     elif code is not None and base in SHELLS:
         segs = [s.split() for s in re.split(r"&&|\|\||[;|\n]", code)]
         segs = [w for w in segs if w and w[0] not in ("set", "exit")]
-        what = "its shell code only greps files" if segs and all(map(_is_grep, segs)) else None
+        if segs and all(map(_is_grep, segs)):
+            what = "its shell code only greps files"
+        elif segs and all(map(_reads_text, segs)) and any(map(_matches_text, segs)):
+            what = "its shell code only reads files through grep, awk, sed or a text filter"
+        else:
+            what = None
+    elif base in MATCHERS and any(FILE_ARG.fullmatch(a) for a in argv[2:]):
+        what = f"it runs {base} over a file"
     elif code is not None and base.startswith("python"):
         mods = {m.split(".")[0].strip() for pair in IMPORTS.findall(code) for g in pair if g for m in g.split(",")}
         ok = READS_FILE.search(code) and mods <= TEXT_MODULES and not RUNS_CODE.search(code)
