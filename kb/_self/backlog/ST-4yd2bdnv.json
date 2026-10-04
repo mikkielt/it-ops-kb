@@ -2,7 +2,7 @@
   "id": "ST-4yd2bdnv",
   "kind": "story",
   "title": "Review sprint: red-pipeline reads job states exactly",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mguj7foz",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "seventh-w52"
+  "evidence": {
+    "commit": "641ab63df50f3b1224c4c26883689c5eadfd2922",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "54d3c50084a360f5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "cc4513e298e879ec"
+      }
+    ]
+  }
 }
