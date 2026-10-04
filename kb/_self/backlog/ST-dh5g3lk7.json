@@ -62,7 +62,8 @@
     "_tools/autopilot*.py",
     ".claude/skills/kb-autopilot/**",
     "kb/_self/autopilot-*.md",
-    "kb/_self/reports/autopilot-*.md"
+    "kb/_self/reports/autopilot-*.md",
+    "AGENTS.md"
   ],
   "depends_on": [
     "ST-47ayoxfb"
