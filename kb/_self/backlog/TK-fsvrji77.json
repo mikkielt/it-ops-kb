@@ -29,7 +29,16 @@
     "_tools/bl_land.py",
     "_tools/bl_base.py",
     "_tools/backlog.py",
-    "_tools/test_land_tiers.py"
+    "_tools/test_land_tiers.py",
+    "_tools/test_bl_land.py",
+    "_tools/test_ops_land.py",
+    "_tools/test_backlog.py",
+    "_tools/bl_testkit.py",
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
   ],
   "claimed_by": "mac-sixth"
 }
