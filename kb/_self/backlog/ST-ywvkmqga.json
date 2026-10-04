@@ -1,0 +1,25 @@
+{
+  "id": "ST-ywvkmqga",
+  "kind": "story",
+  "title": "A push whose range changes only item files waits for no other clone's test gate on the host main lock",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py sync --push of a range that changes only kb/_self/backlog/ files and the autopilot digest (a claim, release, set, move or digest commit) holds the host main lock only while it fetches, rebases and pushes, never while another holder's tests run, and kg_lock prints the holder's step and age with each wait line; today every sync --push holds the lock across its whole gate, so planning pushes waited 10 to 40 minutes behind lands",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "planning_push_skips_gate_lock_wait"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/kg_lock.py",
+    "kb/_self/git.md"
+  ],
+  "notes": "Theme: lock waits and planning commits. Evidence: kg_sync.py:790-793 holds kg_lock across sync_rounds, which runs the gate; waits of 10-40 min reported by mac-third (30+ min on BG-kowie6ly), mac-fourth (10-25 min claim pushes), mac-sixth (about 9 touches widenings, about 2 h), mac-seventh (BG-xwqrlvpp push killed while it waited). push-class files: operator-present only. Alternative from mac-sixth: land carries planning commits that widen the item's own touches."
+}

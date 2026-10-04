@@ -1,0 +1,24 @@
+{
+  "id": "ST-gpodng3o",
+  "kind": "story",
+  "title": "backlog.py check refuses an open item whose repro or check the live-backlog tests refuse, so a bad item fails its own push",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "check reports as an error an open item whose repro or check bl_intake.check_program_refusal refuses or bl_check.trivial_command flags, the same predicates test_open_repros_run_headless and test_done_flags_noop_check_real_backlog_commands assert over the live item files; today new only warns and check passes, so an item file pushed through the fast content gate turned main red for every later code land that selected those tests",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_errors_on_refused_item_command"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/test_bl_check.py"
+  ],
+  "notes": "Theme: main red from another session's item. Evidence: test_open_repros_headless.py:33 and test_bl_check.py:128 assert over the live item files; bl_check.py:898 noop_warnings only warns at new; an sh repro (BG-44qxmrkm) and a trivial probe check (ST-degka7at) failed land gates of other sessions (mac-third: about 40 min on BG-lv3tuhic, 25 min on BG-7tqa65mp)."
+}

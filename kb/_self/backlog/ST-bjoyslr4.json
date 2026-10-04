@@ -1,0 +1,24 @@
+{
+  "id": "ST-bjoyslr4",
+  "kind": "story",
+  "title": "A failing sync gate keeps the full output of its failed checks in a file and prints the path and the failed test count",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbgit.py sync and land write each failed check's whole output to _cache/gate/<stamp>-<check>.txt, print its path and the count of FAILED and ERROR test ids, and keep the last few files; today the gate prints only the last 25 lines of a failed check and a retry overwrites what a caller saved, so a second failure scrolled out unseen and one failure's text was lost",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "gate_keeps_failed_output"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/bl_land.py"
+  ],
+  "notes": "Theme: lost evidence. Evidence: kg_sync.py:534-537 prints one tail line per check and the last 25 lines of a failed one; mac-sixth lost a second failure of the ST-72yvwtoz gate and BG-di5pwdrg's failure text to a retry; an unattended stall ladder reads the same tail."
+}

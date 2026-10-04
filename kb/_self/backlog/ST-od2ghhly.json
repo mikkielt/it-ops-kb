@@ -1,0 +1,27 @@
+{
+  "id": "ST-od2ghhly",
+  "kind": "story",
+  "title": "The committed autopilot digest carries the tick's own lines, as the autopilot skill says it does",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kbdecide.py digest --commit writes, beside the unratified decisions, the last tick's actions from _cache/autopilot/state.json or ticks.jsonl: runners started and ended with their causes, sprints refused as operator-present only, bounds stops, kept gates left open, steps skipped; the skill's step 7 promises these lines and step 8 sends errors, refusals and finished sprints to the digest only, but digest_text writes decisions and the disagreement figures alone, so an unattended operator learns none of them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "digest_carries_tick_lines"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbdecide.py",
+    "_tools/autopilot.py",
+    ".claude/skills/kb-autopilot/SKILL.md",
+    "kb/_self/content-rules.md"
+  ],
+  "notes": "Theme: how an unattended manager communicates. Evidence: kbdecide.py:652-673 digest_text writes the decisions and the disagreement figures only; kb-autopilot SKILL.md:34 (step 7) and :35 (step 8: errors, finished sprints and refused commands wait in the committed digest). The fleet used free-text messages and status asks for the same facts (mac-third, mac-fifth feedback)."
+}

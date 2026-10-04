@@ -19,5 +19,6 @@
   "links": [
     "origin retro SP-7kbrqaol",
     "evidence commit c77141a25"
-  ]
+  ],
+  "notes": "More evidence from the 2026-10-02..04 co-development feedback (mac-eighth's analysis): mac-third's first claim commit broke the trailer rules twice (BG-p4qdpbir); mac-fourth needed 3 amends on a runner release and 1 on a planning commit, and the commit-msg hook refused a KB-Work for an unclaimed item that the push gate then accepted; mac-sixth saw an amend re-run the hook and put a blank line before KB-Work (BG-5ykz2dte); mac-fifth needed amends for ST-xiyvkjro and BG-thez4izx planning commits."
 }

@@ -1,0 +1,38 @@
+{
+  "id": "ST-5i27zwsd",
+  "kind": "story",
+  "title": "The autopilot skill names agents-rule as a kept gate class and notifies it, as the code refuses it",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb-autopilot steps 4 and 8, the epic's goal and the operator decision on gate authority name the same classes the autopilot may not answer as bl_authority.AUTOPILOT_REFUSED (secrets, push, agents-rule): an open agents-rule gate a tick leaves open is notified once like a secrets or push gate, instead of waiting unseen while the skill names only secrets and push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autopilot_skill_names_every_refused_class"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-autopilot/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The decision D-agemmt2y gives AGENTS.md rules to the autopilot, but the code (ecb3b82a) refuses it every agents-rule gate. Which holds?",
+      "options": [
+        "operator-only: supersede D-agemmt2y so agents-rule gates are yours; the skill and the epic say so",
+        "autopilot: revert the code so the autopilot answers agents-rule gates as D-agemmt2y says"
+      ],
+      "recommendation": "operator-only: supersede D-agemmt2y so agents-rule gates are yours; the skill and the epic say so",
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Theme: guard contradictions and what only the operator decides. Evidence: bl_authority.py:22 AUTOPILOT_REFUSED holds agents-rule since ecb3b82a (BG-ejdjj3ns); kb-autopilot SKILL.md steps 4 and 8 name only secrets and push; EP-np3xwfu4's goal and the active operator decision D-agemmt2y (kb/_self/_decisions.csv:2) still give AGENTS.md rules to the autopilot. The code tightening follows the authority-only-shrinks rule, but nothing superseded the decision; the gate on this item asks the operator."
+}

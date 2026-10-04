@@ -1,0 +1,26 @@
+{
+  "id": "ST-33ao33it",
+  "kind": "story",
+  "title": "Stall remedies and the selfcheck claims check act only on claims the autopilot made, not on another live session's",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "bl_stall reports a claim-no-commit or returned signal of an item claimed by anyone other than a runner-SP-* of this clone as foreign, with no remedy, and selfcheck's claims check does not fail on it, so a tick never retries, releases or redispatches an item another session is working in its own clone; today selfcheck fails claims on two items a live operator-present session holds with a test run in progress, whose work commits sit in that session's worktree",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stall_foreign_claim_has_no_remedy"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_stall.py",
+    "_tools/bl_selfcheck.py",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "notes": "Theme: stale claims and a mixed fleet. Evidence: bl_stall.py:274-286 fires claim-no-commit on any claim older than CLAIM_NO_COMMIT_S with no work commit in this clone, whoever holds it; backlog.py selfcheck on 2026-10-04 failed claims on ST-tbi3rras and TK-fsvrji77, held by another session whose worker was running tests at that moment; kb-autopilot step 1 acts on each selfcheck failure, and the ladder's second remedy is release-redispatch. A parent story claimed while its task is worked shows the same signal."
+}

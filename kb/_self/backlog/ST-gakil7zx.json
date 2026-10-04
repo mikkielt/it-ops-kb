@@ -1,0 +1,25 @@
+{
+  "id": "ST-gakil7zx",
+  "kind": "story",
+  "title": "A change to the headless guard or the permission rules is proven by a live headless run before its review",
+  "status": "draft",
+  "parent": "EP-np3xwfu4",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-sprint and the autopilot test plan state that an item touching _tools/kb_hook.py, bl_authority.py or the permission rules of .claude/settings.json lands only after a live headless run (a real claude -p runner with one worker on a doc-only throwaway item in a standalone clone) wrote, committed and landed, its stream kept as the item's evidence; the rehearsal's stub claude evaluates no permission rule, and five text reviews of guard fixes missed the contradiction one live run found",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "guard_change_needs_live_run"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/autopilot-test.md"
+  ],
+  "notes": "Theme: review quality and guard contradictions. Evidence: kb/_self/backlog.md:278 the rehearsal's stub claude evaluates no permission rule; five review rounds of text guards (BG-wg7ir37i .. BG-mewv4st5, mac-fifth) did not find BG-svzlkygp (S1, every headless worker refused its first write), which the first live run found (kb/_self/reports/autopilot-first-run.md, Stage 1). Cost: a real model run per guard change; the operator may prefer a cheaper proof."
+}
