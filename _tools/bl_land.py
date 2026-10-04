@@ -31,7 +31,7 @@ def item_commits(root, ids):
     for rec in log.split("\x1e"):
         sha, _, vals = rec.strip().partition("\x00")
         if sha and set(ID_RE.findall(vals)) & set(ids):
-            paths = [p for p in git(root, "show", "--name-only", "--format=", sha).splitlines() if p]
+            paths = [p for p in git(root, "show", "--no-renames", "--name-only", "--format=", sha).splitlines() if p]
             if any(not item_file(p) for p in paths):
                 out[sha] = paths
     return out
