@@ -1,6 +1,6 @@
-"""kbpublic.cmd_publish_hook and the environment that switches it off: KB_NO_PUBLISH_HOOK (a non-empty value) and
-KB_HEADLESS_RUNNER make it publish nothing; unset or empty, it publishes as before (planted failures: a hook that
-ignores the variable publishes to the configured public remote)."""
+"""kbpublic.cmd_publish_hook and the environment that switches it off: KB_NO_PUBLISH_HOOK (a non-empty value) makes
+it publish nothing; unset or empty, it publishes as before (planted failures: a hook that ignores the variable
+publishes to the configured public remote)."""
 import types
 
 import pytest
@@ -23,7 +23,6 @@ def planted(src, tmp_path):
 @pytest.fixture(autouse=True)
 def clean_env(monkeypatch):
     monkeypatch.delenv(kbpublic.NO_HOOK_ENV, raising=False)
-    monkeypatch.delenv(kbpublic.HEADLESS_ENV, raising=False)
 
 
 def published(pub):
@@ -60,10 +59,3 @@ def test_no_publish_hook_env_empty_counts_as_unset(src, tmp_path, monkeypatch):
     monkeypatch.setenv(kbpublic.NO_HOOK_ENV, "")
     assert kbpublic.cmd_publish_hook(ns(hook=True), r.path) == 0
     assert published(pub)
-
-
-def test_no_publish_hook_env_headless_runner_still_publishes_nothing(src, tmp_path, monkeypatch):
-    r, pub = planted(src, tmp_path)
-    monkeypatch.setenv(kbpublic.HEADLESS_ENV, "1")
-    assert kbpublic.cmd_publish_hook(ns(hook=True), r.path) == 0
-    assert not published(pub)

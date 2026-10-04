@@ -74,12 +74,6 @@ NETWORK_DETECTORS = {"ci"}  # detectors that call the network: `collect` runs th
 KINDS = ("bug", "story")
 SEVERITIES = ("S1", "S2", "S3", "S4")
 FP_RE = re.compile(r"[0-9a-f]{12}")
-HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # the variable `autopilot.py runner start` sets in its headless run (kbpublic.HEADLESS_ENV)
-
-
-def headless_runner():
-    """True in a headless runner's session: its SessionStart hooks file nothing, so the runner's worktree stays clean."""
-    return bool(os.environ.get(HEADLESS_ENV))
 
 
 FP_LINK = "fingerprint "  # a link `fingerprint <12 hex>`, the same marker red-pipeline's bugs carry
@@ -536,7 +530,6 @@ def selects_part(seg):
     return expr is not None and narrows(expr)
 
 
-HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # kbpublic.HEADLESS_ENV: set by autopilot.py runner start in its headless run
 KBGIT_REFUSED = ("publish", "bridge", "install-hooks", "hook")  # kbgit.py forms a check never runs: they push or arm hooks
 DRIFT_ALLOWS_INLINE = False  # drift never runs `python3 -c`; the drift tests' planted checks set it, nothing else does
 # the scripts drift runs a committed check with: read-only ones, so no check reaches sync, autopilot or a backlog writer
@@ -548,9 +541,9 @@ CHECK_SCRIPT = re.compile(r"_tools/[\w.-]+\.py")
 def check_program_refusal(argv, inline=True):
     """Why a check's argv may not run where nothing reviews it, or None: its program must be python3 or python on a
     `_tools/` script of this repository (never `kbgit.py publish`, `bridge`, `install-hooks` or `hook`), so a check
-    neither pushes nor publishes nor runs a shell. INLINE allows `python3 -c` / `-m` (a headless run's done and land;
-    the runner's own edits bound it, kb/_self/backlog.md); intake's drift passes False, since it runs committed checks
-    in every session with that session's credentials."""
+    neither pushes nor publishes nor runs a shell. INLINE allows `python3 -c` / `-m` (the forms an open item's
+    repro and checks may take, kb/_self/backlog.md); intake's drift passes False, since it runs committed checks in
+    every session with that session's credentials."""
     argv = [str(a) for a in argv] if isinstance(argv, (list, tuple)) else []
     if not argv:
         return "a check with no program"

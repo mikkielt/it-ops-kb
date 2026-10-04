@@ -903,8 +903,8 @@ class TestPublishTreeGuid:
 
 
 class TestConftestClearsHookOff:
-    """conftest clears KB_NO_PUBLISH_HOOK and KB_HEADLESS_RUNNER before every test, so a run whose parent process had
-    one (the manager session, a runner) gives the same result: a test inside sees neither (`-k conftest_clears`)."""
+    """conftest clears KB_NO_PUBLISH_HOOK before every test, so a run whose parent process had it gives the same
+    result: a test inside does not see it (`-k conftest_clears`)."""
 
     def inner(self, tmp_path, var, expect="1"):
         t = tmp_path / "test_inner.py"
@@ -916,10 +916,6 @@ class TestConftestClearsHookOff:
 
     def test_conftest_clears_kb_no_publish_hook_for_every_test(self, tmp_path):
         r = self.inner(tmp_path, kbpublic.NO_HOOK_ENV)
-        assert r.returncode == 0, r.stdout + r.stderr
-
-    def test_conftest_clears_kb_headless_runner_for_every_test(self, tmp_path):
-        r = self.inner(tmp_path, kbpublic.HEADLESS_ENV)
         assert r.returncode == 0, r.stdout + r.stderr
 
     def test_conftest_clearing_is_what_makes_the_inner_test_pass(self, tmp_path):

@@ -785,25 +785,7 @@ def sync_rounds(a, r, host):
     return 1
 
 
-def headless_target_refusal(a):
-    """Why a headless sprint run (kbpublic.HEADLESS_ENV, set by autopilot.py runner start) may not sync to A's target,
-    or None: its sync pushes main only, so a --remote or a --branch other than main is refused before anything is
-    fetched or pushed; the code/<id> lane branches come from sync's own internal push."""
-    if not os.environ.get(kbpublic.HEADLESS_ENV):
-        return None
-    named = [f"--remote {a.remote}"] if a.remote else []
-    named += [f"--branch {a.branch}"] if a.branch != "main" else []
-    if not named:
-        return None
-    return (f"refused: a headless run ({kbpublic.HEADLESS_ENV}) syncs only to the integration remote's main, not "
-            f"{' '.join(named)}; nothing was pushed")
-
-
 def cmd_sync(a, host, r=None):
-    refused = headless_target_refusal(a)
-    if refused:
-        print(refused)
-        return 2
     a.remote = a.remote or kbpublic.integration_remote(KB)
     if git("rev-parse", "--is-inside-work-tree") is None or not rev_parse("HEAD"):
         print("refused: not a git clone with commits (or git is missing)")

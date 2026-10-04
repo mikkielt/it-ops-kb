@@ -64,16 +64,10 @@ from pathlib import Path
 
 import pytest
 
-import kbpublic, kbusage, ql_base, ql_capture, ql_deliver, ql_distill, ql_learn, ql_store
+import kbusage, ql_base, ql_capture, ql_deliver, ql_distill, ql_learn, ql_store
 from conftest import GIT, KB, TOOLS, git_env, querylog_env
 from ql_testkit import (auto_config, E, FIXTURES, jsonl, LAPS, load, NOW, plant_spool, plugins_dir, QL, RUN_ID,
                         S_ENDED, S_IDLE, S_OPEN, session_start, SH, SID, spool, store_files)
-
-
-@pytest.fixture(autouse=True)
-def not_headless(monkeypatch):
-    """The launcher does nothing in a headless runner (KB_HEADLESS_RUNNER): these tests run it as an operator's session does."""
-    monkeypatch.delenv(kbpublic.HEADLESS_ENV, raising=False)
 
 
 RAW = ["anna.nowak", "acme", "10." + "1.20.33", "PL-LAPTOP-7731", "it-helpdesk", "Kowalczyk", "Warsaw", "anowak",

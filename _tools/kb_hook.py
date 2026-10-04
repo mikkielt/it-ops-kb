@@ -25,12 +25,8 @@ The same script answers a PreToolUse event on Bash or PowerShell (a JSON event w
 kb article whole (cat, head, tail, sed -n or grep -n on a `kb/<root>/**/*.md` path, or a root's `_gaps.md`; under
 PowerShell Get-Content, gc, cat, type, Select-String or sls, a backslash or slash in the path) gets additionalContext
 naming the rag.py tools that print only the lines a lookup needs (raw_read_nudge). It never sets a permission decision,
-so the command runs as it would without the hook; any other command, and any input it cannot read, gets no output.
-On an Edit, Write, MultiEdit or NotebookEdit event of a headless sprint run (KB_HEADLESS_RUNNER, set by autopilot.py
-runner start) it denies a write to .claude/settings*.json, .claude/hooks/ or .claude-plugin/, to any path outside the
-project, to its own files and the files bl_authority.PATHS gives the agents-rule and push classes, and one that changes
-a gate's answer or by field in a kb/_self/backlog/*.json item, an Edit judged on the file's text after it (headless_guard);
-without the variable it answers nothing.
+so the command runs as it would without the hook; any other command or tool, and any input it cannot read, gets no
+output.
 
 Claude Code runs it from .claude/settings.json (a clone) and from the plugin's plugin.json (an installed plugin); it
 reads the hook's JSON on stdin and prints the hook's JSON answer on stdout. `--test "kb: question"` prints what the
@@ -310,205 +306,6 @@ def raw_read_nudge(event):
     return None
 
 
-HEADLESS_ENV = "KB_HEADLESS_RUNNER"  # kbpublic.HEADLESS_ENV: set by autopilot.py runner start in its headless run
-WRITE_TOOLS = ("Edit", "Write", "MultiEdit", "NotebookEdit")
-GUARDED = (re.compile(r"\.claude/settings[^/]*\.json"), re.compile(r"\.claude/hooks/.+"), re.compile(r"\.claude-plugin/.+"))
-ITEM_FILE = re.compile(r"kb/_self/backlog/[^/]+\.json")  # matched against matched_path(): lower-case
-NEW_TEST_FILE = re.compile(r"_tools/test_[^/]*\.py")  # matched against matched_path(): a test file tests.py would run
-GATE_KEYS = re.compile(r'"(answer|by)"\s*:')
-
-
-def repo_path(path):
-    """(PATH relative to the project with / separators, its full path); the project is CLAUDE_PROJECT_DIR, else this
-    clone. When the project is a runner's worktree <clone>/.claude/worktrees/runner-*, a path inside a worker's
-    isolation worktree <clone>/.claude/worktrees/agent-* (a sibling, directly under the same clone) counts too, relative
-    to that worktree. (None, full) outside them."""
-    root = os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(os.path.dirname(
-        os.path.realpath(__file__))))
-    full = os.path.realpath(path if os.path.isabs(path) else os.path.join(root, path))
-    rel = os.path.relpath(full, root)
-    if rel != ".." and not rel.startswith(".." + os.sep):
-        return rel.replace(os.sep, "/"), full
-    base = os.path.dirname(root)
-    if os.path.basename(root).lower().startswith("runner-") and os.path.basename(base) == "worktrees" \
-            and os.path.basename(os.path.dirname(base)) == ".claude":
-        sib = os.path.relpath(full, base)
-        parts = sib.split(os.sep)
-        if len(parts) > 1 and ".." not in parts and not os.path.isabs(sib) and parts[0].lower().startswith("agent-") \
-                and len(parts[0]) > len("agent-"):
-            return "/".join(parts[1:]), full
-    return None, full
-
-
-def gate_answers(text):
-    """{gate id: (answer, by)} of an item file's text; None when it is not an item's JSON."""
-    try:
-        gates = json.loads(text).get("gates") or []
-        return {g.get("id"): (g.get("answer"), g.get("by")) for g in gates if isinstance(g, dict)}
-    except (ValueError, AttributeError):
-        return None
-
-
-def repeated_gate_id(text):
-    """The first gate id an item file's TEXT holds more than once (readers take the first gate with an id, so a
-    prepended answered copy would hide the real one), else None; also None when TEXT is not an item's JSON."""
-    try:
-        seen = set()
-        for g in json.loads(text).get("gates") or []:
-            gid = g.get("id") if isinstance(g, dict) else None
-            if gid in seen:
-                return gid
-            seen.add(gid)
-    except (ValueError, AttributeError, TypeError):
-        pass
-    return None
-
-
-def edited_text(text, tool, tool_input):
-    """TEXT after an Edit or MultiEdit of it, as the tool applies it (each edit in order; one match unless
-    replace_all); None when an edit cannot be applied cleanly (old_string empty, absent or ambiguous)."""
-    edits = tool_input.get("edits") if tool == "MultiEdit" else [tool_input]
-    if not isinstance(edits, list) or not edits:
-        return None
-    for e in edits:
-        if not isinstance(e, dict) or not isinstance(e.get("old_string"), str) or not e["old_string"] \
-                or not isinstance(e.get("new_string"), str):
-            return None
-        n = text.count(e["old_string"])
-        if n == 0 or (n > 1 and e.get("replace_all") is not True):
-            return None
-        text = text.replace(e["old_string"], e["new_string"]) if e.get("replace_all") is True \
-            else text.replace(e["old_string"], e["new_string"], 1)
-    return text
-
-
-def item_gate_change(path, tool, tool_input):
-    """Why an Edit, MultiEdit or Write of the item file PATH changes a gate's answer or by field (compared before and
-    after the change is applied to the file's current text, so a value-only edit counts), or cannot be checked; else
-    None."""
-    try:
-        with open(path, encoding="utf-8") as f:
-            current = f.read()
-    except OSError:
-        current = None
-    before = {} if current is None and tool == "Write" else gate_answers(current or "")
-    if tool == "Write":
-        applied = tool_input.get("content") or ""
-        after = gate_answers(applied)
-    else:
-        edits = tool_input.get("edits") if tool == "MultiEdit" else [tool_input]
-        for e in edits if isinstance(edits, list) else []:
-            if isinstance(e, dict) and any(GATE_KEYS.search(str(e.get(k) or "")) for k in ("old_string", "new_string")):
-                return "it edits a gate's answer or by field"
-        applied = edited_text(current, tool, tool_input) if current is not None else None
-        if applied is None:
-            return "its edit cannot be applied to the file's current text"
-        after = gate_answers(applied)
-    if repeated_gate_id(applied) is not None:
-        return f"its gates hold the id {repeated_gate_id(applied)!r} more than once"
-    if after is None or before is None or any(v != before.get(k, (None, None)) for k, v in after.items()) \
-            or any(k not in after and v != (None, None) for k, v in before.items()):
-        return "it writes a gate's answer or by field"
-    return None
-
-
-def matched_path(rel):
-    """REL (a project path with / separators) as the guard matches it: lower-case, with every leading
-    .claude/worktrees/<name>/ prefix stripped (nested ones too), so a path in a worktree, in another case or in a
-    worktree of a worktree is judged by its place in a project."""
-    low = re.sub(r"/{2,}", "/", rel.replace("\\", "/").lower())
-    while True:
-        m = re.match(r"(?:\./)*\.claude/worktrees/[^/]+/(.+)", low)
-        if not m:
-            return re.sub(r"^(?:\./)+", "", low)
-        low = m.group(1)
-
-
-def existing_path(full):
-    """FULL, or the existing file whose path equals it ignoring case (a case-sensitive file system holds the item
-    under its own spelling); FULL when none."""
-    if os.path.exists(full):
-        return full
-    drive, tail = os.path.splitdrive(os.path.abspath(full))
-    cur = drive + os.sep
-    parts = [x for x in tail.split(os.sep) if x]
-    for part in parts:
-        try:
-            hit = next((n for n in os.listdir(cur) if n.lower() == part.lower()), None)
-        except OSError:
-            return full
-        if hit is None:
-            return full
-        cur = os.path.join(cur, hit)
-    return cur
-
-
-def guard_paths():
-    """The project paths a headless run never writes: the guard's own files and the files bl_authority.PATHS gives the
-    agents-rule and push classes (a directory ends with /, a family of files with _). Imported here, so a missing
-    module raises and the call is denied."""
-    import bl_authority
-    return bl_authority.guard_paths()
-
-
-def guarded_file(rel):
-    """Why the project path REL is the guard's own or one of guard_paths(), else None. Compared lower-case (a
-    case-insensitive file system), and a copy in a worktree under .claude/worktrees/ by its place there."""
-    low = matched_path(rel)
-    for g in guard_paths():
-        g = g.lower()
-        if low == g or (g.endswith("/") and low.startswith(g)) or (g.endswith("_") and low.startswith(g)) \
-                or low.startswith(g + "/"):
-            return f"{rel} is a file of the guard or of what it protects ({g})"
-    return None
-
-
-def headless_guard(event):
-    """The PreToolUse answer that denies a headless run's (HEADLESS_ENV) Edit, MultiEdit, Write or NotebookEdit of a
-    path outside the project (CLAUDE_PROJECT_DIR, else this clone; symlinks and .. resolved), of .claude/settings*.json,
-    .claude/hooks/, .claude-plugin/, of the guard's own files and the files bl_authority.PATHS gives the agents-rule and
-    push classes, of a new _tools/test_*.py file (an existing one stays editable), and of an item file's gate answer or
-    by field (the edit applied to the file's current text and the gates compared before and after; an edit that cannot
-    be applied is denied): a headless agent never answers as the
-    operator nor rewrites the rules it runs under; it records a gate with backlog.py gate add and answers within its
-    authority with backlog.py answer. None for any other call, and always when HEADLESS_ENV is not set (the
-    operator-present session), so the guard costs nothing there."""
-    if not os.environ.get(HEADLESS_ENV):
-        return None
-    try:
-        tool, tool_input = event.get("tool_name"), event.get("tool_input")
-        if tool not in WRITE_TOOLS:
-            return None
-        if not isinstance(tool_input, dict):
-            raise ValueError("no tool input")
-        path = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
-        if not isinstance(path, str) or not path:
-            raise ValueError("no path")
-        rel, full = repo_path(re.sub(r"/{2,}", "/", path.replace("\\", "/")))
-        low = None if rel is None else matched_path(rel)
-        if rel is None:
-            why = f"{path} is outside the project"
-        elif any(rx.fullmatch(low) for rx in GUARDED):
-            why = f"{rel} holds the rules this run works under"
-        elif guarded_file(rel):
-            why = guarded_file(rel)
-        elif NEW_TEST_FILE.fullmatch(low) and not os.path.exists(existing_path(full)):
-            why = f"{rel} would be a new test file, which tests.py runs as code"
-        elif ITEM_FILE.fullmatch(low):
-            change = item_gate_change(existing_path(full), tool, tool_input)
-            if not change:
-                return None
-            why = f"{rel}: {change}"
-        else:
-            return None
-    except Exception:  # an unreadable call, or a guard that cannot load, is refused, not waved through
-        why = "the call could not be checked"
-    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
-                                   "permissionDecisionReason": f"headless run ({HEADLESS_ENV}): {why}; record a gate with "
-                                   "backlog.py gate add and answer only within the autopilot's authority with "
-                                   "backlog.py answer, or stop and report"}}
-
-
 def main():
     # the hook's JSON is UTF-8 on every OS; Windows would otherwise read and write the locale code page (cp1252)
     sys.stdin.reconfigure(encoding="utf-8", errors="replace")
@@ -522,7 +319,7 @@ def main():
         return  # not our input: never block a prompt on a parse error
     event = event if isinstance(event, dict) else {}
     if event.get("hook_event_name") == "PreToolUse" or "tool_input" in event:
-        out = headless_guard(event) or raw_read_nudge(event)
+        out = raw_read_nudge(event)
         if out is not None:
             print(json.dumps(out, ensure_ascii=False))
         return

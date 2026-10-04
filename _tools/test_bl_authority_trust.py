@@ -2,12 +2,11 @@
 operator answers only ever grows. Planted failures, one per rule, named `authority_trust_boundary`:
 
 1. `OPERATOR_CLASSES` holds agents-rule, so an agent's answer to a gate of that class is refused;
-2. a headless runner answers `--by agent` only, a provisional answer;
-3. `set --touch` re-derives every gate's class on the item and stores the stricter one, so widening the touches onto a
+2. `set --touch` re-derives every gate's class on the item and stores the stricter one, so widening the touches onto a
    guard file re-classes a gate already written (a stored class never goes down);
-4. `_tools/backlog.py` and `_tools/kbpy`, the files that define what the agents may do, are agents-rule paths.
+3. `_tools/backlog.py` and `_tools/kbpy`, the files that define what the agents may do, are agents-rule paths.
 
-5. `check` reports an operator-class gate that an agent answered as a warning on a done or dropped item and as an
+4. `check` reports an operator-class gate that an agent answered as a warning on a done or dropped item and as an
    error on an open one, while `answer` stays strict.
 
 The decision files are those of a throwaway repository, never this one's."""
@@ -25,7 +24,6 @@ sprint = bl_testkit.sprint  # the fixtures `decide` builds on
 repo = bl_testkit.repo
 throwaway_repo = authority.decide
 
-ENV = bl_authority.HEADLESS_ENV
 GUARD_FILES = ("_tools/backlog.py", "_tools/kbpy")
 
 
@@ -34,7 +32,6 @@ def clean_environment(monkeypatch, tmp_path):
     monkeypatch.delenv("KB_TESTS_FAST", raising=False)
     monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
     monkeypatch.setenv("KB_HOST_LOCK_DIR", str(tmp_path / "locks"))
-    monkeypatch.delenv(ENV, raising=False)  # each test sets the runner's variable itself
 
 
 def test_authority_trust_boundary_agents_rule_is_the_operators(throwaway_repo):
@@ -63,15 +60,6 @@ def test_authority_trust_boundary_agents_rule_is_the_operators_planted_failure(t
     a = bl_cli.build_parser("x", str(r)).parse_args(["--root", str(r), "answer", bg, "way", "--answer", "left", "--by",
                                                      "agent"])
     assert backlog.cmd_answer(backlog.Backlog(str(r)), a) == 0  # in this process, where the patch holds
-    assert item_json(r, bg)["gates"][0]["by"] == "agent"
-
-
-def test_authority_trust_boundary_a_headless_runner_answers_by_agent(throwaway_repo, monkeypatch):
-    r, bg = throwaway_repo["repo"], throwaway_repo["bg"]
-    edit(r, bg, gates=[gate_of("Which way?", kind="provisional")])
-    monkeypatch.setenv(ENV, "1")
-    code, out = b(r, "answer", bg, "way", "--provisional")
-    assert code == 0 and "(by agent)" in out, out
     assert item_json(r, bg)["gates"][0]["by"] == "agent"
 
 
