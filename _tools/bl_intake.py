@@ -1039,9 +1039,13 @@ def latest_pipeline(root, job=None, run=None):
                 jobs = github_jobs(host, project, p["id"], run)
                 mine = [j for j in jobs or [] if isinstance(j, dict) and j.get("name") == job
                         and j.get("conclusion") in ("success",) + GITHUB_RED]
-                if not mine:
+                if jobs is None:  # as on GitLab: an unreadable job list is no verdict, and no reason to read an older run
+                    p["red"], p["unverified"] = False, ["the pipeline's jobs could not be read"]
+                elif not mine:
                     continue
-                p["red"], p["how"] = mine[0].get("conclusion") in GITHUB_RED, f"the newest {job}"
+                else:
+                    p["red"] = mine[0].get("conclusion") in GITHUB_RED
+                p["how"] = f"the newest {job}"
         else:
             if r.get("status") not in GITLAB_FINISHED:
                 continue
