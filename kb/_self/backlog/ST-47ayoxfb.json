@@ -2,7 +2,7 @@
   "id": "ST-47ayoxfb",
   "kind": "story",
   "title": "settings.json no longer wires the autopilot's PreCompact and SessionStart hooks or allows autopilot.py, so deleting autopilot.py cannot block compaction",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ytfb4dc5",
   "priority": "P1",
   "rank": 0,
@@ -39,5 +39,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "mac-fifth"
+  "evidence": {
+    "commit": "e21892e98f9a649b4c29306fd84af4ad2df4efbf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "settings_allow"
+        ],
+        "exit": 0,
+        "sha256": "07d00f0862355038"
+      }
+    ]
+  }
 }
