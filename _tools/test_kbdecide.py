@@ -197,6 +197,9 @@ def test_kbdecide_propose_ids_follow_text_and_context(repo):
     assert kbdecide.decision_id("x", "domain:ops") != kbdecide.decision_id("x", "domain:print")
     digest = hashlib.sha256(b"x\ndomain:ops").digest()
     assert kbdecide.decision_id("x", "domain:ops") == "D-" + base64.b32encode(digest).decode().lower()[:8]
+    assert kbdecide.decision_id("x", "domain:ops", "") == kbdecide.decision_id("x", "domain:ops")  # no gate: id as before
+    assert kbdecide.decision_id("x", "item:BG-a", "ga") != kbdecide.decision_id("x", "item:BG-a", "gb")
+    assert kbdecide.decision_id("x", "item:BG-a", "ga") != kbdecide.decision_id("x", "item:BG-a")
 
 
 @pytest.mark.parametrize("args,says", [

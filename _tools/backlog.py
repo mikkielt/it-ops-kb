@@ -652,13 +652,13 @@ def record_decision(bl, iid, gate, text, by="operator"):
     """Keep a gate's answer as an active decision of kb/_self (`kbdecide.py record`, so check.py guards the write): its
     source names the item and the gate, its context is the item. The autopilot's carries a review_by and its maker
     `autopilot`; the operator's supersedes each active autopilot decision on the same gate (`kbdecide.py supersede`),
-    its text ending ` (ratified)` when it repeats theirs, as the same text and context make the same decision id.
+    its text ending ` (ratified)` when it repeats theirs, as the same text, context and gate make the same decision id.
     Refused with kbdecide's reason."""
     old = autopilot_rows(bl, iid, gate) if by == "operator" else []
     if any(r.get("text") == text for r in old):
         text += " (ratified)"
     argv = ["record", "--root", "_self", "--source", f"backlog item {iid} gate {gate}", "--context", f"item:{iid}",
-            "--by", by, "--maker", by]
+            "--gate", gate, "--by", by, "--maker", by]
     if by == bl_authority.AUTOPILOT:
         argv += ["--review-by", bl_authority.review_by()]
     out = run_decide(bl, *argv, "--", text)
