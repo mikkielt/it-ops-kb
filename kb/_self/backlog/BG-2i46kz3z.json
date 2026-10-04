@@ -2,7 +2,7 @@
   "id": "BG-2i46kz3z",
   "kind": "bug",
   "title": "answer --record refuses a second gate of one item whose answer text repeats the first",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-v56iwyry",
   "sprint": "SP-ld5jtjhm",
   "priority": "P2",
@@ -26,5 +26,6 @@
     "kb/_self/backlog.md",
     "kb/_self/content-rules.md"
   ],
-  "notes": "SP-j6hh2ib2 review: the repro plants gate add on BG-3i46pccw, an item deleted since (exit 2 before and after the fix), and answer --by operator is refused headless: replant an item in the temp clone and use --by agent so a runner can close it."
+  "notes": "SP-j6hh2ib2 review: the repro plants gate add on BG-3i46pccw, an item deleted since (exit 2 before and after the fix), and answer --by operator is refused headless: replant an item in the temp clone and use --by agent so a runner can close it.",
+  "claimed_by": "seventh-w43"
 }
