@@ -6,25 +6,23 @@ or refs, or while one of its asks or refs reads unknown, partial, stale or confl
 Each refusal has a planted failure over a small kb of invented words (the corpus `test_bl_check.py`'s knowledge-state
 tests use), run through a copy of the tools in the repository so the pack reads that kb."""
 import os
-import shutil
 import subprocess
 import sys
 import types
-from pathlib import Path
 
 import pytest
 
 import backlog
 import bl_check
 import bl_testkit
-from bl_testkit import PASS, TOOLS, argstr, b, commit, edit, is_file, item, item_json
+from bl_testkit import PASS, argstr, b, commit, edit, is_file, item, item_json
 
 bl_testkit.bind(backlog)
 
 repo, no_git_location, gate_jobs = bl_testkit.repo, bl_testkit.no_git_location, bl_testkit.gate_jobs
 
-TOOL_FILES = ("backlog.py",) + tuple(sorted(f.name for f in Path(TOOLS).glob("bl_*.py"))) + (
-    "kbcommon.py", "kbfacts.py", "kbid.py", "kbpublic.py", "ql_base.py", "aliases.csv", "selfdoc.py")
+TOOL_ROOTS = ("backlog.py", "selfdoc.py")  # run as scripts there; what they import comes with them (bl_testkit.tool_closure)
+TOOL_DATA = ("aliases.csv",)
 SOURCES = "id,url,title,superseded_by,used_in\nS100,https://example.com/a,Zorbex agent guide,,demo/tool.md\n"
 FACTS = ["The zorbex agent prints its build number at startup.", "The zorbex agent retries failed uploads three times."]
 GOOD = "How many times does the zorbex agent retry failed uploads?"
@@ -44,8 +42,7 @@ class Plan:
         self.repo = repo
         self.root = repo / "kb" / "public"
         (repo / "_tools").mkdir()
-        for f in TOOL_FILES:
-            shutil.copy(os.path.join(TOOLS, f), repo / "_tools" / f)
+        bl_testkit.copy_tool_closure(repo / "_tools", *TOOL_ROOTS, data=TOOL_DATA)
         (self.root / "demo").mkdir(parents=True)
         files = {"_root.md": "---\nroot: public\nid_prefix: S\nvisibility: public\n---\n\n# public\n",
                  "_sources.csv": SOURCES, "_conflicts.md": "# Conflicts\n",

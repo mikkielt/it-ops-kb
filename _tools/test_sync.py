@@ -1495,6 +1495,7 @@ class TestSyncGateTests:
         monkeypatch.setattr(kg_sync, "gate_paths", lambda up: set(paths))
         monkeypatch.setattr(kbgit, "trailer_audit", lambda rng, quiet=False, **k: (0, 0, []))
         monkeypatch.setattr(kg_sync, "tool", tool)
+        monkeypatch.setattr(kg_sync, "GATE_DIR", Path(root, "_cache", "gate"))  # a failed check's output file: not the real repository's
         r = {"target": "origin/main"}
         ok = kbgit.gate(r, "origin/main")
         return ok, {label: out for label, out, _ in r["gate"]}["tests.py (changed)"]
