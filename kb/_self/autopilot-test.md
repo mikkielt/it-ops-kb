@@ -37,7 +37,7 @@ Undoing row 1, in the integration project's Settings, Repository: remove the dep
 
 Run the stages in order on a throwaway sprint (`SP-xxxxxxxx`, one or two small content items, filed and started the usual way). Each stage gives the command, the expected result and the abort condition. On an abort, stop the autopilot (the last section), record the failure and do not go on.
 
-**Stage 0. Dry look at a tick.** There is no dry-run of the tick itself (`SKILL.md` takes only `[tick]`). These read-only commands show what it would decide:
+**Stage 0. Dry look at a tick.** There is no dry-run of the tick itself, only a tick limited to named sprints (`/kb-autopilot tick --only SP`, `SKILL.md`). These read-only commands show what it would decide:
 
 ```
 python3 _tools/autopilot.py status
@@ -78,7 +78,7 @@ Abort if any of them is not refused. The rules are defence in depth (the introdu
 
 **Stage 6. Stall remedies.** `python3 _tools/backlog.py stalled` lists each stalled item with its signal and next remedy; `stalled --ladder` the order (`_tools/bl_stall.py`). Leave a claimed item without a commit past its threshold and expect it listed. Abort if the tick takes the same remedy twice for one signal (it is refused: `stalled --took`).
 
-**Stage 7. Digest and notifications.** The tick runs `python3 _tools/kbdecide.py digest --commit` (prints `digest\tN unratified\t<path>`) and sends a PushNotification only for a gate the operator keeps that the last tick did not name, and for a sprint stopped by no-progress (`SKILL.md`, the notify step). Expected: no notification for an error, a finished sprint or a refused command. Abort on any other notification.
+**Stage 7. Digest and notifications.** The tick runs `python3 _tools/kbdecide.py digest --commit` (prints `digest\tN unratified\t<path>`) and sends a PushNotification only for a gate the operator keeps that the last tick did not name, and for a sprint stopped by no-progress (`SKILL.md`, the notify step). Expected: no notification for an error, a finished sprint or a refused command. Abort on any other notification. To see these kinds without real work starting, run this stage as `/kb-autopilot tick --only SP-xxxxxxxx` on the throwaway sprint: the tick starts a runner only on it, plans no new sprint, and intake, gates, orphans and notify are not narrowed.
 
 **Stage 8. Operator gates.** For a gate of class `secrets`, `push` or `agents-rule` (`_tools/bl_authority.py`, `AUTOPILOT_REFUSED`):
 
