@@ -2,7 +2,7 @@
   "id": "BG-h4wygoak",
   "kind": "bug",
   "title": "red-pipeline makes up to 100 job-list calls in a row when no recent main pipeline was started",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-mguj7foz",
   "priority": "P3",
@@ -27,5 +27,19 @@
     "_tools/test_ql_deliver.py",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "seventh-w50"
+  "evidence": {
+    "commit": "88d9e6ee1dbe111c11b21f96741a17614575f2fb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "red_pipeline_bounds_job_list_calls"
+        ],
+        "exit": 0,
+        "sha256": "0ab52f71db4b045a"
+      }
+    ]
+  }
 }
