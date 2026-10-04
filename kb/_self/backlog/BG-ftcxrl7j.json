@@ -2,7 +2,7 @@
   "id": "BG-ftcxrl7j",
   "kind": "bug",
   "title": "The failure fingerprint cuts a pytest id at a space inside its parameter brackets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mguj7foz",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
     "kb/_self/code.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "seventh-w47"
 }
