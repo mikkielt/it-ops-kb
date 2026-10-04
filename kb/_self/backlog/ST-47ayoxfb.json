@@ -24,5 +24,18 @@
     "_tools/bl_selfcheck.py",
     "_tools/test_autopilot.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The removal leaves 17 tests red outside this item's touches: test_autopilot.py compaction-hook tests (4) pin the removed hooks, and test_autopilot_rehearse.py (13) fail at the selfcheck step because _tools/bl_selfcheck.py SKILL_COMMANDS still lists autopilot.py status --hook as an allow rule to cover. All of it is autopilot machinery that ST-dh5g3lk7 deletes. How is main kept green?",
+      "options": [
+        "widen touches to _tools/bl_selfcheck.py and _tools/test_autopilot.py and make the minimal removals in this item",
+        "land ST-47ayoxfb and ST-dh5g3lk7 back to back, red only between them"
+      ],
+      "recommendation": "widen touches to _tools/bl_selfcheck.py and _tools/test_autopilot.py and make the minimal removals in this item",
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "mac-fifth"
 }
