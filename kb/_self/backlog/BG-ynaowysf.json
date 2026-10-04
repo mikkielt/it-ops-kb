@@ -12,10 +12,9 @@
     "run": [
       "python3",
       "-c",
-      "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();i=t.index('def gate_do_warnings');b=t[i:i+1500];sys.exit(0 if 'for o in' in b or 'for opt' in b else 1)"
+      "import sys,types;sys.path.insert(0,'_tools');import bl_check;bl=types.SimpleNamespace(items={'ST-aaaaaaaa':{'status':'todo','gates':[{'id':'g1','kind':'blocking','options':['a','b'],'do':{'a':['echo','x']}}]}},label=lambda i:i);sys.exit(0 if len(bl_check.gate_do_warnings(bl))==1 else 1)"
     ]
   },
-  "repro_reason": "the defect is a loop that is missing; a planted two-option gate is the item's own test, still to be written, and the repro reads the source until it exists",
   "checks": [
     {
       "run": [
@@ -27,10 +26,8 @@
     }
   ],
   "touches": [
-    "_tools/backlog.py",
-    "_tools/bl_*.py",
-    "_tools/test_backlog.py",
-    "_tools/test_bl_*.py",
+    "_tools/bl_check.py",
+    "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ]

@@ -11,11 +11,11 @@
   "repro": {
     "run": [
       "python3",
-      "-c",
-      "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();sys.exit(1 if 'self.kf.pack(question)' in t else 0)"
+      "_tools/tests.py",
+      "-k",
+      "knowledge_state_root_uses_its_own_refs"
     ]
   },
-  "repro_reason": "the fix changes which value the code reads, and showing the defect needs a planted scenario that is this item's own test, still to be written; no cheaper command runs the behaviour, so the repro reads the source until that test exists",
   "checks": [
     {
       "run": [
@@ -27,8 +27,8 @@
     }
   ],
   "touches": [
-    "_tools/backlog.py",
-    "_tools/test_backlog.py",
+    "_tools/bl_check.py",
+    "_tools/test_bl_check.py",
     "kb/_self/tools.md"
   ]
 }

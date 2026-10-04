@@ -11,11 +11,11 @@
   "repro": {
     "run": [
       "python3",
-      "-c",
-      "import sys;t=open('_tools/backlog.py',encoding='utf-8').read();i=t.index('def dependencies');b=t[i:i+3000];sys.exit(0 if 'ancestors' in b else 1)"
+      "_tools/tests.py",
+      "-k",
+      "docs_after_code_story_and_parent"
     ]
   },
-  "repro_reason": "the fix changes which items dependencies() walks; a planted story-to-task scenario is the item's own test, still to be written, and the repro reads the source until it exists",
   "checks": [
     {
       "run": [
@@ -27,10 +27,10 @@
     }
   ],
   "touches": [
-    "_tools/backlog.py",
-    "_tools/bl_*.py",
-    "_tools/test_backlog.py",
-    "_tools/test_bl_*.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_check.py",
+    "_tools/test_bl_plan.py",
+    "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ]
