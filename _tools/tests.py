@@ -207,18 +207,26 @@ def is_code(path):
 def plan(paths, fast):
     """The pytest runs for the changed paths: [(nodes, -m expression)], nodes a testmap node list or EVERY; [] when no
     test can be affected. A fast run (KB_TESTS_FAST=1, kbgit.py sync's gate) keeps the git scenarios of the test files
-    a code path selects (is_code) and leaves them out of the rest, which only kb content selects, and of an `all`
-    selection: the gate runs the slow tests of the code a push changes, not the whole slow suite."""
+    a code path selects (is_code) and leaves them out of the rest, which only kb content selects: the gate runs the
+    slow tests of the code a push changes, not the whole slow suite. When one path selects every file (`all`:
+    pyproject.toml, uv.lock, conftest.py, tests.py, testmap.py or an unplaced path), each other code path keeps its own
+    selection's git scenarios, and the remaining files of the suite run without them."""
     import testmap
     sel, _ = testmap.select(paths)
     if sel == testmap.NONE:
         return []
-    if sel == testmap.ALL or not fast:
-        return [(EVERY if sel == testmap.ALL else sel, FAST_M if fast else FULL_M)]
+    if not fast:
+        return [(EVERY if sel == testmap.ALL else sel, FULL_M)]
     code, _ = testmap.select([p for p in paths if is_code(p)])
-    if code in (testmap.NONE, testmap.ALL):
+    if code == testmap.ALL:  # one path hides what the others select: ask for each path alone
+        alone = [testmap.select([p])[0] for p in paths if is_code(p)]
+        code = sorted({n for s in alone if s not in (testmap.NONE, testmap.ALL) for n in s})
+        if not code:
+            return [(EVERY if sel == testmap.ALL else sel, FAST_M)]
+    elif code == testmap.NONE:
         return [(sel, FAST_M)]
-    rest = [n for n in sel if n not in code and n.split("::")[0] not in code]
+    pool = [f"_tools/{f}" for f in testmap.test_files()] if sel == testmap.ALL else sel  # select() names nodes with _tools/
+    rest = [n for n in pool if n not in code and n.split("::")[0] not in code]
     return [(code, FULL_M)] + ([(rest, FAST_M)] if rest else [])
 
 
