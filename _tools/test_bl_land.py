@@ -423,6 +423,34 @@ def test_close_drops_depends_on(sprint):
     assert code == 0 and sprint["bg"] not in out, out
 
 
+def test_close_drops_links_to_deleted_items(sprint):
+    """The shape of SP-z7a5c76b's close: items outside the sprint name its items in both depends_on and relates_to.
+    close drops every such entry (a done dependency is met), keeps the ones naming items that stay, says which it
+    changed on which item, and check passes right after."""
+    repo = sprint["repo"]
+    for title, slug in (("Later", "z"), ("Other", "y")):
+        b(repo, "new", "bug", "--title", title, "--severity", "S4", "--repro", argstr(is_file(f"src/{slug}.txt")),
+          "--goal", f"{slug} exists")
+    later, other = item(repo, "Later")["id"], item(repo, "Other")["id"]
+    edit(repo, later, depends_on=[sprint["bg"], sprint["tk"]], relates_to=[sprint["st"], sprint["bg"]])
+    edit(repo, other, depends_on=[sprint["bg"], later], relates_to=[sprint["ep"], sprint["tk"]])
+    edit(repo, sprint["bg"], status="done")
+    edit(repo, sprint["tk"], status="done")
+    for iid in (sprint["st"], sprint["rv"]):
+        edit(repo, iid, status="dropped")
+    code, out = b(repo, "close", sprint["sp"])
+    assert code == 0, out
+    assert "depends_on" not in item(repo, "Later") and "relates_to" not in item(repo, "Later")
+    assert item(repo, "Other")["depends_on"] == [later]  # an open dependency stays
+    assert item(repo, "Other")["relates_to"] == [sprint["ep"]]  # the epic stays open, so its link stays
+    lines = {ln.split(" from ", 1)[1].split(" ")[0]: ln for ln in out.splitlines() if ln.startswith("dropped ")}
+    assert set(lines) == {later, other}, out  # one line per changed item, naming it
+    assert f"relates_to {sprint['st']}, {sprint['bg']}" in lines[later] and f"depends_on {sprint['bg']}, {sprint['tk']}" in lines[later]
+    assert f"depends_on {sprint['bg']}" in lines[other] and f"relates_to {sprint['tk']}" in lines[other]
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+
+
 # --- the ops row `sprint.close` (ST-hwua72bg): the sprint's facts, written before close deletes the items ---
 
 @pytest.fixture
