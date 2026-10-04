@@ -2,7 +2,7 @@
   "id": "BG-dvs4vzr6",
   "kind": "bug",
   "title": "backlog.py unlanded_code counts a block-only .gitattributes commit as code at done",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,28 @@
     "_tools/test_bl_land.py",
     "kb/_self/autopilot-container.md"
   ],
-  "claimed_by": "mac-third-worker"
+  "evidence": {
+    "commit": "7b70cd32602a34fe6b0ddb948fc7743531fb04a4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "unlanded_code_pinned_block"
+        ],
+        "exit": 0,
+        "sha256": "d0117aa3d2342c25"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(0 if 'kblane.commit_paths(root, sha)' in open('_tools/bl_land.py',encoding='utf-8').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
