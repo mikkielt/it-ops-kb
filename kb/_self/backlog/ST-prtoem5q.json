@@ -2,7 +2,7 @@
   "id": "ST-prtoem5q",
   "kind": "story",
   "title": "backlog.py merge reports a merge request that auto-merge already merged as merged, not as an error",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,19 @@
   "depends_on": [
     "BG-bd547fvz"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "a2a539a4257f231b0d5ae33d20af9c688ba63a48",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "merge_reports_already_merged"
+        ],
+        "exit": 0,
+        "sha256": "a870f7d29da097a2"
+      }
+    ]
+  }
 }
