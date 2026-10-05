@@ -2,7 +2,7 @@
   "id": "ST-75eg7e2h",
   "kind": "story",
   "title": "A hand-written python3 call is classed by purpose in its call row",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -36,5 +36,29 @@
     "ST-rpdfgu3t",
     "ST-mkczg5gs"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "29533e1f26899c0e46862cc7147f086cecd5bb3b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_call_python_purpose"
+        ],
+        "exit": 0,
+        "sha256": "5348c4d067e690e8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_call_python_no_text"
+        ],
+        "exit": 0,
+        "sha256": "85ae8ccb8d93b187"
+      }
+    ]
+  }
 }
