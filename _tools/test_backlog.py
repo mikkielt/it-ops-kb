@@ -1934,7 +1934,7 @@ def test_backlog_referrers_lists_each_file_that_names_a_moved_file_or_symbol(spr
     repo = referrer_repo(sprint)
     code, out = b(repo, "referrers", "lib/mod.py", "helper_fn", "no_such_symbol")
     assert code == 0, out
-    assert out.splitlines() == ["lib/mod.py  docs/n.md:1  1 line", "lib/mod.py  lib/user.py:1  2 lines",
+    assert out.splitlines() == ["lib/mod.py  docs/n.md:1  1 line", "lib/mod.py  lib/user.py:1  1 line",
                                 "lib/mod.py  src/t.txt:1  1 line",
                                 "helper_fn  docs/n.md:1  1 line", "helper_fn  lib/mod.py:1  1 line",
                                 "helper_fn  lib/user.py:2  1 line",
@@ -1946,11 +1946,29 @@ def test_backlog_referrers_item_marks_the_files_outside_its_touches(sprint):
     code, out = b(repo, "referrers", "lib/mod.py", "--item", sprint["tk"])  # the task's touches are src/**
     assert code == 1, out
     assert "lib/mod.py  src/t.txt:1  1 line\n" in out + "\n" and "src/t.txt:1  1 line  outside" not in out, out
-    assert "docs/n.md:1  1 line  outside touches" in out and "lib/user.py:1  2 lines  outside touches" in out, out
+    assert "docs/n.md:1  1 line  outside touches" in out and "lib/user.py:1  1 line  outside touches" in out, out
     edit(repo, sprint["tk"], touches=["src/**", "docs/n.md", "lib/user.py"])
     code, out = b(repo, "referrers", "lib/mod.py", "--item", sprint["tk"])
     assert code == 0 and "outside" not in out, out
     assert b(repo, "referrers", "x", "--item", "TK-zzzzzzzz")[0] == 2
+
+
+def test_backlog_referrers_ignores_item_files_and_matches_doc_names(sprint):
+    """BG-ncpteupy planted: an item file naming the moved file and prose that only says the module's word are no
+    referrers; an import line and <stem>.py are. A moved doc is found by its file name, word-bounded, too."""
+    repo = referrer_repo(sprint)
+    edit(repo, sprint["tk"], touches=["src/**", "lib/mod.py"], notes="the mod word, and mod.py")
+    for rel, text in {"docs/word.md": "a mod of the game\n", "docs/script.md": "run mod.py now\n",
+                      "lib/other.py": "from lib import mod\n", "docs/guide.md": "# guide\n",
+                      "docs/cites.md": "see guide.md and not myguide.md\n"}.items():
+        (repo / rel).write_text(text, encoding="utf-8", newline="\n")
+    commit(repo, "more files")
+    code, out = b(repo, "referrers", "lib/mod.py", "docs/guide.md")
+    assert code == 0, out
+    assert backlog.REL_DIR not in out and "docs/word.md" not in out, out
+    for want in ("lib/mod.py  docs/script.md:1  1 line", "lib/mod.py  lib/other.py:1  1 line",
+                 "lib/mod.py  lib/user.py:1  1 line", "docs/guide.md  docs/cites.md:1  1 line"):
+        assert want in out, (want, out)
 
 
 def test_backlog_referrers_planted_failure_of_the_scope_rule_is_caught(sprint, capsys, monkeypatch):
