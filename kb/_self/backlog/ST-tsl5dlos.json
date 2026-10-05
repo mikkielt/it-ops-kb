@@ -1,0 +1,25 @@
+{
+  "id": "ST-tsl5dlos",
+  "kind": "story",
+  "title": "kblog.py propose counts the ops rows whose item no commit or item file names and leaves them out unless asked",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kblog.py propose reports how many ops aggregates name an item id that no backlog item file and no KB-Work trailer of the repository names (unknown=N) and proposes none of them unless --unknown is given, so fixture rows are not proposed as fleet history again; a planted sidecar with a known and an unknown item proposes one row and counts one unknown. Retrospective of SP-smqwmchu: ST-vaby3y5b proposed 6412 rows of test fixtures and its commit called them the retired fleet's runs, unchecked.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kblog_propose_counts_unknown_items"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kblog.py",
+    "_tools/test_kblog.py",
+    "kb/_self/tools.md"
+  ]
+}
