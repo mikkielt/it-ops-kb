@@ -2,7 +2,7 @@
   "id": "ST-phnlqmkj",
   "kind": "story",
   "title": "Research sprint goal: kb/_self rules and decisions are retrieved, not read whole",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-njilrify",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "manager-mac"
+  "evidence": {
+    "commit": "ee5202af0fe339b63db2a282ee71bb60e66a109e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "9a312013e2b10c8d"
+      }
+    ]
+  }
 }
