@@ -206,15 +206,18 @@ def test_backlog_set_clear_refuses_the_same_fields(sprint, field, rule):
     refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], "--clear", field, rule=rule)
 
 
-def test_claim_refuses_a_shared_checkout(sprint, tmp_path):
-    """ST-ov6h4gbx planted (SP-tpulmoxh, SP-xdzgepun): session one claims a task; session two's claim of the bug in
-    the same checkout is refused (exit 1, naming session one), writes nothing and records nothing in the tree; in a
-    worktree of it the same claim succeeds; once session one releases, the shared checkout takes session two."""
+def test_claim_refuses_a_shared_checkout(sprint, tmp_path, monkeypatch):
+    """ST-ov6h4gbx planted (SP-tpulmoxh, SP-xdzgepun), with BG-g6zpyfgr: session s1 claims a task; session s2's claim
+    of the bug in the same checkout is refused (exit 1), writes nothing and records nothing in the tree; in a worktree
+    of it the same claim succeeds; once s1 releases, the shared checkout takes s2. One session (an orchestrator)
+    claims for several names in its checkout, and with no session id set the claimer's name stands for it."""
     repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+    monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "s1")
     assert b(repo, "claim", tk, "--by", "one")[0] == 0
     before = item_text(repo, bg)
+    monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "s2")
     code, out = b(repo, "claim", bg, "--by", "two")
-    assert code == 1 and "one works in this checkout" in out and tk in out, out
+    assert code == 1 and "another session (one) works in this checkout" in out and tk in out, out
     status = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all"], cwd=repo, capture_output=True,
                             text=True, check=True).stdout
     assert item_text(repo, bg) == before and "claims" not in status, status  # the record lives in the git dir
@@ -223,10 +226,27 @@ def test_claim_refuses_a_shared_checkout(sprint, tmp_path):
     sh(repo, "git", "worktree", "add", "-q", "--detach", str(wt))
     code, out = b(wt, "claim", bg, "--by", "two")
     assert code == 0, out
+    monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "s1")
     assert b(repo, "claim", tk, "--by", "one")[0] == 0  # the same session again: no refusal
     assert b(repo, "release", tk)[0] == 0
+    monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "s2")
     code, out = b(repo, "claim", bg, "--by", "two")
     assert code == 0, out
+
+
+def test_claim_lets_one_session_claim_for_its_subagents(sprint, monkeypatch):
+    """BG-g6zpyfgr planted: kb-sprint's orchestrator claims the task for worker-a and the bug for worker-b in its own
+    checkout, one session: both pass. With no session id the names stand for sessions: the second is refused."""
+    repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+    monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "orchestrator")
+    assert b(repo, "claim", tk, "--by", "worker-a")[0] == 0
+    code, out = b(repo, "claim", bg, "--by", "worker-b")
+    assert code == 0, out
+    assert b(repo, "release", bg)[0] == 0 and b(repo, "release", tk)[0] == 0
+    monkeypatch.delenv("CLAUDE_CODE_SESSION_ID")
+    assert b(repo, "claim", tk, "--by", "worker-a")[0] == 0
+    code, out = b(repo, "claim", bg, "--by", "worker-b")
+    assert code == 1 and "another session (worker-a)" in out, out
 
 
 def test_goal_prints_ancestor_gates(sprint):
