@@ -2,7 +2,7 @@
   "id": "BG-r5fab2td",
   "kind": "bug",
   "title": "test_cost_open_session's spool rows use a strftime format Windows rejects",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "touches": [
     "_tools/test_cost_open_session.py",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker3"
 }
