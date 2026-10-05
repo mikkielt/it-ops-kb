@@ -2,7 +2,7 @@
   "id": "BG-kgf2igc7",
   "kind": "bug",
   "title": "kb-backlog says set --sprint would leave a draft item in an active sprint, but set refuses that case",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -21,5 +21,18 @@
     ".claude/skills/kb-item/SKILL.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "4e8e8c45e74d35972a30f99641744daa3075b02d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-backlog/SKILL.md',encoding='utf-8').read();sys.exit(1 if 'would leave a draft item in an active sprint' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
