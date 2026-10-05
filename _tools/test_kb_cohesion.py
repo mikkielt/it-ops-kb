@@ -883,3 +883,26 @@ def test_sprint_plan_reviews_goal_figures():
     assert missing(skill) == []
     for p in GOAL_FIGURES:
         assert missing(skill.replace(p, "")) == [p], p
+
+
+PLANT_PER_CLAUSE = {"kb-item": "plant one case per clause of the goal",
+                    "kb-worker": "one planted case per clause of the item's goal",
+                    "backlog.md": "one planted case per clause of the goal"}
+
+
+def test_planted_case_per_goal_clause():
+    """ST-g2xvcjq5 (the SP-xdzgepun and SP-42bn4vz7 reviews' unmet clauses): /kb-item's commit step, the kb-worker
+    agent's done bar and the runbook's definition of done ask for one planted case per goal clause; each phrase
+    removed from a planted copy fails."""
+    def read(*rel):
+        with open(os.path.join(KB, *rel), encoding="utf-8") as f:
+            return f.read()
+    texts = {"kb-item": read(".claude", "skills", "kb-item", "SKILL.md"),
+             "kb-worker": read(".claude", "agents", "kb-worker.md"),
+             "backlog.md": read("kb", "_self", "backlog.md")}
+
+    def missing(ts):
+        return [n for n, phrase in PLANT_PER_CLAUSE.items() if phrase not in ts[n]]
+    assert missing(texts) == []
+    for n, phrase in PLANT_PER_CLAUSE.items():
+        assert missing({**texts, n: texts[n].replace(phrase, "")}) == [n], n

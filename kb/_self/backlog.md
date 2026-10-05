@@ -148,7 +148,7 @@ A `SessionStart` hook (`horizon --hook`) prints a short form of it, each active 
 
 Every item meets the shared minimum, the same bar for every item (`agents/agent-planning-and-done.md`, DOC S-2wwcyoa4):
 - the gate in `kb/_self/maintaining.md` passes, and the tests pass on Linux and Windows in CI;
-- every new check or gate has a test with a planted failure that makes it fail (DER S1896);
+- every new check or gate has a test with a planted failure that makes it fail, one planted case per clause of the goal (DER S1896);
 - no new dependency; the tools stay standard library only;
 - portability: files are read and written with `encoding="utf-8"` (and `newline="\n"` when writing), paths go through `pathlib`, and subprocesses take argument lists;
 - `/kb-self` has run when `_tools/`, `.claude/`, `.claude-plugin/` or `.gitlab-ci.yml` changed;
