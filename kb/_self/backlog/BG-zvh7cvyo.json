@@ -1,0 +1,32 @@
+{
+  "id": "BG-zvh7cvyo",
+  "kind": "bug",
+  "title": "new accepts a repro whose own shell -c string misses a tool after its first command, read as a wrapper's inside tool",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "own_failure reads every command word of a shell -c string (split on &&, ||, ; and |) as the repro's own, so a not-found message naming any of them is the repro's own error (cannot start), and only a name in none of them counts as a tool inside a wrapper; a test plants sh -c 'cd /tmp && jq .' and bash -c 'ls | jqx .' with exit 127 and both are refused, while bash hook.sh naming jq stays accepted. Found by the SP-xdzgepun review of BG-a3ubazze.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_land as b;sys.exit(0 if b.own_failure(['sh','-c','cd /tmp && jq .'],127,'sh: line 1: jq: command not found','.') else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "repro_fails_for_its_own_error_compound_shell"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}
