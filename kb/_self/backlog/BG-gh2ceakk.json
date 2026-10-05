@@ -11,8 +11,9 @@
   "repro": {
     "run": [
       "python3",
-      "-c",
-      "import sys;sys.path.insert(0,'_tools');import test_three_tiers_docs as t;names=' '.join(str(d) for d in t.DOCS);sys.exit(0 if all(n in names for n in ('tools.md','maintaining.md','plugin.md','token-efficiency.md')) else 1)"
+      "_tools/tests.py",
+      "-k",
+      "three_tiers_documented_reads_every_named_doc"
     ]
   },
   "checks": [
