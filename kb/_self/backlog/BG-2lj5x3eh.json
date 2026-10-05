@@ -2,7 +2,7 @@
   "id": "BG-2lj5x3eh",
   "kind": "bug",
   "title": "The rule for a bug filed while landing leaves out that the bug must join a started sprint",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,18 @@
     ".claude/skills/kb-item/SKILL.md",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "dda7b458c9819be7055384136b6298b6066ae026",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();p=next(l for l in t.splitlines() if l.startswith('- **A bug filed while landing**'));sys.exit(0 if '--sprint' in p else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
