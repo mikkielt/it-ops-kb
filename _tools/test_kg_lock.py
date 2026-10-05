@@ -35,7 +35,9 @@ sys.path.insert(0, {tools!r})
 import kg_lock
 os.environ.pop("PYTEST_CURRENT_TEST", None)
 with kg_lock.main_lock({step!r}, "holder", poll=0.02):
-    open({ready!r}, "w").write("1")
+    with open({ready!r} + ".tmp", "w") as f:  # its own pid: on Windows Popen.pid is the venv launcher's
+        f.write(str(os.getpid()))
+    os.replace({ready!r} + ".tmp", {ready!r})
     while not os.path.exists({release!r}):
         time.sleep(0.02)
 """
@@ -44,12 +46,12 @@ WORKER = """
 import os, sys, time
 sys.path.insert(0, {tools!r})
 import kg_lock
-def work():
-    with open({log!r}, "a") as f:
-        f.write("start " + str(os.getpid()) + "\\n")
-    time.sleep(0.25)
-    with open({log!r}, "a") as f:
-        f.write("end " + str(os.getpid()) + "\\n")
+def work():  # a file per worker: appends of several processes to one file lose lines on Windows
+    with open({log!r} + "-" + str(os.getpid()), "a") as f:
+        f.write(str(time.time_ns()) + " start " + str(os.getpid()) + "\\n")
+        f.flush()
+        time.sleep(0.25)
+        f.write(str(time.time_ns()) + " end " + str(os.getpid()) + "\\n")
 if {locked!r}:
     with kg_lock.main_lock("worker", "worker", poll=0.02):
         work()
@@ -88,7 +90,9 @@ def test_kg_lock_main_lock_keeps_holders_apart_and_planted_unlocked_overlap(host
         procs = [subprocess.Popen([sys.executable, "-c", WORKER.format(tools=str(TOOLS), log=str(log), locked=locked)],
                                   env=env_for_child(host_dir)) for _ in range(n)]
         assert [p.wait(60) for p in procs] == [0] * n
-        lines = log.read_text(encoding="utf-8").splitlines()
+        stamped = [ln.split(" ", 1) for f in tmp_path.glob(f"{log.name}-*")
+                   for ln in f.read_text(encoding="utf-8").splitlines()]
+        lines = [ln for _, ln in sorted(stamped, key=lambda s: int(s[0]))]
         assert len(lines) == 2 * n
         assert overlapped(lines) is (not locked), lines
     assert not (host_dir / kg_lock.LOCK_NAME).exists()  # every holder released it
@@ -108,7 +112,7 @@ def test_kg_lock_main_lock_waiter_names_the_holder_and_its_step(host_dir, tmp_pa
             waited = time.time() - started
             held = (host_dir / kg_lock.LOCK_NAME).read_text(encoding="utf-8")
         out = capsys.readouterr().out
-        assert f"held by pid {holder.pid}" in out and "sync --push" in out and "host main lock" in out, out
+        assert f"held by pid {ready.read_text(encoding='utf-8')}" in out and "sync --push" in out and "host main lock" in out, out
         assert waited >= 0.3 and f"pid={os.getpid()}" in held and "step=backlog.py land: fetch and rebase" in held
     finally:
         release.write_text("1", encoding="utf-8")

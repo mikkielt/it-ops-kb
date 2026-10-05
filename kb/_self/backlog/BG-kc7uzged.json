@@ -1,0 +1,34 @@
+{
+  "id": "BG-kc7uzged",
+  "kind": "bug",
+  "title": "kbingest machine-name and posix path tests assume a POSIX host",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "test_kbingest_machine_names_passwd_and_short_host plants os.getuid with the fake pwd module, and test_names_clone_code_drive_less_rooted_posix_unchanged plants posix path semantics as its ntpath siblings plant Windows ones, so both pass on Windows as on POSIX",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_kbingest_machine_names_passwd_and_short_host or test_names_clone_code_drive_less_rooted_posix_unchanged"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_kbingest_machine_names_passwd_and_short_host or test_names_clone_code_drive_less_rooted_posix_unchanged"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_kbingest.py",
+    "_tools/test_kbingest_windows.py",
+    "kb/_self/code.md"
+  ]
+}

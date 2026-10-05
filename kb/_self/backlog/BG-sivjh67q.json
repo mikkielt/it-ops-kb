@@ -1,0 +1,33 @@
+{
+  "id": "BG-sivjh67q",
+  "kind": "bug",
+  "title": "test_bl_land's rejected-push fake clones a remote whose HEAD names master",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The fake kbgit.py of test_bl_land's LAND_REJECT case clones the remote's main by name (clone -b main), so on a host whose git config sets init.defaultBranch=master (Git for Windows' system gitconfig), where the fixture's bare remote's HEAD names a branch that does not exist, the other session's commit sits on main and its push is a fast-forward; both rejected-push land tests pass on Windows",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_land_keeps_done_commit_after_rejected_push or test_branch_land_keeps_done_commit_after_rejected_push"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_land_keeps_done_commit_after_rejected_push or test_branch_land_keeps_done_commit_after_rejected_push"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_bl_land.py",
+    "kb/_self/code.md"
+  ]
+}
