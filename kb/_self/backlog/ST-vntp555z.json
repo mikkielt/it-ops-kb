@@ -2,7 +2,7 @@
   "id": "ST-vntp555z",
   "kind": "story",
   "title": "kb-item reads only the runbook sections that working one item needs, and one session works one item",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ytfb4dc5",
   "priority": "P1",
   "rank": 0,
@@ -27,10 +27,16 @@
   "touches": [
     "kb/_self/backlog.md",
     ".claude/skills/kb-item/SKILL.md",
-    "AGENTS.md"
+    "AGENTS.md",
+    "_tools/test_kb_item_*.py",
+    "_tools/testmap.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-f4ra5s7y"
   ],
-  "notes": "Premise: the reading command at the top of the kb-item skill (selfdoc.py section over The item file, Dependencies, gates and triggers, Definition of done, Working on items, Git and Conduct for changes) prints 70888 bytes on origin/main 782d07f1, against the 30000-byte bound of the goal; the item's first check exits 1 until the sections shrink. It waits on ST-f4ra5s7y “No file of the tools, skills or docs names the autopilot agent feature, and the Windows Autopilot product is untouched”, the last retirement edit of kb/_self/backlog.md, so the bound is measured on the runbook without the autopilot text."
+  "notes": "Premise: the reading command at the top of the kb-item skill (selfdoc.py section over The item file, Dependencies, gates and triggers, Definition of done, Working on items, Git and Conduct for changes) prints 70888 bytes on origin/main 782d07f1, against the 30000-byte bound of the goal; the item's first check exits 1 until the sections shrink. It waits on ST-f4ra5s7y “No file of the tools, skills or docs names the autopilot agent feature, and the Windows Autopilot product is untouched”, the last retirement edit of kb/_self/backlog.md, so the bound is measured on the runbook without the autopilot text.",
+  "claimed_by": "worker-vntp555z"
 }
