@@ -6,7 +6,6 @@ The spool is a throwaway directory the test points `ql_capture.spool_dir` at: no
 The planted failure is the old behaviour (no open session read), which the same checks must reject.
 """
 import json
-import time
 from pathlib import Path
 
 import pytest
@@ -43,7 +42,7 @@ def spool_rows(sid, item, usage=True):
                                     "usage": {"main": {OPUS: counts(i + 1)}, "start": 1000 + i}}))
         for surface, extra in kinds:
             n += 1
-            ts = time.strftime("2026-10-03T09:00:%02d.000Z", time.gmtime(n))
+            ts = f"2026-10-03T09:00:{n:02d}.000Z"  # not strftime: %02d is no format code, and Windows rejects it
             rows.append({"id": f"{sid[:23]}-{n:012x}", "ts": ts, "v": 1, "session_id": sid, "prompt_id": f"p{i}",
                          "surface": surface, **extra})
     return rows
