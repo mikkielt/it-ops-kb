@@ -62,5 +62,9 @@
       "by": "operator"
     }
   ],
+  "trigger": {
+    "when": "a paid navigation run kept its raw stdout",
+    "fired": false
+  },
   "notes": "Kept as a draft: the fixture needs a recorded stream, which exists only after ST-qc4vvlgs lands and one later paid navigation run keeps its raw stdout; schedule it then."
 }

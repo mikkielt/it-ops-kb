@@ -3,17 +3,31 @@
   "kind": "story",
   "title": "The runbook says whether a provisional answer can be confirmed by a delegate",
   "status": "draft",
+  "sprint": "SP-gfz3rl64",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb/_self/backlog.md states who may confirm a provisional answer when the operator delegates (or that no delegate can), and the CLI matches it. Answers the SP-xdzgepun review, where a delegated confirmation was asked for and refused.",
+  "goal": "A provisional answer can be confirmed by a named delegate: `backlog.py answer ID GATE --confirm --by delegate:NAME` is accepted only while an operator grant names NAME (a grant the operator writes in the backlog, such as a `delegates` list on the sprint item that only `--by operator` can set), and is recorded as that delegate; without a grant, or for a gate of a class only the operator answers, it is refused as today. kb/_self/backlog.md states the rule. Planted tests: a granted delegate confirms, an ungranted one and a grant written by an agent are refused. Answers the SP-xdzgepun review, where a delegated confirmation was asked for with no rule to follow.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "delegated_confirmation_rule"
+        "delegate_confirms_under_operator_grant"
       ]
     }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "_tools/bl_authority.py",
+    "_tools/test_backlog_authority.py",
+    "_tools/bl_check.py",
+    "_tools/test_bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-ov6h4gbx"
   ]
 }

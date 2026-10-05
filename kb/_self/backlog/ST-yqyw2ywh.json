@@ -3,23 +3,27 @@
   "kind": "story",
   "title": "A story's check is shown against the figures its goal names",
   "status": "draft",
+  "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
-  "goal": "backlog.py check or planning names a story whose goal lists outputs or figures (such as four totals) that none of its checks or its tasks' checks exercise, so a story cannot close on a check that passes without them; SP-fvztfmtm's ST-6bi7oe6y had a check (-k backlog_cost) that passed with no shared figure or session total and only a reading of the goal found TK-cm5gabpz",
+  "goal": "kb-sprint plan has a review step that reads each committed story's goal for the outputs or figures it names (such as four totals) and the checks of the story and its tasks, and records a missing check before the start gate; no code. The cohesion test finds the step in the skill. Answers SP-fvztfmtm's ST-6bi7oe6y, whose check passed with no shared figure or session total.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "story_check_covers_goal"
+        "sprint_plan_reviews_goal_figures"
       ]
     }
   ],
   "touches": [
-    "_tools/bl_check.py",
-    "_tools/test_bl_check.py",
+    ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-aah3cb3o"
   ]
 }

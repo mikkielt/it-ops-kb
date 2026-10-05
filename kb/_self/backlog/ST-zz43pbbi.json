@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "An open choice on rule-guarding code goes to the operator before the work",
   "status": "draft",
+  "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
   "goal": "kb-item says that a choice a goal leaves open on an item touching _tools/bl_*, skills or the other agents-rule paths becomes an operator gate, to be recorded before coding; and a provisional answer about a shared map or naming rule is put to the operator when recorded, not at the review. Answers BG-4zpv4iol, BG-ytcjstai and BG-xwolxdi6 (held after the work), and ST-clsddgen's map answer that blocked SP-42bn4vz7's review.",
@@ -22,5 +23,8 @@
     "kb/_self/backlog.md",
     "_tools/test_kb_cohesion.py",
     "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-ctwlrtud"
   ]
 }

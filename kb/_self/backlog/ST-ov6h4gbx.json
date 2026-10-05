@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "A second session working in the same checkout is refused before it commits",
   "status": "draft",
+  "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py claim refuses, naming the other session, when another session holds a claim in the same checkout and working tree (not its own worktree), and the kb-sprint and kb-item runbooks name one worktree per worker; a test plants two sessions in one checkout. Answers the SP-tpulmoxh retrospective: worker1's claim commit landed on worker2's branch because both shared /Users/<name>/it-ops-kb.",
+  "goal": "backlog.py claim records the claiming session's name and git toplevel under _cache (never committed) and refuses, naming the other session, a claim by another session in the same toplevel (the same working tree, not its own worktree); the kb-sprint and kb-item runbooks say each worker session works in its own worktree from its first command. A test plants two sessions claiming in one checkout and one in a worktree of it. Answers the SP-tpulmoxh and SP-xdzgepun retrospectives, where a worker's claim commit landed on another worker's branch in a shared checkout; it takes ST-qfw6o5fq's runbook clause.",
   "checks": [
     {
       "run": [
@@ -21,6 +22,11 @@
     "_tools/test_backlog.py",
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-73c5rhb5"
   ]
 }

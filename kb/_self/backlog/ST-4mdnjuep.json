@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A repro whose own code cannot import or start is its own error",
   "status": "draft",
+  "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
   "goal": "own_failure counts an AttributeError, ImportError or ModuleNotFoundError raised from the repro's -c string, and a repro that imports a test module needing pytest under the system python3, as the repro's own error. Answers BG-iafrnmc3's repro (a name backlog.py never exported) and the BG-gh2ceakk and BG-4zpv4iol repros that imported test modules.",

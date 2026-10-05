@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "backlog.py set replaces an item's title, goal, repro, severity and parent",
   "status": "draft",
+  "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py set gains --title, --goal, --repro (a command, with --repro-reason where a text match is all that is possible), --severity and --parent, with the existing refusals kept and a refusal of repro or goal on a done item; so no item file is hand-edited for those fields and fmt/check stay green. Planted test: each flag changes its field and is refused on a done item.",
@@ -29,6 +30,9 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-f5v3i3yd"
   ],
   "notes": "Its change is backlog.py's own item writers (cmd_set, cmd_goal), which stay in the facade under the keep-whole verdict until ST-leqf5onn moves them to bl_items.py: the facade touch warning is accepted."
 }

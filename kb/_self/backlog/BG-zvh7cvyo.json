@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "new accepts a repro whose own shell -c string misses a tool after its first command, read as a wrapper's inside tool",
   "status": "draft",
+  "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -27,6 +28,7 @@
   "touches": [
     "_tools/bl_land.py",
     "_tools/test_backlog.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

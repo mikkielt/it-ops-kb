@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The review's cost step is rerun once the sprint's sessions close",
   "status": "draft",
+  "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
   "goal": "kb-sprint's review and close steps rerun backlog.py cost --rework after the sessions that did the work have closed, or say the figures are provisional, so a review does not report zeros as the sprint's cost. Answers SP-xdzgepun and SP-42bn4vz7, whose reviews read 0 for every item.",
@@ -21,5 +22,8 @@
     "kb/_self/backlog.md",
     "_tools/test_kb_cohesion.py",
     "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-4ib5n3zl"
   ]
 }

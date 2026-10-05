@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The docs-coverage warning of backlog check reads only items of a planned or active sprint",
   "status": "draft",
+  "sprint": "SP-3rzxx3m4",
   "priority": "P2",
   "rank": 0,
   "goal": "Retro SP-ytfb4dc5: once ST-vntp555z (which held AGENTS.md) was done, backlog check added seven 'AGENTS.md is in no item's touches' warnings on drafts and items in no sprint, noise nobody acts on until those items are planned. The docs-coverage warning (an item's code docs in no item's touches) is given only for items of a planned or active sprint, as /kb-sprint plan and start act on it; items outside any sprint get it when they join one. Planted tests: a sprint item still warns, a draft in no sprint does not.",

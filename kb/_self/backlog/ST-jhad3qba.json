@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "land --wait-merge waits a bounded time for the code merge request, read from git, then finishes the second pass",
   "status": "draft",
+  "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py land accepts --wait-merge SECONDS: after the first pass it polls git (fetch, the merge on main), not the forge CLI, every 60 s up to the bound, then runs the second pass; on timeout it stops with the merge request named; so no session writes its own poll loop of long-context turns. Planted test: a merge that appears after two polls, and a timeout.",
@@ -30,6 +31,10 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     ".claude/skills/kb-sprint/SKILL.md",
-    ".claude/skills/kb-item/SKILL.md"
+    ".claude/skills/kb-item/SKILL.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-4mdnjuep"
   ]
 }

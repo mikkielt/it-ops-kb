@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "backlog.py tidy lists the merged work and agent branches and clean worktrees, and with --apply removes only what close may remove",
   "status": "draft",
+  "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py tidy lists every local work/*, worktree-agent-* and orch/* branch fully on the integration main and every clean, process-free agent worktree under the clone, prints why it keeps each other one, and with --apply removes only those, reusing close's helpers (agents are denied git worktree remove and git branch -D, so it runs as a python process like land); a stale work/ID branch no longer makes a worker's checkout -b fail. Operator gate: may an agent run --apply, or does tidy only list? Planted test: a throwaway repo with merged, unmerged, dirty and checked-out branches.",
+  "goal": "backlog.py tidy lists every local work/*, worktree-agent-* and orch/* branch fully on the integration main and every clean, process-free agent worktree under the clone, prints why it keeps each other one, and with --apply removes only those, reusing close's helpers (agents are denied git worktree remove and git branch -D, so it runs as a python process like land); a stale work/ID branch no longer makes a worker's checkout -b fail. An agent may run --apply (gate g1). Planted test: a throwaway repo with merged, unmerged, dirty and checked-out branches.",
   "checks": [
     {
       "run": [
@@ -21,6 +22,9 @@
     "_tools/test_kb_sprint_close_cleanup.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-u36embuw"
   ],
   "gates": [
     {

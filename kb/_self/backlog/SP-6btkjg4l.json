@@ -1,0 +1,20 @@
+{
+  "id": "SP-6btkjg4l",
+  "kind": "sprint",
+  "title": "The retired autopilot leaves no code, event, test gap or hook rule behind",
+  "status": "planned",
+  "goal": "nothing of the retired autopilot runner stays in close, kbusage or the kb-sprint cleanup step; tidy lists and removes the merged work and agent branches and clean worktrees close may remove; stall.remedy is a past ops event; a dropped test id names the removed code it tested; the commit-msg hook names in one message which items a commit may name; and a change to one bl_ module selects only the tests that import it",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

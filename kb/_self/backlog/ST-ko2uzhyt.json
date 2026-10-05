@@ -1,0 +1,32 @@
+{
+  "id": "ST-ko2uzhyt",
+  "kind": "story",
+  "title": "Review sprint: backlog.py's item writers gain their rules, then move to bl_items.py",
+  "status": "draft",
+  "sprint": "SP-gfz3rl64",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/stress_test.py"
+      ]
+    }
+  ]
+}
