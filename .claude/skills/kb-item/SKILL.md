@@ -34,6 +34,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
 5. **Work.**
    - Change only files matching `touches`. If the work needs another file, widen `touches` with `python3 _tools/backlog.py set ID --touch PATH --add` and say so in the commit body.
    - A defect outside the item becomes a bug (`/kb-backlog bug`), not a fix.
+   - Before any code: a choice the goal leaves open on an item whose `touches` name a rule-guarding path (the `agents-rule` paths of `_tools/bl_authority.py`: `_tools/bl_*`, `_tools/backlog.py`, `.claude/skills/`, `.claude/settings.json`, `AGENTS.md` and the others) is a blocking operator gate, added and asked before any code is written, never settled by the worker and held after the work; and a provisional answer about a shared map or naming rule (a map such as `kb/_self/map.csv`, an id or name scheme other items follow) is put to the operator when it is recorded, not left for the review.
    - A question only the operator can settle becomes a gate: `python3 _tools/backlog.py gate add ID --question Q --option O --option O --recommendation R [--kind blocking|provisional]`, the recommendation one of the options:
      - blocking: stop this item and pick the next;
      - provisional: `python3 _tools/backlog.py answer ID GATE --provisional` and go on.
