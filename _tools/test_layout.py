@@ -574,8 +574,9 @@ def test_bl_split_land_bl_land_never_imports_backlog_at_any_depth_and_no_bl_modu
     assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(tree))
     graph = {m: {d for d in deps if (m, d) not in LAZY_EDGES} for m, deps in bl_graph(tool_sources()).items()}
     assert import_cycle(graph) is None, import_cycle(graph)
-    # bl_ci and bl_items, command modules beside it, take the runner of a check from it; nothing below bl_land does
-    assert "bl_land" in graph and not any("bl_land" in deps for m, deps in graph.items() if m not in ("bl_ci", "bl_items"))
+    # bl_items, a command module beside it, takes own_failure from it; bl_ci takes the runner of a check from bl_base
+    # (ST-ufpxla7r), and nothing below bl_land imports it
+    assert "bl_land" in graph and not any("bl_land" in deps for m, deps in graph.items() if m != "bl_items")
 
 
 def test_bl_split_land_done_land_and_close_keep_their_usage_positions_with_bl_land_handlers():
