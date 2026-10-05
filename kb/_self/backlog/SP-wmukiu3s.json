@@ -2,7 +2,7 @@
   "id": "SP-wmukiu3s",
   "kind": "sprint",
   "title": "Sprint process rules are written where planners and workers read them",
-  "status": "planned",
+  "status": "active",
   "goal": "the kb-sprint, kb-backlog and kb-item skills and the runbook say: touches are planned from referrers and the doc map with the docs the code maps to; the review reruns cost once the sessions close; an open choice on rule-guarding code goes to the operator before the work; plan checks each story's premise and reviews the figures its goal names; a planted case covers each goal clause; a resolved rebase conflict keeps both sides; and code.md says every derived cache key holds the form of its rule",
   "gates": [
     {

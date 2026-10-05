@@ -2,7 +2,7 @@
   "id": "ST-ikxgirce",
   "kind": "story",
   "title": "A resolved rebase conflict in a tool file is checked to parse and keep both sides' definitions before land goes on",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
