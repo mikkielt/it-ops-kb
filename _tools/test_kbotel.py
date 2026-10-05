@@ -3,7 +3,9 @@ kb/_self/usage.md, OpenTelemetry events). Each test runs the receiver in a threa
 posts what Claude Code's exporter posts (kb/public/claude/otel-monitoring.md: resourceLogs, scopeLogs, logRecords,
 lowerCamelCase keys, int64 as decimal strings); none reaches the network.
 """
-import json, threading, urllib.request
+import json, os, subprocess, sys, threading, urllib.request
+
+import pytest
 
 import kbotel
 
@@ -131,3 +133,28 @@ def test_otel_events_join_transcript(tmp_path, capsys):
     assert capsys.readouterr().out.splitlines() == ["prompt p-1  cost_usd=0.5  requests=1  tool_results=1",
                                                     "prompt p-2  cost_usd=0.25  requests=1  tool_results=0"]
     assert kbotel.main(["join", str(transcript), "--events", str(tmp_path / "none.jsonl")]) == 2
+
+
+def run_until_return(rx, **kw):
+    """Run the receiver on a thread; True when `run` returned within 15 seconds."""
+    t = threading.Thread(target=rx.run, kwargs=kw, daemon=True)
+    t.start()
+    t.join(15)
+    return not t.is_alive()
+
+
+def test_otel_receiver_exits_on_idle(tmp_path):
+    """ST-xc7bughc planted: with no request for `idle` seconds the receiver's run returns and closes its socket."""
+    rx = kbotel.Receiver(tmp_path / "e.jsonl", 0)
+    assert run_until_return(rx, idle=0.2)
+    assert rx.server.socket.fileno() == -1
+
+
+@pytest.mark.skipif(os.name != "posix", reason="a gone parent is read with os.kill(pid, 0), POSIX only")
+def test_otel_receiver_exits_when_its_parent_is_gone(tmp_path):
+    """ST-xc7bughc planted: a parent pid that has exited ends the run at once, whatever the idle bound."""
+    gone = subprocess.Popen([sys.executable, "-c", "pass"])
+    gone.wait()
+    rx = kbotel.Receiver(tmp_path / "e.jsonl", 0)
+    assert run_until_return(rx, idle=3600, parent=gone.pid)
+    assert not kbotel.alive(gone.pid) and kbotel.alive(os.getpid())

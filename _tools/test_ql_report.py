@@ -752,7 +752,8 @@ class TestDigestOps:
         gates is left out whole."""
         store = digest_store(tmp_path / "store")
         write_ops_sidecar(store, W39_RUN, OPS_W39)
-        write_ops_sidecar(store, WORK_W40, [ops_row(11, "land.end", item="TK-dddddddd", exit=0, ms=5)])
+        write_ops_sidecar(store, WORK_W40, [ops_row(11, "land.end", item="TK-dddddddd", exit=0, ms=5,
+                                                    ts="2026-09-29T09:00:00.000Z")])
         assert ql_store.store_problems(store) == []
         assert "\n".join(ops_part(ql_report.digest(store, "2026-W39")[1])) == DIGEST_W39_OPS
         write_ops_sidecar(store, WORK_W39_EARLY, [ops_row(12, "land.end", item="TK-eeeeeeee", exit=0, ms=5, extra="x")])
@@ -767,6 +768,18 @@ class TestDigestOps:
                                            ops_row(3, "test.run", mode="full", ms=900, exit=1)])
         lines = ops_part(ql_report.digest(store, "2026-W39")[1])
         assert "  test.run: 3, failed 1, median 300 ms, selected nothing 2" in lines, lines
+
+    def test_ql_report_ops_block_by_row_day(self, tmp_path):
+        """ST-xc7bughc planted: a Monday (2026-W40) distill delivers rows of the Sunday before (2026-W39): the W39
+        block counts them by their own ts, and the W40 block does not; a W40 row in the same sidecar counts in W40."""
+        store = digest_store(tmp_path / "store")
+        write_ops_sidecar(store, WORK_W40, [ops_row(1, "land.end", item="TK-aaaaaaaa", exit=0, ms=5,
+                                                    ts="2026-09-27T23:00:00.000Z"),
+                                            ops_row(2, "land.end", item="TK-bbbbbbbb", exit=0, ms=7,
+                                                    ts="2026-09-29T08:00:00.000Z")])
+        w39, w40 = ops_part(ql_report.digest(store, "2026-W39")[1]), ops_part(ql_report.digest(store, "2026-W40")[1])
+        assert w39 and w39[0].startswith("ops: 1 rows") and "  land.end: 1, failed 0, median 5 ms" in w39, w39
+        assert w40 and w40[0].startswith("ops: 1 rows") and "  land.end: 1, failed 0, median 7 ms" in w40, w40
 
     def test_ql_report_ops_block_stable(self, tmp_path):
         """A second digest on unchanged inputs prints the same lines, and a week without ops rows prints no block."""

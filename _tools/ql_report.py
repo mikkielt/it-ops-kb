@@ -145,17 +145,26 @@ NOTHING_SELECTED = 5  # pytest's exit when no test was collected or selected: a 
 OPS_TIMED = ("land.end", "sync.gate", "test.run")  # the events whose count, failures and median ms the block gives
 
 
-def ops_lines(files, week_run):
-    """The digest's ops block for the ops sidecars `files` whose run id `week_run` accepts: `ops: N rows (event n,
+def row_day(row, run_id):
+    """The UTC day of an ops row: its `ts`, else the day of the run that delivered it."""
+    try:
+        return datetime.date.fromisoformat(str(row.get("ts", ""))[:10])
+    except ValueError:
+        return run_day(run_id)
+
+
+def ops_lines(files, in_week):
+    """The digest's ops block for the rows of the ops sidecars `files` whose own day (`ts`, else the sidecar's run
+    day) `in_week` accepts, so a Monday distill does not move the last week's rows: `ops: N rows (event n,
     ...)`, then `  land.end|sync.gate|test.run: N, failed F, median M ms`, `  done.refused: N`, `  agent.run: N (group
     n, ...)`, `  call.tool: N calls, errors E, interrupts I; top classes: class n, ...` and one line per hook event
     kind present; [] when the week's sidecars hold no row. A sidecar that breaks the ops gates is left out whole, as
     work_lines does. Only event names, classes and counts go in."""
     rows = []
-    for p, objs in records(f for f in files if week_run(f.stem)):
+    for p, objs in records(files):
         lines = [w for _, w in objs]
         if lines and not any(ops_line_problems(w, p.stem) for w in lines):
-            rows += lines
+            rows += [w for w in lines if in_week(row_day(w, p.stem))]
     if not rows:
         return []
     by = {}
@@ -288,7 +297,7 @@ def digest(store=None, week=None, backlog=None):
              f"fetches: {nfetch}, failed {failed}, result characters {chars}",
              *usage_lines(entries, usage_records(store)),
              *work_lines(work_files(store), lambda stem: inside(run_day(stem))),
-             *ops_lines(ops_files(store), lambda stem: inside(run_day(stem))),
+             *ops_lines(ops_files(store), inside),
              f"runs: {runs}, entries dropped by redaction {dropped}",
              f"finding records written: {recorded}"]
     table = {}
