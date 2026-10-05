@@ -2,7 +2,7 @@
   "id": "BG-a3ubazze",
   "kind": "bug",
   "title": "backlog.py new refuses a genuine repro whose tool under test has a SyntaxError or passes on exit 127",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
@@ -23,5 +23,18 @@
     "kb/_self/tools.md",
     "_tools/bl_land.py"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "513efb42c2281b6128eb6e2d642454f995c09383",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import backlog as b; sys.exit(0 if b.own_failure(['python3', '_tools/rag.py', 'pack', 'x'], 1, '  File \"_tools/rag.py\", line 3\\n    x = (\\nSyntaxError: invalid syntax') is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
