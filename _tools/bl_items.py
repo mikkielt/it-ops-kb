@@ -250,6 +250,10 @@ def cmd_answer(bl, a):
     if a.confirm and not a.by:
         raise Rejected(f"gate {a.gate} of {bl.label(iid)}: --confirm needs --by operator, which an agent passes only "
                        "after the operator said so")
+    if a.confirm and a.by == "agent":  # an agent's confirmation of its own answer would be recorded as the operator's
+        raise Rejected(f"gate {a.gate} of {bl.label(iid)}: --confirm --by agent: an agent cannot confirm its own "
+                       "provisional answer; the operator confirms (--by operator, passed only after the operator said "
+                       "so) or a delegate the operator granted on the sprint (--by delegate:NAME)")
     delegate = a.by[len("delegate:"):] if (a.by or "").startswith("delegate:") else None
     if delegate is not None and not a.confirm:
         raise Rejected(f"--by delegate:{delegate} only confirms a provisional answer (--confirm), it answers nothing")
