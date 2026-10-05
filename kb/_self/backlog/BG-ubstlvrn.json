@@ -1,0 +1,33 @@
+{
+  "id": "BG-ubstlvrn",
+  "kind": "bug",
+  "title": "command_class keeps any word after git, gh, claude and the other subcommand tools, so a prompt's or an argument's first word can reach a committed call row",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbusage.command_class names a SUBCOMMANDS tool's subcommand only from a per-tool allowlist of real subcommands (git status, gh pr, glab mr, uv run ...) and else the tool alone, so no free word of a prompt or an argument reaches a call.tool row or a repeats story; a planted 'claude -p hello' and 'gh secretword' give 'claude' and 'gh'. Found by the SP-smqwmchu review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbusage as k;sys.exit(1 if k.command_class('claude -p hello') == 'claude.hello' or k.command_class('gh secretword') == 'gh.secretword' else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "command_class_allowlisted_subcommands"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbusage.py",
+    "_tools/test_kbusage.py",
+    "kb/_self/usage.md"
+  ]
+}
