@@ -2,7 +2,7 @@
   "id": "ST-ufpxla7r",
   "kind": "story",
   "title": "A change to one bl_ module selects only the tests that import the backlog modules",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
@@ -55,5 +55,28 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "74a50911360d3f3cd22512e5b9ca6db2d40f9605",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run(['python3','_tools/testmap.py','select','--paths','_tools/bl_land.py'],capture_output=True,text=True).stdout; n=sum(1 for l in o.splitlines() if 'test_' in l); sys.exit(0 if n<60 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "testmap_select_bl_land_stays_under_the_bound"
+        ],
+        "exit": 0,
+        "sha256": "2fa2aba2a3104470"
+      }
+    ]
+  }
 }
