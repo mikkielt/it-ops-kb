@@ -35,7 +35,9 @@ sys.path.insert(0, {tools!r})
 import kg_lock
 os.environ.pop("PYTEST_CURRENT_TEST", None)
 with kg_lock.main_lock({step!r}, "holder", poll=0.02):
-    open({ready!r}, "w").write("1")
+    with open({ready!r} + ".tmp", "w") as f:  # its own pid: on Windows Popen.pid is the venv launcher's
+        f.write(str(os.getpid()))
+    os.replace({ready!r} + ".tmp", {ready!r})
     while not os.path.exists({release!r}):
         time.sleep(0.02)
 """
@@ -108,7 +110,7 @@ def test_kg_lock_main_lock_waiter_names_the_holder_and_its_step(host_dir, tmp_pa
             waited = time.time() - started
             held = (host_dir / kg_lock.LOCK_NAME).read_text(encoding="utf-8")
         out = capsys.readouterr().out
-        assert f"held by pid {holder.pid}" in out and "sync --push" in out and "host main lock" in out, out
+        assert f"held by pid {ready.read_text(encoding='utf-8')}" in out and "sync --push" in out and "host main lock" in out, out
         assert waited >= 0.3 and f"pid={os.getpid()}" in held and "step=backlog.py land: fetch and rebase" in held
     finally:
         release.write_text("1", encoding="utf-8")

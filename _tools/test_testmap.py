@@ -305,10 +305,10 @@ def test_ops_test_run_row_never_breaks_a_run(tmp_path, spool, monkeypatch):
 
 # The host lock (tests.host_lock): a second full gate on one host waits for the first. Real processes, a lock directory of
 # their own (KB_HOST_LOCK_DIR), so no test touches the host's lock.
-HOLD = ("import sys, time, pathlib; sys.path.insert(0, sys.argv[1]); import tests\n"
+HOLD = ("import os, sys, time, pathlib; sys.path.insert(0, sys.argv[1]); import tests\n"
         "stop = pathlib.Path(sys.argv[2])\n"
         "with tests.host_lock('holder', poll=0.05):\n"
-        "    print('held', flush=True)\n"
+        "    print('held', os.getpid(), flush=True)\n"  # its own pid: on Windows Popen.pid is the venv launcher's
         "    while not stop.exists():\n"
         "        time.sleep(0.05)\n")
 TAKE = ("import sys; sys.path.insert(0, sys.argv[1]); import tests\n"
@@ -331,15 +331,16 @@ def test_host_test_lock_waits_second_run_waits_for_the_first(tmp_path):
     stop = tmp_path / "stop"
     first = spawn(HOLD, tmp_path, str(stop))
     try:
-        assert first.stdout.readline().strip() == "held"
+        word, pid = first.stdout.readline().split()
+        assert word == "held"
         held = (tmp_path / "lock" / tests_py.HOST_LOCK_NAME).read_text(encoding="utf-8")
-        assert f"pid={first.pid}" in held and f"clone={tests_py.KB}" in held and "started=" in held
+        assert f"pid={pid}\n" in held and f"clone={tests_py.KB}" in held and "started=" in held
         second = spawn(TAKE, tmp_path)
         time.sleep(1)
         assert second.poll() is None  # still waiting while the first holds the lock
         stop.write_text("x", encoding="utf-8")
         out, _ = second.communicate(timeout=60)
-        assert f"waiting for the host test lock held by pid {first.pid}" in out and "got it" in out
+        assert f"waiting for the host test lock held by pid {pid}" in out and "got it" in out
         assert first.wait(timeout=60) == 0
         assert not (tmp_path / "lock" / tests_py.HOST_LOCK_NAME).exists()  # released on exit
     finally:
