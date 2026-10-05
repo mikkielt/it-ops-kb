@@ -28,5 +28,19 @@
   "touches": [
     "_tools/bl_land.py",
     "_tools/test_bl_land.py"
+  ],
+  "gates": [
+    {
+      "id": "cleanup",
+      "kind": "blocking",
+      "question": "What happens to the 6412 proposed LOG rows in kb/_self/_logs.csv (and the committed ops sidecar rows behind them) that describe test-fixture landings, item ids no commit names?",
+      "options": [
+        "after the fix lands, remove those proposed rows from _logs.csv (rows of items no commit names) and propose again over the sidecars, the fixture rows in kb/_querylog/ops staying as history",
+        "invalidate each of them with kblog.py invalidate, reason fixture data (they stay in the file)",
+        "leave them proposed and never confirm them"
+      ],
+      "recommendation": "after the fix lands, remove those proposed rows from _logs.csv (rows of items no commit names) and propose again over the sidecars, the fixture rows in kb/_querylog/ops staying as history",
+      "class": "querylog"
+    }
   ]
 }

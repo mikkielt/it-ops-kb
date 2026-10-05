@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import tests;sys.exit(1 if tests.run_mode(['-k', 'no_such_test_name']) == 'full' else 0)"
+      "import sys,json,tempfile,pathlib;sys.path.insert(0,'_tools');import ql_report;d=pathlib.Path(tempfile.mkdtemp());f=d/'20261005T100000Z-0000aaaa.jsonl';f.write_text(json.dumps({'run':'20261005T100000Z-0000aaaa','counts':{'rows':1}})+'\\n'+json.dumps({'id':'00000000-0000-4000-8000-000000000001','ts':'2026-10-05T10:00:00.000Z','event':'test.run','mode':'full','ms':900,'exit':5,'selected':0,'passed':0})+'\\n');out=ql_report.ops_lines([f],lambda s:True);sys.exit(1 if any('test.run: 1, failed 1' in ln for ln in out) else 0)"
     ]
   },
   "checks": [
