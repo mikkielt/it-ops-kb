@@ -1002,6 +1002,22 @@ class TestBacklogLand:
     def remote_branches(self, ld):
         return self.out(ld["remote"], "branch", "--list", "code/*").strip()
 
+    def test_land_refuses_out_of_scope_before_the_merge_request(self, landing):
+        """ST-24gbw2hw planted (SP-6btkjg4l's ST-ufpxla7r, refused by done only after its merge request merged): a code
+        item whose commit changes a file outside its touches stops land's first pass at step scope, naming the file;
+        no code/<id> branch is pushed and main does not move. Widened touches let it go on."""
+        ld = landing
+        repo, tk = ld["repo"], ld["tk"]
+        self.work(ld, ["_tools/b.py", "src/b.txt", "docs/stray.md"], "src/b.txt")
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step scope" in out and "docs/stray.md" in out, out
+        assert self.steps(ld) == [] and not self.remote_branches(ld), out
+        assert self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"]
+        edit(repo, tk, touches=["src/**", "kb/public/**", "_tools/b.py", "docs/**"])
+        commit(repo, "widen", tk)
+        code, out = self.land(ld)
+        assert code == 0 and "not done yet" in out and self.remote_branches(ld) == f"code/{tk}", out
+
     def test_land_runs_checks_before_auto_merge(self, landing):
         """A code item whose check (then whose repro) fails stops land at step checks, before the heavy steps and
         sync: the remote has no code/<id> branch to auto-merge. Once both pass, land goes on and opens it."""
