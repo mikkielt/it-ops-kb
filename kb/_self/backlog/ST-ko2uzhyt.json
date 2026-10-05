@@ -2,7 +2,7 @@
   "id": "ST-ko2uzhyt",
   "kind": "story",
   "title": "Review sprint: backlog.py's item writers gain their rules, then move to bl_items.py",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gfz3rl64",
   "review": true,
   "priority": "P1",
@@ -29,5 +29,34 @@
       ]
     }
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "912b45da3d6feb8a469404ec49b07d532d3517a0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "52de8de97d44e693"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f87f93f30952bb19"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/stress_test.py"
+        ],
+        "exit": 0,
+        "sha256": "c8a85c016e0c46c0"
+      }
+    ]
+  }
 }
