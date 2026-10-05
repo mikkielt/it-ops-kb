@@ -17,7 +17,9 @@
   },
   "repro_reason": "the defect is a skill's wording, so there is no behaviour to run; the repro checks the false sentence is gone and a reader confirms the new one matches set's refusal",
   "touches": [
-    ".claude/skills/kb-backlog/SKILL.md"
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    "kb/_self/backlog.md"
   ],
   "claimed_by": "it-ops-kb worker1"
 }

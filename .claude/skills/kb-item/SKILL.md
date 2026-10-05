@@ -22,7 +22,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
 
 1. **Pick.** Use the given id, or `python3 _tools/backlog.py next --any`. Then run `python3 _tools/backlog.py show ID` and say in one line which item and why.
    - If it waits on something, say what and stop. Offer the operator's answer to a blocking gate, or `python3 _tools/backlog.py fire ID` for a trigger that has happened.
-   - Work lands only once the item is claimed in a started sprint (`kb/_self/backlog.md`, Git): `check-trailers` refuses the push otherwise. `next --any` may pick an item outside one: its `sprint` (or its nearest parent's) is missing, or not `active` in `python3 _tools/backlog.py list --kind sprint`. Before any work commit, a bug joins a started sprint: `python3 _tools/backlog.py set ID --sprint SP` with an active sprint's id, committed with the claim. A story (or a task or subtask, which follows its story), or no active sprint, is the operator's call: ask, and stop until they answer.
+   - Work lands only once the item is claimed in a started sprint (`kb/_self/backlog.md`, Git): `check-trailers` refuses the push otherwise. `next --any` may pick an item outside one: its `sprint` (or its nearest parent's) is missing, or not `active` in `python3 _tools/backlog.py list --kind sprint`. Before any work commit, a bug joins a started sprint: `python3 _tools/backlog.py move ID --sprint SP` with an active sprint's id (`set --sprint` refuses a draft item into an active sprint; `move` makes it `todo` there), committed with the claim. A story (or a task or subtask, which follows its story), or no active sprint, is the operator's call: ask, and stop until they answer.
 2. **Claim.**
    1. `python3 _tools/backlog.py claim ID --by <session or agent name> --commit --trailer 'Co-Authored-By: ...'`: it writes the claim and commits it at once (below).
    2. The claim commit is made before any work: `--commit` stages only the item's file in `kb/_self/backlog/` and commits it on its own with the trailer `KB-Work: ID` (a backlog-planning commit); without `--commit` stage and commit it by hand the same way. `check-trailers` reads the item as each commit has it, so work committed while the claim is uncommitted counts as unclaimed and its push is refused (`kb/_self/backlog.md`, Git).
@@ -52,7 +52,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    - `rag.py eval`, `lint`: fix the cause, never the baseline;
    - `kbgit.py sync --push`: `/kb-git-sync`.
 
-   A bug filed while landing is filed with `--sprint SP` (an active sprint; or `backlog.py set ID --sprint SP`), committed on its own, then claimed, before the commit that fixes it: `check-trailers` refuses a `KB-Work` id not in a started sprint (`kb/_self/backlog.md`, Working on items).
+   A bug filed while landing is filed with `--sprint SP` (an active sprint; or `backlog.py move ID --sprint SP`, which makes a draft bug `todo` there), committed on its own, then claimed, before the commit that fixes it: `check-trailers` refuses a `KB-Work` id not in a started sprint (`kb/_self/backlog.md`, Working on items).
 8. **Report** the item's id and title, the commit, the checks that passed and the new horizon (`python3 _tools/backlog.py horizon`). Then stop: one session works one item, and the next item starts in a fresh session (`/clear` or a new one), so this item's reading and output do not stay in its context.
 
 When all its siblings are done, the parent story or bug is ready. Its own `done` runs its checks over the whole.
