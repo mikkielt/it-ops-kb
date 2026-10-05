@@ -2,7 +2,7 @@
   "id": "ST-ywqttahe",
   "kind": "story",
   "title": "The list of tests over live data names every test that reads the live kb or backlog, wherever it lives",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
@@ -25,5 +25,19 @@
   "depends_on": [
     "ST-fo3ztjcs"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "263715b2c6fd0720fda550cb89f9ad30f1722512",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "live_data_list_names_every_reader"
+        ],
+        "exit": 0,
+        "sha256": "ca04130eb395bdff"
+      }
+    ]
+  }
 }
