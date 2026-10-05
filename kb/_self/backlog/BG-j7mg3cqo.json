@@ -2,7 +2,7 @@
   "id": "BG-j7mg3cqo",
   "kind": "bug",
   "title": "The shared-file move rule leaves out telling the sessions to rebase once the move is on main, and its test does not check it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
@@ -32,5 +32,28 @@
     "kb/_self/backlog.md",
     "_tools/test_kb_cohesion.py"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "69f2ba135aaec63c4c69a156dbd12433818c6956",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_shared_file_move_rule"
+        ],
+        "exit": 0,
+        "sha256": "ada4f2fe12c30eaf"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,re;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();b=next(l for l in t.splitlines() if 'Shared-file move' in l);sys.exit(0 if re.search(r'rebase', b) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
