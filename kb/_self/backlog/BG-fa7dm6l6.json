@@ -13,7 +13,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys,re;sys.path.insert(0,'_tools');import ql_capture as q;m=q.DENIED_RULE.search('[PL-LT-00123 jan kowalski]');sys.exit(1 if m else 0)"
+      "import sys; sys.path.insert(0, '_tools'); import ql_capture as q; sys.exit(1 if q.denied_rule('[PL-LT-00123 jan kowalski]') else 0)"
     ]
   },
   "checks": [
