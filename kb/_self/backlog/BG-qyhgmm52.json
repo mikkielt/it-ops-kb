@@ -37,7 +37,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys,json,shutil,tempfile,pathlib as P;sys.path.insert(0,'_tools');import backlog as B;r=P.Path(tempfile.mkdtemp());d=r/'kb/_self/backlog';d.mkdir(parents=True);shutil.copy('kb/_self/map.csv',r/'kb/_self/map.csv');w=lambda i:(d/(i['id']+'.json')).write_text(json.dumps(i));w(dict(id='TK-aaaaaaaa',kind='task',title='Code',status='todo',touches=['_tools/backlog.py'],depends_on=['TK-dddddddd']));w(dict(id='TK-dddddddd',kind='task',title='Docs',status='todo',touches=['kb/_self/tools.md','kb/_self/backlog.md']));out=B.docs_warnings(B.Backlog(r));assert out,'no warning: the code task depends on the task holding its docs'"
+        "import sys,json,shutil,tempfile,pathlib as P;sys.path.insert(0,'_tools');import bl_plan as B,bl_base;r=P.Path(tempfile.mkdtemp());d=r/'kb/_self/backlog';d.mkdir(parents=True);shutil.copy('kb/_self/map.csv',r/'kb/_self/map.csv');w=lambda i:(d/(i['id']+'.json')).write_text(json.dumps(i));w(dict(id='TK-aaaaaaaa',kind='task',title='Code',status='todo',touches=['_tools/backlog.py'],depends_on=['TK-dddddddd']));w(dict(id='TK-dddddddd',kind='task',title='Docs',status='todo',touches=['kb/_self/tools.md','kb/_self/backlog.md']));out=B.docs_warnings(bl_base.Backlog(r));assert out,'no warning: the code task depends on the task holding its docs'"
       ]
     }
   ],

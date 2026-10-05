@@ -105,13 +105,19 @@ def touch_paths(item, files, literal):
 
 
 def dependencies(bl, iid):
-    """The items iid depends on, directly or through another item (earlier work)."""
-    out, todo = set(), [iid]
+    """The items iid depends on, directly or through another item (earlier work): the depends_on of iid and of each
+    of its ancestors, followed the same way through every item found, as readiness inherits them."""
+    out, todo, seen = set(), [iid], set()
     while todo:
-        for d in bl.items.get(todo.pop(), {}).get("depends_on", []) or []:
-            if d in bl.items and d not in out and d != iid:
-                out.add(d)
-                todo.append(d)
+        cur = todo.pop()
+        for owner in [cur] + bl.ancestors(cur):
+            if owner in seen:
+                continue
+            seen.add(owner)
+            for d in bl.items.get(owner, {}).get("depends_on", []) or []:
+                if d in bl.items and d not in out and d != iid:
+                    out.add(d)
+                    todo.append(d)
     return out
 
 
@@ -140,7 +146,8 @@ def docs_after_code(bl, ids):
         for dep in sorted(dependencies(bl, iid)):
             if bl.items[dep].get("status") not in OPEN_STATUSES:
                 continue
-            code = sorted(p for p in touch_paths(bl.items[dep], files, literal) if is_code(p))
+            code = sorted({p for d in [dep] + bl.descendants(dep) if d != iid
+                           for p in touch_paths(bl.items[d], files, literal) if is_code(p)})
             held = sorted(d for d in selfdoc.describing(docmap, code) if d in docs)
             if held:
                 out.append(f"{bl.label(iid)}: touches only docs of code that {bl.label(dep)}, which it depends on, "
@@ -150,10 +157,11 @@ def docs_after_code(bl, ids):
 
 
 def docs_warnings(bl, only=None):
-    """An open item whose own touches name code (CODE_DIRS, CODE_FILES) whose kb/_self/map.csv docs are in no open
-    item's touches, or only in the touches of items that depend on it (a later task): kb/_self/git.md asks for a code
-    change's doc lines in the same commit, and sync's selfdoc stale gate refuses the push without them. The item's own
-    scope (its touches and its descendants') covers a doc; a missing or unreadable map gives no warning. A standard
+    """An open item whose own touches name code (CODE_DIRS, CODE_FILES) whose kb/_self/map.csv docs are outside its own
+    scope (its touches and its descendants'): in no open item's touches, in a later task's (one that depends on it), or
+    in another item's, such as a sibling, its parent or a task it depends on: kb/_self/git.md asks for a code change's
+    doc lines in the same commit, which only the item's own scope lets it carry, and sync's selfdoc stale gate refuses
+    the push without them. The item's own scope covers a doc; a missing or unreadable map gives no warning. A standard
     doc, one with a map pattern that covers every _tools/*.py (EVERY_TOOL), describes no one change: selfdoc stale
     still lists it, and a Self-Reviewed trailer clears it there, so it is no item's to carry. ONLY limits the items
     reported to those ids; the holders of a doc are still every open item."""
@@ -179,7 +187,7 @@ def docs_warnings(bl, only=None):
             continue
         own = scope(bl, iid)
         later = dependents(bl, iid)
-        missing, deferred = [], {}
+        missing, deferred, elsewhere = [], {}, []
         for doc in sorted(selfdoc.describing(docmap, code)):
             if in_scope(doc, own):
                 continue
@@ -189,6 +197,8 @@ def docs_warnings(bl, only=None):
             elif all(h in later for h in holders):
                 for h in holders:
                     deferred.setdefault(h, []).append(doc)
+            else:
+                elsewhere.append(doc)
         if missing:
             out.append(f"{bl.label(iid)}: touches code whose kb/_self/map.csv docs are in no item's touches: "
                        f"{', '.join(missing)} (add them to this item's touches: kb/_self/git.md, code and its docs "
@@ -196,6 +206,9 @@ def docs_warnings(bl, only=None):
         for h, docs in sorted(deferred.items()):
             out.append(f"{bl.label(iid)}: the docs of its code are only in a later task's touches, "
                        f"{bl.label(h)} (it depends on this one): {', '.join(docs)} (move them to this item's touches)")
+        if elsewhere:
+            out.append(f"{bl.label(iid)}: the docs of its code are outside its own scope, in other items' touches: "
+                       f"{', '.join(elsewhere)} (add them to this item's touches: its code commit cannot carry them)")
     return out
 
 
