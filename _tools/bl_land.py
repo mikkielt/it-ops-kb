@@ -7,12 +7,13 @@ request line.
 
 Standard library only; imports `bl_base`, `bl_check` (the no-op rules `done` applies), `bl_cli` and `bl_intake` (the
 colour codes) and never `backlog`. The branch `land` expects sync to open for code commits is named by
-`kg_lane.lane_plan`, the one helper sync uses. `backlog.py` registers `done`, `land` and `close` with `bl_cli`, each in
-its usage position, with the handlers defined here, and `host-check` and the repro rules there call `run_check` from
+`kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `land`, `merge` and `close` with `bl_cli` itself when
+imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there call `run_check` from
 here."""
 import argparse, hashlib, json, os, re, shlex, shutil, subprocess, sys, time
 from pathlib import Path
 
+import bl_cli
 from bl_base import (
     Backlog, ID_RE, CHECK_TIMEOUT_S, REL_DIR, Refused, commit_written, git, in_scope, item_file, line, main_worktree_spool,
     need, run, say, scope, waits,
@@ -1309,3 +1310,9 @@ def args_close(p):
     p.add_argument("--summary", action="store_true",
                    help="only print each item close would delete with its status and evidence commit (the close "
                         "commit's body); changes nothing")
+
+
+bl_cli.register("done", cmd_done, args_done)
+bl_cli.register("land", cmd_land, args_land)
+bl_cli.register("merge", cmd_merge, args_merge)
+bl_cli.register("close", cmd_close, args_close)

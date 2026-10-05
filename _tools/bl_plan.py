@@ -4,12 +4,13 @@ they share), the host-check gates, where a dependency outside a sprint stands (`
 refuses a sprint on them and warns of the rest.
 
 Standard library only; imports `bl_base` and never `backlog` or `bl_check`: `bl_check` imports this module for the
-rules `check` runs, so the two form no cycle. `backlog.py` registers `start` with `bl_cli`, in its usage order, with the
-handler defined here."""
+rules `check` runs, so the two form no cycle. It registers `start` with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts it in
+the usage order."""
 import re
 import subprocess
 import sys
 
+import bl_cli
 from bl_base import (
     APPROVALS, CHECK_TIMEOUT_S, ID_RE, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, in_scope, need, say, scope,
 )
@@ -396,3 +397,6 @@ def outside_deps(bl, sid):
 
 def args_start(p):
     p.add_argument("sprint")
+
+
+bl_cli.register("start", cmd_start, args_start)
