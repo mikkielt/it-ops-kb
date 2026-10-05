@@ -2,7 +2,7 @@
   "id": "BG-gh2ceakk",
   "kind": "bug",
   "title": "The three-tiers docs test reads four of the eight files its goal names, so the tiers sentence can leave plugin.md or token-efficiency.md unseen",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,29 @@
   "touches": [
     "_tools/test_three_tiers_docs.py"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "4cd56a958ff672beb15c930ed205939d4bb5a332",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "three_tiers_documented"
+        ],
+        "exit": 0,
+        "sha256": "d37d05b5af759f26"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "three_tiers_documented_reads_every_named_doc"
+        ],
+        "exit": 0,
+        "sha256": "9a88f056b726414e"
+      }
+    ]
+  }
 }
