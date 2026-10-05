@@ -1,0 +1,22 @@
+{
+  "id": "SP-edgssdh5",
+  "kind": "sprint",
+  "title": "The test suite is rewritten small, with a hard ceiling the gate enforces",
+  "status": "active",
+  "goal": "python3 _tools/tests.py runs a new suite of 60 to 100 test ids in 10 to 15 files in at most 20 s on the macOS host and 60 s on the Windows host; the old test files, the stress suite and their callers are gone; a ceiling file (ids, files, seconds) is enforced by the gate; CI runs the minimum that still gives publish a CI verdict; kb/_self, the skills and the kb-worker agent allow a new test only in a very limited scope and ask a retrospective, not a regression test, for a bug a log can show",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}
