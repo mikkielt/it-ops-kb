@@ -2,7 +2,7 @@
   "id": "ST-aah3cb3o",
   "kind": "story",
   "title": "A story's premise is checked when it is planned into a sprint",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "ST-zz43pbbi"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
