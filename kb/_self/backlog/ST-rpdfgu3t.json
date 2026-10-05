@@ -51,7 +51,9 @@
       "do": {
         "approve": "ST-rpdfgu3t",
         "approve, kb tools and shell only": "ST-rpdfgu3t"
-      }
+      },
+      "answer": "approve, kb tools and shell only",
+      "by": "operator"
     }
   ]
 }

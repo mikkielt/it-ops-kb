@@ -40,7 +40,9 @@
         "an agent may run --apply": [
           "true"
         ]
-      }
+      },
+      "answer": "an agent may run --apply",
+      "by": "operator"
     }
   ]
 }

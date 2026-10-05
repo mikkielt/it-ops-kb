@@ -42,7 +42,9 @@
         "the console exporter in headless claude -p runs only, read from stderr"
       ],
       "recommendation": "no: transcripts and hooks are enough (kbusage already gives per-prompt usage); drop the item",
-      "class": "design"
+      "class": "design",
+      "answer": "a standard-library OTLP http/json receiver in _tools that writes a local file",
+      "by": "operator"
     }
   ]
 }

@@ -31,7 +31,9 @@
         "not now"
       ],
       "recommendation": "sprint.close and agent.run rows since 2026-10-04 (after the fleet)",
-      "class": "design"
+      "class": "design",
+      "answer": "every ops row of the committed sidecar",
+      "by": "operator"
     }
   ]
 }

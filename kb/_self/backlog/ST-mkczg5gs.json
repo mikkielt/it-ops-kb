@@ -49,7 +49,9 @@
       "class": "agents-rule",
       "do": {
         "approve": "ST-mkczg5gs"
-      }
+      },
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

@@ -50,7 +50,9 @@
       "class": "design",
       "do": {
         "approve": "ST-enx4hrlr"
-      }
+      },
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }
