@@ -1,0 +1,33 @@
+{
+  "id": "BG-co3nthy4",
+  "kind": "bug",
+  "title": "test_check_program_allowlist's sh repro loses the marker path's backslashes",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "test_check_program_allowlist_done_runs_a_shell_repro gives sh the marker path with / (as_posix), so sh's touch writes that file on Windows and the test passes there",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_check_program_allowlist_done_runs_a_shell_repro"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_check_program_allowlist_done_runs_a_shell_repro"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_check_program_allowlist.py",
+    "kb/_self/code.md"
+  ]
+}
