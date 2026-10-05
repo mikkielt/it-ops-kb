@@ -515,7 +515,7 @@ def work_state(values, paths, load):
     `load(rel)` is a file's text at the commit, else at its parent (a sprint close deletes the files), or None.
     Exempt: a backlog-planning commit (it changes only item files: new items, claims, gates, a sprint's plan, start
     or close), and the sprint and review items themselves. A research item of a planned sprint (its own touches all
-    inside kb roots, backlog.research_touches) may land claimed, on a commit that changes only kb content and item
+    inside kb roots, bl_base.research_touches) may land claimed, on a commit that changes only kb content and item
     files. An id with no item file is work_ok's to report. A backlog-planning commit must change the item file of
     every id it names: one naming two items and changing one is refused for the other."""
     ids = [x.strip() for x in values[0].split(",") if x.strip()]
@@ -523,7 +523,7 @@ def work_state(values, paths, load):
         return [f"{i}: a backlog-planning commit names it but does not change {BACKLOG}/{i}.json (edit items with "
                 f"backlog.py set, or drop the id from KB-Work)"
                 for i in ids if f"{BACKLOG}/{i}.json" not in paths and load(f"{BACKLOG}/{i}.json")]
-    import backlog
+    from bl_base import RESEARCH_KINDS, research_touches  # the rules, never the backlog facade
     cache = {}
 
     def get(i):
@@ -550,10 +550,10 @@ def work_state(values, paths, load):
             seen.add(cur["parent"])
             cur = get(cur["parent"])
         state = (get(sp) or {}).get("status") if sp else None
-        research = it.get("kind") in backlog.RESEARCH_KINDS and backlog.research_touches(it.get("touches"))
+        research = it.get("kind") in RESEARCH_KINDS and research_touches(it.get("touches"))
         if state == "planned" and research:
             # a research item of a planned sprint: its kb content lands before the sprint starts, nothing else does
-            other = sorted(p for p in paths if not BACKLOG_FILE.fullmatch(p) and not backlog.research_touches([p]))
+            other = sorted(p for p in paths if not BACKLOG_FILE.fullmatch(p) and not research_touches([p]))
             if other:
                 out.append(f"{i} is a research item of a planned sprint ({sp}): its commit changes only kb content "
                            f"and item files, not {', '.join(other[:5])}")

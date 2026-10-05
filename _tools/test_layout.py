@@ -13,6 +13,7 @@ from pathlib import Path
 from conftest import TOOLS
 
 FACADES = {"ql_": "querylog", "kg_": "kbgit", "bench_": "benchmarks", "bl_": "backlog"}
+SPLIT_FACADES = ("backlog", "kbgit")  # the facades the backlog.py and kbgit.py splits made: no bl_ or kg_ module imports either
 
 # (importing module, module it reaches into, the underscore name): what kind of reach it is. One entry per pair,
 # however many uses.
@@ -60,12 +61,17 @@ def violations(sources):
             if isinstance(n, ast.Attribute) and private(n.attr) and isinstance(n.value, ast.Name) \
                     and n.value.id in alias:
                 found.add(("private", mod, alias[n.value.id], n.attr))
-        for prefix, facade in FACADES.items():
-            if mod.startswith(prefix) and any(
-                    (isinstance(n, ast.Import) and any(a.name.split(".")[0] == facade for a in n.names))
-                    or (isinstance(n, ast.ImportFrom) and n.module and not n.level and n.module.split(".")[0] == facade)
-                    for n in ast.walk(tree)):
-                found.add(("facade", mod, facade, facade))
+        for prefix, own in FACADES.items():
+            if not mod.startswith(prefix):
+                continue
+            # its own facade, and for a bl_ or kg_ module the other of the two (the shared-file move rule: a bl_ or kg_
+            # module never imports backlog or kbgit at any depth; BG-lovis5h2)
+            for facade in sorted({own} | (set(SPLIT_FACADES) if prefix in ("bl_", "kg_") else set())):
+                if any((isinstance(n, ast.Import) and any(a.name.split(".")[0] == facade for a in n.names))
+                       or (isinstance(n, ast.ImportFrom) and n.module and not n.level
+                           and n.module.split(".")[0] == facade)
+                       for n in ast.walk(tree)):
+                    found.add(("facade", mod, facade, facade))
     return found
 
 
@@ -790,3 +796,12 @@ def test_bl_split_facade_only_planted_failures_fail():
     assert facade_problems(src + "\ndef horizon(bl, sid):\n    return 0\n", {}, runbook) == ["defines horizon"]
     assert facade_problems(src, {"bl_x": "def cmd_gate(bl, a):\n    return 0\n"}, runbook) == ["cmd_gate also in bl_x"]
     assert facade_problems(src, {}, runbook.replace("`referrers`", "referrers")) == ["verdict lacks referrers"]
+
+
+def test_import_layers_bl_and_kg_modules_import_neither_split_facade():
+    """BG-lovis5h2: a kg_ module that imports backlog (at function level too) and a bl_ module that imports kbgit are
+    facade violations, as each importing its own facade is; a ql_ module may still call backlog or kbgit."""
+    late = "def work_state():\n    import backlog\n    return backlog.RESEARCH_KINDS\n"
+    assert unexcused({"backlog": "", "kg_trailers": late}) == [("facade", "kg_trailers", "backlog", "backlog")]
+    assert unexcused({"kbgit": "", "bl_land": "from kbgit import KB\n"}) == [("facade", "bl_land", "kbgit", "kbgit")]
+    assert unexcused({"backlog": "", "kbgit": "", "ql_deliver": "import backlog\nimport kbgit\n"}) == []
