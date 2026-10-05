@@ -855,3 +855,22 @@ def test_new_bug_repro_python_error_refused(repo, monkeypatch):
     assert code == 0 and "own error" not in out, out
     code, out = new_bug("Asserts", "python3 -c 'assert 1 == 2'")
     assert code == 0 and "own error" not in out, out
+
+
+def test_drop_cleans_links_to_the_dropped_item(sprint):
+    """BG-3aqoagow planted: a story in no sprint that another names in relates_to and in a gate's do is dropped and
+    deleted; the other keeps neither link, and check names no link to an item that does not exist (the planted
+    keeper's own gaps, a story with no checks, are not this test's)."""
+    repo, ep = sprint["repo"], sprint["ep"]
+    for title in ("Gone one", "Keeper"):
+        assert b(repo, "new", "story", "--title", title, "--parent", ep, "--goal", "g")[0] == 0
+    gone, keeper = item(repo, "Gone one")["id"], item(repo, "Keeper")["id"]
+    edit(repo, keeper, relates_to=[gone, ep], gates=[{"id": "g1", "kind": "blocking", "question": "Which?",
+                                                      "options": ["a", "b"], "recommendation": "a",
+                                                      "do": {"a": gone, "b": ["true"]}}])
+    code, out = b(repo, "drop", gone, "--why", "planted")
+    assert code == 0 and "dropped and deleted" in out and f"dropped relates_to {gone}" in out, out
+    kept = item_json(repo, keeper)
+    assert kept["relates_to"] == [ep] and kept["gates"][0]["do"] == {"b": ["true"]}, kept
+    code, out = b(repo, "check")
+    assert gone not in out and "does not exist" not in out, out  # no link left to the deleted item
