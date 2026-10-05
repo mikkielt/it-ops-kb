@@ -2,7 +2,7 @@
   "id": "ST-leqf5onn",
   "kind": "story",
   "title": "bl_items.py holds backlog.py's item writers, so backlog.py keeps only its usage and dispatch",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
@@ -37,5 +37,19 @@
     "ST-37gnlv4r"
   ],
   "notes": "Left from TK-xs5zfyo5, which kept the item writers whole in backlog.py with a written verdict: about 630 lines of backlog.py and about 900 lines of test_backlog.py move. Other test files patch or call backlog.cmd_* and backlog.run_decide (grep before planning) and widen the touches, so the move is announced as a shared-file move and lands as one atomic commit. The keep-whole test bl_split_facade_only (test_layout.py, FACADE_KEEP) shrinks to the dispatch once it lands.",
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "da43e4f986264587a1bed79a8c6dd652929bed51",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_items"
+        ],
+        "exit": 0,
+        "sha256": "24042de59e6541f9"
+      }
+    ]
+  }
 }
