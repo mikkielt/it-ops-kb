@@ -50,14 +50,19 @@ from conftest import KB, TOOLS, querylog_env
 from ql_testkit import load, prompt, QL, serve, SH, SID, spool, stop, tool
 
 
+def census(r):
+    """A census row: a `call.tool` ops row (one beside every kb, docs and shell call) or the `work` row of an
+    interrupted call (ST-enx4hrlr); the tests of those rows read them, the others leave them out."""
+    return r.get("event") == "call.tool" or (r.get("surface") == "work" and r.get("action") == "interrupt")
+
+
 def lines(data, calls=False):
-    """Every spool row under `data`, in file order per file; the `call.tool` census rows (one beside every kb, docs and
-    shell call) only with `calls`."""
+    """Every spool row under `data`, in file order per file; the census rows only with `calls`."""
     out = []
     for f in sorted(spool(data).glob("*.jsonl")) if spool(data).is_dir() else []:
         with open(f, encoding="utf-8") as fh:
             out += [json.loads(line) for line in fh if line.strip()]
-    return out if calls else [r for r in out if r.get("event") != "call.tool"]
+    return out if calls else [r for r in out if not census(r)]
 
 
 def raw(data, calls=False):
@@ -556,6 +561,17 @@ class TestOpsRows:
         # planted: a class that is not a closed token is not written
         assert ql_capture.record("ops", event="call.tool", tool="bash", group="main", outcome="ok", size="empty",
                                  **{"class": "cat /etc/passwd"}) is None
+
+    def test_ops_call_interrupt_flag(self):
+        """ST-enx4hrlr: a PostToolUseFailure with is_interrupt is a call.tool row with outcome interrupt and a `work`
+        row of action interrupt in the prompt (no item, no text), which distill counts per item; a failure that is no
+        interrupt writes no such work row."""
+        ql_capture.capture({**tool("Bash", {"command": "sleep 100"}, ok=False, error="ERROR-TEXT"), "is_interrupt": True})
+        ql_capture.capture(tool("Bash", {"command": "false"}, ok=False, error="Exit code 1"))
+        assert [r["outcome"] for r in self.calls()] == ["interrupt", "error"]
+        work = [r for r in self.rows() if r.get("surface") == "work"]
+        assert [(r["action"], r["prompt_id"], r["session_id"], "item" in r) for r in work] == [("interrupt", "p1", SID, False)]
+        assert "ERROR-TEXT" not in "".join(f.read_text(encoding="utf-8") for f in self.spool.glob("*.jsonl"))
 
     def test_ops_call_python_purpose(self):
         """ST-75eg7e2h: the call.tool row of a python3 -c or stdin script carries its closed purpose (test-run,

@@ -16,7 +16,7 @@ import datetime, hashlib, json, re, subprocess
 from pathlib import Path
 
 from ql_base import HOME, PIPELINE_VERSION, STORE, json_lines, write_text
-from ql_capture import ARG_MAX_CHARS, OPS, OPS_EVENTS, TAGS, VERDICTS, WORK_ITEM, ops_problems
+from ql_capture import ARG_MAX_CHARS, OPS, OPS_COUNT_MAX, OPS_EVENTS, TAGS, VERDICTS, WORK_ITEM, ops_problems
 
 HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
@@ -76,7 +76,7 @@ USAGE_TOOL_KEYS = ("tool", "ok", "chars")
 WORK = "work"
 WORK_HEADER_KEYS = ("run", "reader", "counts")
 WORK_COUNT_KEYS = ("items", "shared", "missing")
-WORK_ITEM_KEYS = ("item", "prompts", "main", "sub", "rework")  # one item worked: its window prompts' summed counts
+WORK_ITEM_KEYS = ("item", "prompts", "main", "sub", "rework", "interrupts")  # one item worked: its window prompts' summed counts
 WORK_REWORK_KEYS = ("prompts", "main", "sub")  # an item line's `rework`: the part of its counts from its first refused done
 WORK_SHARED_KEYS = ("items", "prompts", "main", "sub")  # one session that worked items: its prompts outside any window
 WORK_OVERHEAD_KEYS = ("overhead", "calls", "main")  # one kind of the kb's own background runs: no item, no prompt
@@ -291,7 +291,7 @@ def work_counts(tally):
     return out
 
 
-def work_line(key, value, tally, rework=None):
+def work_line(key, value, tally, rework=None, interrupts=0):
     """The work sidecar line of a tally: `item` (an id) for one item's line, `items` (ids) for a session's shared
     line; the summed counts in their sorted order, `sub` only when a subagent ran. `rework`, the tally of the part
     of an item's counts from its first refused done (a part of the line's counts, not added to them), becomes the
@@ -299,6 +299,8 @@ def work_line(key, value, tally, rework=None):
     line = {key: value, **work_counts(tally)}
     if rework and (rework["prompts"] or rework["sub"]):
         line["rework"] = work_counts(rework)
+    if interrupts and key == "item":
+        line["interrupts"] = interrupts  # the tool calls interrupted in the item's window: a count, nothing else
     return line
 
 
@@ -901,6 +903,9 @@ def work_line_problems(w, where):
     out += _counted_problems(w, where, not shared)
     if "rework" in w and not shared:
         out += rework_problems(w, where)
+    if "interrupts" in w and not (isinstance(w["interrupts"], int) and not isinstance(w["interrupts"], bool)
+                                  and 0 < w["interrupts"] <= OPS_COUNT_MAX):
+        out.append(f"{where}: interrupts is not a positive count")
     return out
 
 

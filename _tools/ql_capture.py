@@ -687,6 +687,8 @@ def capture(event):
             call_row(event, ok)  # the census row, beside whatever row the call gives below
         except Exception:  # noqa: BLE001 - capture never fails for its log
             pass
+        if not ok and event.get("is_interrupt") is True:  # distill counts it on the item of the prompt's window
+            record("work", sid, prompt_id=pid, action="interrupt")
         m = KB_TOOL.fullmatch(tool)
         if m:
             summary = pack_summary(text_of(event.get("tool_response"))) if ok else {"outcome": "error"}
