@@ -1,0 +1,26 @@
+{
+  "id": "ST-37gnlv4r",
+  "kind": "story",
+  "title": "A sprint's start warns of an item check that already passes before the work",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Retro SP-ytfb4dc5: ST-f4ra5s7y's grep check passed vacuously (git rejected a ':!_tools' pathspec with exit 128, empty stdout counted as a pass). Before a sprint starts (backlog.py start, or a planning check the kb-sprint plan step runs), each committed item's checks run once and a check that already exits 0 before any work commit is named as a warning (it proves nothing), unless the item says why (a check that pins behaviour that must stay). A planted test: an item whose check passes on the base is warned of, one whose check fails is not.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "start_warns_passing_check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_bl_plan*.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ]
+}
