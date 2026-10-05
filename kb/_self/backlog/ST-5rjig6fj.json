@@ -1,0 +1,69 @@
+{
+  "id": "ST-5rjig6fj",
+  "kind": "story",
+  "title": "A skill, agent or settings file selects the tests that read it, not every test whose tools mention the skills directory",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "testmap.place for a file under .claude/ or .claude-plugin/ that is not Python (a SKILL.md, an agents/*.md, settings.json, plugin.json) selects the test files whose string constants name its path or its skill or agent directory, the test files that read every such file by glob (derived from the test files as source_scans() derives the tool-source readers, so a new reader is found without a list), and the content classes; it no longer selects every test file that holds the bare directory token (skills, agents, hooks) or reaches a module that names it; tests.is_code reads such a file as prose, so its selection runs without git scenarios; .claude/skills/kb-item/SKILL.md selects under 25 nodes instead of 86; planted cases: a test naming the skill directory is selected, a test holding only the word skills is not, a test that globs .claude/skills/*/SKILL.md is selected, settings.json still selects the change router's test",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "prose_under_claude_selects_its_readers_only"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "settings_json_selects_the_router_test"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/testmap.py",
+    "_tools/tests.py",
+    "_tools/test_testmap.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-w5mrjyyw"
+  ],
+  "relates_to": [
+    "ST-h6qyvynp"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does a prose file under .claude/ or .claude-plugin/ (a skill, an agent definition, settings.json) select in the sync gate? readers = the tests naming the file or its skill or agent directory, the glob readers and the content classes, without git scenarios; readers-with-git = the same files, keeping their git scenarios; keep = today's selection (86 nodes for a SKILL.md, git scenarios kept)",
+      "options": [
+        "readers",
+        "readers-with-git",
+        "keep"
+      ],
+      "recommendation": "readers",
+      "class": "agents-rule",
+      "do": {
+        "readers": "ST-5rjig6fj",
+        "readers-with-git": "ST-5rjig6fj",
+        "keep": [
+          "python3",
+          "_tools/backlog.py",
+          "drop",
+          "ST-5rjig6fj",
+          "--why",
+          "the-operator-keeps-the-wide-selection"
+        ]
+      }
+    }
+  ],
+  "notes": "Premise (run before a sprint commits it): python3 _tools/testmap.py select --paths .claude/skills/kb-item/SKILL.md prints 86 nodes, and the gate keeps their git scenarios (a .claude/ path counts as code in tests.is_code). Cause: mentions() adds the directory token skills, which 21 test files hold, and then every test file reaching one of the 9 modules that name it (78 files). Live run over the repository: by its own path or skill directory kb-item's SKILL.md is named by 5 test files (test_change_router, test_kb_cohesion, test_kb_item_reading, test_kb_mcp, test_three_tiers_docs), kb-backlog's by 2, .claude/agents/kb-worker.md by 4 instead of 94, settings.json by 10 instead of 50; the glob readers come on top. Of the 382 code merges since 2026-10-01, 90 changed such a path and in 32 it alone lifted a selection under 30 test files to 70 or more. Estimate, not measured: a skill-only landing's gate falls from a changed-git run (median 507 s macOS) to a content-sized one (about 10 to 30 s), and on the Windows host from about 20 min to under 2 min. Out of scope: .githooks/ and .claude/hooks/*.py, which run as code."
+}
