@@ -1935,7 +1935,8 @@ def test_commit_msg_amend_with_message_file_reads_the_parent(tmp_path):
     g("init", "-q")
     hook = repo / ".git" / "hooks" / "prepare-commit-msg"
     hook.write_text('#!/bin/sh\nexec "%s" -c "import sys, os; sys.path.insert(0, %r); import kg_hooks; '
-                    'kg_hooks.KB = os.getcwd(); kg_hooks.hook_prepare(sys.argv[1:])" "$@"\n' % (_sys.executable, TOOLS),
+                    'kg_hooks.KB = os.getcwd(); kg_hooks.hook_prepare(sys.argv[1:])" "$@"\n'
+                    % (Path(_sys.executable).as_posix(), Path(TOOLS).as_posix()),  # a \U in a Windows path breaks -c
                     encoding="utf-8")
     hook.chmod(0o755)
     mark = repo / ".git" / kg_hooks.AMEND_MARK
@@ -1948,11 +1949,12 @@ def test_commit_msg_amend_with_message_file_reads_the_parent(tmp_path):
     (repo / "m").write_text("two\n", encoding="utf-8")
     g("commit", "-q", "-F", "m")
     assert not mark.exists()  # planted counterpart: a plain commit -F is no amend
-    g("commit", "-q", "--amend", "-F", "m")
-    assert mark.read_text(encoding="utf-8").strip() == parent
-    mark.unlink()
-    g("commit", "-q", "--amend", "-m", "two again")
-    assert mark.read_text(encoding="utf-8").strip() == parent
-    mark.unlink()
+    if os.name != "nt":  # Windows gives no ancestor's command line (kg_hooks.parent_args): BG-gkfogmmx
+        g("commit", "-q", "--amend", "-F", "m")
+        assert mark.read_text(encoding="utf-8").strip() == parent
+        mark.unlink()
+        g("commit", "-q", "--amend", "-m", "two again")
+        assert mark.read_text(encoding="utf-8").strip() == parent
+        mark.unlink()
     g("commit", "-q", "--amend", "--no-edit")
     assert mark.read_text(encoding="utf-8").strip() == parent
