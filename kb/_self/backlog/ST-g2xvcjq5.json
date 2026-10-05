@@ -2,7 +2,7 @@
   "id": "ST-g2xvcjq5",
   "kind": "story",
   "title": "A planted test covers each clause of an item's goal",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,19 @@
   "depends_on": [
     "ST-yqyw2ywh"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "297ab05622e7434623e0fa15c1bae839f22dc177",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "planted_case_per_goal_clause"
+        ],
+        "exit": 0,
+        "sha256": "ffaffae17f39ef25"
+      }
+    ]
+  }
 }
