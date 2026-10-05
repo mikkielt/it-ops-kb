@@ -2,7 +2,7 @@
   "id": "ST-ufpxla7r",
   "kind": "story",
   "title": "A change to one bl_ module selects only the tests that import the backlog modules",
-  "status": "doing",
+  "status": "todo",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,18 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "gates": [
+    {
+      "id": "scope",
+      "kind": "blocking",
+      "question": "testmap deps shows the chain the goal names (conftest -> kbpublic -> ql_deliver -> backlog) is not the only one: select for bl_land.py is 84 test files, 45 of them import backlog or bl_land themselves, and getting under 60 needs three changes together (measured): ql_deliver off the backlog facade (onto bl_base, bl_intake, bl_ci), bl_ci no longer importing bl_land (run_check moved below it: bl_ci.py, bl_land.py and bl_base.py outside the touches), and testmap no longer following the imports of a script a module only names as a string (kg_sync's backlog.py check, kb_hook, kbdecide, bl_base's review checks): 45 files. Any two of the three leave 70 or more. Which?",
+      "options": [
+        "all three: widen the touches to bl_ci.py, bl_land.py, bl_base.py and test_layout.py; a module that runs a script by name then selects that script's own tests, not its imports', and the full run at sprint end covers the rest",
+        "only ql_deliver and bl_ci (testmap's rule stays): the bound is not reached (about 70); lower the item to that",
+        "drop the item: 84 is the conservative map, the sync gate keeps it"
+      ],
+      "recommendation": "all three: widen the touches to bl_ci.py, bl_land.py, bl_base.py and test_layout.py; a module that runs a script by name then selects that script's own tests, not its imports', and the full run at sprint end covers the rest",
+      "class": "push"
+    }
+  ]
 }
