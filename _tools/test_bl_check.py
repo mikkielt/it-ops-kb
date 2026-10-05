@@ -560,6 +560,25 @@ def test_knowledge_refs_shape_is_checked(kb):
     assert b(repo, "check")[0] == 0
 
 
+def test_knowledge_shape_checked_on_every_item(kb):
+    """BG-74435353 planted: a malformed knowledge field fails check on a draft, done or dropped item, one of a planned
+    sprint and an epic outside any sprint, not only on a worked item; an absent ref on those items still passes, since
+    only the refs wait until the item is worked."""
+    repo, iid = kb
+    waiting = worked_carrier(repo, "Waiting", "Planned sprint", start=False)
+    epic = b(repo, "new", "epic", "--title", "Outcome", "--goal", "an outcome")[0] == 0 and item(repo, "Outcome")["id"]
+    for who, status in ((iid, "draft"), (iid, "done"), (iid, "dropped"), (waiting, None), (epic, None)):
+        if status:
+            edit(repo, who, status=status)
+        edit(repo, who, knowledge="text")
+        code, out = b(repo, "check")
+        assert code == 1 and "knowledge must be {ask" in out, (who, status, out)
+        edit(repo, who, knowledge={"refs": ["demo/absent"]})
+        code, out = b(repo, "check")
+        assert "knowledge" not in out.split("backlog check:")[0], (who, status, out)  # refs wait for a worked item
+        edit(repo, who, knowledge={"ask": ["What does the demo print?"]})
+
+
 def test_knowledge_refs_active_items_only(kb):
     """check validates knowledge refs, and counts a reworded fact as stale, only on an item that is todo or doing in an
     active sprint: a done, dropped or draft item, an item of a planned sprint and an epic outside any sprint keep
