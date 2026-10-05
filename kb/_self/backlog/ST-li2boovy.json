@@ -2,7 +2,7 @@
   "id": "ST-li2boovy",
   "kind": "story",
   "title": "Research sprint goal: Windows host: suite runs recorded and sped up",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-eahtellz",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "worker3"
 }
