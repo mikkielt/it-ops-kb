@@ -2,7 +2,7 @@
   "id": "ST-bvgcbn3j",
   "kind": "story",
   "title": "Review sprint: Every tool call and hook event leaves a closed ops row the operator can read",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-smqwmchu",
   "review": true,
   "priority": "P1",
@@ -29,5 +29,34 @@
       ]
     }
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "ed13d0a1071f1b4d5d44cfbda9f001d4d9361b59",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b350001281439210"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f569dc448fa20db8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/stress_test.py"
+        ],
+        "exit": 0,
+        "sha256": "40f1c54b06a226b5"
+      }
+    ]
+  }
 }
