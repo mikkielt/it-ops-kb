@@ -2,7 +2,7 @@
   "id": "ST-q5avxvi4",
   "kind": "story",
   "title": "Research sprint goal: backlog.py correctness and authority",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-hyp6o7hl",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
