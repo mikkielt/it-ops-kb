@@ -2,7 +2,7 @@
   "id": "BG-xicqvm4t",
   "kind": "bug",
   "title": "Knowledge refs are resolved against the working tree, not HEAD",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
