@@ -4,6 +4,7 @@
   "title": "Permission requests and denials, compactions and API-error turn ends leave closed ops rows",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-smqwmchu",
   "priority": "P2",
   "rank": 0,
   "goal": "ql_capture writes closed ops rows for the PermissionRequest, PermissionDenied, PreCompact, PostCompact and StopFailure hook events: tool group, trigger or error class, agent group and counts, never a reason text, command, summary or path; a test per event shows the row, and a planted payload with free text in each field shows none of it stored.",
@@ -31,7 +32,12 @@
     "_tools/test_ql_capture.py",
     "kb/_self/querylog.md",
     ".claude/settings.json",
-    ".claude-plugin/**"
+    ".claude-plugin/**",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/usage.md"
   ],
   "depends_on": [
     "ST-rpdfgu3t"
@@ -46,7 +52,7 @@
         "reject"
       ],
       "recommendation": "approve",
-      "class": "agents-rule",
+      "class": "secrets",
       "do": {
         "approve": "ST-mkczg5gs"
       },

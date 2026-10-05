@@ -4,6 +4,7 @@
   "title": "Intake has a repeat-reads detector over the call census",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-smqwmchu",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py intake runs a detector that reads the committed call rows and files a draft story naming a command-head class or tool group that one or more sessions repeat more than N times in a week (N in the notes), with the existing section-sized command to use instead when one exists; it has a count budget like the drift detector, files nothing below its threshold, and files each finding once by fingerprint.",
@@ -28,10 +29,13 @@
   "touches": [
     "_tools/bl_intake.py",
     "_tools/test_intake.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-rpdfgu3t"
+    "ST-rpdfgu3t",
+    "ST-enx4hrlr",
+    "ST-zqnngn67"
   ],
   "notes": "Call rows (ST-rpdfgu3t) hold no paths, so file groups are named only if ST-rpdfgu3t adds a closed file-group class; with the fleet retired fewer sessions run per week, so the threshold counts repeats, not agents."
 }

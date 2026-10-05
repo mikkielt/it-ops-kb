@@ -4,10 +4,19 @@
   "title": "kblog.py propose runs over the committed ops sidecars, so _logs.csv holds rows for the operator to confirm",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-smqwmchu",
   "priority": "P3",
   "rank": 0,
-  "goal": "kblog.py propose has been run over the committed store for the window and events the operator chose, so kb/_self/_logs.csv holds proposed rows the operator can confirm one by one; a second run on the same store proposes nothing new. Split from ST-mbnahtlc in the 2026-10-05 backlog review: a dry run since 2026-09-01 would propose 6608 rows, mostly the retired fleet's land runs.",
+  "goal": "kblog.py propose has been run over every ops row of the committed sidecar (the operator's answer: every event, not a window), so kb/_self/_logs.csv holds proposed rows for the operator to confirm one by one, never confirmed by an agent; a second run on the same store proposes nothing new. A dry run since 2026-09-01 counted about 6600 rows (mostly land.end and land.step of the retired fleet's runs), so the run reports its counts per event and the operator confirms in batches.",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kblog_propose_every_ops_event"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -18,7 +27,10 @@
     }
   ],
   "touches": [
-    "kb/_self/_logs.csv"
+    "kb/_self/_logs.csv",
+    "_tools/kblog.py",
+    "_tools/test_kblog.py",
+    "kb/_self/tools.md"
   ],
   "gates": [
     {

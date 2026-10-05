@@ -4,6 +4,7 @@
   "title": "A tool call of any kind leaves one closed ops row of its tool, command class, agent group, duration and size",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-smqwmchu",
   "priority": "P2",
   "rank": 0,
   "goal": "ql_capture writes an ops row call.tool for every PostToolUse and PostToolUseFailure event, whatever the tool: tool group, a closed class of the Bash or PowerShell command head (never command text or a path), agent group, outcome, duration_ms when the event has one and the result size class, so kb/_querylog/ops/ holds a census of tool calls that outlives the transcripts' retention; kbusage.py tree reads the same classes, so the two agree on the same session.",
@@ -34,7 +35,12 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md",
     ".claude/settings.json",
-    ".claude-plugin/**"
+    ".claude-plugin/**",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md"
   ],
   "gates": [
     {
@@ -47,7 +53,7 @@
         "reject"
       ],
       "recommendation": "approve",
-      "class": "agents-rule",
+      "class": "secrets",
       "do": {
         "approve": "ST-rpdfgu3t",
         "approve, kb tools and shell only": "ST-rpdfgu3t"

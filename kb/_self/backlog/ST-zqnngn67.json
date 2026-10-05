@@ -4,10 +4,19 @@
   "title": "OpenTelemetry events of a session go to a local file and join the transcript by id",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-smqwmchu",
   "priority": "P3",
   "rank": 0,
-  "goal": "A documented setting turns on CLAUDE_CODE_ENABLE_TELEMETRY with a console or file exporter and tool details off, so tool_result and api_request events (duration, sizes, cost, prompt.id, tool_use_id) land in a local file outside the repository; a read-only command joins them to a transcript by tool_use_id and request_id and prints cost per prompt, and no event text reaches the store or the API.",
+  "goal": "A standard-library OTLP http/json receiver in _tools (the operator's answer to g1: Claude Code's log exporter offers only otlp, console or none, so a local file needs a receiver) listens on localhost only, takes the tool_result and api_request events of a session run with CLAUDE_CODE_ENABLE_TELEMETRY=1, OTEL_LOGS_EXPORTER=otlp, OTEL_EXPORTER_OTLP_PROTOCOL=http/json and tool details off, and writes their duration, sizes, cost, prompt.id and tool_use_id to a local file outside the repository (the query log's data directory); a read-only command joins them to a transcript by tool_use_id and request_id and prints cost per prompt; no event text reaches the store or the API, and the receiver exits when the session ends.",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "otel_receiver_writes_local_file"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -26,10 +35,17 @@
     }
   ],
   "touches": [
+    "_tools/kbotel.py",
+    "_tools/test_kbotel.py",
     "_tools/kbusage.py",
     "_tools/test_kbusage.py",
     "kb/_self/usage.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/map.csv",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-rpdfgu3t"
   ],
   "gates": [
     {

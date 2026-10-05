@@ -1,0 +1,20 @@
+{
+  "id": "SP-smqwmchu",
+  "kind": "sprint",
+  "title": "Every tool call and hook event leaves a closed ops row the operator can read",
+  "status": "planned",
+  "goal": "Every kb tool and shell call leaves one closed ops row of its tool, command class, agent group, duration and size; permission requests and denials, compactions and API-error turn ends leave closed rows; a hand-written python3 call is classed by purpose; an interrupted call is counted per item in the work sidecar; the weekly digest prints an ops block; kblog.py propose has run over every ops row for the operator to confirm; Claude Code's OpenTelemetry events reach a local file through a standard-library receiver and join the transcript; and intake files a draft for a command class or tool group repeated past its threshold.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

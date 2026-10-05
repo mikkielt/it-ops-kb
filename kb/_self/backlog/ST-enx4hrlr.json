@@ -4,6 +4,7 @@
   "title": "An interrupted tool call is counted per item in the work sidecar",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-smqwmchu",
   "priority": "P3",
   "rank": 0,
   "goal": "The call.tool row records whether PostToolUseFailure reported is_interrupt, and the work sidecar's item line holds the count of interrupted calls inside the item's window, so wasted work can be compared between items; the count carries no command, path or text.",
@@ -35,7 +36,8 @@
     "_tools/test_ql_capture.py"
   ],
   "depends_on": [
-    "ST-rpdfgu3t"
+    "ST-rpdfgu3t",
+    "ST-75eg7e2h"
   ],
   "gates": [
     {
