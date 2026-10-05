@@ -21,5 +21,6 @@
     "_tools/kb_mcp.py",
     "_tools/test_kb_mcp.py",
     "kb/_self/embedding.md"
-  ]
+  ],
+  "notes": "Keep a text content block beside the search_result blocks: non-Claude clients such as Copilot Studio read the text (EP-5sc7hr36)."
 }

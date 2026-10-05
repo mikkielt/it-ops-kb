@@ -6,7 +6,7 @@
   "parent": "EP-o2bjijfp",
   "priority": "P3",
   "rank": 0,
-  "goal": "backlog.py intake runs a detector that reads the committed call rows and files a draft story naming a file group or command head that many agents read again and again in a week, with the existing section-sized command to use instead when one exists; it has a count budget like the drift detector, files nothing below its threshold, and files each finding once by fingerprint.",
+  "goal": "backlog.py intake runs a detector that reads the committed call rows and files a draft story naming a command-head class or tool group that one or more sessions repeat more than N times in a week (N in the notes), with the existing section-sized command to use instead when one exists; it has a count budget like the drift detector, files nothing below its threshold, and files each finding once by fingerprint.",
   "checks": [
     {
       "run": [
@@ -32,5 +32,6 @@
   ],
   "depends_on": [
     "ST-rpdfgu3t"
-  ]
+  ],
+  "notes": "Call rows (ST-rpdfgu3t) hold no paths, so file groups are named only if ST-rpdfgu3t adds a closed file-group class; with the fleet retired fewer sessions run per week, so the threshold counts repeats, not agents."
 }

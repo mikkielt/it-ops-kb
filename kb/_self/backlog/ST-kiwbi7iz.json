@@ -24,5 +24,16 @@
       ]
     }
   ],
-  "notes": "Kept as a draft: kb/_self/_decisions.csv holds no decision row yet, so there is nothing to calibrate on; start when real decisions exist."
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/kbdecide.py",
+    "_tools/test_kb_lookup.py",
+    "kb/public/_retrieval/lookup_eval.csv",
+    "kb/_self/token-efficiency.md"
+  ],
+  "trigger": {
+    "when": "kb facts cite [DECISION ...] and lookup_eval.csv holds decision questions",
+    "fired": false
+  },
+  "notes": "Waits until kb facts cite decisions and lookup_eval has decision questions: kb/_self/_decisions.csv holds 13 active rows (2026-10-05), all backlog-process decisions; no kb fact cites [DECISION ...] and lookup_eval has no decision question, so neither threshold (kbfacts DECISION_ANSWER_SHARE 0.6, kbdecide MIN_SIMILAR 0.5) has data to calibrate on."
 }

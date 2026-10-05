@@ -35,16 +35,14 @@
     {
       "id": "g1",
       "kind": "blocking",
-      "question": "Turn on Claude Code OpenTelemetry export to a local file for this project, tool details off?",
+      "question": "Capture Claude Code OpenTelemetry events locally? Its log exporter offers only otlp, console or none (kb public/claude/otel-monitoring.md), so a local file needs a receiver.",
       "options": [
-        "yes, local file",
-        "no, transcripts and hooks only"
+        "no: transcripts and hooks are enough (kbusage already gives per-prompt usage); drop the item",
+        "a standard-library OTLP http/json receiver in _tools that writes a local file",
+        "the console exporter in headless claude -p runs only, read from stderr"
       ],
-      "recommendation": "yes, local file",
-      "class": "design",
-      "do": {
-        "yes, local file": "ST-zqnngn67"
-      }
+      "recommendation": "no: transcripts and hooks are enough (kbusage already gives per-prompt usage); drop the item",
+      "class": "design"
     }
   ]
 }

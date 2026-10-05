@@ -1,0 +1,37 @@
+{
+  "id": "ST-vaby3y5b",
+  "kind": "story",
+  "title": "kblog.py propose runs over the committed ops sidecars, so _logs.csv holds rows for the operator to confirm",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kblog.py propose has been run over the committed store for the window and events the operator chose, so kb/_self/_logs.csv holds proposed rows the operator can confirm one by one; a second run on the same store proposes nothing new. Split from ST-mbnahtlc in the 2026-10-05 backlog review: a dry run since 2026-09-01 would propose 6608 rows, mostly the retired fleet's land runs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kblog_propose_converges"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/_logs.csv"
+  ],
+  "gates": [
+    {
+      "id": "window",
+      "kind": "blocking",
+      "question": "Which window and events should the first kblog.py propose run over the committed ops sidecars cover?",
+      "options": [
+        "sprint.close and agent.run rows since 2026-10-04 (after the fleet)",
+        "every event of the last 7 days",
+        "not now"
+      ],
+      "recommendation": "sprint.close and agent.run rows since 2026-10-04 (after the fleet)",
+      "class": "design"
+    }
+  ]
+}

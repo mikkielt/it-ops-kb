@@ -31,7 +31,8 @@
     "_tools/ql_store.py",
     "_tools/test_ql_distill.py",
     "kb/_self/querylog.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "_tools/test_ql_capture.py"
   ],
   "depends_on": [
     "ST-rpdfgu3t"

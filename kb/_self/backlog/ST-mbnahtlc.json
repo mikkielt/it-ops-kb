@@ -6,7 +6,7 @@
   "parent": "EP-ajw3oywi",
   "priority": "P2",
   "rank": 0,
-  "goal": "querylog.py digest prints one ops block per week from the committed ops sidecars (land, gate and test-run times, refused dones, agent runs, and the call census once it exists), and kblog.py propose has been run over the committed store so _logs.csv holds proposed rows for the operator to confirm; a second digest on unchanged inputs prints the same lines.",
+  "goal": "querylog.py digest prints one ops block per week from the committed ops sidecars (land, gate and test-run times, refused dones, agent runs, and the call census once it exists); a second digest on unchanged inputs prints the same lines.",
   "checks": [
     {
       "run": [
@@ -15,20 +15,12 @@
         "-k",
         "ql_report_ops_block"
       ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "kblog_propose_converges"
-      ]
     }
   ],
   "touches": [
     "_tools/ql_report.py",
     "_tools/test_ql_report.py",
-    "kb/_self/querylog.md",
-    "kb/_self/_logs.csv"
-  ]
+    "kb/_self/querylog.md"
+  ],
+  "notes": "Narrowed in the 2026-10-05 backlog review: the kblog.py propose run left the goal, since its check (kblog_propose_converges) already passed and a dry run over the committed store would propose 6608 rows, mostly the retired fleet's land runs; that run is ST-mbnahtlc's sibling story with its own gate on the window and events."
 }

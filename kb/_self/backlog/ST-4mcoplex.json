@@ -56,7 +56,8 @@
     "_tools/test_research_merge.py",
     "_tools/test_kb_cohesion.py",
     "_tools/test_kb_lookup.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/kbfacts.py"
   ],
   "links": [
     "kb/_self/reports/test-suite-speed.md",
