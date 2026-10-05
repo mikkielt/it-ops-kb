@@ -1849,3 +1849,75 @@ def test_private_label_gaps_docs_name_every_private_path():
 def test_private_label_in_help_planted_querylog_only_fails():
     helps = {**kbgit_helps(), "publish -h": "push the projection of the integration main (no kb/_querylog)"}
     assert private_label_gaps(helps, "touches kb/_querylog fails") == ["publish -h", "kb.yml kb-public comment"]
+
+
+# --- the commit-msg hook names, in its first refusal, which items a commit may name (ST-p2a2rzkf) ---
+
+import backlog as _backlog  # noqa: E402 - the backlog fixtures below
+import bl_testkit as _bl_testkit  # noqa: E402
+
+_bl_testkit.bind(_backlog)
+repo, bl_sprint = _bl_testkit.repo, _bl_testkit.sprint  # bl_testkit's sprint fixture takes its `repo`
+
+
+def test_commit_msg_names_what_an_unclaimed_item_may_do(bl_sprint, monkeypatch, capsys):
+    """Planted: a planning commit that changes one item file and names two, a work commit naming a released (todo)
+    item, and a work commit with two KB-Work lines. For each, the hook's warning names the problem and then the
+    rule once (which items a commit may name; a release commit names only the released item), and check-trailers
+    refuses the same commit with the same problem and the same rule; the hook warns of nothing the gate passes."""
+    repo, tk, bg = bl_sprint["repo"], bl_sprint["tk"], bl_sprint["bg"]
+    b, sh, commit = _bl_testkit.b, _bl_testkit.sh, _bl_testkit.commit
+    commit(repo, "plan")
+    for m in (kbgit, kg_trailers, kg_hooks):
+        monkeypatch.setattr(m, "KB", str(repo))
+    sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+
+    def hook(msg):
+        f = repo / "MSG"
+        f.write_text(msg, encoding="utf-8")
+        capsys.readouterr()
+        kg_hooks.hook_commit_msg([str(f)])
+        return capsys.readouterr().err
+
+    def gate():
+        kg_trailers._WANT.clear()
+        return [ln for _, lines in kg_trailers.trailer_audit("origin/main..HEAD", quiet=True)[2] for ln in lines]
+
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    sh(repo, "git", "add", "-A")
+    planning = f"claim\n\nKB-Work: {tk}, {bg}\n"
+    err = hook(planning)
+    assert f"{bg}: a backlog-planning commit names it but does not change" in err, err
+    assert err.count("the rule: ") == 1 and "a release commit names the released item and no other" in err, err
+    sh(repo, "git", "commit", "-qm", planning)
+    lines = gate()
+    assert any(f"{bg}: a backlog-planning commit names it" in ln for ln in lines), lines
+    assert sum("the rule: " in ln for ln in lines) == 1, lines
+    sh(repo, "git", "reset", "-q", "--hard", "HEAD^")
+
+    (repo / "src" / "x.txt").write_text("x\n", encoding="utf-8")
+    sh(repo, "git", "add", "-A")
+    released = f"work\n\nKB-Work: {bg}\n"
+    err = hook(released)
+    assert f"{bg} is todo, not claimed" in err and err.count("the rule: ") == 1, err
+    sh(repo, "git", "commit", "-qm", released)
+    assert any(f"{bg} is todo, not claimed" in ln for ln in gate())
+    sh(repo, "git", "reset", "-q", "--soft", "HEAD^")
+
+    two = f"work\n\nKB-Work: {bg}\nKB-Work: {bg}\n"
+    err = hook(two)
+    assert "expected one line of backlog item ids that exist" in err and err.count("the rule: ") == 1, err
+    sh(repo, "git", "commit", "-qm", two)
+    lines = gate()
+    assert any("KB-Work: has" in ln for ln in lines) and sum("the rule: " in ln for ln in lines) == 1, lines
+    sh(repo, "git", "reset", "-q", "--hard", "HEAD^")
+
+    assert b(repo, "claim", bg, "--by", "agent-1")[0] == 0
+    commit(repo, "claim", bg)
+    sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+    (repo / "src" / "x.txt").write_text("x\n", encoding="utf-8")
+    sh(repo, "git", "add", "-A")
+    ok = f"work\n\nKB-Work: {bg}\n"
+    assert hook(ok) == ""  # planted counterpart: a claimed item's work commit is warned of nothing
+    sh(repo, "git", "commit", "-qm", ok)
+    assert gate() == []
