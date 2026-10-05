@@ -2,7 +2,7 @@
   "id": "ST-kd7vnu5r",
   "kind": "story",
   "title": "A dropped test id names the removed code it tested, and a dropped test whose module is still present is flagged",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/test_perfcheck*.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
