@@ -164,6 +164,9 @@ def cmd_done(bl, a):
                 if g.get("by") == "agent":
                     problems.append(f"provisional answer to confirm: {bl.label(s)} gate {g['id']}: {g['answer']}")
     globs = scope(bl, iid)
+    if not globs and kind != "epic" and not it.get("review"):  # start's rule, for an item filed into a running sprint
+        problems.append("no touches of its own or under it: a work item needs a scope (backlog.py set ID --touch "
+                        "GLOB, or tasks that have touches), which start requires of every work item")
     if globs:
         dirty = [ln[3:] for ln in git(bl.root, "status", "--porcelain").splitlines()
                  if in_scope(ln[3:].strip('"'), globs) and not in_scope(ln[3:].strip('"'), ())]
