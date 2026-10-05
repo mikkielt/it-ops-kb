@@ -46,5 +46,6 @@
       "answer": "audit",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Audit done 2026-10-05 (worker1): 14 paths written in place (conftest.WRITTEN); the change is committed, not landed, on worker1's local branch work/ST-b3bbbbpc (81c582c93). Not landed: a copy now copies 14 files (4.8 MB) instead of 1108 (22.9 MB) but takes about 430 ms against 327 ms on this host, so linking is slower here; the operator decides whether to land it, narrow it or drop it."
 }
