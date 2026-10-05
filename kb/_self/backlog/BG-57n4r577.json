@@ -2,7 +2,7 @@
   "id": "BG-57n4r577",
   "kind": "bug",
   "title": "No planted-failure test for land's refusal of a missing branch or one checked out in another worktree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
@@ -12,11 +12,22 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.exit(0 if 'stopped at step branch' in open('_tools/test_backlog.py',encoding='utf-8').read() else 1)"
+      "import sys;t=open('_tools/test_bl_land.py',encoding='utf-8').read();sys.exit(0 if 'def test_land_refuses_missing_branch' in t and 'def test_land_refuses_branch_in_another_worktree' in t else 1)"
     ]
   },
   "repro_reason": "the defect is an absent test; the only thing to observe is whether the test exists, so the repro reads the test file for its name",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_refuses_missing_branch or land_refuses_branch_in_another_worktree"
+      ]
+    }
+  ],
   "touches": [
     "_tools/test_bl_land.py"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
