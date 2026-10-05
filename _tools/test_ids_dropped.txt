@@ -12,6 +12,7 @@ _tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[github-denied]
 _tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[github-gh006]
 _tools/test_ql_deliver.py::TestHostNoRefusalInGit::test_case[unreachable-at-push]
 # autopilot retired: the runner, its tick, rehearsal and skill checks are removed with them
+# live-module calls went with the removed _tools/autopilot.py, _tools/bl_bounds.py
 _tools/test_autopilot.py::test_autopilot_runner_a_bad_argument_is_a_usage_error[args0]
 _tools/test_autopilot.py::test_autopilot_runner_a_bad_argument_is_a_usage_error[args1]
 _tools/test_autopilot.py::test_autopilot_runner_a_bad_argument_is_a_usage_error[args2]
@@ -820,6 +821,7 @@ _tools/test_autopilot_two_runners.py::test_autopilot_two_runners_start_ignores_a
 _tools/test_autopilot_two_runners.py::test_autopilot_two_runners_start_refuses_overlapping_touches_naming_paths_and_holder
 _tools/test_autopilot_two_runners.py::test_autopilot_two_runners_sync_push_holds_the_main_lock_and_a_dry_run_or_no_push_does_not
 # autopilot retired: tests of the runner, the tick and their documents inside files that stay
+# live-module calls went with the removed _tools/autopilot.py
 _tools/test_bl_procs.py::test_procs_ends_only_own_runner_leaves_none_behind[False]
 _tools/test_bl_procs.py::test_procs_ends_only_own_runner_leaves_none_behind[True]
 _tools/test_headless_start_guarded.py::test_headless_start_guarded_items_runner_start_refuses_and_starts_nothing
@@ -830,6 +832,7 @@ _tools/test_docs_headless_statements.py::test_docs_match_runner_credentials_and_
 _tools/test_bl_authority_guards.py::test_gate_class_covers_the_guard_code[_tools/autopilot.py-agents-rule]
 _tools/test_bl_authority_guards.py::test_gate_class_covers_the_guard_code_planted_missing_path_fails[_tools/autopilot.py]
 # autopilot retired: the bounds (bl_bounds.py), the stall remedy ladder and --took, the autopilot's selfcheck checks, the --by autopilot answer path and the start rule of an autopilot-approved sprint are removed
+# live-module calls went with the removed _tools/autopilot.py, _tools/bl_bounds.py
 _tools/test_backlog_authority.py::test_autopilot_authority_an_operator_answer_supersedes_the_autopilots
 _tools/test_backlog_authority.py::test_autopilot_authority_an_operator_repeating_the_answer_ratifies_it
 _tools/test_backlog_authority.py::test_autopilot_authority_answers_the_other_classes[Delete the old kb articles?]
@@ -1004,6 +1007,7 @@ _tools/test_bl_authority_trust.py::test_authority_trust_boundary_agents_rule_is_
 _tools/test_bl_authority_guards.py::test_gate_class_covers_the_guard_code[_tools/bl_bounds.py-agents-rule]
 _tools/test_bl_authority_guards.py::test_gate_class_covers_the_guard_code_planted_missing_path_fails[_tools/bl_bounds.py]
 # autopilot retired: the headless-runner guards and the KB_HEADLESS_RUNNER marker are removed with their tests
+# live-module calls went with the removed `KB_HEADLESS_RUNNER`
 _tools/test_backlog_headless_operator.py::test_backlog_headless_refuses_operator_answers_an_empty_variable_is_unset
 _tools/test_backlog_headless_operator.py::test_backlog_headless_refuses_operator_answers_the_guard_reads_the_parsed_value
 _tools/test_backlog_headless_operator.py::test_backlog_headless_refuses_operator_answers_the_runner_sets_the_variable

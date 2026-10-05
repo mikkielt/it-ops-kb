@@ -307,11 +307,31 @@ def dropped_warnings(root, text, only=None):
     return out
 
 
+RETIRED_PHRASE = "live-module calls went with"  # a retired feature's dropped tests: the live module's calls went too
+
+
+def names_removed(reason, root, code):
+    """True when REASON names a file that no longer exists, or a symbol or flag the code no longer holds."""
+    for m in REASON_TOKEN.finditer(reason or ""):
+        tok = next(g for g in m.groups() if g)
+        if m.group(5):
+            continue
+        if tok.endswith(".py"):
+            if not (Path(root) / tok).exists() and not (Path(root) / "_tools" / Path(tok).name).exists():
+                return True
+        elif tok.split()[0] not in code:
+            return True
+    return False
+
+
 def names_successor(reason, ids, root, code):
     """True when REASON names where the dropped tests went: a test (`test_*`, `Test*`) the code still holds that is
-    not one of the dropped ids' own, or a test file (`test_*.py`) that exists and is not the dropped one. A reason
-    that names only the dropped test itself, or a removed module, excuses nothing."""
+    not one of the dropped ids' own, or a test file (`test_*.py`) that exists and is not the dropped one; or it says the
+    live module's calls went with a retired feature (RETIRED_PHRASE) and names the removed module, file or symbol. A
+    reason that names only the dropped test itself, or a removed module without that phrase, excuses nothing."""
     gone = {i.split("::")[-1] for i in ids} | {i.split("::")[0].rsplit("/", 1)[-1] for i in ids}
+    if RETIRED_PHRASE in (reason or "") and names_removed(reason, root, code):
+        return True  # a retired feature: its live modules' calls went with the removed code the reason names
     for m in REASON_TOKEN.finditer(reason or ""):
         tok = next(g for g in m.groups() if g)
         name = tok.rsplit("/", 1)[-1]
