@@ -2,7 +2,7 @@
   "id": "BG-4zpv4iol",
   "kind": "bug",
   "title": "check refuses a trivial check only on open items, but the live-backlog test it mirrors reads done items too, so a done item turns main red",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -11,8 +11,9 @@
   "repro": {
     "run": [
       "python3",
-      "-c",
-      "import sys;sys.path.insert(0,'_tools');import bl_base,bl_check;bl=bl_base.Backlog('.');bl.items['TK-zzzzzzzz']=dict(id='TK-zzzzzzzz',kind='task',title='Planted',status='done',checks=[dict(run=['python3','-c','pass'])]);sys.exit(0 if any('TK-zzzzzzzz' in x for x in bl_check.refused_command_errors(bl)) else 1)"
+      "_tools/tests.py",
+      "-k",
+      "done_flags_noop_check_real_backlog_commands"
     ]
   },
   "checks": [
@@ -21,7 +22,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "check_errors_on_refused_done_item"
+        "done_flags_noop_check_real_backlog_commands"
       ]
     }
   ],
@@ -30,5 +31,23 @@
     "_tools/test_bl_check.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "gates": [
+    {
+      "id": "scope",
+      "kind": "blocking",
+      "question": "Make check and the live-backlog test agree by having check also error on done items, or by narrowing the test to open items?",
+      "options": [
+        "narrow-test",
+        "check-done-items"
+      ],
+      "recommendation": "narrow-test",
+      "class": "agents-rule",
+      "do": {
+        "narrow-test": "BG-4zpv4iol",
+        "check-done-items": "BG-4zpv4iol"
+      }
+    }
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
