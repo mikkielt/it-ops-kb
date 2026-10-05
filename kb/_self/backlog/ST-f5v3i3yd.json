@@ -2,7 +2,7 @@
   "id": "ST-f5v3i3yd",
   "kind": "story",
   "title": "A repro that runs a tool also checks the tool's exit code",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "ST-4mdnjuep"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
