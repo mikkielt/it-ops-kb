@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Review (2026-10-05): goal clause 1, fresh scenario clones reuse the seed's pack index, is unmet: ST-4mcoplex was deferred (kbfacts.fingerprint hashes mtimes and absolute root paths, so a copied index is never read) and carries it. ST-6fb6kzoa, TK-dpc3j4q6, ST-pg5jyebo and ST-xjb4wykm moved out, waiting on a Claude Code release or the Windows host. The reviewer's gaps are BG-u5jarkwq, ST-ywqttahe, ST-xsxto3rh and ST-b3bbbbpc.",
   "claimed_by": "it-ops-kb worker2"
 }
