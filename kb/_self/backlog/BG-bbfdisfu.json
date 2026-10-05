@@ -2,7 +2,7 @@
   "id": "BG-bbfdisfu",
   "kind": "bug",
   "title": "The stranded detector reports no-fix eval findings and route source findings, which no stage or command can move",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -50,5 +50,40 @@
     "fingerprint 5966a302d8cc"
   ],
   "notes": "Premise: python3 _tools/backlog.py intake reports three stranded findings on c413b82f: F-b28d0d79b19b and F-fe10582bc61f, eval findings no-fix since 2026-09-29 (querylog.py show --findings --state no-fix), and F-a69c6dbdf291, a route source finding (WebFetch read code.claude.com and modelcontextprotocol.io; querylog.py status). learn writes a record only for a finding whose last state is open or fixed-since (ql_learn.learn, LEARN_STATES), a route finding is derived again from the store's fetches on every run, and querylog.py close takes gap findings only, so none of the three can leave its state. F-fe10582bc61f's question (GitHub rulesets branch protection public repository) now packs good from public/gitlab/github-branch-rules-and-auto-merge.md while the finding expects public/gitlab/detecting-mr-merges-in-ci.md: what passes for a no-fix finding is the worker's to define and test. The three fingerprint links keep intake from filing a draft per finding while this bug is open.",
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "bc4acd5ad8f1726e721a12606c02e4da5a1987da",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "learn_rechecks_no_fix"
+        ],
+        "exit": 0,
+        "sha256": "b75720de1653f2a7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "stranded_leaves_out_route"
+        ],
+        "exit": 0,
+        "sha256": "9318f95c70e0e5de"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "intake",
+          "--status",
+          "5966a302d8cc"
+        ],
+        "exit": 0,
+        "sha256": "df5d7f3719904443"
+      }
+    ]
+  }
 }
