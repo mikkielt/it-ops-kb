@@ -2,7 +2,7 @@
   "id": "BG-fuwt5ocn",
   "kind": "bug",
   "title": "backlog check's stale-touches error fires on the item that deleted the file, which done requires to name it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "kb/_self/tools.md",
     "_tools/bl_plan.py",
     "_tools/test_bl_plan.py"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
