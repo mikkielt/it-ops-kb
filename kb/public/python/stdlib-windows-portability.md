@@ -4,7 +4,7 @@ priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
 retrieved_utc: 2026-10-05
 sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl]
-status: complete
+status: partial
 ---
 
 # Python stdlib on Windows: detached processes, locks, text files, interpreter names
@@ -61,6 +61,9 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 - `os.link(src, dst)` creates a hard link named *dst* to *src* and is available on Unix and on Windows (since Python 3.2); the page does not say what it raises when the two paths are on different filesystems. [DOC S-5brdhqgo]
 - `shutil.copytree(src, dst, copy_function=...)` copies each file with the callable it is given, called with the source and the destination path (default `shutil.copy2`); with `dirs_exist_ok=True` it continues into existing directories and overwrites files there. [DOC S-jwv5eevl]
 - So a test that copies a tree it only partly writes can pass `copy_function=os.link` (falling back to a copy where the link fails, such as across filesystems) and replace each file it writes with a fresh copy before writing, since a write through a hard link changes every name of the file. [DER S-5brdhqgo, S-jwv5eevl]
+- `shutil.copy2` is `copy` that also attempts to preserve file metadata, through `copystat`, which copies the permission bits, last access time, last modification time and flags; `copy2` never raises because it could not preserve metadata. [DOC S-jwv5eevl]
+- So a cache keyed on files' modification times (`st_mtime_ns`) still matches after a `copytree` with the default `copy2`, but not after a plain `shutil.copy`, which leaves them out; a key that must survive a copy at another path hashes the files' content and their paths relative to the root instead. [DER S-jwv5eevl: copy2 keeps the times, copy does not]
+- Open: what modification time a fresh `git clone` or `git worktree add` gives the files it checks out is not stated on a git page the kb cites. [UNK: see `_gaps.md`]
 - Open: the error `os.link` raises across filesystems or volumes is not on the page. [UNK]
 
 ## Reference

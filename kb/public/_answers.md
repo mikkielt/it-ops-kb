@@ -2441,3 +2441,13 @@ _Agent: kb-research_
 - See claude/hooks.md, claude/plugins.md, claude/ci-and-headless.md, and the earlier answer QK-claude-p-runs-hooks-run-acceptedits.
 
 _Agent: kb-research_
+
+## QK-windows-host-record-defender-s-cost. How does a Windows host record Defender's cost on a test suite run, and what keeps a pack index valid in a fresh clone?
+- `New-MpPerformanceRecording -RecordTo <file.etl> -Seconds <n>` records without waiting for Enter, needs an elevated session, and `Get-MpPerformanceReport -TopPaths`, `-TopProcesses`, `-TopExtensions` (with `-TopPathsDepth`, `-Overview`, `-Raw`) report the cost by folder, process and extension. [DOC S-wwlnekbg, S-idhc2ard, S-go2hxmtt]
+- Microsoft says the analyzer does not suggest exclusions; the per-user Temp folder, pytest's default root, is on its avoid list. [DOC S-wwlnekbg, S-lkbn5y6v]
+- `shutil.copy2` (and so `copytree`'s default) keeps modification times; plain `copy` does not. [DOC S-jwv5eevl]
+- Conclusion: ST-xjb4wykm records one tests.py run with the timed set in the host's elevated session and reads the three top reports as `-Raw` data; ST-4mcoplex's fingerprint must hash content and root-relative paths, not mtimes and absolute paths, to match in a clone at another path. [DER S-wwlnekbg, S-idhc2ard, S-jwv5eevl]
+- Open: what mtime git gives freshly checked-out files is not on a cited git page; the host measures it. [UNK]
+- See defender/asr-and-antivirus.md, python/stdlib-windows-portability.md, windows/dev-drive.md, python/pytest-xdist.md.
+
+_Agent: kb-research_
