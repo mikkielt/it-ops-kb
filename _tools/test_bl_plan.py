@@ -43,6 +43,22 @@ def test_backlog_stale_touches_names_a_file_git_deleted(sprint):
     assert code == 0 and "errors=0" in out and "working tree lacks" not in out, out
 
 
+def test_backlog_stale_touches_spares_the_item_that_deleted_it(sprint):
+    """BG-fuwt5ocn planted: the task whose own KB-Work commit deleted a file must name it (done refuses the deletion
+    otherwise), so check reports no stale touch on it; the bug, whose touches name the same path and which deleted
+    nothing, is still reported."""
+    repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+    edit(repo, tk, touches=["src/**", "src/a.txt"])
+    edit(repo, bg, touches=["src/**", "src/a.txt"])
+    commit(repo, "touches name a.txt")
+    sh(repo, "git", "rm", "-q", "src/a.txt")
+    commit(repo, "delete a", tk)
+    code, out = b(repo, "check")
+    assert code == 1 and "errors=1" in out, out
+    assert f"{bg} “Bug”: touches names src/a.txt" in out, out
+    assert f"{tk} “Task”: touches names" not in out, out
+
+
 DOC_MAP ="doc,pattern\nkb/_self/tools.md,_tools/x.py\nkb/_self/plugin.md,.claude-plugin/**\n"
 
 

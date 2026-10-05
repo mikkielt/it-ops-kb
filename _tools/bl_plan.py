@@ -10,7 +10,7 @@ import re
 import subprocess
 
 from bl_base import (
-    APPROVALS, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, in_scope, need, say, scope,
+    APPROVALS, ID_RE, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, in_scope, need, say, scope,
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
@@ -52,11 +52,23 @@ def dependents(bl, iid):
     return out
 
 
+def _git_out(root, *args):
+    """git's stdout, or None when it fails or cannot start."""
+    try:
+        r = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return r.stdout if r.returncode == 0 else None
+
+
 def stale_touches(bl):
     """An error for each open item whose touches names a path without glob characters that the working tree lacks and
     that has a commit in git log: a file a move or a deletion stranded, so the item's scope (and `done`'s
-    outside-touches refusal) names nothing. A path no commit ever had is a file the item is yet to create: no error."""
-    history = {}
+    outside-touches refusal) names nothing. A path no commit ever had is a file the item is yet to create: no error.
+    The item whose own KB-Work commit (or a descendant's) removed the path is no error either: `done` refuses that
+    deletion unless its touches name the path."""
+    history, removers = {}, {}
     out = []
     for iid, it in bl.items.items():
         if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES:
@@ -65,12 +77,12 @@ def stale_touches(bl):
             if not isinstance(t, str) or not t or re.search(r"[*?\[]", t) or (bl.root / t).exists():
                 continue
             if t not in history:
-                try:
-                    r = subprocess.run(["git", "-C", str(bl.root), "log", "-1", "--format=%H", "HEAD", "--", t],
-                                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
-                    history[t] = r.returncode == 0 and bool(r.stdout.strip())
-                except (OSError, subprocess.SubprocessError):
-                    history[t] = False
+                history[t] = bool((_git_out(bl.root, "log", "-1", "--format=%H", "HEAD", "--", t) or "").strip())
+                gone = _git_out(bl.root, "log", "-1", "--no-renames", "--diff-filter=D",
+                                "--format=%(trailers:key=KB-Work,valueonly,separator=%x2C)", "HEAD", "--", t)
+                removers[t] = set(ID_RE.findall(gone or ""))
+            if history[t] and removers[t] & ({iid} | set(bl.descendants(iid))):
+                continue
             if history[t]:
                 out.append(f"{bl.label(iid)}: touches names {t}, which git history has and the working tree lacks "
                            f"(moved or deleted: name its new path, or drop it from touches)")
