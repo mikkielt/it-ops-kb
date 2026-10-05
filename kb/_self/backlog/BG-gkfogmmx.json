@@ -1,0 +1,36 @@
+{
+  "id": "BG-gkfogmmx",
+  "kind": "bug",
+  "title": "On Windows the commit hooks cannot tell git commit --amend -F or -m, so commit-msg diffs against HEAD",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kg_hooks.amend_running tells a git commit --amend with -F, -m or -t among the hook's ancestors on Windows as it does on Linux and macOS (kg_hooks.parent_args gives no parent or command line there today), so the amend mark names HEAD's parent and commit-msg's KB-* trailers diff against it; test_commit_msg_amend_with_message_file_reads_the_parent checks the amend -F and -m cases on Windows too, and the hook's added cost per commit on the Windows host is measured and stated",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_commit_msg_amend_with_message_file_reads_the_parent"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_commit_msg_amend_with_message_file_reads_the_parent"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_hooks.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ]
+}
