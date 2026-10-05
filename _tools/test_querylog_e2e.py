@@ -85,6 +85,12 @@ RAW = ["anna.nowak", "acme-corp", "10." + "1.20.33", "PL-LAPTOP-7731", "Nowakows
        "#enable", "view=x", "city=", "weather", "BODY", "session_id", "prompt_id", '"prompt":', '"answer":']
 
 
+def drained(spool):
+    """A spool distill emptied: nothing left but today's tools file, which goes after its day (ql_distill) and now
+    always exists, since every kb, docs and shell call leaves a call.tool ops row in it (ST-rpdfgu3t)."""
+    return all(n.startswith("tools-") for n in spool)
+
+
 def env():
     """A git scenario's environment (conftest.git_env) with no plugin, project or cloud variables, so every tool runs
     as it does in a clone; kbgit.py sync gates without tests.py (KB_SYNC_NO_TESTS=1); localhost needs no proxy."""
@@ -388,7 +394,7 @@ class TestAnswered:
         assert "public/intune/win32-apps.md" in e["articles"] and e["question"] == LOOKUPS["win32"]["asked"]
         assert st["findings"] == {} and w.commits(self.since.main) == [("chore(kb): query log store, 1 run file(s)", "querylog")]
         assert all(st[rel] == [] for rel in KB_FILES)
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]
+        assert drained(st["spool"]) and st["gate"] == [], st["gate"]
         rel = f"{ql_base.STORE_REL}/{self.local.relative_to(w.q / 'store').as_posix()}"
         assert w.show(rel) == self.local.read_text(encoding="utf-8")  # the local store's run file, as it was
 
@@ -440,7 +446,7 @@ class TestWorkSidecar:
         assert got[0]["counts"] == {"items": 1, "shared": 1, "missing": 0}
         assert w.commits() == [("chore(kb): query log store, 1 run file(s), 1 work sidecar(s)", "querylog")]
         assert st["runs"] == [self.local.stem] and st["entries"] == [] and st["findings"] == {}
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]  # the store gates include the work sidecar's
+        assert drained(st["spool"]) and st["gate"] == [], st["gate"]  # the store gates include the work sidecar's
 
     def test_work_sidecar_holds_no_session_prompt_or_text(self):
         text = self.st["text"]
@@ -519,7 +525,7 @@ class TestFixes:
         assert g["article"] == LAPS and g["id"] in gap
         assert [p["to"] for p in g["promotions"]] == ["candidate-gap", "gap"]
         assert all(st[rel] == [] for rel in (CONFLICTS, SOURCES, ARTICLE))
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]
+        assert drained(st["spool"]) and st["gate"] == [], st["gate"]
 
     def test_querylog_one_commit_per_run(self):
         """One run makes one commit: the store's run file and findings file with learn and apply's changes, one
@@ -602,7 +608,7 @@ class TestFixedSince:
         assert kinds(st["findings"]) == [("eval", "fixed-since", "miss")]
         assert [v for _, v in w.commits(self.since.main)] == ["querylog"]  # the run file and learn's findings, in one commit
         assert all(st[rel] == [] for rel in KB_FILES)
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]
+        assert drained(st["spool"]) and st["gate"] == [], st["gate"]
 
 
 # ---------------------------------------------------------------- fetches beside a lookup, and without one
@@ -643,7 +649,7 @@ class TestFetches:
             assert word not in st["text"], word
         assert {r["kind"] for r in st["findings"].values()} <= {"source"}  # report-only, never applied
         assert all(st[rel] == [] for rel in KB_FILES)
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]
+        assert drained(st["spool"]) and st["gate"] == [], st["gate"]
 
 
 # ---------------------------------------------------------------- tools that write their own rows
@@ -658,7 +664,7 @@ class TestToolRows:
         with serve() as url:
             w.server = url
             w.lookup("tools", s)
-        cls.tools = sorted(p.name for p in (w.q / "spool").glob("tools-*.jsonl") if p.name not in cls.since.spool)
+        cls.tools = sorted(p.name for p in (w.q / "spool").glob("tools-*.jsonl"))  # the census rows share it (call.tool)
         w.end(s)
         cls.rc, cls.said = w.distill()
         cls.st = w.state(since=cls.since)
@@ -676,7 +682,7 @@ class TestToolRows:
         assert not any("host" in f for f in e["fetches"])  # 127.0.0.1 is no public host
         assert len(self.tools) == 1 and st["spool"] in ([], self.tools)  # today's tools file goes after its day
         consumed = json.loads((w.q / ql_distill.CONSUMED_NAME).read_text(encoding="utf-8")) if st["spool"] else {}
-        assert all(len(ids) == 3 for name, ids in consumed.items() if name in self.tools)
+        assert all(len(ids) >= 3 for name, ids in consumed.items() if name in self.tools)  # its 3 rows, and call.tool rows
         assert st["gate"] == [], st["gate"]
 
 
@@ -707,7 +713,7 @@ class TestRedaction:
         for raw in ("anna.nowak", "acme-corp", "10." + "1.20.33", "PL-LAPTOP-7731"):
             assert raw not in sent and raw not in st["text"], raw
         assert "PL-LT-00123" in sent and "jan.kowalski@corp.example.com" in sent
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]
+        assert drained(st["spool"]) and st["gate"] == [], st["gate"]
 
 
 # ---------------------------------------------------------------- two clones, one remote
@@ -744,7 +750,7 @@ class TestTwoClones:
         assert ql_store.duplicate_ids(self.b.store()) == []
         assert self.branches == ["refs/heads/main"]
         assert kinds(st["findings"]) == [("eval", "fixed-since", "miss")]
-        assert st["spool"] == [] and self.a_spool == [] and st["gate"] == [], st["gate"]
+        assert drained(st["spool"]) and drained(self.a_spool) and st["gate"] == [], st["gate"]
 
 
 # ---------------------------------------------------------------- a conflict with origin/main
@@ -912,7 +918,7 @@ class TestConflict:
         assert self.opts2 == self.opts  # the push to main carried no push options
         (g,) = [r for r in st["findings"].values() if r["kind"] == "gap"]
         assert (g["state"], g["stage"]) == ("open", "candidate-gap")
-        assert st["spool"] == [] and st["gate"] == [], st["gate"]
+        assert drained(st["spool"]) and st["gate"] == [], st["gate"]
 
 
 # ---------------------------------------------------------------- CI that is not red
@@ -1049,7 +1055,7 @@ def run_mode(w, mode):
         assert wrote == [f"{s}.jsonl"] and says(said, "entries=1 dropped=0 waiting=0") and len(w.local_runs(m)) == 1
         assert w.spool() == [] and w.main() == w.base and not (w.q / ql_deliver.WORKTREE_NAME).exists()
     else:
-        assert says(said, "apply --push: pushed ") and len(st["runs"]) == 1 and st["spool"] == [], said
+        assert says(said, "apply --push: pushed ") and len(st["runs"]) == 1 and drained(st["spool"]), said
 
 
 class TestModesOff:
@@ -1138,7 +1144,7 @@ class TestPushFailure:
         gone = next(i for i, s in enumerate(said) if s.startswith("apply --push: deleted the spool rows of 1 entries"))
         assert pushed < gone, said
         st = self.st
-        assert len(st["runs"]) == 1 and st["spool"] == [] and st["gate"] == [], st["gate"]
+        assert len(st["runs"]) == 1 and drained(st["spool"]) and st["gate"] == [], st["gate"]
 
     def test_a_leak_in_a_run_file_blocks_the_push(self):
         rc, said = self.leaked

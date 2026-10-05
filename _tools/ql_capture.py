@@ -112,7 +112,10 @@ OPS_EVENTS = {  # the closed set of events, each with its closed keys
                        "failed_files": ("list", OPS_LIST_MAX, "test_file")}),
     "agent.run": _spec({"group": "token", "ms": "ms"}, {"agent": "agent", "item": "item"}),
     "stall.remedy": _spec({"item": "item", "signal": "token", "remedy": "token", "count": "count"}),
+    "call.tool": _spec({"tool": "token", "group": "token", "outcome": "token", "size": "token"},
+                       {"class": "token", "ms": "ms"}),
 }
+CALL_OUTCOMES = ("ok", "error", "interrupt")  # a call.tool row's outcome
 
 
 def _shape_ok(shape, v):
@@ -342,7 +345,7 @@ def rows(path, needle=None):
 
 def used_kb(spool, session_id, prompt_id):
     """Whether this prompt used the kb so far: a `kb:` hook or kb MCP row, a prompt with a kb intent, or a tool row
-    (kb_ask.py, fetch.py, census.py) written since the prompt began."""
+    (kb_ask.py, fetch.py, census.py) written since the prompt began; an ops row of the tools file is none."""
     if not (prompt_id and isinstance(session_id, str) and SAFE_SESSION.fullmatch(session_id)):
         return False
     began = None
@@ -358,7 +361,8 @@ def used_kb(spool, session_id, prompt_id):
     day = datetime.date.fromisoformat(began[:10])
     today = datetime.datetime.now(datetime.timezone.utc).date()
     while day <= today:
-        if any(r.get("ts", "") >= began for r in rows(spool / f"tools-{day.isoformat()}.jsonl")):
+        if any(r.get("ts", "") >= began and r.get("surface") != OPS  # an ops row (call.tool) is no kb use
+               for r in rows(spool / f"tools-{day.isoformat()}.jsonl")):
             return True
         day += datetime.timedelta(days=1)
     return False
@@ -567,6 +571,31 @@ def agent_row(event, sid):
                   group=kbusage.agent_group(kind).lower(), item=work_branch_item(event.get("cwd")))
 
 
+def call_row(event, ok):
+    """The ops row `call.tool` of one PostToolUse or PostToolUseFailure event of a kb tool, a documentation server's
+    tool or a shell command (the operator's scope, ST-rpdfgu3t): the tool's group, the command's closed class for a
+    shell (kbusage.command_class, never the command or a path), the agent group (`main` outside a subagent), the
+    outcome (ok, error or interrupt), `duration_ms` when the event has one and the result's size class. None for any
+    other tool."""
+    import kbusage
+    tool = str(event.get("tool_name") or "")
+    group = kbusage.call_group(tool)
+    if not (tool in SHELL_TOOLS or KB_TOOL.fullmatch(tool) or group.startswith("docs.")):
+        return None
+    args = event.get("tool_input") if isinstance(event.get("tool_input"), dict) else {}
+    kind = str(event.get("agent_type") or "").rsplit(":", 1)[-1]
+    agent = kbusage.agent_group(kind).lower() if kind else "main"
+    outcome = "ok" if ok else "interrupt" if event.get("is_interrupt") is True else "error"
+    res = event.get("tool_response") if ok else event.get("error")
+    if isinstance(res, dict) and ("stdout" in res or "stderr" in res):  # a shell's result: its two streams
+        res = f"{res.get('stdout') or ''}{res.get('stderr') or ''}"
+    size = kbusage.size_class(len(text_of(res)))
+    ms = event.get("duration_ms")
+    return record(OPS, event="call.tool", tool=group, group=agent, outcome=outcome, size=size,
+                  ms=ms if isinstance(ms, int) and not isinstance(ms, bool) and ms >= 0 else None,
+                  **{"class": kbusage.command_class(args.get("command")) if tool in SHELL_TOOLS else None})
+
+
 def capture(event):
     """The row one hook event writes, or None."""
     if not isinstance(event, dict):
@@ -588,6 +617,10 @@ def capture(event):
         tool = str(event.get("tool_name") or "")
         args = event.get("tool_input") if isinstance(event.get("tool_input"), dict) else {}
         ok = name == "PostToolUse"
+        try:
+            call_row(event, ok)  # the census row, beside whatever row the call gives below
+        except Exception:  # noqa: BLE001 - capture never fails for its log
+            pass
         m = KB_TOOL.fullmatch(tool)
         if m:
             summary = pack_summary(text_of(event.get("tool_response"))) if ok else {"outcome": "error"}
