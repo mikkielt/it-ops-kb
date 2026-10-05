@@ -1,0 +1,35 @@
+{
+  "id": "BG-u5jarkwq",
+  "kind": "bug",
+  "title": "perfcheck ids against the committed baseline exits 1 on main: the ten ids the sprint dropped on purpose are still in it",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/perfcheck.py ids --against _tools/test_ids_baseline.txt exits 0 on main: the baseline no longer names the ids _tools/test_ids_dropped.txt lists (or the check names --allow-removed), so a check that runs it proves the suite lost no test. BG-k5dql2np, ST-ykvho3zp, ST-5q5b5qtz and ST-n3swrm57 were marked done with this check while it printed '10 missing'. Found by the SP-w3xmbdra review.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/perfcheck.py",
+      "ids",
+      "--against",
+      "_tools/test_ids_baseline.txt"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "perfcheck"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_ids_baseline.txt",
+    "_tools/perfcheck.py",
+    "_tools/test_perfcheck.py"
+  ]
+}
