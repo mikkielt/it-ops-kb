@@ -2,7 +2,7 @@
   "id": "BG-2hxjopue",
   "kind": "bug",
   "title": "done can never close an item whose only touches are item files, so a planning-data fix has no way to finish",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
     "kb/_self/tools.md",
     "_tools/bl_check.py",
     "_tools/test_bl_check.py"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
