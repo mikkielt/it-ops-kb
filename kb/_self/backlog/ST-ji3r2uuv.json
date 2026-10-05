@@ -2,7 +2,7 @@
   "id": "ST-ji3r2uuv",
   "kind": "story",
   "title": "Every derived cache key holds the form of the rule that made it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_layout.py",
     "_tools/kbpublic.py"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "4d1f953c94d0bd797a3b0c715417c9fd42cd8c74",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cache_key_holds_form"
+        ],
+        "exit": 0,
+        "sha256": "244f2ad18c02a7a0"
+      }
+    ]
+  }
 }
