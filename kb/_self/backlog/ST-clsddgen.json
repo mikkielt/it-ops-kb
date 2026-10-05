@@ -23,6 +23,21 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "map",
+      "kind": "provisional",
+      "question": "Which map names the module behind a facade touch?",
+      "options": [
+        "the facade's module prefix: backlog.py bl_, kbgit.py kg_, querylog.py ql_, benchmarks.py bench_, the warning naming the prefix glob",
+        "the subcommand registry, naming the one module that owns the command the item's text names"
+      ],
+      "recommendation": "the facade's module prefix: backlog.py bl_, kbgit.py kg_, querylog.py ql_, benchmarks.py bench_, the warning naming the prefix glob",
+      "class": "querylog",
+      "answer": "the facade's module prefix: backlog.py bl_, kbgit.py kg_, querylog.py ql_, benchmarks.py bench_, the warning naming the prefix glob",
+      "by": "agent"
+    }
+  ],
   "notes": "Theme: overlap rules and stale touches. Evidence: backlog.py:515-549 cmd_held exits 1 for any overlap and prints no verdict; bl_plan.py:62-84 stale_touches flags only paths the tree lacks, and takes a path no commit had for one to create (kb/_self/autopilot.md in BG-rgdrjsz6, BG-2lj5x3eh, BG-fmznri7r); a held-into-cut pipe hid the exit code twice (mac-third, mac-fourth); facade touches in 5 of 9 items (mac-fourth) and a 7-item replan (mac-seventh); the docs-overlap exception the manager granted verbally is written nowhere. Relates ST-igln3v6y (section-level claims of shared docs).",
   "claimed_by": "it-ops-kb worker2"
 }

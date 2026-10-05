@@ -865,6 +865,29 @@ def test_backlog_state_paths_check_warns_of_unchecked_ways_state_changes(repo):
     assert "warnings=0" in out and "state changes" not in out, out
 
 
+def test_facade_touch_warning():
+    """ST-clsddgen: an open item whose touches name a facade and none of its modules is warned of, naming the prefix
+    the map gives; a module named beside it, a glob that covers one, a module still to be created, a done item and a
+    touch of no facade are quiet."""
+    import types
+    root = Path(TOOLS).parent
+
+    def warns(touches, status="todo"):
+        bl = types.SimpleNamespace(root=root, label=lambda i: i,
+                                   items={"ST-aaaaaaaa": {"kind": "story", "status": status, "touches": touches}})
+        return bl_check.facade_touch_warnings(bl)
+
+    (w,) = warns(["_tools/backlog.py", "kb/_self/backlog.md"])
+    assert "facade _tools/backlog.py" in w and "_tools/bl_*.py" in w, w
+    (w,) = warns(["_tools/kbgit.py"])
+    assert "_tools/kg_*.py" in w, w
+    assert len(warns(["_tools/querylog.py", "_tools/benchmarks.py"])) == 2
+    for quiet in (["_tools/backlog.py", "_tools/bl_check.py"], ["_tools/backlog.py", "_tools/bl_*.py"],
+                  ["_tools/backlog.py", "_tools/**"], ["_tools/kbgit.py", "_tools/kg_new.py"], ["_tools/rag.py"]):
+        assert warns(quiet) == [], quiet
+    assert warns(["_tools/backlog.py"], status="done") == []
+
+
 def test_gate_do_warns_per_option():
     """BG-ynaowysf: a blocking gate with two options and a do for one warns once, for the other option; with a do
     for both it is quiet."""
