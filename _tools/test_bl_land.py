@@ -846,6 +846,27 @@ class TestBacklogLand:
     def land(self, ld):
         return b(ld["repo"], "land", ld["tk"], "--trailer", self.CO)
 
+    def test_land_refuses_missing_branch(self, landing):
+        """BG-57n4r577 planted: --branch names no local branch; land stops at step branch, exit 1, runs no step and
+        pushes nothing."""
+        ld = landing
+        code, out = b(ld["repo"], "land", ld["tk"], "--branch", "work/no-such-branch", "--trailer", self.CO)
+        assert code == 1 and "land stopped at step branch" in out and "no local branch work/no-such-branch" in out, out
+        assert self.steps(ld) == [] and self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"], out
+
+    def test_land_refuses_branch_in_another_worktree(self, landing, tmp_path_factory):
+        """BG-57n4r577 planted: work/<id> is checked out by git worktree add in a directory outside .claude/worktrees
+        (no worker's); land stops at step branch, exit 1, keeps that worktree, runs no step and pushes nothing."""
+        ld = landing
+        self.work(ld, ["src/b.txt"], "src/b.txt")
+        sh(ld["repo"], "git", "checkout", "-q", "main")
+        other = tmp_path_factory.mktemp("elsewhere") / "wt"
+        sh(ld["repo"], "git", "worktree", "add", "-q", str(other), f"work/{ld['tk']}")
+        code, out = self.land(ld)
+        assert code == 1 and "land stopped at step branch" in out and "is checked out in the worktree" in out, out
+        assert other.exists() and self.steps(ld) == [], out
+        assert self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"], out
+
     def test_backlog_land_content_item_in_one_run(self, landing):
         ld = landing
         self.work(ld, ["kb/public/x/a.md"], "kb/public/x/a.md")
