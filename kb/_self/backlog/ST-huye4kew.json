@@ -2,7 +2,7 @@
   "id": "ST-huye4kew",
   "kind": "story",
   "title": "check flags an open item whose repro or checks name a moved file or select no test",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,19 @@
     "ST-f5v3i3yd",
     "BG-m5qbkmgp"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "b2578e9cb61b12f072645898ee5a30ecbfdfa615",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "check_flags_gone_repro_paths"
+        ],
+        "exit": 0,
+        "sha256": "372f22382627766f"
+      }
+    ]
+  }
 }
