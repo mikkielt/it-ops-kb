@@ -9,7 +9,7 @@
   perfcheck.py ids --base REV                   compare them with the ids collected at git revision REV, in a temporary
                                                 worktree that is removed afterwards (the working tree is never touched)
   --allow-removed FILE                          ids in FILE (one per line, `#` comments) may be missing
-  perfcheck.py dropped [--file FILE]            warn of a dropped test id (FILE, default _tools/test_ids_dropped.txt) of a
+  perfcheck.py dropped [--file FILE] [--since REV]  warn of a dropped test id (FILE, default _tools/test_ids_dropped.txt) of a
                                                 test file that still exists whose reason names no removed file or symbol
                                                 and no successor test, and of a dropped test file whose local imports are
                                                 all still present (tests of live code); exit 0 with or without warnings
@@ -278,11 +278,14 @@ def last_text(root, path):
     return q.stdout if q.returncode == 0 else None
 
 
-def dropped_warnings(root, text):
-    """The warnings of `dropped` for a dropped-ids file's TEXT in the clone ROOT."""
+def dropped_warnings(root, text, only=None):
+    """The warnings of `dropped` for a dropped-ids file's TEXT in the clone ROOT; ONLY, a set of ids, keeps the groups
+    holding one of them (the ids a range added)."""
     code = code_text(root)
-    out, files_gone = [], {}
+    out, files_gone, reasons = [], {}, {}
     for reason, ids in dropped_groups(text):
+        if only is not None and not set(ids) & only:
+            continue
         files = sorted({i.split("::")[0] for i in ids})
         live = [f for f in files if (Path(root) / f).exists()]
         if live and not names_removed_or_successor(reason, root, code):
@@ -292,15 +295,34 @@ def dropped_warnings(root, text):
             if f not in live:
                 files_gone.setdefault(f, 0)
                 files_gone[f] += len([i for i in ids if i.startswith(f + "::")])
+                reasons.setdefault(f, []).append((reason, ids))
     for f, n in sorted(files_gone.items()):
         old = last_text(root, f)
         if old is None:
             continue
-        mods = {m for m in local_imports_at(old, root, f)}
-        if mods and all((Path(root) / "_tools" / f"{m}.py").exists() for m in mods):
-            out.append(f"dropped: {f} ({n} id(s)) is gone, but every module it tested is still present: "
-                       f"{', '.join(sorted(mods))}")
+        present = sorted(m for m in local_imports_at(old, root, f) if (Path(root) / "_tools" / f"{m}.py").exists())
+        if present and not any(names_successor(r, ids, root, code) for r, ids in reasons[f]):
+            out.append(f"dropped: {f} ({n} id(s)) is gone, but modules it tested are still present: "
+                       f"{', '.join(present)}; the reason names no successor test or test file where their tests went")
     return out
+
+
+def names_successor(reason, ids, root, code):
+    """True when REASON names where the dropped tests went: a test (`test_*`, `Test*`) the code still holds that is
+    not one of the dropped ids' own, or a test file (`test_*.py`) that exists and is not the dropped one. A reason
+    that names only the dropped test itself, or a removed module, excuses nothing."""
+    gone = {i.split("::")[-1] for i in ids} | {i.split("::")[0].rsplit("/", 1)[-1] for i in ids}
+    for m in REASON_TOKEN.finditer(reason or ""):
+        tok = next(g for g in m.groups() if g)
+        name = tok.rsplit("/", 1)[-1]
+        if name in gone:
+            continue
+        if m.group(5) and re.search(rf"\bdef {re.escape(tok)}|\bclass {re.escape(tok)}", code):
+            return True
+        if tok.endswith(".py") and name.startswith("test_") and (
+                (Path(root) / tok).exists() or (Path(root) / "_tools" / name).exists()):
+            return True
+    return False
 
 
 def local_imports_at(text, root, path):
@@ -332,7 +354,15 @@ def run_dropped(a, root=ROOT):
         text = path.read_text(encoding="utf-8")
     except OSError as e:
         raise PerfError(f"cannot read {path}: {e}")
-    warnings = dropped_warnings(root, text)
+    only = None
+    if getattr(a, "since", None):  # the ids the range since SINCE added to the file
+        p = subprocess.run(["git", "diff", "--unified=0", a.since, "--", str(path)], cwd=root, capture_output=True,
+                           text=True, encoding="utf-8", errors="replace")
+        if p.returncode:
+            raise PerfError(f"git diff {a.since} failed: {p.stderr.strip()[:200]}")
+        only = {ln[1:].strip() for ln in p.stdout.splitlines()
+                if ln.startswith("+") and not ln.startswith("+++") and ln[1:].strip() and not ln[1:].lstrip().startswith("#")}
+    warnings = dropped_warnings(root, text, only)
     for w in warnings:
         print(w)
     print(f"perfcheck dropped: {len(warnings)} warning(s)")
@@ -349,6 +379,7 @@ def main(argv=None, collect=collect_ids, runner=run_suite, clock=time.monotonic,
     ids.add_argument("--write", help="write the ids at HEAD to this file")
     dr = sub.add_parser("dropped", help="warn of dropped test ids that name no removed code")
     dr.add_argument("--file", help=f"a dropped-ids file (default {DROPPED_FILE})")
+    dr.add_argument("--since", metavar="REV", help="only the groups whose ids the range since REV added (sync's gate)")
     tm = sub.add_parser("time", help="time a suite run against a bound; other arguments go to tests.py")
     tm.add_argument("--max-seconds", type=float, required=True)
     tm.add_argument("--stress", action="store_true", help="run stress_test.py instead of tests.py")

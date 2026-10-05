@@ -25,7 +25,8 @@
     "_tools/test_sync.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md",
-    "kb/_self/git.md"
+    "kb/_self/git.md",
+    "_tools/test_testmap.py"
   ],
   "claimed_by": "it-ops-kb worker1"
 }

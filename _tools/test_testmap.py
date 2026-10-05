@@ -222,7 +222,7 @@ def test_testmap_review_gaps_root_files_run_check_py():
 
 
 def test_gate_without_a_base_runs_every_check():
-    assert ran(None) == {"check", "fetch", "doc2query", "selfdoc", "backlog", "querylog"}
+    assert ran(None) == {"check", "fetch", "doc2query", "selfdoc", "backlog", "querylog", "dropped"}
 
 
 JUNIT = """<?xml version="1.0"?><testsuites><testsuite>
@@ -637,3 +637,10 @@ def test_testmap_a_script_a_module_names_is_reached_not_followed(monkeypatch):
     assert "bl_land" in reach["test_bl_land.py"] and "bl_land" in reach["test_backlog.py"]
     only_sync = [t for t, r in reach.items() if "kg_sync" in r and "backlog" in r and "bl_land" not in r]
     assert only_sync, "a test that reaches backlog only as a script kg_sync names does not reach bl_land"
+
+
+def test_gate_dropped_ids_file_runs_perfcheck_dropped():
+    """ST-vxi7drn2: a change to the dropped test ids (or to perfcheck.py) runs `perfcheck.py dropped --since` in
+    sync's gate, beside the checks that file's path runs anyway; another tool's change does not."""
+    assert "dropped" in ran(["_tools/test_ids_dropped.txt"]) and "dropped" in ran(["_tools/perfcheck.py"])
+    assert "dropped" not in ran(["_tools/kb_http.py"]) and "dropped" not in ran(["kb/public/python/pytest.md"])

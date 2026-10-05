@@ -411,7 +411,8 @@ def gate_needs(paths):
     """{check: the reason it runs, or None to skip}. Each check runs only when a path it reads changed; with no
     known paths (None) every check runs."""
     if paths is None:
-        return {k: "no base to compare with" for k in ("check", "fetch", "doc2query", "selfdoc", "backlog", "querylog")}
+        return {k: "no base to compare with" for k in ("check", "fetch", "doc2query", "selfdoc", "backlog", "querylog",
+                                                       "dropped")}
     ps = {p.replace("\\", "/") for p in paths}
     kb = {p for p in ps if p.startswith("kb/")}
     tools = {p for p in ps if p.startswith("_tools/")}
@@ -430,7 +431,8 @@ def gate_needs(paths):
                              "an article or its expansions"),
             "selfdoc": why(ps - content - items - store, "a file kb/_self describes"),
             "backlog": why(items | ({"_tools/backlog.py"} & ps), "a backlog item"),
-            "querylog": why(store, "the query log store")}
+            "querylog": why(store, "the query log store"),
+            "dropped": why(ps & {"_tools/test_ids_dropped.txt", "_tools/perfcheck.py"}, "the dropped test ids")}
 
 
 GATE_NOTE = re.compile(r"tests\.py --changed \S+: (\d+) of (\d+) test files or classes(, the git scenarios of \d+ kept)?")
@@ -553,6 +555,8 @@ def gate(r, up, host, fix_check=False, since=None):
                ("querylog.py check", "querylog.py", ["check"], None, need["querylog"])]
     if up:
         checks.append((f"selfdoc.py stale --since {short(up)}", "selfdoc.py", ["stale", "--since", up], None, need["selfdoc"]))
+        checks.append((f"perfcheck.py dropped --since {short(up)}", "perfcheck.py", ["dropped", "--since", up], None,
+                       need["dropped"]))  # warns (exit 0) of a dropped test file whose live modules' tests went nowhere
     checks.append(("tests.py (changed)" if up else "tests.py (fast)", "tests.py", ["--changed", up] if up else [],
                    {"KB_TESTS_FAST": "1"}, need.get("tests", "always")))
     for label, name, args, env, reason in checks:
