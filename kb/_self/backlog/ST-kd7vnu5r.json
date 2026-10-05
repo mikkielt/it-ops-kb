@@ -2,7 +2,7 @@
   "id": "ST-kd7vnu5r",
   "kind": "story",
   "title": "A dropped test id names the removed code it tested, and a dropped test whose module is still present is flagged",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "ac51b7ae4aac4b262880eebbc879a785f5c958b7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "dropped_ids_name_removed_code"
+        ],
+        "exit": 0,
+        "sha256": "a2e65e637cc678cf"
+      }
+    ]
+  }
 }
