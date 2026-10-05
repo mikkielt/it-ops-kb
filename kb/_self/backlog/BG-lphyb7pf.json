@@ -1,0 +1,33 @@
+{
+  "id": "BG-lphyb7pf",
+  "kind": "bug",
+  "title": "tidy --apply removes a live worker's worktree locked by Claude Code and deletes its work branch",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py tidy keeps every locked worktree (a Claude Code agent's lock included: tidy is clone-wide and cannot tell a finished worker from one that has not committed yet) and the branch checked out there, naming the lock; only close, which knows its sprint's items, releases an agent-locked worktree. A planted locked clean worktree at main's tip survives tidy --apply. Found by the SP-6btkjg4l review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,pathlib;sys.path.insert(0,'_tools');import bl_land;e={'path':pathlib.Path('/nonexistent/agent-x'),'lock':'claude agent agent-x (pid 1)','head':'0'*40};sys.exit(0 if (bl_land.tidy_worktree_kept('.',e,'refs/heads/main') or '').startswith('it is locked') else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "tidy_keeps_a_locked_worktree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_kb_sprint_close_cleanup.py",
+    "kb/_self/tools.md"
+  ]
+}
