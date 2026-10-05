@@ -2,7 +2,7 @@
   "id": "BG-ynaowysf",
   "kind": "bug",
   "title": "gate_do_warnings stays silent for an option without a command when another option of the gate has one",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
