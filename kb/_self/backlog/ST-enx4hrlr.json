@@ -2,7 +2,7 @@
   "id": "ST-enx4hrlr",
   "kind": "story",
   "title": "An interrupted tool call is counted per item in the work sidecar",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",

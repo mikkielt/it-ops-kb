@@ -2,7 +2,7 @@
   "id": "ST-vaby3y5b",
   "kind": "story",
   "title": "kblog.py propose runs over the committed ops sidecars, so _logs.csv holds rows for the operator to confirm",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",

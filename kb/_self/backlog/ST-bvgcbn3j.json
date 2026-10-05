@@ -2,7 +2,7 @@
   "id": "ST-bvgcbn3j",
   "kind": "story",
   "title": "Review sprint: Every tool call and hook event leaves a closed ops row the operator can read",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-smqwmchu",
   "review": true,
   "priority": "P1",
