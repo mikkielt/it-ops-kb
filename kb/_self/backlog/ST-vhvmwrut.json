@@ -2,7 +2,7 @@
   "id": "ST-vhvmwrut",
   "kind": "story",
   "title": "Review sprint: The autopilot is retired and the manual multi-session workflow keeps what it taught",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ytfb4dc5",
   "review": true,
   "priority": "P1",
@@ -29,5 +29,34 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "f15532ee5c1432550139e8e3907d589ca157f4a9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "e84c51ed5ddf7dca"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "8662c867ca5d15d8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/stress_test.py"
+        ],
+        "exit": 0,
+        "sha256": "6928c9ad0bae6b32"
+      }
+    ]
+  }
 }
