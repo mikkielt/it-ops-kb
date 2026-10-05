@@ -328,3 +328,21 @@ def test_backlog_find_prints_open_matches_with_parent_chain_and_tree_open_hides_
     assert gone in out
     code, out = b(repo, "tree", "--open")
     assert code == 0 and gone not in out and live in out, out
+
+
+def test_horizon_names_finishable(sprint):
+    """ST-bywuxi6d planted: once the story's only task is done, horizon names the story with `done` as the step that
+    finishes it, which next never offers; once every item of the sprint is done or dropped, horizon names `close`."""
+    repo, sp, st, tk = sprint["repo"], sprint["sp"], sprint["st"], sprint["tk"]
+    code, out = b(repo, "horizon")
+    assert code == 0 and "finish with" not in out and "close with" not in out, out
+    edit(repo, tk, status="done")
+    code, out = b(repo, "horizon")
+    assert code == 0 and f"finish with python3 _tools/backlog.py done {st}" in out, out
+    for i in (st, sprint["bg"], sprint["rv"]):
+        edit(repo, i, status="done")
+    code, out = b(repo, "horizon")
+    assert code == 0 and f"all done: close with python3 _tools/backlog.py close {sp}" in out, out
+    assert "finish with" not in out, out
+    code, out = b(repo, "horizon", "--hook")
+    assert code == 0 and f"close with backlog.py close {sp}" in out, out

@@ -276,6 +276,18 @@ def horizon(bl, sid):
     return reach, by_cause, list(reversed(path)), widths
 
 
+def finishable(bl, items):
+    """The open items of ITEMS whose children are all done or dropped (at least one): a story or bug whose own
+    `done` is the step left, which next never offers since it waits on no child (ST-bywuxi6d)."""
+    out = []
+    for i in items:
+        kids = bl.descendants(i)
+        if bl.items[i].get("status") not in ("done", "dropped") and kids \
+                and all(bl.items[k].get("status") in ("done", "dropped") for k in kids):
+            out.append(i)
+    return out
+
+
 def cmd_horizon(bl, a):
     sprints = [a.sprint] if a.sprint else sorted(i for i, it in bl.items.items()
                                                   if it.get("kind") == "sprint" and it.get("status") == "active")
@@ -305,6 +317,7 @@ def cmd_horizon(bl, a):
             nxt = ready(bl, sid)
             lines.append(f"sprint {sid} “{clip(bl.items[sid].get('title', ''), HOOK_TITLE)}”: "
                          f"{done}/{len(items)} done, {len(reach)} reachable"
+                         + (f", close with backlog.py close {sid}" if items and done == len(items) else "")
                          + (f", {starts} wait on backlog.py start" if starts else "")
                          + (f", {waiting} wait on the operator or a trigger" if waiting else "")
                          + (f", next {nxt[0]}" if nxt else ""))
@@ -315,6 +328,10 @@ def cmd_horizon(bl, a):
         lines.append(f"  {done}/{len(items)} done; {len(reach)} more reachable without the operator; "
                      + (f"{starts} wait on backlog.py start {sid}; " if starts else "")
                      + f"{waiting} wait on the operator or a trigger")
+        if items and done == len(items):
+            lines.append(f"  all done: close with python3 _tools/backlog.py close {sid}")
+        for i in finishable(bl, items):
+            lines.append(f"  finish with python3 _tools/backlog.py done {i}: {bl.label(i)} (every child is done)")
         nxt = ready(bl, sid)
         if nxt:
             lines.append(f"  next: {bl.label(nxt[0])}")
