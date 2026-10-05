@@ -2,7 +2,7 @@
   "id": "ST-n6a2v2xl",
   "kind": "story",
   "title": "Review sprint: Test suites run faster with no lost coverage",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

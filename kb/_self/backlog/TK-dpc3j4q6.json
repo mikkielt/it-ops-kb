@@ -2,7 +2,7 @@
   "id": "TK-dpc3j4q6",
   "kind": "task",
   "title": "agent_bench configs pass their plugins and settings explicitly",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-6fb6kzoa",
   "priority": "P2",
   "rank": 0,
