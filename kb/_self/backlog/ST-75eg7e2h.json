@@ -2,7 +2,7 @@
   "id": "ST-75eg7e2h",
   "kind": "story",
   "title": "A hand-written python3 call is classed by purpose in its call row",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -35,5 +35,6 @@
   "depends_on": [
     "ST-rpdfgu3t",
     "ST-mkczg5gs"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
