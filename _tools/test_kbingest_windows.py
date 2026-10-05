@@ -5,6 +5,7 @@ inside a drive-qualified top, and keeps counting a drive-qualified piece inside 
 part, `..\\x` and a UNC piece as clone code. On posix semantics nothing changes.
 """
 import ntpath
+import posixpath
 
 import pytest
 
@@ -44,7 +45,14 @@ def test_names_clone_code_drive_less_rooted_kept_env_homepath(nt_paths):
     assert not kbingest.kept_env("HOMEPATH", "\\\\server\\share\\x", [TOP])
 
 
-def test_names_clone_code_drive_less_rooted_posix_unchanged():
+@pytest.fixture
+def posix_paths(monkeypatch):  # posix semantics planted the same way, so the test holds on a Windows host too
+    monkeypatch.setattr(kbingest.os, "path", posixpath)
+    monkeypatch.setattr(kbingest.os, "pathsep", ":")
+    monkeypatch.setattr(kbingest.os, "sep", "/")
+
+
+def test_names_clone_code_drive_less_rooted_posix_unchanged(posix_paths):
     assert not kbingest.drive_less_rooted("\\Users\\x")
     assert kbingest.names_clone_code("\\Users\\x", [None])
     assert kbingest.names_clone_code("tools/w", [None])
