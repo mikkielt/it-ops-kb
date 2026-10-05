@@ -1,0 +1,37 @@
+{
+  "id": "BG-rxgpzirg",
+  "kind": "bug",
+  "title": "bl_cli docs say each module registers its own commands, while backlog.py registers bl_view, bl_land, bl_ci, bl_plan and bl_check's",
+  "status": "draft",
+  "parent": "EP-uzf2w6ym",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Either every bl_ module that owns a command registers its parser and handler with bl_cli itself (importing the module registers it, in usage order), or the bl_cli.py docstring, kb/_self/tools.md (bl_cli row) and kb/_self/code.md say backlog.py registers them; the sprint clause 'each registers its own parsers' (SP-tpulmoxh) is met or its docs stop claiming it. Found by the SP-tpulmoxh review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_cli,bl_view,bl_land,bl_ci,bl_plan,bl_check;sys.exit(0 if {'list','done','intake','start','check'} <= set(bl_cli.COMMANDS) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_parser_registry"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_cli.py",
+    "_tools/backlog.py",
+    "_tools/bl_*.py",
+    "_tools/test_layout.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md"
+  ]
+}
