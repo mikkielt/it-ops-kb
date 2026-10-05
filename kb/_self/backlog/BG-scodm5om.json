@@ -1,0 +1,22 @@
+{
+  "id": "BG-scodm5om",
+  "kind": "bug",
+  "title": "commit-msg warns that check-trailers refuses a sprint's close commit, which it accepts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The commit-msg hook warns, on a sprint's close commit (KB-Work: SP-..., the sprint's file deleted by that commit), that KB-Work names an item that does not exist and that check-trailers refuses it; check-trailers accepts the close (bad=0 on SP-gfz3rl64's close, 469649ff3). The hook reads a sprint id the commit deletes, or one git's history has, as check-trailers does, and warns only of what check-trailers refuses. Seen on SP-gfz3rl64's close amend.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,tempfile,os;f=os.path.join(tempfile.mkdtemp(),'m');open(f,'w').write('chore(backlog): close SP-gfz3rl64 \"x\"\\n\\nKB-Work: SP-gfz3rl64\\n');p=subprocess.run([sys.executable,'_tools/kbgit.py','hook','commit-msg',f],capture_output=True,text=True);sys.exit(1 if 'refuses this commit' in p.stdout+p.stderr else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_hooks.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md"
+  ]
+}
