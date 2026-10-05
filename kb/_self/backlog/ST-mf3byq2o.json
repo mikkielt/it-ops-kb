@@ -2,7 +2,7 @@
   "id": "ST-mf3byq2o",
   "kind": "story",
   "title": "Each commit of a stacked branch carries its own Self-Reviewed trailer",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,6 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "_tools/test_kb_mcp.py"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
