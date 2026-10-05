@@ -1,0 +1,22 @@
+{
+  "id": "BG-wh5z4l2b",
+  "kind": "bug",
+  "title": "tools.md and test_tests_lock still call a run naming more than four test files a full run",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/tools.md's host-lock clause and test_tests_lock.py's docstring say what tests.py does since BG-s3pxvjk4: a run naming test files is recorded as mode files however many it names, and only the host lock still treats more than NAMED_FILES_LOCK_FREE files as a full run. Found by the SP-wmukiu3s review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();u=open('_tools/test_tests_lock.py',encoding='utf-8').read();sys.exit(1 if 'more is a full run' in t or 'more is a full run' in u else 0)"
+    ]
+  },
+  "repro_reason": "the defect is two docs' text contradicting the code's recorded mode: only matching that text shows it",
+  "touches": [
+    "kb/_self/tools.md",
+    "_tools/test_tests_lock.py"
+  ]
+}
