@@ -19,7 +19,8 @@
   ],
   "touches": [
     "kb/_self/code.md",
-    "_tools/test_layout.py"
+    "_tools/test_layout.py",
+    "_tools/kbpublic.py"
   ],
   "claimed_by": "it-ops-kb worker1"
 }

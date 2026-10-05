@@ -438,11 +438,12 @@ def hit_key(hit):
 
 def public_values(tip, cwd):
     """{hit_key} of every leak-scan hit (file_hits without an allowlist) in any file of the public tip TIP's tree: the
-    values the public home already holds, whichever file holds them. Scanned once per tip and cached in
-    CACHE_DIR/public-<tip>.json; empty without a tip. Raises RuntimeError on a git error."""
+    values the public home already holds, whichever file holds them. Scanned once per tip and scan rule and cached in
+    CACHE_DIR/public-<SCAN_FORM>-<tip>.json, so a change to what the scan flags reads none of an older rule's values;
+    empty without a tip. Raises RuntimeError on a git error."""
     if not tip:
         return set()
-    name = f"public-{tip}.json"
+    name = f"public-{SCAN_FORM}-{tip}.json"
     got = cache_load(cwd, name)
     if isinstance(got, list) and all(isinstance(x, str) for x in got):
         return set(got)
