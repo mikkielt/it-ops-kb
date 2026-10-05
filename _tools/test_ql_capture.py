@@ -707,9 +707,7 @@ class TestOpsRows:
                  "slow": [{"file": "test_ql_store.py", "ms": 900}], "failed_files": ["test_ql_store.py"]},
                 {"event": "ci.pipeline", "state": "failed", "calls": 3, "sha": "0123abc"},
                 {"event": "agent.run", "group": "kb-worker", "ms": 5, "agent": "0123456789abcdef", "item": "ST-aaaaaaaa"},
-                {"event": "intake.detect", "detector": "drift", "found": 2, "budget": False},
-                {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "claim-no-commit", "remedy": "retry-narrower",
-                 "count": 1}]
+                {"event": "intake.detect", "detector": "drift", "found": 2, "budget": False}]
         for r in rows:
             assert ql_capture.record("ops", **r) is not None, r
         assert [{k: v for k, v in r.items() if k in rows[i]} for i, r in enumerate(self.rows())] == rows
@@ -842,11 +840,24 @@ class TestAgentRows:
         {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator", "count": 1,
          "why": "free text"},
         {"event": "stall.remedies", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator", "count": 1}])
-    def test_ops_stall_remedy_refuses_free_text_and_an_event_outside_the_set(self, tmp_path, monkeypatch, fields):
+    def test_ops_stall_remedy_past_event_refuses_free_text_and_an_event_outside_the_set(self, fields):
+        """A past stall.remedy row is still read by its closed shape: free text, a bad id or a count and an event
+        outside the set break it."""
+        assert ql_capture.ops_problems(fields) != []
+
+    def test_ops_stall_remedy_past_event(self, tmp_path, monkeypatch):
+        """BG-eegzggtk: stall.remedy is a past event (PAST_EVENTS): a committed row of its closed shape is still
+        read (ops_problems, the store's ops_line_problems), and record writes none; a current event still is."""
+        import ql_store
         monkeypatch.setattr(ql_capture, "spool_dir", lambda: tmp_path / "spool")
-        assert ql_capture.record("ops", **fields) is None and not (tmp_path / "spool").exists()
         ok = {"event": "stall.remedy", "item": "ST-aaaaaaaa", "signal": "red-main", "remedy": "ask-operator", "count": 2}
-        assert ql_capture.record("ops", **ok) is not None  # planted counterpart: the closed shapes are written
+        assert "stall.remedy" in ql_capture.PAST_EVENTS and "stall.remedy" in ql_capture.OPS_EVENTS
+        assert ql_capture.ops_problems(ok) == []
+        line = {"id": "00000000-0000-0000-0000-000000000000", "ts": "2026-10-03T10:00:00.000Z", **ok}
+        assert ql_store.ops_line_problems(line, "x") == []
+        assert ql_capture.record("ops", **ok) is None and not (tmp_path / "spool").exists()
+        current = {"event": "agent.run", "group": "kb-worker", "ms": 5}
+        assert ql_capture.record("ops", **current) is not None  # planted counterpart: a current event is written
 
 
 class TestSwitches:

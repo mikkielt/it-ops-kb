@@ -115,6 +115,9 @@ OPS_EVENTS = {  # the closed set of events, each with its closed keys
     "call.tool": _spec({"tool": "token", "group": "token", "outcome": "token", "size": "token"},
                        {"class": "token", "purpose": "token", "ms": "ms"}),
 }
+PAST_EVENTS = frozenset({  # events of OPS_EVENTS no tool writes any more: their committed rows stay readable
+    "stall.remedy",  # the retired autopilot's stall remedies (rows of 2026-10 in kb/_querylog/ops)
+})
 OPS_EVENTS.update({  # the hook events of permission, compaction and API-error turn ends (ST-mkczg5gs): classes only
     "permission.request": _spec({"tool": "token", "group": "token"}),
     "permission.denied": _spec({"tool": "token", "group": "token"}, {"rule": "token"}),
@@ -254,8 +257,8 @@ def spool_file(spool, session_id, ts):
 def record(surface, session_id=None, **fields):
     """Append one spool row and return it, or None when capture is off. Never raises: a caller's work never fails
     for its log. An `ops` row (`record("ops", event="land.step", item=..., ...)`) is written only when it is a
-    closed event with its closed keys (ops_problems) and short enough to stay whole (OPS_ROW_MAX_CHARS); it is
-    never given a session."""
+    closed event with its closed keys (ops_problems), not a past event (PAST_EVENTS) and short enough to stay whole
+    (OPS_ROW_MAX_CHARS); it is never given a session."""
     try:
         spool = spool_dir()
         if spool is None:
@@ -263,7 +266,7 @@ def record(surface, session_id=None, **fields):
         row = {"id": str(uuid.uuid4()), "ts": now(), "surface": surface, "v": ROW_FORMAT}
         given = {k: v for k, v in fields.items() if v is not None}
         if surface == OPS:  # no session, and nothing but a closed event: a row that breaks its shape is not written
-            if ops_problems(given):
+            if ops_problems(given) or given.get("event") in PAST_EVENTS:
                 return None
             session_id = None
         if isinstance(session_id, str) and session_id:

@@ -2,7 +2,7 @@
   "id": "BG-eegzggtk",
   "kind": "bug",
   "title": "The stall.remedy ops event has no writer since the stall remedies were removed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_ql_capture.py",
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
