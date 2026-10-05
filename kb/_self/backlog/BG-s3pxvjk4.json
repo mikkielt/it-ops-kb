@@ -2,7 +2,7 @@
   "id": "BG-s3pxvjk4",
   "kind": "bug",
   "title": "A tests.py run naming more than four test files is still recorded as mode full",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-wmukiu3s",
   "priority": "P2",
@@ -31,5 +31,6 @@
     "_tools/test_tests_lock.py",
     "kb/_self/tools.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
