@@ -882,6 +882,7 @@ STRANDED_DAYS = 3  # a finding in a non-terminal state whose newest record is ol
 RUN_DAY = re.compile(r"(\d{4})(\d{2})(\d{2})T\d{6}Z-")  # a run id starts with the UTC day of the run
 STUCK_STATES = ("no-fix", "apply-failed")  # states no stage moves on its own
 STAGE_SIGNAL = "stage"  # a source finding with this signal asks for the host's provider to be probed
+ROUTE_SIGNAL = "route"  # a source finding with this signal is report-only: never stranded
 
 
 def head_day(root):
@@ -916,12 +917,12 @@ def committed_findings(root):
 
 def stranded_label(rec):
     """Why the newest record `rec` of a finding is non-terminal, or None: its state (`no-fix`, `apply-failed`), `open`
-    for a source finding, or the stage `candidate-gap` of an open gap finding."""
+    for a source finding but a route one (report-only), or the stage `candidate-gap` of an open gap finding."""
     state = rec.get("state")
     if state in STUCK_STATES:
         return state
-    if state == "open" and rec.get("kind") == "source":
-        return "open"
+    if state == "open" and rec.get("kind") == "source" and rec.get("signal") != ROUTE_SIGNAL:
+        return "open"  # a route finding is report-only (querylog.py status lists it): no stage moves it
     if state == "open" and rec.get("stage") == "candidate-gap":
         return "candidate-gap"
     return None

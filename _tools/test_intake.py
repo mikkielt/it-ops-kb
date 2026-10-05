@@ -1064,7 +1064,7 @@ def test_intake_stranded_today_is_the_day_of_heads_commit_not_the_clock(world):
 def test_intake_stranded_every_non_terminal_state_is_reported(world):
     files = {}
     files.update(store_file(run_id(9, 1), finding("F-00000000000a")))
-    files.update(store_file(run_id(9, 2), finding("F-00000000000b", kind="source", stage=None, signal="route",
+    files.update(store_file(run_id(9, 2), finding("F-00000000000b", kind="source", stage=None, signal="stage",
                                                    host="docs.example.com")))
     files.update(store_file(run_id(9, 3), finding("F-00000000000c", kind="eval", state="no-fix")))
     files.update(store_file(run_id(9, 4), finding("F-00000000000d", kind="expansion", state="apply-failed",
@@ -1073,7 +1073,7 @@ def test_intake_stranded_every_non_terminal_state_is_reported(world):
     found, _ = stranded(world.root)
     assert sorted(c.key for c in found) == ["F-00000000000a candidate-gap", "F-00000000000b open",
                                              "F-00000000000c no-fix", "F-00000000000d apply-failed"]
-    assert {c.kind for c in found} == {"bug"}
+    assert sorted(c.kind for c in found) == ["bug", "bug", "bug", "story"]
 
 
 def test_intake_stranded_terminal_and_early_stage_findings_are_not_reported(world):
@@ -1105,17 +1105,31 @@ def test_intake_stranded_a_stage_source_finding_is_a_story_and_the_others_bugs(w
     files = {}
     files.update(store_file(run_id(7, 1), finding("F-0000000000aa", kind="source", stage=None, signal="stage",
                                                    host="wiki.example.com", level=0, needs=["share"])))
-    files.update(store_file(run_id(7, 2), finding("F-0000000000bb", kind="source", stage=None, signal="route",
-                                                   host="docs.example.com", tool="WebFetch")))
+    files.update(store_file(run_id(7, 2), finding("F-0000000000bb", kind="gap")))
     world.commit(1, "chore: store", files)
     found, failures = stranded(world.root)
     assert failures == []
     by_key = {c.key: c for c in found}
-    s, b = by_key["F-0000000000aa open"], by_key["F-0000000000bb open"]
+    s, b = by_key["F-0000000000aa open"], by_key["F-0000000000bb candidate-gap"]
     assert (s.kind, b.kind) == ("story", "bug")
     assert "wiki.example.com" in s.title and "wiki.example.com" in s.goal and "provider" in s.goal
     assert s.checks == [bl_intake.STATUS_REPRO + [s.fp]]  # the story is done once intake no longer reports it
-    assert b.severity == "S3" and "F-0000000000bb" in b.title and "open" in b.title
+    assert b.severity == "S3" and "F-0000000000bb" in b.title and "candidate-gap" in b.title
+
+
+def test_intake_stranded_leaves_out_route_source_findings(world):
+    """BG-bbfdisfu: an open route source finding is report-only (querylog.py status lists it, no stage moves it), so
+    however old it is the stranded detector leaves it out; an open stage source finding of the same age is reported."""
+    files = {}
+    files.update(store_file(run_id(7, 1), finding("F-0000000000cc", kind="source", stage=None, signal="route",
+                                                   host="docs.example.com", tool="WebFetch")))
+    files.update(store_file(run_id(7, 2), finding("F-0000000000dd", kind="source", stage=None, signal="stage",
+                                                   host="wiki.example.com", level=0, needs=["share"])))
+    world.commit(1, "chore: store", files)
+    found, failures = stranded(world.root)
+    assert failures == [] and [c.key for c in found] == ["F-0000000000dd open"], [c.key for c in found]
+    assert bl_intake.stranded_label({"state": "open", "kind": "source", "signal": "route"}) is None
+    assert bl_intake.stranded_label({"state": "open", "kind": "source", "signal": "stage"}) == "open"
 
 
 def test_intake_stranded_the_fingerprint_is_the_finding_id_and_its_state(world):
