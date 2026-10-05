@@ -19,6 +19,7 @@ from pathlib import Path
 import pytest
 
 import backlog
+import bl_check
 import bl_land
 import kbgit
 import kg_hooks
@@ -192,6 +193,25 @@ def test_new_warns_item_files_only_touches(sprint):
     assert code == 0 and "item files only" not in out, out
     assert backlog.item_files_only([f"{backlog.REL_DIR}/*.json"]) and not backlog.item_files_only([])
     assert not backlog.item_files_only([f"{backlog.REL_DIR}.md"])
+
+
+def test_repro_tool_exit_code_warning(sprint):
+    """ST-f5v3i3yd planted (BG-ncpteupy's repro): a python -c proof that runs a tool with subprocess and reads only
+    its stdout passes when the tool crashes printing nothing, so new warns; one that also reads returncode or passes
+    check=True gives no warning."""
+    repo, sp = sprint["repo"], sprint["sp"]
+    blind = ["python3", "-c", "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/t.py'],"
+             "capture_output=True,text=True).stdout;sys.exit(1 if 'x' in o else 0)"]
+    code, out = b(repo, "new", "story", "--title", "Blind", "--sprint", sp, "--goal", "g", "--touch", "src/a.txt",
+                  "--check", argstr(blind))
+    assert code == 0 and "never its exit code" in out, out
+    seen = [blind[0], blind[1], blind[2].replace(".stdout;", ";r=subprocess.run([sys.executable,'_tools/t.py']).returncode;")]
+    code, out = b(repo, "new", "story", "--title", "Seen", "--sprint", sp, "--goal", "g", "--touch", "src/b.txt",
+                  "--check", argstr(seen))
+    assert code == 0 and "never its exit code" not in out, out
+    so = bl_check.stdout_only
+    assert so(blind) and not so(seen) and not so(["python3", "-c", "subprocess.run(['t'],check=True).stdout"])
+    assert not so(["python3", "_tools/tests.py", "-k", "x"]) and not so(["python3", "-c", "print(1)"])
 
 
 def test_new_task_refuses_sprint(repo):

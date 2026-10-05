@@ -984,6 +984,20 @@ def is_test_run(argv):
     return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
 
 
+RUNS_TOOL = re.compile(r"\bsubprocess\.(run|Popen|call)\(|\b(run|Popen|call)\(\s*\[")
+READS_EXIT = re.compile(r"\breturncode\b|\bcheck\s*=\s*True\b|\bcheck_returncode\b|\bwait\(\)|\bcall\(")
+
+
+def stdout_only(run):
+    """True when a python -c proof runs a tool with subprocess and reads its output but never its exit code
+    (returncode, check=True, check_returncode, call's status): a tool that crashes printing nothing to stdout then
+    reads as one that found nothing, so the proof passes on a crash."""
+    if len(run) < 3 or run[1] != "-c" or not re.fullmatch(r"python(\d+(\.\d+)?)?(\.exe)?", Path(run[0]).name):
+        return False
+    code = run[2]
+    return bool(RUNS_TOOL.search(code)) and ".stdout" in code and not READS_EXIT.search(code)
+
+
 def noop_warnings(it, repro_out=""):
     """new's warnings of a proof that may do nothing in this clone: a check or repro that runs no test or tool code,
     a bug's failing repro whose output says it did nothing here, and a bug whose repro runs a tool against this
@@ -993,6 +1007,9 @@ def noop_warnings(it, repro_out=""):
         why = trivial_command(c["run"])
         if why:
             out.append(f"{shlex.join(c['run'])} proves nothing: {why}, so it passes whatever the code does")
+        if stdout_only(c["run"]):
+            out.append(f"{shlex.join(c['run'])[:120]} reads the tool's stdout and never its exit code: a crash that "
+                       "prints nothing passes as a fix; check returncode (or check=True) as well")
     if it.get("repro"):
         run, tests = it["repro"]["run"], any(is_test_run(c["run"]) for c in it.get("checks", []))
         why = noop_output(repro_out)
