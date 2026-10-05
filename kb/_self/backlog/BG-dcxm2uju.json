@@ -1,0 +1,22 @@
+{
+  "id": "BG-dcxm2uju",
+  "kind": "bug",
+  "title": "The runbook's Retrospective still takes the review's cost output, not close's rerun",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/backlog.md's Retrospective reads the cost of work from close's rerun of backlog.py cost --rework SP once the sessions have closed (or says it is provisional), as its Sprints section and /kb-sprint close say since ST-ctwlrtud, and test_review_cost_rerun_after_close reads that line too. Found by the SP-wmukiu3s review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(1 if \"(the review's cost output)\" in s else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the runbook's own text contradicting another line of it: only matching that text shows it",
+  "touches": [
+    "kb/_self/backlog.md",
+    "_tools/test_kb_cohesion.py"
+  ]
+}
