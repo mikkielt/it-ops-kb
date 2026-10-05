@@ -1,0 +1,24 @@
+{
+  "id": "ST-spywrqpp",
+  "kind": "story",
+  "title": "Work done in a worktree session reaches backlog.py cost as work rows",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A session that claims, lands or works an item from a git worktree outside the clone's checkout (../it-ops-kb-worker2) leaves work rows that distill delivers and backlog.py cost --rework reads, so an item's cost is not zero; a test plants a worktree session's claim and done and sees its work lines. Answers the SP-tpulmoxh retrospective: every item read 0 runs and 0 prompts, and land warned 'landed with no work rows' on each worker2 item.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worktree_session_work_rows"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/test_ql_capture.py",
+    "kb/_self/querylog.md"
+  ]
+}
