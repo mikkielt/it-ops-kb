@@ -2,7 +2,7 @@
   "id": "ST-e4nkkkm2",
   "kind": "story",
   "title": "A split of a shared file lands without blocking other work",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-tpulmoxh",
   "priority": "P1",
@@ -17,5 +17,6 @@
         "sprint_shared_file_move_rule"
       ]
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
