@@ -2,7 +2,7 @@
   "id": "ST-ctwlrtud",
   "kind": "story",
   "title": "The review's cost step is rerun once the sprint's sessions close",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,19 @@
   "depends_on": [
     "ST-4ib5n3zl"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "52128ed34759147cb1ff2127aa5333549546923e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "review_cost_rerun_after_close"
+        ],
+        "exit": 0,
+        "sha256": "27c03e01c73f2f19"
+      }
+    ]
+  }
 }
