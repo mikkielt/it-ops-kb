@@ -2314,3 +2314,13 @@ _Agent: kb-research_
 - See agents/agent-caching.md, gitlab/git-test-repositories.md.
 
 _Agent: kb-research_
+
+## QK-ops-capture-hooks-and-otlp-receiver. Which hook events give closed ops rows of tool calls, permissions, compactions and API-error turn ends, and how does a local OTLP http/json receiver take Claude Code's events?
+- `PostToolUse` and `PostToolUseFailure` give a tool call's `tool_name`, `tool_use_id` and optional `duration_ms`; the failure adds `error` and optional `is_interrupt`. [DOC S743]
+- `PermissionRequest` has no `tool_use_id`; `PermissionDenied` fires only for auto-mode denials; `PreCompact` and `PostCompact` carry `trigger`; `StopFailure` runs instead of `Stop` on an API error with an `error` class. [DOC S743]
+- Claude Code has no default OTLP protocol; `OTEL_EXPORTER_OTLP_LOGS_PROTOCOL` and `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` set the logs exporter, which exports every 5000 ms by default, and `OTEL_LOG_TOOL_DETAILS` left unset keeps tool input out. [DOC S744]
+- OTLP/HTTP logs go to `/v1/logs` (port 4318 by default) as an `ExportLogsServiceRequest`, JSON-encoded with lowerCamelCase keys and `Content-Type: application/json`, records nested `resourceLogs` / `scopeLogs` / `logRecords` with `eventName` and `attributes`; success is `200 OK`. [DOC S-kumwk4fp, S-v2wnj4qk, S-iekncbeu]
+- Conclusion: hooks give the call, permission, compaction and API-error rows; a standard-library server on 127.0.0.1 that accepts `POST /v1/logs` JSON and answers 200 takes the `tool_result` and `api_request` events, with tool details and prompts off. [DER S743, S744, S-v2wnj4qk]
+- See claude/hooks.md, claude/otel-monitoring.md.
+
+_Agent: kb-research_

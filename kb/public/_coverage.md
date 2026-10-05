@@ -94,7 +94,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/hooks` | P1 | complete | `claude/hooks.md` | 13 |
 | `claude/managed-mcp` | P1 | complete | `claude/managed-mcp.md` | 2 |
 | `claude/messages-api` | P1 | complete | `claude/messages-api.md`, `claude/models.csv`, `claude/api-limits.csv` | 10 |
-| `claude/otel-monitoring` | P1 | complete | `claude/otel-monitoring.md` | 4 |
+| `claude/otel-monitoring` | P1 | complete | `claude/otel-monitoring.md` | 7 |
 | `claude/permissions-mcp` | P1 | complete | `claude/permissions-mcp.md` | 5 |
 | `claude/tool-output-limits` | P1 | complete | `claude/tool-output-limits.md` | 3 |
 | `claude/agent-sdk` | P2 | complete | `claude/agent-sdk.md`, `claude/agent-sdk-options.csv` | 10 |

@@ -2,8 +2,8 @@
 topic: claude/otel-monitoring
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; metrics and correlation read 2026-09-29)"
-retrieved_utc: 2026-09-29
-sources: [S744, S745, S741, S743]
+retrieved_utc: 2026-10-05
+sources: [S744, S745, S741, S743, S-kumwk4fp, S-v2wnj4qk, S-iekncbeu]
 status: complete
 ---
 # OpenTelemetry monitoring events (MCP-relevant)
@@ -31,6 +31,15 @@ Enable with `CLAUDE_CODE_ENABLE_TELEMETRY=1` plus OTLP exporter variables. MCP a
 - Each streaming response counts toward the cost and token metrics once, including gateways that stream usage over several frames; before v2.1.214 such streams inflated both counters by about one extra request per extra frame. [DOC S744]
 - Admin monitoring guidance: set `OTEL_LOG_TOOL_DETAILS=1` to see which MCP servers and tools users invoke. [DOC S741]
 - PostToolUse `updatedToolOutput` does not affect telemetry, which captures the original output. [DOC S743]
+- Claude Code has no default OTLP protocol: each `otlp` exporter needs `OTEL_EXPORTER_OTLP_PROTOCOL` or its signal's own variable (`OTEL_EXPORTER_OTLP_LOGS_PROTOCOL` for logs and events), and a per-signal endpoint or protocol variable such as `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` replaces the generic one for that signal. [DOC S744]
+- Logs and events are exported every `OTEL_LOGS_EXPORT_INTERVAL` milliseconds (default 5000); metrics every `OTEL_METRIC_EXPORT_INTERVAL` milliseconds (default 60000). [DOC S744]
+- For the `http/protobuf` and `http/json` protocols Claude Code sends each export request with a `Content-Length` header; versions v2.1.191 to v2.1.211 used chunked transfer encoding, which endpoints that require a declared length rejected with `411`. [DOC S744]
+- `OTEL_LOG_TOOL_DETAILS` (default disabled) is the switch for tool parameters and input arguments in tool events and span attributes: Bash commands, MCP server and tool names, skill names and tool input; left unset, they stay out of the events. [DOC S744]
+- The OTLP exporter's protocol is one of `grpc`, `http/protobuf` or `http/json`; a per-signal endpoint such as `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` is used as-is, while `OTEL_EXPORTER_OTLP_ENDPOINT` is a base URL to which `v1/logs` is appended for logs. [DOC S-kumwk4fp]
+- An OTLP/HTTP log request is a POST to `/v1/logs` whose body is an `ExportLogsServiceRequest`; the default OTLP/HTTP port is 4318, and on success the server answers `HTTP 200 OK` with an `ExportLogsServiceResponse`. [DOC S-v2wnj4qk]
+- In OTLP's JSON encoding the request and response carry `Content-Type: application/json`, object keys are field names in lowerCamelCase, 64-bit integers such as `timeUnixNano` are decimal strings, and enum values are integers. [DOC S-v2wnj4qk]
+- A logs request nests `resourceLogs`, then `scopeLogs`, then `logRecords`; each log record carries `timeUnixNano`, a `body` (`AnyValue`), `attributes` (a list of key and value pairs) and an `eventName`, which names the event's schema. [DOC S-iekncbeu]
+- A standard-library local receiver for Claude Code's events needs only an HTTP server on `127.0.0.1` that accepts `POST /v1/logs` with `Content-Type: application/json`, reads each log record's `eventName` and `attributes`, and answers `200` with an empty JSON object; the session runs with `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_LOGS_EXPORTER=otlp`, `OTEL_EXPORTER_OTLP_LOGS_PROTOCOL=http/json`, `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` set to that URL and `OTEL_LOG_TOOL_DETAILS` and `OTEL_LOG_USER_PROMPTS` unset, so no tool input or prompt text arrives. [DER S744, S-kumwk4fp, S-v2wnj4qk, S-iekncbeu: the variables, endpoint rules, path, encoding and record layout above]
 
 ## Reference
 | Event | Key MCP attributes | Needs OTEL_LOG_TOOL_DETAILS |
