@@ -1,0 +1,32 @@
+{
+  "id": "BG-cex7nxdo",
+  "kind": "bug",
+  "title": "start's host-gate words miss a runner and a signed-in CLI, the goal's own examples",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_plan.HOST_WORDS matches a gate question about a runner (registered, a GitLab runner) and a signed-in CLI (glab or gh signed in on this machine), the examples ST-q4sgzlz6's goal names, so start warns of such a gate; or, if the operator's list is deliberately narrower, a decision records it and this bug is dropped naming it. Found by the SP-42bn4vz7 review of ST-q4sgzlz6.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_plan;sys.exit(0 if bl_plan.HOST_WORDS.search('Is the GitLab runner registered?') and bl_plan.HOST_WORDS.search('Is glab signed in on this machine?') else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "host_words_runner_and_signed_in_cli"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_bl_plan.py",
+    "kb/_self/backlog.md"
+  ]
+}
