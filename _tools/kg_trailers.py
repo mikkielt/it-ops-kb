@@ -396,6 +396,11 @@ class BlobReader:
 _WANT = {}  # sha -> computed trailers: sync audits the same commits twice
 
 
+def forget_audits():
+    """Drop the computed trailers of the commits audited so far (a caller that rewrote them audits afresh)."""
+    _WANT.clear()
+
+
 def trailer_audit(rng, quiet=False, work_state_on=True):
     """(commits checked, kb commits, [(sha, lines describing what is wrong)]) for a range A..B or one commit;
     None when the range is not valid here. `work_state_on`: also judge the KB-Work items of the commits not yet on

@@ -1880,7 +1880,7 @@ def test_commit_msg_names_what_an_unclaimed_item_may_do(bl_sprint, monkeypatch, 
         return capsys.readouterr().err
 
     def gate():
-        kg_trailers._WANT.clear()
+        kg_trailers.forget_audits()
         return [ln for _, lines in kg_trailers.trailer_audit("origin/main..HEAD", quiet=True)[2] for ln in lines]
 
     assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
