@@ -2,7 +2,7 @@
   "id": "ST-37gnlv4r",
   "kind": "story",
   "title": "A sprint's start warns of an item check that already passes before the work",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,19 @@
   "depends_on": [
     "ST-ov6h4gbx"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "31d6a96faffc7f66c0d800b8a3fb52a1f4bfe779",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "precheck_warns_passing_check"
+        ],
+        "exit": 0,
+        "sha256": "e71bc5faf4092fe0"
+      }
+    ]
+  }
 }
