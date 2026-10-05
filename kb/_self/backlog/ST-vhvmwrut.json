@@ -2,7 +2,7 @@
   "id": "ST-vhvmwrut",
   "kind": "story",
   "title": "Review sprint: The autopilot is retired and the manual multi-session workflow keeps what it taught",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ytfb4dc5",
   "review": true,
   "priority": "P1",
@@ -28,5 +28,6 @@
         "_tools/stress_test.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
