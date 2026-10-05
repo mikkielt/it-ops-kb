@@ -14,12 +14,11 @@ import argparse, hashlib, json, os, re, shlex, shutil, subprocess, sys, time
 from pathlib import Path
 
 import bl_cli
-from bl_base import (
-    Backlog, ID_RE, CHECK_TIMEOUT_S, REL_DIR, Refused, commit_written, git, in_scope, item_file, line, main_worktree_spool,
+from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
+    ANSI_RE, Backlog, ID_RE, REL_DIR, colourless_env, run_check, Refused, commit_written, git, in_scope, item_file, line, main_worktree_spool,
     need, run, say, scope, waits,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
-from bl_intake import ANSI_RE
 
 
 def item_commits(root, ids):
@@ -88,34 +87,6 @@ def out_of_scope(root, commits, globs):
             if not in_scope(p, globs):
                 first.setdefault(p, sha)
     return [(sha, p) for p, sha in first.items() if blob_id(root, f"{sha}^", p) != blob_id(root, "HEAD", p)]
-
-
-def colourless_env():
-    """The environment with colour off: FORCE_COLOR (3 in a Claude Code background session) makes Python 3.13+
-    colour its tracebacks and 3.14 argparse its usage errors, which would hide a repro's own error from own_failure
-    and a check's output from its match."""
-    env = {k: v for k, v in os.environ.items() if k not in ("FORCE_COLOR", "PYTHON_COLORS", "CLICOLOR_FORCE")}
-    env["NO_COLOR"] = "1"
-    return env
-
-
-def run_check(root, c):
-    """Run one check, or a bug's repro, without a shell and with colour off; its output comes back with any colour
-    codes taken out. A check that names python3 or python runs with the interpreter running this tool: on a host
-    whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
-    argv = list(c["run"])
-    if argv and argv[0] in ("python3", "python"):
-        argv[0] = sys.executable
-    try:
-        p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           timeout=CHECK_TIMEOUT_S, env=colourless_env())
-        code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or ""))
-    except OSError as e:
-        code, out = None, f"cannot start: {e}"
-    except subprocess.TimeoutExpired as e:
-        code, out = None, str(e)
-    ok = code == c.get("exit", 0) and (not c.get("match") or re.search(c["match"], out, re.M) is not None)
-    return ok, code, out
 
 
 def noop_proof(bl, iid, passed):

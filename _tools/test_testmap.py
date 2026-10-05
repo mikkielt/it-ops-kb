@@ -615,3 +615,25 @@ def test_workers_capped_planted_failure_a_one_per_cpu_default_is_caught(monkeypa
     twelve CPUs would still get twelve workers; the share must give three."""
     monkeypatch.delenv("KB_TEST_WORKERS", raising=False)
     assert tests_py.default_workers(others=3, cpus=12) != 12
+
+
+def test_testmap_select_bl_land_stays_under_the_bound():
+    """ST-ufpxla7r: a change to bl_land.py selects fewer than 60 test files (it was 84 while ql_deliver imported the
+    backlog facade, bl_ci took run_check from bl_land and a script a module only names was followed through its
+    imports); a file that really imports bl_land, and one that imports the facade, are still selected."""
+    sel, _ = testmap.select(["_tools/bl_land.py"])
+    tests = [f for f in sel if os.path.basename(f).startswith("test_")]
+    assert len(tests) < 60, len(tests)
+    assert "_tools/test_bl_land.py" in sel and "_tools/test_backlog.py" in sel, sel
+
+
+def test_testmap_a_script_a_module_names_is_reached_not_followed(monkeypatch):
+    """Planted: kg_sync names backlog.py (the gate runs `backlog.py check`): a test of kg_sync reaches backlog, so a
+    change to backlog.py selects it, but not bl_land, which only backlog imports; a test importing backlog reaches
+    both."""
+    reach, _ = testmap.graph()
+    imported, scripts = testmap.split_refs(os.path.join(testmap.TOOLS, "kg_sync.py"), set(testmap.modules()))
+    assert "backlog" in scripts and "backlog" not in imported
+    assert "bl_land" in reach["test_bl_land.py"] and "bl_land" in reach["test_backlog.py"]
+    only_sync = [t for t, r in reach.items() if "kg_sync" in r and "backlog" in r and "bl_land" not in r]
+    assert only_sync, "a test that reaches backlog only as a script kg_sync names does not reach bl_land"
