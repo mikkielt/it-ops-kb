@@ -1,6 +1,7 @@
-"""Which tests.py runs take the host lock and which record a full run: named test files without -k are a cheap
-targeted run (no lock, no per-file full-run times) up to NAMED_FILES_LOCK_FREE files, more is a full run; a bare run,
-a -k run and a named directory keep their behaviour."""
+"""Which tests.py runs take the host lock and which record a full run: named test files without -k are recorded as
+mode files, never a full run (no per-file full-run times), however many they name; up to NAMED_FILES_LOCK_FREE files
+they skip the host lock, and more take it as a full run does; a bare run, a -k run and a named directory keep their
+behaviour."""
 import os
 
 import ql_capture
