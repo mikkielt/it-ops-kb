@@ -864,3 +864,22 @@ def test_sprint_plan_checks_premise():
     for p in PREMISE_STEP:
         assert p in missing(plan.replace(p, ""), runbook), p
     assert missing(plan, runbook.replace("a story whose premise fails is not committed", ""))
+
+
+GOAL_FIGURES = ("Review each committed story's goal for the outputs or figures it names",
+                "against the checks of the story and its tasks", "a named figure no check reads is a missing check",
+                "recorded before the start gate is asked")
+
+
+def test_sprint_plan_reviews_goal_figures():
+    """ST-yqyw2ywh (SP-fvztfmtm's ST-6bi7oe6y, whose check passed with no shared figure or session total): /kb-sprint
+    plan has a review step that reads a story's goal for the figures it names against its and its tasks' checks and
+    records a missing check before the start gate; each phrase removed from a planted copy fails."""
+    with open(os.path.join(KB, ".claude", "skills", "kb-sprint", "SKILL.md"), encoding="utf-8") as f:
+        skill = f.read()
+    def missing(sk):
+        plan = sk[sk.index("## plan"):sk.index("## start SP")]
+        return [p for p in GOAL_FIGURES if p not in plan]
+    assert missing(skill) == []
+    for p in GOAL_FIGURES:
+        assert missing(skill.replace(p, "")) == [p], p
