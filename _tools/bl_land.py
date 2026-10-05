@@ -776,6 +776,37 @@ def own_code(argv, path, root=None):
     return (p == s or p.endswith(os.sep + s)) and not tracked(root, script)
 
 
+IMPORT_ERROR = re.compile(r"(ModuleNotFoundError|ImportError|AttributeError): (.*)")
+EXC_LINE = re.compile(r"[A-Za-z_][\w.]*(Error|Exception|Exit|Interrupt)\b(: |$)")
+
+
+def own_import_error(argv, lines, root=None):
+    """Why a repro failed importing its own names, or None: the traceback's last exception is a ModuleNotFoundError,
+    an ImportError or a module's missing attribute (`module 'x' has no attribute`) raised in the repro's own code (the
+    -c string or an untracked script, as own_code reads it), so it names something the code never had; or it is pytest
+    missing from a test module the repro imports, which the system python3 cannot run (tests.py runs them). An error
+    raised inside the code under test is a failure it accepts."""
+    exc = [i for i, ln in enumerate(lines) if EXC_LINE.match(ln)]
+    if not exc:
+        return None
+    i = exc[-1]
+    m = IMPORT_ERROR.match(lines[i])
+    if not m or (m.group(1) == "AttributeError" and not m.group(2).startswith("module ")):
+        return None
+    frames = [f for f in map(FRAME.search, lines[:i]) if f and not f.group(1).startswith("<frozen")]
+    if not frames:
+        return None
+    where = frames[-1].group(1)
+    if m.group(1) == "ModuleNotFoundError" and re.match(r"No module named '_?pytest\b", m.group(2)) \
+            and re.match(r"(test_|conftest)", os.path.basename(where)):
+        return (f"the repro imports a test module that needs pytest ({lines[i][:200]}): python3 without pytest cannot "
+                "run it; select the test with tests.py -k instead")
+    if own_code(argv, where, root):
+        return (f"the repro's own code names what it cannot import ({lines[i][:200]}): it fails before it tests "
+                "anything; import only names the module has")
+    return None
+
+
 CHAIN = {"&&", "||", ";", "|", "&", "|&"}  # the shell's list and pipeline operators: each starts a command of its own
 
 
@@ -849,6 +880,9 @@ def own_failure(argv, code, out, root=None):
             return (f"Python cannot compile the repro's own code ({ln[:200]}): it fails before it tests anything, "
                     "whatever the defect does (a backslash in a Python string, or newlines lost in --repro's "
                     "split: use / in paths and ; between statements, or put the code in a script)")
+    why = own_import_error(argv, lines, root)
+    if why:
+        return why
     if code == 2 and re.search(r"^usage: ", out, re.M) and re.search(r"^\S+: error: ", out, re.M):
         err = next((ln for ln in lines if re.match(r"\S+: error: ", ln)), last)[:200]
         return (f"the tool rejects the repro's arguments ({err}): a usage error tests nothing (when the rejection is "
