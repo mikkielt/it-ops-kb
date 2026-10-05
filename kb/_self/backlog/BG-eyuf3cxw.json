@@ -1,0 +1,33 @@
+{
+  "id": "BG-eyuf3cxw",
+  "kind": "bug",
+  "title": "The commit-msg hook falsely refuses KB-Work on git commit --amend -F, reading HEAD instead of its parent",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_hooks notes an amend however git names it to prepare-commit-msg (with -F or -m git passes only the source message, not commit HEAD), so commit-msg diffs against HEAD's parent and an amended sprint-close commit naming the closed sprint gets no false KB-Work refusal; check-trailers already passes it. Found closing SP-6btkjg4l: the hook printed has SP-6btkjg4l; expected one line of backlog item ids that exist, and the push went through, the warned-yet-pushed case ST-p2a2rzkf meant to remove.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,subprocess,tempfile; t=os.path.abspath('_tools');d=tempfile.mkdtemp();h=os.path.join(d,'.git','hooks','prepare-commit-msg'); g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com',*a],cwd=d,capture_output=True); g('init','-q');open(os.path.join(d,'a'),'w').write('a');g('add','-A');g('commit','-qm','one'); open(h,'w').write('#!/bin/sh\\nexec \"%s\" -c \"import sys; sys.path.insert(0, %r); import kg_hooks, os; kg_hooks.KB = os.getcwd(); kg_hooks.hook_prepare(sys.argv[1:])\" \"$@\"\\n'%(sys.executable,t));os.chmod(h,0o755); open(os.path.join(d,'m'),'w').write('one again\\n');g('commit','-q','--amend','-F','m'); sys.exit(0 if os.path.exists(os.path.join(d,'.git','kb-trailers-base')) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "commit_msg_amend_with_message_file_reads_the_parent"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_hooks.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md"
+  ]
+}
