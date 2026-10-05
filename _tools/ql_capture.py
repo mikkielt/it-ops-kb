@@ -113,7 +113,7 @@ OPS_EVENTS = {  # the closed set of events, each with its closed keys
     "agent.run": _spec({"group": "token", "ms": "ms"}, {"agent": "agent", "item": "item"}),
     "stall.remedy": _spec({"item": "item", "signal": "token", "remedy": "token", "count": "count"}),
     "call.tool": _spec({"tool": "token", "group": "token", "outcome": "token", "size": "token"},
-                       {"class": "token", "ms": "ms"}),
+                       {"class": "token", "purpose": "token", "ms": "ms"}),
 }
 OPS_EVENTS.update({  # the hook events of permission, compaction and API-error turn ends (ST-mkczg5gs): classes only
     "permission.request": _spec({"tool": "token", "group": "token"}),
@@ -123,6 +123,24 @@ OPS_EVENTS.update({  # the hook events of permission, compaction and API-error t
     "turn.error": _spec({"error": "token", "group": "token"}),
 })
 CALL_OUTCOMES = ("ok", "error", "interrupt")  # a call.tool row's outcome
+# The purpose of hand-written Python (python3 -c, or a script on stdin): the first rule that matches the code, in this
+# order; the code itself is never kept (ST-75eg7e2h).
+PYTHON_PURPOSES = (
+    ("test-run", re.compile(r"\bpytest\b|_tools/tests\.py|\bunittest\b")),
+    ("backlog-edit", re.compile(r"kb/_self/backlog/[^\n]*?(?:write_text|json\.dump|open\([^)]*[\"'][wa][\"'])"
+                                r"|(?:write_text|json\.dump)[^\n]*?kb/_self/backlog/", re.S)),
+    ("kb-read", re.compile(r"\bkb/(?:public|_self)/|\bimport (?:kbfacts|rag|kbcommon|bl_\w+|backlog)\b"
+                           r"|\bfrom (?:kbfacts|rag|kbcommon|bl_\w+|backlog) import\b")),
+    ("parse", re.compile(r"\bjson\.loads?\(|\bcsv\.|\bast\.parse\(|\bre\.(?:findall|search|match|sub|finditer)\(")),
+)
+PYTHON_INLINE = ("python-c", "python")  # the classes whose code is in the command: -c, or a script on stdin
+
+
+def python_purpose(command):
+    """The closed purpose of hand-written Python in a shell command (PYTHON_PURPOSES, else `other`): read from the
+    command's text, which is never returned or stored."""
+    text = command if isinstance(command, str) else ""
+    return next((name for name, rx in PYTHON_PURPOSES if rx.search(text)), "other")
 COMPACT_TRIGGERS = ("manual", "auto")
 STOP_ERRORS = ("rate_limit", "overloaded", "authentication_failed", "oauth_org_not_allowed", "account_on_hold",
                "billing_error", "invalid_request", "model_not_found", "server_error", "max_output_tokens",
@@ -603,9 +621,10 @@ def call_row(event, ok):
         res = f"{res.get('stdout') or ''}{res.get('stderr') or ''}"
     size = kbusage.size_class(len(text_of(res)))
     ms = event.get("duration_ms")
+    cls = kbusage.command_class(args.get("command")) if tool in SHELL_TOOLS else None
     return record(OPS, event="call.tool", tool=group, group=agent, outcome=outcome, size=size,
                   ms=ms if isinstance(ms, int) and not isinstance(ms, bool) and ms >= 0 else None,
-                  **{"class": kbusage.command_class(args.get("command")) if tool in SHELL_TOOLS else None})
+                  purpose=python_purpose(args.get("command")) if cls in PYTHON_INLINE else None, **{"class": cls})
 
 
 def hook_group(event):

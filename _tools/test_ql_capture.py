@@ -557,6 +557,31 @@ class TestOpsRows:
         assert ql_capture.record("ops", event="call.tool", tool="bash", group="main", outcome="ok", size="empty",
                                  **{"class": "cat /etc/passwd"}) is None
 
+    def test_ops_call_python_purpose(self):
+        """ST-75eg7e2h: the call.tool row of a python3 -c or stdin script carries its closed purpose (test-run,
+        backlog-edit, kb-read, parse, other) by the first rule that matches; a script file's call carries none."""
+        cmds = {"python3 -c 'import subprocess; subprocess.run([\"python3\", \"_tools/tests.py\", \"-k\", \"x\"])'": "test-run",
+                "python3 - <<'EOF'\nfrom pathlib import Path\nPath('kb/_self/backlog/ST-x.json').write_text('{}')\nEOF": "backlog-edit",
+                "python3 -c 'import sys; sys.path.insert(0, \"_tools\"); import kbfacts; print(kbfacts.pack(\"q\"))'": "kb-read",
+                "python3 -c 'import json; print(json.load(open(\"x.json\"))[\"k\"])'": "parse",
+                "python3 -c 'print(6 * 7)'": "other",
+                "python3 _tools/rag.py pack 'q'": None}
+        for c in cmds:
+            ql_capture.capture(tool("Bash", {"command": c}, {"stdout": ""}))
+        assert [(r.get("class"), r.get("purpose")) for r in self.calls()] == [
+            ("python-c", "test-run"), ("python", "backlog-edit"), ("python-c", "kb-read"), ("python-c", "parse"),
+            ("python-c", "other"), ("tools.rag", None)], self.calls()
+
+    def test_ops_call_python_no_text(self):
+        """A planted script holding a secret-shaped string, a path and a name leaves none of them in the row: only the
+        closed class and purpose."""
+        c = "python3 -c 'TOKEN = \"glpat-SECRETSECRETSECRET1\"; open(\"/home/jan.kowalski/notes.txt\").read()'"
+        ql_capture.capture(tool("Bash", {"command": c}, {"stdout": "OUT"}))
+        text = "".join(f.read_text(encoding="utf-8") for f in self.spool.glob("*.jsonl"))
+        for leak in ("glpat", "SECRET", "jan.kowalski", "notes.txt", "TOKEN", "OUT"):
+            assert leak not in text, leak
+        assert [(r["class"], r["purpose"]) for r in self.calls()] == [("python-c", "other")]
+
     def hook_ops(self):
         return [{k: v for k, v in r.items() if k not in ("id", "ts", "surface", "v")} for r in self.rows()
                 if r.get("event", "").startswith(("permission.", "compact.", "turn."))]
