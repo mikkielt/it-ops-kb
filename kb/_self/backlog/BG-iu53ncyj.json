@@ -2,7 +2,7 @@
   "id": "BG-iu53ncyj",
   "kind": "bug",
   "title": "horizon and its hook do not show an approved planned sprint while another sprint is active",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "c8d3c1ceba512b87af0cf05acd0708be7e74fc76",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "horizon_hook_lists_approved_sprint_beside_active"
+        ],
+        "exit": 0,
+        "sha256": "a8b967859eae9288"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "horizon_hook_lists_approved_sprint_beside_active"
+        ],
+        "exit": 0,
+        "sha256": "89c997fdf3c1793b"
+      }
+    ]
+  }
 }
