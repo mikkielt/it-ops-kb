@@ -16,7 +16,8 @@ warns when the item has no `work` row in this host's spool or in the committed w
                                              either way
 
 The landing fixture is test_bl_land.py's (a throwaway clone with a bare remote and stub steps). Every run writes under
-a temporary plugin data directory, never the clone's own spool.
+a temporary plugin data directory, never the clone's own spool (KB_OPS_TEST_SPOOL lifts the inside-test guard of
+ql_deliver.ops_row for it alone).
 """
 import json
 
@@ -49,6 +50,7 @@ class TestOpsLand:
         data = tmp_path_factory.mktemp("qldata")
         for k in ("CLAUDE_PLUGIN_ROOT", "CLAUDE_PLUGIN_DATA"):
             monkeypatch.setenv(k, querylog_env(data, home=KB)[k])
+        monkeypatch.setenv("KB_OPS_TEST_SPOOL", "1")  # this spool is the test's own: land's rows may be written there
         self.spool = data / "querylog" / "spool"
 
     def rows(self, event=None):

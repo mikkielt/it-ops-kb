@@ -196,10 +196,14 @@ CI_STATES_KEPT = 50  # pipelines that file remembers
 CI_ROW_STATES = ("red", "pending", "green", "unverified")  # `ok` is `green`; `none` and `skip` read no pipeline
 
 
+TEST_SPOOL_ENV = "KB_OPS_TEST_SPOOL"  # set by a test that points the spool at a directory of its own (and its subprocesses)
+
+
 def inside_test():
     """True in a run started by a test (pytest sets PYTEST_CURRENT_TEST, which a subprocess inherits): its ops rows
-    never reach the clone's own spool, as `tests.inside_test`."""
-    return bool(os.environ.get("PYTEST_CURRENT_TEST"))
+    never reach the clone's own spool, as `tests.inside_test`; False when the test has set TEST_SPOOL_ENV, having
+    pointed CLAUDE_PLUGIN_DATA at a spool of its own."""
+    return bool(os.environ.get("PYTEST_CURRENT_TEST")) and os.environ.get(TEST_SPOOL_ENV) != "1"
 
 
 def ops_row(event, **fields):

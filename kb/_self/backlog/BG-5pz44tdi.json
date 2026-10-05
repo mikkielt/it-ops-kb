@@ -31,7 +31,9 @@
     "_tools/test_bl_land.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/_logs.csv"
+    "kb/_self/_logs.csv",
+    "_tools/ql_deliver.py",
+    "_tools/test_ops_land.py"
   ],
   "gates": [
     {
