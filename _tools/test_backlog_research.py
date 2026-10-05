@@ -1,4 +1,4 @@
-"""A sprint's goal research story (backlog.cmd_new, backlog.cmd_start): `new sprint` files a goal research story whose
+"""A sprint's goal research story (bl_items.cmd_new, bl_plan.cmd_start): `new sprint` files a goal research story whose
 touches are kb content, `check` holds its flag, and the operator's approval starts the sprint whatever the research
 and the knowledge of its items read.
 

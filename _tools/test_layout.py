@@ -29,6 +29,7 @@ EXCEPTIONS = {
     ("provider", "fetch", "_PageText"): TOOL,
     ("ql_apply", "kbfacts", "_FP"): TOOL,
     ("test_backlog", "kg_trailers", "_WANT"): INSIDE,
+    ("test_bl_items", "kg_trailers", "_WANT"): INSIDE,  # the claim tests moved with the item writers
     ("test_factdiff", "factdiff", "_added"): INSIDE,
     ("test_factdiff", "factdiff", "_git"): INSIDE,
     ("test_factdiff", "factdiff", "_madeup"): INSIDE,
@@ -214,8 +215,11 @@ def test_bl_split_base_holds_the_shared_ground_and_backlog_defines_none_of_it():
 def test_bl_split_base_backlog_reexports_the_objects_not_copies():
     import backlog
     import bl_base
-    for name in ("Backlog", "Refused", "Rejected", "git", "run", "need", "say", "commit_written", "in_scope", "KINDS"):
+    import bl_items
+    for name in ("Backlog", "Refused", "Rejected", "run", "in_scope"):
         assert getattr(backlog, name) is getattr(bl_base, name), name
+    for name in ("git", "need", "say", "commit_written", "KINDS"):  # the item writers' ground, in bl_items since the move
+        assert getattr(bl_items, name) is getattr(bl_base, name), name
 
 
 def test_bl_split_base_bl_intake_takes_its_ground_from_bl_base_and_never_backlog():
@@ -274,7 +278,8 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     import bl_selfcheck
     import bl_stall
     import bl_view
-    owner = {"cost": bl_cost, "procs": bl_procs, "stalled": bl_stall, "selfcheck": bl_selfcheck, "check": bl_check, "selectors": bl_check, "start": bl_plan,
+    import bl_items
+    owner = {**dict.fromkeys(ITEMS_COMMANDS, bl_items), "cost": bl_cost, "procs": bl_procs, "stalled": bl_stall, "selfcheck": bl_selfcheck, "check": bl_check, "selectors": bl_check, "start": bl_plan,
              "done": bl_land, "precheck": bl_land, "land": bl_land, "merge": bl_land, "close": bl_land, "tidy": bl_land,
              "red-pipeline": bl_ci, "intake": bl_ci, **dict.fromkeys(VIEW_USAGE, bl_view)}  # a command a bl_ module owns: its handler is that module's, not backlog's
     assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
@@ -567,8 +572,8 @@ def test_bl_split_land_bl_land_never_imports_backlog_at_any_depth_and_no_bl_modu
     assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(tree))
     graph = {m: {d for d in deps if (m, d) not in LAZY_EDGES} for m, deps in bl_graph(tool_sources()).items()}
     assert import_cycle(graph) is None, import_cycle(graph)
-    # bl_ci, a command module beside it, takes the runner of a check from it; nothing below bl_land does
-    assert "bl_land" in graph and not any("bl_land" in deps for m, deps in graph.items() if m != "bl_ci")
+    # bl_ci and bl_items, command modules beside it, take the runner of a check from it; nothing below bl_land does
+    assert "bl_land" in graph and not any("bl_land" in deps for m, deps in graph.items() if m not in ("bl_ci", "bl_items"))
 
 
 def test_bl_split_land_done_land_and_close_keep_their_usage_positions_with_bl_land_handlers():
@@ -722,7 +727,8 @@ def test_bl_split_view_bl_view_never_imports_backlog_and_closes_no_cycle():
     assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(ast.parse(src)))
     graph = {m: {d for d in deps if (m, d) not in LAZY_EDGES} for m, deps in bl_graph(tool_sources()).items()}
     assert import_cycle(graph) is None, import_cycle(graph)
-    assert not any("bl_view" in deps for deps in graph.values()), "only backlog.py imports bl_view"
+    assert not any("bl_view" in deps for m, deps in graph.items() if m != "bl_items"), \
+        "only backlog.py and bl_items (new's near-duplicate warning) import bl_view"
 
 
 def test_bl_split_view_the_views_keep_their_usage_positions_with_bl_view_handlers():
@@ -757,14 +763,15 @@ def test_bl_split_view_planted_failures_fail():
     assert view_tests("def test_horizon_left_behind():\n    pass\n") == {"test_horizon_left_behind"}
 
 
-FACADE_KEEP = ("parse_cmd", "cmd_new", "cmd_fmt", "cmd_claim", "cmd_release", "run_decide", "record_decision",
+ITEMS_MOVED = ("parse_cmd", "cmd_new", "cmd_fmt", "cmd_claim", "cmd_release", "run_decide", "record_decision",
                "DECISIONS_REL", "commit_answer", "cmd_answer", "changed_item", "changed_items", "SET_LISTS",
                "SET_FIELDS", "SET_REFUSED", "set_refusal", "appended", "reclass_gate", "cmd_set", "cmd_move",
                "cmd_reopen", "GATE_ID_RE", "CAPPED_FILE_RE", "SIZE_WORD_RE", "MEASURED_SIZE_RE", "cmd_gate",
                "cmd_host_check", "cmd_fire", "cmd_drop", "referrer_patterns", "referrers_of", "cmd_referrers",
-               "cmd_goal", "USAGE", "main")  # the item writers kept whole (kb/_self/backlog.md), the usage order and the dispatch
-FACADE_COMMANDS = ("new", "fmt", "claim", "release", "answer", "set", "move", "reopen", "gate", "host-check", "fire",
-                   "drop", "referrers", "goal")  # the commands of the kept block the verdict names
+               "cmd_goal")  # the item writers, moved whole from backlog.py to bl_items.py
+ITEMS_COMMANDS = ("new", "fmt", "claim", "release", "answer", "set", "move", "reopen", "gate", "host-check", "fire",
+                  "drop", "referrers", "goal")
+FACADE_KEEP = ("USAGE", "main")  # backlog.py keeps the usage order and the dispatch only
 
 
 def facade_defs(source):
@@ -777,14 +784,15 @@ def facade_defs(source):
 
 
 def facade_problems(backlog_src, module_srcs, runbook):
-    """What breaks backlog.py's facade rule: a name outside the kept block, a name a bl_ module also defines, a kept
-    command the runbook's keep-whole verdict does not name."""
+    """What breaks backlog.py's facade rule: a name outside its usage order and dispatch, a name a bl_ module also
+    defines, a runbook paragraph on the facade that does not name bl_items.py as the item writers' home."""
     defs = facade_defs(backlog_src)
     out = [f"defines {n}" for n in sorted(defs - set(FACADE_KEEP))]
     for mod, src in sorted(module_srcs.items()):
         out += [f"{n} also in {mod}" for n in sorted(defs & facade_defs(src))]
     verdict = next((p for p in runbook.split("\n\n") if p.startswith("`backlog.py` is the facade")), "")
-    out += [f"verdict lacks {c}" for c in FACADE_COMMANDS if f"`{c}`" not in verdict]
+    if "`bl_items.py`" not in verdict or "Keep-whole verdict" in verdict:
+        out.append("runbook does not name bl_items.py as the item writers' home")
     return out
 
 
@@ -798,8 +806,75 @@ def test_bl_split_facade_only_planted_failures_fail():
     runbook = (Path(TOOLS).parent / "kb" / "_self" / "backlog.md").read_text(encoding="utf-8")
     src = tool_source("backlog.py")
     assert facade_problems(src + "\ndef horizon(bl, sid):\n    return 0\n", {}, runbook) == ["defines horizon"]
-    assert facade_problems(src, {"bl_x": "def cmd_gate(bl, a):\n    return 0\n"}, runbook) == ["cmd_gate also in bl_x"]
-    assert facade_problems(src, {}, runbook.replace("`referrers`", "referrers")) == ["verdict lacks referrers"]
+    assert facade_problems(src + "\ndef cmd_gate(bl, a):\n    return 0\n", {}, runbook) == ["defines cmd_gate"]
+    assert facade_problems(src, {"bl_x": "def main():\n    return 0\n"}, runbook) == ["main also in bl_x"]
+    assert facade_problems(src, {}, runbook.replace("`bl_items.py`", "bl_items.py")) == [
+        "runbook does not name bl_items.py as the item writers' home"]
+
+
+ITEMS_TEST_PREFIXES = ("test_backlog_set_", "test_backlog_answer_", "test_backlog_move_", "test_backlog_referrers_",
+                       "test_gate_size_cap_", "test_set_", "test_goal_", "test_claim_", "test_new_", "test_drop_")
+
+
+def items_defs(source):
+    """The item writers' names a module defines (or assigns) at its top level."""
+    tree = ast.parse(source)
+    names = {n.name for n in tree.body if isinstance(n, (ast.FunctionDef, ast.ClassDef))}
+    names |= {t.id for n in tree.body if isinstance(n, ast.Assign) for t in n.targets if isinstance(t, ast.Name)}
+    return names & set(ITEMS_MOVED)
+
+
+def items_tests(src):
+    return {n.name for n in ast.parse(src).body if isinstance(n, (ast.FunctionDef, ast.ClassDef))
+            and n.name.startswith(ITEMS_TEST_PREFIXES)}
+
+
+def test_bl_split_items_bl_items_holds_the_item_writers_and_backlog_defines_none_of_them():
+    assert set(ITEMS_MOVED) <= items_defs(tool_source("bl_items.py"))
+    assert items_defs(tool_source("backlog.py")) == set(), "backlog.py imports bl_items, it defines none of them"
+
+
+def test_bl_split_items_bl_items_never_imports_backlog_and_closes_no_cycle():
+    src = tool_source("bl_items.py")
+    assert not imported_from(src, "backlog")
+    assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(ast.parse(src)))
+    graph = {m: {d for d in deps if (m, d) not in LAZY_EDGES} for m, deps in bl_graph(tool_sources()).items()}
+    assert import_cycle(graph) is None, import_cycle(graph)
+    assert not any("bl_items" in deps for deps in graph.values()), "only backlog.py imports bl_items"
+
+
+def test_bl_split_items_the_writers_keep_their_usage_positions_with_bl_items_handlers():
+    import backlog
+    import bl_cli
+    import bl_items
+    names = list(bl_cli.COMMANDS)
+    assert names.index("new") < names.index("fmt") < names.index("claim") < names.index("release") \
+        < names.index("answer") < names.index("set") < names.index("move") < names.index("reopen") < names.index("gate") \
+        < names.index("fire") < names.index("drop") < names.index("host-check") < names.index("goal") \
+        < names.index("referrers")
+    for n in ITEMS_COMMANDS:
+        assert bl_cli.handler_of(n) is getattr(bl_items, "cmd_" + n.replace("-", "_")), n
+        assert bl_cli.COMMANDS[n][1] in (None, getattr(bl_items, "args_" + n.replace("-", "_"), None)), n
+    assert not hasattr(backlog, "cmd_new") and not hasattr(backlog, "changed_items")
+
+
+def test_bl_split_items_its_tests_are_in_test_bl_items_and_none_are_left_in_test_backlog():
+    sources = backlog_test_sources()
+    assert len(items_tests(sources["test_bl_items.py"])) >= 40
+    assert items_tests(sources["test_backlog.py"]) == set()
+    for name in ITEMS_MOVED:  # a test reads or patches the writers where they live, bl_items
+        for needle in (f"backlog.{name}(", f"backlog.{name} ", f'setattr(backlog, "{name}"'):
+            assert all(needle not in src for src in sources.values()), needle
+
+
+def test_bl_split_items_planted_failures_fail():
+    # a moved name put back in backlog.py, a bl_items that imports backlog, a writer's test left behind
+    assert items_defs("def cmd_gate(bl, a):\n    return 0\n") == {"cmd_gate"}
+    assert items_defs("SET_LISTS = ()\n") == {"SET_LISTS"}
+    assert items_defs("from bl_items import cmd_gate\n") == set()
+    for body in ("import backlog\n", "from backlog import say\n", "def late():\n    from backlog import say\n"):
+        assert unexcused({"backlog": "", "bl_items": body}) == [("facade", "bl_items", "backlog", "backlog")], body
+    assert items_tests("def test_backlog_set_left_behind():\n    pass\n") == {"test_backlog_set_left_behind"}
 
 
 def test_import_layers_bl_and_kg_modules_import_neither_split_facade():
@@ -811,7 +886,9 @@ def test_import_layers_bl_and_kg_modules_import_neither_split_facade():
     assert unexcused({"backlog": "", "kbgit": "", "ql_deliver": "import backlog\nimport kbgit\n"}) == []
 
 
-SELF_REGISTERED = {"bl_view": ("similar", "list", "tree", "find", "show", "next", "held", "horizon"),
+SELF_REGISTERED = {"bl_items": ("new", "fmt", "claim", "release", "answer", "set", "move", "reopen", "gate",
+                                "host-check", "fire", "drop", "referrers", "goal"),
+                   "bl_view": ("similar", "list", "tree", "find", "show", "next", "held", "horizon"),
                    "bl_check": ("check", "selectors"), "bl_land": ("done", "precheck", "land", "merge", "close", "tidy"),
                    "bl_plan": ("start",), "bl_ci": ("red-pipeline", "intake"), "bl_cost": ("cost",),
                    "bl_procs": ("procs",), "bl_stall": ("stalled",), "bl_selfcheck": ("selfcheck",)}
