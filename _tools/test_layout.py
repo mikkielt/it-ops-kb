@@ -745,3 +745,48 @@ def test_bl_split_view_planted_failures_fail():
     for body in ("import backlog\n", "from backlog import say\n", "def late():\n    from backlog import say\n"):
         assert unexcused({"backlog": "", "bl_view": body}) == [("facade", "bl_view", "backlog", "backlog")], body
     assert view_tests("def test_horizon_left_behind():\n    pass\n") == {"test_horizon_left_behind"}
+
+
+FACADE_KEEP = ("parse_cmd", "cmd_new", "cmd_fmt", "cmd_claim", "cmd_release", "run_decide", "record_decision",
+               "DECISIONS_REL", "commit_answer", "cmd_answer", "changed_item", "changed_items", "SET_LISTS",
+               "SET_FIELDS", "SET_REFUSED", "set_refusal", "appended", "reclass_gate", "cmd_set", "cmd_move",
+               "cmd_reopen", "GATE_ID_RE", "CAPPED_FILE_RE", "SIZE_WORD_RE", "MEASURED_SIZE_RE", "cmd_gate",
+               "cmd_host_check", "cmd_fire", "cmd_drop", "referrer_patterns", "referrers_of", "cmd_referrers",
+               "cmd_goal", "main")  # the item writers kept whole (kb/_self/backlog.md) and the dispatch
+FACADE_COMMANDS = ("new", "fmt", "claim", "release", "answer", "set", "move", "reopen", "gate", "host-check", "fire",
+                   "drop", "referrers", "goal")  # the commands of the kept block the verdict names
+
+
+def facade_defs(source):
+    """The names backlog.py defines or assigns at its top level, argument builders (args_*) left out: they go with
+    the command they build."""
+    tree = ast.parse(source)
+    names = {n.name for n in tree.body if isinstance(n, (ast.FunctionDef, ast.ClassDef))}
+    names |= {t.id for n in tree.body if isinstance(n, ast.Assign) for t in n.targets if isinstance(t, ast.Name)}
+    return {n for n in names if not n.startswith("args_")}
+
+
+def facade_problems(backlog_src, module_srcs, runbook):
+    """What breaks backlog.py's facade rule: a name outside the kept block, a name a bl_ module also defines, a kept
+    command the runbook's keep-whole verdict does not name."""
+    defs = facade_defs(backlog_src)
+    out = [f"defines {n}" for n in sorted(defs - set(FACADE_KEEP))]
+    for mod, src in sorted(module_srcs.items()):
+        out += [f"{n} also in {mod}" for n in sorted(defs & facade_defs(src))]
+    verdict = next((p for p in runbook.split("\n\n") if p.startswith("`backlog.py` is the facade")), "")
+    out += [f"verdict lacks {c}" for c in FACADE_COMMANDS if f"`{c}`" not in verdict]
+    return out
+
+
+def test_bl_split_facade_only_backlog_defines_its_dispatch_and_the_kept_item_writers_only():
+    modules = {p.stem: p.read_text(encoding="utf-8") for p in Path(TOOLS).glob("bl_*.py") if p.stem != "bl_testkit"}
+    runbook = (Path(TOOLS).parent / "kb" / "_self" / "backlog.md").read_text(encoding="utf-8")
+    assert facade_problems(tool_source("backlog.py"), modules, runbook) == []
+
+
+def test_bl_split_facade_only_planted_failures_fail():
+    runbook = (Path(TOOLS).parent / "kb" / "_self" / "backlog.md").read_text(encoding="utf-8")
+    src = tool_source("backlog.py")
+    assert facade_problems(src + "\ndef horizon(bl, sid):\n    return 0\n", {}, runbook) == ["defines horizon"]
+    assert facade_problems(src, {"bl_x": "def cmd_gate(bl, a):\n    return 0\n"}, runbook) == ["cmd_gate also in bl_x"]
+    assert facade_problems(src, {}, runbook.replace("`referrers`", "referrers")) == ["verdict lacks referrers"]
