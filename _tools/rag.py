@@ -13,6 +13,10 @@
                                            the cited sources' urls, within about BUDGET tokens. Start every lookup here.
   rag.py pack -q PART -q PART ...          one batch for a question with several parts (1-6): a section with its
                                            own verdict per part and one shared source footer
+  rag.py pack --root _self QUESTION        the best passages of the kb/_self rule docs and the decisions tied to them;
+  rag.py pack --root _self --item ID [QUESTION]   the brief of a backlog item: its docs (kb/_self/map.csv) and decisions
+  rag.py pack --root _self --set NAME      the tested questions of a set (`skill` or `skill:step`, the `sets` column of
+                                           kb/_self/_retrieval/lookup_eval.csv), their passages and the decisions tied to them
   rag.py facts PREFIX [--tag UNK,COMMUNITY] [--format detailed]
                                            fact lines under a path prefix (a domain, topic or file), by tag kind
   rag.py audit [PREFIX] [--status partial] [--entries] [--unlinked] [--format detailed]
@@ -242,16 +246,18 @@ def format_decision_conflicts(items):
     return "\n".join(out)
 
 
-def eval_cases(path=None):
-    """[(root name, case)] of every root's lookup_eval.csv (under DATA_DIR), or of one file: `path` as given (else
-    as a qualified or repository path), its cases belonging to the root that holds it (else the public root)."""
+def eval_cases(path=None, root=None):
+    """[(root name, case)] of every root's lookup_eval.csv (under DATA_DIR) and kb/_self's, or of one root's, or of
+    one file: `path` as given (else as a qualified or repository path), its cases belonging to `root`, else to the
+    root that holds it (else the public root). The root name SELF_ROOT is the kb's own rule docs."""
     if path is None:
         files = [(r.name, os.path.join(r.path, kbcommon.DATA_DIR, "lookup_eval.csv")) for r in kbcommon.roots()]
-        files = [(n, p) for n, p in files if os.path.exists(p)]
+        files.append((kbfacts.SELF_ROOT, os.path.join(kbcommon.SELF, kbcommon.DATA_DIR, "lookup_eval.csv")))
+        files = [(n, p) for n, p in files if os.path.exists(p) and root in (None, n)]
     else:
         full = os.path.abspath(path) if os.path.exists(path) else kbcommon.path_of(path)
-        owner = next((r.name for r in kbcommon.roots()
-                      if os.path.commonpath([full, r.path]) == r.path), kbcommon.public().name)
+        owner = root or next((r.name for r in kbcommon.roots()
+                              if os.path.commonpath([full, r.path]) == r.path), kbcommon.public().name)
         files = [(owner, full)]
     out = []
     for name, p in files:
@@ -260,22 +266,44 @@ def eval_cases(path=None):
     return out
 
 
-def run_eval(path=None):
-    """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root)
-    must be among the pack's articles, and the verdict must equal the expected one (`none` rows expect no path)."""
-    rows = []
-    for root, c in eval_cases(path):
-        res = kbfacts.pack(c["question"])
-        want = [kbcommon.qualify(root, p.strip()) for p in c["expect_paths"].split(";") if p.strip()]
+def run_eval(path=None, root=None):
+    """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root, to
+    kb/_self for SELF_ROOT) must be among the pack's articles, the verdict must equal the expected one (`none` rows
+    expect no path), and when the row has `expect_text` one of its `;`-separated phrases must occur in the pack's text.
+    A `_self` row passes on its text alone: its phrase must be in one of its docs (it has an anchor, else
+    `failed=anchor`) and in the pack's text (else `failed=text`); a row with no `expect_text` expects the verdict
+    `none`. `free` counts the anchored `_self` rows whose phrase is still printed when the pack leaves out that row's own
+    tested question (kbfacts.self_store with skip), out of `anchored`."""
+    rows, free, anchored, passages = [], 0, 0, None
+    for name, c in eval_cases(path, root):
+        own = name == kbfacts.SELF_ROOT
+        res = kbfacts.pack(c["question"], root=name) if own else kbfacts.pack(c["question"])
+        base = "kb/_self/" if own else kbcommon.qualify(name, "")
+        want = [base + p.strip() for p in c["expect_paths"].split(";") if p.strip()]
         found = [p for p in want if p in res["paths"]]
         vok = res["verdict"] == c["expect_verdict"] or (c["expect_verdict"] == "good" and res["verdict"] == "weak" and c.get("allow_weak") == "yes")
         fok = bool(found) if want else True
+        phrases = [t.strip() for t in (c.get("expect_text") or "").split(";") if t.strip()]
+        tok = any(t in res["text"] for t in phrases) if phrases else True
+        failed = [w for w, ok in (("verdict", vok), ("path", fok), ("text", tok)) if not ok]
+        if own:
+            passages = passages or kbfacts.self_units()
+            if not phrases:
+                failed = [] if res["verdict"] == "none" else ["verdict"]
+            elif not kbfacts.anchor_of(c, passages):
+                failed = ["anchor"]
+            else:
+                anchored += 1
+                loo = kbfacts.pack(c["question"], root=name, st=kbfacts.self_store(c["id"]))
+                free += any(t in loo["text"] for t in phrases)
+                failed = [] if tok else ["text"]
         rows.append({"id": c["id"], "verdict": res["verdict"], "want_verdict": c["expect_verdict"], "found": found,
-                     "paths": res["paths"], "chars": len(res["text"]), "ok": vok and fok, "verdict_ok": vok, "found_ok": fok})
+                     "paths": res["paths"], "chars": len(res["text"]), "ok": not failed, "verdict_ok": vok,
+                     "found_ok": fok, "text_ok": tok, "failed": failed})
     n = len(rows)
     return {"n": n, "passed": sum(r["ok"] for r in rows), "verdict_ok": sum(r["verdict_ok"] for r in rows),
             "found_ok": sum(r["found_ok"] for r in rows), "mean_chars": round(sum(r["chars"] for r in rows) / max(n, 1)),
-            "rows": rows}
+            "free": free, "anchored": anchored, "rows": rows}
 
 
 def main():
@@ -294,6 +322,9 @@ def main():
     pk.add_argument("-q", dest="parts", action="append", default=[], help="one part of a multi-part question (repeat, up to 6)")
     pk.add_argument("-d", "--domain"); pk.add_argument("--format", choices=FORMATS, default="detailed")
     pk.add_argument("--root", help="one root only")
+    pk.add_argument("--item", help="with --root _self: the brief of a backlog item (its title and goal when no question is given)")
+    pk.add_argument("--set", dest="set_name", help="with --root _self: the tested questions of a set (`skill` or `skill:step`), "
+                    "their passages and the decisions tied to them; no ranking, no verdict")
     pk.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
     fa = sub.add_parser("facts"); fa.add_argument("prefix"); fa.add_argument("--tag", help="comma-separated kinds, e.g. UNK,COMMUNITY")
     fa.add_argument("--format", choices=FORMATS, default="concise"); fa.add_argument("--root", help="one root only")
@@ -305,7 +336,8 @@ def main():
     tf = sub.add_parser("topics-for"); tf.add_argument("paths", nargs="*", help="files or directories of the code to map")
     tf.add_argument("--keywords", help="text to map instead of (or as well as) files")
     tf.add_argument("--imports", action="store_true", help="match the signals against the packages the files declare (imports, manifests), not their text")
-    ev = sub.add_parser("eval"); ev.add_argument("--file", help="one eval file (default: every root's lookup_eval.csv)")
+    ev = sub.add_parser("eval"); ev.add_argument("--file", help="one eval file (default: every root's lookup_eval.csv and kb/_self's)")
+    ev.add_argument("--root", help="one root only (a kb root or _self); with --file, the root the file's rows belong to")
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     w.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
     a = ap.parse_args()
@@ -354,13 +386,41 @@ def main():
                   + (f"\n  used in: {x['used_in'].replace(';', ', ')}" if x.get("used_in") else ""))
             if a.cited:
                 print(format_cited(cited.get(x["id"], [])))
+    elif a.cmd == "pack" and a.set_name:
+        if a.root != kbfacts.SELF_ROOT or a.question or a.parts or a.item:
+            print(f"pack: --set needs --root {kbfacts.SELF_ROOT} and takes no question, -q or --item", file=sys.stderr)
+            sys.exit(2)
+        info = {}
+        try:
+            text = kbfacts.set_pack(a.set_name, info)
+        except ValueError as e:
+            print(f"pack: {e}", file=sys.stderr)
+            sys.exit(2)
+        print(text)
+        kbfacts.record_self(text, None, set_name=a.set_name, info=info)
     elif a.cmd == "pack":
+        brief = None
+        if a.item:
+            if a.root != kbfacts.SELF_ROOT:
+                print(f"pack: --item needs --root {kbfacts.SELF_ROOT}", file=sys.stderr)
+                sys.exit(2)
+            brief = kbfacts.item_brief(a.item)
+            if brief is None:
+                print(f"no item {a.item}", file=sys.stderr)
+                sys.exit(2)
         parts = a.parts + ([" ".join(a.question)] if a.question else [])
+        if not parts and brief:
+            parts = [brief["question"]]
         if not parts:
             sys.exit("pack: give a question, or -q PART for each part")
+        if any(not p.strip() for p in parts):
+            print("pack: empty question", file=sys.stderr)
+            sys.exit(2)
         if len(parts) > kbfacts.MAX_QUESTIONS:
             sys.exit(f"pack: at most {kbfacts.MAX_QUESTIONS} parts")
-        res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated)
+        res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated, brief)
+        if a.root == kbfacts.SELF_ROOT:
+            kbfacts.record_self(res["text"], a.budget, res, parts, item=a.item)
         if a.json:
             return print(json.dumps(res, indent=1))
         print(res["text"])
@@ -404,15 +464,17 @@ def main():
             return print(json.dumps(res, indent=1))
         print(kbfacts.format_topics_for(res))
     elif a.cmd == "eval":
-        res = run_eval(a.file)
+        if a.root and a.root not in {r.name for r in kbcommon.roots()} | {kbfacts.SELF_ROOT}:
+            ap.error(f"no root {a.root!r}")
+        res = run_eval(a.file, a.root)
         if a.json:
             return print(json.dumps(res, indent=1))
         width = max((len(r["id"]) for r in res["rows"]), default=6)
         for r in res["rows"]:
             print(f"{'ok  ' if r['ok'] else 'FAIL'} {r['id']:<{width}} verdict={r['verdict']:<5} (want {r['want_verdict']:<5}) "
-                  f"found={','.join(r['found']) or '-'} chars={r['chars']}")
+                  f"found={','.join(r['found']) or '-'} chars={r['chars']}" + (f" failed={','.join(r['failed'])}" if r["failed"] else ""))
         print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
-              f"mean_chars={res['mean_chars']}")
+              f"mean_chars={res['mean_chars']}" + (f" free={res['free']}/{res['anchored']}" if res["anchored"] else ""))
         if res["passed"] != res["n"]:
             sys.exit(1)
     else:

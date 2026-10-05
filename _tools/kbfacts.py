@@ -277,6 +277,8 @@ INDEX_FILES = ("README.md",)
 ROOT_INDEX_FILES = (kbcommon.ANSWERS, kbcommon.GAPS, kbcommon.CONFLICTS, kbcommon.COVERAGE_CSV)
 # the kb's own docs (rules, tool reference, design): searched with --index only, never packed; listed by repository path
 SELF_DIR = kbcommon.SELF
+SELF_EVAL = os.path.join(SELF_DIR, kbcommon.DATA_DIR, "lookup_eval.csv")  # the `_self` tested questions
+SELF_ALIASES = os.path.join(SELF_DIR, kbcommon.DATA_DIR, "aliases.csv")  # rule vocabulary, applied under `_self` only
 
 
 def root_files(names):
@@ -372,7 +374,8 @@ _FP = [0.0, None]
 
 def fingerprint():
     """sha1 over (path, mtime_ns, size) of every file the tools read (domain .md/.csv, _sources.csv, the ledgers,
-    aliases.csv, signals.csv, doc2query/expansions.csv, this module and kbid.py) and KB_DOC2QUERY: any edit gives a
+    aliases.csv, signals.csv, doc2query/expansions.csv, the `_self` eval and aliases files, this module and kbid.py)
+    and KB_DOC2QUERY: any edit gives a
     new value. Replaces a time-to-live cache: nothing is rebuilt while no file changed, however long a server idles.
     The domain files' times and sizes come from the directory listing (kb_entries): an os.stat per file costs about
     0.7 ms in a Hyper-V container, most of a warm pack there, and on a loaded host each pack outlasted FP_MEMO and
@@ -381,7 +384,8 @@ def fingerprint():
         return _FP[1]
     h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
     extra = [*root_files((kbcommon.SOURCES,)), *index_files(), *alias_files(), *data_files("signals.csv"),
-             *data_files("doc2query/expansions.csv"), os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py"),
+             *data_files("doc2query/expansions.csv"), kbcommon.repo_rel(SELF_EVAL), kbcommon.repo_rel(SELF_ALIASES),
+             os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py"),
              os.pathsep.join(r.path for r in kbcommon.roots())]  # the set of roots: a root added or removed
     stats = [*((rel, e.stat) for rel, e in kb_entries()),
              *((rel, functools.partial(os.stat, kbcommon.path_of(rel))) for rel in extra)]
@@ -664,6 +668,7 @@ def audit(prefix=None, status=None, root=None):
 
 DECISION_ANSWER_SHARE = 0.6  # an active decision whose text holds this share of a question's informative words answers it
 MAX_DECISIONS = 3  # decision lines one pack prints
+ITEM_DECISIONS = 6  # decision lines the brief of a backlog item prints
 DECISION_CLIP = 300  # characters of a decision's text a line shows
 DECISION_BUDGET_SHARE = 3  # a pack's decision lines cost at most 1/3 of its budget, and count inside it
 DECISION_RANK = {"active": 0, "proposed": 1, "invalidated": 2}  # `superseded` is never shown
@@ -699,7 +704,7 @@ def _cached_rows(cache, name, required, make):
 
 def decision_rows():
     """Every decision row of the served roots and, unless the server is limited to named roots, of kb/_self, as dicts
-    `id, text, status, by, date, context, reason` (its invalidated_reason) plus `root` (its store's name, `_self`),
+    `id, text, status, by, date, context, source, reason` (its invalidated_reason) plus `root` (its store's name, `_self`),
     `path` and `line` (where the row starts, as `rag.py show` takes it) and `refs`, the context as [(kind, value)]
     with an article's or a domain's value qualified (`public/auth/kerberos`). Rows of every status; a file that cannot
     be read gives none (check.py reports it); [] for a kb that keeps no decision. Read again when a decision file's
@@ -707,7 +712,7 @@ def decision_rows():
     return _cached_rows(_DECISIONS, kbcommon.DECISIONS, ("id", "text", "status"), lambda row, at: {
         "id": row["id"], "text": " ".join((row.get("text") or "").split()), "status": row.get("status", ""),
         "by": row.get("by", ""), "date": row.get("date", ""), "context": row.get("context", ""),
-        "reason": row.get("invalidated_reason", ""), **at})
+        "source": " ".join((row.get("source") or "").split()), "reason": row.get("invalidated_reason", ""), **at})
 
 
 def _read_rows(stores, required, make):
@@ -782,9 +787,11 @@ def decision_label(d):
     return f"invalidated because {d['reason'] or 'no reason recorded'}"
 
 
-def decision_line(d):
-    """`- PATH:LINE <label>: <text> [DECISION id]`; PATH:LINE is the row, which `rag.py show` prints."""
-    return f"- {d['path']}:{d['line']} {decision_label(d)}: {clip(d['text'], DECISION_CLIP)} [DECISION {d['id']}]"
+def decision_line(d, source=False):
+    """`- PATH:LINE <label>: <text> [DECISION id]`; PATH:LINE is the row, which `rag.py show` prints. With `source`,
+    the row's source follows the text: `<text> (source: <source>) [DECISION id]`."""
+    cited = f" (source: {clip(d['source'], DECISION_CLIP)})" if source and d["source"] else ""
+    return f"- {d['path']}:{d['line']} {decision_label(d)}: {clip(d['text'], DECISION_CLIP)}{cited} [DECISION {d['id']}]"
 
 
 def _shown(invalidated):
@@ -834,6 +841,80 @@ def show_decisions(qpath, first, last, invalidated=False):
     found = [d for d in rows if decision_link(d, {qpath}, keys, srcs, cited)]
     found.sort(key=lambda d: (DECISION_RANK[d["status"]], d["id"]))
     return [decision_line(d) for d in found]
+
+
+HEADING_RX = re.compile(r" {0,3}(#{1,6})[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*\Z")  # selfdoc.HEADING_RX
+FENCE_RX = re.compile(r" {0,3}(`{3,}|~{3,})")  # selfdoc.FENCE_RX
+
+
+def norm_heading(text):
+    """A heading without case, runs of spaces or backticks, as `selfdoc.py section` compares it."""
+    return " ".join(text.replace("`", "").split()).casefold()
+
+
+def section_headings(rel, wanted):
+    """The normalised headings (norm_heading) of the sections of doc `rel` that hold a line of `wanted`: the nearest
+    heading above each line and every heading above that one. Headings in fenced code and front matter are no headings."""
+    lines = (read(rel) or "").splitlines()
+    start = next((i + 1 for i in range(1, len(lines)) if lines[i].strip() in ("---", "...")), 0) if lines[:1] == ["---"] else 0
+    stack, fence, found = [], None, set()
+    for n in range(start + 1, len(lines) + 1):
+        m = FENCE_RX.match(lines[n - 1])
+        if fence:
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence):
+                fence = None
+        elif m:
+            fence = m.group(1)
+        elif h := HEADING_RX.match(lines[n - 1]):
+            while stack and stack[-1][0] >= len(h.group(1)):
+                stack.pop()
+            stack.append((len(h.group(1)), norm_heading(h.group(2))))
+        if n in wanted:
+            found.update(t for _, t in stack)
+    return found
+
+
+def self_places(passages):
+    """{doc: normalised headings of the sections that hold one of `passages`} for the docs they are in."""
+    lines = defaultdict(set)
+    for u in passages:
+        lines[u["path"]].add(u["line"])
+    return {rel: section_headings(rel, at) for rel, at in lines.items()}
+
+
+def self_ties(d):
+    """[(doc path, normalised heading or '')] of the `article:_self/<doc>` and `article:_self/<doc>#<Heading>`
+    references of decision `d`: the whole doc or one of its sections."""
+    return [(f"kb/_self/{doc.split('/', 1)[1]}.md", norm_heading(heading)) for kind, v in d["refs"] if kind == "article"
+            for doc, _, heading in [v.partition("#")] if doc.startswith(SELF_ROOT + "/")]
+
+
+def tied_decisions(places, invalidated=False, only_active=False):
+    """The decisions (best first) tied by an `article:_self/...` context to a doc of `places` ({doc: the normalised
+    headings of its sections that count, or None for every section}): a whole-doc reference needs the doc only, a
+    section reference one of its headings. As _shown(invalidated); `only_active` leaves out the proposed ones."""
+    out = [d for d in _shown(invalidated) if (d["status"] == "active" or not only_active)
+           and any(doc in places and (not h or places[doc] is None or h in places[doc]) for doc, h in self_ties(d))]
+    return sorted(out, key=lambda d: (DECISION_RANK[d["status"]], d["id"]))
+
+
+def item_decisions(item):
+    """The active decisions of a backlog item's brief (item_brief): those whose context names the item, then those
+    tied (tied_decisions) to any section of its docs."""
+    named = [d for d in _shown(False) if d["status"] == "active" and ("item", item["id"]) in d["refs"]]
+    return named + [d for d in tied_decisions({doc: None for doc in item["docs"]}, only_active=True) if d not in named]
+
+
+def decision_block(dec, budget, cap, source=False):
+    """(lines, decisions) of the first `cap` of `dec`, as many as fit a DECISION_BUDGET_SHARE-th of `budget` tokens
+    (the first always)."""
+    lines = []
+    for d in dec[:cap]:
+        line = decision_line(d, source)
+        if lines and sum(map(len, lines)) + len(line) > int(budget * 3.5) // DECISION_BUDGET_SHARE:
+            break
+        lines.append(line)
+    return lines, dec[:len(lines)]
 
 
 def decision_conflicts(prefix=None, root=None):
@@ -997,9 +1078,10 @@ def data_rows(rel):
     return out
 
 
-def alias_files():
-    """The shared product aliases (_tools/aliases.csv), then each root's own aliases.csv (under DATA_DIR)."""
-    return [ALIASES] + data_files("aliases.csv")
+def alias_files(rules=False):
+    """The shared product aliases (_tools/aliases.csv), then each root's own aliases.csv (under DATA_DIR); with
+    `rules` (the `_self` root), kb/_self's own too."""
+    return [ALIASES] + data_files("aliases.csv") + ([SELF_ALIASES] if rules else [])
 ALIAS_WEIGHT = 0.5  # an alias the question did not use counts half as much as a word it did
 TITLE_WEIGHT = 2    # the article title counts twice in each of its units
 SUMMARY_WEIGHT = 0.1  # the article's Summary text is indexed into each of its units at this weight
@@ -1008,14 +1090,14 @@ EXPANSION_WEIGHT = 1.0  # words of the generated questions a fact answers (doc2q
 UNTAGGED_WEIGHT = 0.8  # an untagged row or line (reference data, Summary, Examples) ranks below a tagged fact
 
 
-def aliases():
-    """{canonical: [alias word tuples]} from alias_files() (`term,canonical`, one row per alias)."""
-    return cached("aliases", _aliases)
+def aliases(rules=False):
+    """{canonical: [alias word tuples]} from alias_files(rules) (`term,canonical`, one row per alias)."""
+    return cached(("aliases", rules), lambda: _aliases(rules))
 
 
-def _aliases():
+def _aliases(rules):
     out = defaultdict(list)
-    for path in alias_files():
+    for path in alias_files(rules):
         try:
             with open(path, encoding="utf-8", newline="") as f:
                 for r in csv.DictReader(f):
@@ -1028,14 +1110,14 @@ def _aliases():
     return dict(out)
 
 
-def expand(question):
-    """Product aliases in a question: ({stem: weight} to add to the ranking, {key stem: [variant stem tuples]}).
+def expand(question, rules=False):
+    """Product aliases in a question (with `rules`, the `_self` aliases too): ({stem: weight} to add to the ranking, {key stem: [variant stem tuples]}).
     A key word that belongs to an alias found in the question also counts as present where any other alias of that
     product is (all words of a multi-word alias). Expansions never become key words of their own, so they cannot
     raise the coverage verdict on words the question did not use."""
     toks = WORD.findall(question.lower())
     extra, variants = {}, defaultdict(set)
-    for canon, forms in aliases().items():
+    for canon, forms in aliases(rules).items():
         found = [(i, len(f)) for f in forms for i in range(len(toks) - len(f) + 1) if tuple(toks[i:i + len(f)]) == f]
         if not found:
             continue
@@ -1091,12 +1173,371 @@ def index_units():
     return out
 
 
+SELF_ROOT = "_self"  # the root name pack and search accept for the kb's own rule docs (not a kb root)
+PASSAGE_CHARS = 400  # a rule doc unit longer than this is split into sentence passages of about this size
+CLAUSE_CHARS = 80  # the lead a later passage repeats of a unit with no bold lead term: its first clause, this long
+PASSAGES_PER_LINE = 2  # a `_self` pack prints at most this many passages of one source line
+PARENT_CHARS = 120 # the context of a nested list item: the end of its parent's last sentence, this long
+CONTEXT_SEP = " … "  # between a passage's context and the passage
+BOUNDARY = re.compile(r"[.;:]\s+(?=[A-Z`]|\*\*)")
+RULE_TAG = [{"kind": "DOC", "ids": [], "note": "rule"}]  # a rule passage counts as a fact for the verdict
+
+
+def self_docs():
+    """The top-level .md docs of the kb's own docs (SELF_DIR; no subdirectory), by repository path, sorted."""
+    return sorted(kbcommon.repo_rel(os.path.join(SELF_DIR, f)) for f in os.listdir(SELF_DIR)
+                  if f.endswith(".md") and os.path.isfile(os.path.join(SELF_DIR, f)))
+
+
+def sentences(text):
+    """`text` cut after `. `, `; ` and `: ` followed by a capital letter, a backtick or `**`, never inside a backtick
+    code span, parentheses or brackets."""
+    out, start, code, depth = [], 0, False, 0
+    for i, c in enumerate(text):
+        if c == "`":
+            code = not code
+        elif code:
+            continue
+        elif c in "([":
+            depth += 1
+        elif c in ")]":
+            depth = max(depth - 1, 0)
+        elif c in ".;:" and not depth:
+            m = BOUNDARY.match(text, i)
+            if m:
+                out.append(text[start:m.end()].strip())
+                start = m.end()
+    out.append(text[start:].strip())
+    return [s for s in out if s]
+
+
+def cells(row):
+    """The cells of a table row `| a | b |`: split at pipes outside backtick code spans and `\\|` escapes."""
+    out, cur, code, i = [], "", False, 0
+    row = row.strip().removeprefix("|")
+    if row.endswith("|") and not row.endswith("\\|"):
+        row = row[:-1]
+    while i < len(row):
+        c = row[i]
+        if c == "\\" and row[i + 1:i + 2] == "|":
+            cur += "\\|"
+            i += 2
+            continue
+        if c == "`":
+            code = not code
+        if c == "|" and not code:
+            out.append(cur.strip())
+            cur = ""
+        else:
+            cur += c
+        i += 1
+    return out + [cur.strip()]
+
+
+def merged(pieces, room):
+    """Neighbouring (separator, text) pieces joined while the result stays within `room` characters; a piece longer
+    than that stays whole."""
+    out = []
+    for sep, s in pieces:
+        if out and len(out[-1]) + len(sep) + len(s) <= room:
+            out[-1] += sep + s
+        else:
+            out.append(s)
+    return out
+
+
+def list_pieces(s, room):
+    """`s` when it fits `room` characters; else cut at its top-level `, ` and `; ` (outside backtick code spans,
+    parentheses and brackets), after a `)` or before a backtick when it has such boundaries, and the pieces merged up
+    to `room`."""
+    if len(s) <= room:
+        return [s]
+    preferred, plain, code, depth = [], [], False, 0
+    for i, c in enumerate(s):
+        if c == "`":
+            code = not code
+        elif code:
+            continue
+        elif c in "([":
+            depth += 1
+        elif c in ")]":
+            depth = max(depth - 1, 0)
+        elif c in ",;" and not depth and s[i + 1:i + 2] == " ":
+            plain.append(i + 2)
+            if s[i - 1:i] == ")" or s[i + 2:i + 3] == "`":
+                preferred.append(i + 2)
+    out = [s]
+    for marks in (preferred, plain):
+        bounds = [0] + marks + [len(s)]
+        out = merged([(" ", s[a:b].strip()) for a, b in zip(bounds, bounds[1:]) if s[a:b].strip()], room)
+        if max(map(len, out)) <= room:
+            break
+    return out
+
+
+def clause(text):
+    """`text` up to CLAUSE_CHARS characters, cut at a word boundary and outside a code span, without a trailing
+    separator."""
+    if len(text) > CLAUSE_CHARS:
+        text = text[:CLAUSE_CHARS].rsplit(" ", 1)[0]
+        if text.count("`") % 2:
+            text = text[:text.rindex("`")] or text + "`"
+    return text.rstrip(" ,;:")
+
+
+def lead_of(text):
+    """What a later passage of a unit repeats of its start: the bold lead term, else the first clause (clause)."""
+    bold = re.match(r"\*\*[^*]+\*\*", text)
+    return bold.group(0) if bold else clause(sentences(text)[0])
+
+
+def parent_context(lines, n, by_line):
+    """For the list item on line n (1-based) of a doc's `lines`: the end of the last sentence of the unit it hangs
+    under (the nearest list line above with less indentation, or the paragraph right above its list), clipped to
+    PARENT_CHARS characters at a word boundary, when that unit ends in `:`; else ''. `by_line`: unit text by line."""
+    raw = lines[n - 1]
+    item = re.match(r"(\s*)[-*] ", raw)
+    if not item:
+        return ""
+    j, parent = n - 2, ""
+    while j >= 0:
+        ln = lines[j]
+        if not ln.strip() or ln.startswith("#"):
+            break
+        above = re.match(r"(\s*)[-*] ", ln)
+        if above and len(above.group(1)) < len(item.group(1)):
+            parent = by_line.get(j + 1, "")
+            break
+        if above:
+            j -= 1
+            continue
+        k = j
+        while k >= 0 and lines[k].strip() and not lines[k].startswith("#") and not re.match(r"\s*[-*] ", lines[k]):
+            k -= 1
+        if k >= 0 and re.match(r"\s*[-*] ", lines[k]):
+            j = k  # the continuation of a list item: handle that item
+            continue
+        parent = by_line.get(k + 2, "")
+        break
+    if not parent.endswith(":"):
+        return ""
+    last = sentences(parent)[-1]
+    if len(last) > PARENT_CHARS:
+        last = last[-PARENT_CHARS:].split(" ", 1)[-1]
+    return last
+
+
+def passage_title(text):
+    """The natural title of a rule doc unit: the first cell of a table row, else the bold lead term of a bullet, else ''."""
+    if text.startswith("|"):
+        return cells(text)[0]
+    bold = re.match(r"\*\*([^*]+)\*\*", text)
+    return bold.group(1) if bold else ""
+
+
+def passages(u, parent=""):
+    """The sentence passages of a rule doc unit, as units of the same line and section: the unit itself when it is at
+    most PASSAGE_CHARS long. A sentence too long for a passage is cut at its list separators (list_pieces). A table
+    row's passages each start with its first cell and ` | `. Context goes in front of a passage, joined by CONTEXT_SEP
+    and part of its text: `parent` (the end of the sentence a nested list item hangs under) on every passage of the
+    item, and for each passage after the first the unit's lead (lead_of)."""
+    text = u["text"]
+    table = text.startswith("|")
+    head = ""
+    if table:
+        first, *rest = cells(text)
+        head = clause(first) + " | " if first else ""
+    lead = lead_of(text) if not table else ""
+    up = parent + CONTEXT_SEP if parent and not table else ""
+    if len(text) <= PASSAGE_CHARS:
+        return [{**u, "text": up + text}] if up else [u]
+    pieces = []
+    if table:
+        for n, cell in enumerate(rest):
+            pieces += [(" | " if n and j == 0 else " ", p) for j, s in enumerate(sentences(cell))
+                       for p in list_pieces(s, PASSAGE_CHARS - len(head))]
+    else:
+        pieces = [(" ", p) for s in sentences(text) for p in list_pieces(s, PASSAGE_CHARS - len(up + lead) - len(CONTEXT_SEP))]
+    room = max(PASSAGE_CHARS - len(head or up + lead + CONTEXT_SEP), PASSAGE_CHARS // 4)
+    out = []
+    for n, s in enumerate(merged(pieces, room)):
+        if head:
+            s = head + s
+        elif n and lead and lead not in s:
+            s = up + lead + CONTEXT_SEP + s
+        else:
+            s = up + s
+        out.append({**u, "text": s})
+    return out
+
+
+def self_units(skip=None):
+    """The passages of the top-level kb/_self docs (self_docs()), every unit of them: the units the `_self` root
+    searches. Each is a rule, so it carries a stand-in tag (RULE_TAG); `root` and `passage` keep them out of every other
+    view. `ord` is a passage's place among those of its source line, `whole` the text of that line's unit, `anchors`
+    the [(id, question)] of the tested questions it is the anchor of (self_eval_rows, anchor_of), except row `skip`."""
+    out = []
+    for rel in self_docs():
+        text = read(rel)
+        units = md_units(rel, text, untagged=True) if text is not None else []
+        lines, by_line = (text or "").splitlines(), {u["line"]: u["text"] for u in units}
+        for u in units:
+            u["lead"] = passage_title(u["text"])
+            for n, p in enumerate(passages(u, parent_context(lines, u["line"], by_line))):
+                p.update(ord=n, whole=u["text"])
+                out.append(p)
+    for u in out:
+        u.update(root=True, passage=True, tags=RULE_TAG)
+    for row in self_eval_rows():
+        anchor = anchor_of(row, out) if row["id"] != skip else None
+        if anchor:
+            anchor.setdefault("anchors", []).append((row["id"], row["question"]))
+    return out
+
+
+def self_eval_rows(path=None):
+    """The rows of the `_self` eval file (SELF_EVAL, or `path`), [] when it is missing."""
+    try:
+        with open(path or SELF_EVAL, encoding="utf-8", newline="") as f:
+            return list(csv.DictReader(f))
+    except OSError:
+        return []
+
+
+def eval_phrases(row):
+    """The `;`-separated alternative phrases of an eval row's `expect_text`."""
+    return [t.strip() for t in (row.get("expect_text") or "").split(";") if t.strip()]
+
+
+def anchor_of(row, us):
+    """The passage of `us` (self_units) an eval row with `expect_text` anchors: in the first of its `expect_paths`
+    docs that holds one of its phrases, the line holding it, and of that line the passage that holds the phrase (the
+    one holding its longest start when it spans two). None when no phrase is in any of its docs."""
+    for rel in (p.strip() for p in (row.get("expect_paths") or "").split(";") if p.strip()):
+        mine = [u for u in us if u["path"] == "kb/_self/" + rel]
+        for phrase in eval_phrases(row):
+            for u in mine:
+                if phrase in u["text"]:
+                    return u
+                if phrase in u["whole"]:
+                    return max((v for v in mine if v["line"] == u["line"]), key=lambda v: phrase_start(phrase, v["text"]))
+    return None
+
+
+def phrase_start(phrase, text):
+    """The length of the longest start of `phrase` that `text` holds."""
+    n = len(phrase)
+    while n and phrase[:n] not in text:
+        n -= 1
+    return n
+
+
+def self_store(skip=None):
+    """The `_self` view of a store built in memory from the rule passages alone, with tested question `skip` neither
+    indexed nor matched: what the rules' ranking gives without that row."""
+    return MemStore("", weighed(self_units(skip), articles(), {})).view(SELF_ROOT)
+
+
+def row_sets(row):
+    """The `;`-separated set names (`skill` or `skill:step`) of a `_self` eval row's `sets` cell."""
+    return [x.strip() for x in (row.get("sets") or "").split(";") if x.strip()]
+
+
+def in_set(row, name):
+    """Whether eval row `row` is in set `name`: it names it, or, for a bare skill name, any of the skill's steps."""
+    return any(x == name or (":" not in name and x.split(":")[0] == name) for x in row_sets(row))
+
+
+def set_pack(name, info=None):
+    """The text of `rag.py pack --root _self --set NAME`: `set NAME: N tested questions`, then for each row of the set
+    `# <id>: <question>` and its anchored passage (`path:line § Heading: text`), or a line naming the phrase and docs
+    that hold no anchor; then the `## decisions` block with the active decisions tied to the docs or sections of those
+    passages, each once. Nothing is ranked and there is no verdict. ValueError naming the known sets when `name` is none.
+    A dict `info` is filled with the set's `tested` ids, the `pinned` passages shown and their `docs`."""
+    rows = self_eval_rows()
+    known = sorted({x for r in rows for s in row_sets(r) for x in (s, s.split(":")[0])})
+    if name not in known:
+        raise ValueError(f"no set {name!r}; known sets: {', '.join(known) or 'none'}")
+    mine = [r for r in rows if in_set(r, name)]
+    st = store(SELF_ROOT)
+    anchored = {rid: i for rid, _, i in st.anchors}
+    out, shown = [f"set {name}: {len(mine)} tested questions"], []
+    for r in mine:
+        out.append(f"# {r['id']}: {r['question']}")
+        if r["id"] not in anchored:
+            docs = ", ".join(p.strip() for p in r["expect_paths"].split(";") if p.strip())
+            out.append(f"  (no anchor: {(eval_phrases(r) or [''])[0]} not in {docs})")
+            continue
+        u = st.unit(anchored[r["id"]])
+        shown.append(u)
+        where = f" § {u['section']}:" if u["section"] else ""
+        out.append(f"{u['path']}:{u['line']}{where} {clip(u['text'], PASSAGE_CHARS + PARENT_CHARS + CLAUSE_CHARS)}")
+    tied = tied_decisions(self_places(shown), only_active=True)
+    if tied:
+        out += ["", "## decisions"] + [decision_line(d, True) for d in tied]
+    if info is not None:
+        info.update(tested=[r["id"] for r in mine], pinned=len(shown), docs=list(dict.fromkeys(u["path"] for u in shown)))
+    return "\n".join(out)
+
+
+def record_self(text, budget, res=None, parts=(), item=None, set_name=None, info=None):
+    """Append one query log row for a `_self` lookup (`ql_capture.record`, surface `kb_ask`, the one a tool's own lookup
+    has): `root`, the `question` (one part as text, several as a list, each clipped), `verdict` (the worst), `tested`
+    (the matched tested-question ids), `pinned` (passages printed for them), `set` or `item`, `budget`, `chars` and
+    `lines` of the printed `text`, `parts`, `docs` printed and `key_missing` (key words no printed passage holds).
+    `res` is pack_many's result, `info` a set run's (set_pack). Never raises: a lookup never fails for its log."""
+    try:
+        import ql_capture
+        rs = (res or {}).get("results") or []
+        uniq = lambda key: list(dict.fromkeys(x for r in rs for x in r[key]))
+        ql_capture.record("kb_ask", root=SELF_ROOT, question=(ql_capture.clip(parts[0]) if len(parts) == 1 else ql_capture.clip(list(parts))) if parts else None,
+                          verdict=(res or {}).get("verdict"), tested=(info or {}).get("tested") or uniq("tested") or None,
+                          pinned=(info or {}).get("pinned", sum(r["pinned"] for r in rs)), set=set_name, item=item, budget=budget,
+                          chars=len(text), lines=ql_capture.pack_lines(text), parts=len(parts) or None,
+                          docs=(info or {}).get("docs") or uniq("paths") or None, key_missing=uniq("key_missing")[:12] or None)
+    except Exception:  # noqa: BLE001 - see the docstring
+        pass
+
+
+def glob_regex(pattern):
+    """The regular expression of a path glob: `*` within a directory, `**` across directories."""
+    return re.compile("".join(".*" if p == "**" else "[^/]*" if p == "*" else re.escape(p) for p in re.split(r"(\*\*|\*)", pattern)))
+
+
+def globs_meet(a, b):
+    """Whether path globs `a` and `b` are equal or one matches the other as a literal path."""
+    return a == b or bool(glob_regex(a).fullmatch(b) or glob_regex(b).fullmatch(a))
+
+
+def item_brief(item_id):
+    """{id, question, docs} of backlog item `item_id` (kb/_self/backlog/<id>.json), None when there is no such item:
+    the question is its title and goal, the docs the top-level kb/_self docs that kb/_self/map.csv maps to one of its
+    `touches` (self_docs() when none does)."""
+    if not kbcommon.CONTEXT_KINDS["item"].fullmatch(item_id):
+        return None
+    try:
+        with open(os.path.join(SELF_DIR, "backlog", f"{item_id}.json"), encoding="utf-8") as f:
+            item = json.load(f)
+        with open(os.path.join(SELF_DIR, "map.csv"), encoding="utf-8-sig", newline="") as f:
+            mapped = list(csv.DictReader(f))
+    except (OSError, ValueError):
+        return None
+    touches, docs = item.get("touches") or [], self_docs()
+    hit = sorted({r["doc"] for r in mapped if r.get("doc") in docs and any(globs_meet(r.get("pattern") or "", t) for t in touches)})
+    return {"id": item_id, "question": f"{item.get('title', '')}. {item.get('goal', '')}".strip(), "docs": hit or docs}
+
+
 def _corpus(domain):
-    metas = articles()
-    exps = expansions()
     us = units(domain, untagged=True)  # untagged rows and lines too: a word the kb has is never "not in the kb"
     if not domain:
         us += index_units()  # last, so the pack's view is a prefix of the corpus
+        us += self_units()  # after those: the index view is a prefix too
+    return weighed(us, articles(), expansions())
+
+
+def weighed(us, metas, exps):
+    """`us` with each unit's `title`, `len`, `own` (the words it holds) and `tf` (its weighted words: title, Summary,
+    doc2query expansions of a fact `exps` holds, tested questions of a passage)."""
     summaries = {}
     for u in us:
         art = u["path"] if u["path"] in metas else u["path"][:-4] + ".md"
@@ -1107,7 +1548,7 @@ def _corpus(domain):
         # domain holds its name, so a growing domain (agents/) would push that word past the 20% common-word cut.
         own = terms(f"{os.path.basename(bare(u['path']))} {u['title']} {u['section']} {u['text']}")
         u["len"], u["own"] = sum(tf.values()), frozenset(own)
-        for t in terms(u["title"]):
+        for t in terms(u["title"] or u.get("lead", "")):
             tf[t] += TITLE_WEIGHT - 1
         if meta and not u["section"].startswith("Summary"):
             if art not in summaries:
@@ -1117,13 +1558,16 @@ def _corpus(domain):
         for q in exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ():
             for t in terms(q):
                 tf[t] += EXPANSION_WEIGHT  # ranks the fact for other wordings; never a verdict word (not in own)
+        for _, q in u.get("anchors", ()):
+            for t in terms(q):
+                tf[t] += EXPANSION_WEIGHT  # a tested question: ranks its passage for other wordings; never a verdict word
         u["tf"] = tf
     return us
 
 
 # ---------------------------------------------------------------- the pack index (postings; persisted with sqlite3)
 
-INDEX_VERSION = 5  # bump when the index layout or what goes into a unit's tf/own changes
+INDEX_VERSION = 8 # bump when the index layout or what goes into a unit's tf/own changes
 
 
 class Store:
@@ -1131,15 +1575,17 @@ class Store:
     the order a full scan would give. `own(t)`: ids of the units whose own words hold t (verdict, df); `tf(t)`:
     [(id, weighted tf)] in id order (ranking). Per unit: `lens`, `summ` (a Summary unit), `tagged`, `root` (a unit of
     a root index file; they come last) and `paths`. Units, article metadata and source urls are read only for what a
-    pack or search prints."""
+    pack or search prints. `anchors`: [(tested question id, question, unit id)] of the `_self` passages."""
 
-    def __init__(self, fp, lens, summ, tagged, paths, arts, srcs, root=None):
+    def __init__(self, fp, lens, summ, tagged, paths, arts, srcs, root=None, passage=None, anchors=()):
         self.fp, self.lens, self.summ, self.tagged, self.paths = fp, lens, summ, tagged, paths
-        self.arts, self.srcs = arts, srcs
+        self.arts, self.srcs, self.anchors, self.rules = arts, srcs, list(anchors), False
         self.root = root if root is not None else [False] * len(lens)
+        self.passage = passage if passage is not None else [False] * len(lens)
         self.n, self.lensum = len(lens), sum(lens)
         self.n_main = next((i for i, r in enumerate(self.root) if r), len(lens))
-        self._own, self._tf, self._main = {}, {}, None
+        self.n_index = next((i for i, p in enumerate(self.passage) if p), len(lens))
+        self._own, self._tf, self._main, self._index = {}, {}, None, None
 
     def own(self, t):
         if t not in self._own:
@@ -1153,10 +1599,19 @@ class Store:
 
     def view(self, domain, index=False):
         """The units a pack (or a search) over `domain` (a path prefix: in_prefix) sees: its units, with `index` its
-        roots' ledgers too; else every unit but the index files'; with `index`, every unit."""
+        roots' ledgers too; else every unit but the index files'; with `index`, every unit but the rule passages.
+        The domain SELF_ROOT is the rule passages alone."""
+        if domain == SELF_ROOT:
+            return Subset(self, domain, rules=True)
         if domain:
             return Subset(self, domain, index)
-        if index or self.n_main == self.n:
+        if index:
+            if self.n_index == self.n:
+                return self
+            if self._index is None:
+                self._index = Prefix(self, self.n_index)
+            return self._index
+        if self.n_main == self.n:
             return self
         if self._main is None:
             self._main = Prefix(self, self.n_main)
@@ -1182,7 +1637,9 @@ class MemStore(Store):
         srcs = {k: [r.get("url") or "", (r.get("superseded_by") or "").strip()] for k, r in rows.items()}
         super().__init__(fp, [u["len"] for u in us], [u["section"].startswith("Summary") for u in us],
                          [bool(u["tags"]) for u in us], [u["path"] for u in us],
-                         {k: dict(v) for k, v in metas.items()}, srcs, [bool(u.get("root")) for u in us])
+                         {k: dict(v) for k, v in metas.items()}, srcs, [bool(u.get("root")) for u in us],
+                         [bool(u.get("passage")) for u in us],
+                         [(rid, q, i) for i, u in enumerate(us) for rid, q in u.get("anchors", ())])
 
     def _load_own(self, t):
         return set(self.own_lists.get(t, ()))
@@ -1209,9 +1666,11 @@ class MemStore(Store):
             pathlist = sorted(set(self.paths))
             pix = {p: i for i, p in enumerate(pathlist)}
             meta = {"version": str(INDEX_VERSION), "fp": self.fp, "lens": array.array("I", self.lens).tobytes(),
-                    "flags": bytes(1 * s + 2 * t + 4 * r for s, t, r in zip(self.summ, self.tagged, self.root)),
+                    "flags": bytes(1 * s + 2 * t + 4 * r + 8 * p
+                                   for s, t, r, p in zip(self.summ, self.tagged, self.root, self.passage)),
                     "pathix": array.array("I", (pix[p] for p in self.paths)).tobytes(),
-                    "paths": json.dumps(pathlist), "arts": json.dumps(self.arts), "srcs": json.dumps(self.srcs)}
+                    "paths": json.dumps(pathlist), "arts": json.dumps(self.arts), "srcs": json.dumps(self.srcs),
+                    "anchors": json.dumps(self.anchors)}
             con.executemany("INSERT INTO meta VALUES (?, ?)", meta.items())
             terms_ = set(self.own_lists) | set(self.tf_lists)
             con.executemany("INSERT INTO post VALUES (?, ?, ?, ?)", (
@@ -1243,7 +1702,8 @@ class SqlStore(Store):
         pathlist = json.loads(m["paths"])
         flags = m["flags"]
         super().__init__(m["fp"], lens.tolist(), [bool(f & 1) for f in flags], [bool(f & 2) for f in flags],
-                         [pathlist[i] for i in pix], json.loads(m["arts"]), json.loads(m["srcs"]), [bool(f & 4) for f in flags])
+                         [pathlist[i] for i in pix], json.loads(m["arts"]), json.loads(m["srcs"]), [bool(f & 4) for f in flags],
+                         [bool(f & 8) for f in flags], json.loads(m["anchors"]))
         self.lock = threading.Lock()
 
     def _row(self, t):
@@ -1275,13 +1735,19 @@ class SqlStore(Store):
 
 class Subset(Store):
     """The units of one domain (a path prefix) of a full store: df, n and the average length over those units only,
-    as a pack over corpus(domain) computes them."""
+    as a pack over corpus(domain) computes them. With `rules`, the rule passages alone."""
 
-    def __init__(self, base, domain, index=False):
+    def __init__(self, base, domain, index=False, rules=False):
         self.base = base
-        self.keep = {i for i, p in enumerate(base.paths) if in_prefix(p, domain) and (index or not base.root[i])}
+        if rules:
+            self.keep = {i for i, p in enumerate(base.passage) if p}
+        else:
+            self.keep = {i for i, p in enumerate(base.paths)
+                         if in_prefix(p, domain) and (index or not base.root[i]) and not base.passage[i]}
         ids = sorted(self.keep)
-        super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs, base.root)
+        super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs, base.root,
+                         base.passage, base.anchors)
+        self.rules = rules
         self.n, self.lensum = len(ids), sum(base.lens[i] for i in ids)
 
     def _load_own(self, t):
@@ -1298,7 +1764,8 @@ class Prefix(Store):
     """The first `n` units of a full store (every unit but the root index files'), as a pack over them computes."""
 
     def __init__(self, base, n):
-        super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs, base.root)
+        super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs, base.root,
+                         base.passage, base.anchors)
         self.base, self.n, self.lensum = base, n, sum(base.lens[:n])
 
     def _load_own(self, t):
@@ -1390,7 +1857,7 @@ def rank(st, question):
     key words, {key word: ids of the units holding it (alias variants included)}, {key word: that count}).
     A Summary unit scores 1.15 times, an untagged one UNTAGGED_WEIGHT times; ties keep corpus order."""
     q = sorted(set(terms(question)))
-    extra, variants = expand(question)
+    extra, variants = expand(question, st.rules)
     whole = set(terms(question, camel=False))
     weight = {**extra, **{t: 1.0 if t in whole else PART_WEIGHT for t in q}}
     df = {t: len(st.own(t)) for t in weight}
@@ -1512,7 +1979,85 @@ def specific(st, question, named, known, keys, holders):
     return False
 
 
-def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False):
+def opening_passage(st, u):
+    """The first passage of the source line of passage `u`: the passages of a line are neighbours in the corpus."""
+    i = u["id"]
+    while i and st.paths[i - 1] == u["path"] and st.unit(i - 1)["line"] == u["line"]:
+        i -= 1
+    return u if i == u["id"] else st.unit(i)
+
+
+TESTED_PINS = 3  # tested questions a `_self` pack pins the passages of
+TESTED_SHARE = 0.75  # of the question's key words a tested question must hold, and half of its own the question
+
+
+def tested_matches(st, informative):
+    """[(id, tested question, passage unit id)] of the (at most TESTED_PINS) anchored tested questions of `_self` store
+    view `st` that the question matches: at least TESTED_SHARE of the question's `informative` key words are in the
+    tested question and at least half of its informative key words in the question. The best match first, then
+    store order."""
+    asked, found = {w for w in informative if len(w) >= 3}, []
+    for n, (rid, text, i) in enumerate(st.anchors if asked else ()):
+        keys = sorted(set(key_terms(text)))
+        theirs = {w for w in informative_words(keys, {t: len(st.own(t)) for t in keys}, st.n) if len(w) >= 3}
+        both = asked & theirs
+        if theirs and len(both) >= TESTED_SHARE * len(asked) and len(both) * 2 >= len(theirs):
+            found.append((-len(both), n, (rid, text, i)))
+    return [x[2] for x in sorted(found)[:TESTED_PINS]]
+
+
+LIST_INTRO_CHARS = 80  # a passage whose own text is shorter than this and ends in `:` introduces a list
+
+
+def list_intro(u):
+    """Whether passage `u`, without its context prefix, is a list introduction ("… refuses when any of these hold:"):
+    its children carry it as their parent context, and alone it says nothing."""
+    own = u["text"].rsplit(CONTEXT_SEP, 1)[-1]
+    return own.endswith(":") and len(own) < LIST_INTRO_CHARS
+
+
+def pick_passages(st, scored, best, cost, limit, pins=()):
+    """{doc: [(score, passage)]} of a `_self` pack: the `pins` (passages marked `tested`) first, in their docs, then the
+    passages of every doc compete, best first until `limit` characters are used (`cost` is spent already), no text
+    twice, at most PASSAGES_PER_LINE of one source line. A line shows its opening passage, which states the rule: for
+    a table row, whose later passages carry only its first cell, when it is not among the line's chosen ones it takes
+    the place of the lowest-scored of its unpinned ones."""
+    taken, shown, per_line = defaultdict(list), set(), Counter()
+    for u in pins:
+        cost += len(clip(u["text"], PASSAGE_CHARS + PARENT_CHARS + CLAUSE_CHARS)) + len(u["path"]) + 12 + (
+            0 if u["path"] in taken else len(u["path"]) + 50)
+        shown.add(u["text"])
+        per_line[(u["path"], u["line"])] += 1
+        taken[u["path"]].append((float("inf"), u))
+    for s, u in scored:
+        if s < 0.4 * best or u["text"] in shown or per_line[(u["path"], u["line"])] >= PASSAGES_PER_LINE or list_intro(u):
+            continue
+        line_cost = len(clip(u["text"], PASSAGE_CHARS + PARENT_CHARS + CLAUSE_CHARS)) + len(u["path"]) + 12
+        head_cost = 0 if u["path"] in taken else len(u["path"]) + 50
+        if cost + line_cost + head_cost > limit and any(taken.values()):
+            break
+        cost += line_cost + head_cost
+        shown.add(u["text"])
+        per_line[(u["path"], u["line"])] += 1
+        taken[u["path"]].append((s, u))
+    for rel, items in taken.items():
+        rows = (read(rel) or "").splitlines()
+        for line in dict.fromkeys(u["line"] for _, u in items):
+            on_line = [x for x in items if x[1]["line"] == line]
+            mine = [x for x in on_line if not x[1].get("tested")]
+            if not mine:
+                continue
+            first = opening_passage(st, mine[0][1])
+            if not rows[line - 1].lstrip().startswith("|") or first["id"] in {u["id"] for _, u in on_line} or first["text"] in shown:
+                continue
+            low = min(mine, key=lambda x: x[0])
+            items[items.index(low)] = (low[0], first)
+            shown.add(first["text"])
+    return taken
+
+
+def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False,
+         item=None, st=None):
     """Rank fact units for a question and return {verdict, route, has, lacks, missing, matched, sources, text, ...}.
 
     The corpus is every fact unit plus the untagged bullets, table rows and data rows (Summary, Reference, Examples,
@@ -1544,6 +2089,14 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     name of the question makes the verdict `good` (its words leave `missing` and the route lines, and no `check:` line
     follows from the facts); a proposed or invalidated one never changes it. A kb with none prints what it always did,
     byte for byte.
+    Root `_self` (the kb's own rule docs) prints, after the passages, the decisions tied by an `article:_self/<doc>` or
+    `article:_self/<doc>#<Heading>` context to a doc or section a printed passage is in (tied_decisions), each with its
+    source, beside those the question's words find; at most MAX_DECISIONS lines. With `item` (item_brief) the question
+    ranks the item's docs only, and the decisions are item_decisions: at most ITEM_DECISIONS lines. A `_self` pack
+    first compares the question with the anchored tested questions (tested_matches): the passage of each that matches
+    is printed first, marked `[tested <id>]`, and the verdict is `good` only then (`coverage: good (tested question
+    <id>: <question>)`); with none it is at most `weak`, `none` by the key words alone. `st` is the store view to use
+    (self_store), else the index's.
     Observed signals: a kb that keeps `_logs.csv` rows adds, after the decisions, `observed signal (LOG, not a fact):`
     and the active rows whose context is a printed article or fact (logs_for: at most MAX_LOGS lines, newest first, each
     with the dates it covers), paid from what budget the facts leave, so a small budget drops them first. They are
@@ -1551,12 +2104,17 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     that routes web prints none. A kb with none prints what it always did, byte for byte. fmt
     `concise` drops the article flags and the source url footer; footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
     or qualified `public/intune`) and `root` narrow the units (scope()); paths print qualified (`public/intune/x.md`)."""
-    st = store(scope(domain, root))
+    rules = scope(domain, root) == SELF_ROOT  # the kb's own rule docs: facts without sources, no web route
+    st = st or store(scope(domain, root))
     ranked, keys, holders, kdf = rank(st, question)
+    if item:
+        ranked = [x for x in ranked if st.paths[x[1]] in item["docs"]]
     n = max(st.n, 1)
     informative = informative_words(keys, kdf, n)
     missing = [t for t in informative if not kdf[t]]
     scored = [(s, st.unit(i)) for s, i in ranked[:40]]
+    tested = tested_matches(st, informative) if rules else []
+    pins = [{**st.unit(i), "tested": rid} for rid, _, i in tested]
 
     def has(u, t):
         return u["id"] in holders[t]
@@ -1614,34 +2172,50 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             verdict = "none"
     # operator decisions beside the facts (decisions_for): an active one that answers the question lifts the coverage
     # to `good` and its words count as held; their lines count inside the budget, so the facts get what is left
-    dec, dheld, lifted = [], set(), False
-    if decision_rows():
+    dec, dheld, lifted, answering = [], set(), False, []
+    if item:
+        dec = [{**d, "hit": [], "answers": False} for d in item_decisions(item)]
+    elif decision_rows():
         cand = [u for a in order for _, u in sorted((x for x in by_art[a] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]]
         dec = decisions_for(informative, named, set(order), cand, scope(domain, root), invalidated)
-        answering = [d for d in dec if d["answers"] and d["status"] == "active"]
+        answering = [d for d in dec if d["answers"] and d["status"] == "active" and not rules]
         if answering:
             dheld = set().union(*(d["hit"] for d in answering))
             lifted = verdict != "good"
             verdict = "good"
             missing = [t for t in missing if t not in dheld]
-    dlines, dused = [], 0
-    for d in dec[:MAX_DECISIONS]:
-        line = decision_line(d)
-        if dlines and dused + len(line) > int(budget * 3.5) // DECISION_BUDGET_SHARE:
-            break
-        dlines.append(line)
-        dused += len(line)
-    dec = dec[:len(dlines)]
-    dused += 40 if dlines else 0  # the section's heading
+    cap = ITEM_DECISIONS if item else MAX_DECISIONS
+    dlines, kept = decision_block(dec, budget, cap, rules)
+    dused = sum(map(len, dlines)) + (40 if dlines else 0)  # the section's heading
     concise = fmt == "concise"
-    url_cost = 0 if concise else 110  # a source footer line is about 110 characters
+    url_cost = 0 if concise or rules else 110  # a source footer line is about 110 characters
     limit, used, groups, cited, paths, printed = int(budget * 3.5), dused, [], [], [], []
+    taken = defaultdict(list)
+    if rules:
+        taken = pick_passages(st, scored, best, dused, limit, pins)
+        if not item:
+            # the decisions tied to a doc or section a chosen passage is in follow the ones the question's words found
+            have = {d["id"] for d in dec}
+            dec = dec + [{**d, "hit": [], "answers": False} for d in
+                         tied_decisions(self_places(u for g in taken.values() for _, u in g), invalidated) if d["id"] not in have]
+            dlines, kept = decision_block(dec, budget, cap, True)
+            dused = sum(map(len, dlines)) + (40 if dlines else 0)
+            taken = pick_passages(st, scored, best, dused, limit, pins)
+            used = dused
+        order = list(taken)
     for art in order:
-        items, picked = [], sorted(sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6],
-                                   key=lambda x: x[1]["line"])
+        if rules:
+            picked = taken[art]
+        else:
+            picked = sorted(sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6],
+                            key=lambda x: x[1]["line"])
+        items = []
+        one_section = len({u["section"] for _, u in picked}) == 1  # rule docs: the heading once, else on each line
         for s, u in picked:
-            text = clip(u["text"], 420)
-            line = f"- {u['path']}:{u['line']} {text}" + ("" if u["tags"] else " (no tag)")
+            text = clip(u["text"], PASSAGE_CHARS + PARENT_CHARS + CLAUSE_CHARS if rules else 420)
+            where = f" § {u['section']}:" if rules and u["section"] and not one_section else ""
+            mark = f" [tested {u['tested']}]" if u.get("tested") else ""
+            line = f"- {u['path']}:{u['line']}{mark}{where} {text}" + ("" if u["tags"] else " (no tag)")
             line += ("\n" + snippet_code(u)) if snippet_code(u) else ""
             new_ids = [i for p in u["tags"] for i in p["ids"]] + ID.findall(text)
             # the root prefix of the path (`public/`) is not counted: a pack chooses the same lines in any layout
@@ -1659,12 +2233,35 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
                 items.append(f"  (+{more} more matching lines in {art}: kb_search with more words, or kb_show)")
             meta = st.arts.get(art, {})
             head = f"## {art}" + (f"  {meta.get('title', '')}" if meta else "")
+            if rules and one_section and picked[0][1]["section"]:
+                head += f"  § {picked[0][1]['section']}"
             flags = ", ".join(filter(None, (meta.get("status"), f"retrieved {meta['retrieved_utc']}" if meta.get("retrieved_utc") else "")))
             groups.append((head + (f"  [{flags}]" if flags and not concise else ""), items))
             paths.append(art)
             used += len(head) - (len(art) - len(bare(art))) + 40
         if used >= limit:
             break
+    if rules and not item:
+        tied = {d["id"] for d in tied_decisions(self_places(printed), invalidated)}
+        dlines, kept = decision_block([d for d in dec if d["answers"] or d["id"] in tied], budget, cap, True)
+    unheld = []
+    if rules:
+        # the docs are so large that "the best article matches most key words" holds for almost any question: the
+        # verdict counts the key words one printed passage (with its context and heading) holds
+        informative_set = set(informative)
+        words = [{t for t in informative if has(u, t)} for u in printed]
+        hit = max(words, key=len, default=set())
+        unheld = [t for t in informative if not any(t in w for w in words)]
+        best_share = len(hit) / len(informative) if informative else 0.0
+        names = named & informative_set
+        # one printed passage holds every named word, and no key word is missing from the docs
+        names_held = bool(names) and not missing and any(names <= w for w in words)
+        if tested:
+            verdict = "good"
+        elif not printed or (best_share < 0.34 and not names_held) or names - set().union(*words):
+            verdict = "none"
+        else:
+            verdict = "weak"
     seen, srcs = set(), []
     for i in cited:
         if i not in seen:
@@ -1691,9 +2288,15 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         if top * 2 < len(known):
             spread = (top, len(known))
     head = f"coverage: {verdict}"
-    if known:
-        head += (f" ({'an active decision answers it; ' if lifted else ''}best article matches {len(hit)} of "
-                 f"{len(known)} key words: {', '.join(sorted(hit)) or '-'})")
+    counted = informative if rules else known
+    if tested:
+        head += f" (tested question {tested[0][0]}: {tested[0][1]})"
+    elif counted:
+        head += (f" ({'an active decision answers it; ' if lifted else ''}{'no tested question matches; ' if rules else ''}"
+                 f"best {'passage' if rules else 'article'} matches {len(hit)} of {len(counted)} key words: "
+                 f"{', '.join(sorted(hit)) or '-'})")
+    elif rules:
+        head += " (no tested question matches)"
     elif lifted:
         head += " (an active decision answers it)"
     if missing:
@@ -1709,17 +2312,25 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     fresh = freshness(question, missing, st.arts.get(paths[0] if paths else (order[0] if order else ""), {}))
     if fresh:
         out.append(fresh)
-    route = route_of(verdict, unmatched, spread, missing)
+    route = None if rules and verdict == "none" else route_of(verdict, unmatched, spread, missing)
     # a near miss (a `none` that routes split: only a language or format name is nowhere in the kb) prints what a
     # `weak` pack would, its facts and source footer, and no none sentence, so the reader answers the part the kb has
     # (sp_getapplock for the T-SQL question) and looks up only the rest
-    shut = verdict == "none" and route != "split"
-    if shut:
+    shut = verdict == "none" and (rules or route != "split") and not item  # an item's brief prints its passages whatever the verdict
+    if shut and not rules:
         out.append(NONE_SENTENCE)
     has = own_words(question, set(hit) | dheld)
     lacks = own_words(question, [t for t in informative if t not in hit and t not in dheld])
     if route:
-        out += [f"route: {route}", f"kb has: {', '.join(has) or '-'}", f"kb lacks: {', '.join(lacks) or '-'}"]
+        out += ([] if rules else [f"route: {route}"]) + [f"kb has: {', '.join(has) or '-'}", f"kb lacks: {', '.join(lacks) or '-'}"]
+        if rules:
+            route = None  # the web never applies to the rule docs
+    elif rules and verdict == "none" and not item:
+        out += [f"kb has: {', '.join(has) or '-'}", f"kb lacks: {', '.join(lacks) or '-'}",
+                'the rule docs do not answer it: python3 _tools/rag.py search --index "<words>" (ledgers, README.md, '
+                "every kb/_self doc)"]
+    if rules and verdict != "good" and not item:
+        out.append("reword once with the rule's own words, or read the section: python3 _tools/selfdoc.py section DOC HEADING")
     for h, items in groups if not shut else [(g[0], g[1][:2]) for g in groups[:1]]:
         out += ["", h] + items
     if dlines:
@@ -1736,15 +2347,17 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         lused += len(line) + 1
     if llines:
         out += ["", LOG_LABEL] + llines
-    if shut:
+    if shut or rules:
         srcs = []
     if srcs and footer and not concise:
         out += ["", "sources:"] + format_sources(srcs)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
             "unmatched": unmatched, "spread": spread, "route": route, "has": has, "lacks": lacks, "paths": paths,
+            "tested": [t[0] for t in tested], "pinned": sum(1 for u in printed if u.get("tested")),
+            "key_missing": own_words(question, unheld),
             "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),
             "decisions": [{"id": d["id"], "status": d["status"], "label": decision_label(d), "path": d["path"],
-                           "line": d["line"], "text": d["text"], "answers": d["answers"]} for d in dec],
+                           "line": d["line"], "text": d["text"], "answers": d["answers"]} for d in kept],
             "logs": [{"id": r["id"], "path": r["path"], "line": r["line"], "observed_from": r["observed_from"],
                       "observed_to": r["observed_to"], "text": r["text"]} for r in lshown]}
 
@@ -1834,7 +2447,7 @@ MAX_QUESTIONS = 6
 PART_BUDGET_MIN = 800  # tokens per part of a 3+ part pack
 
 
-def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False):
+def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
     {verdict (the worst), results, text}. A single question gives exactly pack()'s text. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
@@ -1843,10 +2456,10 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     else `split` when any part routes; None (no line) when none does. One question gives its pack's route."""
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     if len(qs) == 1:
-        res = pack(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated)
+        res = pack(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated, item=item)
         return {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
-    results = [pack(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated) for q in qs]
+    results = [pack(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated, item=item) for q in qs]
     routes = [r["route"] for r in results if r["route"]]
     route = None if not routes else "web" if all(r["route"] == "web" for r in results) else "split"
     out, seen, srcs = ([f"route: {route}"] if route else []), set(), []

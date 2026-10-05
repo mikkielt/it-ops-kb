@@ -77,6 +77,18 @@ def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):
     assert code != 0 and f"FAIL {row['id']}" in out and "questions=1 passed=0" in out, out[-1500:]
 
 
+def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
+    with open(os.path.join(kbcommon.SELF, kbcommon.DATA_DIR, "lookup_eval.csv"), encoding="utf-8", newline="") as f:
+        row = next(csv.DictReader(f))
+    bad = tmp_path / "lookup_eval.csv"
+    with open(bad, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(row), lineterminator="\n")
+        w.writeheader()
+        w.writerow(dict(row, expect_text="a phrase no rule doc holds"))
+    code, out = tool("rag.py", "eval", "--file", str(bad), "--root", "_self")
+    assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
+
+
 def test_pack_prints_coverage_and_fact_lines_with_path_line_and_tag():
     code, out = tool("rag.py", "pack", good_row()["question"])
     assert code == 0, out[-1500:]

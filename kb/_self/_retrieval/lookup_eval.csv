@@ -1,0 +1,39 @@
+id,question,expect_paths,expect_verdict,allow_weak,expect_text,sets
+SE-001,what does backlog.py land refuse when the tree has uncommitted or untracked files,backlog.md,good,yes,it refuses uncommitted changes,kb-item:land
+SE-002,who may answer a sprint's start gate,backlog.md,good,yes,the operator approves the goal,
+SE-003,how is an agent's provisional gate answer confirmed and by whom,backlog.md,good,yes,the operator confirms each such answer,
+SE-004,an item touches a rule-guarding path and its goal leaves a design choice open: what must happen before code is written,backlog.md,good,yes,asked before any code is written,
+SE-005,which commit trailer makes a commit count as work on a backlog item,backlog.md,good,yes,ends with `KB-Work:,kb-item:land
+SE-006,in which cases does backlog.py done refuse an item,backlog.md,good,yes,the item waits on anything,kb-item:land
+SE-007,may a sprint worker push its own branch,backlog.md,good,yes,"`work/<id>`, never pushed",kb-item:land
+SE-008,how does an agent escalate a decision it cannot make itself,backlog.md,good,yes,records a gate with its recommendation,
+SE-009,"who removes a finished worker's worktree, since git worktree remove is denied to agents",backlog.md;tools.md,good,yes,`git worktree remove` is denied to agents,
+SE-010,which signals mark stalled work,tools.md,good,yes,"`returned-no-commit`, `returned-staged`, `done-refused`",
+SE-011,when does backlog.py drop refuse to drop an item,backlog.md,good,yes,refuses an item that an item,
+SE-012,where is a bug found while landing filed so its fix commit passes check-trailers,backlog.md,good,yes,an active sprint's id,
+SE-013,what does backlog.py claim refuse when another session works in the same checkout,backlog.md,good,yes,a claim by a second session,
+SE-014,which changes are pushed as a code/<id> merge request instead of straight to main,git.md,good,yes,goes as branch `code/<id>`,
+SE-015,how do I record that a mapped doc was read and needs no edit,README.md;git.md,good,yes,goes in the commit's `Self-Reviewed:;needed no edit,
+SE-016,what does kbgit.py sync --push run as its gate for a content-only change,git.md;maintaining.md,good,yes,`check.py` for kb content;it runs only what the changed paths can break,
+SE-017,what is allowed to be pushed to GitHub,git.md,good,yes,`main` only through `kbgit.py publish`,
+SE-018,how large may AGENTS.md be,maintaining.md,good,yes,`AGENTS.md` has a 4 KB cap,
+SE-019,should I run the whole test suite before every push,maintaining.md,good,yes,Do not run the suite,
+SE-020,what happens when two whole-suite tests.py runs overlap on one host,maintaining.md,good,yes,waits for another such run,
+SE-021,when may a new test be added to the suite,code.md,good,yes,needs room under `max_ids`;A test is written only for,kb-item:work
+SE-022,may a tool in _tools import a third-party package,tools.md,good,yes,stdlib-only Python in `_tools/`,
+SE-023,what does a bug get instead of a regression test,code.md,good,yes,A bug gets a retrospective,kb-item:work
+SE-024,who may change the numbers in the tests ceiling file,code.md,good,yes,only with the operator's recorded answer,
+SE-025,which fact tags are leads and never the answer alone,content-rules.md,good,yes,`UNK` and `COMMUNITY` facts are leads,
+SE-026,which placeholders must examples use instead of real hostnames and tenant ids,content-rules.md,good,yes,hosts `PL-LT-00123` and `PL-SRV-0042`,
+SE-027,a real lookup failed: when does it become a lookup_eval.csv row and when a _gaps.md entry,maintaining.md,good,yes,the kb has the answer,
+SE-028,may a kb/_self doc describe history or how things used to work,README.md,good,yes,the kb as it is now,
+SE-029,where do measurements of the kb's tools get recorded,README.md,good,yes,the measurements `design.md` and `token-efficiency.md`,
+SE-030,what does rag.py pack print when the kb does not hold the answer,tools.md,good,yes,does not cover the question,
+SE-031,what does selfdoc.py stale --since report,tools.md,good,yes,in REV..HEAD and the working tree,
+SE-032,is the query log ever published to GitHub,querylog.md;git.md,good,yes,Never to the public home,
+SE-033,which modes does the query log have,querylog.md,good,yes,"`mode` (`auto`, `local`, `off`)",
+SE-034,which kb MCP tool is always loaded and which stay deferred,token-efficiency.md;plugin.md,good,yes,the other kb tools stay deferred,
+SE-035,which skills does the plugin ship to its users,plugin.md,good,yes,`/kb-lookup` is model-invocable,
+SE-036,how do I configure the Autopilot enrollment status page timeout,,none,,,
+SE-037,what is the default TTL of a Kerberos ticket granting ticket,,none,,,
+SE-038,which steps does backlog.py land run and what does it refuse,backlog.md,good,yes,runs these steps,kb-item:land

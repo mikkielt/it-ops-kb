@@ -48,7 +48,7 @@ Messages name files by their qualified path `<root>/<path>`, or by their path in
 import argparse, csv, datetime, os, re, sys
 from collections import Counter
 from pathlib import Path
-import kbcommon, kbid
+import kbcommon, kbid, selfdoc
 
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
 TAG = re.compile(r"\[(?:DOC|CODE|DER|COMMUNITY)\s([^\]]+)\]")  # \s: a tag may wrap after DOC
@@ -250,14 +250,33 @@ def central_makers():
     return {(r.get("id") or "").strip(): (r.get("role") or "").strip() for r in rows}
 
 
+def self_article_exists(value):
+    """Whether `_self/<doc>` names a top-level kb/_self doc, and `_self/<doc>#<Heading>` a doc that holds the heading
+    (compared as `selfdoc.py section` does)."""
+    name, sep, heading = value.removeprefix("_self/").partition("#")
+    path = Path(kbcommon.SELF) / f"{name}.md"
+    if not name or "/" in name or not path.is_file():
+        return False
+    if not sep:
+        return True
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return False
+    return any(selfdoc.norm_heading(text) == selfdoc.norm_heading(heading) for _, _, text in selfdoc.headings(lines))
+
+
 def context_error(kind, value, root, base, owner, known, noun="decisions"):
     """Why a context reference names nothing (an existing source, article or domain), or None. kb/_self (root None)
-    qualifies an article or a domain as <root>/<path>."""
+    qualifies an article or a domain as <root>/<path>, and may name one of its own docs or a section of it as
+    article:_self/<doc>[#<Heading>]."""
     if kind == "source":
         return cite_error(value, root, owner, known)
     if kind not in ("article", "domain"):  # an item or a fact may be gone: kbdecide.py sweep invalidates or relinks
         return None
     where, rel = base, value
+    if root is None and kind == "article" and value.startswith("_self/"):
+        return None if self_article_exists(value) else f"names no article {value}"
     if root is None:
         owner_root, rel = kbcommon.split(value)
         if owner_root is None:

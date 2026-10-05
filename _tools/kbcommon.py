@@ -119,7 +119,9 @@ CONTEXT_KINDS = {
     "item": re.compile(r"[A-Z]{2}-[a-z0-9]{8}"),  # a backlog item
     "fact": re.compile(r"[0-9a-f]{12}"),  # a fact's key (kbfacts.fact_key)
     "source": re.compile(r"(?:[A-Z]{1,4}-[a-z2-7]{8}|S\d+)"),  # a source id of the root
-    "article": re.compile(r"[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9._-]*)+"),  # <domain>/<slug> in the root (<root>/<domain>/<slug> in kb/_self)
+    # <domain>/<slug> in the root (<root>/<domain>/<slug> in kb/_self); in kb/_self also a rule doc, `_self/<doc>`, or
+    # one of its sections, `_self/<doc>#<Heading>`
+    "article": re.compile(r"(?:[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9._-]*)+|_self/[a-z0-9][a-z0-9-]*(?:#[^\s#;][^#;]*)?)"),
     "domain": re.compile(r"[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9-]*)?"),  # a domain directory of the root (<root>/<domain> in kb/_self)
 }
 
