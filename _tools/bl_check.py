@@ -902,19 +902,26 @@ def refused_command_errors(bl):
     """check's errors: an open item whose repro or check bl_intake.check_program_refusal refuses or trivial_command
     flags, the predicates test_open_repros_run_headless and test_done_flags_noop_check_real_backlog_commands assert
     over the live item files. new only warns of them, so without this an item file passed the fast content gate and
-    turned those tests red for every later landing that selected them."""
+    turned those tests red for every later landing that selected them. The error names the part, never its command:
+    the command may hold a value the leak scan withholds."""
     out = []
     for iid, it in sorted(bl.items.items()):
         if it.get("status") not in OPEN_STATUSES:
             continue
-        parts = ([("repro", it["repro"])] if it.get("repro") else []) + [("check", c) for c in it.get("checks") or []]
+        checks = it.get("checks") or []
+        parts = ([("repro", it["repro"])] if it.get("repro") else []) \
+            + [(f"check {n}" if len(checks) > 1 else "check", c) for n, c in enumerate(checks, 1)]
         for name, part in parts:
             if not _check_ok(part):
                 continue
-            why = bl_intake.check_program_refusal(part["run"]) or trivial_command(part["run"])
-            if why:
-                out.append(f"{bl.label(iid)}: {name} {shlex.join(part['run'])} is refused: {why} (an open item's "
-                           "repro and checks are python3 on a _tools/ script or inline code that runs a test or tool)")
+            if bl_intake.check_program_refusal(part["run"]):
+                why = "its program is not python3 on a _tools/ script or inline code (bl_intake.check_program_refusal)"
+            elif trivial_command(part["run"]):
+                why = "it runs no test or tool code, so it passes whatever the code does (trivial_command)"
+            else:
+                continue
+            out.append(f"{bl.label(iid)}: {name} is refused: {why}; an open item's repro and checks run without a "
+                       "shell and run a test or tool")
     return out
 
 

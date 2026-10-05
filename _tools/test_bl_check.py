@@ -55,8 +55,9 @@ def test_check_errors_on_refused_item_command(sprint):
     edit(repo, sprint["tk"], checks=[{"run": PASS}])
     code, out = b(repo, "check")
     assert code == 1 and "errors=2" in out, out
-    assert f"{sprint['bg']} “Bug”: repro sh -c 'test -f src/c.txt' is refused: its program is sh" in out, out
-    assert f"{sprint['tk']} “Task”: check python3 -c pass is refused: its code ('pass') only passes" in out, out
+    assert f"{sprint['bg']} “Bug”: repro is refused: its program is not python3" in out, out
+    assert f"{sprint['tk']} “Task”: check is refused: it runs no test or tool code" in out, out
+    assert "src/c.txt" not in out, out  # the command is never printed: it may hold a value the leak scan withholds
     edit(repo, sprint["bg"], status="dropped")
     edit(repo, sprint["tk"], checks=[{"run": is_file("src/b.txt")}])
     code, out = b(repo, "check")
