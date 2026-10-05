@@ -2,7 +2,7 @@
   "id": "BG-aycs7kml",
   "kind": "bug",
   "title": "Knowledge state with --root mixes the other clone's refs with this clone's pack and conflicts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,29 @@
     "_tools/test_bl_check.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "2f89a2b88b55db247e30da9b63d8eeba9c0cfe37",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "knowledge_state_root_uses_its_own_refs"
+        ],
+        "exit": 0,
+        "sha256": "bcb21b54af2d340c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "knowledge_state_root_uses_its_own_refs"
+        ],
+        "exit": 0,
+        "sha256": "5e0cb99f3c336e50"
+      }
+    ]
+  }
 }
