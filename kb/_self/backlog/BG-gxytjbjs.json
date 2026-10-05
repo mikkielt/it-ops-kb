@@ -1,0 +1,22 @@
+{
+  "id": "BG-gxytjbjs",
+  "kind": "bug",
+  "title": "code.md and tools.md contradict the bl_items move and the answer and set refusals",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/code.md no longer says backlog.py holds the item writers kept whole (they are in bl_items.py); tools.md's answer row no longer says --by takes operator or agent only (delegate:NAME confirms), and its set row says a --repro that passes now exits 1, not 2. Found by the SP-gfz3rl64 review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open('kb/_self/code.md',encoding='utf-8').read();t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(1 if 'item writers kept whole' in s or 'takes `operator` or `agent` only' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the docs' own text: what they say about the code is the behaviour, and only matching that text shows it",
+  "touches": [
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ]
+}
