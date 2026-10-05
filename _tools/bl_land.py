@@ -1096,8 +1096,8 @@ def clean_runner_leftovers(root, sid, ids):
     agents' shells may not run `git worktree remove` or `git branch -D` (.claude/settings.json): the runner's worktree
     `runner-<SID>` under the clone's .claude/worktrees/ and its `orch/<SID>` branch, the clean `agent-*` worktrees of
     the sprint's items IDS (on `work/<id>`, or detached at a commit whose KB-Work trailer names one), the sprint's
-    `work/<id>` branches and the `worktree-agent-*` branches whose tip is on the integration main, and
-    _cache/autopilot/<SID>. Worktrees go before branches; never with --force. A branch with a commit the integration
+    `work/<id>` branches and the `worktree-agent-*` branches whose tip is on the integration main (one whose
+    `agent-<x>` worktree, read before any removal, is another sprint's worker is kept), and _cache/autopilot/<SID>. Worktrees go before branches; never with --force. A branch with a commit the integration
     main lacks, a locked, dirty or process-holding worktree, another sprint's runner, or the worktree close runs in
     is kept, and `close: kept ...: reason` says why. Returns the number kept."""
     import kbpublic
@@ -1121,16 +1121,22 @@ def clean_runner_leftovers(root, sid, ids):
     dirs = worker_dirs(root)
     entries = [e for e in worktree_entries(root) if e["path"].parent in dirs]
     wanted = {f"{WORK_PREFIX}{i}" for i in ids}
-    for e in entries:  # the sprint's workers first
-        name = e["path"].name
-        if not name.startswith(WORKER_NAME):
-            continue
+
+    def sprints(e):
+        """Whether the worker worktree E is this sprint's: on one of its work/<id> branches, or detached at a commit
+        whose KB-Work trailer names one of its items."""
+        if e["branch"] in wanted:
+            return True
+        if e["branch"] is not None:
+            return False
+        _, trailer, _ = run(["git", "log", "-1", "--format=%(trailers:key=KB-Work,valueonly)", e["head"]], cwd=root)
+        return bool({t.strip() for t in re.split(r"[,\s]+", trailer) if t.strip()} & set(ids))
+
+    # read before any removal: the agent-<x> worktree each worktree-agent-<x> branch belongs to, and whose it is
+    workers = {e["path"].name: (e, sprints(e)) for e in entries if e["path"].name.startswith(WORKER_NAME)}
+    for e, ours in workers.values():  # the sprint's workers first
         on_branch = e["branch"] in wanted
-        trailer = ""
-        if e["branch"] is None or not on_branch:
-            _, trailer, _ = run(["git", "log", "-1", "--format=%(trailers:key=KB-Work,valueonly)", e["head"]], cwd=root)
-        named = {t.strip() for t in re.split(r"[,\s]+", trailer) if t.strip()}
-        if not (on_branch or (e["branch"] is None and named & set(ids))):
+        if not ours:
             continue
         if not merged_into(root, e["head"], upstream):
             keep(e["path"], f"it has commits {upstream} lacks")
@@ -1161,6 +1167,11 @@ def clean_runner_leftovers(root, sid, ids):
         if branch == f"{ORCH_PREFIX}{sid}" or branch in wanted:
             delete_landed_branch(root, branch, upstream, extra=(ORCH_PREFIX,), who="close")
         elif branch.startswith(AGENT_BRANCH + WORKER_NAME):
+            owner = workers.get(branch[len(AGENT_BRANCH):])
+            if owner and not owner[1]:  # its worktree is another sprint's worker, still there: not this close's
+                keep(branch, f"its worktree {owner[0]['path']} is on {owner[0]['branch'] or 'a detached commit'}, "
+                             "not one of this sprint's items")
+                continue
             anc = run(["git", "merge-base", "--is-ancestor", tip, upstream], cwd=root)[0] == 0
             if anc:
                 delete_landed_branch(root, branch, upstream, who="close")
