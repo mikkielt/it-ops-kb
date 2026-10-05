@@ -154,6 +154,24 @@ class KbAtHead:
         return m.group(1) if m else None
 
 
+def knowledge_form(bl, iid):
+    """The errors of the form of one item's `knowledge`: {ask: [questions], refs: [references]}, each a list of
+    non-empty texts. `check` reads it on every item, whatever its status or sprint (BG-74435353), so a malformed field
+    is reported before a sprint start makes the item worked; only the refs wait for that (knowledge_worked)."""
+    know = bl.items[iid].get("knowledge")
+    if know is None:
+        return []
+    errs = []
+    e = lambda msg: errs.append(f"{bl.label(iid)}: knowledge {msg}")  # noqa: E731
+    if not isinstance(know, dict) or set(know) - set(KNOWLEDGE_KEYS):
+        e("must be {ask: [questions], refs: [references]}")
+        return errs
+    for f in KNOWLEDGE_KEYS:
+        if f in know and not (isinstance(know[f], list) and all(_text_ok(x) for x in know[f])):
+            e(f"{f} must be a list of non-empty texts")
+    return errs
+
+
 def knowledge_check(bl, iid):
     """([errors], [stale]) for the `knowledge` {ask: [questions], refs: [references]} of one item. A reference is a
     topic id (`intune/win32-apps`, `<root>/<domain>/<slug>` outside public), a QK answer id (`QK-<slug>`,
@@ -163,16 +181,10 @@ def knowledge_check(bl, iid):
     know = bl.items[iid].get("knowledge")
     if know is None:
         return [], []
-    errs, stale = [], []
-    e = lambda msg: errs.append(f"{bl.label(iid)}: knowledge {msg}")  # noqa: E731
-    if not isinstance(know, dict) or set(know) - set(KNOWLEDGE_KEYS):
-        e("must be {ask: [questions], refs: [references]}")
-        return errs, stale
-    for f in KNOWLEDGE_KEYS:
-        if f in know and not (isinstance(know[f], list) and all(_text_ok(x) for x in know[f])):
-            e(f"{f} must be a list of non-empty texts")
+    errs, stale = knowledge_form(bl, iid), []
     if errs:
         return errs, stale
+    e = lambda msg: errs.append(f"{bl.label(iid)}: knowledge {msg}")  # noqa: E731
     import kbid
     if not hasattr(bl, "kb"):
         bl.kb = KbAtHead(bl.root)
@@ -658,6 +670,8 @@ def validate(bl, pieces=None):
             e("trigger must be {when: text, fired: bool}")
         if knowledge_worked(bl, iid):
             errs.extend(knowledge_check(bl, iid)[0])
+        else:  # the form is checked on every item; only the refs wait until the item is worked
+            errs.extend(knowledge_form(bl, iid))
         st = it.get("status")
         if st == "doing" and not it.get("claimed_by"):
             e("status doing needs claimed_by")
