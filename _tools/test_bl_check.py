@@ -429,6 +429,27 @@ def test_check_flags_gone_repro_paths(sprint):
     assert "is gone" not in out, out
 
 
+def test_check_gone_path_a_removal_check_is_no_finding(sprint):
+    """BG-gvryjkwc planted: an open removal item whose checks assert a removed file is absent (python exiting with its
+    existence, `assert not os.path.exists`; an item's checks run no shell) is not told the path is gone, since
+    its absence is the proof; a check that reads the same gone file still is."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    (repo / "src").mkdir(exist_ok=True)
+    (repo / "src" / "old.txt").write_text("x\n", encoding="utf-8")
+    commit(repo, "a file")
+    sh(repo, "git", "rm", "-q", "src/old.txt")
+    commit(repo, "remove it")
+    absent = [["python3", "-c", "import pathlib,sys; sys.exit(pathlib.Path('src/old.txt').exists())"],
+              ["python3", "-c", "import os; assert not os.path.exists('src/old.txt')"]]
+    edit(repo, tk, checks=[{"run": r} for r in absent])
+    commit(repo, "removal checks")
+    code, out = b(repo, "check")
+    assert code == 0 and "is gone" not in out, out
+    edit(repo, tk, checks=[{"run": r} for r in absent] + [{"run": is_file("src/old.txt")}])
+    code, out = b(repo, "check")
+    assert code == 0 and "names src/old.txt, which is gone" in out, out
+
+
 def test_project_paths_scp_and_non_ascii(tmp_path):
     """BG-m5qbkmgp planted: git's scp-like host:path remote with no user is read like user@host:path, a one-letter
     host is a Windows drive and no remote, and a remote whose URL is not valid UTF-8 (git prints its bytes) is read

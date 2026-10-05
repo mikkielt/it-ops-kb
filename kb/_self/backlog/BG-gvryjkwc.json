@@ -2,7 +2,7 @@
   "id": "BG-gvryjkwc",
   "kind": "bug",
   "title": "check says a check that a file was removed can never pass once the file is gone",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -15,10 +15,21 @@
       "import sys;sys.path.insert(0,'_tools');import bl_check as c;sys.exit(1 if c.command_paths(['python3','-c','import pathlib,sys; sys.exit(pathlib.Path(\"_tools/kbold.py\").exists())']) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "gone_path_a_removal_check_is_no_finding"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_check.py",
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
