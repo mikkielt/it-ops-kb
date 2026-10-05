@@ -7,7 +7,6 @@
   "rank": 0,
   "goal": "Every root may keep a _logs.csv that the public projection never carries, with kb/_self/_logs.csv holding the project's own rows; an internal fact or article cites a row with a LOG tag; a tool proposes a row from the ops store and the operator confirms it; a row stays active until its context is invalidated; lookups show active LOG lines as evidence beside facts, never counted toward coverage and never the answer alone.",
   "relates_to": [
-    "EP-v56iwyry",
     "EP-ajw3oywi"
   ],
   "evidence": {
