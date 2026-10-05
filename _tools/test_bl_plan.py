@@ -122,12 +122,30 @@ def test_check_warns_unordered_shared_touches(sprint):
       "--check", argstr(is_file("src/b.txt")))
     other = item(repo, "Other")["id"]
     code, out = b(repo, "check")
-    assert code == 0 and f"{tk} “Task” and {other} “Other” both touch src/s.txt and neither depends" in out \
-        or f"{other} “Other” and {tk} “Task” both touch src/s.txt and neither depends" in out, out
+    assert code == 0 and (f"{tk} “Task” and {other} “Other” both touch src/s.txt and neither depends" in out
+                          or f"{other} “Other” and {tk} “Task” both touch src/s.txt and neither depends" in out), out
     edit(repo, other, depends_on=[tk])
     code, out = b(repo, "check")
     assert code == 0 and "neither depends" not in out, out
     edit(repo, other, depends_on=[], touches=["src/z.txt"])
+    code, out = b(repo, "check")
+    assert code == 0 and "neither depends" not in out, out
+
+
+def test_check_unordered_skips_tasks_whose_stories_are_ordered(sprint):
+    """BG-7kyxgcn3 planted: a task of a second story that depends on the first story shares src/s.txt with the first
+    story's task: readiness orders them through the stories, so check warns of no unordered pair; without the story
+    dependency it does."""
+    repo, ep, sp, st, tk = sprint["repo"], sprint["ep"], sprint["sp"], sprint["st"], sprint["tk"]
+    edit(repo, tk, touches=["src/s.txt"])
+    b(repo, "new", "story", "--title", "Second", "--parent", ep, "--sprint", sp, "--goal", "s2",
+      "--check", argstr(is_file("src/b.txt")))
+    st2 = item(repo, "Second")["id"]
+    b(repo, "new", "task", "--title", "Later", "--parent", st2, "--goal", "l", "--touch", "src/s.txt",
+      "--check", argstr(is_file("src/b.txt")))
+    code, out = b(repo, "check")
+    assert code == 0 and "neither depends" in out, out
+    edit(repo, st2, depends_on=[st])
     code, out = b(repo, "check")
     assert code == 0 and "neither depends" not in out, out
 

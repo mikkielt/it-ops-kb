@@ -377,7 +377,8 @@ def shared_file_warnings(bl):
 def unordered_overlap_warnings(bl):
     """check's warnings: two open items of one planned or active sprint whose touches name a common path (globs read
     against the tracked files) while neither depends on the other, directly, through another item or through an
-    ancestor (`dependencies`), and neither is the other's ancestor: they would run at once on one file, so the plan
+    ancestor (`dependencies`), neither is the other's ancestor, and neither depends on an ancestor of the other
+    (BG-7kyxgcn3): they would run at once on one file, so the plan
     orders them (depends_on) before the start. One line per pair, naming both and the shared paths; the review story
     and a dropped item are left out."""
     files, out = None, []
@@ -395,6 +396,8 @@ def unordered_overlap_warnings(bl):
                 shared = paths[a] & paths[c]
                 if not shared or c in deps[a] or a in deps[c] or a in bl.ancestors(c) or c in bl.ancestors(a):
                     continue
+                if any(x in deps[c] for x in bl.ancestors(a)) or any(x in deps[a] for x in bl.ancestors(c)):
+                    continue  # one depends on the other's ancestor (a story on the other's story): readiness orders them
                 out.append(f"{bl.label(a)} and {bl.label(c)} both touch {', '.join(sorted(shared))} and neither "
                            "depends on the other: they could run at once on one file; order them (set ID --depends "
                            "OTHER --add) before the start")
