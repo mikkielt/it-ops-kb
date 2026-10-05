@@ -2,7 +2,7 @@
   "id": "SP-gfz3rl64",
   "kind": "sprint",
   "title": "backlog.py's item writers gain their rules, then move to bl_items.py",
-  "status": "planned",
+  "status": "active",
   "goal": "backlog.py's item writers gain what the reviews asked: set replaces title, goal, repro, severity and parent, goal prints the answered gates of the ancestors, claim refuses a second session in one checkout, a named delegate confirms provisional answers under an operator grant, and precheck warns of a check that passes before the work; then the writers move to bl_items.py and backlog.py keeps its usage and dispatch only",
   "gates": [
     {

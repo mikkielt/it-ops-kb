@@ -2,7 +2,7 @@
   "id": "ST-leqf5onn",
   "kind": "story",
   "title": "bl_items.py holds backlog.py's item writers, so backlog.py keeps only its usage and dispatch",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
