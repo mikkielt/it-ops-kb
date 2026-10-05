@@ -2,7 +2,7 @@
   "id": "ST-xwnun25d",
   "kind": "story",
   "title": "Intake has a repeat-reads detector over the call census",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -37,5 +37,6 @@
     "ST-enx4hrlr",
     "ST-zqnngn67"
   ],
-  "notes": "Call rows (ST-rpdfgu3t) hold no paths, so file groups are named only if ST-rpdfgu3t adds a closed file-group class; with the fleet retired fewer sessions run per week, so the threshold counts repeats, not agents."
+  "notes": "Call rows (ST-rpdfgu3t) hold no paths, so file groups are named only if ST-rpdfgu3t adds a closed file-group class; with the fleet retired fewer sessions run per week, so the threshold counts repeats, not agents.",
+  "claimed_by": "it-ops-kb worker2"
 }
