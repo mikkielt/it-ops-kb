@@ -2,7 +2,7 @@
   "id": "BG-vqivcbfr",
   "kind": "bug",
   "title": "An item filed into an active sprint without touches is done with no commit",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,29 @@
     "_tools/bl_land.py",
     "_tools/test_bl_land.py"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "641a67707fffa23f155cf5d346027ca9aa1a19f1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "done_refuses_active_sprint_item_without_touches"
+        ],
+        "exit": 0,
+        "sha256": "bf334a1309fc9c9e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "done_refuses_active_sprint_item_without_touches"
+        ],
+        "exit": 0,
+        "sha256": "21d876a4bb3d237b"
+      }
+    ]
+  }
 }
