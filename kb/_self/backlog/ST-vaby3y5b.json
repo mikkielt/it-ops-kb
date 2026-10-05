@@ -2,7 +2,7 @@
   "id": "ST-vaby3y5b",
   "kind": "story",
   "title": "kblog.py propose runs over the committed ops sidecars, so _logs.csv holds rows for the operator to confirm",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -48,5 +48,29 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "10e2f6402588f7857103def0be852b3c6bc9d0dc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kblog_propose_every_ops_event"
+        ],
+        "exit": 0,
+        "sha256": "a0531b9e2793c988"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kblog_propose_converges"
+        ],
+        "exit": 0,
+        "sha256": "724430b951733404"
+      }
+    ]
+  }
 }
