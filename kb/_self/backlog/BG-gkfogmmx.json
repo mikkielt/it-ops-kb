@@ -2,8 +2,7 @@
   "id": "BG-gkfogmmx",
   "kind": "bug",
   "title": "On Windows the commit hooks cannot tell git commit --amend -F or -m, so commit-msg diffs against HEAD",
-  "status": "todo",
-  "sprint": "SP-eahtellz",
+  "status": "draft",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -32,5 +31,6 @@
     "kb/_self/git.md",
     "kb/_self/code.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "notes": "deferred by the operator: a Windows amend with -F or -m computes the KB-* trailers against HEAD; check-trailers at push is the net; revisit if the logs show wrong trailers"
 }
