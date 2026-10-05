@@ -2,7 +2,7 @@
   "id": "BG-co3nthy4",
   "kind": "bug",
   "title": "test_check_program_allowlist's sh repro loses the marker path's backslashes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,29 @@
     "_tools/test_check_program_allowlist.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker3"
+  "evidence": {
+    "commit": "96a762849cb969cbc0466332a3bbb00e61cc2efc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_check_program_allowlist_done_runs_a_shell_repro"
+        ],
+        "exit": 0,
+        "sha256": "67dfa38b0ae8b923"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_check_program_allowlist_done_runs_a_shell_repro"
+        ],
+        "exit": 0,
+        "sha256": "d67b9c32657768dd"
+      }
+    ]
+  }
 }
