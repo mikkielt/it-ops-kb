@@ -85,6 +85,20 @@
       "class": "secrets",
       "answer": "drop ST-6u7tlity as superseded by this story",
       "by": "operator"
+    },
+    {
+      "id": "sets",
+      "kind": "blocking",
+      "question": "How do the skills carry curated question sets for the rules their steps need?",
+      "options": [
+        "sets as data: a sets column on the lookup_eval rows names skill and step (kb-item:land); a skill step runs rag.py pack --root _self --set NAME, which prints those rows' anchored passages and the decisions tied to them; the skill text names the set and what it covers in one line",
+        "sets inline: each skill lists its questions as a -q batch in its own text, no new flag, no link to the eval",
+        "no sets: Conduct for changes plus the item brief up front, every other rule asked ad hoc"
+      ],
+      "recommendation": "sets as data: a sets column on the lookup_eval rows names skill and step (kb-item:land); a skill step runs rag.py pack --root _self --set NAME, which prints those rows' anchored passages and the decisions tied to them; the skill text names the set and what it covers in one line",
+      "class": "secrets",
+      "answer": "sets as data: a sets column on the lookup_eval rows names skill and step (kb-item:land); a skill step runs rag.py pack --root _self --set NAME, which prints those rows' anchored passages and the decisions tied to them; the skill text names the set and what it covers in one line",
+      "by": "operator"
     }
   ],
   "knowledge": {

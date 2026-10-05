@@ -99,6 +99,20 @@
       "class": "secrets",
       "answer": "a context reference article:_self/<doc>[#Heading], validated by check.py and kbdecide.py sweep (adds _tools/check.py and _tools/kbdecide.py to the touches)",
       "by": "operator"
+    },
+    {
+      "id": "accuracy",
+      "kind": "blocking",
+      "question": "How does pack --root _self raise its answer rate for paraphrased questions and keep its verdict honest (held-out: answer printed for 14 of 20, verdict good on all 20)?",
+      "options": [
+        "tested questions as expansions and anchors: each lookup_eval row (question, doc, phrase) is indexed as an expansion of the passage holding its phrase and pins that passage when the question matches; a small rule-vocabulary synonym list grown from misses; verdict good only when a tested question matches, else at most weak; eval requires every anchor to resolve and reports the leave-one-out free rate",
+        "lexical tuning only: keep the ranking and verdict as they are, the skills carry the reword-then-section fallback",
+        "hybrid with precomputed static embeddings beside BM25 (a vector file per passage, fused by rank)"
+      ],
+      "recommendation": "tested questions as expansions and anchors: each lookup_eval row (question, doc, phrase) is indexed as an expansion of the passage holding its phrase and pins that passage when the question matches; a small rule-vocabulary synonym list grown from misses; verdict good only when a tested question matches, else at most weak; eval requires every anchor to resolve and reports the leave-one-out free rate",
+      "class": "secrets",
+      "answer": "tested questions as expansions and anchors: each lookup_eval row (question, doc, phrase) is indexed as an expansion of the passage holding its phrase and pins that passage when the question matches; a small rule-vocabulary synonym list grown from misses; verdict good only when a tested question matches, else at most weak; eval requires every anchor to resolve and reports the leave-one-out free rate",
+      "by": "operator"
     }
   ],
   "knowledge": {
