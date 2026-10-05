@@ -9,6 +9,10 @@
   perfcheck.py ids --base REV                   compare them with the ids collected at git revision REV, in a temporary
                                                 worktree that is removed afterwards (the working tree is never touched)
   --allow-removed FILE                          ids in FILE (one per line, `#` comments) may be missing
+  perfcheck.py dropped [--file FILE]            warn of a dropped test id (FILE, default _tools/test_ids_dropped.txt) of a
+                                                test file that still exists whose reason names no removed file or symbol
+                                                and no successor test, and of a dropped test file whose local imports are
+                                                all still present (tests of live code); exit 0 with or without warnings
   perfcheck.py time --max-seconds N [--stress] [ARGS...]
                                                 run tests.py (stress_test.py with --stress) with ARGS and fail when it
                                                 takes longer than N seconds, or fails itself
@@ -220,6 +224,121 @@ def run_time(a, extra, runner=run_suite, clock=time.monotonic):
     return 0
 
 
+DROPPED_FILE = "_tools/test_ids_dropped.txt"
+REASON_TOKEN = re.compile(r"`([^`]+)`|([A-Za-z_][\w./-]*\.py)\b|(--[a-z][a-z-]+)|\b([A-Z][A-Z0-9_]{3,})\b|\b(test_\w+|Test[A-Z]\w*)")
+HELPER_MODULES = ("conftest", "bl_testkit")  # imports a test file makes that name no code under test
+
+
+def dropped_groups(text):
+    """[(reason or None, [ids])] of a dropped-ids file: the `#` lines before a run of ids are its reason."""
+    out, reason, fresh = [], None, True
+    for ln in text.splitlines():
+        ln = ln.strip()
+        if ln.startswith("#"):
+            reason = (reason + " " if reason and not fresh else "") + ln.lstrip("# ").strip()
+            fresh = False
+            continue
+        if ln:
+            if not out or not fresh or out[-1][0] != reason:
+                out.append((reason, []))
+            out[-1][1].append(ln)
+            fresh = True
+    return out
+
+
+def code_text(root):
+    """The text of the repository's tools and tests (_tools/*.py), where a named symbol or test is looked for."""
+    return "\n".join(f.read_text(encoding="utf-8", errors="replace") for f in sorted((Path(root) / "_tools").glob("*.py")))
+
+
+def names_removed_or_successor(reason, root, code):
+    """True when REASON names a file that no longer exists, a symbol, flag or test the code no longer holds, or a
+    successor test (`test_*`, `Test*`) that it does hold."""
+    for m in REASON_TOKEN.finditer(reason or ""):
+        tok = next(g for g in m.groups() if g)
+        if m.group(5):
+            return True  # a test name: removed (gone) or its successor (present) either way names the change
+        if tok.endswith(".py"):
+            if not (Path(root) / tok).exists() and not (Path(root) / "_tools" / Path(tok).name).exists():
+                return True
+        elif tok.split()[0] not in code:
+            return True
+    return False
+
+
+def last_text(root, path):
+    """The text PATH had in the last commit before it was deleted, or None."""
+    p = subprocess.run(["git", "log", "-1", "--format=%H", "--diff-filter=D", "--", path], cwd=root, capture_output=True,
+                       text=True)
+    sha = p.stdout.strip()
+    if p.returncode or not sha:
+        return None
+    q = subprocess.run(["git", "show", f"{sha}^:{path}"], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                       errors="replace")
+    return q.stdout if q.returncode == 0 else None
+
+
+def dropped_warnings(root, text):
+    """The warnings of `dropped` for a dropped-ids file's TEXT in the clone ROOT."""
+    code = code_text(root)
+    out, files_gone = [], {}
+    for reason, ids in dropped_groups(text):
+        files = sorted({i.split("::")[0] for i in ids})
+        live = [f for f in files if (Path(root) / f).exists()]
+        if live and not names_removed_or_successor(reason, root, code):
+            out.append(f"dropped: {len(ids)} id(s) of {', '.join(live)}: the reason names no removed file or symbol "
+                       f"and no successor test: {reason or '(no reason)'}")
+        for f in files:
+            if f not in live:
+                files_gone.setdefault(f, 0)
+                files_gone[f] += len([i for i in ids if i.startswith(f + "::")])
+    for f, n in sorted(files_gone.items()):
+        old = last_text(root, f)
+        if old is None:
+            continue
+        mods = {m for m in local_imports_at(old, root, f)}
+        if mods and all((Path(root) / "_tools" / f"{m}.py").exists() for m in mods):
+            out.append(f"dropped: {f} ({n} id(s)) is gone, but every module it tested is still present: "
+                       f"{', '.join(sorted(mods))}")
+    return out
+
+
+def local_imports_at(text, root, path):
+    """The _tools/ modules TEXT (the last version of the deleted test file PATH) imports, helpers left out: a module is
+    local when _tools/<name>.py exists now or existed in the commit before the file was deleted."""
+    import ast
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return set()
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names |= {a.name.split(".")[0] for a in node.names}
+        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+            names.add(node.module.split(".")[0])
+    p = subprocess.run(["git", "log", "-1", "--format=%H", "--diff-filter=D", "--", path], cwd=root, capture_output=True,
+                       text=True)
+    sha = p.stdout.strip()
+    q = subprocess.run(["git", "ls-tree", "--name-only", f"{sha}^", "_tools/"], cwd=root, capture_output=True, text=True)
+    then = {Path(x).stem for x in q.stdout.split()} if sha and q.returncode == 0 else set()
+    return {n for n in names if n not in HELPER_MODULES and not n.startswith("test_")
+            and ((Path(root) / "_tools" / f"{n}.py").exists() or n in then)}
+
+
+def run_dropped(a, root=ROOT):
+    path = Path(a.file) if a.file else Path(root) / DROPPED_FILE
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as e:
+        raise PerfError(f"cannot read {path}: {e}")
+    warnings = dropped_warnings(root, text)
+    for w in warnings:
+        print(w)
+    print(f"perfcheck dropped: {len(warnings)} warning(s)")
+    return 0
+
+
 def main(argv=None, collect=collect_ids, runner=run_suite, clock=time.monotonic, root=ROOT):
     ap = argparse.ArgumentParser(prog="perfcheck.py", description="Prove a test-suite speed-up lost no test.")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -228,6 +347,8 @@ def main(argv=None, collect=collect_ids, runner=run_suite, clock=time.monotonic,
     ids.add_argument("--base", help="a git revision whose ids are collected in a temporary worktree")
     ids.add_argument("--allow-removed", help="a file of ids that may be missing")
     ids.add_argument("--write", help="write the ids at HEAD to this file")
+    dr = sub.add_parser("dropped", help="warn of dropped test ids that name no removed code")
+    dr.add_argument("--file", help=f"a dropped-ids file (default {DROPPED_FILE})")
     tm = sub.add_parser("time", help="time a suite run against a bound; other arguments go to tests.py")
     tm.add_argument("--max-seconds", type=float, required=True)
     tm.add_argument("--stress", action="store_true", help="run stress_test.py instead of tests.py")
@@ -241,6 +362,10 @@ def main(argv=None, collect=collect_ids, runner=run_suite, clock=time.monotonic,
             if a.allow_removed and not (a.against or a.base):
                 ap.error("--allow-removed needs --against or --base")
             return run_ids(a, collect, root)
+        if a.cmd == "dropped":
+            if extra:
+                ap.error(f"unrecognized arguments: {' '.join(extra)}")
+            return run_dropped(a, root)
         return run_time(a, extra, runner, clock)
     except PerfError as e:
         print(f"perfcheck: {e}", file=sys.stderr)
