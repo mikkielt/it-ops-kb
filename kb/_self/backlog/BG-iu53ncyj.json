@@ -2,7 +2,7 @@
   "id": "BG-iu53ncyj",
   "kind": "bug",
   "title": "horizon and its hook do not show an approved planned sprint while another sprint is active",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xdzgepun",
   "priority": "P3",
   "rank": 0,
@@ -29,6 +29,8 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }

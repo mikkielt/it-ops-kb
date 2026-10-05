@@ -1081,9 +1081,16 @@ def cmd_horizon(bl, a):
         planned = [i for i, it in bl.items.items() if it.get("kind") == "sprint"]
         n = sum(1 for it in bl.items.values() if it.get("kind") != "sprint" and it.get("status") not in ("done", "dropped"))
         lines.append(f"backlog: no active sprint; {n} open item(s)"
-                     + (", planned: " + ", ".join(bl.label(s) + (" (approved, not started)" if start_approved(bl.items[s])
-                                                                 else "") for s in planned) if planned else "")
+                     + (", planned: " + ", ".join(bl.label(s) + (f" (approved, not started: backlog.py start {s})"
+                                                                 if start_approved(bl.items[s]) else "")
+                                                for s in planned) if planned else "")
                      + " (python3 _tools/backlog.py tree)")
+    elif not a.sprint:  # an approved sprint waits on start beside the active ones: first, so the hook never cuts it
+        for sid in sorted(i for i, it in bl.items.items() if it.get("kind") == "sprint"
+                          and it.get("status") == "planned" and start_approved(it)):
+            title = clip(bl.items[sid].get("title", ""), HOOK_TITLE) if a.hook else bl.items[sid].get("title", "")
+            lines.append(f"sprint {sid} “{title}”: approved, not started; next step: "
+                         f"python3 _tools/backlog.py start {sid}")
     for sid in sprints:
         need(bl, sid)
         items = bl.sprint_items(sid)
