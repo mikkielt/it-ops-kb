@@ -232,7 +232,7 @@ from bl_base import (
     line, need, new_id, open_gates, research_in_planned, run, say, scope, trailer_problem, waits, withhold,
 )
 from bl_check import (  # the checks and the readers of knowledge: bl_check holds them, backlog.py's commands use them
-    knowledge_lines, noop_warnings, text_only_repro, validate,
+    ITEM_FILES_ROUTE, item_files_only, knowledge_lines, noop_warnings, text_only_repro, validate,
 )
 from bl_land import run_check, own_failure  # the runner of a check and the reading of a repro's own error: bl_land holds them with done, which host-check, new's repro and land share
 from bl_base import RESEARCH_KINDS, research_touches  # noqa: F401 - kg_trailers reads them as backlog.NAME
@@ -346,6 +346,8 @@ def cmd_new(bl, a):
     warns = noop_warnings(it, out if kind == "bug" else "")
     if a.touch:
         it["touches"] = a.touch
+        if kind in ("story", "task", "subtask", "bug") and item_files_only(a.touch):
+            warns.append(ITEM_FILES_ROUTE)
     if a.depends:
         it["depends_on"] = a.depends
     bl.save(it)

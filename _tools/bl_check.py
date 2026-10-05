@@ -18,7 +18,7 @@ import bl_intake
 from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS, PREFIX_KIND,
     PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED, canonical,
-    host_user_pieces, items_holding_names, research_in_planned, say, withhold_names,
+    REL_DIR, host_user_pieces, items_holding_names, research_in_planned, say, scope, withhold_names,
 )
 from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches
 
@@ -897,6 +897,26 @@ def gate_do_warnings(bl):
     return out
 
 
+def item_files_only(touches):
+    """True when every touches glob, of at least one, names backlog item files only (inside kb/_self/backlog/): done
+    can never close such an item, since it needs a KB-Work commit that changes a file other than item files."""
+    globs = [t for t in touches or [] if isinstance(t, str) and t]
+    return bool(globs) and all(t.startswith(REL_DIR + "/") for t in globs)
+
+
+ITEM_FILES_ROUTE = ("its touches are item files only, which done can never close (done needs a KB-Work commit that "
+                    "changes another file): land the fix as a planning commit, then close the item with backlog.py "
+                    "drop ID --why naming the fixing commit")
+
+
+def item_files_warnings(bl):
+    """check's warnings: an open story, task, subtask or bug whose scope (its touches and its descendants') is item
+    files only (item_files_only), naming the route that closes it (BG-2hxjopue)."""
+    return [f"{bl.label(iid)}: {ITEM_FILES_ROUTE}" for iid, it in sorted(bl.items.items())
+            if it.get("kind") in ("story", "task", "subtask", "bug") and it.get("status") in OPEN_STATUSES
+            and item_files_only(scope(bl, iid))]
+
+
 def is_test_run(argv):
     """True when a check runs tests: tests.py or pytest, so it exercises the code it proves."""
     return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
@@ -963,7 +983,7 @@ def cmd_check(bl, a):
     errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned) + refused_command_errors(bl)
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
-        + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl)
+        + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl) + item_files_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")

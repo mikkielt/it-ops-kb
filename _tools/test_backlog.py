@@ -142,6 +142,27 @@ def test_repro_fails_for_its_own_error_tool_and_wrapper(repo, colour):
     assert "cannot start" in f(["bash", "hook.sh"], 127, "")
 
 
+def test_new_warns_item_files_only_touches(sprint):
+    """BG-2hxjopue planted: a bug whose touches are item files only can never pass done (it needs a KB-Work commit
+    that changes another file): new warns and names the drop route, and so does check while it is open; touches that
+    also name another file, or a story whose task does, give no warning."""
+    repo, sp = sprint["repo"], sprint["sp"]
+    code, out = b(repo, "new", "bug", "--title", "Fix an epic's text", "--sprint", sp, "--severity", "S4",
+                  "--repro", argstr(is_file("src/z.txt")), "--goal", "z", "--touch", f"{backlog.REL_DIR}/EP-aaaaaaaa.json")
+    assert code == 0 and "item files only" in out and "backlog.py drop ID --why" in out, out
+    bg = item(repo, "Fix an epic's text")["id"]
+    code, out = b(repo, "check")
+    assert code == 0 and f"{bg} “Fix an epic's text”: its touches are item files only" in out, out
+    edit(repo, bg, touches=[f"{backlog.REL_DIR}/**", "src/z.txt"])
+    code, out = b(repo, "check")
+    assert "item files only" not in out, out
+    code, out = b(repo, "new", "bug", "--title", "Other", "--sprint", sp, "--severity", "S4",
+                  "--repro", argstr(is_file("src/y.txt")), "--goal", "y", "--touch", "src/y.txt")
+    assert code == 0 and "item files only" not in out, out
+    assert backlog.item_files_only([f"{backlog.REL_DIR}/*.json"]) and not backlog.item_files_only([])
+    assert not backlog.item_files_only([f"{backlog.REL_DIR}.md"])
+
+
 def test_backlog_similar_ranks_open_items_and_new_warns_of_a_near_duplicate(sprint):
     """A planted duplicate: similar ranks it first as near, new names it in a warning and still writes the item with
     exit 0; a unique title gets no warning, and a dropped item is no longer compared."""
