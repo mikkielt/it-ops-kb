@@ -2,7 +2,7 @@
   "id": "ST-4mdnjuep",
   "kind": "story",
   "title": "A repro whose own code cannot import or start is its own error",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,19 @@
   "depends_on": [
     "BG-zvh7cvyo"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "0856b6726273961364f20be313d55752cab9b82b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "repro_own_import_error"
+        ],
+        "exit": 0,
+        "sha256": "1ef71ed34a0af244"
+      }
+    ]
+  }
 }
