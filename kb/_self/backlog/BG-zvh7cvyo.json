@@ -2,7 +2,7 @@
   "id": "BG-zvh7cvyo",
   "kind": "bug",
   "title": "new accepts a repro whose own shell -c string misses a tool after its first command, read as a wrapper's inside tool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "1a803799569dae86d02937a9bb87b9ab39970046",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "repro_fails_for_its_own_error_compound_shell"
+        ],
+        "exit": 0,
+        "sha256": "e1c6faf1f62ca767"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_land as b;sys.exit(0 if b.own_failure(['sh','-c','cd /tmp && jq .'],127,'sh: line 1: jq: command not found','.') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
