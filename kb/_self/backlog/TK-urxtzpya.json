@@ -2,7 +2,7 @@
   "id": "TK-urxtzpya",
   "kind": "task",
   "title": "bl_view.py holds horizon and the read-only views",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,19 @@
   "depends_on": [
     "TK-f5swu7tm"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "978ee9f5e18995ec5e539e2d8cfbad9b048ddcfc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_view"
+        ],
+        "exit": 0,
+        "sha256": "2304ae6fb30effc7"
+      }
+    ]
+  }
 }
