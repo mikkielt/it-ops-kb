@@ -73,7 +73,6 @@ def test_tests_py_named_files_mode_is_not_full(monkeypatch, tmp_path):
 def test_tests_py_named_files_mode_keeps_other_modes(monkeypatch, tmp_path):
     monkeypatch.delenv("KB_TESTS_FAST", raising=False)  # the sync gate runs the suite with it set
     assert _recorded_modes(monkeypatch, tmp_path, []) == ["full"]
-    assert _recorded_modes(monkeypatch, tmp_path, ["-k", "x"]) == ["full"]
     assert _recorded_modes(monkeypatch, tmp_path, ["_tools"]) == ["full"]
     monkeypatch.setenv("KB_TESTS_FAST", "1")
     assert _recorded_modes(monkeypatch, tmp_path, []) == ["fast"]
@@ -105,3 +104,14 @@ def test_tests_py_named_files_glob_takes_lock(monkeypatch, tmp_path):
     monkeypatch.setenv("KB_TESTS_FAST", "1")
     assert _recorded_modes(monkeypatch, tmp_path, many) == ["fast"]
     assert _recorded_modes(monkeypatch, tmp_path, few) == ["files"]
+
+
+def test_run_row_selects_nothing(monkeypatch, tmp_path):
+    """BG-nf6gcqsz: a `-k` run is recorded as mode `keyword`, never `full` (with or without KB_TESTS_FAST), and the
+    mode is one ops_problems accepts; the digest side is test_ql_report's test_run_row_selects_nothing_in_digest."""
+    monkeypatch.delenv("KB_TESTS_FAST", raising=False)
+    for argv in (["-k", "no_such_test_name"], ["-kfoo"], ["-q", "-k", "x"]):
+        assert _recorded_modes(monkeypatch, tmp_path, argv) == ["keyword"], argv
+    monkeypatch.setenv("KB_TESTS_FAST", "1")
+    assert _recorded_modes(monkeypatch, tmp_path, ["-k", "x"]) == ["keyword"]
+    assert ql_capture.ops_problems({"event": "test.run", "mode": "keyword", "ms": 1, "exit": 5}) == []

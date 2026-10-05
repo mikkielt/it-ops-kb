@@ -758,6 +758,16 @@ class TestDigestOps:
         write_ops_sidecar(store, WORK_W39_EARLY, [ops_row(12, "land.end", item="TK-eeeeeeee", exit=0, ms=5, extra="x")])
         assert "\n".join(ops_part(ql_report.digest(store, "2026-W39")[1])) == DIGEST_W39_OPS  # the broken file is out
 
+    def test_run_row_selects_nothing_in_digest(self, tmp_path):
+        """BG-nf6gcqsz: a test.run row with pytest's exit 5 (no test selected) is no failure in the ops block; it is
+        counted as `selected nothing`, and a real failure (exit 1) still is one."""
+        store = digest_store(tmp_path / "store")
+        write_ops_sidecar(store, W39_RUN, [ops_row(1, "test.run", mode="keyword", ms=100, exit=5),
+                                           ops_row(2, "test.run", mode="keyword", ms=300, exit=5),
+                                           ops_row(3, "test.run", mode="full", ms=900, exit=1)])
+        lines = ops_part(ql_report.digest(store, "2026-W39")[1])
+        assert "  test.run: 3, failed 1, median 300 ms, selected nothing 2" in lines, lines
+
     def test_ql_report_ops_block_stable(self, tmp_path):
         """A second digest on unchanged inputs prints the same lines, and a week without ops rows prints no block."""
         store = digest_store(tmp_path / "store")
