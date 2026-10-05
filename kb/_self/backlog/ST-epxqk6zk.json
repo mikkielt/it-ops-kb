@@ -1,0 +1,21 @@
+{
+  "id": "ST-epxqk6zk",
+  "kind": "story",
+  "title": "The open items whose touches name only backlog.py name the bl_ module their change is in",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "No open item draws check's facade touch warning: each item whose touches name _tools/backlog.py and no bl_ module names the bl_ module its change is in, or states in its notes that its change is backlog.py's own item writers. Answers the SP-tpulmoxh retrospective: 7 open items named only the facade after the split, so they overlap every other backlog item by name.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog/*.json"
+  ]
+}
