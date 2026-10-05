@@ -1,0 +1,30 @@
+{
+  "id": "ST-leqf5onn",
+  "kind": "story",
+  "title": "bl_items.py holds backlog.py's item writers, so backlog.py keeps only its usage and dispatch",
+  "status": "draft",
+  "parent": "EP-uzf2w6ym",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_items.py holds the item writers backlog.py keeps whole today (new, fmt, claim, release, answer with its decision recording, set, move, reopen, gate, host-check, fire, drop, referrers, goal, parse_cmd, changed_item(s) and their argument builders), their tests move to test_bl_items.py keeping their names and patch targets, backlog.py holds its usage text, registration and dispatch only, and the keep-whole verdict in kb/_self/backlog.md is removed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_items"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/backlog.py",
+    "_tools/test_bl_items.py",
+    "_tools/test_backlog.py",
+    "_tools/test_layout.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
