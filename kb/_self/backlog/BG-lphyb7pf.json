@@ -2,7 +2,7 @@
   "id": "BG-lphyb7pf",
   "kind": "bug",
   "title": "tidy --apply removes a live worker's worktree locked by Claude Code and deletes its work branch",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-wmukiu3s",
   "priority": "P1",
@@ -30,5 +30,6 @@
     "_tools/bl_land.py",
     "_tools/test_kb_sprint_close_cleanup.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
