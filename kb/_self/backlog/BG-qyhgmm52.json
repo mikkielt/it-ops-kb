@@ -2,7 +2,7 @@
   "id": "BG-qyhgmm52",
   "kind": "bug",
   "title": "The docs-after-code check misses a docs task that waits on a code story or through its parent",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -55,5 +55,48 @@
     "BG-iafrnmc3"
   ],
   "notes": "Merged with BG-iafrnmc3 (same bl_plan.py rule from the other side: a code item's mapped docs outside its own scope). Merged from ST-zjsmb6ni: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs. Merged from ST-nftaqmb7: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs.",
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "d33ec737fd4c8d33db8a764fa8579256bea858f5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "docs_after_code_story_and_parent"
+        ],
+        "exit": 0,
+        "sha256": "e44f28192931401e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "docs_outside_own_scope"
+        ],
+        "exit": 0,
+        "sha256": "5554fd372b888327"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,shutil,tempfile,pathlib as P;sys.path.insert(0,'_tools');import bl_plan as B,bl_base;r=P.Path(tempfile.mkdtemp());d=r/'kb/_self/backlog';d.mkdir(parents=True);shutil.copy('kb/_self/map.csv',r/'kb/_self/map.csv');w=lambda i:(d/(i['id']+'.json')).write_text(json.dumps(i));w(dict(id='TK-aaaaaaaa',kind='task',title='Code',status='todo',touches=['_tools/backlog.py'],depends_on=['TK-dddddddd']));w(dict(id='TK-dddddddd',kind='task',title='Docs',status='todo',touches=['kb/_self/tools.md','kb/_self/backlog.md']));out=B.docs_warnings(bl_base.Backlog(r));assert out,'no warning: the code task depends on the task holding its docs'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "docs_after_code_story_and_parent"
+        ],
+        "exit": 0,
+        "sha256": "4c78505a01b81afe"
+      }
+    ]
+  }
 }
