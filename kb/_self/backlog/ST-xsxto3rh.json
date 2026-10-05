@@ -1,0 +1,26 @@
+{
+  "id": "ST-xsxto3rh",
+  "kind": "story",
+  "title": "settings.json allows no command form only the retired runner used, and test_settings_allow holds no runner list",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The allow rules no skill, agent or AGENTS.md names (git worktree unlock, git cherry, git checkout -b work/*, kbgit.py fmt --check, kbgit.py check-lanes and the like) leave .claude/settings.json, RUNNER_COMMANDS and RUNNER_TOOLS leave _tools/test_settings_allow.py or are renamed for what the skills run and each entry is named by a skill, and bl_land's RUNNER_NAME comment no longer describes a headless sprint runner; BG-whg564eb's goal removed only part of them. Found by the SP-w3xmbdra review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "settings_allow"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "_tools/test_settings_allow.py",
+    "_tools/bl_land.py",
+    "kb/_self/maintaining.md"
+  ]
+}
