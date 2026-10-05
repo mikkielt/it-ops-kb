@@ -2,7 +2,7 @@
   "id": "BG-r5fab2td",
   "kind": "bug",
   "title": "test_cost_open_session's spool rows use a strftime format Windows rejects",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,29 @@
     "_tools/test_cost_open_session.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker3"
+  "evidence": {
+    "commit": "6b50051669dd1d00c5aeb863eee4b94e9688b6e7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_cost_open_session"
+        ],
+        "exit": 0,
+        "sha256": "55a36615cc8f0f88"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_cost_open_session_figures_read_from_the_spool"
+        ],
+        "exit": 0,
+        "sha256": "e1dc2a0dd0bb9e05"
+      }
+    ]
+  }
 }
