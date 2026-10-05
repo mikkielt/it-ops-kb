@@ -35,5 +35,22 @@
     "kb/_self/tools.md",
     ".claude/skills/kb-sprint/SKILL.md"
   ],
+  "gates": [
+    {
+      "id": "form",
+      "kind": "blocking",
+      "question": "With no caller left for procs --record: should selfcheck's orphans check report any process in the clone's checkouts whose parent is gone (named for the operator, never signaled) while procs --record, --end and the owned records are removed, or should the owned/record machinery and its --end stay and the check be removed?",
+      "options": [
+        "report-orphans",
+        "remove-check"
+      ],
+      "recommendation": "report-orphans",
+      "class": "agents-rule",
+      "do": {
+        "report-orphans": "BG-xwolxdi6",
+        "remove-check": "BG-xwolxdi6"
+      }
+    }
+  ],
   "claimed_by": "it-ops-kb worker1"
 }
