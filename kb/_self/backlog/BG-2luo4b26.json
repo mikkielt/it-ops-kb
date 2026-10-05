@@ -2,7 +2,7 @@
   "id": "BG-2luo4b26",
   "kind": "bug",
   "title": "test_sync's amend hook puts backslash paths in a python -c string",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,29 @@
     "_tools/test_sync.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker3"
+  "evidence": {
+    "commit": "04145fe368ddd518cd10b044c16a23048d33ffe3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_commit_msg_amend_with_message_file_reads_the_parent"
+        ],
+        "exit": 0,
+        "sha256": "88397143c8561333"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_commit_msg_amend_with_message_file_reads_the_parent"
+        ],
+        "exit": 0,
+        "sha256": "4bf9b213305f0c42"
+      }
+    ]
+  }
 }
