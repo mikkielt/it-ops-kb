@@ -2,7 +2,7 @@
   "id": "BG-zocrzogv",
   "kind": "bug",
   "title": "red-pipeline reads a real red job older than 10 unstarted main pipelines as green, since the idle stop returns the newest finished pipeline",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
