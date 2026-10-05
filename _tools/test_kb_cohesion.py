@@ -906,3 +906,50 @@ def test_planted_case_per_goal_clause():
     assert missing(texts) == []
     for n, phrase in PLANT_PER_CLAUSE.items():
         assert missing({**texts, n: texts[n].replace(phrase, "")}) == [n], n
+
+
+def conflict_check_command(skill):
+    """The resolved-conflict check's command line from a skill's text, the path left as <file>."""
+    i = skill.index('python3 -c "import ast,subprocess,sys;f=sys.argv[1]')
+    return skill[i:skill.index("<file>", i) + len("<file>")]
+
+
+def test_resolved_conflict_keeps_both_sides(tmp_path):
+    """ST-ikxgirce (SP-tpulmoxh: a scripted resolution of bl_check.py dropped both sides' new functions): /kb-git-sync
+    and /kb-item give one command that, on a real rebase conflict in a tool file, exits 1 naming the function a
+    resolution dropped and 0 on one that keeps both sides; the runbook points to it."""
+    import shlex
+    def read(*rel):
+        with open(os.path.join(KB, *rel), encoding="utf-8") as f:
+            return f.read()
+    sync, item = read(".claude", "skills", "kb-git-sync", "SKILL.md"), read(".claude", "skills", "kb-item", "SKILL.md")
+    cmd = conflict_check_command(sync)
+    assert conflict_check_command(item) == cmd and "resolved_conflict_keeps_both_sides" in read("kb", "_self", "backlog.md")
+    repo = tmp_path / "r"
+    git = lambda *a: subprocess.run(["git", "-C", str(repo), *a], capture_output=True, text=True)  # noqa: E731
+    subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
+    git("config", "user.email", "t@example.com"), git("config", "user.name", "t")
+    (repo / "_tools").mkdir()
+    tool = repo / "_tools" / "x.py"
+    tool.write_text("def base():\n    return 0\n", encoding="utf-8")
+    git("add", "-A"), git("commit", "-qm", "base")
+    git("checkout", "-q", "-b", "side")
+    tool.write_text("def base():\n    return 0\n\n\ndef ours():\n    return 1\n", encoding="utf-8")
+    git("commit", "-qam", "ours")
+    git("checkout", "-q", "main")
+    tool.write_text("def base():\n    return 0\n\n\ndef theirs():\n    return 2\n", encoding="utf-8")
+    git("commit", "-qam", "theirs")
+    git("checkout", "-q", "side")
+    assert git("rebase", "main").returncode != 0, "the planted rebase conflicts"
+    run = lambda: subprocess.run(shlex.split(cmd.replace("<file>", "_tools/x.py")), cwd=repo,  # noqa: E731
+                                 capture_output=True, text=True)
+    tool.write_text("def base():\n    return 0\n\n\ndef ours():\n    return 1\n", encoding="utf-8")  # theirs dropped
+    p = run()
+    assert p.returncode == 1 and "theirs" in p.stdout, p.stdout + p.stderr
+    tool.write_text("def base():\n    return 0\n\n\ndef ours():\n    return 1\n\n\ndef theirs():\n    return 2\n",
+                    encoding="utf-8")
+    p = run()
+    assert p.returncode == 0, p.stdout + p.stderr
+    tool.write_text("def base(:\n", encoding="utf-8")  # a parse error fails too
+    assert run().returncode != 0
+    git("rebase", "--abort")
