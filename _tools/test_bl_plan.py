@@ -80,7 +80,7 @@ def test_check_warns_docs_in_later_task(mapped):
     repo, st, tk = mapped["repo"], mapped["st"], mapped["tk"]
     edit(repo, tk, touches=["_tools/x.py"])
     b(repo, "new", "task", "--title", "Docs", "--parent", st, "--goal", "docs", "--touch", "kb/_self/tools.md",
-      "--depends", tk, "--check", argstr(PASS))
+      "--depends", tk, "--check", argstr(is_file("src/b.txt")))
     docs = item(repo, "Docs")["id"]
     code, out = b(repo, "check")
     assert code == 0 and "warnings=1" in out, out
@@ -163,13 +163,13 @@ def test_backlog_docs_after_code_start_refuses_and_check_errors(repo):
     b(repo, "new", "sprint", "--title", "S", "--goal", "g")
     sp = item(repo, "S")["id"]
     b(repo, "new", "story", "--title", "Story", "--parent", ep, "--sprint", sp, "--goal", "g",
-      "--check", argstr(PASS))
+      "--check", argstr(is_file("src/b.txt")))
     st = item(repo, "Story")["id"]
     b(repo, "new", "task", "--title", "Code", "--parent", st, "--goal", "g", "--touch", "_tools/x.py",
-      "--check", argstr(PASS))
+      "--check", argstr(is_file("src/b.txt")))
     tk = item(repo, "Code")["id"]
     b(repo, "new", "task", "--title", "Docs", "--parent", st, "--goal", "g", "--touch", "kb/_self/tools.md",
-      "--depends", tk, "--check", argstr(PASS))
+      "--depends", tk, "--check", argstr(is_file("src/b.txt")))
     docs = item(repo, "Docs")["id"]
     assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
     files = {f.name: f.read_bytes() for f in (Path(repo) / backlog.REL_DIR).glob("*.json")}
@@ -268,7 +268,7 @@ def test_plan_flags_shared_file_in_check_and_start(repo):
     ids = []
     for n, touch in enumerate((SKILL_FILE, SKILL_FILE, SKILL_FILE, "_tools/other.py")):
         b(repo, "new", "story", "--title", f"Edit {n}", "--sprint", sp, "--goal", "g", "--touch", touch,
-          "--check", argstr(PASS))
+          "--check", argstr(is_file("src/b.txt")))
         ids.append(item(repo, f"Edit {n}")["id"])
     code, out = b(repo, "check")
     assert code == 0 and f"{SKILL_FILE} is in the touches of 3 of 4 items ({', '.join(sorted(ids[:3]))})" in out, out
@@ -322,7 +322,7 @@ def test_start_warns_recurring_p1_item_left_out_of_the_sprint(repo):
                                  ("Recurring P2", [], two), ("Recurring done", [], two)):
         prio = "P2" if title == "Recurring P2" else "P1"
         b(repo, "new", "story", "--title", title, "--parent", ep, "--goal", "g", "--priority", prio,
-          "--check", argstr(PASS), *extra)
+          "--check", argstr(is_file("src/b.txt")), *extra)
         edit(repo, item(repo, title)["id"], recurs=recurs)
     edit(repo, item(repo, "Recurring done")["id"], status="dropped", notes="planted")
     assert b(repo, "check")[0] == 0

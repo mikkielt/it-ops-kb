@@ -2,10 +2,11 @@
 item file must meet, the knowledge an item names (`KbAtHead`, `knowledge_check`) and the state of it (`KnowledgeState`,
 `knowledge_lines`), the host and user name findings `validate` reports, the selector helpers `selectors` counts with,
 the repro and no-op warnings (`text_only_repro`, `trivial_command`, `noop_output`, `noop_warnings`, the warnings
-`check` prints) and the commands `check` and `selectors`.
+`check` prints), the errors `check` adds for an open item's refused repro or check (`refused_command_errors`) and the
+commands `check` and `selectors`.
 
-Standard library only; imports `bl_base` and `bl_plan` (the rules about code and its docs, which `check` runs) and
-never `backlog`; `bl_plan` never imports this module. `backlog.py` registers `check` and `selectors` with `bl_cli`, in
+Standard library only; imports `bl_base`, `bl_intake` (the program rule an open item's commands meet) and `bl_plan`
+(the rules about code and its docs, which `check` runs) and never `backlog`; `bl_plan` never imports this module. `backlog.py` registers `check` and `selectors` with `bl_cli`, in
 its usage order, with the handlers defined here."""
 import re
 import shlex
@@ -13,6 +14,7 @@ import subprocess
 from pathlib import Path
 
 import bl_authority
+import bl_intake
 from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS, PREFIX_KIND,
     PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED, canonical,
@@ -896,6 +898,26 @@ def noop_warnings(it, repro_out=""):
     return out
 
 
+def refused_command_errors(bl):
+    """check's errors: an open item whose repro or check bl_intake.check_program_refusal refuses or trivial_command
+    flags, the predicates test_open_repros_run_headless and test_done_flags_noop_check_real_backlog_commands assert
+    over the live item files. new only warns of them, so without this an item file passed the fast content gate and
+    turned those tests red for every later landing that selected them."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        if it.get("status") not in OPEN_STATUSES:
+            continue
+        parts = ([("repro", it["repro"])] if it.get("repro") else []) + [("check", c) for c in it.get("checks") or []]
+        for name, part in parts:
+            if not _check_ok(part):
+                continue
+            why = bl_intake.check_program_refusal(part["run"]) or trivial_command(part["run"])
+            if why:
+                out.append(f"{bl.label(iid)}: {name} {shlex.join(part['run'])} is refused: {why} (an open item's "
+                           "repro and checks are python3 on a _tools/ script or inline code that runs a test or tool)")
+    return out
+
+
 def host_bound_accepted(it):
     g = next((g for g in it.get("gates", []) if g.get("id") == HOST_BOUND_GATE), {})
     return g.get("by") == "operator" and str(g.get("answer", "")).strip().lower() in HOST_BOUND_ACCEPTS
@@ -905,7 +927,7 @@ def cmd_check(bl, a):
     pieces = host_user_pieces()
     planned = [i for sid, sp in bl.items.items() if sp.get("kind") == "sprint" and sp.get("status") == "planned"
                for i in bl.sprint_items(sid)]
-    errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned)
+    errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned) + refused_command_errors(bl)
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
         + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl)
