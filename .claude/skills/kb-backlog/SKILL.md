@@ -72,7 +72,7 @@ List what needs deciding, intake's drafts first:
 - bugs without a sprint;
 - items whose trigger may have fired (fire them with `python3 _tools/backlog.py fire ID` once the event is confirmed).
 
-Propose priority, severity, sprint or drop for each, in one AskUserQuestion batch. Apply the answers (`python3 _tools/backlog.py set ID --priority P`, `python3 _tools/backlog.py move ID --sprint SP|none` for a sprint, since it writes the status that sprint gives where `set --sprint` would leave a draft item in an active sprint, `python3 _tools/backlog.py drop ID --why W`, `python3 _tools/backlog.py reopen ID --why W` to take a done item back to work; a bug's severity is set by `new`), then run `fmt` and `check`.
+Propose priority, severity, sprint or drop for each, in one AskUserQuestion batch. Apply the answers (`python3 _tools/backlog.py set ID --priority P`, `python3 _tools/backlog.py move ID --sprint SP|none` for a sprint, since it writes the status that sprint gives (todo in an active sprint), where `set --sprint` refuses a draft item into an active sprint, `python3 _tools/backlog.py drop ID --why W`, `python3 _tools/backlog.py reopen ID --why W` to take a done item back to work; a bug's severity is set by `new`), then run `fmt` and `check`.
 
 ## Finish
 Commit the item files with a `KB-Work:` trailer naming the items, in the message's last paragraph with `Co-Authored-By` and the other trailers. Commit only when the user asked. Then run `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops).
