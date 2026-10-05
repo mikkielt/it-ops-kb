@@ -2,7 +2,7 @@
   "id": "BG-dcxm2uju",
   "kind": "bug",
   "title": "The runbook's Retrospective still takes the review's cost output, not close's rerun",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,18 @@
   "depends_on": [
     "ST-l3ky22zo"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "d83536e1481c9f0ece7f2c2de0059acc6477a057",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;s=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(1 if \"(the review's cost output)\" in s else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
