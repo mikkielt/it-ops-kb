@@ -512,8 +512,8 @@ def changed_items(bl, edits):
 
 
 SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to")
-SET_TEXT = ("title", "goal", "repro", "repro_reason", "severity", "parent")  # replaced whole; a done item keeps its goal and repro
-SET_FIELDS = ("notes", "priority", "rank", "sprint") + SET_TEXT + SET_LISTS  # what set changes; the others are refused
+SET_FIELDS = ("notes", "priority", "rank", "sprint", "title", "goal", "repro", "repro_reason", "severity",
+              "parent") + SET_LISTS  # what set changes; the others are refused
 SET_REFUSED = {  # a field set refuses, with the rule it states
     "status": "changes only through claim, release, start, close, drop and done",
     "claimed_by": "changes only through claim and release",
@@ -559,7 +559,7 @@ def cmd_set(bl, a):
         if set_refusal(f):
             raise Rejected(set_refusal(f))
     given = {"notes": a.notes, "priority": a.priority, "rank": a.rank, "sprint": a.sprint}
-    given.update({f: getattr(a, f) for f in SET_TEXT})
+    given.update({f: getattr(a, f) for f in ("title", "goal", "repro", "repro_reason", "severity", "parent")})
     given.update({f: getattr(a, f) for f in SET_LISTS})
     given = {f: v for f, v in given.items() if v is not None}
     both = sorted(set(given) & set(a.clear))
