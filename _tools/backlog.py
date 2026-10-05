@@ -220,12 +220,12 @@ import argparse, copy, re, shlex, subprocess, sys
 from pathlib import Path
 
 import bl_authority
-import bl_check
-import bl_ci
+import bl_check  # noqa: F401 - registers its commands
+import bl_ci  # noqa: F401 - registers its commands
 import bl_cli
-import bl_land
-import bl_plan
-import bl_view
+import bl_land  # noqa: F401 - registers its commands
+import bl_plan  # noqa: F401 - registers its commands
+import bl_view  # noqa: F401 - registers its commands
 from bl_base import (
     Backlog, COMMITS, IN_SPRINT, KINDS, OUTPUT_ROOT, PRIORITIES, RESEARCH_CHECKS, REVIEW_CHECKS, ROOT, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
     commit_message, commit_written, git, in_scope, item_file, need, new_id, research_in_planned, say, scope,
@@ -985,16 +985,7 @@ def args_referrers(p):
 
 
 bl_cli.register("new", cmd_new, args_new)
-bl_cli.register("similar", bl_view.cmd_similar, bl_view.args_similar)
-bl_cli.register("check", bl_check.cmd_check)
 bl_cli.register("fmt", cmd_fmt)
-bl_cli.register("selectors", bl_check.cmd_selectors)
-bl_cli.register("list", bl_view.cmd_list, bl_view.args_list)
-bl_cli.register("tree", bl_view.cmd_tree, bl_view.args_tree)
-bl_cli.register("find", bl_view.cmd_find, bl_view.args_find)
-bl_cli.register("show", bl_view.cmd_show, bl_view.args_show)
-bl_cli.register("next", bl_view.cmd_next, bl_view.args_next)
-bl_cli.register("held", bl_view.cmd_held, bl_view.args_held)
 bl_cli.register("claim", cmd_claim, args_claim)
 bl_cli.register("release", cmd_release, args_release)
 bl_cli.register("answer", cmd_answer, args_answer)
@@ -1003,22 +994,21 @@ bl_cli.register("move", cmd_move, args_move)
 bl_cli.register("reopen", cmd_reopen, args_reopen)
 bl_cli.register("gate", cmd_gate, args_gate)
 bl_cli.register("fire", cmd_fire, args_fire)
-bl_cli.register("done", bl_land.cmd_done, bl_land.args_done)
-bl_cli.register("land", bl_land.cmd_land, bl_land.args_land)
-bl_cli.register("merge", bl_land.cmd_merge, bl_land.args_merge)
 bl_cli.register("drop", cmd_drop, args_drop)
-bl_cli.register("start", bl_plan.cmd_start, bl_plan.args_start)
 bl_cli.register("host-check", cmd_host_check, args_host_check)
-bl_cli.register("close", bl_land.cmd_close, bl_land.args_close)
-bl_cli.register("horizon", bl_view.cmd_horizon, bl_view.args_horizon)
 bl_cli.register("goal", cmd_goal, args_goal)
 bl_cli.register("referrers", cmd_referrers, args_referrers)
-import bl_cost  # noqa: F401 - registers `cost` here, so the usage text keeps its order
-bl_cli.register("red-pipeline", bl_ci.cmd_red_pipeline, bl_ci.args_red_pipeline)
-bl_cli.register("intake", bl_ci.cmd_intake, bl_ci.args_intake)
+import bl_cost  # noqa: F401 - registers `cost`
 import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
 import bl_selfcheck  # noqa: F401 - registers `selfcheck`
+
+# The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
+USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
+         "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "merge", "drop", "start",
+         "host-check", "close", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
+         "selfcheck")
+bl_cli.order(USAGE)
 
 
 def main(argv=None):

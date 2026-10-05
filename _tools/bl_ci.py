@@ -4,11 +4,12 @@ with this module's `run` (`latest_pipeline`, `covered_by_revert`), the failure f
 `intake` commands with the async SessionStart form `hook_intake`.
 
 Standard library only; imports `bl_base`, `bl_intake` (the CI detector and the intake's detectors) and `bl_land` (the
-runner of a check), never `backlog`. `backlog.py` registers `red-pipeline` and `intake` with `bl_cli`, in its usage
-order, with the handlers and argument builders defined here."""
+runner of a check), never `backlog`. It registers `red-pipeline` and `intake` with `bl_cli` itself when
+imported, and `backlog.py`'s USAGE puts them in the usage order."""
 import sys
 import threading
 
+import bl_cli
 import bl_intake
 from bl_base import new_id, run, say, withhold
 from bl_land import run_check
@@ -207,3 +208,7 @@ def args_intake(p):
                    help="also run the detectors that call the network (ci: the newest pipeline of main, as red-pipeline reads it)")
     p.add_argument("--hook", action="store_true",
                    help="the async SessionStart form: silent, bounded, exit 0 always; with --file it writes the drafts uncommitted")
+
+
+bl_cli.register("red-pipeline", cmd_red_pipeline, args_red_pipeline)
+bl_cli.register("intake", cmd_intake, args_intake)

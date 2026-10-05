@@ -4,10 +4,11 @@ ready (`ready`), the near-duplicates (`words`, `similar`, `is_near`), `horizon` 
 They read the backlog and write nothing.
 
 Standard library only; imports `bl_base` and `bl_check` (the knowledge lines `show`, `next` and `horizon` print), never
-`backlog`. `backlog.py` registers the commands with `bl_cli`, in its usage order, with the handlers and argument
-builders defined here."""
+`backlog`. It registers the commands with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts them in
+the usage order."""
 import json, re, subprocess
 
+import bl_cli
 from bl_base import (
     IN_SPRINT, OPEN, REL_DIR, SIMILAR_MIN, SIMILAR_SHOWN, SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, Backlog,
     KINDS, Refused, Rejected, canonical, git, line, need, open_gates, say, scope, touches_overlap, waits, withhold,
@@ -403,3 +404,13 @@ def args_held(p):
 def args_horizon(p):
     p.add_argument("--sprint")
     p.add_argument("--hook", action="store_true")
+
+
+bl_cli.register("similar", cmd_similar, args_similar)
+bl_cli.register("list", cmd_list, args_list)
+bl_cli.register("tree", cmd_tree, args_tree)
+bl_cli.register("find", cmd_find, args_find)
+bl_cli.register("show", cmd_show, args_show)
+bl_cli.register("next", cmd_next, args_next)
+bl_cli.register("held", cmd_held, args_held)
+bl_cli.register("horizon", cmd_horizon, args_horizon)

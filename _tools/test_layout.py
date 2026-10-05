@@ -8,7 +8,11 @@ The exceptions the tree had when the rule was written are listed by name in EXCE
 listed one that no longer occurs, so the list only shrinks. Planted sources prove each rule fails when broken.
 """
 import ast
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 from conftest import TOOLS
 
@@ -758,7 +762,7 @@ FACADE_KEEP = ("parse_cmd", "cmd_new", "cmd_fmt", "cmd_claim", "cmd_release", "r
                "SET_FIELDS", "SET_REFUSED", "set_refusal", "appended", "reclass_gate", "cmd_set", "cmd_move",
                "cmd_reopen", "GATE_ID_RE", "CAPPED_FILE_RE", "SIZE_WORD_RE", "MEASURED_SIZE_RE", "cmd_gate",
                "cmd_host_check", "cmd_fire", "cmd_drop", "referrer_patterns", "referrers_of", "cmd_referrers",
-               "cmd_goal", "main")  # the item writers kept whole (kb/_self/backlog.md) and the dispatch
+               "cmd_goal", "USAGE", "main")  # the item writers kept whole (kb/_self/backlog.md), the usage order and the dispatch
 FACADE_COMMANDS = ("new", "fmt", "claim", "release", "answer", "set", "move", "reopen", "gate", "host-check", "fire",
                    "drop", "referrers", "goal")  # the commands of the kept block the verdict names
 
@@ -805,3 +809,39 @@ def test_import_layers_bl_and_kg_modules_import_neither_split_facade():
     assert unexcused({"backlog": "", "kg_trailers": late}) == [("facade", "kg_trailers", "backlog", "backlog")]
     assert unexcused({"kbgit": "", "bl_land": "from kbgit import KB\n"}) == [("facade", "bl_land", "kbgit", "kbgit")]
     assert unexcused({"backlog": "", "kbgit": "", "ql_deliver": "import backlog\nimport kbgit\n"}) == []
+
+
+SELF_REGISTERED = {"bl_view": ("similar", "list", "tree", "find", "show", "next", "held", "horizon"),
+                   "bl_check": ("check", "selectors"), "bl_land": ("done", "land", "merge", "close"),
+                   "bl_plan": ("start",), "bl_ci": ("red-pipeline", "intake"), "bl_cost": ("cost",),
+                   "bl_procs": ("procs",), "bl_stall": ("stalled",), "bl_selfcheck": ("selfcheck",)}
+
+
+def test_bl_split_parser_registry_each_module_registers_its_own_commands():
+    """BG-rxgpzirg (the operator's answer): importing a bl_ module that owns commands registers them, without
+    backlog.py, and backlog.py registers none of them; backlog.USAGE puts the registry in the usage order."""
+    mods = ", ".join(SELF_REGISTERED)
+    code = f"import sys; sys.path.insert(0, {TOOLS!r}); import bl_cli, {mods}; print(' '.join(bl_cli.COMMANDS))"
+    p = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=60)
+    assert p.returncode == 0, p.stderr
+    assert set(p.stdout.split()) == {n for names in SELF_REGISTERED.values() for n in names}, p.stdout
+    src = tool_source("backlog.py")
+    for names in SELF_REGISTERED.values():
+        for n in names:
+            assert f'bl_cli.register("{n}"' not in src, n
+    import backlog
+    import bl_cli
+    assert tuple(bl_cli.COMMANDS) == backlog.USAGE
+
+
+def test_bl_split_parser_registry_order_refuses_a_missing_extra_or_repeated_name():
+    import bl_cli
+    reg = {}
+    for n in ("b", "a"):
+        bl_cli.register(n, print, registry=reg)
+    bl_cli.order(("a", "b"), registry=reg)
+    assert list(reg) == ["a", "b"]
+    for bad in (("a",), ("a", "b", "c"), ("a", "a", "b")):  # planted: each refused, the registry unchanged
+        with pytest.raises(ValueError):
+            bl_cli.order(bad, registry=reg)
+        assert list(reg) == ["a", "b"]

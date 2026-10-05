@@ -6,13 +6,14 @@ the repro and no-op warnings (`text_only_repro`, `trivial_command`, `noop_output
 commands `check` and `selectors`.
 
 Standard library only; imports `bl_base`, `bl_intake` (the program rule an open item's commands meet) and `bl_plan`
-(the rules about code and its docs, which `check` runs) and never `backlog`; `bl_plan` never imports this module. `backlog.py` registers `check` and `selectors` with `bl_cli`, in
-its usage order, with the handlers defined here."""
+(the rules about code and its docs, which `check` runs) and never `backlog`; `bl_plan` never imports this module. It registers `check` and `selectors` with `bl_cli` itself
+when imported, and `backlog.py`'s USAGE puts them in the usage order."""
 import re
 import shlex
 import subprocess
 from pathlib import Path
 
+import bl_cli
 import bl_authority
 import bl_intake
 from bl_base import (
@@ -1053,3 +1054,5 @@ def cmd_selectors(bl, a):
     return 0
 
 
+bl_cli.register("check", cmd_check)
+bl_cli.register("selectors", cmd_selectors)

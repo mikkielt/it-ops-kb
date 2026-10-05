@@ -1,6 +1,7 @@
 """The subcommand registry of backlog.py (kb/_self/backlog.md, Working on items; kb/_self/tools.md): each module that
-owns a command registers its parser and its handler here, `backlog.main` builds the parser from the registry in
-registration order and dispatches, so a new subcommand adds a `register` call and no line to `main`.
+owns a command registers its parser and its handler here when it is imported, `backlog.py` puts the registry in its
+usage order (`order`), and `backlog.main` builds the parser from the registry and dispatches, so a new subcommand
+adds a `register` call in its module, its name in backlog.py's USAGE and no line to `main`.
 
 Standard library only; imports `bl_base` (for `COMMITS`) and never `backlog`."""
 import argparse
@@ -18,6 +19,18 @@ def register(name, handler, add_arguments=None, help=None, registry=None):
     if name in registry:
         raise ValueError(f"subcommand {name!r} is registered twice")
     registry[name] = (handler, add_arguments, help)
+
+
+def order(names, registry=None):
+    """Put the registry in the usage order `names` (backlog.py's USAGE), which must name each registered command once:
+    the modules register at import, in import order, and the usage text keeps its own order."""
+    registry = COMMANDS if registry is None else registry
+    if sorted(names) != sorted(registry) or len(set(names)) != len(names):
+        missing, extra = sorted(set(registry) - set(names)), sorted(set(names) - set(registry))
+        raise ValueError(f"usage order and registry differ: not in the order {missing}, not registered {extra}")
+    items = {n: registry[n] for n in names}
+    registry.clear()
+    registry.update(items)
 
 
 def build_parser(description, root, registry=None):
