@@ -14,7 +14,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "live_data_size_independent"
+        "live_data_list_names_every_reader"
       ]
     }
   ],

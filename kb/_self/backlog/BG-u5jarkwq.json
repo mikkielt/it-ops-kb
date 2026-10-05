@@ -22,9 +22,10 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "perfcheck"
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt"
       ]
     }
   ],

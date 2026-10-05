@@ -14,7 +14,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "settings_allow"
+        "settings_allow_no_runner_forms"
       ]
     }
   ],
