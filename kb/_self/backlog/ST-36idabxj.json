@@ -2,7 +2,7 @@
   "id": "ST-36idabxj",
   "kind": "story",
   "title": "Research sprint goal: backlog.py's item writers gain their rules, then move to bl_items.py",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-gfz3rl64",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
