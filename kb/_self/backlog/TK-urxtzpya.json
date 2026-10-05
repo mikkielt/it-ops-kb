@@ -2,7 +2,7 @@
   "id": "TK-urxtzpya",
   "kind": "task",
   "title": "bl_view.py holds horizon and the read-only views",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,6 @@
   ],
   "depends_on": [
     "TK-f5swu7tm"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
