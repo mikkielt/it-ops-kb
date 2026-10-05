@@ -2,7 +2,7 @@
   "id": "TK-xs5zfyo5",
   "kind": "task",
   "title": "backlog.py is the facade: its commands, usage and dispatch only",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -35,5 +35,19 @@
     "TK-dtybnlcg",
     "TK-urxtzpya"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "4d4ddfdbdb663e84fc0c6799ab825e5c98005c41",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_facade_only"
+        ],
+        "exit": 0,
+        "sha256": "df66f35d0aeaab87"
+      }
+    ]
+  }
 }
