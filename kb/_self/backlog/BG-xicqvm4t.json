@@ -2,7 +2,8 @@
   "id": "BG-xicqvm4t",
   "kind": "bug",
   "title": "Knowledge refs are resolved against the working tree, not HEAD",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -10,9 +11,8 @@
   "repro": {
     "run": [
       "python3",
-      "_tools/tests.py",
-      "-k",
-      "knowledge_refs_read_from_head"
+      "-c",
+      "import pathlib, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport bl_check\nd = pathlib.Path(tempfile.mkdtemp())\nr = d / 'kb' / 'public'\nr.mkdir(parents=True)\n(r / '_root.md').write_text('---\\nroot: public\\nid_prefix: S\\nvisibility: public\\n---\\n\\n# public\\n', encoding='utf-8')\n(r / '_sources.csv').write_text('id,url,title\\nS1,https://example.com/a,A\\n', encoding='utf-8')\ng = ['git', '-C', str(d), '-c', 'user.name=t', '-c', 'user.email=t@example.com']\nsubprocess.run(g + ['init', '-q'], check=True)\nsubprocess.run(g + ['add', '-A'], check=True)\nsubprocess.run(g + ['commit', '-q', '-m', 'base'], check=True)\nwith open(r / '_sources.csv', 'a', encoding='utf-8') as f:\n    f.write('S2,https://example.com/b,B\\n')\nids = bl_check.KbAtHead(d).source_ids()\nsys.exit(0 if 'S1' in ids and 'S2' not in ids else 1)\n"
     ]
   },
   "checks": [
