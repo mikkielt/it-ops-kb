@@ -1,0 +1,26 @@
+{
+  "id": "ST-l3ky22zo",
+  "kind": "story",
+  "title": "The retired features' dropped test groups name where their live modules' calls went",
+  "status": "todo",
+  "sprint": "SP-qzip6qar",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A full perfcheck.py dropped run lists 21 historical groups of retired features (autopilot, the headless runner) whose deleted test files imported a live module beside the removed one and whose reasons name no successor (ST-vxi7drn2). Each group's reason in _tools/test_ids_dropped.txt is annotated with a phrase the checker recognises, stating that the live module's calls went with the retired feature, and perfcheck's names_successor accepts that phrase only beside a removed module or file the reason names; a full dropped run then warns of none of them, and no known-list is left over. The operator chose this (option a).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dropped_retired_feature_phrase"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_ids_dropped.txt",
+    "_tools/perfcheck.py",
+    "_tools/test_perfcheck_dropped.py",
+    "kb/_self/tools.md"
+  ]
+}
