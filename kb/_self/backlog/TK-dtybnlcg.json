@@ -2,7 +2,7 @@
   "id": "TK-dtybnlcg",
   "kind": "task",
   "title": "bl_ci.py holds the CI readers and the red-pipeline command",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -37,5 +37,19 @@
   "depends_on": [
     "TK-f5swu7tm"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "9f13e9f10f48ed0c68f4213764a0835258c70c5f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_ci"
+        ],
+        "exit": 0,
+        "sha256": "0d71b6a7ca29a075"
+      }
+    ]
+  }
 }
