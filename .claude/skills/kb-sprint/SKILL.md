@@ -9,10 +9,10 @@ argument-hint: "plan \"<goal>\" | start SP-... | run [SP-...] | review SP-... | 
 Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section backlog "Sprints" backlog "Dependencies, gates and triggers" backlog "Definition of done" backlog "Working on items" backlog "Git" maintaining "Conduct for changes" git.md "Workflow"
+python3 _tools/selfdoc.py section backlog "Sprints" backlog "Dependencies, gates and triggers" backlog "Definition of done" backlog "Working on items" backlog "Git" backlog "Landing" backlog "Running a sprint" backlog "Processes left running" backlog "Self-check" backlog "Stalled work" maintaining "Conduct for changes" git.md "Workflow"
 ```
 
-What each gives: `backlog "Git"` the `KB-Work` trailer; `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` sync and the gate.
+What each gives: `backlog "Git"` the `KB-Work` trailer; `backlog "Landing"` the steps `land` runs; `backlog "Running a sprint"` the orchestrator's rules; `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` sync and the gate.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
@@ -37,7 +37,7 @@ Never answer the start gate yourself.
 ## run [SP]
 Tests run in three tiers (`kb/_self/backlog.md`, Working on items): narrow per task (the workers of step 3), the gate per landing (the `tests.py --changed origin/main` of `sync --push` in step 4) and the heavy suites once at sprint end (`stress_test.py` with the full `tests.py`, the review story's checks, `## review SP`).
 
-You are the orchestrator. Run from your own clone or git worktree, never a checkout another session works in: a second orchestrator starts its own (`kb/_self/backlog.md`, Working on items). Loop:
+You are the orchestrator. Run from your own clone or git worktree, never a checkout another session works in: a second orchestrator starts its own (`kb/_self/backlog.md`, Running a sprint). Loop:
 1. Run `python3 _tools/backlog.py selfcheck` first (Self-check) and act on each failure before anything is claimed, then `python3 _tools/backlog.py horizon --sprint SP` and `python3 _tools/backlog.py next --sprint SP --all`.
 2. From the ready list, take up to four items whose `touches` do not overlap each other or any item in flight: after `git fetch`, `python3 _tools/backlog.py held --overlaps ID --ref origin/main` lists the claimed items, of every session, whose touches an item would meet (exit 1 when there is one). Before a claim, `grep -rn` the existing tests and run `python3 _tools/selfdoc.py stale` for the behaviour the fix changes, and list what they name in the item's `touches`, with any skill the work edits, up front: `done` refuses a file outside the touches. Right before the claim run `git fetch origin` and check that no local `work/<id>` branch exists: two sessions can pass `held` together and the second push conflicts. Claim each: `python3 _tools/backlog.py claim ID --by <subagent name> --commit --trailer 'Co-Authored-By: ...'`, then push the claims once, the claim sync: `python3 _tools/kbgit.py sync --push`.
    - Shared-file move: a task that moves code out of a file other items edit (a split of `backlog.py` or `kbgit.py`) is announced first to the manager session; in-flight items on that file drain: no new claims on it, and `python3 _tools/backlog.py held --overlaps ID --ref origin/main` shows none of the mover's claimed touches overlapping before the move starts; the move is one atomic commit per file moved: new modules git-added, mapped in `kb/_self/map.csv`, the testmap and the tools map, docs in the same commit, tests keeping their names, patch targets repointed, and a `bl_` or `kg_` module never importing `backlog` or `kbgit` at any depth.

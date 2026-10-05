@@ -1,6 +1,6 @@
 """`backlog.py procs`: the processes whose working directory lies in a checkout of this clone (the main checkout or any
 worktree `git worktree list` names), each as owned, orphaned or foreign, and the end of the owned orphans
-(kb/_self/backlog.md, Working on items; kb/_self/tools.md).
+(kb/_self/backlog.md, Processes left running; kb/_self/tools.md).
 
   procs                 list them (read only): pid, parent, age, class, command name, and where it runs
   procs --record PID    note that the autopilot started PID: its pid, start time and command name go to

@@ -1,5 +1,5 @@
-"""`backlog.py stalled`: the claimed and the ready items that show a stall signal (kb/_self/backlog.md, Working on
-items; kb/_self/tools.md; the kb-sprint skill, Stalled work).
+"""`backlog.py stalled`: the claimed and the ready items that show a stall signal (kb/_self/backlog.md, Stalled
+work; kb/_self/tools.md; the kb-sprint skill, Stalled work).
 
   stalled                      list each claimed (doing) or ready item that shows a signal, with its signals (read
                                only; exit 0, also when nothing stalls)
