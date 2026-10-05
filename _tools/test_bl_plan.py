@@ -90,6 +90,25 @@ def test_backlog_docs_touches_miss_check_warns(mapped):
     assert code == 0 and "warnings=0" in out, out
 
 
+def test_docs_warning_only_sprint_items(mapped):
+    """ST-cyhyax32 planted: a story in no sprint whose touches name mapped code and none of its docs gets no
+    docs-coverage warning from check (noise nobody acts on until it is planned); the sprint's task with the same
+    touches still warns, and so does the loose story once it joins the sprint."""
+    repo, tk, sp = mapped["repo"], mapped["tk"], mapped["sp"]
+    code, out = b(repo, "new", "story", "--title", "Loose", "--goal", "g", "--touch", "_tools/x.py",
+                  "--check", argstr(is_file("src/b.txt")))
+    assert code == 0, out
+    loose = item(repo, "Loose")["id"]
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out, out
+    edit(repo, tk, touches=["_tools/x.py"])
+    code, out = b(repo, "check")
+    assert f"{tk} “Task”: touches code" in out and loose not in out, out
+    edit(repo, loose, sprint=sp)
+    code, out = b(repo, "check")
+    assert f"{loose} “Loose”" in out, out
+
+
 def test_check_warns_docs_in_later_task(mapped):
     """Planted: the code's doc only in a task that depends on the code task (a later task); check warns, naming the
     doc and that task. The same doc in an item that does not depend on it is still outside the code task's scope: a

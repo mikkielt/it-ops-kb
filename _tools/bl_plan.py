@@ -166,7 +166,9 @@ def docs_warnings(bl, only=None):
     the push without them. The item's own scope covers a doc; a missing or unreadable map gives no warning. A standard
     doc, one with a map pattern that covers every _tools/*.py (EVERY_TOOL), describes no one change: selfdoc stale
     still lists it, and a Self-Reviewed trailer clears it there, so it is no item's to carry. ONLY limits the items
-    reported to those ids; the holders of a doc are still every open item."""
+    reported to those ids; without it only items of a planned or active sprint (their own or their nearest parent's)
+    are reported, as /kb-sprint plan and start act on them, and a draft or an item in no sprint gets it when it joins
+    one; the holders of a doc are still every open item."""
     import selfdoc
     try:
         docmap = selfdoc.load_map(str(bl.root))
@@ -179,6 +181,8 @@ def docs_warnings(bl, only=None):
     out = []
     for iid in open_ids:
         if only is not None and iid not in only:
+            continue
+        if only is None and bl.items.get(bl.sprint_of(iid) or "", {}).get("status") not in ("planned", "active"):
             continue
         if files is None and any(re.search(r"[*?]", t) for t in bl.items[iid].get("touches", []) or []
                                  if isinstance(t, str)):
