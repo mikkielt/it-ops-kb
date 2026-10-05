@@ -1,0 +1,34 @@
+{
+  "id": "BG-ytcjstai",
+  "kind": "bug",
+  "title": "close deletes another sprint's empty worktree-agent branch, since nothing ties it to the sprint that made it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "clean_runner_leftovers counts a worktree-agent-* branch as the closed sprint's only when git worktree list --porcelain, read before any removal, shows its agent-<x> worktree on one of the sprint's work/<id> branches (BG-6a7jiylf's goal clause), and keeps any other with a close: kept line; a test plants two such branches, one tied to another sprint's work/<id>, and asserts that one is kept. Found by the SP-42bn4vz7 review of BG-6a7jiylf.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect;sys.path.insert(0,'_tools');import bl_land;src=inspect.getsource(bl_land.clean_runner_leftovers);sys.exit(0 if 'worktree_entries' in src and 'AGENT_BRANCH' in src and 'ids' in src.split('AGENT_BRANCH',1)[1][:400] else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a missing attribution in close's cleanup, which needs a repository with two concurrent sprints' worktrees to run; the check is the test that plants it, and the repro reads the function for the attribution until that test exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_keeps_other_sprints_agent_branch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ]
+}
