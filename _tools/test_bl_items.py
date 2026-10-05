@@ -835,3 +835,23 @@ def test_set_parent_rederives_status_from_the_new_parents_sprint(sprint):
     assert code == 0 and item_json(repo, tk)["status"] == "todo", out
     code, out = b(repo, "set", tk, "--parent", planned)
     assert code == 0 and item_json(repo, tk)["status"] == "draft", out
+
+
+def test_new_bug_repro_python_error_refused(repo, monkeypatch):
+    """ST-ikh2h7m5 planted: a repro whose own -c code calls a function with the wrong arguments (TypeError) or a
+    name it never defined (NameError) fails before it tests the defect and is refused, naming the exception, with
+    colour forced on as in a background session; one that exits 1 by sys.exit, or fails an assert on the defect, is
+    filed (an error on a value the code under test returned stays accepted: test_backlog's
+    test_repro_own_import_error)."""
+    monkeypatch.setenv("FORCE_COLOR", "3")
+
+    def new_bug(title, repro):
+        return b(repo, "new", "bug", "--title", title, "--severity", "S4", "--repro", repro, "--goal", "x")
+    for repro, cls in (("python3 -c 'def f(a, b): pass\nf(1)'", "TypeError"), ("python3 -c 'no_such_name_pl()'", "NameError")):
+        code, out = new_bug("Own error", repro)
+        assert code == 1 and "fails for its own error, not the defect" in out and f"raised {cls}" in out, out
+    assert not list((Path(repo) / backlog.REL_DIR).glob("*.json")), "a refused repro files nothing"
+    code, out = new_bug("Exits one", "python3 -c 'import sys; sys.exit(1)'")
+    assert code == 0 and "own error" not in out, out
+    code, out = new_bug("Asserts", "python3 -c 'assert 1 == 2'")
+    assert code == 0 and "own error" not in out, out

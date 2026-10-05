@@ -2,12 +2,12 @@
   "id": "ST-ikh2h7m5",
   "kind": "story",
   "title": "backlog.py new runs a bug's repro once and refuses one that fails by a Python error rather than its exit code",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-hyp6o7hl",
   "priority": "P3",
   "rank": 0,
-  "goal": "backlog.py new bug (and set --repro) runs the repro once with the check timeout and refuses it, naming the exception class, when it ends in an uncaught Python exception (a traceback on stderr) instead of the exit code that proves the defect; a planted repro calling a function with the wrong arguments is refused, one that exits 1 by sys.exit is accepted. Retrospective of SP-smqwmchu: BG-nf6gcqsz was filed with a repro that failed by TypeError, not by the defect.",
+  "goal": "backlog.py new bug (and set --repro, and land's checks) refuses a repro, naming the exception class, when it ends in an uncaught TypeError, NameError or UnboundLocalError raised in its own code (the -c string or an untracked script), which says the repro's code is wrong rather than the defect; an error on a value the code under test returned (an AttributeError on its None, ST-4mdnjuep's contract), one raised inside the code under test and an AssertionError stay accepted. A planted repro calling a function with the wrong arguments is refused, one that exits 1 by sys.exit is accepted. Retrospective of SP-smqwmchu: BG-nf6gcqsz was filed with a repro that failed by TypeError, not by the defect.",
   "checks": [
     {
       "run": [
@@ -22,10 +22,13 @@
     "_tools/bl_plan.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_land.py",
+    "_tools/test_bl_items.py"
   ],
   "depends_on": [
     "BG-7kyxgcn3",
     "BG-bapadqdl"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

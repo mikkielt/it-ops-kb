@@ -599,3 +599,4 @@ class TestBacklogCommitFlag:
         code, out = b(repo, "claim", tk, "--by", "agent-1", "--commit")
         assert code == 0 and "nothing committed" in out, out
         assert self.out(repo, "rev-parse", "HEAD") == head
+
