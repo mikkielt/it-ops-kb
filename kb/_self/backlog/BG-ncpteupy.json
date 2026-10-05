@@ -2,7 +2,7 @@
   "id": "BG-ncpteupy",
   "kind": "bug",
   "title": "backlog.py referrers matches the bare stem of a moved .py file in every item that says the word, and misses a moved doc's file name",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "97887a32d4f8b2dcd8e89ce45685501b5aac7b2a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "referrers_ignores_item_files_and_matches_doc_names"
+        ],
+        "exit": 0,
+        "sha256": "fc8420c4dd937530"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/backlog.py','referrers','_tools/backlog.py'],capture_output=True,text=True).stdout.splitlines();sys.exit(1 if [l for l in o if '  kb/_self/backlog/' in l] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
