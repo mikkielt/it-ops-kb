@@ -1598,6 +1598,20 @@ class TestCloseRemovesRunnerLeftovers:
         assert runner.is_dir() and f"orch/{sp}" in self.branches(repo), out
         assert not (wt / "agent-a0").exists(), out
 
+    def test_close_keeps_other_sprints_agent_branch(self, closing):
+        """BG-ytcjstai planted: another sprint's live worker, agent-b9 on work/TK-otherxxx, beside its empty
+        worktree-agent-b9 branch (tip on the integration main, not checked out): close keeps that branch, naming
+        the worktree, and still removes this sprint's worktree-agent-a1, whose worktree is gone."""
+        repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
+        other = "TK-otherxxx"
+        sh(repo, "git", "worktree", "add", "-q", "-b", f"work/{other}", str(wt / "agent-b9"), "HEAD")
+        sh(repo, "git", "branch", "worktree-agent-b9", "HEAD")
+        code, out = b(repo, "close", sp)
+        assert code == 0 and "close: kept worktree-agent-b9: its worktree" in out and f"work/{other}" in out, out
+        left = self.branches(repo)
+        assert "worktree-agent-b9" in left and f"work/{other}" in left and (wt / "agent-b9").is_dir(), out
+        assert "worktree-agent-a1" not in left, out
+
     def test_close_removes_runner_leftovers_summary_removes_nothing(self, closing):
         repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
         before = self.branches(repo)
