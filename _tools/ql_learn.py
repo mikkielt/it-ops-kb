@@ -409,7 +409,7 @@ def later_stage(prev, rec):
 
 def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, counts=None, out=print):
     """One learn over `store` (default: the local store beside the spool): every judged miss re-run with `pack` on
-    HEAD (a none entry whose fetched pages the kb cites is an eval finding for the article citing them most, and so is
+    HEAD, a `no-fix` eval finding included, which becomes `fixed-since` when its question now passes (BG-bbfdisfu) (a none entry whose fetched pages the kb cites is an eval finding for the article citing them most, and so is
     a miss whose none pack leads with an article holding the words it lacks, `held_article`), the source findings,
     then one findings file holding only the records that change a finding's state. 0."""
     store = Path(store or places()[0] / "store")
@@ -436,6 +436,9 @@ def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, cou
         if prev is None or (prev.get("state") in LEARN_STATES and not later_stage(prev, rec)
                             and _key(prev) != _key(rec)):
             new.append(rec)
+        elif prev.get("state") == "no-fix" and prev.get("kind") == "eval" and rec.get("state") == "fixed-since":
+            # apply found no fix, but the question now passes on HEAD; one still missing stays no-fix
+            new.append({**_key(prev), "state": "fixed-since", "observed": rec.get("observed")})
     for fid, prev in last.items():  # an open finding learn no longer derives: the kb at HEAD handles it now
         if fid not in derived and prev.get("state") == "open":
             new.append({**_key(prev), "state": "fixed-since"})

@@ -94,6 +94,28 @@ class TestLearn:
         assert next(r for r in planted if r.get("host") == UNSTAGED)["triggers"] == ["share", "failures"]
         assert ql_store.store_problems(store) == []
 
+    def test_learn_rechecks_no_fix_eval_findings(self, tmp_path):
+        """BG-bbfdisfu: a no-fix eval finding (apply found no fix and promoted it) whose question
+        now passes on HEAD becomes fixed-since; one whose question still misses stays no-fix, and a second learn
+        writes nothing more for either."""
+        store = learn_store(tmp_path)
+        run_learn(store, failing)
+        entries = ql_store.store_entries(store)
+        questions = {e["id"]: e.get("question") for _, e in entries}
+        evals = sorted((r for r in by_id(store).values() if r["kind"] == "eval"), key=lambda r: r["id"])
+        fixed, stuck = evals[0], evals[1]
+        ql_store.write_findings(store, entries, [{**{k: v for k, v in r.items() if k != "observed"}, "state": "no-fix", "stage": "candidate-gap"}
+                                                 for r in (fixed, stuck)], ("no-fix",))
+        assert {by_id(store)[r["id"]]["state"] for r in (fixed, stuck)} == {"no-fix"}
+        now = questions[fixed["entry"]]
+        run_learn(store, lambda q: passing(q) if q == now else failing(q))
+        last = by_id(store)
+        assert last[fixed["id"]]["state"] == "fixed-since" and last[stuck["id"]]["state"] == "no-fix", last
+        assert last[fixed["id"]]["stage"] == "candidate-gap"  # the finding's own record, moved on, not a new miss
+        files = len(findings(store))
+        run_learn(store, lambda q: passing(q) if q == now else failing(q))
+        assert len(findings(store)) == files
+
     def test_learn_writes_findings_only(self, tmp_path, head_pack):
         store = learn_store(tmp_path)
         before = tree(store)
