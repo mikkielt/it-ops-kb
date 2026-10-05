@@ -2,7 +2,7 @@
   "id": "ST-ufpxla7r",
   "kind": "story",
   "title": "A change to one bl_ module selects only the tests that import the backlog modules",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
     "kb/_self/git.md",
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
