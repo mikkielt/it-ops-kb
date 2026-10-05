@@ -2,7 +2,7 @@
   "id": "ST-fo3ztjcs",
   "kind": "story",
   "title": "A sprint review re-runs every done item's checks once on the sprint's tip",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "depends_on": [
     "BG-wh5z4l2b",
     "ST-yl5ihysf"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
