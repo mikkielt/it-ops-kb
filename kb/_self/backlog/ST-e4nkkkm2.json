@@ -2,7 +2,7 @@
   "id": "ST-e4nkkkm2",
   "kind": "story",
   "title": "A split of a shared file lands without blocking other work",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-tpulmoxh",
   "priority": "P1",
@@ -18,5 +18,19 @@
       ]
     }
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "c040544a5f6ebe3da3f99920865f595542568673",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_shared_file_move_rule"
+        ],
+        "exit": 0,
+        "sha256": "e0daab1127ba096e"
+      }
+    ]
+  }
 }
