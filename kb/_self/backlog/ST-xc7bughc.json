@@ -2,7 +2,7 @@
   "id": "ST-xc7bughc",
   "kind": "story",
   "title": "kbotel's receiver exit is tested, its file's place is stated right, and the digest's ops block counts rows by their own day",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
@@ -37,5 +37,6 @@
   ],
   "depends_on": [
     "BG-hdy6rfro"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
