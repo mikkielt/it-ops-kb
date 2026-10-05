@@ -135,6 +135,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (--summary: only list each of them with its status and the commit done
                                           recorded, the close commit's body, and change nothing; with --commit
                                           refused)
+  backlog.py tidy [--apply]               list the clone's merged work/*, worktree-agent-* and orch/* branches and
+                                          its clean agent-* worktrees, each other one with why it stays; --apply
+                                          removes the listed ones (never --force)
   backlog.py horizon [--sprint ID] [--hook]   how far each active sprint can go without the operator: reachable
                                           items, what waits on which gate or trigger, the critical path, the
                                           knowledge state of the next item's asks and refs (--hook runs no pack)
@@ -1080,7 +1083,7 @@ import bl_selfcheck  # noqa: F401 - registers `selfcheck`
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "merge", "drop", "start",
-         "host-check", "close", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
+         "host-check", "close", "tidy", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
          "selfcheck")
 bl_cli.order(USAGE)
 

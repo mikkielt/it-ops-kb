@@ -246,7 +246,7 @@ def test_bl_split_base_planted_failures_fail():
 
 SUBCOMMANDS = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
                "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "merge", "drop", "start",
-               "host-check", "close", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
+               "host-check", "close", "tidy", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
                "selfcheck")
 
 
@@ -275,7 +275,7 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     import bl_stall
     import bl_view
     owner = {"cost": bl_cost, "procs": bl_procs, "stalled": bl_stall, "selfcheck": bl_selfcheck, "check": bl_check, "selectors": bl_check, "start": bl_plan,
-             "done": bl_land, "land": bl_land, "merge": bl_land, "close": bl_land,
+             "done": bl_land, "land": bl_land, "merge": bl_land, "close": bl_land, "tidy": bl_land,
              "red-pipeline": bl_ci, "intake": bl_ci, **dict.fromkeys(VIEW_USAGE, bl_view)}  # a command a bl_ module owns: its handler is that module's, not backlog's
     assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
     for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit
@@ -812,7 +812,7 @@ def test_import_layers_bl_and_kg_modules_import_neither_split_facade():
 
 
 SELF_REGISTERED = {"bl_view": ("similar", "list", "tree", "find", "show", "next", "held", "horizon"),
-                   "bl_check": ("check", "selectors"), "bl_land": ("done", "land", "merge", "close"),
+                   "bl_check": ("check", "selectors"), "bl_land": ("done", "land", "merge", "close", "tidy"),
                    "bl_plan": ("start",), "bl_ci": ("red-pipeline", "intake"), "bl_cost": ("cost",),
                    "bl_procs": ("procs",), "bl_stall": ("stalled",), "bl_selfcheck": ("selfcheck",)}
 

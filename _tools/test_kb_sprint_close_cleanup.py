@@ -67,3 +67,73 @@ def test_kb_sprint_close_cleans_worker_leftovers_planted_failures(plant, want):
         assert problems == []
     else:
         assert any(want in p for p in problems), problems
+
+
+# ---- backlog.py tidy (ST-3oaiwyfn): the clone's merged leftovers, listed and with --apply removed
+
+def sh(cwd, *argv):
+    import subprocess
+    p = subprocess.run(list(argv), cwd=cwd, capture_output=True, text=True, encoding="utf-8")
+    assert p.returncode == 0, p.stderr
+    return p.stdout
+
+
+def tidy(clone, *args):
+    import subprocess
+    import sys
+    p = subprocess.run([sys.executable, str(Path(KB) / "_tools" / "backlog.py"), "--root", str(clone), "tidy", *args],
+                       cwd=clone, capture_output=True, text=True, encoding="utf-8")
+    return p.returncode, p.stdout + p.stderr
+
+
+@pytest.fixture
+def leftovers(tmp_path):
+    """A clone with a bare origin: merged work/, worktree-agent-* and orch/ branches and a clean merged agent-a0
+    worktree (tidy's); an unmerged work/ branch, a dirty agent-d1 worktree and a branch checked out in a worktree
+    (kept)."""
+    git = ("git", "-c", "user.name=t", "-c", "user.email=t@corp.example.com")
+    origin, clone = tmp_path / "origin.git", tmp_path / "clone"
+    sh(tmp_path, "git", "init", "-q", "--bare", "-b", "main", str(origin))
+    sh(tmp_path, "git", "clone", "-q", str(origin), str(clone))
+    (clone / "kb" / "_self" / "backlog").mkdir(parents=True)
+    (clone / ".gitignore").write_text(".claude/worktrees/\n", encoding="utf-8")
+    sh(clone, *git, "checkout", "-q", "-b", "main")
+    sh(clone, "git", "add", "-A")
+    sh(clone, *git, "commit", "-qm", "base")
+    sh(clone, "git", "push", "-q", "origin", "main")
+    for b in ("work/TK-merged00", "worktree-agent-x1", "orch/SP-old00000"):
+        sh(clone, "git", "branch", b)
+    sh(clone, "git", "checkout", "-q", "-b", "work/TK-unmerged")
+    (clone / "own.txt").write_text("own\n", encoding="utf-8")
+    sh(clone, "git", "add", "own.txt")
+    sh(clone, *git, "commit", "-qm", "own work")
+    sh(clone, "git", "checkout", "-q", "main")
+    wt = clone / ".claude" / "worktrees"
+    sh(clone, "git", "worktree", "add", "-q", "--detach", str(wt / "agent-a0"), "main")
+    sh(clone, "git", "worktree", "add", "-q", "--detach", str(wt / "agent-d1"), "main")
+    (wt / "agent-d1" / "unsaved.txt").write_text("x\n", encoding="utf-8")
+    sh(clone, "git", "worktree", "add", "-q", "-b", "work/TK-checked0", str(wt / "other-1"), "main")
+    return clone
+
+
+def branches(clone):
+    return set(sh(clone, "git", "branch", "--format=%(refname:short)").split())
+
+
+def test_tidy_removes_only_merged(leftovers):
+    """Without --apply tidy lists and removes nothing; with it the merged branches and the clean merged agent worktree
+    go, and the unmerged branch, the dirty worktree and the checked-out branch stay, each named with why."""
+    clone, wt = leftovers, leftovers / ".claude" / "worktrees"
+    before = branches(clone)
+    code, out = tidy(clone)
+    assert code == 0 and "would remove 4, kept 3" in out, out
+    assert branches(clone) == before and (wt / "agent-a0").is_dir(), out
+    code, out = tidy(clone, "--apply")
+    assert code == 0 and "removed 4, kept 3" in out, out
+    left = branches(clone)
+    assert not {"work/TK-merged00", "worktree-agent-x1", "orch/SP-old00000"} & left, out
+    assert {"work/TK-unmerged", "work/TK-checked0", "main"} <= left, out
+    assert not (wt / "agent-a0").exists() and (wt / "agent-d1" / "unsaved.txt").is_file(), out
+    assert "kept work/TK-unmerged: it has commits" in out and "kept work/TK-checked0: it is checked out" in out, out
+    assert "agent-d1: it has uncommitted changes" in out, out
+    assert "removed 0, kept 3" in tidy(clone, "--apply")[1]  # a second run finds nothing more
