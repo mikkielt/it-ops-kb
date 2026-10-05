@@ -1,0 +1,32 @@
+{
+  "id": "BG-ke2xj34l",
+  "kind": "bug",
+  "title": "publish reuses a cached clean verdict after the leak-scan rule changes, since the verdict cache key holds no scan form",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbpublic's verdict cache name holds a SCAN_FORM constant beside the allowlist and pinned digest, bumped whenever file_hits' rule changes (as PROJECTION_FORM keys the projection cache), so a verdict cached under an older scan rule is never read; a test caches a clean verdict under a planted laxer file_hits, restores the real one and asserts publish refuses with leak-scan hit (guid). Found by the SP-42bn4vz7 review of BG-svpvanw4 and BG-r5wzfz3c.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbpublic;sys.exit(0 if isinstance(getattr(kbpublic,'SCAN_FORM',None),int) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "publish_verdict_cache_keyed_by_scan_form"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/tools.md"
+  ]
+}
