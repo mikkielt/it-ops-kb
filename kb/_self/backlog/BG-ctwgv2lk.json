@@ -1,0 +1,34 @@
+{
+  "id": "BG-ctwgv2lk",
+  "kind": "bug",
+  "title": "KbTemplate.changed() names a write through a link with backslashes on Windows",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "KbTemplate in _tools/conftest.py keys its digests and changed() by root-relative paths with / on every OS, so test_kb_copies_template_untouched_check_sees_a_write_through_a_link passes on Windows and the sync gate's tests.py --changed no longer fails there",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_kb_copies_template_untouched_check_sees_a_write_through_a_link"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_kb_copies_template_untouched_check_sees_a_write_through_a_link"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/conftest.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ]
+}
