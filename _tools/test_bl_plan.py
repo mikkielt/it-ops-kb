@@ -70,6 +70,7 @@ def mapped(sprint):
     (repo / "kb" / "_self" / "map.csv").write_text(DOC_MAP, encoding="utf-8", newline="\n")
     (repo / ".claude-plugin").mkdir()
     (repo / ".claude-plugin" / "plugin.json").write_text("{}\n", encoding="utf-8", newline="\n")
+    edit(repo, sprint["bg"], depends_on=[sprint["tk"]])  # the fixture's bug and task share src/**: ordered, no warning
     commit(repo, "map")
     return sprint
 
@@ -88,6 +89,26 @@ def test_backlog_docs_touches_miss_check_warns(mapped):
     edit(repo, tk, touches=["_tools/x.py", ".claude-plugin/*.json", "kb/_self/tools.md", "kb/_self/plugin.md"])
     code, out = b(repo, "check")
     assert code == 0 and "warnings=0" in out, out
+
+
+def test_check_warns_unordered_shared_touches(sprint):
+    """ST-xd5vboit planted: two open tasks of the sprint that both touch src/s.txt with no depends_on between them
+    are warned of by check, naming both and the path; once one depends on the other, and for a pair with disjoint
+    touches, there is no such warning."""
+    repo, st, tk = sprint["repo"], sprint["st"], sprint["tk"]
+    edit(repo, tk, touches=["src/s.txt"])
+    b(repo, "new", "task", "--title", "Other", "--parent", st, "--goal", "o", "--touch", "src/s.txt",
+      "--check", argstr(is_file("src/b.txt")))
+    other = item(repo, "Other")["id"]
+    code, out = b(repo, "check")
+    assert code == 0 and f"{tk} “Task” and {other} “Other” both touch src/s.txt and neither depends" in out \
+        or f"{other} “Other” and {tk} “Task” both touch src/s.txt and neither depends" in out, out
+    edit(repo, other, depends_on=[tk])
+    code, out = b(repo, "check")
+    assert code == 0 and "neither depends" not in out, out
+    edit(repo, other, depends_on=[], touches=["src/z.txt"])
+    code, out = b(repo, "check")
+    assert code == 0 and "neither depends" not in out, out
 
 
 def test_docs_warning_only_sprint_items(mapped):

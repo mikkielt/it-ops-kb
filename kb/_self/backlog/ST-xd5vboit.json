@@ -2,7 +2,7 @@
   "id": "ST-xd5vboit",
   "kind": "story",
   "title": "backlog check warns of sprint items that share a file with no depends_on order between them",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3rzxx3m4",
   "priority": "P2",
   "rank": 0,
@@ -21,9 +21,11 @@
     "_tools/bl_plan.py",
     "_tools/test_bl_plan.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_check.py"
   ],
   "depends_on": [
     "ST-cyhyax32"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
