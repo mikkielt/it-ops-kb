@@ -26,5 +26,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "notes": "Left from TK-xs5zfyo5, which kept the item writers whole in backlog.py with a written verdict: about 630 lines of backlog.py and about 900 lines of test_backlog.py move. Other test files patch or call backlog.cmd_* and backlog.run_decide (grep before planning) and widen the touches, so the move is announced as a shared-file move and lands as one atomic commit. The keep-whole test bl_split_facade_only (test_layout.py, FACADE_KEEP) shrinks to the dispatch once it lands."
 }
