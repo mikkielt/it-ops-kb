@@ -2,7 +2,7 @@
   "id": "ST-ikh2h7m5",
   "kind": "story",
   "title": "backlog.py new runs a bug's repro once and refuses one that fails by a Python error rather than its exit code",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-hyp6o7hl",
   "priority": "P3",
@@ -30,5 +30,19 @@
     "BG-7kyxgcn3",
     "BG-bapadqdl"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "670fcefe0e85ef6cb45093f744f0a668d6724409",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "new_bug_repro_python_error_refused"
+        ],
+        "exit": 0,
+        "sha256": "3bc65a07e90dcd3b"
+      }
+    ]
+  }
 }
