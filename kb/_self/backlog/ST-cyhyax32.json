@@ -2,7 +2,7 @@
   "id": "ST-cyhyax32",
   "kind": "story",
   "title": "The docs-coverage warning of backlog check reads only items of a planned or active sprint",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3rzxx3m4",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "e95513cf6a7c3f47e6e76582f0ad49dd44cfbeaf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "docs_warning_only_sprint_items"
+        ],
+        "exit": 0,
+        "sha256": "0db1cc2d59b51c4e"
+      }
+    ]
+  }
 }
