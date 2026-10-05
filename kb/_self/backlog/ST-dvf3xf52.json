@@ -51,7 +51,12 @@
     "kb/_self/content-rules.md",
     "kb/_self/plugin.md",
     "kb/_self/embedding.md",
-    "AGENTS.md"
+    "AGENTS.md",
+    "_tools/check.py",
+    "_tools/kbdecide.py"
+  ],
+  "depends_on": [
+    "ST-ulhmplqh"
   ],
   "gates": [
     {
@@ -80,6 +85,19 @@
       "recommendation": "split at index time: docs unchanged, long lines indexed as sentence passages; only lines the eval shows answering badly are rewritten",
       "class": "secrets",
       "answer": "split at index time: docs unchanged, long lines indexed as sentence passages; only lines the eval shows answering badly are rewritten",
+      "by": "operator"
+    },
+    {
+      "id": "decision-ref",
+      "kind": "blocking",
+      "question": "How is a decision tied to a kb/_self doc or section so pack can print it beside the passages it changes?",
+      "options": [
+        "a context reference article:_self/<doc>[#Heading], validated by check.py and kbdecide.py sweep (adds _tools/check.py and _tools/kbdecide.py to the touches)",
+        "a doc path in the free-text links column, read by pack only and validated by nothing (no further file touched)"
+      ],
+      "recommendation": "a context reference article:_self/<doc>[#Heading], validated by check.py and kbdecide.py sweep (adds _tools/check.py and _tools/kbdecide.py to the touches)",
+      "class": "secrets",
+      "answer": "a context reference article:_self/<doc>[#Heading], validated by check.py and kbdecide.py sweep (adds _tools/check.py and _tools/kbdecide.py to the touches)",
       "by": "operator"
     }
   ],
