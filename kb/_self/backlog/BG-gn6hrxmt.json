@@ -2,7 +2,7 @@
   "id": "BG-gn6hrxmt",
   "kind": "bug",
   "title": "backlog.md still says answer --record accepts --by autopilot, which answer now rejects",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,27 @@
   "touches": [
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "e0150d54fce986dc809c31fb464bccc3f8650249",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; r=subprocess.run(['git','grep','-n','-E','`operator` or `autopilot`','--','kb/_self/backlog.md'],capture_output=True,text=True); print(r.stdout+r.stderr); sys.exit(1 if r.returncode==0 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "01ba4719c80b6fe9"
+      }
+    ]
+  }
 }
