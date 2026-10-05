@@ -2,7 +2,7 @@
   "id": "ST-aah3cb3o",
   "kind": "story",
   "title": "A story's premise is checked when it is planned into a sprint",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,19 @@
   "depends_on": [
     "ST-zz43pbbi"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "e5a6d37c8c3bb179d8e78511904913bcfc559707",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_plan_checks_premise"
+        ],
+        "exit": 0,
+        "sha256": "f38fd81e0c7206b9"
+      }
+    ]
+  }
 }
