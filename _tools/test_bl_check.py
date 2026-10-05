@@ -46,6 +46,24 @@ def test_check_finds_planted_errors(sprint):
     assert f"{sprint['tk']} “Task”" in out  # an id is never printed without its title
 
 
+def test_check_errors_on_refused_item_command(sprint):
+    """An open item's repro or check that check_program_refusal refuses (a shell) or trivial_command flags (code that
+    only passes) is a check error, so the item file fails its own push; a done item's is history and passes."""
+    repo = sprint["repo"]
+    assert b(repo, "check")[0] == 0
+    edit(repo, sprint["bg"], repro={"run": ["sh", "-c", "test -f src/c.txt"]})
+    edit(repo, sprint["tk"], checks=[{"run": PASS}])
+    code, out = b(repo, "check")
+    assert code == 1 and "errors=2" in out, out
+    assert f"{sprint['bg']} “Bug”: repro is refused: its program is not python3" in out, out
+    assert f"{sprint['tk']} “Task”: check is refused: it runs no test or tool code" in out, out
+    assert "src/c.txt" not in out, out  # the command is never printed: it may hold a value the leak scan withholds
+    edit(repo, sprint["bg"], status="dropped")
+    edit(repo, sprint["tk"], checks=[{"run": is_file("src/b.txt")}])
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+
+
 def tests_check(*args):
     return {"run": ["python3", "_tools/tests.py", *args]}
 
@@ -253,9 +271,9 @@ def test_started_sprint_check_refuses_worked_item_of_planned_sprint(repo):
     todo, doing or done item of it (planted: the story set to todo)."""
     b(repo, "new", "sprint", "--title", "Planned", "--goal", "g")
     sp = item(repo, "Planned")["id"]
-    b(repo, "new", "story", "--title", "S", "--sprint", sp, "--goal", "g", "--check", argstr(PASS))
+    b(repo, "new", "story", "--title", "S", "--sprint", sp, "--goal", "g", "--check", argstr(is_file("src/b.txt")))
     st = item(repo, "S")["id"]
-    b(repo, "new", "task", "--title", "T", "--parent", st, "--goal", "g", "--touch", "src/**", "--check", argstr(PASS))
+    b(repo, "new", "task", "--title", "T", "--parent", st, "--goal", "g", "--touch", "src/**", "--check", argstr(is_file("src/b.txt")))
     assert item(repo, "T")["status"] == "draft"
     assert b(repo, "check")[0] == 0
     edit(repo, st, status="todo")
@@ -802,7 +820,7 @@ def test_gate_option_names_its_command(repo):
     """check warns of an unanswered blocking gate of an open item whose options carry no do; an argv or an item id
     on an option, an answer, a provisional gate and a done item are quiet; do is validated against the options."""
     assert b(repo, "new", "story", "--title", "Decide", "--goal", "Pick a name", "--touch", "src/**",
-             "--check", "python3 -c pass")[0] == 0
+             "--check", argstr(is_file("src/b.txt")))[0] == 0
     sid = item(repo, "Decide")["id"]
     args = ("gate", "add", sid, "--question", "Which name?", "--option", "keep", "--option", "rename",
             "--recommendation", "keep")

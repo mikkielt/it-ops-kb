@@ -44,8 +44,8 @@ def plant(lone, field, text):
     """Write TEXT into FIELD of the epic (the bug for repro); the id and the path the error must name."""
     repo, ep, bg = lone["repo"], lone["ep"], lone["bg"]
     if field == "repro":
-        edit(repo, bg, repro={"run": ["python3", "-c", f"print({text!r})"]})
-        return bg, "repro.run[2]"
+        edit(repo, bg, repro={"run": ["python3", "_tools/tests.py", "-k", text]})  # a form check admits
+        return bg, "repro.run[3]"
     if field in ("gate question", "gate answer"):
         key = field.split()[1]
         edit(repo, ep, gates=gate(**{key: text}))

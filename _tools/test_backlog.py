@@ -1327,11 +1327,11 @@ def refused_unchanged(repo, iid, *args, rule):
 def test_backlog_set_changes_each_field_and_check_passes(sprint):
     repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
     code, out = b(repo, "set", tk, "--notes", "why", "--link", "pipeline 1", "--touch", "src/a.txt", "--touch", "kb/x/**",
-                  "--check", argstr(PASS), "--depends", bg, "--relates", sprint["st"], "--priority", "P1", "--rank", "3")
+                  "--check", argstr(is_file("src/b.txt")), "--depends", bg, "--relates", sprint["st"], "--priority", "P1", "--rank", "3")
     assert code == 0 and "set " in out, out
     it = item_json(repo, tk)
     assert it["notes"] == "why" and it["links"] == ["pipeline 1"] and it["touches"] == ["src/a.txt", "kb/x/**"]
-    assert it["checks"] == [{"run": PASS}] and it["depends_on"] == [bg] and it["relates_to"] == [sprint["st"]]
+    assert it["checks"] == [{"run": is_file("src/b.txt")}] and it["depends_on"] == [bg] and it["relates_to"] == [sprint["st"]]
     assert it["priority"] == "P1" and it["rank"] == 3
     code, out = b(repo, "check")
     assert code == 0 and "errors=0" in out, out
@@ -1341,7 +1341,7 @@ def test_backlog_set_moves_a_draft_story_to_another_sprint(repo):
     b(repo, "new", "sprint", "--title", "One", "--goal", "g")
     b(repo, "new", "sprint", "--title", "Two", "--goal", "g")
     one, two = item(repo, "One")["id"], item(repo, "Two")["id"]
-    b(repo, "new", "story", "--title", "S", "--sprint", one, "--goal", "g", "--check", argstr(PASS))
+    b(repo, "new", "story", "--title", "S", "--sprint", one, "--goal", "g", "--check", argstr(is_file("src/b.txt")))
     st = item(repo, "S")["id"]
     assert b(repo, "set", st, "--sprint", two)[0] == 0
     assert item_json(repo, st)["sprint"] == two

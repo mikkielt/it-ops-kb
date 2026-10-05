@@ -967,7 +967,7 @@ class TestCodeLaneSync(SyncScenario):
     def item(d, i):
         """Task `i`, claimed, under a story of an active sprint with its review story, so a commit may name it in
         KB-Work and the items pass the gate's backlog.py check (a backlog-planning commit)."""
-        check = [{"run": ["python3", "-c", "pass"], "exit": 0}]
+        check = [{"run": ["python3", "_tools/backlog.py", "check"], "exit": 0}]
         sp, rv, st = "SP-aaaaaaaa", "ST-bbbbbbbb", "ST-aaaaaaaa"
         items = [{"id": sp, "kind": "sprint", "title": "Lane test", "status": "active", "goal": "Lane test",
                   "gates": [{"id": "start", "kind": "blocking", "question": "Approve this sprint's goal and committed items?",
