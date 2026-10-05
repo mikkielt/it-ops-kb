@@ -2,7 +2,7 @@
   "id": "ST-phnlqmkj",
   "kind": "story",
   "title": "Research sprint goal: kb/_self rules and decisions are retrieved, not read whole",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-njilrify",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "manager-mac"
 }
