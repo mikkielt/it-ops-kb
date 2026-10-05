@@ -1,0 +1,25 @@
+{
+  "id": "ST-yl5ihysf",
+  "kind": "story",
+  "title": "close --summary names each goal clause of the sprint and the item that carried it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py close --summary prints the sprint's goal split into its clauses (by '; ' and ', and'), each with the done item whose goal covers it or 'unmet' and the item that now carries it, so a clause whose item was deferred mid-sprint shows at the close; a test plants a sprint whose clause item was moved out. Answers the SP-w3xmbdra retrospective: goal clause 1 (seed pack index) went unmet when ST-4mcoplex was deferred, and only the review notes said so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_summary_names_goal_clauses"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
