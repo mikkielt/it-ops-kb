@@ -2,7 +2,7 @@
   "id": "ST-xwnun25d",
   "kind": "story",
   "title": "Intake has a repeat-reads detector over the call census",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -38,5 +38,29 @@
     "ST-zqnngn67"
   ],
   "notes": "Call rows (ST-rpdfgu3t) hold no paths, so file groups are named only if ST-rpdfgu3t adds a closed file-group class; with the fleet retired fewer sessions run per week, so the threshold counts repeats, not agents.",
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "51957110b9dfea9a6e7d0c996b2e58c186956cb7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_repeat_reads_detector"
+        ],
+        "exit": 0,
+        "sha256": "1b30d15c74c5e66c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_repeat_reads_converges"
+        ],
+        "exit": 0,
+        "sha256": "31523ae837678faf"
+      }
+    ]
+  }
 }
