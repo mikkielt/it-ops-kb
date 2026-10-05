@@ -2,7 +2,7 @@
   "id": "ST-mkczg5gs",
   "kind": "story",
   "title": "Permission requests and denials, compactions and API-error turn ends leave closed ops rows",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P2",
@@ -60,5 +60,29 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "b96e94248731f290e95ef6dc4a69403d58f829ae",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_permission_compact_rows"
+        ],
+        "exit": 0,
+        "sha256": "b9a88a2ba8a46180"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_hook_event_no_free_text"
+        ],
+        "exit": 0,
+        "sha256": "eaf77b624ae7d3ba"
+      }
+    ]
+  }
 }
