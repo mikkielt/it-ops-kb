@@ -2,7 +2,7 @@
   "id": "ST-bfxozcrl",
   "kind": "story",
   "title": "Review sprint: Large tools split along their change boundaries without blocking work",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tpulmoxh",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,26 @@
     }
   ],
   "notes": "Remaining, review done up to done: the full tests.py and stress_test.py passed once on the review's tree; the reviewer's three gaps are bugs BG-lovis5h2, BG-rxgpzirg and BG-j7mg3cqo (in SP-w3xmbdra). Left: the operator confirms the provisional answers, then done, then the close retrospective.",
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "479f13c7947bf191cebd4314471cfc4e1832d39b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3cb99933aca2981b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "27123b55b6abab56"
+      }
+    ]
+  }
 }
