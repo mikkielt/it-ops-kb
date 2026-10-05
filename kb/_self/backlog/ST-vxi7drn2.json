@@ -2,7 +2,7 @@
   "id": "ST-vxi7drn2",
   "kind": "story",
   "title": "perfcheck dropped warns of a deleted test file that tested a live module beside a removed one, and a gate runs it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
@@ -26,5 +26,6 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
