@@ -2,7 +2,7 @@
   "id": "ST-fo3ztjcs",
   "kind": "story",
   "title": "A sprint review re-runs every done item's checks once on the sprint's tip",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,19 @@
     "BG-wh5z4l2b",
     "ST-yl5ihysf"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "bfe9d774c23f30b1bb8373d90eeed9328f18b6f5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "review_reruns_done_checks"
+        ],
+        "exit": 0,
+        "sha256": "1ac65fc94d6e00c2"
+      }
+    ]
+  }
 }
