@@ -1535,8 +1535,8 @@ def test_red_pipeline_bounds_job_list_calls(tmp_path, monkeypatch):
     """With 100 pipelines of main none of which started a job (every job manual), the read makes at most
     bl_intake.IDLE_PIPELINES job-list calls (10, the bound it stops at: that many pipelines in a row with no job
     run say the newer ones were unstarted, not that a job ran long ago), not one call for each pipeline, and the
-    verdict is the same: the newest finished pipeline. A job that ran within that bound is found, at #3 and at
-    #10; one behind more unstarted pipelines than the bound is out of reach."""
+    answer is "not checked", never a verdict. A job that ran within that bound is found, at #3 and at #10; one behind
+    more unstarted pipelines than the bound is out of reach, and so not checked."""
     from ql_deliver import is_job_list
     assert bl_intake.IDLE_PIPELINES <= 10
     manual = [{"id": 15, "name": "kb-tests", "status": "manual", "allow_failure": True}]
@@ -1547,10 +1547,7 @@ def test_red_pipeline_bounds_job_list_calls(tmp_path, monkeypatch):
         p, note = bl_intake.latest_pipeline(w.root, job=job)
         n = sum(1 for a in calls if is_job_list(a))
         assert n <= bl_intake.IDLE_PIPELINES, (job, n)
-        if job:
-            assert p is None and "kb-tests" in note
-        else:
-            assert p["id"] == 1000 and p["red"] is False and "no job ran in the last" in p["how"]
+        assert p is None and note.startswith("no job ran in the last 10 pipelines"), (job, p, note)
     ran = [{"id": 16, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure",
             "started_at": "2026-09-01T10:00:00Z"}]
     by_pipeline = {}
@@ -1568,10 +1565,42 @@ def test_red_pipeline_bounds_job_list_calls(tmp_path, monkeypatch):
         by_pipeline.clear()
         by_pipeline[pipes[index]["id"]] = ran  # #3 is index 2
         for job in (None, "kb-tests"):
-            p, _ = bl_intake.latest_pipeline(w.root, job=job)
+            p, note = bl_intake.latest_pipeline(w.root, job=job)
             assert (p is not None and p["id"] == pipes[index]["id"] and p["red"]) is found, (index, job)
-            if not found and not job:
-                assert p["id"] == 1000 and not p["red"]
+            if not found:
+                assert p is None and "IDLE_PIPELINES" in note, (index, job, note)
+
+
+def test_red_pipeline_early_idle_stop_is_not_checked(tmp_path, monkeypatch, capsys):
+    """BG-zocrzogv: 100 pipelines of main whose jobs are all manual but a red job at the fifteenth, behind more
+    unstarted pipelines than IDLE_PIPELINES: the read stops and answers "not checked", never the newest finished
+    pipeline as green, for latest_pipeline, red-pipeline --status and the intake ci detector; a red job at the fifth
+    is still found."""
+    manual = [{"id": 15, "name": "kb-tests", "status": "manual", "allow_failure": True}]
+    ran = [{"id": 16, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure",
+            "started_at": "2026-09-01T10:00:00Z"}]
+    pipes = [{"id": 1000 - i, "sha": SHA, "status": "success", "web_url": f"https://x/{1000 - i}"} for i in range(100)]
+    w, _ = ci_world(tmp_path, monkeypatch, pipes, manual)
+    red_at = {}
+    real = bl_intake.run_argv
+
+    def fake(argv, cwd=None):
+        if argv[0] == "glab" and "/pipelines/" in argv[-1] and "/jobs?" in argv[-1]:
+            pid = int(argv[-1].split("/pipelines/")[1].split("/")[0])
+            return 0, json.dumps(ran if pid == red_at.get("id") else manual), ""
+        return real(argv, cwd=cwd)
+
+    monkeypatch.setattr(bl_intake, "run_argv", fake)
+    red_at["id"] = pipes[14]["id"]  # the fifteenth
+    for job in (None, "kb-tests"):
+        p, note = bl_intake.latest_pipeline(w.root, job=job)
+        assert p is None and "IDLE_PIPELINES" in note, (job, p, note)
+    assert red_pipeline(w.root, "--status") == 1
+    assert "red-pipeline: not checked: no job ran in the last 10" in capsys.readouterr().out
+    assert bl_intake.ci_detector(w.root) == []
+    red_at["id"] = pipes[4]["id"]  # the fifth: within reach
+    p, note = bl_intake.latest_pipeline(w.root)
+    assert p is not None and p["id"] == pipes[4]["id"] and p["red"], (p, note)
 
 
 @pytest.mark.parametrize("what", ["covered", "unreadable", "green"])
