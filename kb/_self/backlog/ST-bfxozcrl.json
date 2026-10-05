@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Remaining, review done up to done: the full tests.py and stress_test.py passed once on the review's tree; the reviewer's three gaps are bugs BG-lovis5h2, BG-rxgpzirg and BG-j7mg3cqo (in SP-w3xmbdra). Left: the operator confirms the provisional answers, then done, then the close retrospective.",
   "claimed_by": "it-ops-kb worker2"
 }
