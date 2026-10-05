@@ -18,7 +18,7 @@ import bl_intake
 from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS, PREFIX_KIND,
     PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED, canonical,
-    REL_DIR, host_user_pieces, items_holding_names, research_in_planned, say, scope, withhold_names,
+    REL_DIR, glob_re, host_user_pieces, items_holding_names, research_in_planned, say, scope, withhold_names,
 )
 from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches
 
@@ -917,6 +917,35 @@ def item_files_warnings(bl):
             and item_files_only(scope(bl, iid))]
 
 
+# A command line facade and the prefix of the modules behind it (kb/_self/code.md, Layout): a change to a command is
+# made in the module, so a touch of the facade alone names the wrong file and overlaps every item that names it. Names
+# without `.py`: a script's file name in a string would make testmap read it as a reference to that tool.
+FACADES = {"backlog": "bl_", "kbgit": "kg_", "querylog": "ql_", "benchmarks": "bench_"}
+
+
+def facade_touch_warnings(bl):
+    """check's warnings: an open item whose touches name a facade (FACADES) and none of the modules behind it, naming
+    the prefix the map gives, so its scope names the file its change is in and overlaps only the items that share
+    it."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        touches = it.get("touches") if isinstance(it.get("touches"), list) else []
+        if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES or not touches:
+            continue
+        rxs = [glob_re(t) for t in touches if isinstance(t, str)]
+        for name, prefix in FACADES.items():
+            facade = f"_tools/{name}.py"
+            if facade not in touches:
+                continue
+            module = f"_tools/{prefix}module.py"  # any module behind it: a glob that covers one names it
+            if not any(t.startswith(f"_tools/{prefix}") for t in touches if isinstance(t, str)) \
+                    and not any(rx.fullmatch(module) for rx in rxs):
+                out.append(f"{bl.label(iid)}: touches name the facade {facade} and no module behind it: add the "
+                           f"_tools/{prefix}*.py module its change is in (set --touch PATH --add), unless the change is "
+                           "the facade's own command line")
+    return out
+
+
 def is_test_run(argv):
     """True when a check runs tests: tests.py or pytest, so it exercises the code it proves."""
     return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
@@ -983,7 +1012,8 @@ def cmd_check(bl, a):
     errs = validate(bl, pieces) + stale_touches(bl) + docs_after_code(bl, planned) + refused_command_errors(bl)
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
-        + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl) + item_files_warnings(bl)
+        + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl) + item_files_warnings(bl) \
+        + facade_touch_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
