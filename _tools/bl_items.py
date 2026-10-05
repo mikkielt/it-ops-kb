@@ -18,7 +18,7 @@ from bl_base import (
 from bl_check import (
     ITEM_FILES_ROUTE, item_files_only, noop_warnings, text_only_repro, validate,
 )
-from bl_land import run_check, own_failure
+from bl_land import cleanup_gate_do, run_check, own_failure
 from bl_view import (
     is_near, similar,
 )
@@ -678,6 +678,20 @@ def cmd_drop(bl, a):
             bl.save(x)
     if not bl.sprint_of(iid):
         label = bl.label(iid)
+        gone = {iid, *bl.descendants(iid)}
+        for i, x in sorted(bl.items.items()):  # no remaining item keeps a link to a deleted one (BG-3aqoagow)
+            if i in gone or not set(x.get("relates_to") or []) & gone:
+                continue
+            cut = sorted(gone & set(x["relates_to"]))
+            left = [r for r in x["relates_to"] if r not in gone]
+            if left:
+                x["relates_to"] = left
+            else:
+                x.pop("relates_to")
+            bl.save(x)
+            say(f"dropped relates_to {', '.join(cut)} from {bl.label(i)}")
+        for i, gate, opt, target in cleanup_gate_do(bl, gone):  # a gate's do names an item by id too
+            say(f"dropped gate {gate} do {opt!r} (item {target}) from {bl.label(i)}")
         for d in bl.descendants(iid):
             bl.delete(d)
         bl.delete(iid)
