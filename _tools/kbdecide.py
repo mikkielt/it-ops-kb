@@ -744,7 +744,10 @@ class Context:
 
 def gone(store, kind, value):
     """Whether the article or domain `value` of a context reference no longer exists: in the store's root, or, in
-    kb/_self, in the root its `<root>/<path>` names (a root that is gone too)."""
+    kb/_self, in the root its `<root>/<path>` names (a root that is gone too) or, as `_self/<doc>[#<Heading>]`, in
+    the doc or section of kb/_self it names."""
+    if store.root is None and kind == "article" and value.startswith("_self/"):
+        return not check.self_article_exists(value)
     where, rel = (Path(store.root.path), value) if store.root else (None, value)
     if store.root is None:
         owner, rel = kbcommon.split(value)

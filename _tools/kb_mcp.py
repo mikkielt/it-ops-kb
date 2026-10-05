@@ -219,8 +219,11 @@ def kb_search(args):
 
 
 def root_of(args):
-    """The `root` argument, checked against the roots this server serves (None when absent)."""
+    """The `root` argument, checked against the roots this server serves (None when absent); the kb's own rule docs
+    (`_self`) are served by the team's own server only."""
     name = str(args.get("root") or "").strip()
+    if name == kbfacts.SELF_ROOT and not limited():
+        return name
     if name and name not in {r.name for r in kbcommon.roots()}:
         raise ToolError(f"no root {name!r}; roots: {', '.join(r.name for r in kbcommon.roots())}")
     return name or None
@@ -255,8 +258,12 @@ def kb_pack(args):
         raise ToolError(f"at most {kbfacts.MAX_QUESTIONS} questions per call")
     budget = min(max(int(args.get("budget") or 1200), 200), 6000)
     with guarded():
-        text = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root_of(args),
-                                  args.get("include_invalidated") is True)["text"]
+        root = root_of(args)
+        res = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root,
+                                args.get("include_invalidated") is True)
+        text = res["text"]
+        if root == kbfacts.SELF_ROOT:
+            kbfacts.record_self(text, budget, res, questions)
     note = behind_note()
     return f"{note}\n\n{text}" if note else text
 

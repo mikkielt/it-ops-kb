@@ -32,10 +32,18 @@
   kb_ask.py --no-model "<question>"  print a good pack, or a count answer, without calling a model
   kb_ask.py --model M "<question>"   override the routed model of step 3 or 4
   kb_ask.py -v "<question>"          also print the route to stderr
+  kb_ask.py --root _self "<question>"  a question about the kb's own rules (kb/_self/*.md): never the web.
+                                     A part with a tested question (coverage good) prints its pack, no model; the
+                                     weak parts go to one Haiku reader with no tools, given the packs and the full text
+                                     of the sections of the first two docs' headings the packs print, which quotes the
+                                     one to three lines that answer, each with its path:line, or says INSUFFICIENT; a
+                                     part the kb lacks, or that the reader cannot answer, prints the pack's `kb has` and
+                                     `kb lacks` lines and the commands that read its sections, and exits 1
 
 Every run writes one query log spool row (kb/_self/querylog.md, Capture): the question, the route taken (`tool`,
-`good`, `web`, `split`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT), the verdict, the kb
-lines of the pack (path:line, tag, verdict), the model and, for a web or split run, `sources`: the ids of the kb
+`good`, `web`, `split`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT; for --root _self
+`tool`, `read` or `miss`), the verdict, the kb lines of the pack (path:line, tag, verdict), the model and, for a web or
+split run, `sources`: the ids of the kb
 sources whose urls the researcher's answer names (never the urls or the text), which learn reads as pages the lookup
 fetched. Its own `claude -p` runs with hooks off, so the session it starts never logs itself and its fetches are never
 logged.
@@ -49,7 +57,7 @@ import argparse, json, os, re, shutil, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbfacts  # noqa: E402
-import ql_capture  # noqa: E402
+import ql_capture, selfdoc  # noqa: E402
 
 HOME = kbfacts.kbcommon.HOME  # this repository: the kb server, the sessions' cwd
 # the researcher's live docs come through the kb server's docs_search and docs_fetch (kb_mcp.py), which keep each
@@ -354,6 +362,128 @@ def split(q, p, row):
     print(live.strip() if escalated else f"{kb_text.strip()}\n\n{LIVE_LABEL}\n{live.strip()}")
     return 0
 
+# ---------------------------------------------------------------- the kb's own rules (--root _self)
+
+RULES_ROOT = kbfacts.SELF_ROOT
+SECTION_HEAD = re.compile(r"^## (kb/_self/([\w.-]+)\.md)(?:  § (.+?))?\s*$")
+SECTION_LINE = re.compile(r"^- kb/_self/([\w.-]+)\.md:\d+ § ([^:]+):")
+ANSWER_REF = re.compile(r"kb/_self/[\w.-]+\.md:[1-9]\d*")
+SECTIONS_READ = 2  # distinct (doc, heading) pairs whose full text the reader gets
+SECTION_MAX = 12000  # characters of one section given to the reader, cut at a line end
+PROMPT_MAX = 30000  # characters of the reader's whole prompt
+ANSWER_LINES_MAX = 12
+RULES_READER = ("Answer from the kb rule docs below. Reply with the one to three lines that answer the question, each "
+                "quoted exactly as written with its `kb/_self/<doc>.md:<line>` (a section's lines are numbered `line: "
+                "text`); nothing else. If no line answers it, reply with the single word `" + SENTINEL + "`. Never "
+                "fill gaps from memory.")
+
+
+def pack_sections(text):
+    """[(doc, heading)] of the passages a `_self` pack prints, in order, each pair once: the `## path  § heading` heads and,
+    under a head with no heading, the `§ heading:` each line starts with. Only .md docs (a decision row has none)."""
+    out, doc = [], None
+    for ln in text.splitlines():
+        m = SECTION_HEAD.match(ln)
+        if m:
+            doc = m.group(2)
+            pair = (doc, m.group(3)) if m.group(3) else None
+        else:
+            m = SECTION_LINE.match(ln)
+            pair = (m.group(1), m.group(2)) if m else None
+        if pair and pair not in out:
+            out.append(pair)
+    return out
+
+
+def section_text(doc, heading, limit):
+    """The lines of `heading` in kb/_self doc `doc` as `selfdoc.py section` prints them (`doc:first-last`, then `line: text`),
+    cut at a line end within `limit` characters; '' when the doc or heading is not found."""
+    try:
+        found, _ = selfdoc.section(doc, heading)
+    except selfdoc.SelfdocError:
+        return ""
+    out, size = [], 0
+    for block in found:
+        for row in [f"kb/_self/{doc}.md:{block[0][0]}-{block[-1][0]}"] + [f"{no}: {ln}" for no, ln in block]:
+            if size + len(row) + 1 > limit:
+                return "\n".join(out)
+            out.append(row)
+            size += len(row) + 1
+    return "\n".join(out)
+
+
+def rules_prompt(question, packs, pairs):
+    """The rules reader's input: the question, the weak parts' packs and the full text of each pair's section, the whole
+    capped at PROMPT_MAX characters (a section is cut to what is left, and left out below 500)."""
+    out = f"Question: {question}\n\n<kb_evidence>\n{packs}\n</kb_evidence>"
+    for doc, heading in pairs:
+        room = min(SECTION_MAX, PROMPT_MAX - len(out) - 100)
+        body = section_text(doc, heading, room) if room >= 500 else ""
+        if body:
+            out += f"\n\n<section doc=\"{doc}\" heading=\"{heading}\">\n{body}\n</section>"
+    return out[:PROMPT_MAX]
+
+
+def rules_miss(results):
+    """The lines printed for a part nobody answered: its pack's `kb has` and `kb lacks` lines, then the commands that
+    read the sections the pack points at."""
+    out = []
+    for r in results:
+        has, lacks = has_lacks(r["text"])
+        out += [f"kb has: {'; '.join(has) or NONE_WORD}", f"kb lacks: {'; '.join(lacks) or NONE_WORD}"]
+    pairs = [x for r in results for x in pack_sections(r["text"])]
+    out += [f'python3 _tools/selfdoc.py section {doc} "{heading}"' for doc, heading in pairs[:SECTIONS_READ]]
+    return "\n".join(out)
+
+
+def rules(q, a, row):
+    """A question about the kb's own rules: good parts print their pack with no model (a tested question's passage is the
+    answer); one Haiku reader gets the weak parts, their packs and the full text of the first two sections they print, and
+    quotes the lines that answer; a none part, or INSUFFICIENT, prints what the kb has and lacks and exits 1 (never the web).
+    The row (route `tool`, `read` or `miss`) carries `root`, `tested`, `sections` and the `answer_lines` the reader quoted."""
+    parts = split_parts(q)
+    res = kbfacts.pack_many(parts, root=RULES_ROOT)
+    results = res["results"]
+    weak = [r for r in results if r["verdict"] == "weak"]
+    pairs = [x for r in weak for x in pack_sections(r["text"])][:SECTIONS_READ]
+    row.update(root=RULES_ROOT, route="plan" if a.route else "tool", verdict=res["verdict"], parts=len(parts),
+               lines=ql_capture.pack_lines(res["text"]), tested=list(dict.fromkeys(t for r in results for t in r["tested"])) or None)
+    line = f"kind=rules verdict={res['verdict']} parts={len(parts)} weak={len(weak)} model={None if a.no_model else (a.model or READER_MODEL)}"
+    log(line)
+    if a.route:
+        print(line)
+        return 0
+    if a.no_model:
+        print(res["text"])
+        return 0
+    if weak and not shutil.which("claude"):
+        print("kb_ask: the claude CLI is not on PATH; the evidence follows\n", file=sys.stderr)
+        print(res["text"])
+        return 2
+    answered = None
+    if weak:
+        model = a.model or READER_MODEL
+        packs = "\n\n".join(f"# Q{i}: {parts[i]}\n{r['text']}" if len(parts) > 1 else r["text"]
+                             for i, r in enumerate(results) if r["verdict"] == "weak")
+        row.update(model=model, sections=[f"{d}#{h}" for d, h in pairs] or None)
+        text, cost, ok = read(model, RULES_READER, rules_prompt(q, packs, pairs), output="json")
+        log(f"reader {model} total_cost_usd={cost}")
+        if not ok:
+            print(text, file=sys.stderr)
+            return 1
+        answered = text.strip() if not text.lstrip().startswith(SENTINEL) else None
+        row.update(route="read" if answered else "miss")
+        if answered:
+            row.update(answer_lines=list(dict.fromkeys(ANSWER_REF.findall(answered)))[:ANSWER_LINES_MAX] or None)
+    unanswered = [r for r in results if r["verdict"] == "none" or (r["verdict"] == "weak" and not answered)]
+    if not weak and unanswered:
+        row.update(route="miss")
+    good = [r["text"] for r in results if r["verdict"] == "good"]
+    print("\n\n".join(good + ([answered] if answered else [])))
+    if unanswered:
+        print(rules_miss(unanswered))
+    return 1 if unanswered else 0
+
 
 def main():
     row = {}
@@ -371,11 +501,14 @@ def run(row):
     ap.add_argument("--route", action="store_true", help="print the plan, run nothing")
     ap.add_argument("--no-model", action="store_true", help="print a good pack or a count answer without a model")
     ap.add_argument("--model", help="override the routed model")
+    ap.add_argument("--root", choices=[RULES_ROOT], help="ask the kb's own rule docs, never the web")
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args()
     VERBOSE = a.verbose
     q = " ".join(a.question)
     row.update(question=q, route="tool")
+    if a.root:
+        return rules(q, a, row)
     tool = tool_answer(q)
     if tool is not None:
         print("kind=tool (audit and source tools, no model)" if a.route else tool)
