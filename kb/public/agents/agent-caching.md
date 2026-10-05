@@ -2,8 +2,8 @@
 topic: agents/agent-caching
 priority: P1
 applies_to: "Anthropic prompt caching (Claude Developer Platform, retrieved 2026-09-25); Claude Code >=2.1.251; OpenAI Responses/Completions API; Azure OpenAI/Foundry Models; MCP spec 2026-07-28"
-retrieved_utc: 2026-09-28
-sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159]
+retrieved_utc: 2026-10-05
+sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159, S1512]
 status: complete
 ---
 
@@ -51,6 +51,12 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 - Servers that declare the `tools` capability with `listChanged: true` SHOULD send `notifications/tools/list_changed` when the tool set changes; a client that has opened a `subscriptions/listen` stream with `toolsListChanged: true` receives it and is expected to re-fetch `tools/list` [DOC S2135].
 - The spec explicitly ties deterministic list ordering to prompt caching: servers SHOULD return tools in a deterministic order, which lets clients cache the tool list reliably and "improves LLM prompt cache hit rates when tools are included in model context" [DOC S2135].
 - The tool-set returned by `tools/list` MUST NOT vary per-connection or as a side effect of other requests, but MAY vary by the caller's authorization/granted scopes, since credentials are per-request, not connection state — relevant to an MCP server that varies its tool list by the caller's permission tier [DOC S2135; DER — general implication for tiered-access MCP servers].
+- GitLab CI's `cache:key:files` makes the cache key from the content of the files named: "generate a new
+  cache key when the content of the specified files change", and the key stays the same while they do
+  not. [DOC S1512]
+- So a cache of derived results keyed only by its data inputs serves stale results once the code or rule
+  that derived them changes; keying it also by a form or version of that rule (or a hash of its source)
+  makes a rule change a new key. [DER S1512: the key changes with what it names, and only with that]
 
 ## Reference
 

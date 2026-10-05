@@ -3,7 +3,7 @@ topic: gitlab/git-test-repositories
 priority: P3
 applies_to: "Git 2.55.0 (documentation at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration)"
 retrieved_utc: 2026-10-05
-sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5]
+sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz]
 status: complete
 ---
 
@@ -66,6 +66,11 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
 - So a cleanup that may only remove what is safe keeps `git branch -d` semantics (a branch whose every
   commit is on the integration branch) and removes a worktree without `--force`, leaving a dirty or locked
   one in place with the reason. [DER S-fqaj6jn5, S-wyfuoqs5]
+- `git merge-file --union` resolves each conflict "favouring ... lines from both" sides instead of leaving
+  markers (`--ours` and `--theirs` take one side). [DOC S-lnlroicz]
+- So a union resolution of a source file keeps both sides' lines but not a working program: the two sides'
+  definitions can still collide or break the syntax, and a resolved tool file needs a parse check that it
+  keeps both sides' definitions. [DER S-lnlroicz]
 
 ## Reference
 - Related: `python/pytest.md` (session fixtures, `tmp_path_factory`, `--durations`), `python/pytest-xdist.md` (a session fixture runs once per worker), `python/stdlib-windows-portability.md` (process start on Windows), `gitlab/git-trailers-and-hooks.md` (what `git commit` runs), `windows/dev-drive.md` (where the repositories live on Windows).

@@ -2305,3 +2305,12 @@ _Agent: kb-research_
 - See gitlab/git-test-repositories.md, gitlab/git-trailers-and-hooks.md.
 
 _Agent: kb-research_
+
+## QK-cache-key-rule-form-union-merge. When does a derived cache go stale, and what does keeping both sides of a merge conflict guarantee?
+- GitLab CI's `cache:key:files` derives the key from file content, so the key changes when, and only when, those files change. [DOC S1512]
+- A cache of derived results therefore needs the rule that derived them in its key, or a rule change keeps serving old results. [DER S1512]
+- `git merge-file --union` resolves conflicts with the lines of both sides. [DOC S-lnlroicz]
+- Conclusion: code.md's rule that every derived cache key holds the form of its rule, and the runbook's rule that a resolved tool file is checked to parse and keep both sides' definitions, both rest on these: a key changes only with what it names, and a union keeps lines, not a working program. [DER S1512, S-lnlroicz]
+- See agents/agent-caching.md, gitlab/git-test-repositories.md.
+
+_Agent: kb-research_
