@@ -980,7 +980,8 @@ def land_once(bl, a):
                 land_run(root, step, argv)
         land_run(root, *LAND_SYNC, whole=True)
         if late:
-            LAND_OPS["pending"] = (pushed_tip(root, remote, code_branch), code_branch)
+            tip = pushed_tip(root, remote, code_branch)
+            LAND_OPS["pending"] = (tip, code_branch) if tip else None
             say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
                 f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
         else:
@@ -1006,10 +1007,18 @@ def land_once(bl, a):
 
 def pushed_tip(root, remote, code_branch):
     """[the tip of CODE_BRANCH on REMOTE] as sync pushed it, fetched: sync may rebase the range onto a newer main
-    before it pushes, so the commits --wait-merge waits for are the pushed ones, not the ones land rebased."""
+    before it pushes, so the commits --wait-merge waits for are the pushed ones, not the ones land rebased. None when
+    the fetch fails (git dies with exit 128 on a ref the remote lacks) or leaves no ref, said once: a stale or
+    missing tip is never waited for, and the first pass still ends as not done yet (BG-bd547fvz)."""
     tracking = f"refs/remotes/{remote}/{code_branch}"
-    land_git_network(root, "wait-merge", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}")
-    return [git(root, "rev-parse", tracking).strip()]
+    p = land_git_network(root, "wait-merge", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}")
+    if p.returncode:
+        say(f"land: could not fetch {code_branch} from {remote} after the push "
+            f"({(p.stderr or p.stdout).strip() or f'exit {p.returncode}'}): no tip to wait for")
+        return None
+    tip = subprocess.run(["git", "rev-parse", "-q", "--verify", tracking], cwd=root, capture_output=True, text=True,
+                         encoding="utf-8", errors="replace").stdout.strip()
+    return [tip] if tip else None
 
 
 WAIT_POLL = 60  # seconds between land --wait-merge's reads of the integration main
