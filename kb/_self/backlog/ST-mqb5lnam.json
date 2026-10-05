@@ -1,0 +1,29 @@
+{
+  "id": "ST-mqb5lnam",
+  "kind": "story",
+  "title": "querylog.py close --tried closes an eval finding apply left no-fix, and the stranded detector leaves it alone",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-qzip6qar",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py close F --tried NOTE (ql_research) also accepts an eval finding whose newest record is no-fix: it records the finding tried with the dated NOTE (no _gaps.md entry for an eval finding), and bl_intake's stranded detector skips a tried eval finding until the note is older than QUEUE_TRIED_DAYS; a gap finding keeps today's rules. Planted: a no-fix eval finding closed --tried is no longer stranded, and one past QUEUE_TRIED_DAYS is again. The operator's call for F-b28d0d79b19b and F-fe10582bc61f (BG-leuzxnns, BG-wl242jco): once it lands they are closed --tried and the two bugs dropped.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_tried_eval_no_fix"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_research.py",
+    "_tools/test_ql_research.py",
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py",
+    "kb/_self/querylog.md",
+    "kb/_self/backlog.md"
+  ]
+}
