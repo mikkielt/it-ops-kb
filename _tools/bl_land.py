@@ -1379,6 +1379,43 @@ def cleanup_gate_do(bl, dead):
     return out
 
 
+CLAUSE_SPLIT = re.compile(r";\s+|,\s+and\s+")  # a sprint goal's clauses: split at '; ' and ', and '
+CLAUSE_COVER = 0.5  # the share of a clause's words an item's title and goal must hold to carry it
+
+
+def clause_words(text):
+    return {w for w in re.findall(r"[a-z0-9_]+", str(text).lower()) if len(w) > 3}
+
+
+def goal_clause_lines(bl, sid, items):
+    """close --summary's clause lines: the sprint's goal split into its clauses, each with the done item of the sprint
+    whose title and goal hold at least CLAUSE_COVER of its words, or `unmet` and the open item outside the sprint that
+    carries it now (moved out mid-sprint), or none."""
+    clauses = [c.strip(" .") for c in CLAUSE_SPLIT.split(str(bl.items[sid].get("goal", ""))) if c.strip(" .")]
+    if len(clauses) < 2:
+        return []
+
+    def best(cw, ids):
+        scored = [(len(cw & clause_words(f"{bl.items[i].get('title', '')} {bl.items[i].get('goal', '')}")) / len(cw), i)
+                  for i in ids]
+        top = max(scored, default=(0, None))
+        return top[1] if top[0] >= CLAUSE_COVER else None
+    done = [i for i in items if bl.items[i].get("status") == "done" and not bl.items[i].get("review")
+            and not bl.items[i].get("goal_research")]
+    elsewhere = [i for i, it in bl.items.items() if i not in items and it.get("kind") not in ("sprint", "epic")
+                 and it.get("status") not in ("done", "dropped")]
+    out = ["goal clauses:"]
+    for n, c in enumerate(clauses, 1):
+        cw = clause_words(c)
+        by = best(cw, done) if cw else None
+        if by:
+            out.append(f"  {n}. {c[:120]}: {bl.label(by)}")
+        else:
+            now = best(cw, elsewhere) if cw else None
+            out.append(f"  {n}. {c[:120]}: unmet, carried by {bl.label(now) if now else 'no item'}")
+    return out
+
+
 def cmd_close(bl, a):
     if a.summary and a.commit:
         raise Refused("close --summary only prints and commits nothing: run close --commit without --summary")
@@ -1395,6 +1432,8 @@ def cmd_close(bl, a):
             gone.add(e)
     summary = [f"delivered by {bl.label(sid)}:"] + [summary_line(bl, i, gone)
                                                   for i in sorted(gone, key=lambda i: summary_key(bl, i))]
+    if a.summary:
+        summary += goal_clause_lines(bl, sid, items)
     if a.summary:  # the runbook prints the list, writes the retrospective, then closes: --summary changes nothing
         for x in summary:
             say(x)
