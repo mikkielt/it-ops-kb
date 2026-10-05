@@ -2,7 +2,7 @@
   "id": "BG-ykxthe5x",
   "kind": "bug",
   "title": "kb-sprint and kb-backlog skills do not name backlog.py move and reopen",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,6 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-backlog/SKILL.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
