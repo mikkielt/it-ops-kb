@@ -1,6 +1,6 @@
-# CI for it-ops-kb on GitHub, mirroring .gitlab-ci.yml. Direct-push model: agents push to main after
-# `kbgit.py sync --push` (and the pre-push hook) ran the same gate locally; this workflow is the safety net that also
-# catches a `git push --no-verify`. It detects a bad push after the fact; it cannot prevent one without a PR workflow.
+# CI for it-ops-kb on GitHub. Direct-push model: agents push to main after `kbgit.py sync --push` (and the pre-push
+# hook) ran the same gate locally; this workflow is the safety net that also catches a `git push --no-verify`. It
+# detects a bad push after the fact; it cannot prevent one without a PR workflow.
 name: kb
 
 on:
@@ -8,11 +8,6 @@ on:
     branches: ["**"]
     tags: ["**"]
   workflow_dispatch:
-    inputs:
-      range:
-        description: "check-lanes range (A..B or a revision); empty checks the ref's history"
-        required: false
-        default: ""
 
 permissions:
   contents: read
@@ -25,8 +20,8 @@ env:
   PYTHONDONTWRITEBYTECODE: "1"
 
 jobs:
-  # The full image has git, so the git scenarios (merge, history, sync, research merge, census) run instead of
-  # skipping; a full clone keeps the commits the research-merge scenario replays.
+  # The full image has git, so the git scenarios run instead of skipping; a full clone keeps the history the KB-*
+  # commit trailers check reads.
   kb-tests:
     runs-on: ubuntu-latest
     container: python:3.14
@@ -37,28 +32,7 @@ jobs:
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: pip install --quiet uv
       - run: python3 _tools/tests.py
-
-  # The tools' floor (pyproject.toml requires-python >=3.11): the same tests on the image's Python 3.11 instead of the
-  # 3.14 pinned in .python-version (UV_PYTHON takes precedence over it), without the git scenarios.
-  kb-tests-floor:
-    runs-on: ubuntu-latest
-    container: python:3.11
-    env:
-      UV_PYTHON: "3.11"
-      KB_TESTS_FAST: "1"
-    steps:
-      - uses: actions/checkout@v4
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: pip install --quiet uv
-      - run: python3 _tools/tests.py
-
-  tool-stress:
-    runs-on: ubuntu-latest
-    container: python:3.14
-    steps:
-      - uses: actions/checkout@v4
-      - run: pip install --quiet uv
-      - run: python3 _tools/stress_test.py
+      - run: python3 _tools/kbgit.py check-trailers
 
   # The public home never gets the query log's store or a root's observed signals (kb/_self/git.md, Public home): a
   # pushed ref whose history touches kb/_querylog or any _logs.csv fails. Runs only where the repository variable KB_PUBLIC_HOME is `true`; a clone hosted
@@ -73,49 +47,3 @@ jobs:
           fetch-depth: 0
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: python3 _tools/kbgit.py check-public HEAD
-
-  # What the push gate adds beyond tests.py, on the pushed range: KB-* trailers and the kb's own docs.
-  kb-push-range:
-    if: github.event_name == 'push' && github.ref_type == 'branch'
-    runs-on: ubuntu-latest
-    container: python:3.14
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: KB-* commit trailers and kb/_self/ docs on the pushed commits
-        env:
-          BEFORE: ${{ github.event.before }}
-          SHA: ${{ github.sha }}
-        run: |
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
-            python3 _tools/kbgit.py check-trailers "$SHA"
-          else
-            python3 _tools/kbgit.py check-trailers "$BEFORE..$SHA"
-            python3 _tools/selfdoc.py stale --since "$BEFORE"
-          fi
-          python3 _tools/doc2query.py stale
-          python3 _tools/fetch.py --offline
-
-  # Code-lane commits no merged pull request introduced (kb/_self/git.md, Lanes), started by hand only
-  # (workflow_dispatch): the pushed range is not known then, so the optional input `range` (A..B or a revision) names
-  # it and an empty one checks the history of the chosen ref. It detects after the fact and never blocks a push. The
-  # run's own read-only token reads the association API; no secret, nothing is published.
-  check-lanes:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    container: python:3.14
-    permissions:
-      contents: read
-      pull-requests: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: kbgit.py check-lanes over the range
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          LANE_RANGE: ${{ inputs.range }}
-        run: python3 _tools/kbgit.py check-lanes --forge github ${LANE_RANGE:+"$LANE_RANGE"}

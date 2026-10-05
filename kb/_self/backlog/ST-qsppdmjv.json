@@ -19,7 +19,6 @@
   ],
   "touches": [
     "_tools/bl_plan.py",
-    "_tools/test_bl_plan.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],

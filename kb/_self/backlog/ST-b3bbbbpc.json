@@ -20,7 +20,6 @@
   ],
   "touches": [
     "_tools/conftest.py",
-    "_tools/test_conftest.py",
     "kb/_self/tools.md"
   ],
   "depends_on": [

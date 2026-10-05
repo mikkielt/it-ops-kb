@@ -1,55 +1,54 @@
 #!/usr/bin/env python3
-"""Run the kb's tests with pytest and pytest-xdist (pyproject.toml's dev group, installed by uv). Exit 0 when they pass.
+"""Run the kb's tests with pytest and pytest-xdist (pyproject.toml's dev group, installed by uv). Exit 0 when they pass
+and the suite is within its ceiling.
 
-  tests.py                         every test module in _tools/ but the stress suite, in parallel
-  tests.py -k Leak                 only tests whose name matches (pytest -k); other pytest arguments pass through
-  tests.py PATH [PATH ...]         only those test files or directories (and their `::` nodes), not _tools/; -k and other pytest
-                                   arguments pass through
-  tests.py --changed [REV]         only the test files a change from REV's merge base (default HEAD: the working tree)
-                                   can break, from testmap.py's map; none when no test can be affected
+  tests.py                         every test file in _tools/, in parallel; fails when the run breaks the ceiling
+  tests.py -k NAME                 only tests whose name matches (pytest -k); other pytest arguments pass through
+  tests.py PATH [PATH ...]         only those test files (and their `::` nodes)
+  tests.py --changed [REV]         what a change from REV's merge base (default HEAD: the working tree) needs: nothing
+                                   when only backlog items or the query log store changed, the suite without the git
+                                   scenarios when only kb content changed, the whole suite for any other path
+  tests.py --ceiling               collect the test ids without running them and compare ids and files with the ceiling
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
-  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git"): kbgit.py sync's gate. With --changed it
-                                   keeps them in the test files a code path selects (a changed path outside kb content
-                                   and the backlog and query log store): one run of those with -m "not stress", one of
-                                   the rest without the git scenarios; an `all` selection still leaves them out
-  stress_test.py                   the stress suite (test_stress.py)
+  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git")
+
+The ceiling (_tools/tests_ceiling.json: max_ids, max_files, max_seconds per sys.platform, decision) is the most the
+suite may hold and the longest a full run may take. Every run checks the file count and that `decision` names an active
+decision of kb/_self/_decisions.csv made by the operator whose text holds the file's own numbers (ceiling_token), so a
+number changes only with the operator's recorded answer. A full run also fails when it ran more ids than max_ids or took
+longer than max_seconds; --ceiling checks the ids without running. On a CI runner (GITLAB_CI or GITHUB_ACTIONS set)
+KB_TEST_TIMEOUT_FACTOR (a number of at least 1) multiplies max_seconds, for a container slower than the host the
+seconds were set on. A new test id needs room under max_ids, else it replaces one.
 
 Each run appends one ops row `test.run` to the query log's spool (ql_capture.record, best effort: nothing is written
 when capture is off, inside a test, or when the row breaks its closed shape, and a failure to write never changes the
 exit code): mode, selected and total test files, workers, milliseconds, exit, passed, failed and skipped counts, the
 slowest files, every file's time for a full run and the names of the test files with a failure.
 
-A full run, a --changed run with more than one worker and stress_test.py take a host-wide lock first (host_lock): an
-O_EXCL file in KB_HOST_LOCK_DIR (default /tmp, or the public directory on Windows) holding the pid, clone and start time.
-A second run prints who holds it and waits; a holder whose pid no longer runs is cleared by one waiter (an atomic claim),
-an empty lock file only after KB_HOST_LOCK_GRACE seconds (default 10). A -k run, a run inside a test,
-a run that names only a few test files (at most NAMED_FILES_LOCK_FREE, 4; no --changed) and a one-worker run (-n 1)
-take none; the run that names only a few test files records mode files and no file times, so mode full holds only
-runs of the whole selection. A run that names more files (a shell glob of every test file) is a full run: it takes the
-lock and records mode full with every file's time.
+A full run and a --changed run take a host-wide lock first (host_lock): an O_EXCL file in KB_HOST_LOCK_DIR (default
+/tmp, or the public directory on Windows) holding the pid, clone and start time. A second run prints who holds it and
+waits; a holder whose pid no longer runs is cleared by one waiter (an atomic claim), an empty lock file only after
+KB_HOST_LOCK_GRACE seconds (default 10). A -k run, a run of named files, a run inside a test and a one-worker run
+(-n 1) take none. kg_lock.py's main lock uses the same helpers.
 
-The default worker count is capped, not one per CPU: KB_TEST_WORKERS (a number) when set, else the CPUs divided among
-this run and the other live tests.py runs (each run holds a kb-tests-run.PID file beside the lock while it runs; a dead
-pid's is removed), at most DEFAULT_WORKER_CAP (8, the fastest of three timed counts on one 14-core host; a 4-core and an
-8-core host are unmeasured), at least 1; an explicit -n in the arguments wins.
+The default worker count is KB_TEST_WORKERS (a number) when set, else the CPUs divided among this run and the other
+live tests.py runs (each holds a kb-tests-run.PID file beside the lock), at most DEFAULT_WORKER_CAP, at least 1; an
+explicit -n in the arguments wins.
 
-Modules: test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py, test_kb_leaks.py, test_merge.py, test_history.py, test_sync.py, test_census.py,
-test_kb_mcp.py, test_research_merge.py, test_agent_bench.py, test_portability.py, test_redact.py, test_ql_capture.py,
-test_ql_distill.py, test_ql_store.py, test_ql_learn.py, test_ql_deliver.py, test_ql_research.py, test_ql_report.py,
-test_querylog_e2e.py, test_backlog.py, test_stress.py; shared fixtures and helpers in conftest.py, and the query log
-tests' in ql_testkit.py.
 pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lock on first use), or with this Python
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
-under test stay stdlib-only.
+under test stay stdlib-only. Shared fixtures and helpers are in conftest.py.
 """
-import contextlib, datetime, os, re, shutil, signal, subprocess, sys, tempfile, time
+import contextlib, csv, datetime, json, os, re, shutil, signal, subprocess, sys, tempfile, time
 import xml.etree.ElementTree as ET
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
-XDIST = ["-n", "auto"]  # dist loadscope: a class's scenario is built once, on one worker (stress_test.py: load); run with
-# --no-loadscope-reorder, conftest.pytest_collection_modifyitems orders the scopes: class-fixture scenarios first;
-# "auto" here means default_workers(): the CPUs shared among the tests.py runs live on the host, KB_TEST_WORKERS overriding
+CEILING = os.path.join(TOOLS, "tests_ceiling.json")
+DECISIONS = os.path.join(KB, "kb", "_self", "_decisions.csv")
+NO_TESTS = ("kb/_self/backlog/", "kb/_querylog/")  # the gate's own checks cover them (backlog.py check, querylog.py check)
+CONTENT = ("kb/", "AGENTS.md", "README.md", "CLAUDE.md")  # kb content: the git scenarios read none of it
+FAST_M = "not git"
 
 
 def pytest_cmd():
@@ -62,6 +61,104 @@ def pytest_cmd():
         return None
     return [sys.executable, "-m", "pytest"]
 
+
+def test_files():
+    return sorted(f for f in os.listdir(TOOLS) if f.startswith("test_") and f.endswith(".py"))
+
+
+# The ceiling
+
+
+class CeilingError(Exception):
+    """The ceiling file or its decision cannot be accepted."""
+
+
+def ceiling_token(c):
+    """The text an operator's decision holds for the ceiling's numbers: `tests-ceiling ids=N files=N seconds=p:N,...`."""
+    secs = ",".join(f"{k}:{v}" for k, v in sorted(c["max_seconds"].items()))
+    return f"tests-ceiling ids={c['max_ids']} files={c['max_files']} seconds={secs}"
+
+
+def read_ceiling(path=None, decisions=None):
+    """The ceiling {max_ids, max_files, max_seconds, decision} of `path`; CeilingError when the file is missing or
+    malformed, or when no active decision of the operator in `decisions` with the id it names holds its numbers."""
+    path, decisions = path or CEILING, decisions or DECISIONS
+    try:
+        with open(path, encoding="utf-8") as f:
+            c = json.load(f)
+        ok = (type(c["max_ids"]) is int and type(c["max_files"]) is int and isinstance(c["decision"], str)
+              and isinstance(c["max_seconds"], dict) and c["max_seconds"]
+              and all(type(v) is int for v in c["max_seconds"].values()))
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        raise CeilingError(f"{path}: unreadable ceiling ({e.__class__.__name__})") from None
+    if not ok:
+        raise CeilingError(f"{path}: max_ids, max_files (integers), max_seconds ({{platform: integer}}) and decision are needed")
+    try:
+        with open(decisions, encoding="utf-8", newline="") as f:
+            rows = [r for r in csv.DictReader(f) if r.get("id") == c["decision"]]
+    except OSError:
+        rows = []
+    token = ceiling_token(c)
+    if not any(r.get("status") == "active" and r.get("by") == "operator" and token in (r.get("text") or "") for r in rows):
+        raise CeilingError(f"{os.path.basename(path)}: no active decision {c['decision']} of the operator records "
+                           f"`{token}`; the ceiling changes only with the operator's recorded answer "
+                           "(backlog.py answer ID GATE --answer TEXT --by operator --record)")
+    return c
+
+
+def seconds_factor(env=None):
+    """KB_TEST_TIMEOUT_FACTOR on a CI runner (a number of at least 1), else 1."""
+    env = os.environ if env is None else env
+    if not (env.get("GITLAB_CI") or env.get("GITHUB_ACTIONS")):
+        return 1.0
+    try:
+        return max(float(env.get("KB_TEST_TIMEOUT_FACTOR") or 1), 1.0)
+    except ValueError:
+        return 1.0
+
+
+def ceiling_problems(c, files=None, ids=None, seconds=None, platform=None, factor=1.0):
+    """What breaks the ceiling `c`: one line for each of the given counts (None: not measured) that is over."""
+    out = []
+    if files is not None and files > c["max_files"]:
+        out.append(f"{files} test files, the ceiling is {c['max_files']}")
+    if ids is not None and ids > c["max_ids"]:
+        out.append(f"{ids} test ids, the ceiling is {c['max_ids']}: a new test id replaces one")
+    limit = c["max_seconds"].get(platform or sys.platform)
+    if seconds is not None and limit is not None and seconds > limit * factor:
+        out.append(f"the full run took {seconds:.0f} s, the ceiling is {limit * factor:.0f} s on {platform or sys.platform}")
+    return out
+
+
+def collect_ids():
+    """How many test ids pytest collects in _tools/ (nothing runs), or None when the collection fails."""
+    cmd = pytest_cmd()
+    if cmd is None:
+        return None
+    p = subprocess.run(cmd + ["--collect-only", "-q", "-p", "no:cacheprovider", TOOLS], cwd=KB, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace")
+    if p.returncode not in (0, 5):
+        return None
+    return sum(1 for ln in p.stdout.splitlines() if "::" in ln and not ln.startswith(" "))
+
+
+def ceiling_report(ids=None, seconds=None):
+    """Print the ceiling's verdict for the measured counts; 0 when within it, 1 when over or the file is refused."""
+    try:
+        c = read_ceiling()
+    except CeilingError as e:
+        print(f"tests.py: ceiling refused: {e}", file=sys.stderr)
+        return 1
+    bad = ceiling_problems(c, files=len(test_files()), ids=ids, seconds=seconds, factor=seconds_factor())
+    for b in bad:
+        print(f"tests.py: over the ceiling: {b}", file=sys.stderr)
+    if bad:
+        print("tests.py: cut a test, or ask the operator for a recorded answer that raises _tools/tests_ceiling.json",
+              file=sys.stderr)
+    return 1 if bad else 0
+
+
+# The test.run row
 
 SLOW_FILES = 10  # the slowest files a test.run row names
 TEST_FILE = re.compile(r"test_\w+|conftest")  # the module part of a junit classname: the test file's name
@@ -87,29 +184,20 @@ def junit_files(path):
     return {k: [int(round(v[0] * 1000))] + v[1:] for k, v in out.items()}
 
 
-def run_fields(mode, entries, total, workers, full_files, ms):
-    """The keys of the ops row `test.run` for the pytest runs in `entries` ({"exit", "files"} each, `files` from
-    junit_files): counts and times only, and test file names that match the row's closed shape (ql_capture.ops_problems
-    refuses the rest). `full_files`: the run covered every test file, so each file's time is kept."""
+def run_fields(mode, entry, workers, full):
+    """The keys of the ops row `test.run` for one pytest run (`entry`: {"exit", "ms", "files"}, `files` from
+    junit_files): counts and times only, and test file names that match the row's closed shape. `full`: the run
+    covered every test file, so each file's time is kept."""
     import ql_capture
-    files = {}
-    for e in entries:
-        for name, v in e["files"].items():
-            cur = files.setdefault(name, [0, 0, 0, 0])
-            for i, x in enumerate(v):
-                cur[i] += x
+    files = entry["files"]
     ok = {k: v for k, v in files.items() if ql_capture.OPS_TEST_FILE.fullmatch(k)}
-    exits = [e["exit"] for e in entries]
-    f = {"mode": mode, "ms": ms, "exit": next((c for c in exits if c), 0) if exits else 0,
-         "selected": len(ok), "workers": workers,
-         "passed": sum(v[1] for v in files.values()), "failed": sum(v[2] for v in files.values()),
+    f = {"mode": mode, "ms": entry["ms"], "exit": entry["exit"], "selected": len(ok), "total": len(test_files()),
+         "workers": workers, "passed": sum(v[1] for v in files.values()), "failed": sum(v[2] for v in files.values()),
          "skipped": sum(v[3] for v in files.values())}
-    if total is not None:
-        f["total"] = total
     by_time = sorted(ok.items(), key=lambda kv: (-kv[1][0], kv[0]))
     if by_time:
         f["slow"] = [{"file": k, "ms": v[0]} for k, v in by_time[:SLOW_FILES]]
-    if full_files and ok:
+    if full and ok:
         f["files"] = [{"file": k, "ms": ok[k][0]} for k in sorted(ok)][:ql_capture.OPS_LIST_MAX]
     failed = sorted(k for k, v in ok.items() if v[2])
     if failed:
@@ -122,66 +210,37 @@ def inside_test():
     return bool(os.environ.get("PYTEST_CURRENT_TEST"))
 
 
-def record_run(mode, entries, args, wall_ms):
+def record_run(mode, entry, args):
     """Append the `test.run` row of one tests.py run; best effort: it returns None and raises nothing when ops capture is
     unavailable, when the run is inside a test (a scenario clone's run never writes into the real spool) or when the
     row breaks its shape."""
     try:
-        if not entries or inside_test():
+        if inside_test():
             return None
         import ql_capture
-        workers = worker_count(args)
-        try:
-            import testmap
-            total = len(testmap.test_files())
-        except Exception:  # noqa: BLE001 - a count the row can do without
-            total = None
-        full = mode == "full" and not keyword_run(args) and not names_test_files(args)
-        fields = run_fields(mode, entries, total, workers, full, wall_ms)
-        return ql_capture.record("ops", event="test.run", **fields)
+        return ql_capture.record("ops", event="test.run", **run_fields(mode, entry, worker_count(args), mode == "full"))
     except Exception:  # noqa: BLE001 - a run never fails for its log
         return None
 
 
-def run_mode(env, fast):
-    return "stress" if "KB_STRESS_SCALE" in (env or {}) else "fast" if fast else "full"
-
-
-def xdist_args():
-    """The default -n arguments: XDIST, with "auto" replaced by the capped default_workers()."""
-    return ["-n", str(default_workers())] if XDIST[1] == "auto" else list(XDIST)
-
-
-def run_pytest(args, env=None, dist="loadscope", report=None, mode=None):
-    """Run pytest; the exit code. With `report` (a list) the run's result is appended to it for the caller to record
-    once; without, the run records its own `test.run` row."""
+def run_pytest(args):
+    """Run pytest with the default workers; {"exit", "ms", "files"} of the run, or None when pytest is missing."""
     cmd = pytest_cmd()
     if cmd is None:
         print("pytest and pytest-xdist are needed: install uv (https://docs.astral.sh/uv/) and rerun, or "
               "`pip install pytest pytest-xdist`", file=sys.stderr)
-        return 2
-    xml, extra = None, []
-    if not any(a.startswith("--junitxml") for a in args):
-        fd, xml = tempfile.mkstemp(suffix=".xml", prefix="kb-tests-")
-        os.close(fd)
-        extra = [f"--junitxml={xml}"]
+        return None
+    fd, xml = tempfile.mkstemp(suffix=".xml", prefix="kb-tests-")
+    os.close(fd)
     start = time.monotonic()
     try:
-        code = subprocess.run(cmd + xdist_args() + ["--dist", dist] + (["--no-loadscope-reorder"] if dist == "loadscope" else []) + extra + args, cwd=KB,
-                              env={**os.environ, **(env or {})}).returncode
-        entry = {"exit": code, "ms": int((time.monotonic() - start) * 1000), "files": junit_files(xml) if xml else {}}
+        code = subprocess.run(cmd + ["-n", str(worker_count(args)), "--dist", "loadscope", "--no-loadscope-reorder",
+                                    f"--junitxml={xml}"] + args,
+                              cwd=KB).returncode
+        return {"exit": code, "ms": int((time.monotonic() - start) * 1000), "files": junit_files(xml)}
     finally:
-        if xml:
-            try:
-                os.unlink(xml)
-            except OSError:
-                pass
-    if report is not None:
-        report.append(entry)
-    else:
-        record_run(mode or (run_mode(env, False) if "KB_STRESS_SCALE" in (env or {}) else
-                            run_scope(args, False, os.environ.get("KB_TESTS_FAST") == "1")), [entry], args, entry["ms"])
-    return code
+        with contextlib.suppress(OSError):
+            os.unlink(xml)
 
 
 def write_lint_baseline():
@@ -194,46 +253,28 @@ def write_lint_baseline():
     return 0
 
 
-FULL_M, FAST_M = "not stress", "not stress and not git"
-EVERY = "all"  # every test module in _tools/ (testmap.ALL)
+# What a change needs
 
 
-def is_code(path):
-    """A changed path whose tests keep their git scenarios in a fast run: any path but kb content and the backlog and
-    query log store (testmap's CONTENT and NO_TESTS)."""
-    import testmap
-    return not path.replace("\\", "/").startswith(testmap.CONTENT + testmap.NO_TESTS)
+def changed(since):
+    """Paths changed from the merge base of `since` and HEAD to the working tree, untracked files included."""
+    def git(*args):
+        p = subprocess.run(["git", *args], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if p.returncode:
+            raise SystemExit(f"tests.py: git {' '.join(args)} failed: {p.stderr.strip()}")
+        return p.stdout
+    base = git("merge-base", since, "HEAD").strip()
+    names = git("diff", "--name-only", base).splitlines() + git("ls-files", "--others", "--exclude-standard").splitlines()
+    return sorted({n.strip().replace("\\", "/") for n in names if n.strip()})
 
 
-def plan(paths, fast):
-    """The pytest runs for the changed paths: [(nodes, -m expression)], nodes a testmap node list or EVERY; [] when no
-    test can be affected. A fast run (KB_TESTS_FAST=1, kbgit.py sync's gate) keeps the git scenarios of the test files
-    a code path selects (is_code) and leaves them out of the rest, which only kb content selects: the gate runs the
-    slow tests of the code a push changes, not the whole slow suite. When one path selects every file (`all`:
-    pyproject.toml, uv.lock, conftest.py, tests.py, testmap.py or an unplaced path), each other code path keeps its own
-    selection's git scenarios, and the remaining files of the suite run without them."""
-    import testmap
-    sel, _ = testmap.select(paths)
-    if sel == testmap.NONE:
-        return []
-    if not fast:
-        return [(EVERY if sel == testmap.ALL else sel, FULL_M)]
-    code, _ = testmap.select([p for p in paths if is_code(p)])
-    if code == testmap.ALL:  # one path hides what the others select: ask for each path alone
-        alone = [testmap.select([p])[0] for p in paths if is_code(p)]
-        code = sorted({n for s in alone if s not in (testmap.NONE, testmap.ALL) for n in s})
-        if not code:
-            return [(EVERY if sel == testmap.ALL else sel, FAST_M)]
-    elif code == testmap.NONE:
-        return [(sel, FAST_M)]
-    pool = [f"_tools/{f}" for f in testmap.test_files()] if sel == testmap.ALL else sel  # select() names nodes with _tools/
-    rest = [n for n in pool if n not in code and n.split("::")[0] not in code]
-    return [(code, FULL_M)] + ([(rest, FAST_M)] if rest else [])
-
-
-def target(node):
-    """A testmap node (`_tools/test_x.py` or `_tools/test_x.py::Class`) as a pytest target under KB."""
-    return os.path.join(KB, *node.split("::")[0].split("/")) + ("::" + node.split("::", 1)[1] if "::" in node else "")
+def scope(paths):
+    """What the changed `paths` need: `none` (only backlog items and the query log store, or nothing), `content` (only
+    kb content beside those: the suite without the git scenarios) or `all` (any other path: the whole suite)."""
+    rest = [p for p in paths if not p.startswith(NO_TESTS)]
+    if not rest:
+        return "none"
+    return "content" if all(p.startswith(CONTENT) for p in rest) else "all"
 
 
 HOST_LOCK_NAME = "kb-tests.lock"
@@ -419,12 +460,7 @@ def run_registered():
                 os.unlink(path)
 
 
-# The most workers a default run starts. Full runs of this suite (5005 tests passed each) on one 14-core, 24 GB macOS
-# host at load 3 to 7 took 770 s at -n 4, 681 s at -n 6 and 642 s at -n 8; no count above 8 was timed in that series,
-# and no 4-core or 8-core host was measured, so 8 is the best count measured on that one host only. The one full run
-# above 8 in the query log's spool (-n 14, 570 s, 4783 tests passed) was not part of the series and its load is unknown:
-# it does not show that 14 is faster. A host with fewer CPUs still gets its share, cpus // (others + 1).
-DEFAULT_WORKER_CAP = 8
+DEFAULT_WORKER_CAP = 12  # the most workers a default run starts: a worker for each test file of a suite this small
 
 
 def default_workers(others=None, cpus=None):
@@ -440,8 +476,8 @@ def default_workers(others=None, cpus=None):
 
 
 def worker_count(args, others=None):
-    """The xdist workers a run with these pytest arguments uses (the last -n wins; the default is XDIST's, the capped
-    default_workers() for "auto")."""
+    """The xdist workers a run with these pytest arguments uses: the last -n (`auto`: one per CPU), else
+    default_workers()."""
     val = None
     for i, a in enumerate(args):
         if a == "-n" and i + 1 < len(args):
@@ -449,9 +485,7 @@ def worker_count(args, others=None):
         elif a.startswith("-n") and len(a) > 2:
             val = a[2:]
     if val is None:
-        val = XDIST[1]
-        if val == "auto":
-            return default_workers(others)
+        return default_workers(others)
     if val == "auto":
         return os.cpu_count() or 1
     try:
@@ -460,17 +494,8 @@ def worker_count(args, others=None):
         return 1
 
 
-def wants_host_lock(args):
-    """A run takes the host lock unless it is inside a test, selects with -k, names at most NAMED_FILES_LOCK_FREE test
-    files and no directory (a cheap targeted run; a longer list or a named directory is a full-scope run and takes it;
-    `--changed` never counts as one) or uses one worker."""
-    return (not inside_test() and not any(a == "-k" or a.startswith("-k") for a in args) and not named_files_only(args)
-            and worker_count(args) > 1)
-
-
 VALUE_OPTIONS = {"-k", "-m", "-n", "-p", "-c", "-o", "--dist", "--maxfail", "--deselect", "--ignore", "--rootdir",
-                 "--junitxml", "--durations", "--timeout", "--basetemp", "--tb", "-W", "--ignore-glob", "--confcutdir",
-                 "--import-mode", "--log-level", "--log-format", "--log-file", "--log-cli-level", "--capture"}  # pytest options whose next argument is their value
+                 "--junitxml", "--durations", "--basetemp", "--tb", "-W"}  # pytest options whose next argument is their value
 
 
 def path_args(args):
@@ -486,45 +511,28 @@ def path_args(args):
     return out
 
 
-NAMED_FILES_LOCK_FREE = 4  # a handful of named files is cheap enough to skip the host lock; a shell glob of every test file is not
-
-
 def keyword_run(args):
     """True when the arguments select tests by `-k` (`-k EXPR` or `-kEXPR`)."""
     return any(a == "-k" or (a.startswith("-k") and len(a) > 2) for a in args)
 
 
-def run_scope(args, changed, fast):
-    """The `mode` of a run's test.run row: `changed`, `files` (a few named files), `keyword` (a `-k` selection),
-    `fast` or `full`; a run that selects tests is never `full`."""
-    if changed:
+def run_scope(args, changed_run, fast):
+    """The `mode` of a run's test.run row: `changed`, `files` (named files), `keyword` (a `-k` selection), `fast` or
+    `full`; a run that selects tests is never `full`."""
+    if changed_run:
         return "changed"
-    if names_test_files(args):
+    if path_args(args):
         return "files"
     if keyword_run(args):
         return "keyword"
     return "fast" if fast else "full"
 
 
-def names_test_files(args):
-    """True when the arguments name at least one path and every one is a file (optionally `::node`), however many:
-    a selection of test files, which a test.run row records as `files`, never `full` (named_files_only adds the
-    host-lock cap)."""
-    paths = path_args(args)
-    return bool(paths) and all(os.path.isfile(os.path.join(KB, f)) or os.path.isfile(f)
-                               for f in {a.split("::")[0] for a in paths})
-
-
-def named_files_only(args):
-    """True when the arguments name at least one path, every one a file (optionally `::node`), at most
-    NAMED_FILES_LOCK_FREE distinct files, and the run is not `--changed`: a cheap targeted run of a few files. A named
-    directory, no path, or more files than that (a shell glob of the test files) is a full-scope run."""
-    if "--changed" in args:
-        return False
-    paths = path_args(args)
-    files = {a.split("::")[0] for a in paths}
-    return (bool(paths) and len(files) <= NAMED_FILES_LOCK_FREE
-            and all(os.path.isfile(os.path.join(KB, f)) or os.path.isfile(f) for f in files))
+def wants_host_lock(args):
+    """A run takes the host lock unless it is inside a test, selects with -k, names test files, only reads the ceiling
+    or uses one worker."""
+    return (not inside_test() and not keyword_run(args) and "--ceiling" not in args
+            and ("--changed" in args or not path_args(args)) and worker_count(args) > 1)
 
 
 def main(argv):
@@ -538,34 +546,39 @@ def main(argv):
 def run_main(argv):
     if "--write-lint-baseline" in argv:
         return write_lint_baseline()
+    if "--ceiling" in argv:
+        ids = collect_ids()
+        if ids is None:
+            print("tests.py --ceiling: pytest could not collect the tests", file=sys.stderr)
+            return 2
+        code = ceiling_report(ids=ids)
+        if not code:
+            print(f"tests.py --ceiling: {ids} test ids in {len(test_files())} files, within the ceiling")
+        return code
     args = list(argv)
     fast = os.environ.get("KB_TESTS_FAST") == "1"
-    runs = [(EVERY, FAST_M if fast else FULL_M)]
-    changed = "--changed" in args
-    if changed:  # only the tests the change can break (testmap.py)
+    changed_run = "--changed" in args
+    if changed_run:
         i = args.index("--changed")
         rev = args[i + 1] if i + 1 < len(args) and not args[i + 1].startswith("-") else None
         del args[i:i + (2 if rev else 1)]
-        import testmap
-        runs = plan(testmap.changed(rev or "HEAD"), fast)
-        if not runs:
-            print(f"tests.py --changed {rev or 'HEAD'}: no test can be affected by the changed paths (testmap.py explain)")
+        need = scope(changed(rev or "HEAD"))
+        if need == "none":
+            print(f"tests.py --changed {rev or 'HEAD'}: no test can be affected by the changed paths")
             return 0
-        if runs[0][0] != EVERY:
-            n = sum(len(nodes) for nodes, _ in runs)
-            slow = f", the git scenarios of {len(runs[0][0])} kept" if fast and runs[0][1] == FULL_M else ""
-            print(f"tests.py --changed {rev or 'HEAD'}: {n} of {len(testmap.test_files())} test files or classes{slow}")
-    named = not changed and bool(path_args(args))  # tests.py PATH: only the named files, not every test file beside them
-    code, report, start = 0, [], time.monotonic()
-    for nodes, m in runs:
-        got = run_pytest(([] if named else [TOOLS] if nodes == EVERY else [target(n) for n in nodes])
-                         + ([] if "-m" in args else ["-m", m]) + args, report=report)
-        code = code or (0 if got == 5 and nodes != EVERY else got)  # 5: every selected test was deselected by -m
-    for e in report:  # a deselected-to-nothing run is a pass here, and so is its row's exit
-        if e["exit"] == 5 and runs[0][0] != EVERY:
-            e["exit"] = 0
-    record_run(run_scope(args, changed, fast), report, args, int((time.monotonic() - start) * 1000))
-    return code
+        fast = need == "content"
+        print(f"tests.py --changed {rev or 'HEAD'}: " + ("kb content only, the suite without the git scenarios"
+                                                          if fast else "the whole suite"))
+    mode = run_scope(args, changed_run, fast)
+    entry = run_pytest(([] if path_args(args) else [TOOLS]) + ([] if "-m" in args or not fast else ["-m", FAST_M]) + args)
+    if entry is None:
+        return 2
+    record_run(mode, entry, args)
+    whole = not path_args(args) and not keyword_run(args) and "-m" not in args
+    ran = sum(v[1] + v[2] + v[3] for v in entry["files"].values())
+    over = ceiling_report(ids=ran if whole and not fast else None,
+                          seconds=entry["ms"] / 1000 if mode == "full" else None)
+    return entry["exit"] or over
 
 
 if __name__ == "__main__":

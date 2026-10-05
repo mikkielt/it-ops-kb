@@ -35,7 +35,7 @@ Rules that hold throughout:
 ## Phase 1: mechanical verdicts for the rest (no judgment)
 1. `python3 _tools/census.py check --date <date> --factdiff kb/public/_census/factdiff-<date>.csv` (about a minute with warm clones; clones go to `_cache/census/repos/`). It writes `kb/public/_census/<date>.csv` with one bucket per source: OK, CHANGED, GONE, NEWER-VERSION, NEEDS-READING, and the evidence (commit ids, dates, versions). The method per kind is in `census.py`'s docstring.
 2. `python3 _tools/census.py summary kb/public/_census/<date>.csv`. NEEDS-READING with note `blocked` means this environment's network policy denied the host: tell the user which hosts (the environment's network settings can allow them) and continue with the rest; those sources stay unconfirmed.
-3. Look at the non-OK rows for mechanical false positives before any reading (a monorepo tag family, a moved url, a shallow clone). Fix `census.py` if the rule is wrong (with a test in `_tools/test_census.py`), never the log by hand, and rerun check.
+3. Look at the non-OK rows for mechanical false positives before any reading (a monorepo tag family, a moved url, a shallow clone). Fix `census.py` if the rule is wrong, never the log by hand, and rerun check.
 4. Commit the log: `python3 _tools/build_index.py`, the gate, then `git add kb/public/_census/<date>.csv` and commit `docs(kb): census <date> phase 1 verdicts`.
 
 ## Phase 2: read what the checks could not decide

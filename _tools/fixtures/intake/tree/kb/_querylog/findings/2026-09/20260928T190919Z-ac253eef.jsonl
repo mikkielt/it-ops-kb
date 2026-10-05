@@ -1,2 +1,0 @@
-{"run":"20260928T190919Z-ac253eef","pipeline":5,"retrieval":4,"kb_commit":"0000000000000000000000000000000000000000","counts":{"findings":1,"applied":1}}
-{"id":"F-27b9b6ccd368","kind":"gap","state":"applied","stage":"claim","promotions":[{"from":"miss","to":"candidate-gap","by":"learn"},{"from":"candidate-gap","to":"gap","by":"apply"},{"from":"gap","to":"claim","by":"kb-research"}],"entry":"00000000-0000-0000-0000-000000000005","article":"public/security/management-plane-hardening.md","observed":{"entry":"kb/public/_gaps.md:1049"}}

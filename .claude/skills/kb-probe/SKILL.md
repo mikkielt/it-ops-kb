@@ -32,7 +32,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops).
 4. `python3 _tools/provider.py show <sample url>` shows the form and the signals the fetch tools will use.
 
 ## 3. Check and report
-- `python3 _tools/check.py` and `python3 _tools/tests.py -k provider`.
+- `python3 _tools/check.py` and `python3 _tools/tests.py`.
 - A changed signal changes what the fetch tools trust: say so in the commit body.
 - Commit with the probe's evidence lines in the body (`/kb-verify`, then `python3 _tools/kbgit.py sync --push`); commit only when asked.
 - Report: the provider, the sample urls, each measured column old -> new, and anything the probe could not decide (put it in the row's `notes`).

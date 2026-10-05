@@ -120,7 +120,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py land ID [--branch B] [--trailer 'KEY: VALUE']...
                                           land a finished item's branch (default work/ID) from a clean tree: fetch
                                           and rebase it on the integration main, then a content item: done --commit,
-                                          rag.py eval and the lint when the landing changes _tools/ (stress_test.py
+                                          rag.py eval and the lint when the landing changes _tools/ (the full tests.py
                                           runs once, at the review story), kbgit.py sync --push; an item with a code-lane commit not on that main:
                                           those checks and sync --push (the code/<id> merge request), and a re-run
                                           once it has merged ends as a content item does. A re-run before the merge

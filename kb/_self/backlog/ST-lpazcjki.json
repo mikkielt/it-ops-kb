@@ -21,12 +21,6 @@
         "python3",
         "_tools/tests.py"
       ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/stress_test.py"
-      ]
     }
   ]
 }

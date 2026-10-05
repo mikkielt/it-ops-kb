@@ -161,7 +161,7 @@ def maker_names_allowed(root, policy=None):
     return policy in ("", "role-and-name")
 
 
-# Secret shapes: the leak scan over tracked files (test_kb_leaks.py, TestLeaks) and kbingest.py's survey of a repository.
+# Secret shapes: the leak scan over tracked files (`_tools/test_leaks.py`) and kbingest.py's survey of a repository.
 SECRETS = (
     r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----",
     r"\bAKIA[0-9A-Z]{16}\b",
@@ -173,7 +173,7 @@ SECRETS = (
     r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}",
     r"(?i)\b(?:password|passwd|pwd|client_secret|api_key|apikey|secret)\b\s*[:=]\s*[\"'][^\"'\s<>${}]{8,}[\"']",
 )
-# The placeholders-only shapes: what the leak scan flags in authored files (test_kb_leaks.py, TestLeaks) and what drops a
+# The placeholders-only shapes: what the leak scan flags in authored files (`_tools/test_leaks.py`) and what drops a
 # query-log entry after redaction (redact.py). One copy, so the redactor keeps nothing the scan would flag.
 LEAK_HOME = r"(?:/Users/|/home/|[A-Za-z]:\\+Users\\+)(?!<)[A-Za-z][\w.-]+"
 HOME_GENERIC = ("public", "default", "all users", "username", "user", "administrator", "jan.kowalski")

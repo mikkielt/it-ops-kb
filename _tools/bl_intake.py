@@ -30,7 +30,7 @@ the detectors and the filing of their candidates:
   main's tip, `rotation`, only seeds the first run), so every eligible item is reached within as many runs as there
   are whatever moved the tip between them, each check as a process group of
   its own that a timeout or this process's exit ends whole (`end_tree`, `end_live`), and a check that runs the whole
-  test suite (`heavy_check`: `_tools/tests.py` or pytest with no narrowing `-k`, `stress_test.py`, a wrapper such as
+  test suite (`heavy_check`: `_tools/tests.py` or pytest with no narrowing `-k`, a wrapper such as
   `perfcheck.py`, also inside `sh -c '...'`) never runs, nor one that is not of drift's read-only forms
   (`check_program_refusal` with `inline=False`: exactly python3 on one of DRIFT_SCRIPTS, so a committed `git push`,
   publish, sync or runner start never runs in a session's hook); the items those leave unchecked are counted in the
@@ -351,7 +351,7 @@ BACKLOG_DIR = REL_DIR  # the item files, one `<id>.json` each
 DRIFT_HOURS = 24  # a doing item whose newest work commit is older than this drifted
 CHECK_TIMEOUT_S = 15  # one check run by the detector; a check that exceeds it is counted and says nothing
 DRIFT_BUDGET_S = 30  # all the checks of one scan; once spent, no further check starts and the rest are counted
-HEAVY_SCRIPTS = ("stress_test.py", "perfcheck.py")  # a check that runs one of these (whole-suite wrappers) never runs
+HEAVY_SCRIPTS = ("perfcheck.py",)  # a check that runs one of these (whole-suite wrappers) never runs
 SUITE = "_tools/tests.py"  # a check that runs it, or pytest, with no narrowing `-k` selector never runs from intake
 SEPARATORS = (";", "&&", "||", "|", "&")  # shell operators that end one command of a `sh -c` string
 SHELLS = ("sh", "bash", "zsh", "dash", "ksh", "cmd", "powershell", "pwsh")  # their string arguments are commands
@@ -364,7 +364,7 @@ class Drift:
     """What `scan_drift` found: `stale` {doing item id: (work commit, hours it is older than the tip of main)},
     `passing` {draft or todo item id: how many checks it has} (all of its checks pass on HEAD), `timed_out` the ids of
     items with a check that exceeded the timeout, `heavy` the ids of items left unchecked because a check runs the
-    whole test suite or the stress tests, `refused` the ids of items left unchecked because a check is not one of
+    whole test suite, `refused` the ids of items left unchecked because a check is not one of
     drift's read-only forms (check_program_refusal), `over_budget` the ids of items left unchecked once the budget was
     spent, `ran` how many items had their checks run, `last` the id of the last item reached in the run's order before
     the budget was spent (the next run starts after it)."""
@@ -563,7 +563,7 @@ def check_program_refusal(argv, inline=True):
 
 
 def heavy_check(check):
-    """True when the check runs `stress_test.py` or a whole-suite wrapper (HEAVY_SCRIPTS), or `_tools/tests.py` or
+    """True when the check runs a whole-suite wrapper (HEAVY_SCRIPTS), or `_tools/tests.py` or
     pytest with no narrowing `-k` selector (pytest: nor a test file), seen through a shell string such as
     `sh -c '...'`."""
     ws = words(check.get("run", []))
@@ -791,7 +791,7 @@ def drift_detector(root):
         notes.append(f"{len(d.timed_out)} item(s) had a check that exceeded {CHECK_TIMEOUT_S} s (or the budget left) and were "
                      "left out")
     if d.heavy:
-        notes.append(f"{len(d.heavy)} item(s) had a check that runs the whole test suite or the stress tests, "
+        notes.append(f"{len(d.heavy)} item(s) had a check that runs the whole test suite, "
                      "not run, and were left out")
     if d.refused:
         notes.append(f"{len(d.refused)} item(s) had a check drift does not run (not one of its read-only forms: "

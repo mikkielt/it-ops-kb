@@ -70,7 +70,6 @@ SKILL_COMMANDS = (
     "python3 _tools/kbgit.py fix --check",
     "python3 _tools/tests.py --changed origin/main",
     "python3 _tools/check.py",
-    "python3 _tools/stress_test.py",
     "python3 _tools/rag.py eval",
     "python3 _tools/selfdoc.py section backlog Heading",
     "python3 _tools/selfdoc.py stale --since origin/main",

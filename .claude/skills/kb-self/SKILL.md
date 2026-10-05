@@ -59,7 +59,7 @@ Rules for every doc:
 
 1. `python3 _tools/selfdoc.py stale --since <REV>`: `stale=0` (an edited doc counts as updated; a doc you only reviewed stays listed until the commit carries its `Self-Reviewed:` trailer).
 2. `python3 _tools/selfdoc.py check`: `problems=0`.
-3. `python3 _tools/tests.py -k "Cohesion or SelfDocs"`: flags, backtick paths, links, size caps, the map, skills listed.
+3. `python3 _tools/tests.py`: the suite, in seconds.
 4. `python3 _tools/build_index.py --check` when `coverage.md` or an article's front matter was touched.
 5. For a doc change that came with a code change, the full gate in `kb/_self/maintaining.md` before committing.
 

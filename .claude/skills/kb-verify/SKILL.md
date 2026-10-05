@@ -1,6 +1,6 @@
 ---
 name: kb-verify
-description: Use before any it-ops-kb commit or push, or when the user asks to check, verify or gate a change: runs the checks, tests, stress tests, lookup eval, contract lint and the kb/_self/ docs check, and reports findings without changing files.
+description: Use before any it-ops-kb commit or push, or when the user asks to check, verify or gate a change: runs the checks, tests, lookup eval, contract lint and the kb/_self/ docs check, and reports findings without changing files.
 argument-hint: "[path prefixes to limit the contract checks, e.g. auth dsc/what-if] [--base REV]"
 ---
 
@@ -24,12 +24,11 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 1. `python3 _tools/check.py`: sources, citations, artifacts, front matter, CSV shape.
    Also `python3 _tools/build_index.py --check`: the generated index files are up to date.
 2. `python3 _tools/fetch.py --offline`: pinned artifacts match their sha256.
-3. `python3 _tools/stress_test.py` only when the user asks or step 6 finds `_tools/` changed and `python3 _tools/testmap.py select --since <base>` prints `all` or `_tools/test_stress.py`: tool robustness, about 8 minutes on the project's Windows host.
+3. `python3 _tools/rag.py eval`: the lookup eval set; a failing question names the expected article and the verdict it got.
 4. `python3 .claude/skills/kb-verify/lint.py <path prefixes>` (the prefixes from the arguments; the base option is for step 6 only): contract checks that `check.py` does not make:
    - ERROR: topic id vs path; the topic's `_coverage.csv` or `_coverage.md` row missing or stale (generated: the fix is `python3 _tools/build_index.py`); coverage lists a missing file (fix `files:`); missing section; tag without a source id; untagged Facts bullet.
    - WARN: no `#` title; a bullet mixing tag kinds; a DER fact that says it rests on a run or probe of our own ("observed on", "measured with", "probed", "the same probe against", "in the headless runs") and names no version such as `2.1.285` or "version 3" (`kb/_self/content-rules.md`, Facts and tags); header sources never cited, or cited ids missing from the header.
-5. `python3 _tools/tests.py --changed <base>` (the base from step 6): the test files the changed paths can break (`python3 _tools/testmap.py explain --since <base>` says why each runs); the full `python3 _tools/tests.py` (about 20 minutes on the project's Windows host) only when the user asks. Lint errors listed in `_tools/lint_baseline.txt` are known debt; only new ones fail. When the tests that hold them are selected (the full run selects all), it also checks the `signals.csv` and `aliases.csv` tables (every signal names an existing topic, no duplicate keys), `expansions.csv`, the lookup eval, and both plugins (`claude plugin validate` when the CLI is installed).
-   - `python3 _tools/rag.py eval`: the lookup eval set on its own; a failing question names the expected article and the verdict it got.
+5. `python3 _tools/tests.py --changed <base>` (the base from step 6): the gate's selection for the changed paths (nothing when only backlog items or the query log store changed; the suite without the git scenarios when only kb content changed; the whole suite for any other path); the full `python3 _tools/tests.py` only when the user asks. Lint errors listed in `_tools/lint_baseline.txt` are known debt; only new ones fail. The suite also runs `check.py` and the lookup eval over the live kb and the leak scan over the tracked files.
    - `python3 _tools/doc2query.py stale`: `stale=0`, else the listed expansion keys belong to reworded or removed facts (exit 1; `python3 _tools/doc2query.py prune` removes their rows).
    - `python3 _tools/rag.py audit --unlinked`: ledger entries with no topic link. The ones already there are section notes (headers, "no conflicts found", budget, licence and source-repo notes) and stay unlinked; an entry this work added must end with `(topic: <domain>/<slug>)`.
 6. Find the files this work changed, against the commit it started from, not against `main` (a branch made from another branch, or a `main` that moved on, would otherwise show other people's changes as yours):
