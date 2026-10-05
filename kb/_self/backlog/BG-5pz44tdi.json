@@ -42,7 +42,9 @@
         "leave them proposed and never confirm them"
       ],
       "recommendation": "after the fix lands, remove those proposed rows from _logs.csv (rows of items no commit names) and propose again over the sidecars, the fixture rows in kb/_querylog/ops staying as history",
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "after the fix lands, remove those proposed rows from _logs.csv (rows of items no commit names) and propose again over the sidecars, the fixture rows in kb/_querylog/ops staying as history",
+      "by": "operator"
     }
   ]
 }
