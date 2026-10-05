@@ -57,7 +57,7 @@ The same code runs on Linux, macOS and Windows.
 - **No cycles at the top level.** A reach back up the order is an import inside the function that needs it.
 - **A leading underscore means the module's own.** Another module does not import or call a name that starts with `_`; a name two modules need is public, without the underscore.
 - **A reader of a file format that a writing tool also reads is below it.** `kbdecide.py` imports `kbfacts.py` (to find facts), so the lookup side reads `_decisions.csv` itself, tolerantly and by its columns (`kbfacts.decision_rows`), never through `kbdecide.py`; `check.py` stays the one place that judges the format. The lookup tests that plant decision rows (the tests named `decision_lookup`, in `test_kb_lookup.py` and `test_kb_mcp.py`) write them with `kbcommon.write_csv` and run `rag.py` over a fixture root, so a change to the row format reaches them through `kbcommon`.
-- **A test holds the first and third rules.** `_tools/test_layout.py` parses every `_tools/*.py` with `ast` and fails when a `ql_*`, `kg_*`, `bench_*` or `bl_*` module imports its facade, or a module imports an underscore name from another one (`from x import _y` or `x._y`); the exceptions the tree had are listed by name in the test, and a new one fails.
+- **A test holds the first and third rules.** `_tools/test_layout.py` parses every `_tools/*.py` with `ast` and fails when a `ql_*`, `kg_*`, `bench_*` or `bl_*` module imports its facade, or a `bl_*` or `kg_*` module imports `backlog.py` or `kbgit.py`, at any depth (`SPLIT_FACADES`), or a module imports an underscore name from another one (`from x import _y` or `x._y`); the exceptions the tree had are listed by name in the test, and a new one fails.
 
 ## Writing a checked file
 

@@ -29,7 +29,8 @@
   "touches": [
     "_tools/kg_trailers.py",
     "_tools/test_layout.py",
-    "_tools/backlog.py"
+    "_tools/backlog.py",
+    "kb/_self/code.md"
   ],
   "claimed_by": "it-ops-kb worker2"
 }

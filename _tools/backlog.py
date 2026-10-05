@@ -235,7 +235,7 @@ from bl_check import (  # the checks and the readers of knowledge: bl_check hold
     ITEM_FILES_ROUTE, item_files_only, noop_warnings, text_only_repro, validate,
 )
 from bl_land import run_check, own_failure  # the runner of a check and the reading of a repro's own error: bl_land holds them with done, which host-check, new's repro and land share
-from bl_base import RESEARCH_KINDS, research_touches  # noqa: F401 - kg_trailers reads them as backlog.NAME
+from bl_base import RESEARCH_KINDS, research_touches  # noqa: F401 - tests read them as backlog.NAME
 from bl_base import run  # noqa: F401 - tests read the real runner as backlog.run
 from bl_ci import (  # noqa: F401 - the CI readers and red-pipeline: bl_ci holds them; main and ql_deliver use them as backlog.NAME
     GITLAB_FINISHED, LOG_PREFIX_RE, MAIN_PIPELINES, S1_JOBS, STATUS_REPRO, add_pipeline, bug_with_fingerprint,
