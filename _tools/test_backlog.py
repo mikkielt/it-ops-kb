@@ -323,12 +323,31 @@ def test_horizon_start_approved_waits_on_backlog_start_not_the_operator(repo):
     assert "3 wait on backlog.py start" in ctx and "wait on the operator" not in ctx, ctx
     assert "approved, not started" in ctx and "Approve this sprint" not in ctx, ctx
     code, out = b(repo, "horizon", "--hook")  # no active sprint: the planned list names the approval
-    assert "(approved, not started)" in json.loads(out)["systemMessage"], out
+    assert f"(approved, not started: backlog.py start {sp})" in json.loads(out)["systemMessage"], out
     # an item's own gate is still the operator's, inside an approved sprint
     bg = item(repo, "Planned bug")["id"]
     edit(repo, bg, gates=[{"id": "G1", "kind": "blocking", "question": "Fix or drop?", "recommendation": "fix"}])
     code, out = b(repo, "horizon", "--sprint", sp)
     assert "2 wait on backlog.py start" in out and "1 wait on the operator or a trigger" in out, out
+
+
+def test_horizon_hook_lists_approved_sprint_beside_active(sprint):
+    """BG-iu53ncyj planted: one active sprint and one planned sprint the operator approved; horizon and its hook name
+    the approved one as approved, not started, with backlog.py start as its next step, first, while the active one is
+    reported as before. An unapproved planned sprint is not listed."""
+    repo, active = sprint["repo"], sprint["sp"]
+    sp = planned_sprint(repo)
+    code, out = b(repo, "horizon")
+    assert code == 0 and f"sprint {sp} “Planned”" not in out, out
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    want = f"sprint {sp} “Planned”: approved, not started; next step: python3 _tools/backlog.py start {sp}"
+    code, out = b(repo, "horizon")
+    assert code == 0 and out.splitlines()[0] == want and f"sprint {active} “Sprint” [active]" in out, out
+    code, out = b(repo, "horizon", "--hook")
+    msg = json.loads(out)["systemMessage"]
+    assert msg.splitlines()[0] == want and f"sprint {active} “Sprint”:" in msg, msg
+    code, out = b(repo, "horizon", "--sprint", active)
+    assert "approved, not started; next step" not in out, out
 
 
 HOOK_LIMIT = 1000  # characters of the SessionStart hook's whole stdout, which every session in a clone reads
