@@ -11,7 +11,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 9 |
 | `agents/agent-dispatch-and-shared-services` | P1 | complete | `agents/agent-dispatch-and-shared-services.md` | 10 |
 | `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
-| `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 34 |
+| `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 36 |
 | `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
 | `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 18 |
 | `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 15 |
@@ -36,7 +36,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
 | `agents/headless-agent-runtimes` | P2 | complete | `agents/headless-agent-runtimes.md` | 18 |
-| `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 24 |
+| `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 26 |
 | `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
 | `agents/microsoft-agent-framework` | P2 | complete | `agents/microsoft-agent-framework.md` | 21 |
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |

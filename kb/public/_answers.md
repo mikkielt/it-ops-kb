@@ -2364,3 +2364,14 @@ _Agent: kb-research_
 - See agents/test-suite-size-and-agent-overengineering.md, agents/agent-planning-and-done.md.
 
 _Agent: kb-research_
+
+## QK-retrieving-project-s-own-rule-docs. For retrieving a project's own rule docs: does splitting long paragraphs into sentence-level passages help retrieval, what keeps a passage understandable out of context, and how is such a retriever judged?
+- The Dense X Retrieval paper reports that indexing by fine-grained units such as propositions significantly outperforms passage-level units, and defines a proposition as an atomic, self-contained expression of one factoid. [DOC S-bfjgfchf]
+- Small units lose context: Microsoft and Anthropic both warn that chunks too small to carry enough context give poor results, and the remedies named are the document title appended to mid-document chunks and a prepended chunk-specific context string (failure rate 5.7% to 3.7%). [DOC S-adb2hv5q, S-idqwhfg2, S-4hditql5]
+- A retriever is judged on a corpus, queries and qrels, with recall, MRR or nDCG@k at a top-k cutoff, and the labelled set must judge the documents the retriever returns (Foundry's Holes). [DOC S-w2g2bnsw, S-h7tjbts3]
+- Loading rule docs in tiers, as Agent Skills do, is the existing practice for keeping a long document out of context until needed. [DOC S1936, S1855]
+- Conclusion: splitting rule paragraphs into self-contained sentences is supported by Dense X for retrieval, but only where each unit stays readable alone (title or context prepended); the evidence is for generic corpora, so the change should be judged on our own labelled lookup questions with recall and nDCG@k before it is kept. [DER S-bfjgfchf, S-4hditql5, S-w2g2bnsw]
+- Open: no source read tests sentence-level retrieval on a project's own rule documents. [UNK]
+- See agents/hybrid-retrieval.md, agents/agent-evaluation.md, agents/coding-agent-codebase-context.md.
+
+_Agent: kb-research_

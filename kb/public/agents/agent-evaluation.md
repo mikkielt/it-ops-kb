@@ -2,8 +2,8 @@
 topic: agents/agent-evaluation
 priority: P1
 applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 1.1.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview), OpenAI cookbook self-evolving agents (commit 2182005b), promptfoo assertions (commit e6b46046), Claude Code plugin evals (2026-09)"
-retrieved_utc: 2026-09-30
-sources: [S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s, S1920, S-lkcsn2fs, S-m2glighe, S-ll5srdcw]
+retrieved_utc: 2026-10-06
+sources: [S-w2g2bnsw, S-h7tjbts3, S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s, S1920, S-lkcsn2fs, S-m2glighe, S-ll5srdcw]
 status: complete
 ---
 
@@ -163,6 +163,13 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   reported a reliability gap (e.g. GPT-4o at 61% pass@1 but 25% pass@8 on retail tasks in the original
   2024 paper); τ2-bench/τ3-bench (MIT-licensed repository, v1.0.1, 2026-07) continue the line and define
   task grading via `evaluation_criteria.actions` and a `reward_basis` gate. [DOC S1899, S1900]
+
+### Judging a retriever against labelled queries
+- The BEIR benchmark's evaluation data format is a corpus, queries and qrels (relevance judgements), so a retriever is judged against queries whose relevant documents are known [DOC S-w2g2bnsw].
+- BEIR's toolkit provides the standard IR metrics for any top-k cutoff: precision, recall, MAP, MRR and nDCG [DOC S-w2g2bnsw].
+- BEIR chose nDCG@k because it gives a good balance for tasks with binary as well as graded relevance judgements [DOC S-w2g2bnsw].
+- Microsoft Foundry's document-retrieval evaluator describes its Fidelity metric as the number of good documents returned out of the total number of known good documents in a dataset, a recall-style score against labelled ground truth [DOC S-h7tjbts3].
+- The same evaluator reports Holes, the number of documents with missing query relevance judgments (ground truth), so a labelled set has to judge the documents the retriever returns [DOC S-h7tjbts3].
 
 ### Rule-based and code-based checks before a model judge (graders, evals, self-improving pipelines)
 - Anthropic's eval guidance names the methods of a **code-based grader**: string-match checks (exact, regex, fuzzy),

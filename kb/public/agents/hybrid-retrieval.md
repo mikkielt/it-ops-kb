@@ -2,8 +2,8 @@
 topic: agents/hybrid-retrieval
 priority: P2
 applies_to: "Azure AI Search hybrid/vector/semantic search (api-version 2026-04-01, retrieved 2026-09-26); Anthropic Contextual Retrieval (engineering post, retrieved 2026-09-26); pgvector (README/LICENSE at master, retrieved 2026-09-26); Elasticsearch RRF retriever (docs, retrieved 2026-09-26); Claude API search result blocks (retrieved 2026-09-27); doc2query and Doc2Query-- papers; Model2Vec v0.9.0; Sufficient Context paper; Anthropic reduce-hallucinations guide; Azure AI Search traffic analytics (retrieved 2026-09-27)"
-retrieved_utc: 2026-09-29
-sources: [S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135, S-qpqoaaqj, S-jnq56sj3, S-sqbfbcyk, S-aqnin65g, S-yi5xka25, S-fovhkyzc, S-enf2tnxi, S-5y6g7iij, S-dghvtpkr, S-yknt2enl]
+retrieved_utc: 2026-10-06
+sources: [S-bfjgfchf, S-adb2hv5q, S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135, S-qpqoaaqj, S-jnq56sj3, S-sqbfbcyk, S-aqnin65g, S-yi5xka25, S-fovhkyzc, S-enf2tnxi, S-5y6g7iij, S-dghvtpkr, S-yknt2enl]
 status: complete
 ---
 
@@ -41,6 +41,13 @@ Hybrid retrieval combines a lexical ranker (BM25 or Elasticsearch's equivalent) 
 - Integrated vectorization is an indexer-pipeline feature that chunks and embeds content during indexing and can also vectorize the query string at search time, via a skillset with a chunking skill (Text Split or Azure Content Understanding) followed by an embedding skill [DOC S-net4uvqm].
 - Recommended chunking drivers: keep chunks under the embedding/chat model's max input tokens (e.g. `text-embedding-3-small` accepts up to 8,191 input tokens, roughly 6,000 words), and add overlap to preserve context across chunk boundaries [DOC S-idqwhfg2].
 - Azure OpenAI Embedding skill supports `text-embedding-ada-002` (fixed 1,536 dimensions), `text-embedding-3-large` (1-3,072 dimensions via the optional `dimensions` parameter) and `text-embedding-3-small` (1-1,536 dimensions); the vector field's `dimensions` property must match the skill's `dimensions` setting [DOC S-z7wh2sbr].
+
+### Retrieval granularity and chunk context
+- The Dense X Retrieval paper (EMNLP 2024) reports that indexing a corpus by fine-grained units such as propositions significantly outperforms passage-level units in retrieval tasks [DOC S-bfjgfchf].
+- Dense X defines a proposition, its proposed retrieval unit, as an atomic expression within the text that encapsulates one distinct factoid and is presented in a concise, self-contained natural-language format, which is what lets the small unit be read without its surrounding passage [DOC S-bfjgfchf].
+- Microsoft's Azure Architecture Center warns that chunks too small to hold enough context to address the query can result in poor outcomes [DOC S-adb2hv5q].
+- Azure AI Search guidance gives one remedy for context loss: with large documents, use variable-sized chunks and also append the document title to chunks from the middle of the document [DOC S-idqwhfg2].
+- Anthropic states that splitting documents into smaller chunks can lead to problems when individual chunks lack sufficient context, the problem Contextual Retrieval (above) addresses [DOC S-4hditql5].
 
 ### Azure AI Search tier and vector index limits
 - Vector index size is a hard per-partition quota (Dedicated) or per-index quota (Serverless); exceeding it fails further indexing until vectors are deleted, dimensionality is reduced, or (Dedicated) partitions are added [DOC S-jaycbw5k].
