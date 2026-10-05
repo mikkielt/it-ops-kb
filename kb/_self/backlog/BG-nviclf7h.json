@@ -2,7 +2,7 @@
   "id": "BG-nviclf7h",
   "kind": "bug",
   "title": "git.md says KB_NO_PUBLISH_HOOK is what the unattended manager needs and cites the removed 'Starting the autopilot' section",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,6 @@
   ],
   "touches": [
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
