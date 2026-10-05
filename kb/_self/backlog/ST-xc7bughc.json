@@ -2,7 +2,7 @@
   "id": "ST-xc7bughc",
   "kind": "story",
   "title": "kbotel's receiver exit is tested, its file's place is stated right, and the digest's ops block counts rows by their own day",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
@@ -38,5 +38,29 @@
   "depends_on": [
     "BG-hdy6rfro"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "04d4b03598c03e01e35321c991b321914d50fa86",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "otel_receiver_exits"
+        ],
+        "exit": 0,
+        "sha256": "697e7b60d0ddd161"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ql_report_ops_block_by_row_day"
+        ],
+        "exit": 0,
+        "sha256": "820a32881839f140"
+      }
+    ]
+  }
 }
