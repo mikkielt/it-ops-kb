@@ -2,7 +2,7 @@
   "id": "BG-2hxjopue",
   "kind": "bug",
   "title": "done can never close an item whose only touches are item files, so a planning-data fix has no way to finish",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,28 @@
     "_tools/bl_check.py",
     "_tools/test_bl_check.py"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "f2cb935b3533312e67056f285147a0445a2e61fb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "new_warns_item_files_only_touches"
+        ],
+        "exit": 0,
+        "sha256": "bb1c2b9a45651beb"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'item files only' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
