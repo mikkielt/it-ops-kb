@@ -1,0 +1,32 @@
+{
+  "id": "BG-74435353",
+  "kind": "bug",
+  "title": "check skips the form of knowledge on draft, done, dropped and planned items, so a malformed field passes until the sprint starts",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_check.validate checks the form of an item's knowledge field (ask and refs, lists of non-empty texts) on every item, and only the ref resolution and the stale count stay limited to items todo or doing in an active sprint (knowledge_worked); the knowledge_states docstring holds again; a test plants a malformed knowledge on a draft item and check reports it. Found by the SP-xdzgepun review of BG-53f6xe32.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_base,bl_check;bl=bl_base.Backlog('.');iid=next(i for i,it in sorted(bl.items.items()) if it.get('status')=='draft' and it.get('kind')!='sprint');bl.items[iid]['knowledge']='text';sys.exit(0 if any('knowledge' in x for x in bl_check.validate(bl)) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "knowledge_shape_checked_on_every_item"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/test_bl_check.py",
+    "kb/_self/backlog.md"
+  ]
+}
