@@ -7,6 +7,7 @@ successor test, and of a deleted test file whose local imports are all still pre
 import subprocess
 
 import pytest
+from pathlib import Path
 
 import perfcheck
 
@@ -122,3 +123,29 @@ def test_dropped_ids_partial_removal_warned_since_reads_only_added_groups(partia
     assert capsys.readouterr().out.splitlines() == ["perfcheck dropped: 0 warning(s)"]
     assert perfcheck.main(["dropped", "--since", "HEAD~1"], root=partial) == 0
     assert "mod_live" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("reason, warned", [
+    ("autopilot retired\n# live-module calls went with the removed mod_auto.py", False),
+    ("autopilot retired\n# live-module calls went with the removed `auto_fn`", False),  # a removed symbol
+    ("autopilot retired\n# live-module calls went with the runner", True),  # the phrase names nothing removed
+    ("autopilot retired\n# live-module calls went with the removed mod_live.py", True),  # a module still present
+    ("mod_auto.py is removed", True),  # a removed module without the phrase
+])
+def test_dropped_retired_feature_phrase(partial, capsys, reason, warned):
+    """ST-l3ky22zo planted: a retired feature's gone test file is excused when its reason says the live module's calls
+    went with the retired feature (perfcheck.RETIRED_PHRASE) and names the removed module, file or symbol; the phrase
+    naming nothing removed, or a removed module without the phrase, is still warned of."""
+    f = partial / "dropped.txt"
+    f.write_text(f"# {reason}\n_tools/test_autoshape.py::test_c\n", encoding="utf-8")
+    assert perfcheck.main(["dropped", "--file", str(f)], root=partial) == 0
+    assert ("is gone, but modules it tested are still present: mod_live" in capsys.readouterr().out) == warned
+
+
+def test_dropped_retired_feature_phrase_real_file_has_no_partial_removal_left():
+    """The live dropped-ids file's retired-feature groups carry the phrase: a full dropped run over the repository
+    names no gone test file whose live modules' tests went nowhere."""
+    from conftest import KB
+    text = (Path(KB) / perfcheck.DROPPED_FILE).read_text(encoding="utf-8")
+    left = [w for w in perfcheck.dropped_warnings(KB, text) if "is gone, but modules" in w]
+    assert left == [], left

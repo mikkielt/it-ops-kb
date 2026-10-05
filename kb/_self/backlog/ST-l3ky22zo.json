@@ -2,7 +2,7 @@
   "id": "ST-l3ky22zo",
   "kind": "story",
   "title": "The retired features' dropped test groups name where their live modules' calls went",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "ST-yl5ihysf"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
