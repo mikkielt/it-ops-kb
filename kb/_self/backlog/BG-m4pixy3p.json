@@ -1,0 +1,34 @@
+{
+  "id": "BG-m4pixy3p",
+  "kind": "bug",
+  "title": "The host main lock's order, re-entry and land/sync holding have no test since test_autopilot_two_runners.py was deleted",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Tests again guard kg_lock's live behaviour that 9606015b deleted with test_autopilot_two_runners.py: taking the main lock while holding the test lock raises LockOrderError; real processes never hold the main lock at once (with a planted case that skips the lock and overlaps); a child inheriting KB_MAIN_LOCK_HELD takes no second lock; land's fetch and rebase hold it; sync --push holds it and --dry-run or sync without --push does not. kb/_self/git.md cites the new selector instead of `tests.py -k autopilot_two_runners`, which selects nothing. Found by the SP-ytfb4dc5 review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; r=subprocess.run(['git','grep','-n','-E','LockOrderError','--','_tools/test_*.py'],capture_output=True,text=True); print(r.stdout+r.stderr); sys.exit(0 if r.returncode==0 else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a missing test; the lock code works today, so only the absence of a test naming it shows the gap",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kg_lock"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_kg_lock*.py",
+    "_tools/testmap.py",
+    "kb/_self/git.md",
+    "_tools/test_ids_dropped.txt"
+  ]
+}
