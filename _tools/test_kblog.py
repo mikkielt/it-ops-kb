@@ -529,3 +529,44 @@ def test_kblog_propose_converges_only_a_changed_aggregate_is_a_new_row(repo):
     refused(repo, *record_args(new[0]["observation"], context=new[0]["context"], runs=new[0]["source_run_ids"],
                                first=new[0]["observed_from"], last=new[0]["observed_to"]), says=f"{new[0]['id']} is already in")
     repo.check()
+
+
+SAMPLE = {"item": "TK-aaaaaaaa", "sprint": "SP-aaaaaaaa", "token": "x", "sha": "abcdef1", "agent": "abcdef12",
+          "test_file": "test_x.py", "mode": "full", "ms": 1, "count": 1, "exit": 0, "flag": True}
+
+
+def sample_keys(spec):
+    """One closed value for each required key of an ops event (ql_capture.OPS_EVENTS)."""
+    import ql_capture
+    out = {}
+    for k, (shape, required) in spec.items():
+        if not required:
+            continue
+        if isinstance(shape, tuple):
+            out[k] = []
+        elif shape == "reason":
+            out[k] = ql_capture.OPS_REFUSED[0]
+        else:
+            out[k] = SAMPLE[shape]
+    return out
+
+
+def test_kblog_propose_every_ops_event(repo):
+    """ST-vaby3y5b (the operator's answer: every ops row): with --context naming what the item-less events are about,
+    propose aggregates a row of every event of ql_capture.OPS_EVENTS, none left out for want of a context, each a
+    proposed row; a second run proposes nothing new. Planted: without --context the item-less events are counted
+    out."""
+    import ql_capture
+    events = sorted(ql_capture.OPS_EVENTS)
+    store = ops_store(repo, {"20261003T120000Z-cccc3333": [
+        ("2026-10-03T08:00:00Z", e, sample_keys(ql_capture.OPS_EVENTS[e])) for e in events]})
+    out = propose(repo, store, "--since", "2026-10-01", "--context", "domain:ops")
+    assert f"proposed={len(events)} known=0 no-context=0 not-closed=0" in out, out
+    assert sorted(r["observation"].split(":", 1)[0][4:] for r in repo.logs()) == events
+    assert {r["status"] for r in repo.logs()} == {"proposed"}
+    assert "proposed=0 known=" in propose(repo, store, "--since", "2026-10-01", "--context", "domain:ops")
+    bare = ops_store(repo, {"20261003T120000Z-cccc3333": [
+        ("2026-10-03T08:00:00Z", e, sample_keys(ql_capture.OPS_EVENTS[e])) for e in events]})
+    out = propose(repo, bare, "--since", "2026-10-01", "--dry-run")
+    assert "no-context=0" not in out, out
+    repo.check()
