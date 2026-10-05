@@ -5,7 +5,9 @@ tools_map tests and the focused tests of its files) and never `tests.py --change
 `stress_test.py`; kb-sprint's skill states the three tiers once, briefs workers with the narrow tier and has the
 review story run the heavy suites; kb-item's skill gives the narrow tier before landing; the runbook states each
 tier once (narrow per task, the gate per landing, the heavy suites once at sprint end); none still says a worker runs
-`--changed`, the fast tests, or that `land` or the orchestrator runs `stress_test.py` before the sprint's end.
+`--changed`, the fast tests, or that `land` or the orchestrator runs `stress_test.py` before the sprint's end; and the
+other docs that name the tiers point at them: tools.md's tests.py row, maintaining.md's gate, plugin.md's skills and
+token-efficiency.md's sprint workers (BG-gh2ceakk).
 test_three_tiers_documented_planted_failures: each required sentence taken out, and each old rule put back, fails.
 """
 import os
@@ -17,7 +19,12 @@ KB_WORKER = ".claude/agents/kb-worker.md"
 KB_SPRINT = ".claude/skills/kb-sprint/SKILL.md"
 KB_ITEM = ".claude/skills/kb-item/SKILL.md"
 RUNBOOK = "kb/_self/backlog.md"
-DOCS = (KB_WORKER, KB_SPRINT, KB_ITEM, RUNBOOK)
+TOOLS_DOC = "kb/_self/tools.md"
+MAINTAINING = "kb/_self/maintaining.md"
+PLUGIN = "kb/_self/plugin.md"
+TOKENS = "kb/_self/token-efficiency.md"
+DOCS = (KB_WORKER, KB_SPRINT, KB_ITEM, RUNBOOK, TOOLS_DOC, MAINTAINING, PLUGIN, TOKENS)
+WORKER_TEXTS = (KB_WORKER, KB_SPRINT, KB_ITEM)  # the texts a worker or orchestrator acts on: no loose --changed there
 
 NARROW = 'python3 _tools/tests.py -k "ruff or tools_map"'
 
@@ -56,6 +63,10 @@ REQUIRED = {
         "Heavy, once at sprint end: `stress_test.py` with the full `tests.py` runs once, as the review story's checks",
         "before the review and the retrospective",
     ],
+    TOOLS_DOC: ["the one mapped run per landing and no sprint worker's: the three test tiers"],
+    MAINTAINING: ["which runs the narrow tier only: the three test tiers"],
+    PLUGIN: ["A sprint runs tests in three tiers"],
+    TOKENS: ["It runs only the narrow tier of the three test tiers, never `--changed` or a full suite"],
 }
 
 # wordings of the old rule: a worker runs the mapped tests, land or the orchestrator runs the stress suite
@@ -85,7 +96,7 @@ def tier_problems(texts):
         for phrase in FORBIDDEN:
             if phrase in text:
                 problems.append(f"{rel} still says {phrase!r}")
-        if rel != RUNBOOK:
+        if rel in WORKER_TEXTS:
             for sentence in re.split(r"(?<=[.;:]) ", text):
                 if "--changed" in sentence and not any(word in sentence.lower() for word in CHANGED_OK):
                     problems.append(f"{rel} has a sentence naming --changed with no gate or never: {sentence.strip()[:100]!r}")
@@ -128,3 +139,10 @@ def test_three_tiers_documented_planted_failures():
         planted[rel] = texts[rel].replace(old, new, 1) if old else texts[rel] + new
         assert planted[rel] != texts[rel], f"plant does not apply: {rel} {old!r}"
         assert tier_problems(planted), f"not caught: {rel} {old!r} -> {new!r}"
+
+
+def test_three_tiers_documented_reads_every_named_doc():
+    """BG-gh2ceakk: the docs TK-zcji275w's goal names for the three tiers are all read, the four kb/_self docs that
+    only point at the runbook among them, and each has a sentence of its own to keep."""
+    named = {KB_WORKER, KB_SPRINT, KB_ITEM, RUNBOOK, TOOLS_DOC, MAINTAINING, PLUGIN, TOKENS}
+    assert set(DOCS) == named and all(REQUIRED[rel] for rel in named)
