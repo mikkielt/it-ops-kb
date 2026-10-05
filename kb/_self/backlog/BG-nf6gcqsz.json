@@ -1,0 +1,35 @@
+{
+  "id": "BG-nf6gcqsz",
+  "kind": "bug",
+  "title": "A tests.py run that selects nothing is recorded as a failed full run, so the digest's test.run failures are inflated",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A tests.py run with a -k or a file selection is never recorded as mode full, and a run that selected no test (pytest exit 5) is recorded as such (a mode or flag the digest leaves out of its failures), so querylog.py digest's test.run failures count only runs whose tests failed; the 80 of 111 'failed' rows of 2026-10-05 were exit 5 runs of item checks whose selectors matched nothing. Found by the SP-smqwmchu review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import tests;sys.exit(1 if tests.run_mode(['-k', 'no_such_test_name']) == 'full' else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_run_row_selects_nothing"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_tests.py",
+    "_tools/ql_report.py",
+    "_tools/test_ql_report.py",
+    "kb/_self/querylog.md"
+  ]
+}
