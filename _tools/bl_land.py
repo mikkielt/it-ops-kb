@@ -988,7 +988,7 @@ def land_once(bl, a):
             if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
                 say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
                     f"pushed with this content): merge it, then run backlog.py land {iid} again")
-                LAND_OPS["pending"] = (late, code_branch)
+                LAND_OPS["pending"] = ([git(root, "rev-parse", tracking).strip()], code_branch)
                 stuck = stuck_merge_request(root, remote, code_branch)
                 if stuck:
                     say(stuck)
@@ -1016,7 +1016,7 @@ def land_once(bl, a):
                 land_run(root, step, argv)
         land_run(root, *LAND_SYNC, whole=True)
         if late:
-            LAND_OPS["pending"] = (late, code_branch)
+            LAND_OPS["pending"] = (pushed_tip(root, remote, code_branch), code_branch)
             say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
                 f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
         else:
@@ -1038,6 +1038,14 @@ def land_once(bl, a):
             for done_branch in (branch, agent_branch):
                 if done_branch and start_ref != f"refs/heads/{done_branch}":
                     delete_landed_branch(root, done_branch, upstream)
+
+
+def pushed_tip(root, remote, code_branch):
+    """[the tip of CODE_BRANCH on REMOTE] as sync pushed it, fetched: sync may rebase the range onto a newer main
+    before it pushes, so the commits --wait-merge waits for are the pushed ones, not the ones land rebased."""
+    tracking = f"refs/remotes/{remote}/{code_branch}"
+    land_git_network(root, "wait-merge", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}")
+    return [git(root, "rev-parse", tracking).strip()]
 
 
 WAIT_POLL = 60  # seconds between land --wait-merge's reads of the integration main
