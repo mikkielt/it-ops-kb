@@ -1,0 +1,31 @@
+{
+  "id": "BG-3omfxxnw",
+  "kind": "bug",
+  "title": "test_backlog_record_clean needs a live backlog item outside any sprint, and fails the sync gate now that none is left",
+  "status": "todo",
+  "sprint": "SP-hyp6o7hl",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "test_backlog_record_clean plants the item outside any sprint that its gate needs (backlog.py new bug in its throwaway clone) when the copied backlog has none, so it passes whatever the live backlog holds; today every BG is in a sprint (BG-leuzxnns and BG-wl242jco dropped at a4c9b294) and both of its tests fail in tests.py --changed, the sync gate of every change that selects them.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "_tools/test_backlog_record_clean.py"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "answer_record_leaves_a_clean_tree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_backlog_record_clean.py"
+  ]
+}
