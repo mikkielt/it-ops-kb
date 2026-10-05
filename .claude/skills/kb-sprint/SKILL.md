@@ -58,6 +58,7 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    - "run tests in the foreground, and end every background command and monitor you started before you return": `land` refuses a branch while a process still runs in its worker's worktree, naming each pid and command, and `python3 _tools/backlog.py procs` lists what workers left running in the clone (`procs --end` ends only an owned orphan);
    - "file a bug for any defect outside the item, do not fix it";
   - "a doc that needs an edit outside the touches stops the work with a report; `Self-Reviewed:` names only docs read and found still correct";
+   - for a stacked item (its base holds another item's commits not yet landed): "each commit names in its own `Self-Reviewed` trailer every doc `selfdoc.py stale --since <the item's base>` lists for its change, not the stack's: the item below lands first, and its trailer then covers none of yours";
    - "a choice the goal leaves open: record a provisional gate with a recommendation (`gate add ID --kind provisional ...`), answer it `--provisional` and commit it with the work, never prose in the report only; a choice only the operator can make: a blocking gate, and stop";
    - "never write the operator's decisions into docs or code".
    An item with a single commit and a narrow `touches` may be done in this session instead.
