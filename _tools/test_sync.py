@@ -1921,3 +1921,38 @@ def test_commit_msg_names_what_an_unclaimed_item_may_do(bl_sprint, monkeypatch, 
     assert hook(ok) == ""  # planted counterpart: a claimed item's work commit is warned of nothing
     sh(repo, "git", "commit", "-qm", ok)
     assert gate() == []
+
+
+def test_commit_msg_amend_with_message_file_reads_the_parent(tmp_path):
+    """BG-eyuf3cxw: with -F or -m git passes prepare-commit-msg only `message`, so the hook reads the amend from the
+    `git commit --amend` among its ancestors and notes HEAD's parent for commit-msg; a plain commit -F notes nothing,
+    and --amend --no-edit (`commit HEAD`) still does. The hook runs as git runs it, in a throwaway repository."""
+    import sys as _sys
+    repo = tmp_path / "r"
+    repo.mkdir()
+    g = lambda *a: subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@corp.example.com", *a], cwd=repo,
+                                  capture_output=True, text=True, check=True)  # noqa: E731
+    g("init", "-q")
+    hook = repo / ".git" / "hooks" / "prepare-commit-msg"
+    hook.write_text('#!/bin/sh\nexec "%s" -c "import sys, os; sys.path.insert(0, %r); import kg_hooks; '
+                    'kg_hooks.KB = os.getcwd(); kg_hooks.hook_prepare(sys.argv[1:])" "$@"\n' % (_sys.executable, TOOLS),
+                    encoding="utf-8")
+    hook.chmod(0o755)
+    mark = repo / ".git" / kg_hooks.AMEND_MARK
+    (repo / "a").write_text("a\n", encoding="utf-8")
+    g("add", "-A")
+    g("commit", "-qm", "one")
+    parent = g("rev-parse", "HEAD").stdout.strip()
+    (repo / "b").write_text("b\n", encoding="utf-8")
+    g("add", "-A")
+    (repo / "m").write_text("two\n", encoding="utf-8")
+    g("commit", "-q", "-F", "m")
+    assert not mark.exists()  # planted counterpart: a plain commit -F is no amend
+    g("commit", "-q", "--amend", "-F", "m")
+    assert mark.read_text(encoding="utf-8").strip() == parent
+    mark.unlink()
+    g("commit", "-q", "--amend", "-m", "two again")
+    assert mark.read_text(encoding="utf-8").strip() == parent
+    mark.unlink()
+    g("commit", "-q", "--amend", "--no-edit")
+    assert mark.read_text(encoding="utf-8").strip() == parent
