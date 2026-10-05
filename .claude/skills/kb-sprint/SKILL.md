@@ -55,7 +55,7 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
    - "run only the narrow tier: the item's own checks, `python3 _tools/tests.py -k "ruff or tools_map"` and the focused tests of the files you changed; never `tests.py --changed`, `python3 _tools/stress_test.py` or the full `tests.py`" (parallel runs load the host into false timeouts);
    - "commit on a local branch `work/<id>` with `KB-Work: <id>` in the message's last paragraph, with `Co-Authored-By` and the other trailers; never push";
    - the known failing tests: each test you already know fails on the host (its test id), with the bug filed for it (id and title) and its cause, so the worker neither files it again nor guesses a cause; a failure the brief does not name is the worker's to file;
-   - "run tests in the foreground, and end every background command and monitor you started before you return": `land` refuses a branch while a process still runs in its worker's worktree, naming each pid and command, and `python3 _tools/backlog.py procs` lists what workers left running in the clone (`procs --end` ends only an owned orphan);
+   - "run tests in the foreground, and end every background command and monitor you started before you return": `land` refuses a branch while a process still runs in its worker's worktree, naming each pid and command, and `python3 _tools/backlog.py procs` lists what workers left running in the clone (each orphan named for you, never signaled);
    - "file a bug for any defect outside the item, do not fix it";
   - "a doc that needs an edit outside the touches stops the work with a report; `Self-Reviewed:` names only docs read and found still correct";
    - for a stacked item (its base holds another item's commits not yet landed): "each commit names in its own `Self-Reviewed` trailer every doc `selfdoc.py stale --since <the item's base>` lists for its change, not the stack's: the item below lands first, and its trailer then covers none of yours";
@@ -112,7 +112,7 @@ The review story is ready once every other item is done or dropped. Its checks r
 - `hooks`: the commit hooks or the plugin are not installed: run `/kb-setup` (`python3 _tools/kbgit.py install-hooks`) before any commit.
 - `host`: the load is over its per-core limit, or a host lock has been held past `HOST_LOCK_WAIT_S` by a live process: dispatch fewer workers and give the tests a `-k` selection, which takes no host lock; end a lock's holder only when it is yours and stuck.
 - `claims`: a claimed item shows `claim-no-commit`, `returned-no-commit` or `returned-staged`: act on it as Stalled work says.
-- `orphans`: a process recorded with `procs --record` runs on without its parent: `procs --end`, which ends owned orphans only.
+- `orphans`: a process in a checkout of the clone runs on after its parent is gone (`procs` lists each with its pid and checkout): end it if it is yours, or ask the session that left it; nothing ends it for you.
 - `main`: the newest `ci.pipeline` row is red: file it as a bug (`python3 _tools/backlog.py red-pipeline`) and take the next ready item; with no row the check is `UNKNOWN`: `python3 _tools/backlog.py red-pipeline --status` reads the forge.
 
 ## Stalled work
