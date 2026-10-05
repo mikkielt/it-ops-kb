@@ -91,6 +91,27 @@ def test_backlog_docs_touches_miss_check_warns(mapped):
     assert code == 0 and "warnings=0" in out, out
 
 
+def test_precheck_warns_passing_check(sprint):
+    """ST-37gnlv4r planted (ST-f4ra5s7y's vacuous grep): precheck runs the sprint's item checks once; the story and
+    task whose check already passes on the checkout are warned of (exit 0), and once their notes say the check passes
+    before the work, or the check fails, they are not; the review story's checks are not run."""
+    repo, sp, st, tk = sprint["repo"], sprint["sp"], sprint["st"], sprint["tk"]
+    (repo / "src").mkdir(exist_ok=True)
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    code, out = b(repo, "precheck", sp)
+    assert code == 0 and f"warning: {tk} “Task”" in out and "already exits 0 before the work" in out, out
+    assert f"warning: {st} “Story”" in out and "passing=2" in out and sprint["rv"] not in out, out
+    for i in (st, tk):
+        edit(repo, i, notes="the check passes before the work: it pins b.txt, which must stay")
+    code, out = b(repo, "precheck", sp)
+    assert code == 0 and "passing=0" in out and "warning:" not in out, out
+    for i in (st, tk):
+        edit(repo, i, notes="")
+    (repo / "src" / "b.txt").unlink()
+    code, out = b(repo, "precheck", sp)
+    assert code == 0 and "passing=0" in out, out
+
+
 def test_check_warns_unordered_shared_touches(sprint):
     """ST-xd5vboit planted: two open tasks of the sprint that both touch src/s.txt with no depends_on between them
     are warned of by check, naming both and the path; once one depends on the other, and for a pair with disjoint

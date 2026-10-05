@@ -1435,6 +1435,43 @@ def cmd_close(bl, a):
     return 0
 
 
+PRECHECK_NOTE = "passes before the work"  # an item's notes saying so keep its passing checks out of precheck's warnings
+
+
+def precheck_rows(bl, sid):
+    """[(item id, check, exit code, passed)] of each check of the sprint's open committed items, run once on the checkout as
+    it is (before any work commit); the review and research stories, whose checks pass by design, are left out."""
+    rows = []
+    for iid in sorted(bl.sprint_items(sid)):
+        it = bl.items[iid]
+        if it.get("status") not in ("draft", "todo", "doing") or it.get("review") or it.get("goal_research"):
+            continue
+        for c in it.get("checks", []) or []:
+            ok, code, _ = run_check(bl.root, c)
+            rows.append((iid, c, code if code is not None else -1, ok))
+    return rows
+
+
+def cmd_precheck(bl, a):
+    """precheck SP: run each committed item's checks once before any work and warn (exit 0) of each that passes
+    already: it proves nothing yet, unless the item's notes say the check passes before the work (one that pins
+    behaviour that must stay). kb-sprint plan runs it before the start gate is asked, so start stays fast."""
+    sid = need(bl, a.sprint)
+    if bl.items[sid].get("kind") != "sprint":
+        raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
+    rows = precheck_rows(bl, sid)
+    passing = 0
+    for iid, c, code, ok in rows:
+        if not ok or PRECHECK_NOTE in (bl.items[iid].get("notes") or ""):
+            continue
+        passing += 1
+        say(f"warning: {bl.label(iid)}: `{shlex.join(c['run'])}` already exits {code} before the work: it proves "
+            f"nothing yet; make it fail until the work is done, or say in the item's notes that it {PRECHECK_NOTE} "
+            "and why (a check that pins behaviour that must stay)")
+    say(f"precheck {bl.label(sid)}: checks={len(rows)} passing={passing}")
+    return 0
+
+
 def args_done(p):
     p.add_argument("id")
     p.add_argument("--dry-run", action="store_true")
@@ -1492,6 +1529,7 @@ def args_close(p):
 
 
 bl_cli.register("done", cmd_done, args_done)
+bl_cli.register("precheck", cmd_precheck, lambda p: p.add_argument("sprint"))
 bl_cli.register("land", cmd_land, args_land)
 bl_cli.register("merge", cmd_merge, args_merge)
 bl_cli.register("close", cmd_close, args_close)
