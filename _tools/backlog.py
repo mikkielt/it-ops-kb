@@ -229,7 +229,7 @@ from bl_base import (
     Backlog, COMMITS, IN_SPRINT, KINDS, OPEN, OUTPUT_ROOT, PRIORITIES,
     REL_DIR, RESEARCH_CHECKS, REVIEW_CHECKS, ROOT, Refused, Rejected, SEVERITIES, SIMILAR_MIN, SIMILAR_SHOWN,
     SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, TEXT_MAX, canonical, commit_message, commit_written, git, in_scope,
-    line, need, new_id, open_gates, research_in_planned, run, say, scope, trailer_problem, waits, withhold,
+    item_file, line, need, new_id, open_gates, research_in_planned, run, say, scope, trailer_problem, waits, withhold,
 )
 from bl_check import (  # the checks and the readers of knowledge: bl_check holds them, backlog.py's commands use them
     ITEM_FILES_ROUTE, item_files_only, knowledge_lines, noop_warnings, text_only_repro, validate,
@@ -1330,23 +1330,28 @@ def hook_intake(bl, a, budget=None):
 
 
 def referrer_patterns(term, files):
-    """The patterns that name term: a tracked file by its path (a .py also by its module name, word-bounded), any
-    other term as a symbol, word-bounded."""
+    """The patterns that name term: a tracked file by its path and its file name, word-bounded (a .py file's name is
+    <stem>.py, and it is also named by an import line that holds its module name: `import stem`, `from stem import`),
+    any other term as a symbol, word-bounded. The bare module name alone is no reference: prose and items say the
+    word (`backlog`) without naming the file."""
     if term in files:
-        pats = [re.compile(re.escape(term))]
+        name = Path(term).name
+        pats = [re.compile(re.escape(term)), re.compile(r"(?<![\w.-])" + re.escape(name) + r"(?![\w-])")]
         if term.endswith(".py"):
-            pats.append(re.compile(r"\b" + re.escape(Path(term).stem) + r"\b"))
+            pats.append(re.compile(r"^\s*(?:from|import)\s.*\b" + re.escape(Path(term).stem) + r"\b"))
         return pats
     return [re.compile(r"(?<![\w])" + re.escape(term) + r"(?![\w])")]
 
 
 def referrers_of(root, term, files):
-    """(path, first line number, matching line count) of each tracked text file other than term itself that names it."""
+    """(path, first line number, matching line count) of each tracked text file other than term itself that names it.
+    Backlog item files are left out: an item naming the path in its touches is check's stale-touches error once the
+    file moves, and an item's prose only says the word."""
     pats = referrer_patterns(term, files)
     out = []
     for f in files:
         path = Path(root) / f
-        if f == term or not path.is_file() or path.stat().st_size > 4_000_000:
+        if f == term or item_file(f) or not path.is_file() or path.stat().st_size > 4_000_000:
             continue
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         hit = [n for n, ln in enumerate(lines, 1) if any(p.search(ln) for p in pats)]
