@@ -2,7 +2,7 @@
   "id": "BG-xol5fzlc",
   "kind": "bug",
   "title": "answer --confirm --by agent records an agent's own provisional answer as the operator's",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-hdy6rfro",
   "kind": "bug",
   "title": "KB_OPS_TEST_SPOOL lifts the inside-test guard without checking the spool is the test's own",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P3",

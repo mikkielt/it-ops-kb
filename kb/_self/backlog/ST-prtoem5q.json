@@ -2,7 +2,7 @@
   "id": "ST-prtoem5q",
   "kind": "story",
   "title": "backlog.py merge reports a merge request that auto-merge already merged as merged, not as an error",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,

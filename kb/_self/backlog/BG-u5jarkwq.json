@@ -2,7 +2,7 @@
   "id": "BG-u5jarkwq",
   "kind": "bug",
   "title": "perfcheck ids against the committed baseline exits 1 on main: the ten ids the sprint dropped on purpose are still in it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",

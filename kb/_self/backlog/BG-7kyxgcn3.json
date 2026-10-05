@@ -2,7 +2,7 @@
   "id": "BG-7kyxgcn3",
   "kind": "bug",
   "title": "check warns of two tasks as unordered when one's story depends on the other's story",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,

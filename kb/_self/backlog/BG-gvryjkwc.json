@@ -2,7 +2,7 @@
   "id": "BG-gvryjkwc",
   "kind": "bug",
   "title": "check says a check that a file was removed can never pass once the file is gone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,

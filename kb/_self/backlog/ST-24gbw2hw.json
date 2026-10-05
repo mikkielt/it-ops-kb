@@ -2,7 +2,7 @@
   "id": "ST-24gbw2hw",
   "kind": "story",
   "title": "land refuses a commit outside the item's touches before it opens the code merge request, not after it merged",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P2",

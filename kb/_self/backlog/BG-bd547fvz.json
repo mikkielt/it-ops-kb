@@ -2,7 +2,7 @@
   "id": "BG-bd547fvz",
   "kind": "bug",
   "title": "land's pushed_tip ignores a failed fetch of the code branch",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,

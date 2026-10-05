@@ -2,7 +2,7 @@
   "id": "BG-ixyqrmrw",
   "kind": "bug",
   "title": "goal prints an ancestor's unconfirmed provisional answer without marking it provisional",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,

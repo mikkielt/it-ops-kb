@@ -2,7 +2,7 @@
   "id": "ST-mqb5lnam",
   "kind": "story",
   "title": "querylog.py close --tried closes an eval finding apply left no-fix, and the stranded detector leaves it alone",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P2",

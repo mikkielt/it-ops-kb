@@ -2,7 +2,7 @@
   "id": "BG-k4myfom6",
   "kind": "bug",
   "title": "set --parent keeps a draft task draft when its new parent is in an active sprint",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,

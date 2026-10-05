@@ -2,7 +2,7 @@
   "id": "ST-b3bbbbpc",
   "kind": "story",
   "title": "Each kb copy a test makes hard-links every file the test does not write",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-qzip6qar",
   "priority": "P3",

@@ -2,7 +2,7 @@
   "id": "ST-ikh2h7m5",
   "kind": "story",
   "title": "backlog.py new runs a bug's repro once and refuses one that fails by a Python error rather than its exit code",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-hyp6o7hl",
   "priority": "P3",
