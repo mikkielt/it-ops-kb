@@ -2,7 +2,7 @@
   "id": "ST-uruzsef6",
   "kind": "story",
   "title": "Research sprint goal: The test suite is rewritten small, with a hard ceiling the gate enforces",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-edgssdh5",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "claude-main"
+  "evidence": {
+    "commit": "26d2d1acb9b99c8cef18e50dddf01ec3808a44c3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "b34dad1e6329dc32"
+      }
+    ]
+  }
 }
