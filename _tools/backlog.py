@@ -329,7 +329,7 @@ def cmd_new(bl, a):
         ok, code, out = run_check(bl.root, it["repro"])
         if ok:
             raise Refused(f"--repro passes now (exit {code}): it must fail until the bug is fixed")
-        why = own_failure(it["repro"]["run"], code, out)
+        why = own_failure(it["repro"]["run"], code, out, bl.root)
         if why:
             raise Refused(f"--repro fails for its own error, not the defect: {why}")
         why = text_only_repro(it["repro"]["run"])
