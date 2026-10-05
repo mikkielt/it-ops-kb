@@ -2,7 +2,7 @@
   "id": "ST-tsl5dlos",
   "kind": "story",
   "title": "kblog.py propose counts the ops rows whose item no commit or item file names and leaves them out unless asked",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
@@ -23,5 +23,19 @@
     "_tools/test_kblog.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "fd4a5a2c3c93d0e2d727bb93359f413ee62a6242",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kblog_propose_counts_unknown_items"
+        ],
+        "exit": 0,
+        "sha256": "58a03bed26b5915c"
+      }
+    ]
+  }
 }
