@@ -2,7 +2,7 @@
   "id": "ST-6u7tlity",
   "kind": "story",
   "title": "The sections kb-item reads leave room under their byte bound: reference lists move under headings of their own",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   "depends_on": [
     "ST-bywuxi6d",
     "BG-dudqrf5p"
-  ]
+  ],
+  "notes": "Dropped: superseded by ST-reit3qmw (The skills and the kb-worker agent ask the _self route instead of reading sections): the kb-item reading it trims is removed there, and its check names a test the suite no longer holds; the operator agreed (gate supersede on ST-reit3qmw)"
 }

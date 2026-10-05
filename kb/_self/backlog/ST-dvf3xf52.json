@@ -1,0 +1,87 @@
+{
+  "id": "ST-dvf3xf52",
+  "kind": "story",
+  "title": "pack serves the kb/_self rules and active decisions under root _self, with a lookup eval",
+  "status": "todo",
+  "sprint": "SP-njilrify",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "python3 _tools/rag.py pack --root _self QUESTION (also -q batches, and kb_pack with root _self on the kb MCP server) reads the kb/_self/*.md docs, where a long line is indexed as sentence passages at index time and the docs themselves are not restructured, and prints the best passages with path:line and section heading under a coverage verdict that can be good, with the active decisions of kb/_self/_decisions.csv tied by their context to a cited doc and, with --item ID, the active decisions whose context names that item, never an invalidated or superseded one; every pack, search and eval result outside root _self is unchanged; python3 _tools/rag.py eval --root _self runs kb/_self/_retrieval/lookup_eval.csv, rows of real rule questions each with an expected doc and an expected phrase of the answering line, exits 1 on a row whose phrase is not in the printed lines, and one test within the ceiling plants such a wrong row",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "--root",
+        "_self",
+        "which steps does backlog.py land run and what does it refuse"
+      ],
+      "match": "coverage: good[\\s\\S]*kb/_self/backlog\\.md:\\d+"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_live_kb.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/rag.py",
+    "_tools/kb_mcp.py",
+    "_tools/kbcommon.py",
+    "_tools/test_live_kb.py",
+    "_tools/test_ids_baseline.txt",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/_decisions.csv",
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/code.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/plugin.md",
+    "kb/_self/embedding.md",
+    "AGENTS.md"
+  ],
+  "gates": [
+    {
+      "id": "route",
+      "kind": "blocking",
+      "question": "Which surface serves the kb/_self docs and decisions to agents?",
+      "options": [
+        "extend pack: rag.py pack --root _self and the existing kb_pack with root _self, no new MCP tool",
+        "a new MCP tool kb_rules plus selfdoc.py ask",
+        "CLI only: selfdoc.py ask, no MCP change"
+      ],
+      "recommendation": "extend pack: rag.py pack --root _self and the existing kb_pack with root _self, no new MCP tool",
+      "class": "secrets",
+      "answer": "extend pack: rag.py pack --root _self and the existing kb_pack with root _self, no new MCP tool",
+      "by": "operator"
+    },
+    {
+      "id": "docs",
+      "kind": "blocking",
+      "question": "Are the kb/_self docs restructured so line-level retrieval returns one statement?",
+      "options": [
+        "split at index time: docs unchanged, long lines indexed as sentence passages; only lines the eval shows answering badly are rewritten",
+        "rewrite the sprint-path sections of backlog.md, git.md and maintaining.md to one statement per bullet",
+        "rewrite every kb/_self doc to one statement per line"
+      ],
+      "recommendation": "split at index time: docs unchanged, long lines indexed as sentence passages; only lines the eval shows answering badly are rewritten",
+      "class": "secrets",
+      "answer": "split at index time: docs unchanged, long lines indexed as sentence passages; only lines the eval shows answering badly are rewritten",
+      "by": "operator"
+    }
+  ],
+  "notes": "tests.py _tools/test_live_kb.py passes before the work: it pins the public pack and eval behaviour that must stay, and will hold the planted wrong row test. Premise: python3 _tools/rag.py pack --root _self 'how does land work' prints coverage: none today, since pack cannot see kb/_self and _self is not a root (run 2026-10-06)."
+}

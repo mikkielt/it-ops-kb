@@ -1,0 +1,91 @@
+{
+  "id": "ST-reit3qmw",
+  "kind": "story",
+  "title": "The skills and the kb-worker agent ask the _self route instead of reading sections, with a measured before and after",
+  "status": "todo",
+  "sprint": "SP-njilrify",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Every skill under .claude/skills/ that read kb/_self sections up front and .claude/agents/kb-worker.md read only maintaining's Conduct for changes with selfdoc.py section and get every other rule by asking python3 _tools/rag.py pack --root _self (kb-item, kb-sprint and kb-worker also once with --item ID for the item's brief), each naming the questions its steps need; no heading is renamed; and kb/_self/reports/2026-10-06-self-rules-retrieval.md records, taken the same way before and after, the bytes each skill's up-front reading prints and a headless session's tokens, tool calls, wall time and graded answers on one fixed set of rule questions",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; sys.exit(0 if pathlib.Path('kb/_self/reports/2026-10-06-self-rules-retrieval.md').is_file() else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,shlex,sys; bad=[f for f in glob.glob('.claude/skills/*/SKILL.md')+['.claude/agents/kb-worker.md'] for l in open(f,encoding='utf-8') if l.strip().startswith('python3 _tools/selfdoc.py section') and len(shlex.split(l.strip()))>5]; print(bad); sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-add-root/SKILL.md",
+    ".claude/skills/kb-add-topic/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/skills/kb-census/SKILL.md",
+    ".claude/skills/kb-git-sync/SKILL.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/skills/kb-probe/SKILL.md",
+    ".claude/skills/kb-refresh/SKILL.md",
+    ".claude/skills/kb-research/SKILL.md",
+    ".claude/skills/kb-self/SKILL.md",
+    ".claude/skills/kb-setup/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-verify/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/reports/2026-10-06-self-rules-retrieval.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/plugin.md",
+    "kb/_self/README.md",
+    "AGENTS.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-dvf3xf52"
+  ],
+  "gates": [
+    {
+      "id": "upfront",
+      "kind": "blocking",
+      "question": "What do the skills and the kb-worker agent still read up front?",
+      "options": [
+        "Conduct for changes plus one item brief (pack --root _self --item ID) in kb-item, kb-sprint and kb-worker; everything else asked when needed",
+        "a reduced fixed section list per skill plus asking",
+        "nothing fixed up front, Conduct for changes asked too"
+      ],
+      "recommendation": "Conduct for changes plus one item brief (pack --root _self --item ID) in kb-item, kb-sprint and kb-worker; everything else asked when needed",
+      "class": "secrets",
+      "answer": "Conduct for changes plus one item brief (pack --root _self --item ID) in kb-item, kb-sprint and kb-worker; everything else asked when needed",
+      "by": "operator"
+    },
+    {
+      "id": "supersede",
+      "kind": "blocking",
+      "question": "What happens to ST-6u7tlity (The sections kb-item reads leave room under their byte bound) of sprint SP-hyp6o7hl, whose reading this story removes?",
+      "options": [
+        "drop ST-6u7tlity as superseded by this story",
+        "leave ST-6u7tlity as filed"
+      ],
+      "recommendation": "drop ST-6u7tlity as superseded by this story",
+      "class": "secrets",
+      "answer": "drop ST-6u7tlity as superseded by this story",
+      "by": "operator"
+    }
+  ],
+  "notes": "selfdoc.py check passes before the work: it pins that no heading reference goes dead when the skills change. Premise: the up-front reading commands print 8 to 73 KB today (kb-sprint 73282 bytes, kb-item 28412, kb-worker 24027), measured by running each skill's selfdoc.py section command on 2026-10-06."
+}
