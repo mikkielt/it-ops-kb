@@ -773,30 +773,67 @@ LIVE_DATA_TESTS = {
     "test_raw_read_nudge_survives_odd_input": "the hook's exit on odd input; the kb's files are not read",
     "test_raw_read_nudge_recognises_powershell_reads": "a hint for a command; the kb's files are not read",
     "test_raw_read_nudge_is_silent_for_other_powershell_commands": "no output for a command; the kb's files are not read",
+    # tests of other files that read the live repository (ST-ywqttahe): each with why it holds at any size
+    "test_done_flags_noop_check_real_backlog_commands": "a predicate per live item's check, at any item count",
+    "test_facade_touch_warning": "the warning's wording for planted items over the live tree's layout, no count",
+    "test_repro_reads_source_real_backlog": "a predicate per live item's repro, at any item count",
+    "test_stalled_lists_without_remedies_the_skill_names_every_signal_and_no_ladder": "named phrases of a skill",
+    "test_session_start_names_conduct_section_not_whole_maintaining_doc": "a named section heading in the output",
+    "test_python_passes_ruff_when_installed": "ruff's exit code over the tools, whatever their number",
+    "test_live_docs_cache_lives_under_the_ignored_cache_directory": "git's ignore rule for one path",
+    "test_skill_section_git_doc_name_with_md_is_accepted_by_selfdoc": "a named section's exit code",
+    "test_bl_split_facade_only_backlog_defines_its_dispatch_and_the_kept_item_writers_only": "named names and a "
+        "named runbook paragraph",
+    "test_bl_split_facade_only_planted_failures_fail": "planted edits of the runbook paragraph, no count",
+    "test_cli": "a store of the test's own, run from the clone: the queue and close of planted findings",
+    "test_the_spool_and_local_store_stay_ignored": "git's ignore rules for named paths",
+    "test_private_label_gaps_docs_name_every_private_path": "each private path named in the docs, at any count",
+    "test_worker_capture_definition_names_the_requirement": "named phrases of an agent definition",
+    "test_dropped_retired_feature_phrase_real_file_has_no_partial_removal_left": "no warning of one kind, at any "
+        "number of dropped ids",
 }
 
 
+LIVE_MARKERS = ("cwd=KB", "Path(TOOLS).parent")  # a run from the clone, or a read of its files through the tools' parent
+
+
 def live_runs(source):
-    """The test functions in SOURCE whose body, or a helper method of their class they call, runs a tool with cwd=KB."""
+    """The test functions in SOURCE whose body, or a helper method of their class they call, runs a tool with cwd=KB
+    or reads the clone through Path(TOOLS).parent (LIVE_MARKERS)."""
     tree = ast.parse(source)
     out = set()
     for cls in [n for n in ast.walk(tree) if isinstance(n, (ast.ClassDef, ast.Module))]:
         funcs = [n for n in cls.body if isinstance(n, ast.FunctionDef)]
-        helpers = {f.name for f in funcs if not f.name.startswith("test_") and "cwd=KB" in ast.get_source_segment(source, f)}
+        live = lambda seg: any(m in seg for m in LIVE_MARKERS)  # noqa: E731
+        helpers = {f.name for f in funcs if not f.name.startswith("test_") and live(ast.get_source_segment(source, f))}
         for f in funcs:
             seg = ast.get_source_segment(source, f)
-            if f.name.startswith("test_") and ("cwd=KB" in seg or any(f"self.{h}(" in seg for h in helpers)):
+            if f.name.startswith("test_") and (live(seg) or any(f"self.{h}(" in seg for h in helpers)):
                 out.add(f.name)
     return out
 
 
+def test_live_data_list_names_every_reader():
+    """ST-ywqttahe planted: a test file outside test_kb_lookup.py and test_backlog.py whose test reads the clone
+    through the tools' parent directory, not a run from the clone, is a live run the scan finds; a test that reads its
+    own tmp_path is not."""
+    parent = "Path(TOOLS)" + ".parent"  # split, so this test's own source is not a live run
+    planted = (f"def test_reads_live_backlog():\n    items = list(({parent} / 'kb').glob('*'))\n    assert items\n\n"
+               "def test_reads_own(tmp_path):\n    assert not list(tmp_path.glob('*'))\n")
+    assert live_runs(planted) == {"test_reads_live_backlog"}
+    assert "test_reads_live_backlog" not in LIVE_DATA_TESTS
+    test_live_data_size_independent_list()
+
+
 def test_live_data_size_independent_list():
-    """Every test of this file and test_backlog.py that runs a tool over the live repository is in LIVE_DATA_TESTS
-    with its reason, and every name there is a test of this file. Planted: an unlisted live test is found."""
-    names = {n.name for n in ast.walk(ast.parse(Path(__file__).read_text(encoding="utf-8")))
+    """Every test of every test file that runs a tool over the live repository or reads it through the tools' parent
+    is in LIVE_DATA_TESTS with its reason, and every name there is a test of some test file. Planted: an unlisted live
+    test is found."""
+    files = sorted(Path(TOOLS).glob("test_*.py"))
+    names = {n.name for f in files for n in ast.walk(ast.parse(f.read_text(encoding="utf-8")))
              if isinstance(n, ast.FunctionDef) and n.name.startswith("test_")}
     assert set(LIVE_DATA_TESTS) <= names, sorted(set(LIVE_DATA_TESTS) - names)
-    for f in (Path(__file__), Path(TOOLS) / "test_backlog.py"):
+    for f in files:
         unlisted = live_runs(f.read_text(encoding="utf-8")) - set(LIVE_DATA_TESTS)
         assert not unlisted, f"{f.name}: tests over live data not in LIVE_DATA_TESTS: {sorted(unlisted)}"
     live = "cwd=" + "KB"  # split, so this test's own source is not a live run
