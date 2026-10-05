@@ -19,6 +19,7 @@ from pathlib import Path
 import pytest
 
 import backlog
+import bl_land
 import kbgit
 import kg_hooks
 import kg_trailers
@@ -115,6 +116,20 @@ def test_repro_fails_for_its_own_error_classifier():
     assert f(["python3", "t.py"], 1, "finding 1\nfinding 2\nfinding 3\nsetup.sh: x: command not found\n") is None
     assert f(["python3", "t.py"], 2, "usage: t.py [-h]\n") is None  # exit 2 without argparse's error line
     assert f(["python3", "t.py"], None, "Command 't.py' timed out after 1800 seconds") is None
+
+
+def test_repro_fails_for_its_own_error_compound_shell():
+    """BG-zvh7cvyo planted: a shell -c string that chains commands (&&, |) and misses a tool after its first word
+    exits 127 for its own command, so both are refused as cannot start; a wrapper script (bash hook.sh) whose output
+    names a tool inside it is still accepted, and so is a -c string that runs that script."""
+    f = backlog.own_failure
+    for argv, out in ((["sh", "-c", "cd /tmp && jq ."], "sh: line 1: jq: command not found\n"),
+                      (["bash", "-c", "ls | jqx ."], "bash: line 1: jqx: command not found\n"),
+                      (["sh", "-c", "FOO=1 true; jq ."], "sh: line 1: jq: command not found\n")):
+        assert "cannot start" in (f(argv, 127, out) or ""), argv
+    assert f(["bash", "hook.sh"], 127, "hook.sh: line 3: jq: command not found\n") is None
+    assert f(["sh", "-c", "./hook.sh --x"], 127, "./hook.sh: line 3: jq: command not found\n") is None
+    assert bl_land.own_words(["sh", "-c", "a && b || c; d | e"]) == {"a", "b", "c", "d", "e"}
 
 
 def test_repro_fails_for_its_own_error_tool_and_wrapper(repo, colour):

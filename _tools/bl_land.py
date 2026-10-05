@@ -776,12 +776,50 @@ def own_code(argv, path, root=None):
     return (p == s or p.endswith(os.sep + s)) and not tracked(root, script)
 
 
+CHAIN = {"&&", "||", ";", "|", "&", "|&"}  # the shell's list and pipeline operators: each starts a command of its own
+
+
+def own_words(argv):
+    """The command words a repro runs itself: argv[0], or for a shell's -c (or cmd's /c) string the first word of
+    every command in it, split at && || ; | (POSIX runs each, and any can exit 127), read through a nested shell up
+    to the depth `launched` reads; a VAR=value prefix is no command word."""
+    argv = list(argv)
+    for _ in range(3):
+        if not argv:
+            return set()
+        prog = os.path.basename(argv[0]).lower()
+        rest = argv[1:]
+        while prog in SHELLS and rest and rest[0].startswith("-") and rest[0].lower() not in ("-c", "-command"):
+            rest = rest[1:]
+        if not (prog in SHELLS and rest and rest[0].lower() in ("-c", "/c", "-command") and len(rest) > 1):
+            return {os.path.basename(argv[0])}
+        try:
+            lex = shlex.shlex(rest[1], posix=prog not in ("cmd", "cmd.exe"), punctuation_chars=True)
+            lex.whitespace_split = True
+            tokens = list(lex)
+        except ValueError:
+            return {w for w in rest[1].split()[:1]}
+        words, start = [], True
+        for t in tokens:
+            if t in CHAIN:
+                start = True
+            elif start and not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", t):
+                words.append(t)
+                start = False
+        if len(words) == 1 and os.path.basename(words[0]).lower() in SHELLS:  # a nested shell: read its string
+            argv = tokens
+            continue
+        return {os.path.basename(w) for w in words}
+    return {os.path.basename(argv[0])} if argv else set()
+
+
 def missing_inside(argv, out):
-    """True when the output's not-found message names a command other than the one the repro launches: a wrapper
-    (a shell script, a hook) that started and could not find a tool inside it, which may be the defect."""
-    prog = launched(argv)[0]
+    """True when the output's not-found message names only commands the repro does not run itself (own_words): a
+    wrapper (a shell script, a hook) that started and could not find a tool inside it, which may be the defect. A name
+    that is any command word of the repro's own -c string is its own error."""
+    own = own_words(argv)
     names = {m.group("cmd") or m.group("sh") for m in NOT_FOUND.finditer(out)}
-    return bool(names) and prog is not None and all(os.path.basename(n) != os.path.basename(prog) for n in names)
+    return bool(names) and bool(own) and all(os.path.basename(n) not in own for n in names)
 
 
 def own_failure(argv, code, out, root=None):
