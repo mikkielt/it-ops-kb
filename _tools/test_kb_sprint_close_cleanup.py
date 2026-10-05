@@ -137,3 +137,16 @@ def test_tidy_removes_only_merged(leftovers):
     assert "kept work/TK-unmerged: it has commits" in out and "kept work/TK-checked0: it is checked out" in out, out
     assert "agent-d1: it has uncommitted changes" in out, out
     assert "removed 0, kept 3" in tidy(clone, "--apply")[1]  # a second run finds nothing more
+
+
+def test_tidy_keeps_a_locked_worktree(leftovers):
+    """BG-lphyb7pf planted: a worker that has just started (a clean agent-l2 worktree at main's tip on work/TK-locked00,
+    locked by Claude Code, no process between its commands): tidy --apply keeps the worktree and its branch, naming
+    the lock, while the unlocked clean agent-a0 still goes."""
+    clone, wt = leftovers, leftovers / ".claude" / "worktrees"
+    sh(clone, "git", "worktree", "add", "-q", "-b", "work/TK-locked00", str(wt / "agent-l2"), "main")
+    sh(clone, "git", "worktree", "lock", "--reason", "claude agent agent-l2 (pid 4242)", str(wt / "agent-l2"))
+    code, out = tidy(clone, "--apply")
+    assert code == 0 and (wt / "agent-l2").is_dir() and "work/TK-locked00" in branches(clone), out
+    assert "agent-l2: it is locked (claude agent" in out and "kept work/TK-locked00: it is checked out" in out, out
+    assert not (wt / "agent-a0").exists(), out

@@ -1249,15 +1249,16 @@ def integration_main(root):
 
 
 def tidy_worktree_kept(root, entry, upstream):
-    """Why the agent worktree ENTRY stays, or None when tidy may remove it: the worktree tidy runs in, a lock that is not
-    a Claude Code agent's, uncommitted changes, a live process, or a commit UPSTREAM lacks."""
+    """Why the agent worktree ENTRY stays, or None when tidy may remove it: the worktree tidy runs in, any lock (a Claude
+    Code agent's too: tidy is clone-wide and cannot tell a finished worker from one that has not committed yet; close,
+    which knows its sprint's items, releases those), uncommitted changes, a live process, or a commit UPSTREAM lacks."""
     path = entry["path"]
     here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
     cwd = Path.cwd().resolve()
     if path == here or path == cwd or path in cwd.parents:
         return "it is the worktree tidy runs in"
-    if entry["lock"] is not None and not entry["lock"].startswith(WORKER_LOCK):
-        return f"it is locked ({entry['lock'] or 'no reason given'})"
+    if entry["lock"] is not None:
+        return f"it is locked ({entry['lock'] or 'no reason given'}): a worker may still be using it"
     code, out, err = run(["git", "status", "--porcelain"], cwd=path)
     if code or out.strip():
         return "it has uncommitted changes" if not code else f"git status failed: {err.strip()}"
