@@ -36,7 +36,8 @@
     "_tools/bl_ci.py",
     "_tools/bl_land.py",
     "_tools/bl_base.py",
-    "_tools/test_layout.py"
+    "_tools/test_layout.py",
+    "kb/_self/backlog.md"
   ],
   "gates": [
     {
