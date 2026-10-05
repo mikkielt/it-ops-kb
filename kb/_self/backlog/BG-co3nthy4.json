@@ -2,7 +2,7 @@
   "id": "BG-co3nthy4",
   "kind": "bug",
   "title": "test_check_program_allowlist's sh repro loses the marker path's backslashes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "touches": [
     "_tools/test_check_program_allowlist.py",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker3"
 }
