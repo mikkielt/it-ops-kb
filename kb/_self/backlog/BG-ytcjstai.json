@@ -2,7 +2,7 @@
   "id": "BG-ytcjstai",
   "kind": "bug",
   "title": "close deletes another sprint's empty worktree-agent branch, since nothing ties it to the sprint that made it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -11,11 +11,11 @@
   "repro": {
     "run": [
       "python3",
-      "-c",
-      "import sys,inspect;sys.path.insert(0,'_tools');import bl_land;src=inspect.getsource(bl_land.clean_runner_leftovers);sys.exit(0 if 'worktree_entries' in src and 'AGENT_BRANCH' in src and 'ids' in src.split('AGENT_BRANCH',1)[1][:400] else 1)"
+      "_tools/tests.py",
+      "-k",
+      "close_keeps_other_sprints_agent_branch"
     ]
   },
-  "repro_reason": "the defect is a missing attribution in close's cleanup, which needs a repository with two concurrent sprints' worktrees to run; the check is the test that plants it, and the repro reads the function for the attribution until that test exists",
   "checks": [
     {
       "run": [
@@ -30,6 +30,25 @@
     "_tools/bl_land.py",
     "_tools/test_bl_land.py",
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "orphans",
+      "kind": "blocking",
+      "question": "Does close keep a worktree-agent branch whose agent worktree is already removed, or remove it when its tip is on main?",
+      "options": [
+        "remove-orphans",
+        "keep-orphans"
+      ],
+      "recommendation": "remove-orphans",
+      "class": "agents-rule",
+      "do": {
+        "remove-orphans": "BG-ytcjstai",
+        "keep-orphans": "BG-ytcjstai"
+      }
+    }
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
