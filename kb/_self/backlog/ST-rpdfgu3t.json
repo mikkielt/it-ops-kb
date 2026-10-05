@@ -40,7 +40,8 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_querylog_e2e.py"
   ],
   "gates": [
     {
