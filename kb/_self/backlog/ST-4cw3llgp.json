@@ -2,7 +2,7 @@
   "id": "ST-4cw3llgp",
   "kind": "story",
   "title": "Review sprint: Sprint process rules are written where planners and workers read them",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wmukiu3s",
   "review": true,
   "priority": "P1",
@@ -28,5 +28,6 @@
         "_tools/stress_test.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
