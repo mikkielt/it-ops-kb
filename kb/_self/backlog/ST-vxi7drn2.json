@@ -4,6 +4,7 @@
   "title": "perfcheck dropped warns of a deleted test file that tested a live module beside a removed one, and a gate runs it",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
   "goal": "perfcheck.py dropped warns of a deleted test file when any _tools/ module it imported (helpers left out) is still present, naming those modules, unless the reason names where their tests went (a successor test or file that exists); a reason that names only the dropped test itself no longer excuses it; the review step of a sprint (or sync's gate when test_ids_dropped.txt changes) runs it. Planted: the shape of test_autopilot_two_runners.py (a removed module beside a live kg_lock) is warned of. Found by the SP-6btkjg4l review: ST-kd7vnu5r's motivating case passes silently.",
@@ -23,6 +24,7 @@
     "_tools/kg_sync.py",
     "_tools/test_sync.py",
     "kb/_self/tools.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/git.md"
   ]
 }

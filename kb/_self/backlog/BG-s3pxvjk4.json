@@ -29,6 +29,7 @@
   "touches": [
     "_tools/tests.py",
     "_tools/test_tests_lock.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
   ]
 }

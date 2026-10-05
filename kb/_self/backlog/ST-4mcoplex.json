@@ -4,6 +4,7 @@
   "title": "Fresh scenario clones reuse the seed's pack index",
   "status": "draft",
   "parent": "EP-hlnsqx4f",
+  "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 2,
   "goal": "A git scenario's clone or worktree of the kb seed starts with the pack index the session built once for the seed commit, so no tool run in it rebuilds the index for unchanged content; tests that test index building keep their own index directory.",
@@ -57,7 +58,12 @@
     "_tools/test_kb_cohesion.py",
     "_tools/test_kb_lookup.py",
     "kb/_self/tools.md",
-    "_tools/kbfacts.py"
+    "_tools/kbfacts.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-pg5jyebo"
   ],
   "links": [
     "kb/_self/reports/test-suite-speed.md",

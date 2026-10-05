@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "set --parent keeps a draft task draft when its new parent is in an active sprint",
   "status": "draft",
+  "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -19,5 +20,8 @@
     "_tools/test_bl_items.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-ixyqrmrw"
   ]
 }

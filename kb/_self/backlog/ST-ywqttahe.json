@@ -4,6 +4,7 @@
   "title": "The list of tests over live data names every test that reads the live kb or backlog, wherever it lives",
   "status": "draft",
   "parent": "EP-hlnsqx4f",
+  "sprint": "SP-qzip6qar",
   "priority": "P3",
   "rank": 0,
   "goal": "test_kb_lookup's LIVE_DATA_TESTS names every test that reads the repository's live kb or backlog (the backlog tests now in test_bl_check.py and test_tool_closure.py among them), its completeness test scans every test file and also flags a read through Path(TOOLS).parent, not only the text cwd=KB, and kb/_self/code.md's 'lists each such test' is true; a planted unlisted live-data test fails it. Found by the SP-w3xmbdra review (ST-2zl2od7q's scan still covered only test_kb_lookup.py and test_backlog.py after the split).",

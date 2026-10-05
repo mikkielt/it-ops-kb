@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "commit-msg warns that check-trailers refuses a sprint's close commit, which it accepts",
   "status": "draft",
+  "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

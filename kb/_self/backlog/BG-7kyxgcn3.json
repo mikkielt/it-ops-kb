@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "check warns of two tasks as unordered when one's story depends on the other's story",
   "status": "draft",
+  "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

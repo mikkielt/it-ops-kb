@@ -4,6 +4,7 @@
   "title": "kbotel's receiver exit is tested, its file's place is stated right, and the digest's ops block counts rows by their own day",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-qzip6qar",
   "priority": "P3",
   "rank": 0,
   "goal": "test_kbotel plants an idle expiry and a gone parent and sees serve return; kb/_self/usage.md says the events file is in the query log's data directory (a clone's _cache/querylog, ignored, or the plugin's data directory), not 'outside the repository'; ql_report.ops_lines counts each ops row in the ISO week of its own ts, not of its distill run, so a Monday distill does not move the previous week's rows. Found by the SP-smqwmchu review.",
@@ -31,6 +32,10 @@
     "_tools/ql_report.py",
     "_tools/test_ql_report.py",
     "kb/_self/usage.md",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-hdy6rfro"
   ]
 }

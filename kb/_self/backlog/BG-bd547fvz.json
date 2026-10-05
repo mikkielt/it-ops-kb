@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "land's pushed_tip ignores a failed fetch of the code branch",
   "status": "draft",
+  "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -17,6 +18,7 @@
   "touches": [
     "_tools/bl_land.py",
     "_tools/test_bl_land.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ]
 }

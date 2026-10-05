@@ -4,6 +4,7 @@
   "title": "Defender's cost on test scratch files is measured and settled by the operator",
   "status": "draft",
   "parent": "EP-hlnsqx4f",
+  "sprint": "SP-eahtellz",
   "priority": "P3",
   "rank": 7,
   "goal": "A Defender performance recording of one tests.py run names the processes, paths and extensions that the scans cost, and the operator's choice for the test scratch root (no change, Dev Drive, or a dedicated excluded folder) is applied and timed.",

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "start warns of an item that waits on a trigger or a host the sprint cannot reach",
   "status": "draft",
+  "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py start warns, naming each, of a sprint item (or a task under it) that waits on an unfired trigger or names a host other than the one starting the sprint in its trigger, so the operator moves it out or accepts that the review waits on it; a test plants an item with an unfired trigger. Answers the SP-w3xmbdra retrospective: four items waiting on a Claude Code release or the Windows host held the sprint's review until they were moved out.",

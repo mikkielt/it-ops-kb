@@ -4,6 +4,7 @@
   "title": "KB_OPS_TEST_SPOOL lifts the inside-test guard without checking the spool is the test's own",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-qzip6qar",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

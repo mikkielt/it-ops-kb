@@ -4,6 +4,7 @@
   "title": "Each kb copy a test makes hard-links every file the test does not write",
   "status": "draft",
   "parent": "EP-hlnsqx4f",
+  "sprint": "SP-qzip6qar",
   "priority": "P3",
   "rank": 0,
   "goal": "conftest's KbTemplate.copy_to hard-links every tracked file of the per-session template that no test writes, not only _snapshots, artifacts and _census, so a kb copy costs links rather than about 60% of its bytes copied (781 of 1915 files linked today); the write-through guard still fails a test that writes a linked file; measured before and after on this host. Found by the SP-w3xmbdra review (ST-ykvho3zp's goal clause 'hard links of one per-session template' is only partly delivered).",
