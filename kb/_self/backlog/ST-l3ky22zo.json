@@ -2,7 +2,7 @@
   "id": "ST-l3ky22zo",
   "kind": "story",
   "title": "The retired features' dropped test groups name where their live modules' calls went",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,19 @@
   "depends_on": [
     "ST-yl5ihysf"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "206a12fcdae09066c598c3d7d998974588e80b43",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "dropped_retired_feature_phrase"
+        ],
+        "exit": 0,
+        "sha256": "874c62766307a36a"
+      }
+    ]
+  }
 }
