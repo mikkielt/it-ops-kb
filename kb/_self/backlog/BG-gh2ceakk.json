@@ -1,0 +1,30 @@
+{
+  "id": "BG-gh2ceakk",
+  "kind": "bug",
+  "title": "The three-tiers docs test reads four of the eight files its goal names, so the tiers sentence can leave plugin.md or token-efficiency.md unseen",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "test_three_tiers_docs.py reads every file TK-zcji275w's goal names for the three tiers (kb-worker.md, kb-sprint, kb-item, backlog.md, tools.md, maintaining.md, plugin.md, token-efficiency.md), and its planted-failure test removes the sentence from one of the four now unread files and fails. Found by the SP-42bn4vz7 review of TK-zcji275w.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import test_three_tiers_docs as t;names=' '.join(str(d) for d in t.DOCS);sys.exit(0 if all(n in names for n in ('tools.md','maintaining.md','plugin.md','token-efficiency.md')) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "three_tiers_documented"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_three_tiers_docs.py"
+  ]
+}
