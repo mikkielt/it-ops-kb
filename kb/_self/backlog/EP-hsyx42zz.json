@@ -2,9 +2,13 @@
   "id": "EP-hsyx42zz",
   "kind": "epic",
   "title": "Agents spend tokens on the work, not on re-deriving the kb's own state",
-  "status": "todo",
+  "status": "done",
   "priority": "P2",
   "rank": 0,
   "goal": "Each recurring hand-written read or write that agents repeat against the kb's own docs, tools and state files is one deterministic command or a section-sized read, so a transcript census over a comparable sample of sessions and subagent runs shows the ad-hoc scripts and whole-file reads gone",
-  "notes": "Found by a census of tool results over 314 transcripts of this project (52 sessions, 262 subagent runs). Stories: ST-pqmnnxvm (process docs by section), ST-3p6lizv4 (_tools map), ST-o6krms2n (live-docs reuse), ST-fmtszrey (_sources.csv row writer), ST-mkaeoctd (raw kb reads steered to rag.py). Siblings elsewhere: ST-exu6fdy6 and ST-ppxck77t under EP-mzzucemv, ST-wgzgijlw and ST-3cofh4hv under EP-o2bjijfp. ST-exu6fdy6 (usage by tool, command and file) is the measure for every story here: build it first or repeat the census by hand."
+  "notes": "Found by a census of tool results over 314 transcripts of this project (52 sessions, 262 subagent runs). Stories: ST-pqmnnxvm (process docs by section), ST-3p6lizv4 (_tools map), ST-o6krms2n (live-docs reuse), ST-fmtszrey (_sources.csv row writer), ST-mkaeoctd (raw kb reads steered to rag.py). Siblings elsewhere: ST-exu6fdy6 and ST-ppxck77t under EP-mzzucemv, ST-wgzgijlw and ST-3cofh4hv under EP-o2bjijfp. ST-exu6fdy6 (usage by tool, command and file) is the measure for every story here: build it first or repeat the census by hand.",
+  "evidence": {
+    "commit": "5b3cf34bec480ff7e90e374f3a8f91bf0d2dc2b7",
+    "checks": []
+  }
 }

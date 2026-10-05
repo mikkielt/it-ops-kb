@@ -2,7 +2,7 @@
   "id": "EP-rumrqsu5",
   "kind": "epic",
   "title": "Git regime: content and code lanes on any host, published to a public home",
-  "status": "draft",
+  "status": "done",
   "priority": "P2",
   "rank": 0,
   "goal": "Every clone follows one git regime whatever host it lives on: kb content lands on the integration remote's main by direct push through kbgit.py sync --push; code (tools, hooks, skills, CI, process docs) lands only through a code/<id> branch merged by a merge or pull request; a manual CI job in .gitlab-ci.yml and in the GitHub workflow runs kbgit.py check-lanes and fails when main carries a code-lane commit outside a merge; a clone with a publish remote fast-forwards it from a green integration main and never publishes an internal root, _private/ or _cache/; kb/_self/git.md, kb/_self/backlog.md and AGENTS.md state the regime.",
@@ -19,5 +19,9 @@
     "kb/public/gitlab/detecting-mr-merges-in-ci.md",
     "kb/public/_answers.md#QK-each-host-enforce-server-side-content"
   ],
-  "notes": "Roles, not hosts: the tools know an integration remote (where main moves and CI gates, default origin) and an optional publish remote (the public home); no host name, url, tier or project appears in tools or docs, and nothing detects which host a clone lives on. Server settings (protected branches, GitHub rulesets, push rules, mirrors) are optional per-host setup that git.md describes with kb citations; the regime holds without them: client-side refusal in sync and the pre-push hook, detection in CI. Protected branches are per branch, not per path (protected-branches-tags.md:30), push rules are Premium (:31), server hooks need a self-managed administrator (:33), and a public Free GitHub repository has no path rules either (github-branch-rules-and-auto-merge.md:38), so path enforcement cannot rely on the server (protected-branches-tags.md:35, QK-each-host-enforce-server-side-content): the client (sync, the pre-push hook) and a CI check are the enforcement points. Autonomous writers (query log, research, ingest) write content paths only and keep direct push (ST-6dszsvk5 “Autonomous writers reach main only through kbgit.py sync --push”). Out of scope: changing any host's settings; new dependencies. Superseding the sprints' github gate answers (at sprint close only) is the publish-when gate of ST-su4em5sl “kbgit.py publish fast-forwards the public home”, not an edit to those sprints."
+  "notes": "Roles, not hosts: the tools know an integration remote (where main moves and CI gates, default origin) and an optional publish remote (the public home); no host name, url, tier or project appears in tools or docs, and nothing detects which host a clone lives on. Server settings (protected branches, GitHub rulesets, push rules, mirrors) are optional per-host setup that git.md describes with kb citations; the regime holds without them: client-side refusal in sync and the pre-push hook, detection in CI. Protected branches are per branch, not per path (protected-branches-tags.md:30), push rules are Premium (:31), server hooks need a self-managed administrator (:33), and a public Free GitHub repository has no path rules either (github-branch-rules-and-auto-merge.md:38), so path enforcement cannot rely on the server (protected-branches-tags.md:35, QK-each-host-enforce-server-side-content): the client (sync, the pre-push hook) and a CI check are the enforcement points. Autonomous writers (query log, research, ingest) write content paths only and keep direct push (ST-6dszsvk5 “Autonomous writers reach main only through kbgit.py sync --push”). Out of scope: changing any host's settings; new dependencies. Superseding the sprints' github gate answers (at sprint close only) is the publish-when gate of ST-su4em5sl “kbgit.py publish fast-forwards the public home”, not an edit to those sprints.",
+  "evidence": {
+    "commit": "5b3cf34bec480ff7e90e374f3a8f91bf0d2dc2b7",
+    "checks": []
+  }
 }

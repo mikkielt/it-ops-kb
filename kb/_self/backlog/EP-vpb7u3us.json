@@ -2,7 +2,7 @@
   "id": "EP-vpb7u3us",
   "kind": "epic",
   "title": "Work items know the kb facts they rest on",
-  "status": "todo",
+  "status": "done",
   "priority": "P2",
   "rank": 0,
   "goal": "A story or task can name the knowledge it rests on as kb lookup questions and stable references (topic, QK answer, source id, fact key) in its knowledge field, and show, next and horizon print the derived state of each (coverage, conflicting or stale) from a pack run in process, so a planner sees what the kb holds or lacks before work starts. A compact brief of the packs for the working agent was measured and dropped (kb/_self/token-efficiency.md, Measured, not assumed, \"Tried and dropped\").",
@@ -11,5 +11,9 @@
     "agents/agent-planning-and-done.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Delivered: the knowledge field (ST-ireqmpda) with its derived state, and the measurement of a compact brief (ST-zptutwlf), which showed the brief added tokens and was dropped. Planning writes knowledge needs (asks and refs); only research and the kb's own skills write facts."
+  "notes": "Delivered: the knowledge field (ST-ireqmpda) with its derived state, and the measurement of a compact brief (ST-zptutwlf), which showed the brief added tokens and was dropped. Planning writes knowledge needs (asks and refs); only research and the kb's own skills write facts.",
+  "evidence": {
+    "commit": "5b3cf34bec480ff7e90e374f3a8f91bf0d2dc2b7",
+    "checks": []
+  }
 }

@@ -2,7 +2,7 @@
   "id": "EP-5sc7hr36",
   "kind": "epic",
   "title": "Remote MCP clients use the kb directly and through a host MCP server",
-  "status": "draft",
+  "status": "done",
   "priority": "P2",
   "rank": 0,
   "goal": "Copilot Studio and other remote MCP clients can use the kb both ways, with one tool contract: directly, through _tools/kb_http.py serving the read-only tools over MCP Streamable HTTP (stateless, JSON responses, loopback behind an authenticating TLS proxy), and through a host MCP server that spawns kb_mcp.py over stdio and re-exposes kb_pack, kb_search and kb_show; both serve kb/public unless told otherwise, a test proves both paths give the same answers, and kb/_self documents each path and how to deploy it",
@@ -40,5 +40,39 @@
     "kb/_self/plugin.md",
     "public/agents/copilot-studio-mcp-client.md"
   ],
-  "notes": "Two paths to Copilot Studio. First: the operator's TypeScript MCP server, already hosted over Streamable HTTP with authentication, spawns kb_mcp.py over stdio and re-exposes kb_pack, kb_search and kb_show (ST-2zvzr6gr); the TypeScript changes are planned in that server's own repository. Second: kb_http.py serves the kb directly behind a TLS proxy (ST-z6fw4er5, ST-y6ee5kdv). Operator answers: this repository delivers code, tests, docs and a runbook, not a deployment; the proxy authenticates and kb_http.py holds no secrets; a hosted or embedded kb serves kb/public unless told to serve more, one instance per audience, since root is a filter and not access control. Out of scope: a request or query log for hosted lookups (it touches the query log's redaction rules, an always-blocking gate), a container image or CI build, infrastructure as code, live-docs tools inside the server (TK-kgguzw2y). Later, once refined: an end-to-end proof that a Copilot Studio agent answers from the kb through each path, recorded as a report; research on the Dataverse MCP server and Dataverse Web API authentication (the kb has coverage none) if an agent is to use Dataverse beside the kb. TK-yittxcs5 (search_result blocks) must keep a text content block, which non-Claude clients such as Copilot Studio read. Scheduling: P2, sprint SP-4udo5jmw “Copilot Studio reaches the kb both ways”. Both paths, their parity test and kb/_self/hosting.md and embedding.md are delivered; BG-qxoozn4n is the last open child. Run backlog.py done on this epic once that bug is done. The end-to-end Copilot Studio proof and the Dataverse research named above are not planned unless the operator asks."
+  "notes": "Two paths to Copilot Studio. First: the operator's TypeScript MCP server, already hosted over Streamable HTTP with authentication, spawns kb_mcp.py over stdio and re-exposes kb_pack, kb_search and kb_show (ST-2zvzr6gr); the TypeScript changes are planned in that server's own repository. Second: kb_http.py serves the kb directly behind a TLS proxy (ST-z6fw4er5, ST-y6ee5kdv). Operator answers: this repository delivers code, tests, docs and a runbook, not a deployment; the proxy authenticates and kb_http.py holds no secrets; a hosted or embedded kb serves kb/public unless told to serve more, one instance per audience, since root is a filter and not access control. Out of scope: a request or query log for hosted lookups (it touches the query log's redaction rules, an always-blocking gate), a container image or CI build, infrastructure as code, live-docs tools inside the server (TK-kgguzw2y). Later, once refined: an end-to-end proof that a Copilot Studio agent answers from the kb through each path, recorded as a report; research on the Dataverse MCP server and Dataverse Web API authentication (the kb has coverage none) if an agent is to use Dataverse beside the kb. TK-yittxcs5 (search_result blocks) must keep a text content block, which non-Claude clients such as Copilot Studio read. Scheduling: P2, sprint SP-4udo5jmw “Copilot Studio reaches the kb both ways”. Both paths, their parity test and kb/_self/hosting.md and embedding.md are delivered; BG-qxoozn4n is the last open child. Run backlog.py done on this epic once that bug is done. The end-to-end Copilot Studio proof and the Dataverse research named above are not planned unless the operator asks.",
+  "evidence": {
+    "commit": "5b3cf34bec480ff7e90e374f3a8f91bf0d2dc2b7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "embed"
+        ],
+        "exit": 0,
+        "sha256": "b4768f3f1b8d3026"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http"
+        ],
+        "exit": 0,
+        "sha256": "e1985f4e0f1a81fc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }

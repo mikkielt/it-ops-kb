@@ -2,7 +2,7 @@
   "id": "EP-g5hizdko",
   "kind": "epic",
   "title": "Codebase ingestion maps code with the language's own tools",
-  "status": "todo",
+  "status": "done",
   "priority": "P2",
   "rank": 0,
   "goal": "An agent ingesting a repository, or using the kb as a plugin in a host project, gets the repository's toolchain pins and a map of its packages, imports and symbols from deterministic tools at a pinned commit: kbingest.py survey reports the pins, an operator-approved read-only mapping mode records tool-native maps, topics_for can match code by its imports, /kb-ingest and the plugin docs use them, and the research gaps left by the codebase-mapping topics are worked.",
@@ -15,5 +15,9 @@
     "kb/public/agents/repository-ingestion.md",
     "QK-codebase-mapped-known-deterministically-agent-ingested"
   ],
-  "notes": "Operator scope (2026-09-28 planning): pins are parsed with the standard library and never execute repository code; running installed toolchains waits on the gate of ST-55lva2xl; topics_for keeps its lexical default and adds an import-aware mode; the research gaps are one story. Out of scope: new dependencies (tools stay stdlib only), a semantic or embeddings index, changing signals.csv's format."
+  "notes": "Operator scope (2026-09-28 planning): pins are parsed with the standard library and never execute repository code; running installed toolchains waits on the gate of ST-55lva2xl; topics_for keeps its lexical default and adds an import-aware mode; the research gaps are one story. Out of scope: new dependencies (tools stay stdlib only), a semantic or embeddings index, changing signals.csv's format.",
+  "evidence": {
+    "commit": "5b3cf34bec480ff7e90e374f3a8f91bf0d2dc2b7",
+    "checks": []
+  }
 }

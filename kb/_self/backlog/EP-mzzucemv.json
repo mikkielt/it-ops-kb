@@ -2,7 +2,7 @@
   "id": "EP-mzzucemv",
   "kind": "epic",
   "title": "Query log: a self-improving lookup pipeline",
-  "status": "todo",
+  "status": "done",
   "priority": "P2",
   "rank": 0,
   "goal": "Every kb lookup leaves a redacted, judged record in kb/_querylog/; learn turns records into findings and apply turns accepted findings into eval rows, aliases, expansions and _gaps.md entries, pushed straight to main once the local gate passes (kb/_self/querylog.md is the design).",
@@ -11,5 +11,9 @@
     "QK-kb-need-know-build-query-log",
     "QK-self-improving-lookup-pipeline-query-logging"
   ],
-  "notes": "Work cost (ST-fria7ro7 to ST-ecacczzu): per-item token lines in kb/_querylog/work/, joined to items by id; tokens only, no prices. ST-zptutwlf reads them through backlog.py cost. Not planned yet: a per-kind baseline that flags an item far over its peers in horizon."
+  "notes": "Work cost (ST-fria7ro7 to ST-ecacczzu): per-item token lines in kb/_querylog/work/, joined to items by id; tokens only, no prices. ST-zptutwlf reads them through backlog.py cost. Not planned yet: a per-kind baseline that flags an item far over its peers in horizon.",
+  "evidence": {
+    "commit": "5b3cf34bec480ff7e90e374f3a8f91bf0d2dc2b7",
+    "checks": []
+  }
 }
