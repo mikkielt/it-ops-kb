@@ -2,7 +2,7 @@
   "id": "BG-g6zpyfgr",
   "kind": "bug",
   "title": "claim refuses the orchestrator's own claims for its subagents in its checkout",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_bl_items.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
