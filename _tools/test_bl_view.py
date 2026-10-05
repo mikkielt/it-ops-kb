@@ -239,7 +239,7 @@ def holders(sprint):
     b(repo, "new", "task", "--title", "Task two", "--parent", st, "--goal", "b/x written", "--touch", "src/b/**",
       "--check", argstr(is_file("src/b/x.txt")))
     assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
-    assert b(repo, "claim", bg, "--by", "agent-2")[0] == 0
+    edit(repo, bg, status="doing", claimed_by="agent-2")  # a second session, in its own checkout: claim refuses it here
     return item(repo, "Task two")["id"]
 
 

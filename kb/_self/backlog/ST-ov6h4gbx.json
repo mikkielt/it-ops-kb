@@ -24,7 +24,8 @@
     ".claude/skills/kb-item/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "_tools/test_bl_view.py"
   ],
   "depends_on": [
     "ST-73c5rhb5"
