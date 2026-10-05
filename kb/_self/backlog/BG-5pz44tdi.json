@@ -1,0 +1,32 @@
+{
+  "id": "BG-5pz44tdi",
+  "kind": "bug",
+  "title": "land writes its ops rows from inside a test into the clone's real spool, so fixture landings reach the committed sidecars and the proposed LOG rows",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bl_land.ops_write writes nothing inside a test run (PYTEST_CURRENT_TEST, as ql_deliver.ops_row and tests.record_run already guard), so no fixture landing reaches the clone's spool, its committed ops sidecars or kblog proposals; a planted test run records nothing. Found by the SP-smqwmchu review: 6412 of the 6613 proposed _logs.csv rows (3556 distinct item ids no commit names) are land.end and land.step of test fixtures, not the retired fleet.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile,pathlib;sys.path.insert(0,'_tools');os.environ['PYTEST_CURRENT_TEST']='t';import ql_capture,bl_land;d=pathlib.Path(tempfile.mkdtemp());ql_capture.spool_dir=lambda:d;bl_land.ops_write(event='land.end',item='TK-aaaaaaaa',exit=0,ms=1);sys.exit(1 if list(d.glob('*.jsonl')) else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_ops_rows_never_from_a_test"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py"
+  ]
+}
