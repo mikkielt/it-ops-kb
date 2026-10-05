@@ -8,9 +8,10 @@ rules `check` runs, so the two form no cycle. `backlog.py` registers `start` wit
 handler defined here."""
 import re
 import subprocess
+import sys
 
 from bl_base import (
-    APPROVALS, ID_RE, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, in_scope, need, say, scope,
+    APPROVALS, CHECK_TIMEOUT_S, ID_RE, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, in_scope, need, say, scope,
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
@@ -227,6 +228,26 @@ def host_gates(bl, sid, answered=True):
             for g in bl.items[i].get("gates", []) if "host_check" in g and (not answered or "answer" in g)]
 
 
+def host_check_fails(root, hc):
+    """Why a gate's host check fails on this host, run now without a shell, or None when it exits 0. start runs it
+    itself: a `host_checked` result in the item file is committed and ties the pass to no host or clone
+    (BG-bfivioo3)."""
+    argv = list(hc.get("run") or []) if isinstance(hc, dict) else []
+    if not argv:
+        return "no command"
+    if argv[0] in ("python3", "python"):
+        argv[0] = sys.executable
+    try:
+        p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=CHECK_TIMEOUT_S)
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return f"{type(e).__name__}: {e}"
+    if p.returncode == 0:
+        return None
+    tail = ((p.stdout or "") + (p.stderr or "")).strip().splitlines()[-1:]
+    return f"exited {p.returncode}" + (f": {tail[0]}" if tail else "")
+
+
 def has_scope(bl, iid):
     """An item's work has a scope: it is dropped, has touches of its own, or has tasks or subtasks that are not
     dropped and every one of which has a scope (a story broken down into tasks is covered by them)."""
@@ -248,11 +269,11 @@ def cmd_start(bl, a):
     items = bl.sprint_items(sid)
     if len(items) < 2:
         raise Refused(f"{bl.label(sid)} commits to no item besides its review")
-    unchecked = [f"{bl.label(i)} gate {g['id']}" for i, g in host_gates(bl, sid)
-                 if not g.get("host_checked", {}).get("ok")]
+    unchecked = [f"{bl.label(i)} gate {g['id']}: {why}" for i, g in host_gates(bl, sid)
+                 for why in [host_check_fails(bl.root, g["host_check"])] if why]
     if unchecked:
-        raise Refused(f"{bl.label(sid)} has an answered gate whose host setup is not checked on this host "
-                      "(`backlog.py host-check`, which must pass):\n  " + "\n  ".join(unchecked))
+        raise Refused(f"{bl.label(sid)} has an answered gate whose host setup does not hold on this host (start ran "
+                      "its host check here; `backlog.py host-check` shows the output):\n  " + "\n  ".join(unchecked))
     bare = [i for i in items if not bl.items[i].get("review") and not has_scope(bl, i)]
     if bare:
         raise Refused(f"{bl.label(sid)} has work items without touches (give each its own touches, or tasks that "
