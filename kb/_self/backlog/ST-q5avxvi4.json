@@ -2,7 +2,7 @@
   "id": "ST-q5avxvi4",
   "kind": "story",
   "title": "Research sprint goal: backlog.py correctness and authority",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyp6o7hl",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "50c422b6076b3e2f82cf5332b80d36d36cf90253",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "ac7f3bba8669f424"
+      }
+    ]
+  }
 }
