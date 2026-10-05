@@ -37,7 +37,9 @@
         "drop the item: 84 is the conservative map, the sync gate keeps it"
       ],
       "recommendation": "all three: widen the touches to bl_ci.py, bl_land.py, bl_base.py and test_layout.py; a module that runs a script by name then selects that script's own tests, not its imports', and the full run at sprint end covers the rest",
-      "class": "push"
+      "class": "push",
+      "answer": "all three: widen the touches to bl_ci.py, bl_land.py, bl_base.py and test_layout.py; a module that runs a script by name then selects that script's own tests, not its imports', and the full run at sprint end covers the rest",
+      "by": "operator"
     }
   ]
 }
