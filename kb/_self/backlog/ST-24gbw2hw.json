@@ -1,0 +1,26 @@
+{
+  "id": "ST-24gbw2hw",
+  "kind": "story",
+  "title": "land refuses a commit outside the item's touches before it opens the code merge request, not after it merged",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land's first pass (before kbgit.py sync --push opens code/<id>) runs done's scope rule (out_of_scope) over the item's commits and stops at step scope naming each path, so a file outside touches is fixed or the touches widened before the code merges; a planted commit outside touches stops the first pass and pushes nothing. Retrospective of SP-6btkjg4l: ST-ufpxla7r's done refused kb/_self/backlog.md only after MR !535 merged, costing a planning commit and a third land.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_refuses_out_of_scope_before_the_merge_request"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}
