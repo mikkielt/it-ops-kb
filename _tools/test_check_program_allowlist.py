@@ -35,7 +35,7 @@ def test_check_program_allowlist_inline_python_only_outside_drift():
 def test_check_program_allowlist_done_runs_a_shell_repro(tmp_path):
     """done's run_check is not drift: it runs the sh repro the allowlist refuses."""
     marker = tmp_path / "ran"
-    check = {"run": ["sh", "-c", f"touch {marker}"]}
+    check = {"run": ["sh", "-c", f"touch '{marker.as_posix()}'"]}  # sh reads a Windows path's \ as an escape
     assert bl_intake.check_program_refusal(check["run"])
     ok, code, out = bl_land.run_check(str(tmp_path), check)
     assert ok and code == 0 and marker.exists()
