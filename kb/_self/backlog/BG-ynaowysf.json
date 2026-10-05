@@ -2,7 +2,7 @@
   "id": "BG-ynaowysf",
   "kind": "bug",
   "title": "gate_do_warnings stays silent for an option without a command when another option of the gate has one",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "266176c5bce14c427a1cb0ef7deae25873f04b78",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "gate_do_warns_per_option"
+        ],
+        "exit": 0,
+        "sha256": "7a41c4ae6533b9ac"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,'_tools');import bl_check;bl=types.SimpleNamespace(items={'ST-aaaaaaaa':{'status':'todo','gates':[{'id':'g1','kind':'blocking','options':['a','b'],'do':{'a':['echo','x']}}]}},label=lambda i:i);sys.exit(0 if len(bl_check.gate_do_warnings(bl))==1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
