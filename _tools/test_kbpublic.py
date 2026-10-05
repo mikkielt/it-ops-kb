@@ -706,13 +706,14 @@ class TestRemoteRoles:
 
     def test_red_pipeline_names_the_integration_remote(self, clone, monkeypatch, capsys):
         import backlog
+        import bl_ci
         calls = []
 
         def fake(argv, cwd=None):
             calls.append(argv)
             return 1, "", "stub"
 
-        monkeypatch.setattr(backlog, "run", fake)
+        monkeypatch.setattr(bl_ci, "run", fake)
         backlog.cmd_red_pipeline(SimpleNamespace(root=clone.path), argparse.Namespace(status=False))
         assert ["git", "fetch", "-q", "integ", "main"] in calls
         assert "no integ remote" in capsys.readouterr().out

@@ -1179,7 +1179,8 @@ def red_pipeline_here(home, sha):
     signed in and answers one failed pipeline of `sha` on main, and the bug's repro (`red-pipeline --status`) runs in
     this process with the same answers, so nothing reaches the network. (exit code, output)."""
     import backlog
-    real = backlog.run
+    import bl_ci
+    real = bl_ci.run
     pipelines = [{"id": CONVERGE_PIPELINE, "sha": sha, "status": "failed",
                   "web_url": f"https://gitlab.example.com/team/kb/-/pipelines/{CONVERGE_PIPELINE}"}]
     jobs = [{"name": "kb-lint", "status": "failed"}]
@@ -1207,8 +1208,8 @@ def red_pipeline_here(home, sha):
         return code == c.get("exit", 0), code, out
 
     with pytest.MonkeyPatch.context() as mp:
-        mp.setattr(backlog, "run", fake)
-        mp.setattr(backlog, "run_check", check)
+        mp.setattr(bl_ci, "run", fake)
+        mp.setattr(bl_ci, "run_check", check)
         return call(["--root", str(home), "red-pipeline"])
 
 

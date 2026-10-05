@@ -256,6 +256,7 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     usage = ap.format_usage()
     assert "{" + ",".join(SUBCOMMANDS) + "}" in usage
     import bl_check
+    import bl_ci
     import bl_cost
     import bl_land
     import bl_plan
@@ -263,7 +264,8 @@ def test_bl_split_parser_registry_main_builds_from_the_registry_and_holds_no_par
     import bl_selfcheck
     import bl_stall
     owner = {"cost": bl_cost, "procs": bl_procs, "stalled": bl_stall, "selfcheck": bl_selfcheck, "check": bl_check, "selectors": bl_check, "start": bl_plan,
-             "done": bl_land, "land": bl_land, "merge": bl_land, "close": bl_land}  # a command a bl_ module owns: its handler is that module's, not backlog's
+             "done": bl_land, "land": bl_land, "merge": bl_land, "close": bl_land,
+             "red-pipeline": bl_ci, "intake": bl_ci}  # a command a bl_ module owns: its handler is that module's, not backlog's
     assert all(bl_cli.handler_of(n) is getattr(owner.get(n, backlog), "cmd_" + n.replace("-", "_")) for n in SUBCOMMANDS)
     for n in SUBCOMMANDS:  # --commit and --trailer exactly on the commands that commit
         sub = next(a for a in ap._actions if a.dest == "cmd").choices[n]
@@ -554,7 +556,8 @@ def test_bl_split_land_bl_land_never_imports_backlog_at_any_depth_and_no_bl_modu
     assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(tree))
     graph = {m: {d for d in deps if (m, d) not in LAZY_EDGES} for m, deps in bl_graph(tool_sources()).items()}
     assert import_cycle(graph) is None, import_cycle(graph)
-    assert "bl_land" in graph and not any("bl_land" in deps for deps in graph.values())
+    # bl_ci, a command module beside it, takes the runner of a check from it; nothing below bl_land does
+    assert "bl_land" in graph and not any("bl_land" in deps for m, deps in graph.items() if m != "bl_ci")
 
 
 def test_bl_split_land_done_land_and_close_keep_their_usage_positions_with_bl_land_handlers():
@@ -610,3 +613,67 @@ def test_bl_split_land_planted_failures_fail():
     kit = (Path(TOOLS) / "bl_testkit.py").read_text(encoding="utf-8")
     assert own_copies(kit, {"test_bl_land.py": "def finish_task(repo, tk):\n    return 1\n"}) == \
         [("test_bl_land.py", "finish_task")]
+
+
+CI_MOVED = ("normalise_error_line", "first_failure", "bug_with_fingerprint", "add_pipeline", "latest_pipeline",
+            "covered_by_revert", "red_bug", "cmd_red_pipeline", "cmd_intake", "hook_intake", "args_red_pipeline",
+            "args_intake", "INTAKE_HOOK_BUDGET_S", "INTAKE_HOOK_SLOW", "STATUS_REPRO")
+CI_TEST_PREFIXES = ("test_red_pipeline_", "test_job_state_table_red_pipeline_", "test_fingerprint_",
+                    "test_gitlab_com_", "test_real_forge_log_")
+
+
+def ci_defs(source):
+    """The public names a module defines (or assigns) at its top level that belong to the CI readers and commands."""
+    tree = ast.parse(source)
+    names = {n.name for n in tree.body if isinstance(n, (ast.FunctionDef, ast.ClassDef))}
+    names |= {t.id for n in tree.body if isinstance(n, ast.Assign) for t in n.targets if isinstance(t, ast.Name)}
+    return names & set(CI_MOVED)
+
+
+def ci_tests(src):
+    return {n.name for n in ast.parse(src).body if isinstance(n, (ast.FunctionDef, ast.ClassDef))
+            and n.name.startswith(CI_TEST_PREFIXES)}
+
+
+def test_bl_split_ci_bl_ci_holds_the_ci_readers_and_commands_and_backlog_defines_none_of_them():
+    assert set(CI_MOVED) <= ci_defs(tool_source("bl_ci.py"))
+    assert ci_defs(tool_source("backlog.py")) == set(), "backlog.py imports them, it does not define them"
+
+
+def test_bl_split_ci_bl_ci_never_imports_backlog_and_closes_no_cycle():
+    src = tool_source("bl_ci.py")
+    assert not imported_from(src, "backlog")
+    assert not any(isinstance(n, ast.Import) and any(a.name == "backlog" for a in n.names) for n in ast.walk(ast.parse(src)))
+    graph = {m: {d for d in deps if (m, d) not in LAZY_EDGES} for m, deps in bl_graph(tool_sources()).items()}
+    assert import_cycle(graph) is None, import_cycle(graph)
+    assert not any("bl_ci" in deps for deps in graph.values()), "only backlog.py imports bl_ci"
+
+
+def test_bl_split_ci_red_pipeline_and_intake_keep_their_usage_positions_with_bl_ci_handlers():
+    import backlog
+    import bl_ci
+    import bl_cli
+    names = list(bl_cli.COMMANDS)
+    assert names.index("red-pipeline") + 1 == names.index("intake")
+    for n in ("red-pipeline", "intake"):
+        assert bl_cli.handler_of(n) is getattr(bl_ci, "cmd_" + n.replace("-", "_"))
+        assert bl_cli.COMMANDS[n][1] is getattr(bl_ci, "args_" + n.replace("-", "_"))
+    assert backlog.first_failure is bl_ci.first_failure and backlog.red_bug is bl_ci.red_bug  # ql_deliver's names
+
+
+def test_bl_split_ci_its_tests_are_in_test_bl_ci_and_none_are_left_in_test_backlog():
+    sources = backlog_test_sources()
+    assert len(ci_tests(sources["test_bl_ci.py"])) >= 20
+    assert ci_tests(sources["test_backlog.py"]) == set()
+    for needle in ('setattr(backlog, "run"', 'setattr(backlog, "run_check"', "backlog.first_failure"):
+        assert needle not in sources["test_bl_ci.py"], needle
+
+
+def test_bl_split_ci_planted_failures_fail():
+    # a moved name put back in backlog.py, a bl_ci that imports backlog, a CI test left behind
+    assert ci_defs("def cmd_red_pipeline(bl, a):\n    return 0\n") == {"cmd_red_pipeline"}
+    assert ci_defs("STATUS_REPRO = []\n") == {"STATUS_REPRO"}
+    assert ci_defs("from bl_ci import cmd_red_pipeline\n") == set()
+    for body in ("import backlog\n", "from backlog import say\n", "def late():\n    from backlog import say\n"):
+        assert unexcused({"backlog": "", "bl_ci": body}) == [("facade", "bl_ci", "backlog", "backlog")], body
+    assert ci_tests("def test_red_pipeline_left_behind():\n    pass\n") == {"test_red_pipeline_left_behind"}
