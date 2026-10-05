@@ -2,7 +2,7 @@
   "id": "ST-ji3r2uuv",
   "kind": "story",
   "title": "Every derived cache key holds the form of the rule that made it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -19,6 +19,8 @@
   ],
   "touches": [
     "kb/_self/code.md",
-    "_tools/test_layout.py"
-  ]
+    "_tools/test_layout.py",
+    "_tools/kbpublic.py"
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }

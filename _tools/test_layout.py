@@ -8,6 +8,7 @@ The exceptions the tree had when the rule was written are listed by name in EXCE
 listed one that no longer occurs, so the list only shrinks. Planted sources prove each rule fails when broken.
 """
 import ast
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -925,3 +926,46 @@ def test_bl_split_parser_registry_order_refuses_a_missing_extra_or_repeated_name
         with pytest.raises(ValueError):
             bl_cli.order(bad, registry=reg)
         assert list(reg) == ["a", "b"]
+
+
+FORM_NAME = re.compile(r"[A-Z][A-Z0-9_]*_(FORM|VERSION)")
+RAW_CACHES = {("kb_mcp", "docs_cache_key"): "it keys verbatim fetched text, which no rule of ours derives"}
+
+
+def unformed_caches(sources):
+    """[(module, function)] of each function that reads or writes a derived cache (calls cache_load or cache_save) or
+    hashes a cache key (a name with `cache` that calls hashlib) and names no form constant (a *_FORM or *_VERSION),
+    neither itself nor through a function of its module it calls that names one; RAW_CACHES are left out."""
+    out = []
+    for mod, src in sorted(sources.items()):
+        funcs = {n.name: n for n in ast.walk(ast.parse(src)) if isinstance(n, ast.FunctionDef)}
+        formed = {name for name, n in funcs.items()  # a form the code names, not one a docstring mentions
+                  if any(FORM_NAME.fullmatch(x.id if isinstance(x, ast.Name) else x.attr)
+                         for x in ast.walk(n) if isinstance(x, (ast.Name, ast.Attribute)))}
+        for name, n in funcs.items():
+            calls = {c.func.id if isinstance(c.func, ast.Name) else getattr(c.func, "attr", "")
+                     for c in ast.walk(n) if isinstance(c, ast.Call)}
+            body = ast.get_source_segment(src, n) or ""
+            cache = (bool(calls & {"cache_load", "cache_save"}) and name not in ("cache_load", "cache_save")) \
+                or ("cache" in name.lower() and "hashlib." in body)
+            if cache and name not in formed and not calls & formed and (mod, name) not in RAW_CACHES:
+                out.append((mod, name))
+    return out
+
+
+def test_cache_key_holds_form():
+    """ST-ji3r2uuv (BG-ke2xj34l: a leak verdict cached under a laxer scan rule could be reused): every derived cache's
+    key holds the form constant of the rule that made it (kb/_self/code.md); the live tools have none without one
+    (public_values once keyed only by the tip), and a planted cache without a form, or with its form removed, is
+    found."""
+    tools = {p.stem: p.read_text(encoding="utf-8") for p in Path(TOOLS).glob("*.py")
+             if not p.name.startswith("test_") and p.name != "conftest.py"}
+    assert unformed_caches(tools) == []
+    planted = "def scan_cached(tip, cwd):\n    got = cache_load(cwd, f'scan-{tip}.json')\n    return got\n"
+    assert unformed_caches({"x": planted}) == [("x", "scan_cached")]
+    formed = planted.replace("f'scan-{tip}.json'", "f'scan-{SCAN_FORM}-{tip}.json'")
+    assert unformed_caches({"x": formed}) == []
+    helper = "def name_of(tip):\n    return f'p-{P_FORM}-{tip}'\n\n\ndef read(cwd, tip):\n    return cache_load(cwd, name_of(tip))\n"
+    assert unformed_caches({"x": helper}) == []
+    assert unformed_caches({"kbpublic": tools["kbpublic"].replace("public-{SCAN_FORM}-{tip}", "public-{tip}")}) == \
+        [("kbpublic", "public_values")]
