@@ -2,7 +2,7 @@
   "id": "BG-wh5z4l2b",
   "kind": "bug",
   "title": "tools.md and test_tests_lock still call a run naming more than four test files a full run",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "BG-dcxm2uju"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
