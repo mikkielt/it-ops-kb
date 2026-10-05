@@ -2,7 +2,7 @@
   "id": "BG-m4pixy3p",
   "kind": "bug",
   "title": "The host main lock's order, re-entry and land/sync holding have no test since test_autopilot_two_runners.py was deleted",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
     "_tools/testmap.py",
     "kb/_self/git.md",
     "_tools/test_ids_dropped.txt"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
