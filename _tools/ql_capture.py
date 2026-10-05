@@ -145,7 +145,40 @@ COMPACT_TRIGGERS = ("manual", "auto")
 STOP_ERRORS = ("rate_limit", "overloaded", "authentication_failed", "oauth_org_not_allowed", "account_on_hold",
                "billing_error", "invalid_request", "model_not_found", "server_error", "max_output_tokens",
                "cloud_credential_error", "unknown")  # StopFailure's documented error classes (claude/hooks.md)
-DENIED_RULE = re.compile(r"\[([A-Za-z][A-Za-z0-9 _-]{0,38})\]")  # the classifier rule a PermissionDenied reason names
+DENIED_RULES = frozenset((  # the labels of the classifier's built-in soft_deny and hard_deny rules, as
+    # `claude auto-mode defaults` printed them (v2.1.289); a denial naming any other rule (a custom one) stores none
+    'Account & Standing-Rule Changes', 'Auto-Mode Bypass', 'Blind Apply', 'Browser File Upload Exfil',
+    'Browser Input Exfil', 'Browser JS Exfil', 'Browser Navigate Exfil', 'Browser Shortcut Execution', 'CI Bypass',
+    'ChatOps Trigger Comments', 'Cloud Storage Mass Delete', 'Cluster-Wide Workload Creation',
+    'Code That Leaks When Run', 'Code from External', 'Command Network Lists', 'Containment Escape',
+    'Create Public Surface', 'Create RCE Surface', 'Create Unsafe Agents', 'Credential Exploration',
+    'Credential Leakage', 'Credential Materialization', 'DNS / Domain / Cert Changes', 'Data Exfiltration',
+    'Excess Sensitive Detail', 'Exfil Scouting', 'Expose Local Services', 'External Ingress Tunnel',
+    'External System Writes', 'Feature Flag Writes', 'Git Destructive', 'Instruction Poisoning',
+    'Interfere With Workloads', 'Irreversible Deletion (general)', 'Irreversible Local Destruction',
+    'Live-Shared Artifact Sensitive Delta', 'Logging/Audit Tampering', 'Merge Without Review',
+    'Modify Shared Resources', 'Node Lifecycle Operations', 'Out-of-Place Publication', 'PII Data Handling',
+    'Package Registry Bypass', 'Permission Grant', 'Production Deploy', 'Production Reads',
+    'Protected-Scope IaC Apply', 'Public Data-Sharing Upload', 'Real-World Transactions', 'Remote Repoint',
+    'Remote Shell Writes', 'Safety Bypass Flag', 'Sandbox Network Callback', 'Secret-Store Writes',
+    'Security Test Removal', 'Security Weaken', 'Self-Approval', 'Self-Modification', 'Sensitive Remote Exec',
+    'Sensitive-Source Provenance', 'Session Transcript Tampering', 'Shared Cluster Mutation', 'Shared Scratch Sweep',
+    'TLS/Auth Weaken', 'Third-Party Attack', 'Tmux Self Drive', 'Traffic Redirection', 'Unauthorized Persistence',
+    'Unrequested Artifact Publish', 'Unrequested Commit in a Connected App', 'Untrusted Code Integration',
+    'Unverifiable Deletion Scope', 'Unverifiable Deletion Target',
+))
+DENIED_RULE = re.compile(r"\[([^\[\]]{1,60})\]")  # a bracketed rule name in a PermissionDenied reason
+
+
+def denied_rule(reason):
+    """The rule token of a PermissionDenied reason: the first bracketed name that is one of DENIED_RULES (lower case,
+    each run of other characters one `-`), `classifier-unavailable` for that reason, else None; the reason's text is
+    never returned or stored."""
+    text = reason if isinstance(reason, str) else ""
+    named = next((m.group(1).strip() for m in DENIED_RULE.finditer(text) if m.group(1).strip() in DENIED_RULES), None)
+    if named:
+        return re.sub(r"[^a-z0-9]+", "-", named.lower()).strip("-")[:40]
+    return "classifier-unavailable" if text.strip().lower().startswith("classifier unavailable") else None
 
 
 def _shape_ok(shape, v):
@@ -645,11 +678,7 @@ def hook_ops_row(event):
         tool = kbusage.call_group(str(event.get("tool_name") or ""))
         if name == "PermissionRequest":
             return record(OPS, event="permission.request", tool=tool, group=group)
-        reason = str(event.get("reason") or "")
-        m = DENIED_RULE.search(reason)
-        rule = re.sub(r"[ _]+", "-", m.group(1).strip().lower()) if m else \
-            "classifier-unavailable" if reason.strip().lower().startswith("classifier unavailable") else None
-        return record(OPS, event="permission.denied", tool=tool, group=group, rule=rule)
+        return record(OPS, event="permission.denied", tool=tool, group=group, rule=denied_rule(event.get("reason")))
     if name in ("PreCompact", "PostCompact"):
         trigger = event.get("trigger") if event.get("trigger") in COMPACT_TRIGGERS else "other"
         if name == "PreCompact":

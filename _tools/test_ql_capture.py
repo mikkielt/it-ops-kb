@@ -636,18 +636,27 @@ class TestOpsRows:
         for ev in ({"hook_event_name": "PermissionRequest", "tool_name": "Bash", "tool_input": {"command": free},
                     "permission_suggestions": [{"rule": free}]},
                    {"hook_event_name": "PermissionDenied", "tool_name": "Bash", "tool_input": {"command": free},
-                    "reason": free + " [" + "x" * 60 + "]"},
+                    "reason": free + " [PL-LT-00123 jan kowalski] [" + "x" * 60 + "]"},  # short and long brackets
                    {"hook_event_name": "PreCompact", "trigger": free, "custom_instructions": free},
                    {"hook_event_name": "PostCompact", "trigger": "auto", "compact_summary": free},
                    {"hook_event_name": "StopFailure", "error": free, "error_details": free,
                     "last_assistant_message": free}):
             ql_capture.capture({**base, **ev})
         text = "".join(f.read_text(encoding="utf-8") for f in self.spool.glob("*.jsonl"))
-        for leak in ("FREE-TEXT", "jan.kowalski", "secret.md", "xxxx"):
+        for leak in ("FREE-TEXT", "jan.kowalski", "jan-kowalski", "pl-lt-00123", "secret.md", "xxxx"):
             assert leak not in text, leak
         assert [r["event"] for r in self.hook_ops()] == ["permission.request", "permission.denied", "compact.pre",
                                                          "compact.post", "turn.error"]
         assert self.hook_ops()[2]["trigger"] == "other" and "rule" not in self.hook_ops()[1]
+
+    @pytest.mark.parametrize("reason, want", [
+        ("Denied [Data Exfiltration]", "data-exfiltration"), ("[Logging/Audit Tampering]", "logging-audit-tampering"),
+        ("[PL-LT-00123] then [Git Destructive]", "git-destructive"), ("Classifier unavailable", "classifier-unavailable"),
+        ("[PL-LT-00123 jan kowalski]", None), ("[My Custom Rule]", None), (None, None)])
+    def test_ops_permission_denied_rule_is_a_built_in_label(self, reason, want):
+        """BG-fa7dm6l6: a denial's rule is one of the classifier's built-in labels (DENIED_RULES), else none: a host,
+        a name or a custom rule's label in brackets never becomes a rule token."""
+        assert ql_capture.denied_rule(reason) == want
 
     def test_ops_sidecar_a_closed_event_is_one_row_in_the_tools_file(self):
         row = ql_capture.record("ops", **LAND_STEP)
