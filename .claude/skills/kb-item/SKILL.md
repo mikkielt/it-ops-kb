@@ -52,7 +52,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    - `rag.py eval`, `lint`: fix the cause, never the baseline;
    - `kbgit.py sync --push`: `/kb-git-sync`.
 
-   A bug filed while landing is committed on its own, then claimed, before the commit that fixes it (`kb/_self/backlog.md`, Working on items).
+   A bug filed while landing is filed with `--sprint SP` (an active sprint; or `backlog.py set ID --sprint SP`), committed on its own, then claimed, before the commit that fixes it: `check-trailers` refuses a `KB-Work` id not in a started sprint (`kb/_self/backlog.md`, Working on items).
 8. **Report** the item's id and title, the commit, the checks that passed and the new horizon (`python3 _tools/backlog.py horizon`). Then stop: one session works one item, and the next item starts in a fresh session (`/clear` or a new one), so this item's reading and output do not stay in its context.
 
 When all its siblings are done, the parent story or bug is ready. Its own `done` runs its checks over the whole.
