@@ -407,6 +407,22 @@ def test_item_holds_host_names_never_printed_by_any_command(sprint, planted_name
         assert sprint["tk"] in out and no_planted_piece(out), (argv, out)
 
 
+def test_project_paths_scp_and_non_ascii(tmp_path):
+    """BG-m5qbkmgp planted: git's scp-like host:path remote with no user is read like user@host:path, a one-letter
+    host is a Windows drive and no remote, and a remote whose URL is not valid UTF-8 (git prints its bytes) is read
+    with replacement instead of crashing the read."""
+    repo = tmp_path / "r"
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    for name, url in (("o", "gitlab.example.com:grp/proj.git"), ("d", "C:/repos/local/x"),
+                      ("n", b"https://gitlab.example.com/gr\xfcp/p\xc3\xb8j.git")):
+        subprocess.run([b"git", b"-C", bytes(repo), b"remote", b"add", name.encode(), url if isinstance(url, bytes)
+                        else url.encode()], check=True)
+    got = bl_base.project_paths(repo)
+    assert {"grp/proj", "grp%2fproj"} <= got, got
+    assert not any(p.startswith("repos/") for p in got), got
+    assert "gr\ufffdp/p\u00f8j" in got, got
+
+
 def test_name_check_exempts_project_path(sprint, planted_names, capsys):
     """A namespace equal to the user's name: the repository path (read from the remotes) is no hit, the name
     elsewhere still is."""

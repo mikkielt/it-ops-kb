@@ -2,7 +2,7 @@
   "id": "BG-m5qbkmgp",
   "kind": "bug",
   "title": "project_paths misses an scp-style remote without a user and can crash on a non-ASCII remote",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
@@ -31,5 +31,6 @@
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
