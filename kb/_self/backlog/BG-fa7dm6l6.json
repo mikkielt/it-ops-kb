@@ -2,7 +2,7 @@
   "id": "BG-fa7dm6l6",
   "kind": "bug",
   "title": "permission.denied keeps any short bracketed text of the denial reason as its rule",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
@@ -32,5 +32,28 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "cb478b9d8a4816fa567ede02f6e7a4903611cf20",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_hook_event_no_free_text"
+        ],
+        "exit": 0,
+        "sha256": "408522e52f51d442"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import ql_capture as q; sys.exit(1 if q.denied_rule('[PL-LT-00123 jan kowalski]') else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
