@@ -1,4 +1,4 @@
-"""The landing side of backlog.py (kb/_self/backlog.md, Working on items; kb/_self/tools.md): `done`, which runs an
+"""The landing side of backlog.py (kb/_self/backlog.md, What done refuses, Landing; kb/_self/tools.md): `done`, which runs an
 item's checks and records the evidence, `land`, which rebases a worker's branch and runs the steps to the integration
 main, and `close`, which deletes a finished sprint; with what they share: the commits an item's trailers name
 (`item_commits`, `unlanded_code`, `out_of_scope`), the runner of a check (`run_check`), the worker's worktree

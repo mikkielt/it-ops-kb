@@ -1,5 +1,5 @@
 """`backlog.py selfcheck`: the orchestrator's check of its own tools, rules, hooks and host, run before `/kb-sprint run`
-dispatches work (kb/_self/backlog.md, Working on items; kb/_self/tools.md; the kb-sprint skill, Self-check).
+dispatches work (kb/_self/backlog.md, Self-check; kb/_self/tools.md; the kb-sprint skill, Self-check).
 
   selfcheck            print, read only, one line when every check passes, else one line for each check that failed
                        or could not be read, with the remedy the kb-sprint skill names (exit 0 passing, 1 a failure)

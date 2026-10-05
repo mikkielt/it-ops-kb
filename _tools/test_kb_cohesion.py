@@ -451,9 +451,9 @@ class TestCohesion:
         """Problems with how a task that moves code out of a shared file is run: each text names the announce, the
         drain, the check and the atomic commit."""
         run = skill.split("## run", 1)[-1].split("\n## review", 1)[0]
-        steps = runbook.split("## Working on items", 1)[-1].split("\n## ", 1)[0]
+        steps = runbook.split("## Running a sprint", 1)[-1].split("\n## ", 1)[0]
         problems = []
-        for name, part in (("kb-sprint run", run), ("backlog.md Working on items", steps)):
+        for name, part in (("kb-sprint run", run), ("backlog.md Running a sprint", steps)):
             for need in ("moves code out of a file other items edit", "announced first", "drain",
                          "held --overlaps ID --ref origin/main", "one atomic commit per file moved"):
                 if need not in part:

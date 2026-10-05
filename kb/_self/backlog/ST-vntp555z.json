@@ -32,7 +32,16 @@
     "_tools/testmap.py",
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/agents/kb-worker.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_kb_mcp.py",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/git.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/querylog.md",
+    "_tools/bl_land.py",
+    "_tools/bl_procs.py",
+    "_tools/bl_selfcheck.py",
+    "_tools/bl_stall.py"
   ],
   "depends_on": [
     "ST-f4ra5s7y"

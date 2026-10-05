@@ -12,7 +12,7 @@ Read these sections of the `kb/_self/` docs first, not the whole docs, in one co
 python3 _tools/selfdoc.py section backlog "The item file" backlog "Dependencies, gates and triggers" backlog "Definition of done" backlog "Working on items" backlog "Git" maintaining "Conduct for changes"
 ```
 
-What each gives: `backlog "Git"` the `KB-Work` trailer; `maintaining "Conduct for changes"` the gate, commit messages.
+What each gives: `backlog "Working on items"` the steps and the test tier; `backlog "Git"` the `KB-Work` trailer; `maintaining "Conduct for changes"` the gate, commit messages.
 
 The item's own change may also need its skill (a new topic: `/kb-add-topic`; facts: `/kb-refresh` or `/kb-research`; tools and docs: `/kb-self`).
 
@@ -39,7 +39,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
      - provisional: `python3 _tools/backlog.py answer ID GATE --provisional` and go on.
      In an interactive session, ask the operator at once as well.
 6. **Commit.** Commit the work with the trailer `KB-Work: ID` in the message's last paragraph, with `Co-Authored-By` and the other trailers (no blank line between them). Then `/kb-verify` on the changed files (and `/kb-self` if tools, skills, hooks or rules changed). Before landing run only the narrow tier of the three test tiers (`kb/_self/backlog.md`, Working on items): the item's own checks, `-k "ruff or tools_map"` and the focused tests of the files you changed, never `tests.py --changed` (the sync gate runs it once per landing), the full `tests.py` or `stress_test.py` (the sprint's review story runs them once).
-7. **Prove and land** with one command, never the steps by hand: `python3 _tools/backlog.py land ID --branch <your branch> --trailer 'Co-Authored-By: ...'` (the branch defaults to `work/ID`; `main` if you worked there). Show its output. From a clean tree it fetches, rebases the branch on the integration `main`, then:
+7. **Prove and land** with one command, never the steps by hand: `python3 _tools/backlog.py land ID --branch <your branch> --trailer 'Co-Authored-By: ...'` (the branch defaults to `work/ID`; `main` if you worked there). A landing is a long command: start it in the background with the Bash tool's longest `timeout`, 7200000 ms, never in the foreground, which is lost at the 10-minute limit; wait for its completion notice, then show its output. From a clean tree it fetches, rebases the branch on the integration `main`, then:
    - a content-only item: `backlog.py done ID --commit` (`status`, `claimed_by` and `evidence` are written only by `claim` and `done`, never edited; `set` refuses them), `selfdoc.py stale --since origin/main`, the lookup eval and the contract lint when the landing changed `_tools/` (`stress_test.py` runs once, with the full `tests.py`, at the sprint's review story), and `kbgit.py sync --push`, straight to `main`;
    - an item with a code-lane commit (`_tools/kblane.py`) not yet on the integration `main`: the same checks, then `sync --push`, which sends the range as a `code/<id>` merge request; `main` does not move and the item is not done yet. Then read the request: `glab mr view code/<id> -F json -R <project url>`. `state` `opened` with a `merge_error` is an auto-merge that failed: retry once with `python3 _tools/backlog.py merge <id>` and name the error in your report; a retry that fails too is reported with its error and left to the operator, never tried a third time. Report that and stop; on a later pass, once the request has merged, run the same `land` again: it rebases onto the merged `main`, runs `done --commit` and pushes the item file (a content-lane commit).
 
@@ -53,6 +53,6 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    - `kbgit.py sync --push`: `/kb-git-sync`.
 
    A bug filed while landing is committed on its own, then claimed, before the commit that fixes it (`kb/_self/backlog.md`, Working on items).
-8. **Report** the item's id and title, the commit, the checks that passed and the new horizon (`python3 _tools/backlog.py horizon`).
+8. **Report** the item's id and title, the commit, the checks that passed and the new horizon (`python3 _tools/backlog.py horizon`). Then stop: one session works one item, and the next item starts in a fresh session (`/clear` or a new one), so this item's reading and output do not stay in its context.
 
 When all its siblings are done, the parent story or bug is ready. Its own `done` runs its checks over the whole.

@@ -216,12 +216,12 @@ def kb_worker_dispatch_problems(sprint, census, runbook):
         problems.append("/kb-sprint review names kb-worker: the review keeps the session model")
     if "kb-worker" in census:
         problems.append("/kb-census names kb-worker: census subagents keep the session model")
-    work = md_section(runbook, "## Working on items")
+    work = md_section(runbook, "## Running a sprint")
     bullet = next((l for l in work.splitlines() if "`kb-worker`" in l), "")
     for phrase in ("task or subtask", "no `model`", "`S1` or `S2` bug", "no tasks yet", "session model",
                    "sprint review", "`/kb-census`"):
         if phrase not in bullet:
-            problems.append(f"the runbook's Working on items does not say {phrase!r} with kb-worker")
+            problems.append(f"the runbook's Running a sprint does not say {phrase!r} with kb-worker")
     return problems
 
 
@@ -230,9 +230,9 @@ def kb_worker_fallback_problems(sprint, runbook):
     session whose Agent tool does not list kb-worker: [] when nothing."""
     problems = []
     step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", md_section(sprint, "## run [SP]"))
-    work = md_section(runbook, "## Working on items")
+    work = md_section(runbook, "## Running a sprint")
     for where, text in (("/kb-sprint run step 3", step3.group(0) if step3 else ""),
-                        ("the runbook's Working on items", work)):
+                        ("the runbook's Running a sprint", work)):
         line = next((l for l in text.splitlines() if "does not list `kb-worker`" in l), "")
         if not line:
             problems.append(f"{where} has no fallback for an Agent tool that does not list kb-worker")
@@ -304,9 +304,9 @@ def kb_worker_load_problems(worker, sprint, runbook):
                    "`stress_test.py` with the full `tests.py` runs once, as the review story's checks"):
         if phrase not in tiers:
             problems.append(f"the runbook's Working on items does not say {phrase!r} in its three test tiers")
-    line = next((l for l in work.splitlines() if "sibling" in l and "brief" in l), "")
+    line = next((l for l in md_section(runbook, "## Running a sprint").splitlines() if "sibling" in l and "brief" in l), "")
     if "files" not in line:
-        problems.append("the runbook's Working on items does not say a worker's brief names the in-flight siblings' files")
+        problems.append("the runbook's Running a sprint does not say a worker's brief names the in-flight siblings' files")
     return problems
 
 
@@ -348,10 +348,10 @@ def worker_provisional_gate_problems(worker, sprint, runbook):
     first = next((l for l in review.splitlines() if l.startswith("1. ")), "")
     if "provisional answer" not in first or "run step 4.1" not in first:
         problems.append("/kb-sprint review step 1 does not confirm the provisional answers of run step 4.1")
-    work = md_section(runbook, "## Working on items")
+    work = md_section(runbook, "## Running a sprint")
     if not any(LANDED_BY_GATES in l and "`.claude/agents/kb-worker.md`" in l and "provisional gate" in l
                for l in work.splitlines()):
-        problems.append("the runbook's Working on items does not land an item only after its gates are answered "
+        problems.append("the runbook's Running a sprint does not land an item only after its gates are answered "
                         "or provisional")
     gates_doc = md_section(runbook, "## Dependencies, gates and triggers")
     if not any("goal leaves open" in l and GATE_ADD in l and f"`{GATE_ANSWER}`" in l
@@ -429,12 +429,12 @@ def sprint_worker_base_problems(settings, worker, sprint, runbook):
                    "git merge-base --is-ancestor origin/main HEAD", "git rebase origin/main", "only if behind"):
         if phrase not in rule:
             problems.append(f"kb-worker's rule 2 does not say {phrase!r}")
-    work = md_section(runbook, "## Working on items")
+    work = md_section(runbook, "## Running a sprint")
     bullet = next((l for l in work.splitlines() if BASE_REF in l), "")
     for phrase in ('`"head"`', "orchestrator's branch tip", "pushed claim commits", "only after its claim sync",
                    "rebases only if behind", "no checkout by hand"):
         if phrase not in bullet:
-            problems.append(f"the runbook's Working on items does not say {phrase!r} with {BASE_REF}")
+            problems.append(f"the runbook's Running a sprint does not say {phrase!r} with {BASE_REF}")
     return problems
 
 
@@ -486,11 +486,11 @@ def code_mr_merge_retry_problems(sprint, item, runbook):
     run = md_section(sprint, "## run [SP]")
     step4 = re.search(r"(?ms)^4\. When a subagent returns.*?(?=^\d+\. )", run)
     step7 = re.search(r"(?ms)^7\. \*\*Prove and land\*\*.*?(?=^\d+\. )", item)
-    work = md_section(runbook, "## Working on items")
+    work = md_section(runbook, "## Landing")
     problems = []
     for where, text in (("/kb-sprint run step 4", step4.group(0) if step4 else ""),
                         ("/kb-item step 7", step7.group(0) if step7 else ""),
-                        ("the runbook's Working on items", work)):
+                        ("the runbook's Landing", work)):
         line = next((l for l in text.splitlines() if MR_VIEW in l), "")
         if not line:
             problems.append(f"{where} does not read the code/<id> request's state with {MR_VIEW}")
@@ -548,8 +548,8 @@ def sprint_brief_known_failures_problems(sprint, runbook):
     problems = []
     step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", md_section(sprint, "## run [SP]"))
     brief = [l for l in (step3.group(0) if step3 else "").splitlines() if l.lstrip().startswith("- ")]
-    work = md_section(runbook, "## Working on items")
-    for where, lines in (("/kb-sprint run's brief", brief), ("the runbook's Working on items", work.splitlines())):
+    work = md_section(runbook, "## Running a sprint")
+    for where, lines in (("/kb-sprint run's brief", brief), ("the runbook's Running a sprint", work.splitlines())):
         line = next((l for l in lines if KNOWN_FAILURES in l), "")
         if not line:
             problems.append(f"{where} does not name the {KNOWN_FAILURES}")
@@ -603,9 +603,9 @@ def sprint_second_clone_worktree_problems(sprint, runbook):
     clone: [] when nothing."""
     problems = []
     step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", md_section(sprint, "## run [SP]"))
-    work = md_section(runbook, "## Working on items")
+    work = md_section(runbook, "## Running a sprint")
     for where, text in (("/kb-sprint run step 3", step3.group(0) if step3 else ""),
-                        ("the runbook's Working on items", work)):
+                        ("the runbook's Running a sprint", work)):
         line = next((l for l in text.splitlines() if SECOND_CLONE in l), "")
         if not line:
             problems.append(f"{where} does not say how to run workers from a second clone")
