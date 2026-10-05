@@ -2,9 +2,8 @@
   "id": "ST-4mcoplex",
   "kind": "story",
   "title": "Fresh scenario clones reuse the seed's pack index",
-  "status": "todo",
+  "status": "draft",
   "parent": "EP-hlnsqx4f",
-  "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 2,
   "goal": "A git scenario's clone or worktree of the kb seed starts with the pack index the session built once for the seed commit, so no tool run in it rebuilds the index for unchanged content; tests that test index building keep their own index directory.",
@@ -64,5 +63,5 @@
     "kb/public/python/pytest.md (tmp_path_factory, session scope)",
     "kb/public/python/pytest-xdist.md (session fixture once per worker, FileLock pattern)"
   ],
-  "notes": "Measured: a fresh clone's first rag.py pack takes 12.8 s against 0.29 s warm, the first check.py 14.5 s against 1.1 s; in the full run 42 of 73 check.py runs, 36 of 52 kbgit.py fix runs and 40 of 47 kbgit.py sync runs took over 5 s, about 2,500-3,000 worker-seconds of the 7,700-8,300 total. Expected saving: 25-35% of tests.py worker time. kbfacts.index_path names the index by content fingerprint, and store() prunes the other indexes of its root in the same directory, so a shared KB_INDEX directory across scenarios could delete a file another test holds open on Windows; copying the seed's index file into each clone's _cache avoids that. A kb_seed fixture already builds the seed once per run (conftest.py); the index is built there after the commit and copied beside every clone. The seed_index test proves a clone's first pack builds nothing (for example an index file count and mtime unchanged) and has a planted failure: a clone without the copied index fails it. Kept as a draft: the operator has not scheduled the test-speed epic EP-hlnsqx4f. Its checks name _tools/perfcheck.py and _tools/test_ids_baseline.txt, which ST-c35i7vjx \"A tool proves a test-suite speed-up lost no test\" creates, so that story comes first. Mac measurement (2026-10-04): a fresh clone's first check.py takes 0.22 s and kbgit.py fix --check 0.39 s (no index is built), its first rag.py pack 3.0 s cold against 0.05 s warm. One TestFixes setup (71 s serial) built one kbindex file, about 4%; the five scenario files run 431 tests in 586 s serial, their slowest setups (25-55 s) cost something else. Estimate on a Mac: about 3 s per scenario clone that reads the index, roughly 10% for nine files. The Windows premise above (check.py 14.5 s cold, 25-35% of worker time) is file-cache and Defender cost: measure on Windows before building this."
+  "notes": "Deferred, outside any sprint: kbfacts.fingerprint hashes each file's mtime_ns and the absolute root paths, so a clone at another path never matches the seed's index file and a copied index is never read. It needs a fingerprint independent of the clone's path and mtimes (_tools/kbfacts.py, outside these touches) and a Windows measurement first: on the Mac a fresh clone's first rag.py pack costs about 3 s cold against 0.05 s warm, about 10% of the scenario files' time; the Windows premise (check.py 14.5 s cold, 25-35% of worker time) is file-cache and Defender cost. kbfacts.store() prunes other indexes of its root in the same directory, so a shared KB_INDEX directory across scenarios could delete a file another test holds open on Windows; a per-clone copy avoids that. Its checks name perfcheck.py (ST-c35i7vjx)."
 }
