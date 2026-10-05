@@ -374,6 +374,33 @@ def shared_file_warnings(bl):
     return out
 
 
+def unordered_overlap_warnings(bl):
+    """check's warnings: two open items of one planned or active sprint whose touches name a common path (globs read
+    against the tracked files) while neither depends on the other, directly, through another item or through an
+    ancestor (`dependencies`), and neither is the other's ancestor: they would run at once on one file, so the plan
+    orders them (depends_on) before the start. One line per pair, naming both and the shared paths; the review story
+    and a dropped item are left out."""
+    files, out = None, []
+    for sid, sp in sorted(bl.items.items()):
+        if sp.get("kind") != "sprint" or sp.get("status") not in ("planned", "active"):
+            continue
+        ids = sorted(i for i in bl.sprint_items(sid) if bl.items[i].get("status") in OPEN_STATUSES
+                     and not bl.items[i].get("review") and bl.items[i].get("touches"))
+        if files is None and any(re.search(r"[*?]", t) for i in ids for t in bl.items[i]["touches"] if isinstance(t, str)):
+            files = tracked_files(bl.root)
+        paths = {i: touch_paths(bl.items[i], files or [], []) for i in ids}
+        deps = {i: dependencies(bl, i) for i in ids}
+        for n, a in enumerate(ids):
+            for c in ids[n + 1:]:
+                shared = paths[a] & paths[c]
+                if not shared or c in deps[a] or a in deps[c] or a in bl.ancestors(c) or c in bl.ancestors(a):
+                    continue
+                out.append(f"{bl.label(a)} and {bl.label(c)} both touch {', '.join(sorted(shared))} and neither "
+                           "depends on the other: they could run at once on one file; order them (set ID --depends "
+                           "OTHER --add) before the start")
+    return out
+
+
 def where_outside(bl, d):
     """Where a dependency outside a sprint stands: in no sprint, or in a sprint (started or not)."""
     sp = bl.sprint_of(d)
