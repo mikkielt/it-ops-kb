@@ -2,7 +2,7 @@
   "id": "EP-o2bjijfp",
   "kind": "epic",
   "title": "Backlog: automatic intake and review aids",
-  "status": "todo",
+  "status": "done",
   "priority": "P3",
   "rank": 0,
   "goal": "Defects and drift that the pipeline, the query-log store, git history and the backlog already show reach the backlog as draft items without a person filing them, found by deterministic detectors and filed once per fingerprint.",
@@ -22,5 +22,20 @@
     "public/agents/agent-planning-and-done.md:44",
     "public/agents/agent-overuse-patterns.md:14"
   ],
-  "notes": "Intake uses no model: every detector is a rule over the store, git and item files. Its drafts stay uncommitted until /kb-backlog triage, so it adds no autonomous write path to main."
+  "notes": "Intake uses no model: every detector is a rule over the store, git and item files. Its drafts stay uncommitted until /kb-backlog triage, so it adds no autonomous write path to main.",
+  "evidence": {
+    "commit": "f825923b0f94a1970e2c5f8461a1e843bacaa419",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "intake_replay"
+        ],
+        "exit": 0,
+        "sha256": "d5549a4153f1feb1"
+      }
+    ]
+  }
 }
