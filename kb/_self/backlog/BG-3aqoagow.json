@@ -2,7 +2,7 @@
   "id": "BG-3aqoagow",
   "kind": "bug",
   "title": "drop leaves other items' relates_to and depends_on naming the dropped item",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "c55bf32524146d06e2bb49f81c64f684cd6ed86a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "drop_cleans_links_to_the_dropped_item"
+        ],
+        "exit": 0,
+        "sha256": "f94c61bd6cf57f75"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,inspect;sys.path.insert(0,'_tools');import bl_items;sys.exit(1 if 'relates_to' not in inspect.getsource(bl_items.cmd_drop) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
