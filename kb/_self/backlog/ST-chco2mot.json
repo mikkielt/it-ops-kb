@@ -2,7 +2,7 @@
   "id": "ST-chco2mot",
   "kind": "story",
   "title": "A refused done records why",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
@@ -27,5 +27,6 @@
     "_tools/bl_land.py",
     "_tools/test_bl_land.py"
   ],
-  "notes": "Failure it answers: the work sidecar's refused row says only that done exited 1, so the rework a refusal costs cannot be split by cause (ST-2w2bqtjf). OPERATOR ANSWER 2026-10-04 (query-log recorded fields): APPROVED: the new ops row done.refused records the item id and the name of the refusing check, no free text, no values."
+  "notes": "Failure it answers: the work sidecar's refused row says only that done exited 1, so the rework a refusal costs cannot be split by cause (ST-2w2bqtjf). OPERATOR ANSWER 2026-10-04 (query-log recorded fields): APPROVED: the new ops row done.refused records the item id and the name of the refusing check, no free text, no values.",
+  "claimed_by": "it-ops-kb worker1"
 }
