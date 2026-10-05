@@ -13,9 +13,19 @@
     "run": [
       "python3",
       "-c",
-      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import backlog as b; sys.exit(0 if not b.name_pieces('gitlab-runner') and not b.name_pieces('ContainerAdministrator') else 1)"
+      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import bl_base as b; sys.exit(0 if not b.name_pieces('gitlab-runner') and not b.name_pieces('ContainerAdministrator') else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ci_accounts_give_no_piece"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_base.py",
     "_tools/test_bl_check.py",

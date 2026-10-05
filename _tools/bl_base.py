@@ -176,13 +176,17 @@ USER_ENV = ("USERNAME", "USER", "LOGNAME")
 PROFILE_ENV = ("USERPROFILE", "HOME")  # the profile folder's name is the user's too (TEMP paths carry it)
 # Names a CI runner, container or fresh install gives every machine (a GitLab runner is
 # runner-<token>-project-<id>-concurrent-<n>, a Windows one DESKTOP-<serial>): a piece equal to one names no one
-# host or person, and matching it would refuse ordinary text.
+# host or person, and matching it would refuse ordinary text. A name whose every part is one of them (gitlab-runner,
+# the shell executor's account; ContainerAdministrator and ContainerUser, a Windows container's) gives no piece.
 GENERIC_NAMES = frozenset("""
     admin administrator agent build builder buildkite circleci codespace codespaces computer concurrent container
     default desktop developer docker github gitlab guest instance jenkins laptop local localhost owner project public
-    runner runneradmin server service system tester travis ubuntu users vagrant vscode windows workstation
+    runner runneradmin server service system tester travis ubuntu user users vagrant vscode windows workstation
 """.split())
 NAME_PART = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z0-9]+|[A-Z0-9]+")  # CamelCase parts; digits stay on
+# The random suffix Kubernetes adds to a pod's name (generateName: five characters of an alphabet without vowels
+# or 0, 1 and 3), which a CI job's host name ends in: it differs on every run and names no one host.
+POD_SUFFIX = re.compile(r"-([bcdfghjklmnpqrstvwxz2456789]{5})$")
 
 
 def host_user_names(env=None):
@@ -214,7 +218,13 @@ def name_pieces(name):
     """The pieces of one name, lower case, kept by name_piece_ok: the whole name, it without separators, each part
     between non-alphanumerics and each CamelCase part of those (`JohnSmithCorp`: johnsmithcorp, john, smith;
     `ABC-PC01`: abc-pc01, abcpc01, pc01), and for a name of more than 8 letters and digits its Windows 8.3 short form
-    without the number (`johnsm~`: a TEMP path's `JOHNSM~1` profile folder)."""
+    without the number (`johnsm~`: a TEMP path's `JOHNSM~1` profile folder). A name made only of GENERIC_NAMES parts
+    gives none, and a Kubernetes pod's random suffix (POD_SUFFIX) is no piece of its own."""
+    toks = [t for t in re.split(r"[^0-9A-Za-z]+", name) if t]
+    if toks and all(t.lower() in GENERIC_NAMES or all(x.lower() in GENERIC_NAMES for x in NAME_PART.findall(t))
+                    for t in toks):
+        return set()  # gitlab-runner, ContainerAdministrator: the name every such machine has
+    pod = POD_SUFFIX.search(name)
     bare = re.sub(r"[^0-9A-Za-z]", "", name).lower()
     cands = {name.lower(), bare}
     if len(bare) > 8 and not any(g.startswith(bare[:6]) for g in GENERIC_NAMES):
@@ -222,6 +232,8 @@ def name_pieces(name):
     for tok in re.split(r"[^0-9A-Za-z]+", name):
         cands.add(tok.lower())
         cands.update(x.lower() for x in NAME_PART.findall(tok))
+    if pod:
+        cands.discard(pod.group(1))  # a pod's random suffix: the whole name still counts
     return {c for c in cands if name_piece_ok(c)}
 
 
