@@ -87,5 +87,17 @@
       "by": "operator"
     }
   ],
+  "knowledge": {
+    "ask": [
+      "does splitting long paragraphs into sentence passages help retrieval, what keeps a passage understandable out of context, and how is a retriever judged against labelled questions",
+      "what loads when a skill is invoked and what is read only on demand"
+    ],
+    "refs": [
+      "QK-retrieving-project-s-own-rule-docs",
+      "agents/hybrid-retrieval",
+      "agents/agent-evaluation",
+      "agents/subagents-vs-deterministic-tools"
+    ]
+  },
   "notes": "selfdoc.py check passes before the work: it pins that no heading reference goes dead when the skills change. Premise: the up-front reading commands print 8 to 73 KB today (kb-sprint 73282 bytes, kb-item 28412, kb-worker 24027), measured by running each skill's selfdoc.py section command on 2026-10-06."
 }

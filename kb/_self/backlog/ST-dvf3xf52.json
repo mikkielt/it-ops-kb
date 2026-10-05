@@ -83,6 +83,16 @@
       "by": "operator"
     }
   ],
+  "knowledge": {
+    "ask": [
+      "does splitting long paragraphs into sentence passages help retrieval, what keeps a passage understandable out of context, and how is a retriever judged against labelled questions"
+    ],
+    "refs": [
+      "QK-retrieving-project-s-own-rule-docs",
+      "agents/hybrid-retrieval",
+      "agents/agent-evaluation"
+    ]
+  },
   "notes": "tests.py _tools/test_live_kb.py passes before the work: it pins the public pack and eval behaviour that must stay, and will hold the planted wrong row test. Premise: python3 _tools/rag.py pack --root _self 'how does land work' prints coverage: none today, since pack cannot see kb/_self and _self is not a root (run 2026-10-06).",
   "claimed_by": "manager-mac"
 }
