@@ -230,7 +230,7 @@ Several sprints may be active at once. Each has its own horizon.
 ## Working on items
 
 - **One item** (`/kb-item ID`, or `/kb-item` for `next --any`; one session works one item, and the next item starts in a fresh session):
-  1. claim it: `backlog.py claim ID --by <session> --commit --trailer 'Co-Authored-By: ...'`, which commits the item file on its own with `KB-Work: ID` (a backlog-planning commit; Git, below) before any work commit, since `check-trailers` reads the item as each commit has it;
+  1. claim it, from the session's own worktree (each session works in its own git worktree from its first command (`git worktree add`), never a checkout another session works in: `claim` records the claims made in a working tree in its own git dir and refuses (exit 1, naming the other session) a claim by a second session while one of them is still doing there (`tests.py -k claim_refuses_a_shared_checkout`)): `backlog.py claim ID --by <session> --commit --trailer 'Co-Authored-By: ...'`, which commits the item file on its own with `KB-Work: ID` (a backlog-planning commit; Git, below) before any work commit, since `check-trailers` reads the item as each commit has it;
   2. print its `/goal` condition;
   3. do the work within `touches`, and commit with `KB-Work: ID`; run `/kb-verify`;
   4. land it with `backlog.py land ID [--branch B] --trailer '...'` (the branch defaults to `work/ID`), one command for the steps of Landing, below, which stops at the first failing one and names it (`land stopped at step <step>`, exit 1). A landing is a long command: start it in the background with the Bash tool's longest `timeout` (7200000 ms), since a foreground command is lost at the 10-minute limit. Fix the cause and run it again:

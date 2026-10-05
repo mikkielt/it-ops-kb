@@ -765,6 +765,29 @@ def test_backlog_set_clear_refuses_the_same_fields(sprint, field, rule):
     refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], "--clear", field, rule=rule)
 
 
+def test_claim_refuses_a_shared_checkout(sprint, tmp_path):
+    """ST-ov6h4gbx planted (SP-tpulmoxh, SP-xdzgepun): session one claims a task; session two's claim of the bug in
+    the same checkout is refused (exit 1, naming session one), writes nothing and records nothing in the tree; in a
+    worktree of it the same claim succeeds; once session one releases, the shared checkout takes session two."""
+    repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+    assert b(repo, "claim", tk, "--by", "one")[0] == 0
+    before = item_text(repo, bg)
+    code, out = b(repo, "claim", bg, "--by", "two")
+    assert code == 1 and "one works in this checkout" in out and tk in out, out
+    status = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all"], cwd=repo, capture_output=True,
+                            text=True, check=True).stdout
+    assert item_text(repo, bg) == before and "claims" not in status, status  # the record lives in the git dir
+    commit(repo, "one's claim")
+    wt = tmp_path / "wt"
+    sh(repo, "git", "worktree", "add", "-q", "--detach", str(wt))
+    code, out = b(wt, "claim", bg, "--by", "two")
+    assert code == 0, out
+    assert b(repo, "claim", tk, "--by", "one")[0] == 0  # the same session again: no refusal
+    assert b(repo, "release", tk)[0] == 0
+    code, out = b(repo, "claim", bg, "--by", "two")
+    assert code == 0, out
+
+
 def test_goal_prints_ancestor_gates(sprint):
     """ST-73c5rhb5 planted (SP-fvztfmtm's TK-ymbmdww4): goal prints, under the task's condition, each answered gate
     of its parent story with its question, answer and who gave it; an unanswered gate is not printed, and a task with

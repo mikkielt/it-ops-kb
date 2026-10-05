@@ -2,7 +2,7 @@
   "id": "ST-ov6h4gbx",
   "kind": "story",
   "title": "A second session working in the same checkout is refused before it commits",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
@@ -24,9 +24,11 @@
     ".claude/skills/kb-item/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "_tools/test_bl_view.py"
   ],
   "depends_on": [
     "ST-73c5rhb5"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
