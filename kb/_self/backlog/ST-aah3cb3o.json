@@ -1,0 +1,24 @@
+{
+  "id": "ST-aah3cb3o",
+  "kind": "story",
+  "title": "A story's premise is checked when it is planned into a sprint",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan runs each committed story's stated premise (a command in its notes or a 'Premise:' line) before the start gate is asked and records the result, so a story whose premise fails is not committed; a test plants a story whose premise command fails. Answers the SP-tpulmoxh retrospective: ST-4mcoplex was committed and claimed before its premise (a copied index the fingerprint would match) was found false, and was deferred.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sprint_plan_checks_premise"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/test_kb_cohesion.py"
+  ]
+}
