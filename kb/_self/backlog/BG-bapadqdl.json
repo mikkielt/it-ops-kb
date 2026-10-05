@@ -2,7 +2,7 @@
   "id": "BG-bapadqdl",
   "kind": "bug",
   "title": "own_words misses command words after if/then, !, env, a newline and a nested shell in a chain",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "ST-prtoem5q"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
