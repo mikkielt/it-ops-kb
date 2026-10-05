@@ -2,7 +2,7 @@
   "id": "ST-x5bim4qs",
   "kind": "story",
   "title": "Research sprint goal: Repros, checks and touches say exactly what an item gets wrong",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3rzxx3m4",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "4a96c3ed627ba45b7816105ab4e425d513a31678",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "dd0ed050bebea2b7"
+      }
+    ]
+  }
 }
