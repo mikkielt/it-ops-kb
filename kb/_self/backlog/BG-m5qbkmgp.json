@@ -15,6 +15,16 @@
       "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import bl_base as b; d = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', d]); subprocess.run(['git', '-C', d, 'remote', 'add', 'o', 'gitlab.example.com:grp/proj.git']); sys.exit(0 if 'grp/proj' in b.project_paths(d) else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "project_paths_scp_and_non_ascii"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_base.py",
     "_tools/test_bl_check.py",

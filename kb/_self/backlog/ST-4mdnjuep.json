@@ -15,5 +15,14 @@
         "repro_own_import_error"
       ]
     }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-zvh7cvyo"
   ]
 }

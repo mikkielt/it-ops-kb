@@ -15,5 +15,14 @@
         "planted_case_per_goal_clause"
       ]
     }
+  ],
+  "touches": [
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
   ]
 }

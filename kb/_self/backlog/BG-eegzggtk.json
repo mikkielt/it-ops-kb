@@ -6,12 +6,28 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "ql_capture.OPS_EVENTS holds no stall.remedy event, or keeps it only as a past event whose committed rows stay readable and that no tool writes, kb/_self/querylog.md says which, and test_ql_capture.py plants a stall.remedy row only as that",
+  "goal": "ql_capture keeps stall.remedy only as a past event: its committed rows (two in kb/_querylog/ops/2026-10) stay readable by the store, no tool writes it, the event is marked past (a PAST_EVENTS set beside OPS_EVENTS), kb/_self/querylog.md says so, and test_ql_capture.py plants a stall.remedy row only as a past one.",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0, '_tools'); import ql_capture; sys.exit('stall.remedy' in ql_capture.OPS_EVENTS)"
+      "import sys; sys.path.insert(0, '_tools'); import ql_capture; sys.exit(0 if 'stall.remedy' in getattr(ql_capture, 'PAST_EVENTS', ()) else 1)"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stall_remedy_past_event"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/test_ql_capture.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ]
 }

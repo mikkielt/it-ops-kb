@@ -15,5 +15,9 @@
         "cache_key_holds_form"
       ]
     }
+  ],
+  "touches": [
+    "kb/_self/code.md",
+    "_tools/test_layout.py"
   ]
 }

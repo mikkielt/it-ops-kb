@@ -13,5 +13,28 @@
       "-c",
       "import sys; sys.path.insert(0, '_tools'); import bl_land; sys.exit(hasattr(bl_land, 'prune_runner_cache') or hasattr(bl_land, 'RUNNER_SPRINT_ENV'))"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_cleans_no_runner_leftovers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py",
+    "_tools/test_kb_sprint_close_cleanup.py",
+    "_tools/kbusage.py",
+    "_tools/test_kbusage.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ]
 }

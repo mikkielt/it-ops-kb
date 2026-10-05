@@ -15,5 +15,12 @@
         "open_choice_operator_gate_documented"
       ]
     }
+  ],
+  "touches": [
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/maintaining.md"
   ]
 }

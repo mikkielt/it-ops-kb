@@ -5,7 +5,7 @@
   "status": "draft",
   "priority": "P3",
   "rank": 0,
-  "goal": "Planning (kb-backlog, kb-sprint plan) sets an item's touches from backlog.py referrers and kb/_self/map.csv, so touches are neither wider than the change nor missing a doc the code maps to. Answers BG-ncpteupy (a bl_*.py glob that overlapped another worker) and BG-iu53ncyj (tools.md missing).",
+  "goal": "Planning (kb-backlog, kb-sprint plan) sets an item's touches from backlog.py referrers and kb/_self/map.csv, so touches are neither wider than the change nor missing a doc the code maps to. Answers BG-ncpteupy (a bl_*.py glob that overlapped another worker) and BG-iu53ncyj (tools.md missing). It takes ST-dhnamkia's clause: the docs a code item maps to (check's docs warnings) are added to its touches when it is filed or scheduled, so those warnings stay actionable instead of noise (they rose from 8 to over 30 in SP-xdzgepun).",
   "checks": [
     {
       "run": [
@@ -15,5 +15,12 @@
         "touches_planned_from_referrers"
       ]
     }
+  ],
+  "touches": [
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/maintaining.md"
   ]
 }

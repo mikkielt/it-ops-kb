@@ -16,6 +16,12 @@
       ]
     }
   ],
+  "touches": [
+    "_tools/kg_hooks.py",
+    "_tools/kg_trailers.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md"
+  ],
   "links": [
     "origin retro SP-7kbrqaol",
     "evidence commit c77141a25"

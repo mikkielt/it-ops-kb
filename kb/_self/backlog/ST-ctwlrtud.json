@@ -15,5 +15,11 @@
         "review_cost_rerun_after_close"
       ]
     }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/test_kb_cohesion.py",
+    "kb/_self/maintaining.md"
   ]
 }
