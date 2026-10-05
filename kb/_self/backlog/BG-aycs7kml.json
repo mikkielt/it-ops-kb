@@ -2,7 +2,7 @@
   "id": "BG-aycs7kml",
   "kind": "bug",
   "title": "Knowledge state with --root mixes the other clone's refs with this clone's pack and conflicts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/bl_check.py",
     "_tools/test_bl_check.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

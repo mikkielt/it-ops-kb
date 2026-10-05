@@ -723,12 +723,35 @@ def test_knowledge_state_next_and_horizon_print_it_and_the_hook_runs_no_pack(ks,
         return {"verdict": "good", "sources": [], "paths": [], "unmatched": [], "spread": None}
 
     monkeypatch.setattr(bl_check.KnowledgeState, "pack", canned)
+    monkeypatch.setattr(bl_check, "KB_HOME", ks.repo.resolve())  # this process reads ks.repo's kb as its own
     bl = backlog.Backlog(ks.repo)
     backlog.cmd_horizon(bl, argparse.Namespace(sprint=ks.sp, hook=True))
     assert calls == [] and "knowledge" not in capsys.readouterr().out
     backlog.cmd_horizon(bl, argparse.Namespace(sprint=ks.sp, hook=False))
     assert len(calls) == 3, calls
     assert "knowledge sufficient" in capsys.readouterr().out
+
+
+def test_knowledge_state_root_uses_its_own_refs(ks, tmp_path):
+    """BG-aycs7kml: a conflict on demo/tool closed only in DIR (planted: open in the other clone). DIR's own
+    backlog.py derives the state from DIR's kb; another clone's backlog.py with --root DIR, whose pack and ledgers
+    read its own kb, derives none and says so, in show, next and horizon, never a state mixed from the two."""
+    entry = "- The two pages disagree on the retry count (S100). (topic: demo/tool)\n"
+    ks.know(refs=["demo/tool"])
+    ks.know(refs=["demo/tool"], item=ks.bg)
+    other = tmp_path / "other"
+    shutil.copytree(ks.repo, other)
+    (other / "kb" / "public" / "_conflicts.md").write_text("# Conflicts\n\n" + entry, encoding="utf-8", newline="\n")
+    ks.write("_conflicts.md", "# Conflicts\n\n" + entry + "  - Resolved 2026-09-29: the later page settles it.\n")
+    assert ks_states(ks.show()) == {"demo/tool": "sufficient"}
+    for cmd in (("show", ks.tk), ("next", "--sprint", ks.sp, "--all"), ("horizon", "--sprint", ks.sp)):
+        p = subprocess.run([sys.executable, str(other / "_tools" / "backlog.py"), "--root", str(ks.repo), *cmd],
+                           cwd=other, capture_output=True, text=True, encoding="utf-8", env=ks.env)
+        out = p.stdout + p.stderr
+        assert p.returncode == 0 and ks_states(out) == {}, (cmd, out)
+        assert bl_check.OTHER_CLONE in out, (cmd, out)
+    code, out = ks.run("--root", str(ks.repo), "show", ks.tk)  # --root naming the clone itself still derives it
+    assert code == 0 and ks_states(out) == {"demo/tool": "sufficient"}, out
 
 
 def test_knowledge_state_is_reported_never_stored_and_never_changes_readiness(ks):
@@ -753,10 +776,11 @@ def test_knowledge_state_costs_nothing_for_items_without_knowledge(sprint):
     assert p.returncode == 0 and p.stdout.strip().endswith("NOT LOADED"), p.stdout + p.stderr
 
 
-def test_knowledge_state_against_the_repositorys_own_kb(sprint):
-    """The real pack of this clone (`--root` names only where the backlog is): an eval-set question it answers `good`
-    with no check line, in an article with no open conflict entry, is sufficient; one about nothing the kb holds is
-    unknown. The ledger entries are the kb's own state, so the question is picked, not named."""
+def test_knowledge_state_against_the_repositorys_own_kb():
+    """The real pack of this clone, for an item of this clone (another clone's state is not derived:
+    test_knowledge_state_root_uses_its_own_refs): an eval-set question it answers `good` with no check line, in an
+    article with no open conflict entry, is sufficient; one about nothing the kb holds is unknown. The ledger entries
+    are the kb's own state, so the question is picked, not named."""
     import rag
 
     class Clone:
@@ -765,9 +789,9 @@ def test_knowledge_state_against_the_repositorys_own_kb(sprint):
     state = bl_check.KnowledgeState(Clone())
     good = next(c["question"] for _, c in rag.eval_cases() if c["expect_verdict"] == "good"
                 and state.of_ask(c["question"])[0] == "sufficient")
-    edit(sprint["repo"], sprint["tk"], knowledge={"ask": [good, KS_NONE]})
-    code, out = b(sprint["repo"], "show", sprint["tk"])
-    assert code == 0 and ks_states(out) == {good: "sufficient", KS_NONE: "unknown"}, out
+    Clone.items = {"TK-aaaaaaaa": {"knowledge": {"ask": [good, KS_NONE]}}}
+    out = "\n".join(bl_check.knowledge_lines(Clone(), "TK-aaaaaaaa"))
+    assert ks_states(out) == {good: "sufficient", KS_NONE: "unknown"}, out
 
 
 def test_knowledge_state_judge_maps_every_verdict(monkeypatch):

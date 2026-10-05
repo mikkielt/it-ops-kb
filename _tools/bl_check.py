@@ -390,15 +390,34 @@ class KnowledgeState:
         return "unknown", "no such topic"
 
 
-def knowledge_states(bl, iid):
-    """[(kind, text, state, why)] for each ask and each ref of an item's `knowledge`, `kind` `ask` or `ref`; [] for an
-    item with no asks or refs, without loading the pack (a malformed field is `check`'s to report)."""
+# The clone whose kb this process reads: the pack, the article index and the ledgers (kbfacts, kbcommon) read the
+# clone the tools run from, whatever --root names.
+KB_HOME = Path(__file__).resolve().parent.parent
+OTHER_CLONE = ("knowledge state not derived: --root names another clone, and this process's pack and ledgers read "
+               "the kb of the clone its tools run from; run that clone's own _tools/backlog.py")
+
+
+def other_clone(bl):
+    """True when bl.root is not the clone whose kb this process reads (KB_HOME): its knowledge state would mix that
+    clone's refs with this clone's pack and conflicts (BG-aycs7kml)."""
+    return Path(bl.root).resolve() != KB_HOME
+
+
+def knowledge_todo(bl, iid):
+    """[(kind, text)] for each ask and each ref of an item's `knowledge`, `kind` `ask` or `ref`."""
     know = bl.items[iid].get("knowledge")
     if not isinstance(know, dict):
         return []
-    todo = [(k, x) for k, f in (("ask", "ask"), ("ref", "refs")) for x in (know.get(f) if isinstance(know.get(f), list) else [])
+    return [(k, x) for k, f in (("ask", "ask"), ("ref", "refs")) for x in (know.get(f) if isinstance(know.get(f), list) else [])
             if isinstance(x, str) and x.strip()]
-    if not todo:
+
+
+def knowledge_states(bl, iid):
+    """[(kind, text, state, why)] for each ask and each ref of an item's `knowledge`, `kind` `ask` or `ref`; [] for an
+    item with no asks or refs, without loading the pack (a malformed field is `check`'s to report), and for an item of
+    another clone (other_clone), whose state this process cannot derive."""
+    todo = knowledge_todo(bl, iid)
+    if not todo or other_clone(bl):
         return []
     if not hasattr(bl, "state"):
         bl.state = KnowledgeState(bl)
@@ -411,7 +430,10 @@ def knowledge_states(bl, iid):
 
 def knowledge_lines(bl, iid, indent="  "):
     """One line per ask and per ref of an item's `knowledge`: `knowledge <state> ask|ref: <text>` and, for any state
-    but sufficient, why. [] for an item with no asks or refs (knowledge_states)."""
+    but sufficient, why. [] for an item with no asks or refs (knowledge_states); one line saying the state is not
+    derived for an item of another clone (other_clone)."""
+    if other_clone(bl) and knowledge_todo(bl, iid):
+        return [f"{indent}{OTHER_CLONE}"]
     return [f"{indent}knowledge {state:<11} {kind}: {text}" + (f" ({why})" if why else "")
             for kind, text, state, why in knowledge_states(bl, iid)]
 
