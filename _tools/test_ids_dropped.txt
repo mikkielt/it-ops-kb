@@ -1353,3 +1353,9 @@ _tools/test_land_worker_worktree_sibling.py::test_land_removes_sibling_worker_wo
 _tools/test_land_worker_worktree_sibling.py::test_land_removes_sibling_worker_worktree_keeps_another_clones_sibling
 _tools/test_land_worker_worktree_sibling.py::test_land_removes_sibling_worker_worktree_keeps_a_locked_non_agent
 _tools/test_land_worker_worktree_sibling.py::test_land_removes_sibling_worker_worktree_keeps_a_sibling_of_a_plain_linked_clone
+# set replaces an item's title, goal, repro and parent since ST-3tgtrzd3 (`set` refuses them no more): the parameters of test_backlog_set_clear_refuses_the_same_fields and test_backlog_set_refuses_status_claim_evidence_and_identity that refused them are removed; test_set_replaces_goal_and_repro proves the replacement
+_tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[goal-is not a field set changes]
+_tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[repro-is not a field set changes]
+_tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[title-identity]
+_tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_identity[--parent-ST-aaaaaaaa-set refuses parent]
+_tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_identity[--title-Other-set refuses title]

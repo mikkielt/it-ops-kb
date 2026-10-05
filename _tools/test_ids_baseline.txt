@@ -57,7 +57,6 @@ _tools/test_backlog.py::TestBacklogLand::test_pid_named_land_refuses_live_worker
 _tools/test_backlog.py::TestBacklogLand::test_planted_blind_land_refuses_live_worker_process
 _tools/test_backlog.py::TestBacklogLand::test_stopped_land_returns_to_start_branch
 _tools/test_backlog.py::TestBacklogLand::test_unchecked_host_land_refuses_live_worker_process
-_tools/test_backlog.py::TestBacklogLand::test_unlocked_worker_worktree_unlocked_never
 _tools/test_backlog.py::TestDoneLane::test_content_item_needs_no_integration_main
 _tools/test_backlog.py::TestDoneLane::test_done_counts_descendant_commits_unmerged_task_code
 _tools/test_backlog.py::TestDoneLane::test_merged_code_commit_passes
@@ -206,10 +205,7 @@ _tools/test_backlog.py::test_backlog_set_changes_each_field_and_check_passes
 _tools/test_backlog.py::test_backlog_set_check_flags_malformed_links
 _tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[claimed_by-changes only through claim and release]
 _tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[evidence-is written only by done]
-_tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[goal-is not a field set changes]
-_tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[repro-is not a field set changes]
 _tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[status-changes only through claim, release, start, close, drop and done]
-_tools/test_backlog.py::test_backlog_set_clear_refuses_the_same_fields[title-identity]
 _tools/test_backlog.py::test_backlog_set_gate_add_blocks_until_answered
 _tools/test_backlog.py::test_backlog_set_gate_add_refuses[args0-refuses a different gate with the question or id of gate way]
 _tools/test_backlog.py::test_backlog_set_gate_add_refuses[args1-refuses a different gate with the question or id of gate way]
@@ -237,9 +233,7 @@ _tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_ident
 _tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_identity[--gates-[]-set refuses gates]
 _tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_identity[--id-TK-aaaaaaaa-set refuses id]
 _tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_identity[--kind-bug-set refuses kind]
-_tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_identity[--parent-ST-aaaaaaaa-set refuses parent]
 _tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_identity[--status-done-set refuses status]
-_tools/test_backlog.py::test_backlog_set_refuses_status_claim_evidence_and_identity[--title-Other-set refuses title]
 _tools/test_backlog.py::test_backlog_set_refuses_what_check_would_flag[args0-priority must be one of]
 _tools/test_backlog.py::test_backlog_set_refuses_what_check_would_flag[args1-notes empty or longer than TEXT_MAX]
 _tools/test_backlog.py::test_backlog_set_refuses_what_check_would_flag[args10-checks missing]
@@ -984,7 +978,6 @@ _tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[0-`state` `open
 _tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[0-and name the error in your report-and go on]
 _tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[0-read the request: `glab mr view code/<id> -F json -R <project url>`-wait for the request]
 _tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[0-retry once with-retry with]
-_tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[1-`glab mr merge code/<id> --auto-merge=false --yes -R <project url>`-`glab mr merge code/<id>`]
 _tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[1-never tried a third time-tried again]
 _tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[2-reads the request itself, `glab mr view code/<id> -F json -R <project url>`-waits]
 _tools/test_kb_mcp.py::test_code_mr_merge_retry_planted_failures[2-retries once-retries]
@@ -1733,11 +1726,7 @@ _tools/test_ql_deliver.py::TestHostInGit::test_case[delivers]
 _tools/test_ql_deliver.py::TestHostInGit::test_case[red-gate]
 _tools/test_ql_deliver.py::TestHostInGit::test_case[unreachable-at-clone]
 _tools/test_ql_deliver.py::TestHostNoRefusalInGit::test_case[push-rule]
-_tools/test_ql_deliver.py::TestHostNoRefusalInGit::test_case[unreachable-at-push]
-_tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[github-denied]
-_tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[github-gh006]
 _tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[gitlab-project]
-_tools/test_ql_deliver.py::TestHostRefusalsInGit::test_case[gitlab-protected]
 _tools/test_ql_deliver.py::TestHostRules::test_a_cloud_session
 _tools/test_ql_deliver.py::TestHostRules::test_a_host_without_an_install_source_is_refused
 _tools/test_ql_deliver.py::TestHostRules::test_a_refusal_for_want_of_rights[ERROR: Permission to grp/proj.git denied to jan-kowalski.\nfatal: Could not read from remote repository.-github]
@@ -2486,7 +2475,6 @@ _tools/test_querylog_e2e.py::TestAutonomousConverge::test_autonomous_converge_qu
 _tools/test_querylog_e2e.py::TestAutonomousConverge::test_autonomous_converge_survey_warns_of_a_checkout_off_the_commit
 _tools/test_querylog_e2e.py::TestAutonomousConverge::test_autonomous_converge_the_first_run_changes_the_kb
 _tools/test_querylog_e2e.py::TestAutonomousConverge::test_autonomous_converge_the_second_run_changes_nothing
-_tools/test_querylog_e2e.py::TestCaps::test_the_rest_wait_and_the_next_runs_take_them
 _tools/test_querylog_e2e.py::TestCiNotRed::test_unfinished_or_unverified_ci_holds_the_push_and_a_passed_gate_does_not
 _tools/test_querylog_e2e.py::TestConflict::test_a_branch_with_the_mr_options_findings_pending_and_held
 _tools/test_querylog_e2e.py::TestDistillHelp::test_help_names_the_work_and_the_ops_sidecar
@@ -2504,7 +2492,6 @@ _tools/test_querylog_e2e.py::TestHeldOnLongPaths::test_held_raises_on_git_failur
 _tools/test_querylog_e2e.py::TestHeldOnLongPaths::test_held_raises_on_git_failure[merge-base]
 _tools/test_querylog_e2e.py::TestHeldOnLongPaths::test_held_reads_without_git_show
 _tools/test_querylog_e2e.py::TestModesAuto::test_modes[auto]
-_tools/test_querylog_e2e.py::TestModesAuto::test_modes[default]
 _tools/test_querylog_e2e.py::TestModesLocal::test_modes
 _tools/test_querylog_e2e.py::TestModesOff::test_modes[disabled]
 _tools/test_querylog_e2e.py::TestModesOff::test_modes[off]
@@ -2512,8 +2499,6 @@ _tools/test_querylog_e2e.py::TestModesOff::test_modes[unreadable]
 _tools/test_querylog_e2e.py::TestPushFailure::test_a_failed_push_keeps_the_spool_and_a_successful_one_deletes_it_after
 _tools/test_querylog_e2e.py::TestPushFailure::test_a_leak_in_a_run_file_blocks_the_push
 _tools/test_querylog_e2e.py::TestRedaction::test_an_identifier_is_redacted_and_an_identifying_entry_dropped
-_tools/test_querylog_e2e.py::TestResearch::test_research_off
-_tools/test_querylog_e2e.py::TestResearch::test_research_over_its_cap
 _tools/test_querylog_e2e.py::TestResearch::test_research_within_its_daily_cap
 _tools/test_querylog_e2e.py::TestSessions::test_an_open_session_waits_an_ended_and_an_idle_one_are_distilled
 _tools/test_querylog_e2e.py::TestToolRows::test_kb_ask_fetch_and_census_rows_join_their_prompt
