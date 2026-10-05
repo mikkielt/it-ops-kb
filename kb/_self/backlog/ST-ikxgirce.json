@@ -2,7 +2,7 @@
   "id": "ST-ikxgirce",
   "kind": "story",
   "title": "A resolved rebase conflict in a tool file is checked to parse and keep both sides' definitions before land goes on",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,19 @@
   "depends_on": [
     "ST-g2xvcjq5"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "49bfcdead23e889abe83953928d900297af3be74",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "resolved_conflict_keeps_both_sides"
+        ],
+        "exit": 0,
+        "sha256": "9a71245375f49371"
+      }
+    ]
+  }
 }
