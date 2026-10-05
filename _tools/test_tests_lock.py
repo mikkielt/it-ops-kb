@@ -98,11 +98,11 @@ def test_tests_py_named_files_glob_takes_lock(monkeypatch, tmp_path):
     assert not tests_py.named_files_only(many)
     assert tests_py.wants_host_lock(many + ["-q"])
     assert not tests_py.wants_host_lock(many + ["-k", "x"])  # -k stays lock free
-    assert _full_flags(monkeypatch, [("full", many), ("full", few)]) == [True, False]
+    assert _full_flags(monkeypatch, [("full", many), ("full", few)]) == [False, False]  # a file selection (BG-s3pxvjk4)
     assert _recorded_modes(monkeypatch, tmp_path, few) == ["files"]
-    assert _recorded_modes(monkeypatch, tmp_path, many) == ["full"]
+    assert _recorded_modes(monkeypatch, tmp_path, many) == ["files"]  # takes the lock, still a file selection
     monkeypatch.setenv("KB_TESTS_FAST", "1")
-    assert _recorded_modes(monkeypatch, tmp_path, many) == ["fast"]
+    assert _recorded_modes(monkeypatch, tmp_path, many) == ["files"]
     assert _recorded_modes(monkeypatch, tmp_path, few) == ["files"]
 
 
@@ -115,3 +115,14 @@ def test_run_row_selects_nothing(monkeypatch, tmp_path):
     monkeypatch.setenv("KB_TESTS_FAST", "1")
     assert _recorded_modes(monkeypatch, tmp_path, ["-k", "x"]) == ["keyword"]
     assert ql_capture.ops_problems({"event": "test.run", "mode": "keyword", "ms": 1, "exit": 5}) == []
+
+
+def test_run_row_selects_nothing_many_named_files_are_files(monkeypatch, tmp_path):
+    """BG-s3pxvjk4: a run naming more test files than NAMED_FILES_LOCK_FREE (a shell glob) is recorded as mode
+    `files`, never `full`; no path or the _tools directory stays `full`."""
+    monkeypatch.delenv("KB_TESTS_FAST", raising=False)
+    many = _many_files(tests_py.NAMED_FILES_LOCK_FREE + 2)
+    assert tests_py.run_scope(many, False, False) == "files"
+    assert _recorded_modes(monkeypatch, tmp_path, many) == ["files"]
+    assert _recorded_modes(monkeypatch, tmp_path, []) == ["full"]
+    assert _recorded_modes(monkeypatch, tmp_path, ["_tools"]) == ["full"]
