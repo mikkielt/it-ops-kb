@@ -1,0 +1,31 @@
+{
+  "id": "ST-leqf5onn",
+  "kind": "story",
+  "title": "bl_items.py holds backlog.py's item writers, so backlog.py keeps only its usage and dispatch",
+  "status": "draft",
+  "parent": "EP-uzf2w6ym",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_items.py holds the item writers backlog.py keeps whole today (new, fmt, claim, release, answer with its decision recording, set, move, reopen, gate, host-check, fire, drop, referrers, goal, parse_cmd, changed_item(s) and their argument builders), their tests move to test_bl_items.py keeping their names and patch targets, backlog.py holds its usage text, registration and dispatch only, and the keep-whole verdict in kb/_self/backlog.md is removed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_split_items"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/backlog.py",
+    "_tools/test_bl_items.py",
+    "_tools/test_backlog.py",
+    "_tools/test_layout.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "Left from TK-xs5zfyo5, which kept the item writers whole in backlog.py with a written verdict: about 630 lines of backlog.py and about 900 lines of test_backlog.py move. Other test files patch or call backlog.cmd_* and backlog.run_decide (grep before planning) and widen the touches, so the move is announced as a shared-file move and lands as one atomic commit. The keep-whole test bl_split_facade_only (test_layout.py, FACADE_KEEP) shrinks to the dispatch once it lands."
+}

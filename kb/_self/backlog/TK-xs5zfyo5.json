@@ -2,7 +2,7 @@
   "id": "TK-xs5zfyo5",
   "kind": "task",
   "title": "backlog.py is the facade: its commands, usage and dispatch only",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -34,5 +34,6 @@
     "TK-ajwqcbpm",
     "TK-dtybnlcg",
     "TK-urxtzpya"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
