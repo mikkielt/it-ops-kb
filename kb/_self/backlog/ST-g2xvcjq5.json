@@ -1,0 +1,19 @@
+{
+  "id": "ST-g2xvcjq5",
+  "kind": "story",
+  "title": "A planted test covers each clause of an item's goal",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-item's planted-failure step asks for one planted case per clause of the goal, so a clause cannot go unmet while the item's tests pass. Answers the reviews of SP-xdzgepun and SP-42bn4vz7, which found unmet clauses in BG-53f6xe32, BG-a3ubazze, BG-6a7jiylf, ST-q4sgzlz6, TK-zcji275w and ST-gpodng3o.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "planted_case_per_goal_clause"
+      ]
+    }
+  ]
+}

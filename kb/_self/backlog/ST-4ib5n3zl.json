@@ -1,0 +1,19 @@
+{
+  "id": "ST-4ib5n3zl",
+  "kind": "story",
+  "title": "An item's touches are planned from referrers and the doc map",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning (kb-backlog, kb-sprint plan) sets an item's touches from backlog.py referrers and kb/_self/map.csv, so touches are neither wider than the change nor missing a doc the code maps to. Answers BG-ncpteupy (a bl_*.py glob that overlapped another worker) and BG-iu53ncyj (tools.md missing).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "touches_planned_from_referrers"
+      ]
+    }
+  ]
+}

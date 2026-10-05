@@ -1,0 +1,19 @@
+{
+  "id": "ST-dhnamkia",
+  "kind": "story",
+  "title": "check's docs warnings stay near zero by planning the docs into touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning adds the docs a code item maps to (the check docs warnings) to its touches when it is filed or scheduled, so the warnings that BG-qyhgmm52 widened stay actionable instead of noise. Answers SP-xdzgepun, where the warnings rose from 8 to over 30.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "docs_warnings_planned_into_touches"
+      ]
+    }
+  ]
+}

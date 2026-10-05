@@ -1,0 +1,19 @@
+{
+  "id": "ST-huye4kew",
+  "kind": "story",
+  "title": "check flags an open item whose repro or checks name a moved file or select no test",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check warns of an open item whose repro or checks read a path that is gone or run a -k selector that collects nothing, so a split or a drop does not leave items that can never finish. Answers BG-57n4r577 (a repro reading a moved test file) and ST-tbi3rras (checks of a dropped task).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_flags_stale_repro_paths"
+      ]
+    }
+  ]
+}

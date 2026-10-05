@@ -1,0 +1,19 @@
+{
+  "id": "ST-qfw6o5fq",
+  "kind": "story",
+  "title": "Each sprint worker session starts in a worktree of its own",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-item and the runbook say a parallel worker session (not only an orchestrator's subagent) works in its own git worktree from its first command, so no two sessions share a checkout. Answers SP-xdzgepun's start, where two workers shared the main checkout and one's claim commit landed on the other's branch.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_session_own_worktree_documented"
+      ]
+    }
+  ]
+}

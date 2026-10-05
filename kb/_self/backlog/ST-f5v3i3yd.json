@@ -1,0 +1,19 @@
+{
+  "id": "ST-f5v3i3yd",
+  "kind": "story",
+  "title": "A repro that runs a tool also checks the tool's exit code",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py new warns of a repro that runs a tool and reads only its stdout, so a crash that prints nothing cannot pass as a fix. Answers BG-ncpteupy, whose repro passed while referrers crashed on a NameError.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "repro_tool_exit_code_warning"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "ST-g22owosx",
+  "kind": "story",
+  "title": "The runbook says whether a provisional answer can be confirmed by a delegate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md states who may confirm a provisional answer when the operator delegates (or that no delegate can), and the CLI matches it. Answers the SP-xdzgepun review, where a delegated confirmation was asked for and refused.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "delegated_confirmation_rule"
+      ]
+    }
+  ]
+}

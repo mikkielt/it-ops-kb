@@ -1,0 +1,19 @@
+{
+  "id": "ST-ji3r2uuv",
+  "kind": "story",
+  "title": "Every derived cache key holds the form of the rule that made it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/code.md states that a cache of derived results carries a form constant of the rule that produced it in its key (as PROJECTION_FORM and SCAN_FORM do), and a test finds a cache key without one. Answers BG-ke2xj34l, where a leak verdict cached under a laxer scan rule could be reused.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cache_key_holds_form"
+      ]
+    }
+  ]
+}
