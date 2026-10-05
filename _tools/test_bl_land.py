@@ -18,7 +18,7 @@ import bl_land
 import bl_testkit
 from bl_check import HOST_BOUND_GATE
 from bl_testkit import (
-    PASS, TOOL, TOOLS, argstr, b, commit, edit, finish_task, is_file, item, land, sh,
+    PASS, TOOL, TOOLS, argstr, b, commit, edit, finish_task, is_file, item, item_json, land, sh,
     story_with_touches,
 )
 
@@ -312,6 +312,28 @@ def test_close_summary_names_goal_clauses(sprint):
     assert lines[i + 1] == f"  1. story b exists and is written: {st} “Story”", lines[i:]
     assert lines[i + 2] == f"  2. the bug's file c exists: {bg} “Bug”", lines[i:]
     assert lines[i + 3] == f"  3. the release notes carry every flag: unmet, carried by {moved} “Release notes”", lines[i:]
+
+
+def test_review_reruns_done_checks(sprint):
+    """ST-fo3ztjcs planted (SP-w3xmbdra closed four items whose perfcheck check exits 1 on main): the review story's
+    done re-runs every done item's checks on the tip; a done task whose file was removed afterwards fails its check
+    there, and the review is refused naming the task and its check; once the file is back the review is done."""
+    repo, tk, st, bg, rv = (sprint[k] for k in ("repo", "tk", "st", "bg", "rv"))
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+    commit(repo, "b and c", f"{tk}, {bg}")
+    for iid in (tk, st, bg):
+        assert b(repo, "done", iid)[0] == 0
+    edit(repo, rv, checks=[{"run": PASS}])
+    (repo / "src" / "b.txt").unlink()  # planted: a later change breaks the done task's check on the tip
+    commit(repo, "state")
+    code, out = b(repo, "done", rv)
+    assert code == 1 and "check(s) of done items fail on the sprint's tip" in out and f"{tk} “Task”" in out, out
+    assert item_json(repo, rv)["status"] != "done"
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    commit(repo, "b back")
+    code, out = b(repo, "done", rv)
+    assert code == 0 and f"ok   rerun {tk}" in out, out
 
 
 def finish(sprint):

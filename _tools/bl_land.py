@@ -139,6 +139,23 @@ def refuse_done(iid, t0, reasons, message, checks=()):
     raise Refused(message)
 
 
+def rerun_done_checks(bl, sid):
+    """[(item id, check, exit code)] of each check and bug repro of the sprint's done items, the review story left
+    out, that fails when run once more on the checkout as it is (the sprint's tip): a check that passed when its item
+    was done and fails now (another item broke it, or it never passed on main) is named before the sprint closes."""
+    out = []
+    for i in sorted(bl.sprint_items(sid)):
+        it = bl.items[i]
+        if it.get("status") != "done" or it.get("review"):
+            continue
+        for c in list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else []):
+            ok, code, _ = run_check(bl.root, c)
+            say(f"{'ok  ' if ok else 'FAIL'} rerun {i}: {shlex.join(c['run'])}")
+            if not ok:
+                out.append((i, c, code))
+    return out
+
+
 def cmd_done(bl, a):
     t0 = time.monotonic()
     iid = need(bl, a.id)
@@ -219,6 +236,14 @@ def cmd_done(bl, a):
         noop_proof(bl, iid, passed)
     except Refused as e:
         refuse_done(iid, t0, ["no-op-proof"], str(e), [c["run"] for c, out in passed if noop_output(out)])
+    if it.get("review"):  # every done item's proof, once more on the sprint's tip: one that fails here does not close
+        stale = rerun_done_checks(bl, bl.sprint_of(iid))
+        if stale:
+            refuse_done(iid, t0, ["check-failed"], f"{bl.label(iid)} is not done: {len(stale)} check(s) of done items "
+                        "fail on the sprint's tip:\n  " + "\n  ".join(f"{bl.label(i)}: `{shlex.join(c['run'])}` exits "
+                                                                     f"{code}" for i, c, code in stale)
+                        + "\nreopen each (backlog.py reopen ID --why ...) and fix it, or fix its check",
+                        [c["run"] for _, c, _ in stale])
     if a.dry_run:
         say(f"{bl.label(iid)} would be done")
         return 0
