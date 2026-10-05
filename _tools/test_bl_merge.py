@@ -43,8 +43,10 @@ def glab_calls(calls):
 def test_merge_only_own_code_branch(world):
     bl, calls = world
     assert merge(bl, "TK-aaaaaaaa") == 0
-    assert glab_calls(calls) == [["glab", "mr", "merge", "code/TK-aaaaaaaa", "--auto-merge=false", "--yes", "-R",
-                                  "https://gitlab.example.com/team/kb"]]
+    assert glab_calls(calls) == [
+        ["glab", "mr", "view", "code/TK-aaaaaaaa", "-F", "json", "-R", "https://gitlab.example.com/team/kb"],
+        ["glab", "mr", "merge", "code/TK-aaaaaaaa", "--auto-merge=false", "--yes", "-R",
+         "https://gitlab.example.com/team/kb"]]
 
 
 def test_merge_only_own_code_branch_unknown_item_refused(world):
@@ -67,3 +69,21 @@ def test_merge_only_own_code_branch_takes_no_project_argument():
     bl_land.args_merge(p)
     with pytest.raises(SystemExit):
         p.parse_args(["TK-aaaaaaaa", "-R", "other/project"])
+
+
+@pytest.mark.parametrize("state, code, merges", [("merged", 0, False), ("closed", 1, False), ("opened", 0, True)])
+def test_merge_reports_already_merged(world, monkeypatch, state, code, merges):
+    """ST-prtoem5q planted: a stubbed glab reports the request's state; one auto-merge already merged is reported
+    merged with exit 0 and no merge call (glab would refuse it), a closed one exits 1, an open one is merged."""
+    bl, calls = world
+
+    def run(argv, cwd=None):
+        calls.append(argv)
+        if argv[:3] == ["git", "remote", "get-url"]:
+            return 0, "git@gitlab.example.com:team/kb.git\n", ""
+        if argv[:3] == ["glab", "mr", "view"]:
+            return 0, '{"state": "%s", "merged_at": "2026-10-05T12:00:00Z"}' % state, ""
+        return 0, "merged", ""
+    monkeypatch.setattr(bl_land, "run", run)
+    assert merge(bl, "TK-aaaaaaaa") == code
+    assert any(c[:3] == ["glab", "mr", "merge"] for c in glab_calls(calls)) == merges

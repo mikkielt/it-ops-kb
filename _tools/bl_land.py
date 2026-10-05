@@ -1479,8 +1479,23 @@ def merge_target(bl, iid):
 def cmd_merge(bl, a):
     """Merge the item's own code/ID merge request on the integration remote's project, now (`glab mr merge
     --auto-merge=false --yes`): the one way an agent merges, since .claude/settings.json allows no `glab mr merge`.
-    Another item's branch and another project are refused (exit 2)."""
+    Another item's branch and another project are refused (exit 2). Its state is read first (`glab mr view -F json`):
+    one auto-merge already merged is reported merged, exit 0, so land runs next; a closed one is exit 1; only an open
+    one is merged (glab refuses a merged one before any call)."""
     branch, project = merge_target(bl, a.id)
+    # its state first: auto-merge may have merged it seconds before, and glab then refuses with no open request
+    vcode, vout, _ = run(["glab", "mr", "view", branch, "-F", "json", "-R", project], cwd=bl.root)
+    try:
+        view = json.loads(vout) if not vcode else {}
+    except ValueError:
+        view = {}
+    state = view.get("state") if isinstance(view, dict) else None
+    if state == "merged":
+        say(f"merge {branch} ({project}): already merged" + (f" at {view['merged_at']}" if view.get("merged_at") else ""))
+        return 0
+    if state == "closed":
+        say(f"merge {branch} ({project}): the merge request is closed, not merged")
+        return 1
     code, out, err = run(["glab", "mr", "merge", branch, "--auto-merge=false", "--yes", "-R", project], cwd=bl.root)
     say(f"merge {branch} ({project}): {'merged' if code == 0 else 'failed'}")
     text = (out or err or "").strip()
