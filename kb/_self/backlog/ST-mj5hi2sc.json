@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Review work done except done: the full tests.py (3947 passed, 7 skipped) and stress_test.py (98 passed) ran green; backlog.py cost --rework was printed for the sprint and each story and bug (one distilled run, the rest in sessions still open); the fresh-context review found six gaps, filed to the backlog: BG-ke2xj34l, BG-4zpv4iol, BG-cex7nxdo, BG-gh2ceakk, BG-ytcjstai, BG-kgf2igc7. Left: the operator confirms or changes ST-clsddgen's provisional answer to gate map, then backlog.py done ST-mj5hi2sc and the close retrospective.",
   "claimed_by": "it-ops-kb worker1"
 }
