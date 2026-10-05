@@ -2,7 +2,7 @@
   "id": "BG-7kyxgcn3",
   "kind": "bug",
   "title": "check warns of two tasks as unordered when one's story depends on the other's story",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "_tools/test_bl_plan.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
