@@ -2,7 +2,7 @@
   "id": "ST-3tgtrzd3",
   "kind": "story",
   "title": "backlog.py set replaces an item's title, goal, repro, severity and parent",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Its change is backlog.py's own item writers (cmd_set, cmd_goal), which stay in the facade under the keep-whole verdict until ST-leqf5onn moves them to bl_items.py: the facade touch warning is accepted."
+  "notes": "Its change is backlog.py's own item writers (cmd_set, cmd_goal), which stay in the facade under the keep-whole verdict until ST-leqf5onn moves them to bl_items.py: the facade touch warning is accepted.",
+  "claimed_by": "it-ops-kb worker1"
 }
