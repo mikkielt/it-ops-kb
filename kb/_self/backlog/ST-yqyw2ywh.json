@@ -2,7 +2,7 @@
   "id": "ST-yqyw2ywh",
   "kind": "story",
   "title": "kb-sprint plan reviews a story's goal figures against its checks",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "ST-aah3cb3o"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
