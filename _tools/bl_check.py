@@ -45,11 +45,13 @@ FACT_KEY = re.compile(r"[0-9a-f]{12}")
 class KbAtHead:
     """The kb roots of a clone (kb/<name>/ with a _root.md), read on demand for the references of an item's
     `knowledge`. Source ids, QK answer ids, topics and fact keys are resolved with the kb's own readers (kbid,
-    kbfacts), so a fact key is the one _anchors.csv and doc2query use. Files are read from the checkout, which is
-    HEAD once the work is committed."""
+    kbfacts), so a fact key is the one _anchors.csv and doc2query use. Files are read at HEAD (`git show HEAD:<path>`),
+    so an uncommitted edit neither makes a fact HEAD still holds stale nor gives a ref an article HEAD lacks
+    (BG-xicqvm4t); outside a git repository, or before its first commit, they are read from the tree."""
 
     def __init__(self, root):
         import kbcommon
+        self.root, self._head = Path(root).resolve(), None
         self.roots, self._sources, self._facts = {}, None, {}
         kb = Path(root) / "kb"
         for p in sorted(kb.iterdir()) if kb.is_dir() else []:
@@ -59,12 +61,28 @@ class KbAtHead:
                 except kbcommon.RootError:
                     continue  # check.py reports a malformed root
 
-    @staticmethod
-    def text(path):
+    def at_head(self):
+        """True when the clone has a HEAD commit to read from (computed once)."""
+        if self._head is None:
+            p = subprocess.run(["git", "-C", str(self.root), "rev-parse", "--verify", "-q", "HEAD"],
+                               capture_output=True, text=True)
+            self._head = p.returncode == 0
+        return self._head
+
+    def text(self, path):
+        """A kb file's text at HEAD, or None when HEAD has no such file; read from the tree without a HEAD."""
+        path = Path(path)
+        if not self.at_head():
+            try:
+                return path.read_text(encoding="utf-8-sig", errors="replace")
+            except OSError:
+                return None
         try:
-            return Path(path).read_text(encoding="utf-8-sig", errors="replace")
-        except OSError:
+            rel = path.resolve().relative_to(self.root).as_posix()
+        except ValueError:
             return None
+        p = subprocess.run(["git", "-C", str(self.root), "show", f"HEAD:{rel}"], capture_output=True)
+        return p.stdout.decode("utf-8-sig", errors="replace") if p.returncode == 0 else None
 
     def split(self, qpath):
         """(root name, path inside the root) of `<root>/<path>`; a path whose first part names no root is public's."""
