@@ -2,7 +2,7 @@
   "id": "ST-mbnahtlc",
   "kind": "story",
   "title": "The weekly digest reports the ops sidecar",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P2",
@@ -24,5 +24,6 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
-  "notes": "Narrowed in the 2026-10-05 backlog review: the kblog.py propose run left the goal, since its check (kblog_propose_converges) already passed and a dry run over the committed store would propose 6608 rows, mostly the retired fleet's land runs; that run is ST-mbnahtlc's sibling story with its own gate on the window and events."
+  "notes": "Narrowed in the 2026-10-05 backlog review: the kblog.py propose run left the goal, since its check (kblog_propose_converges) already passed and a dry run over the committed store would propose 6608 rows, mostly the retired fleet's land runs; that run is ST-mbnahtlc's sibling story with its own gate on the window and events.",
+  "claimed_by": "it-ops-kb worker2"
 }
