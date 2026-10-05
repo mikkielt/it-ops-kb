@@ -20,5 +20,5 @@
     "_tools/test_sync.py",
     "kb/_self/git.md"
   ],
-  "notes": "Dropped: cleared by BG-eyuf3cxw (b950f960): the false warning on SP-gfz3rl64's close amend came from the hook reading HEAD on an amend made with -F; a close amend in a throwaway clone warns with the old hook and not with the fixed one. Its repro names a sprint whose file is in neither the commit nor its parent, which check-trailers refuses as well, so the hook's warning there matches the gate"
+  "notes": "Dropped: cleared by BG-eyuf3cxw (b950f960): the false warning on SP-gfz3rl64's close amend came from the hook reading HEAD on an amend made with -F; a close amend in a throwaway clone warns with the old hook and not with the fixed one. Its repro names a sprint whose file is in neither the commit nor its parent, which check-trailers refuses as well, so the hook's warning there matches the gate Dropped: cleared by BG-eyuf3cxw's fix (the commit-msg hook reads HEAD's parent on an amend made with -F, -m or -t): SP-wmukiu3s's close amend, c995ec67e, raised no false alarm"
 }
