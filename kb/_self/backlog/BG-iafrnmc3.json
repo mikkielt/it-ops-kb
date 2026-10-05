@@ -2,7 +2,7 @@
   "id": "BG-iafrnmc3",
   "kind": "bug",
   "title": "backlog.py check stays silent when a code task's docs sit in a sibling, an earlier task or its parent",
-  "status": "todo",
+  "status": "dropped",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
@@ -24,5 +24,5 @@
     "_tools/bl_plan.py",
     "_tools/test_bl_plan.py"
   ],
-  "notes": "Merged from ST-zjsmb6ni: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs. Merged from ST-nftaqmb7: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs."
+  "notes": "Merged from ST-zjsmb6ni: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs. Merged from ST-nftaqmb7: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs. Dropped: merged into BG-qyhgmm52, which now carries its goal, repro (as a check) and touches"
 }
