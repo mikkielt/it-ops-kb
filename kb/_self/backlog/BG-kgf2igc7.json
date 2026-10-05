@@ -2,7 +2,7 @@
   "id": "BG-kgf2igc7",
   "kind": "bug",
   "title": "kb-backlog says set --sprint would leave a draft item in an active sprint, but set refuses that case",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "the defect is a skill's wording, so there is no behaviour to run; the repro checks the false sentence is gone and a reader confirms the new one matches set's refusal",
   "touches": [
     ".claude/skills/kb-backlog/SKILL.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
