@@ -118,6 +118,24 @@ def test_repro_fails_for_its_own_error_classifier():
     assert f(["python3", "t.py"], None, "Command 't.py' timed out after 1800 seconds") is None
 
 
+def test_repro_own_import_error():
+    """ST-4mdnjuep planted: a -c string that imports a name its module never had (a missing module, a missing name
+    in a from-import, a module's missing attribute) fails for its own error, and so does one importing a test module
+    that needs pytest; the same errors raised inside the code under test are failures it accepts."""
+    f = backlog.own_failure
+    for code_ in ("import os; os.no_such_name_x", "from os import no_such_name_x", "import no_such_module_x"):
+        p = subprocess.run([sys.executable, "-c", code_], capture_output=True, text=True)
+        assert "cannot import" in (f(["python3", "-c", code_], p.returncode, p.stdout + p.stderr) or ""), code_
+    tb = 'Traceback (most recent call last):\n  File "<string>", line 1, in <module>\n'
+    pytest_tb = tb + '  File "/r/_tools/test_backlog.py", line 9, in <module>\n    import pytest\n'
+    assert "needs pytest" in f(["python3", "-c", "import test_backlog"], 1,
+                               pytest_tb + "ModuleNotFoundError: No module named 'pytest'\n")
+    inner = tb + '  File "/r/_tools/bl_land.py", line 5, in own_failure\n    x.y\n'
+    for err in ("AttributeError: module 'os' has no attribute 'y'", "ImportError: cannot import name 'z' from 'os'"):
+        assert f(["python3", "-c", "import bl_land; bl_land.own_failure()"], 1, inner + err + "\n") is None, err
+    assert f(["python3", "-c", "x = None; x.y"], 1, tb + "AttributeError: 'NoneType' object has no attribute 'y'\n") is None
+
+
 def test_repro_fails_for_its_own_error_compound_shell():
     """BG-zvh7cvyo planted: a shell -c string that chains commands (&&, |) and misses a tool after its first word
     exits 127 for its own command, so both are refused as cannot start; a wrapper script (bash hook.sh) whose output

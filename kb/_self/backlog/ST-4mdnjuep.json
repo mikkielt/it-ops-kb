@@ -2,7 +2,7 @@
   "id": "ST-4mdnjuep",
   "kind": "story",
   "title": "A repro whose own code cannot import or start is its own error",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "BG-zvh7cvyo"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
