@@ -2,7 +2,7 @@
   "id": "ST-nfa6h7pg",
   "kind": "story",
   "title": "Review sprint: The retired autopilot leaves no code, event, test gap or hook rule behind",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6btkjg4l",
   "review": true,
   "priority": "P1",
@@ -28,5 +28,6 @@
         "_tools/stress_test.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
