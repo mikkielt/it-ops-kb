@@ -2,7 +2,7 @@
   "id": "ST-2zl2od7q",
   "kind": "story",
   "title": "Tests over the repository's live data do not depend on its size",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "_tools/test_kb_lookup.py",
     "_tools/test_backlog.py",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
