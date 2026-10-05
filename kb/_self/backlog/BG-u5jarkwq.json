@@ -2,7 +2,7 @@
   "id": "BG-u5jarkwq",
   "kind": "bug",
   "title": "perfcheck ids against the committed baseline exits 1 on main: the ten ids the sprint dropped on purpose are still in it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
@@ -33,6 +33,8 @@
     "_tools/test_ids_baseline.txt",
     "_tools/perfcheck.py",
     "_tools/test_perfcheck.py",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "_tools/test_ids_dropped.txt"
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
