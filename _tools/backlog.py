@@ -365,8 +365,34 @@ def cmd_claim(bl, a):
         raise Refused(f"{bl.label(iid)} is not ready:\n  " + "\n  ".join(w))
     if it.get("status") == "doing" and it.get("claimed_by") != a.by:
         raise Refused(f"{bl.label(iid)} is claimed by {it['claimed_by']}")
+    # one session per checkout: the claims made in this working tree (its git toplevel; a worktree has its own) are
+    # recorded in its own git dir, which git never commits whatever the ignore rules, and a claim by another session
+    # while one of them is still doing here is refused before anything is written, so no claim commit lands on another
+    # session's branch
+    import json
+    rev = subprocess.run(["git", "-C", str(bl.root), "rev-parse", "--show-toplevel", "--absolute-git-dir"],
+                         capture_output=True, text=True, encoding="utf-8", errors="replace").stdout.split("\n")
+    top, gitdir = (rev + ["", ""])[:2] if len(rev) >= 2 and rev[1] else (str(bl.root), "")
+    ledger = Path(gitdir) / "kb-backlog-claims.json" if gitdir else None
+    try:
+        here = json.loads(ledger.read_text(encoding="utf-8")) if ledger else {}
+    except (OSError, ValueError):
+        here = {}
+    busy = sorted(i for i, by in here.items() if by != a.by and i != iid and i in bl.items
+                  and bl.items[i].get("status") == "doing" and bl.items[i].get("claimed_by") == by)
+    if busy:
+        raise Refused(f"claim refuses {bl.label(iid)} for {a.by}: {here[busy[0]]} works in this checkout ({top}) on "
+                      f"{', '.join(bl.label(i) for i in busy)}; each session works in its own worktree "
+                      "(git worktree add), so its claim commits never land on another session's branch")
     it.update(status="doing", claimed_by=a.by)
     bl.save(it)
+    here = {i: by for i, by in here.items() if i in bl.items and bl.items[i].get("status") == "doing"}
+    here[iid] = a.by
+    try:
+        if ledger:
+            ledger.write_text(json.dumps(here, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    except OSError:
+        pass  # the record guards the next claim; a checkout it cannot be written in is not refused for it
     say(f"claimed {bl.label(iid)} for {a.by}")
     commit_written(bl, a, "claim", iid)
     return 0
