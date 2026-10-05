@@ -642,8 +642,10 @@ def record_problems(r, where, ids, k):
             out.append(f"{where}: promotions do not follow each other")
         elif chain[-1] != r.get("stage") and r.get("stage") in STAGES:
             out.append(f"{where}: stage {r.get('stage')} is not its last promotion's {chain[-1]}")
-    if "tried" in r and not (r.get("kind") == "gap" and isinstance(r["tried"], str) and DAY.fullmatch(r["tried"])):
-        out.append(f"{where}: `tried` is not the day of a gap finding's tried note: {r['tried']!r:.40}")
+    if "tried" in r and not ((r.get("kind") == "gap" or (r.get("kind") == "eval" and r.get("state") == "no-fix"))
+                             and isinstance(r["tried"], str) and DAY.fullmatch(r["tried"])):
+        out.append(f"{where}: `tried` is not the day of a gap finding's, or a no-fix eval finding's, tried note: "
+                   f"{r['tried']!r:.40}")
     if r.get("kind") == "gap" and r.get("stage") in STAGES[2:] and not ARTICLE.fullmatch(str(r.get("article", ""))):
         out.append(f"{where}: a gap finding at stage {r.get('stage')} names no article")
     return out

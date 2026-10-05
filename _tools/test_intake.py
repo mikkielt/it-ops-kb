@@ -1076,6 +1076,22 @@ def test_intake_stranded_every_non_terminal_state_is_reported(world):
     assert sorted(c.kind for c in found) == ["bug", "bug", "bug", "story"]
 
 
+def test_intake_stranded_close_tried_eval_no_fix_waits_queue_tried_days(world):
+    """ST-mqb5lnam planted: a no-fix eval finding closed --tried (its record carries the tried day) is not stranded
+    while the note is younger than QUEUE_TRIED_DAYS, and is again once older; a no-fix eval finding with no tried day
+    and a candidate-gap one keep today's rules."""
+    import ql_research
+    files = {}
+    recent = (datetime.date(2026, 1, 1) - datetime.timedelta(days=12)).isoformat()
+    old = (datetime.date(2026, 1, 1) - datetime.timedelta(days=ql_research.QUEUE_TRIED_DAYS + 5)).isoformat()
+    files.update(store_file(run_id(9, 1), finding("F-00000000001a", kind="eval", state="no-fix", tried=recent)))
+    files.update(store_file(run_id(9, 2), finding("F-00000000001b", kind="eval", state="no-fix", tried=old)))
+    files.update(store_file(run_id(9, 3), finding("F-00000000001c", kind="eval", state="no-fix")))
+    files.update(store_file(run_id(9, 4), finding("F-00000000001d", tried=recent)))
+    world.commit(1, "chore: store", files)
+    assert stranded_ids(world) == ["F-00000000001b", "F-00000000001c", "F-00000000001d"]
+
+
 def test_intake_stranded_terminal_and_early_stage_findings_are_not_reported(world):
     files = {}
     files.update(store_file(run_id(9, 1), finding("F-000000000001", state="fixed-since")))

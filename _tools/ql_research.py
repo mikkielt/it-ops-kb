@@ -643,7 +643,8 @@ def queue(store=None, limit=None, gate=None, day=None, kb_commit=None, out=print
 def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_commit=None, out=print, reject=False,
           written=None):
     """`close F-ID --claim|--tried NOTE|--reject`: one findings record for an open gap finding worked by
-    `/kb-research`. --claim: its _gaps.md entry must carry a `Resolved <day>:` note (the content rules), and the finding
+    `/kb-research`, or with --tried an eval finding whose newest record is no-fix (apply found no fix for the miss): its
+    record carries `tried` (the day) and the note, with no _gaps.md entry to write. --claim: its _gaps.md entry must carry a `Resolved <day>:` note (the content rules), and the finding
     is promoted to claim (by kb-research, `applied`). --tried: the dated note `  - Tried <day>: NOTE (topic: ...)` goes
     under the entry, and the record carries `tried` (the day). --reject: its entry must be gone from the ledger (removed
     as off the kb's domains), and the finding is put back from its stage to candidate-gap (by kb-research), `rejected`
@@ -656,6 +657,19 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
     day = day or datetime.datetime.now(datetime.timezone.utc).date().isoformat()
     last = finding_states(store)
     g = last.get(fid)
+    if g and g.get("kind") == "eval" and g.get("state") == "no-fix" and tried is not None and not claim and not reject:
+        # an eval miss apply found no fix for: no _gaps.md entry to note under, so the dated note goes in the record,
+        # and the stranded detector leaves the finding alone until the note is older than QUEUE_TRIED_DAYS
+        note = TOPIC_MARK.sub("", one_line(tried or "", 1000)).strip()
+        if not note:
+            out("close: --tried needs a note of what was tried and what it still needs")
+            return 1
+        rec = {**{k: v for k, v in g.items() if k != "observed"}, "tried": day, "observed": {"note": note}}
+        run_id, _ = write_findings(store, store_entries(store), [rec], ("no-fix",), kb_commit)
+        if written is not None:
+            written.append(run_path(store, run_id, findings=True))
+        out(f"close: {fid} tried {day} run={run_id} (an eval finding apply left no-fix)")
+        return 0
     if not g or g not in open_gaps(store, last):
         out(f"close: {fid} is no open gap finding of {shown(store)}")
         return 1

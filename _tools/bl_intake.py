@@ -931,7 +931,8 @@ def stranded_label(rec):
 def stranded_findings(root, days=None):
     """[(record, label, run id, age in days)] sorted by finding id: each finding of the committed store whose newest
     record is non-terminal (`stranded_label`) and more than `days` (default STRANDED_DAYS) days older than HEAD's commit
-    day, the run id's day being the record's. No commit, no store or a run id without a day gives none."""
+    day, the run id's day being the record's; a no-fix eval finding closed --tried is left out until its `tried` day is
+    QUEUE_TRIED_DAYS old. No commit, no store or a run id without a day gives none."""
     days = STRANDED_DAYS if days is None else days
     today = head_day(root)
     if today is None:
@@ -940,10 +941,17 @@ def stranded_findings(root, days=None):
     for run, rec in committed_findings(root):
         last[rec["id"]] = (rec, run)
     out = []
+    from ql_research import QUEUE_TRIED_DAYS  # the query log's own wait after a tried note
     for fid, (rec, run) in sorted(last.items()):
         label, m = stranded_label(rec), RUN_DAY.match(run)
         if not label or not m:
             continue
+        if label == "no-fix" and rec.get("kind") == "eval" and isinstance(rec.get("tried"), str):
+            try:  # a no-fix eval finding closed --tried waits, as a tried gap does, until its note is old
+                if (today - datetime.date.fromisoformat(rec["tried"])).days < QUEUE_TRIED_DAYS:
+                    continue
+            except ValueError:
+                pass
         try:
             age = (today - datetime.date(*(int(g) for g in m.groups()))).days
         except ValueError:
