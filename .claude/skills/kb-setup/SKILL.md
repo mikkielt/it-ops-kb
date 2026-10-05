@@ -1,6 +1,6 @@
 ---
 name: kb-setup
-description: Use when the it-ops-kb clone is fresh, a check or MCP server fails at start, or the user asks to set up the kb: checks Python, runs the checks and stress tests, installs the commit hook, registers the MCP servers, asks about the query log, reports pass/fail.
+description: Use when the it-ops-kb clone is fresh, a check or MCP server fails at start, or the user asks to set up the kb: checks Python, runs the checks and tests, installs the commit hook, registers the MCP servers, asks about the query log, reports pass/fail.
 ---
 
 # Set up it-ops-kb
@@ -16,7 +16,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 1. Python
 - Run `python3 --version`. Needs 3.11 or newer (the floor in `pyproject.toml`; CI tests it). Development and the tests use the newest stable CPython pinned in `.python-version` (3.14), which uv installs on the first `tests.py`.
-- The tools are stdlib-only: install nothing for them. If `python3` is missing, stop and tell the user how to install it for their OS. The tests need uv (`uv --version`); without it, tell the user to install uv (on a Windows host without Python, `_tools/install-python.ps1` below installs both; on one that has a Python and lacks only uv, the pinned uv release by hand as `python/uv-windows-install` shows, not pip; elsewhere https://docs.astral.sh/uv/) and mark the two test steps SKIPPED.
+- The tools are stdlib-only: install nothing for them. If `python3` is missing, stop and tell the user how to install it for their OS. The tests need uv (`uv --version`); without it, tell the user to install uv (on a Windows host without Python, `_tools/install-python.ps1` below installs both; on one that has a Python and lacks only uv, the pinned uv release by hand as `python/uv-windows-install` shows, not pip; elsewhere https://docs.astral.sh/uv/) and mark the test step SKIPPED.
 - Windows: `python3` exit 49 with "Python was not found" is the Store alias, not Python. Offer `_tools/install-python.ps1` (the pinned python.org installer, SHA-256 and signature checked, per user, adds `python3.exe`; then the pinned uv from its GitHub release, SHA-256 checked, into `%USERPROFILE%\.local\bin` on the user PATH; `-SkipUv` leaves uv out); install only when the user agrees. The script always installs the pinned Python too (there is no switch to skip it), so on a host that has another Python and lacks only uv, install the pinned uv release by hand as `python/uv-windows-install` shows. Run it with `-CheckOnly` first, then without.
   - Exit 3, or any `CONFLICT:` line: something already on the host conflicts with the install, and nothing was installed. Quote every `CONFLICT:` line to the user in the chat, word for word, and ask with AskUserQuestion how to proceed (resolve it themselves, or install anyway). Rerun with `-AcceptConflicts` only on their explicit answer, never on your own.
   - `NOTE:` and `WARNING:` lines: list them in the report. A `WARNING:` that `python` or `python3` in a new session does not start the new install goes to the user at once, as a conflict does.
@@ -26,8 +26,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Run each and record exit code and last line:
 - `python3 _tools/check.py` (expect `errors=0`)
 - `python3 _tools/fetch.py --offline` (expect `mismatch=0 unknown=0`)
-- `python3 _tools/stress_test.py` (expect no failures; about 35 s)
-- `python3 _tools/tests.py` (expect no failures; this is what CI runs, about 20 s; it needs uv, which installs pytest from `uv.lock` on first use)
+- `python3 _tools/tests.py` (expect no failures; this is what CI runs; it needs uv, which installs pytest from `uv.lock` on first use)
 - `python3 _tools/rag.py eval` (expect `passed` equal to `questions` on the last line: the lookup eval set)
 - `python3 _tools/rag.py pack "kerberos delegation"` (expect a `coverage:` line, fact lines with `path:line` and a `sources:` footer)
 

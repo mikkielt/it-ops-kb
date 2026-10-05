@@ -32,9 +32,8 @@ kb/_self/tools.md,_tools/build_index.py
 kb/_self/tools.md,_tools/fetch.py
 kb/_self/tools.md,_tools/census.py
 kb/_self/tools.md,_tools/selfdoc.py
-kb/_self/tools.md,_tools/stress_test.py
 kb/_self/tools.md,_tools/tests.py
-kb/_self/tools.md,_tools/testmap.py
+kb/_self/tools.md,_tools/tests_ceiling.json
 kb/_self/tools.md,_tools/perfcheck.py
 kb/_self/tools.md,_tools/conftest.py
 kb/_self/tools.md,_tools/kbcommon.py
@@ -120,7 +119,6 @@ kb/_self/tools.md,_tools/kbusage.py
 kb/_self/tools.md,_tools/kbotel.py
 kb/_self/querylog.md,_tools/kbusage.py
 kb/_self/embedding.md,_tools/kb_mcp.py
-kb/_self/embedding.md,_tools/fixtures/kb_mcp_contract.json
 kb/_self/hosting.md,_tools/kb_http.py
 kb/_self/content-rules.md,_tools/kbdecide.py
 kb/_self/content-rules.md,kb/*/_decisions.csv

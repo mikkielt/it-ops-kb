@@ -28,10 +28,8 @@
   "touches": [
     ".claude/skills/kb-git-sync/SKILL.md",
     ".claude/skills/kb-item/SKILL.md",
-    "_tools/test_kb_cohesion.py",
     "_tools/kg_merge.py",
     "_tools/kbgit.py",
-    "_tools/test_sync.py",
     "kb/_self/git.md",
     "kb/_self/tools.md",
     "AGENTS.md",

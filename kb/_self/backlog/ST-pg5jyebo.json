@@ -20,7 +20,6 @@
   ],
   "touches": [
     "kb/_self/reports/windows-run.md",
-    "_tools/test_kb_cohesion.py",
     "kb/_self/maintaining.md"
   ],
   "trigger": {

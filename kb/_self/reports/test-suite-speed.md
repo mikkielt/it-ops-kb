@@ -96,3 +96,14 @@ Earlier the same day, under the CI jobs' load (23:34), the system Python took 78
 4. The stress suite is dominated by per-case copies and cold rebuilds after each mutation.
 5. The CI Windows job cannot finish at 2 CPUs whatever the suite's scheduling.
 6. The largest saving of all is not running the full suite for changes that cannot break it: most commits change only kb content, whose checks take seconds (ST-hwk2acoz, P1).
+
+## After the suite was rewritten small (macOS host, 2026-10-06)
+
+The figures above describe the suite as it was on 2026-09-29/30. It has since been replaced by a small one under a ceiling (`_tools/tests_ceiling.json`; `kb/_self/code.md`, Checks and their tests). One full `python3 _tools/tests.py` on the macOS host (14 cores, other sessions idle), read from its `test.run` ops row:
+
+| run | workers | tests | test files | wall | worker time |
+|---|---|---|---|---|---|
+| full, default workers | 12 | 53 | 11 | 14.5 s | 62.9 s |
+| full, `KB_TEST_WORKERS=6` | 6 | 53 | 11 | 16.1 s | not read |
+
+The four end-to-end scenarios hold most of the worker time (sync 13.6 s, land 13.4 s, pre-push 10.9 s, publish 10.1 s); no other file takes 5 s. The wall time is the slowest file plus the workers' start, which is why files are handed to the workers slow ones first (`conftest.SLOW_FIRST`) and the default worker cap covers one worker per file. The ceiling's seconds are 20 on macOS and 60 on Windows and Linux; the Windows host and the two CI runners are not measured in this section.

@@ -20,7 +20,6 @@
   ],
   "touches": [
     ".claude/settings.json",
-    "_tools/test_settings_allow.py",
     "_tools/bl_land.py",
     "kb/_self/maintaining.md",
     "kb/_self/backlog.md",
