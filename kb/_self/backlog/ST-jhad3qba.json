@@ -2,7 +2,7 @@
   "id": "ST-jhad3qba",
   "kind": "story",
   "title": "land --wait-merge waits a bounded time for the code merge request, read from git, then finishes the second pass",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,29 @@
   "depends_on": [
     "ST-4mdnjuep"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "189d3a6d0337b7dfdcab270579a3733479f85881",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_wait_merge_reads_git"
+        ],
+        "exit": 0,
+        "sha256": "5f88e4fa740b63f4"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_wait_merge_times_out"
+        ],
+        "exit": 0,
+        "sha256": "c609e2baf86c6bef"
+      }
+    ]
+  }
 }
