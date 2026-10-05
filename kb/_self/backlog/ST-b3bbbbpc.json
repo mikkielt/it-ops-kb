@@ -2,7 +2,7 @@
   "id": "ST-b3bbbbpc",
   "kind": "story",
   "title": "Each kb copy a test makes hard-links every file the test does not write",
-  "status": "doing",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
@@ -26,5 +26,23 @@
   "depends_on": [
     "ST-fo3ztjcs"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Linking every file a test does not write needs the list of files tests write in place: a write through a hard link changes the shared template. How is that list made? audit = one full run with every file linked, the guard naming each file written in place, those paths kept as a committed COPY list in conftest; declare = link every file and fix each failing test with copy= over several runs; narrow = link only kb/public/** articles and data, keep the rest copied, and measure",
+      "options": [
+        "audit",
+        "declare",
+        "narrow"
+      ],
+      "recommendation": "audit",
+      "class": "agents-rule",
+      "do": {
+        "audit": "ST-b3bbbbpc",
+        "declare": "ST-b3bbbbpc",
+        "narrow": "ST-b3bbbbpc"
+      }
+    }
+  ]
 }
