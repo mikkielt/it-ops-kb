@@ -28,6 +28,7 @@
   "touches": [
     "_tools/ql_capture.py",
     "_tools/test_ql_capture.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
   ]
 }
