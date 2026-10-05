@@ -856,18 +856,22 @@ def refused_answer_warnings(bl):
 
 
 def gate_do_warnings(bl):
-    """check's warnings: an unanswered blocking gate of an open item whose options carry no `do` (the argv that
-    carries an option out, or the id of the item whose work adds that command), so an answer would wait on a command
-    nobody planned."""
+    """check's warnings, one for each option of an unanswered blocking gate of an open item that carries no `do` (the
+    argv that carries the option out, or the id of the item whose work adds that command), so an answer would wait on
+    a command nobody planned; an option with one does not silence the others (BG-ynaowysf)."""
     out = []
     for iid, it in sorted(bl.items.items()):
         if it.get("status") not in OPEN_STATUSES:
             continue
         for g in it.get("gates", []):
-            if isinstance(g, dict) and g.get("kind") == "blocking" and "answer" not in g and g.get("id") != START_GATE \
-                    and not g.get("do"):
-                out.append(f"{bl.label(iid)}: blocking gate {g.get('id')} has no `do` for its options, the command "
-                           "that carries each out or the item that adds it (gate add --do OPTION=CMD|ID)")
+            if not (isinstance(g, dict) and g.get("kind") == "blocking" and "answer" not in g
+                    and g.get("id") != START_GATE):
+                continue
+            do = g.get("do") if isinstance(g.get("do"), dict) else {}
+            for opt in g.get("options") or []:
+                if not do.get(opt):
+                    out.append(f"{bl.label(iid)}: blocking gate {g.get('id')} has no `do` for option {opt!r}, the "
+                               "command that carries it out or the item that adds it (gate add --do OPTION=CMD|ID)")
     return out
 
 
