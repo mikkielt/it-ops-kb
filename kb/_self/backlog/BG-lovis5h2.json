@@ -1,0 +1,33 @@
+{
+  "id": "BG-lovis5h2",
+  "kind": "bug",
+  "title": "kg_trailers.work_state imports the backlog facade, so check-trailers and the pre-push hook load backlog.py and every bl_ module",
+  "status": "draft",
+  "parent": "EP-uzf2w6ym",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_trailers.work_state reads RESEARCH_KINDS and research_touches from bl_base, so no kg_ module imports backlog at any depth, as the shared-file move rule says; test_layout's facade rule catches a kg_ module importing backlog (a planted failure). Found by the SP-tpulmoxh review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kg_trailers;kg_trailers.work_state(['ST-aaaaaaaa'],['x'],lambda r:None);sys.exit(1 if 'backlog' in sys.modules else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "import_layers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_trailers.py",
+    "_tools/test_layout.py",
+    "_tools/backlog.py"
+  ]
+}
