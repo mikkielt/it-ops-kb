@@ -2,7 +2,7 @@
   "id": "BG-bfivioo3",
   "kind": "bug",
   "title": "start accepts a host check recorded on another host: host_checked.ok is committed and nothing ties it to the host",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

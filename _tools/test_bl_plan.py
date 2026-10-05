@@ -433,9 +433,9 @@ def host_sprint(repo, host_check):
 
 
 def test_host_setup_gate_checked_records_a_passing_check_and_start_follows(repo):
+    """host-check records a passing check; start runs the check itself on this host, so it starts with or without
+    that record."""
     sp, st = host_sprint(repo, PASS)
-    code, out = b(repo, "start", sp)
-    assert code == 1 and "gate setup" in out and "host-check" in out, out
     code, out = b(repo, "host-check", sp)
     assert code == 0 and "ok" in out, out
     assert item_json(repo, st)["gates"][0]["host_checked"] == {"ok": True, "exit": 0}
@@ -444,13 +444,30 @@ def test_host_setup_gate_checked_records_a_passing_check_and_start_follows(repo)
     assert code == 0, out
 
 
+def test_start_ignores_a_host_check_from_another_host(repo):
+    """BG-bfivioo3: a passing host_checked committed from another host (planted) while the check fails on this one:
+    start runs the check here and refuses, naming the gate and the check's output; once it passes here, start
+    follows."""
+    marker = "src/host-ready.txt"
+    sp, st = host_sprint(repo, is_file(marker))
+    edit(repo, st, gates=[dict(item_json(repo, st)["gates"][0], host_checked={"ok": True, "exit": 0})])
+    assert b(repo, "check")[0] == 0
+    code, out = b(repo, "start", sp)
+    assert code == 1 and "gate setup" in out and "does not hold on this host" in out, out
+    assert item_json(repo, sp)["status"] != "active"
+    (repo / "src").mkdir(exist_ok=True)
+    (repo / marker).write_text("ready\n", encoding="utf-8")
+    code, out = b(repo, "start", sp)
+    assert code == 0 and item_json(repo, sp)["status"] == "active", out
+
+
 def test_host_setup_gate_checked_planted_failure_stops_the_sprint(repo):
     sp, st = host_sprint(repo, ["python3", "-c", "import sys; print('feature is off'); sys.exit(3)"])
     code, out = b(repo, "host-check", sp)
     assert code == 1 and "FAILED" in out and "feature is off" in out and "Which host?" in out, out
     assert item_json(repo, st)["gates"][0]["host_checked"] == {"ok": False, "exit": 3}
     code, out = b(repo, "start", sp)
-    assert code == 1 and "not checked on this host" in out, out
+    assert code == 1 and "does not hold on this host" in out and "feature is off" in out, out
     assert item_json(repo, sp)["status"] != "active"
 
 
