@@ -2,7 +2,7 @@
   "id": "ST-24gbw2hw",
   "kind": "story",
   "title": "land refuses a commit outside the item's touches before it opens the code merge request, not after it merged",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
@@ -23,5 +23,6 @@
     "_tools/test_bl_land.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }

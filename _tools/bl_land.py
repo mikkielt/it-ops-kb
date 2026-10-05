@@ -972,6 +972,12 @@ def land_once(bl, a):
                     raise land_stop("done", str(e)) from None
                 land_git(root, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
         if late:  # the code lane pushes an auto-merging merge request: its proof runs before that, not after
+            stray = out_of_scope(root, item_commits(root, family), scope(bl, iid))
+            if stray:  # done's scope rule, read before the merge request opens rather than after it merged
+                raise land_stop("scope", f"{bl.label(iid)}'s commits change files outside its touches, so done would "
+                                         "refuse it once the merge request merged; nothing was pushed: "
+                                + "; ".join(f"commit {sha[:10]} changed {p}" for sha, p in stray)
+                                + " (revert it, or widen touches: backlog.py set ID --touch PATH --add)")
             land_checks(bl, iid)
         changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
