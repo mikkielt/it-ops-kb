@@ -2,7 +2,7 @@
   "id": "ST-zqnngn67",
   "kind": "story",
   "title": "OpenTelemetry events of a session go to a local file and join the transcript by id",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -63,5 +63,39 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "38576cbf904dd7fc60b63f5ef94e9f9572994296",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "otel_receiver_writes_local_file"
+        ],
+        "exit": 0,
+        "sha256": "01e166328e9b5028"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "otel_events_join_transcript"
+        ],
+        "exit": 0,
+        "sha256": "0bfb541b02ae1156"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "otel_events_no_text_stored"
+        ],
+        "exit": 0,
+        "sha256": "6ef60ae1683a7bd8"
+      }
+    ]
+  }
 }
