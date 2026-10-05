@@ -2,7 +2,7 @@
   "id": "ST-yl5ihysf",
   "kind": "story",
   "title": "close --summary names each goal clause of the sprint and the item that carried it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,19 @@
   "depends_on": [
     "ST-24gbw2hw"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "d030053ab094c1e41a5e85a89db5b0855ab672bd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "close_summary_names_goal_clauses"
+        ],
+        "exit": 0,
+        "sha256": "8ba675cfe31cb1f3"
+      }
+    ]
+  }
 }
