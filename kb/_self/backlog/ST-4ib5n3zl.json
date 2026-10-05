@@ -2,7 +2,7 @@
   "id": "ST-4ib5n3zl",
   "kind": "story",
   "title": "An item's touches are planned from referrers and the doc map",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,6 @@
     "kb/_self/backlog.md",
     "_tools/test_kb_cohesion.py",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
