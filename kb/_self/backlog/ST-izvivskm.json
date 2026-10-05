@@ -2,7 +2,7 @@
   "id": "ST-izvivskm",
   "kind": "story",
   "title": "Research sprint goal: Sprint process rules are written where planners and workers read them",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-wmukiu3s",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
