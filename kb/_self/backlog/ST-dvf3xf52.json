@@ -2,7 +2,7 @@
   "id": "ST-dvf3xf52",
   "kind": "story",
   "title": "pack serves the kb/_self rules and active decisions under root _self, with a lookup eval",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-njilrify",
   "priority": "P1",
   "rank": 0,
@@ -131,5 +131,41 @@
     ]
   },
   "notes": "tests.py _tools/test_live_kb.py passes before the work: it pins the public pack and eval behaviour that must stay, and will hold the planted wrong row test. Premise: python3 _tools/rag.py pack --root _self 'how does land work' prints coverage: none today, since pack cannot see kb/_self and _self is not a root (run 2026-10-06).",
-  "claimed_by": "manager-mac"
+  "evidence": {
+    "commit": "6f4efc76c4c97dd275a28b72420193031fb0f8ed",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--root",
+          "_self"
+        ],
+        "exit": 0,
+        "sha256": "15b7eb9bb836384e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "--root",
+          "_self",
+          "which steps does backlog.py land run and what does it refuse"
+        ],
+        "exit": 0,
+        "sha256": "72d6aefb41172b74"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_live_kb.py"
+        ],
+        "exit": 0,
+        "sha256": "8fde8e6e4c96e430"
+      }
+    ]
+  }
 }
