@@ -2,7 +2,7 @@
   "id": "BG-ke2xj34l",
   "kind": "bug",
   "title": "publish reuses a cached clean verdict after the leak-scan rule changes, since the verdict cache key holds no scan form",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/tools.md",
     "kb/_self/git.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "d9c33c614d8721bec88cf533dc50ed173aef8fb1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "publish_verdict_cache_keyed_by_scan_form"
+        ],
+        "exit": 0,
+        "sha256": "ebe9e54c54990ad8"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbpublic;sys.exit(0 if isinstance(getattr(kbpublic,'SCAN_FORM',None),int) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
