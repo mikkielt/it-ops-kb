@@ -388,7 +388,6 @@ def checked_out_elsewhere(root, branch):
 # the lock Claude Code puts on a subagent's worktree, which outlives the agent when it left background work running
 WORKER_LOCK = "claude agent"
 WORKER_DIR = (".claude", "worktrees")  # under the clone's main checkout
-RUNNER_NAME = "runner-"  # a headless sprint runner's own worktree, beside the workers' under the clone root
 WORKER_NAME = "agent-"  # how the Agent tool names a worker's isolation worktree: an unlocked one is removed only so
 WORK_PREFIX = "work/"  # the local branch a worker commits on: land deletes it once it has landed
 AGENT_BRANCH = "worktree-"  # + the worktree's name: the branch the Agent tool made the worker's worktree on
@@ -442,18 +441,10 @@ def live_processes(path):
 
 
 def worker_dirs(root):
-    """The .claude/worktrees/ directories whose worktrees are the workers of the clone land runs in ROOT: the one of
-    the toplevel there (`git rev-parse --show-toplevel`: a linked worktree is its own clone) and, when ROOT is a
-    runner's worktree (`<clone root>/.claude/worktrees/runner-*` of its own common checkout, the clone kb_hook
-    defines for a runner), the same directory of the clone root, where the Agent tool puts the worker's worktree beside
-    the runner's."""
+    """The .claude/worktrees/ directory whose worktrees are the workers of the clone land runs in ROOT, as a set: the
+    one of the toplevel there (`git rev-parse --show-toplevel`: a linked worktree is its own clone)."""
     top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
-    dirs = {top.joinpath(*WORKER_DIR).resolve()}
-    common = Path(git(root, "rev-parse", "--path-format=absolute", "--git-common-dir").strip()).resolve()
-    sibling = common.parent.joinpath(*WORKER_DIR).resolve()
-    if top.parent == sibling and top.name.startswith(RUNNER_NAME):
-        dirs.add(sibling)
-    return dirs
+    return {top.joinpath(*WORKER_DIR).resolve()}
 
 
 def detached_workers(root, branch):
@@ -1108,7 +1099,7 @@ def refused_dones(root, ids):
 def close_row(bl, sid, items):
     """The keys of the `sprint.close` ops row of sprint `sid` whose item ids are `items`, or None when the sprint's
     planning commit cannot be read: the items `landed` (done) and `dropped`, the `bugs` among them, the provisional
-    gates of the items and the sprint that an operator or the autopilot `confirmed`, the `refused` dones the ops rows
+    gates of the items and the sprint that the operator `confirmed`, the `refused` dones the ops rows
     name for them (`refused_dones`) and `ms` from the commit that added the sprint's file to now."""
     its = [bl.items[i] for i in items]
     gates = [g for it in its + [bl.items[sid]] for g in it.get("gates", [])]
@@ -1120,7 +1111,7 @@ def close_row(bl, sid, items):
             "landed": sum(1 for it in its if it.get("status") == "done"),
             "dropped": sum(1 for it in its if it.get("status") == "dropped"),
             "bugs": sum(1 for it in its if it.get("kind") == "bug"),
-            "confirmed": sum(1 for g in gates if g.get("kind") == "provisional" and g.get("by") in ("operator", "autopilot")),
+            "confirmed": sum(1 for g in gates if g.get("kind") == "provisional" and g.get("by") == "operator"),
             "refused": refused_dones(bl.root, set(items)),
             "ms": max(0, (int(time.time()) - min(added)) * 1000)}
 

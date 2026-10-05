@@ -2,7 +2,7 @@
   "id": "BG-b4vvk2wz",
   "kind": "bug",
   "title": "close still reads a runner worktree's sibling workers and counts gates answered by the autopilot",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-wmukiu3s",
   "priority": "P2",
@@ -34,5 +34,6 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
