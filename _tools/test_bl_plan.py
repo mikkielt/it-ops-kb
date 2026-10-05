@@ -444,6 +444,33 @@ def test_host_setup_gate_checked_records_a_passing_check_and_start_follows(repo)
     assert code == 0, out
 
 
+def test_host_setup_gate_free_text(repo):
+    """ST-q4sgzlz6: a gate whose question names a host setup in free text ('installed') and carries no --host-check
+    makes start warn, naming the item, the gate and the word, and start still starts; a gate with a --host-check, one
+    with a host_unchecked reason and one naming no host setup are quiet."""
+    b(repo, "new", "sprint", "--title", "Free sprint", "--goal", "ship b")
+    sp = item(repo, "Free sprint")["id"]
+    b(repo, "new", "story", "--title", "Free story", "--sprint", sp, "--goal", "b exists",
+      "--check", argstr(is_file("src/b.txt")), "--touch", "src/**")
+    st = item(repo, "Free story")["id"]
+    for gid, question, extra in (("free", "Is the Hyper-V feature installed?", ()),
+                                 ("checked", "Is the gh CLI login done?", ("--host-check", argstr(PASS))),
+                                 ("reason", "Which credential store holds the token?", ()),
+                                 ("plain", "Which name reads better?", ())):
+        code, out = b(repo, "gate", "add", st, "--id", gid, "--question", question, "--option", "yes",
+                      "--option", "no", "--recommendation", "yes", *extra)
+        assert code == 0, out
+        assert b(repo, "answer", st, gid, "--answer", "yes", "--by", "operator")[0] == 0
+    gates = item_json(repo, st)["gates"]
+    edit(repo, st, gates=[dict(g, host_unchecked="the store is read only inside the user's session")
+                          if g["id"] == "reason" else g for g in gates])
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    code, out = b(repo, "start", sp)
+    assert code == 0 and item_json(repo, sp)["status"] == "active", out
+    assert f"warning: {st} “Free story” gate free names a host setup ('installed') with no --host-check" in out, out
+    assert out.count("names a host setup") == 1, out
+
+
 def test_start_ignores_a_host_check_from_another_host(repo):
     """BG-bfivioo3: a passing host_checked committed from another host (planted) while the check fails on this one:
     start runs the check here and refuses, naming the gate and the check's output; once it passes here, start
