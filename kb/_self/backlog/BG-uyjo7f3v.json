@@ -2,7 +2,7 @@
   "id": "BG-uyjo7f3v",
   "kind": "bug",
   "title": "kbpublic.py's NO_HOOK_ENV comment still says the unattended manager session exports KB_NO_PUBLISH_HOOK",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "the defect is a code comment's wording, so no behaviour differs; the repro reads the constant's own line",
   "touches": [
     "_tools/kbpublic.py"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
