@@ -1,0 +1,25 @@
+{
+  "id": "BG-xol5fzlc",
+  "kind": "bug",
+  "title": "answer --confirm --by agent records an agent's own provisional answer as the operator's",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Authority hole: on a gate outside the operator-only classes, `backlog.py answer ID GATE --confirm --by agent` is accepted and rewrites the agent's provisional answer as `by: operator`, so an agent confirms its own answer as the operator and the review story's operator confirmation is satisfied without the operator. --confirm accepts --by operator (the operator's word, passed only after the operator said so) and --by delegate:NAME under an operator grant, and refuses --by agent (exit 2, the gate unchanged); test_backlog_authority_class's test_authority_refused_class_provisional_confirm_needs_by_for_every_gate, which pins the old behaviour, is changed with it. Found while working ST-g22owosx (SP-gfz3rl64).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);it={'id':'BG-aaaaaaaa','kind':'bug','title':'T','status':'todo','priority':'P3','rank':0,'severity':'S4','goal':'g','repro':{'run':['python3','-c','raise SystemExit(1)']},'touches':['src/x'],'gates':[{'id':'g1','kind':'provisional','question':'Which?','options':['a','b'],'recommendation':'a','answer':'a','by':'agent'}]};open(os.path.join(b,'BG-aaaaaaaa.json'),'w').write(json.dumps(it));p=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'answer','BG-aaaaaaaa','g1','--confirm','--by','agent'],capture_output=True);by=json.load(open(os.path.join(b,'BG-aaaaaaaa.json')))['gates'][0]['by'];sys.exit(1 if p.returncode==0 and by=='operator' else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_bl_items.py",
+    "_tools/test_backlog_authority_class.py",
+    "_tools/test_backlog_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
