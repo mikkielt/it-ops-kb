@@ -2375,3 +2375,20 @@ _Agent: kb-research_
 - See agents/hybrid-retrieval.md, agents/agent-evaluation.md, agents/coding-agent-codebase-context.md.
 
 _Agent: kb-research_
+
+## QK-lexical-passage-retriever-over-project-s. A lexical passage retriever over a project's rule docs prints the answering passage for 14 of 20 held-out questions and reports coverage good on all 20: which techniques do the sources support to raise the answer rate and to make the verdict honest?
+- Field weights: BM25F extends BM25 with a weighted total term frequency, and Azure AI Search scoring profiles and Elasticsearch `multi_match` carets boost a match in a designated field (title over body); a weight table is data kept beside the index. [DOC S-zapphi2u, S-fjxhj6uv, S-tjpagk62]
+- Synonyms: a synonym map expands a query with equivalent terms by rewriting it with OR; it is a curated list that someone writes and maintains. [DOC S-3hg4s7nu]
+- Lemmatization: Microsoft's English analyzer lemmatizes where a stemmer would stem; it needs a language data file or analyzer. [DOC S-typv6xpp]
+- Pinned results: a pinned query promotes curated documents above organic matches; it is a curated list of questions mapped to documents. [DOC S-lom3gqqn]
+- Alternate questions: adding the user query as an alternate question on an answer raises that answer's confidence score; it is a curated list that grows from real misses. [DOC S-2w5ehbab]
+- Document expansion: doc2query appends queries a seq2seq model predicts a document answers, and Doc2Query-- filters hallucinated ones (up to 16% better retrieval effectiveness, 33% smaller index); a model runs at write time only. [DOC S-jnq56sj3, S-sqbfbcyk]
+- Chunk context: prepending a chunk-specific context string lowered the failure rate from 5.7% to 3.7%, and 2.9% with Contextual BM25 as well; the context is generated at write time by a model. [DOC S-4hditql5]
+- Self-contained units: Dense X reports propositions outperform passage-level units; the units are produced at write time by a model. [DOC S-bfjgfchf]
+- Query-time models (HyDE hypothetical documents, LLM subqueries in agentic retrieval, preview) need a model at query time, which this retriever does not have; blind feedback improves results on average but tends to fail on queries that are difficult to start with. [DOC S-rzdl5ab6, S-mtxzhduu, S-zapphi2u]
+- Honest verdict: SQuAD 2.0 requires a system to determine when no answer is supported and abstain; Azure AI Search scores are relative to the other documents of the same result set, and Microsoft advises not setting score limits too granular; custom question answering recommends a confidence threshold of 50 on its own score scale. [DOC S-tfxaexfl, S-ilzlwkww, S-jt6qyh46, S-2w5ehbab]
+- Conclusion: the techniques that need no model at query time are field weights, synonyms, lemmatization, pinned or alternate questions (data files and curated lists) and write-time expansion or chunk context (a model once, at write time); the verdict needs a signal other than the best BM25 score, judged on labelled unanswerable questions, because the scores the sources describe are relative. [DER S-zapphi2u, S-3hg4s7nu, S-2w5ehbab, S-jnq56sj3, S-4hditql5, S-ilzlwkww, S-tfxaexfl: compared with the retriever's 14 of 20 answered and coverage good on 20 of 20]
+- Open: no source gives an absolute score threshold for BM25, nor the answer-rate gain of any of these on a project's own rule docs. [UNK]
+- See agents/hybrid-retrieval.md, agents/agent-evaluation.md.
+
+_Agent: kb-research_

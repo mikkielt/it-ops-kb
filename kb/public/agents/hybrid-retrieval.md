@@ -3,7 +3,7 @@ topic: agents/hybrid-retrieval
 priority: P2
 applies_to: "Azure AI Search hybrid/vector/semantic search (api-version 2026-04-01, retrieved 2026-09-26); Anthropic Contextual Retrieval (engineering post, retrieved 2026-09-26); pgvector (README/LICENSE at master, retrieved 2026-09-26); Elasticsearch RRF retriever (docs, retrieved 2026-09-26); Claude API search result blocks (retrieved 2026-09-27); doc2query and Doc2Query-- papers; Model2Vec v0.9.0; Sufficient Context paper; Anthropic reduce-hallucinations guide; Azure AI Search traffic analytics (retrieved 2026-09-27)"
 retrieved_utc: 2026-10-06
-sources: [S-bfjgfchf, S-adb2hv5q, S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135, S-qpqoaaqj, S-jnq56sj3, S-sqbfbcyk, S-aqnin65g, S-yi5xka25, S-fovhkyzc, S-enf2tnxi, S-5y6g7iij, S-dghvtpkr, S-yknt2enl]
+sources: [S-bfjgfchf, S-adb2hv5q, S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135, S-qpqoaaqj, S-jnq56sj3, S-sqbfbcyk, S-aqnin65g, S-yi5xka25, S-fovhkyzc, S-enf2tnxi, S-5y6g7iij, S-dghvtpkr, S-yknt2enl, S-zapphi2u, S-fjxhj6uv, S-tjpagk62, S-3hg4s7nu, S-typv6xpp, S-lom3gqqn, S-63ms6dc7, S-ilzlwkww, S-tfxaexfl, S-rzdl5ab6, S-mtxzhduu, S-2w5ehbab]
 status: complete
 ---
 
@@ -95,6 +95,24 @@ Hybrid retrieval combines a lexical ranker (BM25 or Elasticsearch's equivalent) 
 - doc2query expands each document before indexing with queries a sequence-to-sequence model predicts it answers, the model being trained on pairs of queries and relevant documents; with a re-ranker it set the state of the art on two retrieval tasks, and without re-ranking it approached the effectiveness of neural re-rankers at much lower latency. [DOC S-jnq56sj3]
 - Doc2Query-- argues that the generated queries include hallucinated content that harms retrieval and inflates the index, and filters them before indexing with a relevance model: up to 16% better retrieval effectiveness than Doc2Query, 23% lower mean query execution time and a 33% smaller index. [DOC S-sqbfbcyk]
 - This kb's filter is a variant: it keeps a generated question only when `pack` without expansion already routes it to the fact's article, a lexical self-consistency test rather than a relevance model, so an expansion can re-rank lines inside an article the lexical ranker already reaches but cannot bridge vocabulary it does not. [DER S-sqbfbcyk: filter compared with `kb/_self/doc2query.md`]
+
+### Lexical ranking levers and the no-answer verdict
+- Robertson and Zaragoza call the simplest extension of BM25 to weighted fields (streams) a weighted variant of the total term frequency. [DOC S-zapphi2u]
+- Azure AI Search scoring profiles can be based on weighted string fields, where boosting rests on a match in a designated field. [DOC S-fjxhj6uv]
+- An Elasticsearch `multi_match` field boost is written with a caret, and in the documented example the query multiplies the `subject` field's score by three and leaves the `message` field's score unchanged. [DOC S-tjpagk62]
+- An Azure AI Search synonym map associates equivalent terms and so expands the scope of a query without the user having to provide the term. [DOC S-3hg4s7nu]
+- Azure AI Search implements synonyms internally by rewriting the original query with the synonyms using the OR operator. [DOC S-3hg4s7nu]
+- Microsoft's English analyzer in Azure AI Search performs lemmatization instead of stemming. [DOC S-typv6xpp]
+- Elasticsearch's pinned query is typically used to guide searchers to curated documents that are promoted over and above any "organic" matches. [DOC S-lom3gqqn]
+- A Microsoft Search bookmark result that does not meet the machine learning ranker threshold is suppressed in the Microsoft Teams client. [DOC S-63ms6dc7]
+- Azure AI Search scores convey a general sense of relevance, reflecting the strength of match relative to other documents in the same result set. [DOC S-ilzlwkww]
+- For custom code with minimum thresholds, or the threshold property on vector and hybrid queries, Microsoft advises not making the limits too granular. [DOC S-jt6qyh46]
+- HyDE is reported to significantly outperform the unsupervised dense retriever Contriever and to perform comparably to fine-tuned retrievers across tasks (web search, QA, fact verification) and languages. [DOC S-rzdl5ab6]
+- Robertson and Zaragoza: blind feedback is generally known to improve search results on average but tends to fail on some queries, particularly ones that are difficult to start with, where the top-ranked documents of the initial search may be poor. [DOC S-zapphi2u]
+- Azure AI Search agentic retrieval can use LLM-based query planning (preview) to break a complex query into smaller, focused subqueries for better coverage. [DOC S-mtxzhduu]
+- SQuAD 2.0 requires systems not only to answer when possible but to determine when no answer is supported by the paragraph and abstain from answering. [DOC S-tfxaexfl]
+- Custom question answering recommends a confidence threshold of 50 as one that should work for most projects. [DOC S-2w5ehbab]
+- To improve the confidence score of a particular response to a user query, custom question answering lets you add the user query to the project as an alternate question on that response. [DOC S-2w5ehbab]
 
 ### Static embeddings: Model2Vec
 - Model2Vec turns a sentence transformer into a static embedding model: the README states models up to 50 times smaller and up to 500 times faster, "with a small drop in performance". [DOC S-aqnin65g]

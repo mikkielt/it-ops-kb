@@ -36,7 +36,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
 | `agents/headless-agent-runtimes` | P2 | complete | `agents/headless-agent-runtimes.md` | 18 |
-| `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 26 |
+| `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 38 |
 | `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
 | `agents/microsoft-agent-framework` | P2 | complete | `agents/microsoft-agent-framework.md` | 21 |
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |
