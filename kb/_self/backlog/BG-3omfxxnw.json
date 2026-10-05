@@ -2,7 +2,7 @@
   "id": "BG-3omfxxnw",
   "kind": "bug",
   "title": "test_backlog_record_clean needs a live backlog item outside any sprint, and fails the sync gate now that none is left",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyp6o7hl",
   "priority": "P1",
   "rank": 0,
@@ -27,5 +27,6 @@
   ],
   "touches": [
     "_tools/test_backlog_record_clean.py"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
