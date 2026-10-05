@@ -34,5 +34,19 @@
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "gates": [
+    {
+      "id": "register",
+      "kind": "blocking",
+      "question": "Which way closes the gap between the docs and the code on who registers each bl_ module's commands?",
+      "options": [
+        "each bl_ module that owns a command registers it itself, and backlog.py imports the modules in usage order, as bl_cost and bl_procs do (meets the sprint's 'each registers its own parsers')",
+        "backlog.py keeps registering them, and the bl_cli.py docstring, tools.md's bl_cli row and code.md say so"
+      ],
+      "recommendation": "each bl_ module that owns a command registers it itself, and backlog.py imports the modules in usage order, as bl_cost and bl_procs do (meets the sprint's 'each registers its own parsers')",
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Gate register is open: recommended the modules register themselves (the sprint goal and TK-f5swu7tm's title say so); the docs-only fix is the smaller alternative."
 }
