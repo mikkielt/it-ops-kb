@@ -2,7 +2,7 @@
   "id": "ST-zz43pbbi",
   "kind": "story",
   "title": "An open choice on rule-guarding code goes to the operator before the work",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,19 @@
   "depends_on": [
     "ST-ctwlrtud"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "da63aac6e012c00fcf96750e0f2b3db122246744",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "open_choice_operator_gate_documented"
+        ],
+        "exit": 0,
+        "sha256": "5e4a6cc48df16cc7"
+      }
+    ]
+  }
 }
