@@ -2,7 +2,7 @@
   "id": "ST-tsl5dlos",
   "kind": "story",
   "title": "kblog.py propose counts the ops rows whose item no commit or item file names and leaves them out unless asked",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
@@ -22,5 +22,6 @@
     "_tools/kblog.py",
     "_tools/test_kblog.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
