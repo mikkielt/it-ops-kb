@@ -2,7 +2,7 @@
   "id": "ST-37gnlv4r",
   "kind": "story",
   "title": "A sprint's start warns of an item check that already passes before the work",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,6 @@
   ],
   "depends_on": [
     "ST-ov6h4gbx"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
