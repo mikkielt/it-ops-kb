@@ -2,7 +2,7 @@
   "id": "ST-4ib5n3zl",
   "kind": "story",
   "title": "An item's touches are planned from referrers and the doc map",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,19 @@
     "_tools/test_kb_cohesion.py",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "48f0b7ac379240c08f68e3a9e1f7b37c8cf41240",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "touches_planned_from_referrers"
+        ],
+        "exit": 0,
+        "sha256": "b5a49560fb37fd4b"
+      }
+    ]
+  }
 }
