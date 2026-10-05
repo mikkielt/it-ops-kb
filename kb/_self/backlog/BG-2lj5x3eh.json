@@ -2,7 +2,7 @@
   "id": "BG-2lj5x3eh",
   "kind": "bug",
   "title": "The rule for a bug filed while landing leaves out that the bug must join a started sprint",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
