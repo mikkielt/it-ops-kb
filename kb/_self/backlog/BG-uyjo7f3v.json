@@ -1,0 +1,23 @@
+{
+  "id": "BG-uyjo7f3v",
+  "kind": "bug",
+  "title": "kbpublic.py's NO_HOOK_ENV comment still says the unattended manager session exports KB_NO_PUBLISH_HOOK",
+  "status": "doing",
+  "sprint": "SP-w3xmbdra",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The comment on kbpublic.NO_HOOK_ENV says what the variable does (publish --hook does nothing) and who sets it (a session that must never publish on its own), as git.md does since BG-nviclf7h, without the retired unattended manager.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect;sys.path.insert(0,'_tools');import kbpublic;src=inspect.getsource(kbpublic);line=next(l for l in src.splitlines() if l.startswith('NO_HOOK_ENV'));sys.exit(1 if 'unattended manager' in line else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a code comment's wording, so no behaviour differs; the repro reads the constant's own line",
+  "touches": [
+    "_tools/kbpublic.py"
+  ],
+  "claimed_by": "it-ops-kb worker1"
+}
