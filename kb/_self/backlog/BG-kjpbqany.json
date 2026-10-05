@@ -2,7 +2,7 @@
   "id": "BG-kjpbqany",
   "kind": "bug",
   "title": "Host lock tests compare the lock's pid with the venv launcher's pid on Windows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_kg_lock.py",
     "_tools/test_testmap.py",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker3"
 }
