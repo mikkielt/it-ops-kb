@@ -22,9 +22,9 @@ The seven checks, each independent and each a result {name, state, detail, remed
                holder that is gone is cleared by the next taker and is no failure)
   claims       no `doing` item shows `claim-no-commit`, `returned-no-commit` or `returned-staged` (`bl_stall.collect`'s
                signals, read from the claims, git and the worktrees' processes)
-  orphans      no process recorded by `procs --record` runs on after its parent is gone (`bl_procs.snapshot`'s `owned
-               orphan`; an unrecorded orphan or a foreign process is another session's and no failure); `unknown` on
-               a host that cannot list working directories
+  orphans      no process in a checkout of the clone runs on after its parent is gone (`bl_procs.snapshot`'s
+               `orphan`: a background run a session left behind, named, never signaled; a foreign process is a live
+               session's and no failure); `unknown` on a host that cannot list working directories
   main         the newest `ci.pipeline` row (`bl_stall.main_state`, the row `red-pipeline` writes) is not red;
                `unknown` with no row, which `backlog.py red-pipeline --status` reads from the forge (the one network
                call, never made here, so the check is offline and fast)
@@ -101,7 +101,8 @@ REMEDY = {
                  "and stuck",
     "claims": "ask its worker, or release it (`backlog.py release ID`) and dispatch it again with the failure named in "
               "the brief",
-    "orphans": "`python3 _tools/backlog.py procs --end`; it ends owned orphans only",
+    "orphans": "end it if it is yours (`python3 _tools/backlog.py procs` lists each with its pid and checkout); "
+               "nothing ends it for you",
     "main": "file the red pipeline as a bug (`backlog.py red-pipeline`) and take the next ready item",
     "main-unknown": "read it by hand: `python3 _tools/backlog.py red-pipeline --status` (needs the network)",
 }
@@ -293,11 +294,11 @@ def check_orphans(root, snapshot=bl_procs.snapshot):
     if procs is None:
         return result("orphans", "unknown", f"this host cannot list processes by working directory ({why})",
                       REMEDY["orphans"])
-    owned = [p for p in procs if p["kind"] == bl_procs.OWNED_ORPHAN]
-    if owned:
-        return result("orphans", "fail", f"{len(owned)} owned orphan(s): "
-                      + listing(f"pid {p['pid']} {p['comm']} in {p['where']}" for p in owned), REMEDY["orphans"])
-    return result("orphans", "ok", "no owned orphan runs")
+    orphans = [p for p in procs if p["kind"] == bl_procs.ORPHAN]
+    if orphans:
+        return result("orphans", "fail", f"{len(orphans)} orphan(s): "
+                      + listing(f"pid {p['pid']} {p['comm']} in {p['where']}" for p in orphans), REMEDY["orphans"])
+    return result("orphans", "ok", "no orphan runs in a checkout of this clone")
 
 
 def check_main(report):

@@ -1,7 +1,7 @@
 """Tests of `backlog.py selfcheck` (bl_selfcheck.py): the seven checks (allow rules, checkout, hooks and plugin, host, claims,
-owned orphans, main), each failing with the remedy the kb-sprint skill names, and the capped output. The tests named
+orphans, main), each failing with the remedy the kb-sprint skill names, and the capped output. The tests named
 selfcheck_names_remedy_* and selfcheck_capped_* are the item's checks. Every failure is planted: a settings file that
-lacks a rule, a clone with no hooks, a lock held for hours, a stale claim, an owned orphan, a red
+lacks a rule, a clone with no hooks, a lock held for hours, a stale claim, an orphan, a red
 pipeline row; a passing host prints one line. The host's lock directory is the test's own, and the main lock's holder
 variable is cleared (a run inside the sync gate inherits it).
 """
@@ -167,13 +167,17 @@ def test_selfcheck_names_remedy_claims_stale_claim_names_its_ladder_step():
     assert sc.check_claims(report([quiet, ready]))["state"] == "ok"
 
 
-def test_selfcheck_names_remedy_orphans_owned_orphan_fails_and_foreign_does_not():
+def test_selfcheck_names_remedy_orphans_orphan_fails_and_foreign_does_not():
+    """BG-xwolxdi6: any orphan in a checkout of the clone fails the check, named with its pid, and the remedy is the
+    operator's to end it; a foreign process (a live session's) is no failure. Planted: a check that reads only the
+    retired owned orphans would pass on the orphan."""
     def proc(pid, kind):
         return {"pid": pid, "ppid": 1, "start": 1.0, "comm": "sleep", "where": "clone/sub", "kind": kind}
     snap = lambda procs: (lambda root: (procs, {}, None))  # noqa: E731
-    r = sc.check_orphans("r", snap([proc(7, bl_procs.OWNED_ORPHAN), proc(8, bl_procs.FOREIGN), proc(9, bl_procs.ORPHAN)]))
-    assert r["state"] == "fail" and "pid 7" in r["detail"] and "pid 8" not in r["detail"] and "pid 9" not in r["detail"]
-    assert "procs --end" in r["remedy"]
+    r = sc.check_orphans("r", snap([proc(8, bl_procs.FOREIGN), proc(9, bl_procs.ORPHAN)]))
+    assert r["state"] == "fail" and "pid 9" in r["detail"] and "pid 8" not in r["detail"], r
+    assert "end it if it is yours" in r["remedy"] and "procs --end" not in r["remedy"], r
+    assert sc.check_orphans("r", snap([proc(9, "owned orphan")]))["state"] == "ok", "the retired class is no orphan"
     assert sc.check_orphans("r", snap([proc(8, bl_procs.FOREIGN)]))["state"] == "ok"
     unk = sc.check_orphans("r", lambda root: (None, None, "no lsof"))
     assert unk["state"] == "unknown" and "no lsof" in unk["detail"]
@@ -265,7 +269,7 @@ def test_selfcheck_capped_the_real_checks_stay_under_the_cap_when_all_fail(repo)
     settings(repo, [])
     stale = [{"id": f"ST-{i:08d}", "label": f"ST-{i:08d} “" + "t" * 60 + "”", "state": "doing", "claimed_by": "s",
               "unknown": [], "signals": ["returned-staged"], "next": {}} for i in range(40)]
-    procs = [{"pid": i, "ppid": 1, "start": 1.0, "comm": "sleep", "where": "clone/" + "d" * 40, "kind": bl_procs.OWNED_ORPHAN}
+    procs = [{"pid": i, "ppid": 1, "start": 1.0, "comm": "sleep", "where": "clone/" + "d" * 40, "kind": bl_procs.ORPHAN}
              for i in range(30)]
     results = [sc.check_allow(repo), sc.check_hooks(repo), sc.check_host(time.time(), load=99, cores=1),
                sc.check_claims(report(stale)), sc.check_orphans("r", lambda root: (procs, {}, None)),
