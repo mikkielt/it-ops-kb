@@ -2,7 +2,7 @@
   "id": "ST-g22owosx",
   "kind": "story",
   "title": "The runbook says whether a provisional answer can be confirmed by a delegate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gfz3rl64",
   "priority": "P3",
   "rank": 0,
@@ -25,9 +25,11 @@
     "_tools/bl_check.py",
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_base.py"
   ],
   "depends_on": [
     "ST-ov6h4gbx"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }

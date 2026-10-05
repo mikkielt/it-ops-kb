@@ -533,6 +533,10 @@ def validate(bl, pieces=None):
         unknown = set(it) - FIELDS
         if unknown:
             e(f"unknown fields {sorted(unknown)}")
+        if "delegates" in it and (kind != "sprint" or not isinstance(it["delegates"], list) or not all(
+                isinstance(d, dict) and set(d) == {"name", "by"} and isinstance(d["name"], str)
+                and re.fullmatch(r"[\w.-]+", d["name"]) and d["by"] in ("operator", "agent") for d in it["delegates"])):
+            e("delegates is a sprint's list of {name, by} grants (set SP --delegate NAME --by operator)")
         if not _text_ok(it.get("title")):
             e("title missing or longer than TEXT_MAX")
         for f in ("goal", "notes"):
@@ -625,8 +629,9 @@ def validate(bl, pieces=None):
             gate_ids.add(g.get("id"))
             if g["kind"] == "provisional" and not g.get("recommendation"):
                 e(f"provisional gate {g['id']} needs a recommendation")
-            if "answer" in g and g.get("by") not in ("operator", "agent"):
-                e(f"gate {g['id']}: an answer needs by: operator|agent")
+            if "answer" in g and g.get("by") not in ("operator", "agent") and not (
+                    g["kind"] == "provisional" and re.fullmatch(r"delegate:[\w.-]+", str(g.get("by")))):
+                e(f"gate {g['id']}: an answer needs by: operator|agent (delegate:NAME confirms a provisional one)")
             if "class" in g and g["class"] not in bl_authority.CLASSES:
                 e(f"gate {g['id']}: class {g['class']!r} is not one of {', '.join(bl_authority.CLASSES)}")
             elif bl_authority.lowered(it, g):

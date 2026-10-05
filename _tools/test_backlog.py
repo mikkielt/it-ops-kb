@@ -887,7 +887,7 @@ def test_backlog_set_refuses_moving_the_review_story_out_of_its_sprint(sprint):
 
 def test_backlog_set_refuses_a_sprint_except_notes_and_links(sprint):
     repo, sp = sprint["repo"], sprint["sp"]
-    refused_unchanged(repo, sp, "set", sp, "--priority", "P1", rule="a sprint takes notes and links only")
+    refused_unchanged(repo, sp, "set", sp, "--priority", "P1", rule="a sprint takes notes, links and delegates only")
     assert b(repo, "set", sp, "--notes", "n", "--link", "l")[0] == 0
 
 

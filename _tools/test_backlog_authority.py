@@ -185,13 +185,14 @@ def test_gate_authority_gate_add_stores_the_derived_class(decide):
 
 
 def test_gate_authority_only_the_operator_and_an_agent_answer(decide):
-    """The answer's maker is the operator or an agent: any other `--by` is a usage error and leaves the item."""
+    """The answer's maker is the operator or an agent (a granted delegate:NAME only confirms): any other `--by` is a
+    usage error and leaves the item."""
     r, bg = decide["repo"], decide["bg"]
     edit(r, bg, gates=[gate_of("Which name?", kind="provisional")])
     before = text_of(r, bg)
     for by in ("autopilot", "manager"):
         code, out = b(r, "answer", bg, "way", "--answer", "left", "--by", by)
-        assert code == 2 and "invalid choice" in out and text_of(r, bg) == before, (by, out)
+        assert code == 2 and "operator, agent or delegate:NAME" in out and text_of(r, bg) == before, (by, out)
         code, out = b(r, "answer", bg, "way", "--confirm", "--by", by)
         assert code == 2 and text_of(r, bg) == before, (by, out)
     assert b(r, "answer", bg, "way", "--provisional")[0] == 0
@@ -242,3 +243,36 @@ def test_gate_authority_kbdecide_record_is_the_operators_only(decide, args):
     code, out = tool(r, "kbdecide.py", "record", "--root", "_self", "--source", "s", "--context",
                      f"item:{decide['bg']}", "--by", "operator", "--maker", "operator", "--", "left")
     assert code == 0 and [x["by"] for x in decisions(r)] == ["operator"], out
+
+
+def test_delegate_confirms_under_operator_grant(sprint):
+    """ST-g22owosx planted: a provisional answer on a sprint's task is confirmed by delegate:mgr once the operator
+    granted mgr on the sprint, and the gate records who confirmed; an ungranted delegate, a grant an agent wrote, a
+    grant set without --by operator and a delegate answering are refused with the item unchanged."""
+    repo, sp, tk = sprint["repo"], sprint["sp"], sprint["tk"]
+    assert b(repo, "gate", "add", tk, "--question", "Which layout?", "--option", "a", "--option", "b",
+             "--recommendation", "a", "--kind", "provisional")[0] == 0
+    assert b(repo, "answer", tk, "g1", "--provisional")[0] == 0
+    before = item_json(repo, tk)
+
+    def refused(*args, code=None, rule=""):
+        got, out = b(repo, *args)
+        assert got in ((1, 2) if code is None else (code,)) and rule in out, (args, got, out)
+        assert item_json(repo, tk) == before, out
+
+    refused("answer", tk, "g1", "--confirm", "--by", "delegate:mgr", rule="no operator grant names delegate mgr")
+    got, out = b(repo, "set", sp, "--delegate", "mgr")
+    assert got == 2 and "without --by operator" in out and "delegates" not in item_json(repo, sp), out
+    edit(repo, sp, delegates=[{"name": "rogue", "by": "agent"}])
+    refused("answer", tk, "g1", "--confirm", "--by", "delegate:rogue", rule="no operator grant names delegate rogue")
+    edit(repo, sp, delegates=[])
+    refused("answer", tk, "g1", "--answer", "b", "--by", "delegate:mgr", code=2, rule="only confirms")
+    got, out = b(repo, "set", sp, "--delegate", "mgr", "--by", "operator")
+    assert got == 0 and item_json(repo, sp)["delegates"] == [{"name": "mgr", "by": "operator"}], out
+    refused("answer", tk, "g1", "--confirm", "--by", "delegate:other", rule="no operator grant names delegate other")
+    got, out = b(repo, "answer", tk, "g1", "--confirm", "--by", "delegate:mgr")
+    assert got == 0 and "(by delegate:mgr)" in out, out
+    g = item_json(repo, tk)["gates"][0]
+    assert (g["answer"], g["by"]) == ("a", "delegate:mgr"), g
+    code, out = b(repo, "check")
+    assert code == 0, out
