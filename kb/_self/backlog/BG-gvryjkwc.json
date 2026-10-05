@@ -15,6 +15,16 @@
       "import sys;sys.path.insert(0,'_tools');import bl_check as c;sys.exit(1 if c.command_paths(['python3','-c','import pathlib,sys; sys.exit(pathlib.Path(\"_tools/kbold.py\").exists())']) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "gone_path_a_removal_check_is_no_finding"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_check.py",
     "_tools/test_bl_check.py",
