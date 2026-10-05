@@ -2,7 +2,7 @@
   "id": "BG-bapadqdl",
   "kind": "bug",
   "title": "own_words misses command words after if/then, !, env, a newline and a nested shell in a chain",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -15,6 +15,16 @@
       "import sys;sys.path.insert(0,'_tools');import bl_land as b;sys.exit(1 if b.own_failure(['sh','-c','if true; then jq .; fi'],127,'sh: line 1: jq: command not found') is None else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "own_words_after_reserved_words"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
     "_tools/test_backlog.py",
@@ -23,5 +33,6 @@
   ],
   "depends_on": [
     "ST-prtoem5q"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

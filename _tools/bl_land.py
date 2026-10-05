@@ -774,38 +774,68 @@ def own_import_error(argv, lines, root=None):
 CHAIN = {"&&", "||", ";", "|", "&", "|&"}  # the shell's list and pipeline operators: each starts a command of its own
 
 
-def own_words(argv):
-    """The command words a repro runs itself: argv[0], or for a shell's -c (or cmd's /c) string the first word of
-    every command in it, split at && || ; | (POSIX runs each, and any can exit 127), read through a nested shell up
-    to the depth `launched` reads; a VAR=value prefix is no command word."""
+RESERVED = {"if", "then", "elif", "else", "do", "while", "until", "!", "{", "(", "time"}  # the next word is a command
+CLOSERS = {"fi", "done", "esac", "}", ")"}  # end a compound command: no command word
+PREFIX_RUNNERS = {"env", "command", "exec", "nohup", "nice"}  # run the utility named after their options and assignments
+RUNNER_ARG_OPTS = {"-u", "--unset", "-n", "-C", "--chdir", "-S"}  # options of a prefix runner that take a value
+
+
+def command_word(tokens):
+    """(the command word of one simple command's TOKENS, the tokens after it): reserved words, `!`, `name=value`
+    assignments and a prefix runner (env, command, exec, nohup, nice) with its options and assignments are skipped,
+    as POSIX reads them; (None, []) when nothing is left."""
+    i = 0
+    while i < len(tokens):
+        t = tokens[i]
+        if t in RESERVED or t in CLOSERS or re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", t):
+            i += 1
+        elif os.path.basename(t) in PREFIX_RUNNERS:
+            i += 1
+            while i < len(tokens) and (tokens[i].startswith("-") or re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", tokens[i])):
+                i += 2 if tokens[i] in RUNNER_ARG_OPTS else 1
+        else:
+            return t, tokens[i + 1:]
+    return None, []
+
+
+def own_words(argv, depth=3):
+    """The command words a repro runs itself: argv[0], or for a shell's -c (or cmd's /c) string the command word of
+    every command in it (command_word: after a reserved word such as if, then, do or !, an assignment or a prefix
+    runner such as env), split at && || ; | & ( ) and a newline (POSIX runs each, and any can exit 127), and through a
+    nested shell's -c string anywhere in it, up to DEPTH shells deep (BG-zvh7cvyo, BG-bapadqdl)."""
     argv = list(argv)
-    for _ in range(3):
-        if not argv:
-            return set()
-        prog = os.path.basename(argv[0]).lower()
-        rest = argv[1:]
-        while prog in SHELLS and rest and rest[0].startswith("-") and rest[0].lower() not in ("-c", "-command"):
-            rest = rest[1:]
-        if not (prog in SHELLS and rest and rest[0].lower() in ("-c", "/c", "-command") and len(rest) > 1):
-            return {os.path.basename(argv[0])}
-        try:
-            lex = shlex.shlex(rest[1], posix=prog not in ("cmd", "cmd.exe"), punctuation_chars=True)
-            lex.whitespace_split = True
-            tokens = list(lex)
-        except ValueError:
-            return {w for w in rest[1].split()[:1]}
-        words, start = [], True
-        for t in tokens:
-            if t in CHAIN:
-                start = True
-            elif start and not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", t):
-                words.append(t)
-                start = False
-        if len(words) == 1 and os.path.basename(words[0]).lower() in SHELLS:  # a nested shell: read its string
-            argv = tokens
+    if not argv:
+        return set()
+    prog = os.path.basename(argv[0]).lower()
+    rest = argv[1:]
+    while prog in SHELLS and rest and rest[0].startswith("-") and rest[0].lower() not in ("-c", "-command"):
+        rest = rest[1:]
+    if not (prog in SHELLS and rest and rest[0].lower() in ("-c", "/c", "-command") and len(rest) > 1) or depth <= 0:
+        return {os.path.basename(argv[0])}
+    try:
+        lex = shlex.shlex(rest[1].replace("\n", " ; "), posix=prog not in ("cmd", "cmd.exe"), punctuation_chars=True)
+        lex.whitespace_split = True
+        tokens = list(lex)
+    except ValueError:
+        return {w for w in rest[1].split()[:1]}
+    commands, cur = [], []
+    for t in tokens:
+        if t in CHAIN or t in ("(", ")", ";;"):
+            commands.append(cur)
+            cur = []
+        else:
+            cur.append(t)
+    commands.append(cur)
+    words = set()
+    for cmd in commands:
+        word, args = command_word(cmd)
+        if word is None:
             continue
-        return {os.path.basename(w) for w in words}
-    return {os.path.basename(argv[0])} if argv else set()
+        if os.path.basename(word).lower() in SHELLS:
+            words |= own_words([word, *args], depth - 1)
+        else:
+            words.add(os.path.basename(word))
+    return words
 
 
 def missing_inside(argv, out):

@@ -150,6 +150,23 @@ def test_repro_fails_for_its_own_error_compound_shell():
     assert bl_land.own_words(["sh", "-c", "a && b || c; d | e"]) == {"a", "b", "c", "d", "e"}
 
 
+@pytest.mark.parametrize("script, words", [
+    ("if true; then jq .; fi", {"true", "jq"}),
+    ("! grep x f && env -u HOME A=1 python3 x.py", {"grep", "python3"}),
+    ("cd /tmp\njq .", {"cd", "jq"}),
+    ("echo hi; sh -c 'curl x | yq .'", {"echo", "curl", "yq"}),
+    ("while read l; do nohup jq .; done", {"read", "jq"}),
+    ("( cd /tmp && A=1 make )", {"cd", "make"}),
+])
+def test_own_words_after_reserved_words_env_newline_and_nested_shell(script, words):
+    """BG-bapadqdl planted: the command words of a -c string after if/then/do, !, a newline, a subshell, an
+    assignment, env or nohup with their options, and inside a nested sh -c that is not the only command; a repro
+    missing jq in `if true; then jq .; fi` is its own error (exit 127, cannot start)."""
+    assert bl_land.own_words(["sh", "-c", script]) == words
+    if "jq" in words:
+        assert "cannot start" in (backlog.own_failure(["sh", "-c", script], 127, "sh: line 1: jq: command not found\n") or "")
+
+
 def test_repro_fails_for_its_own_error_tool_and_wrapper(repo, colour):
     """BG-a3ubazze planted: a SyntaxError in a repository tool the repro runs (git tracks it: a 3.12-only construct
     on 3.11) is a genuine reproduction, filed; the same broken script untracked is the repro's own, also behind
