@@ -2,7 +2,7 @@
   "id": "ST-ywqttahe",
   "kind": "story",
   "title": "The list of tests over live data names every test that reads the live kb or backlog, wherever it lives",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
@@ -24,5 +24,6 @@
   ],
   "depends_on": [
     "ST-fo3ztjcs"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
