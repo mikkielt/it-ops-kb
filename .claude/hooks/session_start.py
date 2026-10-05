@@ -56,9 +56,9 @@ def report():
         f"- The open work is the backlog ({SELF}/backlog.md; the horizon hook printed its state). Before any change run python3 _tools/selfdoc.py section maintaining \"Conduct for changes\"; {SELF}/README.md",
         "  maps the kb's own docs (content rules, tools, git, plugin, design).",
         "- The gate is python3 _tools/kbgit.py sync --push: it runs only what the changed paths can break (the checks each",
-        "  path needs and tests.py --changed, mapped by _tools/testmap.py). While working, python3 _tools/tests.py --changed runs",
-        "  the same tests; the full tests.py and stress_test.py run on request (a sprint review, a manual CI job). After tool,",
-        "  skill or config changes run selfdoc.py stale --since @{upstream} (/kb-self).",
+        "  path needs and tests.py --changed: the whole small suite for a code change, nothing for backlog items). The suite",
+        "  has a ceiling (_tools/tests_ceiling.json): a new test replaces one, and a bug gets a retrospective, not a test,",
+        "  when a log shows it. After tool, skill or config changes run selfdoc.py stale --since @{upstream} (/kb-self).",
         "- This environment's network policy may deny learn.microsoft.com, github.com pages and api.github.com; raw GitHub",
         "  files, git over https, code.claude.com and the claude-code-docs MCP server work.",
     ]

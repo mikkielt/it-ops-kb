@@ -152,7 +152,7 @@ def job_verdict(jobs, gate=None):
       ci_quota_exceeded), missing from the pipeline, or the list unreadable;
     - else `ok`.
     `failed` names the jobs whose script failed, sorted; `unpassed` says how each gate job did not succeed
-    (`kb-tests manual`, `kb-tests failed (ci_quota_exceeded)`, `kb-trailers not in the pipeline`)."""
+    (`kb-tests manual`, `kb-tests failed (ci_quota_exceeded)`, `kb-tests-windows not in the pipeline`)."""
     gate = GATE_JOBS if gate is None else gate
     if not isinstance(jobs, list):
         return "unverified", [], ["the pipeline's jobs could not be read"]

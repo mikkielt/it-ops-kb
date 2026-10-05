@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Prove a test-suite speed-up lost no test, and time a suite run against a bound. Standard library only; described in kb/_self/tools.md.
 
-  perfcheck.py ids                              print the test ids tests.py and stress_test.py collect at HEAD (the working
-                                                tree), one per line, sorted
+  perfcheck.py ids                              print the test ids tests.py collects at HEAD (the working tree), one per
+                                                line, sorted
   perfcheck.py ids --write FILE                 write them to FILE (the baseline); a second run changes nothing
   perfcheck.py ids --against FILE               compare them with the ids in FILE; a baseline id not collected now fails
                                                 unless its test now lives in another file (reported as `moved:`)
@@ -13,12 +13,12 @@
                                                 test file that still exists whose reason names no removed file or symbol
                                                 and no successor test, and of a dropped test file whose local imports are
                                                 all still present (tests of live code); exit 0 with or without warnings
-  perfcheck.py time --max-seconds N [--stress] [ARGS...]
-                                                run tests.py (stress_test.py with --stress) with ARGS and fail when it
-                                                takes longer than N seconds, or fails itself
+  perfcheck.py time --max-seconds N [ARGS...]
+                                                run tests.py with ARGS and fail when it takes longer than N seconds, or
+                                                fails itself
 
-The ids are what `pytest --collect-only -q` prints for the two selections the runners use: `_tools` with -m "not stress"
-(tests.py) and `_tools/test_stress.py` with -m stress (stress_test.py). Nothing runs and nothing touches the network.
+The ids are what `pytest --collect-only -q` prints for the selection tests.py runs: `_tools`. Nothing runs and nothing
+touches the network.
 Ids added since the baseline are listed and do not fail; the baseline file is appended to by whoever adds tests.
 A test that moved to another file keeps its class and name: a baseline id missing at head whose part after the file path
 (`Class::test_name[param]`, or `test_name[param]`) is the same as that of an id added in another file is reported as
@@ -35,8 +35,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parent
 ROOT = TOOLS.parent
 SELECTIONS = (  # (pytest arguments after the collect options, a path that must exist for the selection to apply)
-    (["_tools", "-m", "not stress"], "_tools"),  # tests.py: FULL_M over every test module
-    (["_tools/test_stress.py", "-m", "stress"], "_tools/test_stress.py"),  # stress_test.py
+    (["_tools"], "_tools"),  # the one selection tests.py runs
 )
 REPO_VARS = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_PREFIX")
 
@@ -89,7 +88,7 @@ def parse_collected(text):
 
 
 def collect_ids(root, cmd=None):
-    """The sorted ids both selections collect under `root`; PerfError when pytest fails to collect."""
+    """The sorted ids the selection collects under `root`; PerfError when pytest fails to collect."""
     cmd = cmd or pytest_command()
     ids = set()
     for args, needs in SELECTIONS:
@@ -205,14 +204,13 @@ def run_ids(a, collect=collect_ids, root=ROOT):
     return 1 if removed else 0
 
 
-def run_suite(args, stress=False):
-    script = TOOLS / ("stress_test.py" if stress else "tests.py")
-    return subprocess.run([sys.executable, str(script)] + args, cwd=str(ROOT), env=clean_env()).returncode
+def run_suite(args):
+    return subprocess.run([sys.executable, str(TOOLS / "tests.py")] + args, cwd=str(ROOT), env=clean_env()).returncode
 
 
 def run_time(a, extra, runner=run_suite, clock=time.monotonic):
     start = clock()
-    code = runner(extra, a.stress)
+    code = runner(extra)
     seconds = clock() - start
     if code != 0:
         print(f"perfcheck time: the suite run failed (exit {code}) after {seconds:.1f} s")
@@ -226,7 +224,7 @@ def run_time(a, extra, runner=run_suite, clock=time.monotonic):
 
 DROPPED_FILE = "_tools/test_ids_dropped.txt"
 REASON_TOKEN = re.compile(r"`([^`]+)`|([A-Za-z_][\w./-]*\.py)\b|(--[a-z][a-z-]+)|\b([A-Z][A-Z0-9_]{3,})\b|\b(test_\w+|Test[A-Z]\w*)")
-HELPER_MODULES = ("conftest", "bl_testkit")  # imports a test file makes that name no code under test
+HELPER_MODULES = ("conftest",)  # imports a test file makes that name no code under test
 
 
 def dropped_groups(text):
@@ -402,7 +400,6 @@ def main(argv=None, collect=collect_ids, runner=run_suite, clock=time.monotonic,
     dr.add_argument("--since", metavar="REV", help="only the groups whose ids the range since REV added (sync's gate)")
     tm = sub.add_parser("time", help="time a suite run against a bound; other arguments go to tests.py")
     tm.add_argument("--max-seconds", type=float, required=True)
-    tm.add_argument("--stress", action="store_true", help="run stress_test.py instead of tests.py")
     a, extra = ap.parse_known_args(argv)
     try:
         if a.cmd == "ids":

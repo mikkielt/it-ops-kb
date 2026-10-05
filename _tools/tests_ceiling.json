@@ -1,0 +1,10 @@
+{
+  "decision": "D-7zbgyagn",
+  "max_files": 15,
+  "max_ids": 100,
+  "max_seconds": {
+    "darwin": 20,
+    "linux": 60,
+    "win32": 60
+  }
+}

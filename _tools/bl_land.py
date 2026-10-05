@@ -108,7 +108,7 @@ def noop_proof(bl, iid, passed):
     c, why = noops[0]
     raise Refused(f"{bl.label(iid)} is not done: {shlex.join(c['run'])} passed without doing its work in this clone "
                   f"({why}), and no check that runs tests proves the fix. Name one: backlog.py set {iid} --add "
-                  "--check 'python3 _tools/tests.py -k <the test that plants the defect>'; or ask the operator to "
+                  "a --check that does its work in this clone (a tool run on a planted input); or ask the operator to "
                   f"accept the host-bound proof: backlog.py gate add {iid} --id {HOST_BOUND_GATE} --question "
                   "'Accept a proof that does nothing in this clone?' --option accept --option add-test "
                   f"--recommendation add-test, answered with backlog.py answer {iid} {HOST_BOUND_GATE} --answer "
@@ -258,7 +258,7 @@ def cmd_done(bl, a):
 
 # land: the steps after a worker's branch comes back, each a command run from the clone's root with this interpreter
 LAND_STALE = ("stale", ["_tools/selfdoc.py", "stale", "--since"])  # + the integration main; seconds, so it runs first
-# run once, when the landing changes _tools/; stress_test.py is no step here: it runs once at the sprint's review story
+# run once, when the landing changes _tools/; the full tests.py is no step here: it runs once at the sprint's review story
 LAND_HEAVY = (("rag.py eval", ["_tools/rag.py", "eval"]),
               ("lint", [".claude/skills/kb-verify/lint.py"]))
 LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])

@@ -15,7 +15,7 @@ A path is content when it is written by the kb's own routine work, and code othe
 A commit is code when any path it changes against its first parent is code (a merge commit is judged the same way; a
 root commit against the empty tree), else content. Every path the query log's writers accept (ql_deliver.auto_kinds)
 and every path `kbgit.py fix` rewrites after a rebase (fix_texts of kg_merge) is content, so a sync that rebases content
-never turns into code (tests: test_kblane.py). One of those paths, .gitattributes, is code by its path (a hand edit of
+never turns into code. One of those paths, .gitattributes, is code by its path (a hand edit of
 its rules is code) and content only when a commit changes nothing outside its pinned block, the lines between
 `# pinned:start` and `# pinned:end` that fix regenerates from _artifacts.csv: commit_paths leaves it out then. This module imports no other kb module: the classifier is shared by
 kbgit.py, backlog.py and CI, and only its CLI wiring lives in kbgit.py.

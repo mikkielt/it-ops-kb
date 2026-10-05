@@ -1,2 +1,0 @@
-{"type": "user", "promptId": "p2", "message": {"role": "user", "content": "PRIVATE-TEXT"}, "isSidechain": true, "agentId": "a2"}
-{"type": "assistant", "requestId": "s2", "message": {"model": "gpt-weird", "usage": {"input_tokens": 1, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0, "output_tokens": 1}, "content": []}, "isSidechain": true, "agentId": "a2"}

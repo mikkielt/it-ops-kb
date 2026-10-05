@@ -7,8 +7,7 @@
 # password held as a SecureString and never printed), bundles main into C:\Users\Public\kb-cleanhost (Administrators,
 # SYSTEM and the account only), runs this script again as that account through Start-Process -Credential (no user
 # rights changed), copies its results.txt and one log per step to -Out (default _cache\cleanhost, never committed),
-# then deletes the account, its profile and the work folder. -Short leaves out stress_test.py and tests.py (minutes
-# instead of about 40) and adds the step 4 and 5 commands that need no sign-in. -KeepAccount keeps the account and the
+# then deletes the account, its profile and the work folder. -Short leaves out tests.py and adds the step 4 and 5 commands that need no sign-in. -KeepAccount keeps the account and the
 # folder for a look afterwards; delete them by hand. Exit 0 when every step exited 0, 1 when one did not, 2 when the
 # run could not start. The results name no host or user: profile paths print as %USERPROFILE%.
 param([switch]$Short, [switch]$KeepAccount, [string]$Out, [switch]$AsAccount)
@@ -70,7 +69,6 @@ if ($AsAccount) {
         Step 'kb-setup 4: kb_mcp.py --status' { python3 _tools/kb_mcp.py --status }
         Step 'kb-setup 5: querylog.py where' { python3 _tools/querylog.py where }
     } else {
-        Step 'kb-setup 2: stress_test.py' { python3 _tools/stress_test.py }
         Step 'kb-setup 2: tests.py' { python3 _tools/tests.py }
     }
     "# finished $(Get-Date -Format s)" | Add-Content $res -Encoding utf8

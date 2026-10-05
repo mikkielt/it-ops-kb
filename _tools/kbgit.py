@@ -98,8 +98,8 @@ Sync (kg_sync.py; the only way to push; people push straight to main, CI is a sa
      "chore(kb): kbgit fix after sync" with KB-* trailers. Unpushed commits whose trailers no longer match their diff
      (conflict resolution, renumbered ids) get them rewritten (`git rebase --exec "kbgit.py trailers --amend"`).
      Gate: build_index.py --check, check.py, fetch.py --offline, doc2query.py stale, selfdoc.py stale --since
-     REMOTE/BRANCH (a `Self-Reviewed:` trailer clears a doc), tests.py --changed with KB_TESTS_FAST=1 (git scenarios only
-     in the test files a changed tool or other code path selects; KB_SYNC_NO_TESTS=1 skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1,
+     REMOTE/BRANCH (a `Self-Reviewed:` trailer clears a doc), tests.py --changed with KB_TESTS_FAST=1 (nothing for backlog
+     items and the query log store, the suite without the git scenarios for kb content only, the whole suite for any other path; KB_SYNC_NO_TESTS=1 skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1,
      nothing pushed.
   e. --push: git push REMOTE HEAD:BRANCH, never --force. Rejected because the remote moved: fetch and rebase once more,
      then give up (exit 1). A push to main whose range has a code-lane commit (kblane.py) goes instead as the branch

@@ -435,7 +435,8 @@ def gate_needs(paths):
             "dropped": why(ps & {"_tools/test_ids_dropped.txt", "_tools/perfcheck.py"}, "the dropped test ids")}
 
 
-GATE_NOTE = re.compile(r"tests\.py --changed \S+: (\d+) of (\d+) test files or classes(, the git scenarios of \d+ kept)?")
+GATE_NOTE = re.compile(r"tests\.py --changed \S+: (no test can be affected by the changed paths"
+                       r"|kb content only, the suite without the git scenarios|the whole suite)")
 
 
 def gate_name(label):
@@ -502,11 +503,10 @@ def gate_scope(r, skipped, out):
         r["scope"], r["scope_line"] = ("skipped", "tests.py did not run (KB_SYNC_NO_TESTS=1)") if skipped == "no-tests-env" else (
             "none", "tests.py did not run, no path it reads changed")
     elif m:
-        r["scope"], r["scope_line"] = ("changed-git" if m.group(3) else "changed"), m.group(0)
-    elif "no test can be affected" in (out or ""):
-        r["scope"], r["scope_line"] = "none", "no test file can be affected by the changed paths"
+        r["scope"] = "none" if m.group(1).startswith("no test") else "changed" if m.group(1).startswith("kb") else "all"
+        r["scope_line"] = m.group(0)
     else:
-        r["scope"], r["scope_line"] = "all", "every test file, without the git scenarios"
+        r["scope"], r["scope_line"] = "all", "the suite without the git scenarios"
 
 
 def record_gate(r, code):
@@ -530,8 +530,8 @@ def gate(r, up, host, fix_check=False, since=None):
     check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
     clears a doc), backlog.py check for backlog items, querylog.py check for the query log store, and tests.py
-    --changed UP (testmap.py maps the paths to the test files they can break; KB_TESTS_FAST=1 keeps the git scenarios
-    of the test files a code path selects, TestCloudInGit for kbgit.py, and leaves out those only kb content selects).
+    --changed UP (KB_TESTS_FAST=1: nothing for backlog items and the query log store, the suite without the git
+    scenarios for kb content only, the whole suite for any other path).
     `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
     rebuilds the generated files, so its gate has neither. A skipped check is listed with why.
     SINCE (a retry after a rejected push): the commit the last green gate judged. Each check then reads only the paths

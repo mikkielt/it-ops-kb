@@ -87,8 +87,8 @@ def cmd_new(bl, a):
         why = text_only_repro(it["repro"]["run"])
         if why and not (a.repro_reason or "").strip():
             raise Rejected(f"--repro only matches text in a file ({why}): it proves the text, not the behaviour, and "
-                           "can pass on a fix that does not work; run the behaviour (a test, a command on a planted "
-                           "input), or state why it cannot with --repro-reason TEXT")
+                           "can pass on a fix that does not work; run the behaviour (a tool call on a planted "
+                           "input, a command with a match, or a test), or state why it cannot with --repro-reason TEXT")
         if (a.repro_reason or "").strip():
             it["repro_reason"] = a.repro_reason.strip()
     elif a.repro_reason:

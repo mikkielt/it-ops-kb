@@ -1,52 +1,28 @@
 """Shared pytest setup for the kb tests. Run them with `python3 _tools/tests.py` (uv installs pytest and pytest-xdist
-from pyproject.toml's dev group) or `uv run pytest`.
+from pyproject.toml's dev group).
 
-  Repo(path, env)       one throwaway directory: git(), run_git(), rev(), tool(), kbgit(), read(), write(), append()
-  querylog_env(data)    the environment of a kb_hook.py or kb_ask.py run on this clone: its query log rows go under
-                        `data`, never into the clone's own spool, in mode `local` (a config.json it writes unless one
-                        is there; `mode=None` writes none), so a distill it starts never delivers to a real remote
+  KB, TOOLS             the repository and its _tools directory
+  tool(name, *args)     run _tools/NAME on this repository: (exit code, stdout + stderr)
+  tracked(), text(rel)  the tracked files (git ls-files) and one file's text (None when it is not utf-8)
   git_env(**extra)      the environment of a git scenario: no global or system git config, a fixed author, and none
-                        of the variables that would leak the outer repository, a CI run or a verification date into it
-  GIT_LOCATION          the git variables that name a repository (GIT_DIR, GIT_WORK_TREE, ...): removed from
-                        os.environ at import, so a run a git hook starts never acts on the hook's repository
-  copy_kb(dst, skip, copy)  a copy of the kb's working tree without .git, _cache, _private, __pycache__ (and `skip`):
-                        hard links of a per-process template for the files in LINKED_DIRS, real copies of the rest (and
-                        of the paths in `copy`); an autouse session fixture fails the run when a write went through a
-                        link into the template
-  kb_seed               (fixture) a bare repository of a kb copy, committed once per run and shared by the xdist
-                        workers: the origin a git scenario clones
-  SCOPE_GROUPS          {"module.py::Class": unit}: the classes that share a fixture built once per worker run as one
-                        xdist loadscope unit (scope_of; the hook pytest_xdist_make_scheduler), in file order
-  requires_git          skip marker for a test that needs the git binary
-  marker `git`          a scenario in throwaway git repositories (about 10 s each); `-m "not git"` leaves them out,
-                        which is what KB_TESTS_FAST=1 (kbgit.py sync's gate) does
-  marker `stress`       test_stress.py: stress_test.py runs it, tests.py leaves it out
-  SOURCES_HEADER        the header line of _sources.csv
-  P(rel)                a path relative to the public root as a path relative to the repository (kbcommon.repo_rel):
-                        what a scenario passes to Repo.write/read or git for a ledger, article or retrieval data file
-  D(rel)                P() of a retrieval data file (signals.csv, lookup_eval.csv, doc2query/expansions.csv, ...)
-  Q(rel)                the qualified path of a public-root file (`public/<rel>`): what the read tools print
-  SELF_REL              the kb's own docs directory relative to the repository (`_self`)
-  timeout_s(seconds)    a subprocess timeout set on the project's Windows host, times KB_TEST_TIMEOUT_FACTOR (default
-                        1, at least 1; kb-tests-windows sets 3): the limit follows a slower host
-  run(*args), tracked(), text(rel), pinned(), authored(), allowlist(), hits(...), fmt(...), URL_RX, ALLOWLIST
-                        what test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py and test_kb_leaks.py share:
-                        a tool run, the tracked files and their text, the pinned and authored subsets, the leak
-                        scan's reviewed allowlist and its pattern search
+                        of the variables that would leak the outer repository, a CI run or a session into it
+  Repo(path, env)       one throwaway directory: git(), run_git(), rev(), tool(), kbgit(), read(), write(), append()
+  kb_seed               (fixture) a bare repository of this working tree's files (tracked and new, without the query
+                        log store, _fetch_state.csv and the _snapshots directories), committed once per run and shared by the xdist workers
+  scenario              (fixture) a Scenario: `origin`, a bare copy of the seed that only this test pushes to, and
+                        `clone()`, a fresh clone of it as a Repo with the commit hooks installed
+  marker `git`          a scenario in throwaway git repositories; `-m "not git"` leaves them out
 """
-import csv, functools, hashlib, json, os, re, shutil, subprocess, sys, tempfile, time
+import functools, json, os, shutil, subprocess, sys, time
 from pathlib import Path
 
 import pytest
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
-os.environ.pop("KB_ROOTS", None)  # the suite tests this repository; test_kb_root.py sets it per call
-# The variables that point git at one repository: `git rev-parse --local-env-vars` (what git itself unsets when it
-# enters another repository) without its GIT_CONFIG* ones (CI passes safe.directory in GIT_CONFIG_COUNT), plus
-# GIT_NAMESPACE. A git hook sets GIT_DIR (absolute in a worktree), and a run it starts inherits it: every git a test
-# runs, whatever its cwd, would act on the real repository, and census.repo_dir's
-# `fetch --force origin +refs/heads/*:refs/heads/*` would overwrite its branches and tags. So they go before any test.
+os.environ.pop("KB_ROOTS", None)  # the suite tests this repository
+# The variables that point git at one repository. A git hook sets GIT_DIR, and a run it starts inherits it: every git
+# a test runs, whatever its cwd, would act on the real repository. So they go before any test.
 GIT_LOCATION = ("GIT_DIR", "GIT_WORK_TREE", "GIT_IMPLICIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR",
                 "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_GRAFT_FILE", "GIT_SHALLOW_FILE",
                 "GIT_REPLACE_REF_BASE", "GIT_NO_REPLACE_OBJECTS", "GIT_PREFIX", "GIT_NAMESPACE")
@@ -54,247 +30,45 @@ for _k in GIT_LOCATION:
     os.environ.pop(_k, None)
 if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
-import kbcommon  # noqa: E402
 import kbpublic  # noqa: E402
-# at import, so an xdist worker and every subprocess it starts run without it, whatever the process that ran
-# pytest exported
-os.environ.pop(kbpublic.NO_HOOK_ENV, None)
 
+# What a scenario must not inherit: a verification date, the gate's own switches, a CI run's range, the session a
+# sync would compare commits with, the main lock a sync above the test run holds, and the publish hook's off switch.
+LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "KB_SYNC_NO_TESTS", "KB_GATE_DONE", "KB_SESSION", "KB_MAIN_LOCK_HELD",
+         "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", "CLAUDE_CODE_REMOTE_SESSION_ID", "CLAUDE_CODE_BRIDGE_SESSION_ID",
+         kbpublic.NO_HOOK_ENV, *GIT_LOCATION)
+for _k in LEAKY:
+    os.environ.pop(_k, None)
+SEED_SKIP = ("kb/_querylog/", ".claude/worktrees/")  # the committed query log store is no part of a scenario's kb
+SEED_SKIP_NAMES = ("_fetch_state.csv",)
+SEED_SKIP_DIRS = ("_snapshots",)  # copies of sources no gate reads: half of the files a clone would check out
 
-def P(rel):
-    return kbcommon.repo_rel(rel, kbcommon.PUBLIC)
-
-
-def Q(rel):
-    return kbcommon.qualify(kbcommon.public(), rel)
-
-
-def D(rel):
-    return P(kbcommon.data_rel(rel))
-
-
-SELF_REL = kbcommon.repo_rel(kbcommon.SELF)
-
-GIT = shutil.which("git")
-requires_git = pytest.mark.skipif(not GIT, reason="git is not installed")
-SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
-# The variable that makes `publish --hook` do nothing: a session that exports it would reach every test unless it is
-# cleared first. A test that needs it sets it with monkeypatch (or in the env of its own subprocess).
-HOOK_OFF = (kbpublic.NO_HOOK_ENV,)
-LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", *HOOK_OFF, *GIT_LOCATION)
-
-
-TIMEOUT_FACTOR_VAR = "KB_TEST_TIMEOUT_FACTOR"
-
-
-def timeout_factor(env=None):
-    """KB_TEST_TIMEOUT_FACTOR (default 1): how many times slower than the project's Windows host the run's host is,
-    for the subprocess timeouts set there. A number of at least 1, else ValueError: a smaller one would shorten them."""
-    raw = (os.environ if env is None else env).get(TIMEOUT_FACTOR_VAR, "").strip() or "1"
-    try:
-        factor = float(raw)
-    except ValueError:
-        factor = None
-    if factor is None or not factor >= 1 or factor == float("inf"):
-        raise ValueError(f"{TIMEOUT_FACTOR_VAR}={raw!r}: need a number of at least 1")
-    return factor
-
-
-def timeout_s(seconds):
-    """A test's subprocess timeout, set on the project's Windows host, times KB_TEST_TIMEOUT_FACTOR: kb-tests-windows
-    (a Hyper-V container, about 3 times slower) sets it, so the limit follows the host instead of being raised for all."""
-    return seconds * timeout_factor()
+SLOW_FIRST = ("_e2e.py", "test_leaks.py", "test_live_kb.py")  # the scenarios and the scans of the whole tree
+requires_git = pytest.mark.skipif(not shutil.which("git"), reason="git is not installed")
 
 
 def pytest_configure(config):
-    try:
-        timeout_factor()
-    except ValueError as e:
-        raise pytest.UsageError(str(e)) from None
     config.addinivalue_line("markers", "git: a scenario in throwaway git repositories (left out by -m 'not git')")
-    config.addinivalue_line("markers", "stress: the stress suite, test_stress.py (stress_test.py runs it; tests.py leaves it out)")
 
 
-def querylog_env(data, home=KB, base=None, mode="local"):
-    """The environment of a tool run whose query log rows must not reach the spool of the clone at `home`: capture
-    writes as the plugin at `home` would, under `data` (querylog/spool/), while KB_INDEX keeps the pack index in
-    `home`'s _cache, where it lives without the plugin variables.
-
-    The plugin's config file (data/querylog/config.json) pins `mode` unless the test wrote one first: with none the
-    mode is `auto`, whose distill delivers from a plugin host (ql_deliver.host_push), and on a host with the plugin
-    installed it would clone the install source and push the test's entries. `mode=None` writes no file, for a test
-    of the default itself that starts no distill; a test of delivery writes its own config and points the install
-    source at a local bare repository."""
-    if mode is not None:
-        cfg = Path(data) / "querylog" / "config.json"
-        if not cfg.exists():
-            cfg.parent.mkdir(parents=True, exist_ok=True)
-            cfg.write_text(json.dumps({"mode": mode}), encoding="utf-8", newline="\n")
-    env = dict(os.environ if base is None else base)
-    env.update(CLAUDE_PLUGIN_ROOT=str(home), CLAUDE_PLUGIN_DATA=str(data),
-               KB_INDEX=env.get("KB_INDEX") or os.path.join(str(home), "_cache"))
-    return env
+def pytest_collection_modifyitems(config, items):
+    """The slow files first (SLOW_FIRST, file order within each group): tests.py hands whole files to the workers in
+    this order (--no-loadscope-reorder), so each slow file starts on a worker of its own and the quick ones fill in
+    behind, instead of two slow files sharing one worker."""
+    items.sort(key=lambda it: 0 if any(s in it.nodeid.split("::")[0] for s in SLOW_FIRST) else 1)
 
 
-def git_env(**extra):
-    env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t",
-           "GIT_AUTHOR_EMAIL": "t@example.com", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com"}
-    for k in LEAKY:
-        env.pop(k, None)
-    env.update(extra)
-    # No automatic maintenance (gc --auto, maintenance run --auto) in a throwaway repository: appended after the
-    # caller's GIT_CONFIG_COUNT entries (CI's safe.directory), never replacing them.
-    try:
-        n = max(int(env.get("GIT_CONFIG_COUNT") or 0), 0)
-    except ValueError:
-        n = 0
-    for k, v in (("gc.auto", "0"), ("maintenance.auto", "false")):
-        env[f"GIT_CONFIG_KEY_{n}"], env[f"GIT_CONFIG_VALUE_{n}"] = k, v
-        n += 1
-    env["GIT_CONFIG_COUNT"] = str(n)
-    return env
-
-
-# Directories whose files tests do not write through a kb copy: a copy links them. A test that writes into one passes
-# `copy=` with the path (test_factdiff.py: its snapshots), else the end-of-run check fails.
-LINKED_DIRS = ("_snapshots", "artifacts", "_census")
-
-
-class KbTemplate:
-    """One copy of a kb working tree, read once, that every kb copy of a run is built from: files in LINKED_DIRS are
-    hard links of it (copied where the filesystem refuses a link), all others real copies, so a test may write any
-    file outside LINKED_DIRS (or inside, when copy_to's `copy` names it). A write through a link would change the
-    template and every later copy: `changed()` rereads the template against the digests taken while it was built."""
-
-    def __init__(self, src, ignore, symlinks=False):
-        self.base = tempfile.mkdtemp(prefix="kb-template-")
-        self.root = os.path.join(self.base, "kb")
-        self.digests = {}
-
-        def read_once(s, d, *, follow_symlinks=True):
-            with open(s, "rb") as f:
-                data = f.read()
-            with open(d, "wb") as f:
-                f.write(data)
-            shutil.copystat(s, d)
-            self.digests[os.path.relpath(d, self.root)] = hashlib.sha256(data).hexdigest()
-            return d
-
-        shutil.copytree(src, self.root, ignore=ignore, symlinks=symlinks, copy_function=read_once)
-
-    @staticmethod
-    def linked(rel, copy=()):
-        rel = rel.replace(os.sep, "/")
-        return any(part in LINKED_DIRS for part in rel.split("/")[:-1]) and not any(
-            rel == c.strip("/") or rel.startswith(c.strip("/") + "/") for c in copy)
-
-    def copy_to(self, dst, skip=(), copy=()):
-        """The template as a new tree at `dst` (which must not exist), without the names matching `skip` (glob
-        patterns, as shutil.ignore_patterns); `copy`: path prefixes (relative, with /) that stay real copies."""
-        drop = shutil.ignore_patterns(*skip) if skip else None
-
-        def walk(s, d, rel):
-            os.makedirs(d, exist_ok=bool(rel))
-            with os.scandir(s) as it:
-                entries = list(it)
-            dropped = set(drop(s, [e.name for e in entries])) if drop else ()
-            for e in entries:
-                if e.name in dropped:
-                    continue
-                r, target = (rel + "/" + e.name) if rel else e.name, os.path.join(d, e.name)
-                if e.is_symlink():
-                    os.symlink(os.readlink(e.path), target)
-                elif e.is_dir():
-                    walk(e.path, target, r)
-                elif self.linked(r, copy):
-                    try:
-                        os.link(e.path, target)
-                    except OSError:  # another device, a filesystem without links, a link count limit
-                        shutil.copy2(e.path, target)
-                else:
-                    shutil.copy2(e.path, target)
-
-        walk(self.root, os.fspath(dst), "")
-        return dst
-
-    def changed(self):
-        """Relative paths of the template's files that differ from what was read, went missing or appeared."""
-        seen = {}
-        for d, _, names in os.walk(self.root):
-            for n in names:
-                p = os.path.join(d, n)
-                if not os.path.islink(p):
-                    with open(p, "rb") as f:
-                        seen[os.path.relpath(p, self.root)] = hashlib.sha256(f.read()).hexdigest()
-        return sorted(k for k in seen.keys() | self.digests.keys() if seen.get(k) != self.digests.get(k))
-
-    def remove(self):
-        shutil.rmtree(self.base, ignore_errors=True)
-
-
-TEMPLATES = {}  # per process, so per xdist worker: each builds its own, nothing is shared between workers
-
-
-def kb_template(key, ignore, symlinks=False):
-    if key not in TEMPLATES:
-        TEMPLATES[key] = KbTemplate(KB, ignore, symlinks)
-    return TEMPLATES[key]
-
-
-@pytest.fixture(autouse=True)
-def hook_off_cleared():
-    """Neither HOOK_OFF variable is set when a test starts, even if an earlier test or fixture left one in os.environ.
-    No monkeypatch here: an autouse fixture that asks for it makes it set up before every other autouse fixture, so it
-    is undone after theirs, and a test that patches an attribute their teardown reads sees the patch there."""
-    for k in HOOK_OFF:
-        os.environ.pop(k, None)
-
-
-@pytest.fixture(scope="session", autouse=True)
-def kb_templates_untouched():
-    """The end of a run (a worker's, under xdist): every template file is what it was when read, else an error."""
-    yield
-    templates, bad = list(TEMPLATES.values()), []
-    TEMPLATES.clear()
-    for t in templates:
-        bad += t.changed()
-        t.remove()
-    if bad:
-        pytest.fail(f"a test wrote through a hard link into the kb template: {bad[:10]} (a file a test writes belongs "
-                    "outside conftest.LINKED_DIRS, or in copy_kb's `copy`)", pytrace=False)
-
-
-def copy_kb(dst, skip=(), copy=()):
-    patterns = shutil.ignore_patterns(".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache")
-    claude = os.path.normcase(os.path.join(KB, ".claude"))
-
-    def ignore(d, names):  # and Claude Code's worktrees (sprint subagents): each is a whole second kb
-        return set(patterns(d, names)) | ({"worktrees"} if os.path.normcase(d) == claude else set())
-
-    return kb_template("kb", ignore).copy_to(dst, skip, copy)
-
-
-ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")  # the reviewed exceptions of the leak scan
-
-
-def run(*args):
-    p = subprocess.run([sys.executable, *args], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace")
+def tool(name, *args, env=None):
+    p = subprocess.run([sys.executable, os.path.join(TOOLS, name), *args], cwd=KB, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", env=env)
     return p.returncode, p.stdout + p.stderr
 
 
 @functools.lru_cache(maxsize=None)
 def tracked():
-    """Tracked files (git ls-files), or every file outside ignored dirs when git is unavailable (read once per run)."""
-    try:
-        out = subprocess.run(["git", "ls-files", "-z"], cwd=KB, capture_output=True, check=True).stdout
-        return tuple(sorted(f for f in out.decode().split("\0") if f))
-    except (OSError, subprocess.CalledProcessError):
-        out = []
-        for root, dirs, files in os.walk(KB):
-            dirs[:] = [d for d in dirs if d not in {".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache",
-                                                    ".ruff_cache", ".uv-cache", "node_modules"}]  # never scan installed packages
-            out += [os.path.relpath(os.path.join(root, f), KB) for f in files]
-        return tuple(sorted(out))
+    """Tracked files (git ls-files), sorted: stage a new file before a run, or the scans pass it unchecked."""
+    out = subprocess.run(["git", "ls-files", "-z"], cwd=KB, capture_output=True, check=True).stdout
+    return tuple(sorted(f for f in out.decode("utf-8").split("\0") if f))
 
 
 @functools.lru_cache(maxsize=None)
@@ -306,98 +80,23 @@ def text(rel):
         return None
 
 
-def pinned():
-    """Repository paths of every root's pinned artifacts."""
-    out = set()
-    for r in kbcommon.roots():
-        with open(os.path.join(r.path, kbcommon.ARTIFACTS), encoding="utf-8-sig", newline="") as f:
-            out |= {kbcommon.repo_rel(x["path"], r.path) for x in csv.DictReader(f)}
-    return out
-
-
-def internal_prefixes():
-    """Repository path prefixes of the roots marked `visibility: internal`: they may hold real names and addresses."""
-    return tuple(kbcommon.repo_rel(".", r.path) + "/" for r in kbcommon.roots() if r.visibility != "public")
-
-
-@functools.lru_cache(maxsize=None)
-def authored():
-    """Tracked text files we wrote ourselves that the placeholders-only rule covers: not pinned artifacts, not vendor
-    exports under */artifacts/ or snapshots of copy sources under */_snapshots/, not files of internal roots (secrets are
-    checked everywhere: test_no_secrets)."""
-    p, internal = pinned(), internal_prefixes()
-    return tuple(f for f in tracked() if f not in p and "/artifacts/" not in f and f"/{kbcommon.SNAPSHOTS}/" not in f
-                 and not f.startswith(internal) and text(f) is not None)
-
-
-def allowlist():
-    out = {}
-    if os.path.exists(ALLOWLIST):
-        with open(ALLOWLIST, encoding="utf-8") as f:
-            lines = f.read().splitlines()
-        for ln in lines:
-            ln = ln.split("#", 1)[0].strip()
-            if ln:
-                kind, value = ln.split(None, 1)
-                out.setdefault(kind, set()).add(value.strip().lower())
-    return out
-
-
-# urls, including git remotes: ssh:// and the scp-like `git@host:path` form, and `ssh [-opts] git@host` (a remote or an
-# ssh login, not an e-mail address)
-URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
-
-
-def hits(pattern, files, flags=0, strip_urls=False):
-    rx = re.compile(pattern, flags)
-    found = []
-    for f in files:
-        t = text(f)
-        if t is None:
-            continue
-        for n, ln in enumerate(t.splitlines(), 1):
-            src = URL_RX.sub("", ln) if strip_urls else ln
-            for m in rx.finditer(src):
-                found.append((f, n, m.group(0)))
-    return found
-
-
-def fmt(found, limit=20):
-    return "\n".join(f"  {f}:{n}: {v}" for f, n, v in found[:limit]) + (f"\n  ... +{len(found) - limit}" if len(found) > limit else "")
-
-
-@pytest.fixture(scope="session")
-def kb_seed(tmp_path_factory):
-    """(bare repository, its commit) of a kb copy without _fetch_state.csv and the committed query log store, committed
-    once per run: the origin a git scenario clones. Under pytest-xdist the first worker that asks builds it in the
-    run's shared temporary directory, and the others wait for it."""
-    base = tmp_path_factory.getbasetemp()
-    tmp = (base.parent if os.environ.get("PYTEST_XDIST_WORKER") else base) / "kb-seed"
-    done = tmp / "seed.json"
+def git_env(**extra):
+    env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t",
+           "GIT_AUTHOR_EMAIL": "t@example.com", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com"}
+    for k in LEAKY:
+        env.pop(k, None)
+    env.update(extra)
+    # No automatic maintenance in a throwaway repository: appended after the caller's GIT_CONFIG_COUNT entries (CI's
+    # safe.directory), never replacing them.
     try:
-        tmp.mkdir()
-    except FileExistsError:
-        deadline = time.monotonic() + 900
-        while not done.exists():
-            assert time.monotonic() < deadline, f"no seed at {tmp}"
-            time.sleep(0.1)
-        got = json.loads(done.read_text(encoding="utf-8"))
-        assert "error" not in got, got
-        return Path(got["bare"]), got["base"]
-    got = {"error": "not built"}
-    try:
-        repo = Repo(copy_kb(str(tmp / "seed"), skip=("_fetch_state.csv", "_querylog")))
-        repo.git("init", "-q", "-b", "main")
-        repo.git("add", "-A")
-        repo.git("commit", "-q", "-m", "base")
-        Repo(tmp).git("clone", "-q", "--bare", repo.path, str(tmp / "seed.git"))
-        Repo(tmp / "seed.git").git("repack", "-a", "-d", "-q")  # one pack: a clone links two files, not every object
-        got = {"bare": str(tmp / "seed.git"), "base": repo.rev("HEAD")}
-    finally:
-        part = done.with_suffix(".part")
-        part.write_text(json.dumps(got), encoding="utf-8")
-        os.replace(part, done)
-    return Path(got["bare"]), got["base"]
+        n = max(int(env.get("GIT_CONFIG_COUNT") or 0), 0)
+    except ValueError:
+        n = 0
+    for k, v in (("gc.auto", "0"), ("maintenance.auto", "false")):
+        env[f"GIT_CONFIG_KEY_{n}"], env[f"GIT_CONFIG_VALUE_{n}"] = k, v
+        n += 1
+    env["GIT_CONFIG_COUNT"] = str(n)
+    return env
 
 
 class Repo:
@@ -410,7 +109,8 @@ class Repo:
         return f"Repo({self.path!r})"
 
     def run_git(self, *args, env=None):
-        return subprocess.run(["git", *args], cwd=self.path, env={**self.env, **(env or {})}, capture_output=True, text=True, encoding="utf-8")
+        return subprocess.run(["git", *args], cwd=self.path, env={**self.env, **(env or {})}, capture_output=True,
+                              text=True, encoding="utf-8", errors="replace")
 
     def git(self, *args, env=None):
         """git's stdout; AssertionError with its output when it fails."""
@@ -425,10 +125,11 @@ class Repo:
     def tool(self, name, *args, env=None):
         """Run this directory's own copy of _tools/NAME."""
         return subprocess.run([sys.executable, os.path.join(self.path, "_tools", name), *args], cwd=self.path,
-                              env={**self.env, **(env or {})}, capture_output=True, text=True, encoding="utf-8", errors="replace")
+                              env={**self.env, **(env or {})}, capture_output=True, text=True, encoding="utf-8",
+                              errors="replace")
 
-    def kbgit(self, *args):
-        return self.tool("kbgit.py", *args)
+    def kbgit(self, *args, env=None):
+        return self.tool("kbgit.py", *args, env=env)
 
     def file(self, rel):
         return os.path.join(self.path, rel)
@@ -445,71 +146,86 @@ class Repo:
     def append(self, rel, text):
         self.write(rel, text, "a")
 
-
-SCOPE_GROUPS = {  # "module.py::Class" -> the one loadscope unit its tests share: scenarios built in one shared clone
-    "test_querylog_e2e.py::TestAnswered": "test_querylog_e2e.py::stage-a",
-    "test_querylog_e2e.py::TestFetches": "test_querylog_e2e.py::stage-a",
-    "test_querylog_e2e.py::TestToolRows": "test_querylog_e2e.py::stage-a",
-    "test_querylog_e2e.py::TestRedaction": "test_querylog_e2e.py::stage-a",
-    "test_querylog_e2e.py::TestFixedSince": "test_querylog_e2e.py::stage-b",
-    "test_querylog_e2e.py::TestSessions": "test_querylog_e2e.py::stage-b",
-    "test_querylog_e2e.py::TestModesOff": "test_querylog_e2e.py::stage-c",
-    "test_querylog_e2e.py::TestModesLocal": "test_querylog_e2e.py::stage-c",
-    "test_querylog_e2e.py::TestModesAuto": "test_querylog_e2e.py::stage-c",
-}
+    def commit(self, message, *paths):
+        """Stage `paths` (everything when none) and commit; the new commit's hash."""
+        self.git("add", *(paths or ("-A",)))
+        self.git("commit", "-q", "-m", message)
+        return self.rev("HEAD")
 
 
-def scope_of(nodeid):
-    """The pytest-xdist loadscope unit of a test id: a class's tests are one unit, a module's functions another; the
-    classes of one SCOPE_GROUPS entry are one unit together (they share a fixture built once per worker)."""
-    scope = nodeid.rsplit("::", 1)[0]
-    module, _, rest = scope.partition("::")
-    return SCOPE_GROUPS.get(f"{module.replace(chr(92), '/').rsplit('/', 1)[-1]}::{rest}", scope)
+def seed_files():
+    """This working tree's files a scenario's kb holds: tracked and new (not ignored), without SEED_SKIP."""
+    out = subprocess.run(["git", "ls-files", "-z", "-c", "-o", "--exclude-standard"], cwd=KB, capture_output=True,
+                         check=True).stdout.decode("utf-8")
+    return sorted({f for f in out.split("\0") if f and not f.startswith(SEED_SKIP)
+                   and f.rsplit("/", 1)[-1] not in SEED_SKIP_NAMES and not set(f.split("/")[:-1]) & set(SEED_SKIP_DIRS)
+                   and os.path.isfile(os.path.join(KB, f))})
 
 
-@functools.lru_cache(maxsize=None)
-def grouped_scheduler():
-    """pytest-xdist's LoadScopeScheduling with scope_of as its unit: the classes of a SCOPE_GROUPS entry go to one worker."""
-    from xdist.scheduler import LoadScopeScheduling
+@pytest.fixture(scope="session")
+def kb_seed(tmp_path_factory):
+    """(bare repository, its commit) of this working tree's files (seed_files), committed once per run: the origin a
+    git scenario copies. Nothing is written into the working tree: the commit is made with a git dir and an index of
+    its own. Under pytest-xdist the first worker that asks builds it in the run's shared temporary
+    directory, and the others wait for it."""
+    base = tmp_path_factory.getbasetemp()
+    tmp = (base.parent if os.environ.get("PYTEST_XDIST_WORKER") else base) / "kb-seed"
+    done = tmp / "seed.json"
+    try:
+        tmp.mkdir()
+    except FileExistsError:
+        deadline = time.monotonic() + 300
+        while not done.exists():
+            assert time.monotonic() < deadline, f"no seed at {tmp}"
+            time.sleep(0.05)
+        got = json.loads(done.read_text(encoding="utf-8"))
+        assert "error" not in got, got
+        return Path(got["bare"]), got["base"]
+    got = {"error": "not built"}
+    try:
+        # committed straight from the working tree (GIT_WORK_TREE), with an index of its own: no copy of the files
+        bare = tmp / "seed.git"
+        Repo(tmp).git("init", "-q", "--bare", "-b", "main", str(bare))
+        Repo(bare).git("config", "core.bare", "false")
+        spec = tmp / "seed-paths"
+        spec.write_bytes("\0".join(seed_files()).encode("utf-8"))
+        tree = Repo(KB, git_env(GIT_DIR=str(bare), GIT_WORK_TREE=KB))
+        tree.git("-c", "core.autocrlf=false", "add", "-f", f"--pathspec-from-file={spec}", "--pathspec-file-nul")
+        tree.git("commit", "-q", "-m", "base")
+        Repo(bare).git("config", "core.bare", "true")
+        got = {"bare": str(bare), "base": Repo(bare).rev("HEAD")}
+    finally:
+        part = done.with_suffix(".part")
+        part.write_text(json.dumps(got), encoding="utf-8")
+        os.replace(part, done)
+    return Path(got["bare"]), got["base"]
 
-    class GroupedLoadScope(LoadScopeScheduling):
-        def _split_scope(self, nodeid):
-            return scope_of(nodeid)
 
-    return GroupedLoadScope
+class Scenario:
+    """A test's own origin (a bare copy of the seed) and the clones made of it."""
 
+    def __init__(self, tmp, seed, base):
+        self.tmp, self.base, self.n = Path(tmp), base, 0
+        self.origin = Repo(self.tmp / "origin.git")
+        Repo(self.tmp).git("clone", "-q", "--bare", str(seed), self.origin.path)
 
-@pytest.hookimpl(optionalhook=True)
-def pytest_xdist_make_scheduler(config, log):
-    """`--dist loadscope` hands out scope_of's units; any other distribution is xdist's own."""
-    if config.getoption("dist", None) == "loadscope":
-        return grouped_scheduler()(config, log)
-    return None
+    def bare(self, name):
+        """Another bare copy of the origin (a public home, a second remote) as a Repo."""
+        Repo(self.tmp).git("clone", "-q", "--bare", self.origin.path, str(self.tmp / name))
+        return Repo(self.tmp / name)
 
-
-def longest_scopes_first(units):
-    """`units` as (scope, tests, class_fixtures) in the order a loadscope run should hand them out: the scopes with a
-    class-scoped fixture first (a scenario built once per class, the scopes that take minutes to set up), each group by
-    test count, most first, then by scope name; the order is the same in every worker."""
-    return sorted(units, key=lambda u: (not u[2], -u[1], u[0]))
-
-
-def has_class_fixture(item):
-    info = getattr(item, "_fixtureinfo", None)
-    defs = info.name2fixturedefs.values() if info else ()
-    return any(d.scope == "class" for ds in defs for d in ds)
+    def clone(self, hooks=True, env=None):
+        """A fresh clone of the origin on `main` as a Repo, with the commit hooks installed unless `hooks` is False."""
+        self.n += 1
+        repo = Repo(self.tmp / f"clone{self.n}", env)
+        Repo(self.tmp).git("clone", "-q", self.origin.path, repo.path)
+        repo.git("config", "core.autocrlf", "false")
+        if hooks:
+            p = repo.kbgit("install-hooks")
+            assert p.returncode == 0, p.stdout + p.stderr
+        return repo
 
 
-def pytest_collection_modifyitems(config, items):
-    """Under --no-loadscope-reorder (tests.py passes it for loadscope) the scheduler hands scopes out in collection
-    order: put the scopes with a class fixture first, by size, so the long scenario classes start at the beginning
-    of the run, not 500-1,000 s into it. Tests keep their order inside a scope."""
-    if getattr(config.option, "loadscopereorder", True):
-        return
-    units = {}
-    for it in items:
-        u = units.setdefault(scope_of(it.nodeid), [0, False])
-        u[0] += 1
-        u[1] = u[1] or has_class_fixture(it)
-    rank = {s: i for i, (s, _, _) in enumerate(longest_scopes_first([(s, n, h) for s, (n, h) in units.items()]))}
-    items.sort(key=lambda it: rank[scope_of(it.nodeid)])  # stable: a scope's tests keep their order
+@pytest.fixture
+def scenario(tmp_path, kb_seed):
+    return Scenario(tmp_path, *kb_seed)
