@@ -2,7 +2,7 @@
   "id": "ST-mj5hi2sc",
   "kind": "story",
   "title": "Review sprint: Landing and the lane gates match their rules",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
