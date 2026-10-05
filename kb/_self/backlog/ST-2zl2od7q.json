@@ -2,7 +2,7 @@
   "id": "ST-2zl2od7q",
   "kind": "story",
   "title": "Tests over the repository's live data do not depend on its size",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_backlog.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "4f2c718c1737bdb06d57bea301f8db962eeb1c3a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "live_data_size_independent"
+        ],
+        "exit": 0,
+        "sha256": "93e8933073ba7f19"
+      }
+    ]
+  }
 }
