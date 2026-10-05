@@ -2,7 +2,7 @@
   "id": "BG-gn6hrxmt",
   "kind": "bug",
   "title": "backlog.md still says answer --record accepts --by autopilot, which answer now rejects",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,6 @@
   ],
   "touches": [
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
