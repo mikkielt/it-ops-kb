@@ -368,6 +368,31 @@ def worker_provisional_gate_texts():
     return texts
 
 
+STACKED_RULES = ((KB_WORKER, "name in your own commit's `Self-Reviewed` trailer every doc it lists for your change"),
+                 (KB_SPRINT, "each commit names in its own `Self-Reviewed` trailer every doc `selfdoc.py stale --since "
+                             "<the item's base>` lists for its change"),
+                 (RUNBOOK, "names in its own commit's `Self-Reviewed` trailer every doc `selfdoc.py stale --since "
+                           "<the item's base>` lists for its change"))
+
+
+def stacked_self_reviewed_problems(texts):
+    """The files of STACKED_RULES whose text (texts[rel]) lacks the stacked-branch Self-Reviewed rule."""
+    return [rel for rel, phrase in STACKED_RULES if phrase not in texts[rel]]
+
+
+def test_stacked_self_reviewed():
+    """ST-mf3byq2o: kb-worker, the kb-sprint brief and the runbook say each stacked item's commit names its own docs
+    in its own Self-Reviewed trailer, checked with selfdoc stale since the item's base; a planted copy of each without
+    the rule fails."""
+    texts = {}
+    for rel, _ in STACKED_RULES:
+        with open(os.path.join(KB, rel), encoding="utf-8") as f:
+            texts[rel] = f.read()
+    assert stacked_self_reviewed_problems(texts) == []
+    for rel, phrase in STACKED_RULES:
+        assert stacked_self_reviewed_problems({**texts, rel: texts[rel].replace(phrase, "")}) == [rel]
+
+
 def test_worker_provisional_gate():
     """A worker records a choice its goal leaves open as a provisional gate, answered and committed with the work, not
     report prose; /kb-sprint run lands an item only after its gates are answered or provisional; the review confirms
