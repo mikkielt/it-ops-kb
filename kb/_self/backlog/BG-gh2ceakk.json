@@ -2,7 +2,7 @@
   "id": "BG-gh2ceakk",
   "kind": "bug",
   "title": "The three-tiers docs test reads four of the eight files its goal names, so the tiers sentence can leave plugin.md or token-efficiency.md unseen",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,6 @@
   ],
   "touches": [
     "_tools/test_three_tiers_docs.py"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
