@@ -2,7 +2,7 @@
   "id": "ST-ydybkglj",
   "kind": "story",
   "title": "Research sprint goal: The retired autopilot leaves no code, event, test gap or hook rule behind",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6btkjg4l",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "dbd18dfd270aafadbf889375afe2229071af077b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "c71d80d0be0503de"
+      }
+    ]
+  }
 }
