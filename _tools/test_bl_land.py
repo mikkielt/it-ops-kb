@@ -762,6 +762,8 @@ sys.path.insert(0, os.environ["LAND_TOOLS"])
 import kg_lane
 _, branch = kg_lane.lane_plan(os.getcwd(), "refs/remotes/origin/main", "HEAD")
 git("push", "-q", "origin", "HEAD:refs/heads/" + (branch or "main"))
+if branch and os.environ.get("LAND_AUTOMERGE"):  # planted: the forge auto-merges the request at once
+    git("push", "-q", "origin", "HEAD:refs/heads/main")
 """
 
 
@@ -899,6 +901,43 @@ class TestBacklogLand:
         assert code == 0 and "landed" in out, out
         assert self.steps(ld)[4:] == ["sync"], out  # the item file alone: the heavy steps ran once
         assert self.remote_item(ld)["status"] == "done"
+
+    def test_land_wait_merge_reads_git(self, landing, monkeypatch):
+        """ST-jhad3qba planted: a merge that appears on the remote main after two reads is found by wait_merge, which
+        reads git (a fetch), on its third read, sleeping twice; and land --wait-merge whose merge request merges at
+        once finishes the second pass in the same run: the item is done on main."""
+        ld = landing
+        repo, tk = ld["repo"], ld["tk"]
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        code, out = self.land(ld)
+        assert code == 0 and "not done yet" in out, out
+        shas = [self.out(ld["remote"], "rev-parse", f"code/{tk}").strip()]
+        sleeps = []
+
+        def sleep(n):
+            sleeps.append(n)
+            if len(sleeps) == 2:  # the merge, between the second and the third read
+                sh(ld["remote"], "git", "update-ref", "refs/heads/main", f"refs/heads/code/{tk}")
+        assert bl_land.wait_merge(repo, "origin", shas, 300, poll=60, sleep=sleep) == 3 and sleeps == [60, 60]
+        assert bl_land.wait_merge(repo, "origin", shas, 0, sleep=sleep) == 1
+
+    def test_land_wait_merge_reads_git_second_pass(self, landing, monkeypatch):
+        ld = landing
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        monkeypatch.setenv("LAND_AUTOMERGE", "1")
+        code, out = b(ld["repo"], "land", ld["tk"], "--trailer", self.CO, "--wait-merge", "120")
+        assert code == 0 and "second pass" in out and "landed" in out, out
+        assert self.remote_item(ld)["status"] == "done"
+
+    def test_land_wait_merge_times_out(self, landing):
+        """ST-jhad3qba planted: a merge request that never merges stops land --wait-merge at step wait-merge, exit 1,
+        naming the code/<id> branch; main does not move and the item is not done."""
+        ld = landing
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        code, out = b(ld["repo"], "land", ld["tk"], "--trailer", self.CO, "--wait-merge", "0")
+        assert code == 1 and "land stopped at step wait-merge" in out and f"code/{ld['tk']}" in out, out
+        assert self.out(ld["remote"], "rev-parse", "main").strip() == ld["main"]
+        assert self.remote_item(ld, f"code/{ld['tk']}")["status"] == "doing"
 
     def test_backlog_land_stops_at_the_failing_step_and_names_it(self, landing, monkeypatch):
         ld = landing

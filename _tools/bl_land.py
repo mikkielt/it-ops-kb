@@ -917,8 +917,7 @@ def land_checks(bl, iid):
     raise land_stop("checks", f"{len(failed)} check(s) of {bl.label(iid)} failed: nothing was pushed")
 
 
-@ops_land
-def cmd_land(bl, a):
+def land_once(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
     heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the item's checks and
     a bug's repro, the heavy checks, sync --push (a code/<id> merge request; main does not move), and a re-run once
@@ -989,6 +988,7 @@ def cmd_land(bl, a):
             if fetched and git(root, "rev-parse", f"{tracking}^{{tree}}") == git(root, "rev-parse", "HEAD^{tree}"):
                 say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
                     f"pushed with this content): merge it, then run backlog.py land {iid} again")
+                LAND_OPS["pending"] = (late, code_branch)
                 stuck = stuck_merge_request(root, remote, code_branch)
                 if stuck:
                     say(stuck)
@@ -1016,6 +1016,7 @@ def cmd_land(bl, a):
                 land_run(root, step, argv)
         land_run(root, *LAND_SYNC, whole=True)
         if late:
+            LAND_OPS["pending"] = (late, code_branch)
             say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
                 f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
         else:
@@ -1037,6 +1038,58 @@ def cmd_land(bl, a):
             for done_branch in (branch, agent_branch):
                 if done_branch and start_ref != f"refs/heads/{done_branch}":
                     delete_landed_branch(root, done_branch, upstream)
+
+
+WAIT_POLL = 60  # seconds between land --wait-merge's reads of the integration main
+
+
+def merged_on_main(root, remote, shas):
+    """True when every one of SHAS is an ancestor of the integration main after a fetch: git, not the forge CLI, says
+    the code merge request merged (a merge commit or a fast-forward keeps the commits)."""
+    ref = f"refs/remotes/{remote}/main"
+    land_git_network(root, "wait-merge", "fetch", "--quiet", remote, f"+refs/heads/main:{ref}")
+    return all(subprocess.run(["git", "merge-base", "--is-ancestor", sha, ref], cwd=root,
+                              capture_output=True).returncode == 0 for sha in shas)
+
+
+def wait_merge(root, remote, shas, bound, poll=WAIT_POLL, sleep=time.sleep):
+    """The number of reads of the integration main it took for SHAS to be on it, reading every POLL seconds for at
+    most BOUND seconds; None when they are not on it by then."""
+    reads, waited = 0, 0
+    while True:
+        reads += 1
+        if merged_on_main(root, remote, shas):
+            return reads
+        if waited + poll > bound:
+            return None
+        sleep(poll)
+        waited += poll
+
+
+@ops_land
+def cmd_land(bl, a):
+    """Land a finished item's branch (land_once). With --wait-merge SECONDS a code item's first pass is followed by a
+    bounded wait for its merge request, read from git (a fetch of the integration main every WAIT_POLL seconds, not
+    the forge CLI), then the second pass in the same run; a wait that runs out stops at step wait-merge naming the
+    merge request."""
+    LAND_OPS["pending"] = None
+    code = land_once(bl, a)
+    pending, bound = LAND_OPS.get("pending"), getattr(a, "wait_merge", None)
+    if code or not pending or bound is None:
+        return code
+    import kbpublic
+    shas, code_branch = pending
+    remote = kbpublic.integration_remote(bl.root)
+    say(f"land: wait-merge: reading {remote}/main every {WAIT_POLL} s for up to {bound} s")
+    ops_mark("wait-merge")
+    reads = wait_merge(bl.root, remote, shas, bound)
+    if reads is None:
+        raise land_stop("wait-merge", f"the merge request of branch {code_branch} has not merged into {remote}/main "
+                                      f"within {bound} s: merge it (backlog.py merge {a.id}), then run backlog.py land "
+                                      f"{a.id} again")
+    say(f"land: merged on {remote}/main ({reads} read(s)): second pass")
+    LAND_OPS["pending"] = None
+    return land_once(Backlog(bl.root), a)
 
 
 def summary_key(bl, iid):
@@ -1350,6 +1403,9 @@ def args_done(p):
 def args_land(p):
     p.add_argument("id")
     p.add_argument("--branch", help="the local branch to land (default work/ID)")
+    p.add_argument("--wait-merge", type=int, metavar="SECONDS",
+                   help="after a code item's first pass, wait up to SECONDS for its merge request (read from git "
+                        "every 60 s), then run the second pass")
     p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
                    help="a trailer of the session's own for the done --commit commit (repeatable)")
 
