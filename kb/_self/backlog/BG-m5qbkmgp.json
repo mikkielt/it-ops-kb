@@ -2,7 +2,7 @@
   "id": "BG-m5qbkmgp",
   "kind": "bug",
   "title": "project_paths misses an scp-style remote without a user and can crash on a non-ASCII remote",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
@@ -32,5 +32,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "87ec9d59eccd7df58d1411de4ce0f459f38cc885",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "project_paths_scp_and_non_ascii"
+        ],
+        "exit": 0,
+        "sha256": "b803427f5a5140c8"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import bl_base as b; d = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', d]); subprocess.run(['git', '-C', d, 'remote', 'add', 'o', 'gitlab.example.com:grp/proj.git']); sys.exit(0 if 'grp/proj' in b.project_paths(d) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
