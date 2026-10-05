@@ -2,7 +2,7 @@
   "id": "ST-x5bim4qs",
   "kind": "story",
   "title": "Research sprint goal: Repros, checks and touches say exactly what an item gets wrong",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-3rzxx3m4",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
