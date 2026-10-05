@@ -67,15 +67,18 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           "title", KB-Work: ID, then each --trailer 'KEY: VALUE') and the decisions
                                           row (no KB-Work), so the tree is clean for the next kbgit.py sync
   backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
-                 [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--add] [--clear FIELD]...
+                 [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--title T] [--goal T]
+                 [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID] [--add] [--clear FIELD]...
                                           change an item after new: each list option replaces its list (--add:
                                           appends what is missing, so a second run changes nothing; for --notes,
                                           appends the text unless the notes hold it), --clear FIELD removes one.
                                           The result is validated as check does and written only when it adds no
-                                          error; status, claimed_by, evidence, id, kind, parent, title and the
-                                          fields set does not name are refused, a sprint takes notes and links
-                                          only, and a done item keeps its checks and touches (its evidence proves
-                                          them); exit 2 for each refusal, the item file unchanged
+                                          error; title, goal and parent, and a bug's repro (one that fails now, as
+                                          new bug's), repro_reason and severity are replaced whole; status,
+                                          claimed_by, evidence, id, kind, a done item's goal, repro, checks and
+                                          touches (its evidence proves them) and the fields set does not name
+                                          are refused, and a sprint takes notes and links only; exit 2 for each
+                                          refusal (exit 1 for a repro that passes), the item file unchanged
   backlog.py move ID --sprint SP|none     set a story's or bug's sprint (none: no sprint) and write the status that
                                           sprint's state gives: todo in an active sprint, draft in a planned one or
                                           in none; its draft and todo tasks and subtasks follow. Refused (exit 2, the
@@ -509,15 +512,14 @@ def changed_items(bl, edits):
 
 
 SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to")
-SET_FIELDS = ("notes", "priority", "rank", "sprint") + SET_LISTS  # what set changes; the others are refused
+SET_TEXT = ("title", "goal", "repro", "repro_reason", "severity", "parent")  # replaced whole; a done item keeps its goal and repro
+SET_FIELDS = ("notes", "priority", "rank", "sprint") + SET_TEXT + SET_LISTS  # what set changes; the others are refused
 SET_REFUSED = {  # a field set refuses, with the rule it states
     "status": "changes only through claim, release, start, close, drop and done",
     "claimed_by": "changes only through claim and release",
     "evidence": "is written only by done",
     "id": "is the item's identity",
     "kind": "is the item's identity",
-    "parent": "is the item's identity",
-    "title": "is the item's identity",
     "gates": "changes through gate add and answer",
 }
 
@@ -557,6 +559,7 @@ def cmd_set(bl, a):
         if set_refusal(f):
             raise Rejected(set_refusal(f))
     given = {"notes": a.notes, "priority": a.priority, "rank": a.rank, "sprint": a.sprint}
+    given.update({f: getattr(a, f) for f in SET_TEXT})
     given.update({f: getattr(a, f) for f in SET_LISTS})
     given = {f: v for f, v in given.items() if v is not None}
     both = sorted(set(given) & set(a.clear))
@@ -568,9 +571,40 @@ def cmd_set(bl, a):
     if it.get("kind") == "sprint" and set(named) - {"notes", "links"}:
         raise Rejected(f"set refuses {', '.join(sorted(set(named) - {'notes', 'links'}))} on a sprint: "
                        "a sprint takes notes and links only")
-    if it.get("status") == "done" and {"checks", "touches"} & set(named):
-        raise Rejected(f"set refuses checks and touches on {bl.label(iid)}: it is done, and its evidence proves the "
-                       "checks and touches it had")
+    if it.get("status") == "done" and {"checks", "touches", "goal", "repro", "repro_reason"} & set(named):
+        raise Rejected(f"set refuses {', '.join(sorted({'checks', 'touches', 'goal', 'repro', 'repro_reason'} & set(named)))} "
+                       f"on {bl.label(iid)}: it is done, and its evidence proves the goal, repro, checks and touches it had")
+    if "title" in given:
+        given["title"] = given["title"].strip()
+        if not given["title"]:
+            raise Rejected("set: --title is empty")
+    if {"repro", "repro_reason", "severity"} & set(named) and it.get("kind") != "bug":
+        raise Rejected(f"set refuses {', '.join(sorted({'repro', 'repro_reason', 'severity'} & set(named)))} on "
+                       f"{bl.label(iid)}: only a bug has a repro and a severity")
+    if {"repro", "severity"} & set(a.clear):
+        raise Rejected("set refuses --clear repro or severity: a bug needs both")
+    if "parent" in given and given["parent"] not in bl.items:
+        raise Rejected(f"set refuses parent {given['parent']} for {bl.label(iid)}: no such item")
+    if "repro" in given:  # as new bug: a command that fails now, for the defect, not for its own error
+        try:
+            given["repro"] = {"run": parse_cmd(given["repro"])}
+        except ValueError as e:
+            raise Rejected(f"set: --repro is not a command line ({e})") from e
+        ok, code, out = run_check(bl.root, given["repro"])
+        if ok:
+            raise Refused(f"--repro passes now (exit {code}): it must fail until the bug is fixed")
+        why = own_failure(given["repro"]["run"], code, out, bl.root)
+        if why:
+            raise Refused(f"--repro fails for its own error, not the defect: {why}")
+    if "repro_reason" in given:
+        given["repro_reason"] = given["repro_reason"].strip()
+    if {"repro", "repro_reason"} & set(named):
+        run = (given.get("repro") or it.get("repro") or {}).get("run") or []
+        reason = "" if "repro_reason" in a.clear else given.get("repro_reason", it.get("repro_reason", ""))
+        why = text_only_repro(run) if run else None
+        if why and not reason:
+            raise Rejected(f"--repro only matches text in a file ({why}): run the behaviour (a test, a command on a "
+                           "planted input), or state why it cannot with --repro-reason TEXT")
     if a.sprint is not None and bl.items.get(a.sprint, {}).get("status") == "active" and it.get("status") == "draft":
         raise Rejected(f"set refuses sprint {a.sprint} for {bl.label(iid)}: the sprint is active and the item is "
                        "draft, so it would never be ready")
@@ -932,6 +966,12 @@ def args_set(p):
     p.add_argument("--priority")
     p.add_argument("--rank", type=int)
     p.add_argument("--sprint")
+    p.add_argument("--title", help="the item's title")
+    p.add_argument("--goal", help="the goal, replaced whole (refused on a done item)")
+    p.add_argument("--repro", help="a bug's repro command, which must fail now as new bug's does (refused on a done item)")
+    p.add_argument("--repro-reason", dest="repro_reason", help="why a bug's repro can only match text in a file")
+    p.add_argument("--severity", choices=SEVERITIES, help="a bug's severity")
+    p.add_argument("--parent", help="the item's parent, by the same kind rules check applies")
     p.add_argument("--add", action="store_true", help="append to a list (or to the notes) instead of replacing it")
     p.add_argument("--clear", action="append", default=[], metavar="FIELD", help="remove a field (repeatable)")
     for f in SET_REFUSED:  # accepted only to be refused with the rule that applies
