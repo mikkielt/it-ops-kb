@@ -143,41 +143,76 @@ def noop_proof(bl, iid, passed):
                   "accept --by operator")
 
 
+def check_token(run):
+    """A check's name as an ops token, never its text: the -k selector of a test run, else the script it runs, else
+    its program (`done.refused`'s `checks`)."""
+    run = [str(x) for x in run]
+    name = run[run.index("-k") + 1] if "-k" in run[:-1] else next(
+        (Path(x).stem for x in run[1:] if x.endswith(".py")), Path(run[0]).stem if run else "check")
+    tok = ops_token(name)
+    return tok if tok[:1].isalpha() else f"c-{tok}"[:40]
+
+
+def refuse_done(iid, t0, reasons, message, checks=()):
+    """Append the `done.refused` ops row (the item, its closed reason classes, the failed checks' names and the
+    milliseconds spent), then refuse with MESSAGE. Best effort: the row never changes the refusal."""
+    try:
+        from ql_deliver import ops_row
+        fields = {"item": iid, "reasons": sorted(set(reasons)), "ms": int((time.monotonic() - t0) * 1000)}
+        if checks:
+            fields["checks"] = [check_token(c) for c in checks][:20]
+        ops_row("done.refused", **fields)
+    except Exception:  # noqa: BLE001 - a refusal never fails for its log
+        pass
+    raise Refused(message)
+
+
 def cmd_done(bl, a):
+    t0 = time.monotonic()
     iid = need(bl, a.id)
     it = bl.items[iid]
     kind = it["kind"]
     if kind == "sprint":
         raise Refused("a sprint is closed with backlog.py close")
+    reasons = []
     if kind == "epic":
         problems = [f"open child {line(bl, c)}" for c in bl.children(iid)
                     if bl.items[c].get("status") not in ("done", "dropped")]
+        reasons += ["children-open"] * bool(problems)
     else:
         problems = [x for x in waits(bl, iid, any_sprint=True)
                     if not x.startswith(("status doing", "not in an active sprint"))]
+        reasons += ["not-ready"] * bool(problems)
     if it.get("status") not in ("todo", "doing", "draft" if kind == "epic" else "todo"):
         problems.append(f"status {it.get('status')}")
+        reasons.append("status")
     if it.get("review"):
         sp = bl.sprint_of(iid)
         for s in bl.sprint_items(sp) + [sp]:
             for g in bl.items[s].get("gates", []):
                 if g.get("by") == "agent":
                     problems.append(f"provisional answer to confirm: {bl.label(s)} gate {g['id']}: {g['answer']}")
+                    reasons.append("provisional-answer")
     globs = scope(bl, iid)
     if not globs and kind != "epic" and not it.get("review"):  # start's rule, for an item filed into a running sprint
         problems.append("no touches of its own or under it: a work item needs a scope (backlog.py set ID --touch "
                         "GLOB, or tasks that have touches), which start requires of every work item")
+        reasons.append("not-ready")
     if globs:
         dirty = [ln[3:] for ln in git(bl.root, "status", "--porcelain").splitlines()
                  if in_scope(ln[3:].strip('"'), globs) and not in_scope(ln[3:].strip('"'), ())]
         if dirty:
             problems.append("uncommitted changes in scope (checks run on HEAD): " + ", ".join(dirty[:5]))
+            reasons.append("uncommitted")
         family = [iid] + bl.descendants(iid)
         if it.get("touches") and not item_commits(bl.root, [iid] + bl.descendants(iid)):
+            reasons.append("no-work-commit")
             problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} or one of its descendants' ids "
                             "and changes a file other than item files (git reads a trailer only in the message's last "
                             "paragraph, with the others; a claim or planning commit is not the work)")
         late, remote, owners = unlanded_code(bl.root, family)
+        if late:
+            reasons.append("unlanded-code")
         if late == ["(no such ref)"]:
             problems.append(f"code commits of the item, and refs/remotes/{remote}/main is not fetched: fetch {remote}, "
                             "then run done again")
@@ -188,8 +223,9 @@ def cmd_done(bl, a):
                             f"pushes), fetch {remote} and run done again")
         for sha, path in out_of_scope(bl.root, item_commits(bl.root, family), globs):
             problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
+            reasons.append("outside-touches")
     if problems:
-        raise Refused(f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
+        refuse_done(iid, t0, reasons, f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
     checks = list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else [])
     results, failed, passed = [], [], []
     for c in checks:
@@ -205,8 +241,12 @@ def cmd_done(bl, a):
             tail = "\n".join(out.strip().splitlines()[-8:])
             say(f"--- {shlex.join(c['run'])} (want exit {c.get('exit', 0)}"
                 + (f", output matching {c['match']!r}" if c.get("match") else "") + f"):\n{tail}")
-        raise Refused(f"{bl.label(iid)} is not done: {len(failed)} check(s) failed")
-    noop_proof(bl, iid, passed)
+        refuse_done(iid, t0, ["check-failed"], f"{bl.label(iid)} is not done: {len(failed)} check(s) failed",
+                    [c["run"] for c, _, _ in failed])
+    try:
+        noop_proof(bl, iid, passed)
+    except Refused as e:
+        refuse_done(iid, t0, ["no-op-proof"], str(e), [c["run"] for c, out in passed if noop_output(out)])
     if a.dry_run:
         say(f"{bl.label(iid)} would be done")
         return 0
