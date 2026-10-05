@@ -751,7 +751,7 @@ def cmd_goal(bl, a):
         for x, g in above:
             by = g.get("by") or "?"
             say(f"  {bl.label(x)} {g['id']}: {g.get('question', '')} -> {g['answer']} (by {by}"
-                + (", provisional" if g.get("provisional") else "") + ")")
+                + (", provisional" if g.get("kind") == "provisional" and g.get("by") == "agent" else "") + ")")
     return 0
 
 

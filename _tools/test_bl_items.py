@@ -266,6 +266,10 @@ def test_goal_prints_ancestor_gates(sprint):
     assert code == 0 and "answered gates above it" in out, out
     assert f"{st} “Story” g1: Shared counts or per-row keys? -> shared (by operator)" in out, out
     assert "Still open?" not in out, out
+    assert b(repo, "answer", st, "g2", "--provisional")[0] == 0  # BG-ixyqrmrw: an agent's unconfirmed answer
+    code, out = b(repo, "goal", tk)
+    assert code == 0 and f"{st} “Story” g2: Still open? -> a (by agent, provisional)" in out, out
+    assert "shared (by operator, provisional)" not in out, out  # the operator's answer is no provisional one
 
 
 def test_set_replaces_goal_and_repro(sprint):
