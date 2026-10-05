@@ -676,31 +676,86 @@ def restore_done(root, iid):
 
 SYNTAX_ERROR = re.compile(r"(SyntaxError|IndentationError|TabError)\b")
 FRAME = re.compile(r'File "([^"]*)", line \d+')
-NOT_FOUND = re.compile(r"is not recognized as an internal or external command"
-                       r"|^\S+: (line \d+: )?\S+: command not found$", re.M)
+NOT_FOUND = re.compile(r"^'?(?P<cmd>[^'\s]+)'? is not recognized as an internal or external command"
+                       r"|^\S+: (line \d+: )?(?P<sh>\S+): command not found$", re.M)
+PY_OPT_ARG = ("-X", "-W", "--check-hash-based-pycs")  # python options that take the next word as their value
+SHELLS = {"sh", "bash", "zsh", "dash", "cmd", "cmd.exe", "pwsh", "powershell"}
 
 
-def own_code(argv, path):
-    """True when a frame's file is the repro's own code: the -c string, or the script python runs (argv[1])."""
+def launched(argv):
+    """(program, script, code): what a repro runs, read through python's options and a shell's -c (or cmd's /c)
+    string. PROGRAM is the command's first word as the shell or the OS sees it; SCRIPT the file python or a shell
+    runs (None for -c, -m or no script); CODE true when python runs a -c string."""
+    argv = list(argv)
+    for _ in range(3):  # a shell's -c string may run a shell or python in turn
+        if not argv:
+            return None, None, False
+        prog = os.path.basename(argv[0]).lower()
+        if prog in SHELLS:
+            rest = argv[1:]
+            while rest and rest[0].startswith("-") and rest[0].lower() not in ("-c", "-command"):
+                rest = rest[1:]
+            if rest and rest[0].lower() in ("-c", "/c", "-command") and len(rest) > 1:
+                try:
+                    argv = shlex.split(rest[1], posix=prog not in ("cmd", "cmd.exe"))
+                except ValueError:
+                    return (rest[1].split() or [None])[0], None, False
+                continue
+            return argv[0], (rest[0] if rest else None), False
+        if re.fullmatch(r"python(\d+(\.\d+)?)?(\.exe)?", prog):
+            i = 1
+            while i < len(argv) and argv[i].startswith("-") and argv[i] not in ("-c", "-m", "-"):
+                i += 2 if argv[i] in PY_OPT_ARG else 1
+            nxt = argv[i] if i < len(argv) else None
+            return argv[0], (None if nxt in (None, "-c", "-m", "-") else nxt), nxt == "-c"
+        return argv[0], None, False
+    return argv[0] if argv else None, None, False
+
+
+def tracked(root, path):
+    """True when git tracks PATH in the clone at ROOT: a repository tool, not a file a repro wrote for itself."""
+    try:
+        p = subprocess.run(["git", "ls-files", "--error-unmatch", "--", path], cwd=root or ".", capture_output=True,
+                           timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return p.returncode == 0
+
+
+def own_code(argv, path, root=None):
+    """True when a frame's file is the repro's own code: the -c string, or the script python runs when git does not
+    track it (a file the repro wrote for itself; a repository tool's SyntaxError, such as a 3.12-only construct run
+    on 3.11, is a genuine reproduction)."""
+    _, script, code = launched(argv)
     if path == "<string>":
-        return True
-    script = argv[1] if len(argv) > 1 and not argv[1].startswith("-") else None
+        return code
     if not script:
         return False
     p, s = (os.path.normcase(os.path.normpath(x)) for x in (path, script))
-    return p == s or p.endswith(os.sep + s)
+    return (p == s or p.endswith(os.sep + s)) and not tracked(root, script)
 
 
-def own_failure(argv, code, out):
+def missing_inside(argv, out):
+    """True when the output's not-found message names a command other than the one the repro launches: a wrapper
+    (a shell script, a hook) that started and could not find a tool inside it, which may be the defect."""
+    prog = launched(argv)[0]
+    names = {m.group("cmd") or m.group("sh") for m in NOT_FOUND.finditer(out)}
+    return bool(names) and prog is not None and all(os.path.basename(n) != os.path.basename(prog) for n in names)
+
+
+def own_failure(argv, code, out, root=None):
     """Why a failing repro failed for its own error rather than the defect, or None when its failure may be the
-    defect's: it cannot start (not found; exit 127 or 9009, or a shell's or python -m's lone not-found message);
-    Python cannot compile its own code (a
-    SyntaxError in the -c string or the script it names, before anything is tested); the tool it runs rejects its
+    defect's: it cannot start (not found; exit 127 or 9009, or a shell's or python -m's lone not-found message, unless the
+    message names a tool inside a wrapper the repro started); Python cannot compile its own code (a SyntaxError in
+    the -c string or in a script git does not track in ROOT, the clone, default the working directory, before
+    anything is tested; python's options and a shell's -c string are read for the script they run); the tool it runs rejects its
     arguments (argparse's exit 2 with usage: and error:); or a pytest run selected no tests (exit 5, or no tests ran).
     A failed assertion, a traceback from the code under test or a finding with exit 1 is a failure it accepts."""
     lines = [ln.strip() for ln in out.strip().splitlines() if ln.strip()]
     last = lines[-1][:200] if lines else ""
     alone = len(lines) <= 3  # a shell's or interpreter's one message, not a tool's output that mentions one
+    if code is not None and (code in (127, 9009) or (alone and NOT_FOUND.search(out))) and missing_inside(argv, out):
+        return None  # a wrapper started and a tool inside it is missing: that may be the defect
     if ((code is None and out.startswith("cannot start")) or code in (127, 9009)
             or (alone and NOT_FOUND.search(out)) or (alone and argv[1:2] == ["-m"] and "No module named " in out)):
         msg = next((ln[:200] for ln in lines if NOT_FOUND.search(ln) or "No module named " in ln), last)
@@ -711,7 +766,7 @@ def own_failure(argv, code, out):
         if not SYNTAX_ERROR.match(ln):
             continue
         frame = next((m for m in map(FRAME.search, reversed(lines[:i])) if m), None)  # the frame it points at
-        if frame and own_code(argv, frame.group(1)):
+        if frame and own_code(argv, frame.group(1), root):
             return (f"Python cannot compile the repro's own code ({ln[:200]}): it fails before it tests anything, "
                     "whatever the defect does (a backslash in a Python string, or newlines lost in --repro's "
                     "split: use / in paths and ; between statements, or put the code in a script)")
@@ -741,7 +796,7 @@ def land_checks(bl, iid):
     if not failed:
         return
     for c, code, out in failed:
-        why = own_failure(c["run"], code, out)
+        why = own_failure(c["run"], code, out, bl.root)
         tail = "\n".join(out.strip().splitlines()[-8:])
         say(f"--- {shlex.join(c['run'])} (want exit {c.get('exit', 0)}"
             + (f", output matching {c['match']!r}" if c.get("match") else "") + ")"

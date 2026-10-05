@@ -119,6 +119,29 @@ def test_repro_fails_for_its_own_error_classifier():
     assert f(["python3", "t.py"], None, "Command 't.py' timed out after 1800 seconds") is None
 
 
+def test_repro_fails_for_its_own_error_tool_and_wrapper(repo, colour):
+    """BG-a3ubazze planted: a SyntaxError in a repository tool the repro runs (git tracks it: a 3.12-only construct
+    on 3.11) is a genuine reproduction, filed; the same broken script untracked is the repro's own, also behind
+    python's -u and -X options and a shell's -c; a wrapper's exit 127 naming a tool inside it is accepted, while one
+    naming the command the repro launches is still its own."""
+    broken = "import sys\nif True\n    sys.exit(1)\n"
+    (repo / "tool.py").write_text(broken, encoding="utf-8")
+    commit(repo, "a tool with a SyntaxError")
+    (repo / "mine.py").write_text(broken, encoding="utf-8")
+    refused_own_error(repo, "python3 -X dev mine.py", "cannot compile the repro's own code")
+    code, out = new_bug(repo, "Tool", "python3 -u tool.py")
+    assert code == 0 and "own error" not in out, out
+    f = backlog.own_failure
+    syntax = '  File "mine.py", line 2\n    if True\n           ^\nSyntaxError: expected \':\'\n'
+    assert "cannot compile" in f(["sh", "-c", "python3 -u mine.py"], 1, syntax, repo)
+    assert "cannot compile" in f(["python3", "-W", "ignore", "mine.py"], 1, syntax, repo)
+    assert f(["python3", "-u", "tool.py"], 1, syntax.replace("mine.py", "tool.py"), repo) is None
+    assert f(["bash", "hook.sh"], 127, "hook.sh: line 3: jq: command not found\n") is None
+    assert f(["sh", "-c", "./hook.sh --x"], 127, "./hook.sh: line 3: jq: command not found\n") is None
+    assert "cannot start" in f(["bash", "-c", "jq ."], 127, "bash: line 1: jq: command not found\n")
+    assert "cannot start" in f(["bash", "hook.sh"], 127, "")
+
+
 def test_backlog_similar_ranks_open_items_and_new_warns_of_a_near_duplicate(sprint):
     """A planted duplicate: similar ranks it first as near, new names it in a warning and still writes the item with
     exit 0; a unique title gets no warning, and a dropped item is no longer compared."""
