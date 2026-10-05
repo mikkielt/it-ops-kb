@@ -2,7 +2,7 @@
   "id": "BG-74435353",
   "kind": "bug",
   "title": "check skips the form of knowledge on draft, done, dropped and planned items, so a malformed field passes until the sprint starts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "417d460840451e3b1c681a322a4f23916b1d1cd2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "knowledge_shape_checked_on_every_item"
+        ],
+        "exit": 0,
+        "sha256": "751ffd8eceb67752"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_base,bl_check;bl=bl_base.Backlog('.');iid=next(i for i,it in sorted(bl.items.items()) if it.get('status')=='draft' and it.get('kind')!='sprint');bl.items[iid]['knowledge']='text';sys.exit(0 if any('knowledge' in x for x in bl_check.validate(bl)) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
