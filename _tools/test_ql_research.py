@@ -708,6 +708,24 @@ class TestQueue:
         assert listed(said) == [] and f"waiting {fid}: tried {DAY}, back in the queue {LATER}" in said, said
         assert listed(run_queue(store, gate, day=LATER)[1]) == [fid]
 
+    def test_close_tried_eval_no_fix_records_the_note(self, tmp_path):
+        """ST-mqb5lnam planted: an eval finding whose newest record is no-fix (apply found no fix) is closed --tried:
+        its record keeps no-fix and carries the tried day and the note, no _gaps.md line is written, querylog check
+        passes; an eval finding that is not no-fix, and an empty note, are still refused."""
+        root, store, gate = queued(tmp_path)
+        ev = next(r for r in by_id(store).values() if r["kind"] == "eval")
+        assert run_close(store, gate, ev["id"], tried="x")[0] == 1  # not no-fix yet
+        nofix = {**{k: v for k, v in ev.items() if k != "observed"}, "state": "no-fix", "stage": "candidate-gap"}
+        ql_store.write_findings(store, ql_store.store_entries(store), [nofix], ("no-fix",), "0" * 40)
+        gaps = (root / "_gaps.md").read_text(encoding="utf-8")
+        assert run_close(store, gate, ev["id"], tried=" ")[0] == 1
+        rc, said = run_close(store, gate, ev["id"], tried="The eval's page is gone; no official page states it.")
+        assert rc == 0 and said[0].startswith(f"close: {ev['id']} tried {DAY} run="), said
+        rec = by_id(store)[ev["id"]]
+        assert (rec["state"], rec["tried"]) == ("no-fix", DAY), rec
+        assert (root / "_gaps.md").read_text(encoding="utf-8") == gaps
+        assert querylog.main(["check", str(store)]) == 0
+
     def test_close_refuses_what_is_no_open_gap(self, tmp_path):
         root, store, gate = queued(tmp_path)
         assert run_close(store, gate, "F-000000000000", claim=True)[0] == 1
