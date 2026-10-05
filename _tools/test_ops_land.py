@@ -20,6 +20,7 @@ a temporary plugin data directory, never the clone's own spool (KB_OPS_TEST_SPOO
 ql_deliver.ops_row for it alone).
 """
 import json
+from pathlib import Path
 
 import pytest
 
@@ -133,3 +134,21 @@ class TestOpsLand:
         self.plant_work_row(ld["tk"])  # planted: the same landing with a claim row
         code, out = self.land(ld)
         assert code == 0 and "landed" in out and WARNING not in out, out
+
+
+def test_spool_escape_needs_own_spool(tmp_path, monkeypatch):
+    """BG-hdy6rfro planted: inside a test, KB_OPS_TEST_SPOOL=1 lifts the guard only with CLAUDE_PLUGIN_DATA outside
+    the clone: with no plugin data, or plugin data inside the clone (its own _cache), the guard holds."""
+    import ql_deliver
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "t")
+    monkeypatch.setenv("KB_OPS_TEST_SPOOL", "1")
+    monkeypatch.delenv("CLAUDE_PLUGIN_DATA", raising=False)
+    assert ql_deliver.inside_test()
+    monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(Path(ql_deliver.HOME) / "_cache"))
+    assert ql_deliver.inside_test()
+    monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(ql_deliver.HOME))
+    assert ql_deliver.inside_test()
+    monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(tmp_path / "qldata"))
+    assert not ql_deliver.inside_test()
+    monkeypatch.delenv("KB_OPS_TEST_SPOOL")
+    assert ql_deliver.inside_test()

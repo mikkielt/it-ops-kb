@@ -199,11 +199,24 @@ CI_ROW_STATES = ("red", "pending", "green", "unverified")  # `ok` is `green`; `n
 TEST_SPOOL_ENV = "KB_OPS_TEST_SPOOL"  # set by a test that points the spool at a directory of its own (and its subprocesses)
 
 
+def own_test_spool():
+    """True when a test has set TEST_SPOOL_ENV and CLAUDE_PLUGIN_DATA names a directory outside this clone: a spool
+    of the test's own. The variable alone, exported or left over, never lifts the guard."""
+    data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if os.environ.get(TEST_SPOOL_ENV) != "1" or not data:
+        return False
+    try:
+        where, home = Path(data).resolve(), Path(HOME).resolve()
+    except OSError:
+        return False
+    return where != home and home not in where.parents
+
+
 def inside_test():
     """True in a run started by a test (pytest sets PYTEST_CURRENT_TEST, which a subprocess inherits): its ops rows
-    never reach the clone's own spool, as `tests.inside_test`; False when the test has set TEST_SPOOL_ENV, having
-    pointed CLAUDE_PLUGIN_DATA at a spool of its own."""
-    return bool(os.environ.get("PYTEST_CURRENT_TEST")) and os.environ.get(TEST_SPOOL_ENV) != "1"
+    never reach the clone's own spool, as `tests.inside_test`; False only when the test has set TEST_SPOOL_ENV and
+    pointed CLAUDE_PLUGIN_DATA at a directory outside the clone (own_test_spool)."""
+    return bool(os.environ.get("PYTEST_CURRENT_TEST")) and not own_test_spool()
 
 
 def ops_row(event, **fields):
