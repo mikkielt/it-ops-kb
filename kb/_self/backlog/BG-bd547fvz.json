@@ -2,7 +2,7 @@
   "id": "BG-bd547fvz",
   "kind": "bug",
   "title": "land's pushed_tip ignores a failed fetch of the code branch",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "_tools/test_bl_land.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
