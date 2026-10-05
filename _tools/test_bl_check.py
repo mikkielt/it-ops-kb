@@ -321,6 +321,31 @@ def test_item_holds_host_names_pieces_of_a_name():
         "runner-ab12cd34-project-42-concurrent-0", "runnerab12cd34project42concurrent0", "ab12cd34"}
 
 
+CI_POD = "runner-ab12cd34-project-42-concurrent-0-x7k2p"  # a Kubernetes executor's pod: its random suffix last
+
+
+def test_item_holds_host_names_ci_accounts_give_no_piece(sprint, monkeypatch, capsys):
+    """BG-72dbkic3: the names CI gives every machine (gitlab-runner on a shell executor, ContainerAdministrator and
+    ContainerUser in Windows containers, a pod's random suffix) give no piece, so check never refuses kb text that
+    spells them; a person's name made of a generic part and another (JanAdmin) still does."""
+    for generic in ("gitlab-runner", "ContainerAdministrator", "ContainerUser", "GitLab-Runner"):
+        assert bl_base.name_pieces(generic) == set(), generic
+    assert bl_base.name_pieces(CI_POD) == {CI_POD, "runnerab12cd34project42concurrent0x7k2p", "ab12cd34"}
+    assert "pc001" in bl_base.name_pieces("abc-pc001")  # 0 and 1 are not of the pod alphabet: a serial stays
+    assert bl_base.name_pieces("JanAdmin") == {"janadmin"}
+    for env in ({"USER": "gitlab-runner", "HOSTNAME": CI_POD}, {"USERNAME": "ContainerAdministrator", "COMPUTERNAME": CI_POD},
+                {"USERNAME": "ContainerUser", "COMPUTERNAME": CI_POD}):  # the profile folder is named as the user
+        for k in bl_base.HOST_ENV + bl_base.USER_ENV + bl_base.PROFILE_ENV:
+            monkeypatch.delenv(k, raising=False)
+        for k, v in env.items():
+            monkeypatch.setenv(k, v)
+        monkeypatch.setattr(bl_base.socket, "gethostname", lambda: CI_POD)
+        edit(sprint["repo"], sprint["st"], goal="b exists under /builds/gitlab-runner/x7k2p as ContainerAdministrator "
+                                                "or ContainerUser")
+        assert backlog.main(["--root", str(sprint["repo"]), "check"]) == 0, (env, capsys.readouterr().out)
+        capsys.readouterr()
+
+
 def test_item_holds_host_names_read_from_the_environment(planted_names):
     pieces = bl_base.host_user_pieces()
     assert set(pieces) == set(PLANTED_PIECES)

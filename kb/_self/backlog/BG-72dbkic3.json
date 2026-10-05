@@ -2,7 +2,7 @@
   "id": "BG-72dbkic3",
   "kind": "bug",
   "title": "The name check refuses ordinary kb text on a CI shell runner or a Windows container account",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
@@ -13,15 +13,24 @@
     "run": [
       "python3",
       "-c",
-      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import backlog as b; sys.exit(0 if not b.name_pieces('gitlab-runner') and not b.name_pieces('ContainerAdministrator') else 1)"
+      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import bl_base as b; sys.exit(0 if not b.name_pieces('gitlab-runner') and not b.name_pieces('ContainerAdministrator') else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ci_accounts_give_no_piece"
+      ]
+    }
+  ],
   "touches": [
-    "_tools/backlog.py",
-    "_tools/test_backlog.py",
-    "kb/_self/backlog.md",
-    "kb/_self/tools.md",
     "_tools/bl_base.py",
-    "_tools/test_bl_check.py"
-  ]
+    "_tools/test_bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
