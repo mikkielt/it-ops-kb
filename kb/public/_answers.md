@@ -2324,3 +2324,12 @@ _Agent: kb-research_
 - See claude/hooks.md, claude/otel-monitoring.md.
 
 _Agent: kb-research_
+
+## QK-move-functions-patch-where-looked-up. What breaks when a module's functions move to another module behind a re-export?
+- `mock.patch` replaces a name where it is looked up, not where it is defined. [DOC S-27tycl3n]
+- `ModuleNotFoundError` and a missing from-list name are `ImportError`s, so a caller importing a name the facade dropped fails at import. [DOC S-q5frtccp]
+- Conclusion: moving backlog.py's item writers to bl_items.py keeps callers working only for names backlog.py re-exports, and the tests that patch a moved function's lookups must patch bl_items; a planted test that patches the old name and expects the new code to see it fails. [DER S-27tycl3n, S-q5frtccp]
+- Open: what git itself documents about `index.lock` when two sessions share one checkout. [UNK]
+- See python/imports-and-modules.md, gitlab/git-test-repositories.md.
+
+_Agent: kb-research_

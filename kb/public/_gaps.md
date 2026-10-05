@@ -1176,3 +1176,4 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## gitlab/git-test-repositories
 - **How git prints a non-ASCII remote url.** Looked 2026-10-05 in git-clone's GIT URLS section (S-vupwsv3m): it gives the url forms but not the byte encoding `git remote -v` or `git config --get remote.<name>.url` prints for a url with non-ASCII characters. Needs the git-config or git-remote documentation on output encoding, or git's source at a pinned tag. [UNK] (topic: gitlab/git-test-repositories)
+- **What git documents about `index.lock` when two processes share a checkout.** Looked 2026-10-05 in git-update-index and git-worktree (S-wyfuoqs5): neither page describes the lock file or the error a second writer gets. Needs git's api documentation of lockfiles or its source at a pinned tag. [UNK] (topic: gitlab/git-test-repositories)

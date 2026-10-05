@@ -3,7 +3,7 @@ topic: python/imports-and-modules
 priority: P3
 applies_to: [python]
 retrieved_utc: 2026-10-05
-sources: [S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq, S-q5frtccp]
+sources: [S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq, S-q5frtccp, S-27tycl3n]
 status: complete
 ---
 
@@ -40,6 +40,12 @@ modes) and `python/ruff.md` (lint and size rules), and `agents/codebase-mapping.
 - So `except ImportError` catches both a missing module and a missing `from`-imported name, but not a
   missing attribute read through the module; a check that classes "the code could not import" must name
   `AttributeError` beside `ImportError`. [DER S-q5frtccp]
+- `unittest.mock.patch` works by name: "you patch where an object is looked up, which is not necessarily the
+  same place as where it is defined"; after `from a import SomeClass` in `b`, a test patches `b.SomeClass`.
+  [DOC S-27tycl3n]
+- So when functions move from one module to another and the old module re-exports them, a test that patched
+  the old module's name no longer reaches the moved code's own lookups: such tests patch the new module, and
+  the re-export keeps only callers' imports working. [DER S-27tycl3n]
 
 ## Reference
 - SNIPPET: list the sibling-module imports of every file in a flat directory; context: Python 3.11+, standard library only; checked: syntax [DER S-ci5jq2sq: `ast.parse`, `ast.walk`, `Import`, `ImportFrom`, `alias` fields as documented]

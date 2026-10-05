@@ -238,7 +238,7 @@ python/ruff,P2,complete,python/ruff.md,13
 python/stdlib-sqlite3-csv,P2,complete,python/stdlib-sqlite3-csv.md,4
 python/uv-projects,P2,complete,python/uv-projects.md,11
 python/version-lifecycle,P2,complete,python/version-lifecycle.md;python/version-lifecycle.csv,8
-python/imports-and-modules,P3,complete,python/imports-and-modules.md,9
+python/imports-and-modules,P3,complete,python/imports-and-modules.md,10
 python/interpreter-startup,P3,partial,python/interpreter-startup.md,3
 python/stdlib-argparse-json,P3,complete,python/stdlib-argparse-json.md,4
 python/stdlib-windows-portability,P3,complete,python/stdlib-windows-portability.md,12
