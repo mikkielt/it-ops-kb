@@ -815,3 +815,28 @@ def test_review_cost_rerun_after_close():
     for p in COST_RERUN:
         assert p in missing(review.replace(p, ""), close, runbook), p
     assert "close rerun" in missing(review, close.replace("`backlog.py cost --rework SP` rerun now", ""), runbook)
+
+
+OPEN_CHOICE = ("is a blocking operator gate, added and asked before any code is written",
+               "never settled by the worker and held after the work",
+               "a provisional answer about a shared map or naming rule", "is put to the operator when it is recorded")
+
+
+def test_open_choice_operator_gate_documented():
+    """ST-zz43pbbi (BG-4zpv4iol, BG-ytcjstai, BG-xwolxdi6 held after the work; ST-clsddgen's map answer): /kb-item,
+    /kb-sprint run and the runbook say an open choice on rule-guarding code is an operator gate before the work and a
+    provisional answer on a shared map or naming rule goes to the operator when recorded; each phrase removed from a
+    planted copy fails."""
+    def read(*rel):
+        with open(os.path.join(KB, *rel), encoding="utf-8") as f:
+            return f.read()
+    texts = {"kb-item": read(".claude", "skills", "kb-item", "SKILL.md"),
+             "kb-sprint": read(".claude", "skills", "kb-sprint", "SKILL.md"),
+             "backlog.md": read("kb", "_self", "backlog.md")}
+
+    def missing(ts):
+        return [(n, p) for n, t in ts.items() for p in OPEN_CHOICE if p not in t]
+    assert missing(texts) == []
+    for name in texts:
+        for p in OPEN_CHOICE:
+            assert (name, p) in missing({**texts, name: texts[name].replace(p, "")}), (name, p)

@@ -2,7 +2,7 @@
   "id": "ST-zz43pbbi",
   "kind": "story",
   "title": "An open choice on rule-guarding code goes to the operator before the work",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,6 @@
   ],
   "depends_on": [
     "ST-ctwlrtud"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
