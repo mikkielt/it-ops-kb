@@ -49,7 +49,9 @@
       "do": {
         "report-orphans": "BG-xwolxdi6",
         "remove-check": "BG-xwolxdi6"
-      }
+      },
+      "answer": "report-orphans",
+      "by": "operator"
     }
   ],
   "claimed_by": "it-ops-kb worker1"
