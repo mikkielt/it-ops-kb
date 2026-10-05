@@ -2,7 +2,7 @@
   "id": "BG-kc7uzged",
   "kind": "bug",
   "title": "kbingest machine-name and posix path tests assume a POSIX host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,29 @@
     "_tools/test_kbingest_windows.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker3"
+  "evidence": {
+    "commit": "95b53e48aa3bccb919505126e0504ce627fa10fc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_kbingest_machine_names_passwd_and_short_host or test_names_clone_code_drive_less_rooted_posix_unchanged"
+        ],
+        "exit": 0,
+        "sha256": "2552b19b078a7338"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_kbingest_machine_names_passwd_and_short_host or test_names_clone_code_drive_less_rooted_posix_unchanged"
+        ],
+        "exit": 0,
+        "sha256": "a3415ba59a3eeda0"
+      }
+    ]
+  }
 }
