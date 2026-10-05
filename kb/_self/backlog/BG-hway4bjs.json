@@ -2,7 +2,7 @@
   "id": "BG-hway4bjs",
   "kind": "bug",
   "title": "test_bl_check passes a non-UTF-8 remote URL as an argument, which Windows cannot",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,29 @@
     "_tools/test_bl_check.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker3"
+  "evidence": {
+    "commit": "fb90abd189ac70f81d599da3cf7631ce619fd554",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_project_paths_scp_and_non_ascii"
+        ],
+        "exit": 0,
+        "sha256": "cbbd82b55e3eb327"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_project_paths_scp_and_non_ascii"
+        ],
+        "exit": 0,
+        "sha256": "8ac5b1596e6a6aec"
+      }
+    ]
+  }
 }
