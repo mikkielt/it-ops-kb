@@ -21,5 +21,8 @@
   "touches": [
     "_tools/test_kb_lookup.py",
     "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-b3bbbbpc"
   ]
 }
