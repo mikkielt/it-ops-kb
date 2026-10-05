@@ -2,7 +2,7 @@
   "id": "ST-qy6zyecg",
   "kind": "story",
   "title": "Research sprint goal: Every tool call and hook event leaves a closed ops row the operator can read",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-smqwmchu",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "9b2b78ae6a0320cef09ea6a4fa5255b5e6257241",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "e100268139b06492"
+      }
+    ]
+  }
 }
