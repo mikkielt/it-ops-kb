@@ -458,6 +458,12 @@ def cmd_set(bl, a):
         if "touches" in given or "touches" in a.clear:  # new touches may put a gate in a stricter class: store it
             for g in new.get("gates", []) or []:
                 reclass_gate(new, g)
+        if "parent" in given and not new.get("sprint") and new.get("status") in ("draft", "todo"):
+            # as move does: the sprint the new parent puts it in gives its status, todo in an active sprint and draft
+            # in a planned one; with no sprint above it the status stays (BG-k4myfom6)
+            state = bl.items.get(bl.sprint_of(given["parent"]) or "", {}).get("status")
+            if state in ("active", "planned"):
+                new["status"] = "todo" if state == "active" else "draft"
 
     if changed_item(bl, iid, edit):
         say(f"set {bl.label(iid)}: {', '.join(named)}")

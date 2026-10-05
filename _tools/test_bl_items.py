@@ -816,3 +816,22 @@ def test_claim_accepts_own_claimed_dependency(sprint):
     code, out = b(repo, "claim", tk, "--by", "s1")
     assert code == 0, out
     assert backlog.Backlog(repo).items[tk]["claimed_by"] == "s1"
+
+
+def test_set_parent_rederives_status_from_the_new_parents_sprint(sprint):
+    """BG-k4myfom6 planted: a draft task under a story of a planned sprint, given set --parent the active sprint's
+    story, becomes todo, so next offers it; set back under the planned sprint's story, it is draft again, as move
+    does."""
+    repo, ep, st = sprint["repo"], sprint["ep"], sprint["st"]
+    assert b(repo, "new", "sprint", "--title", "Later", "--goal", "d later")[0] == 0
+    later = item(repo, "Later")["id"]
+    assert b(repo, "new", "story", "--title", "Later story", "--parent", ep, "--sprint", later, "--goal", "d exists")[0] == 0
+    planned = item(repo, "Later story")["id"]
+    assert b(repo, "new", "task", "--title", "Later task", "--parent", planned, "--goal", "d written",
+             "--touch", "src/**")[0] == 0
+    tk = item(repo, "Later task")["id"]
+    assert item_json(repo, tk)["status"] == "draft"
+    code, out = b(repo, "set", tk, "--parent", st)
+    assert code == 0 and item_json(repo, tk)["status"] == "todo", out
+    code, out = b(repo, "set", tk, "--parent", planned)
+    assert code == 0 and item_json(repo, tk)["status"] == "draft", out
