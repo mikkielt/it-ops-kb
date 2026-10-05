@@ -980,6 +980,80 @@ def stranded_detector(root):
     return out
 
 
+# ------------------------------------------------------------------ the repeats detector
+
+REPEAT_THRESHOLD = 300  # calls of one command class or tool group in one ISO week above which it is a finding
+REPEAT_ROWS_MAX = 200000  # the count budget: the committed call rows one scan reads; the rest are counted, not read
+REPEAT_MAX = 5  # the findings one scan reports, most calls first
+INSTEAD = {  # the section-sized command to use instead of a class read again and again, when one exists
+    "cat": "python3 _tools/rag.py show PATH:LINE -n 30 (a kb article's lines around a fact) or selfdoc.py section",
+    "head": "python3 _tools/rag.py show PATH:LINE -n 30, or python3 _tools/selfdoc.py section DOC HEADING",
+    "tail": "python3 _tools/rag.py show PATH:LINE -n 30",
+    "sed": "python3 _tools/rag.py show PATH:LINE -n 30, or python3 _tools/selfdoc.py section DOC HEADING",
+    "grep": "python3 _tools/rag.py search \"<keywords>\" --index, or backlog.py find WORDS",
+    "rg": "python3 _tools/rag.py search \"<keywords>\" --index",
+    "tools.backlog": "python3 _tools/backlog.py show ID or next, rather than list and tree over the whole backlog",
+    "tools.selfdoc": "python3 _tools/selfdoc.py section DOC HEADING ... in one call",
+    "kb_show": "kb_pack first: one call answers most lookups",
+}
+
+
+def committed_calls(root, budget=None):
+    """([(ISO week, class or tool group)] of the call.tool rows of the ops sidecars at HEAD, at most `budget` (default
+    REPEAT_ROWS_MAX) of them, and how many more there were). `git grep` reads HEAD's tree: a working tree edit changes
+    nothing, and no spool is read."""
+    budget = REPEAT_ROWS_MAX if budget is None else budget
+    p = subprocess.run(["git", "grep", "-I", "-h", "-e", '"call.tool"', "HEAD", "--", f"{STORE_REL}/ops/"], cwd=root,
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    out, over = [], 0
+    for line in p.stdout.splitlines():
+        _, sep, text = line.partition(".jsonl:")
+        try:
+            rec = json.loads(text if sep else line)
+        except ValueError:
+            continue
+        if not (isinstance(rec, dict) and rec.get("event") == "call.tool" and isinstance(rec.get("ts"), str)):
+            continue
+        if len(out) >= budget:
+            over += 1
+            continue
+        try:
+            y, w, _ = datetime.date.fromisoformat(rec["ts"][:10]).isocalendar()
+        except ValueError:
+            continue
+        key = rec.get("class") or rec.get("tool")
+        if isinstance(key, str) and key:
+            out.append((f"{y}-W{w:02d}", key))
+    return out, over
+
+
+@detector("repeats")
+def repeats_detector(root):
+    """One story per command class or tool group (call.tool's `class`, else its `tool`) called more than
+    REPEAT_THRESHOLD times in one ISO week by the sessions of the committed ops sidecars, the REPEAT_MAX most called
+    first, naming the section-sized command to use instead when INSTEAD has one. The fingerprint is the week and the
+    class, so each finding is filed once; nothing at or below the threshold is reported."""
+    calls, over = committed_calls(root)
+    counts = {}
+    for week, key in calls:
+        counts[(week, key)] = counts.get((week, key), 0) + 1
+    found = sorted(((n, week, key) for (week, key), n in counts.items() if n > REPEAT_THRESHOLD),
+                   key=lambda t: (-t[0], t[1], t[2]))[:REPEAT_MAX]
+    out = []
+    for n, week, key in found:
+        fkey = f"{week} {key}"
+        instead = INSTEAD.get(key)
+        notes = (f"{n} calls of {key} in {week}; the threshold is {REPEAT_THRESHOLD} a week (bl_intake.REPEAT_THRESHOLD)"
+                 + (f"; {over} call rows past the read budget were not counted" if over else ""))
+        out.append(Candidate(
+            kind="story", title=f"Calls of {key} repeat {n} times in {week}",
+            goal=(f"Sessions call {key} at most {REPEAT_THRESHOLD} times a week"
+                  + (f", using {instead} instead" if instead else ", or the reason they must is recorded")
+                  + ", so the repeats detector does not report it."),
+            key=fkey, checks=[STATUS_REPRO + [fingerprint("repeats", fkey)]], notes=notes))
+    return out
+
+
 # ------------------------------------------------------------------ the CI detector
 
 GITLAB_FINISHED = ("success", "failed", "canceled", "skipped", "manual")  # manual: waits on a person, read by its jobs

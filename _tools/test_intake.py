@@ -2057,3 +2057,56 @@ def test_intake_core_fingerprint_pytest_id_space_long_bracket_line_does_not_back
         t0 = time.monotonic()
         bl_ci.first_failure(line)
         assert time.monotonic() - t0 < 2
+
+
+def calls_file(run, rows):
+    """{path: text} of one committed ops sidecar of `run` holding call.tool rows [(day, class or None, tool)]."""
+    lines = [{"run": run, "counts": {"rows": len(rows)}}]
+    for n, (day, cls, tool) in enumerate(rows):
+        row = {"id": f"00000000-0000-4000-8000-{n:012d}", "ts": f"{day}T10:00:00.000Z", "event": "call.tool",
+               "tool": tool, "group": "main", "outcome": "ok", "size": "lt1k"}
+        if cls:
+            row["class"] = cls
+        lines.append(row)
+    text = "".join(json.dumps(r, separators=(",", ":")) + "\n" for r in lines)
+    return {f"{bl_intake.STORE_REL}/ops/{run[:4]}-{run[4:6]}/{run}.jsonl": text}
+
+
+def repeats(root):
+    bl_intake.detector("repeats")(bl_intake.repeats_detector)
+    return bl_intake.collect(root, only="repeats")
+
+
+def test_intake_repeat_reads_detector(world):
+    """ST-xwnun25d: a command class or tool group called more than REPEAT_THRESHOLD times in one ISO week is one story
+    naming the section-sized command to use instead; one at the threshold, the same class spread over two weeks and
+    an uncommitted sidecar are no finding; the read budget counts what it leaves out."""
+    t = bl_intake.REPEAT_THRESHOLD
+    rows = [("2026-09-28", "cat", "bash")] * (t + 1)  # W40: one over
+    rows += [("2026-09-29", None, "kb_show")] * t  # W40: at the threshold
+    rows += [("2026-09-21", "git.status", "bash")] * (t // 2 + 1) + [("2026-09-28", "git.status", "bash")] * (t // 2 + 1)
+    world.commit(1, "chore: store", calls_file("20261001T100000Z-0000aaaa", rows))
+    extra = calls_file("20261002T100000Z-0000bbbb", [("2026-09-28", "sed", "bash")] * (t + 5))
+    for rel, text in extra.items():  # not committed: not read
+        (world.root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (world.root / rel).write_text(text, encoding="utf-8", newline="\n")
+    found, failures = repeats(world.root)
+    assert failures == [] and [(c.kind, c.key) for c in found] == [("story", "2026-W40 cat")], found
+    (c,) = found
+    assert f"repeat {t + 1} times in 2026-W40" in c.title and "rag.py show" in c.goal and str(t) in c.notes
+    assert c.checks == [bl_intake.STATUS_REPRO + [c.fp]]
+    calls, over = bl_intake.committed_calls(world.root, budget=10)
+    assert len(calls) == 10 and over == len(rows) - 10
+
+
+def test_intake_repeat_reads_converges(world, capsys):
+    """`intake --file` files the finding once as a draft story; a second run files nothing (its fingerprint is on the
+    open item)."""
+    t = bl_intake.REPEAT_THRESHOLD
+    world.commit(1, "chore: store", calls_file("20261001T100000Z-0000aaaa", [("2026-09-28", "grep", "bash")] * (t + 1)))
+    bl_intake.detector("repeats")(bl_intake.repeats_detector)
+    assert intake(world.root, capsys, "--file")[0] == 0
+    stories = [x for x in load(world.root) if x["kind"] == "story" and "repeat" in x["title"]]
+    assert len(stories) == 1 and stories[0]["status"] == "draft"
+    assert intake(world.root, capsys, "--file")[0] == 0
+    assert len([x for x in load(world.root) if x["kind"] == "story" and "repeat" in x["title"]]) == 1
