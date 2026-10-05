@@ -2,7 +2,7 @@
   "id": "ST-yl5ihysf",
   "kind": "story",
   "title": "close --summary names each goal clause of the sprint and the item that carried it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "ST-24gbw2hw"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
