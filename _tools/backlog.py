@@ -138,7 +138,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py horizon [--sprint ID] [--hook]   how far each active sprint can go without the operator: reachable
                                           items, what waits on which gate or trigger, the critical path, the
                                           knowledge state of the next item's asks and refs (--hook runs no pack)
-  backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope
+  backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope; then
+                                          the answered gates of its parent chain, which its work keeps to
   backlog.py cost ID [--runs] [--rework] [--format text|json]
                                           the tokens the query log's work sidecars (kb/_querylog/work/) hold for the
                                           item and its descendants (for a sprint, its items too; a sprint's own line
@@ -915,6 +916,13 @@ def cmd_goal(bl, a):
     if globs:
         parts.append("no commit for it changes a file outside " + ", ".join(globs))
     say(", ".join(parts) + ", or stop after 60 turns")
+    above = [(x, g) for x in bl.ancestors(iid) for g in bl.items[x].get("gates", []) or [] if g.get("answer")]
+    if above:  # a brief built from the goal must not contradict an answer given above the item
+        say("answered gates above it, which its work keeps to:")
+        for x, g in above:
+            by = g.get("by") or "?"
+            say(f"  {bl.label(x)} {g['id']}: {g.get('question', '')} -> {g['answer']} (by {by}"
+                + (", provisional" if g.get("provisional") else "") + ")")
     return 0
 
 

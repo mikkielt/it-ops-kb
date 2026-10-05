@@ -765,6 +765,25 @@ def test_backlog_set_clear_refuses_the_same_fields(sprint, field, rule):
     refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], "--clear", field, rule=rule)
 
 
+def test_goal_prints_ancestor_gates(sprint):
+    """ST-73c5rhb5 planted (SP-fvztfmtm's TK-ymbmdww4): goal prints, under the task's condition, each answered gate
+    of its parent story with its question, answer and who gave it; an unanswered gate is not printed, and a task with
+    no answered gate above it prints its condition alone."""
+    repo, st, tk = sprint["repo"], sprint["st"], sprint["tk"]
+    code, out = b(repo, "goal", tk)
+    assert code == 0 and "answered gates above it" not in out, out
+    assert b(repo, "gate", "add", st, "--question", "Shared counts or per-row keys?", "--option", "shared",
+             "--option", "per-row", "--recommendation", "shared", "--kind", "provisional")[0] == 0
+    assert b(repo, "gate", "add", st, "--question", "Still open?", "--option", "a", "--option", "b",
+             "--recommendation", "a", "--kind", "provisional")[0] == 0
+    code, out = b(repo, "answer", st, "g1", "--answer", "shared", "--by", "operator")
+    assert code == 0, out
+    code, out = b(repo, "goal", tk)
+    assert code == 0 and "answered gates above it" in out, out
+    assert f"{st} “Story” g1: Shared counts or per-row keys? -> shared (by operator)" in out, out
+    assert "Still open?" not in out, out
+
+
 def test_set_replaces_goal_and_repro(sprint):
     """ST-3tgtrzd3 planted: set replaces a task's title, goal and parent and a bug's repro, repro_reason and
     severity; a repro that passes now, repro or severity on a task, an unknown parent, and goal or repro on a done
