@@ -157,6 +157,7 @@ Each item adds three parts of its own: the end state (`goal`), the commands that
 
 `python3 _tools/backlog.py done ID` is the only way to `done`. In short (each rule in full: What done refuses, below), it refuses while:
 - the item waits on anything, or a file in scope has uncommitted changes;
+- a work item has no `touches` of its own or under it;
 - no commit with a `KB-Work` trailer naming the item (or a descendant) changes a file other than item files;
 - a code-lane commit of the item is not on the integration `main` as last fetched: merge its `code/<id>` request, fetch, run `done` again;
 - a commit of the item left a file outside its scope changed at `HEAD`;
@@ -170,6 +171,7 @@ When it succeeds it records the commit and each check's exit code and output dig
 `python3 _tools/backlog.py done ID` refuses when any of these hold:
 - the item waits on anything;
 - a file in scope has uncommitted changes (the checks run on `HEAD`);
+- a work item (not an epic or a review story) has no `touches` of its own or under it: `start` requires a scope of every work item, and a story or bug filed with `--sprint` into an active sprint is `todo` at once without one, so `done` holds the same rule (`backlog.py set ID --touch GLOB`; `tests.py -k done_refuses_active_sprint_item_without_touches`);
 - the item has `touches` of its own and no commit reachable from `HEAD` carries a `KB-Work` trailer, as git reads trailers, naming the item or one of its descendants and changing a file other than item files (a claim or planning commit, which changes only `kb/_self/backlog/*.json`, is not the work; a story or bug whose tasks carried the work needs no commit of its own);
 - a code-lane commit whose `KB-Work` trailer names the item or one of its descendants (lanes: `_tools/kblane.py`; a rename counts both its old and its new path, so moving a code path into a content path is a code-lane commit, as for `sync`; a commit that changes `.gitattributes` only between its `# pinned:start` and `# pinned:end` lines, which `kbgit.py fix` regenerates, is content, as `kblane.commit_paths` counts it) is not an ancestor of `refs/remotes/<integration>/main` as last fetched, or that ref does not exist: it names the commits and the merge requests `sync` opened for them (branch `code/<id>`, the one `kg_lane.lane_plan` names for the range `sync` pushes, as `land` does: the first `KB-Work` id of that range, which may be another item's); merge them, fetch, run `done` again. `done` does not fetch, and a content-lane commit never needs to be on the integration `main`;
 - a commit whose `KB-Work` trailer names the item or one of its descendants left a file outside the scope (the item's `touches` with its descendants') changed at `HEAD` (a later revert clears that);

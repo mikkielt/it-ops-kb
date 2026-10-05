@@ -137,6 +137,29 @@ def test_done_claim_commit_alone_is_not_the_work(sprint):
     assert code == 0, out
 
 
+def test_done_refuses_active_sprint_item_without_touches(sprint):
+    """BG-vqivcbfr planted: a bug filed into the running sprint with no --touch is todo at once, and done refused it
+    only through the touches it lacked, so it passed with no commit at all; it is refused until it has a scope."""
+    repo = sprint["repo"]
+    assert b(repo, "new", "bug", "--title", "Bare", "--sprint", sprint["sp"], "--severity", "S3",
+             "--repro", argstr(is_file("src/e.txt")), "--goal", "e exists")[0] == 0
+    bg = item(repo, "Bare")["id"]
+    assert item(repo, "Bare")["status"] == "todo"
+    commit(repo, "file bare bug")
+    assert b(repo, "claim", bg, "--by", "agent-1")[0] == 0
+    commit(repo, "claim", bg)
+    (repo / "src" / "e.txt").write_text("e\n", encoding="utf-8")
+    commit(repo, "write e, no trailer")
+    code, out = b(repo, "done", bg)
+    assert code == 1 and "no touches of its own or under it" in out, out
+    assert item(repo, "Bare")["status"] == "doing"
+    assert b(repo, "set", bg, "--touch", "src/**")[0] == 0
+    (repo / "src" / "f.txt").write_text("f\n", encoding="utf-8")
+    commit(repo, "write f", bg)
+    code, out = b(repo, "done", bg)
+    assert code == 0, out
+
+
 def test_done_counts_descendant_commits_story_closes(sprint):
     """A story with touches whose task's commits carried the work is done without a commit of its own."""
     repo, st, tk = story_with_touches(sprint)
