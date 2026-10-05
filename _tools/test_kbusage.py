@@ -816,3 +816,15 @@ def test_autopilot_rot_metrics_tree_command_prints_tick_table(tmp_path):
     assert [r["compactions"] for r in rep["rot"]["ticks"]] == [1, 0, 2] and set(rep["rot"]) == {"ticks"}
     assert run_tree(main, "--runners", str(tmp_path)).returncode == 2
     assert not any(hasattr(kbusage, n) for n in ("runner_row", "runner_files"))
+
+
+@pytest.mark.parametrize("command, want", [
+    ("git status -s", "git.status"), ("git -C /w log --oneline", "git.log"), ("glab mr list", "glab.mr"),
+    ("uv run pytest", "uv.run"), ("pip3 install x", "pip3.install"), ("claude mcp list", "claude.mcp"),
+    ("claude -p hello", "claude"), ("claude --model opus -p x", "claude"),  # planted: a prompt's or option's word
+    ("gh secretword", "gh"), ("git PL-LT-00123", "git"), ("docker jan.kowalski", "docker"),
+])
+def test_command_class_allowlisted_subcommands(command, want):
+    """BG-ubstlvrn: a SUBCOMMANDS tool's class names its subcommand only from CLASS_SUBCOMMANDS, else the tool
+    alone, so no free word of a prompt or an argument reaches a call.tool row or a repeats story."""
+    assert kbusage.command_class(command) == want
