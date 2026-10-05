@@ -761,6 +761,9 @@ if os.environ.get("LAND_REJECT"):  # planted: other sessions push main between s
 sys.path.insert(0, os.environ["LAND_TOOLS"])
 import kg_lane
 _, branch = kg_lane.lane_plan(os.getcwd(), "refs/remotes/origin/main", "HEAD")
+if branch and os.environ.get("LAND_REWRITE"):  # planted: sync rebased the range, so the pushed commits are new
+    subprocess.run(["git", "commit", "-q", "--amend", "--no-edit"], check=True, capture_output=True,
+                   env={**os.environ, "GIT_COMMITTER_DATE": "2001-01-01T00:00:00"})
 git("push", "-q", "origin", "HEAD:refs/heads/" + (branch or "main"))
 if branch and os.environ.get("LAND_AUTOMERGE"):  # planted: the forge auto-merges the request at once
     git("push", "-q", "origin", "HEAD:refs/heads/main")
@@ -925,6 +928,7 @@ class TestBacklogLand:
         ld = landing
         self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
         monkeypatch.setenv("LAND_AUTOMERGE", "1")
+        monkeypatch.setenv("LAND_REWRITE", "1")  # the pushed commits differ from the ones land rebased
         code, out = b(ld["repo"], "land", ld["tk"], "--trailer", self.CO, "--wait-merge", "120")
         assert code == 0 and "second pass" in out and "landed" in out, out
         assert self.remote_item(ld)["status"] == "done"
