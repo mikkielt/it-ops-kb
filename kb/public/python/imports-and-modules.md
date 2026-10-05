@@ -2,8 +2,8 @@
 topic: python/imports-and-modules
 priority: P3
 applies_to: [python]
-retrieved_utc: 2026-09-29
-sources: [S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq]
+retrieved_utc: 2026-10-05
+sources: [S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq, S-q5frtccp]
 status: complete
 ---
 
@@ -33,6 +33,13 @@ modes) and `python/ruff.md` (lint and size rules), and `agents/codebase-mapping.
 - A check of import direction between flat modules can parse each file, walk all `Import` and `ImportFrom` nodes (the walk also reaches imports inside function bodies, so a lazy import that avoids a cycle still counts), map `module` or `alias.name` to a sibling file, and flag an import of the facade or of a name starting with `_`; sort the findings, since the walk order is unspecified. The language itself blocks neither. [DER S-ci5jq2sq, S-y3vaig55, S-pnak2iyz: node fields and the underscore convention as documented above]
 - A prefix such as `kg_` or `bench_` on sibling modules is a naming choice within PEP 8's lowercase-with-underscores form, and a facade script run as `python _tools/kbgit.py` puts `_tools/` first on `sys.path`, so its helper modules import by bare name from any working directory. [DER S-nmpccgft, S-kzlfvktk: naming rule and the sys.path[0] rule]
 - Not found in the official pages read: what happens when a file run as a script is also imported by another module under its own name. The documentation says only that a script's `__name__` is `"__main__"`, so whether the file loads a second time as a separate module is left as a lead. [UNK: looked in the tutorial, the reference and library/__main__ at v3.14.7]
+- `ModuleNotFoundError` (added in 3.6) is "A subclass of ImportError which is raised by import when a module
+  could not be located"; `ImportError` is also raised when a name in the "from list" of `from ... import`
+  cannot be found, while a failed attribute reference such as `module.name` raises `AttributeError`,
+  which is not an `ImportError`. [DOC S-q5frtccp]
+- So `except ImportError` catches both a missing module and a missing `from`-imported name, but not a
+  missing attribute read through the module; a check that classes "the code could not import" must name
+  `AttributeError` beside `ImportError`. [DER S-q5frtccp]
 
 ## Reference
 - SNIPPET: list the sibling-module imports of every file in a flat directory; context: Python 3.11+, standard library only; checked: syntax [DER S-ci5jq2sq: `ast.parse`, `ast.walk`, `Import`, `ImportFrom`, `alias` fields as documented]

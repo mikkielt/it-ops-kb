@@ -2283,3 +2283,15 @@ _Agent: kb-research_
 - See claude/hooks.md, claude/otel-monitoring.md, claude/data-retention.md.
 
 _Agent: kb-research_
+
+## QK-not-found-command-scp-like-git. What do a not-found command, an scp-like git remote, a failed import and a skipped pipeline look like to the backlog tools?
+- A POSIX shell exits 127 for a command it cannot find (126 for one it finds but cannot execute) and must write an error message whose wording it does not fix; Bash returns 127 the same way. [DOC S-glgntdsx, S-reb2jhbs]
+- In `a && b`, `a || b` and `a | b` the later commands run too, so a chained `sh -c` string can exit 127 for any of its command words. [DER S-glgntdsx: AND, OR lists and pipelines]
+- Git's scp-like ssh syntax is `[<user>@]<host>:/<path-to-git-repo>`, so the user is optional, and it is recognized only with no slash before the first colon. [DOC S-vupwsv3m]
+- `ModuleNotFoundError` is a subclass of `ImportError`; `ImportError` also covers a missing `from`-imported name, and a failed `module.name` read is an `AttributeError`. [DOC S-q5frtccp]
+- With **Pipelines must succeed**, a skipped pipeline blocks the merge unless **Skipped pipelines are considered successful** is set. [DOC S-rivqro7b]
+- Conclusion: the sprint's repro and remote checks read every command word of a `-c` string as the repro's own, accept `host:group/project` without a user, and class both `ImportError` and `AttributeError` raised in a repro's own code as its own error; a code item's merge request whose pipeline is skipped needs the merge command or that project setting. [DER S-glgntdsx, S-reb2jhbs, S-vupwsv3m, S-q5frtccp, S-rivqro7b]
+- Open: the wording of each shell's not-found message, and the encoding git prints for a non-ASCII remote url. [UNK]
+- See python/stdlib-argparse-json.md, gitlab/git-test-repositories.md, python/imports-and-modules.md, gitlab/automated-merge-requests.md.
+
+_Agent: kb-research_

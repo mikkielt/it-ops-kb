@@ -2,8 +2,8 @@
 topic: gitlab/git-test-repositories
 priority: P3
 applies_to: "Git 2.55.0 (documentation at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration)"
-retrieved_utc: 2026-09-29
-sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj]
+retrieved_utc: 2026-10-05
+sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m]
 status: complete
 ---
 
@@ -49,6 +49,11 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
 - `git fast-import` reads a command and data stream on stdin and writes one or more packfiles straight into the repository, updating branch and tag refs at EOF; it can import into an empty repository created by `git init`. [DOC S-4aovy2cm]
 - The fast-import docs say its design imports large projects with minimal memory and processing time, that most bottlenecks are source access or disk IO, and that its packfiles are suboptimal until repacked, so benchmarks should not run on a fresh import before a repack. [DOC S-4aovy2cm]
 - A test fixture that needs N commits can write them as one fast-import stream (one process) instead of N `git add` plus `git commit` pairs (2N processes and N automatic-maintenance checks); a test that checks commit hooks or trailers still needs real `git commit` calls. [DER S-4aovy2cm, S-waqn37nq: one process for the whole stream; `git commit` runs the hooks and the automatic maintenance]
+- Git also accepts an scp-like syntax for the ssh protocol, `[<user>@]<host>:/<path-to-git-repo>`, so
+  the user part is optional, and the syntax "is only recognized if there are no slashes before the first
+  colon", which tells it from a local path that contains a colon. [DOC S-vupwsv3m]
+- So a tool that reads a project path from `git remote -v` must accept `host:group/project` with no
+  `user@` as well as `git@host:group/project` and the `ssh://` and `https://` forms. [DER S-vupwsv3m]
 
 ## Reference
 - Related: `python/pytest.md` (session fixtures, `tmp_path_factory`, `--durations`), `python/pytest-xdist.md` (a session fixture runs once per worker), `python/stdlib-windows-portability.md` (process start on Windows), `gitlab/git-trailers-and-hooks.md` (what `git commit` runs), `windows/dev-drive.md` (where the repositories live on Windows).

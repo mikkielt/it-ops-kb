@@ -2,8 +2,8 @@
 topic: python/stdlib-argparse-json
 priority: P3
 applies_to: [python, argparse, json]
-retrieved_utc: 2026-09-29
-sources: [S-w47ijsvq, S-zzvrhdyd]
+retrieved_utc: 2026-10-05
+sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs]
 status: complete
 ---
 
@@ -59,6 +59,20 @@ picks its separators from `indent`. Pages read at CPython 3.14.7.
 - `json.dumps` does not write a trailing newline and `json.dump` writes to a text file object; the
   docs' examples do not add one, so a tool that writes a file and wants a final newline adds it
   itself. [DER S-zzvrhdyd: neither signature documents a newline parameter]
+- A POSIX shell gives a command that is not found the exit status 127, and one that is found but is not
+  an executable utility 126; when the search for a utility fails the shell "shall write an error
+  message", whose wording the standard does not fix. [DOC S-glgntdsx]
+- In a POSIX AND list (`a && b`) the second command runs only when the first exits 0, in an OR list
+  (`a || b`) only when it exits non-zero, the list's status is that of the last command executed, and in
+  a pipeline (`a | b`) each command's standard output feeds the next one's standard input. [DOC S-glgntdsx]
+- Bash: "If a command is not found, the child process created to execute it returns a status of 127";
+  a command found but not executable returns 126, and one ended by fatal signal N returns 128+N.
+  [DOC S-reb2jhbs]
+- So a `sh -c` or `bash -c` string that chains commands with `&&`, `||`, `;` or `|` can exit 127 for any
+  of its own command words, not only the first, and the not-found message names the missing word in a
+  shell-specific wording; a check that reads exit 127 as "cannot start" must read every command word of
+  the string as the command's own. [DER S-glgntdsx, S-reb2jhbs: the 127 rule applies per command, and the
+  list operators run the later commands]
 
 ## Reference
 - SNIPPET: subcommands with a handler, one exclusive group and stable JSON output; context: Python
