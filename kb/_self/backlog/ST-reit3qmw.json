@@ -53,7 +53,8 @@
     "kb/_self/plugin.md",
     "kb/_self/README.md",
     "AGENTS.md",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "depends_on": [
     "ST-dvf3xf52"
