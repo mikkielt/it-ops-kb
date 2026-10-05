@@ -1,0 +1,37 @@
+{
+  "id": "BG-xwolxdi6",
+  "kind": "bug",
+  "title": "selfcheck orphans and procs --end never act: only the retired autopilot ran procs --record, so no process is owned",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "With no recorder left, the orphans check of selfcheck and procs reflect the manual workflow: either the orphans check reports a process whose parent is gone in the clone's worktrees (named for the operator, never signaled unless owned) or the owned/record machinery and its --end path are removed; bl_procs.py, kb/_self/backlog.md (Processes left running) and the kb-sprint skill no longer say the autopilot records pids; a planted test shows the check fails on an orphan it should report. Found by the SP-ytfb4dc5 review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; r=subprocess.run(['git','grep','-n','-E','procs --record|autopilot (started|recorded)','--','_tools/bl_procs.py','kb/_self/backlog.md','.claude/skills/kb-sprint/SKILL.md'],capture_output=True,text=True); print(r.stdout+r.stderr); sys.exit(1 if r.returncode==0 else 0)"
+    ]
+  },
+  "repro_reason": "the defect is that no caller records a pid; showing it by behaviour needs a stray process outliving its parent on the host, which no command plants",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bl_procs or bl_selfcheck"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_procs.py",
+    "_tools/bl_selfcheck.py",
+    "_tools/test_bl_procs.py",
+    "_tools/test_bl_selfcheck.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ]
+}
