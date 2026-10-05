@@ -107,7 +107,9 @@
         "delete": "ST-p3ltyxcb",
         "three": "ST-p3ltyxcb",
         "keep": "ST-p3ltyxcb"
-      }
+      },
+      "answer": "delete",
+      "by": "operator"
     }
   ],
   "notes": "Rule, skill, bl_ and CI change: blocking operator gate g1 (recommended delete), under the operator's direction of 2026-10-05. Premise: 219 committed stress_test.py runs (ops rows test.run mode stress, 2026-10-02..05, macOS) have a median of 55 s wall; the Windows host's measured run is 462 s wall, 3,495 worker-s on 8 workers (kb/_self/reports/test-suite-speed.md: test_corpus_scaling 216 s, mutation cases 50-162 s each). Depends on ST-f2gtof46 because both rewrite the three test tiers in backlog.md, the skills and kb-worker.md. The referrers list came from backlog.py referrers _tools/stress_test.py _tools/test_stress.py on 2026-10-05; the ops sidecars and kb/public articles that name the script are data and stay; kb/_self/reports/windows-fresh-host.md is a dated report and stays. ST-pg5jyebo (a Windows session records a run of both suites) names the stress suite: its goal loses that half once this lands."

@@ -75,7 +75,9 @@
         "minimal": "ST-f2gtof46",
         "moderate": "ST-f2gtof46",
         "keep": "ST-f2gtof46"
-      }
+      },
+      "answer": "minimal",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -92,7 +94,9 @@
         "retitle": "ST-f2gtof46",
         "fold": "ST-f2gtof46",
         "keep": "ST-f2gtof46"
-      }
+      },
+      "answer": "retitle",
+      "by": "operator"
     }
   ],
   "notes": "Rule change: blocking operator gates g1 (the rule text; recommended minimal) and g2 (EP-hlnsqx4f's 'no lost coverage'; recommended retitle). The operator's direction of 2026-10-05 (cut aggressively; tests only with a very limited scope; real errors from logs) is the settled principle; g1 confirms the exact rule text. Answer g1 with backlog.py answer ST-f2gtof46 g1 --answer minimal --by operator --record, which writes the active decision the dropped-id reasons and perfcheck dropped can name. Depends on ST-xohqvy5p because the deleted prose pins (test_kb_cohesion.py's plan, review, cost-rerun and touches phrases, test_three_tiers_docs.py, test_worker_brief.py, test_kb_item_reading.py, test_kb_sprint_close_cleanup.py, test_kb_mcp.py's kb-worker pins) would fail the rewrite of these docs. AGENTS.md states no test rule (its 4 KB cap is untouched). The -k selectors the skills name stay selectable after the cuts (ruff or tools_map, leaks or test_no_private_ipv4, Cohesion or SelfDocs, test_lookup_ and passes). The doc citations of deleted tests elsewhere in kb/_self/ go in the docs story that depends on this one; this story removes those in the skills and kb-worker.md it rewrites."

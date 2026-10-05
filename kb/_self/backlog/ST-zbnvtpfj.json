@@ -60,7 +60,9 @@
         "slim": "ST-zbnvtpfj",
         "windows-only": "ST-zbnvtpfj",
         "keep": "ST-zbnvtpfj"
-      }
+      },
+      "answer": "windows-only",
+      "by": "operator"
     }
   ],
   "notes": "CI change: blocking operator gate g1 (recommended slim), under the operator's direction of 2026-10-05, which names the deployment pipeline. Premise: GitLab jobs of 2026-09-29/30 (glab api, project jobs): kb-tests on docker-linux-wsl2 812 s (success) and 1,976 s (failed); kb-tests-windows 2,200-2,277 s (success) and 3,635-3,858 s (failed, job timeout); kb-tests-floor and tool-stress ran manually; GitHub's workflow runs kb-tests, kb-tests-floor (3.11, no git scenarios), tool-stress, check-public, trailers and check-lanes on every push. After the suite cuts of EP-5o2drech each remaining test job runs about a fifth of today's time; this item removes the duplicate runs. Depends on ST-p3ltyxcb, which removes the stress steps from the same two files. The sync gate's and pre-push hook's own runs are gate-research's items (ST-h6qyvynp, ST-w5mrjyyw, ST-5rjig6fj, ST-4me7hv37, ST-jcbbt6wl), not this one."
