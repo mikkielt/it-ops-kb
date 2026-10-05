@@ -769,6 +769,33 @@ IMPORT_ERROR = re.compile(r"(ModuleNotFoundError|ImportError|AttributeError): (.
 EXC_LINE = re.compile(r"[A-Za-z_][\w.]*(Error|Exception|Exit|Interrupt)\b(: |$)")
 
 
+OWN_CODE_ERRORS = ("TypeError", "NameError", "UnboundLocalError")  # the repro's code is wrong, not the value it tests
+
+
+def own_exception(argv, lines, root=None):
+    """Why a repro failed by a Python error in its own code, or None: the traceback's last exception is one that says
+    the repro's code itself is wrong (OWN_CODE_ERRORS: a TypeError from calling a function with the wrong arguments, a
+    NameError, an UnboundLocalError), raised with the innermost frame in the repro's own code (the -c string or an
+    untracked script, own_code), so it fails before the defect is tested (ST-ikh2h7m5). An exception on a value the
+    code under test returned (an AttributeError on its None, a KeyError of its output), one raised inside the code
+    under test, and an AssertionError are failures it accepts."""
+    if not any(ln.startswith("Traceback (most recent call last)") for ln in lines):
+        return None
+    for i in range(len(lines) - 1, -1, -1):
+        m = EXC_LINE.match(lines[i])
+        if not m:
+            continue
+        cls = lines[i].split(":", 1)[0].rsplit(".", 1)[-1]
+        if cls not in OWN_CODE_ERRORS:
+            return None
+        frame = next((f for f in map(FRAME.search, reversed(lines[:i])) if f), None)
+        if frame and own_code(argv, frame.group(1), root):
+            return (f"the repro's own code raised {cls} ({lines[i][:200]}): it fails before it tests the defect; "
+                    "exit 1 on the defect (sys.exit(1 if ... else 0)) instead")
+        return None
+    return None
+
+
 def own_import_error(argv, lines, root=None):
     """Why a repro failed importing its own names, or None: the traceback's last exception is a ModuleNotFoundError,
     an ImportError or a module's missing attribute (`module 'x' has no attribute`) raised in the repro's own code (the
@@ -878,7 +905,8 @@ def own_failure(argv, code, out, root=None):
     message names a tool inside a wrapper the repro started); Python cannot compile its own code (a SyntaxError in
     the -c string or in a script git does not track in ROOT, the clone, default the working directory, before
     anything is tested; python's options and a shell's -c string are read for the script they run); the tool it runs rejects its
-    arguments (argparse's exit 2 with usage: and error:); or a pytest run selected no tests (exit 5, or no tests ran).
+    arguments (argparse's exit 2 with usage: and error:); its own code raised an uncaught exception (own_exception); or
+    a pytest run selected no tests (exit 5, or no tests ran).
     A failed assertion, a traceback from the code under test or a finding with exit 1 is a failure it accepts."""
     lines = [ln.strip() for ln in out.strip().splitlines() if ln.strip()]
     last = lines[-1][:200] if lines else ""
@@ -899,7 +927,7 @@ def own_failure(argv, code, out, root=None):
             return (f"Python cannot compile the repro's own code ({ln[:200]}): it fails before it tests anything, "
                     "whatever the defect does (a backslash in a Python string, or newlines lost in --repro's "
                     "split: use / in paths and ; between statements, or put the code in a script)")
-    why = own_import_error(argv, lines, root)
+    why = own_import_error(argv, lines, root) or own_exception(argv, lines, root)
     if why:
         return why
     if code == 2 and re.search(r"^usage: ", out, re.M) and re.search(r"^\S+: error: ", out, re.M):
