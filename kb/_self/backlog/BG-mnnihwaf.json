@@ -2,7 +2,7 @@
   "id": "BG-mnnihwaf",
   "kind": "bug",
   "title": "test_kg_lock's workers lose log lines appending to one file on Windows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,27 @@
     "_tools/test_kg_lock.py",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker3"
+  "evidence": {
+    "commit": "372cf2fbb8fd2fa26d916625e0d79014e9c92058",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys; sys.exit(max(subprocess.run([sys.executable, \"_tools/tests.py\", \"-k\", \"test_kg_lock_main_lock_keeps_holders_apart_and_planted_unlocked_overlap\", \"-q\"]).returncode for _ in range(5)))"
+        ],
+        "exit": 0,
+        "sha256": "a782066ca2b0b789"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys; sys.exit(max(subprocess.run([sys.executable, \"_tools/tests.py\", \"-k\", \"test_kg_lock_main_lock_keeps_holders_apart_and_planted_unlocked_overlap\", \"-q\"]).returncode for _ in range(5)))"
+        ],
+        "exit": 0,
+        "sha256": "0c410023fe774c15"
+      }
+    ]
+  }
 }
