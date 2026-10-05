@@ -2,7 +2,7 @@
   "id": "ST-ov6h4gbx",
   "kind": "story",
   "title": "A second session working in the same checkout is refused before it commits",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,19 @@
   "depends_on": [
     "ST-73c5rhb5"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "616f95de2d52047d98c39cda6b4048c5232e757e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "claim_refuses_a_shared_checkout"
+        ],
+        "exit": 0,
+        "sha256": "3e8c7350aa96745a"
+      }
+    ]
+  }
 }
