@@ -59,7 +59,8 @@ def test_authority_trust_boundary_agents_rule_is_the_operators_planted_failure(t
     import bl_cli
     a = bl_cli.build_parser("x", str(r)).parse_args(["--root", str(r), "answer", bg, "way", "--answer", "left", "--by",
                                                      "agent"])
-    assert backlog.cmd_answer(backlog.Backlog(str(r)), a) == 0  # in this process, where the patch holds
+    import bl_items
+    assert bl_items.cmd_answer(backlog.Backlog(str(r)), a) == 0  # in this process, where the patch holds
     assert item_json(r, bg)["gates"][0]["by"] == "agent"
 
 
