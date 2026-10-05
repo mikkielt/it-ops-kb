@@ -1,7 +1,7 @@
 {
   "id": "ST-yqyw2ywh",
   "kind": "story",
-  "title": "A story's check is shown against the figures its goal names",
+  "title": "kb-sprint plan reviews a story's goal figures against its checks",
   "status": "todo",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
