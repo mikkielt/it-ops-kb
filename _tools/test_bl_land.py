@@ -1716,3 +1716,13 @@ def test_land_ops_rows_never_from_a_test(tmp_path, monkeypatch):
     bl_land.ops_write(event="land.end", item="TK-aaaaaaaa", exit=0, ms=1)
     rows = [json.loads(ln) for f in spool.glob("*.jsonl") for ln in f.read_text(encoding="utf-8").splitlines()]
     assert [(r["event"], r["item"]) for r in rows] == [("land.end", "TK-aaaaaaaa")], rows
+
+
+def test_close_has_no_runner_rule():
+    """BG-b4vvk2wz: bl_land keeps no rule of the retired runner: no RUNNER_NAME, worker_dirs names only the clone's own
+    .claude/worktrees/, and close_row counts the gates the operator confirmed, never an autopilot's."""
+    import inspect
+    assert not hasattr(bl_land, "RUNNER_NAME")
+    for fn in (bl_land.worker_dirs, bl_land.close_row, bl_land.clean_worker_leftovers):
+        src = inspect.getsource(fn)
+        assert "runner" not in src.lower().replace("runner of a check", "") and "autopilot" not in src, fn.__name__
