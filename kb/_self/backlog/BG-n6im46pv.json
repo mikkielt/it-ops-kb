@@ -2,7 +2,7 @@
   "id": "BG-n6im46pv",
   "kind": "bug",
   "title": "The Edit and Write PreToolUse hook in .claude/settings.json runs kb_hook.py, which answers nothing there since the headless guard was removed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ytfb4dc5",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,28 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "d0f55157725dbcd22f07b9c37b33ed9a48349b7c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "raw_read_nudge_hook_is_registered"
+        ],
+        "exit": 0,
+        "sha256": "620831e6c7a95880"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, sys; h = json.load(open(\".claude/settings.json\", encoding=\"utf-8\"))[\"hooks\"].get(\"PreToolUse\", []); sys.exit(any(\"Edit\" in e.get(\"matcher\", \"\") and any(\"kb_hook.py\" in x.get(\"command\", \"\") for x in e.get(\"hooks\", [])) for e in h))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
