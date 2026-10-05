@@ -2,7 +2,7 @@
   "id": "ST-mqb5lnam",
   "kind": "story",
   "title": "querylog.py close --tried closes an eval finding apply left no-fix, and the stranded detector leaves it alone",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
@@ -28,5 +28,19 @@
     "kb/_self/tools.md",
     "_tools/ql_store.py"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "8d03af8586b06d1b0d8bf7847ee824b851dcde8b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "close_tried_eval_no_fix"
+        ],
+        "exit": 0,
+        "sha256": "e6e21b67fd0233c9"
+      }
+    ]
+  }
 }
