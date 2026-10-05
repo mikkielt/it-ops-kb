@@ -2,7 +2,7 @@
   "id": "ST-kramneqk",
   "kind": "story",
   "title": "Research sprint goal: land, test and ops hygiene",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "2c015252e21273738d6db06fca5cd752a81c10ad",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "c67457031974ec98"
+      }
+    ]
+  }
 }
