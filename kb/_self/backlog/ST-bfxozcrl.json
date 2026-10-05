@@ -2,7 +2,7 @@
   "id": "ST-bfxozcrl",
   "kind": "story",
   "title": "Review sprint: Large tools split along their change boundaries without blocking work",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tpulmoxh",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
