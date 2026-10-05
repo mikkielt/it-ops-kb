@@ -2,7 +2,7 @@
   "id": "ST-reit3qmw",
   "kind": "story",
   "title": "The skills and the kb-worker agent ask the _self route instead of reading sections, with a measured before and after",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-njilrify",
   "priority": "P1",
   "rank": 0,
@@ -54,7 +54,8 @@
     "kb/_self/README.md",
     "AGENTS.md",
     "kb/_self/web-sources.md",
-    "kb/_self/_retrieval/lookup_eval.csv"
+    "kb/_self/_retrieval/lookup_eval.csv",
+    ".claude/hooks/session_start.py"
   ],
   "depends_on": [
     "ST-dvf3xf52"
@@ -114,5 +115,6 @@
       "agents/subagents-vs-deterministic-tools"
     ]
   },
-  "notes": "selfdoc.py check passes before the work: it pins that no heading reference goes dead when the skills change. Premise: the up-front reading commands print 8 to 73 KB today (kb-sprint 73282 bytes, kb-item 28412, kb-worker 24027), measured by running each skill's selfdoc.py section command on 2026-10-06."
+  "notes": "selfdoc.py check passes before the work: it pins that no heading reference goes dead when the skills change. Premise: the up-front reading commands print 8 to 73 KB today (kb-sprint 73282 bytes, kb-item 28412, kb-worker 24027), measured by running each skill's selfdoc.py section command on 2026-10-06.",
+  "claimed_by": "manager-mac"
 }
