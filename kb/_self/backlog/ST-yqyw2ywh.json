@@ -2,7 +2,7 @@
   "id": "ST-yqyw2ywh",
   "kind": "story",
   "title": "kb-sprint plan reviews a story's goal figures against its checks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,19 @@
   "depends_on": [
     "ST-aah3cb3o"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "2f0f899a2a4e045784fba7af3a05e9c59fbc52f2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sprint_plan_reviews_goal_figures"
+        ],
+        "exit": 0,
+        "sha256": "662bf43619e72b1a"
+      }
+    ]
+  }
 }
