@@ -1,9 +1,0 @@
-{
-  "id": "EP-5o2drech",
-  "kind": "epic",
-  "title": "The test suite is a minimal set: one test per command or gate, the machine-read formats and the leak guards",
-  "status": "draft",
-  "priority": "P1",
-  "rank": 0,
-  "goal": "tests.py's suite holds about 230 tests (4,168 ids on 2026-10-05, the stress suite's 98 among them), each a test of one command's main path or one gate's planted failure, a machine-read format, or a secret, leak or untrusted-code guard; the stress suite is gone; a full python3 _tools/tests.py takes about a minute on the project's macOS host and a few minutes on its Windows host (305-377 s and about 25 min before); kb/_self/code.md, kb/_self/backlog.md, the skills and the kb-worker agent ask any new test for that limited scope only, and operational errors are read from the ops rows and querylog.py digest, not from tests"
-}

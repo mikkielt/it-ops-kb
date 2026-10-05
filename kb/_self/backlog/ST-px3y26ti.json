@@ -1,0 +1,93 @@
+{
+  "id": "ST-px3y26ti",
+  "kind": "story",
+  "title": "tests.py runs a new small suite under a ceiling file, and the old suite, the stress suite, their callers, CI jobs and test rules are cut to match",
+  "status": "todo",
+  "sprint": "SP-edgssdh5",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Every old _tools/test_*.py, test_stress.py, stress_test.py and testmap.py is deleted and every caller changed; a new suite written from scratch holds 60 to 100 test ids in 10 to 15 files: leak and redaction scans, the operator-only gate classes, the check-program allowlist, kbingest's untrusted-repo guards, check.py over the live kb, the lookup eval, one end-to-end scenario each for sync, pre-push, land and publish, and the ceiling's planted failure; python3 _tools/tests.py takes at most 20 s on the macOS host and 60 s on the Windows host; _tools/tests_ceiling.json (max ids, files, seconds) is enforced by tests.py on every run, and its numbers are accepted only when an active operator decision of kb/_self records them; the perfcheck id baseline and test_ids_dropped.txt are reset to the new suite; .gitlab-ci.yml and .github/workflows/kb.yml run the minimum that still gives kbgit.py publish a CI verdict; kb/_self (code.md, backlog.md, maintaining.md, tools.md), the skills and kb-worker.md allow a test only for one command's main path, one planted failure per gate, a machine-read format or a leak or untrusted-code guard, ask a retrospective instead of a regression test for a bug a log can show, and cite no tests.py -k selector that selects nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "--ceiling"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/**",
+    ".claude/**",
+    ".gitlab-ci.yml",
+    ".github/**",
+    "pyproject.toml",
+    "uv.lock",
+    "kb/_self/**",
+    "AGENTS.md",
+    "README.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which numbers does the ceiling file _tools/tests_ceiling.json hold?",
+      "options": [
+        "tests-ceiling ids=100 files=15 seconds=darwin:20,linux:60,win32:60",
+        "ids and files equal to the landed suite's counts, seconds 20, 60 and 60"
+      ],
+      "recommendation": "ids and files equal to the landed suite's counts, seconds 20, 60 and 60",
+      "class": "push",
+      "answer": "tests-ceiling ids=100 files=15 seconds=darwin:20,linux:60,win32:60",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which test jobs stay in .gitlab-ci.yml and .github/workflows/kb.yml?",
+      "options": [
+        "GitLab: kb-tests on Linux and kb-tests-windows, both manual; GitHub: one job",
+        "GitLab: kb-tests-windows only; GitHub: one job",
+        "one Linux job on each forge"
+      ],
+      "recommendation": "GitLab: kb-tests-windows only; GitHub: one job",
+      "class": "push",
+      "answer": "GitLab: kb-tests on Linux and kb-tests-windows, both manual; GitHub: one job (the development host is macOS, so Linux and Windows both run on GitLab)",
+      "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does the gate keep testmap.py's map from changed paths to test files?",
+      "options": [
+        "delete testmap.py: tests.py --changed runs nothing for the backlog and query log store, the suite without git scenarios for kb content, the whole suite for anything else",
+        "keep testmap.py, trimmed to the new files"
+      ],
+      "recommendation": "delete testmap.py: tests.py --changed runs nothing for the backlog and query log store, the suite without git scenarios for kb content, the whole suite for anything else",
+      "class": "push",
+      "answer": "delete testmap.py: tests.py --changed runs nothing for the backlog and query log store, the suite without git scenarios for kb content, the whole suite for anything else",
+      "by": "operator"
+    }
+  ],
+  "notes": "Merged from EP-5o2drech, its ten stories and ST-h6qyvynp, ST-w5mrjyyw, ST-5rjig6fj, ST-4me7hv37, ST-jcbbt6wl (dropped 2026-10-05; git keeps them). Operator's direction of 2026-10-05: cut aggressively; errors are read from ops rows and querylog.py digest; a later break is a bug and a retrospective. Earlier operator answers carried over: new-test rule 'minimal' (one command's main path, one planted failure per gate, a machine-read format, a leak or untrusted-code guard; at most two parametrize cases; no test of doc wording; no regression test for a defect a log shows); stress suite 'delete'; CI 'windows-only'; EP-hlnsqx4f's retitle (drop 'with no lost coverage') is still the operator's. Before: 4,168 ids, 103 files, 305-377 s on macOS, about 25 min on the Windows host; stress 55 s and 462 s; GitLab kb-tests 812 s, kb-tests-windows 2,200 s. Old tests whose subject stays (to read, not copy): gate_authority_refuses_an_agent_an_operator_class, authority_refused_class, authority_trust_boundary, backlog_check_refuses_leak_in_item_text, check_program_allowlist_refuses, kbingest map guards (ast shadow, symlink, scrub_env, program inside the worktree, redact_leaks), sync failing_gate_blocks_a_plain_push and content_only_goes_to_main, publish leaked_address and query_log_store_is_refused, backlog_land_content_item_in_one_run, lookup_eval_passes, check_py_passes, test_kb_leaks.py, test_redact.py. Stress callers: tests.py, testmap.py, conftest.py, perfcheck.py, bl_base.REVIEW_CHECKS, bl_intake.HEAVY_SCRIPTS, bl_land, bl_selfcheck, backlog.py, settings.json, session_start.py, cleanhost-run.ps1, both CI files, pyproject.toml, four skills, kb-worker.md, kb/_self docs. kb/_self cited 229 tests.py -k selectors (181 distinct). Publish's CI verdict (kbpublic.ci_refusals) needs a pipeline of the source commit with no failed job script. The checks pass before the work except tests.py --ceiling, which does not exist yet."
+}
