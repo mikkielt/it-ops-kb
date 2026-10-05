@@ -2,7 +2,7 @@
   "id": "ST-enx4hrlr",
   "kind": "story",
   "title": "An interrupted tool call is counted per item in the work sidecar",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -57,5 +57,29 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "41b07acf69d2ae4264cce4d4cb14a3cf0cb33d8d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "work_sidecar_interrupt_count"
+        ],
+        "exit": 0,
+        "sha256": "d958e74fb919d10c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_call_interrupt_flag"
+        ],
+        "exit": 0,
+        "sha256": "ec59ca27bbf937d6"
+      }
+    ]
+  }
 }
