@@ -131,6 +131,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo;
                                           a warning (exit 0) for each open P1 item whose `recurs` names 2 or more
                                           sprint ids and that is not in the sprint
+  backlog.py precheck SPRINT              run each committed item's checks once before any work and warn (exit
+                                          0) of each that passes already, unless the item's notes say it
+                                          passes before the work
   backlog.py close SPRINT [--summary]     delete a finished sprint, its items and the epics they finished
                                           (--summary: only list each of them with its status and the commit done
                                           recorded, the close commit's body, and change nothing; with --commit
@@ -1082,7 +1085,7 @@ import bl_selfcheck  # noqa: F401 - registers `selfcheck`
 
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
-         "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "merge", "drop", "start",
+         "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "merge", "drop", "start", "precheck",
          "host-check", "close", "tidy", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
          "selfcheck")
 bl_cli.order(USAGE)
