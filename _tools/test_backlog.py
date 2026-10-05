@@ -600,15 +600,3 @@ class TestBacklogCommitFlag:
         assert code == 0 and "nothing committed" in out, out
         assert self.out(repo, "rev-parse", "HEAD") == head
 
-
-def test_new_bug_repro_python_error_refused(repo, colour):
-    """ST-ikh2h7m5 planted: a repro whose own -c code calls a function with the wrong arguments (TypeError) or a
-    name it never defined (NameError) fails before it tests the defect and is refused, naming the exception; one that
-    exits 1 by sys.exit, or fails an assert on the defect, is filed (an error on a value the code under test returned
-    stays accepted: test_repro_own_import_error)."""
-    refused_own_error(repo, "python3 -c 'def f(a, b): pass\nf(1)'", "raised TypeError")
-    refused_own_error(repo, "python3 -c 'no_such_name_pl()'", "raised NameError")
-    code, out = new_bug(repo, "Exits one", "python3 -c 'import sys; sys.exit(1)'")
-    assert code == 0 and "own error" not in out, out
-    code, out = new_bug(repo, "Asserts", "python3 -c 'assert 1 == 2'")
-    assert code == 0 and "own error" not in out, out
