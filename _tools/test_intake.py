@@ -22,6 +22,7 @@ from pathlib import Path
 import pytest
 
 import backlog
+import bl_ci
 import bl_intake
 from bl_intake import Candidate
 from conftest import Repo
@@ -1417,7 +1418,7 @@ def ci_world(tmp_path, monkeypatch, pipelines, jobs=(), logs=None, signed_in=Tru
 
     tip = w.repo.rev("HEAD")  # a pipeline's `sha` SHA stands for the commit the clone is at
     monkeypatch.setattr(bl_intake, "run_argv", fake)
-    monkeypatch.setattr(backlog, "run_check", lambda root, c: (False, 1, ""))  # the repro fails: main is red
+    monkeypatch.setattr(bl_ci, "run_check", lambda root, c: (False, 1, ""))  # the repro fails: main is red
     return w, calls
 
 
@@ -1430,7 +1431,7 @@ def filed(root):
 
 
 def ci_fp(job, failure):
-    return backlog.failure_fingerprint(job, failure)
+    return bl_ci.failure_fingerprint(job, failure)
 
 
 def test_intake_ci_runs_only_with_network(tmp_path, monkeypatch, capsys, ci_register):
@@ -1490,7 +1491,7 @@ def test_intake_ci_either_command_files_the_same_item(tmp_path_factory, monkeypa
     assert ia["links"][-1] == "detector ci" and "detector ci" not in ib["links"]
     assert {**ia, "id": 0, "links": ia["links"][:-1]} == {**ib, "id": 0}
     assert ia["links"][:-1] == ["pipeline 901", f"fingerprint {ci_fp('kb-tests-windows', '_tools/test_x.py::test_a')}"]
-    assert ia["repro"] == {"run": backlog.STATUS_REPRO + ["--job", "kb-tests-windows"]}
+    assert ia["repro"] == {"run": bl_ci.STATUS_REPRO + ["--job", "kb-tests-windows"]}
 
 
 def test_intake_ci_a_gate_job_is_s1_with_priority_p1(tmp_path, monkeypatch, capsys, ci_register):
@@ -1653,7 +1654,7 @@ def test_intake_ci_the_fingerprint_of_a_recorded_real_log_is_red_pipelines(tmp_p
     jobs = [{"id": 30, "name": doc["job"], "status": "failed", "failure_reason": "script_failure"}]
     w, _ = ci_world(tmp_path, monkeypatch, [{"id": 801, "sha": SHA, "status": "failed"}], jobs, {30: log})
     code, out, _ = intake(w.root, capsys, "--network")
-    fp = ci_fp("kb-tests-windows", backlog.first_failure(log))
+    fp = ci_fp("kb-tests-windows", bl_ci.first_failure(log))
     assert code == 0 and out[0].startswith(f"ci bug {fp} ") and fp != ci_fp("kb-tests-windows", "")
 
 
@@ -1665,18 +1666,18 @@ def test_intake_ci_fingerprint_continuation_stream_marker_strips_with_no_space()
         ("RuntimeError: boom 42 failed", "RuntimeError: boom <n> failed"),
     ]
     for text, want in cases:
-        first = backlog.first_failure(ts + "01O " + text)
+        first = bl_ci.first_failure(ts + "01O " + text)
         assert first == want
         for marker in ("00O+", "01O+", "02E+", "01O+ "):
             line = ts + marker + text
-            assert backlog.first_failure(line) == first, line
-            assert ci_fp("j", backlog.first_failure(line)) == ci_fp("j", first)
-        assert backlog.normalise_error_line(ts + "01E+" + text) == backlog.normalise_error_line(ts + "01E " + text)
+            assert bl_ci.first_failure(line) == first, line
+            assert ci_fp("j", bl_ci.first_failure(line)) == ci_fp("j", first)
+        assert bl_ci.normalise_error_line(ts + "01E+" + text) == bl_ci.normalise_error_line(ts + "01E " + text)
     # planted: a marker without + glued to text is real text, not stripped
-    assert backlog.first_failure(ts + "01OFAILED a.py::t") == ""
-    assert backlog.normalise_error_line(ts + "02Ofoo failed") == "<n>Ofoo failed"
-    assert backlog.normalise_error_line(ts + "02O+foo failed") == "foo failed"
-    assert backlog.normalise_error_line(ts + "02Efoo") == "<n>Efoo"
+    assert bl_ci.first_failure(ts + "01OFAILED a.py::t") == ""
+    assert bl_ci.normalise_error_line(ts + "02Ofoo failed") == "<n>Ofoo failed"
+    assert bl_ci.normalise_error_line(ts + "02O+foo failed") == "foo failed"
+    assert bl_ci.normalise_error_line(ts + "02Efoo") == "<n>Efoo"
 
 
 def test_intake_ci_red_pipeline_files_the_candidate_the_detector_builds(tmp_path, monkeypatch, capsys, ci_register):
@@ -1764,7 +1765,7 @@ def test_intake_hook_stops_waiting_for_a_detector_that_outlasts_its_budget_and_f
     bl_intake.detector("slow")(never)
     t0 = time.monotonic()
     try:
-        code = backlog.hook_intake(backlog.Backlog(world.root), argparse.Namespace(file=True, network=False), budget=0.5)
+        code = bl_ci.hook_intake(backlog.Backlog(world.root), argparse.Namespace(file=True, network=False), budget=0.5)
         elapsed = time.monotonic() - t0
     finally:
         release.set()
@@ -1786,7 +1787,7 @@ def test_intake_hook_order_runs_drift_last_so_a_drift_scan_past_the_budget_costs
     bl_intake.detector("stranded")(lambda root: ran.append("stranded") or [bug("stranded:1", title="Stranded")])
     bl_intake.detector("trailers")(lambda root: ran.append("trailers") or [bug("trailers:1", title="Trailers")])
     try:
-        code = backlog.hook_intake(backlog.Backlog(world.root), argparse.Namespace(file=True, network=False), budget=0.5)
+        code = bl_ci.hook_intake(backlog.Backlog(world.root), argparse.Namespace(file=True, network=False), budget=0.5)
     finally:
         release.set()
     time.sleep(0.2)
@@ -1809,7 +1810,7 @@ def test_intake_hook_settings_run_it_offline_beside_red_pipeline_hook_each_async
     cmds = [h for g in cfg["hooks"]["SessionStart"] for h in g["hooks"] if "backlog.py" in h["command"]]
     (h,) = [h for h in cmds if " intake " in h["command"]]
     assert h["command"].endswith("_tools/backlog.py intake --file --hook")  # no --network: the offline detectors
-    assert h.get("async") is True and h["timeout"] > backlog.INTAKE_HOOK_BUDGET_S
+    assert h.get("async") is True and h["timeout"] > bl_ci.INTAKE_HOOK_BUDGET_S
     (r,) = [h for h in cmds if "red-pipeline" in h["command"]]  # the pipeline read stays its own hook
     assert r["command"].endswith("_tools/backlog.py red-pipeline --hook") and r.get("async") is True and r["timeout"] == 60
 
@@ -2008,12 +2009,12 @@ def test_red_pipeline_job_github_unreadable_is_unverified(tmp_path, monkeypatch,
 
 
 def test_intake_core_fingerprint_pytest_id_space_in_brackets_is_read_whole():
-    ff = backlog.first_failure
+    ff = bl_ci.first_failure
     assert ff("FAILED t.py::f[a b] - x") == "t.py::f[a b]"
     assert ff("FAILED t.py::f[a b] - x") != "t.py::f[a"  # the id is not cut at the first space
     assert ff("FAILED t.py::f[a b] - x") != ff("FAILED t.py::f[a c] - x")
-    assert backlog.failure_fingerprint("j", ff("FAILED t.py::f[a b]")) != \
-        backlog.failure_fingerprint("j", ff("FAILED t.py::f[a c]"))
+    assert bl_ci.failure_fingerprint("j", ff("FAILED t.py::f[a b]")) != \
+        bl_ci.failure_fingerprint("j", ff("FAILED t.py::f[a c]"))
     assert ff("ERROR t.py::C::f[a b c]") == "t.py::C::f[a b c]"
     # the second form
     assert ff("t.py::f[a b] FAILED") == "t.py::f[a b]"
@@ -2025,7 +2026,7 @@ def test_intake_core_fingerprint_pytest_id_space_in_brackets_is_read_whole():
 
 
 def test_intake_core_fingerprint_pytest_id_space_unclosed_bracket_and_plain_ids_keep_old_reading():
-    ff = backlog.first_failure
+    ff = bl_ci.first_failure
     assert ff("FAILED t.py::f[a b - x") == "t.py::f[a"  # never closed: the plain token
     assert ff("t.py::f[a b FAILED") == "t.py::f[a b FAILED"  # as before: no id, the error line stands
     assert ff("FAILED t.py::f") == "t.py::f"
@@ -2040,5 +2041,5 @@ def test_intake_core_fingerprint_pytest_id_space_long_bracket_line_does_not_back
     for line in ("FAILED t.py::f" + "[" * 200000, "FAILED " + "[" * 200000, "t.py::" + "[ " * 100000 + " FAILED",
                  "FAILED t.py::f[" + "a[ " * 50000 + "]"):
         t0 = time.monotonic()
-        backlog.first_failure(line)
+        bl_ci.first_failure(line)
         assert time.monotonic() - t0 < 2

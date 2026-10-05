@@ -29,7 +29,10 @@
     "_tools/test_selfdoc.py",
     "_tools/test_testmap.py",
     "kb/_self/map.csv",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_intake.py",
+    "_tools/test_kbpublic.py",
+    "_tools/test_querylog_e2e.py"
   ],
   "depends_on": [
     "TK-f5swu7tm"
