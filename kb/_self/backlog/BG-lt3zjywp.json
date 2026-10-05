@@ -1,0 +1,33 @@
+{
+  "id": "BG-lt3zjywp",
+  "kind": "bug",
+  "title": "test_bl_land's worktree_listed misses git's forward-slash paths on Windows",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "TestBacklogLand.worktree_listed compares git worktree list --porcelain with the path in / form as git prints it on Windows, so the six land tests that check a kept or removed worktree pass on Windows",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_dirty_worker_worktree_unlocked_never"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_dirty_worker_worktree_unlocked_never"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_bl_land.py",
+    "kb/_self/code.md"
+  ]
+}
