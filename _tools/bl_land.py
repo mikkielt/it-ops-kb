@@ -281,9 +281,11 @@ def ops_token(label):
 
 
 def ops_write(**fields):
+    """Append a land ops row (`ql_deliver.ops_row`: nothing inside a test run, so a fixture's landing never reaches the
+    clone's spool); a landing never fails for its log."""
     try:
-        import ql_capture
-        ql_capture.record("ops", **fields)
+        from ql_deliver import ops_row
+        ops_row(fields.pop("event"), **fields)
     except Exception:  # noqa: BLE001 - a landing never fails for its log
         pass
 
