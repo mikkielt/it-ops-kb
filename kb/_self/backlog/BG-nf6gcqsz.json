@@ -2,7 +2,7 @@
   "id": "BG-nf6gcqsz",
   "kind": "bug",
   "title": "A tests.py run that selects nothing is recorded as a failed full run, so the digest's test.run failures are inflated",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
@@ -22,7 +22,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "test_run_row_selects_nothing"
+        "run_row_selects_nothing"
       ]
     }
   ],
@@ -34,6 +34,9 @@
     "kb/_self/querylog.md",
     "kb/_self/maintaining.md",
     "kb/_self/tools.md",
-    "kb/_self/usage.md"
-  ]
+    "kb/_self/usage.md",
+    "_tools/ql_capture.py",
+    "_tools/test_tests_lock.py"
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

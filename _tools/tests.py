@@ -136,7 +136,7 @@ def record_run(mode, entries, args, wall_ms):
             total = len(testmap.test_files())
         except Exception:  # noqa: BLE001 - a count the row can do without
             total = None
-        full = mode == "full" and not any(a == "-k" or a.startswith("-k") for a in args) and not named_files_only(args)
+        full = mode == "full" and not keyword_run(args) and not named_files_only(args)
         fields = run_fields(mode, entries, total, workers, full, wall_ms)
         return ql_capture.record("ops", event="test.run", **fields)
     except Exception:  # noqa: BLE001 - a run never fails for its log
@@ -179,7 +179,8 @@ def run_pytest(args, env=None, dist="loadscope", report=None, mode=None):
     if report is not None:
         report.append(entry)
     else:
-        record_run(mode or run_mode(env, os.environ.get("KB_TESTS_FAST") == "1"), [entry], args, entry["ms"])
+        record_run(mode or (run_mode(env, False) if "KB_STRESS_SCALE" in (env or {}) else
+                            run_scope(args, False, os.environ.get("KB_TESTS_FAST") == "1")), [entry], args, entry["ms"])
     return code
 
 
@@ -488,6 +489,23 @@ def path_args(args):
 NAMED_FILES_LOCK_FREE = 4  # a handful of named files is cheap enough to skip the host lock; a shell glob of every test file is not
 
 
+def keyword_run(args):
+    """True when the arguments select tests by `-k` (`-k EXPR` or `-kEXPR`)."""
+    return any(a == "-k" or (a.startswith("-k") and len(a) > 2) for a in args)
+
+
+def run_scope(args, changed, fast):
+    """The `mode` of a run's test.run row: `changed`, `files` (a few named files), `keyword` (a `-k` selection),
+    `fast` or `full`; a run that selects tests is never `full`."""
+    if changed:
+        return "changed"
+    if named_files_only(args):
+        return "files"
+    if keyword_run(args):
+        return "keyword"
+    return "fast" if fast else "full"
+
+
 def named_files_only(args):
     """True when the arguments name at least one path, every one a file (optionally `::node`), at most
     NAMED_FILES_LOCK_FREE distinct files, and the run is not `--changed`: a cheap targeted run of a few files. A named
@@ -537,8 +555,7 @@ def run_main(argv):
     for e in report:  # a deselected-to-nothing run is a pass here, and so is its row's exit
         if e["exit"] == 5 and runs[0][0] != EVERY:
             e["exit"] = 0
-    mode = "changed" if changed else "files" if named_files_only(args) else "fast" if fast else "full"
-    record_run(mode, report, args, int((time.monotonic() - start) * 1000))
+    record_run(run_scope(args, changed, fast), report, args, int((time.monotonic() - start) * 1000))
     return code
 
 
