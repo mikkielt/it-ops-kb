@@ -46,12 +46,12 @@ WORKER = """
 import os, sys, time
 sys.path.insert(0, {tools!r})
 import kg_lock
-def work():
-    with open({log!r}, "a") as f:
-        f.write("start " + str(os.getpid()) + "\\n")
-    time.sleep(0.25)
-    with open({log!r}, "a") as f:
-        f.write("end " + str(os.getpid()) + "\\n")
+def work():  # a file per worker: appends of several processes to one file lose lines on Windows
+    with open({log!r} + "-" + str(os.getpid()), "a") as f:
+        f.write(str(time.time_ns()) + " start " + str(os.getpid()) + "\\n")
+        f.flush()
+        time.sleep(0.25)
+        f.write(str(time.time_ns()) + " end " + str(os.getpid()) + "\\n")
 if {locked!r}:
     with kg_lock.main_lock("worker", "worker", poll=0.02):
         work()
@@ -90,7 +90,9 @@ def test_kg_lock_main_lock_keeps_holders_apart_and_planted_unlocked_overlap(host
         procs = [subprocess.Popen([sys.executable, "-c", WORKER.format(tools=str(TOOLS), log=str(log), locked=locked)],
                                   env=env_for_child(host_dir)) for _ in range(n)]
         assert [p.wait(60) for p in procs] == [0] * n
-        lines = log.read_text(encoding="utf-8").splitlines()
+        stamped = [ln.split(" ", 1) for f in tmp_path.glob(f"{log.name}-*")
+                   for ln in f.read_text(encoding="utf-8").splitlines()]
+        lines = [ln for _, ln in sorted(stamped, key=lambda s: int(s[0]))]
         assert len(lines) == 2 * n
         assert overlapped(lines) is (not locked), lines
     assert not (host_dir / kg_lock.LOCK_NAME).exists()  # every holder released it
