@@ -47,7 +47,9 @@ of the days `--since` to `--until` (default: no end): one row for each event and
 event's rows, how many of them ended with a nonzero `exit`, and the median and the range of its `ms`, written by this
 tool from numbers only (`ops land.step: 7 rows, 2 with a nonzero exit, ms median 1200, range 300 to 9000`). A row's runs are
 the runs that held those rows, its dates the first and last day of them, and its context `item:ID` of the item (or sprint)
-the event names. An event with no item key (`sync.gate`, `test.run`, `ci.pipeline`, `intake.detect`, an `agent.run` with
+the event names; a row naming an item that no item file of kb/_self/backlog/ and no commit message of any branch
+names (`known_items`: a test fixture's landing) is left out and counted as `unknown`, unless `--unknown` asks for it. An
+event with no item key (`sync.gate`, `test.run`, `ci.pipeline`, `intake.detect`, an `agent.run` with
 no item) has no context of its own: it is aggregated only when `--context REF` names what it is about, else left out and
 counted. A row of the sidecar that is not the closed shape (ql_store.ops_line_problems) is left out and counted. No
 event, id of a row, time of day, person or text reaches a row, and a row goes through the same path as `record`, one
@@ -57,7 +59,7 @@ only the operator confirms (`confirm --by operator`), `propose` never activates.
 
 Exit: 0 done, 2 refused (a rule above, an unknown root or id, or a file that cannot be read) or bad arguments.
 """
-import argparse, sys
+import argparse, re, subprocess, sys
 from pathlib import Path
 
 import kbcommon, kbdecide
@@ -125,12 +127,33 @@ def ops_rows(store_dir, since, until):
     return rows, bad
 
 
-def aggregates(rows, fallback):
-    """[(event, context, runs, first day, last day, observation)] sorted, and how many rows had no context: a row's own
-    `item` (or `sprint`) is its context, else `fallback` (the `--context` text) when there is one."""
-    groups, none = {}, 0
+ITEM_ID = re.compile(r"\b(?:EP|ST|TK|SB|BG|SP)-[a-z0-9]{8}\b")
+UNKNOWN = "unknown"
+
+
+def known_items(base):
+    """The item ids the repository at BASE names: an item file of kb/_self/backlog/ or a commit message of any branch
+    (`git log --all`, nothing when BASE has no git history). An ops row naming any other id is a test fixture's."""
+    ids = {f.stem for f in (Path(base) / "kb" / "_self" / "backlog").glob("*.json")}
+    try:
+        p = subprocess.run(["git", "log", "--all", "--format=%B"], cwd=base, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=120)
+        ids |= set(ITEM_ID.findall(p.stdout)) if p.returncode == 0 else set()
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return ids
+
+
+def aggregates(rows, fallback, known=None):
+    """([(event, context, runs, first day, last day, observation)] sorted, how many rows had no context, how many named
+    an unknown item): a row's own `item` (or `sprint`) is its context, else `fallback` (the `--context` text) when
+    there is one; a row whose own id is not in `known` (a set; None keeps every row) is left out and counted."""
+    groups, none, unknown = {}, 0, 0
     for run, d, o in rows:
         own = o.get("item") or o.get("sprint")
+        if own and known is not None and own not in known:
+            unknown += 1
+            continue
         context = f"item:{own}" if own else fallback
         if not context:
             none += 1
@@ -140,7 +163,7 @@ def aggregates(rows, fallback):
     for (event, context), g in sorted(groups.items()):
         days = sorted(d for _, d, _ in g)
         out.append((event, context, sorted({run for run, _, _ in g}), days[0], days[-1], observation_of(event, [o for _, _, o in g])))
-    return out, none
+    return out, none, unknown
 
 
 def cmd_propose(a):
@@ -159,7 +182,8 @@ def cmd_propose(a):
     have = {field(r, "id") for r in rows}
     read, bad = ops_rows(store_dir, since, until)
     new, kept = [], 0
-    found, none = aggregates(read, fallback)
+    known = None if a.unknown else known_items(Path(kbcommon.SELF).parent.parent)
+    found, none, unknown = aggregates(read, fallback, known)
     for _, context, runs, first, last, observation in found:
         run_ids = "; ".join(runs)
         lid = row_id(LOGS, observation, context, run_ids, first, last)
@@ -175,7 +199,8 @@ def cmd_propose(a):
         save(store, rows + new)
     for r in new:
         print(f"{r['id']}\tproposed\t{store.name}\t{r['context']}\t{r['observation']}")
-    print(f"proposed={len(new)} known={kept} {NO_CONTEXT}={none} not-closed={bad}" + (" dry-run" if a.dry_run else ""))
+    print(f"proposed={len(new)} known={kept} {NO_CONTEXT}={none} {UNKNOWN}={unknown} not-closed={bad}"
+          + (" dry-run" if a.dry_run else ""))
     return 0
 
 
@@ -242,6 +267,8 @@ def parser():
     p.add_argument("--store", help="a query-log store directory (default: kb/_querylog)")
     p.add_argument("--context", help="`;`-separated kind:value references for the events that name no item")
     p.add_argument("--dry-run", action="store_true", help="print what would be proposed and write nothing")
+    p.add_argument("--unknown", action="store_true",
+                   help="also aggregate the rows of items no item file or commit message names (test fixtures' rows)")
     p = add("confirm", "the operator confirms a proposed log row")
     p.add_argument("id")
     p.add_argument("--by", help=f"must be {OPERATOR}")
