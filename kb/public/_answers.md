@@ -2333,3 +2333,13 @@ _Agent: kb-research_
 - See python/imports-and-modules.md, gitlab/git-test-repositories.md.
 
 _Agent: kb-research_
+
+## QK-glab-mr-merge-git-fetch-posix. What do glab mr merge, git fetch and a POSIX shell do in the cases sprint G's backlog.py fixes rely on?
+- `glab mr merge` refuses a merge request whose state is already `merged` with the error `this merge request has already been merged`, before any merge call; the merge API answers `405` when a merge request cannot merge and does not name the answer for one already merged. [CODE S-my6iz3ts] [DOC S-4abgkvor]
+- `git fetch` of a ref the remote lacks dies with `couldn't find remote ref`, exit status 128, leaving the remote-tracking ref as it was. [CODE S-r6wgcwme, S-33l7g2u2]
+- In a POSIX shell the word after `if`, `then`, `elif`, `else`, `do` or `!` is a command word, `!` negates a pipeline's status, and `env` runs the utility named after its assignments. [DOC S-glgntdsx, S-6gpxsapp]
+- Conclusion: `backlog.py merge` reads the merge request's state to report one auto-merge already merged as merged, `land` checks the code-branch fetch's own exit status before reading its tip, and `own_words` reads command words after reserved words, `!`, `env` and in nested shells. [DER S-my6iz3ts, S-r6wgcwme, S-glgntdsx]
+- Open: the merge API's answer for a merge request that is already merged is not stated on its page. [UNK]
+- See gitlab/automated-merge-requests.md, gitlab/git-trailers-and-hooks.md, python/stdlib-argparse-json.md.
+
+_Agent: kb-research_

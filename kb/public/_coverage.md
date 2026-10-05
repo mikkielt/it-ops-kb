@@ -137,11 +137,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/pipelines-rules` | P0 | complete | `gitlab/pipelines-rules.md` | 6 |
 | `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 7 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
-| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 35 |
+| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 37 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 7 |
 | `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 12 |
-| `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 11 |
+| `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 13 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
 | `gitlab/repository-mirroring` | P3 | complete | `gitlab/repository-mirroring.md` | 9 |
@@ -246,7 +246,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/version-lifecycle` | P2 | complete | `python/version-lifecycle.md`, `python/version-lifecycle.csv` | 8 |
 | `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 10 |
 | `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 3 |
-| `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 4 |
+| `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 5 |
 | `python/stdlib-windows-portability` | P3 | complete | `python/stdlib-windows-portability.md` | 12 |
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |
 | `python/windows-python-install` | P3 | partial | `python/windows-python-install.md` | 6 |

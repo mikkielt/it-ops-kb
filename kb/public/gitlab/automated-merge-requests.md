@@ -2,8 +2,8 @@
 topic: gitlab/automated-merge-requests
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); glab (gitlab-org/cli main @37ebe99d, 2026-09-28); GitHub CLI and REST docs read 2026-09-28, gh pr list included; merge requests API @9f1632e2; push access checks and server hooks doc @fff2349d; GitHub push errors (github/docs @aff94963); git v2.55.0; Free tier and CE unless stated"
-retrieved_utc: 2026-09-29
-sources: [S-2d2dlaeq, S-rivqro7b, S-zh7oqkup, S-7zthwzzb, S446, S-kdfwn4eo, S-ijtwicvp, S-4darq3cp, S-fa7zbfwo, S-d6wuvfpd, S-6omn4l4d, S-zg5iu4oe, S-4hzaehlu, S-ygtpb7no, S-7dwkyip6, S-4abgkvor, S-dn5ck62j, S-l6s4hfqp, S-sraelr2g, S-pj72raea, S-ag7ica4f, S-qcamxpw6, S-naq3uqba, S-vtgbttzo, S-fuytyyvw, S-54krfv6d, S-cscuur4r, S-jvu5ctb6, S-iwjdorgq, S-ydwwcn45, S-ou7ze25b, S-tnx2t4le, S-hxibhwxc, S-qjtuh6hs, S-pr6irhfg]
+retrieved_utc: 2026-10-05
+sources: [S-2d2dlaeq, S-rivqro7b, S-zh7oqkup, S-7zthwzzb, S446, S-kdfwn4eo, S-ijtwicvp, S-4darq3cp, S-fa7zbfwo, S-d6wuvfpd, S-6omn4l4d, S-zg5iu4oe, S-4hzaehlu, S-ygtpb7no, S-7dwkyip6, S-4abgkvor, S-dn5ck62j, S-l6s4hfqp, S-sraelr2g, S-pj72raea, S-ag7ica4f, S-qcamxpw6, S-naq3uqba, S-vtgbttzo, S-fuytyyvw, S-54krfv6d, S-cscuur4r, S-jvu5ctb6, S-iwjdorgq, S-ydwwcn45, S-ou7ze25b, S-tnx2t4le, S-hxibhwxc, S-qjtuh6hs, S-pr6irhfg, S-my6iz3ts, S-p62bjeiz]
 status: complete
 ---
 
@@ -74,6 +74,10 @@ A script can open a merge request, set it to auto-merge and ask for its source b
 - Code that tests `git push -o` against a local bare repository must set `receive.advertisePushOptions=true` on it, and a `pre-receive` hook there can record `GIT_PUSH_OPTION_*` to check which options arrived. [DER S-ygtpb7no, S-7dwkyip6]
 - An automation that stops for good when its push is refused for want of rights reads the forge's own refusal in the push output (GitLab's `You are not allowed to push code ...` texts, GitHub's `Permission to ... denied` or `GH006`) or an HTTP 403 on a push whose fetch just succeeded. `(pre-receive hook declined)` alone also covers push rules, timeouts and custom hooks, and a DNS or connection error or a `remote failure` can pass, so none of those stops it. [DER S-ag7ica4f, S-qcamxpw6, S-naq3uqba, S-vtgbttzo, S-fuytyyvw, S-sraelr2g, S-l6s4hfqp]
 - A test of that classification can stand in for each forge with a local bare repository whose `pre-receive` hook prints the forge's message and exits non-zero, and for the network with a remote url that cannot be reached. [DER S-7dwkyip6, S-l6s4hfqp]
+- The API's `PUT /projects/:id/merge_requests/:merge_request_iid/merge` answers `405 Method Not Allowed` when the merge request cannot merge, `409` when `sha` does not match the source branch head, `422` when the merge failed, `401` without permission and `400` when a commit SHA is required and missing; the page does not name the answer for a merge request that is already merged. [DOC S-4abgkvor]
+- Cancelling auto-merge (`POST .../merge_requests/:merge_request_iid/cancel_merge_when_pipeline_succeeds`) answers `201` both on success and when the merge request has already merged. [DOC S-4abgkvor]
+- `glab mr merge` reads the merge request first and refuses, before any merge call, with the error `this merge request has already been merged` when its state is `merged` (also for a closed, draft or conflicting one, a failed pipeline or a missing merge privilege); after a successful accept it reports `Merged!` only when the state is `merged`. [CODE S-my6iz3ts: MRCheckErrors; CODE S-p62bjeiz: the merge command's checks and its result]
+- So a tool that retries `glab mr merge` on a merge request auto-merge has already merged sees an error, not success: it reads the state (`glab mr view -F json`, `state` `merged`) before or after the call and reports that case as merged. [DER S-my6iz3ts, S-p62bjeiz]
 
 ## Reference
 | Push option | Effect | Source |

@@ -2,8 +2,8 @@
 topic: gitlab/git-trailers-and-hooks
 priority: P3
 applies_to: "git v2.55.0 documentation (git/git tag v2.55.0): git-interpret-trailers, pretty-formats, git-commit, git-push, githooks, trailer.* configuration, and for the push facts git-merge (`--ff-only`), git-merge-base, git-ls-remote and the remote.* and receive.* configuration; the parse examples were run with a local git; behaviour is the same on GitHub and GitLab remotes because the trailer rules are client-side"
-retrieved_utc: 2026-09-29
-sources: [S-wtbq3lvm, S-d6iv4nbm, S-ziyhuwyc, S-wjfrtzpf, S-7dwkyip6, S-l6s4hfqp, S-ygtpb7no, S-zhftykfq, S-j3galfta, S-rzi7mtmw, S-gvt5wbk7]
+retrieved_utc: 2026-10-05
+sources: [S-wtbq3lvm, S-d6iv4nbm, S-ziyhuwyc, S-wjfrtzpf, S-7dwkyip6, S-l6s4hfqp, S-ygtpb7no, S-zhftykfq, S-j3galfta, S-rzi7mtmw, S-gvt5wbk7, S-r6wgcwme, S-33l7g2u2]
 status: complete
 ---
 
@@ -45,6 +45,8 @@ Git reads a trailer only inside the trailer block: the last group of lines of th
 - `git ls-remote --exit-code` exits 2 when no matching ref is found and otherwise 0 whenever it could talk to the remote, found or not; `--get-url` prints the url after `url.<base>.insteadOf` rewriting without contacting the remote, and `--symref` shows what `HEAD` points to. [DOC S-rzi7mtmw]
 - `git merge-base --is-ancestor <A> <B>` exits 0 when A is an ancestor of B and 1 when it is not; any other non-zero status is an error. [DOC S-gvt5wbk7]
 - A publisher that pushes only fast-forwards checks the remote tip is an ancestor of what it pushes (fetch, then `git merge-base --is-ancestor`, or push without force and read the `rejected` or `remote rejected` flag) and never falls back to a force; the failure is the signal that someone pushed to the public home directly. [DER S-l6s4hfqp, S-zhftykfq, S-gvt5wbk7: fast-forward definition, refusal by default, `--ff-only`]
+- `git fetch <remote> <ref>` of a ref the remote does not have stops with `fatal: couldn't find remote ref <ref>` (`die`), and `die` exits with status 128; the git-fetch page states no exit status. [CODE S-r6wgcwme: get_fetch_map; CODE S-33l7g2u2: die_builtin]
+- So a step that fetches a branch and then reads its tip must check the fetch's own exit status: after a failed fetch the remote-tracking ref still holds the previous tip, or none. [DER S-r6wgcwme, S-33l7g2u2]
 
 ## Reference
 | Need | Command | Source |

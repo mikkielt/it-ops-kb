@@ -3,7 +3,7 @@ topic: python/stdlib-argparse-json
 priority: P3
 applies_to: [python, argparse, json]
 retrieved_utc: 2026-10-05
-sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs]
+sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs, S-6gpxsapp]
 status: complete
 ---
 
@@ -73,6 +73,10 @@ picks its separators from `indent`. Pages read at CPython 3.14.7.
   shell-specific wording; a check that reads exit 127 as "cannot start" must read every command word of
   the string as the command's own. [DER S-glgntdsx, S-reb2jhbs: the 127 rule applies per command, and the
   list operators run the later commands]
+- POSIX reserved words are `!`, `{`, `}`, `case`, `do`, `done`, `elif`, `else`, `esac`, `fi`, `for`, `if`, `in`, `then`, `until` and `while`, recognized only unquoted and as the first word of a command or the first word after a reserved word other than `case`, `for` or `in`; so after `if`, `then`, `do` or `!` the next word is a command word. [DOC S-glgntdsx]
+- The reserved word `!` before a pipeline makes its exit status the logical NOT of the pipeline's status. [DOC S-glgntdsx]
+- `env [-i] [name=value]... [utility [argument...]]` runs the utility named after its assignments with the modified environment, so in `env A=1 python3 x.py` the command word is `python3`, not `env`. [DOC S-6gpxsapp]
+- So a reader of a shell string's command words takes the word after `if`, `then`, `elif`, `else`, `do`, `!`, `&&`, `||`, `;`, `|` and a newline, skips leading `name=value` assignments and an `env` prefix with its options and assignments, and reads a nested `sh -c` or `bash -c` string the same way. [DER S-glgntdsx, S-6gpxsapp]
 
 ## Reference
 - SNIPPET: subcommands with a handler, one exclusive group and stable JSON output; context: Python
