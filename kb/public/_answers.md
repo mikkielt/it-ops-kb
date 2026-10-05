@@ -2352,3 +2352,15 @@ _Agent: kb-research_
 - See python/stdlib-windows-portability.md, python/stdlib-argparse-json.md.
 
 _Agent: kb-research_
+
+## QK-keeps-test-suite-growing-ai-agent. What keeps a test suite from growing, and an AI agent from over-engineering it?
+- Tests are easy to add and hard to remove, and each one is paid for at every run and at every repair, so the guides ask for few slow and duplicated tests and for most tests at the lowest level. [DOC S-zec4acor]
+- Numbers that are enforced hold the line: Bazel gives each test size a time limit (60, 300, 900, 3600 seconds), and Microsoft's taxonomy caps unit tests at averages of 60 and 400 milliseconds with a 2-second maximum. [DOC S-3dlofilm, S-wxn7kar4]
+- Deleting is part of the practice: Microsoft's own migration replaced some legacy tests and deleted many after judging their usefulness, and Google's SRE book asks for explicit goals instead of "We need more tests". [DOC S-wxn7kar4, S-flv3lmzn]
+- Anthropic documents that its models over-engineer and add tests, documentation and supporting files unasked, and gives the counter-instruction: "Don't add features, tests, files, docs or refactors that weren't asked for." [DOC S-3jc54vsg, S-xxsfmdk5]
+- An agent still needs a check it can run itself, and tests are there to verify, not to define the solution. [DOC S-o3v6ozch, S-3jc54vsg]
+- Conclusion: a suite stays small when its runner enforces a cap on tests and run time so that an addition costs a removal, and an agent stays within it when a short written rule names the allowed kinds of test and forbids unrequested additions. The ratios the guides give (80/15/5, 70/20/10) are for large products; the amount of testing follows what a failure costs. [DER S-3dlofilm, S-wxn7kar4, S-zec4acor, S-xxsfmdk5, S-flv3lmzn]
+- Open: no source read states that a defect logs or monitoring would show needs no regression test; production checks are described as an addition to tests before release. [UNK]
+- See agents/test-suite-size-and-agent-overengineering.md, agents/agent-planning-and-done.md.
+
+_Agent: kb-research_
