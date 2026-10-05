@@ -5,7 +5,7 @@ The repository is the one test_kbdecide.py builds (a public root, an internal ro
 and the store it shares with kbdecide.py. Every command runs as a process; every success is followed by check.py over
 the whole repository, and every refusal plants the failure it names and finds every log and decision file as it was.
 """
-import json, shutil
+import json, shutil, subprocess
 from pathlib import Path
 
 import pytest
@@ -22,6 +22,9 @@ CONTEXT = "domain:ops; item:TK-abcd2345"
 STORES = ("public", "team", "_self")
 
 
+KNOWN_ITEMS = ("TK-abcd2345", "TK-aaaaaaaa", "SP-aaaaaaaa")
+
+
 @pytest.fixture(scope="module")
 def template(tmp_path_factory):
     """The repository every test starts from."""
@@ -34,6 +37,8 @@ def template(tmp_path_factory):
     make_root(repo / "kb" / "team", "team", "T", "internal")
     write(repo / "kb" / "_self" / kbcommon.DECISIONS, ",".join(kbcommon.DECISION_COLS) + "\n")
     write(repo / "kb" / "_self" / kbcommon.DECISION_MAKERS, ",".join(kbcommon.MAKER_COLS) + "\nowner,operations owner,,\n")
+    for known in KNOWN_ITEMS:  # the items the planted ops rows name: an item file each, so propose knows them
+        write(repo / "kb" / "_self" / "backlog" / f"{known}.json", "{}\n")
     return repo
 
 
@@ -443,7 +448,7 @@ def test_kblog_propose_from_ops_derives_aggregates_with_runs_dates_and_context(r
     assert (row["source_run_ids"], row["observed_from"], row["observed_to"], row["context"], row["links"]) == (
         f"{RUN_A}; {RUN_B}", "2026-10-01", "2026-10-02", f"item:{ITEM}", "")
     assert f"{row['id']}\tproposed\tpublic\titem:{ITEM}\t{LAND_OBSERVATION}" in out, out
-    assert "proposed=1 known=0 no-context=2 not-closed=0" in out, out  # the two test.run rows name no item
+    assert "proposed=1 known=0 no-context=2 unknown=0 not-closed=0" in out, out  # the two test.run rows name no item
     text = repo.logfile().read_text(encoding="utf-8")  # no raw event, id, time of day or step name
     assert not any(x in text for x in (OPS_ID.format(1), "T12:", "rebase", "11111111")), text
     repo.check()
@@ -561,7 +566,7 @@ def test_kblog_propose_every_ops_event(repo):
     store = ops_store(repo, {"20261003T120000Z-cccc3333": [
         ("2026-10-03T08:00:00Z", e, sample_keys(ql_capture.OPS_EVENTS[e])) for e in events]})
     out = propose(repo, store, "--since", "2026-10-01", "--context", "domain:ops")
-    assert f"proposed={len(events)} known=0 no-context=0 not-closed=0" in out, out
+    assert f"proposed={len(events)} known=0 no-context=0 unknown=0 not-closed=0" in out, out
     assert sorted(r["observation"].split(":", 1)[0][4:] for r in repo.logs()) == events
     assert {r["status"] for r in repo.logs()} == {"proposed"}
     assert "proposed=0 known=" in propose(repo, store, "--since", "2026-10-01", "--context", "domain:ops")
@@ -570,3 +575,21 @@ def test_kblog_propose_every_ops_event(repo):
     out = propose(repo, bare, "--since", "2026-10-01", "--dry-run")
     assert "no-context=0" not in out, out
     repo.check()
+
+
+def test_kblog_propose_counts_unknown_items(repo):
+    """ST-tsl5dlos: a row naming an item that no item file and no commit message names (a test fixture's landing) is
+    left out and counted as unknown, so fixture rows are not proposed as history; --unknown proposes it too. A commit
+    message naming the id makes it known."""
+    store = ops_store(repo, {RUN_A: [land("2026-10-01T12:00:00Z", 0, 100),
+                                     land("2026-10-01T12:00:05Z", 0, 300, item="TK-zzzzzzzz")]})
+    out = propose(repo, store, "--since", "2026-10-01", "--dry-run")
+    assert "proposed=1 known=0 no-context=0 unknown=1 not-closed=0 dry-run" in out, out
+    assert "item:TK-zzzzzzzz" not in out and f"item:{ITEM}" in out, out
+    out = propose(repo, store, "--since", "2026-10-01", "--dry-run", "--unknown")
+    assert "proposed=2 known=0 no-context=0 unknown=0" in out and "item:TK-zzzzzzzz" in out, out
+    for argv in (["init", "-q"], ["add", "-A"],
+                 ["-c", "user.name=t", "-c", "user.email=t@corp.example.com", "commit", "-qm", "work\n\nKB-Work: TK-zzzzzzzz"]):
+        subprocess.run(["git", *argv], cwd=repo.path, check=True, capture_output=True)
+    out = propose(repo, store, "--since", "2026-10-01", "--dry-run")
+    assert "proposed=2 known=0 no-context=0 unknown=0" in out, out
