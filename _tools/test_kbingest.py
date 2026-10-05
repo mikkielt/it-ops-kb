@@ -1486,6 +1486,7 @@ def test_kbingest_machine_names_passwd_and_short_host(monkeypatch):
             return type("Entry", (), {"pw_name": "Jan.Kowalski"})()
 
     monkeypatch.setitem(sys.modules, "pwd", FakePwd)
+    monkeypatch.setattr(kbingest.os, "getuid", lambda: 1000, raising=False)  # POSIX only: planted on Windows too
     assert "jan.kowalski" in kbingest.machine_names()
     assert kbingest.holds_machine_name("jan.kowalski")
     assert kbingest.holds_machine_name("PC1.corp.example.com") and kbingest.holds_machine_name("pc1")
