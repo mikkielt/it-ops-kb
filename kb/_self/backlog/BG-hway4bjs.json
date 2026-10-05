@@ -1,0 +1,33 @@
+{
+  "id": "BG-hway4bjs",
+  "kind": "bug",
+  "title": "test_bl_check passes a non-UTF-8 remote URL as an argument, which Windows cannot",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "test_project_paths_scp_and_non_ascii plants the remote whose URL is not valid UTF-8 by writing its bytes into the repository's git config file, not as a git argument (Windows argv cannot hold bytes that are not UTF-8), so it passes on Windows",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_project_paths_scp_and_non_ascii"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_project_paths_scp_and_non_ascii"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_bl_check.py",
+    "kb/_self/code.md"
+  ]
+}
