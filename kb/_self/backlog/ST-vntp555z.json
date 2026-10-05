@@ -2,7 +2,7 @@
   "id": "ST-vntp555z",
   "kind": "story",
   "title": "kb-item reads only the runbook sections that working one item needs, and one session works one item",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ytfb4dc5",
   "priority": "P1",
   "rank": 0,
@@ -47,5 +47,28 @@
     "ST-f4ra5s7y"
   ],
   "notes": "Premise: the reading command at the top of the kb-item skill (selfdoc.py section over The item file, Dependencies, gates and triggers, Definition of done, Working on items, Git and Conduct for changes) prints 70888 bytes on origin/main 782d07f1, against the 30000-byte bound of the goal; the item's first check exits 1 until the sections shrink. It waits on ST-f4ra5s7y “No file of the tools, skills or docs names the autopilot agent feature, and the Windows Autopilot product is untouched”, the last retirement edit of kb/_self/backlog.md, so the bound is measured on the runbook without the autopilot text.",
-  "claimed_by": "worker-vntp555z"
+  "evidence": {
+    "commit": "f4fab725b479c7f0a471f052a9ae216811f1ce1c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run(['python3','_tools/selfdoc.py','section','backlog','The item file','backlog','Dependencies, gates and triggers','backlog','Definition of done','backlog','Working on items','backlog','Git','maintaining','Conduct for changes'],capture_output=True,text=True).stdout; sys.exit(0 if len(o.encode())<=30000 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cohesion"
+        ],
+        "exit": 0,
+        "sha256": "f4a203466537ef35"
+      }
+    ]
+  }
 }
