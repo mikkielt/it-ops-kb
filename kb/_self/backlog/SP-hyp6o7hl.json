@@ -1,0 +1,20 @@
+{
+  "id": "SP-hyp6o7hl",
+  "kind": "sprint",
+  "title": "backlog.py correctness and authority",
+  "status": "planned",
+  "goal": "backlog.py records only the operator's confirmation as the operator's (an agent's --confirm stays provisional), goal marks an ancestor's unconfirmed provisional answer, set --parent turns a draft task todo under an active sprint's parent, check orders two tasks whose stories depend on each other and judges a check that a file was removed, own_words reads command words after if/then, !, env, a newline and a nested shell, land's pushed_tip stops on a failed fetch of the code branch, merge reports a request auto-merge already merged as merged, new refuses a bug's repro that fails by a Python error, the commit-msg hook warns of nothing check-trailers accepts on a sprint's close commit, perfcheck ids passes on main against the committed baseline, and code.md and tools.md match the bl_items move and the answer and set refusals",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
