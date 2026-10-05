@@ -2295,3 +2295,13 @@ _Agent: kb-research_
 - See python/stdlib-argparse-json.md, gitlab/git-test-repositories.md, python/imports-and-modules.md, gitlab/automated-merge-requests.md.
 
 _Agent: kb-research_
+
+## QK-branch-worktree-cleanup-may-remove. What may a cleanup of merged branches and agent worktrees remove without force, and what does the commit-msg hook allow?
+- `git branch -d` deletes only a branch fully merged in its upstream (or HEAD); `-D` forces it. [DOC S-fqaj6jn5]
+- `git worktree remove` removes only a clean worktree; an unclean one needs `--force`, a locked one `--force` twice, and the main worktree never goes. [DOC S-wyfuoqs5]
+- `git worktree list --porcelain` is the stable format for reading each worktree's branch. [DOC S-wyfuoqs5]
+- A `commit-msg` hook gets the message file, aborts the commit on a non-zero exit and may edit the file. [DOC S-7dwkyip6]
+- Conclusion: `tidy --apply` can remove a work, agent or orch branch with `-d` semantics and a clean, unlocked worker worktree without `--force`, reading the worktrees from the porcelain list, and keeps the rest with its reason; the commit-msg hook can name the rule in its message whether it refuses or warns. [DER S-fqaj6jn5, S-wyfuoqs5, S-7dwkyip6]
+- See gitlab/git-test-repositories.md, gitlab/git-trailers-and-hooks.md.
+
+_Agent: kb-research_
