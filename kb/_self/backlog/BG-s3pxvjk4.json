@@ -2,7 +2,7 @@
   "id": "BG-s3pxvjk4",
   "kind": "bug",
   "title": "A tests.py run naming more than four test files is still recorded as mode full",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-wmukiu3s",
   "priority": "P2",
@@ -32,5 +32,28 @@
     "kb/_self/tools.md",
     "kb/_self/maintaining.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "9bee63828f43147bb2a2f5aa7132b936533a0c49",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "run_row_selects_nothing"
+        ],
+        "exit": 0,
+        "sha256": "58ad6b41e3f4151e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,glob;sys.path.insert(0,'_tools');import tests;f=sorted(glob.glob('_tools/test_*.py'))[:5];sys.exit(1 if tests.run_scope(f,False,False)=='full' else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
