@@ -2,7 +2,7 @@
   "id": "ST-xwrywgun",
   "kind": "story",
   "title": "A pipeline sprint's review shows the pipeline run once on a real spool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,19 @@
     "kb/_self/maintaining.md",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "686b11658fce6ebc25c0ef21c54282afa52e007e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "review_runs_pipeline_on_real_spool"
+        ],
+        "exit": 0,
+        "sha256": "19a9b08d9409d14e"
+      }
+    ]
+  }
 }
