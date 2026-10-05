@@ -87,7 +87,7 @@ The review story is ready once every other item is done or dropped. Its checks r
 6. `python3 _tools/backlog.py done <review id> --commit --trailer 'Co-Authored-By: ...'`, then `python3 _tools/kbgit.py sync --push`.
 
 ## close SP
-1. `python3 _tools/backlog.py close SP --summary` prints one line per item close will delete (id, title, kind, status and the commit `done` recorded, or `no evidence commit`) and changes nothing. It refuses while anything is open. Keep its `delivered by` list for the commit body.
+1. `python3 _tools/backlog.py close SP --summary` prints one line per item close will delete, then each goal clause with the item that carried it or `unmet` and where it went (an unmet clause goes into the retrospective) (id, title, kind, status and the commit `done` recorded, or `no evidence commit`) and changes nothing. It refuses while anything is open. Keep its `delivered by` list for the commit body.
 2. **Retrospective.** From this sprint's evidence, list what went wrong in the process, not in the product:
    - a `done` that refused;
    - a check that passed although the item did not work;

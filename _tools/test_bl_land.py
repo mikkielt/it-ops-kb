@@ -293,6 +293,27 @@ def test_close_summary_lists_every_item_with_its_evidence_commit(sprint):
         f"    - {tk} “Task” (task): done at {work[:10]}")  # a child under its parent
 
 
+def test_close_summary_names_goal_clauses(sprint):
+    """ST-yl5ihysf planted (SP-w3xmbdra's goal clause 1, unmet when ST-4mcoplex was deferred): a sprint whose goal has
+    three clauses, two carried by its done story and bug and one by a story moved out mid-sprint: close --summary
+    names each clause with its done item, and the third as unmet and carried by the moved story."""
+    repo, sp, st, bg = sprint["repo"], sprint["sp"], sprint["st"], sprint["bg"]
+    edit(repo, sp, goal="story b exists and is written; the bug's file c exists, and the release notes carry every flag")
+    edit(repo, st, goal="story b exists and is written")
+    edit(repo, bg, goal="the bug's file c exists")
+    b(repo, "new", "story", "--title", "Release notes", "--goal", "the release notes carry every flag",
+      "--check", argstr(PASS))
+    moved = item(repo, "Release notes")["id"]
+    finish(sprint)
+    code, out = b(repo, "close", sp, "--summary")
+    assert code == 0, out
+    lines = out.splitlines()
+    i = lines.index("goal clauses:")
+    assert lines[i + 1] == f"  1. story b exists and is written: {st} “Story”", lines[i:]
+    assert lines[i + 2] == f"  2. the bug's file c exists: {bg} “Bug”", lines[i:]
+    assert lines[i + 3] == f"  3. the release notes carry every flag: unmet, carried by {moved} “Release notes”", lines[i:]
+
+
 def finish(sprint):
     """Every item of the sprint fixture done (the epic too), committed: close may delete them."""
     repo, tk, st, bg, rv, ep = (sprint[k] for k in ("repo", "tk", "st", "bg", "rv", "ep"))
