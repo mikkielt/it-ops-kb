@@ -7,7 +7,7 @@
   "sprint": "SP-42bn4vz7",
   "priority": "P1",
   "rank": 0,
-  "goal": "A kb-worker runs only its item's own -k checks plus ruff and tools_map, and the sync gate's tests.py --changed is the one mapped run per landing; backlog.py land no longer runs stress_test.py; the review story's checks run stress_test.py with the full tests.py once before review and retro; when that end run fails, a backlog.py subcommand finds the landed commit after which the failing test ids first fail, as a git bisect run script that exits 0, 1 or 125 and counts a step bad only when the failure repeats on a re-run at that commit, holding the host lock; kb-sprint says to file a bug naming that commit's item and dispatch a kb-worker for it at once, or, when the commit's KB-Work trailer names an item outside the sprint, to file it against that item's sprint and tell its owner; kb-sprint, kb-worker, kb-item and backlog.md state the three tiers.",
+  "goal": "A kb-worker runs only its item's own -k checks plus ruff and tools_map, and the sync gate's tests.py --changed is the one mapped run per landing; backlog.py land no longer runs stress_test.py; the review story's checks run stress_test.py with the full tests.py once before review and retro; kb-sprint, kb-worker, kb-item and backlog.md state the three tiers.",
   "checks": [
     {
       "run": [
@@ -23,30 +23,6 @@
         "_tools/tests.py",
         "-k",
         "review_checks_run_stress_once"
-      ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "red_end_run_finds_culprit_landing"
-      ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "red_end_run_reruns_before_bad"
-      ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "red_end_run_routes_foreign_culprit"
       ]
     }
   ],
@@ -64,5 +40,5 @@
     "_tools/bl_land.py",
     "_tools/test_bl_land.py"
   ],
-  "notes": "Tiers before the story: a worker runs the item's checks and tests.py --changed origin/main; land runs done, stress_test.py, rag.py eval and lint, then the sync gate runs --changed again; the review story runs the full tests.py once. After it: the worker runs no --changed, stress_test.py runs once at sprint end, and a red end run is bisected over the sprint's landings with its bug fixed by a worker dispatched at once. The story is large: /kb-item splits it into tasks (land and review checks; worker brief and docs; the bisect subcommand and the kb-sprint step). Mid-sprint heavy runs are scheduled by ST-t7xxgt47 from each landing's measured test impact; the bisect runs over the landings since the last heavy run and waits on ST-zkotxvdl's host lock. Each bisect step is recorded as an ops bisect.step row once the ops sidecar exists."
+  "notes": "Tiers before the story: a worker runs the item's checks and tests.py --changed origin/main; land runs done, stress_test.py, rag.py eval and lint, then the sync gate runs --changed again; the review story runs the full tests.py once. After it: the worker runs no --changed, stress_test.py runs once at sprint end, and a red end run is bisected over the sprint's landings with its bug fixed by a worker dispatched at once. The story is large: /kb-item splits it into tasks (land and review checks; worker brief and docs; the bisect subcommand and the kb-sprint step). Mid-sprint heavy runs are scheduled by ST-t7xxgt47 from each landing's measured test impact; the bisect runs over the landings since the last heavy run and waits on ST-zkotxvdl's host lock. Each bisect step is recorded as an ops bisect.step row once the ops sidecar exists. The bisect clause and its three red_end_run checks were taken out of this story's goal when the operator dropped TK-qi7oo5l3 on 2026-10-04 (efficiency decision: with one agent and no unattended runs it has no measured pain); the sprint manager approved the narrowing."
 }
