@@ -2,7 +2,7 @@
   "id": "ST-rpdfgu3t",
   "kind": "story",
   "title": "A tool call of any kind leaves one closed ops row of its tool, command class, agent group, duration and size",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P2",
@@ -63,5 +63,29 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "da1d157ad4c7ddff12b3f0c26c19201194833893",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_call_tool_row"
+        ],
+        "exit": 0,
+        "sha256": "c3a381d22ac14d9c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ops_call_tool_no_command_text"
+        ],
+        "exit": 0,
+        "sha256": "6b6ebac73bedac6b"
+      }
+    ]
+  }
 }
