@@ -932,6 +932,29 @@ def check_rework_split(lines):
     assert ql_store.work_line_problems(line, "x") == []
 
 
+class TestWorkInterrupts:
+    """ST-enx4hrlr: an interrupted tool call's `work` row (action interrupt, no item, no text) counts on the item line
+    of the window its prompt lies in (`-k work_sidecar_interrupt_count`)."""
+
+    def test_work_sidecar_interrupt_count(self):
+        plan = [(("claim:" + WA,), 2, False, False), (("interrupt", "interrupt"), 3, False, False),
+                (("interrupt",), 4, False, False), (("done:" + WA,), 5, False, False),
+                (("interrupt",), 6, False, False),  # outside every window: the session's shared line, no count
+                (("claim:" + WB,), 7, False, False), (("claim:" + WC, "interrupt"), 8, False, False)]  # two windows
+        lines, _, _ = ql_distill.plan_work(work_sessions(plan), {}, SPRINTS.get)
+        by = {ln.get("item") or tuple(ln.get("items", ())): ln for ln in lines}
+        assert by[WA]["interrupts"] == 3, by[WA]
+        assert all("interrupts" not in ln for k, ln in by.items() if k != WA), lines
+        assert all(ql_store.work_line_problems(ln, "x") == [] for ln in lines)
+        # without interrupt rows the lines are the same but for the count
+        plain = [(tuple(w for w in work if w != "interrupt"), *rest) for work, *rest in plan]
+        same, _, _ = ql_distill.plan_work(work_sessions(plain), {}, SPRINTS.get)
+        assert [{k: v for k, v in ln.items() if k != "interrupts"} for ln in lines] == same
+        # planted: a count that is not a positive whole number is a gate problem
+        for bad in (0, -1, "3", True):
+            assert ql_store.work_line_problems({**by[WA], "interrupts": bad}, "x"), bad
+
+
 class TestWorkRework:
     """The work sidecar splits an item's counts at its first refused done (`-k work_rework`): the item line keeps the
     window's total and a `rework` block holds the part from the first `refused` row's prompt to the end of the window."""

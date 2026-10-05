@@ -534,7 +534,7 @@ def add_sub(tally, sub):
     tally["prompts"] -= 1
 
 
-def session_work(rows, done, items, sprint_of=None, rework=None):
+def session_work(rows, done, items, sprint_of=None, rework=None, interrupts=None):
     """One closed session's work: (its shared line or None, the window prompts without usage, the prompt ids
     counted). Each prompt not in `done` with a usage record of this reader (usage_of) adds its counts to the tally of
     the line work_lines_of names (`items`: {item or sprint: tally}, which the run's sessions share), or to the
@@ -544,6 +544,7 @@ def session_work(rows, done, items, sprint_of=None, rework=None):
     one window only, and a subagent routed to an item, in rework at that prompt; a prompt in several windows counts
     on its sprint's line with no split."""
     rework = {} if rework is None else rework
+    interrupts = {} if interrupts is None else interrupts  # {item: interrupted calls in its window's prompts}
     inside, worked = work_windows(rows)
     if not worked:
         return None, 0, set()
@@ -564,6 +565,10 @@ def session_work(rows, done, items, sprint_of=None, rework=None):
             continue
         counted.add(pid)
         lines = work_lines_of(windows, sprint_of)
+        cut = sum(1 for r in by_prompt[pid] if r.get("surface") == "work" and r.get("action") == "interrupt")
+        if cut and len(windows) == 1:  # a prompt of one item's window: its interrupted calls are that item's
+            (item,) = windows
+            interrupts[item] = interrupts.get(item, 0) + cut
         for key in lines:
             store_.tally_add(items.setdefault(key, store_.new_tally()), counts)
             if len(windows) == 1 and key in again[pid]:
@@ -582,17 +587,18 @@ def plan_work(sessions, worked, sprint_of=None):
     sessions: the items' lines in id order, then the sessions' shared lines. `worked` ({session id: prompt ids}) holds
     the prompts an earlier run counted, so a session whose rows stayed in the spool is never counted twice;
     `sprint_of` (sprint_finder) names the sprint of an item."""
-    items, rework, shared, missing, counted = {}, {}, [], 0, {}
+    items, rework, shared, missing, counted, interrupts = {}, {}, [], 0, {}, {}
     for sid in sorted(sessions):
         if not sessions[sid]["closed"]:
             continue
-        line, m, pids = session_work(sessions[sid]["rows"], set(worked.get(sid, ())), items, sprint_of, rework)
+        line, m, pids = session_work(sessions[sid]["rows"], set(worked.get(sid, ())), items, sprint_of, rework,
+                                     interrupts)
         missing += m
         if pids:
             counted[sid] = pids
         if line:
             shared.append(line)
-    lines = [store_.work_line("item", i, items[i], rework.get(i)) for i in sorted(items)]
+    lines = [store_.work_line("item", i, items[i], rework.get(i), interrupts.get(i, 0)) for i in sorted(items)]
     return lines + sorted(shared, key=lambda ln: json.dumps(ln, sort_keys=True)), missing, counted
 
 
