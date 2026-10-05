@@ -4,14 +4,13 @@ only; no model and no network.
 
   kbusage.py TRANSCRIPT [--prompt PROMPT_ID]   the usage record of each prompt of a transcript (or of one), as JSON
                                                lines: the numbers the query log's sidecar keeps, nothing else
-  kbusage.py tree PATH [--runners DIR] [--format json] [--top N]
+  kbusage.py tree PATH [--format json] [--top N]
                                                tool results of a transcript with its subagents/*.jsonl, or of every
                                                transcript of a project directory: calls and characters by tool, Bash
                                                command head, file path and agent, with the totals checked against the
                                                transcripts' usage (exit 1 when they do not add up, 2 for no input);
-                                               then, per manager tick (a prompt of the main transcript) and per runner
-                                               (a stream file under DIR), the compactions with their preTokens, the
-                                               tokens and the files read more than once
+                                               then, per tick (a prompt of the main transcript), the compactions with
+                                               their preTokens, the tokens and the files read more than once
 
 prompt_usage(transcript_path, prompt_id) is what the query log's distill calls: a dict of counts, tool groups and
 model ids, or None when the transcript cannot be read or holds no request of the prompt. A subagent that worked on a
@@ -630,7 +629,7 @@ def tree_text(rep, top):
         lines += [f"  {r['calls']:>6} {r['chars']:>10} {r['errors']:>6}  {r['key']}" for r in shown]
         if len(shown) < len(rows):
             lines.append(f"  ... {len(rows) - len(shown)} more rows (--top 0 shows all)")
-    lines += rot_text(rep.get("rot") or {"ticks": [], "runners": []})
+    lines += rot_text(rep.get("rot") or {"ticks": []})
     lines += ["", "check: " + ("ok" if rep["check"]["ok"] else "FAILED")]
     lines += [f"  {p}" for p in rep["check"]["problems"]]
     return lines
@@ -639,17 +638,13 @@ def tree_text(rep, top):
 # ---------------------------------------------------------------- context rot: compactions, tokens, repeated reads
 
 def pre_tokens(rec):
-    """The preTokens of a compact_boundary record: a transcript spells it `compactMetadata.preTokens`, a runner's stream
-    `compact_metadata.pre_tokens`; 0 when the record gives none."""
-    for meta, key in (("compactMetadata", "preTokens"), ("compact_metadata", "pre_tokens")):
-        m = rec.get(meta)
-        if isinstance(m, dict) and key in m:
-            return _int(m[key])
-    return 0
+    """The preTokens of a compact_boundary record (`compactMetadata.preTokens`); 0 when the record gives none."""
+    m = rec.get("compactMetadata")
+    return _int(m["preTokens"]) if isinstance(m, dict) and "preTokens" in m else 0
 
 
 class Rot:
-    """One unit of work (a manager tick, a runner's run): the compactions it saw, the tokens its requests used and the
+    """One tick (a prompt of a main transcript): the compactions it saw, the tokens its requests used and the
     files its Read calls named, by agent. `tokens` is in + cache write + cache read + out of every request, once each."""
 
     def __init__(self):
@@ -690,7 +685,7 @@ def read_uses(rec):
 
 
 def tick_rows(path):
-    """[row] per manager tick of a main transcript: a tick is one prompt, the records from its first user record to the
+    """[row] per tick of a main transcript: a tick is one prompt, the records from its first user record to the
     next prompt's (a loop firing is one prompt). Its subagents' requests (the transcripts whose first record names the
     prompt) count in its tokens; a file is read twice when two Read calls of the main chain name it (a worktree's path
     folded into the project's, as `by file` keys it). A transcript with no prompt gives no rows."""
@@ -722,61 +717,31 @@ def tick_rows(path):
     return out
 
 
-def runner_row(path):
-    """The row of one runner's stream file (`_cache/autopilot/SP/<stamp>.jsonl`, one `claude -p` run in stream-json): its
-    compact_boundary events, the tokens of its assistant messages (a message's several events count once, by message
-    id, with the most output) and the files read more than once by one agent (a subagent's events name their parent
-    tool use, so two subagents reading the same file do not repeat it)."""
-    rot, n = Rot(), 0
-    for r in read_all(path):
-        if is_boundary(r):
-            rot.boundary(r)
-        elif r.get("type") == "assistant":
-            msg = r.get("message") if isinstance(r.get("message"), dict) else {}
-            n += 1
-            if isinstance(msg.get("usage"), dict) and msg.get("model") != "<synthetic>":
-                rot.request(msg["id"] if isinstance(msg.get("id"), str) else f"#{n}", counts_of(msg["usage"]))
-            agent = str(r.get("parent_tool_use_id") or "main")
-            for use, p in read_uses(r):
-                rot.read(agent, file_key(p, r.get("cwd")), use)
-    return rot.row()
-
-
-def runner_files(directory):
-    """[(sprint, file)] of the runner streams under DIR: every `*.jsonl` of DIR and of its subdirectories, the sprint
-    being the name of the directory a stream is in (`_cache/autopilot/SP`); status.json is no stream."""
-    base = Path(directory)
-    return [(f.parent.name if f.parent != base else "", f) for f in sorted(base.rglob("*.jsonl"))]
-
-
-def rot_rows(files, runners):
-    """{"ticks": [...], "runners": [...]}: a row per tick of each main transcript (`transcript` its number, `tick` the
-    tick's, both from 1) and per runner stream (`sprint`, `run` the stream's name)."""
+def rot_rows(files):
+    """{"ticks": [...]}: a row per tick of each main transcript (`transcript` its number, `tick` the tick's, both
+    from 1)."""
     ticks = []
     for i, (scope, f) in enumerate([x for x in files if x[0] == "main"], 1):
         ticks += [{"transcript": i, "tick": j, **row} for j, row in enumerate(tick_rows(f), 1)]
-    runs = [{"sprint": sprint, "run": f.stem, **runner_row(f)} for sprint, f in (runner_files(runners) if runners else [])]
-    return {"ticks": ticks, "runners": runs}
+    return {"ticks": ticks}
 
 
 def rot_text(rot):
-    """Lines of the `by tick` and `by runner` tables; every count prints, a unit with no compaction as 0."""
-    lines = []
-    for name, rows, label in (("tick", rot["ticks"], lambda r: f"t{r['transcript']}.{r['tick']}"),
-                              ("runner", rot["runners"], lambda r: f"{r['sprint'] or '-'}/{r['run']}")):
-        if not rows:
-            continue
-        lines += ["", f"by {name}: {'compactions':>11} {'pre_tokens':>11} {'tokens':>12} {'reads':>6} {'repeated':>8}"]
-        for r in rows:
-            pre = ",".join(map(str, r["pre_tokens"])) if r["pre_tokens"] else "0"
-            lines.append(f"  {r['compactions']:>11} {pre:>11} {r['tokens']:>12} {r['reads']:>6} {r['repeated_reads']:>8}  {label(r)}")
+    """Lines of the `by tick` table; every count prints, a tick with no compaction as 0."""
+    rows = rot["ticks"]
+    if not rows:
+        return []
+    lines = ["", f"by tick: {'compactions':>11} {'pre_tokens':>11} {'tokens':>12} {'reads':>6} {'repeated':>8}"]
+    for r in rows:
+        pre = ",".join(map(str, r["pre_tokens"])) if r["pre_tokens"] else "0"
+        lines.append(f"  {r['compactions']:>11} {pre:>11} {r['tokens']:>12} {r['reads']:>6} {r['repeated_reads']:>8}  "
+                     f"t{r['transcript']}.{r['tick']}")
     return lines
 
 
 def tree_main(argv):
     ap = argparse.ArgumentParser(prog="kbusage.py tree", description=TREE_DOC)
     ap.add_argument("path", help="a transcript (with its subagents/*.jsonl) or a project directory of transcripts")
-    ap.add_argument("--runners", help="a directory of runner streams (_cache/autopilot or one sprint's): adds a row per run")
     ap.add_argument("--format", choices=("text", "json"), default="text")
     ap.add_argument("--top", type=int, default=15, help="rows per group in text (0: all; default 15)")
     a = ap.parse_args(argv)
@@ -792,10 +757,7 @@ def tree_main(argv):
     for scope, f in files:
         tree.scan(scope, f)
     rep = tree.report()
-    if a.runners and not Path(a.runners).is_dir():
-        print(f"kbusage tree: {a.runners}: no such directory", file=sys.stderr)
-        return 2
-    rep["rot"] = rot_rows(files, a.runners)
+    rep["rot"] = rot_rows(files)
     if a.format == "json":
         print(json.dumps(rep, indent=1, sort_keys=True))
     else:

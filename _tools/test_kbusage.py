@@ -794,23 +794,6 @@ def rot_session(tmp_path):
     return main
 
 
-def event(**kw):
-    return kw
-
-
-def stream_run(*extra):
-    """A runner's stream of known numbers, 156 tokens a message: m1 (its event written twice, the larger output counts)
-    and m2 both read a.md; a subagent's (parent tool use T) m3 reads a.md too (another agent: not repeated), m4 and m5
-    read b.md (repeated); then EXTRA, a boundary in the stream's spelling."""
-    def msg(mid, path, out=5, parent=None):
-        return event(type="assistant", parent_tool_use_id=parent, message={
-            "id": mid, "model": "claude-opus-5-5", "usage": {"input_tokens": 1, "cache_creation_input_tokens": 100,
-                                                            "cache_read_input_tokens": 50, "output_tokens": out},
-            "content": [{"type": "tool_use", "id": "u" + mid, "name": "Read", "input": {"file_path": path}}]})
-    return [event(type="system", subtype="init"), msg("m1", "/w/a.md", 1), msg("m1", "/w/a.md"), msg("m2", "/w/a.md"),
-            msg("m3", "/w/a.md", parent="T"), msg("m4", "/w/b.md", parent="T"), msg("m5", "/w/b.md", parent="T"), *extra]
-
-
 def test_autopilot_rot_metrics_per_tick_compactions_tokens_and_repeated_reads(tmp_path):
     rows = kbusage.tick_rows(rot_session(tmp_path))
     assert [(r["compactions"], r["pre_tokens"], r["tokens"], r["requests"], r["reads"], r["repeated_reads"],
@@ -820,35 +803,16 @@ def test_autopilot_rot_metrics_per_tick_compactions_tokens_and_repeated_reads(tm
         (2, [100, 200], 156 + 9, 2, 1, 0, 0)]  # the main sidechain record is left out; the subagent's request counts
 
 
-def test_autopilot_rot_metrics_per_runner_numbers_and_agents(tmp_path):
-    base = tmp_path / "autopilot"
-    boundary_ev = event(type="system", subtype="compact_boundary", compact_metadata={"trigger": "auto", "pre_tokens": 168000})
-    write_jsonl(base / "SP-aaaaaaaa" / "20261001T000000Z.jsonl", stream_run(boundary_ev))
-    write_jsonl(base / "SP-bbbbbbbb" / "20261002T000000Z.jsonl", stream_run()[:1])
-    (base / "SP-aaaaaaaa" / "status.json").write_text("{}", encoding="utf-8", newline="\n")
-    got = kbusage.rot_rows([], base)["runners"]
-    assert [(r["sprint"], r["run"]) for r in got] == [("SP-aaaaaaaa", "20261001T000000Z"), ("SP-bbbbbbbb", "20261002T000000Z")]
-    a, b = got
-    assert (a["compactions"], a["pre_tokens"], a["tokens"], a["requests"], a["reads"], a["repeated_reads"], a["repeated_files"]) == (
-        1, [168000], 5 * 156, 5, 5, 2, 2)  # main: a.md twice (m1's repeated event is one call); T: a.md once, b.md twice
-    assert (b["compactions"], b["pre_tokens"], b["tokens"], b["reads"]) == (0, [], 0, 0)
-
-
-def test_autopilot_rot_metrics_tree_command_prints_both_tables(tmp_path):
+def test_autopilot_rot_metrics_tree_command_prints_tick_table(tmp_path):
+    """The `by tick` table of a transcript; no runner streams are read (BG-u36embuw): --runners is no option."""
     main = rot_session(tmp_path)
-    base = tmp_path / "autopilot"
-    write_jsonl(base / "SP-aaaaaaaa" / "20261001T000000Z.jsonl", stream_run(
-        event(type="system", subtype="compact_boundary", compact_metadata={"pre_tokens": 168000})))
-    write_jsonl(base / "SP-bbbbbbbb" / "20261002T000000Z.jsonl", stream_run()[:1])
-    p = run_tree(main, "--runners", str(base))
+    p = run_tree(main)
     assert p.returncode in (0, 1), p.stderr
     lines = p.stdout.splitlines()
-    assert any(ln.startswith("by tick:") for ln in lines) and any(ln.startswith("by runner:") for ln in lines)
+    assert any(ln.startswith("by tick:") for ln in lines) and not any(ln.startswith("by runner") for ln in lines)
     tick_rows = [ln for ln in lines if ln.endswith(("  t1.1", "  t1.2", "  t1.3"))]
     assert [ln.split()[:2] for ln in tick_rows] == [["1", "150000"], ["0", "0"], ["2", "100,200"]]
-    runner_rows = [ln for ln in lines if "SP-" in ln]
-    assert [ln.split()[:2] for ln in runner_rows] == [["1", "168000"], ["0", "0"]]
-    rep = json.loads(run_tree(main, "--runners", str(base), "--format", "json").stdout)
-    assert [r["compactions"] for r in rep["rot"]["ticks"]] == [1, 0, 2] and len(rep["rot"]["runners"]) == 2
-    assert run_tree(main, "--runners", str(tmp_path / "nowhere")).returncode == 2
-    assert "by runner" not in run_tree(main).stdout  # without --runners the transcript's ticks only
+    rep = json.loads(run_tree(main, "--format", "json").stdout)
+    assert [r["compactions"] for r in rep["rot"]["ticks"]] == [1, 0, 2] and set(rep["rot"]) == {"ticks"}
+    assert run_tree(main, "--runners", str(tmp_path)).returncode == 2
+    assert not any(hasattr(kbusage, n) for n in ("runner_row", "runner_files"))

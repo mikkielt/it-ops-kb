@@ -2,7 +2,7 @@
   "id": "BG-u36embuw",
   "kind": "bug",
   "title": "Close and kbusage still handle the retired autopilot runner's leftovers",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,6 @@
     "kb/_self/maintaining.md",
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

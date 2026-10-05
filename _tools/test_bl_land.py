@@ -1553,14 +1553,15 @@ class TestBacklogLand:
         assert [c[:3] for c in calls] == [["git", "remote", "get-url"]], calls
 
 
-# backlog.py close removes the closed sprint's runner leftovers itself (bl_land.clean_runner_leftovers): agents' shells
-# may not run `git worktree remove` or `git branch -D`. A throwaway clone with each leftover planted; planted failures:
-# another sprint's, a dirty, a locked and a branch with a commit of its own are kept with their reason, and a
-# --summary run removes nothing.
+# backlog.py close removes the closed sprint's worker leftovers itself (bl_land.clean_worker_leftovers): agents' shells
+# may not run `git worktree remove` or `git branch -D`. A throwaway clone with each leftover planted, and beside them
+# what the retired autopilot runner used to leave (a runner-<SP> worktree, its orch/<SP> branch, _cache/autopilot/<SP>),
+# which close no longer knows and leaves alone; planted failures: another sprint's worker and a branch with a commit
+# of its own are kept, and a --summary run removes nothing.
 OTHER_SP = "SP-other000"
 
 
-class TestCloseRemovesRunnerLeftovers:
+class TestCloseRemovesWorkerLeftovers:
     @pytest.fixture
     def closing(self, sprint, monkeypatch, tmp_path_factory):
         monkeypatch.delenv("KB_TESTS_FAST", raising=False)
@@ -1574,14 +1575,12 @@ class TestCloseRemovesRunnerLeftovers:
         work = subprocess.run(["git", "log", "-1", "--format=%H", "--grep", "b and c"], cwd=repo, capture_output=True,
                               text=True).stdout.strip()
         wt = repo / ".claude" / "worktrees"
-        sh(repo, "git", "worktree", "add", "-q", "-b", f"orch/{sp}", str(wt / f"runner-{sp}"), "HEAD")
+        sh(repo, "git", "worktree", "add", "-q", "-b", f"orch/{sp}", str(wt / f"runner-{sp}"), "HEAD")  # retired
         sh(repo, "git", "worktree", "add", "-q", "--detach", str(wt / "agent-a0"), work)
-        sh(repo, "git", "worktree", "add", "-q", "-b", f"orch/{OTHER_SP}", str(wt / f"runner-{OTHER_SP}"), "HEAD")
         sh(repo, "git", "branch", "worktree-agent-a1", "HEAD")  # empty: its tip is on the integration main
         sh(repo, "git", "branch", f"work/{tk}", work)
-        for d in (sp, OTHER_SP):
-            (repo / "_cache" / "autopilot" / d).mkdir(parents=True)
-            (repo / "_cache" / "autopilot" / d / "status.json").write_text("{}\n", encoding="utf-8")
+        (repo / "_cache" / "autopilot" / sp).mkdir(parents=True)  # retired
+        (repo / "_cache" / "autopilot" / sp / "status.json").write_text("{}\n", encoding="utf-8")
         return {"repo": repo, "sp": sp, "tk": tk, "wt": wt}
 
     @staticmethod
@@ -1589,57 +1588,38 @@ class TestCloseRemovesRunnerLeftovers:
         return set(subprocess.run(["git", "branch", "--format=%(refname:short)"], cwd=repo, capture_output=True,
                                   text=True).stdout.split())
 
-    def test_close_removes_runner_leftovers(self, closing):
+    def test_close_removes_worker_leftovers(self, closing):
         repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
         code, out = b(repo, "close", sp)
         assert code == 0 and f"closed {sp}" in out, out
-        assert not (wt / f"runner-{sp}").exists() and not (wt / "agent-a0").exists(), out
-        assert not (repo / "_cache" / "autopilot" / sp).exists(), out
+        assert not (wt / "agent-a0").exists(), out
         left = self.branches(repo)
-        assert f"orch/{sp}" not in left and "worktree-agent-a1" not in left and f"work/{closing['tk']}" not in left, out
+        assert "worktree-agent-a1" not in left and f"work/{closing['tk']}" not in left, out
         assert "kept" not in out, out
 
-    def test_close_removes_runner_leftovers_keeps_another_sprints(self, closing):
+    def test_close_cleans_no_runner_leftovers(self, closing):
+        """BG-u36embuw: close neither removes nor names the retired runner's worktree, orch branch or state
+        directory, and bl_land has no code for them."""
         repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
         code, out = b(repo, "close", sp)
         assert code == 0, out
-        assert (wt / f"runner-{OTHER_SP}").is_dir() and f"orch/{OTHER_SP}" in self.branches(repo), out
-        assert (repo / "_cache" / "autopilot" / OTHER_SP / "status.json").is_file(), out
-
-    def test_close_removes_runner_leftovers_keeps_a_dirty_runner_worktree(self, closing):
-        repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
-        (wt / f"runner-{sp}" / "unsaved.txt").write_text("x\n", encoding="utf-8")  # planted: uncommitted work
-        code, out = b(repo, "close", sp)
-        assert code == 0 and "uncommitted changes" in out and "close: kept" in out, out
-        assert (wt / f"runner-{sp}" / "unsaved.txt").is_file() and f"orch/{sp}" in self.branches(repo), out
-        assert not (wt / "agent-a0").exists(), out  # the clean worker beside it still goes
-
-    def test_close_removes_runner_leftovers_keeps_a_locked_runner_worktree(self, closing):
-        repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
-        sh(repo, "git", "worktree", "lock", "--reason", "on a removable disk", str(wt / f"runner-{sp}"))  # planted
-        code, out = b(repo, "close", sp)
-        assert code == 0 and "locked (on a removable disk)" in out, out
         assert (wt / f"runner-{sp}").is_dir() and f"orch/{sp}" in self.branches(repo), out
+        assert (repo / "_cache" / "autopilot" / sp / "status.json").is_file(), out
+        for word in (f"runner-{sp}", f"orch/{sp}", "_cache/autopilot", "runner's", "runner leftovers"):
+            assert word not in out, (word, out)
+        for name in ("prune_runner_cache", "runner_worktree_kept", "clean_runner_leftovers", "ORCH_PREFIX"):
+            assert not hasattr(bl_land, name), name
 
-    def test_close_removes_runner_leftovers_keeps_a_branch_with_commits_of_its_own(self, closing):
+    def test_close_keeps_a_worker_branch_with_commits_of_its_own(self, closing):
         repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
-        runner = wt / f"runner-{sp}"
-        (runner / "own.txt").write_text("own\n", encoding="utf-8")  # planted: a commit the integration main lacks
-        sh(runner, "git", "add", "own.txt")
-        sh(runner, "git", "commit", "-qm", "own work")
-        sh(repo, "git", "checkout", "-q", "-b", "worktree-agent-own", f"orch/{sp}")
+        sh(repo, "git", "checkout", "-q", "-b", "worktree-agent-own")
+        (repo / "own.txt").write_text("own\n", encoding="utf-8")  # planted: a commit the integration main lacks
+        sh(repo, "git", "add", "own.txt")
+        sh(repo, "git", "commit", "-qm", "own work")
         sh(repo, "git", "checkout", "-q", "-")
         code, out = b(repo, "close", sp)
-        assert code == 0 and f"runner-{sp}: it has commits" in out and "close: kept" in out, out
-        assert runner.is_dir() and {f"orch/{sp}", "worktree-agent-own"} <= self.branches(repo), out
-
-    def test_close_removes_runner_leftovers_keeps_the_worktree_it_runs_in(self, closing):
-        repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
-        runner = wt / f"runner-{sp}"
-        code, out = b(runner, "close", sp)  # planted: close run inside the runner's own worktree
-        assert code == 0 and "it is the worktree close runs in" in out, out
-        assert runner.is_dir() and f"orch/{sp}" in self.branches(repo), out
-        assert not (wt / "agent-a0").exists(), out
+        assert code == 0 and "worktree-agent-own" in self.branches(repo), out
+        assert not (wt / "agent-a0").exists(), out  # the clean worker beside it still goes
 
     def test_close_keeps_other_sprints_agent_branch(self, closing):
         """BG-ytcjstai planted: another sprint's live worker, agent-b9 on work/TK-otherxxx, beside its empty
@@ -1655,23 +1635,22 @@ class TestCloseRemovesRunnerLeftovers:
         assert "worktree-agent-b9" in left and f"work/{other}" in left and (wt / "agent-b9").is_dir(), out
         assert "worktree-agent-a1" not in left, out
 
-    def test_close_removes_runner_leftovers_summary_removes_nothing(self, closing):
+    def test_close_removes_worker_leftovers_summary_removes_nothing(self, closing):
         repo, sp, wt = closing["repo"], closing["sp"], closing["wt"]
         before = self.branches(repo)
         code, out = b(repo, "close", sp, "--summary")
         assert code == 0, out
-        assert (wt / f"runner-{sp}").is_dir() and (wt / "agent-a0").is_dir(), out
-        assert (repo / "_cache" / "autopilot" / sp).is_dir() and self.branches(repo) == before, out
+        assert (wt / "agent-a0").is_dir() and self.branches(repo) == before, out
 
-    def test_close_removes_runner_leftovers_failing_cleanup_never_fails_the_close(self, closing, monkeypatch, capsys):
+    def test_close_removes_worker_leftovers_failing_cleanup_never_fails_the_close(self, closing, monkeypatch, capsys):
         repo, sp = closing["repo"], closing["sp"]
 
         def boom(*a, **k):
             raise RuntimeError("planted")
-        monkeypatch.setattr(bl_land, "clean_runner_leftovers", boom)
+        monkeypatch.setattr(bl_land, "clean_worker_leftovers", boom)
         bl = backlog.Backlog(repo)
         code = bl_land.cmd_close(bl, argparse.Namespace(sprint=sp, summary=False, commit=False, trailer=None))
-        assert code == 0 and f"close: kept the runner leftovers of {sp}: planted" in capsys.readouterr().out
+        assert code == 0 and f"close: kept the worker leftovers of {sp}: planted" in capsys.readouterr().out
 
 
 # --- the ops row `done.refused` (ST-chco2mot): a refused done records its reason classes, never its text ---
