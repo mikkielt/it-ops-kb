@@ -31,8 +31,5 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-f5v3i3yd"
-  ],
   "notes": "Its change is backlog.py's own item writers (cmd_set, cmd_goal), which stay in the facade under the keep-whole verdict until ST-leqf5onn moves them to bl_items.py: the facade touch warning is accepted."
 }
