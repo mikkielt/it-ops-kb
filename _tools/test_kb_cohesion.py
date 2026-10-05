@@ -766,3 +766,29 @@ def test_review_runs_pipeline_on_real_spool():
     assert review_pipeline_problems(skill) == []
     for p in REVIEW_PIPELINE:
         assert p in review_pipeline_problems(skill.replace(p, "", 1)), p
+
+
+TOUCH_PLANNING = ("an item's `touches` are planned, not guessed", "backlog.py referrers PATH|SYMBOL... --item ID",
+                  "python3 _tools/selfdoc.py map <file>", "never a glob wider than those files",
+                  "`set ID --touch DOC --add`")
+
+
+def touch_planning_problems(texts):
+    """The phrases of TOUCH_PLANNING each text lacks, as (name, phrase)."""
+    return [(name, p) for name, text in texts.items() for p in TOUCH_PLANNING if p not in text]
+
+
+def test_touches_planned_from_referrers():
+    """ST-4ib5n3zl (BG-ncpteupy, BG-iu53ncyj): /kb-backlog, /kb-sprint plan and the runbook say an item's touches are
+    planned from its files, referrers and the doc map, never a wider glob, and that check's docs warning is acted on
+    when the item is filed or scheduled; each phrase removed from a planted copy fails."""
+    def read(*rel):
+        with open(os.path.join(KB, *rel), encoding="utf-8") as f:
+            return f.read()
+    sprint = read(".claude", "skills", "kb-sprint", "SKILL.md")
+    texts = {"kb-backlog": read(".claude", "skills", "kb-backlog", "SKILL.md"),
+             "kb-sprint plan": sprint[sprint.index("## plan"):sprint.index("## start SP")],
+             "backlog.md": read("kb", "_self", "backlog.md")}
+    assert touch_planning_problems(texts) == []
+    for p in TOUCH_PLANNING:
+        assert ("kb-backlog", p) in touch_planning_problems({**texts, "kb-backlog": texts["kb-backlog"].replace(p, "")}), p
