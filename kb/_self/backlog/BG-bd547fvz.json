@@ -2,7 +2,7 @@
   "id": "BG-bd547fvz",
   "kind": "bug",
   "title": "land's pushed_tip ignores a failed fetch of the code branch",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "48b6a53091393845d213592283987459f8411f83",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pushed_tip_failed_fetch"
+        ],
+        "exit": 0,
+        "sha256": "3c05fdbda6f026b7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,subprocess,tempfile;sys.path.insert(0,'_tools');import bl_land as b;d=tempfile.mkdtemp();subprocess.run(['git','init','-q',d]);b.land_git_network=lambda *a:subprocess.CompletedProcess(a,1,'','fatal: could not read');exec(\"try:\\n b.pushed_tip(d,'origin','code/x')\\nexcept Exception:\\n sys.exit(1)\")"
+        ],
+        "exit": 0,
+        "sha256": "1173571b075c4d1c"
+      }
+    ]
+  }
 }
