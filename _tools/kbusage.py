@@ -439,12 +439,31 @@ KNOWN_COMMANDS = frozenset((
     "df", "stat", "file", "basename", "dirname", "realpath", "readlink", "open", "dig", "nslookup", "ssh", "scp",
     "rsync", "python", "pytest", "ruff"))
 CLASS_TOKEN = re.compile(r"[a-z][a-z0-9_.-]{0,39}")
+CLASS_SUBCOMMANDS = {  # the subcommands `command_class` names per SUBCOMMANDS tool; any other word gives the tool alone
+    "git": set("""add am apply bisect blame branch cat-file check-ignore cherry cherry-pick clean clone commit config
+        count-objects describe diff fetch for-each-ref format-patch fsck gc grep hash-object init log ls-files ls-remote
+        ls-tree merge merge-base mv notes pull push range-diff rebase reflog remote reset restore rev-list rev-parse
+        revert rm shortlog show show-ref stash status submodule switch symbolic-ref tag update-ref worktree""".split()),
+    "gh": set("api auth browse cache gist issue label pr release repo run search secret status workflow".split()),
+    "glab": set("api auth ci issue job mr pipeline project release repo variable".split()),
+    "docker": set("""build compose cp exec image images info inspect login logs network ps pull push rm rmi run start stop
+        system tag version volume""".split()),
+    "kubectl": set("apply config create delete describe edit exec get logs port-forward rollout scale top version".split()),
+    "npm": set("audit ci exec init install ls outdated pack publish run test uninstall update version view".split()),
+    "pip": set("check download freeze index install list show uninstall wheel".split()),
+    "uv": set("add build cache export init lock pip publish python remove run sync tool tree venv".split()),
+    "cargo": set("add bench build check clean clippy doc fmt init install new publish run test tree update".split()),
+    "go": set("build env fmt generate get install list mod run test tool version vet work".split()),
+    "claude": set("agents config doctor install mcp plugin setup-token update".split()),
+}
+CLASS_SUBCOMMANDS["pip3"] = CLASS_SUBCOMMANDS["pip"]
 TOOL_SCRIPT = re.compile(r"_tools/([a-z][a-z0-9_]{0,30})\.py")
 
 
 def command_class(command):
     """The closed class of a shell command: `tools.<stem>` for a script of this repository's `_tools/`, `python-c`,
-    `python-m` or `python-script` for any other Python, `<tool>.<subcommand>` for the tools in SUBCOMMANDS, the
+    `python-m` or `python-script` for any other Python, `<tool>.<subcommand>` for the tools in SUBCOMMANDS when
+    CLASS_SUBCOMMANDS names the subcommand (else the tool alone: no free word of a prompt or an argument), the
     command's own name when it is in KNOWN_COMMANDS, `none` for no command and `other` for the rest."""
     head = command_head(command)
     if head == "(none)":
@@ -461,8 +480,8 @@ def command_class(command):
             return "python-m"
         return "python-script" if word else "python"
     if first in SUBCOMMANDS:
-        cls = f"{first}.{rest.split(' ', 1)[0]}" if rest else first
-        return cls if CLASS_TOKEN.fullmatch(cls) else first
+        sub = rest.split(" ", 1)[0]
+        return f"{first}.{sub}" if sub in CLASS_SUBCOMMANDS.get(first, ()) else first
     return first if first in KNOWN_COMMANDS else "other"
 
 
