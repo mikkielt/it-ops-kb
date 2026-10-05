@@ -747,8 +747,6 @@ def test_backlog_set_add_keeps_existing_checks(sprint):
     ("--evidence", "x", "set refuses evidence"),
     ("--id", "TK-aaaaaaaa", "set refuses id"),
     ("--kind", "bug", "set refuses kind"),
-    ("--parent", "ST-aaaaaaaa", "set refuses parent"),
-    ("--title", "Other", "set refuses title"),
     ("--gates", "[]", "set refuses gates"),
 ])
 def test_backlog_set_refuses_status_claim_evidence_and_identity(sprint, flag, value, rule):
@@ -759,12 +757,40 @@ def test_backlog_set_refuses_status_claim_evidence_and_identity(sprint, flag, va
     ("status", "changes only through claim, release, start, close, drop and done"),
     ("claimed_by", "changes only through claim and release"),
     ("evidence", "is written only by done"),
-    ("title", "identity"),
-    ("goal", "is not a field set changes"),
-    ("repro", "is not a field set changes"),
+    ("title", "would make `check` fail"),  # set replaces a title, and check needs one
+    ("goal", "would make `check` fail"),
+    ("repro", "only a bug has a repro"),
 ])
 def test_backlog_set_clear_refuses_the_same_fields(sprint, field, rule):
     refused_unchanged(sprint["repo"], sprint["tk"], "set", sprint["tk"], "--clear", field, rule=rule)
+
+
+def test_set_replaces_goal_and_repro(sprint):
+    """ST-3tgtrzd3 planted: set replaces a task's title, goal and parent and a bug's repro, repro_reason and
+    severity; a repro that passes now, repro or severity on a task, an unknown parent, and goal or repro on a done
+    item are refused with the item unchanged."""
+    repo, tk, bg = sprint["repo"], sprint["tk"], sprint["bg"]
+    assert b(repo, "new", "story", "--title", "Other story", "--sprint", sprint["sp"], "--goal", "o")[0] == 0
+    other = item(repo, "Other story")["id"]
+    for args in (["--title", "Renamed"], ["--goal", "new goal"], ["--parent", other]):
+        code, out = b(repo, "set", tk, *args)
+        assert code == 0, (args, out)
+    it = item_json(repo, tk)
+    assert (it["title"], it["goal"], it["parent"]) == ("Renamed", "new goal", other), it
+    code, out = b(repo, "set", bg, "--repro", argstr(is_file("src/never.txt")), "--severity", "S2")
+    assert code == 0, out
+    it = item_json(repo, bg)
+    assert it["repro"] == {"run": is_file("src/never.txt")} and it["severity"] == "S2", it
+    assert b(repo, "set", bg, "--repro-reason", "only a text match is possible")[0] == 0
+    assert item_json(repo, bg)["repro_reason"] == "only a text match is possible"
+    before = item_text(repo, bg)
+    code, out = b(repo, "set", bg, "--repro", argstr(PASS))
+    assert code == 1 and "passes now" in out and item_text(repo, bg) == before, out  # exit 1, as new bug refuses it
+    refused_unchanged(repo, tk, "set", tk, "--severity", "S1", rule="only a bug has a repro")
+    refused_unchanged(repo, tk, "set", tk, "--parent", "ST-zzzzzzzz", rule="no such item")
+    edit(repo, tk, status="done")
+    for args in (["--goal", "late"], ["--repro", argstr(is_file("src/x.txt"))]):
+        refused_unchanged(repo, tk, "set", tk, *args, rule="it is done")
 
 
 def test_backlog_set_refuses_nothing_to_change_and_a_value_with_its_clear(sprint):
