@@ -46,7 +46,9 @@
       "do": {
         "narrow-test": "BG-4zpv4iol",
         "check-done-items": "BG-4zpv4iol"
-      }
+      },
+      "answer": "narrow-test",
+      "by": "operator"
     }
   ],
   "claimed_by": "it-ops-kb worker1"

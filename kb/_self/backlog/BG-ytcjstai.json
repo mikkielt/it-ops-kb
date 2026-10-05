@@ -47,7 +47,9 @@
       "do": {
         "remove-orphans": "BG-ytcjstai",
         "keep-orphans": "BG-ytcjstai"
-      }
+      },
+      "answer": "remove-orphans",
+      "by": "operator"
     }
   ],
   "claimed_by": "it-ops-kb worker1"
