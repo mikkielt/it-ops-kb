@@ -560,13 +560,13 @@ def release_worker_worktree(root, path, lock, branch=None):
     return None
 
 
-def delete_landed_branch(root, branch, upstream, who="land"):
+def delete_landed_branch(root, branch, upstream, who="land", prefixes=None):
     """Delete the local work/<id> BRANCH, or the worktree-agent-* branch the Agent tool made a removed worker's
-    worktree on, once every commit of it is on UPSTREAM (`git cherry` lists
+    worktree on (or a branch starting with one of PREFIXES, when given), once every commit of it is on UPSTREAM (`git cherry` lists
     no `+` line), with `git branch -D` (a branch landed by a rebase is not an ancestor, so -d refuses it): agents'
     shells may not delete a branch. Any other branch, one with a commit UPSTREAM lacks, or one checked out anywhere is
     kept, and WHO says why. Returns True once it is deleted."""
-    if not branch.startswith((WORK_PREFIX, AGENT_BRANCH + WORKER_NAME)) or not has_ref(root, f"refs/heads/{branch}"):
+    if not branch.startswith(prefixes or (WORK_PREFIX, AGENT_BRANCH + WORKER_NAME)) or not has_ref(root, f"refs/heads/{branch}"):
         return False
     code, out, err = run(["git", "cherry", upstream, branch], cwd=root)
     if code or any(ln.startswith("+") for ln in out.splitlines()):
@@ -1265,6 +1265,88 @@ def clean_worker_leftovers(root, sid, ids):
     return kept
 
 
+TIDY_PREFIXES = (WORK_PREFIX, AGENT_BRANCH + WORKER_NAME, "orch/")  # orch/: a retired runner's branch left in a clone
+
+
+def integration_main(root):
+    """The integration main's ref of the clone ROOT (`refs/remotes/<remote>/main`, else `refs/heads/main`), or None."""
+    import kbpublic
+    for ref in (f"refs/remotes/{kbpublic.integration_remote(root)}/main", "refs/heads/main"):
+        if has_ref(root, ref):
+            return ref
+    return None
+
+
+def tidy_worktree_kept(root, entry, upstream):
+    """Why the agent worktree ENTRY stays, or None when tidy may remove it: the worktree tidy runs in, a lock that is not
+    a Claude Code agent's, uncommitted changes, a live process, or a commit UPSTREAM lacks."""
+    path = entry["path"]
+    here = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    cwd = Path.cwd().resolve()
+    if path == here or path == cwd or path in cwd.parents:
+        return "it is the worktree tidy runs in"
+    if entry["lock"] is not None and not entry["lock"].startswith(WORKER_LOCK):
+        return f"it is locked ({entry['lock'] or 'no reason given'})"
+    code, out, err = run(["git", "status", "--porcelain"], cwd=path)
+    if code or out.strip():
+        return "it has uncommitted changes" if not code else f"git status failed: {err.strip()}"
+    procs, _ = live_processes(path)
+    if procs:
+        return "a process still runs there: " + ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
+    if not merged_into(root, entry["head"], upstream):
+        return f"it has commits {upstream} lacks"
+    return None
+
+
+def cmd_tidy(bl, a):
+    """List (and with --apply remove) the clone's leftovers: the clean, process-free agent-* worktrees under its
+    .claude/worktrees/ whose commits are all on the integration main, then the local work/*, worktree-agent-* and
+    orch/* branches whose commits are all on it and that no worktree has checked out; every other one is printed with
+    why it stays. Removal goes through close's helpers, never --force."""
+    root = bl.root
+    upstream = integration_main(root)
+    if upstream is None:
+        raise Refused("tidy: no integration main to compare against (fetch the integration remote first)")
+    verb = "removed" if a.apply else "would remove"
+    removable, kept = 0, 0
+    dirs = worker_dirs(root)
+    for e in worktree_entries(root):
+        if e["path"].parent not in dirs or not e["path"].name.startswith(WORKER_NAME):
+            continue
+        why = tidy_worktree_kept(root, e, upstream)
+        if why is None and a.apply:
+            why = release_worker_worktree(root, e["path"], e["lock"])
+        if why:
+            kept += 1
+            say(f"tidy: kept {e['path']}: {why}")
+        else:
+            removable += 1
+            say(f"tidy: {verb} the worktree {e['path']}")
+    here = {e["branch"] for e in worktree_entries(root) if e["branch"]}
+    code, out, _ = run(["git", "for-each-ref", "--format=%(refname:short)", "refs/heads"], cwd=root)
+    for branch in out.split() if not code else []:
+        if not branch.startswith(TIDY_PREFIXES):
+            continue
+        if branch in here:
+            kept += 1
+            say(f"tidy: kept {branch}: it is checked out in a worktree")
+        elif not merged_into(root, f"refs/heads/{branch}", upstream):
+            kept += 1
+            say(f"tidy: kept {branch}: it has commits {upstream} lacks")
+        elif a.apply and not delete_landed_branch(root, branch, upstream, who="tidy", prefixes=TIDY_PREFIXES):
+            kept += 1
+        else:
+            removable += 1
+            if not a.apply:
+                say(f"tidy: would remove the branch {branch}")
+    say(f"tidy: {verb} {removable}, kept {kept}" + ("" if a.apply else " (--apply removes them)"))
+    return 0
+
+
+def args_tidy(p):
+    p.add_argument("--apply", action="store_true", help="remove what tidy lists (default: only list it)")
+
+
 def cleanup_gate_do(bl, dead):
     """Drop every gate `do` entry of a remaining item that names (by item id) an item in DEAD, which close deletes: the
     work that entry waited for is done or dropped, and check refuses a `do` naming an item that does not exist. An
@@ -1413,3 +1495,4 @@ bl_cli.register("done", cmd_done, args_done)
 bl_cli.register("land", cmd_land, args_land)
 bl_cli.register("merge", cmd_merge, args_merge)
 bl_cli.register("close", cmd_close, args_close)
+bl_cli.register("tidy", cmd_tidy, args_tidy)

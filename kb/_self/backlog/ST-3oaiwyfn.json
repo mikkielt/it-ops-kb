@@ -2,7 +2,7 @@
   "id": "ST-3oaiwyfn",
   "kind": "story",
   "title": "backlog.py tidy lists the merged work and agent branches and clean worktrees, and with --apply removes only what close may remove",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
@@ -21,7 +21,9 @@
     "_tools/bl_land.py",
     "_tools/test_kb_sprint_close_cleanup.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/backlog.py",
+    "_tools/test_layout.py"
   ],
   "depends_on": [
     "BG-u36embuw"
@@ -48,5 +50,6 @@
       "answer": "an agent may run --apply",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
