@@ -1,0 +1,33 @@
+{
+  "id": "BG-r5fab2td",
+  "kind": "bug",
+  "title": "test_cost_open_session's spool rows use a strftime format Windows rejects",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "spool_rows in _tools/test_cost_open_session.py writes each row's timestamp with the row's own second (09:00:01, 09:00:02, ...) through a Python format rather than time.strftime with %02d, which Windows rejects with ValueError: Invalid format string and glibc reads as the day of the month, so the 18 tests of test_cost_open_session, _main and _reopened pass on Windows",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_cost_open_session_figures_read_from_the_spool"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_cost_open_session"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_cost_open_session.py",
+    "kb/_self/code.md"
+  ]
+}
