@@ -933,6 +933,18 @@ class TestBacklogLand:
         assert code == 0 and "second pass" in out and "landed" in out, out
         assert self.remote_item(ld)["status"] == "done"
 
+    def test_land_pushed_tip_failed_fetch_waits_for_nothing(self, landing, capsys):
+        """BG-bd547fvz planted: a fetch of a code branch the remote lacks (git dies, exit 128) gives no tip and says so,
+        so --wait-merge never waits for a stale one; a branch the remote has gives its tip."""
+        ld = landing
+        repo, tk = ld["repo"], ld["tk"]
+        assert bl_land.pushed_tip(repo, "origin", "code/TK-nosuchxx") is None
+        assert "could not fetch code/TK-nosuchxx from origin" in capsys.readouterr().out
+        self.work(ld, ["_tools/b.py", "src/b.txt"], "src/b.txt")
+        code, out = self.land(ld)
+        assert code == 0 and "not done yet" in out, out
+        assert bl_land.pushed_tip(repo, "origin", f"code/{tk}") == [self.out(ld["remote"], "rev-parse", f"code/{tk}").strip()]
+
     def test_land_wait_merge_times_out(self, landing):
         """ST-jhad3qba planted: a merge request that never merges stops land --wait-merge at step wait-merge, exit 1,
         naming the code/<id> branch; main does not move and the item is not done."""
