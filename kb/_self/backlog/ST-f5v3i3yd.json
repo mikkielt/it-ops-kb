@@ -2,7 +2,7 @@
   "id": "ST-f5v3i3yd",
   "kind": "story",
   "title": "A repro that runs a tool also checks the tool's exit code",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,19 @@
   "depends_on": [
     "ST-4mdnjuep"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "82e2d25b0509b1f380b6c2b5773b4f5bc8749ffb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "repro_tool_exit_code_warning"
+        ],
+        "exit": 0,
+        "sha256": "a97abb8202d7236a"
+      }
+    ]
+  }
 }
