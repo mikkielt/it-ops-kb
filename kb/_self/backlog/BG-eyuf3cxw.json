@@ -2,7 +2,7 @@
   "id": "BG-eyuf3cxw",
   "kind": "bug",
   "title": "The commit-msg hook falsely refuses KB-Work on git commit --amend -F, reading HEAD instead of its parent",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-wmukiu3s",
   "priority": "P2",
@@ -30,5 +30,6 @@
     "_tools/kg_hooks.py",
     "_tools/test_sync.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

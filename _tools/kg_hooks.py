@@ -5,7 +5,7 @@ adds the KB-* trailers). Runs git in KB, this module's own copy of the repositor
 at a scratch clone). Standard library only; kbgit.py imports it, and it imports no facade: the gate and the dirty paths
 come in as arguments.
 """
-import os, stat, sys
+import os, stat, subprocess, sys
 from pathlib import Path
 
 import kblane
@@ -222,12 +222,53 @@ def cmd_install_hooks(a):
     return 0
 
 
+def parent_args(pid):
+    """(the parent pid, the argv) of process PID: /proc on Linux, `ps` on other POSIX hosts; (None, []) when this host
+    gives no way to tell (Windows)."""
+    proc = Path("/proc") / str(pid)
+    if (proc / "stat").exists():
+        try:
+            fields = (proc / "stat").read_text(encoding="utf-8", errors="replace")
+            argv = (proc / "cmdline").read_bytes().split(b"\0")
+            return int(fields.rsplit(")", 1)[1].split()[1]), [a.decode("utf-8", "replace") for a in argv if a]
+        except (OSError, ValueError, IndexError):
+            return None, []
+    if os.name == "nt":
+        return None, []
+    try:
+        p = subprocess.run(["ps", "-o", "ppid=", "-o", "command=", "-p", str(pid)], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=5)
+        ppid, _, cmd = p.stdout.strip().partition(" ")
+        return int(ppid), cmd.split()
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None, []
+
+
+def amend_running(levels=6):
+    """True when a `git commit --amend` is among this process's ancestors (the hook script and the interpreter
+    launcher sit between): with -F, -m or -t git passes prepare-commit-msg only `message` or `template`, not
+    `commit HEAD`, so the hook's arguments cannot tell an amend (BG-eyuf3cxw)."""
+    pid = os.getppid()
+    for _ in range(levels):
+        if not pid or pid <= 1:
+            return False
+        ppid, argv = parent_args(pid)
+        if any(os.path.basename(a).startswith("git") for a in argv[:1]) and "commit" in argv and "--amend" in argv:
+            return True
+        pid = ppid
+    return False
+
+
 def hook_prepare(args):
-    """Note an --amend (git passes `commit HEAD`; -c/-C pass `commit <rev>`), so commit-msg diffs against HEAD's parent, not HEAD."""
+    """Note an --amend, so commit-msg diffs against HEAD's parent, not HEAD: git passes `commit HEAD` (-c/-C pass
+    `commit <rev>`), and with a message given by -F, -m or -t only `message` or `template`, read then from the
+    `git commit --amend` among the hook's ancestors (amend_running)."""
     mark = git_path(AMEND_MARK)
     if mark and os.path.exists(mark):
         os.remove(mark)
-    if mark and len(args) >= 3 and args[1] == "commit" and rev_parse(args[2]) == rev_parse("HEAD"):
+    amend = len(args) >= 3 and args[1] == "commit" and rev_parse(args[2]) == rev_parse("HEAD")
+    amend = amend or (len(args) >= 2 and args[1] in ("message", "template") and rev_parse("HEAD") and amend_running())
+    if mark and amend:
         parents = (git("rev-list", "--parents", "-n", "1", "HEAD") or "").split()[1:]
         with open(mark, "w", encoding="utf-8", newline="\n") as f:
             f.write("merge" if len(parents) > 1 else (parents[0] if parents else "root"))
