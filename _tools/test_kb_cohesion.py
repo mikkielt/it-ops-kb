@@ -840,3 +840,27 @@ def test_open_choice_operator_gate_documented():
     for name in texts:
         for p in OPEN_CHOICE:
             assert (name, p) in missing({**texts, name: texts[name].replace(p, "")}), (name, p)
+
+
+PREMISE_STEP = ("Run each committed story's premise once, before the start gate is asked", "`Premise:` line",
+                "record the result in its notes", "a story whose premise does not reproduce is not committed")
+
+
+def test_sprint_plan_checks_premise():
+    """ST-aah3cb3o (SP-tpulmoxh: ST-4mcoplex committed and claimed before its premise was found false): /kb-sprint
+    plan runs each committed story's premise before the start gate is asked, records the result and keeps a story
+    whose premise fails out of the sprint, and the runbook says so; each phrase removed from a planted copy fails."""
+    with open(os.path.join(KB, ".claude", "skills", "kb-sprint", "SKILL.md"), encoding="utf-8") as f:
+        skill = f.read()
+    with open(os.path.join(KB, "kb", "_self", "backlog.md"), encoding="utf-8") as f:
+        runbook = f.read()
+    plan = skill[skill.index("## plan"):skill.index("## start SP")]
+
+    def missing(pl, rb):
+        out = [p for p in PREMISE_STEP if p not in pl]
+        return out + [f"runbook: {p}" for p in ("`Premise:` line", "before the start gate is asked",
+                                                "a story whose premise fails is not committed") if p not in rb]
+    assert missing(plan, runbook) == []
+    for p in PREMISE_STEP:
+        assert p in missing(plan.replace(p, ""), runbook), p
+    assert missing(plan, runbook.replace("a story whose premise fails is not committed", ""))
