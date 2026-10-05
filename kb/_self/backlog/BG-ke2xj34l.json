@@ -28,7 +28,8 @@
   "touches": [
     "_tools/kbpublic.py",
     "_tools/test_kbpublic.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
   ],
   "claimed_by": "it-ops-kb worker1"
 }

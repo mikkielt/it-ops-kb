@@ -426,6 +426,22 @@ class TestPublishSafety:
         else:
             assert kbpublic.cmd_publish(ns(), r.path) == 0, capsys.readouterr().out
 
+    def test_publish_verdict_cache_keyed_by_scan_form(self, src, tmp_path, capsys, monkeypatch):
+        """BG-ke2xj34l planted: a GUID in a .csv checked under a laxer scan rule (GUIDs in Markdown only, as d103bd44 had
+        it) caches a clean verdict; once the strict rule is back with SCAN_FORM bumped, as a change to file_hits must,
+        publish refuses with the GUID's hit instead of reading the old verdict."""
+        path = "kb/public/ad/anchors.csv"
+        r, pub = self.prepare(src, tmp_path, {path: f"anchor,{self.AD_GUID}\n"})
+        strict = kbpublic.file_hits
+        monkeypatch.setattr(kbpublic, "file_hits", lambda p, *a, **k: [
+            h for h in strict(p, *a, **k) if h[0] != "guid" or p.endswith(".md")])
+        assert kbpublic.cmd_publish(ns(dry_run=True), r.path) == 0, capsys.readouterr().out  # clean, and cached
+        assert list(Path(r.path, *kbpublic.CACHE_DIR).glob("verdicts-*.json"))
+        capsys.readouterr()
+        monkeypatch.setattr(kbpublic, "file_hits", strict)
+        monkeypatch.setattr(kbpublic, "SCAN_FORM", kbpublic.SCAN_FORM + 1)
+        self.refused(r, pub, capsys, f"{path} has a leak-scan hit (guid)")
+
     def published_leak(self, src, tmp_path):
         """A public tip whose _tools/test_x.py holds a GUID, published under an allowlist that is then dropped."""
         guid = "-".join(("3f2a4c1e", "0000", "4000", "8000", "00000000abcd"))  # built here so this file has none

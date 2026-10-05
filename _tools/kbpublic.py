@@ -76,6 +76,7 @@ ALLOWLIST_PATH = "_tools/tests_allowlist.txt"
 URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
 CACHE_DIR = ("_cache", "publish")  # the per-clone scan cache under the repository, never committed (its own .gitignore)
 PROJECTION_FORM = 1  # the projection's form: a change to how commits are projected bumps it, so no older cache is read
+SCAN_FORM = 1  # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
 HOOK_BOUND = 150  # uncached commits publish --hook checks at most; a longer range is left to a publish by hand (git.md)
 CI_RUN = None  # a command runner (argv -> (code, stdout, stderr)) for the CI check; None: ql_base.run_cmd. Tests stub it.
 
@@ -537,7 +538,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
             file of TIP holds (public_values: already public), allowing the _tools/tests_allowlist.txt of the commit
             and of PROJ.
     The leak verdict of each commit (its causes, often none) is cached per commit in
-    CACHE_DIR/verdicts-<TIP>-<digest of PROJ's allowlist and pinned artifacts>.json, the inputs it depends on beside the commit's own, so a
+    CACHE_DIR/verdicts-<TIP>-<digest of SCAN_FORM, PROJ's allowlist and pinned artifacts>.json, the inputs it depends on beside the commit's own, so a
     range already checked costs one `git log` the next time. With BOUND, raises LongRange before any scan when more
     than BOUND commits of the range have no cached verdict. Raises RuntimeError on a git error."""
     import kbcommon
@@ -546,7 +547,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     changes = history_changes(proj, tip, cwd)
     final = blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "")
     pinned = pinned_paths(proj, files, cwd)
-    inputs = "\0".join([final, *sorted(pinned)])
+    inputs = "\0".join([f"scan-form {SCAN_FORM}", final, *sorted(pinned)])
     vname = f"verdicts-{tip or 'none'}-{hashlib.sha256(inputs.encode('utf-8')).hexdigest()[:16]}.json"
     got = cache_load(cwd, vname)
     verdicts = {c: v for c, v in (got.items() if isinstance(got, dict) else ())
