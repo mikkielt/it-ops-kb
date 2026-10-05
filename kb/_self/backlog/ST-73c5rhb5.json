@@ -2,7 +2,7 @@
   "id": "ST-73c5rhb5",
   "kind": "story",
   "title": "backlog.py goal prints the answered gates of an item's ancestors",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gfz3rl64",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,6 @@
   "depends_on": [
     "ST-3tgtrzd3"
   ],
-  "notes": "Its change is backlog.py's own item writers (cmd_set, cmd_goal), which stay in the facade under the keep-whole verdict until ST-leqf5onn moves them to bl_items.py: the facade touch warning is accepted."
+  "notes": "Its change is backlog.py's own item writers (cmd_set, cmd_goal), which stay in the facade under the keep-whole verdict until ST-leqf5onn moves them to bl_items.py: the facade touch warning is accepted.",
+  "claimed_by": "it-ops-kb worker1"
 }

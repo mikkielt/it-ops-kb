@@ -164,7 +164,7 @@ Each item adds three parts of its own: the end state (`goal`), the commands that
 - a check fails, or passed while doing nothing in this clone;
 - a review story still has an agent's provisional answer.
 
-When it succeeds it records the commit and each check's exit code and output digest in `evidence`. A bug is done when its `repro` passes as well. `backlog.py goal ID` prints a `/goal` condition naming the same end state, checks and scope, so a transcript-only judge sees the proof (`agents/agent-planning-and-done.md`, DOC S-vp5onm7b).
+When it succeeds it records the commit and each check's exit code and output digest in `evidence`. A bug is done when its `repro` passes as well. `backlog.py goal ID` prints a `/goal` condition naming the same end state, checks and scope, so a transcript-only judge sees the proof (`agents/agent-planning-and-done.md`, DOC S-vp5onm7b), and under it each answered gate of the item's parent chain with its answer and who gave it, which a worker's brief must not contradict.
 
 ## What done refuses
 
