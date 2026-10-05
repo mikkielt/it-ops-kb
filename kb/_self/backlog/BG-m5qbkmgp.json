@@ -7,17 +7,17 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "backlog.project_paths reads host:group/project remotes (no user) and decodes git's output as UTF-8 with replacement, so a non-ASCII remote never crashes backlog.py check. Found by the SP-2agxqrrv review.",
+  "goal": "bl_base.project_paths reads host:group/project remotes (no user) and decodes git's output as UTF-8 with replacement, so a non-ASCII remote never crashes backlog.py check. Found by the SP-2agxqrrv review.",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import backlog as b; d = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', d]); subprocess.run(['git', '-C', d, 'remote', 'add', 'o', 'gitlab.example.com:grp/proj.git']); sys.exit(0 if 'grp/proj' in b.project_paths(d) else 1)"
+      "import sys, subprocess, tempfile; sys.path.insert(0, '_tools'); import bl_base as b; d = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', d]); subprocess.run(['git', '-C', d, 'remote', 'add', 'o', 'gitlab.example.com:grp/proj.git']); sys.exit(0 if 'grp/proj' in b.project_paths(d) else 1)"
     ]
   },
   "touches": [
-    "_tools/backlog.py",
-    "_tools/test_backlog.py",
+    "_tools/bl_base.py",
+    "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ]
