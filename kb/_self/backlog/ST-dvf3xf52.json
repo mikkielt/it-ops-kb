@@ -57,7 +57,8 @@
     "kb/_self/querylog.md",
     "_tools/kb_ask.py",
     "kb/_self/design.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "kb/_self/_retrieval/aliases.csv"
   ],
   "depends_on": [
     "ST-ulhmplqh"
