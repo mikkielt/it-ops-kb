@@ -810,11 +810,16 @@ def test_review_cost_rerun_after_close():
 
     def missing(rv, cl, rb):
         out = [p for p in COST_RERUN if p not in rv or p not in rb]
+        retro = rb[rb.index("**Retrospective**"):][:2000] if "**Retrospective**" in rb else ""
+        out += [] if "close's rerun of `backlog.py cost --rework SP`" in retro and "the review's cost output" not in retro \
+            else ["retrospective"]  # BG-dcxm2uju: the runbook's Retrospective reads close's rerun, never the review's
         return out + ([] if "`backlog.py cost --rework SP` rerun now" in cl else ["close rerun"])
     assert missing(review, close, runbook) == []
     for p in COST_RERUN:
         assert p in missing(review.replace(p, ""), close, runbook), p
     assert "close rerun" in missing(review, close.replace("`backlog.py cost --rework SP` rerun now", ""), runbook)
+    old = runbook.replace("close's rerun of `backlog.py cost --rework SP`", "the review's cost output", 1)
+    assert "retrospective" in missing(review, close, old)
 
 
 OPEN_CHOICE = ("is a blocking operator gate, added and asked before any code is written",
