@@ -2,7 +2,7 @@
   "id": "BG-hdy6rfro",
   "kind": "bug",
   "title": "KB_OPS_TEST_SPOOL lifts the inside-test guard without checking the spool is the test's own",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
@@ -30,5 +30,6 @@
     "_tools/ql_deliver.py",
     "_tools/test_ops_land.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
