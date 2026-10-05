@@ -2,7 +2,7 @@
   "id": "ST-gsdnuoae",
   "kind": "story",
   "title": "Review sprint: Backlog commands keep the backlog valid",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xdzgepun",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "322461f8555e70d626dcce72bfd69dbc1ef80ed5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "8ee5374983721e3c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "0ab84b1748ae48d1"
+      }
+    ]
+  }
 }
