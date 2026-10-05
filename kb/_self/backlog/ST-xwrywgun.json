@@ -2,7 +2,7 @@
   "id": "ST-xwrywgun",
   "kind": "story",
   "title": "A pipeline sprint's review shows the pipeline run once on a real spool",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-42bn4vz7",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,6 @@
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

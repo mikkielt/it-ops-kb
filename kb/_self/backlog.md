@@ -217,6 +217,7 @@ A sprint is a goal and the stories and bugs committed to it. It ends when its go
 4. **Review**: the review story depends on every other item of the sprint. Its work:
    - the operator confirms or changes each provisional answer;
    - `backlog.py cost --rework` runs for the sprint and for each of its stories and bugs, and its output goes to the reviewer and to the operator as retrospective input (what the work cost; the items with rework, the tokens from an item's first refused `done` on; where shared tokens stand out): it reports tokens only, no prices and no blame, and a figure with an unresolved id is incomplete (Cost of work, below);
+   - a sprint that changed what the query log writes runs distill once on a copy of the real spool in mode `local` (nothing pushed) and shows its run file, sidecars and `querylog.py check` on that store, so a sidecar no work ever delivered shows before the close (SP-fvztfmtm; `/kb-sprint review`, step 3; `tests.py -k review_runs_pipeline_on_real_spool`);
    - a fresh-context reviewer subagent reads the sprint's diff against each item's goal and reports only gaps that affect correctness or a goal (DOC S-o3v6ozch);
    - every gap becomes a bug, in this sprint if it is `S1`, else in the backlog;
    - `backlog.py check`, the full `tests.py` and `stress_test.py` pass: the heavy tier of the three test tiers (Working on items, above), run once as the story's checks.

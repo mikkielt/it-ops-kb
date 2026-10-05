@@ -738,3 +738,28 @@ class TestScopeGroups:
         for key in conftest.SCOPE_GROUPS:
             module, cls = key.split("::")
             assert re.search(rf"^class {cls}\b", text(f"_tools/{module}") or "", re.M), key
+
+
+REVIEW_PIPELINE = ("A sprint that changed what the query log writes", "copy of the real spool",
+                   '`{"mode": "local"}`', "python3 _tools/querylog.py distill",
+                   "python3 _tools/querylog.py check <scratch>/querylog/store", "work and ops sidecars")
+
+
+def review_pipeline_problems(skill):
+    """The phrases of REVIEW_PIPELINE that /kb-sprint review's section of `skill` (the SKILL.md text) lacks, and
+    'order' when the pipeline step does not come before the reviewer subagent."""
+    sec = skill[skill.index("## review SP"):skill.index("## close SP")]
+    missing = [p for p in REVIEW_PIPELINE if p not in sec]
+    run, reviewer = sec.find("python3 _tools/querylog.py distill"), sec.find("fresh-context reviewer")
+    return missing + (["order"] if run < 0 or reviewer < 0 or run > reviewer else [])
+
+
+def test_review_runs_pipeline_on_real_spool():
+    """ST-xwrywgun: /kb-sprint review of a sprint that changed what the query log writes runs distill once on a copy
+    of the real spool in mode local and shows querylog.py check on its store, before the reviewer; each phrase
+    removed from a planted copy fails."""
+    with open(os.path.join(KB, ".claude", "skills", "kb-sprint", "SKILL.md"), encoding="utf-8") as f:
+        skill = f.read()
+    assert review_pipeline_problems(skill) == []
+    for p in REVIEW_PIPELINE:
+        assert p in review_pipeline_problems(skill.replace(p, "", 1)), p
