@@ -1700,3 +1700,19 @@ def test_ops_done_refused_reasons_check_token():
     assert bl_land.check_token(["python3", "_tools/rag.py", "eval"]) == "rag"
     assert bl_land.check_token(["git", "diff", "--quiet"]) == "git"
     assert bl_land.check_token(["python3", "_tools/tests.py", "-k", "2fast"]) == "c-2fast"
+
+
+def test_land_ops_rows_never_from_a_test(tmp_path, monkeypatch):
+    """BG-5pz44tdi: land's ops rows (bl_land.ops_write) go through ql_deliver.ops_row, so inside a test run
+    (PYTEST_CURRENT_TEST, which this test has) a fixture's landing writes nothing to the spool; with the guard lifted
+    the same call writes its land.end row, so the guard and not a broken writer is what keeps the spool empty."""
+    import ql_capture
+    import ql_deliver
+    spool = tmp_path / "querylog" / "spool"
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: spool)
+    bl_land.ops_write(event="land.end", item="TK-aaaaaaaa", exit=0, ms=1)
+    assert not list(spool.glob("*.jsonl")) if spool.is_dir() else True
+    monkeypatch.setattr(ql_deliver, "inside_test", lambda: False)
+    bl_land.ops_write(event="land.end", item="TK-aaaaaaaa", exit=0, ms=1)
+    rows = [json.loads(ln) for f in spool.glob("*.jsonl") for ln in f.read_text(encoding="utf-8").splitlines()]
+    assert [(r["event"], r["item"]) for r in rows] == [("land.end", "TK-aaaaaaaa")], rows

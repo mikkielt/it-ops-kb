@@ -2,7 +2,7 @@
   "id": "BG-5pz44tdi",
   "kind": "bug",
   "title": "land writes its ops rows from inside a test into the clone's real spool, so fixture landings reach the committed sidecars and the proposed LOG rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-6btkjg4l",
   "priority": "P1",
@@ -30,7 +30,10 @@
     "_tools/bl_land.py",
     "_tools/test_bl_land.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/_logs.csv",
+    "_tools/ql_deliver.py",
+    "_tools/test_ops_land.py"
   ],
   "gates": [
     {
@@ -47,5 +50,6 @@
       "answer": "after the fix lands, remove those proposed rows from _logs.csv (rows of items no commit names) and propose again over the sidecars, the fixture rows in kb/_querylog/ops staying as history",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
