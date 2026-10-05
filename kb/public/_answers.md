@@ -2343,3 +2343,12 @@ _Agent: kb-research_
 - See gitlab/automated-merge-requests.md, gitlab/git-trailers-and-hooks.md, python/stdlib-argparse-json.md.
 
 _Agent: kb-research_
+
+## QK-hard-link-copies-and-idle-server-exit. How does a test copy a tree with hard links, and how does a local server exit when idle?
+- `shutil.copytree` takes a `copy_function` called with source and destination, so `os.link` (Unix and Windows) gives a hard-linked copy; a file the test writes must be replaced by a copy first, since a hard link shares its content. [DOC S-jwv5eevl, S-5brdhqgo] [DER S-jwv5eevl, S-5brdhqgo]
+- `handle_request()` returns after `timeout` seconds without a request, calling `handle_timeout()`; `shutdown()` stops `serve_forever()` only from another thread. [DOC S-uj2rumru]
+- Conclusion: ST-b3bbbbpc links every file a test does not write and copies the ones it writes; ST-xc7bughc tests kbotel's idle exit with a sub-second bound on its handle_request loop. [DER S-jwv5eevl, S-uj2rumru]
+- Open: the error `os.link` raises across filesystems. [UNK]
+- See python/stdlib-windows-portability.md, python/stdlib-argparse-json.md.
+
+_Agent: kb-research_

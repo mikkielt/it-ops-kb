@@ -3,7 +3,7 @@ topic: python/stdlib-argparse-json
 priority: P3
 applies_to: [python, argparse, json]
 retrieved_utc: 2026-10-05
-sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs, S-6gpxsapp]
+sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs, S-6gpxsapp, S-uj2rumru]
 status: complete
 ---
 
@@ -77,6 +77,8 @@ picks its separators from `indent`. Pages read at CPython 3.14.7.
 - The reserved word `!` before a pipeline makes its exit status the logical NOT of the pipeline's status. [DOC S-glgntdsx]
 - `env [-i] [name=value]... [utility [argument...]]` runs the utility named after its assignments with the modified environment, so in `env A=1 python3 x.py` the command word is `python3`, not `env`. [DOC S-6gpxsapp]
 - So a reader of a shell string's command words takes the word after `if`, `then`, `elif`, `else`, `do`, `!`, `&&`, `||`, `;`, `|` and a newline, skips leading `name=value` assignments and an `env` prefix with its options and assignments, and reads a nested `sh -c` or `bash -c` string the same way. [DER S-glgntdsx, S-6gpxsapp]
+- A `socketserver` (and so `http.server`) server's `handle_request()` processes one request, and when none arrives within the server's `timeout` seconds it calls `handle_timeout()` and returns; `shutdown()` stops a `serve_forever()` loop and must be called from another thread, or it deadlocks. [DOC S-uj2rumru]
+- So a local receiver that must exit after an idle period loops on `handle_request()` with `timeout` set and checks the time since its last request after each return, and a test of that exit plants an idle bound of a second or less. [DER S-uj2rumru]
 
 ## Reference
 - SNIPPET: subcommands with a handler, one exclusive group and stable JSON output; context: Python

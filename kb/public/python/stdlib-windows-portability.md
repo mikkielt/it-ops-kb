@@ -2,8 +2,8 @@
 topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
-retrieved_utc: 2026-09-30
-sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743]
+retrieved_utc: 2026-10-05
+sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl]
 status: complete
 ---
 
@@ -58,6 +58,10 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 - With `shell=True` on Windows, the shell is `%COMSPEC%` (normally `cmd.exe`), and the docs say `shell=True` is needed only for shell built-ins such as `dir` or `copy`, not for batch files or console executables. [DOC S-dabwnzz5]
 - The system error code for a command line, path or extension that is too long is 206, `ERROR_FILENAME_EXCED_RANGE`: "The filename or extension is too long." A `[WinError 206]` from `subprocess` is therefore the string limit above, not a missing program. [DOC S-ttcgrkbl; DER S-6bobcclf: the 32,767-character maximum and the error code meaning]
 - A child started with a list of arguments and `shell=False` faces the 32,767-character limit (and its quoted form counts); through `cmd /c` the 8191 limit applies. A test or tool that must pass more than about 30,000 characters to a Windows child sends it through stdin or a file, not argv. [DER S-6bobcclf, S-e4zz24dq, S-dabwnzz5: the two limits and `subprocess`'s conversion; the "about 30,000" margin allows for quoting and the program path]
+- `os.link(src, dst)` creates a hard link named *dst* to *src* and is available on Unix and on Windows (since Python 3.2); the page does not say what it raises when the two paths are on different filesystems. [DOC S-5brdhqgo]
+- `shutil.copytree(src, dst, copy_function=...)` copies each file with the callable it is given, called with the source and the destination path (default `shutil.copy2`); with `dirs_exist_ok=True` it continues into existing directories and overwrites files there. [DOC S-jwv5eevl]
+- So a test that copies a tree it only partly writes can pass `copy_function=os.link` (falling back to a copy where the link fails, such as across filesystems) and replace each file it writes with a fresh copy before writing, since a write through a hard link changes every name of the file. [DER S-5brdhqgo, S-jwv5eevl]
+- Open: the error `os.link` raises across filesystems or volumes is not on the page. [UNK]
 
 ## Reference
 | Need | POSIX | Windows | Source |
