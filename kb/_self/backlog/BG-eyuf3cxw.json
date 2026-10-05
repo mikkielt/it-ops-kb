@@ -2,7 +2,7 @@
   "id": "BG-eyuf3cxw",
   "kind": "bug",
   "title": "The commit-msg hook falsely refuses KB-Work on git commit --amend -F, reading HEAD instead of its parent",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-wmukiu3s",
   "priority": "P2",
@@ -31,5 +31,28 @@
     "_tools/test_sync.py",
     "kb/_self/git.md"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "b1123f22d4d210147179bb4f45263b90092604bc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "commit_msg_amend_with_message_file_reads_the_parent"
+        ],
+        "exit": 0,
+        "sha256": "7d4e440a346ddda2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,subprocess,tempfile; t=os.path.abspath('_tools');d=tempfile.mkdtemp();h=os.path.join(d,'.git','hooks','prepare-commit-msg'); g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com',*a],cwd=d,capture_output=True); g('init','-q');open(os.path.join(d,'a'),'w').write('a');g('add','-A');g('commit','-qm','one'); open(h,'w').write('#!/bin/sh\\nexec \"%s\" -c \"import sys; sys.path.insert(0, %r); import kg_hooks, os; kg_hooks.KB = os.getcwd(); kg_hooks.hook_prepare(sys.argv[1:])\" \"$@\"\\n'%(sys.executable,t));os.chmod(h,0o755); open(os.path.join(d,'m'),'w').write('one again\\n');g('commit','-q','--amend','-F','m'); sys.exit(0 if os.path.exists(os.path.join(d,'.git','kb-trailers-base')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
