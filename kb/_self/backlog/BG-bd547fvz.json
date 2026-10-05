@@ -1,0 +1,22 @@
+{
+  "id": "BG-bd547fvz",
+  "kind": "bug",
+  "title": "land's pushed_tip ignores a failed fetch of the code branch",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.pushed_tip (ST-jhad3qba) checks the fetch of code/<id>: a failed fetch after a successful push neither raises from git rev-parse nor leaves --wait-merge reading a stale tip; land reports the fetch failure and the first pass still ends as not done yet. Found by the SP-3rzxx3m4 review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,subprocess,tempfile;sys.path.insert(0,'_tools');import bl_land as b;d=tempfile.mkdtemp();subprocess.run(['git','init','-q',d]);b.land_git_network=lambda *a:subprocess.CompletedProcess(a,1,'','fatal: could not read');exec(\"try:\\n b.pushed_tip(d,'origin','code/x')\\nexcept Exception:\\n sys.exit(1)\")"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_bl_land.py",
+    "kb/_self/tools.md"
+  ]
+}
