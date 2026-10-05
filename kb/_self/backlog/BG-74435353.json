@@ -2,7 +2,7 @@
   "id": "BG-74435353",
   "kind": "bug",
   "title": "check skips the form of knowledge on draft, done, dropped and planned items, so a malformed field passes until the sprint starts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/bl_check.py",
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
