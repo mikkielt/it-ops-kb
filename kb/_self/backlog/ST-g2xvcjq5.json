@@ -2,7 +2,7 @@
   "id": "ST-g2xvcjq5",
   "kind": "story",
   "title": "A planted test covers each clause of an item's goal",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wmukiu3s",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,6 @@
   ],
   "depends_on": [
     "ST-yqyw2ywh"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
