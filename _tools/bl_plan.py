@@ -228,6 +228,30 @@ def host_gates(bl, sid, answered=True):
             for g in bl.items[i].get("gates", []) if "host_check" in g and (not answered or "answer" in g)]
 
 
+# Words that name a host setup in a gate's question or options (the operator's list): such a gate carries a
+# --host-check command, or `host_unchecked`, the reason it cannot be checked; start warns of one with neither.
+HOST_WORDS = re.compile(r"\b(?:hosts?|services?|daemons?|credentials?|logins?|installed|enabled)\b", re.I)
+
+
+def free_text_host_gates(bl, sid):
+    """(item id, gate, word) for each gate of the sprint's open items whose question or options name a host setup
+    (HOST_WORDS) and that carries neither a `host_check` nor a `host_unchecked` reason: its setup is named only in
+    free text, so no host check proves it (start warns; ST-q4sgzlz6)."""
+    out = []
+    for i in bl.sprint_items(sid):
+        if bl.items[i].get("status") in ("done", "dropped"):
+            continue
+        for g in bl.items[i].get("gates", []):
+            if not isinstance(g, dict) or g.get("id") == START_GATE or "host_check" in g \
+                    or str(g.get("host_unchecked") or "").strip():
+                continue
+            text = " ".join(str(x) for x in [g.get("question", "")] + list(g.get("options") or []))
+            m = HOST_WORDS.search(text)
+            if m:
+                out.append((i, g, m.group(0)))
+    return out
+
+
 def host_check_fails(root, hc):
     """Why a gate's host check fails on this host, run now without a shell, or None when it exits 0. start runs it
     itself: a `host_checked` result in the item file is committed and ties the pass to no host or clone
@@ -292,6 +316,10 @@ def cmd_start(bl, a):
         say(f"  warning: {w}")
     for i, d, where in outside_deps(bl, sid):
         say(f"  warning: {bl.label(i)} depends on {bl.label(d)}, outside this sprint ({where})")
+    for i, g, word in free_text_host_gates(bl, sid):
+        say(f"  warning: {bl.label(i)} gate {g.get('id')} names a host setup ({word!r}) with no --host-check: add the "
+            "command that proves it on this host (gate add --host-check CMD), or the reason it cannot be checked as "
+            "the gate's host_unchecked")
     for i in recurring_left_out(bl, sid):
         say(f"  warning: recurring P1 item {bl.label(i)} (recurs in {len(set(bl.items[i]['recurs']))} sprints) "
             "is not in this sprint")
