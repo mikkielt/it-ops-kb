@@ -2,7 +2,8 @@
   "id": "BG-n6im46pv",
   "kind": "bug",
   "title": "The Edit and Write PreToolUse hook in .claude/settings.json runs kb_hook.py, which answers nothing there since the headless guard was removed",
-  "status": "draft",
+  "status": "doing",
+  "sprint": "SP-ytfb4dc5",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -15,9 +16,36 @@
     ]
   },
   "repro_reason": "the defect is a dead entry in the settings file itself: the hook runs and outputs nothing, so no behaviour differs; only the entry's presence shows it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "raw_read_nudge_hook_is_registered"
+      ]
+    }
+  ],
   "touches": [
     ".claude/settings.json",
     "_tools/test_kb_lookup.py",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "gates": [
+    {
+      "id": "remove-entry",
+      "kind": "blocking",
+      "question": "Remove the PreToolUse Edit|Write|MultiEdit|NotebookEdit entry that runs kb_hook.py from .claude/settings.json?",
+      "options": [
+        "remove: drop the entry, its test comment and the tools.md sentence",
+        "keep: leave the dead entry"
+      ],
+      "recommendation": "remove: drop the entry, its test comment and the tools.md sentence",
+      "class": "agents-rule",
+      "answer": "remove: drop the entry, its test comment and the tools.md sentence",
+      "by": "operator"
+    }
+  ],
+  "claimed_by": "orchestrator"
 }
