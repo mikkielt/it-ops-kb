@@ -12,7 +12,7 @@ import threading
 import bl_cli
 import bl_intake
 from bl_base import new_id, run, say, withhold
-from bl_land import run_check
+from bl_base import run_check
 
 
 # The pipeline reader, the failure fingerprint and the red-main bug are the CI detector's (bl_intake.py); this

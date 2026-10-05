@@ -547,7 +547,7 @@ def test_bl_split_plan_planted_failures_fail():
                for n in ast.parse("def test_start_left_behind():\n    pass\n").body)
 
 
-LAND_MOVED = ("item_commits", "unlanded_code", "blob_id", "out_of_scope", "colourless_env", "run_check", "noop_proof",
+LAND_MOVED = ("item_commits", "unlanded_code", "blob_id", "out_of_scope", "noop_proof",
               "cmd_done", "land_stop", "land_run", "land_git", "has_ref", "checked_out_elsewhere", "live_processes",
               "release_worker_worktree", "mr_stuck", "stuck_merge_request", "cmd_land", "summary_key", "summary_line",
               "cmd_close", "args_done", "args_land", "args_close", "LAND_HEAVY", "LAND_SYNC", "WORKER_LOCK")
@@ -562,6 +562,8 @@ def land_defs(source):
 def test_bl_split_land_bl_land_holds_land_done_and_close_and_backlog_defines_none_of_them():
     assert set(LAND_MOVED) <= land_defs(tool_source("bl_land.py"))
     assert land_defs(tool_source("backlog.py")) == set(), "backlog.py imports them, it does not define them"
+    for name in ("run_check", "colourless_env"):  # below bl_land, so bl_ci runs a check without it (ST-ufpxla7r)
+        assert f"\ndef {name}(" in tool_source("bl_base.py") and f"\ndef {name}(" not in tool_source("bl_land.py"), name
     assert {"waits", "open_gates", "line"} <= kit_names(tool_source("bl_base.py")), "the readiness rules sit below bl_land"
 
 

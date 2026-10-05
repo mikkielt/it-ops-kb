@@ -326,14 +326,14 @@ def ci_pipeline(url, sha, run):
 def pipeline_failure(url, pipe, run):
     """(failure, fingerprint) of the red pipeline `pipe` ({id, ...}) on origin's forge, computed as backlog.py does
     for main's pipeline: the first failed job by name (among the jobs whose script ran and failed, when there are
-    any), what failed first in its log (`backlog.first_failure`), and
-    `backlog.failure_fingerprint` of the two. ('', None) when no failed job can be read (no id, a failed call).
+    any), what failed first in its log (`bl_ci.first_failure`), and
+    `bl_ci.failure_fingerprint` of the two. ('', None) when no failed job can be read (no id, a failed call).
     The first failed job's name goes into `pipe["job"]`, which the bug's repro names with `--job`, only when its
     script ran and failed (`job_decided`; on GitHub, any failed job): `--job` reads only a pipeline where the job
     reached a verdict, so a job that failed without running (ci_quota_exceeded, runner_system_failure) leaves the
     repro plain `--status`, which reads the red pipeline itself. On GitLab a job counts by its newest attempt
     (`latest_jobs`): one that failed and was retried to success is no failed job."""
-    import backlog
+    import bl_ci  # the red-pipeline rules themselves, not the backlog facade, which reaches every bl_ module
     pid = pipe.get("id")
     if pid is None:
         return "", None
@@ -366,8 +366,8 @@ def pipeline_failure(url, pipe, run):
                 ["glab", "api", "--hostname", host, f"projects/{quoted}/jobs/{jid}/trace"])
         code, o, _ = run(argv)
         log = o if code == 0 else ""
-    failure = backlog.first_failure(log)
-    return failure, backlog.failure_fingerprint(first["name"], failure)
+    failure = bl_ci.first_failure(log)
+    return failure, bl_ci.failure_fingerprint(first["name"], failure)
 
 
 def ci_status(url, sha, run):
@@ -755,23 +755,24 @@ class Pusher:
         """One bug item (severity S2) in the worktree for the red pipeline of the reverted push, unless the
         backlog already names that pipeline; its id, or None. Its repro is backlog.py red-pipeline --status --job
         <the first failed job> (plain --status when none was read): it fails until that job passes on main again."""
-        import backlog
-        bl = backlog.Backlog(self.wt)
+        import bl_ci
+        from bl_base import Backlog
+        bl = Backlog(self.wt)
         pid = pipe.get("id") if pipe.get("id") is not None else f"of commit {sha[:12]}"
         marker = f"pipeline {pid}"
-        if any(backlog.names_pipeline(it, marker) for it in bl.items.values()):
+        if any(bl_ci.names_pipeline(it, marker) for it in bl.items.values()):
             return None
         fp = pipe.get("fingerprint")
-        dup = backlog.bug_with_fingerprint(bl, fp) if fp else None
+        dup = bl_ci.bug_with_fingerprint(bl, fp) if fp else None
         if dup:  # an open bug already carries this way of failing: the pipeline joins it
-            backlog.add_pipeline(bl, dup, pid)
+            bl_ci.add_pipeline(bl, dup, pid)
             return dup
         ids = sorted(applied)
         extra = (f"Its push {sha[:12]} was reverted (KB-Auto: revert); reverted findings: "
                  f"{', '.join(ids) or 'none applied'}; the pipeline's status was "
                  f"{pipe.get('status') or 'failed'}."
                  + (f" It failed first on: {pipe['failure']}." if pipe.get("failure") else ""))
-        it = backlog.red_bug(pid, sha, "S2", (), pipe.get("url"), extra, fingerprint=fp, job=pipe.get("job"))
+        it = bl_ci.red_bug(pid, sha, "S2", (), pipe.get("url"), extra, fingerprint=fp, job=pipe.get("job"))
         it["title"] = f"Red main {marker}: query log push {sha[:9]} reverted"
         bl.save(it)
         return it["id"]

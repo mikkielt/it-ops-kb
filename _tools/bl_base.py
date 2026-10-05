@@ -5,7 +5,7 @@ behind everything the tool prints, the helpers that commit the item files a comm
 backlog.py and the bl_ modules import it, and it imports no bl_ module at load and never backlog (`run`
 reaches bl_intake.run_argv by an import in the function, so a caller that patches the reader is heard).
 """
-import base64, functools, getpass, json, os, re, secrets, socket, subprocess
+import base64, functools, getpass, json, os, re, secrets, socket, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,6 +36,7 @@ FIELDS = set(ORDER)
 # files any item's commits may change besides its `touches`: the tracker itself and what build_index.py regenerates
 ALWAYS_IN_SCOPE = ("kb/_self/backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.md")
 CHECK_TIMEOUT_S = 1800
+ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")  # colour and title codes a check prints
 TEXT_MAX = 2000  # one field's text; a longer one is an essay, not a work item
 START_GATE = "start"
 APPROVALS = ("approve", "approved", "yes")  # the start gate's answers that let backlog.py start run
@@ -518,3 +519,31 @@ def line(bl, iid):
     it = bl.items[iid]
     extra = f" {it['severity']}" if it.get("severity") else ""
     return f"{iid}  {it['kind']:<7} {it.get('status', ''):<7} {it.get('priority', ''):<2}{extra}  {it.get('title', '')}"
+
+
+def colourless_env():
+    """The environment with colour off: FORCE_COLOR (3 in a Claude Code background session) makes Python 3.13+
+    colour its tracebacks and 3.14 argparse its usage errors, which would hide a repro's own error from own_failure
+    and a check's output from its match."""
+    env = {k: v for k, v in os.environ.items() if k not in ("FORCE_COLOR", "PYTHON_COLORS", "CLICOLOR_FORCE")}
+    env["NO_COLOR"] = "1"
+    return env
+
+
+def run_check(root, c):
+    """Run one check, or a bug's repro, without a shell and with colour off; its output comes back with any colour
+    codes taken out. A check that names python3 or python runs with the interpreter running this tool: on a host
+    whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
+    argv = list(c["run"])
+    if argv and argv[0] in ("python3", "python"):
+        argv[0] = sys.executable
+    try:
+        p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=CHECK_TIMEOUT_S, env=colourless_env())
+        code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or ""))
+    except OSError as e:
+        code, out = None, f"cannot start: {e}"
+    except subprocess.TimeoutExpired as e:
+        code, out = None, str(e)
+    ok = code == c.get("exit", 0) and (not c.get("match") or re.search(c["match"], out, re.M) is not None)
+    return ok, code, out

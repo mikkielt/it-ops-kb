@@ -147,23 +147,35 @@ def scans_missing(nodes=None):
     return sorted(n for n in (source_scans() if nodes is None else nodes) if n not in have and n.split("::")[0] not in have)
 
 
-def direct_refs(path, mods):
-    """The tool modules a file imports or names as a script."""
+def split_refs(path, mods):
+    """(the tool modules a file imports, the tool modules it names as a script)."""
     strs, imps = strings_and_imports(path)
-    got = {m for m in imps if m in mods}
     names = {m + ".py": m for m in mods}
+    scripts = set()
     for s in strs:
         s = s.replace("\\", "/")
         if " " not in s and s.rsplit("/", 1)[-1] in names:  # a file name or a path, as argv or os.path.join take it
-            got.add(names[s.rsplit("/", 1)[-1]])
-    return got
+            scripts.add(names[s.rsplit("/", 1)[-1]])
+    return {m for m in imps if m in mods}, scripts
+
+
+def direct_refs(path, mods):
+    """The tool modules a file imports or names as a script."""
+    imported, scripts = split_refs(path, mods)
+    return imported | scripts
 
 
 @functools.lru_cache(maxsize=None)
 def graph():
-    """{test file: every tool module it reaches}, and {module: its direct refs}."""
+    """{test file: every tool module it reaches}, and {module: its direct refs}. A test file's own refs, imports and
+    scripts alike, are followed through the modules' imports; a script a module only names (a subprocess it runs, a
+    check it stores) is reached but not followed, so a change to that script's imports does not select the tests of
+    every module that names it: the tests that import or run the script themselves cover it, and the full run at a
+    sprint's end covers the rest (ST-ufpxla7r)."""
     mods = set(modules())
-    edges = {m: direct_refs(os.path.join(TOOLS, m + ".py"), mods) - {m} for m in mods}
+    split = {m: split_refs(os.path.join(TOOLS, m + ".py"), mods) for m in mods}
+    edges = {m: (imported | scripts) - {m} for m, (imported, scripts) in split.items()}
+    follow = {m: imported - {m} for m, (imported, _) in split.items()}
 
     def closure(start):
         seen, todo = set(), list(start)
@@ -171,8 +183,8 @@ def graph():
             m = todo.pop()
             if m not in seen:
                 seen.add(m)
-                todo += edges.get(m, ())
-        return seen
+                todo += follow.get(m, ())
+        return seen | {s for m in seen for s in split.get(m, (set(), set()))[1]}
 
     return {t: closure(direct_refs(os.path.join(TOOLS, t), mods)) for t in test_files()}, edges
 
