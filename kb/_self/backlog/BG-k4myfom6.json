@@ -2,7 +2,7 @@
   "id": "BG-k4myfom6",
   "kind": "bug",
   "title": "set --parent keeps a draft task draft when its new parent is in an active sprint",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,28 @@
   "depends_on": [
     "BG-ixyqrmrw"
   ],
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "bbfbcc8a2e18ba772953ab6e7dfb6e0bd630dd26",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "set_parent_rederives_status"
+        ],
+        "exit": 0,
+        "sha256": "392cb25dd189371d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);W=lambda it:open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it));G=lambda:[{'id':'start','kind':'blocking','question':'Q?','options':['approve'],'recommendation':'approve','answer':'approve','by':'operator'}];R=lambda *a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);W({'id':'SP-aaaaaaaa','kind':'sprint','title':'P','status':'planned','goal':'g','gates':G()});W({'id':'SP-bbbbbbbb','kind':'sprint','title':'A','status':'active','goal':'g','gates':G()});W({'id':'EP-aaaaaaaa','kind':'epic','title':'E','status':'todo','priority':'P3','rank':0,'goal':'g'});W({'id':'ST-aaaaaaaa','kind':'story','title':'Sa','status':'draft','parent':'EP-aaaaaaaa','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'goal':'g','checks':[{'run':['python3','-c','pass']}]});W({'id':'ST-bbbbbbbb','kind':'story','title':'Sb','status':'todo','parent':'EP-aaaaaaaa','sprint':'SP-bbbbbbbb','priority':'P3','rank':0,'goal':'g','checks':[{'run':['python3','-c','pass']}]});W({'id':'TK-aaaaaaaa','kind':'task','title':'T','status':'draft','parent':'ST-aaaaaaaa','priority':'P3','rank':0,'goal':'g','touches':['src/x'],'checks':[{'run':['python3','-c','pass']}]});p=R('set','TK-aaaaaaaa','--parent','ST-bbbbbbbb');st=json.load(open(os.path.join(b,'TK-aaaaaaaa.json')))['status'];sys.exit(1 if p.returncode==0 and st=='draft' else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
