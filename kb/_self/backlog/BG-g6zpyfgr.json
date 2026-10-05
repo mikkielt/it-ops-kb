@@ -2,7 +2,7 @@
   "id": "BG-g6zpyfgr",
   "kind": "bug",
   "title": "claim refuses the orchestrator's own claims for its subagents in its checkout",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gfz3rl64",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "8873792fa3ef3437c3174830600f25ecfeb3dbd9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "claim_refuses_a_shared_checkout"
+        ],
+        "exit": 0,
+        "sha256": "a5d8b09cc09abc0a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);sp={'id':'SP-aaaaaaaa','kind':'sprint','title':'S','status':'active','goal':'g','gates':[{'id':'start','kind':'blocking','question':'Q?','options':['approve'],'recommendation':'approve','answer':'approve','by':'operator'}]};bug=lambda i:{'id':i,'kind':'bug','title':i,'status':'todo','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'severity':'S4','goal':'g','repro':{'run':['python3','-c','raise SystemExit(1)']},'touches':['src/'+i]};[open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it)) for it in (sp,bug('BG-aaaaaaaa'),bug('BG-bbbbbbbb'))];env={**os.environ,'CLAUDE_CODE_SESSION_ID':'one-orchestrator'};c=lambda i,by:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'claim',i,'--by',by],capture_output=True,env=env).returncode;a=c('BG-aaaaaaaa','worker-a');z=c('BG-bbbbbbbb','worker-b');sys.exit(1 if a==0 and z!=0 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
