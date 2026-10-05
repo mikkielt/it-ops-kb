@@ -705,3 +705,62 @@ class TestQuerylogShow:
         (tmp_path / "empty").mkdir()
         assert run_show("--findings", store=tmp_path / "empty")[:2] == (0, "findings: 0\n")
         assert run_show("--run", "2026", store=tmp_path / "empty")[0] == 2  # an unknown run is a refusal
+
+
+def ops_row(n, event, **kv):
+    return {"id": f"00000000-0000-4000-8000-{n:012d}", "ts": "2026-09-27T10:00:00.000Z", "event": event, **kv}
+
+
+def write_ops_sidecar(store, run, rows):
+    month = f"{run[:4]}-{run[4:6]}"
+    write_store_file(store / "ops" / month / f"{run}.jsonl", {"run": run, "counts": {"rows": len(rows)}}, rows)
+    if not (store / month / f"{run}.jsonl").exists():
+        write_store_file(store / month / f"{run}.jsonl",
+                         {"run": run, "pipeline": 2, "retrieval": 4, "kb_commit": "0" * 40,
+                          "counts": {"entries": 0, "dropped": 0, "waiting": 0}}, [])
+
+
+OPS_W39 = [ops_row(1, "land.end", item="TK-aaaaaaaa", exit=0, ms=1000),
+           ops_row(2, "land.end", item="TK-bbbbbbbb", exit=1, ms=3000),
+           ops_row(3, "land.end", item="TK-cccccccc", exit=0, ms=2000),
+           ops_row(4, "test.run", mode="changed", ms=500, exit=0),
+           ops_row(5, "done.refused", item="TK-aaaaaaaa", reasons=["uncommitted"], ms=10),
+           ops_row(6, "agent.run", group="kb-worker", ms=9000),
+           ops_row(7, "call.tool", tool="bash", group="main", outcome="ok", size="lt1k", **{"class": "git.status"}),
+           ops_row(8, "call.tool", tool="bash", group="main", outcome="error", size="empty", **{"class": "git.status"}),
+           ops_row(9, "call.tool", tool="kb_pack", group="main", outcome="interrupt", size="empty"),
+           ops_row(10, "compact.pre", trigger="auto", group="main")]
+DIGEST_W39_OPS = """ops: 10 rows (agent.run 1, call.tool 3, compact.pre 1, done.refused 1, land.end 3, test.run 1)
+  land.end: 3, failed 1, median 2000 ms
+  test.run: 1, failed 0, median 500 ms
+  done.refused: 1
+  agent.run: 1 (kb-worker 1)
+  call.tool: 3 calls, errors 1, interrupts 1; top classes: git.status 2, kb_pack 1
+  compact.pre: 1"""
+
+
+def ops_part(lines_):
+    start = next((i for i, ln in enumerate(lines_) if ln.startswith("ops:")), None)
+    return [] if start is None else lines_[start:next(i for i, ln in enumerate(lines_) if ln.startswith("runs:"))]
+
+
+class TestDigestOps:
+    def test_ql_report_ops_block(self, tmp_path):
+        """ST-mbnahtlc: the digest prints one ops block per week from the committed ops sidecars: rows by event, the
+        land, gate and test-run counts, failures and median ms, refused dones, agent runs by group, the call census
+        with its top classes and the hook events; a sidecar of another week is left out, and one that breaks the ops
+        gates is left out whole."""
+        store = digest_store(tmp_path / "store")
+        write_ops_sidecar(store, W39_RUN, OPS_W39)
+        write_ops_sidecar(store, WORK_W40, [ops_row(11, "land.end", item="TK-dddddddd", exit=0, ms=5)])
+        assert ql_store.store_problems(store) == []
+        assert "\n".join(ops_part(ql_report.digest(store, "2026-W39")[1])) == DIGEST_W39_OPS
+        write_ops_sidecar(store, WORK_W39_EARLY, [ops_row(12, "land.end", item="TK-eeeeeeee", exit=0, ms=5, extra="x")])
+        assert "\n".join(ops_part(ql_report.digest(store, "2026-W39")[1])) == DIGEST_W39_OPS  # the broken file is out
+
+    def test_ql_report_ops_block_stable(self, tmp_path):
+        """A second digest on unchanged inputs prints the same lines, and a week without ops rows prints no block."""
+        store = digest_store(tmp_path / "store")
+        assert ops_part(ql_report.digest(store, "2026-W39")[1]) == []
+        write_ops_sidecar(store, W39_RUN, OPS_W39)
+        assert ql_report.digest(store, "2026-W39") == ql_report.digest(store, "2026-W39")

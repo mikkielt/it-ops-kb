@@ -11,7 +11,8 @@ from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_l
 from ql_learn import FAILED, host_fetches, is_miss
 from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RUN_ID,
                       SURFACES, finding_id, finding_states, findings_files, load_run, records, resolve_id, run_files,
-                      run_ids, store_entries, usage_files, usage_records, work_files, work_line_problems)
+                      run_ids, store_entries, usage_files, usage_records, work_files, work_line_problems, ops_files,
+                      ops_line_problems)
 from ql_capture import VERDICTS
 
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
@@ -139,6 +140,53 @@ def work_lines(files, week_run):
     return out
 
 
+OPS_TOP = 5  # the command classes the ops block names, most calls first
+OPS_TIMED = ("land.end", "sync.gate", "test.run")  # the events whose count, failures and median ms the block gives
+
+
+def ops_lines(files, week_run):
+    """The digest's ops block for the ops sidecars `files` whose run id `week_run` accepts: `ops: N rows (event n,
+    ...)`, then `  land.end|sync.gate|test.run: N, failed F, median M ms`, `  done.refused: N`, `  agent.run: N (group
+    n, ...)`, `  call.tool: N calls, errors E, interrupts I; top classes: class n, ...` and one line per hook event
+    kind present; [] when the week's sidecars hold no row. A sidecar that breaks the ops gates is left out whole, as
+    work_lines does. Only event names, classes and counts go in."""
+    rows = []
+    for p, objs in records(f for f in files if week_run(f.stem)):
+        lines = [w for _, w in objs]
+        if lines and not any(ops_line_problems(w, p.stem) for w in lines):
+            rows += lines
+    if not rows:
+        return []
+    by = {}
+    for r in rows:
+        by.setdefault(r["event"], []).append(r)
+    out = [f"ops: {len(rows)} rows ({_counts((e, len(by[e])) for e in sorted(by))})"]
+    for e in OPS_TIMED:
+        if e in by:
+            failed = sum(1 for r in by[e] if r.get("exit") not in (0, None))
+            out.append(f"  {e}: {len(by[e])}, failed {failed}, median {rank([r['ms'] for r in by[e]], 0.5)} ms")
+    if "done.refused" in by:
+        out.append(f"  done.refused: {len(by['done.refused'])}")
+    if "agent.run" in by:
+        groups = {}
+        for r in by["agent.run"]:
+            groups[r["group"]] = groups.get(r["group"], 0) + 1
+        out.append(f"  agent.run: {len(by['agent.run'])} ({_counts(sorted(groups.items()))})")
+    if "call.tool" in by:
+        calls, classes = by["call.tool"], {}
+        for r in calls:
+            k = r.get("class") or r["tool"]
+            classes[k] = classes.get(k, 0) + 1
+        top = sorted(classes, key=lambda k: (-classes[k], k))[:OPS_TOP]
+        out.append(f"  call.tool: {len(calls)} calls, errors {sum(1 for r in calls if r['outcome'] == 'error')}, "
+                   f"interrupts {sum(1 for r in calls if r['outcome'] == 'interrupt')}; top classes: "
+                   f"{_counts((k, classes[k]) for k in top)}")
+    for e in ("permission.request", "permission.denied", "compact.pre", "compact.post", "turn.error"):
+        if e in by:
+            out.append(f"  {e}: {len(by[e])}")
+    return out
+
+
 def intake_line(backlog=None):
     """The digest's line for the backlog's intake: the open items (not done or dropped) `backlog.py intake --file`
     filed, counted by the detector named in their `detector <name>` link, such as `intake: 3 open (drift 1, trailers 2)`,
@@ -237,6 +285,7 @@ def digest(store=None, week=None, backlog=None):
              f"fetches: {nfetch}, failed {failed}, result characters {chars}",
              *usage_lines(entries, usage_records(store)),
              *work_lines(work_files(store), lambda stem: inside(run_day(stem))),
+             *ops_lines(ops_files(store), lambda stem: inside(run_day(stem))),
              f"runs: {runs}, entries dropped by redaction {dropped}",
              f"finding records written: {recorded}"]
     table = {}
