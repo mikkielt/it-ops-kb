@@ -2,7 +2,7 @@
   "id": "ST-xd5vboit",
   "kind": "story",
   "title": "backlog check warns of sprint items that share a file with no depends_on order between them",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3rzxx3m4",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,19 @@
   "depends_on": [
     "ST-cyhyax32"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "65bf112eda16db6e4cfd7ecb67bc52e624555c3a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "warns_unordered_shared_touches"
+        ],
+        "exit": 0,
+        "sha256": "bfcd5566f1ec825b"
+      }
+    ]
+  }
 }
