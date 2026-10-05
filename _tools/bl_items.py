@@ -137,10 +137,13 @@ def cmd_claim(bl, a):
     if it.get("status") == "doing" and it.get("claimed_by") != a.by:
         raise Refused(f"{bl.label(iid)} is claimed by {it['claimed_by']}")
     # one session per checkout: the claims made in this working tree (its git toplevel; a worktree has its own) are
-    # recorded in its own git dir, which git never commits whatever the ignore rules, and a claim by another session
-    # while one of them is still doing here is refused before anything is written, so no claim commit lands on another
-    # session's branch
+    # recorded in its own git dir, which git never commits whatever the ignore rules, each with the session that made
+    # it: CLAUDE_CODE_SESSION_ID, which Claude Code sets in every Bash subprocess, else the claimer's name. A claim
+    # from another session while one of its claims is still doing here is refused before anything is written, so no
+    # claim commit lands on another session's branch; one session (an orchestrator) claims for several names freely
     import json
+    import os
+    session = os.environ.get("CLAUDE_CODE_SESSION_ID") or f"by:{a.by}"
     rev = subprocess.run(["git", "-C", str(bl.root), "rev-parse", "--show-toplevel", "--absolute-git-dir"],
                          capture_output=True, text=True, encoding="utf-8", errors="replace").stdout.split("\n")
     top, gitdir = (rev + ["", ""])[:2] if len(rev) >= 2 and rev[1] else (str(bl.root), "")
@@ -149,16 +152,17 @@ def cmd_claim(bl, a):
         here = json.loads(ledger.read_text(encoding="utf-8")) if ledger else {}
     except (OSError, ValueError):
         here = {}
-    busy = sorted(i for i, by in here.items() if by != a.by and i != iid and i in bl.items
-                  and bl.items[i].get("status") == "doing" and bl.items[i].get("claimed_by") == by)
+    here = {i: (r if isinstance(r, dict) else {"by": r, "session": f"by:{r}"}) for i, r in here.items()}
+    busy = sorted(i for i, r in here.items() if r.get("session") != session and i != iid and i in bl.items
+                  and bl.items[i].get("status") == "doing" and bl.items[i].get("claimed_by") == r.get("by"))
     if busy:
-        raise Refused(f"claim refuses {bl.label(iid)} for {a.by}: {here[busy[0]]} works in this checkout ({top}) on "
-                      f"{', '.join(bl.label(i) for i in busy)}; each session works in its own worktree "
-                      "(git worktree add), so its claim commits never land on another session's branch")
+        raise Refused(f"claim refuses {bl.label(iid)} for {a.by}: another session ({here[busy[0]].get('by')}) works "
+                      f"in this checkout ({top}) on {', '.join(bl.label(i) for i in busy)}; each session works in its "
+                      "own worktree (git worktree add), so its claim commits never land on another session's branch")
     it.update(status="doing", claimed_by=a.by)
     bl.save(it)
-    here = {i: by for i, by in here.items() if i in bl.items and bl.items[i].get("status") == "doing"}
-    here[iid] = a.by
+    here = {i: r for i, r in here.items() if i in bl.items and bl.items[i].get("status") == "doing"}
+    here[iid] = {"by": a.by, "session": session}
     try:
         if ledger:
             ledger.write_text(json.dumps(here, indent=1, sort_keys=True) + "\n", encoding="utf-8")
