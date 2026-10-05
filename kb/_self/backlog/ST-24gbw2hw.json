@@ -2,7 +2,7 @@
   "id": "ST-24gbw2hw",
   "kind": "story",
   "title": "land refuses a commit outside the item's touches before it opens the code merge request, not after it merged",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
@@ -24,5 +24,19 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "3495db92f7d77759d04ef70a5ed6ed821a99b52a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_refuses_out_of_scope_before_the_merge_request"
+        ],
+        "exit": 0,
+        "sha256": "03502fc2187e648e"
+      }
+    ]
+  }
 }
