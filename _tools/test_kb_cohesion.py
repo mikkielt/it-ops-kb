@@ -792,3 +792,26 @@ def test_touches_planned_from_referrers():
     assert touch_planning_problems(texts) == []
     for p in TOUCH_PLANNING:
         assert ("kb-backlog", p) in touch_planning_problems({**texts, "kb-backlog": texts["kb-backlog"].replace(p, "")}), p
+
+
+COST_RERUN = ("a cost read while the sessions that did the work are still open is provisional", "`open session figures`",
+              "never reports those zeros as the sprint's cost", "close reruns `backlog.py cost --rework SP`")
+
+
+def test_review_cost_rerun_after_close():
+    """ST-ctwlrtud (SP-xdzgepun, SP-42bn4vz7, whose reviews read 0 for every item): /kb-sprint review and the runbook
+    say a cost read while the work's sessions are open is provisional and close reruns it, and close's retrospective
+    reruns cost --rework SP; each phrase removed from a planted copy fails."""
+    with open(os.path.join(KB, ".claude", "skills", "kb-sprint", "SKILL.md"), encoding="utf-8") as f:
+        skill = f.read()
+    with open(os.path.join(KB, "kb", "_self", "backlog.md"), encoding="utf-8") as f:
+        runbook = f.read()
+    review, close = skill[skill.index("## review SP"):skill.index("## close SP")], skill[skill.index("## close SP"):]
+
+    def missing(rv, cl, rb):
+        out = [p for p in COST_RERUN if p not in rv or p not in rb]
+        return out + ([] if "`backlog.py cost --rework SP` rerun now" in cl else ["close rerun"])
+    assert missing(review, close, runbook) == []
+    for p in COST_RERUN:
+        assert p in missing(review.replace(p, ""), close, runbook), p
+    assert "close rerun" in missing(review, close.replace("`backlog.py cost --rework SP` rerun now", ""), runbook)
