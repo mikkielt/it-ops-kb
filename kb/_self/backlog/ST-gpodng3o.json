@@ -2,7 +2,7 @@
   "id": "ST-gpodng3o",
   "kind": "story",
   "title": "backlog.py check refuses an open item whose repro or check the live-backlog tests refuse, so a bad item fails its own push",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42bn4vz7",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,19 @@
     "_tools/test_backlog_leak_scan.py"
   ],
   "notes": "Theme: main red from another session's item. Evidence: test_open_repros_headless.py:33 and test_bl_check.py:128 assert over the live item files; bl_check.py:898 noop_warnings only warns at new; an sh repro (BG-44qxmrkm) and a trivial probe check (ST-degka7at) failed land gates of other sessions (mac-third: about 40 min on BG-lv3tuhic, 25 min on BG-7tqa65mp).",
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "fc22fe569f5328c17d01600007f42202ae83cf8e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "check_errors_on_refused_item_command"
+        ],
+        "exit": 0,
+        "sha256": "12b19bc5ca85242c"
+      }
+    ]
+  }
 }
