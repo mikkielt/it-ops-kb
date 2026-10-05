@@ -2,7 +2,7 @@
   "id": "ST-pkprc4oy",
   "kind": "story",
   "title": "kbgit.py splits along its change boundaries behind the unchanged CLI",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-tpulmoxh",
   "priority": "P1",
@@ -18,5 +18,6 @@
       ]
     }
   ],
-  "notes": "kbgit.py's hotspots are sync, lane_plan, push_branch and check-lanes; land calls into it. The branch-name helper takes a root so backlog.py land no longer swaps kbgit.KB (KG1 first). test_layout bans a kg_ module reaching kbgit at any depth. Tests keep their names and patch targets move with the code. ST-csdjyfat edits kbgit.py: the split lands first or it rebases onto the new modules. The split lands as one atomic commit per file, announced first, with held showing no claimed touches on kbgit.py."
+  "notes": "kbgit.py's hotspots are sync, lane_plan, push_branch and check-lanes; land calls into it. The branch-name helper takes a root so backlog.py land no longer swaps kbgit.KB (KG1 first). test_layout bans a kg_ module reaching kbgit at any depth. Tests keep their names and patch targets move with the code. ST-csdjyfat edits kbgit.py: the split lands first or it rebases onto the new modules. The split lands as one atomic commit per file, announced first, with held showing no claimed touches on kbgit.py.",
+  "claimed_by": "it-ops-kb worker2"
 }
