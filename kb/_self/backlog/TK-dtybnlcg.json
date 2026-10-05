@@ -2,7 +2,7 @@
   "id": "TK-dtybnlcg",
   "kind": "task",
   "title": "bl_ci.py holds the CI readers and the red-pipeline command",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-d3uyx3pv",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,6 @@
   ],
   "depends_on": [
     "TK-f5swu7tm"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
