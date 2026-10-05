@@ -2,7 +2,7 @@
   "id": "ST-4mdnjuep",
   "kind": "story",
   "title": "A repro whose own code cannot import or start is its own error",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,

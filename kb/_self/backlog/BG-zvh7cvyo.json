@@ -2,7 +2,7 @@
   "id": "BG-zvh7cvyo",
   "kind": "bug",
   "title": "new accepts a repro whose own shell -c string misses a tool after its first command, read as a wrapper's inside tool",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,

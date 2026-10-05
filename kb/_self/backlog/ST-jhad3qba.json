@@ -2,7 +2,7 @@
   "id": "ST-jhad3qba",
   "kind": "story",
   "title": "land --wait-merge waits a bounded time for the code merge request, read from git, then finishes the second pass",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,

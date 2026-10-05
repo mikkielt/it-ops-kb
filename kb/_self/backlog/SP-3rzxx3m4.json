@@ -2,7 +2,7 @@
   "id": "SP-3rzxx3m4",
   "kind": "sprint",
   "title": "Repros, checks and touches say exactly what an item gets wrong",
-  "status": "planned",
+  "status": "active",
   "goal": "backlog.py new, check, land and own_failure report exactly what an item gets wrong: a repro's own command and import errors are its own, a repro that runs a tool checks its exit code, project_paths reads scp and non-ASCII remotes, the docs warning reads only sprint items, sprint items sharing a file are ordered, a repro or check reading a gone path is flagged, and land --wait-merge finishes a code item without a second run",
   "gates": [
     {

@@ -2,7 +2,7 @@
   "id": "BG-m5qbkmgp",
   "kind": "bug",
   "title": "project_paths misses an scp-style remote without a user and can crash on a non-ASCII remote",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
