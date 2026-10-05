@@ -2,7 +2,7 @@
   "id": "ST-zqnngn67",
   "kind": "story",
   "title": "OpenTelemetry events of a session go to a local file and join the transcript by id",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -62,5 +62,6 @@
       "answer": "a standard-library OTLP http/json receiver in _tools that writes a local file",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
