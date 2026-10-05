@@ -92,7 +92,8 @@ def test_backlog_docs_touches_miss_check_warns(mapped):
 
 def test_check_warns_docs_in_later_task(mapped):
     """Planted: the code's doc only in a task that depends on the code task (a later task); check warns, naming the
-    doc and that task. The same doc in an item that does not depend on it is no warning."""
+    doc and that task. The same doc in an item that does not depend on it is still outside the code task's scope: a
+    warning naming that item (BG-iafrnmc3); the doc in the code task's own touches clears it."""
     repo, st, tk = mapped["repo"], mapped["st"], mapped["tk"]
     edit(repo, tk, touches=["_tools/x.py"])
     b(repo, "new", "task", "--title", "Docs", "--parent", st, "--goal", "docs", "--touch", "kb/_self/tools.md",
@@ -105,8 +106,35 @@ def test_check_warns_docs_in_later_task(mapped):
     assert "in no item's touches" not in out, out
     edit(repo, docs, depends_on=[])
     code, out = b(repo, "check")
+    assert code == 0 and "warnings=1" in out, out
+    assert f"{tk} “Task”: the docs of its code are outside its own scope, in other items' touches: kb/_self/tools.md" in out, out
+    edit(repo, tk, touches=["_tools/x.py", "kb/_self/tools.md"])
+    edit(repo, docs, touches=["kb/_self/plugin.md"])
+    code, out = b(repo, "check")
     assert code == 0 and "warnings=0" in out, out
-    assert code == 0 and "warnings=0" in out, out
+
+
+@pytest.mark.parametrize("holder", ["sibling", "parent", "earlier"])
+def test_check_warns_docs_outside_own_scope(mapped, holder):
+    """BG-iafrnmc3 planted: the code task's doc held by a sibling task, by its parent story or by a task the code task
+    depends on (an earlier task) is outside the code task's own scope, which alone its code commit can carry: check
+    warns, naming the doc, where it was silent before."""
+    repo, st, tk = mapped["repo"], mapped["st"], mapped["tk"]
+    edit(repo, tk, touches=["_tools/x.py"])
+    if holder == "parent":
+        edit(repo, st, touches=["kb/_self/tools.md"])
+        held = st
+    else:
+        b(repo, "new", "task", "--title", "Docs", "--parent", st, "--goal", "docs", "--touch", "kb/_self/tools.md",
+          "--check", argstr(is_file("src/b.txt")))
+        held = item(repo, "Docs")["id"]
+        if holder == "earlier":
+            edit(repo, tk, depends_on=[held])
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=1" in out, out
+    assert (f"{tk} “Task”: the docs of its code are outside its own scope, in other items' touches: "
+            "kb/_self/tools.md") in out, out
+    assert held != tk
 
 
 def test_backlog_docs_skip_standard_doc(mapped):
@@ -199,6 +227,44 @@ def test_backlog_docs_after_code_start_refuses_and_check_errors(repo):
     edit(repo, docs, depends_on=[])
     code, out = b(repo, "start", sp)
     assert code == 0, out
+
+
+@pytest.mark.parametrize("case", ["story", "parent"])
+def test_docs_after_code_story_and_parent(repo, case):
+    """BG-qyhgmm52 planted: a docs-only task that depends on a code story whose code sits in the story's task
+    ("story"), or whose parent story depends on the code task ("parent"); check errors and start refuses, naming both,
+    where the dependency and the scope read only the item's own fields saw nothing."""
+    (repo / "kb" / "_self").mkdir(parents=True, exist_ok=True)
+    (repo / "kb" / "_self" / "map.csv").write_text(DOC_MAP, encoding="utf-8", newline="\n")
+    commit(repo, "map")
+    b(repo, "new", "epic", "--title", "E", "--goal", "g")
+    ep = item(repo, "E")["id"]
+    b(repo, "new", "sprint", "--title", "S", "--goal", "g")
+    sp = item(repo, "S")["id"]
+    b(repo, "new", "story", "--title", "Code story", "--parent", ep, "--sprint", sp, "--goal", "g",
+      "--check", argstr(is_file("src/b.txt")))
+    cs = item(repo, "Code story")["id"]
+    b(repo, "new", "task", "--title", "Code", "--parent", cs, "--goal", "g", "--touch", "_tools/x.py",
+      "--check", argstr(is_file("src/b.txt")))
+    tk = item(repo, "Code")["id"]
+    b(repo, "new", "story", "--title", "Docs story", "--parent", ep, "--sprint", sp, "--goal", "g",
+      "--check", argstr(is_file("src/b.txt")))
+    ds = item(repo, "Docs story")["id"]
+    b(repo, "new", "task", "--title", "Docs", "--parent", ds, "--goal", "g", "--touch", "kb/_self/tools.md",
+      "--check", argstr(is_file("src/b.txt")))
+    docs = item(repo, "Docs")["id"]
+    if case == "story":
+        edit(repo, docs, depends_on=[cs])
+        dep = f"{cs} “Code story”"
+    else:
+        edit(repo, ds, depends_on=[tk])
+        dep = f"{tk} “Code”"
+    assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+    want = f"{docs} “Docs”: touches only docs of code that {dep}, which it depends on, touches: kb/_self/tools.md"
+    code, out = b(repo, "check")
+    assert code == 1 and want in out and "errors=1" in out, out
+    code, out = b(repo, "start", sp)
+    assert code == 1 and want in out, out
 
 
 def test_dependency_outside_sprint_named_by_horizon_and_start(repo):

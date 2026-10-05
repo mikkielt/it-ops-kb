@@ -2,12 +2,12 @@
   "id": "BG-qyhgmm52",
   "kind": "bug",
   "title": "The docs-after-code check misses a docs task that waits on a code story or through its parent",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xdzgepun",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "backlog.py dependencies follows the depends_on of an item and of its ancestors and reads a dependency's scope through its descendants, so a docs task that depends on a code story whose touches sit in its tasks is refused at start and flagged by check; a test plants the story case and the parent case; found in the review of SP-6eifcza6 (ST-enbiym2z)",
+  "goal": "backlog.py dependencies follows the depends_on of an item and of its ancestors and reads a dependency's scope through its descendants, so a docs task that depends on a code story whose touches sit in its tasks is refused at start and flagged by check; a test plants the story case and the parent case; found in the review of SP-6eifcza6 (ST-enbiym2z); and (merged from BG-iafrnmc3) docs_warnings warns whenever a doc kb/_self/map.csv maps to an item's code is outside that item's own scope (its touches and its descendants'), not only when no item holds it or only later tasks do: a docs task the code task depends on, a sibling or the parent story holding the doc is a warning, since the code commit cannot carry the doc lines; test_check_warns_docs_in_later_task no longer asserts warnings=0 for a doc held by an item that does not depend on the code task (SP-ar52y6fk review of ST-rkirzt76)",
   "repro": {
     "run": [
       "python3",
@@ -24,6 +24,21 @@
         "-k",
         "docs_after_code_story_and_parent"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "docs_outside_own_scope"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,json,shutil,tempfile,pathlib as P;sys.path.insert(0,'_tools');import bl_plan as B,bl_base;r=P.Path(tempfile.mkdtemp());d=r/'kb/_self/backlog';d.mkdir(parents=True);shutil.copy('kb/_self/map.csv',r/'kb/_self/map.csv');w=lambda i:(d/(i['id']+'.json')).write_text(json.dumps(i));w(dict(id='TK-aaaaaaaa',kind='task',title='Code',status='todo',touches=['_tools/backlog.py'],depends_on=['TK-dddddddd']));w(dict(id='TK-dddddddd',kind='task',title='Docs',status='todo',touches=['kb/_self/tools.md','kb/_self/backlog.md']));out=B.docs_warnings(bl_base.Backlog(r));assert out,'no warning: the code task depends on the task holding its docs'"
+      ]
     }
   ],
   "touches": [
@@ -32,6 +47,13 @@
     "_tools/test_bl_plan.py",
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ],
+  "relates_to": [
+    "BG-iafrnmc3"
+  ],
+  "notes": "Merged with BG-iafrnmc3 (same bl_plan.py rule from the other side: a code item's mapped docs outside its own scope). Merged from ST-zjsmb6ni: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs. Merged from ST-nftaqmb7: warn once in check (not refuse) when a code item's mapped doc is outside its touches; about 9 touch widenings cost roughly 2 h in the fleet runs.",
+  "claimed_by": "it-ops-kb worker1"
 }
