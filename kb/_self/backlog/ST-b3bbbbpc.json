@@ -42,7 +42,9 @@
         "audit": "ST-b3bbbbpc",
         "declare": "ST-b3bbbbpc",
         "narrow": "ST-b3bbbbpc"
-      }
+      },
+      "answer": "audit",
+      "by": "operator"
     }
   ]
 }
