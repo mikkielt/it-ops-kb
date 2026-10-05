@@ -260,15 +260,19 @@ def _strings(v, path):
 
 
 def project_paths(root):
-    """The project's own repository paths, lower case, from the git remotes' URLs: `namespace/project` and its
-    URL-encoded `namespace%2fproject`. An item may spell them although the namespace can be a user's name."""
+    """The project's own repository paths, lower case, from the git remotes' URLs (a URL, or the scp-like
+    `[user@]host:path` with or without a user): `namespace/project` and its URL-encoded `namespace%2fproject`. An item
+    may spell them although the namespace can be a user's name. git's output is read as UTF-8 with replacement."""
     try:
-        r = subprocess.run(["git", "-C", str(root), "remote", "-v"], capture_output=True, text=True, timeout=30)
+        r = subprocess.run(["git", "-C", str(root), "remote", "-v"], capture_output=True, text=True, timeout=30,
+                           encoding="utf-8", errors="replace")  # a non-ASCII remote never crashes the read
     except (OSError, subprocess.SubprocessError):
         return set()
     out = set()
     for url in {line.split()[1] for line in r.stdout.splitlines() if len(line.split()) >= 2}:
-        m = re.match(r"(?:[a-z+]+://(?:[^@/]+@)?[^/]+/|[^@/:]+@[^:/]+:)(.+?)(?:\.git)?/?$", url, re.I)
+        # a URL, or git's scp-like [user@]host:path, the user optional, recognized only with no slash before the
+        # first colon (kb: gitlab/git-test-repositories); a one-letter host is a Windows drive, not a remote
+        m = re.match(r"(?:[a-z+]+://(?:[^@/]+@)?[^/]+/|(?:[^@/:]+@)?[^@:/]{2,}:)(.+?)(?:\.git)?/?$", url, re.I)
         if m and "/" in m.group(1):
             path = m.group(1).lower()
             out |= {path, path.replace("/", "%2f")}
