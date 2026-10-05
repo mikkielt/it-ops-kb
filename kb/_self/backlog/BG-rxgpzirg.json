@@ -2,7 +2,7 @@
   "id": "BG-rxgpzirg",
   "kind": "bug",
   "title": "bl_cli docs say each module registers its own commands, while backlog.py registers bl_view, bl_land, bl_ci, bl_plan and bl_check's",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
@@ -55,5 +55,28 @@
     }
   ],
   "notes": "Gate register is open: recommended the modules register themselves (the sprint goal and TK-f5swu7tm's title say so); the docs-only fix is the smaller alternative.",
-  "claimed_by": "it-ops-kb worker2"
+  "evidence": {
+    "commit": "30c5d4df651fb6385d15f26a728ebc757101542b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bl_split_parser_registry"
+        ],
+        "exit": 0,
+        "sha256": "bab3783b2fa16eb1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_cli,bl_view,bl_land,bl_ci,bl_plan,bl_check;sys.exit(0 if {'list','done','intake','start','check'} <= set(bl_cli.COMMANDS) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
