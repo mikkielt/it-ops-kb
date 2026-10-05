@@ -22,7 +22,7 @@ import backlog
 import bl_base
 import bl_check
 import bl_testkit
-from bl_testkit import SOURCE_REPRO, TEXT_REPRO, PASS, TOOLS, argstr, b, commit, edit, is_file, item
+from bl_testkit import SOURCE_REPRO, TEXT_REPRO, PASS, TOOLS, argstr, b, commit, edit, is_file, item, sh
 
 bl_testkit.bind(backlog)
 
@@ -505,12 +505,37 @@ def test_knowledge_refs_fact_of_a_data_file_and_a_reworded_fact(kb):
     assert b(repo, "check")[0] == 0
     art = repo / "kb" / "public" / "demo" / "tool.md"
     art.write_text(ARTICLE.replace("print their version", "print their build"), encoding="utf-8", newline="\n")
+    commit(repo, "reword")  # refs are read at HEAD
     code, out = b(repo, "check")
     assert code == 0 and "errors=0 stale=1" in out, out
     assert f"{iid} “Carrier”: stale knowledge: fact {key()} is no longer in public/demo/tool.md" in out
     art.unlink()  # planted: the article removed is missing, not stale
+    commit(repo, "remove")
     code, out = b(repo, "check")
     assert code == 1 and "no article or data file" in out, out
+
+
+def test_knowledge_refs_read_from_head(kb):
+    """BG-xicqvm4t: refs are resolved at HEAD, not in the working tree. A fact reworded but not committed is not stale
+    (HEAD still holds it) and is once committed; a ref to an article written but not committed is missing, and
+    resolves once committed."""
+    repo, iid = kb
+    art = repo / "kb" / "public" / "demo" / "tool.md"
+    edit(repo, iid, knowledge={"refs": [f"public/demo/tool.md#{key()}"]})
+    art.write_text(ARTICLE.replace("print their version", "print their build"), encoding="utf-8", newline="\n")
+    code, out = b(repo, "check")
+    assert code == 0 and "stale=0" in out, out  # planted: an uncommitted rewording
+    commit(repo, "reword")
+    code, out = b(repo, "check")
+    assert code == 0 and "stale=1" in out, out
+    new = repo / "kb" / "public" / "demo" / "fresh.md"
+    new.write_text(ARTICLE.replace("demo/tool", "demo/fresh"), encoding="utf-8", newline="\n")
+    edit(repo, iid, knowledge={"refs": ["demo/fresh"]})
+    code, out = b(repo, "check")
+    assert code == 1 and "no such topic" in out, out  # planted: an uncommitted article
+    commit(repo, "fresh")
+    code, out = b(repo, "check")
+    assert code == 0 and "no such topic" not in out, out
 
 
 def test_knowledge_refs_shape_is_checked(kb):
@@ -543,6 +568,7 @@ def test_knowledge_refs_active_items_only(kb):
     edit(repo, iid, knowledge={"refs": [f"public/demo/tool.md#{key()}"]}, status="todo")
     (repo / "kb" / "public" / "demo" / "tool.md").write_text(ARTICLE.replace("print their version", "print their build"),
                                                               encoding="utf-8", newline="\n")
+    commit(repo, "reword")  # refs are read at HEAD
     code, out = b(repo, "check")
     assert code == 0 and "errors=0 stale=1" in out, out  # the worked item's reworded fact is counted; the others' refs are not
     edit(repo, iid, status="dropped")
@@ -636,7 +662,10 @@ class Ks:
             "KB_INDEX": "0"}
 
     def write(self, rel, text):
+        """Write a kb file and commit it: knowledge refs are read at HEAD (BG-xicqvm4t)."""
         (self.root / rel).write_text(text, encoding="utf-8", newline="\n")
+        sh(self.repo, "git", "add", "-A")
+        sh(self.repo, "git", "commit", "-q", "--allow-empty", "-m", f"kb {rel}")
 
     def run(self, *a):
         """The copy of backlog.py in the repository, whose own kb is the one its pack reads."""
