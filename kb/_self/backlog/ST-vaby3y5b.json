@@ -2,7 +2,7 @@
   "id": "ST-vaby3y5b",
   "kind": "story",
   "title": "kblog.py propose runs over the committed ops sidecars, so _logs.csv holds rows for the operator to confirm",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P3",
@@ -47,5 +47,6 @@
       "answer": "every ops row of the committed sidecar",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
