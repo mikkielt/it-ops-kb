@@ -45,9 +45,6 @@
       "Bash(python3 _tools/kbgit.py asof *)",
       "Bash(python3 _tools/kbgit.py check-public *)",
       "Bash(python3 _tools/selfdoc.py stale *)",
-      "Bash(python3 _tools/kbdecide.py digest)",
-      "Bash(python3 _tools/kbdecide.py digest --commit)",
-      "Bash(python3 _tools/kbdecide.py list *)",
       "Bash(git fetch)",
       "Bash(git fetch --quiet)",
       "Bash(git fetch origin)",
@@ -108,9 +105,6 @@
       "PowerShell(python3 _tools/kbgit.py asof *)",
       "PowerShell(python3 _tools/kbgit.py check-public *)",
       "PowerShell(python3 _tools/selfdoc.py stale *)",
-      "PowerShell(python3 _tools/kbdecide.py digest)",
-      "PowerShell(python3 _tools/kbdecide.py digest --commit)",
-      "PowerShell(python3 _tools/kbdecide.py list *)",
       "PowerShell(git fetch)",
       "PowerShell(git fetch --quiet)",
       "PowerShell(git fetch origin)",
@@ -144,9 +138,7 @@
       "Agent",
       "Edit",
       "Write",
-      "SendMessage",
-      "PushNotification",
-      "ToolSearch"
+      "SendMessage"
     ],
     "deny": [
       "mcp__claude-code-docs__submit_feedback",

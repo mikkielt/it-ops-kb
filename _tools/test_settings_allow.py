@@ -1,8 +1,8 @@
-""".claude/settings.json allows the commands a headless sprint run (/kb-sprint run --headless) and the decision tick
-run, each shell rule as Bash and PowerShell, in the narrow forms the runner uses, and
-nothing broader in the same families: no kbgit.py, git or glab rule beyond the list, no whole-shell rule and no tool
-rule beyond the four the runner needs. It denies, for both shells, what a headless agent must never do without a
-prompt: publish, push, delete a branch or a worktree, or throw away a file's changes."""
+""".claude/settings.json allows the commands the sprint skills run (a worker's landing, a session's claim and sync),
+each shell rule as Bash and PowerShell, in the narrow forms they use, and nothing broader in the same families: no
+kbgit.py, kbdecide.py, git or glab rule beyond the list, no whole-shell rule and no tool rule beyond the four the
+skills need. It denies, for both shells, what an agent must never do without a prompt: publish, push, delete a
+branch or a worktree, or throw away a file's changes."""
 import json
 import re
 
@@ -36,12 +36,6 @@ RUNNER_COMMANDS = [
     "glab mr view *",
 ]
 RUNNER_TOOLS = ["Agent", "Edit", "Write", "SendMessage"]
-# The decision digest and list (read forms only: digest without --out, which writes to any path), and the
-# notification and tool-search tools, as the retired decision tick left them in the settings. kbdecide.py's writing
-# forms (record, ratify, revert, supersede, invalidate, ...) are never allowed.
-TICK_COMMANDS = ["python3 _tools/kbdecide.py digest", "python3 _tools/kbdecide.py digest --commit",
-                 "python3 _tools/kbdecide.py list *"]
-TICK_TOOLS = ["PushNotification", "ToolSearch"]
 DENIED_COMMANDS = ["python3 _tools/kbgit.py publish *", "git push *", "git -C * push *", "git branch -D *",
                    "git worktree remove *", "git checkout -- *"]
 # a rebase that runs a command, and a commit that skips the hooks (--no-verify, or its short form -n): denied whatever
@@ -66,43 +60,36 @@ def runner_problems(perms):
     out += [f"missing {t}" for t in RUNNER_TOOLS if t not in have]
     out += [f"not denied {s}({c})" for c in DENIED_COMMANDS + REBASE_COMMIT_DENIED for s in SHELLS
             if f"{s}({c})" not in deny]
-    out += [f"missing {s}({c})" for c in TICK_COMMANDS for s in SHELLS if f"{s}({c})" not in have]
-    out += [f"missing {t}" for t in TICK_TOOLS if t not in have]
-    listed = {f"{s}({c})" for c in RUNNER_COMMANDS + TICK_COMMANDS for s in SHELLS}
+    listed = {f"{s}({c})" for c in RUNNER_COMMANDS for s in SHELLS}
     for rule in allow:
         m = re.fullmatch(r"(Bash|PowerShell)\((.*)\)", rule)
         if m and re.match(r"(git|glab)\b|python3 _tools/(kbgit|kbdecide)\.py\b", m.group(2)) and rule not in listed:
             out.append(f"beyond the list: {rule}")
         elif rule in SHELLS or (m and m.group(2).strip() in ("*", "")):
             out.append(f"whole shell allowed: {rule}")
-        elif not m and not rule.startswith("mcp__") and rule not in RUNNER_TOOLS + TICK_TOOLS:
+        elif not m and not rule.startswith("mcp__") and rule not in RUNNER_TOOLS:
             out.append(f"tool rule beyond the list: {rule}")
     return out
 
 
-def test_settings_allow_tick_commands():
-    """kbdecide.py digest and list, PushNotification and ToolSearch are each allowed, for both shells, and no wider
-    kbdecide.py form is."""
-    problems = runner_problems(permissions(text(".claude/settings.json")))
-    assert problems == []
+def test_settings_allow_no_kbdecide_or_notification_rule():
+    """No kbdecide.py form, PushNotification or ToolSearch is allowed: nothing that runs now needs them."""
+    allow = permissions(text(".claude/settings.json"))["allow"]
+    assert [r for r in allow if "kbdecide.py" in r or r in ("PushNotification", "ToolSearch")] == []
 
 
 @pytest.mark.parametrize("plant, want", [
-    (lambda a: [r for r in a if r != "PowerShell(python3 _tools/kbdecide.py digest)"],
-     "missing PowerShell(python3 _tools/kbdecide.py digest)"),
-    (lambda a: [r for r in a if r != "Bash(python3 _tools/kbdecide.py list *)"],
-     "missing Bash(python3 _tools/kbdecide.py list *)"),
-    (lambda a: [r for r in a if r != "PushNotification"], "missing PushNotification"),
-    (lambda a: [r for r in a if r != "ToolSearch"], "missing ToolSearch"),
     *[(lambda a, c=c: a + [f"Bash(python3 _tools/kbdecide.py {c})"], f"beyond the list: Bash(python3 _tools/kbdecide.py {c})")
-      for c in ("*", "digest *", "record *", "ratify *", "revert *", "supersede *", "invalidate *")],
+      for c in ("*", "digest", "digest --commit", "list *", "record *", "ratify *", "revert *")],
+    (lambda a: a + ["PushNotification"], "tool rule beyond the list: PushNotification"),
+    (lambda a: a + ["ToolSearch"], "tool rule beyond the list: ToolSearch"),
 ])
-def test_settings_allow_tick_commands_refuses_a_planted_change(plant, want):
+def test_settings_allow_no_kbdecide_or_notification_rule_refuses_a_planted_change(plant, want):
     perms = permissions(text(".claude/settings.json"))
     assert want in runner_problems({**perms, "allow": plant(perms["allow"])})
 
 
-def test_settings_allow_headless_runner():
+def test_settings_allow_sprint_skills():
     assert runner_problems(permissions(text(".claude/settings.json"))) == []
 
 
@@ -123,12 +110,12 @@ def _allow(f):
     *[(lambda p, r=f"{s}({c})": {**p, "deny": [x for x in p["deny"] if x != r]}, f"not denied {s}({c})")
       for c in DENIED_COMMANDS for s in SHELLS],
 ])
-def test_settings_allow_headless_runner_refuses_a_planted_change(plant, want):
+def test_settings_allow_sprint_skills_refuses_a_planted_change(plant, want):
     assert want in runner_problems(plant(permissions(text(".claude/settings.json"))))
 
 
 def test_settings_allow_rebase_commit_narrow():
-    """Rebase and commit are allowed only in the forms a headless run uses, and a rebase that runs a command or a
+    """Rebase and commit are allowed only in the forms the sprint skills use, and a rebase that runs a command or a
     commit that skips the hooks is denied, for both shells."""
     perms = permissions(text(".claude/settings.json"))
     assert runner_problems(perms) == []
@@ -148,21 +135,17 @@ def test_settings_allow_rebase_commit_narrow_refuses_a_planted_change(plant, wan
 
 def test_settings_allow_review_gaps():
     """The SP-zihqagoi review's settings gaps: no `glab mr merge` at all (an agent merges with `backlog.py merge ID`,
-    its own code/ID only), a checkout of paths from another revision denied, and the tick's `kbdecide.py digest
-    --commit` allowed, for both shells."""
+    its own code/ID only) and a checkout of paths from another revision denied, for both shells."""
     perms = permissions(text(".claude/settings.json"))
     assert runner_problems(perms) == []
     for s in SHELLS:
         assert not [r for r in perms["allow"] if r.startswith(f"{s}(glab mr merge")]
         assert f"{s}(git checkout * -- *)" in perms["deny"]
-        assert f"{s}(python3 _tools/kbdecide.py digest --commit)" in perms["allow"]
 
 
 @pytest.mark.parametrize("plant, want", [
     (_allow(lambda a: a + ["Bash(glab mr merge *)"]), "beyond the list: Bash(glab mr merge *)"),
     (_allow(lambda a: a + ["PowerShell(glab mr merge code/*)"]), "beyond the list: PowerShell(glab mr merge code/*)"),
-    (_allow(lambda a: [r for r in a if r != "PowerShell(python3 _tools/kbdecide.py digest --commit)"]),
-     "missing PowerShell(python3 _tools/kbdecide.py digest --commit)"),
     *[(lambda p, r=f"{s}(git checkout * -- *)": {**p, "deny": [x for x in p["deny"] if x != r]},
        f"not denied {s}(git checkout * -- *)") for s in SHELLS],
 ])
