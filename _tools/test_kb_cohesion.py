@@ -188,6 +188,11 @@ class TestToolChecks:
         assert not new, "new lint errors (fix them, or accept deliberately with --write-lint-baseline):\n" + "\n".join(new[:30])
 
 
+SHARED_FILE_MOVE_NEEDS = ("moves code out of a file other items edit", "announced first", "drain",
+                          "held --overlaps ID --ref origin/main", "one atomic commit per file moved",
+                          "the sessions are told to rebase onto it")
+
+
 class TestCohesion:
     def test_kb_article_reference_direction(self):
         for rel, refs in DIRECTED_REFS.items():
@@ -449,13 +454,12 @@ class TestCohesion:
     @staticmethod
     def shared_file_move_problems(skill, runbook):
         """Problems with how a task that moves code out of a shared file is run: each text names the announce, the
-        drain, the check and the atomic commit."""
+        drain, the check, the atomic commit and the rebase notice once it is on main (BG-j7mg3cqo)."""
         run = skill.split("## run", 1)[-1].split("\n## review", 1)[0]
         steps = runbook.split("## Running a sprint", 1)[-1].split("\n## ", 1)[0]
         problems = []
         for name, part in (("kb-sprint run", run), ("backlog.md Running a sprint", steps)):
-            for need in ("moves code out of a file other items edit", "announced first", "drain",
-                         "held --overlaps ID --ref origin/main", "one atomic commit per file moved"):
+            for need in SHARED_FILE_MOVE_NEEDS:
                 if need not in part:
                     problems.append(f"{name}: no `{need}`")
         return problems
@@ -464,8 +468,7 @@ class TestCohesion:
         skill, runbook = text(".claude/skills/kb-sprint/SKILL.md"), text("kb/_self/backlog.md")
         assert self.shared_file_move_problems(skill, runbook) == []
         # planted failures: each part removed from each text
-        for need in ("moves code out of a file other items edit", "announced first", "drain",
-                     "held --overlaps ID --ref origin/main", "one atomic commit per file moved"):
+        for need in SHARED_FILE_MOVE_NEEDS:
             assert self.shared_file_move_problems(skill.replace(need, "x"), runbook), need
             assert self.shared_file_move_problems(skill, runbook.replace(need, "x")), need
 

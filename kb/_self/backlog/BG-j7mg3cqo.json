@@ -2,7 +2,7 @@
   "id": "BG-j7mg3cqo",
   "kind": "bug",
   "title": "The shared-file move rule leaves out telling the sessions to rebase once the move is on main, and its test does not check it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-w3xmbdra",
   "priority": "P3",
@@ -31,5 +31,6 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "_tools/test_kb_cohesion.py"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
