@@ -2,7 +2,7 @@
   "id": "ST-ufpxla7r",
   "kind": "story",
   "title": "A change to one bl_ module selects only the tests that import the backlog modules",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,

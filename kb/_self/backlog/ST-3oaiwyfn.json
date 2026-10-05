@@ -2,7 +2,7 @@
   "id": "ST-3oaiwyfn",
   "kind": "story",
   "title": "backlog.py tidy lists the merged work and agent branches and clean worktrees, and with --apply removes only what close may remove",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,

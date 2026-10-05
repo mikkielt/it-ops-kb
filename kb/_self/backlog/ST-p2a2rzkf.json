@@ -2,7 +2,7 @@
   "id": "ST-p2a2rzkf",
   "kind": "story",
   "title": "The commit-msg hook's rule for naming an unclaimed item is findable in one message, so a release or planning commit needs no amends",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,

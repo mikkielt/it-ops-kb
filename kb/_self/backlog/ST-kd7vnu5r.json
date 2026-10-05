@@ -2,7 +2,7 @@
   "id": "ST-kd7vnu5r",
   "kind": "story",
   "title": "A dropped test id names the removed code it tested, and a dropped test whose module is still present is flagged",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,

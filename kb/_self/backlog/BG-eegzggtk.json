@@ -2,7 +2,7 @@
   "id": "BG-eegzggtk",
   "kind": "bug",
   "title": "The stall.remedy ops event has no writer since the stall remedies were removed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,

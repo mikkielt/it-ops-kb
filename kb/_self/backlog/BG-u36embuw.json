@@ -2,7 +2,7 @@
   "id": "BG-u36embuw",
   "kind": "bug",
   "title": "Close and kbusage still handle the retired autopilot runner's leftovers",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
   "rank": 0,
