@@ -1,0 +1,68 @@
+{
+  "id": "ST-v6l7x6gj",
+  "kind": "story",
+  "title": "The git scenarios are one per sync, pre-push, publish, merge and history path and the push leak guards",
+  "status": "draft",
+  "parent": "EP-5o2drech",
+  "priority": "P1",
+  "rank": 4,
+  "goal": "The 15 test files of kbgit.py's sync, hooks, lanes, merge, history, lock and publish and of census and factdiff (test_sync.py, test_kbpublic.py, test_kbpublic_hook_env.py, test_merge.py, test_history.py, test_research_merge.py, test_kblane.py, test_kg_lock.py, test_kg_lock_bound.py, test_git_timeout.py, test_ops_sync_gate.py, test_gate_output_file.py, test_census.py, test_factdiff.py, test_factdiff_ids.py) hold only the 28 tests the notes' KEEP list names (315 ids on 2026-10-05), every removed id is in _tools/test_ids_dropped.txt under a reason line naming the operator's direction of 2026-10-05 and the kept test of its file that still reaches the module, and every tool module is still reached by a test; a full tests.py spends about 290 worker-seconds less (about 0.7 min of wall on macOS, about 3 min or more on the Windows host, where each scenario clone costs more). It no longer catches: sync's push retries and back-off, re-exec, lease and branch-naming cases, the autonomous writers' push routes, the kg split layout; publish's projection cache, hook, history and bridge cases; each merge rule; the trailer rules; the lock bound and the bounded git wait; the gate's output file cases and its ops row. They show in the sync.gate ops rows, a refused push and the digest.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_sync.py",
+        "_tools/test_kbpublic.py",
+        "_tools/test_merge.py",
+        "_tools/test_history.py",
+        "_tools/test_research_merge.py",
+        "_tools/test_kblane.py",
+        "_tools/test_kg_lock.py",
+        "_tools/test_gate_output_file.py",
+        "_tools/test_census.py",
+        "_tools/test_factdiff.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--base",
+        "7fbf1f2d5",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/testmap.py",
+        "orphans"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_sync.py",
+    "_tools/test_kbpublic.py",
+    "_tools/test_kbpublic_hook_env.py",
+    "_tools/test_merge.py",
+    "_tools/test_history.py",
+    "_tools/test_research_merge.py",
+    "_tools/test_kblane.py",
+    "_tools/test_kg_lock.py",
+    "_tools/test_kg_lock_bound.py",
+    "_tools/test_git_timeout.py",
+    "_tools/test_ops_sync_gate.py",
+    "_tools/test_gate_output_file.py",
+    "_tools/test_census.py",
+    "_tools/test_factdiff.py",
+    "_tools/test_factdiff_ids.py",
+    "_tools/test_ids_dropped.txt"
+  ],
+  "depends_on": [
+    "ST-ybxdj3gq"
+  ],
+  "notes": "KEEP, test_ names without the prefix, [1] the first case (all else in these files goes): sync: clones_only_know_the_temp_remote, clean_rebase_is_fixed_gated_and_pushed, collision_renumbered_with_trailers_refreshed, same_line_edit_needs_a_human, failing_gate_blocks_a_plain_push, content_only_goes_to_main, code_goes_to_a_branch_with_options, sync_foreign_session_commit_is_refused; kbpublic: publish, private_and_cache_paths[1], leaked_address, new_leak_in_public_file_refused, leak_removed_later, logs_csv_refused_in_a_pushed_range, guard_push, no_tool_holds_the_string_origin, query_log_store_is_refused, publish_tree_guid_clean; merge: strip_markers_is_union, result_passes_checks_and_fix_is_idempotent; history: hook_writes_trailers; research_merge: a_rebases_cleanly_and_pushes; kblane: lane_of_paths, pre_push_refuses_a_code_lane_commit_for_main; kg_lock: kg_lock_main_lock_keeps_holders_apart_and_planted_unlocked_overlap[1]; gate_output_file: gate_keeps_failed_output_whole_in_a_file_and_prints_the_tail; census and factdiff: the first collected test of each. Whole files go: kbpublic_hook_env, kg_lock_bound, git_timeout, ops_sync_gate, factdiff_ids. Premise: pytest --collect-only -q over the 15 files collects 315 (7fbf1f2d5). Measured on macOS 2026-10-05, one process: test_sync.py 202 s (TestCodeLaneSync 68, TestSyncInGit 36 of class setup, which the kept tests share, TestSyncPushRetriesInGit 35, TestSyncReexec 12, TestSyncConflictInGit 12), test_kbpublic.py 82 s (TestPublishSafety 30, TestBridge 16, TestPublishTreeGuid 10); the rest from the last full run, pro rata. The checks pass before the work. BG-2luo4b26 names a test_sync.py amend-hook test this deletes. No gate: test files and reasons only, under the operator's settled direction of 2026-10-05."
+}

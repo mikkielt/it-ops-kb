@@ -1,0 +1,81 @@
+{
+  "id": "ST-dqjon2zn",
+  "kind": "story",
+  "title": "The backlog tool's item, view, check, plan and authority tests are one per command and its operator-only and leak guards",
+  "status": "draft",
+  "parent": "EP-5o2drech",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "The 17 test files of backlog.py's item writers, views, check, plan and gate authority (test_backlog.py, test_bl_items/view/check/plan.py, test_backlog_authority*.py, test_bl_authority_*.py, test_backlog_leak_scan.py, test_backlog_record_clean.py, test_backlog_research.py, test_check_program_allowlist.py, test_drift_refused.py, test_open_repros_headless.py, test_settings_allow.py) hold only the 25 tests the notes' KEEP list names (615 ids on 2026-10-05), every removed id is in _tools/test_ids_dropped.txt under a reason line naming the operator's direction of 2026-10-05 and the kept test of its file that still reaches the module, and every tool module is still reached by a test; a full tests.py spends about 250 worker-seconds less (about 0.6 min of wall on macOS, about 2.7 min on the Windows host). It no longer catches: each refusal of set, move, reopen, gate add and answer; the planning warnings (docs, shared files, unordered touches, host checks, precheck); the knowledge-ref states; the gate-class derivation table; the repro classifier's cases; the settings.json allow-rule matrices. A wrong refusal or warning shows as a refused or surprising backlog.py run, which the ops rows (done.refused, work rows) record.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_backlog.py",
+        "_tools/test_bl_items.py",
+        "_tools/test_bl_view.py",
+        "_tools/test_bl_check.py",
+        "_tools/test_bl_plan.py",
+        "_tools/test_backlog_authority.py",
+        "_tools/test_backlog_authority_class.py",
+        "_tools/test_bl_authority_trust.py",
+        "_tools/test_backlog_leak_scan.py",
+        "_tools/test_check_program_allowlist.py",
+        "_tools/test_settings_allow.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--base",
+        "7fbf1f2d5",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/testmap.py",
+        "orphans"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "live_data_size_independent"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_backlog.py",
+    "_tools/test_bl_items.py",
+    "_tools/test_bl_view.py",
+    "_tools/test_bl_check.py",
+    "_tools/test_bl_plan.py",
+    "_tools/test_backlog_authority.py",
+    "_tools/test_backlog_authority_class.py",
+    "_tools/test_bl_authority_trust.py",
+    "_tools/test_bl_authority_derivation.py",
+    "_tools/test_bl_authority_guards.py",
+    "_tools/test_backlog_leak_scan.py",
+    "_tools/test_backlog_record_clean.py",
+    "_tools/test_backlog_research.py",
+    "_tools/test_check_program_allowlist.py",
+    "_tools/test_drift_refused.py",
+    "_tools/test_open_repros_headless.py",
+    "_tools/test_settings_allow.py",
+    "_tools/test_ids_dropped.txt",
+    "_tools/bl_testkit.py",
+    "_tools/test_kb_lookup.py"
+  ],
+  "depends_on": [
+    "ST-y2a3ocjb"
+  ],
+  "notes": "KEEP, test_ names without the prefix, [1] the first case (all else in these files goes): backlog: bug_repro_must_fail_now, check_trailers_planning_commit_names_item, backlog_commit_flag_claim_commits_only_its_item_file; bl_items: backlog_set_changes_each_field_and_check_passes, claim_committed_before_work, claim_refuses_a_shared_checkout, backlog_set_gate_add_blocks_until_answered, backlog_set_refuses_a_name_of_this_host_in_notes, backlog_move_to_an_active_sprint_writes_todo_and_the_tasks_follow, backlog_answer_record_writes_an_active_decision_of_the_item; bl_view: next_orders_s1_bugs_first, horizon_splits_reachable_from_gated, backlog_similar_ranks_open_items_and_new_warns_of_a_near_duplicate; bl_check: check_finds_planted_errors, repository_backlog_is_valid, item_holds_host_names_refused_without_the_piece; bl_plan: start_refuses_work_items_without_touches, only_operator_answers_blocking_gates_and_starts_sprints; backlog_authority: gate_authority_refuses_an_agent_an_operator_class_and_leaves_the_item[1]; backlog_authority_class: authority_refused_class_provisional_refuses_every_non_operator_answer[1]; bl_authority_trust: authority_trust_boundary_agents_rule_is_the_operators; backlog_leak_scan: backlog_check_refuses_leak_in_item_text[1]; check_program_allowlist: check_program_allowlist_refuses[1], drift_allowlist_read_only_refuses_writers[1]; settings_allow: settings_allow_sprint_skills. Whole files go: bl_authority_derivation, bl_authority_guards, backlog_record_clean, backlog_research, drift_refused, open_repros_headless. LIVE_DATA_TESTS in test_kb_lookup.py drops deleted names. Premise: pytest --collect-only -q over the 17 files collects 615 (7fbf1f2d5). Seconds: the last full run's per-file times, pro rata. The checks pass before the work (no id unlisted, no module unreached). No gate: test files and reasons only, under the operator's settled direction."
+}

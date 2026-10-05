@@ -1,0 +1,67 @@
+{
+  "id": "ST-zbnvtpfj",
+  "kind": "story",
+  "title": "CI runs the suite once per OS and the cheap history checks, with no floor or stress job",
+  "status": "draft",
+  "parent": "EP-5o2drech",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "By the operator's answer to gate g1 (recommended: slim), .gitlab-ci.yml and .github/workflows/kb.yml run tests.py once on Linux (kb-tests) and, on GitLab, once on Windows (kb-tests-windows, tests.py only), the 3.11 floor as a byte-compile of _tools on python:3.11 (seconds, no test run), and the cheap history jobs (kb-trailers, check-lanes, GitHub's check-public); no job runs the suite a second time on one OS or runs a stress suite; kbgit.py publish's CI verdict rule (kbpublic.ci_refusals through ql_deliver.ci_pipeline) still reads the remaining jobs as it did; test_ci_config.py's kept test and kb/_self/git.md, runners.md and backlog.md's Definition of done say the same. Each GitHub publish push saves the floor job's full test run and the stress job, and a manual GitLab pipeline the same.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_ci_config.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale",
+        "--work",
+        "ST-zbnvtpfj"
+      ]
+    }
+  ],
+  "touches": [
+    ".gitlab-ci.yml",
+    ".github/workflows/kb.yml",
+    "_tools/test_ci_config.py",
+    "kb/_self/git.md",
+    "kb/_self/runners.md",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-setup/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-p3ltyxcb"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which test jobs stay in .gitlab-ci.yml (all manual) and .github/workflows/kb.yml (every push to the public home)? slim = kb-tests on Linux and kb-tests-windows (tests.py only) stay; kb-tests-floor becomes a byte-compile of _tools on python:3.11 with no test run; tool-stress and GitHub's stress job go; kb-trailers, check-lanes and check-public stay. windows-only = as slim, and the Linux kb-tests job goes too (macOS runs the suite locally, Windows in CI); the Definition of done's 'tests pass on Linux and Windows in CI' becomes 'on Windows in CI'. keep = no change but what ST-p3ltyxcb removes. Any answer keeps what kbgit.py publish reads for its CI verdict (kbpublic.ci_refusals).",
+      "options": [
+        "slim",
+        "windows-only",
+        "keep"
+      ],
+      "recommendation": "slim",
+      "class": "push",
+      "do": {
+        "slim": "ST-zbnvtpfj",
+        "windows-only": "ST-zbnvtpfj",
+        "keep": "ST-zbnvtpfj"
+      }
+    }
+  ],
+  "notes": "CI change: blocking operator gate g1 (recommended slim), under the operator's direction of 2026-10-05, which names the deployment pipeline. Premise: GitLab jobs of 2026-09-29/30 (glab api, project jobs): kb-tests on docker-linux-wsl2 812 s (success) and 1,976 s (failed); kb-tests-windows 2,200-2,277 s (success) and 3,635-3,858 s (failed, job timeout); kb-tests-floor and tool-stress ran manually; GitHub's workflow runs kb-tests, kb-tests-floor (3.11, no git scenarios), tool-stress, check-public, trailers and check-lanes on every push. After the suite cuts of EP-5o2drech each remaining test job runs about a fifth of today's time; this item removes the duplicate runs. Depends on ST-p3ltyxcb, which removes the stress steps from the same two files. The sync gate's and pre-push hook's own runs are gate-research's items (ST-h6qyvynp, ST-w5mrjyyw, ST-5rjig6fj, ST-4me7hv37, ST-jcbbt6wl), not this one."
+}

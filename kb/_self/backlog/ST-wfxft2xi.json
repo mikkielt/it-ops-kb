@@ -1,0 +1,64 @@
+{
+  "id": "ST-wfxft2xi",
+  "kind": "story",
+  "title": "kb/_self cites only tests that exist, the id baseline is the cut suite and its time is measured again",
+  "status": "draft",
+  "parent": "EP-5o2drech",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "Every tests.py -k selector the kb/_self docs cite (229 citations of 181 selectors on 2026-10-05, in tools.md, backlog.md, querylog.md, git.md, usage.md, code.md, maintaining.md, embedding.md and the reports) selects at least one test or is gone with the rule sentence it proved; _tools/test_ids_baseline.txt is the ids of the cut suite (perfcheck.py ids --write); kb/_self/reports/test-suite-speed.md holds a new section with a full tests.py on the macOS host (wall, workers, tests, worker-seconds, from its test.run ops row) beside the 2026-09-29/30 Windows figures, and the Windows host's own run once a Windows session records one (ST-pg5jyebo); a full tests.py on the macOS host takes under 200 s (305-377 s at 7-8 workers in the last three full runs before the cuts).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "time",
+        "--max-seconds",
+        "200"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale",
+        "--work",
+        "ST-wfxft2xi"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/git.md",
+    "kb/_self/usage.md",
+    "kb/_self/code.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/embedding.md",
+    "kb/_self/reports/backlog-briefs.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/test-suite-speed.md",
+    "_tools/test_ids_baseline.txt"
+  ],
+  "depends_on": [
+    "ST-zbnvtpfj"
+  ],
+  "notes": "Premise: a scan of kb/_self/**/*.md, the skills and the agent definitions on 2026-10-05 finds 229 citations of the form tests.py -k NAME or a backticked -k NAME, of 181 distinct selectors (tools.md 86, backlog.md 79, querylog.md 23, git.md 20, the rest 21); all but one (search_result_citations) match a collected test id today, and the cuts of EP-5o2drech leave most of them selecting nothing. The scan: for each selector, does any id that pytest --collect-only -q prints contain it (as -k matches names); backlog.py selectors does the same for the open items' checks. The skills' and kb-worker.md's citations are ST-f2gtof46's. Then perfcheck.py ids --write _tools/test_ids_baseline.txt, so the baseline no longer names the 3,950 ids the cuts listed in test_ids_dropped.txt. perfcheck.py time runs the full tests.py and takes the host lock: run it on an otherwise idle host; the 200 s bound is the macOS host's figure (the Windows host's is recorded in the report, not checked). No gate: docs citations, a measured report and the baseline file; no rule changes here (ST-f2gtof46 carries them)."
+}

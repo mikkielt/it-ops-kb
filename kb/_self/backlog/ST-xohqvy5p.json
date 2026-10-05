@@ -1,0 +1,72 @@
+{
+  "id": "ST-xohqvy5p",
+  "kind": "story",
+  "title": "No test pins a doc's or a skill's wording, and the repository scans are one test each",
+  "status": "draft",
+  "parent": "EP-5o2drech",
+  "priority": "P1",
+  "rank": 6,
+  "goal": "The 25 test files of the router hook, selfdoc, testmap, layout, portability, perfcheck, tests.py, the cohesion scans and the doc pins (test_change_router.py, test_selfdoc.py, test_selfdoc_ingest.py, test_testmap.py, test_testmap_scans.py, test_layout.py, test_portability.py, test_perfcheck.py, test_perfcheck_dropped.py, test_perfcheck_moved.py, test_tests_order.py, test_tests_lock.py, test_tool_closure.py, test_kb_cohesion.py, test_kb_ids.py, test_kbfacts.py, test_kbfacts_imports.py, test_lint_code_pointer.py, test_ci_config.py, test_cleanhost.py, test_install_python.py, test_kb_item_reading.py, test_three_tiers_docs.py, test_worker_brief.py, test_kb_sprint_close_cleanup.py) hold only the 44 tests the notes' KEEP list names (484 ids on 2026-10-05; test_kb_leaks.py's 8 stay whole), no remaining test reads a skill, an agent definition or a kb/_self doc to assert a phrase in it, testmap.py names only test files and classes that exist, every removed id is in _tools/test_ids_dropped.txt under a reason line naming the operator's direction and the kept test that still reaches the module, and every tool module is still reached by a test; a full tests.py spends about 75 worker-seconds less, and a doc or skill edit no longer fails a phrase pin. It no longer catches: a rule's wording dropped from a skill or doc (the sprint plan, review, brief, tiers, cost rerun and touches phrases), dead links, backtick paths and flags in docs, the layout's split pins, each router phrase, the launcher's interpreter fallbacks, the scheduler's order. The skills' -k selectors (ruff or tools_map, leaks, Cohesion or SelfDocs, test_lookup_ and passes) still select a test.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ruff or tools_map or leaks or Cohesion or SelfDocs or testmap or layout or perfcheck"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--base",
+        "7fbf1f2d5",
+        "--allow-removed",
+        "_tools/test_ids_dropped.txt"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/testmap.py",
+        "orphans"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_change_router.py",
+    "_tools/test_selfdoc.py",
+    "_tools/test_selfdoc_ingest.py",
+    "_tools/test_testmap.py",
+    "_tools/test_testmap_scans.py",
+    "_tools/test_layout.py",
+    "_tools/test_portability.py",
+    "_tools/test_perfcheck.py",
+    "_tools/test_perfcheck_dropped.py",
+    "_tools/test_perfcheck_moved.py",
+    "_tools/test_tests_order.py",
+    "_tools/test_tests_lock.py",
+    "_tools/test_tool_closure.py",
+    "_tools/test_kb_cohesion.py",
+    "_tools/test_kb_ids.py",
+    "_tools/test_kbfacts.py",
+    "_tools/test_kbfacts_imports.py",
+    "_tools/test_lint_code_pointer.py",
+    "_tools/test_ci_config.py",
+    "_tools/test_cleanhost.py",
+    "_tools/test_install_python.py",
+    "_tools/test_kb_item_reading.py",
+    "_tools/test_three_tiers_docs.py",
+    "_tools/test_worker_brief.py",
+    "_tools/test_kb_sprint_close_cleanup.py",
+    "_tools/test_ids_dropped.txt",
+    "_tools/testmap.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-kcfepveu"
+  ],
+  "notes": "KEEP, test_ names without the prefix, [1] the first case (all else in these files goes): change_router: change_requests_are_routed[1], malformed_event_is_silent_and_exits_zero[1], every_routed_skill_exists_and_is_model_invocable; selfdoc: stale_follows_commits, check, selfdoc_section_runs_to_the_next_heading_of_its_level, tools_map_this_repository_parses_and_holds; testmap: a_tool_change_selects_the_test_files_that_reach_it, shared_setup_and_unknown_paths_select_everything[1], the_repository_has_no_orphan_module, tests_py_changed_runs_nothing_when_no_test_can_be_affected, ops_test_run_row_records_scope_counts_and_per_file_times, host_test_lock_waits_second_run_waits_for_the_first; layout: import_layers_tree_holds, import_layers_a_planted_violation_fails_on_the_real_tree; portability: settings_hooks_go_through_the_launcher, no_interpreter_exits_127, tools_print_utf8_under_a_cp1252_locale; perfcheck: perfcheck_planted_dropped_test_id_fails; kb_cohesion: check_py_passes, pinned_artifacts_match, no_new_lint_errors, decisions_store_self_files_exist_in_the_format_with_roles_only, generated_indexes_up_to_date, python_passes_ruff_when_installed, skills_well_formed, mcp_config_consistent, claude_md_imports_agents_md, agents_md_stays_small, self_map_is_complete, self_docs_stay_out_of_the_pack, scope_groups_name_existing_classes; kb_ids: first 2; testmap_scans, perfcheck_dropped, tests_lock, tool_closure, kbfacts, kbfacts_imports, lint_code_pointer, ci_config, cleanhost, install_python: first 1 each. Whole files go: selfdoc_ingest, perfcheck_moved, tests_order, kb_item_reading, three_tiers_docs, worker_brief, kb_sprint_close_cleanup. testmap.py drops its names of deleted files and classes. Premise: pytest --collect-only -q over the 25 files collects 484 (7fbf1f2d5). Checks pass before the work. No gate: test files, testmap's names and reasons only, under the operator's settled direction."
+}
