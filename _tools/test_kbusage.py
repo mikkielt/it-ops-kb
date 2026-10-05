@@ -644,6 +644,8 @@ class TestTree:
         assert rows_of(rep, "tool") == {"Bash": (2, 52, 0), "Read": (2, 50, 1), "mcp__acme__lookup": (1, 5, 0),
                                         "Grep": (1, 7, 0), "Write": (1, 2, 0)}
         assert rows_of(rep, "bash") == {"python3 _tools/rag.py pack": (1, 40, 0), "git status": (1, 12, 0)}
+        # the closed classes the ops row call.tool records for the same calls (ST-rpdfgu3t): the two agree
+        assert rows_of(rep, "class") == {"tools.rag": (1, 40, 0), "git.status": (1, 12, 0)}
         # the worktree's file and the project's own are one file
         assert rows_of(rep, "file") == {"kb/_self/a.md": (2, 50, 1), "/x/out.txt": (1, 2, 0)}
         assert rows_of(rep, "agent") == {"main": (5, 102, 1), "Explore": (2, 14, 0)}
@@ -686,6 +688,17 @@ class TestTree:
         (None, "(none)"), ("glab api projects", "glab api")])
     def test_kbusage_tree_command_head(self, command, head):
         assert kbusage.command_head(command) == head
+
+    def test_ops_call_tool_row_classes_are_closed_tokens(self):
+        """kbusage.command_class gives a closed token for any command, never its text or a path; size_class buckets."""
+        cases = {"python3 _tools/rag.py pack 'q'": "tools.rag", "python3 /home/jan.kowalski/x.py": "python-script",
+                 "python3 -c 'print(1)'": "python-c", "python3 -m pytest -q": "python-m", "git -C /p log": "git.log",
+                 "cd /tmp && ls -la": "ls", "./secret-script.sh --token X": "other", "": "none"}
+        for command, want in cases.items():
+            assert kbusage.command_class(command) == want, command
+            assert kbusage.CLASS_TOKEN.fullmatch(kbusage.command_class(command)), command
+        assert [kbusage.size_class(n) for n in (0, 1, 999, 1000, 99999, 100000)] == \
+            ["empty", "lt1k", "lt1k", "lt10k", "lt100k", "ge100k"]
 
     @pytest.mark.parametrize("path,cwd,key", [
         ("/p/.claude/worktrees/w1/kb/a.md", "/p/.claude/worktrees/w1", "kb/a.md"),

@@ -50,17 +50,22 @@ from conftest import KB, TOOLS, querylog_env
 from ql_testkit import load, prompt, QL, serve, SH, SID, spool, stop, tool
 
 
-def lines(data):
-    """Every spool row under `data`, in file order per file."""
+def lines(data, calls=False):
+    """Every spool row under `data`, in file order per file; the `call.tool` census rows (one beside every kb, docs and
+    shell call) only with `calls`."""
     out = []
     for f in sorted(spool(data).glob("*.jsonl")) if spool(data).is_dir() else []:
         with open(f, encoding="utf-8") as fh:
             out += [json.loads(line) for line in fh if line.strip()]
-    return out
+    return out if calls else [r for r in out if r.get("event") != "call.tool"]
 
 
-def raw(data):
-    return b"".join(f.read_bytes() for f in spool(data).glob("*.jsonl")) if spool(data).is_dir() else b""
+def raw(data, calls=False):
+    """The spool's bytes; the `call.tool` census rows (closed tokens only, tested on their own) only with `calls`."""
+    if not spool(data).is_dir():
+        return b""
+    text = b"".join(f.read_bytes() for f in spool(data).glob("*.jsonl"))
+    return text if calls else b"".join(ln for ln in text.splitlines(keepends=True) if b'"event":"call.tool"' not in ln)
 
 
 def hook(data, event, env=None):
@@ -251,7 +256,7 @@ class TestWorkRows:
             ("work", "SB-dddddddd", "done", "p4")]
         assert all(r["session_id"] == SID and r["v"] == ql_capture.ROW_FORMAT and is_uuid4(r["id"]) for r in rows)
         assert len({r["id"] for r in rows}) == 5 and not any("agent_id" in r for r in rows)
-        assert [f.name for f in spool(tmp_path).iterdir()] == [f"{SID}.jsonl"]  # keyed like every hook row
+        assert [f.name for f in spool(tmp_path).iterdir() if not f.name.startswith("tools-")] == [f"{SID}.jsonl"]  # keyed like every hook row
         text = raw(tmp_path).decode("utf-8")
         for secret in ("OUTPUT-SECRET", "worker-", "--by", "--commit", "Co-Authored", "backlog.py", "python"):
             assert secret not in text, secret  # no command text, flag value or result
@@ -358,7 +363,7 @@ class TestWorkRows:
             ("work", "TK-aaaaaaaa", "refused", "p2")]
         assert all(r["session_id"] == SID and r["v"] == ql_capture.ROW_FORMAT and is_uuid4(r["id"]) for r in (a, b, c))
         assert "agent_id" not in a and c["agent_id"] == "agent-0000000000000001"
-        assert [f.name for f in spool(tmp_path).iterdir()] == [f"{SID}.jsonl"]
+        assert [f.name for f in spool(tmp_path).iterdir() if not f.name.startswith("tools-")] == [f"{SID}.jsonl"]
         assert set(a) == {"id", "ts", "surface", "v", "session_id", "prompt_id", "item", "action"}
         text = raw(tmp_path).decode("utf-8")
         for secret in ("ERROR-SECRET", "Exit code", "is not done", "--commit", "Co-Authored", "backlog.py", "python"):
@@ -511,6 +516,46 @@ class TestOpsRows:
 
     def rows(self):
         return [json.loads(ln) for f in sorted(self.spool.glob("*.jsonl")) for ln in f.read_text(encoding="utf-8").splitlines()]
+
+    def calls(self):
+        return [r for r in self.rows() if r.get("event") == "call.tool"]
+
+    def test_ops_call_tool_row_for_kb_docs_and_shell_calls(self):
+        """ST-rpdfgu3t: one closed call.tool row per PostToolUse or PostToolUseFailure event of a kb tool, a
+        documentation server's tool or a shell command (the operator's scope): the tool group, the command's class, the
+        agent group, the outcome, duration_ms when given and the size class; any other tool writes none."""
+        ql_capture.capture({**tool("mcp__kb__kb_pack", {"question": "q"}, "x" * 1500), "duration_ms": 420})
+        ql_capture.capture(tool("Bash", {"command": "python3 _tools/rag.py pack 'q'"}, {"stdout": "ok"}))
+        ql_capture.capture({**tool("PowerShell", {"command": "git status"}, ok=False, error="Exit code 1"),
+                            "agent_type": "it-ops-kb:kb-worker"})
+        ql_capture.capture({**tool("Bash", {"command": "sleep 100"}, ok=False, error=""), "is_interrupt": True})
+        ql_capture.capture(tool("mcp__microsoft-learn__microsoft_docs_search", {"query": "q"}, "y"))
+        ql_capture.capture(tool("Read", {"file_path": "/x/secret.md"}, "z"))  # outside the scope: no row
+        rows = [{k: r.get(k) for k in ("tool", "group", "outcome", "size", "class", "ms")} for r in self.calls()]
+        assert rows == [
+            {"tool": "kb_pack", "group": "main", "outcome": "ok", "size": "lt10k", "class": None, "ms": 420},
+            {"tool": "bash", "group": "main", "outcome": "ok", "size": "lt1k", "class": "tools.rag", "ms": None},
+            {"tool": "powershell", "group": "kb-worker", "outcome": "error", "size": "lt1k", "class": "git.status",
+             "ms": None},
+            {"tool": "bash", "group": "main", "outcome": "interrupt", "size": "empty", "class": "sleep", "ms": None},
+            {"tool": "docs.microsoft-learn", "group": "main", "outcome": "ok", "size": "lt1k", "class": None,
+             "ms": None}], rows
+        assert all(ql_capture.ops_problems({k: v for k, v in r.items() if k not in ("id", "ts", "surface", "v")}) == []
+                   and "session_id" not in r for r in self.calls())
+
+    def test_ops_call_tool_no_command_text(self):
+        """No command text, path, argument, result or error text reaches a call.tool row: a planted command with a
+        path and a secret-looking argument, a result and an error message leave only closed tokens."""
+        cmd = "python3 /home/jan.kowalski/private/tool.py --token SECRET-ARG /etc/hosts && cat /etc/passwd"
+        ql_capture.capture(tool("Bash", {"command": cmd}, {"stdout": "RESULT-TEXT"}))
+        ql_capture.capture(tool("Bash", {"command": cmd}, ok=False, error="Exit code 2\nERROR-TEXT /etc/shadow"))
+        text = "".join(f.read_text(encoding="utf-8") for f in self.spool.glob("tools-*.jsonl"))
+        for leak in ("jan.kowalski", "private", "tool.py", "SECRET-ARG", "/etc", "RESULT-TEXT", "ERROR-TEXT", "--token"):
+            assert leak not in text, leak
+        assert [r["class"] for r in self.calls()] == ["python-script", "python-script"]
+        # planted: a class that is not a closed token is not written
+        assert ql_capture.record("ops", event="call.tool", tool="bash", group="main", outcome="ok", size="empty",
+                                 **{"class": "cat /etc/passwd"}) is None
 
     def test_ops_sidecar_a_closed_event_is_one_row_in_the_tools_file(self):
         row = ql_capture.record("ops", **LAND_STEP)

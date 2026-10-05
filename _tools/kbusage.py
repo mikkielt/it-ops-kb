@@ -33,7 +33,7 @@ AGENTS = {"general-purpose": "general-purpose", "Explore": "Explore", "Plan": "P
           "it-ops-kb:kb-lookup": "kb-lookup", "kb-reviewer": "kb-reviewer", "it-ops-kb:kb-reviewer": "kb-reviewer",
           "kb-worker": "kb-worker", "it-ops-kb:kb-worker": "kb-worker"}
 OTHER_AGENT = "other"
-GROUPS = ("tool", "bash", "file", "agent")
+GROUPS = ("tool", "bash", "class", "file", "agent")
 SHELLS = ("Bash", "PowerShell")
 FILE_TOOLS = {"Read": "file_path", "Write": "file_path", "Edit": "file_path", "MultiEdit": "file_path",
               "NotebookEdit": "notebook_path"}
@@ -431,6 +431,61 @@ def command_head(command):
     return "(none)"
 
 
+# The closed class of a shell command (command_class): a token, never command text or a path, shared by the ops row
+# `call.tool` (ql_capture) and the tree's `class` group, so the two agree on one session.
+KNOWN_COMMANDS = frozenset((
+    "ls", "cat", "head", "tail", "wc", "grep", "rg", "find", "sed", "awk", "sort", "uniq", "cut", "tr", "diff", "echo",
+    "printf", "test", "mkdir", "rm", "cp", "mv", "touch", "chmod", "ln", "curl", "wget", "tar", "unzip", "zip", "jq",
+    "make", "node", "npx", "pwsh", "powershell", "sleep", "kill", "ps", "which", "date", "env", "xargs", "tee", "du",
+    "df", "stat", "file", "basename", "dirname", "realpath", "readlink", "open", "dig", "nslookup", "ssh", "scp",
+    "rsync", "python", "pytest", "ruff"))
+CLASS_TOKEN = re.compile(r"[a-z][a-z0-9_.-]{0,39}")
+TOOL_SCRIPT = re.compile(r"_tools/([a-z][a-z0-9_]{0,30})\.py")
+
+
+def command_class(command):
+    """The closed class of a shell command: `tools.<stem>` for a script of this repository's `_tools/`, `python-c`,
+    `python-m` or `python-script` for any other Python, `<tool>.<subcommand>` for the tools in SUBCOMMANDS, the
+    command's own name when it is in KNOWN_COMMANDS, `none` for no command and `other` for the rest."""
+    head = command_head(command)
+    if head == "(none)":
+        return "none"
+    first, _, rest = head.partition(" ")
+    if PYTHON.fullmatch(first):
+        word = rest.split(" ", 1)[0]
+        m = TOOL_SCRIPT.fullmatch(word)
+        if m:
+            return "tools." + m.group(1)
+        if word == "-c":
+            return "python-c"
+        if word.startswith("-m"):
+            return "python-m"
+        return "python-script" if word else "python"
+    if first in SUBCOMMANDS:
+        cls = f"{first}.{rest.split(' ', 1)[0]}" if rest else first
+        return cls if CLASS_TOKEN.fullmatch(cls) else first
+    return first if first in KNOWN_COMMANDS else "other"
+
+
+SIZE_CLASSES = ((0, "empty"), (1000, "lt1k"), (10000, "lt10k"), (100000, "lt100k"))
+
+
+def size_class(chars):
+    """The class of a result's size in characters: `empty`, `lt1k`, `lt10k`, `lt100k` or `ge100k`."""
+    n = chars if isinstance(chars, int) and chars >= 0 else 0
+    if n == 0:
+        return "empty"
+    for top, name in SIZE_CLASSES[1:]:
+        if n < top:
+            return name
+    return "ge100k"
+
+
+def call_group(name):
+    """A tool's group as a token (tool_group in lower case, `:` as `.`)."""
+    return tool_group(name).lower().replace(":", ".")
+
+
 def file_key(path, cwd):
     """A file path as a rollup keys it: `/` separators, a worktree's directory collapsed into the project's, and
     relative to the session's working directory when it lies under it."""
@@ -504,6 +559,7 @@ class Tree:
         self.row("agent", scope, chars, error)
         if name in SHELLS:
             self.row("bash", command_head(inp.get("command")), chars, error)
+            self.row("class", command_class(inp.get("command")), chars, error)
         if name in FILE_TOOLS:
             p = inp.get(FILE_TOOLS[name])
             self.row("file", file_key(p, cwd) if isinstance(p, str) and p else "(no path)", chars, error)
@@ -541,7 +597,7 @@ def tree_problems(rep):
                 for k in ("calls", "chars", "errors")]
 
     want = {"tool": [t["calls"], t["chars"], t["errors"]], "agent": [t["calls"], t["chars"], t["errors"]],
-            "bash": of(SHELLS), "file": of(FILE_TOOLS)}
+            "bash": of(SHELLS), "class": of(SHELLS), "file": of(FILE_TOOLS)}
     out = []
     for g, w in want.items():
         got = sums.get(g, [0, 0, 0])
