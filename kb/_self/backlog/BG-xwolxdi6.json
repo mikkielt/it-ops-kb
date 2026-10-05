@@ -2,7 +2,7 @@
   "id": "BG-xwolxdi6",
   "kind": "bug",
   "title": "selfcheck orphans and procs --end never act: only the retired autopilot ran procs --record, so no process is owned",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     ".claude/skills/kb-sprint/SKILL.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
