@@ -6,8 +6,9 @@ a covered question, forwards an uncovered one with the pack, and leaves other pr
 TestFingerprint: the index fingerprint of the kb's files is the per-file stat value, and changes with a file's time or a new file.
 TestKbHookRoute, TestRawReadNudge: the kb: hook's routes on planted packs, and the hint on a whole-file read of an article.
 test_freshness_note_for_latest_or_unnamed_versions: the `freshness:` line of a pack.
+LIVE_DATA_TESTS: the tests that read the repository's live kb or backlog, each with why it holds at any size.
 """
-import csv, json, os, re, subprocess, sys
+import ast, csv, json, os, re, subprocess, sys
 from pathlib import Path
 
 import kb_hook, kbcommon, kbfacts, kbid
@@ -729,6 +730,80 @@ class TestBacklogPrompt:
                            encoding="utf-8", timeout=timeout_s(60))
         assert p.returncode == 0, "a backlog: prompt must not load kbfacts"
         assert not list((tmp_path / "querylog" / "spool").rglob("*.jsonl")), "a backlog: prompt writes no query log row"
+
+
+    def test_backlog_prompt_live_data_size_independent(self, tmp_path, monkeypatch):
+        """The end-to-end test above runs over the live backlog; what it asserts holds at any size of it. Planted: each
+        command's output grown far past the hook's limit (as seven active sprints grew horizon, BG-o3cjsgmm): the
+        block reason still starts with horizon and holds next whole, and the backlog+ context keeps both commands."""
+        self.fake(tmp_path, monkeypatch, long=3000)
+        reason = kb_hook.respond("backlog: what is next?")[0]["reason"]
+        assert reason.startswith("$ backlog.py horizon\n") and "\n\n$ backlog.py next --all --any\n" in reason
+        ctx = kb_hook.respond("backlog+: what is next?")[0]["hookSpecificOutput"]["additionalContext"]
+        assert "$ backlog.py horizon\n" in ctx and "$ backlog.py next --all --any\n" in ctx
+        assert self.every_part_problems(ctx) == [], ctx[-400:]
+
+
+# The tests that read the repository's own live data (its kb, its backlog), each with why what it asserts holds at
+# any size of that data: another session growing the kb or the backlog must not turn main red (ST-2zl2od7q). Every
+# test that runs a tool with cwd=KB is listed (test_live_data_size_independent_list); test_backlog.py builds its own
+# repository for every test and reads no live data.
+LIVE_DATA_TESTS = {
+    "test_e2e_fixture_questions_keep_their_pack": "pins named questions' verdict and lead article, re-pinned on a "
+                                                  "content change; no count",
+    "test_search_finds_the_expected_article": "a named article in a top-5 ranking: the search baseline, no count",
+    "test_persisted_index_gives_identical_packs": "two stores of the same corpus agree, whatever its size",
+    "test_ledger_topic_markers_link_entries": "one named article's ledger link",
+    "test_alias_and_signal_tables": "each row well formed and each named topic present, at any row count",
+    "test_doc2query_expansions": "each row well formed, at any row count",
+    "test_lookup_eval_ids_unique": "ids unique and slug-shaped, at any row count",
+    "test_doc2query_no_stale_keys": "the tool's exit code",
+    "test_lookup_eval_passes": "the eval's exit code over its own rows",
+    "test_kb_ask_routes": "named questions' routes; the audit row lists rows by a status, never a count",
+    "test_kb_ask_without_claude_prints_the_evidence": "one named question's evidence",
+    "test_kb_hook": "named questions' verdicts and routes",
+    "test_spread_key_words_get_a_check_line": "named questions, and a property of every good eval row",
+    "test_false_good_gets_a_check_line": "named questions' verdicts",
+    "test_common_words_need_one_fact_that_holds_them_all": "named questions' verdicts",
+    "test_pack_number_with_unit_suffix_is_good": "one named question's verdict and fact line",
+    "test_off_domain_product_is_none": "named questions' verdicts",
+    "test_backlog_prompt_end_to_end_without_loading_the_kb": "headers and block shape, which the hook keeps at any "
+                                                             "backlog size (test_backlog_prompt_live_data_size_independent)",
+    "test_raw_read_nudge_end_to_end_prints_json_only_for_a_read": "a hint for a command; the kb's files are not read",
+    "test_raw_read_nudge_survives_odd_input": "the hook's exit on odd input; the kb's files are not read",
+    "test_raw_read_nudge_recognises_powershell_reads": "a hint for a command; the kb's files are not read",
+    "test_raw_read_nudge_is_silent_for_other_powershell_commands": "no output for a command; the kb's files are not read",
+}
+
+
+def live_runs(source):
+    """The test functions in SOURCE whose body, or a helper method of their class they call, runs a tool with cwd=KB."""
+    tree = ast.parse(source)
+    out = set()
+    for cls in [n for n in ast.walk(tree) if isinstance(n, (ast.ClassDef, ast.Module))]:
+        funcs = [n for n in cls.body if isinstance(n, ast.FunctionDef)]
+        helpers = {f.name for f in funcs if not f.name.startswith("test_") and "cwd=KB" in ast.get_source_segment(source, f)}
+        for f in funcs:
+            seg = ast.get_source_segment(source, f)
+            if f.name.startswith("test_") and ("cwd=KB" in seg or any(f"self.{h}(" in seg for h in helpers)):
+                out.add(f.name)
+    return out
+
+
+def test_live_data_size_independent_list():
+    """Every test of this file and test_backlog.py that runs a tool over the live repository is in LIVE_DATA_TESTS
+    with its reason, and every name there is a test of this file. Planted: an unlisted live test is found."""
+    names = {n.name for n in ast.walk(ast.parse(Path(__file__).read_text(encoding="utf-8")))
+             if isinstance(n, ast.FunctionDef) and n.name.startswith("test_")}
+    assert set(LIVE_DATA_TESTS) <= names, sorted(set(LIVE_DATA_TESTS) - names)
+    for f in (Path(__file__), Path(TOOLS) / "test_backlog.py"):
+        unlisted = live_runs(f.read_text(encoding="utf-8")) - set(LIVE_DATA_TESTS)
+        assert not unlisted, f"{f.name}: tests over live data not in LIVE_DATA_TESTS: {sorted(unlisted)}"
+    live = "cwd=" + "KB"  # split, so this test's own source is not a live run
+    planted = (f"class TestX:\n    def go(self):\n        return run(x, {live})\n\n"
+               "    def test_counts(self):\n        assert self.go() == 3\n\n"
+               f"def test_direct():\n    run(y, {live})\n\ndef test_fixture(tmp_path):\n    run(y, cwd=tmp_path)\n")
+    assert live_runs(planted) == {"test_counts", "test_direct"}
 
 
 class TestRawReadNudge:

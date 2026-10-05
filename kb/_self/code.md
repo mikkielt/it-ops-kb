@@ -20,6 +20,7 @@ The same code runs on Linux, macOS and Windows.
 ## Git in tests
 
 - **A test never acts on the real repository.** `_tools/conftest.py` removes the variables that name a repository (`GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE` and the others) from the environment before any test, because a git hook sets them and a run it starts would inherit them. It clears `KB_NO_PUBLISH_HOOK` the same way (at import, so in every xdist worker, and again before each test), because a session may export it and a test that needs it sets it itself with `monkeypatch`.
+- **A test over the repository's live data holds at any size of it.** A test that reads the live kb or backlog asserts named content or a shape (a verdict, a header, an exit code), never a count or a length another session's growth can break, or it runs over a fixture: main went red when seven active sprints filled the `backlog:` hook's limit (BG-o3cjsgmm). `_tools/test_kb_lookup.py`'s `LIVE_DATA_TESTS` lists each such test with why it holds, and `tests.py -k live_data_size_independent` fails on a test that runs a tool with `cwd=KB` and is not listed.
 - **A scenario builds its own repository** in a temporary directory, with `git_env()` for its environment: no global or system git config, a fixed author and committer, and none of the variables that leak a CI run or a verification date. The `Repo` helper runs git in such a directory.
 
 ## Output
