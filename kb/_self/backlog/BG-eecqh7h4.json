@@ -1,0 +1,21 @@
+{
+  "id": "BG-eecqh7h4",
+  "kind": "bug",
+  "title": "test_backlog_record_clean needs an item outside a sprint in the live backlog",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "test_answer_record_leaves_a_clean_tree and its planted twin copy the live kb and pick an item outside any sprint; with none (as when the SP-wmukiu3s review's full run started, after two drops), both fail with 'no item outside a sprint'. code.md: a test over the repository's live data holds at any size of it. The tests plant the item they need in their copy. Found by the SP-wmukiu3s review's tests.py run.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open('_tools/test_backlog_record_clean.py',encoding='utf-8').read();sys.exit(1 if 'no item outside a sprint' in s else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the test's dependence on live state that is not there on every run; the assertion's text in the test is what a fix removes",
+  "touches": [
+    "_tools/test_backlog_record_clean.py"
+  ]
+}
