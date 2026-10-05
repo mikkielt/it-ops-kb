@@ -1,0 +1,33 @@
+{
+  "id": "BG-hdy6rfro",
+  "kind": "bug",
+  "title": "KB_OPS_TEST_SPOOL lifts the inside-test guard without checking the spool is the test's own",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "ql_deliver.inside_test stays True under KB_OPS_TEST_SPOOL=1 unless CLAUDE_PLUGIN_DATA names a directory outside the clone (the test's own spool), so an exported variable cannot send fixture rows to the clone's spool again; kb/_self/querylog.md names the variable. Found by the SP-6btkjg4l review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys;sys.path.insert(0,'_tools');os.environ['PYTEST_CURRENT_TEST']='t';os.environ['KB_OPS_TEST_SPOOL']='1';os.environ.pop('CLAUDE_PLUGIN_DATA',None);import ql_deliver;sys.exit(1 if not ql_deliver.inside_test() else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_spool_escape_needs_own_spool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/test_ops_land.py",
+    "kb/_self/querylog.md"
+  ]
+}
