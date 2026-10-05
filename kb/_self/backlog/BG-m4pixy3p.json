@@ -2,7 +2,7 @@
   "id": "BG-m4pixy3p",
   "kind": "bug",
   "title": "The host main lock's order, re-entry and land/sync holding have no test since test_autopilot_two_runners.py was deleted",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/git.md",
     "_tools/test_ids_dropped.txt"
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "302b01f0c9e7d2ac4fe8a0853f715a6a1638bd13",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kg_lock"
+        ],
+        "exit": 0,
+        "sha256": "4a2f19ed5737b129"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; r=subprocess.run(['git','grep','-n','-E','LockOrderError','--','_tools/test_*.py'],capture_output=True,text=True); print(r.stdout+r.stderr); sys.exit(0 if r.returncode==0 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "39636d2d623834eb"
+      }
+    ]
+  }
 }
