@@ -1594,3 +1594,52 @@ class TestCloseRemovesRunnerLeftovers:
         bl = backlog.Backlog(repo)
         code = bl_land.cmd_close(bl, argparse.Namespace(sprint=sp, summary=False, commit=False, trailer=None))
         assert code == 0 and f"close: kept the runner leftovers of {sp}: planted" in capsys.readouterr().out
+
+
+# --- the ops row `done.refused` (ST-chco2mot): a refused done records its reason classes, never its text ---
+
+def done_in_process(repo, iid):
+    land(repo)
+    ns = argparse.Namespace(id=iid, dry_run=False, commit=False, trailer=[])
+    try:
+        return bl_land.cmd_done(backlog.Backlog(repo), ns)
+    except backlog.Refused:
+        return 1
+
+
+def test_ops_done_refused_reasons(sprint, ops_spool):
+    """Planted refusals each write one `done.refused` row with the item, the closed reason classes, the failed checks'
+    names and the milliseconds: no work commit; uncommitted changes with a commit outside touches; a failed check.
+    A done that succeeds writes none."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    commit(repo, "claim", tk)
+    assert done_in_process(repo, tk) == 1
+    (repo / "stray.txt").write_text("x\n", encoding="utf-8")
+    (repo / "src" / "x.txt").write_text("x\n", encoding="utf-8")
+    commit(repo, "stray work", tk)
+    (repo / "src" / "y.txt").write_text("y\n", encoding="utf-8")
+    assert done_in_process(repo, tk) == 1
+    sh(repo, "git", "rm", "-q", "stray.txt")
+    commit(repo, "revert stray and add y", tk)
+    assert done_in_process(repo, tk) == 1  # src/b.txt, the task's check, is missing
+    rows = spool_rows(ops_spool, "done.refused")
+    assert [(r["item"], r["reasons"]) for r in rows] == [
+        (tk, ["no-work-commit"]), (tk, ["outside-touches", "uncommitted"]), (tk, ["check-failed"])], rows
+    assert rows[2]["checks"] == ["python3"] and "checks" not in rows[0], rows
+    assert all(isinstance(r["ms"], int) and r["ms"] >= 0 for r in rows), rows
+    import ql_capture
+    meta = ("id", "ts", "surface", "v")  # the spool line's own keys, not the event's
+    assert all(ql_capture.ops_problems({k: v for k, v in r.items() if k not in meta}) == [] for r in rows), rows
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    commit(repo, "write b", tk)
+    assert done_in_process(repo, tk) == 0
+    assert len(spool_rows(ops_spool, "done.refused")) == 3, "a done that succeeds writes no refused row"
+
+
+def test_ops_done_refused_reasons_check_token():
+    """A check's name is a token, never its text: the -k selector, else the script, else the program."""
+    assert bl_land.check_token(["python3", "_tools/tests.py", "-k", "ops_done refused"]) == "ops_done-refused"
+    assert bl_land.check_token(["python3", "_tools/rag.py", "eval"]) == "rag"
+    assert bl_land.check_token(["git", "diff", "--quiet"]) == "git"
+    assert bl_land.check_token(["python3", "_tools/tests.py", "-k", "2fast"]) == "c-2fast"
