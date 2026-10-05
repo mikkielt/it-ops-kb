@@ -1,0 +1,20 @@
+{
+  "id": "SP-eahtellz",
+  "kind": "sprint",
+  "title": "Windows host: suite runs recorded and sped up",
+  "status": "planned",
+  "goal": "Run only in a Claude session on the project's Windows 11 host (precondition: that host, with python3, git and the clone's .venv, nothing else running; it cannot start from macOS or Linux): a Claude session there records a run of both suites, Defender's cost on test scratch files is measured and the operator settles it, and fresh scenario clones reuse the seed's pack index, toward EP-hlnsqx4f: python3 _tools/tests.py finishes in 10 minutes or less and stress_test.py in 5 minutes or less on that host, kb-tests-windows within its 3-hour timeout, every run collecting the same test ids with every planted-failure test still present and passing",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
