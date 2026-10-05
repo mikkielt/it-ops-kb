@@ -14,7 +14,7 @@ import kg_lane
 import kg_merge
 from kg_base import KB
 from kg_trailers import (INDEX, KEY_LINE, STRAY_WORK, WORK, apply_trailers, blob, changed_paths, compute, message_trailers,
-                         stray_work, valid_date, work_state)
+                         stray_work, valid_date, WORK_RULE, work_ids_ok, work_state)
 
 HOOKS_DIR = ".githooks"
 HOOKS = ("prepare-commit-msg", "commit-msg", "pre-push")
@@ -262,11 +262,17 @@ def hook_commit_msg(args):
         print(f"kbgit.py commit-msg: {STRAY_WORK}; check-trailers (the pre-push hook, sync's gate) refuses this "
               "commit", file=sys.stderr)
     work = message_trailers(new)[1].get(WORK, [])
-    if len(work) == 1:
+    if work:  # the checks check-trailers runs on this commit before a push, with the rule they apply said once
         staged = lambda rel: blob(INDEX, rel) if blob(INDEX, rel) is not None else blob(base, rel)  # noqa: E731
-        for why in work_state(work, changed_paths(base, INDEX), staged):
+        if not work_ids_ok(work, staged):
+            whys = [f"has {', '.join(work)}; expected one line of backlog item ids that exist"]
+        else:
+            whys = work_state(work, changed_paths(base, INDEX), staged)
+        for why in whys:
             print(f"kbgit.py commit-msg: {WORK}: {why}; check-trailers (the pre-push hook, sync's gate) refuses this "
                   "commit: work lands only for a claimed item of a started sprint", file=sys.stderr)
+        if whys:
+            print(f"kbgit.py commit-msg: the rule: {WORK_RULE}", file=sys.stderr)
 
 
 def cmd_hook(a, gate, dirty_paths):

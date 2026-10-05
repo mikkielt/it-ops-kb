@@ -396,6 +396,11 @@ class BlobReader:
 _WANT = {}  # sha -> computed trailers: sync audits the same commits twice
 
 
+def forget_audits():
+    """Drop the computed trailers of the commits audited so far (a caller that rewrote them audits afresh)."""
+    _WANT.clear()
+
+
 def trailer_audit(rng, quiet=False, work_state_on=True):
     """(commits checked, kb commits, [(sha, lines describing what is wrong)]) for a range A..B or one commit;
     None when the range is not valid here. `work_state_on`: also judge the KB-Work items of the commits not yet on
@@ -453,6 +458,8 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
             for why in state:
                 lines.append(f"    {WORK}: {why}" + ("" if why == STRAY_WORK else
                                                      "; work lands only for a claimed item of a started sprint"))
+            if WORK in wrong or any(why != STRAY_WORK for why in state):
+                lines.append(f"    the rule: {WORK_RULE}")
             bad.append((sha, lines))
     return len(recs), kb, bad
 
@@ -497,12 +504,21 @@ def stray_work(message):
 def work_ok(sha, values):
     """A KB-Work trailer: one line of comma-separated backlog ids, each an item file at the commit or its parent (a
     commit that closes a sprint deletes the files)."""
-    if len(values) > 1:
+    return work_ids_ok(values, lambda rel: blob(sha, rel) if blob(sha, rel) is not None else blob(sha + "^", rel))
+
+
+def work_ids_ok(values, load):
+    """work_ok's rule with `load(rel)` the file's text (or None): one KB-Work line of existing backlog ids."""
+    if len(values) != 1:
         return False
     ids = [x.strip() for x in values[0].split(",") if x.strip()]
-    return bool(ids) and all(WORK_ID.fullmatch(i) and (blob(sha, f"{BACKLOG}/{i}.json") is not None
-                                                      or blob(sha + "^", f"{BACKLOG}/{i}.json") is not None)
-                             for i in ids)
+    return bool(ids) and all(WORK_ID.fullmatch(i) and load(f"{BACKLOG}/{i}.json") is not None for i in ids)
+
+
+WORK_RULE = ("a commit's KB-Work names, on one line, only items claimed (doing or done) in a started sprint, or a "
+             "sprint or review item; a backlog-planning commit (it changes only item files: a claim, a release, a "
+             "gate, a plan) names exactly the items whose files it changes, so a release commit names the released "
+             "item and no other, and no later work commit names that item until it is claimed again")
 
 
 WORKED = ("doing", "done")  # a claimed item (done drops claimed_by but was claimed to get there)
