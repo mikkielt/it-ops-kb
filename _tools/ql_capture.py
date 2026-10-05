@@ -115,7 +115,19 @@ OPS_EVENTS = {  # the closed set of events, each with its closed keys
     "call.tool": _spec({"tool": "token", "group": "token", "outcome": "token", "size": "token"},
                        {"class": "token", "ms": "ms"}),
 }
+OPS_EVENTS.update({  # the hook events of permission, compaction and API-error turn ends (ST-mkczg5gs): classes only
+    "permission.request": _spec({"tool": "token", "group": "token"}),
+    "permission.denied": _spec({"tool": "token", "group": "token"}, {"rule": "token"}),
+    "compact.pre": _spec({"trigger": "token", "group": "token"}),
+    "compact.post": _spec({"trigger": "token", "group": "token"}, {"size": "token"}),
+    "turn.error": _spec({"error": "token", "group": "token"}),
+})
 CALL_OUTCOMES = ("ok", "error", "interrupt")  # a call.tool row's outcome
+COMPACT_TRIGGERS = ("manual", "auto")
+STOP_ERRORS = ("rate_limit", "overloaded", "authentication_failed", "oauth_org_not_allowed", "account_on_hold",
+               "billing_error", "invalid_request", "model_not_found", "server_error", "max_output_tokens",
+               "cloud_credential_error", "unknown")  # StopFailure's documented error classes (claude/hooks.md)
+DENIED_RULE = re.compile(r"\[([A-Za-z][A-Za-z0-9 _-]{0,38})\]")  # the classifier rule a PermissionDenied reason names
 
 
 def _shape_ok(shape, v):
@@ -596,6 +608,41 @@ def call_row(event, ok):
                   **{"class": kbusage.command_class(args.get("command")) if tool in SHELL_TOOLS else None})
 
 
+def hook_group(event):
+    """The agent group of a hook event as a token: `main` outside a subagent."""
+    import kbusage
+    kind = str(event.get("agent_type") or "").rsplit(":", 1)[-1]
+    return kbusage.agent_group(kind).lower() if kind else "main"
+
+
+def hook_ops_row(event):
+    """The ops row of a PermissionRequest, PermissionDenied, PreCompact, PostCompact or StopFailure event (ST-mkczg5gs):
+    the tool's group, the classifier rule a denial names (from its `[...]` only, else `classifier-unavailable` or
+    none), the compaction trigger, the summary's size class, the API error's class (StopFailure's documented set, else
+    `unknown`) and the agent group; never the reason text, the command or tool input, the summary or a path."""
+    import kbusage
+    name, group = event.get("hook_event_name"), hook_group(event)
+    if name in ("PermissionRequest", "PermissionDenied"):
+        tool = kbusage.call_group(str(event.get("tool_name") or ""))
+        if name == "PermissionRequest":
+            return record(OPS, event="permission.request", tool=tool, group=group)
+        reason = str(event.get("reason") or "")
+        m = DENIED_RULE.search(reason)
+        rule = re.sub(r"[ _]+", "-", m.group(1).strip().lower()) if m else \
+            "classifier-unavailable" if reason.strip().lower().startswith("classifier unavailable") else None
+        return record(OPS, event="permission.denied", tool=tool, group=group, rule=rule)
+    if name in ("PreCompact", "PostCompact"):
+        trigger = event.get("trigger") if event.get("trigger") in COMPACT_TRIGGERS else "other"
+        if name == "PreCompact":
+            return record(OPS, event="compact.pre", trigger=trigger, group=group)
+        return record(OPS, event="compact.post", trigger=trigger, group=group,
+                      size=kbusage.size_class(len(text_of(event.get("compact_summary")))))
+    if name == "StopFailure":
+        error = event.get("error") if event.get("error") in STOP_ERRORS else "unknown"
+        return record(OPS, event="turn.error", error=error, group=group)
+    return None
+
+
 def capture(event):
     """The row one hook event writes, or None."""
     if not isinstance(event, dict):
@@ -646,6 +693,8 @@ def capture(event):
                       outcome=fetch_outcome(tool, ok, event, host), chars=chars)
     if name in ("SubagentStart", "SubagentStop"):
         return agent_row(event, sid)
+    if name in ("PermissionRequest", "PermissionDenied", "PreCompact", "PostCompact", "StopFailure"):
+        return hook_ops_row(event)
     if name == "Stop":
         if not used_kb(spool, sid, pid):
             return None

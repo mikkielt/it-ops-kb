@@ -2,7 +2,7 @@
   "id": "ST-mkczg5gs",
   "kind": "story",
   "title": "Permission requests and denials, compactions and API-error turn ends leave closed ops rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-smqwmchu",
   "priority": "P2",
@@ -59,5 +59,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }

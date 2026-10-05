@@ -557,6 +557,57 @@ class TestOpsRows:
         assert ql_capture.record("ops", event="call.tool", tool="bash", group="main", outcome="ok", size="empty",
                                  **{"class": "cat /etc/passwd"}) is None
 
+    def hook_ops(self):
+        return [{k: v for k, v in r.items() if k not in ("id", "ts", "surface", "v")} for r in self.rows()
+                if r.get("event", "").startswith(("permission.", "compact.", "turn."))]
+
+    def test_ops_permission_compact_rows(self):
+        """ST-mkczg5gs: PermissionRequest, PermissionDenied, PreCompact, PostCompact and StopFailure each leave one
+        closed ops row: the tool group, the denial's rule class, the trigger, the summary's size class, the API
+        error's class and the agent group."""
+        base = {"session_id": SID, "prompt_id": "p1"}
+        ql_capture.capture({**base, "hook_event_name": "PermissionRequest", "tool_name": "Bash",
+                            "tool_input": {"command": "rm -rf build"}})
+        ql_capture.capture({**base, "hook_event_name": "PermissionDenied", "tool_name": "mcp__kb__kb_pack",
+                            "tool_input": {}, "tool_use_id": "toolu_01", "reason": "Blocked [Data Exfiltration] by rule",
+                            "agent_type": "it-ops-kb:kb-worker"})
+        ql_capture.capture({**base, "hook_event_name": "PermissionDenied", "tool_name": "WebFetch",
+                            "reason": "Classifier unavailable"})
+        ql_capture.capture({**base, "hook_event_name": "PreCompact", "trigger": "auto", "custom_instructions": None})
+        ql_capture.capture({**base, "hook_event_name": "PostCompact", "trigger": "manual", "compact_summary": "s" * 2500})
+        ql_capture.capture({**base, "hook_event_name": "StopFailure", "error": "rate_limit", "error_details": "429"})
+        ql_capture.capture({**base, "hook_event_name": "StopFailure", "error": "something new"})
+        assert self.hook_ops() == [
+            {"event": "permission.request", "tool": "bash", "group": "main"},
+            {"event": "permission.denied", "tool": "kb_pack", "group": "kb-worker", "rule": "data-exfiltration"},
+            {"event": "permission.denied", "tool": "webfetch", "group": "main", "rule": "classifier-unavailable"},
+            {"event": "compact.pre", "trigger": "auto", "group": "main"},
+            {"event": "compact.post", "trigger": "manual", "group": "main", "size": "lt10k"},
+            {"event": "turn.error", "error": "rate_limit", "group": "main"},
+            {"event": "turn.error", "error": "unknown", "group": "main"}], self.hook_ops()
+        assert all(ql_capture.ops_problems(r) == [] for r in self.hook_ops())
+
+    def test_ops_hook_event_no_free_text(self):
+        """A planted payload with free text in every field of the five events stores none of it: no reason, command,
+        tool input, custom instructions, summary, error details, last message or path."""
+        free = "FREE-TEXT /home/jan.kowalski/secret.md"
+        base = {"session_id": SID, "prompt_id": "p1", "cwd": "/home/jan.kowalski/repo", "transcript_path": free}
+        for ev in ({"hook_event_name": "PermissionRequest", "tool_name": "Bash", "tool_input": {"command": free},
+                    "permission_suggestions": [{"rule": free}]},
+                   {"hook_event_name": "PermissionDenied", "tool_name": "Bash", "tool_input": {"command": free},
+                    "reason": free + " [" + "x" * 60 + "]"},
+                   {"hook_event_name": "PreCompact", "trigger": free, "custom_instructions": free},
+                   {"hook_event_name": "PostCompact", "trigger": "auto", "compact_summary": free},
+                   {"hook_event_name": "StopFailure", "error": free, "error_details": free,
+                    "last_assistant_message": free}):
+            ql_capture.capture({**base, **ev})
+        text = "".join(f.read_text(encoding="utf-8") for f in self.spool.glob("*.jsonl"))
+        for leak in ("FREE-TEXT", "jan.kowalski", "secret.md", "xxxx"):
+            assert leak not in text, leak
+        assert [r["event"] for r in self.hook_ops()] == ["permission.request", "permission.denied", "compact.pre",
+                                                         "compact.post", "turn.error"]
+        assert self.hook_ops()[2]["trigger"] == "other" and "rule" not in self.hook_ops()[1]
+
     def test_ops_sidecar_a_closed_event_is_one_row_in_the_tools_file(self):
         row = ql_capture.record("ops", **LAND_STEP)
         (got,) = self.rows()
