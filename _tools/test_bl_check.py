@@ -143,15 +143,27 @@ def test_done_flags_noop_check_real_publish_output(repo, capsys):
     assert "no public remote" in bl_check.noop_output(out), out
 
 
+def trivial_live(items):
+    """(id, argv) of each check or repro that trivial_command flags among ITEMS, open ones only: the items backlog.py
+    check reads for the same rule (refused_command_errors), so a done item, whose checks set refuses to change and
+    done only warns of, never turns this test red where check passed (BG-4zpv4iol)."""
+    return [(it["id"], c["run"]) for it in items if it.get("status") in bl_check.OPEN_STATUSES
+            for c in it.get("checks", []) + ([it["repro"]] if it.get("repro") else []) if bl_check.trivial_command(c["run"])]
+
+
 def test_done_flags_noop_check_real_backlog_commands():
-    """Real inputs: no check or repro of the repository's own items runs nothing (trivial_command flags none)."""
-    flagged = []
-    for f in (Path(TOOLS).parent / backlog.REL_DIR).glob("*.json"):
-        it = json.loads(f.read_text(encoding="utf-8"))
-        for c in it.get("checks", []) + ([it["repro"]] if it.get("repro") else []):
-            if bl_check.trivial_command(c["run"]):
-                flagged.append((it["id"], c["run"]))
-    assert not flagged, flagged
+    """Real inputs: no check or repro of the repository's open items runs nothing (trivial_command flags none), the
+    items check refuses such a command on; planted: an open item with `python3 -c pass` is flagged, a done one is not,
+    and check agrees on both."""
+    items = [json.loads(f.read_text(encoding="utf-8")) for f in (Path(TOOLS).parent / backlog.REL_DIR).glob("*.json")]
+    assert not trivial_live(items), trivial_live(items)
+    planted = [{"id": f"TK-{s}aaaaaaa", "kind": "task", "title": s, "status": s,
+                "checks": [{"run": ["python3", "-c", "pass"]}]} for s in ("t", "d")]
+    planted[0]["status"], planted[1]["status"] = "todo", "done"
+    assert [i for i, _ in trivial_live(planted)] == ["TK-taaaaaaa"]
+    bl = bl_base.Backlog(Path(TOOLS).parent)
+    bl.items = {it["id"]: it for it in planted}
+    assert [e.split(" ", 1)[0] for e in bl_check.refused_command_errors(bl)] == ["TK-taaaaaaa"]
 
 
 def test_done_flags_noop_check_new_and_done_warn_of_a_trivial_check(sprint):
