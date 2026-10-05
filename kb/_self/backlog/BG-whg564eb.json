@@ -2,7 +2,8 @@
   "id": "BG-whg564eb",
   "kind": "bug",
   "title": "settings.json still allows what only the retired autopilot tick and headless runner used, and test_settings_allow.py requires it",
-  "status": "draft",
+  "status": "doing",
+  "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -38,5 +39,6 @@
     "_tools/bl_selfcheck.py",
     "kb/_self/maintaining.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb sprint manager"
 }
