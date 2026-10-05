@@ -22,5 +22,9 @@
     "kb/_self/maintaining.md",
     "_tools/test_kb_item_reading.py",
     ".claude/skills/kb-item/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-bywuxi6d",
+    "BG-dudqrf5p"
   ]
 }
