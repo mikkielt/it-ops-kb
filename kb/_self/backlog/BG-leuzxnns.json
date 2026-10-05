@@ -1,0 +1,24 @@
+{
+  "id": "BG-leuzxnns",
+  "kind": "bug",
+  "title": "Query-log finding F-b28d0d79b19b is stranded in no-fix",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The finding F-b28d0d79b19b left the state no-fix: learn, apply or research moved it on, or it was closed by hand, so the stranded-findings detector does not report it.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/backlog.py",
+      "intake",
+      "--status",
+      "546e1bf45493"
+    ]
+  },
+  "links": [
+    "fingerprint 546e1bf45493",
+    "detector stranded"
+  ],
+  "notes": "eval finding F-b28d0d79b19b, no-fix, newest record in run 20260929T135455Z-9ec949c9, 6 day(s) before HEAD's commit; the limit is 3"
+}
