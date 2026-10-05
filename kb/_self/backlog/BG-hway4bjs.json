@@ -2,7 +2,7 @@
   "id": "BG-hway4bjs",
   "kind": "bug",
   "title": "test_bl_check passes a non-UTF-8 remote URL as an argument, which Windows cannot",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "touches": [
     "_tools/test_bl_check.py",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker3"
 }

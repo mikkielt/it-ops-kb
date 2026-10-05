@@ -456,10 +456,10 @@ def test_project_paths_scp_and_non_ascii(tmp_path):
     with replacement instead of crashing the read."""
     repo = tmp_path / "r"
     subprocess.run(["git", "init", "-q", str(repo)], check=True)
-    for name, url in (("o", "gitlab.example.com:grp/proj.git"), ("d", "C:/repos/local/x"),
-                      ("n", b"https://gitlab.example.com/gr\xfcp/p\xc3\xb8j.git")):
-        subprocess.run([b"git", b"-C", bytes(repo), b"remote", b"add", name.encode(), url if isinstance(url, bytes)
-                        else url.encode()], check=True)
+    for name, url in (("o", "gitlab.example.com:grp/proj.git"), ("d", "C:/repos/local/x")):
+        subprocess.run(["git", "-C", str(repo), "remote", "add", name, url], check=True)
+    with open(repo / ".git" / "config", "ab") as f:  # bytes no Windows argv can carry: written to git's config directly
+        f.write(b'[remote "n"]\n\turl = https://gitlab.example.com/gr\xfcp/p\xc3\xb8j.git\n')
     got = bl_base.project_paths(repo)
     assert {"grp/proj", "grp%2fproj"} <= got, got
     assert not any(p.startswith("repos/") for p in got), got
