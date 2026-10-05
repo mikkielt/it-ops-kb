@@ -1,0 +1,25 @@
+{
+  "id": "ST-kd7vnu5r",
+  "kind": "story",
+  "title": "A dropped test id names the removed code it tested, and a dropped test whose module is still present is flagged",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Retro SP-ytfb4dc5: deleting test_autopilot_two_runners.py dropped the kg_lock tests that land and sync rely on, and perfcheck ids --allow-removed accepted it (BG-m4pixy3p). perfcheck ids (or a check beside it) warns of a test id in test_ids_dropped.txt whose recorded reason names no removed file or symbol, and of a dropped test file whose imports are all still present modules, so a removal that drops tests of live code is seen before it lands. Planted tests for both.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dropped_ids_name_removed_code"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/perfcheck.py",
+    "_tools/test_perfcheck*.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}
