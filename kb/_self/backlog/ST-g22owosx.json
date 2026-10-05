@@ -25,7 +25,8 @@
     "_tools/bl_check.py",
     "_tools/test_bl_check.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_base.py"
   ],
   "depends_on": [
     "ST-ov6h4gbx"

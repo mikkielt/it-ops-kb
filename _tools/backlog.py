@@ -54,10 +54,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           (a research item of a planned sprint, one whose touches are all inside kb
                                           roots: claimed from draft, released to draft; check accepts it doing or
                                           done, and done proves it before the sprint starts)
-  backlog.py answer ID GATE (--answer TEXT --by operator|agent [--record] | --provisional | --confirm)
+  backlog.py answer ID GATE (--answer TEXT --by operator|agent [--record] | --provisional | --confirm
+                            --by operator|delegate:NAME)
                                           record a gate's answer: --provisional takes the recommendation as the
                                           agent's answer (provisional gates only); --confirm --by operator makes an
-                                          agent's answer the operator's (no --by: exit 2);
+                                          agent's answer the operator's (no --by: exit 2); --by delegate:NAME
+                                          confirms only under an operator grant on the sprint (set SP
+                                          --delegate NAME --by operator), recorded as that delegate;
                                           --record (with --by operator) also writes it as an active
                                           decision of kb/_self through kbdecide.py, its context the item (exit 2 with
                                           --provisional, --confirm or a --by other than operator);
@@ -68,7 +71,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           row (no KB-Work), so the tree is clean for the next kbgit.py sync
   backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
                  [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--title T] [--goal T]
-                 [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID] [--add] [--clear FIELD]...
+                 [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID]
+                 [--delegate NAME --by operator] [--add] [--clear FIELD]...
                                           change an item after new: each list option replaces its list (--add:
                                           appends what is missing, so a second run changes nothing; for --notes,
                                           appends the text unless the notes hold it), --clear FIELD removes one.
@@ -476,9 +480,14 @@ def cmd_answer(bl, a):
             raise Refused(why)
     members = [bl.items[i] for i in bl.sprint_items(iid)] if it.get("kind") == "sprint" else []
     scope = bl_authority.sprint_scope(it, g, members)
+    if a.by is not None and a.by not in ("operator", "agent") and not re.fullmatch(r"delegate:[\w.-]+", a.by):
+        raise Rejected(f"--by {a.by}: operator, agent or delegate:NAME")
     if a.confirm and not a.by:
         raise Rejected(f"gate {a.gate} of {bl.label(iid)}: --confirm needs --by operator, which an agent passes only "
                        "after the operator said so")
+    delegate = a.by[len("delegate:"):] if (a.by or "").startswith("delegate:") else None
+    if delegate is not None and not a.confirm:
+        raise Rejected(f"--by delegate:{delegate} only confirms a provisional answer (--confirm), it answers nothing")
     if a.by != "operator" and (a.by or a.provisional):
         cls = bl_authority.derived_class(scope, g)
         if cls in bl_authority.OPERATOR_CLASSES:
@@ -488,7 +497,13 @@ def cmd_answer(bl, a):
     if a.confirm:
         if g.get("by") != "agent":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} has no agent answer to confirm")
-        g["by"] = "operator"
+        if delegate is not None:  # a grant the operator wrote on the item's sprint names this delegate
+            sp = it if it.get("kind") == "sprint" else bl.items.get(bl.sprint_of(iid) or "", {})
+            if not any(isinstance(d, dict) and d.get("name") == delegate and d.get("by") == "operator"
+                       for d in sp.get("delegates", []) or []):
+                raise Refused(f"gate {a.gate} of {bl.label(iid)}: no operator grant names delegate {delegate} on its "
+                              f"sprint (the operator grants one: set SP --delegate {delegate} --by operator)")
+        g["by"] = a.by if delegate is not None else "operator"
     elif a.provisional:
         if g["kind"] != "provisional":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} is blocking: only the operator answers it")
@@ -546,7 +561,7 @@ def changed_items(bl, edits):
 
 SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to")
 SET_FIELDS = ("notes", "priority", "rank", "sprint", "title", "goal", "repro", "repro_reason", "severity",
-              "parent") + SET_LISTS  # what set changes; the others are refused
+              "parent", "delegates") + SET_LISTS  # what set changes; the others are refused
 SET_REFUSED = {  # a field set refuses, with the rule it states
     "status": "changes only through claim, release, start, close, drop and done",
     "claimed_by": "changes only through claim and release",
@@ -593,6 +608,19 @@ def cmd_set(bl, a):
             raise Rejected(set_refusal(f))
     given = {"notes": a.notes, "priority": a.priority, "rank": a.rank, "sprint": a.sprint}
     given.update({f: getattr(a, f) for f in ("title", "goal", "repro", "repro_reason", "severity", "parent")})
+    if a.delegate or "delegates" in a.clear:  # a grant the operator gives: never an agent's own word
+        if a.set_by != "operator":
+            raise Rejected("set refuses delegates without --by operator: a grant to confirm provisional answers is the "
+                           "operator's, never an agent's")
+        if it.get("kind") != "sprint":
+            raise Rejected(f"set refuses delegates on {bl.label(iid)}: a grant is a sprint's")
+    if a.delegate:
+        bad = [n for n in a.delegate if not re.fullmatch(r"[\w.-]+", n)]
+        if bad:
+            raise Rejected(f"set: --delegate {bad[0]!r} is not a name (letters, digits, . _ -)")
+        have = [d for d in it.get("delegates", []) or [] if isinstance(d, dict)]
+        given["delegates"] = have + [{"name": n, "by": "operator"} for n in dict.fromkeys(a.delegate)
+                                     if not any(d.get("name") == n for d in have)]
     given.update({f: getattr(a, f) for f in SET_LISTS})
     given = {f: v for f, v in given.items() if v is not None}
     both = sorted(set(given) & set(a.clear))
@@ -601,9 +629,9 @@ def cmd_set(bl, a):
     if not given and not a.clear:
         raise Rejected("set: nothing to change: name a field (" + ", ".join(SET_FIELDS) + ")")
     named = sorted(set(given) | set(a.clear))
-    if it.get("kind") == "sprint" and set(named) - {"notes", "links"}:
-        raise Rejected(f"set refuses {', '.join(sorted(set(named) - {'notes', 'links'}))} on a sprint: "
-                       "a sprint takes notes and links only")
+    if it.get("kind") == "sprint" and set(named) - {"notes", "links", "delegates"}:
+        raise Rejected(f"set refuses {', '.join(sorted(set(named) - {'notes', 'links', 'delegates'}))} on a sprint: "
+                       "a sprint takes notes, links and delegates only")
     if it.get("status") == "done" and {"checks", "touches", "goal", "repro", "repro_reason"} & set(named):
         raise Rejected(f"set refuses {', '.join(sorted({'checks', 'touches', 'goal', 'repro', 'repro_reason'} & set(named)))} "
                        f"on {bl.label(iid)}: it is done, and its evidence proves the goal, repro, checks and touches it had")
@@ -987,7 +1015,8 @@ def args_answer(p):
     p.add_argument("id")
     p.add_argument("gate")
     p.add_argument("--answer")
-    p.add_argument("--by", choices=("operator", "agent"))
+    p.add_argument("--by", metavar="operator|agent|delegate:NAME",
+                   help="who answers; delegate:NAME only confirms, under the operator's grant on the sprint")
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
     p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator: keep the answer as an active decision, committed with the item file")
@@ -1012,6 +1041,9 @@ def args_set(p):
     p.add_argument("--repro-reason", dest="repro_reason", help="why a bug's repro can only match text in a file")
     p.add_argument("--severity", choices=SEVERITIES, help="a bug's severity")
     p.add_argument("--parent", help="the item's parent, by the same kind rules check applies")
+    p.add_argument("--delegate", action="append", metavar="NAME",
+                   help="on a sprint, with --by operator: grant NAME the confirming of its provisional answers")
+    p.add_argument("--by", dest="set_by", metavar="operator", help="who writes a --delegate grant: the operator only")
     p.add_argument("--add", action="store_true", help="append to a list (or to the notes) instead of replacing it")
     p.add_argument("--clear", action="append", default=[], metavar="FIELD", help="remove a field (repeatable)")
     for f in SET_REFUSED:  # accepted only to be refused with the rule that applies
