@@ -2,7 +2,7 @@
   "id": "ST-4cw3llgp",
   "kind": "story",
   "title": "Review sprint: Sprint process rules are written where planners and workers read them",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wmukiu3s",
   "review": true,
   "priority": "P1",
@@ -29,5 +29,34 @@
       ]
     }
   ],
-  "claimed_by": "it-ops-kb worker1"
+  "evidence": {
+    "commit": "f1babfb2f555e2ba5883be28b6a27131bea6d769",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "78828fddc791f092"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "3e8a787c7542cad5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/stress_test.py"
+        ],
+        "exit": 0,
+        "sha256": "c4fb762ee131d6a4"
+      }
+    ]
+  }
 }
