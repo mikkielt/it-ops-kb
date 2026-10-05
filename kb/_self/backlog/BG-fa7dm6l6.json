@@ -2,7 +2,7 @@
   "id": "BG-fa7dm6l6",
   "kind": "bug",
   "title": "permission.denied keeps any short bracketed text of the denial reason as its rule",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-6btkjg4l",
   "priority": "P2",
@@ -31,5 +31,6 @@
     "_tools/test_ql_capture.py",
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker2"
 }
