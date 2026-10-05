@@ -865,6 +865,47 @@ def repro_text_warnings(bl):
     return out
 
 
+REPO_PATH = re.compile(r"(?<![\w./:-])((?:\.?[\w-]+/)+[\w.-]*\.\w+)(?![\w/])")  # a relative file path, with an extension
+
+
+def command_paths(run):
+    """The repository-relative file paths a repro or check names: in its words, and in a python -c string's code."""
+    out = []
+    for word in run[1:]:
+        for m in REPO_PATH.finditer(word):
+            if "://" not in word[max(0, m.start() - 3):m.start() + 3] and m.group(1) not in out:
+                out.append(m.group(1))
+    return out
+
+
+def gone_path_warnings(bl):
+    """check's warnings: an open item whose repro or check names a file the checkout no longer has but git's history
+    on HEAD did, a moved or removed file (a split or a drop), so the item can never pass; offline and fast: git is
+    asked only about the paths that are missing."""
+    out, seen = [], {}
+    for iid, it in sorted(bl.items.items()):
+        if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES:
+            continue
+        checks = it.get("checks") or []
+        parts = ([("repro", it["repro"])] if it.get("repro") else []) \
+            + [(f"check {n}" if len(checks) > 1 else "check", c) for n, c in enumerate(checks, 1)]
+        for name, part in parts:
+            if not _check_ok(part):
+                continue
+            for rel in command_paths(part["run"]):
+                if (Path(bl.root) / rel).exists():
+                    continue
+                if rel not in seen:
+                    r = subprocess.run(["git", "-C", str(bl.root), "log", "-1", "--format=%h", "HEAD", "--", rel],
+                                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+                    seen[rel] = r.stdout.strip() if r.returncode == 0 else ""
+                if seen[rel]:
+                    out.append(f"{bl.label(iid)}: its {name} names {rel}, which is gone (last changed in {seen[rel]}, "
+                               "moved or removed): it can never pass as written; point it at the file's new place, or "
+                               "drop the item with --why")
+    return out
+
+
 STATE_READER = re.compile(r"\bitems?'?s?\s+(?:status|presence)\b|\b(?:status|presence) of (?:an?|each|every|the)? ?items?\b"
                           r"|\bbacklog state\b|\breads? (?:the )?backlog\b", re.I)
 STATE_PATHS = (("done", r"(?<![a-z])done(?![a-z])"),
@@ -1063,7 +1104,7 @@ def cmd_check(bl, a):
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) + state_path_warnings(bl) \
         + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl) + item_files_warnings(bl) \
-        + facade_touch_warnings(bl)
+        + facade_touch_warnings(bl) + gone_path_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")

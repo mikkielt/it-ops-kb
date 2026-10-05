@@ -407,6 +407,28 @@ def test_item_holds_host_names_never_printed_by_any_command(sprint, planted_name
         assert sprint["tk"] in out and no_planted_piece(out), (argv, out)
 
 
+def test_check_flags_gone_repro_paths(sprint):
+    """ST-huye4kew planted (BG-57n4r577, ST-tbi3rras): an open item whose check reads a file that git moved away
+    is warned of by check, naming the item, the part and the path; a path git never had (a file the work will
+    create) and a done item's gone path are not."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    (repo / "src").mkdir(exist_ok=True)
+    (repo / "src" / "old.txt").write_text("x\n", encoding="utf-8")
+    commit(repo, "a file")
+    edit(repo, tk, checks=[{"run": is_file("src/old.txt")}, {"run": is_file("src/new_by_work.txt")}])
+    commit(repo, "checks")
+    code, out = b(repo, "check")
+    assert code == 0 and "is gone" not in out, out
+    sh(repo, "git", "mv", "src/old.txt", "src/moved.txt")
+    commit(repo, "move it")
+    code, out = b(repo, "check")
+    assert code == 0 and f"{tk} " in out and "check 1 names src/old.txt, which is gone" in out, out
+    assert "new_by_work.txt" not in out, out
+    edit(repo, tk, status="done")
+    code, out = b(repo, "check")
+    assert "is gone" not in out, out
+
+
 def test_project_paths_scp_and_non_ascii(tmp_path):
     """BG-m5qbkmgp planted: git's scp-like host:path remote with no user is read like user@host:path, a one-letter
     host is a Windows drive and no remote, and a remote whose URL is not valid UTF-8 (git prints its bytes) is read

@@ -2,7 +2,7 @@
   "id": "ST-huye4kew",
   "kind": "story",
   "title": "check flags an open item whose repro or checks name a moved file or select no test",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3rzxx3m4",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,6 @@
   "depends_on": [
     "ST-f5v3i3yd",
     "BG-m5qbkmgp"
-  ]
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
