@@ -89,12 +89,12 @@ def test_authority_refused_class_provisional_confirm_needs_by_for_every_gate(spr
     assert b(r, "answer", bg, "g1", "--provisional")[0] == 0  # no --by stays allowed outside secrets and push
     assert item_json(r, bg)["gates"][0]["by"] == "agent"
     code, out = b(r, "answer", bg, "g1", "--confirm", *(["--by", by] if by else []))
-    if by is None:
+    if by in (None, "agent"):  # BG-xol5fzlc: an agent never confirms its own answer as the operator's
         assert code == 2 and "--by operator" in out, out
         assert item_json(r, bg)["gates"][0]["by"] == "agent"
     else:
         assert code == 0, out
-        assert item_json(r, bg)["gates"][0]["by"] == ("operator" if by in ("operator", "agent") else by)
+        assert item_json(r, bg)["gates"][0]["by"] == ("operator" if by == "operator" else by)
 
 
 @pytest.mark.parametrize("question, cls", [(PUSH_Q, "push"), (SECRET_Q, "secrets")])

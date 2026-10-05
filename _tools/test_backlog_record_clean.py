@@ -23,14 +23,22 @@ DIGEST = "kb/_self/reports/decision-digest.md"
 
 
 def an_item(clone):
-    """The id of an item that is in no sprint: a gate on it is no sprint's start gate."""
+    """The id of an item that is in no sprint: a gate on it is no sprint's start gate. The copied backlog may hold none
+    (every bug planned into a sprint), so one is planted and committed in the clone then (BG-3omfxxnw)."""
     folder = clone.file("kb/_self/backlog")
     for name in sorted(os.listdir(folder)):
         if name.startswith("BG-") and name.endswith(".json"):
             with open(os.path.join(folder, name), encoding="utf-8") as f:
                 if "sprint" not in json.load(f):
                     return name[:-len(".json")]
-    raise AssertionError("no item outside a sprint")
+    out = backlog(clone, "new", "bug", "--title", "A planted bug outside any sprint", "--severity", "S4", "--goal",
+                  "a gate on it is no sprint's start gate", "--repro", "python3 -c 'raise SystemExit(1)'", "--touch",
+                  "src/planted.txt")
+    iid = out.split()[2]
+    clone.git("add", "-A")
+    clone.git("commit", "-q", "-m", f"chore(backlog): file {iid}\n\nKB-Work: {iid}")
+    assert clean(clone) == ""
+    return iid
 
 
 def clean(clone):
