@@ -2,7 +2,7 @@
   "id": "BG-ke2xj34l",
   "kind": "bug",
   "title": "publish reuses a cached clean verdict after the leak-scan rule changes, since the verdict cache key holds no scan form",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w3xmbdra",
   "priority": "P2",
   "rank": 0,
@@ -28,6 +28,8 @@
   "touches": [
     "_tools/kbpublic.py",
     "_tools/test_kbpublic.py",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
+  ],
+  "claimed_by": "it-ops-kb worker1"
 }
