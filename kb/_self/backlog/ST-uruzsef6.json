@@ -2,7 +2,7 @@
   "id": "ST-uruzsef6",
   "kind": "story",
   "title": "Research sprint goal: The test suite is rewritten small, with a hard ceiling the gate enforces",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-edgssdh5",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "claude-main"
 }
