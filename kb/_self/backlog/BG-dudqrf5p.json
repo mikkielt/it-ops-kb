@@ -35,6 +35,22 @@
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does kbgit.py lost-definitions FILE do on a file with no conflict stages in the index (already added, or never in conflict)?",
+      "options": [
+        "exit 2",
+        "exit 0",
+        "exit 1"
+      ],
+      "recommendation": "exit 2",
+      "class": "push",
+      "answer": "exit 2",
+      "by": "operator"
+    }
+  ],
   "notes": "Housekeeping 2026-10-06: the -k lost_definitions_methods_and_assignments selector named a test the suite rules no longer allow; the check runs kg_merge.lost_definitions on a planted three-way input (a dropped method and a dropped assignment) and must exit 0 after the fix.",
   "claimed_by": "worker-dudqrf5p"
 }
