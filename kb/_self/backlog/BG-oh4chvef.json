@@ -2,7 +2,7 @@
   "id": "BG-oh4chvef",
   "kind": "bug",
   "title": "new refuses a repro whose TypeError comes from a None the code under test returned as the repro's own error",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-oh4chv"
 }
