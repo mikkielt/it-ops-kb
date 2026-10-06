@@ -1,0 +1,25 @@
+{
+  "id": "ST-eegqfkah",
+  "kind": "story",
+  "title": "A tested match of pack --root _self prints its pinned passage and little else",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "pack --root _self QUESTION whose verdict is good (a tested question matched) prints the pinned passages, at most three further passages and the tied decisions, so a tested answer costs a fraction of the default budget; a weak pack keeps the full budget, since the agent must find the line itself; the report under kb/_self/reports/ records the bytes of a tested answer before and after",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "BG-g3kbc72r",
+  "kind": "bug",
+  "title": "A pinned passage clipped at the print width hides the anchor phrase of its tested question",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "pack --root _self prints a pinned passage so that its tested question's anchor phrase is in the printed text: a passage longer than the clip is printed as the window around the phrase with an ellipsis at each cut end, so a tested question whose answer sits deep in a long single-sentence passage (the gate-options rule of backlog.md's Escalation line) is answered by the printed line and its row passes the eval",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; out=subprocess.run(['python3','_tools/rag.py','pack','--root','_self','what must a gate about AGENTS.md or README.md state in each option'],capture_output=True,text=True).stdout; sys.exit(0 if 'measured size' in out else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Found by the review of ST-dvf3xf52: row SS2-004 of the skills' sets was left out of lookup_eval.csv because its pinned passage (backlog.md Escalation line, one sentence over the clip) prints without the phrase. The repro reads stdout only; the tool exits 0 on a pack, so a crash would show as a missing phrase too."
+}
