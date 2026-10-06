@@ -2,7 +2,7 @@
   "id": "BG-ay4w32jc",
   "kind": "bug",
   "title": "A one-prompt headless worker gets no usage row, so backlog cost still reads 0 for its item",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/usage.md",
     "kb/_self/querylog.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-stopusage"
 }
