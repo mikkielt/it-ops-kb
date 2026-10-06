@@ -35,7 +35,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    2. The claim commit is made before any work: `--commit` stages only the item's file in `kb/_self/backlog/` and commits it on its own with the trailer `KB-Work: ID` (a backlog-planning commit); without `--commit` stage and commit it by hand the same way. `check-trailers` reads the item as each commit has it, so work committed while the claim is uncommitted counts as unclaimed and its push is refused (`kb/_self/backlog.md`, Git).
 3. **Goal.** `python3 _tools/backlog.py goal ID` prints the condition. Keep it in view; the operator may set it as `/goal`.
 4. **Break down if needed.**
-   - A story or bug with no tasks: add tasks (`new task --parent ID --touch G --check CMD`, later `set ID --touch G --add` or `--check CMD --add`), one commit each.
+   - A story or bug with no tasks: add tasks (`new task --parent ID --touch G --check CMD`, later `set ID --touch G --add` or `--check CMD --add`; `set --touch` alone replaces the whole list, so a gone path leaves it by setting the list again without that path), one commit each.
    - A task with several distinct steps may get subtasks.
    - Work the children first, each through steps 2 to 7.
 5. **Work.** Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-item:work`.
