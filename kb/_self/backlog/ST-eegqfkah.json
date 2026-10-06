@@ -2,7 +2,7 @@
   "id": "ST-eegqfkah",
   "kind": "story",
   "title": "A tested match of pack --root _self prints its pinned passage and little else",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sz5fbvqn",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,6 @@
   "depends_on": [
     "BG-g3kbc72r"
   ],
-  "notes": "Planning 2026-10-06: the planted check packs the tested question SE-002 (kb/_self/_retrieval/lookup_eval.csv) and asks for at most pinned+3 passages under 2400 bytes, the bound being (1 pinned + 3) x 450 bytes (the longest passage line today) plus 561 bytes of header, decisions and footer; today it prints 12 passages in 4255 bytes. The worker may re-derive the bound in the report the goal asks for."
+  "notes": "Planning 2026-10-06: the planted check packs the tested question SE-002 (kb/_self/_retrieval/lookup_eval.csv) and asks for at most pinned+3 passages under 2400 bytes, the bound being (1 pinned + 3) x 450 bytes (the longest passage line today) plus 561 bytes of header, decisions and footer; today it prints 12 passages in 4255 bytes. The worker may re-derive the bound in the report the goal asks for.",
+  "claimed_by": "worker sonnet ST-eegqfkah"
 }
