@@ -2,7 +2,7 @@
   "id": "ST-t2afmfpn",
   "kind": "story",
   "title": "close --summary maps each part of a comma and 'and' list in a sprint goal to the item that carries it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "notes": "Premise: python3 _tools/backlog.py close SP-hyp6o7hl --summary on 2026-10-06 split the goal into 2 clauses and reported clause 1, the comma list 'backlog.py records only the operator's confirmation as the operator's (an agent's --confirm stays provisional), goal marks ..., set --parent ..., ... and perfcheck ids passes on main', as 'unmet, carried by no item' though 14 done items carry its parts; the item's check prints no goal clauses at all for a goal with one comma list (exit 1). CLAUSE_SPLIT in bl_land.py splits only at '; ' and ', and ', and goal_clause_lines returns nothing for fewer than 2 clauses."
+  "notes": "Premise: python3 _tools/backlog.py close SP-hyp6o7hl --summary on 2026-10-06 split the goal into 2 clauses and reported clause 1, the comma list 'backlog.py records only the operator's confirmation as the operator's (an agent's --confirm stays provisional), goal marks ..., set --parent ..., ... and perfcheck ids passes on main', as 'unmet, carried by no item' though 14 done items carry its parts; the item's check prints no goal clauses at all for a goal with one comma list (exit 1). CLAUSE_SPLIT in bl_land.py splits only at '; ' and ', and ', and goal_clause_lines returns nothing for fewer than 2 clauses.",
+  "claimed_by": "worker-t2afmf"
 }
