@@ -2,7 +2,7 @@
   "id": "ST-4mcyzrrz",
   "kind": "story",
   "title": "A done refused only because the item's code commits are not yet on the integration main opens no rework window in backlog.py cost",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,18 @@
     "ST-spywrqpp"
   ],
   "notes": "Premise: the item's check (a planted done refused for unlanded code, replayed through ql_capture.capture, then ql_distill.rework_windows) shows the item in rework at the later prompt (exit 1, [True, True, False, True]) on 2026-10-06; in SP-hyp6o7hl the worker's done of BG-dudqrf5p was refused only for the lane order and cost --rework counted the orchestrator's landing (4.59M tokens) as its rework. Second clause, not checked here: the worktree subagents' usage read 0 attributed (sub) for their items; ST-spywrqpp carries the worktree spool side of it, and what is left (routing a worktree subagent's usage to its item) is for this story's worker to file once that lands. The rework window starts at ql_distill.rework_windows from the work row action refused that ql_capture.refused_done writes for a done exiting 1; done's reason classes are in the done.refused ops row (bl_land.refuse_done), which carries no prompt id.",
-  "claimed_by": "worker-4mcyzr"
+  "evidence": {
+    "commit": "7ca5e01bc0af57842b56dbecc24db87ba9d78e42",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,shutil,subprocess as sp,sys,tempfile\nfrom pathlib import Path\nS=Path.cwd();t=Path(tempfile.mkdtemp());d=t/'r';q=t/'data';c=1\nos.environ.update(CLAUDE_PLUGIN_ROOT=str(S),CLAUDE_PLUGIN_DATA=str(q))\ntry:\n    b=d/'kb'/'_self'/'backlog';b.mkdir(parents=True);(d/'_tools').mkdir();(d/'kb'/'pub').mkdir()\n    g=lambda *a:sp.run(['git','-C',str(d),'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True,check=True)\n    g('init','-q','-b','main')\n    W=lambda p,s:Path(d/p).write_text(s)\n    it=lambda i,tch,ck:{'id':i,'kind':'bug','title':'T','status':'doing','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','-c','pass']},'checks':[{'run':['python3','-c',ck]}],'touches':[tch]}\n    W('kb/_self/backlog/BG-aaaaaaaa.json',json.dumps(it('BG-aaaaaaaa','_tools/x.py','pass')));W('kb/_self/backlog/BG-bbbbbbbb.json',json.dumps(it('BG-bbbbbbbb','kb/pub/a.md','import sys;sys.exit(1)')))\n    W('_tools/x.py','x=1\\n');W('kb/pub/a.md','a\\n');g('add','-A');g('commit','-qm','base');g('update-ref','refs/remotes/origin/main','HEAD')\n    W('_tools/x.py','x=2\\n');g('commit','-qam','fix\\n\\nKB-Work: BG-aaaaaaaa')\n    W('kb/pub/a.md','b\\n');g('commit','-qam','doc\\n\\nKB-Work: BG-bbbbbbbb')\n    sys.path.insert(0,str(S/'_tools'));import ql_capture,ql_distill\n    def h(p,ev,cmd,**k):ql_capture.capture(dict(hook_event_name=ev,session_id='s1',prompt_id=p,tool_name='Bash',tool_input=dict(command=cmd),**k))\n    def done(i,p):\n        r=sp.run([sys.executable,str(S/'_tools'/'backlog.py'),'--root',str(d),'done',i],capture_output=True,text=True)\n        print(i,'done exit',r.returncode,(r.stdout+r.stderr).strip().splitlines()[-1:])\n        h(p,'PostToolUseFailure','python3 _tools/backlog.py done '+i,error='Exit code %d\\n%s%s'%(r.returncode,r.stdout,r.stderr))\n        return r.returncode\n    for i,p in (('BG-aaaaaaaa','p1'),('BG-bbbbbbbb','p1')):h(p,'PostToolUse','python3 _tools/backlog.py claim '+i,tool_response=dict(stdout='ok'))\n    ra=done('BG-aaaaaaaa','p2');rb=done('BG-bbbbbbbb','p3')\n    rows=[json.loads(x) for x in (q/'querylog'/'spool'/'s1.jsonl').read_text().splitlines()]+[{'prompt_id':'p4','surface':'prompt'}]\n    w=ql_distill.rework_windows(rows);print('rework at p4:',sorted(w.get('p4',())))\n    R=[ra!=0,rb!=0,'BG-aaaaaaaa' not in w.get('p4',()),'BG-bbbbbbbb' in w.get('p4',())];print(R);c=0 if all(R) else 1\nexcept Exception as x:print('check error',type(x).__name__,str(x)[:200])\nfinally:shutil.rmtree(t,ignore_errors=True)\nsys.exit(c)"
+        ],
+        "exit": 0,
+        "sha256": "52e2af023f7f98f7"
+      }
+    ]
+  }
 }
