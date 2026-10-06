@@ -1,0 +1,46 @@
+{
+  "id": "ST-zbwyp3ru",
+  "kind": "story",
+  "title": "The suite's id count against the sprint goal's 60 to 100 is settled by the operator",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-edgssdh5's goal asked for 60 to 100 test ids and the sprint delivered 54 under a ceiling of 100 (python3 _tools/tests.py --ceiling); the operator settles whether 54 stands as delivered, under the rule that the suite does not grow, or which guards of kb/_self/code.md's test kinds still lack a test and are added within the ceiling.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "--ceiling"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests_ceiling.json",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "SP-edgssdh5 delivered 54 test ids against its goal's '60 to 100' (the ceiling of 100 and the rule that the suite does not grow were the operator's answers; the lower bound was the goal's own). accept = 54 stands as delivered and this story is dropped (recommended); add = name the guards still worth a test and add them within the ceiling",
+      "options": [
+        "accept",
+        "add"
+      ],
+      "recommendation": "accept",
+      "class": "agents-rule",
+      "do": {
+        "accept": [
+          "python3",
+          "_tools/backlog.py",
+          "drop",
+          "ST-zbwyp3ru",
+          "--why",
+          "the operator accepted 54 ids as delivered: the ceiling is a maximum and the suite does not grow"
+        ],
+        "add": "ST-zbwyp3ru"
+      }
+    }
+  ]
+}

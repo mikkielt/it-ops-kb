@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A decision tied to a section prints under a question only when it bears on it",
   "status": "draft",
+  "sprint": "SP-sz5fbvqn",
   "priority": "P3",
   "rank": 0,
   "goal": "pack --root _self prints a decision tied to a printed passage's doc or section only when the decision's text or source shares a key word with the question or with the pinned tested question, so a section's decisions do not follow every question that touches the section; --set and --item print them as now",
@@ -19,6 +20,11 @@
   ],
   "touches": [
     "_tools/kbfacts.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-eegqfkah"
   ]
 }
