@@ -610,9 +610,9 @@ def agent_hash(agent_id):
     return hashlib.sha256(f"{salt}\0{agent_id}".encode("utf-8")).hexdigest()[:AGENT_HASH_CHARS]
 
 
-def work_branch_item(cwd):
-    """The item id of the `work/<id>` branch checked out at `cwd` (or above it), read from the repository's HEAD file
-    with no process started, else None. Only the id leaves: never the branch text or a path."""
+def work_branch(cwd):
+    """(checkout root, item id) of the `work/<id>` branch checked out at `cwd` (or above it), read from the
+    repository's HEAD file with no process started, else None. The root is the directory that holds the `.git` entry."""
     if not (isinstance(cwd, str) and cwd):
         return None
     try:
@@ -637,7 +637,24 @@ def work_branch_item(cwd):
     except (OSError, ValueError):
         return None
     tail = ref[len(WORK_BRANCH_REF):] if ref.startswith(WORK_BRANCH_REF) else ""
-    return tail if WORK_ITEM.fullmatch(tail) else None
+    return (d, tail) if WORK_ITEM.fullmatch(tail) else None
+
+
+def work_branch_item(cwd):
+    """The item id of the `work/<id>` branch checked out at `cwd` (or above it), else None (work_branch). Only the id
+    leaves: never the branch text or a path."""
+    found = work_branch(cwd)
+    return found[1] if found else None
+
+
+def item_doing(root, item):
+    """Whether the item file `kb/_self/backlog/<item>.json` under `root` exists and says `"status": "doing"`: a file
+    read, never a process."""
+    try:
+        data = json.loads((root / "kb" / "_self" / "backlog" / f"{item}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    return isinstance(data, dict) and data.get("status") == "doing"
 
 
 def agent_row(event, sid):
@@ -657,15 +674,23 @@ def agent_row(event, sid):
 def branch_row(spool, sid, event, pid):
     """The `work` row of a UserPromptSubmit event whose directory is on a `work/<id>` branch: `action` branch, `item` the
     id, `prompt_id` the prompt. It opens the item's window as a `claim` does (usage_targets), so a worker session that
-    the orchestrator's claim set up counts on the item. Written once per session and item: None when the directory is
-    on no such branch, the session has no file name of its own, or a `branch` row of the item is already in its rows
-    (a window `done` or `release` closed stays closed). Only the id and the action are written, never the branch text
-    or a path."""
-    item = work_branch_item(event.get("cwd"))
-    if item is None or not (isinstance(sid, str) and SAFE_SESSION.fullmatch(sid)):
+    the orchestrator's claim set up counts on the item. Written only when all three hold, else None: it is the
+    session's first prompt (no `prompt` row of another prompt in its spool file; capture writes the prompt's own row
+    first); the item file at the root of the checkout (work_branch) exists with status `doing`; and the session's
+    rows hold no `claim`, `done` or `release` of the item (nor a `branch` row of it: one hook run, one row). A stale
+    branch, an orchestrator whose directory followed a `cd` into a worker's worktree and a session back in a worktree
+    after its item was done thus open no window that no later row of the session closes. Only the id and the action
+    are written, never the branch text or a path; no process is started."""
+    found = work_branch(event.get("cwd"))
+    if found is None or not (isinstance(sid, str) and SAFE_SESSION.fullmatch(sid)):
         return None
-    for r in rows(spool / f"{sid}.jsonl", f'"{BRANCH_ACTION}"'):
-        if r.get("surface") == "work" and r.get("action") == BRANCH_ACTION and r.get("item") == item:
+    root, item = found
+    if not item_doing(root, item):
+        return None
+    for r in rows(spool / f"{sid}.jsonl", '"surface":"'):
+        if r.get("surface") == "prompt" and not (pid and r.get("prompt_id") == pid):
+            return None
+        if r.get("surface") == "work" and r.get("item") == item and r.get("action") in (*WORK_ACTIONS, BRANCH_ACTION):
             return None
     return record("work", sid, prompt_id=pid, action=BRANCH_ACTION, item=item)
 
@@ -739,7 +764,10 @@ def capture(event):
         prune(spool)
         prompt = str(event.get("prompt") or "")
         row = record("prompt", sid, prompt_id=pid, prompt=prompt, kb_intent=intent(prompt))
-        branch_row(spool, sid, event, pid)  # a worker's window opens at its first prompt, with no claim of its own
+        try:
+            branch_row(spool, sid, event, pid)  # a worker's window opens at its first prompt, with no claim of its own
+        except Exception:  # noqa: BLE001 - capture never fails for its log
+            pass
         try:
             add_usage(spool, sid, event.get("transcript_path"), skip=pid)
         except Exception:  # noqa: BLE001
