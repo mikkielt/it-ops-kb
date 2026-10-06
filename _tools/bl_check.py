@@ -879,22 +879,26 @@ REPO_PATH = re.compile(r"(?<![\w./:-])((?:\.?[\w-]+/)+[\w.-]*\.\w+)(?![\w/])")  
 
 def asserts_absent(text, rel):
     """True when TEXT (a python -c string; an item's checks run no shell) checks that REL does not exist: python
-    exiting with the path's existence (`sys.exit(Path(REL).exists())`), or `not` (`assert not`) before an exists or
-    isfile test of it (BG-gvryjkwc)."""
+    exiting with the path's existence (`sys.exit(Path(REL).exists())`, also in `int(...)` and `1 if ... else 0`), or
+    `not` (`assert not`) before an exists or isfile test of it (BG-gvryjkwc)."""
     q = re.escape(rel)
     probe = (rf"(?:os\.path\.(?:exists|isfile|lexists)\(\s*['\"]{q}['\"]\s*\)"
              rf"|(?:pathlib\.)?Path\(\s*['\"]{q}['\"]\s*\)\.(?:exists|is_file)\(\))")
-    return bool(re.search(rf"sys\.exit\(\s*(?:bool\()?\s*{probe}", text) or re.search(rf"\bnot\s+{probe}", text))
+    return bool(re.search(rf"sys\.exit\(\s*(?:bool\(|int\()?\s*{probe}", text)
+                or re.search(rf"sys\.exit\(\s*1\s+if\s+{probe}\s+else\s+0\s*\)", text)
+                or re.search(rf"\bnot\s+{probe}", text))
 
 
 def command_paths(run):
     """The repository-relative file paths a repro or check names: in its words, and in a python -c string's code;
-    a path the command checks is absent (asserts_absent: a removal's proof) is left out, since its absence passes."""
+    a path the command checks is absent (asserts_absent: a removal's proof; or an argv `test ! -e|-f PATH`) is left
+    out, since its absence passes."""
     out = []
+    negated = run[3] if len(run) == 4 and run[:2] == ["test", "!"] and run[2] in ("-e", "-f") else None
     for word in run[1:]:
         for m in REPO_PATH.finditer(word):
             if "://" not in word[max(0, m.start() - 3):m.start() + 3] and m.group(1) not in out \
-                    and not asserts_absent(word, m.group(1)):
+                    and word != negated and not asserts_absent(word, m.group(1)):
                 out.append(m.group(1))
     return out
 
