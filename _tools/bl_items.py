@@ -473,7 +473,14 @@ def cmd_set(bl, a):
             if state in ("active", "planned"):
                 new["status"] = "todo" if state == "active" else "draft"
 
-    if changed_item(bl, iid, edit):
+    edits = {iid: edit}
+    if "parent" in given and not it.get("sprint") and it.get("status") in ("draft", "todo"):
+        state = bl.items.get(bl.sprint_of(given["parent"]) or "", {}).get("status")
+        if state in ("active", "planned"):  # its draft or todo descendants take the status it gets, as move gives them
+            def edit_child(new):
+                new["status"] = "todo" if state == "active" else "draft"
+            edits.update({c: edit_child for c in bl.descendants(iid) if bl.items[c].get("status") in ("draft", "todo")})
+    if changed_items(bl, edits):
         say(f"set {bl.label(iid)}: {', '.join(named)}")
     else:
         say(f"set {bl.label(iid)}: unchanged")
