@@ -2,7 +2,7 @@
   "id": "BG-ff6e462e",
   "kind": "bug",
   "title": "usage.md says the kb's own headless runs load project hooks with --setting-sources project,local, but they also pass disableAllHooks",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mlemdqbn",
   "priority": "P2",
   "rank": 0,
@@ -17,5 +17,6 @@
   },
   "touches": [
     "kb/_self/usage.md"
-  ]
+  ],
+  "claimed_by": "worker-usage"
 }
