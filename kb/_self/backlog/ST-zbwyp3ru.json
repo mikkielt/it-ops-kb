@@ -2,7 +2,8 @@
   "id": "ST-zbwyp3ru",
   "kind": "story",
   "title": "The suite's id count against the sprint goal's 60 to 100 is settled by the operator",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
   "priority": "P3",
   "rank": 0,
   "goal": "SP-edgssdh5's goal asked for 60 to 100 test ids and the sprint delivered 54 under a ceiling of 100 (python3 _tools/tests.py --ceiling); the operator settles whether 54 stands as delivered, under the rule that the suite does not grow, or which guards of kb/_self/code.md's test kinds still lack a test and are added within the ceiling.",
@@ -17,7 +18,8 @@
   ],
   "touches": [
     "_tools/tests_ceiling.json",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
   ],
   "gates": [
     {

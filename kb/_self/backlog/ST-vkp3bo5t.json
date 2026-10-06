@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The worker brief says how a filed bug is handed back, and sprint plan asks a rule-guarding item's open choices before start",
   "status": "draft",
+  "sprint": "SP-pbekfhaz",
   "priority": "P2",
   "rank": 0,
   "goal": "(a) The kb-sprint run brief (.claude/skills/kb-sprint/SKILL.md), .claude/agents/kb-worker.md and kb/_self/backlog.md say how a worker hands back a bug it filed with backlog.py new bug: it commits the new item file alone, in a commit of its own on work/<id> whose KB-Work names the new bug, and names the bug in its report, so no untracked item file is left to make land refuse the worktree; done's scope rule allows this, since kb/_self/backlog/** is always in scope (bl_base.ALWAYS_IN_SCOPE) and a commit of item files only is no work commit (bl_land.item_commits). (b) /kb-sprint plan lists, before the start gate is asked, each committed item whose touches are rule-guarding (the agents-rule paths of _tools/bl_authority.py) and asks each choice its goal leaves open as a blocking gate then, not after the code. Each rule is a tested question of kb/_self/_retrieval/lookup_eval.csv in the kb-worker and kb-sprint:plan sets. From the SP-hyp6o7hl retrospective.",
