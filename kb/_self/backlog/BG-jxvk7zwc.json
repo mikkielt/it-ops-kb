@@ -2,7 +2,7 @@
   "id": "BG-jxvk7zwc",
   "kind": "bug",
   "title": "set and reopen write an item that check then fails: changed_items skips check's refused-command and docs-after-code errors",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,6 @@
       "answer": "let them through",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "worker-jxvk7z"
 }
