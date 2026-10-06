@@ -2,7 +2,7 @@
   "id": "BG-fyr5ncj5",
   "kind": "bug",
   "title": "selectors ignores done items, so a change that deletes the tests a done item of the active sprint checks is not told before the review",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-fyr5nc"
+  "evidence": {
+    "commit": "6efa2dc31003d740c07af74924dc6fe76ca026e3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);W=lambda it:open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it));G=lambda:[{'id':'start','kind':'blocking','question':'Q?','options':['approve'],'recommendation':'approve','answer':'approve','by':'operator'}];K=[{'run':['python3','_tools/tests.py','-k','nosuchtest_xyz']}];W({'id':'SP-aaaaaaaa','kind':'sprint','title':'A','status':'active','goal':'g','gates':G()});W({'id':'ST-aaaaaaaa','kind':'story','title':'S','status':'done','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'goal':'g','checks':K,'touches':['_tools/test_x.py'],'evidence':{'commit':'0'*40,'checks':[]}});p=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selectors'],capture_output=True,text=True);o=p.stdout+p.stderr;print(p.returncode,o);sys.exit(1 if 'ST-aaaaaaaa' not in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "1c9645a8619c9c12"
+      }
+    ]
+  }
 }
