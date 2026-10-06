@@ -2,7 +2,7 @@
   "id": "ST-qsppdmjv",
   "kind": "story",
   "title": "start warns of an item that waits on a trigger or a host the sprint cannot reach",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,18 @@
     "ST-ywqttahe"
   ],
   "notes": "Housekeeping 2026-10-06: the -k start_warns_unreachable_trigger selector named a test the suite rules no longer allow; the check copies the backlog to a temporary root, plants an approved sprint with a story whose trigger is unfired, runs backlog.py --root T start on it and expects the warning to name the story and its trigger.",
-  "claimed_by": "worker-qsppdm"
+  "evidence": {
+    "commit": "40a8973a2dc910479b77dadf6b06634119561974",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,shutil,subprocess,sys,tempfile,pathlib;t=pathlib.Path(tempfile.mkdtemp());b=t/'kb'/'_self'/'backlog';shutil.copytree('kb/_self/backlog',b);w=lambda d:json.dump(d,open(b/(d['id']+'.json'),'w',encoding='utf-8'));w({'id':'SP-planted00','kind':'sprint','title':'planted','status':'planned','goal':'planted trigger warning','gates':[{'id':'start','kind':'blocking','question':'Approve?','options':['approve','change','cancel'],'recommendation':'approve','answer':'approve','by':'operator'}]});w({'id':'ST-planted00','kind':'story','title':'planted trigger','status':'todo','sprint':'SP-planted00','priority':'P3','goal':'planted','touches':['kb/_self/backlog.md'],'checks':[{'run':['python3','_tools/backlog.py','check']}],'trigger':{'when':'a Claude session on a host this sprint cannot reach','fired':False}});w({'id':'ST-planted01','kind':'story','title':'Review sprint: planted','review':True,'status':'todo','sprint':'SP-planted00','priority':'P1','goal':'review','checks':[{'run':['python3','_tools/backlog.py','check']}]});o=subprocess.run(['python3','_tools/backlog.py','--root',str(t),'start','SP-planted00'],capture_output=True,text=True);out=o.stdout+o.stderr;sys.exit(0 if 'ST-planted00' in out and 'trigger' in out else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
