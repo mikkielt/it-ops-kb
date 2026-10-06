@@ -2,7 +2,7 @@
   "id": "BG-m44nifbo",
   "kind": "bug",
   "title": "check reports a path a check proves absent as gone when it uses test ! -e or sys.exit on an exists test in another form",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-m44nif"
 }
