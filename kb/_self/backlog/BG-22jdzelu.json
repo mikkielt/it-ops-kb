@@ -2,7 +2,7 @@
   "id": "BG-22jdzelu",
   "kind": "bug",
   "title": "The docs still say a work window opens only from a claim, and cite the dropped BG-maqf3lxh as open",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   ],
   "depends_on": [
     "BG-lbazs72w"
-  ]
+  ],
+  "claimed_by": "worker-docs"
 }
