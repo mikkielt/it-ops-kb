@@ -2115,6 +2115,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     scored = [(s, st.unit(i)) for s, i in ranked[:40]]
     tested = tested_matches(st, informative) if rules else []
     pins = [{**st.unit(i), "tested": rid} for rid, _, i in tested]
+    anchor_phrases = {r["id"]: eval_phrases(r) for r in self_eval_rows()} if tested else {}
 
     def has(u, t):
         return u["id"] in holders[t]
@@ -2212,7 +2213,11 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         items = []
         one_section = len({u["section"] for _, u in picked}) == 1  # rule docs: the heading once, else on each line
         for s, u in picked:
-            text = clip(u["text"], PASSAGE_CHARS + PARENT_CHARS + CLAUSE_CHARS if rules else 420)
+            if rules:
+                text = clip_around(u["text"], PASSAGE_CHARS + PARENT_CHARS + CLAUSE_CHARS,
+                                   anchor_phrases.get(u.get("tested"), ()), set(informative))
+            else:
+                text = clip(u["text"], 420)
             where = f" § {u['section']}:" if rules and u["section"] and not one_section else ""
             mark = f" [tested {u['tested']}]" if u.get("tested") else ""
             line = f"- {u['path']}:{u['line']}{mark}{where} {text}" + ("" if u["tags"] else " (no tag)")
@@ -2437,6 +2442,44 @@ def clip(text, n):
     head = text[:n].rsplit(" ", 1)[0]
     tags = [m.group(0) for m in TAG.finditer(text) if m.end() > len(head)]  # tags cut off, straddling ones included
     return head + " ..." + ("" if TAG.search(head) or not tags else " " + " ".join(tags))
+
+
+def clip_around(text, n, phrases=(), terms=()):
+    """`clip(text, n)`, except that a text longer than n whose `phrases` (the first one it holds) or else most `terms`
+    (stems of the question's key words) lie beyond the clip prints as the window of n characters around them, with
+    `...` at each cut end: the passage a tested question is pinned on answers by the printed line, not by the part
+    cut off. The clip itself when its head holds as many of them."""
+    if len(text) <= n:
+        return text
+    head = clip(text, n)
+    found = next(((i, i + len(p)) for p in phrases for i in [text.find(p)] if i >= 0), None)
+    if found:
+        if found[1] <= len(head.split(" ...")[0]):
+            return head
+        start = max(0, found[0] - max(0, n - (found[1] - found[0])) // 3)
+    else:
+        hits = [(m.start(), stem(m.group(0).lower())) for m in WORD.finditer(text)]
+        hits = [(i, t) for i, t in hits if t in terms]
+
+        def held(a):
+            return len({t for i, t in hits if a <= i < a + n - 20})
+        if not hits:
+            return head
+        start = max(hits, key=lambda h: (held(h[0]), -h[0]))[0]
+        if held(start) <= held(0):
+            return head
+        inside = sorted(i for i, t in hits if start <= i < start + n - 20)
+        start = max(0, inside[len(inside) // 2] - n // 2)  # the window centred on the words it holds
+    end = min(len(text), start + n)
+    start = max(0, end - n)
+    if start:
+        start = text.find(" ", start) + 1 or start
+    if end < len(text):
+        end = text.rfind(" ", start, end) if " " in text[start:end] else end
+    window = text[start:end]
+    tags = [m.group(0) for m in TAG.finditer(text) if m.end() > end]  # tags cut off, straddling ones included
+    return ("... " if start else "") + window + (" ..." + ("" if TAG.search(window) or not tags else " " + " ".join(tags))
+                                                if end < len(text) else "")
 
 
 def format_sources(srcs):
