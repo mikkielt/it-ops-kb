@@ -12,9 +12,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "land_refuses_out_of_scope_before_the_merge_request"
+        "-c",
+        "import sys, subprocess, tempfile, pathlib\nsys.path.insert(0, \"_tools\")\nimport bl_land\nsrc = pathlib.Path(\"_tools/bl_land.py\").read_text()\nbody = src[src.index(\"def land_once\"):src.index(\"def cmd_land\")]\ns = body.index('land_stop(\"scope\"')\nassert \"out_of_scope(root, item_commits\" in body[:s] and s < body.index(\"land_checks(bl, iid)\") < body.index(\"LAND_SYNC\"), \"scope must precede checks and sync\"\nd = tempfile.mkdtemp()\ndef g(*a): return subprocess.run([\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@t\", *a], cwd=d, check=True, capture_output=True, text=True).stdout\ng(\"init\", \"-q\")\nfor n in (\"src/a.txt\", \"docs/stray.md\"):\n    p = pathlib.Path(d, n); p.parent.mkdir(exist_ok=True); p.write_text(\"x\")\ng(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"work\")\nsha = g(\"rev-parse\", \"HEAD\").strip()\nc = {sha: [\"src/a.txt\", \"docs/stray.md\"]}\nassert bl_land.out_of_scope(d, c, [\"src/**\"]) == [(sha, \"docs/stray.md\")]\nassert bl_land.out_of_scope(d, c, [\"src/**\", \"docs/**\"]) == []"
       ]
     }
   ],
@@ -25,17 +24,16 @@
     "kb/_self/backlog.md"
   ],
   "evidence": {
-    "commit": "3495db92f7d77759d04ef70a5ed6ed821a99b52a",
+    "commit": "e3a42363ca3d51f92ba5c74933bfc82bfeee9c63",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "land_refuses_out_of_scope_before_the_merge_request"
+          "-c",
+          "import sys, subprocess, tempfile, pathlib\nsys.path.insert(0, \"_tools\")\nimport bl_land\nsrc = pathlib.Path(\"_tools/bl_land.py\").read_text()\nbody = src[src.index(\"def land_once\"):src.index(\"def cmd_land\")]\ns = body.index('land_stop(\"scope\"')\nassert \"out_of_scope(root, item_commits\" in body[:s] and s < body.index(\"land_checks(bl, iid)\") < body.index(\"LAND_SYNC\"), \"scope must precede checks and sync\"\nd = tempfile.mkdtemp()\ndef g(*a): return subprocess.run([\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@t\", *a], cwd=d, check=True, capture_output=True, text=True).stdout\ng(\"init\", \"-q\")\nfor n in (\"src/a.txt\", \"docs/stray.md\"):\n    p = pathlib.Path(d, n); p.parent.mkdir(exist_ok=True); p.write_text(\"x\")\ng(\"add\", \"-A\"); g(\"commit\", \"-qm\", \"work\")\nsha = g(\"rev-parse\", \"HEAD\").strip()\nc = {sha: [\"src/a.txt\", \"docs/stray.md\"]}\nassert bl_land.out_of_scope(d, c, [\"src/**\"]) == [(sha, \"docs/stray.md\")]\nassert bl_land.out_of_scope(d, c, [\"src/**\", \"docs/**\"]) == []"
         ],
         "exit": 0,
-        "sha256": "03502fc2187e648e"
+        "sha256": "e3b0c44298fc1c14"
       }
     ]
   }
