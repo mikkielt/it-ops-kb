@@ -2,7 +2,7 @@
   "id": "BG-hu56lf65",
   "kind": "bug",
   "title": "The headless delegation sentences send land a worker worktree with untracked intake drafts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mlemdqbn",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "worker-intake"
 }
