@@ -46,10 +46,11 @@ changed topic X / source S / answer QK-..." without reading diffs:
                           (only kb/_self/backlog/*.json changed), a sprint and a sprint's review story. A claimed
                           research item of a planned sprint (its touches all inside kb roots) passes on a commit that
                           changes only kb content and item files, and is refused on one that changes anything else
-                          (_tools/, .claude/, .githooks/, CI, kb/_self/ docs). On a commit
-                          not yet on origin/main it also flags a KB-Work line git does not read as a trailer (outside
-                          the message's last paragraph, e.g. a blank line before Co-Authored-By). The commit-msg
-                          hook warns about these; the pre-push hook and sync's gate refuse them.
+                          (_tools/, .claude/, .githooks/, CI, kb/_self/ docs). On any
+                          commit it also flags a KB-Work line git does not read as a trailer (outside the message's
+                          last paragraph, e.g. a blank line before Co-Authored-By) and a change to _tools/, .claude/,
+                          .githooks/ or .gitlab-ci.yml with neither a KB-Work nor a KB-Auto trailer. The commit-msg
+                          hook warns about the stray line; the pre-push hook and sync's gate refuse both.
 One line per key, values sorted and joined by ", ". A key with more than MAX_IDS (40) values is written as a count,
 e.g. `KB-Sources-Added: 312 ids (see diff)`: trailers cannot wrap, and `log` finds such commits by their diff anyway.
 A commit is diffed against its first parent (the empty tree for a root commit). Merge commits carry no trailers and
