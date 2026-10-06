@@ -1,0 +1,24 @@
+{
+  "id": "ST-ebsbhbni",
+  "kind": "story",
+  "title": "A check for a new attribution rule also covers a session that must not be attributed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-mlemdqbn retrospective: TK-nwxefymo's check proved a worker session's prompts count on its item, but no check covered a session that must not count (a stale work/<id> checkout, an orchestrator whose hook cwd passed a worker worktree), so the review found S2 BG-lbazs72w after landing. kb-sprint plan step 6 and kb/_self/backlog.md Sprints (Plan) say that a committed item whose goal adds or widens a rule that attributes rows, windows or cost to an item carries, beside its positive check, one check that a session outside the rule is not attributed.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys;F=(\".claude/skills/kb-sprint/SKILL.md\",\"kb/_self/backlog.md\");r=[any(\"not attributed\" in l for l in pathlib.Path(f).read_text(encoding=\"utf-8\").splitlines()) for f in F];print(r);sys.exit(0 if all(r) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ]
+}

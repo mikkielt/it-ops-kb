@@ -1,0 +1,26 @@
+{
+  "id": "ST-bum7owtw",
+  "kind": "story",
+  "title": "land moves a worker worktree's untracked intake drafts aside itself",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-mlemdqbn retrospective: every headless worker started with the project settings filed about six untracked intake drafts into its worktree (SessionStart backlog.py intake --file --hook), and the orchestrator moved them aside by hand before each of six landings, since bl_land.release_worker_worktree refuses untracked files. land moves untracked kb/_self/backlog/*.json drafts that no commit of the item's branch names out of the worker's worktree (to the main checkout's intake, or the scratch area intake triage reads) and says so, still refusing any other untracked or modified file; kb-sprint run step 3, kb/_self/backlog.md Running a sprint and Landing say so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys;t=pathlib.Path(\"_tools/bl_land.py\").read_text(encoding=\"utf-8\");ok=\"intake\" in t and \"kb/_self/backlog/\" in t;print(\"land handles intake drafts:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ]
+}

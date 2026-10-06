@@ -1,0 +1,25 @@
+{
+  "id": "ST-3p74zj4k",
+  "kind": "story",
+  "title": "Repros and checks that import the query log capture write to an isolated spool, never the clone's own",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-mlemdqbn retrospective: a bug repro that imported ql_capture with CLAUDE_PLUGIN_DATA set but not CLAUDE_PLUGIN_ROOT fell back to the clone's _cache/querylog spool and wrote a junk work row there, removed by hand. bl_base.run_check runs every check and repro with an isolated query log home (CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT pointing at a temporary directory, or the DISABLED marker), so no check or repro adds rows to the real spool; kb/_self/backlog.md and kb/_self/querylog.md say so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_base;ok,code,out=bl_base.run_check(\".\",{\"run\":[\"python3\",\"-c\",\"import os,sys;d=os.environ.get(\\\"CLAUDE_PLUGIN_DATA\\\",\\\"\\\");sys.exit(0 if d and os.environ.get(\\\"CLAUDE_PLUGIN_ROOT\\\") and \\\"_cache\\\" not in d else 1)\"]});print(\"check runs with an isolated query log home:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ]
+}
