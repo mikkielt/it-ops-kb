@@ -16,6 +16,7 @@
   kbgit.py publish [--remote R] [--dry-run] [--rewrite] [--hook]    push the integration main without kb/_querylog and any _logs.csv to the public home
   kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]  a public-home branch to the integration remote: rebase, gate, push by lane
   kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog or a _logs.csv (kbpublic.py)
+  kbgit.py lost-definitions FILE                           exit 1 listing definitions a side added that a resolved .py conflict dropped
 
 Roots. Every root in this repository's kb/ (kb/public and any kb/<name>/ with a _root.md; KB_ROOTS roots belong to
 other repositories) has its own ledgers: fix and fmt work on each root in turn, sync treats every root's ledgers and
@@ -161,6 +162,12 @@ put your commits on): its source and answer ids win a collision.
 Exit (fix, fmt): 0 clean (or fixed), 1 --check and something would change, 2 a problem needs a human (nothing is written).
 Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, asof/blame found no such file or line;
 2 bad arguments, not a git clone, or a git error. Hooks always exit 0.
+
+lost-definitions FILE (kg_merge.py), run on a resolved conflict in a Python file before `git add`, with its stages
+still in the index: the definitions the base (:1:) lacks and ours (:2:) or theirs (:3:) has (a top-level function, class
+or assigned name, a class's method or attribute as `Class.name`) that the working-tree file lacks, one `lost: NAME`
+line each. Exit: 0 none lost; 1 a definition lost or the resolution does not parse; 2 FILE unreadable or not conflicted
+(no :2: or :3: stage).
 """
 import argparse, os, sys
 
@@ -178,7 +185,7 @@ from kg_trailers import (AUTO, AUTO_VALUES, INDEX, KEY_LINE, STRAY_WORK, WORK, a
                          changed_paths, cmd_check_trailers, cmd_trailers, compute, default_range, is_content, log_records,
                          message_trailers, parse_trailers, source_rows_of, stray_work, trailer_audit,
                          valid_date, work_state)
-from kg_merge import FB, canon_csv, has_markers, id_key, lf, run, strip_markers  # noqa: E402,F401
+from kg_merge import FB, canon_csv, cmd_lost_definitions, has_markers, id_key, lf, run, strip_markers  # noqa: E402,F401
 
 
 FIX_COMMIT = kg_sync.FIX_COMMIT  # ql_deliver.py reads it: the subject of the commit sync makes from what fix changed
@@ -279,6 +286,8 @@ def main():
     br.add_argument("--remote", help=f"the integration remote (default: git config {kbpublic.INTEGRATION_KEY}, else origin)")
     cp = sub.add_parser("check-public", help=f"exit 1 listing commits of REV whose history touches {kbpublic.PRIVATE_LABEL}")
     cp.add_argument("rev", nargs="?", help="a commit (default HEAD)")
+    ld = sub.add_parser("lost-definitions", help="exit 1 listing definitions a side added that a resolved .py conflict dropped")
+    ld.add_argument("file", help="the conflicted Python file, resolved in the working tree, its stages still in the index")
     h = sub.add_parser("hook", help="internal: run by the .githooks scripts")
     h.add_argument("name", choices=HOOKS)
     h.add_argument("args", nargs="*")
@@ -288,7 +297,7 @@ def main():
     cmds ={"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane, "check-lanes": cmd_check_lanes,
             "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
             "sync": cmd_sync, "bridge": cmd_bridge, "publish": lambda a: (kbpublic.cmd_publish_hook if a.hook else kbpublic.cmd_publish)(a, KB),
-            "check-public": lambda a: kbpublic.cmd_check_public(a, KB)}
+            "check-public": lambda a: kbpublic.cmd_check_public(a, KB), "lost-definitions": cmd_lost_definitions}
     if a.cmd in cmds:
         try:
             sys.exit(cmds[a.cmd](a))
