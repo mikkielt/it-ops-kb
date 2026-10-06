@@ -29,7 +29,8 @@
     "_tools/kbfacts.py",
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/content-rules.md"
+    "kb/_self/content-rules.md",
+    "kb/_self/reports/2026-10-06-self-rules-retrieval.md"
   ],
   "depends_on": [
     "BG-g3kbc72r"
