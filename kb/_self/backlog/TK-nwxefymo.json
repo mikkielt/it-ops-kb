@@ -2,7 +2,7 @@
   "id": "TK-nwxefymo",
   "kind": "task",
   "title": "The capture hook opens a work window from the session's work/<id> branch",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-4ws6suk5",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "BG-ff6e462e"
-  ]
+  ],
+  "claimed_by": "worker-window"
 }
