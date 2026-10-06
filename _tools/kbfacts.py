@@ -1988,7 +1988,8 @@ def opening_passage(st, u):
 
 
 TESTED_PINS = 3  # tested questions a `_self` pack pins the passages of
-TESTED_SHARE = 0.75  # of the question's key words a tested question must hold, and half of its own the question
+TESTED_FURTHER = 3  # passages a pack with a tested match prints besides the pinned ones (a weak pack keeps its budget)
+TESTED_SHARE = 0.75 # of the question's key words a tested question must hold, and half of its own the question
 
 
 def tested_matches(st, informative):
@@ -2021,7 +2022,7 @@ def pick_passages(st, scored, best, cost, limit, pins=()):
     passages of every doc compete, best first until `limit` characters are used (`cost` is spent already), no text
     twice, at most PASSAGES_PER_LINE of one source line. A line shows its opening passage, which states the rule: for
     a table row, whose later passages carry only its first cell, when it is not among the line's chosen ones it takes
-    the place of the lowest-scored of its unpinned ones."""
+    the place of the lowest-scored of its unpinned ones. With pins, at most TESTED_FURTHER further passages."""
     taken, shown, per_line = defaultdict(list), set(), Counter()
     for u in pins:
         cost += len(clip(u["text"], PASSAGE_CHARS + PARENT_CHARS + CLAUSE_CHARS)) + len(u["path"]) + 12 + (
@@ -2029,7 +2030,10 @@ def pick_passages(st, scored, best, cost, limit, pins=()):
         shown.add(u["text"])
         per_line[(u["path"], u["line"])] += 1
         taken[u["path"]].append((float("inf"), u))
+    further = 0
     for s, u in scored:
+        if pins and further >= TESTED_FURTHER:
+            break
         if s < 0.4 * best or u["text"] in shown or per_line[(u["path"], u["line"])] >= PASSAGES_PER_LINE or list_intro(u):
             continue
         line_cost = len(clip(u["text"], PASSAGE_CHARS + PARENT_CHARS + CLAUSE_CHARS)) + len(u["path"]) + 12
@@ -2040,6 +2044,7 @@ def pick_passages(st, scored, best, cost, limit, pins=()):
         shown.add(u["text"])
         per_line[(u["path"], u["line"])] += 1
         taken[u["path"]].append((s, u))
+        further += 1
     for rel, items in taken.items():
         rows = (read(rel) or "").splitlines()
         for line in dict.fromkeys(u["line"] for _, u in items):
