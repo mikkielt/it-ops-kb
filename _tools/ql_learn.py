@@ -3,14 +3,15 @@ only findings: every judged miss re-run with pack first (`fixed-since` when it n
 expansion and gap-candidate findings, and report-only source findings on the hosts the store's fetches name. A
 lookup with verdict none whose fetched pages the kb cites is a false none: an eval finding, in place of a gap; so is
 a miss whose pack on HEAD is none with an article in the lead that holds every word the pack says the kb lacks. One
-findings file holds the records that change a finding's state (none: no file).
+findings file holds the records that change a finding's state (none: no file). A weak or none lookup in the kb's own
+rule docs (an entry with `root` _self) is a `rules` finding of its own, never one of those.
 """
 import csv, re
 from pathlib import Path
 
 from ql_base import HOME, places
 from ql_capture import host_path
-from ql_store import (FETCH_KEYS, LEARN_STATES, SOURCES_MAX, STAGES, finding_id, finding_states, store_entries,
+from ql_store import (FETCH_KEYS, LEARN_STATES, RULES_ROOT, SOURCES_MAX, STAGES, finding_id, finding_states, store_entries,
                       write_findings)
 
 WEB_SOURCES = HOME / "kb" / "_self" / "web-sources.md"
@@ -143,12 +144,45 @@ def share_trigger(per_root):
 
 def is_miss(e):
     """A judged miss: Haiku judged the lookup missed or partly answered, or the pack's verdict was weak or none; but a
-    weak pack that Haiku judged answered is no miss (a verdict none stays one)."""
-    if not isinstance(e.get("question"), str):
+    weak pack that Haiku judged answered is no miss (a verdict none stays one). A lookup in the rule docs is no
+    public miss (`rules_miss`)."""
+    if not isinstance(e.get("question"), str) or e.get("root") == RULES_ROOT:
         return False
     if e.get("judged") in ("missed", "partly"):
         return True
     return e.get("verdict") == "none" or (e.get("verdict") == "weak" and e.get("judged") != "answered")
+
+
+def rules_miss(e):
+    """A lookup in the kb's own rule docs (an entry with `root` _self) that missed: it has a question (a set run has
+    none), no set, and its pack verdict was weak or none or the reader found no answer (route `miss`)."""
+    return (e.get("root") == RULES_ROOT and isinstance(e.get("question"), str) and "set" not in e
+            and (e.get("verdict") in ("weak", "none") or e.get("route") == "miss"))
+
+
+def default_rules_pack(question):
+    """{verdict, known} of the rule docs now: the verdict of `pack --root _self` for the question, and whether the
+    `_self` eval file already holds the question as a row."""
+    import kbfacts
+    asked = " ".join(question.lower().split())
+    return {"verdict": kbfacts.pack(question, fmt="concise", root=RULES_ROOT)["verdict"],
+            "known": any(" ".join((r.get("question") or "").lower().split()) == asked for r in kbfacts.self_eval_rows())}
+
+
+def rules_finding(e, now):
+    """The `rules` finding of one missed rules lookup: `fixed-since` when the rule docs answer it now (the pack is
+    `good` after a weak or none one) or the eval file holds the question; else `open`. It carries the question, the
+    verdict, the `answer_lines` the reader quoted and the `key_missing` words, when the entry has them, and stays at
+    stage miss: no public gap or fact comes of it."""
+    fixed = now["known"] or (e.get("verdict") in ("weak", "none") and now["verdict"] == "good")
+    obs = {"question": e["question"], "verdict": e.get("verdict")}
+    if e.get("route") == "miss":
+        obs["route"] = "miss"
+    for key in ("answer_lines", "key_missing"):
+        if e.get(key):
+            obs[key] = list(e[key])
+    return {"id": finding_id("rules", e["id"]), "kind": "rules", "state": "fixed-since" if fixed else "open",
+            "stage": "miss", "entry": e["id"], "observed": obs}
 
 
 def passes(res, best):
@@ -407,7 +441,7 @@ def later_stage(prev, rec):
     return at.get(prev.get("stage"), 0) > at.get(rec.get("stage"), 0)
 
 
-def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, counts=None, out=print):
+def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, counts=None, out=print, rules_pack=None):
     """One learn over `store` (default: the local store beside the spool): every judged miss re-run with `pack` on
     HEAD, a `no-fix` eval finding included, which becomes `fixed-since` when its question now passes (BG-bbfdisfu) (a none entry whose fetched pages the kb cites is an eval finding for the article citing them most, and so is
     a miss whose none pack leads with an article holding the words it lacks, `held_article`), the source findings,
@@ -420,7 +454,10 @@ def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, cou
         return 0
     derived, pages = {}, KbPages()
     for _, e in entries:
-        if is_miss(e):
+        if rules_miss(e):
+            rec = rules_finding(e, (rules_pack or default_rules_pack)(e["question"]))
+            derived[rec["id"]] = rec
+        elif is_miss(e):
             res = pack(e["question"])
             hit = pages.match(e)  # a false none: the kb cites a page the lookup fetched, so an eval and no gap
             held = None if hit else held_article(res)  # or the pack's lead article holds the words it says it lacks
