@@ -2201,9 +2201,12 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         taken = pick_passages(st, scored, best, dused, limit, pins)
         if not item:
             # the decisions tied to a doc or section a chosen passage is in follow the ones the question's words found
+            # and only when its text or source shares a key word with the question or the tested question pinned
             have = {d["id"] for d in dec}
+            bears = set(informative).union(*(key_terms(q) for _, q, _ in tested))
             dec = dec + [{**d, "hit": [], "answers": False} for d in
-                         tied_decisions(self_places(u for g in taken.values() for _, u in g), invalidated) if d["id"] not in have]
+                         tied_decisions(self_places(u for g in taken.values() for _, u in g), invalidated)
+                         if d["id"] not in have and bears & set(key_terms(d["text"] + " " + d["source"]))]
             dlines, kept = decision_block(dec, budget, cap, True)
             dused = sum(map(len, dlines)) + (40 if dlines else 0)
             taken = pick_passages(st, scored, best, dused, limit, pins)
