@@ -2,7 +2,7 @@
   "id": "ST-4ws6suk5",
   "kind": "story",
   "title": "a worker session opens its item's work window without a second claim, so backlog cost counts its prompts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mlemdqbn",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise: no check planted. The mechanism is open (claim --resume or a window row at the worker's first command), and the end state needs a spool of a real session's rows; a check written before that choice would pin one design. Evidence: backlog.py cost reads 0 for every SP-sz5fbvqn item although the worker sessions ran."
+  "notes": "Premise: no check planted. The mechanism is open (claim --resume or a window row at the worker's first command), and the end state needs a spool of a real session's rows; a check written before that choice would pin one design. Evidence: backlog.py cost reads 0 for every SP-sz5fbvqn item although the worker sessions ran.",
+  "claimed_by": "orchestrator"
 }
