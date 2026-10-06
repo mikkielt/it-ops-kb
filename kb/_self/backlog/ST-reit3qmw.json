@@ -2,7 +2,7 @@
   "id": "ST-reit3qmw",
   "kind": "story",
   "title": "The skills and the kb-worker agent ask the _self route instead of reading sections, with a measured before and after",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-njilrify",
   "priority": "P1",
   "rank": 0,
@@ -119,5 +119,36 @@
     ]
   },
   "notes": "selfdoc.py check passes before the work: it pins that no heading reference goes dead when the skills change. Premise: the up-front reading commands print 8 to 73 KB today (kb-sprint 73282 bytes, kb-item 28412, kb-worker 24027), measured by running each skill's selfdoc.py section command on 2026-10-06.",
-  "claimed_by": "manager-mac"
+  "evidence": {
+    "commit": "4a36dacef4cfea42d53e763fd1e6edaf64168a8b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; sys.exit(0 if pathlib.Path('kb/_self/reports/2026-10-06-self-rules-retrieval.md').is_file() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob,shlex,sys; bad=[f for f in glob.glob('.claude/skills/*/SKILL.md')+['.claude/agents/kb-worker.md'] for l in open(f,encoding='utf-8') if l.strip().startswith('python3 _tools/selfdoc.py section') and len(shlex.split(l.strip()))>5]; print(bad); sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
