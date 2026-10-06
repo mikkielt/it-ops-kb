@@ -2,7 +2,7 @@
   "id": "ST-bsg2lwrh",
   "kind": "story",
   "title": "Review sprint: pack --root _self answers a tested rule question with its pinned passage, little else, and only the decisions that bear on it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-sz5fbvqn",
   "review": true,
   "priority": "P1",

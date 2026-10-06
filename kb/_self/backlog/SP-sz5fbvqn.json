@@ -2,7 +2,7 @@
   "id": "SP-sz5fbvqn",
   "kind": "sprint",
   "title": "pack --root _self answers a tested rule question with its pinned passage, little else, and only the decisions that bear on it",
-  "status": "planned",
+  "status": "active",
   "goal": "python3 _tools/rag.py pack --root _self prints a pinned passage longer than the clip as the window around its tested question's anchor phrase with an ellipsis at each cut end, so the row passes the eval; a good verdict on a tested question prints the pinned passages, at most three further passages and the tied decisions, and a report under kb/_self/reports/ records the bytes of a tested answer before and after; a decision tied to a printed passage's doc or section prints only when its text or source shares a key word with the question or the pinned tested question, --set and --item printing them as now; learn records on a rules finding the word pair a miss shows and apply writes it as a kb/_self/_retrieval/aliases.csv row kept only when rag.py eval --root _self passes and the pair is in no alias file yet",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }
