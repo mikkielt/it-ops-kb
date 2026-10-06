@@ -2,7 +2,7 @@
   "id": "ST-goziyt7i",
   "kind": "story",
   "title": "Research sprint goal: Headless workers measured and landed cleanly",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mlemdqbn",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "worker-research"
+  "evidence": {
+    "commit": "310dd781815ffea29fbb120d2d33098de6277be7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "8c756a7adebb4499"
+      }
+    ]
+  }
 }
