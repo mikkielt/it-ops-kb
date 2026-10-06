@@ -2,7 +2,7 @@
   "id": "ST-vkp3bo5t",
   "kind": "story",
   "title": "The worker brief says how a filed bug is handed back, and sprint plan asks a rule-guarding item's open choices before start",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-pbekfhaz",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,18 @@
     "ST-zzsbdbi7"
   ],
   "notes": "Premise: python3 _tools/rag.py pack --root _self with each of the check's two questions shows coverage weak, no tested question, on 2026-10-06 (the check exits 1); in SP-hyp6o7hl a worker's new bug left an untracked item file in its worktree that blocked land, and BG-dudqrf5p (rule-guarding bl_authority touches, an exit-code choice its goal left open) got its gate after the code. kb-worker.md rule 5 already says to commit the filed bug's item file, but the kb-sprint run brief says only 'file a bug ... do not fix it' and kb/_self/backlog.md is silent on it. Why a rule-delivery check and not a text match: workers and planners read these rules through rag.py pack --root _self --set, so the check asks the questions a worker and a planner would ask and requires a tested question in their sets; the skill and agent text itself is not matched. Overlaps ST-zzsbdbi7 (same skill, agent and runbook files, another sprint): land one after the other.",
-  "claimed_by": "worker-vkp3bo5t"
+  "evidence": {
+    "commit": "df1e84f60aae55892b44f29d19d57189c637c31a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess as sp,sys\nP=lambda *a:sp.run([sys.executable,'_tools/rag.py','pack','--root','_self',*a],capture_output=True,text=True,check=True).stdout\nQ=[('a sprint worker filed a bug with backlog.py new bug: how does its new item file reach the landing','kb-worker'),('before a sprint starts, which committed items get their open choices asked as blocking gates because their touches are rule-guarding','kb-sprint:plan')]\nR=[]\nfor q,s in Q:\n    m=re.search(r'coverage: good \\(tested question (\\S+):',P(q));R.append(bool(m) and ('# %s:'%m.group(1)) in P('--set',s));print(s,m.group(1) if m else 'no tested question',R[-1])\nsys.exit(0 if all(R) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "9368d834cae2257e"
+      }
+    ]
+  }
 }
