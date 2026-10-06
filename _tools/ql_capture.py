@@ -31,6 +31,8 @@ SKILL = re.compile(r"\s*/(?:it-ops-kb:)?kb-[\w-]+")  # a kb skill typed as a sla
 SAFE_SESSION = re.compile(r"[A-Za-z0-9_-]{1,80}")  # a session id that is safe as a file name
 STATUS = re.compile(r"\b(?:HTTP(?:/[\d.]+)?|status(?: code)?)\D{0,3}([1-5]\d\d)\b", re.I)
 WORK_ACTIONS = ("claim", "done", "release")  # the backlog.py commands that open or end a window of work on an item
+BRANCH_ACTION = "branch"  # the `work` row of a session's first prompt on a `work/<id>` branch (branch_row)
+OPEN_ACTIONS = ("claim", BRANCH_ACTION)  # the `work` rows that open an item's window (usage_targets, ql_distill.work_windows)
 AGENT_ACTIONS = ("agent-start", "agent-stop")  # the `work` rows of a subagent's start and stop (agent_row)
 AGENT_SALT_NAME = "agent.salt"  # beside the spool, never committed: what a hash of an agent id is salted with
 AGENT_HASH_CHARS = 12
@@ -652,6 +654,22 @@ def agent_row(event, sid):
                   group=kbusage.agent_group(kind).lower(), item=work_branch_item(event.get("cwd")))
 
 
+def branch_row(spool, sid, event, pid):
+    """The `work` row of a UserPromptSubmit event whose directory is on a `work/<id>` branch: `action` branch, `item` the
+    id, `prompt_id` the prompt. It opens the item's window as a `claim` does (usage_targets), so a worker session that
+    the orchestrator's claim set up counts on the item. Written once per session and item: None when the directory is
+    on no such branch, the session has no file name of its own, or a `branch` row of the item is already in its rows
+    (a window `done` or `release` closed stays closed). Only the id and the action are written, never the branch text
+    or a path."""
+    item = work_branch_item(event.get("cwd"))
+    if item is None or not (isinstance(sid, str) and SAFE_SESSION.fullmatch(sid)):
+        return None
+    for r in rows(spool / f"{sid}.jsonl", f'"{BRANCH_ACTION}"'):
+        if r.get("surface") == "work" and r.get("action") == BRANCH_ACTION and r.get("item") == item:
+            return None
+    return record("work", sid, prompt_id=pid, action=BRANCH_ACTION, item=item)
+
+
 def call_row(event, ok):
     """The ops row `call.tool` of one PostToolUse or PostToolUseFailure event of a kb tool, a documentation server's
     tool or a shell command (the operator's scope, ST-rpdfgu3t): the tool's group, the command's closed class for a
@@ -721,6 +739,7 @@ def capture(event):
         prune(spool)
         prompt = str(event.get("prompt") or "")
         row = record("prompt", sid, prompt_id=pid, prompt=prompt, kb_intent=intent(prompt))
+        branch_row(spool, sid, event, pid)  # a worker's window opens at its first prompt, with no claim of its own
         try:
             add_usage(spool, sid, event.get("transcript_path"), skip=pid)
         except Exception:  # noqa: BLE001
@@ -773,8 +792,9 @@ def capture(event):
 def usage_targets(rs, skip=None):
     """(prompt ids that need a usage row, (prompt id, reader) pairs that have one) of one session's spool rows, the
     targets in the order the prompts began. A prompt needs one when it used the kb (a kb_hook or mcp row, or a kb
-    intent) or lies inside a work window: from a `claim` row of an item to the `done` or `release` row of the same
-    item, the prompts of both rows included, a window still open at the end of the rows running to it. A `done` or
+    intent) or lies inside a work window: from a `claim` row of an item, or the `branch` row of the session's
+    `work/<id>` branch (branch_row), to the `done` or `release` row of the same item, the prompts of both rows
+    included, a window still open at the end of the rows running to it. A `done` or
     `release` with no open claim in these rows opens and closes nothing. `skip` (the running prompt) is never a
     target."""
     order, kb, inside, have, open_items = [], set(), set(), set(), set()
@@ -792,7 +812,7 @@ def usage_targets(rs, skip=None):
         if r.get("surface") in ("kb_hook", "mcp") or r.get("kb_intent"):
             kb.add(pid)
         elif r.get("surface") == "work" and isinstance(r.get("item"), str):
-            if r.get("action") == "claim":
+            if r.get("action") in OPEN_ACTIONS:
                 open_items.add(r["item"])
                 inside.add(pid)
             elif r.get("action") in ("done", "release") and r["item"] in open_items:
