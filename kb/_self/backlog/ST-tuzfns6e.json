@@ -16,6 +16,13 @@
         "--root",
         "_self"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, subprocess, sys\ntry:\n    def ids(args):\n        r = subprocess.run([\"python3\", \"_tools/rag.py\", \"pack\", \"--root\", \"_self\"] + args, capture_output=True, text=True)\n        assert r.returncode == 0, \"pack exit %d\" % r.returncode\n        return r.stdout, set(re.findall(r\"\\[DECISION (\\S+)\\]\", r.stdout))\n    # D-bnfzftjv (kb/_self/_decisions.csv:3): context article _self/backlog#Running a sprint, text \"2, each with up to 4 workers\",\n    # source \"backlog item ST-2jojzufm gate parallel\": no key word of \"what is a sprint\" (kb/_self/backlog.md passage § Sprints prints)\n    out, got = ids([\"what is a sprint\"])\n    assert \"§ Sprints\" in out, \"question no longer prints a Sprints passage\"\n    _, kept = ids([\"--set\", \"kb-sprint:run\"])  # --set keeps printing it\n    ok = \"D-bnfzftjv\" not in got and \"D-bnfzftjv\" in kept\n    print(\"%s: question prints %s; --set prints %s\" % (\"ok\" if ok else \"FAIL\", sorted(got), sorted(kept)))\n    sys.exit(0 if ok else 1)\nexcept Exception as e:\n    print(\"check error\", e)\n    sys.exit(1)"
+      ]
     }
   ],
   "touches": [
@@ -26,5 +33,6 @@
   ],
   "depends_on": [
     "ST-eegqfkah"
-  ]
+  ],
+  "notes": "Planning 2026-10-06: the planted check packs 'what is a sprint', which prints the Sprints passage of backlog.md, and asks that D-bnfzftjv (tied to _self/backlog#Running a sprint, sharing no key word with the question) is absent while --set kb-sprint:run still prints it; today the question prints it. A shared word with the decision's text already counts; a shared source word does not and the decision prints anyway."
 }
