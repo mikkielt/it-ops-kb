@@ -19,9 +19,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "pushed_tip_failed_fetch"
+        "-c",
+        "import sys,subprocess,tempfile;sys.path.insert(0,'_tools');import bl_land as b;d=tempfile.mkdtemp();subprocess.run(['git','init','-q',d]);b.land_git_network=lambda *a:subprocess.CompletedProcess(a,1,'','fatal: could not read');exec(\"try:\\n b.pushed_tip(d,'origin','code/x')\\nexcept Exception:\\n sys.exit(1)\")"
       ]
     }
   ],
@@ -32,17 +31,16 @@
     "kb/_self/backlog.md"
   ],
   "evidence": {
-    "commit": "48b6a53091393845d213592283987459f8411f83",
+    "commit": "10e2897f0349bff9662c28fb0463d50335b47601",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "pushed_tip_failed_fetch"
+          "-c",
+          "import sys,subprocess,tempfile;sys.path.insert(0,'_tools');import bl_land as b;d=tempfile.mkdtemp();subprocess.run(['git','init','-q',d]);b.land_git_network=lambda *a:subprocess.CompletedProcess(a,1,'','fatal: could not read');exec(\"try:\\n b.pushed_tip(d,'origin','code/x')\\nexcept Exception:\\n sys.exit(1)\")"
         ],
         "exit": 0,
-        "sha256": "3c05fdbda6f026b7"
+        "sha256": "1173571b075c4d1c"
       },
       {
         "run": [

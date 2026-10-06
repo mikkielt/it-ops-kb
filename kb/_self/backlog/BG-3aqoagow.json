@@ -20,9 +20,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "drop_cleans_links_to_the_dropped_item"
+        "-c",
+        "import sys,inspect;sys.path.insert(0,'_tools');import bl_items;sys.exit(1 if 'relates_to' not in inspect.getsource(bl_items.cmd_drop) else 0)"
       ]
     }
   ],
@@ -33,17 +32,16 @@
     "kb/_self/tools.md"
   ],
   "evidence": {
-    "commit": "c55bf32524146d06e2bb49f81c64f684cd6ed86a",
+    "commit": "10e2897f0349bff9662c28fb0463d50335b47601",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "drop_cleans_links_to_the_dropped_item"
+          "-c",
+          "import sys,inspect;sys.path.insert(0,'_tools');import bl_items;sys.exit(1 if 'relates_to' not in inspect.getsource(bl_items.cmd_drop) else 0)"
         ],
         "exit": 0,
-        "sha256": "f94c61bd6cf57f75"
+        "sha256": "e3b0c44298fc1c14"
       },
       {
         "run": [

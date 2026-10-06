@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "horizon_names_finishable"
+        "-c",
+        "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);W=lambda it:open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it));H=lambda:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'horizon'],capture_output=True,text=True).stdout;C=[{'run':['python3','-c','pass']}]\nW({'id':'SP-aaaaaaaa','kind':'sprint','title':'S','status':'active','goal':'g','gates':[{'id':'start','kind':'blocking','question':'Q?','options':['approve'],'recommendation':'approve','answer':'approve','by':'operator'}]})\nW({'id':'ST-aaaaaaaa','kind':'story','title':'A','status':'doing','sprint':'SP-aaaaaaaa','priority':'P2','rank':0,'goal':'g','checks':C})\nW({'id':'TK-aaaaaaaa','kind':'task','title':'T','status':'todo','parent':'ST-aaaaaaaa','priority':'P2','rank':0,'goal':'g','touches':['src/x'],'checks':C})\nW({'id':'ST-rrrrrrrr','kind':'story','title':'R','status':'todo','sprint':'SP-aaaaaaaa','review':True,'priority':'P1','rank':999999,'goal':'g','checks':C})\no0=H();t=json.load(open(os.path.join(b,'TK-aaaaaaaa.json')));t['status']='done';W(t);o1=H()\nfor i in ('ST-aaaaaaaa','ST-rrrrrrrr'):\n    t=json.load(open(os.path.join(b,i+'.json')));t['status']='done';W(t)\no2=H();R=['finish with' not in o0 and 'close with' not in o0,'finish with python3 _tools/backlog.py done ST-aaaaaaaa' in o1,'all done: close with python3 _tools/backlog.py close SP-aaaaaaaa' in o2 and 'finish with' not in o2]\nprint(R);sys.exit(0 if all(R) else 1)"
       ]
     }
   ],
@@ -24,17 +23,16 @@
     "kb/_self/tools.md"
   ],
   "evidence": {
-    "commit": "ba1a78d3dbabdcc7756d2cbc6504805f82ce65f8",
+    "commit": "10e2897f0349bff9662c28fb0463d50335b47601",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "horizon_names_finishable"
+          "-c",
+          "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);W=lambda it:open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it));H=lambda:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'horizon'],capture_output=True,text=True).stdout;C=[{'run':['python3','-c','pass']}]\nW({'id':'SP-aaaaaaaa','kind':'sprint','title':'S','status':'active','goal':'g','gates':[{'id':'start','kind':'blocking','question':'Q?','options':['approve'],'recommendation':'approve','answer':'approve','by':'operator'}]})\nW({'id':'ST-aaaaaaaa','kind':'story','title':'A','status':'doing','sprint':'SP-aaaaaaaa','priority':'P2','rank':0,'goal':'g','checks':C})\nW({'id':'TK-aaaaaaaa','kind':'task','title':'T','status':'todo','parent':'ST-aaaaaaaa','priority':'P2','rank':0,'goal':'g','touches':['src/x'],'checks':C})\nW({'id':'ST-rrrrrrrr','kind':'story','title':'R','status':'todo','sprint':'SP-aaaaaaaa','review':True,'priority':'P1','rank':999999,'goal':'g','checks':C})\no0=H();t=json.load(open(os.path.join(b,'TK-aaaaaaaa.json')));t['status']='done';W(t);o1=H()\nfor i in ('ST-aaaaaaaa','ST-rrrrrrrr'):\n    t=json.load(open(os.path.join(b,i+'.json')));t['status']='done';W(t)\no2=H();R=['finish with' not in o0 and 'close with' not in o0,'finish with python3 _tools/backlog.py done ST-aaaaaaaa' in o1,'all done: close with python3 _tools/backlog.py close SP-aaaaaaaa' in o2 and 'finish with' not in o2]\nprint(R);sys.exit(0 if all(R) else 1)"
         ],
         "exit": 0,
-        "sha256": "ade0defe12de0a6f"
+        "sha256": "167d50667f671d10"
       }
     ]
   }

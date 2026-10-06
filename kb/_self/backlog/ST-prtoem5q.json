@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "merge_reports_already_merged"
+        "-c",
+        "import argparse,sys,types;sys.path.insert(0,'_tools');import bl_land,kbpublic;kbpublic.integration_remote=lambda root:'origin';bl_land.say=lambda *a,**k:None;bl=types.SimpleNamespace(root='.',items={'SP-aaaaaaaa':{'kind':'sprint'},'ST-aaaaaaaa':{'kind':'story','sprint':'SP-aaaaaaaa'},'TK-aaaaaaaa':{'kind':'task','parent':'ST-aaaaaaaa'}});C=[];S={}\ndef run(argv,cwd=None):\n    C.append(argv)\n    if argv[:3]==['git','remote','get-url']:return 0,'git@gitlab.example.com:team/kb.git\\n',''\n    if argv[:3]==['glab','mr','view']:return 0,'{\"state\": \"%s\", \"merged_at\": \"2026-10-05T12:00:00Z\"}'%S['s'],''\n    return 0,'merged',''\nbl_land.run=run;R=[]\nfor s,code,merges in (('merged',0,False),('closed',1,False),('opened',0,True)):\n    S['s']=s;C.clear();rc=bl_land.cmd_merge(bl,argparse.Namespace(id='TK-aaaaaaaa'));m=any(c[:3]==['glab','mr','merge'] for c in C);R.append((s,rc,m,rc==code and m==merges))\nprint(R);sys.exit(0 if all(r[3] for r in R) else 1)"
       ]
     }
   ],
@@ -28,17 +27,16 @@
     "BG-bd547fvz"
   ],
   "evidence": {
-    "commit": "a2a539a4257f231b0d5ae33d20af9c688ba63a48",
+    "commit": "10e2897f0349bff9662c28fb0463d50335b47601",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "merge_reports_already_merged"
+          "-c",
+          "import argparse,sys,types;sys.path.insert(0,'_tools');import bl_land,kbpublic;kbpublic.integration_remote=lambda root:'origin';bl_land.say=lambda *a,**k:None;bl=types.SimpleNamespace(root='.',items={'SP-aaaaaaaa':{'kind':'sprint'},'ST-aaaaaaaa':{'kind':'story','sprint':'SP-aaaaaaaa'},'TK-aaaaaaaa':{'kind':'task','parent':'ST-aaaaaaaa'}});C=[];S={}\ndef run(argv,cwd=None):\n    C.append(argv)\n    if argv[:3]==['git','remote','get-url']:return 0,'git@gitlab.example.com:team/kb.git\\n',''\n    if argv[:3]==['glab','mr','view']:return 0,'{\"state\": \"%s\", \"merged_at\": \"2026-10-05T12:00:00Z\"}'%S['s'],''\n    return 0,'merged',''\nbl_land.run=run;R=[]\nfor s,code,merges in (('merged',0,False),('closed',1,False),('opened',0,True)):\n    S['s']=s;C.clear();rc=bl_land.cmd_merge(bl,argparse.Namespace(id='TK-aaaaaaaa'));m=any(c[:3]==['glab','mr','merge'] for c in C);R.append((s,rc,m,rc==code and m==merges))\nprint(R);sys.exit(0 if all(r[3] for r in R) else 1)"
         ],
         "exit": 0,
-        "sha256": "a870f7d29da097a2"
+        "sha256": "ecfbdae6852c2a86"
       }
     ]
   }

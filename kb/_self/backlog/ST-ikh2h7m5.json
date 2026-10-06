@@ -12,9 +12,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "new_bug_repro_python_error_refused"
+        "-c",
+        "import os,subprocess,sys,tempfile;d=tempfile.mkdtemp();os.makedirs(os.path.join(d,'kb','_self','backlog'));subprocess.run(['git','init','-q',d]);N=lambda r:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'new','bug','--title','Own error','--severity','S4','--repro',r,'--goal','x'],capture_output=True,text=True,env=dict(os.environ,FORCE_COLOR='3'))\nR=[]\nfor r,cls in ((\"python3 -c 'def f(a, b): pass\\nf(1)'\",'TypeError'),(\"python3 -c 'no_such_name_pl()'\",'NameError')):\n    p=N(r);o=p.stdout+p.stderr;R.append(p.returncode==1 and 'fails for its own error' in o and 'raised '+cls in o)\nR.append(not os.listdir(os.path.join(d,'kb','_self','backlog')))\nfor r in (\"python3 -c 'import sys; sys.exit(1)'\",\"python3 -c 'assert 1 == 2'\"):\n    p=N(r);R.append(p.returncode==0 and 'own error' not in p.stdout+p.stderr)\nprint(R);sys.exit(0 if all(R) else 1)"
       ]
     }
   ],
@@ -31,17 +30,16 @@
     "BG-bapadqdl"
   ],
   "evidence": {
-    "commit": "670fcefe0e85ef6cb45093f744f0a668d6724409",
+    "commit": "10e2897f0349bff9662c28fb0463d50335b47601",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "new_bug_repro_python_error_refused"
+          "-c",
+          "import os,subprocess,sys,tempfile;d=tempfile.mkdtemp();os.makedirs(os.path.join(d,'kb','_self','backlog'));subprocess.run(['git','init','-q',d]);N=lambda r:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'new','bug','--title','Own error','--severity','S4','--repro',r,'--goal','x'],capture_output=True,text=True,env=dict(os.environ,FORCE_COLOR='3'))\nR=[]\nfor r,cls in ((\"python3 -c 'def f(a, b): pass\\nf(1)'\",'TypeError'),(\"python3 -c 'no_such_name_pl()'\",'NameError')):\n    p=N(r);o=p.stdout+p.stderr;R.append(p.returncode==1 and 'fails for its own error' in o and 'raised '+cls in o)\nR.append(not os.listdir(os.path.join(d,'kb','_self','backlog')))\nfor r in (\"python3 -c 'import sys; sys.exit(1)'\",\"python3 -c 'assert 1 == 2'\"):\n    p=N(r);R.append(p.returncode==0 and 'own error' not in p.stdout+p.stderr)\nprint(R);sys.exit(0 if all(R) else 1)"
         ],
         "exit": 0,
-        "sha256": "3bc65a07e90dcd3b"
+        "sha256": "7c2db25ffb3f094f"
       }
     ]
   }

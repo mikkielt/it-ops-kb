@@ -19,9 +19,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "check_unordered_skips_tasks_whose_stories_are_ordered"
+        "-c",
+        "import sys,types;sys.path.insert(0,'_tools');import bl_plan as p;I={'SP':{'kind':'sprint','status':'active'},'SA':{'kind':'story','status':'doing','sprint':'SP'},'SB':{'kind':'story','status':'todo','sprint':'SP','depends_on':['SA']},'TA':{'kind':'task','status':'todo','parent':'SA','touches':['x.py']},'TB':{'kind':'task','status':'todo','parent':'SB','touches':['x.py']}};par=lambda i:[I[i]['parent']] if 'parent' in I[i] else [];bl=types.SimpleNamespace(items=I,root='.',ancestors=par,label=lambda i:i,sprint_items=lambda s:[i for i in I if I[i]['kind']!='sprint']);sys.exit(1 if any('TA' in w and 'TB' in w for w in p.unordered_overlap_warnings(bl)) else 0)"
       ]
     }
   ],
@@ -32,17 +31,16 @@
     "kb/_self/tools.md"
   ],
   "evidence": {
-    "commit": "3c71a03b62aa1b7df63102cc4324db7d7a9c2f63",
+    "commit": "10e2897f0349bff9662c28fb0463d50335b47601",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "check_unordered_skips_tasks_whose_stories_are_ordered"
+          "-c",
+          "import sys,types;sys.path.insert(0,'_tools');import bl_plan as p;I={'SP':{'kind':'sprint','status':'active'},'SA':{'kind':'story','status':'doing','sprint':'SP'},'SB':{'kind':'story','status':'todo','sprint':'SP','depends_on':['SA']},'TA':{'kind':'task','status':'todo','parent':'SA','touches':['x.py']},'TB':{'kind':'task','status':'todo','parent':'SB','touches':['x.py']}};par=lambda i:[I[i]['parent']] if 'parent' in I[i] else [];bl=types.SimpleNamespace(items=I,root='.',ancestors=par,label=lambda i:i,sprint_items=lambda s:[i for i in I if I[i]['kind']!='sprint']);sys.exit(1 if any('TA' in w and 'TB' in w for w in p.unordered_overlap_warnings(bl)) else 0)"
         ],
         "exit": 0,
-        "sha256": "a3928b14ebab255c"
+        "sha256": "e3b0c44298fc1c14"
       },
       {
         "run": [
