@@ -19,7 +19,8 @@ import kbusage
 import ql_store as store_
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
-from ql_capture import AGENT_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines
+from ql_capture import (AGENT_ACTIONS, OPEN_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage,
+                        pack_lines)
 from ql_store import (ANSWER_LINE, ANSWER_LINES_MAX, ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, KEY_MISSING_MAX,
                       KEY_WORD, NAME, OUTCOME, QUESTION_MAX_CHARS, ROW_SURFACES, RULES_ROOT, SET_NAME, SKIPPED_KEY,
                       SOURCES_MAX, TESTED_ID, TESTED_MAX, URL_PATH, public_host)
@@ -478,8 +479,10 @@ def routed_of(rs):
 def work_windows(rows):
     """({prompt id: the items whose window holds it}, the items the rows claimed), the prompts in the order they began.
     The windows of `ql_capture.usage_targets`: a prompt is inside an item's window when the item was open as the
-    prompt began, or the prompt's own row claims it, or closes it with `done` or `release`; a `done` or `release` with
-    no open claim in these rows opens and closes nothing. Windows of several items may overlap."""
+    prompt began, or the prompt's own row opens it (a `claim`, or the `branch` row of the session's `work/<id>`
+    branch, ql_capture.branch_row), or closes it with `done` or `release`; a `done` or `release` with no open window
+    in these rows opens and closes nothing. Windows of several items may overlap. A branch-opened item is one the rows
+    worked, as a claimed one is."""
     inside, worked, open_items = {}, set(), set()
     for r in rows:
         pid = r.get("prompt_id")
@@ -489,7 +492,7 @@ def work_windows(rows):
         item = r.get("item") if r.get("surface") == "work" else None
         if not (isinstance(item, str) and WORK_ITEM.fullmatch(item)):
             continue
-        if r.get("action") == "claim":
+        if r.get("action") in OPEN_ACTIONS:
             open_items.add(item)
             worked.add(item)
             inside[pid].add(item)
@@ -503,7 +506,8 @@ def rework_windows(rows):
     """{prompt id: the items in rework at it}, for the prompts in the order they began: an item is in rework from the
     prompt of its first `refused` row (a `backlog.py done` that exited 1) while its window is open, up to the prompt
     that closes it with `done` or `release`, both included. A `refused` row of an item with no open claim in these
-    rows is none, and a later `claim` of an item that was released starts a window with no rework: the windows are
+    rows is none, and a later `claim` of an item that was released starts a window with no rework (a `branch` row
+    opens a window as a `claim` does): the windows are
     those of work_windows, and a session's refusals never carry into another session's rows."""
     out, open_items, refused = {}, set(), set()
     for r in rows:
@@ -515,7 +519,7 @@ def rework_windows(rows):
         if not (isinstance(item, str) and WORK_ITEM.fullmatch(item)):
             continue
         action = r.get("action")
-        if action == "claim":
+        if action in OPEN_ACTIONS:
             open_items.add(item)
         elif action == "refused" and item in open_items:
             refused.add(item)
@@ -572,7 +576,7 @@ def session_work(rows, done, items, sprint_of=None, rework=None, interrupts=None
     counted). Each prompt not in `done` with a usage record of this reader (usage_of) adds its counts to the tally of
     the line work_lines_of names (`items`: {item or sprint: tally}, which the run's sessions share), or to the
     session's shared tally when that is none; the subagents the record routes to items (routed_of) add their counts
-    to those items' tallies. A session that claimed no item is unrecorded. `rework` ({item: tally}, shared by the
+    to those items' tallies. A session that worked no item (no `claim` or `branch` row) is unrecorded. `rework` ({item: tally}, shared by the
     run's sessions like `items`) also takes the counts that fall in an item's rework (rework_windows): a prompt of
     one window only, and a subagent routed to an item, in rework at that prompt; a prompt in several windows counts
     on its sprint's line with no split."""
