@@ -2,7 +2,7 @@
   "id": "ST-b3bbbbpc",
   "kind": "story",
   "title": "Each kb copy a test makes hard-links every file the test does not write",
-  "status": "todo",
+  "status": "dropped",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
@@ -75,8 +75,10 @@
         ],
         "rescope": "ST-b3bbbbpc",
         "keep": "ST-b3bbbbpc"
-      }
+      },
+      "answer": "drop",
+      "by": "operator"
     }
   ],
-  "notes": "Audit done 2026-10-05 (worker1): 14 paths written in place (conftest.WRITTEN); the change is committed, not landed, on worker1's local branch work/ST-b3bbbbpc (81c582c93). Not landed: a copy now copies 14 files (4.8 MB) instead of 1108 (22.9 MB) but takes about 430 ms against 327 ms on this host, so linking is slower here; the operator decides whether to land it, narrow it or drop it. Housekeeping 2026-10-06: the -k kb_copy_links_every_unwritten_file selector named a test of the deleted KbTemplate; the checks are the suite and its Windows time bound until gate g2 settles whether the story is dropped or rescoped."
+  "notes": "Audit done 2026-10-05 (worker1): 14 paths written in place (conftest.WRITTEN); the change is committed, not landed, on worker1's local branch work/ST-b3bbbbpc (81c582c93). Not landed: a copy now copies 14 files (4.8 MB) instead of 1108 (22.9 MB) but takes about 430 ms against 327 ms on this host, so linking is slower here; the operator decides whether to land it, narrow it or drop it. Housekeeping 2026-10-06: the -k kb_copy_links_every_unwritten_file selector named a test of the deleted KbTemplate; the checks are the suite and its Windows time bound until gate g2 settles whether the story is dropped or rescoped. Dropped: KbTemplate.copy_to and the kb file copies it linked left conftest.py with the old suite (4d70166fe)"
 }
