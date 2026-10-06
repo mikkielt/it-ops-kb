@@ -1455,11 +1455,17 @@ def cleanup_gate_do(bl, dead):
 
 
 CLAUSE_SPLIT = re.compile(r";\s+|,\s+and\s+")  # a sprint goal's clauses: split at '; ' and ', and '
-CLAUSE_COVER = 0.5  # the share of a clause's words an item's title and goal must hold to carry it
+PART_SPLIT = re.compile(r",\s+(?:and\s+)?|\s+and\s+")  # a list clause's parts: split at ', ' and ' and '
+CLAUSE_COVER = 0.5 # the share of a clause's words an item's title and goal must hold to carry it
 
 
 def clause_words(text):
     return {w for w in re.findall(r"[a-z0-9_]+", str(text).lower()) if len(w) > 3}
+
+
+def clause_parts(clause):
+    """A clause that is a list of independent statements, split at ', ' and ' and ' into its parts with words."""
+    return [p for p in (x.strip(" .") for x in PART_SPLIT.split(clause)) if clause_words(p)]
 
 
 def goal_clause_lines(bl, sid, items):
@@ -1467,7 +1473,7 @@ def goal_clause_lines(bl, sid, items):
     whose title and goal hold at least CLAUSE_COVER of its words, or `unmet` and the open item outside the sprint that
     carries it now (moved out mid-sprint), or none."""
     clauses = [c.strip(" .") for c in CLAUSE_SPLIT.split(str(bl.items[sid].get("goal", ""))) if c.strip(" .")]
-    if len(clauses) < 2:
+    if len(clauses) < 2 and not (clauses and len(clause_parts(clauses[0])) > 1):
         return []
 
     def best(cw, ids):
@@ -1480,14 +1486,20 @@ def goal_clause_lines(bl, sid, items):
     elsewhere = [i for i, it in bl.items.items() if i not in items and it.get("kind") not in ("sprint", "epic")
                  and it.get("status") not in ("done", "dropped")]
     out = ["goal clauses:"]
-    for n, c in enumerate(clauses, 1):
-        cw = clause_words(c)
+    def verdict(cw):
         by = best(cw, done) if cw else None
         if by:
-            out.append(f"  {n}. {c[:120]}: {bl.label(by)}")
+            return bl.label(by)
+        now = best(cw, elsewhere) if cw else None
+        return f"unmet, carried by {bl.label(now) if now else 'no item'}"
+    for n, c in enumerate(clauses, 1):
+        cw = clause_words(c)
+        parts = clause_parts(c)
+        if len(parts) > 1 and not (cw and best(cw, done)):
+            out.append(f"  {n}. {c[:120]}:")
+            out.extend(f"     - {p[:100]}: {verdict(clause_words(p))}" for p in parts)
         else:
-            now = best(cw, elsewhere) if cw else None
-            out.append(f"  {n}. {c[:120]}: unmet, carried by {bl.label(now) if now else 'no item'}")
+            out.append(f"  {n}. {c[:120]}: {verdict(cw)}")
     return out
 
 
