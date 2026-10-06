@@ -2,7 +2,7 @@
   "id": "BG-g3kbc72r",
   "kind": "bug",
   "title": "A pinned passage clipped at the print width hides the anchor phrase of its tested question",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sz5fbvqn",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,18 @@
     }
   ],
   "notes": "Found by the review of ST-dvf3xf52: row SS2-004 of the skills' sets was left out of lookup_eval.csv because its pinned passage (backlog.md Escalation line, one sentence over the clip) prints without the phrase. The repro reads stdout only; the tool exits 0 on a pack, so a crash would show as a missing phrase too.",
-  "claimed_by": "worker sonnet BG-g3kbc72r"
+  "evidence": {
+    "commit": "177eff2d044caa7662a0224263df7453f65b810a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; out=subprocess.run(['python3','_tools/rag.py','pack','--root','_self','what must a gate about AGENTS.md or README.md state in each option'],capture_output=True,text=True).stdout; sys.exit(0 if 'measured size' in out else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
