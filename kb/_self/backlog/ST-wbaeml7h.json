@@ -2,7 +2,7 @@
   "id": "ST-wbaeml7h",
   "kind": "story",
   "title": "Review sprint: Headless workers measured and landed cleanly",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mlemdqbn",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
