@@ -2,7 +2,7 @@
   "id": "BG-qiib5dow",
   "kind": "bug",
   "title": "test_ql_distill copies _tools fixtures past the Windows path limit",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
   ],
   "touches": [
     "kb/_self/code.md"
-  ]
+  ],
+  "notes": "Dropped: test_ql_distill.py and test_the_real_distill_under_querylog_env_delivers_nothing were deleted with the old suite (4d70166fe); the new suite has no distill test to fix"
 }

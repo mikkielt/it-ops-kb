@@ -12,9 +12,16 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "kb_copy_links_every_unwritten_file"
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "time",
+        "--max-seconds",
+        "60"
       ]
     }
   ],
@@ -23,7 +30,8 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-fo3ztjcs"
+    "ST-fo3ztjcs",
+    "ST-xsxto3rh"
   ],
   "gates": [
     {
@@ -44,7 +52,31 @@
       },
       "answer": "audit",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "KbTemplate.copy_to and the per-session template left _tools/conftest.py with the old suite: scenarios are now git clones of a bare seed and no test copies kb files, so there is nothing left to hard-link and the audited change on worker1's branch work/ST-b3bbbbpc (81c582c93) no longer applies. The operator's answer to ST-f2gtof46 g2 kept this epic's stories for the operator. drop = drop it as moot (recommended); rescope = keep it as 'a scenario clone costs no more than N ms on the Windows host', measured in the new conftest; keep = leave it as it is",
+      "options": [
+        "drop",
+        "rescope",
+        "keep"
+      ],
+      "recommendation": "drop",
+      "class": "agents-rule",
+      "do": {
+        "drop": [
+          "python3",
+          "_tools/backlog.py",
+          "drop",
+          "ST-b3bbbbpc",
+          "--why",
+          "KbTemplate.copy_to and the kb file copies it linked left conftest.py with the old suite (4d70166fe)"
+        ],
+        "rescope": "ST-b3bbbbpc",
+        "keep": "ST-b3bbbbpc"
+      }
     }
   ],
-  "notes": "Audit done 2026-10-05 (worker1): 14 paths written in place (conftest.WRITTEN); the change is committed, not landed, on worker1's local branch work/ST-b3bbbbpc (81c582c93). Not landed: a copy now copies 14 files (4.8 MB) instead of 1108 (22.9 MB) but takes about 430 ms against 327 ms on this host, so linking is slower here; the operator decides whether to land it, narrow it or drop it."
+  "notes": "Audit done 2026-10-05 (worker1): 14 paths written in place (conftest.WRITTEN); the change is committed, not landed, on worker1's local branch work/ST-b3bbbbpc (81c582c93). Not landed: a copy now copies 14 files (4.8 MB) instead of 1108 (22.9 MB) but takes about 430 ms against 327 ms on this host, so linking is slower here; the operator decides whether to land it, narrow it or drop it. Housekeeping 2026-10-06: the -k kb_copy_links_every_unwritten_file selector named a test of the deleted KbTemplate; the checks are the suite and its Windows time bound until gate g2 settles whether the story is dropped or rescoped."
 }

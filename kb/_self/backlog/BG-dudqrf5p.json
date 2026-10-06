@@ -19,9 +19,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "lost_definitions_methods_and_assignments"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kg_merge;f=kg_merge.lost_definitions;base='X = 1\\nclass C:\\n    def a(self):\\n        pass\\n';ours=base+'    def b(self):\\n        pass\\nY = 2\\n';theirs=base+'    def c(self):\\n        pass\\nZ = 3\\n';lost=f(base,ours,theirs,ours);print(lost);sys.exit(0 if 'C.c' in lost and 'Z' in lost else 1)"
       ]
     }
   ],
@@ -35,5 +34,6 @@
     "AGENTS.md",
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "notes": "Housekeeping 2026-10-06: the -k lost_definitions_methods_and_assignments selector named a test the suite rules no longer allow; the check runs kg_merge.lost_definitions on a planted three-way input (a dropped method and a dropped assignment) and must exit 0 after the fix."
 }

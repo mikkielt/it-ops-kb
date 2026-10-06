@@ -2,7 +2,7 @@
   "id": "BG-ctwgv2lk",
   "kind": "bug",
   "title": "KbTemplate.changed() names a write through a link with backslashes on Windows",
-  "status": "doing",
+  "status": "dropped",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,5 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker3"
+  "notes": "Dropped: KbTemplate and its changed() left _tools/conftest.py with the old suite (4d70166fe): scenarios are now git clones of a bare seed, with no file digests to key"
 }

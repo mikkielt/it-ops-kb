@@ -2,7 +2,7 @@
   "id": "BG-lt3zjywp",
   "kind": "bug",
   "title": "test_bl_land's worktree_listed misses git's forward-slash paths on Windows",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
   ],
   "touches": [
     "kb/_self/code.md"
-  ]
+  ],
+  "notes": "Dropped: test_bl_land.py and TestBacklogLand.worktree_listed were deleted with the old suite (4d70166fe); test_land_e2e.py has no worktree path comparison"
 }

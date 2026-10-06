@@ -1,20 +1,19 @@
 {
   "id": "ST-pg5jyebo",
   "kind": "story",
-  "title": "A Claude session on the Windows host records a run of both suites",
+  "title": "A Claude session on the Windows host records a run of the test suite",
   "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-eahtellz",
   "priority": "P1",
   "rank": 0,
-  "goal": "kb/_self/reports/windows-run.md records the commit, the host and the results of tests.py and stress_test.py as run by a Claude session on the Windows host, and a test fails when the record names a commit that is not an ancestor of HEAD or lacks either suite's result",
+  "goal": "kb/_self/reports/windows-run.md records the commit, the host and the result of python3 _tools/tests.py as run by a Claude session on the Windows host, within the Windows ceiling of _tools/tests_ceiling.json, and the record names a commit that is an ancestor of HEAD",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "windows_run_record"
+        "-c",
+        "import re,subprocess,sys,pathlib;t=pathlib.Path('kb/_self/reports/windows-run.md').read_text(encoding='utf-8');c=re.search(r'\\b[0-9a-f]{9,40}\\b',t).group(0);sys.exit(subprocess.run(['git','merge-base','--is-ancestor',c,'HEAD']).returncode or int('tests.py' not in t))"
       ]
     }
   ],
@@ -26,5 +25,5 @@
     "when": "a Claude session runs in a clone on the Windows host and can run tests.py and stress_test.py there",
     "fired": false
   },
-  "notes": "Its run needs a Claude session in a clone on the Windows host; the trigger holds it until one exists (fire it with backlog.py fire ST-pg5jyebo), and the same session can run ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator”."
+  "notes": "Its run needs a Claude session in a clone on the Windows host; the trigger holds it until one exists (fire it with backlog.py fire ST-pg5jyebo), and the same session can run ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator”. Housekeeping 2026-10-06: the stress suite is gone, so the record covers tests.py only; the -k windows_run_record test became a check that reads the record's commit and asks git whether it is an ancestor of HEAD (a doc-reading test is not written). The trigger's text still names stress_test.py: backlog.py has no command to reword a trigger."
 }

@@ -17,6 +17,21 @@
       "recommendation": "approve",
       "answer": "approve",
       "by": "operator"
+    },
+    {
+      "id": "goal-stress",
+      "kind": "blocking",
+      "question": "The sprint's goal still says 'stress_test.py in 5 minutes or less' and 'every run collecting the same test ids with every planted-failure test still present': the stress suite and the old ids went with the test cut (the ceiling file bounds tests.py at 60 s on Windows). rescope = replace those clauses with 'tests.py within the Windows ceiling of _tools/tests_ceiling.json' (recommended); keep = leave the goal and let the review story name the clauses as moot",
+      "options": [
+        "rescope",
+        "keep"
+      ],
+      "recommendation": "rescope",
+      "class": "design",
+      "do": {
+        "rescope": "SP-eahtellz",
+        "keep": "SP-eahtellz"
+      }
     }
   ]
 }

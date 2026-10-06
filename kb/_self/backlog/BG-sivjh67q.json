@@ -2,7 +2,7 @@
   "id": "BG-sivjh67q",
   "kind": "bug",
   "title": "test_bl_land's rejected-push fake clones a remote whose HEAD names master",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
   ],
   "touches": [
     "kb/_self/code.md"
-  ]
+  ],
+  "notes": "Dropped: test_bl_land.py and its LAND_REJECT fake kbgit.py were deleted with the old suite (4d70166fe); the rejected-push land tests no longer exist"
 }

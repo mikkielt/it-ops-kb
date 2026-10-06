@@ -1,26 +1,24 @@
 {
   "id": "ST-xsxto3rh",
   "kind": "story",
-  "title": "settings.json allows no command form only the retired runner used, and test_settings_allow holds no runner list",
+  "title": "settings.json allows no command form only the retired runner used",
   "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
   "rank": 0,
-  "goal": "The allow rules no skill, agent or AGENTS.md names (git worktree unlock, git cherry, git checkout -b work/*, kbgit.py fmt --check, kbgit.py check-lanes and the like) leave .claude/settings.json, RUNNER_COMMANDS and RUNNER_TOOLS leave _tools/test_settings_allow.py or are renamed for what the skills run and each entry is named by a skill, and bl_land's RUNNER_NAME comment no longer describes a headless sprint runner; BG-whg564eb's goal removed only part of them. Found by the SP-w3xmbdra review.",
+  "goal": "The allow rules no skill, agent or AGENTS.md names (git worktree unlock, git cherry, git checkout -b work/*, kbgit.py fmt --check, kbgit.py check-lanes and the like, in both their Bash and PowerShell forms) leave .claude/settings.json and each remaining entry is named by a skill, the agent file or AGENTS.md; BG-whg564eb's goal removed only part of them. Found by the SP-w3xmbdra review.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "settings_allow_no_runner_forms"
+        "-c",
+        "import json,sys;a=' '.join(json.load(open('.claude/settings.json',encoding='utf-8'))['permissions']['allow']);bad=[w for w in ('git worktree unlock','git cherry ','git checkout -b work/','kbgit.py fmt --check','kbgit.py check-lanes') if w in a];print('stale allow forms:',bad);sys.exit(int(bool(bad)))"
       ]
     }
   ],
   "touches": [
     ".claude/settings.json",
-    "_tools/bl_land.py",
     "kb/_self/maintaining.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
@@ -28,5 +26,6 @@
   "depends_on": [
     "ST-yl5ihysf",
     "ST-qsppdmjv"
-  ]
+  ],
+  "notes": "Housekeeping 2026-10-06: _tools/test_settings_allow.py, RUNNER_COMMANDS, RUNNER_TOOLS and bl_land's RUNNER_NAME went with the old suite and the runner, so the story keeps only its settings.json half; the check reads the allow list and fails while a retired form is in it."
 }
