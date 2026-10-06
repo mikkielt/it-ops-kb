@@ -2,7 +2,7 @@
   "id": "ST-4mcyzrrz",
   "kind": "story",
   "title": "A done refused only because the item's code commits are not yet on the integration main opens no rework window in backlog.py cost",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   "relates_to": [
     "ST-spywrqpp"
   ],
-  "notes": "Premise: the item's check (a planted done refused for unlanded code, replayed through ql_capture.capture, then ql_distill.rework_windows) shows the item in rework at the later prompt (exit 1, [True, True, False, True]) on 2026-10-06; in SP-hyp6o7hl the worker's done of BG-dudqrf5p was refused only for the lane order and cost --rework counted the orchestrator's landing (4.59M tokens) as its rework. Second clause, not checked here: the worktree subagents' usage read 0 attributed (sub) for their items; ST-spywrqpp carries the worktree spool side of it, and what is left (routing a worktree subagent's usage to its item) is for this story's worker to file once that lands. The rework window starts at ql_distill.rework_windows from the work row action refused that ql_capture.refused_done writes for a done exiting 1; done's reason classes are in the done.refused ops row (bl_land.refuse_done), which carries no prompt id."
+  "notes": "Premise: the item's check (a planted done refused for unlanded code, replayed through ql_capture.capture, then ql_distill.rework_windows) shows the item in rework at the later prompt (exit 1, [True, True, False, True]) on 2026-10-06; in SP-hyp6o7hl the worker's done of BG-dudqrf5p was refused only for the lane order and cost --rework counted the orchestrator's landing (4.59M tokens) as its rework. Second clause, not checked here: the worktree subagents' usage read 0 attributed (sub) for their items; ST-spywrqpp carries the worktree spool side of it, and what is left (routing a worktree subagent's usage to its item) is for this story's worker to file once that lands. The rework window starts at ql_distill.rework_windows from the work row action refused that ql_capture.refused_done writes for a done exiting 1; done's reason classes are in the done.refused ops row (bl_land.refuse_done), which carries no prompt id.",
+  "claimed_by": "worker-4mcyzr"
 }
