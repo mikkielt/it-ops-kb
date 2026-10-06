@@ -2,7 +2,7 @@
   "id": "BG-v2gqk7zd",
   "kind": "bug",
   "title": "land warns of no work rows for an item whose only window is a branch row",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,18 @@
   "depends_on": [
     "BG-22jdzelu"
   ],
-  "claimed_by": "worker-landwarn"
+  "evidence": {
+    "commit": "6a5cc3fa9e29d0d68fc62f00d7912e1fafa20f8b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;L=[l for l in pathlib.Path(\"_tools/bl_land.py\").read_text(encoding=\"utf-8\").splitlines() if \"ql_capture.WORK_ACTIONS\" in l];print(L);sys.exit(0 if L and all(\"OPEN_ACTIONS\" in l for l in L) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "acc2d05a2b795212"
+      }
+    ]
+  }
 }
