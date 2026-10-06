@@ -21,3 +21,4 @@ flag,value,effect,headless_relevant,source
 --no-session-persistence,(flag),"print mode only; disables saving the session to disk so it cannot be resumed",n,S1824
 --effort,"low|medium|high|xhigh|max|ultracode",sets the effort level for the current session; does not persist,n,S1824
 --model,<alias or full name>,overrides the model setting and ANTHROPIC_MODEL for the session,n,S1824
+--setting-sources,"<sources>","loads only the named settings sources (user, project, local); a list without local never reads .claude/settings.local.json; user alone reads neither project settings files nor .mcp.json; the cli-reference flags table has no row for it",n,S1863;S-pmhgjvef

@@ -2,8 +2,8 @@
 topic: claude/skills-and-subagents
 priority: P2
 applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-09-26"
-retrieved_utc: 2026-09-29
-sources: [S2158, S2157, S-qdxfqzln, S-ezqg74ki, S-bisz7fay]
+retrieved_utc: 2026-10-06
+sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay]
 status: complete
 ---
 
@@ -73,9 +73,14 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   `.claude/agent-memory/<name>/`, or `.claude/agent-memory-local/<name>/` respectively. [DOC S2157]
 - `omitClaudeMd: true` skips user/project/local CLAUDE.md at launch (managed policy files still load, except for
   managed subagents); ignored when the agent runs as the main session agent; requires v2.1.271+. [DOC S2157]
-- `isolation: worktree` gives the subagent a temporary git worktree branched from the default branch (not the
-  parent's HEAD); the worktree auto-cleans up if the subagent made no changes. [DOC S2157]
-- `experimental.cacheTtl` (`5m` or `1h`) sets prompt-cache TTL for the subagent's own requests; `1h` is ignored while
+- `isolation: worktree` gives the subagent a temporary git worktree branched from the default branch by default (not
+  the parent's HEAD; see `worktree.baseRef` below); the worktree auto-cleans up if the subagent made no changes. [DOC S2157]
+- `worktree.baseRef` (`"fresh"` default | `"head"`) sets what new worktrees branch from, for `--worktree` and subagent
+  worktrees alike: `"fresh"` the repository's default branch on the remote, `"head"` the current local `HEAD`, carrying
+  unpushed commits. Inside a worktree `"head"` is that worktree's `HEAD`, not the main checkout's. [DOC S-j22fjuka]
+- `worktree.baseRef` takes no branch name; to start from a specific branch, create the worktree with git directly. [DOC S-j22fjuka]
+- `worktree.baseRef` was added in v2.1.133 (`fresh` | `head`, covering `--worktree`, `EnterWorktree` and agent-isolation
+  worktrees); the same release moved `EnterWorktree`'s base back to `origin/<default>`, where it had been local `HEAD` since 2.1.128. [DOC S-hvuk3dqt]- `experimental.cacheTtl` (`5m` or `1h`) sets prompt-cache TTL for the subagent's own requests; `1h` is ignored while
   the subscription is on usage credits; the field is read only from subagent files; requires v2.1.248+. [DOC S2157]
 - For plugin subagents, `hooks`, `mcpServers`, and `permissionMode` are all ignored for security reasons; copy the
   file into `.claude/agents/` or `~/.claude/agents/` to use them, or grant via `permissions.allow` (session-wide).

@@ -33,7 +33,7 @@ agent .md,memory,user|project|local,(none),"Enables persistent cross-session mem
 agent .md,background,boolean,false,true keeps the subagent in the background even when Claude asks to run it in the foreground,S2157
 agent .md,omitClaudeMd,boolean,false,"true launches without user/project/local CLAUDE.md (managed policy files still load, except for managed subagents); ignored when run as the main session agent; requires v2.1.271+",S2157
 agent .md,effort,low|medium|high|xhigh|max,inherits session,Effort level while this subagent is active,S2157
-agent .md,isolation,worktree,(none),"Runs the subagent in a temporary git worktree branched from the default branch rather than the parent session's HEAD; auto-cleaned if no changes made",S2157
+agent .md,isolation,worktree,(none),"Runs the subagent in a temporary git worktree branched from the default branch rather than the parent session's HEAD unless worktree.baseRef is "head"; auto-cleaned if no changes made",S2157
 agent .md,color,red|blue|green|yellow|purple|orange|pink|cyan,(none),Display color in the task list and transcript,S2157
 agent .md,initialPrompt,string,(none),"Auto-submitted as first user turn when this agent runs as the main session agent (via --agent or the agent setting); commands/skills processed; prepended to any user prompt; ignored for plugin subagents",S2157
 agent .md,experimental,map (cacheTtl: 5m|1h),(none),"cacheTtl sets prompt-cache lifetime for this subagent's requests; 1h ignored while the subscription uses usage credits; read only from subagent files; requires v2.1.248+",S2157

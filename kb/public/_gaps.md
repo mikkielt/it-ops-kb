@@ -1056,6 +1056,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Whether python.org's Windows installers carry an Authenticode signature, and which signer subject to expect.** The Python docs' Windows usage page (S-sjuwcuhk) names Authenticode only for install manager index signatures; python.org's Sigstore page (S-jzqdphnx) and PEP 761 describe Sigstore and OpenPGP only. Looked 2026-09-29. `_tools/install-python.ps1` checks an Authenticode signer; an official statement of the expected subject is still missing. [UNK] (topic: python/windows-python-install)
 
+## claude/settings-and-scopes
+
+- **The `--setting-sources` flag's own definition.** Looked 2026-10-06 in the cli-reference page's flags table (searched for "setting" in the whole page): it has no row for the flag, though a dozen pages link to `cli-reference#cli-flags` for it. The valid source names and the comma-separated value form are not stated on any page read; the effect is taken from the memory, permissions and sandboxing pages. Needs the flag's row on the CLI reference, or `claude --help` output of a pinned version. [UNK] (topic: claude/settings-and-scopes)
+- **Whether `.claude/skills`, `.claude/agents`, `.claude/commands` and `.claude/hooks` are named in the permission system's protected paths.** Looked 2026-10-06 in the permission-modes page's Protected paths section (S-zcuxapgb): it lists `.claude` as a protected directory with exceptions and does not name those four subdirectories; the sandbox page (S-l6l42j6e) names them for its own list. [UNK] (topic: claude/settings-and-scopes)
+
 ## claude/hooks
 
 - **The shape of `tool_response` for an MCP tool call in `PostToolUse`.** The hooks reference documents `tool_response` as "the result it returned" with a per-tool schema, and shows it for Write, Bash, Agent and ExitPlanMode, but not for an MCP tool (searched `code.claude.com/docs/en/hooks.md` for `tool_response` and `MCP`, 2026-09-28). The query log capture reads it defensively (a string, a content-block list or an object). [UNK] (topic: claude/hooks)
