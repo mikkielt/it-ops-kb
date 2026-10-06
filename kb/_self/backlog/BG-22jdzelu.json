@@ -2,7 +2,8 @@
   "id": "BG-22jdzelu",
   "kind": "bug",
   "title": "The docs still say a work window opens only from a claim, and cite the dropped BG-maqf3lxh as open",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -22,6 +23,11 @@
     "kb/_self/querylog.md",
     "_tools/bl_cost.py",
     "kb/_self/code.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "BG-lbazs72w"
   ]
 }

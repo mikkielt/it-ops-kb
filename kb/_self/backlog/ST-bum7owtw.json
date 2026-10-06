@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "land moves a worker worktree's untracked intake drafts aside itself",
   "status": "draft",
+  "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-mlemdqbn retrospective: every headless worker started with the project settings filed about six untracked intake drafts into its worktree (SessionStart backlog.py intake --file --hook), and the orchestrator moved them aside by hand before each of six landings, since bl_land.release_worker_worktree refuses untracked files. land moves untracked kb/_self/backlog/*.json drafts that no commit of the item's branch names out of the worker's worktree (to the main checkout's intake, or the scratch area intake triage reads) and says so, still refusing any other untracked or modified file; kb-sprint run step 3, kb/_self/backlog.md Running a sprint and Landing say so.",
@@ -22,5 +23,33 @@
     "kb/_self/tools.md",
     "AGENTS.md",
     "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-ocfkanth",
+    "ST-2zl47dfu"
+  ],
+  "gates": [
+    {
+      "id": "needed",
+      "kind": "blocking",
+      "question": "Once ST-ocfkanth stops intake filing drafts in a worker's linked worktree, is land moving drafts aside still needed? drop: ST-ocfkanth removes the cause, land keeps refusing untracked files as today; keep: land also moves aside any intake draft a worker worktree still holds (a session started outside .claude/worktrees, or an older clone).",
+      "options": [
+        "drop",
+        "keep"
+      ],
+      "recommendation": "drop",
+      "class": "agents-rule",
+      "do": {
+        "drop": [
+          "python3",
+          "_tools/backlog.py",
+          "drop",
+          "ST-bum7owtw",
+          "--why",
+          "carried-by-ST-ocfkanth"
+        ],
+        "keep": "ST-bum7owtw"
+      }
+    }
   ]
 }

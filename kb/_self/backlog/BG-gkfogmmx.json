@@ -55,8 +55,10 @@
           "operator"
         ],
         "add-test": "BG-gkfogmmx"
-      }
+      },
+      "answer": "accept",
+      "by": "operator"
     }
   ],
-  "notes": "deferred by the operator: a Windows amend with -F or -m computes the KB-* trailers against HEAD; check-trailers at push is the net; revisit if the logs show wrong trailers Housekeeping 2026-10-06: test_commit_msg_amend_with_message_file_reads_the_parent went with the old suite and the rules allow no regression test for it. The check runs kg_hooks.parent_args on the hook's own parent: it passes on macOS and Linux today and fails on Windows until the fix. The repro still names the deleted test: backlog.py set --repro refuses a command that passes on this host, so the repro can be replaced only from a session on the Windows host (the same parent_args run), or the operator accepts the host-bound proof (gate host-bound)."
+  "notes": "deferred by the operator: a Windows amend with -F or -m computes the KB-* trailers against HEAD; check-trailers at push is the net; revisit if the logs show wrong trailers Housekeeping 2026-10-06: test_commit_msg_amend_with_message_file_reads_the_parent went with the old suite and the rules allow no regression test for it. The check runs kg_hooks.parent_args on the hook's own parent: it passes on macOS and Linux today and fails on Windows until the fix. The repro still names the deleted test: backlog.py set --repro refuses a command that passes on this host, so the repro can be replaced only from a session on the Windows host (the same parent_args run), or the operator accepts the host-bound proof (gate host-bound). Windows worker, first step: the repro python3 _tools/tests.py -k test_commit_msg_amend_with_message_file_reads_the_parent selects no test since the suite rewrite (exit 5), so done would refuse. On the Windows host, where parent_args gives no command line today, repoint it before the fix: python3 _tools/backlog.py set BG-gkfogmmx --repro \"python3 -c 'import os,sys;sys.path.insert(0,\\\"_tools\\\");import kg_hooks;p,a=kg_hooks.parent_args(os.getppid());print(p,a);sys.exit(0 if a else 1)'\" (set refuses a repro that passes, so it cannot be set on macOS or Linux). Operator answered gate host-bound: accept the parent_args run on the Windows host as the proof. Research facts: kb/public/windows/process-parent-and-command-line.md (ST-li2boovy)."
 }

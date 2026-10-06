@@ -2,7 +2,8 @@
   "id": "BG-v2gqk7zd",
   "kind": "bug",
   "title": "land warns of no work rows for an item whose only window is a branch row",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -19,5 +20,8 @@
     "_tools/bl_land.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-22jdzelu"
   ]
 }

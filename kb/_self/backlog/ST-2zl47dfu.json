@@ -3,10 +3,18 @@
   "kind": "story",
   "title": "After land the orchestrator's checkout is level with origin/main before its next claim",
   "status": "draft",
+  "sprint": "SP-gkbtjjce",
   "priority": "P3",
   "rank": 0,
   "goal": "After backlog.py land pushes an item, the orchestrator's next claim starts from the pushed origin/main, either because land fast-forwards the checkout it ran in (clean, on a branch whose upstream is origin/main) or because kb-sprint run step 2 says to fast-forward before a claim, as the gate 'how' decides; kb/_self/backlog.md says which. From the SP-pbekfhaz retrospective: after two landings the orchestrator's checkout was 7 commits behind origin/main and each claim needed a manual git merge --ff-only.",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys;t=pathlib.Path(\"_tools/bl_land.py\").read_text(encoding=\"utf-8\");ok=\"--ff-only\" in t;print(\"land fast-forwards its checkout:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -25,6 +33,9 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
+  "depends_on": [
+    "ST-ocfkanth"
+  ],
   "gates": [
     {
       "id": "how",
@@ -39,7 +50,10 @@
       "do": {
         "tool: land fast-forwards the checkout it ran in when it is clean and its upstream is origin/main, and says so": "ST-2zl47dfu",
         "rule text: kb-sprint run step 2 says to run git merge --ff-only origin/main before each claim; no tool change": "ST-2zl47dfu"
-      }
+      },
+      "answer": "tool: land fast-forwards the checkout it ran in when it is clean and its upstream is origin/main, and says so",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "The second check, tests.py -k land, passes before the work on purpose: it pins the landing behaviour the change must keep. The first check fails until land fast-forwards its checkout (operator's gate how: tool)."
 }

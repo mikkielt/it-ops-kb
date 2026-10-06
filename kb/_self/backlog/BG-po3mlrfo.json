@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "Trailers: 5 commit(s) on main without a KB-Work trailer git reads",
   "status": "draft",
+  "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

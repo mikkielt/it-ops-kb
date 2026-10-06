@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "intake --file --hook files nothing in a worker's linked worktree and says so on stderr",
   "status": "draft",
+  "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py intake --file --hook, run in a linked git worktree under .claude/worktrees/ (a headless worker's), files no draft item and prints one line on stderr naming the worktree as the reason; in the main checkout it files as before and prints nothing. Answers the SP-sz5fbvqn retrospective: each worker session's SessionStart hook filed 5-6 untracked drafts under kb/_self/backlog/ of its worktree, one worker swept them into a commit with git add -A, and the orchestrator moved them aside before every land.",

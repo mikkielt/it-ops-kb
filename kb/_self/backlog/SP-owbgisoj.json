@@ -2,7 +2,7 @@
   "id": "SP-owbgisoj",
   "kind": "sprint",
   "title": "Work windows count only a worker's own session",
-  "status": "planned",
+  "status": "active",
   "goal": "A work window opens from a work/<id> branch only for that item's worker session and closes with the item, so backlog.py cost never counts an orchestrator's or a stale checkout's prompts on an item; land's no-work-rows warning reads branch rows; the docs describe claim and branch windows and no longer cite BG-maqf3lxh as open; checks and repros run with an isolated query log home, so none writes to the clone's spool; and kb-sprint plan asks that a new attribution rule's checks cover a session that must not be attributed",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

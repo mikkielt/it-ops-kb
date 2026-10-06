@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The goal research story skips the live docs when the pack is good for every committed item",
   "status": "draft",
+  "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-mlemdqbn retrospective: the goal research story ST-goziyt7i cost 5.6M tokens over 79 turns for about fifty lines, the largest item of the sprint, although kb_pack already answered every fact the items needed and only three side questions were new. kb-sprint plan step 1 and kb/_self/backlog.md Sprints (Plan) say the planner runs the goal's questions through rag.py pack first and narrows the research story's goal to the questions whose coverage is weak or none, naming them; a goal whose every question is good gets a research story whose done needs no outside facts (as ST-idwjvloy proposes).",
@@ -22,5 +23,8 @@
     "AGENTS.md",
     "kb/_self/maintaining.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-bum7owtw"
   ]
 }
