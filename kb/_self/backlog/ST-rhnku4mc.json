@@ -30,7 +30,8 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-tuzfns6e"
+    "ST-tuzfns6e",
+    "BG-jafnt5o2"
   ],
   "notes": "Planning 2026-10-06: the planted check builds a store in a temporary directory with one _self miss quoting kb/_self/backlog.md's 'uncommitted' line, runs ql_learn.learn and ql_apply.apply on it and asks for the pair on the finding's observed field and an alias row with both words in the temporary directory; it also checks that the real kb/_self/_retrieval/aliases.csv is unchanged. Gate.targets (ql_apply.py) has no aliases path for a _self rules finding today; the check sets a gate.rules_aliases attribute as the hook it expects, which the worker may rename with the check."
 }

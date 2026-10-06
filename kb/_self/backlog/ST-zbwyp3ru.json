@@ -2,7 +2,7 @@
   "id": "ST-zbwyp3ru",
   "kind": "story",
   "title": "The suite's id count against the sprint goal's 60 to 100 is settled by the operator",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-eahtellz",
   "priority": "P3",
   "rank": 0,
@@ -42,7 +42,10 @@
           "the operator accepted 54 ids as delivered: the ceiling is a maximum and the suite does not grow"
         ],
         "add": "ST-zbwyp3ru"
-      }
+      },
+      "answer": "accept",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Dropped: the operator accepted 54 ids as delivered: the ceiling is a maximum and the suite does not grow"
 }

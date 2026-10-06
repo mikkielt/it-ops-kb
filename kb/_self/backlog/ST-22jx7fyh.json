@@ -41,7 +41,9 @@
       "do": {
         "rule text: kb-sprint plan step 6, kb-backlog Plan and kb/_self/backlog.md Sprints ask for the probe; no tool change": "ST-22jx7fyh",
         "tool warning: backlog.py check warns of a committed story whose goal names a quality figure and whose notes hold no Premise line running a probe (adds _tools/bl_*.py check code and its docs to the touches)": "ST-22jx7fyh"
-      }
+      },
+      "answer": "rule text: kb-sprint plan step 6, kb-backlog Plan and kb/_self/backlog.md Sprints ask for the probe; no tool change",
+      "by": "operator"
     }
   ],
   "notes": "Premise: the SP-njilrify history; ST-ulhmplqh's notes (git history) record the held-out run (rag.py eval --file of 20 held-out rule questions --root _self: 14 passed, verdict good on all 20) that raised the accuracy gate of ST-dvf3xf52 after work began. selfdoc.py check passes before the work: it pins that no heading reference goes dead when the skills change. Touches agents-rule paths (.claude/skills/): how the rule is enforced is an operator gate."
