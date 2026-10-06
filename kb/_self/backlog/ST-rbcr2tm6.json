@@ -1,0 +1,24 @@
+{
+  "id": "ST-rbcr2tm6",
+  "kind": "story",
+  "title": "The sync gate refuses a push whose deleted or renamed test leaves a done or open item's check selecting no test",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py sync --push (kg_sync gate_paths and gates) runs backlog.py selectors when the pushed range deletes or renames a _tools/test_*.py file, and refuses the push while a check or repro of a done item of an active sprint, or of an open item, selects no test. Answers the SP-qzip6qar land, test and ops hygiene retrospective: ST-px3y26ti's suite rewrite (commit 4d70166f) deleted tests that nine done items of SP-qzip6qar checked with tests.py -k, and nothing said so until the review story's done reran them (exit 5 each).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kg_sync\na=kg_sync.gate_needs({'_tools/test_x.py'}).get('selectors');b=kg_sync.gate_needs({'_tools/foo.py'}).get('selectors')\nprint(a,b);sys.exit(0 if a and not b else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/code.md",
+    "kb/_self/git.md"
+  ],
+  "notes": "Premise: python3 -c \"import sys;sys.path.insert(0,'_tools');import kg_sync;print(kg_sync.gate_needs({'_tools/test_x.py'}))\" shows no selectors entry: the gate runs check and selfdoc for a changed test file and never backlog.py selectors, which itself exits 0 even when a selector selects none (backlog selectors prints none=N), so the gate must read its none= count. gate_paths diffs names from the merge base, where a rename shows only the new name."
+}
