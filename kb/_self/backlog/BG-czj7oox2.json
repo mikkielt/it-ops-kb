@@ -1,0 +1,22 @@
+{
+  "id": "BG-czj7oox2",
+  "kind": "bug",
+  "title": "apply's alias check for a rules finding's word pair reads every alias file but kb/_self's own, so a pair whose term kb/_self/_retrieval/aliases.csv holds gets a second row",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found by the fresh-context review of SP-sz5fbvqn, item ST-rhnku4mc (apply writes a kb/_self aliases row for a rules finding that names a word pair): the check that a rules finding's pair is in no alias file yet (ql_apply.rules_alias_rows through Gate.alias_terms) reads kb/_self/_retrieval/aliases.csv too (kbfacts.alias_files(rules=True) or the same set), so a pair whose term or canonical that file already holds writes no second row and the finding is left as the goal says.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,csv; sys.path.insert(0,'_tools'); import ql_apply,kbfacts; t=ql_apply.Gate().alias_terms(); rows=list(csv.DictReader(open(kbfacts.SELF_ALIASES,encoding='utf-8'))); miss=[r['term'] for r in rows if ' '.join(r['term'].lower().split()) not in t]; print(miss[:5]); sys.exit(1 if miss else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_apply.py",
+    "kb/_self/querylog.md",
+    "kb/_self/code.md"
+  ]
+}
