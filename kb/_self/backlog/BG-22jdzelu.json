@@ -1,0 +1,27 @@
+{
+  "id": "BG-22jdzelu",
+  "kind": "bug",
+  "title": "The docs still say a work window opens only from a claim, and cite the dropped BG-maqf3lxh as open",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the SP-mlemdqbn review (TK-nwxefymo): kb/_self/backlog.md Running a sprint and kb-sprint run step 3 cite BG-maqf3lxh (dropped, carried by TK-nwxefymo) as the open claim-window problem; kb/_self/usage.md and kb/_self/querylog.md still say a session that claimed no item is not recorded and that a window runs from a claim; the bl_cost.py docstring says worked items are the ones a session claimed. Each says a window opens from a claim or from the session's work/<id> branch (ql_capture.branch_row), and none names BG-maqf3lxh as open.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys;F=(\"kb/_self/backlog.md\",\".claude/skills/kb-sprint/SKILL.md\",\"kb/_self/usage.md\",\"kb/_self/querylog.md\",\"_tools/bl_cost.py\");L=[(f,i+1) for f in F for i,l in enumerate(pathlib.Path(f).read_text(encoding=\"utf-8\").splitlines()) if \"BG-maqf3lxh\" in l or \"claimed no item\" in l];print(L);sys.exit(1 if L else 0)"
+    ]
+  },
+  "repro_reason": "a defect in the docs' wording: the sentences name the dropped bug and the claim-only window; no tool run shows a stale sentence",
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md",
+    "_tools/bl_cost.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ]
+}
