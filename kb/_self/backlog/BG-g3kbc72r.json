@@ -21,6 +21,21 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Who gets the key-word window: every clipped _self passage, or only a pinned one (then the repro needs the SS2-004 row or another tested question)?",
+      "options": [
+        "every clipped _self passage (anchor phrase for a pinned one, else the densest cluster of the question key words): an unpinned weak pack hides its answer the same way, and the repro runs with no tested row",
+        "only a pinned passage, on its anchor phrase: other passages keep the head cut, and the repro needs a tested row"
+      ],
+      "recommendation": "every clipped _self passage (anchor phrase for a pinned one, else the densest cluster of the question key words): an unpinned weak pack hides its answer the same way, and the repro runs with no tested row",
+      "class": "secrets",
+      "answer": "every clipped _self passage (anchor phrase for a pinned one, else the densest cluster of the question key words): an unpinned weak pack hides its answer the same way, and the repro runs with no tested row",
+      "by": "operator"
+    }
+  ],
   "notes": "Found by the review of ST-dvf3xf52: row SS2-004 of the skills' sets was left out of lookup_eval.csv because its pinned passage (backlog.md Escalation line, one sentence over the clip) prints without the phrase. The repro reads stdout only; the tool exits 0 on a pack, so a crash would show as a missing phrase too.",
   "claimed_by": "worker sonnet BG-g3kbc72r"
 }
