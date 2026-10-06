@@ -2,7 +2,7 @@
   "id": "BG-qkjgg3yj",
   "kind": "bug",
   "title": "The headless delegation sentences state a .claude/ write refusal that depends on the permission mode as always true",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mlemdqbn",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,6 @@
   ],
   "depends_on": [
     "BG-bnvqwxiw"
-  ]
+  ],
+  "claimed_by": "worker-permmode"
 }
