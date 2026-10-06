@@ -41,14 +41,29 @@ def plugin_data():
     return Path(data) if data and root and _same(root, HOME) else None
 
 
+def clone_home():
+    """The checkout that owns this copy's spool: HOME, or the main worktree of the clone when HOME is a linked git
+    worktree (its `.git` is a file naming `<common dir>/worktrees/<name>`), where the readers look."""
+    try:
+        text = (HOME / ".git").read_text(encoding="utf-8").strip()
+    except OSError:
+        return HOME
+    if text.startswith("gitdir:"):
+        gitdir = Path(text[len("gitdir:"):].strip())
+        if gitdir.parent.name == "worktrees" and gitdir.parent.parent.name == ".git":
+            return gitdir.parent.parent.parent
+    return HOME
+
+
 def places():
     """(querylog directory, config file): the plugin's data directory when this copy runs as the plugin, else the
-    clone's _cache/querylog and _private/querylog.json."""
+    clone's _cache/querylog and _private/querylog.json (the main worktree's, for a copy in a linked worktree)."""
     data = plugin_data()
     if data is not None:
         d = data / "querylog"
         return d, d / "config.json"
-    return HOME / "_cache" / "querylog", HOME / "_private" / "querylog.json"
+    home = clone_home()
+    return home / "_cache" / "querylog", home / "_private" / "querylog.json"
 
 
 def read_json(path, default):
