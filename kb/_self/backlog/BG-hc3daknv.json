@@ -1,0 +1,23 @@
+{
+  "id": "BG-hc3daknv",
+  "kind": "bug",
+  "title": "set --repro cannot repoint a reopened bug whose fix has landed: it refuses every repro that passes now",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "set --repro on a reopened bug (one with a done evidence commit in its history, its fix landed) accepts a repro that passes now, since done reruns the repro and needs it to pass, so a reopened bug whose repro runs a deleted test can be repointed; on a bug never done it still refuses a passing repro. Found by the SP-hyp6o7hl review: BG-3omfxxnw's repro ran a test ST-px3y26ti deleted and could only be dropped.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True);g('init','-q');g('commit','-q','--allow-empty','-m','a');it={'id':'BG-aaaaaaaa','kind':'bug','title':'T','status':'done','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','_tools/tests.py','-k','gone_test']},'checks':[{'run':['python3','_tools/tests.py','-k','gone_test']}],'touches':['src/x'],'evidence':{'commit':'0'*40,'checks':[]}};open(os.path.join(b,'BG-aaaaaaaa.json'),'w').write(json.dumps(it));r=lambda *a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);o=r('reopen','BG-aaaaaaaa','--why','its repro runs a deleted test');s=r('set','BG-aaaaaaaa','--repro','git status --short');print('reopen',o.returncode,'set --repro',s.returncode,(s.stdout+s.stderr).strip()[:300]);sys.exit(1 if o.returncode==0 and s.returncode!=0 else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
