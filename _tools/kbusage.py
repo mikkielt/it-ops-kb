@@ -14,7 +14,9 @@ only; no model and no network.
 
 prompt_usage(transcript_path, prompt_id) is what the query log's distill calls: a dict of counts, tool groups and
 model ids, or None when the transcript cannot be read or holds no request of the prompt. A subagent that worked on a
-`work/<id>` branch is counted under `routed`, by that item id, not under `sub`.
+`work/<id>` branch is counted under `routed`, by that item id, not under `sub`. find_transcript(session_id) and
+transcript_ended(path) are what the launcher uses to close a session whose SessionEnd never ran: the transcript of a
+session id, and whether the session has exited.
 """
 import argparse, json, os, re, shlex, sys
 from pathlib import Path
@@ -325,6 +327,28 @@ def prompt_usage(transcript_path, prompt_id):
     if len(st) > STEPS_MAX:
         rec["cut"] = len(st) - STEPS_MAX
     return rec
+
+
+def find_transcript(session_id):
+    """The main transcript of a session, `<Claude config dir>/projects/<project>/<session id>.jsonl` (the config dir:
+    CLAUDE_CONFIG_DIR, else `~/.claude`), or None. `session_id` is a safe file name (ql_capture.SAFE_SESSION)."""
+    base = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude") / "projects"
+    try:
+        return next(base.glob(f"*/{session_id}.jsonl"), None)
+    except OSError:
+        return None
+
+
+def transcript_ended(path):
+    """Whether a transcript's last record is Claude Code's `cost-state`, written once, last, when a session exits (a
+    session still running, or resumed since, ends in another record). False when the file cannot be read."""
+    try:
+        for line in tail_lines(path):
+            r = loads(line)
+            return r is not None and r.get("type") == "cost-state"
+    except OSError:
+        pass
+    return False
 
 
 def prompt_ids(path):

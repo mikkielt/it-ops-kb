@@ -36,6 +36,7 @@ LAUNCH_SETTLE_S = 2
 SESSION_IDLE_CLOSED_S = 86400
 USAGE_LOCK_WAIT_S = 600  # a distill started with a transcript waits this long for the lock
 USAGE_LOCK_POLL_S = 2
+MISSED_ENDS_MAX = 8  # the sessions one launch closes that exited without a SessionEnd
 LOG_NAME = "distill.log"
 LOG_MAX_BYTES = 1_000_000  # the launcher starts a fresh log above it
 CALLS_NAME = "haiku-calls.json"  # {"day", "calls"}: the Haiku calls this machine made today
@@ -780,6 +781,7 @@ def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit
             n = add_usage(qdir / "spool", *usage_from)
             if n:
                 out(f"distill: usage rows written: {n}")
+            close_ended(qdir / "spool", *usage_from)
         now_dt = now_dt or datetime.datetime.now(datetime.timezone.utc)
         spend = Spend()
         rc = _distill(qdir, haiku or functools.partial(claude_haiku, spend=spend), now_dt, run_id, kb_commit, out,
@@ -1021,10 +1023,49 @@ def ready(spool, t_now):
     return False
 
 
-def detach(argv, log):
-    """Start `argv` detached from this process, its output appended to `log`; its PID. POSIX: a new session.
-    Windows: DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, plus CREATE_BREAKAWAY_FROM_JOB when the job the hook runs
-    in allows it (a job that forbids breakaway refuses the flag, and the child is started without it)."""
+def missed_ends(spool, skip=None):
+    """[(session id, transcript path)] of the spool's sessions that have no `.end` marker, yet whose transcript says the
+    session exited (kbusage.transcript_ended): a SessionEnd that never ran, as none did for a headless worker started
+    with the project's hooks (kb/_self/usage.md). At most MISSED_ENDS_MAX, never `skip` (the session of the event)."""
+    try:
+        names = sorted(p.name for p in Path(spool).iterdir())
+    except OSError:
+        return []
+    out = []
+    for n in names:
+        sid = n[:-6]
+        if not n.endswith(".jsonl") or n.startswith("tools-") or sid == skip or f"{sid}.end" in names \
+                or not SAFE_SESSION.fullmatch(sid):
+            continue
+        transcript = kbusage.find_transcript(sid)
+        if transcript is not None and kbusage.transcript_ended(transcript):
+            out.append((sid, str(transcript)))
+            if len(out) >= MISSED_ENDS_MAX:
+                break
+    return out
+
+
+def close_ended(spool, session_id, transcript_path):
+    """Mark a session closed (its `.end` marker) when no SessionEnd did and its transcript says it exited
+    (kbusage.transcript_ended). Done in the distill that wrote the session's usage rows, after them, so that another
+    distill's pass never consumes the session before its rows are written. Whether it marked."""
+    base = Path(spool)
+    try:
+        if not (isinstance(session_id, str) and SAFE_SESSION.fullmatch(session_id)
+                and (base / f"{session_id}.jsonl").exists() and not (base / f"{session_id}.end").exists()
+                and kbusage.transcript_ended(transcript_path)):
+            return False
+        (base / f"{session_id}.end").touch()
+        return True
+    except OSError:
+        return False
+
+
+def detach(argv, log, note=None):
+    """Start `argv` detached from this process, its output appended to `log` (after the line `note`, when given); its
+    PID. POSIX: a new session. Windows: DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, plus CREATE_BREAKAWAY_FROM_JOB
+    when the job the hook runs in allows it (a job that forbids breakaway refuses the flag, and the child is started
+    without it)."""
     log = Path(log)
     log.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -1032,6 +1073,9 @@ def detach(argv, log):
     except OSError:
         fresh = False
     with open(log, "w" if fresh else "a", encoding="utf-8", newline="\n") as f:
+        if note:
+            f.write(note + "\n")
+            f.flush()
         kw = dict(stdin=subprocess.DEVNULL, stdout=f, stderr=subprocess.STDOUT, cwd=str(HOME), close_fds=True)
         if os.name == "nt":
             flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
@@ -1043,10 +1087,12 @@ def detach(argv, log):
 
 
 def launch(event):
-    """The PID of the distill a SessionEnd or SessionStart event starts, or None. SessionEnd first marks its session
-    closed; when the session has a spool file and the event names its transcript, the distill it starts gets the
-    session id and the transcript path (`--session`, `--transcript`) and waits for the lock. Otherwise nothing starts
-    when logging is off, nothing is ready, or a distill holds a fresh lock."""
+    """The PID of the distill a SessionEnd or SessionStart event starts, or None. Each session of the spool whose
+    transcript says it exited without a SessionEnd (missed_ends) gets a distill of its own with `--session` and
+    `--transcript`, as a SessionEnd would have started; that distill marks the session closed after its usage rows
+    (close_ended). SessionEnd then marks its session closed; when the session has a spool file and the event names its
+    transcript, the distill it starts gets the session id and the transcript path and waits for the lock. Otherwise
+    nothing more starts when logging is off, nothing is ready, or a distill holds a fresh lock."""
     if not isinstance(event, dict) or event.get("hook_event_name") not in ("SessionEnd", "SessionStart"):
         return None
     qdir, cfg = places()
@@ -1055,14 +1101,18 @@ def launch(event):
     spool = qdir / "spool"
     sid = event.get("session_id")
     argv = [sys.executable, str(ENTRY), "distill", "--settle", str(LAUNCH_SETTLE_S)]
+    pid = None
+    for missed, path in missed_ends(spool, sid):
+        pid = detach(argv + ["--session", missed, "--transcript", path], qdir / LOG_NAME,
+                     note=f"launch: session {missed} exited without a SessionEnd: closed, its usage read")
     if event["hook_event_name"] == "SessionEnd" and isinstance(sid, str) and SAFE_SESSION.fullmatch(sid) \
             and (spool / f"{sid}.jsonl").exists():
         (spool / f"{sid}.end").touch()
         transcript = event.get("transcript_path")
         if isinstance(transcript, str) and transcript:
             return detach(argv + ["--session", sid, "--transcript", transcript], qdir / LOG_NAME)
-    if not ready(spool, time.time()):
-        return None
+    if pid is not None or not ready(spool, time.time()):
+        return pid
     age = lock_age(qdir / LOCK_NAME)
     if age is not None and age < LOCK_STALE_S:
         return None
