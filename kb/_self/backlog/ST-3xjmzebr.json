@@ -1,0 +1,22 @@
+{
+  "id": "ST-3xjmzebr",
+  "kind": "story",
+  "title": "Research sprint goal: Workers read what they change and gates say why they block",
+  "status": "draft",
+  "sprint": "SP-ktup3cha",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}
