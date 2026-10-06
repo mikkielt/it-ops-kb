@@ -2,7 +2,7 @@
   "id": "BG-cnuobqet",
   "kind": "bug",
   "title": "land stops at wait-merge with exit 1 when the fetch of the pushed code branch times out after a successful push",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-cnuobq"
 }
