@@ -2,7 +2,7 @@
   "id": "BG-m44nifbo",
   "kind": "bug",
   "title": "check reports a path a check proves absent as gone when it uses test ! -e or sys.exit on an exists test in another form",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-m44nif"
+  "evidence": {
+    "commit": "95f3d53ec825d0ba8b712027c5b015fb28d6e586",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_check;q=chr(39);p='os.path.exists('+q+'src/old.txt'+q+')';R=[['test','!','-e','src/old.txt'],['python3','-c','import os,sys;sys.exit(1 if '+p+' else 0)'],['python3','-c','import os,sys;sys.exit(int('+p+'))']];F=[(r,bl_check.command_paths(r)) for r in R];[print(r,'->',f) for r,f in F];sys.exit(1 if any(f for r,f in F) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "d206a1ebe8bbec2a"
+      }
+    ]
+  }
 }
