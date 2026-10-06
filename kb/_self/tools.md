@@ -100,7 +100,7 @@ Every tool is stdlib-only Python in `_tools/`, run as `python3 _tools/<tool>`. E
 | `_tools/bl_cost.py` | the module of `cost`: the work sidecars of the query log summed for an item and its descendants, work and rework, research and overhead; it registers itself and imports `bl_base` and `bl_cli` |
 | `_tools/bl_intake.py` | not a command: the intake's detectors (`DETECTORS`), their candidates and fingerprints, the CI detector's pipeline reader and the filing of `intake --file`; `bl_ci` holds the command |
 | `_tools/bl_land.py` | the module of `done`, `land`, `merge` and `close`: the evidence, the landing steps, the worker's worktree release and the sprint summary; it imports `bl_base`, `bl_check`, `bl_intake` and `kg_lane`, never `backlog` |
-| `_tools/bl_plan.py` | the module of `start`: the code-and-docs rules, the host-check gates and the free-text host setup warning, the dependencies outside a sprint and the shared-file plan; it imports `bl_base` only, never `bl_check` |
+| `_tools/bl_plan.py` | the module of `start`: the code-and-docs rules, the host-check gates and the free-text host setup warning, the dependencies outside a sprint, the unfired triggers of a sprint's items and the shared-file plan; it imports `bl_base` only, never `bl_check` |
 | `_tools/bl_procs.py` | the module of `procs`: the processes left running in this clone's checkouts, owned, orphaned or foreign; it registers itself |
 | `_tools/bl_selfcheck.py` | the module of `selfcheck`: the orchestrator's checks of its own tools, rules, hooks and host; it registers itself |
 | `_tools/bl_stall.py` | the module of `stalled`: the stall signals of claimed and ready items; it registers itself |
