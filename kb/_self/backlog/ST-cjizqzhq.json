@@ -1,0 +1,25 @@
+{
+  "id": "ST-cjizqzhq",
+  "kind": "story",
+  "title": "The orchestrator checks staged .claude/ edits after copying them back, before land",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-sprint run step 3 (the headless delegation paragraph) and kb/_self/backlog.md Running a sprint say that after the orchestrator copies a headless worker's staging copies back into the worktree it runs python3 _tools/selfdoc.py check and the item's own checks there, before the commit and land, since the worker's checks read the worktree's unchanged .claude/ files, not the copies it edited; the rule is a tested question of kb/_self/_retrieval/lookup_eval.csv in set kb-sprint:run. From the SP-pbekfhaz retrospective: ST-zzsbdbi7's worker reported selfdoc problems=0 while its staged kb-sprint text held a dead heading reference.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess as sp,sys;P=lambda *a:sp.run([sys.executable,'_tools/rag.py','pack','--root','_self',*a],capture_output=True,text=True,check=True).stdout;m=re.search(r'coverage: good \\(tested question (\\S+):',P('after copying a headless worker staging copies back, which checks does the orchestrator run before land'));ok=bool(m) and ('# %s:'%m.group(1)) in P('--set','kb-sprint:run');print(m.group(1) if m else 'no tested question',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ]
+}
