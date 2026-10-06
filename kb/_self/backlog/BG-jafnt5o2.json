@@ -2,7 +2,7 @@
   "id": "BG-jafnt5o2",
   "kind": "bug",
   "title": "learn records a no-fix eval finding that was closed with --tried as fixed-since with its tried day, and querylog.py check rejects it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sz5fbvqn",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "kb/_self/code.md",
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
-  ]
+  ],
+  "claimed_by": "worker sonnet BG-jafnt5o2"
 }
