@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "dropped_retired_feature_phrase"
+        "-c",
+        "import sys, subprocess, tempfile, io, contextlib, pathlib\nsys.path.insert(0, '_tools')\nimport perfcheck\nd = pathlib.Path(tempfile.mkdtemp()); t = d / '_tools'; t.mkdir()\ndef g(*a): subprocess.run(['git', '-c', 'user.name=t', '-c', 'user.email=t@example.com', *a], cwd=d, check=True, capture_output=True)\nfor n, s in {'mod_live.py': 'def live_fn():\\n return 1\\n', 'mod_auto.py': 'def auto_fn():\\n return 2\\n', 'test_autoshape.py': 'import mod_auto\\nimport mod_live\\n\\ndef test_c():\\n pass\\n'}.items(): (t / n).write_text(s)\ng('init', '-q'); g('add', '-A'); g('commit', '-qm', 'b')\nfor n in ('mod_auto.py', 'test_autoshape.py'): (t / n).unlink()\ng('add', '-A'); g('commit', '-qm', 'r')\ndef warned(reason):\n    f = d / 'dropped.txt'; f.write_text('# ' + reason + '\\n_tools/test_autoshape.py::test_c\\n')\n    o = io.StringIO()\n    with contextlib.redirect_stdout(o): perfcheck.main(['dropped', '--file', str(f)], root=d)\n    return 'modules it tested are still present: mod_live' in o.getvalue()\nP = 'live-module calls went with'\nfor r, w in [(P + ' the removed mod_auto.py', 0), (P + ' the removed `auto_fn`', 0), (P + ' the runner', 1), (P + ' the removed mod_live.py', 1), ('mod_auto.py is removed', 1)]:\n    assert warned(r) == bool(w), r\n"
       ]
     }
   ],
@@ -27,17 +26,16 @@
     "ST-yl5ihysf"
   ],
   "evidence": {
-    "commit": "206a12fcdae09066c598c3d7d998974588e80b43",
+    "commit": "b1e389e56ed8149f4238b2f43e6bab90194d290e",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "dropped_retired_feature_phrase"
+          "-c",
+          "import sys, subprocess, tempfile, io, contextlib, pathlib\nsys.path.insert(0, '_tools')\nimport perfcheck\nd = pathlib.Path(tempfile.mkdtemp()); t = d / '_tools'; t.mkdir()\ndef g(*a): subprocess.run(['git', '-c', 'user.name=t', '-c', 'user.email=t@example.com', *a], cwd=d, check=True, capture_output=True)\nfor n, s in {'mod_live.py': 'def live_fn():\\n return 1\\n', 'mod_auto.py': 'def auto_fn():\\n return 2\\n', 'test_autoshape.py': 'import mod_auto\\nimport mod_live\\n\\ndef test_c():\\n pass\\n'}.items(): (t / n).write_text(s)\ng('init', '-q'); g('add', '-A'); g('commit', '-qm', 'b')\nfor n in ('mod_auto.py', 'test_autoshape.py'): (t / n).unlink()\ng('add', '-A'); g('commit', '-qm', 'r')\ndef warned(reason):\n    f = d / 'dropped.txt'; f.write_text('# ' + reason + '\\n_tools/test_autoshape.py::test_c\\n')\n    o = io.StringIO()\n    with contextlib.redirect_stdout(o): perfcheck.main(['dropped', '--file', str(f)], root=d)\n    return 'modules it tested are still present: mod_live' in o.getvalue()\nP = 'live-module calls went with'\nfor r, w in [(P + ' the removed mod_auto.py', 0), (P + ' the removed `auto_fn`', 0), (P + ' the runner', 1), (P + ' the removed mod_live.py', 1), ('mod_auto.py is removed', 1)]:\n    assert warned(r) == bool(w), r\n"
         ],
         "exit": 0,
-        "sha256": "874c62766307a36a"
+        "sha256": "e3b0c44298fc1c14"
       }
     ]
   }
