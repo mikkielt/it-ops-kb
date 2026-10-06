@@ -68,3 +68,15 @@ Held-out: 20 rule questions written after the tuning and never added to the file
 ## 5. Cost of the delegated sessions that built this
 
 Headless `claude -p` sessions, by model, read from each result's `modelUsage`: Sonnet (claude-sonnet-5-5) for every session: 28 sessions plus the four measurement runs, 22.20 USD in total, of which the measurement runs are 0.61 USD; no Haiku or Opus session. The manager session's own cost is not in this figure.
+
+## 6. A tested answer costs less (2026-10-06)
+
+Setup: `len(stdout.encode())` of `python3 _tools/rag.py pack --root _self "<tested question>"` at the default budget, on the base (origin/main) and on the change; a pack with a tested match prints its pinned passages and at most three further ones, the tied decisions as before; a weak pack keeps the full budget.
+
+| tested question | before | after |
+|---|---|---|
+| SE-002 who may answer a sprint's start gate | 4255 | 1774 |
+| SE-005 which commit trailer makes a commit count as work on a backlog item | 4365 | 1743 |
+| SE-001 what does backlog.py land refuse when the tree has uncommitted or untracked files | 1166 | 1166 |
+
+The planted bound of the item (one pinned passage plus three, 4 x 450 bytes, plus 561 bytes of header, decision and footer: 2361, rounded to 2400) holds for SE-002 with 1774 bytes; `rag.py eval --root _self` passes 271 of 271.
