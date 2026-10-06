@@ -2,7 +2,7 @@
   "id": "ST-bsg2lwrh",
   "kind": "story",
   "title": "Review sprint: pack --root _self answers a tested rule question with its pinned passage, little else, and only the decisions that bear on it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sz5fbvqn",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator SP-sz5fbvqn"
+  "evidence": {
+    "commit": "09775d6be6cc00c6ead04e9c910c3604492666a4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "90363c50717b09e3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "3d04cf6d6f4dea3a"
+      }
+    ]
+  }
 }
