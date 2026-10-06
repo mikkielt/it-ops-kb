@@ -2,7 +2,7 @@
   "id": "BG-dudqrf5p",
   "kind": "bug",
   "title": "The resolved-conflict check misses a dropped method or a dropped top-level assignment",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyp6o7hl",
   "priority": "P2",
   "rank": 0,
@@ -52,5 +52,27 @@
     }
   ],
   "notes": "Housekeeping 2026-10-06: the -k lost_definitions_methods_and_assignments selector named a test the suite rules no longer allow; the check runs kg_merge.lost_definitions on a planted three-way input (a dropped method and a dropped assignment) and must exit 0 after the fix.",
-  "claimed_by": "worker-dudqrf5p"
+  "evidence": {
+    "commit": "f58235ab72fa45c2196bd8e275c5859093c2f871",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kg_merge;f=kg_merge.lost_definitions;base='X = 1\\nclass C:\\n    def a(self):\\n        pass\\n';ours=base+'    def b(self):\\n        pass\\nY = 2\\n';theirs=base+'    def c(self):\\n        pass\\nZ = 3\\n';lost=f(base,ours,theirs,ours);print(lost);sys.exit(0 if 'C.c' in lost and 'Z' in lost else 1)"
+        ],
+        "exit": 0,
+        "sha256": "522749a69152b077"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kg_merge;f=getattr(kg_merge,'lost_definitions',None);base='class C:\\n    def a(self):\\n        pass\\n';ours=base+'    def b(self):\\n        pass\\n';theirs=base+'    def c(self):\\n        pass\\n';sys.exit(1 if f is None or 'C.c' not in f(base,ours,theirs,ours) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
