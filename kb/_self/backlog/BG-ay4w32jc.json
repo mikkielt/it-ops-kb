@@ -1,0 +1,24 @@
+{
+  "id": "BG-ay4w32jc",
+  "kind": "bug",
+  "title": "A one-prompt headless worker gets no usage row, so backlog cost still reads 0 for its item",
+  "status": "todo",
+  "sprint": "SP-owbgisoj",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Found while running SP-owbgisoj: after BG-lbazs72w, the workers of BG-lbazs72w, ST-u3bx6w77 and BG-22jdzelu each wrote their branch row, yet backlog.py cost reads 0 for them: a claude -p worker has one prompt, add_usage writes a prompt's usage row only at the next prompt (skip=the running one) or from the SessionEnd distill, and distill.log shows no SessionEnd distill for these sessions (kb/public/_gaps.md: whether a normal -p exit runs SessionEnd is not stated). The capture of the Stop event (already a configured hook) writes the usage rows of the session's finished prompts that need one (ql_capture.add_usage with no skip), so a one-prompt worker inside a branch window gets its usage row; usage.md and querylog.md say so.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as sp,sys,tempfile,shutil\nfrom pathlib import Path\nS=Path.cwd();t=Path(tempfile.mkdtemp());c=1\ntry:\n    g=lambda *a:sp.run(['git','-c','user.name=t','-c','user.email=t@t',*a],cwd=t/'r',capture_output=True,check=True)\n    i='ST-abcdefgh';(t/'r'/'kb'/'_self'/'backlog').mkdir(parents=True);(t/'r'/'kb'/'_self'/'backlog'/(i+'.json')).write_text(json.dumps(dict(id=i,kind='story',status='doing')))\n    g('init','-q');g('add','-A');g('commit','-qm','i');g('checkout','-qb','work/'+i)\n    d=t/'d';(d/'querylog').mkdir(parents=True);(d/'querylog'/'config.json').write_text('{\"mode\": \"local\"}')\n    u=dict(input_tokens=1,cache_creation_input_tokens=2,cache_read_input_tokens=3,output_tokens=4)\n    (t/'tr').write_text(chr(10).join(json.dumps(r) for r in [dict(type='user',promptId='p1',message=dict(role='user',content='x')),dict(type='assistant',requestId='r1',message=dict(model='claude-sonnet-5-5',usage=u,content=[]))])+chr(10))\n    e=dict(os.environ,CLAUDE_PLUGIN_DATA=str(d),CLAUDE_PLUGIN_ROOT=str(S))\n    def h(**k):sp.run([sys.executable,str(S/'_tools'/'querylog.py'),'capture'],input=json.dumps(dict(dict(session_id='s1',cwd=str(t/'r'),transcript_path=str(t/'tr')),**k)),text=True,cwd=t/'r',env=e,capture_output=True)\n    h(hook_event_name='UserPromptSubmit',prompt_id='p1',prompt='x')\n    h(hook_event_name='Stop')\n    R=[json.loads(l) for l in (d/'querylog'/'spool'/'s1.jsonl').read_text().splitlines()]\n    w=[r.get('action') for r in R if r.get('surface')=='work'];n=[r for r in R if r.get('surface')=='usage' and r.get('prompt_id')=='p1']\n    print('work rows:',w,'usage rows for the one prompt after Stop:',len(n));c=0 if n and 'branch' in w else 1\nexcept Exception as x:print('check error',type(x).__name__,str(x)[:150])\nfinally:shutil.rmtree(t,ignore_errors=True)\nsys.exit(c)\n"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md",
+    "kb/_self/code.md"
+  ]
+}
