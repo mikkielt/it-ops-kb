@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "review_reruns_done_checks"
+        "-c",
+        "import sys, tempfile, pathlib\nsys.path.insert(0, '_tools')\nimport bl_land\nd = pathlib.Path(tempfile.mkdtemp())\nneed = [sys.executable, '-c', 'import os, sys; sys.exit(0 if os.path.exists(\"b.txt\") else 1)']\nfail = [sys.executable, '-c', 'import sys; sys.exit(1)']\nclass BL:\n    root = d\n    items = {'T1': {'status': 'done', 'checks': [{'run': need}]}, 'T2': {'status': 'todo', 'checks': [{'run': fail}]}, 'R1': {'status': 'done', 'review': True, 'checks': [{'run': fail}]}}\n    def sprint_items(self, sid):\n        return list(self.items)\nbl = BL()\nstale = bl_land.rerun_done_checks(bl, 'S')\nassert [i for i, c, code in stale] == ['T1'], stale\nassert stale[0][2] == 1, stale\n(d / 'b.txt').write_text('b')\nassert bl_land.rerun_done_checks(bl, 'S') == []\nprint('rerun names the failing done item only; clean once fixed')"
       ]
     }
   ],
@@ -31,17 +30,16 @@
     "ST-yl5ihysf"
   ],
   "evidence": {
-    "commit": "bfe9d774c23f30b1bb8373d90eeed9328f18b6f5",
+    "commit": "a6c8e0be10cc98e29dea9c86a79aa26e8d8152e4",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "review_reruns_done_checks"
+          "-c",
+          "import sys, tempfile, pathlib\nsys.path.insert(0, '_tools')\nimport bl_land\nd = pathlib.Path(tempfile.mkdtemp())\nneed = [sys.executable, '-c', 'import os, sys; sys.exit(0 if os.path.exists(\"b.txt\") else 1)']\nfail = [sys.executable, '-c', 'import sys; sys.exit(1)']\nclass BL:\n    root = d\n    items = {'T1': {'status': 'done', 'checks': [{'run': need}]}, 'T2': {'status': 'todo', 'checks': [{'run': fail}]}, 'R1': {'status': 'done', 'review': True, 'checks': [{'run': fail}]}}\n    def sprint_items(self, sid):\n        return list(self.items)\nbl = BL()\nstale = bl_land.rerun_done_checks(bl, 'S')\nassert [i for i, c, code in stale] == ['T1'], stale\nassert stale[0][2] == 1, stale\n(d / 'b.txt').write_text('b')\nassert bl_land.rerun_done_checks(bl, 'S') == []\nprint('rerun names the failing done item only; clean once fixed')"
         ],
         "exit": 0,
-        "sha256": "1ac65fc94d6e00c2"
+        "sha256": "f9c503a1dd20ca01"
       }
     ]
   }
