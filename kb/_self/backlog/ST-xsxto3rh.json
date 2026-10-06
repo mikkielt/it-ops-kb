@@ -21,7 +21,9 @@
     ".claude/settings.json",
     "kb/_self/maintaining.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_selfcheck.py",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-yl5ihysf",
@@ -45,6 +47,25 @@
         "move out": "ST-xsxto3rh"
       },
       "answer": "full audit",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Full audit: remove the retired and unused forms (git worktree unlock, git cherry with its SKILL_COMMANDS entry, git checkout -b work/*, work/*, orch/*, kbgit.py fmt --check, check-lanes, lane, kb_hook.py, git fetch --quiet, git commit -q, git branch --list) and keep the read-only lookup forms maintaining.md names, remove every unnamed form, or only the ten the check names?",
+      "options": [
+        "remove sure list, keep read-only",
+        "remove all unnamed",
+        "only the 10"
+      ],
+      "recommendation": "remove sure list, keep read-only",
+      "class": "agents-rule",
+      "do": {
+        "remove sure list, keep read-only": "ST-xsxto3rh",
+        "remove all unnamed": "ST-xsxto3rh",
+        "only the 10": "ST-xsxto3rh"
+      },
+      "answer": "remove sure list, keep read-only",
       "by": "operator"
     }
   ],
