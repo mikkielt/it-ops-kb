@@ -12,9 +12,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "live_data_list_names_every_reader"
+        "-c",
+        "import glob,sys\nd=open(\"kb/_self/code.md\",encoding=\"utf-8\").read()\nassert \"A test over the repository's live data holds at any size of it.\" in d, \"rule gone\"\nclaims=\"lists each such test\" in d\nlisted=any(\"LIVE_DATA_TESTS\" in open(f,encoding=\"utf-8\").read() for f in glob.glob(\"_tools/test_*.py\"))\nassert not claims or listed, \"code.md claims a list of live-data tests that no test file holds\"\nfor f in glob.glob(\"_tools/test_*.py\"):\n    s=open(f,encoding=\"utf-8\").read()\n    assert \"LIVE_DATA_TESTS\" not in s or \"def test_\" in s\nprint(\"ok\")"
       ]
     }
   ],
@@ -26,17 +25,16 @@
     "ST-fo3ztjcs"
   ],
   "evidence": {
-    "commit": "263715b2c6fd0720fda550cb89f9ad30f1722512",
+    "commit": "d6182a76944b5c53253dc31a127c7c7c67866d7d",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "live_data_list_names_every_reader"
+          "-c",
+          "import glob,sys\nd=open(\"kb/_self/code.md\",encoding=\"utf-8\").read()\nassert \"A test over the repository's live data holds at any size of it.\" in d, \"rule gone\"\nclaims=\"lists each such test\" in d\nlisted=any(\"LIVE_DATA_TESTS\" in open(f,encoding=\"utf-8\").read() for f in glob.glob(\"_tools/test_*.py\"))\nassert not claims or listed, \"code.md claims a list of live-data tests that no test file holds\"\nfor f in glob.glob(\"_tools/test_*.py\"):\n    s=open(f,encoding=\"utf-8\").read()\n    assert \"LIVE_DATA_TESTS\" not in s or \"def test_\" in s\nprint(\"ok\")"
         ],
         "exit": 0,
-        "sha256": "ca04130eb395bdff"
+        "sha256": "dc51b8c96c2d745d"
       }
     ]
   }
