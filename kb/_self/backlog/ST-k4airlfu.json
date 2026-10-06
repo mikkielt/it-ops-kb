@@ -2,7 +2,7 @@
   "id": "ST-k4airlfu",
   "kind": "story",
   "title": "Research sprint goal: pack --root _self answers a tested rule question with its pinned passage, little else, and only the decisions that bear on it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sz5fbvqn",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orchestrator SP-sz5fbvqn"
 }
