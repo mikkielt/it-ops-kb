@@ -2,7 +2,7 @@
   "id": "BG-bnvqwxiw",
   "kind": "bug",
   "title": "The headless delegation sentences do not say where staging copies of .claude/ files go",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mlemdqbn",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,18 @@
     "BG-hu56lf65",
     "BG-qkjgg3yj"
   ],
-  "claimed_by": "worker-staging"
+  "evidence": {
+    "commit": "e76a30b40c9714c0064e3d31946520c4dadc7a08",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;L=[l for f in ('.claude/skills/kb-sprint/SKILL.md','kb/_self/backlog.md','.claude/agents/kb-worker.md') for l in pathlib.Path(f).read_text(encoding='utf-8').splitlines() if 'staging cop' in l];print(len(L),[('outside' in l) for l in L]);sys.exit(0 if L and all('outside' in l for l in L) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0b6b227b63d3e011"
+      }
+    ]
+  }
 }
