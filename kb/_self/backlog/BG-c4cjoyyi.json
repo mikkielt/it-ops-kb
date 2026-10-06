@@ -2,7 +2,7 @@
   "id": "BG-c4cjoyyi",
   "kind": "bug",
   "title": "reopen refuses a done item whose touches name a file a later commit deleted, so its stale check can never be fixed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyp6o7hl",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-c4cjoyyi"
 }
