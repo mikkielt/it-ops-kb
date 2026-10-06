@@ -12,17 +12,15 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "otel_receiver_exits"
+        "-c",
+        "import sys,os,subprocess,threading,tempfile\nsys.path.insert(0,'_tools')\nimport kbotel\nd=tempfile.mkdtemp()\ndef ret(**kw):\n    rx=kbotel.Receiver(os.path.join(d,'e.jsonl'),0)\n    t=threading.Thread(target=rx.run,kwargs=kw,daemon=True)\n    t.start();t.join(15)\n    return rx,not t.is_alive()\nrx,ok=ret(idle=0.2)\nassert ok and rx.server.socket.fileno()==-1,'idle expiry'\ng=subprocess.Popen([sys.executable,'-c','pass']);g.wait()\nrx,ok=ret(idle=3600,parent=g.pid)\nassert ok,'gone parent'\nassert not kbotel.alive(g.pid) and kbotel.alive(os.getpid())\nrx,ok=ret(idle=0.3,parent=os.getpid())\nassert ok,'idle with live parent'\n"
       ]
     },
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "ql_report_ops_block_by_row_day"
+        "-c",
+        "import sys, json, tempfile, datetime\nfrom pathlib import Path\nsys.path.insert(0, '_tools')\nimport ql_report\nd = Path(tempfile.mkdtemp())\ndef row(n, ts, ms):\n    return {'id': '00000000-0000-4000-8000-%012d' % n, 'ts': ts, 'event': 'land.end', 'item': 'TK-aaaaaaaa', 'exit': 0, 'ms': ms}\np = d / '20260929T080000Z.jsonl'\nrows = [row(1, '2026-09-27T23:00:00.000Z', 5), row(2, '2026-09-29T08:00:00.000Z', 7)]\np.write_text('\\n'.join(json.dumps(x) for x in [{'run': p.stem, 'counts': {'rows': 2}}] + rows) + '\\n')\ndef week(lo):\n    return lambda day: lo <= day <= lo + datetime.timedelta(days=6)\nw39 = ql_report.ops_lines([p], week(datetime.date(2026, 9, 21)))\nw40 = ql_report.ops_lines([p], week(datetime.date(2026, 9, 28)))\nassert w39 and w39[0].startswith('ops: 1 rows') and '  land.end: 1, failed 0, median 5 ms' in w39, w39\nassert w40 and w40[0].startswith('ops: 1 rows') and '  land.end: 1, failed 0, median 7 ms' in w40, w40\n"
       ]
     }
   ],
@@ -39,27 +37,25 @@
     "BG-hdy6rfro"
   ],
   "evidence": {
-    "commit": "04d4b03598c03e01e35321c991b321914d50fa86",
+    "commit": "60539de74a29d1970a8c50ca602aab7fb431c259",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "otel_receiver_exits"
+          "-c",
+          "import sys,os,subprocess,threading,tempfile\nsys.path.insert(0,'_tools')\nimport kbotel\nd=tempfile.mkdtemp()\ndef ret(**kw):\n    rx=kbotel.Receiver(os.path.join(d,'e.jsonl'),0)\n    t=threading.Thread(target=rx.run,kwargs=kw,daemon=True)\n    t.start();t.join(15)\n    return rx,not t.is_alive()\nrx,ok=ret(idle=0.2)\nassert ok and rx.server.socket.fileno()==-1,'idle expiry'\ng=subprocess.Popen([sys.executable,'-c','pass']);g.wait()\nrx,ok=ret(idle=3600,parent=g.pid)\nassert ok,'gone parent'\nassert not kbotel.alive(g.pid) and kbotel.alive(os.getpid())\nrx,ok=ret(idle=0.3,parent=os.getpid())\nassert ok,'idle with live parent'\n"
         ],
         "exit": 0,
-        "sha256": "697e7b60d0ddd161"
+        "sha256": "e3b0c44298fc1c14"
       },
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "ql_report_ops_block_by_row_day"
+          "-c",
+          "import sys, json, tempfile, datetime\nfrom pathlib import Path\nsys.path.insert(0, '_tools')\nimport ql_report\nd = Path(tempfile.mkdtemp())\ndef row(n, ts, ms):\n    return {'id': '00000000-0000-4000-8000-%012d' % n, 'ts': ts, 'event': 'land.end', 'item': 'TK-aaaaaaaa', 'exit': 0, 'ms': ms}\np = d / '20260929T080000Z.jsonl'\nrows = [row(1, '2026-09-27T23:00:00.000Z', 5), row(2, '2026-09-29T08:00:00.000Z', 7)]\np.write_text('\\n'.join(json.dumps(x) for x in [{'run': p.stem, 'counts': {'rows': 2}}] + rows) + '\\n')\ndef week(lo):\n    return lambda day: lo <= day <= lo + datetime.timedelta(days=6)\nw39 = ql_report.ops_lines([p], week(datetime.date(2026, 9, 21)))\nw40 = ql_report.ops_lines([p], week(datetime.date(2026, 9, 28)))\nassert w39 and w39[0].startswith('ops: 1 rows') and '  land.end: 1, failed 0, median 5 ms' in w39, w39\nassert w40 and w40[0].startswith('ops: 1 rows') and '  land.end: 1, failed 0, median 7 ms' in w40, w40\n"
         ],
         "exit": 0,
-        "sha256": "820a32881839f140"
+        "sha256": "e3b0c44298fc1c14"
       }
     ]
   }
