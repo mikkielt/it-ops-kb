@@ -2,7 +2,7 @@
   "id": "BG-lbazs72w",
   "kind": "bug",
   "title": "A session on a work/<id> branch that is not that item's worker opens a work window no land closes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/usage.md",
     "kb/_self/querylog.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-leak"
 }
