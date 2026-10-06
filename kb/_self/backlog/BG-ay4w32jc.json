@@ -2,7 +2,7 @@
   "id": "BG-ay4w32jc",
   "kind": "bug",
   "title": "A one-prompt headless worker gets no usage row, so backlog cost still reads 0 for its item",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,18 @@
     "kb/_self/plugin.md"
   ],
   "notes": "2026-10-07 probe: claude -p with a SessionEnd hook that writes a file and starts a background child (sleep 5) left both files: SessionEnd fires on a normal -p exit and a detached child survives. A first fix (usage rows at the async Stop capture) was withdrawn by the orchestrator: it contradicts usage.md's rule (read after the prompt, not at Stop) and would freeze incomplete rows for interactive kb prompts.",
-  "claimed_by": "worker-stopusage"
+  "evidence": {
+    "commit": "8450c6fa696fbf931a2804688922bed5c0ff02c0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, os, shutil, subprocess as sp, sys, tempfile, time, uuid\nfrom pathlib import Path\nS = Path.cwd(); t = Path(tempfile.mkdtemp()); c = 1\ntry:\n    d = t / 'd'; q = d / 'querylog'; (q / 'spool').mkdir(parents=True); (q / 'config.json').write_text('{\"mode\": \"local\"}')\n    p = t / 'cfg' / 'projects' / 'w'; p.mkdir(parents=True)\n    u = dict(input_tokens=1, cache_creation_input_tokens=2, cache_read_input_tokens=3, output_tokens=4)\n    j = lambda *rs: ''.join(json.dumps(r) + chr(10) for r in rs)\n    (p / 's1.jsonl').write_text(j(dict(type='user', promptId='p1', message=dict(role='user', content='x')),\n                                  dict(type='assistant', requestId='r1', message=dict(model='claude-sonnet-5-5', usage=u, content=[])),\n                                  dict(type='cost-state', sessionId='s1')))\n    row = lambda **k: dict(id=str(uuid.uuid4()), ts='2026-10-06T23:09:43.545Z', v=1, session_id='s1', prompt_id='p1', **k)\n    (q / 'spool' / 's1.jsonl').write_text(j(row(surface='prompt', prompt='x'), row(surface='work', action='branch', item='ST-abcdefgh')))\n    e = dict(os.environ, CLAUDE_PLUGIN_DATA=str(d), CLAUDE_PLUGIN_ROOT=str(S), CLAUDE_CONFIG_DIR=str(t / 'cfg'))\n    ev = dict(hook_event_name='SessionStart', session_id='s2', cwd=str(S), source='startup')\n    sp.run([sys.executable, str(S / '_tools' / 'querylog.py'), 'launch'], input=json.dumps(ev), text=True, cwd=S, env=e, capture_output=True)\n    end = time.time() + 40; hit = []\n    while time.time() < end and not hit:\n        time.sleep(1)\n        for f in (q / 'store').rglob('work/*/*.jsonl'):\n            hit += [r for r in map(json.loads, f.read_text().splitlines()) if r.get('item') == 'ST-abcdefgh']\n    print('work lines for the item of the ended session after a later session started:', len(hit))\n    c = 0 if hit else 1\n    while (q / 'distill.lock').exists() and time.time() < end:\n        time.sleep(0.5)\nexcept Exception as x:\n    print('check error', type(x).__name__, str(x)[:150])\nfinally:\n    shutil.rmtree(t, ignore_errors=True)\nsys.exit(c)\n"
+        ],
+        "exit": 0,
+        "sha256": "cfad5e4f61e4b4e8"
+      }
+    ]
+  }
 }
