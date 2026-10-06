@@ -2,7 +2,7 @@
   "id": "ST-li2boovy",
   "kind": "story",
   "title": "Research sprint goal: Windows host: suite runs recorded and sped up",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "worker-winresearch"
+  "evidence": {
+    "commit": "57ccd0e6a3b672caa6021bfd47c727bee869de1b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "6bf9736f337df272"
+      }
+    ]
+  }
 }
