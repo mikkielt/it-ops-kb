@@ -441,12 +441,14 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
             wrong.append(AUTO)
         work = have.get(WORK)
         state = []
-        if bodies.get(sha, 0) > len(work or []) and not on_origin_main(sha):
+        paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
+        if bodies.get(sha, 0) > len(work or []):
             state.append(STRAY_WORK)
+        elif not work and not auto and any(code_path(p) for p in paths):
+            state.append(MISSING_WORK)
         if work and not work_ok(sha, work):
             wrong.append(WORK)
         elif work and work_state_on and not on_origin_main(sha):
-            paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
             state += work_state(work, paths, lambda rel: at_or_parent(sha, rel))
         kb += bool(want)
         if wrong or state:
@@ -456,9 +458,9 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
                                                                                                  WORK: "once, backlog item ids that exist at the commit or its parent"}.get(k, f"(no {k})"))
                 lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
             for why in state:
-                lines.append(f"    {WORK}: {why}" + ("" if why == STRAY_WORK else
+                lines.append(f"    {WORK}: {why}" + ("" if why in FORM_ONLY else
                                                      "; work lands only for a claimed item of a started sprint"))
-            if WORK in wrong or any(why != STRAY_WORK for why in state):
+            if WORK in wrong or any(why not in FORM_ONLY for why in state):
                 lines.append(f"    the rule: {WORK_RULE}")
             bad.append((sha, lines))
     return len(recs), kb, bad
@@ -466,6 +468,16 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
 
 STRAY_WORK = ("a KB-Work line outside the trailer block, which git does not read as a trailer (a blank line before "
               "Co-Authored-By?): put it in the message's last paragraph, with the other trailers")
+
+
+MISSING_WORK = ("changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work and no KB-Auto trailer: "
+                "name the item it works on")
+FORM_ONLY = (STRAY_WORK, MISSING_WORK)
+WORK_PATHS = ("_tools/", ".claude/", ".githooks/", ".gitlab-ci.yml")  # a change to these is work: it needs a KB-Work
+
+
+def code_path(path):
+    return any(path == p or (p.endswith("/") and path.startswith(p)) for p in WORK_PATHS)
 
 
 def work_lines(spec):
