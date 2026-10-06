@@ -1,0 +1,25 @@
+{
+  "id": "ST-t2afmfpn",
+  "kind": "story",
+  "title": "close --summary maps each part of a comma and 'and' list in a sprint goal to the item that carries it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py close --summary (bl_land.goal_clause_lines) splits a goal clause that is a list of independent statements joined by ', ' and ' and ' into its parts when no single done item carries the whole clause, and names for each part the done item that carries it (CLAUSE_COVER of its words), so a long list clause whose parts many items carry is not reported as unmet, carried by no item; a part no item carries is still unmet. A goal with no '; ' or ', and ' (one such list only) is split the same way, so its parts get clause lines. Planted check: a sprint whose goal is 'reopen keeps gone touches, horizon names finished sprints and merge reports merged requests' with three done stories carrying one part each; the summary's goal clauses name all three and print no unmet. From the SP-hyp6o7hl retrospective.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,re,shutil,subprocess as sp,sys,tempfile\nt=tempfile.mkdtemp();c=1\ntry:\n    b=os.path.join(t,'kb','_self','backlog');os.makedirs(b);sp.run(['git','init','-q',t])\n    W=lambda it:open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it));C=[{'run':['python3','-c','pass']}];E={'commit':'0'*40,'checks':[]}\n    W({'id':'SP-aaaaaaaa','kind':'sprint','title':'S','status':'active','goal':'reopen keeps gone touches, horizon names finished sprints and merge reports merged requests','gates':[{'id':'start','kind':'blocking','question':'Q?','options':['approve'],'recommendation':'approve','answer':'approve','by':'operator'}]})\n    P=[('ST-aaaaaaaa','reopen keeps gone touches of a done item'),('ST-bbbbbbbb','horizon names finished sprints with their command'),('ST-cccccccc','merge reports merged requests as merged')]\n    [W({'id':i,'kind':'story','title':x,'status':'done','sprint':'SP-aaaaaaaa','priority':'P2','rank':0,'goal':x,'checks':C,'evidence':E}) for i,x in P]\n    r=sp.run([sys.executable,'_tools/backlog.py','--root',t,'close','SP-aaaaaaaa','--summary'],capture_output=True,text=True);o=r.stdout+r.stderr;print(o)\n    L=o.split('goal clauses:',1)[1] if 'goal clauses:' in o else ''\n    R=[r.returncode==0,bool(L.strip()),'unmet' not in o]+[i in L for i,_ in P];print(R);c=0 if all(R) else 1\nexcept Exception as x:print('check error',type(x).__name__,str(x)[:200])\nfinally:shutil.rmtree(t,ignore_errors=True)\nsys.exit(c)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "Premise: python3 _tools/backlog.py close SP-hyp6o7hl --summary on 2026-10-06 split the goal into 2 clauses and reported clause 1, the comma list 'backlog.py records only the operator's confirmation as the operator's (an agent's --confirm stays provisional), goal marks ..., set --parent ..., ... and perfcheck ids passes on main', as 'unmet, carried by no item' though 14 done items carry its parts; the item's check prints no goal clauses at all for a goal with one comma list (exit 1). CLAUSE_SPLIT in bl_land.py splits only at '; ' and ', and ', and goal_clause_lines returns nothing for fewer than 2 clauses."
+}
