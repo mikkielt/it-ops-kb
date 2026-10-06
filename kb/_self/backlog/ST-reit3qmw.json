@@ -55,7 +55,10 @@
     "AGENTS.md",
     "kb/_self/web-sources.md",
     "kb/_self/_retrieval/lookup_eval.csv",
-    ".claude/hooks/session_start.py"
+    ".claude/hooks/session_start.py",
+    "_tools/rag.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-dvf3xf52"
