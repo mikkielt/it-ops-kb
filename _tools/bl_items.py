@@ -16,14 +16,14 @@ from bl_base import (
     trailer_problem, waits, withhold,
 )
 from bl_check import (
-    ITEM_FILES_ROUTE, item_files_only, noop_warnings, text_only_repro, validate,
+    ITEM_FILES_ROUTE, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
 )
 from bl_land import cleanup_gate_do, run_check, own_failure
 from bl_view import (
     is_near, similar,
 )
 from bl_plan import (
-    has_scope, host_gates, stale_touches, tracked_files,
+    docs_after_code, has_scope, host_gates, stale_touches, tracked_files,
 )
 
 
@@ -297,6 +297,14 @@ def gone_touch_prefix(bl, iid):
     return f"{bl.label(iid)}: touches names "
 
 
+def check_errors(bl, skip=()):
+    """The errors `check` counts, less the findings that begin with a prefix of SKIP."""
+    planned = [i for sid, sp in bl.items.items() if sp.get("kind") == "sprint" and sp.get("status") == "planned"
+               for i in bl.sprint_items(sid)]
+    errs = validate(bl) + stale_touches(bl) + docs_after_code(bl, planned) + refused_command_errors(bl)
+    return [x for x in errs if not x.startswith(tuple(skip))]
+
+
 def changed_item(bl, iid, edit):
     """Apply `edit` to a copy of the item and write it when the copy differs and validates as `check` does: no error
     that was not there before (this item's, or another's that a dependency cycle or a review story's sprint would
@@ -308,8 +316,9 @@ def changed_item(bl, iid, edit):
 def changed_items(bl, edits, reveal=()):
     """`changed_item` for several items at once ({id: edit}): the copies are validated together, so either every
     changed item is written or none is. Returns True when it wrote any file. `reveal` names items whose own
-    gone-path touches (`stale_touches`) may appear new: an item the edit opens again, which `check` did not flag for
-    them while it was done, so the edit reveals them rather than adds them (`reopen`)."""
+    gone-path touches (`stale_touches`) and refused repro or check (`refused_command_errors`) may appear new: an item
+    the edit opens again, which `check` did not flag for them while it was done, so the edit reveals them rather
+    than adds them (`reopen`). Every other error `check` counts is refused when the edit adds it."""
     olds = {i: bl.items[i] for i in edits}
     news = {}
     for i, edit in edits.items():
@@ -318,13 +327,15 @@ def changed_items(bl, edits, reveal=()):
     news = {i: n for i, n in news.items() if canonical(n) != canonical(olds[i])}
     if not news:
         return False
-    before = set(validate(bl) + stale_touches(bl))
+    before = set(check_errors(bl))
     raws = {i: bl.raw[i] for i in news}
     for i, n in news.items():
         bl.items[i], bl.raw[i] = n, canonical(n)
     try:
         own = tuple(gone_touch_prefix(bl, i) for i in reveal)
-        fresh = [x for x in validate(bl) + [s for s in stale_touches(bl) if not s.startswith(own)] if x not in before]
+        refused = tuple(f"{bl.label(i)}: " for i in reveal)
+        fresh = [x for x in check_errors(bl) if x not in before and not x.startswith(own)
+                 and not (x.startswith(refused) and " is refused: " in x)]
     finally:
         for i in news:
             bl.items[i], bl.raw[i] = olds[i], raws[i]
