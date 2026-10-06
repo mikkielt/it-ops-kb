@@ -2,7 +2,7 @@
   "id": "ST-tuzfns6e",
   "kind": "story",
   "title": "A decision tied to a section prints under a question only when it bears on it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sz5fbvqn",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,6 @@
   "depends_on": [
     "ST-eegqfkah"
   ],
-  "notes": "Planning 2026-10-06: the planted check packs 'what is a sprint', which prints the Sprints passage of backlog.md, and asks that D-bnfzftjv (tied to _self/backlog#Running a sprint, sharing no key word with the question) is absent while --set kb-sprint:run still prints it; today the question prints it. A shared word with the decision's text already counts; a shared source word does not and the decision prints anyway."
+  "notes": "Planning 2026-10-06: the planted check packs 'what is a sprint', which prints the Sprints passage of backlog.md, and asks that D-bnfzftjv (tied to _self/backlog#Running a sprint, sharing no key word with the question) is absent while --set kb-sprint:run still prints it; today the question prints it. A shared word with the decision's text already counts; a shared source word does not and the decision prints anyway.",
+  "claimed_by": "worker sonnet ST-tuzfns6e"
 }
