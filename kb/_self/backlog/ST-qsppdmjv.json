@@ -2,7 +2,7 @@
   "id": "ST-qsppdmjv",
   "kind": "story",
   "title": "start warns of an item that waits on a trigger or a host the sprint cannot reach",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
   "depends_on": [
     "ST-ywqttahe"
   ],
-  "notes": "Housekeeping 2026-10-06: the -k start_warns_unreachable_trigger selector named a test the suite rules no longer allow; the check copies the backlog to a temporary root, plants an approved sprint with a story whose trigger is unfired, runs backlog.py --root T start on it and expects the warning to name the story and its trigger."
+  "notes": "Housekeeping 2026-10-06: the -k start_warns_unreachable_trigger selector named a test the suite rules no longer allow; the check copies the backlog to a temporary root, plants an approved sprint with a story whose trigger is unfired, runs backlog.py --root T start on it and expects the warning to name the story and its trigger.",
+  "claimed_by": "worker-qsppdm"
 }
