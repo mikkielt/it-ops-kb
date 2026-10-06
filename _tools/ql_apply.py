@@ -1,8 +1,9 @@
 """The query log's apply (kb/_self/querylog.md, Apply): accepted findings become changes in this clone's working
 tree, never committed here (`apply --push` commits them in its worktree). Each open eval finding's row is written
 together with its alias or expansion fix when the kb gates pass; an open gap candidate the pack still reproduces
-under an article becomes a `_gaps.md` entry; then opt-in research (ql_research). One findings file records each
-outcome.
+under an article becomes a `_gaps.md` entry; an open `rules` finding (a missed lookup in the rule docs) whose reader
+quoted a line becomes a row of kb/_self/_retrieval/lookup_eval.csv anchored on a phrase of that line; then opt-in
+research (ql_research). One findings file records each outcome.
 """
 import csv, datetime, re, sys
 from pathlib import Path
@@ -20,6 +21,9 @@ SPECIFIC_WORDS = 2  # of them, words few articles hold (`specific_words`)
 ABOUT_UNITS = 10  # lines of a weak lead holding one key word: the lead is about that word
 MANY_WORDS = 5 # key words in one line that are the subject whichever they are
 SPECIFIC_ONE_IN = 15  # a specific word is in at most one article in this many
+RULES_ID = "SQ-"  # a rules eval row's id: this and the slug of its question, as a public row's `EV-` id
+ANCHOR_WORDS = (4, 6)  # the words an anchor phrase has, at least and at most
+ANCHOR_CANDIDATES = 5  # phrases of the answering line tried for the anchor, rarest first
 CSV_HEADERS = {"eval": ["id", "question", "expect_paths", "expect_verdict", "allow_weak"],
                "aliases": ["term", "canonical"], "expansions": ["key", "question"]}
 
@@ -51,6 +55,36 @@ class Gate:
                 good += sum(kbfacts.pack(q, fmt="concise")["verdict"] == "good" for q in qs)
         return {"n": res["n"], "passed": res["passed"], "failed": [r["id"] for r in res["rows"] if not r["ok"]],
                 "chars": {r["id"]: r["chars"] for r in res["rows"]}, "offkb_good": good}
+
+    def rules_eval(self):
+        """The `_self` eval file, where a rules finding's row goes."""
+        import kbcommon
+        return Path(kbcommon.SELF) / kbcommon.DATA_DIR / "lookup_eval.csv"
+
+    def rule_line(self, ref):
+        """(the doc's name under kb/_self, the text of the line) of a `kb/_self/<doc>.md:<line>` reference, or None."""
+        import kbfacts
+        path, _, n = ref.rpartition(":")
+        text = kbfacts.read(path) if path in kbfacts.self_docs() else None
+        lines = (text or "").splitlines()
+        return (path.rsplit("/", 1)[1], lines[int(n) - 1]) if n.isdigit() and 0 < int(n) <= len(lines) else None
+
+    def token_counts(self):
+        """{token: occurrences} over the kb/_self docs, a token as `anchor_phrases` cuts it."""
+        import kbfacts
+        counts = {}
+        for rel in kbfacts.self_docs():
+            for t in (kbfacts.read(rel) or "").split():
+                t = bare_token(t)
+                if t:
+                    counts[t] = counts.get(t, 0) + 1
+        return counts
+
+    def anchored(self, row):
+        """Whether the eval row's phrase is in a passage of its doc (what `rag.py eval --root _self` calls its anchor)."""
+        import kbfacts
+        return kbfacts.anchor_of(dict(zip(("id", "question", "expect_paths", "expect_verdict", "allow_weak", "expect_text"), row)),
+                                 kbfacts.self_units()) is not None
 
     def targets(self, article):
         """The files a fix for `article` writes: its root's eval set and expansions, and the aliases (the shared
@@ -295,6 +329,72 @@ def apply_one(ev, fix, entry, gate, base):
     return out
 
 
+# ---------------------------------------------------------------- rules findings: an anchored eval row
+
+def bare_token(t):
+    """A whitespace-separated token of a doc line in lower case without the punctuation around it."""
+    return re.sub(r"^\W+|\W+$", "", t).lower()
+
+
+def anchor_phrases(line, counts):
+    """The phrases of 4 to 6 consecutive words of `line`, as written (single spaces, no `;`, no punctuation at either
+    end), rarest first, at most ANCHOR_CANDIDATES: the fewest occurrences per word across the docs (`counts`), then the
+    longer, then the earlier. A window holding a token with no letter or digit (a table bar) is no phrase."""
+    toks = line.split()
+    found = {}
+    for n in range(ANCHOR_WORDS[0], ANCHOR_WORDS[1] + 1):
+        for i in range(len(toks) - n + 1):
+            win = toks[i:i + n]
+            words = [bare_token(t) for t in win]
+            phrase = re.sub(r"^\W+|\W+$", "", " ".join(win))
+            if not all(words) or ";" in phrase or phrase not in line:
+                continue
+            rank = (sum(counts.get(w, 0) for w in words) / n, -n, i)
+            if phrase not in found or rank < found[phrase]:
+                found[phrase] = rank
+    return sorted(found, key=found.get)[:ANCHOR_CANDIDATES]
+
+
+def rules_one(f, entry, gate, base):
+    """(the record of one open `rules` finding or None, whether it needs a human): its eval row, anchored on the line
+    the reader quoted, goes into kb/_self/_retrieval/lookup_eval.csv and stays only when the gates hold (`try_fix`: the
+    whole `rag.py eval`, the pack size, off-kb `good`), `applied`; else the finding is `no-fix` with the failed gates in
+    `observed`. A finding with no answer line is left open and reported (a word pair for aliases.csv is a person's
+    to pick); a question the file already holds gets nothing (learn records it)."""
+    import kbid
+    refs = (f.get("observed") or {}).get("answer_lines") or []
+    question = entry["question"]
+    path = gate.rules_eval()
+    if not refs:
+        return None, True
+    if any(len(r) > 1 and " ".join(r[1].split()).lower() == " ".join(question.split()).lower() for r in csv_rows(path)):
+        return None, False
+    eid = RULES_ID + kbid.eval_id(question)[3:]
+    taken = {r[0]: r[1] for r in csv_rows(path) if len(r) > 1}
+    problems, row = [], None
+    if eid in taken:
+        problems.append(f"eval id {eid} is taken by another question")
+    else:
+        counts = gate.token_counts()
+        for ref in refs:
+            got = gate.rule_line(ref)
+            for phrase in anchor_phrases(got[1], counts) if got else []:
+                cand = [eid, question, got[0], "good", "yes", phrase, ""]
+                if gate.anchored(cand):
+                    row = cand
+                    break
+            if row:
+                break
+        if row is None:
+            problems.append("no anchor phrase in the quoted lines")
+    if row is not None:
+        ok, why = try_fix({}, row, {"eval": path}, gate, base)
+        if ok:
+            return {**without_observed(f), "state": "applied", "observed": {"eval": eid, "line": refs[0]}}, False
+        problems += why
+    return {**without_observed(f), "state": "no-fix", "observed": {"gate": sorted(set(problems))[:6]}}, False
+
+
 # ---------------------------------------------------------------- the gap step
 
 def weak_off_topic(res, article, gate):
@@ -411,7 +511,7 @@ def gap_one(g, entry, gate, day):
 
 def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=None, day=None):
     """One apply over `store` (default: the local store beside the spool), in the working tree of this clone: every
-    open eval finding with its open fix finding, in id order; then the gap step (each open gap candidate whose miss
+    open eval finding with its open fix finding, in id order; then each open rules finding (`rules_one`); then the gap step (each open gap candidate whose miss
     reproduces under an article becomes a _gaps.md entry under that article's topic); then, when `research` (a
     Researcher) has runs left, research on the gap findings; then one findings file with each outcome. Source findings
     are left as they are, and so are the findings in `hold` (pending on a conflict branch) and those recorded
@@ -436,18 +536,25 @@ def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=No
                     and actionable(r)), key=lambda r: r["id"])
     gaps = sorted((r for r in last.values() if r.get("kind") == "gap" and r.get("state") == "open"
                    and r.get("stage") == "candidate-gap" and actionable(r)), key=lambda r: r["id"])
-    new, base = [], None
-    if evals:
+    rules = sorted((r for r in last.values() if r.get("kind") == "rules" and r.get("state") == "open"
+                    and actionable(r) and entry_of(r)), key=lambda r: r["id"])
+    new, base, human = [], None, 0
+    if evals or any((r.get("observed") or {}).get("answer_lines") for r in rules):
         base = gate.measure()
         if base["passed"] != base["n"]:
             out(f"apply: rag.py eval fails before any change ({base['passed']} of {base['n']} pass); nothing applied")
             return 1
+    if evals:
         fixes = {r["entry"]: r for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "open"
                  and actionable(r)}
         for ev in evals:
             entry = entry_of(ev)
             if entry:
                 new += apply_one(ev, fixes.get(ev["entry"]), entry, gate, base)
+    for f in rules:
+        rec, needs = rules_one(f, entry_of(f), gate, base)
+        human += needs
+        new += [rec] if rec else []
     for g in gaps:
         entry = entry_of(g)
         if entry:
@@ -466,12 +573,15 @@ def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=No
                 new = [r for r in new if r["id"] != rec["id"]] + [rec]
                 runs["facts"] += (rec.get("observed") or {}).get("facts", 0)
                 runs["conflicts"] += (rec.get("observed") or {}).get("conflicts", 0)
+    note = f"apply: {human} rules finding(s) with no answer line stay open: a word pair for aliases.csv needs a person"
     if not new:
         out("apply: nothing to apply" + (f" (research runs={runs['runs']}, no reply)" if runs["runs"] else ""))
+        if human:
+            out(note)
         return 0
     run_id, counts = write_findings(store, entries, new, APPLY_STATES, kb_commit)
     said = f"apply: run={run_id} records={len(new)} " + " ".join(f"{s}={n}" for s, n in counts.items())
-    if base is not None and any(r["kind"] in FIX_KINDS and r["state"] == "applied" for r in new):
+    if base is not None and any(r["kind"] in (*FIX_KINDS, "rules") and r["state"] == "applied" for r in new):
         m = gate.measure()
         ids = [i for i in base["chars"] if i in m["chars"]]
         mean = [round(sum(d["chars"][i] for i in ids) / max(len(ids), 1)) for d in (base, m)]
@@ -484,4 +594,6 @@ def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=No
     if runs["runs"]:
         said += f" research={runs['runs']} facts={runs['facts']} conflicts={runs['conflicts']}"
     out(said)
+    if human:
+        out(note)
     return 0

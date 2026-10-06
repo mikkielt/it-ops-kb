@@ -22,7 +22,10 @@ HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
 SKIPPED_KEY = "skipped"  # a count a header holds only when distill skipped spool rows
 ENTRY_KEYS = ("id", "surface", "day", "intent", "tools", "route", "question", "verdict", "articles", "citations",
-              "cited", "judged", "best", "fetches", "sources", "tool", "fetcher", "host", "path", "outcome", "chars")
+              "cited", "judged", "best", "fetches", "sources", "tool", "fetcher", "host", "path", "outcome", "chars",
+              "root", "tested", "set", "item", "model", "answer_lines", "key_missing")
+RULES_ROOT = "_self"  # the `root` of a kb_ask row of a lookup in the kb's own rule docs (kb/_self)
+RULES_KEYS = ("root", "tested", "set", "item", "model", "answer_lines", "key_missing")  # an entry holds them only with `root`
 CITATION_KEYS = ("line", "tag", "verdict")
 CITED = ("reply", "pack")  # the citations the reply named, else the pack's first lines
 FREE_TEXT_KEYS = ("summary",)  # an outcome in words: the entry's citations say what the kb gave
@@ -37,6 +40,13 @@ JUDGED = ("answered", "partly", "missed")
 QUESTION_MAX_CHARS = 500
 CITATIONS_MAX = 5  # kb lines an entry keeps
 SOURCES_MAX = 10  # kb source ids an entry keeps: those a kb_ask.py researcher's answer named (never the urls)
+TESTED_MAX = 40  # tested-question ids a rules entry keeps
+ANSWER_LINES_MAX = 12  # kb/_self lines a rules entry keeps of the reader's answer
+KEY_MISSING_MAX = 12  # key words no printed passage held that a rules entry keeps
+TESTED_ID = re.compile(r"[A-Z]{2,4}\d{0,2}-\d{1,4}")  # a tested question's id in kb/_self/_retrieval/lookup_eval.csv
+SET_NAME = re.compile(r"[a-z0-9][a-z0-9:_.-]{0,59}")  # a set of tested questions: `skill`, `skill:step`, `kb-item:land`
+ANSWER_LINE = re.compile(r"kb/_self/[\w.-]+\.md:[1-9]\d*")
+KEY_WORD = re.compile(r"[\w.-]{1,40}")
 DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
 OUTCOME = re.compile(r"http-[1-5]\d\d|empty|redirect-cross-host|truncated|error|unknown")
 RUN_ID = re.compile(r"(\d{4})(\d{2})\d{2}T\d{6}Z-[0-9a-f]{8}")
@@ -51,7 +61,7 @@ PRIVATE_TLDS = ("local", "lan", "corp", "internal", "intra", "home", "localdomai
                 "invalid", "example")
 
 FINDINGS = "findings"
-FINDING_KINDS = ("eval", "alias", "expansion", "gap", "source")
+FINDING_KINDS = ("eval", "alias", "expansion", "gap", "source", "rules")
 FIX_KINDS = ("alias", "expansion")
 LEARN_STATES = ("open", "fixed-since")  # the states learn writes; a record in any other state is apply's to change
 APPLY_STATES = ("applied", "rejected", "no-fix")  # fix written / fix failed its gates / a miss with no accepted fix
@@ -433,13 +443,22 @@ def closed_problems(e, where):
     anything else: free text has no field of its own in an entry."""
     def names(v, rx):
         return isinstance(v, list) and all(isinstance(x, str) and rx.fullmatch(x) for x in v)
+
+    def bounded(v, rx, cap):
+        return names(v, rx) and 0 < len(v) <= cap and len(set(v)) == len(v)
     import kbid
     checks = (("day", lambda v: isinstance(v, str) and DAY.fullmatch(v)), ("intent", lambda v: v in INTENTS),
               ("tools", lambda v: names(v, NAME)), ("route", lambda v: isinstance(v, str) and NAME.fullmatch(v)),
               ("verdict", lambda v: v in VERDICTS), ("articles", lambda v: names(v, ARTICLE)),
               ("judged", lambda v: v in JUDGED), ("best", lambda v: isinstance(v, str) and ARTICLE.fullmatch(v)),
               ("sources", lambda v: isinstance(v, list) and 0 < len(v) <= SOURCES_MAX and len(set(v)) == len(v)
-               and all(isinstance(x, str) and kbid.SOURCE_ID.fullmatch(x) for x in v)))
+               and all(isinstance(x, str) and kbid.SOURCE_ID.fullmatch(x) for x in v)),
+              ("root", lambda v: v == RULES_ROOT), ("model", lambda v: isinstance(v, str) and NAME.fullmatch(v)),
+              ("tested", lambda v: bounded(v, TESTED_ID, TESTED_MAX)),
+              ("set", lambda v: isinstance(v, str) and SET_NAME.fullmatch(v)),
+              ("item", lambda v: isinstance(v, str) and WORK_ITEM.fullmatch(v)),
+              ("answer_lines", lambda v: bounded(v, ANSWER_LINE, ANSWER_LINES_MAX)),
+              ("key_missing", lambda v: bounded(v, KEY_WORD, KEY_MISSING_MAX)))
     return [f"{where}: `{key}` is not a {key} value: {e[key]!r:.60}" for key, ok in checks
             if key in e and not ok(e[key])]
 
@@ -459,6 +478,9 @@ def entry_problems(e, where, k):
     other = sorted(set(e) - set(ENTRY_KEYS) - set(RAW_KEYS) - set(HEADER_KEYS) - set(FREE_TEXT_KEYS))
     if other:
         out.append(f"{where}: unknown fields: {', '.join(other)}")
+    bare = sorted(set(e) & set(RULES_KEYS) - {"root"}) if "root" not in e else []
+    if bare:
+        out.append(f"{where}: rules lookup fields without `root`: {', '.join(bare)}")
     if not (isinstance(e.get("id"), str) and ENTRY_ID.fullmatch(e["id"])):
         out.append(f"{where}: entry id is not a UUID")
     if e.get("surface") not in SURFACES:
@@ -486,8 +508,9 @@ def entry_problems(e, where, k):
         out.append(f"{where}: `cited` is not {' or '.join(CITED)} beside the citations")
     fetches = e.get("fetches", [])
     fetches = list(fetches) if isinstance(fetches, list) else [None]
-    if any(key in e for key in FETCH_KEYS):
-        fetches.append({key: e[key] for key in FETCH_KEYS if key in e})
+    own = [key for key in FETCH_KEYS if "root" not in e or key != "chars"]  # a rules entry's `chars` is its lookup's
+    if any(key in e for key in own):
+        fetches.append({key: e[key] for key in own if key in e})
     for f in fetches:
         out += fetch_problems(f, where, k) if isinstance(f, dict) else [f"{where}: a fetch is not an object"]
     return out
@@ -646,6 +669,8 @@ def record_problems(r, where, ids, k):
                              and isinstance(r["tried"], str) and DAY.fullmatch(r["tried"])):
         out.append(f"{where}: `tried` is not the day of a gap finding's, or a no-fix eval finding's, tried note: "
                    f"{r['tried']!r:.40}")
+    if r.get("kind") == "rules" and r.get("stage") != "miss":
+        out.append(f"{where}: a rules finding stays at stage miss: no public gap or fact comes of it")
     if r.get("kind") == "gap" and r.get("stage") in STAGES[2:] and not ARTICLE.fullmatch(str(r.get("article", ""))):
         out.append(f"{where}: a gap finding at stage {r.get('stage')} names no article")
     return out

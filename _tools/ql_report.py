@@ -9,8 +9,8 @@ from pathlib import Path
 from ql_base import HOME, STORE, logging_off, places, run_cmd, write_text
 from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_list, origin_forge
 from ql_learn import FAILED, host_fetches, is_miss
-from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RUN_ID,
-                      SURFACES, finding_id, finding_states, findings_files, load_run, records, resolve_id, run_files,
+from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RULES_ROOT,
+                      RUN_ID, SURFACES, finding_id, finding_states, findings_files, load_run, records, resolve_id, run_files,
                       run_ids, store_entries, usage_files, usage_records, work_files, work_line_problems, ops_files,
                       ops_line_problems)
 from ql_capture import VERDICTS
@@ -223,6 +223,22 @@ def intake_line(backlog=None):
     return f"intake: {sum(found.values())} open ({_counts(sorted(found.items()))})"
 
 
+def rules_lines(rules, open_findings):
+    """The digest's rules block, for the week's lookups in the rule docs (entries with `root` _self, which no public
+    count holds) and the `rules` findings still open at its end: `rules lookups: N (verdict n, ...)`, the printed
+    characters (sum and mean over the lookups that kept them), the sets run and the open findings. Nothing when the
+    week has neither."""
+    if not rules and not open_findings:
+        return []
+    verdicts = [(v, sum(1 for e in rules if e.get("verdict") == v)) for v in reversed(VERDICTS)]
+    verdicts.append(("no verdict", sum(1 for e in rules if e.get("verdict") not in VERDICTS)))
+    printed = [e["chars"] for e in rules if isinstance(e.get("chars"), int)]
+    mean = round(sum(printed) / len(printed)) if printed else 0
+    return [f"rules lookups: {len(rules)}" + (f" ({_counts(verdicts)})" if rules else ""),
+            f"rules printed characters: {sum(printed)}, mean {mean}",
+            f"rules sets run: {sum(1 for e in rules if e.get('set'))}, open rules findings: {open_findings}"]
+
+
 def digest(store=None, week=None, backlog=None):
     """(week, lines, whether the week holds anything) of the committed store (default kb/_querylog) for the ISO week
     `week` (default: the week of the newest entry). Only the store and `week` go in, so every clone at the same
@@ -242,7 +258,9 @@ def digest(store=None, week=None, backlog=None):
     def inside(d):
         return d is not None and monday <= d <= sunday
 
-    entries = [e for _, e in store_entries(store) if isinstance(e.get("day"), str) and lo <= e["day"] <= hi]
+    week_entries = [e for _, e in store_entries(store) if isinstance(e.get("day"), str) and lo <= e["day"] <= hi]
+    rules = [e for e in week_entries if e.get("root") == RULES_ROOT]
+    entries = [e for e in week_entries if e.get("root") != RULES_ROOT]
     runs, dropped = 0, 0
     for p in run_files(store):
         if not inside(run_day(p.stem)):
@@ -295,6 +313,7 @@ def digest(store=None, week=None, backlog=None):
              f"judged: {_counts(judged_)}",
              f"misses: {len(misses)}, fixed: {sum(fixed.values())} ({_counts(fixed.items())})",
              f"fetches: {nfetch}, failed {failed}, result characters {chars}",
+             *rules_lines(rules, sum(1 for r in state.values() if r.get("kind") == "rules" and r.get("state") == "open")),
              *usage_lines(entries, usage_records(store)),
              *work_lines(work_files(store), lambda stem: inside(run_day(stem))),
              *ops_lines(ops_files(store), inside),
@@ -311,7 +330,7 @@ def digest(store=None, week=None, backlog=None):
             lines.append(f"  {kind}: " + _counts((s, table[kind][s]) for s in FINDING_STATES if s in table[kind]))
     if backlog is not None:
         lines.append(intake_line(backlog))
-    return week, lines, bool(entries or runs or recorded)
+    return week, lines, bool(week_entries or runs or recorded)
 
 
 def digest_hook(now_dt=None, store=None, backlog=None):

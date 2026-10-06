@@ -20,8 +20,9 @@ import ql_store as store_
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
 from ql_capture import AGENT_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines
-from ql_store import (ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, NAME, OUTCOME, QUESTION_MAX_CHARS,
-                      ROW_SURFACES, SKIPPED_KEY, SOURCES_MAX, URL_PATH, public_host)
+from ql_store import (ANSWER_LINE, ANSWER_LINES_MAX, ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, KEY_MISSING_MAX,
+                      KEY_WORD, NAME, OUTCOME, QUESTION_MAX_CHARS, ROW_SURFACES, RULES_ROOT, SET_NAME, SKIPPED_KEY,
+                      SOURCES_MAX, TESTED_ID, TESTED_MAX, URL_PATH, public_host)
 
 HAIKU_MODEL = "haiku"
 HAIKU_BATCH_ENTRIES = 25
@@ -351,6 +352,30 @@ def ask_sources(kb):
     return sorted(ids)[:SOURCES_MAX]
 
 
+def rules_fields(r, k):
+    """The fields of a `_self` kb_ask row an entry keeps (querylog.md, Store): `root`, `tested`, `set`, `item`,
+    `model`, `answer_lines`, `key_missing` and `chars`, each only in its closed shape (a list of unique matches of
+    the store's pattern, at most its cap; `key_missing` only when the leak scan finds nothing in its words).
+    Anything else the row holds (`sections`, `docs`, `lines`, `budget`) stays out."""
+    import redact
+
+    def listed(key, rx, cap):
+        v = r.get(key)
+        got = [x for x in dict.fromkeys(v) if isinstance(x, str) and rx.fullmatch(x)] if isinstance(v, list) else []
+        return got[:cap] or None
+
+    def one(key, rx):
+        v = r.get(key)
+        return v if isinstance(v, str) and rx.fullmatch(v) else None
+    words = listed("key_missing", KEY_WORD, KEY_MISSING_MAX)
+    chars = r.get("chars")
+    return {"root": RULES_ROOT, "tested": listed("tested", TESTED_ID, TESTED_MAX), "set": one("set", SET_NAME),
+            "item": one("item", WORK_ITEM), "model": one("model", NAME),
+            "answer_lines": listed("answer_lines", ANSWER_LINE, ANSWER_LINES_MAX),
+            "key_missing": None if words and redact.scan(" ".join(words), k) else words,
+            "chars": chars if isinstance(chars, int) and not isinstance(chars, bool) and chars >= 0 else None}
+
+
 def entry_of(rs, k):
     """(entry without the Haiku fields, what Haiku judges or None, why the entry is dropped or None), or None when
     the rows never used the kb. `rs` is one prompt's rows with the tools rows of its window, or a single tools row
@@ -397,7 +422,13 @@ def entry_of(rs, k):
              "fetches": sorted(fetches.values(), key=lambda f: json.dumps(f, sort_keys=True)),
              "sources": ask_sources(kb)}
     answer = "\n".join(r["answer"] for r in rs if r.get("surface") == "stop" and isinstance(r.get("answer"), str))
-    entry["citations"], entry["cited"] = citations(kb, answer)
+    own = [r for r in kb if r.get("surface") == "kb_ask" and r.get("root") == RULES_ROOT]
+    rules = own[0] if own and len(own) == len(kb) else None  # a prompt that also used the public kb is a public entry
+    if rules:  # a lookup in the rule docs: no public article or citation, and nothing for Haiku to judge
+        entry.update(rules_fields(rules, k))
+        entry["articles"], entry["citations"], entry["cited"] = [], [], None
+    else:
+        entry["citations"], entry["cited"] = citations(kb, answer)
     candidates = entry["articles"]
     if not entry["citations"]:
         entry["articles"] = []  # an article is stored only with the kb lines that back it
@@ -408,6 +439,8 @@ def entry_of(rs, k):
     if not question:
         return ordered(entry), None, "the leak scan"
     entry["question"] = question[:QUESTION_MAX_CHARS]
+    if rules:
+        return ordered(entry), None, None
     typed = prompt.get("prompt") if prompt and isinstance(prompt.get("prompt"), str) else ""
     return ordered(entry), {"question": entry["question"], "prompt": typed.strip(), "answer": answer.strip(),
                             "candidates": candidates}, None

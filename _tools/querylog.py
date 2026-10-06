@@ -337,7 +337,7 @@ def main(argv=None):
         what.add_argument("--findings", action="store_true", help="each finding's last record, under the filters")
         what.add_argument("--usage", metavar="RUN", help="one run's usage sidecar, one line per entry")
         what.add_argument("--spool", action="store_true", help="the local spool: its files and rows by kind, no text")
-        ap.add_argument("--kind", help="with --findings: only this kind (eval, alias, expansion, gap, source)")
+        ap.add_argument("--kind", help="with --findings: only this kind (eval, alias, expansion, gap, source, rules)")
         ap.add_argument("--article", help="with --findings: only the findings of this article, a path or its tail")
         ap.add_argument("--state", help="with --findings: only this state (open, fixed-since, applied, ...)")
         ap.add_argument("--limit", type=int, default=None, help="lines of a list to print (default: SHOW_LIMIT; "
