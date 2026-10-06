@@ -1,0 +1,24 @@
+{
+  "id": "ST-atorqkvw",
+  "kind": "story",
+  "title": "kb-worker rule 4: read every doc stale lists for the item's own files, in touches or not",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": ".claude/agents/kb-worker.md rule 4 says to read every doc 'selfdoc.py stale --since origin/main' lists for the item's own changed files, whether in touches or not, and to name it in Self-Reviewed when it is still correct; a doc that needs an edit outside touches still stops the work. Answers the SP-sz5fbvqn retrospective: the workers of ST-tuzfns6e and ST-rhnku4mc skipped kb/_self/code.md because it was outside their touches, so land stopped at stale and the orchestrator amended Self-Reviewed.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();ok='in touches or not' in t;print('kb-worker.md has the rule 4 wording:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "Premise: no check planted. The change is a sentence of agent instructions; a grep proves the wording, not that a worker follows it. The retrospective evidence is the two amended Self-Reviewed trailers."
+}

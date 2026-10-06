@@ -1,0 +1,29 @@
+{
+  "id": "ST-hr4hksct",
+  "kind": "story",
+  "title": "gate add names the word or touch that set a gate's class, and a worker never rewords a gate to change it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "gate add prints, for the gate it files, the class and the word or touch path that set it (for example class agents-rule from the word 'rule'), so a misclass is visible and filed as a bug instead of dodged; .claude/agents/kb-worker.md rule 6 says never to reword a gate's question or options to change its class. Does not repeat BG-zw5sxzkc (token in a touch path). Answers the SP-sz5fbvqn retrospective: BG-jafnt5o2's worker reworded its gate to drop 'rule' and got a provisional gate where the class was agents-rule.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import tempfile,subprocess,sys,os;d=tempfile.mkdtemp();os.makedirs(d+'/kb/_self/backlog');R=os.getcwd()+'/_tools/backlog.py';r=lambda *a:subprocess.run([sys.executable,R,'--root',d,*a],capture_output=True,text=True);i=r('new','story','--title','t','--goal','g','--touch','_tools/x.py').stdout.split()[2];p=r('gate','add',i,'--question','Which rule wording?','--option','a','--option','b','--recommendation','a');ok=p.returncode==0 and 'matched' in p.stdout;print('gate add exit',p.returncode,'output:',p.stdout.strip(),'| names the matched word:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_authority.py",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "Premise: today gate add prints only 'gate g1 (blocking) added' for a question holding the word rule (class agents-rule); the check wants the word 'matched' in the output, e.g. \"class agents-rule (matched 'rule')\"."
+}

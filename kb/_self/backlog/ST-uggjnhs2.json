@@ -1,0 +1,24 @@
+{
+  "id": "ST-uggjnhs2",
+  "kind": "story",
+  "title": "backlog check warns of a goal that names a kb path no touch covers",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py check warns, for an open item whose goal names a kb/ path or directory (a path-shaped token such as kb/_self/reports/) that none of its touches covers, naming the item and the path; an item whose touches cover every such path gets no warning. Answers the SP-sz5fbvqn retrospective: ST-eegqfkah's goal named a report under kb/_self/reports/ but its touches held no reports path, found only at dispatch.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import tempfile,subprocess,sys,os;d=tempfile.mkdtemp();os.makedirs(d+'/kb/_self/backlog');R=os.getcwd()+'/_tools/backlog.py';r=lambda *a:subprocess.run([sys.executable,R,'--root',d,*a],capture_output=True,text=True);i=r('new','story','--title','t','--goal','writes a report under kb/_self/reports/ for the sprint','--touch','_tools/x.py','--check','python3 -c pass').stdout.split()[2];p=r('check');w=[l for l in (p.stdout+p.stderr).splitlines() if i in l and 'kb/_self/reports/' in l and 'touch' in l.lower()];print('check exit',p.returncode,'| warning naming the uncovered goal path:',w or 'none');sys.exit(0 if w else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}

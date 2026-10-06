@@ -1,0 +1,29 @@
+{
+  "id": "ST-4ws6suk5",
+  "kind": "story",
+  "title": "a worker session opens its item's work window without a second claim, so backlog cost counts its prompts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a headless worker session opens the work window of the item it works with backlog.py claim ID --resume by the claimer's name (no second claim commit, no status change), and backlog.py cost ID then counts that session's prompts instead of reading 0. Answers the SP-sz5fbvqn retrospective: the Sonnet worker sessions loaded the hooks but never ran claim (the orchestrator claimed in its own session), so no window opened and every item's cost read 0 although the sessions cost about 4.4 USD in all (kb/_self/usage.md, a window needs a claim the session itself ran).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/backlog.py','claim','-h'],capture_output=True,text=True);ok='--resume' in p.stdout;print('claim -h offers --resume:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "notes": "Premise: no check planted. The mechanism is open (claim --resume or a window row at the worker's first command), and the end state needs a spool of a real session's rows; a check written before that choice would pin one design. Evidence: backlog.py cost reads 0 for every SP-sz5fbvqn item although the worker sessions ran."
+}
