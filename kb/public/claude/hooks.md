@@ -1,9 +1,9 @@
 ---
 topic: claude/hooks
 priority: P1
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28; subagent agent_type values and failure input re-read 2026-10-01; permission, compaction, failure and instructions events read 2026-10-04)"
-retrieved_utc: 2026-10-04
-sources: [S743, S744, S745, S746, S747, S1800, S2157, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf, S-uzkb4duq, S-npnkw4t2]
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28; subagent agent_type values and failure input re-read 2026-10-01; permission, compaction, failure and instructions events read 2026-10-04; hooks in `-p` runs and the `cwd` input field read 2026-10-07)"
+retrieved_utc: 2026-10-07
+sources: [S743, S744, S745, S746, S747, S1800, S2157, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf, S-uzkb4duq, S-npnkw4t2, S-j22fjuka, S-2ip5zngf, S-pmhgjvef]
 status: complete
 ---
 # Hooks relevant to MCP tools
@@ -66,6 +66,15 @@ instead, so a hook can answer a prompt without a model call.
 - On a `claude -p` run stopped by SIGTERM, only `SessionEnd` hooks still run before exit (`claude/ci-and-headless.md`). [DOC S1800]
 - A `SessionEnd` hook that must do more than about a second of work (a batch job, a network push) fits only as a launcher that starts a detached process and returns; from a plugin it cannot win more time with `timeout`, and an environment variable is a per-user setting, not something a repository can ship. [DER S743: the 1.5-second shared budget, the plugin exception and the variable above]
 
+### The `cwd` input field and the launch directory
+- The common input field `cwd` is the working directory at the moment the hook is invoked, so it is read per event, not fixed when the session starts. [DOC S743]
+- `cwd` follows Claude: after Claude enters a worktree it is the worktree root, and after Claude runs `cd` it is the new directory; `${CLAUDE_PROJECT_DIR}` stays the project root where the session started, so a script path built from it still points into the main checkout. [DOC S743, S-j22fjuka]
+- A `cd` Claude runs in the main session carries over to later Bash commands only while it stays inside the project directory or an added working directory; a `cd` that lands elsewhere resets to the project directory and appends `Shell cwd was reset to <dir>` to the tool result, subagent sessions never carry a directory change over, and `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` turns the carry-over off. [DOC S-2ip5zngf]
+- `CwdChanged` runs when a shell command in the main conversation changes the working directory, for example Claude running `cd`; its input adds `old_cwd` and `new_cwd`, and it cannot block the change. [DOC S743]
+- The directory where Claude is launched is the session's primary working directory until `/cd` moves it. [DOC S-pmhgjvef]
+- A `claude -p` run started from a git worktree path (the shell's working directory set to it) therefore gives its hooks that path as `cwd` while Claude stays there, `cwd` changes after a `cd` that the Bash carry-over keeps, and `${CLAUDE_PROJECT_DIR}` does not change; that the first `cwd` equals the launch directory is derived, since no sentence says it. [DER S743, S-pmhgjvef, S-2ip5zngf: `cwd` per invocation, the launch directory as primary working directory, the `cd` carry-over rule; the unstated part is logged in `_gaps.md`]
+- A hook that must act on the directory Claude works in reads `cwd`, and one that must find a script shipped in the project uses `${CLAUDE_PROJECT_DIR}`; a worker running in its own worktree should not take the script path from `cwd` after Claude has run `cd` elsewhere. [DER S743: `cwd` follows Claude, `${CLAUDE_PROJECT_DIR}` stays put]
+
 ### SessionStart, and what reaches the user
 - `SessionStart` runs when Claude Code starts or resumes a session (matchers `startup`, `resume`, `clear`, `compact`, `fork`); it runs on every session, so its hooks should stay fast, and only `command` and `mcp_tool` hooks are supported. [DOC S743]
 - At an interactive start, a `--continue` or `--resume` launch or `/clear`, `SessionStart` hooks run in the background: the user can type at once, but Claude's first response waits for the hooks to finish. [DOC S743]
@@ -75,6 +84,16 @@ instead, so a hook can answer a prompt without a model call.
 - A hook's `additionalContext`, `systemMessage` and plain stdout are each capped at 10,000 characters; longer output is saved to a file and replaced by its path and a preview of the first 2,000 characters. [DOC S743]
 - A command hook's `timeout` defaults to 600 seconds on `SessionStart` (the default for most events), and a hook canceled at its timeout has its output discarded. [DOC S743]
 - A message a hook must show the person, not Claude, comes from a synchronous `SessionStart` command hook that prints a JSON object with `systemMessage` only: an async hook's `systemMessage` and any plain stdout reach Claude instead. Such a hook stays short and sets its own `timeout`, since Claude's first response waits for it. [DER S743: `systemMessage`, async delivery, SessionStart stdout and waiting above]
+
+### Hooks in a `claude -p` run
+- A `claude -p` run with `--output-format stream-json` emits `hook_started`, `hook_progress` and `hook_response` events while a configured `SessionStart` or `Setup` hook runs, ahead of the `system/init` event; v2.1.204 restored live delivery, and v2.1.169 through v2.1.203 sent them as one batch after the hook finished, still ahead of `system/init`. So `SessionStart` hooks do run in a `-p` run. [DOC S1800]
+- The `SessionStart` output field `initialUserMessage` applies in a `-p` run: it becomes the first turn even when no prompt is given, and a given prompt follows as the next turn. [DOC S743]
+- The docs state the background run of `SessionStart` hooks, and that Claude's first response waits for them, for an interactive start, a `--continue` or `--resume` launch and `/clear`; no sentence in them says how a `-p` start waits. In a `-p` run the hook events come before `system/init` and an `initialUserMessage` turn comes before the prompt's turn, so the hooks have finished before the prompt's turn begins, and a `-p` hook's `additionalContext` reaches Claude before the first prompt like an interactive one's. [DER S1800, S743: hook events ahead of `system/init`, `initialUserMessage` as first turn, `additionalContext` "before the first prompt"; the unstated part is logged in `_gaps.md`]
+- `UserPromptSubmit` runs when a prompt is submitted and before Claude processes it, and it also runs for prompts nobody typed (a scheduled task, a background subagent reporting back, a message from another session); the Agent SDK's hook table lists it as "a prompt is submitted, including a turn Claude Code starts on its own". [DOC S743, S-av5665nf]
+- No page read names `UserPromptSubmit` in a `-p` run. A `-p` run without `--bare` runs the hooks of the project's settings files, and `UserPromptSubmit` runs when a prompt is submitted, so its hooks fire for the prompt a `-p` run is given; this is derived, not stated. [DER S1800, S743: `-p` runs settings hooks without `--bare`; `UserPromptSubmit` runs on a submitted prompt; the unstated part is logged in `_gaps.md`]
+- `Setup` hooks do not run on a normal start: they fire only for `--init-only`, or for `--init` or `--maintenance` together with `-p`, so per-session set-up in a `-p` run belongs in `SessionStart`; Claude Code discards a `Setup` hook's JSON output fields, and under `-p` its stdout, stderr and exit code appear only as `hook_response` events with `--output-format stream-json --verbose`. [DOC S743]
+- Two hook outputs behave differently in non-interactive runs: `terminalSequence` is ignored in `-p` and the Agent SDK, and a `MessageDisplay` hook runs once per assistant message, after it completes, with `index` `0`, `final` `true` and the whole text in `delta`. [DOC S743]
+- `--bare` skips the auto-discovery of hooks, so a hook in a teammate's `~/.claude` or in the project's settings does not run in that `-p` run. [DOC S1800]
 
 ### Tool event input
 - `PreToolUse` hooks receive `tool_name`, `tool_input` and `tool_use_id` beyond the common input fields; `PostToolUse` fires only after a tool executed successfully and its input holds `tool_input` (the arguments sent) and `tool_response` (the result returned), whose schema depends on the tool, plus an optional `duration_ms`. [DOC S743]

@@ -2402,3 +2402,15 @@ _Agent: kb-research_
 - See python/stdlib-argparse-json.md.
 
 _Agent: kb-research_
+
+## QK-claude-p-runs-hooks-run-acceptedits. In a `claude -p` run, do `SessionStart` and `UserPromptSubmit` hooks run (and does `SessionStart` finish before the first prompt), can `acceptEdits` edit files in a `--add-dir` directory without a prompt, and what `cwd` does a hook receive?
+- `SessionStart` hooks run in a `-p` run: stream-json output carries `hook_started`, `hook_progress` and `hook_response` events for them ahead of `system/init`, and `initialUserMessage` applies in `-p`. [DOC S1800, S743]
+- Without `--bare` a `-p` run runs the hooks of the project's settings files and shows no trust dialog; `--bare` skips hook auto-discovery. [DOC S1800]
+- `acceptEdits` auto-approves edits and `mkdir`/`touch`/`rm`/`rmdir`/`mv`/`cp`/`sed` inside the working directory or `additionalDirectories`; files in a directory added with `--add-dir` follow the same permission rules as the launch directory, with editing following the current mode. [DOC S-zcuxapgb, S-pmhgjvef]
+- `cwd` in hook input is the working directory when the hook is invoked; it is the worktree root after Claude enters a worktree and the new directory after Claude runs `cd`, while `${CLAUDE_PROJECT_DIR}` stays at the project root where the session started. [DOC S743, S-j22fjuka]
+- A Bash `cd` carries over only inside the project directory or an added working directory; elsewhere the shell resets to the project directory. [DOC S-2ip5zngf]
+- Conclusion: `SessionStart` hooks run in `-p` and, going by the event order, finish before the prompt's turn; `UserPromptSubmit` hooks fire for the prompt; `claude -p --permission-mode acceptEdits --add-dir <dir>` edits under `<dir>` without a prompt except at protected paths, which a `-p` run denies; a hook's `cwd` is the launch directory (a worktree path, when the run starts there) until Claude `cd`s. [DER S1800, S743, S-zcuxapgb, S-pmhgjvef, S-j22fjuka, S-2ip5zngf: the event order, `-p` running settings hooks, the `acceptEdits` scope, added directories, `cwd` per invocation]
+- Open: no page states that a `-p` run waits for `SessionStart` hooks, names `UserPromptSubmit` in a `-p` run, equates the first `cwd` with the launch directory or says what `cwd` reads after a `cd` that the shell resets; `-p` with `--add-dir` under `acceptEdits` is not stated either. [UNK]
+- See claude/hooks.md, claude/settings-and-scopes.md, claude/ci-and-headless.md.
+
+_Agent: kb-research_
