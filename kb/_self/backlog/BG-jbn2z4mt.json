@@ -27,7 +27,9 @@
   "touches": [
     "_tools/kg_trailers.py",
     "kb/_self/git.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_sync_e2e.py",
+    "_tools/kbgit.py"
   ],
   "gates": [
     {
