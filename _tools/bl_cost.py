@@ -21,7 +21,7 @@ from bl_base import ID_RE, REL_DIR, RESEARCH_KINDS, Rejected, research_touches, 
 # `cost ID`: what the query log's work sidecars (kb/_querylog/work/<yyyy-mm>/<run-id>.jsonl, written by distill) hold
 # for an item and its descendants: tokens per model, the counts of its own prompts (direct, the `main` of its lines)
 # apart from those of the subagents routed to it (attributed, the `sub`), cache writes (cw) as a figure of their own.
-# A sprint line (`item: SP-...`) is the sprint's, and a shared line (`items`: the ids its session claimed) is its
+# A sprint line (`item: SP-...`) is the sprint's, and a shared line (`items`: the ids its session worked) is its
 # session's, not an item's: its counts, `main` and `sub` together, are the `shared` figure of a report, counted once
 # for every line that names any id in the report's scope, never once per item it names, and the session total is
 # direct + attributed + shared (`cost_report`). Reads no command text, session or prompt id: the sidecar has none. An id with a line and no item file (deleted at sprint close)
@@ -97,9 +97,11 @@ def open_lines(root, rework=True):
     (`ql_distill.read_spool`: not closed), computed from their spool rows with the pure work-window code distill
     runs for a closed session (`ql_distill.plan_work`, one session at a time), as report lines named `open-<session>`.
     Reads the clone's spool and the main worktree's when it is another directory (`bl_base.main_worktree_spool`), a
-    session in both once: no sidecar, no marker, no row is written, and a session that claimed no item gives
-    nothing. The prompts `worked.json` beside a spool lists (what a sidecar already counted, distill's ledger) are
-    left out, so a session distilled after an idle close that then reopened adds only its later prompts. `worked` is the set of items the session claimed and `missing` its window prompts with no usable
+    session in both once: no sidecar, no marker, no row is written, and a session that opened no item's window (no
+    `claim` row and no `branch` row of a `work/<id>` branch) gives nothing. The prompts `worked.json` beside a spool
+    lists (what a sidecar already counted, distill's ledger) are left out, so a session distilled after an idle close
+    that then reopened adds only its later prompts. `worked` is the set of items whose window the session opened, by a
+    claim or by its `work/<id>` branch, and `missing` its window prompts with no usable
     `usage` row (a prompt is counted once its Stop row has written its usage). No spool directory: nothing."""
     import time
 
