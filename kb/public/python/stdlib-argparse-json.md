@@ -2,8 +2,8 @@
 topic: python/stdlib-argparse-json
 priority: P3
 applies_to: [python, argparse, json]
-retrieved_utc: 2026-10-05
-sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs, S-6gpxsapp, S-uj2rumru]
+retrieved_utc: 2026-10-06
+sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs, S-6gpxsapp, S-uj2rumru, S-36yy3wcx, S-lyf4dv2j, S-lcvgoknn]
 status: complete
 ---
 
@@ -79,6 +79,17 @@ picks its separators from `indent`. Pages read at CPython 3.14.7.
 - So a reader of a shell string's command words takes the word after `if`, `then`, `elif`, `else`, `do`, `!`, `&&`, `||`, `;`, `|` and a newline, skips leading `name=value` assignments and an `env` prefix with its options and assignments, and reads a nested `sh -c` or `bash -c` string the same way. [DER S-glgntdsx, S-6gpxsapp]
 - A `socketserver` (and so `http.server`) server's `handle_request()` processes one request, and when none arrives within the server's `timeout` seconds it calls `handle_timeout()` and returns; `shutdown()` stops a `serve_forever()` loop and must be called from another thread, or it deadlocks. [DOC S-uj2rumru]
 - So a local receiver that must exit after an idle period loops on `handle_request()` with `timeout` set and checks the time since its last request after each return, and a test of that exit plants an idle bound of a second or less. [DER S-uj2rumru]
+- `textwrap.shorten(text, width, *, fix_sentence_endings=False, break_long_words=True, break_on_hyphens=True, placeholder=' [...]')` (added in 3.4) first collapses whitespace, replacing all of it with single spaces; if the result fits in `width` it is returned, else enough words are dropped from the end so the remaining words plus the placeholder fit. The docs' examples: `shorten("Hello  world!", width=12)` gives `'Hello world!'`, `width=11` gives `'Hello [...]'`, and `shorten("Hello world", width=10, placeholder="...")` gives `'Hello...'`. [DOC S-36yy3wcx]
+- Because `shorten` collapses whitespace before it calls `TextWrapper`, the docs say changing `tabsize`, `expand_tabs`, `drop_whitespace` and `replace_whitespace` has no effect on it; its other keyword arguments are the `TextWrapper` attributes of the same names. The page does not say what `shorten` does when the placeholder alone is wider than `width`. [DOC S-36yy3wcx]
+- `shorten` cuts at word boundaries: it drops whole words from the end, so a result is never a window cut inside a word, and text with no whitespace to drop at is left to `break_long_words`. [DER S-36yy3wcx: the dropped-words rule and the `break_long_words` text]
+- `TextWrapper.width` (default 70) is "the maximum length of wrapped lines": the docs guarantee no output line longer than `width` characters when no single word in the input is longer than `width`, and `wrap(text)` returns lines each "at most width characters long". The page counts in characters, not bytes. [DOC S-36yy3wcx]
+- `TextWrapper.max_lines` (default `None`, added in 3.4): if not `None`, the output has at most `max_lines` lines, with `placeholder` appearing at the end of the output; `placeholder` (default `' [...]'`, added in 3.4) is the string that appears at the end of the output text if it has been truncated. [DOC S-36yy3wcx]
+- `TextWrapper.break_long_words` (default `True`): if true, words longer than `width` are broken so no line is longer than `width`; if false they are not broken, they go on a line by themselves, and some lines may be longer than `width`. [DOC S-36yy3wcx]
+- So `TextWrapper(width=W, max_lines=1, placeholder=P).fill(s)` is the documented way to cut one long sentence to one line that ends in `P`, and a line over `W` is possible only through a word longer than `W` with `break_long_words=False`. [DER S-36yy3wcx: `max_lines`, `placeholder` and `break_long_words` texts]
+- `str.encode(encoding='utf-8', errors='strict')` returns the string encoded to bytes; `encoding` defaults to `'utf-8'`, and with `'strict'` (the default) an encoding error raises a `UnicodeError`; `'Python'.encode()` gives `b'Python'` of type `bytes`. [DOC S-lyf4dv2j]
+- UTF-8 represents a code point below 128 as the one byte of that value and any code point of 128 or more as a sequence of two, three or four bytes, each between 128 and 255; a string of ASCII text is also valid UTF-8. [DOC S-lcvgoknn]
+- So the UTF-8 size of a `str` is `len(s.encode())`, which differs from `len(s)` for every character at or above U+0080; the tools measure printed bytes this way, not by character count. [DER S-lyf4dv2j, S-lcvgoknn: default encoding and the byte-count rule]
+- U+2026 HORIZONTAL ELLIPSIS is above U+07FF and so takes three bytes in UTF-8 (`E2 80 A6`), where three ASCII dots take three bytes too; the Python pages read state only that a UTF-8 code point takes two to four bytes, so the three is derived from the UTF-8 encoding table, not stated there. [DER S-lcvgoknn: the two-to-four-byte rule; the length ranges are the standard UTF-8 table]
 
 ## Reference
 - SNIPPET: subcommands with a handler, one exclusive group and stable JSON output; context: Python

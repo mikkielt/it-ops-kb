@@ -2392,3 +2392,13 @@ _Agent: kb-research_
 - See agents/hybrid-retrieval.md, agents/agent-evaluation.md.
 
 _Agent: kb-research_
+
+## QK-python-clip-long-text-width-ellipsis. How does Python clip a long text to a width with an ellipsis and measure its UTF-8 bytes?
+- `textwrap.shorten(text, width, placeholder=' [...]')` collapses whitespace, then drops whole words from the end until the words plus the placeholder fit `width`. [DOC S-36yy3wcx]
+- `TextWrapper` takes `max_lines`, `placeholder` (the string that ends truncated output) and `break_long_words`; `width` counts characters. [DOC S-36yy3wcx]
+- `str.encode()` encodes to UTF-8 with `errors='strict'` by default; a code point of 128 or more takes two to four bytes. [DOC S-lyf4dv2j, S-lcvgoknn]
+- Conclusion: `len(s.encode())` is the UTF-8 byte size of a printed answer, and U+2026 costs three bytes, the same as three ASCII dots, though it is one character. [DER S-lyf4dv2j, S-lcvgoknn: the encode default and the byte rule; the exact three is the UTF-8 table]
+- Open: what `shorten` does when the placeholder alone is wider than `width`; the page is silent. [UNK]
+- See python/stdlib-argparse-json.md.
+
+_Agent: kb-research_

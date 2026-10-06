@@ -1174,6 +1174,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## python/stdlib-argparse-json
 - **The wording of a shell's not-found message.** Looked 2026-10-05 in POSIX.1-2024 XCU chapter 2 (S-glgntdsx), which requires an error message but fixes no wording, and in the Bash manual's Exit Status section (S-reb2jhbs), which gives the 127 status but not the message. bash prints `<name>: command not found` and dash `<name>: not found` in practice, which no page read here states. Needs each shell's own documentation or source of the message. [UNK] (topic: python/stdlib-argparse-json)
+- **What `textwrap.shorten` does when the placeholder alone is wider than `width`.** Looked 2026-10-06 in the textwrap page (S-36yy3wcx): the `shorten` and `placeholder` texts say nothing about it. Needs CPython's `Lib/textwrap.py` at a pinned tag (a `CODE` fact). [UNK] (topic: python/stdlib-argparse-json)
 
 ## gitlab/git-test-repositories
 - **How git prints a non-ASCII remote url.** Looked 2026-10-05 in git-clone's GIT URLS section (S-vupwsv3m): it gives the url forms but not the byte encoding `git remote -v` or `git config --get remote.<name>.url` prints for a url with non-ASCII characters. Needs the git-config or git-remote documentation on output encoding, or git's source at a pinned tag. [UNK] (topic: gitlab/git-test-repositories)
