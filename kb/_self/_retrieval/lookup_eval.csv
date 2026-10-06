@@ -270,3 +270,5 @@ SS4-008,may an item note keep a dated log of what was tried,backlog.md,good,yes,
 SS4-009,what is a subtask and does it get a commit,backlog.md,good,yes,one agent step inside a task,kb-item:claim
 SS4-010,what is done with a story or bug that is too big for one push,backlog.md,good,yes,too big for one push,kb-item:claim
 SS4-011,which reuse class does a source whose terms could not be read get,content-rules.md,good,yes,treated as `paraphrase`,kb-refresh:update
+SS1-076,a sprint worker filed a bug with backlog.py new bug: how does its new item file reach the landing,backlog.md,good,yes,is handed back by committing its new item file alone,kb-worker;kb-sprint:run
+SS1-077,"before a sprint starts, which committed items get their open choices asked as blocking gates because their touches are rule-guarding",backlog.md,good,yes,lists each committed item whose touches are rule-guarding,kb-sprint:plan
