@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True);g('init','-q');g('commit','-q','--allow-empty','-m','a');it={'id':'BG-aaaaaaaa','kind':'bug','title':'T','status':'done','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','_tools/tests.py','-k','gone_test']},'checks':[{'run':['python3','_tools/tests.py','-k','gone_test']}],'touches':['src/x'],'evidence':{'commit':'0'*40,'checks':[]}};open(os.path.join(b,'BG-aaaaaaaa.json'),'w').write(json.dumps(it));r=lambda *a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);o=r('reopen','BG-aaaaaaaa','--why','its repro runs a deleted test');s=r('set','BG-aaaaaaaa','--repro','git status --short');print('reopen',o.returncode,'set --repro',s.returncode,(s.stdout+s.stderr).strip()[:300]);sys.exit(1 if o.returncode==0 and s.returncode!=0 else 0)"
+      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True);g('init','-q');g('commit','-q','--allow-empty','-m','a');it={'id':'BG-aaaaaaaa','kind':'bug','title':'T','status':'done','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','_tools/tests.py','-k','gone_test']},'checks':[{'run':['python3','_tools/tests.py','-k','gone_test']}],'touches':['src/x'],'evidence':{'commit':'0'*40,'checks':[]}};open(os.path.join(b,'BG-aaaaaaaa.json'),'w').write(json.dumps(it));r=lambda *a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);o=r('reopen','BG-aaaaaaaa','--why','its repro runs a deleted test');s=r('set','BG-aaaaaaaa','--repro','python3 -c \"import os,sys;sys.exit(0 if os.path.isdir(chr(107)+chr(98)) else 1)\"');print('reopen',o.returncode,'set --repro',s.returncode,(s.stdout+s.stderr).strip()[:300]);sys.exit(1 if o.returncode==0 and s.returncode!=0 else 0)"
     ]
   },
   "touches": [
@@ -22,13 +22,13 @@
     "kb/_self/code.md"
   ],
   "evidence": {
-    "commit": "5f9162f1d35123aafc1496017a434bdd60e087b6",
+    "commit": "4b31788fd1e1c255006a762fda05826cea3d1a33",
     "checks": [
       {
         "run": [
           "python3",
           "-c",
-          "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True);g('init','-q');g('commit','-q','--allow-empty','-m','a');it={'id':'BG-aaaaaaaa','kind':'bug','title':'T','status':'done','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','_tools/tests.py','-k','gone_test']},'checks':[{'run':['python3','_tools/tests.py','-k','gone_test']}],'touches':['src/x'],'evidence':{'commit':'0'*40,'checks':[]}};open(os.path.join(b,'BG-aaaaaaaa.json'),'w').write(json.dumps(it));r=lambda *a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);o=r('reopen','BG-aaaaaaaa','--why','its repro runs a deleted test');s=r('set','BG-aaaaaaaa','--repro','git status --short');print('reopen',o.returncode,'set --repro',s.returncode,(s.stdout+s.stderr).strip()[:300]);sys.exit(1 if o.returncode==0 and s.returncode!=0 else 0)"
+          "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True);g('init','-q');g('commit','-q','--allow-empty','-m','a');it={'id':'BG-aaaaaaaa','kind':'bug','title':'T','status':'done','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','_tools/tests.py','-k','gone_test']},'checks':[{'run':['python3','_tools/tests.py','-k','gone_test']}],'touches':['src/x'],'evidence':{'commit':'0'*40,'checks':[]}};open(os.path.join(b,'BG-aaaaaaaa.json'),'w').write(json.dumps(it));r=lambda *a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);o=r('reopen','BG-aaaaaaaa','--why','its repro runs a deleted test');s=r('set','BG-aaaaaaaa','--repro','python3 -c \"import os,sys;sys.exit(0 if os.path.isdir(chr(107)+chr(98)) else 1)\"');print('reopen',o.returncode,'set --repro',s.returncode,(s.stdout+s.stderr).strip()[:300]);sys.exit(1 if o.returncode==0 and s.returncode!=0 else 0)"
         ],
         "exit": 0,
         "sha256": "ee86fe34d35cae99"
