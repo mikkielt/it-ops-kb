@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Review of SP-njilrify (2026-10-06, manager session, operator away): no provisional gate was recorded in the sprint, so nothing to confirm. Cost figures provisional: backlog.py cost --rework printed zeros (no usage rows yet; the headless sessions ran without capture hooks); the delegated sessions' cost by model is in kb/_self/reports/2026-10-06-self-rules-retrieval.md. The query log pipeline ran on a copy of the real spool (mode local): distill entries=0 (the spool held ops rows only), querylog.py check problems=0; the _self rows were exercised on the copy ST-uyyoecpl's work used. Reviewer gaps filed: ST-rhnku4mc (alias rows), ST-tuzfns6e (decision noise), BG-g3kbc72r, ST-eegqfkah. Two deliberate exceptions to the up-front gate answer, for the operator to confirm or change: kb-setup keeps its Setup section read (a fresh clone has no index yet) and kb-self keeps its README read.",
   "claimed_by": "manager-mac"
 }
