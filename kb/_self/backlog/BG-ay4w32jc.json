@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "Found while running SP-owbgisoj: after BG-lbazs72w, the workers of BG-lbazs72w, ST-u3bx6w77 and BG-22jdzelu each wrote their branch row, yet backlog.py cost reads 0 for them: a claude -p worker has one prompt, add_usage writes a prompt's usage row only at the next prompt (skip=the running one) or from the SessionEnd distill, and distill.log shows no SessionEnd distill for these sessions (kb/public/_gaps.md: whether a normal -p exit runs SessionEnd is not stated). The capture of the Stop event (already a configured hook) writes the usage rows of the session's finished prompts that need one (ql_capture.add_usage with no skip), so a one-prompt worker inside a branch window gets its usage row; usage.md and querylog.md say so.",
+  "goal": "Found while running SP-owbgisoj: after BG-lbazs72w, the workers of BG-lbazs72w, ST-u3bx6w77 and BG-22jdzelu each wrote their branch row, yet backlog.py cost reads 0 for them: a claude -p worker has one prompt, and its usage row can come only from the SessionEnd distill (ql_distill.launch with --session/--transcript), since usage is read after the prompt, not at its Stop (kb/_self/usage.md: a read at Stop misses the prompt's last request). A probe on 2026-10-07 showed SessionEnd fires on a normal claude -p exit and a detached child outlives it, yet for these sessions _cache/querylog/distill.log shows no SessionEnd distill and no .end marker was left. Find where the SessionEnd path stops for a headless worker in a linked worktree (the hook through _tools/kbpy, launch, detach, the distill's lock wait, kbusage.prompt_usage on a -p transcript) and fix it there, so the one prompt of a headless worker inside a branch window gets its usage row and backlog.py cost counts it; the Stop capture does not write usage rows. usage.md and querylog.md say what changed.",
   "repro": {
     "run": [
       "python3",
@@ -17,9 +17,15 @@
   },
   "touches": [
     "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "_tools/kbusage.py",
+    "_tools/kbpy",
     "kb/_self/usage.md",
     "kb/_self/querylog.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md"
   ],
+  "notes": "2026-10-07 probe: claude -p with a SessionEnd hook that writes a file and starts a background child (sleep 5) left both files: SessionEnd fires on a normal -p exit and a detached child survives. A first fix (usage rows at the async Stop capture) was withdrawn by the orchestrator: it contradicts usage.md's rule (read after the prompt, not at Stop) and would freeze incomplete rows for interactive kb prompts.",
   "claimed_by": "worker-stopusage"
 }
