@@ -8,13 +8,18 @@ argument-hint: "<topic | directory | file | S-id>"
 
 Target: $ARGUMENTS. If empty, ask which topic, directory or file. Never refresh the whole kb unasked: a full run is about 20 minutes of network traffic.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ids" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git.md "Workflow" git.md "Commit trailers"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Ids"` source ids, replaced sources, CSV writing; `git "Workflow"` commits and pushes; `git "Commit trailers"` `KB-Verified`.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-refresh:diff`: before step 2, seeing what changed
+- `kb-refresh:update`: before step 3, updating the kb
+- `kb-refresh:commit`: before step 4, check, commit and report
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 `AGENTS.md` covers lookups only.
 
@@ -28,6 +33,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Flags repeat and combine. `--older-than DAYS` skips recently fetched sources.
 
 ## 2. See what changed
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-refresh:diff`.
+
 1. `python3 _tools/fetch.py --status <selection>`: last fetch and change dates.
 2. Fact diff first (no model): `python3 _tools/factdiff.py detect <selection>` checks each source by its provider's cheapest signal and resolves every fact of a changed, moved or gone source against its anchor. Then `python3 _tools/factdiff.py apply kb/public/_census/factdiff-<today>.csv --dry-run` and, when it shows what you expect, without `--dry-run`: unchanged sources and facts found word for word are confirmed and dated, facts found word for word on another page are re-pointed. `python3 _tools/factdiff.py review kb/public/_census/factdiff-<today>.csv` prints what is left, each fact with its old and new passage: judge each as supported, contradicted or not enough information from those passages (step 3 says what to do), and read the page only when they do not settle it. A source gone with no successor: `python3 _tools/factdiff.py dead <log> --source <id>` (facts that cited only it become `[UNK]`, `_gaps.md` entries, the row marked dead with its last Wayback capture).
 3. The low-level text diff, when a passage needs its context: `python3 _tools/fetch.py --diff <selection> --full --max-lines 200`
@@ -38,6 +45,8 @@ Flags repeat and combine. `--older-than DAYS` skips recently fetched sources.
 3. For pinned artifacts (rows with `artifact_sha256`), use `python3 _tools/fetch.py --verify` only if the user asks; those urls are fixed commits and do not drift.
 
 ## 3. Update the kb
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-refresh:update`.
+
 For every changed source, find the facts citing it: `python3 _tools/rag.py src S1234 --cited` (the row and every line that names the id).
 - Fact still true: leave it.
 - Fact changed: rewrite it from the new text, same tag, same id. Update that source's `retrieved_utc` and `version_or_date` in `_sources.csv`.
@@ -52,6 +61,8 @@ For every changed source, find the facts citing it: `python3 _tools/rag.py src S
 Follow the "Licensing and privacy" section: each source row's `reuse` class says what its text allows (quotes of 25 words or fewer from `quote`, verbatim copies only from `copy`). A new row carries `licence` and `reuse`: copy an existing row's pair for the same host or repository (`python3 _tools/rag.py src <id>`), else read the licence where it is stated (the repository's LICENSE, the page footer, the terms page) and pick the class by that section. Write rows with Python's `csv` module; a new row's `used_in` and `superseded_by` are empty.
 
 ## 4. Check and report
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-refresh:commit`.
+
 - `python3 _tools/check.py` must end `errors=0`. Run `python3 .claude/skills/kb-verify/lint.py <paths you edited>`.
 - When facts changed: `python3 _tools/doc2query.py stale` prints `stale=0`, `python3 _tools/rag.py eval` passes every question, and `python3 _tools/tests.py` passes.
 - A targeted `--diff` or `detect` writes `_fetch_state.csv` for the sources it checked (`detect` also its log in `_census/` and the snapshots of changed `copy` sources). Commit them with the refresh they explain, even when no fact changed: it records when those sources were last verified. (Only a whole-kb baseline is left to the maintainer.)

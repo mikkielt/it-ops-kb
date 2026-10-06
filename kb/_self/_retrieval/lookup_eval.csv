@@ -1,39 +1,272 @@
 id,question,expect_paths,expect_verdict,allow_weak,expect_text,sets
 SE-001,what does backlog.py land refuse when the tree has uncommitted or untracked files,backlog.md,good,yes,it refuses uncommitted changes,kb-item:land
-SE-002,who may answer a sprint's start gate,backlog.md,good,yes,the operator approves the goal,
-SE-003,how is an agent's provisional gate answer confirmed and by whom,backlog.md,good,yes,the operator confirms each such answer,
-SE-004,an item touches a rule-guarding path and its goal leaves a design choice open: what must happen before code is written,backlog.md,good,yes,asked before any code is written,
-SE-005,which commit trailer makes a commit count as work on a backlog item,backlog.md,good,yes,ends with `KB-Work:,kb-item:land
+SE-002,who may answer a sprint's start gate,backlog.md,good,yes,the operator approves the goal,kb-backlog:plan;kb-sprint:plan;kb-sprint:start
+SE-003,how is an agent's provisional gate answer confirmed and by whom,backlog.md,good,yes,the operator confirms each such answer,kb-sprint:review
+SE-004,an item touches a rule-guarding path and its goal leaves a design choice open: what must happen before code is written,backlog.md,good,yes,asked before any code is written,kb-backlog:plan;kb-item:work
+SE-005,which commit trailer makes a commit count as work on a backlog item,backlog.md,good,yes,ends with `KB-Work:,kb-backlog:finish;kb-item:done;kb-item:land
 SE-006,in which cases does backlog.py done refuse an item,backlog.md,good,yes,the item waits on anything,kb-item:land
-SE-007,may a sprint worker push its own branch,backlog.md,good,yes,"`work/<id>`, never pushed",kb-item:land
-SE-008,how does an agent escalate a decision it cannot make itself,backlog.md,good,yes,records a gate with its recommendation,
+SE-007,may a sprint worker push its own branch,backlog.md,good,yes,"`work/<id>`, never pushed",kb-item:land;kb-worker
+SE-008,how does an agent escalate a decision it cannot make itself,backlog.md,good,yes,records a gate with its recommendation,kb-backlog:plan;kb-worker
 SE-009,"who removes a finished worker's worktree, since git worktree remove is denied to agents",backlog.md;tools.md,good,yes,`git worktree remove` is denied to agents,
 SE-010,which signals mark stalled work,tools.md,good,yes,"`returned-no-commit`, `returned-staged`, `done-refused`",
-SE-011,when does backlog.py drop refuse to drop an item,backlog.md,good,yes,refuses an item that an item,
-SE-012,where is a bug found while landing filed so its fix commit passes check-trailers,backlog.md,good,yes,an active sprint's id,
-SE-013,what does backlog.py claim refuse when another session works in the same checkout,backlog.md,good,yes,a claim by a second session,
-SE-014,which changes are pushed as a code/<id> merge request instead of straight to main,git.md,good,yes,goes as branch `code/<id>`,
-SE-015,how do I record that a mapped doc was read and needs no edit,README.md;git.md,good,yes,goes in the commit's `Self-Reviewed:;needed no edit,
-SE-016,what does kbgit.py sync --push run as its gate for a content-only change,git.md;maintaining.md,good,yes,`check.py` for kb content;it runs only what the changed paths can break,
-SE-017,what is allowed to be pushed to GitHub,git.md,good,yes,`main` only through `kbgit.py publish`,
-SE-018,how large may AGENTS.md be,maintaining.md,good,yes,`AGENTS.md` has a 4 KB cap,
-SE-019,should I run the whole test suite before every push,maintaining.md,good,yes,Do not run the suite,
+SE-011,when does backlog.py drop refuse to drop an item,backlog.md,good,yes,refuses an item that an item,kb-backlog:triage
+SE-012,where is a bug found while landing filed so its fix commit passes check-trailers,backlog.md,good,yes,an active sprint's id,kb-backlog:bug;kb-item:land
+SE-013,what does backlog.py claim refuse when another session works in the same checkout,backlog.md,good,yes,a claim by a second session,kb-item:claim
+SE-014,which changes are pushed as a code/<id> merge request instead of straight to main,git.md,good,yes,goes as branch `code/<id>`,kb-git-sync:sync
+SE-015,how do I record that a mapped doc was read and needs no edit,README.md;git.md,good,yes,goes in the commit's `Self-Reviewed:;needed no edit,kb-item:done;kb-self:stale
+SE-016,what does kbgit.py sync --push run as its gate for a content-only change,git.md;maintaining.md,good,yes,`check.py` for kb content;it runs only what the changed paths can break,kb-census:phase1;kb-git-sync:sync;kb-ingest:commit;kb-refresh:commit;kb-self:commit;kb-verify;kb-commit
+SE-017,what is allowed to be pushed to GitHub,git.md,good,yes,`main` only through `kbgit.py publish`,kb-git-sync:sync;kb-ingest:commit
+SE-018,how large may AGENTS.md be,maintaining.md,good,yes,`AGENTS.md` has a 4 KB cap,kb-self:update
+SE-019,should I run the whole test suite before every push,maintaining.md,good,yes,Do not run the suite,kb-self:commit;kb-verify
 SE-020,what happens when two whole-suite tests.py runs overlap on one host,maintaining.md,good,yes,waits for another such run,
 SE-021,when may a new test be added to the suite,code.md,good,yes,needs room under `max_ids`;A test is written only for,kb-item:work
 SE-022,may a tool in _tools import a third-party package,tools.md,good,yes,stdlib-only Python in `_tools/`,
-SE-023,what does a bug get instead of a regression test,code.md,good,yes,A bug gets a retrospective,kb-item:work
-SE-024,who may change the numbers in the tests ceiling file,code.md,good,yes,only with the operator's recorded answer,
-SE-025,which fact tags are leads and never the answer alone,content-rules.md,good,yes,`UNK` and `COMMUNITY` facts are leads,
-SE-026,which placeholders must examples use instead of real hostnames and tenant ids,content-rules.md,good,yes,hosts `PL-LT-00123` and `PL-SRV-0042`,
-SE-027,a real lookup failed: when does it become a lookup_eval.csv row and when a _gaps.md entry,maintaining.md,good,yes,the kb has the answer,
-SE-028,may a kb/_self doc describe history or how things used to work,README.md,good,yes,the kb as it is now,
+SE-023,what does a bug get instead of a regression test,code.md,good,yes,A bug gets a retrospective,kb-backlog:bug;kb-item:work
+SE-024,who may change the numbers in the tests ceiling file,code.md,good,yes,only with the operator's recorded answer,kb-item:work;kb-worker
+SE-025,which fact tags are leads and never the answer alone,content-rules.md,good,yes,`UNK` and `COMMUNITY` facts are leads,kb-add-topic:research;kb-research:research
+SE-026,which placeholders must examples use instead of real hostnames and tenant ids,content-rules.md,good,yes,hosts `PL-LT-00123` and `PL-SRV-0042`,kb-add-topic:write;kb-research:write;kb-refresh:update
+SE-027,a real lookup failed: when does it become a lookup_eval.csv row and when a _gaps.md entry,maintaining.md,good,yes,the kb has the answer,kb-add-topic:register;kb-research:write
+SE-028,may a kb/_self doc describe history or how things used to work,README.md,good,yes,the kb as it is now,kb-self:update
 SE-029,where do measurements of the kb's tools get recorded,README.md,good,yes,the measurements `design.md` and `token-efficiency.md`,
 SE-030,what does rag.py pack print when the kb does not hold the answer,tools.md,good,yes,does not cover the question,
-SE-031,what does selfdoc.py stale --since report,tools.md,good,yes,in REV..HEAD and the working tree,
-SE-032,is the query log ever published to GitHub,querylog.md;git.md,good,yes,Never to the public home,
+SE-031,what does selfdoc.py stale --since report,tools.md,good,yes,in REV..HEAD and the working tree,kb-self:stale
+SE-032,is the query log ever published to GitHub,querylog.md;git.md,good,yes,Never to the public home,kb-setup
 SE-033,which modes does the query log have,querylog.md,good,yes,"`mode` (`auto`, `local`, `off`)",
 SE-034,which kb MCP tool is always loaded and which stay deferred,token-efficiency.md;plugin.md,good,yes,the other kb tools stay deferred,
 SE-035,which skills does the plugin ship to its users,plugin.md,good,yes,`/kb-lookup` is model-invocable,
 SE-036,how do I configure the Autopilot enrollment status page timeout,,none,,,
 SE-037,what is the default TTL of a Kerberos ticket granting ticket,,none,,,
-SE-038,which steps does backlog.py land run and what does it refuse,backlog.md,good,yes,runs these steps,kb-item:land
+SE-038,which steps does backlog.py land run and what does it refuse,backlog.md,good,yes,runs these steps,kb-item:land;kb-sprint:run
+SS1-001,my item is outside any sprint: can its work be committed and pushed,backlog.md,good,yes,joins a started sprint,kb-item:claim
+SS1-002,what does check-trailers refuse for a KB-Work id that is not claimed,backlog.md,good,yes,only for a claimed item,kb-item:claim
+SS1-003,which commit does claim --commit make and what does it stage,backlog.md,good,yes,the item files the command wrote,kb-item:claim
+SS1-004,is the claim commit exempt from the started-sprint check,backlog.md,good,yes,Exempt: a backlog-planning commit,kb-item:claim
+SS1-005,may I pass a KB-* trailer to claim with --trailer,backlog.md,good,yes,a `KB-*` key is refused,kb-item:claim
+SS1-007,an item waits on a trigger that has happened: what do I run,backlog.md,good,yes,runs `backlog.py fire ID`,kb-item:claim
+SS1-008,what does a blocking gate hold back,backlog.md,good,yes,every item under or after it,kb-item:claim
+SS1-009,a defect found outside the item's scope: fix it or file it,backlog.md,good,yes,outside its item files a bug,kb-item:work;kb-worker
+SS1-011,what happens to the class of a gate when I widen an item's touches,backlog.md,good,yes,widened touches re-class a gate,kb-item:work
+SS1-012,what does answering a gate provisionally record,backlog.md,good,yes,goes on with the recommendation,kb-item:work
+SS1-014,may I run tests.py --changed myself before landing,backlog.md,good,yes,runs `tests.py --changed origin/main`,kb-item:work
+SS1-015,where do the item file changes of a claim or a gate go in the commits,backlog.md,good,yes,same commit as the work,kb-item:done
+SS1-016,why is my KB-Work line not read as a trailer,backlog.md,good,yes,Git reads trailers only,kb-item:done;kb-worker
+SS1-017,how must a commit message be worded,maintaining.md,good,yes,conventional prefix (`docs(kb):`,kb-item:done
+SS1-018,may a Self-Reviewed trailer be used to get past the stale gate,maintaining.md,good,yes,never a way past the gate,kb-item:done
+SS1-019,a stacked item: which docs must its Self-Reviewed trailer name,backlog.md,good,yes,own commit's `Self-Reviewed` trailer every doc,kb-worker
+SS1-020,a doc needs an edit outside the item's touches: what do I do,backlog.md,good,yes,stops its work with a report,kb-item:done;kb-worker
+SS1-021,why must land run in the background with the longest timeout,backlog.md,good,yes,lost at the 10-minute limit,kb-item:land
+SS1-022,a code-lane item was pushed as a code/<id> request: is it done and what next,backlog.md,good,yes,the item is not done,kb-item:land;kb-sprint:run
+SS1-023,done refuses because its code-lane commit is not on main: what to do,backlog.md,good,yes,merge its `code/<id>` request,kb-item:land
+SS1-024,the code/<id> request is opened with a merge_error: what to do,backlog.md,good,yes,so it retries once;never tried a third time,kb-item:land
+SS1-029,what does done refuse for files outside the item's scope,backlog.md,good,yes,left a file outside the scope,kb-item:done
+SS1-030,why does land fail at the stale step,backlog.md,good,yes,a missing `Self-Reviewed` trailer fails,kb-item:land
+SS1-031,which items stay draft while their sprint is planned,backlog.md,good,yes,everything stays `draft`,kb-sprint:plan
+SS1-032,which item may be claimed in a planned sprint,backlog.md,good,yes,`claim` takes it from `draft`,kb-sprint:plan
+SS1-033,which consumers must a change to how agents read docs name in touches,backlog.md,good,yes,names every consumer of it,kb-sprint:plan
+SS1-034,must every clause of the sprint goal have an item,backlog.md,good,yes,carried by a committed item,kb-sprint:plan
+SS1-035,in what order do done and the push to main come for a code-lane item's goal,backlog.md,good,yes,come after its `code/<id>` merge request,kb-sprint:plan
+SS1-036,what is done with a story whose premise does not reproduce,backlog.md,good,yes,premise fails is not committed,kb-sprint:plan
+SS1-037,what happens to a figure a story's goal names that no check reads,backlog.md,good,yes,missing check before the start gate,kb-sprint:plan
+SS1-038,what does a gate that names a host setup need,backlog.md,good,yes,carries the command that proves it,kb-sprint:start
+SS1-040,what makes backlog.py start refuse a sprint,backlog.md,good,yes,review story has no `touches` of,kb-sprint:start
+SS1-041,what do the drafts become when the sprint starts,backlog.md,good,yes,turns the drafts into `todo`,kb-sprint:start
+SS1-042,what do items wait on while the start gate is unanswered,backlog.md,good,yes,is the operator's question,kb-sprint:start
+SS1-043,how is an item filed into a running sprint created,backlog.md,good,yes,into an active sprint as `todo`,kb-sprint:start
+SS1-044,where does a new story go while a sprint runs,backlog.md,good,yes,backlog for a later sprint,kb-sprint:start
+SS1-045,does start run the host checks of answered gates again,backlog.md,good,yes,answered gate's check again itself,kb-sprint:start
+SS1-046,what does selfcheck do with the allow rules in settings.json,backlog.md,good,yes,reads `.claude/settings.json` (never writes it),kb-sprint:run
+SS1-049,which items may run in parallel,backlog.md,good,yes,do not overlap run in parallel,kb-sprint:run
+SS1-051,which agent takes a task and which a bug,backlog.md,good,yes,goes to the `kb-worker` agent,kb-sprint:run
+SS1-052,when may the orchestrator dispatch the workers,backlog.md,good,yes,dispatches only after its claim sync,kb-sprint:run
+SS1-053,when does the orchestrator land a worker's branch with regard to its gates,backlog.md,good,yes,lands it only after each gate,kb-sprint:run
+SS1-054,what must a worker's brief say about known failing tests,backlog.md,good,yes,neither files it again nor,kb-sprint:run
+SS1-055,can a worker in a worktree run the lookup eval,backlog.md,good,yes,cannot run the lookup eval,kb-sprint:run;kb-worker
+SS1-056,items that share a file: how are they run,backlog.md,good,yes,Items that share a file,kb-sprint:run
+SS1-062,can an agent confirm a provisional answer in the review,backlog.md,good,yes,`--confirm` with no `--by`,kb-sprint:review
+SS1-063,from when does an item's rework count,backlog.md,good,yes,an item's first refused `done` on,kb-sprint:review
+SS1-064,may the review report cost figures read while sessions are open,backlog.md,good,yes,never reports those zeros as,kb-sprint:review
+SS1-065,which gaps does the fresh-context reviewer report,backlog.md,good,yes,reports only gaps that affect,kb-sprint:review
+SS1-066,where does a gap found by the review go,backlog.md,good,yes,every gap becomes a bug,kb-sprint:review
+SS1-067,how does a sprint that changed the query log writes get checked in the review,backlog.md,good,yes,runs distill once on a copy,kb-sprint:review
+SS1-068,what does done of the review story re-run,backlog.md,good,yes,once more on the sprint's tip,kb-sprint:review
+SS1-070,when does close refuse,backlog.md,good,yes,refuses while anything is open,kb-sprint:close
+SS1-071,what does close delete,backlog.md,good,yes,items and the epics they finished,kb-sprint:close
+SS1-072,what is the retrospective made of,backlog.md,good,yes,from the sprint's evidence,kb-sprint:close
+SS1-073,which cost figures go into the retrospective,backlog.md,good,yes,once the sprint's sessions have closed,kb-sprint:close
+SS1-074,what happens to ids of the closed sprint in other items,backlog.md,good,yes,drops their ids from every remaining,kb-sprint:close
+SS1-075,what does close leave for backlog.py tidy,backlog.md,good,yes,go with `backlog.py tidy`,kb-sprint:close
+SS2-001,which fields does backlog.py set refuse to write on an item,backlog.md,good,yes,they refuse `status`,kb-backlog:plan
+SS2-002,which decisions are always blocking gates only the operator settles,backlog.md,good,yes,These are always blocking,kb-backlog:plan
+SS2-003,who may answer a gate on a secrets or push or agents-rule item,backlog.md,good,yes,only the operator answers it,kb-backlog:plan
+SS2-005,what refuses a push of a code task whose mapped docs are missing,backlog.md,good,yes,gate refuses a push without them,kb-backlog:plan
+SS2-006,what does a bug item need at filing and how is it sized,backlog.md,good,yes,sized like a story,kb-backlog:bug
+SS2-007,what does severity S1 cover,backlog.md,good,yes,a wrong answer served as `good`,kb-backlog:bug
+SS2-008,what happens to an S1 bug when it is filed,backlog.md,good,yes,An `S1` bug joins the active sprint,kb-backlog:bug
+SS2-009,which severity does a doc that disagrees with its code get,backlog.md,good,yes,a doc that disagrees with its code,kb-backlog:bug
+SS2-010,which repro does new bug refuse besides one that passes,backlog.md,good,yes,refuses one that fails for its own error,kb-backlog:bug
+SS2-011,does a grep over a file count as a bug repro,backlog.md,good,yes,`new` refuses such a repro,kb-backlog:bug
+SS2-012,which items may reopen take back to work,backlog.md,good,yes,`reopen` refuses every status but `done`,kb-backlog:triage
+SS2-013,how does a draft item get into an active sprint,backlog.md,good,yes,refuses a draft item into an active sprint,kb-backlog:triage
+SS2-014,can move put a task or a doing item into a sprint,backlog.md,good,yes,a task follows its story,kb-backlog:triage
+SS2-015,is the reason given to reopen stored on the item,backlog.md,good,yes,printed and never written to the item,kb-backlog:triage
+SS2-016,how is an item with a trigger released once the event happened,backlog.md,good,yes,runs `backlog.py fire ID`,kb-backlog:triage
+SS2-017,in which paragraph of a commit message does the KB-Work trailer go,git.md,good,yes,last paragraph with `Co-Authored-By`,kb-backlog:finish
+SS2-018,what does check-trailers flag about KB-Work lines,git.md,good,yes,flags a second `KB-Work` line,kb-backlog:finish
+SS2-019,what does check-trailers refuse for a KB-Work id whose item is not claimed,git.md,good,yes,an id whose item is not claimed,kb-backlog:finish
+SS2-020,which items must a backlog planning commit name in KB-Work,git.md,good,yes,must change the file of every item it names,kb-backlog:finish
+SS2-021,how must a message or commit body name a backlog item,backlog.md,good,yes,never a bare id,kb-backlog:finish
+SS2-022,what style must a commit message follow,maintaining.md,good,yes,body explaining why,kb-backlog:finish
+SS2-023,when may an agent commit,maintaining.md,good,yes,Commit only when asked,kb-backlog:finish;kb-self:commit
+SS2-024,what does sync refuse before it rebases anything,git.md,good,yes,refuses a dirty tree,kb-git-sync:sync
+SS2-025,what does sync --push refuse when the range holds other commits,git.md,good,yes,another Claude session's commits,kb-git-sync:sync
+SS2-026,what does sync exit 3 mean,git.md,good,yes,Exit 3 means a conflict in an article,kb-git-sync:sync;kb-commit
+SS2-027,may I push with a red gate,git.md,good,yes,never push with a red gate,kb-git-sync:sync
+SS2-028,what to do when sync stops with exit 3 after its own re-run,git.md,good,yes,run the same command again,kb-git-sync:sync
+SS2-029,does fix clean the signals aliases and eval rows after a merge,git.md,good,yes,but `fix` does not clean it,kb-git-sync:conflict
+SS2-030,how many rows may stay per signal alias term or eval id,git.md,good,yes,one row per signal,kb-git-sync:conflict
+SS2-031,what happens to an answer id both sides took,git.md,good,yes,is renamed to `QK-<slug>` on the local side,kb-git-sync:conflict
+SS2-032,what does exit 2 of kbgit.py fix mean,git.md,good,yes,Exit 2 means a human decision,kb-git-sync:conflict
+SS2-033,where do real disagreements between sources go,maintaining.md,good,yes,Real disagreements stay in `_conflicts.md`,kb-git-sync:conflict
+SS2-034,may a COMMUNITY fact be the only evidence,content-rules.md,good,yes,never the only evidence for a DOC fact,kb-git-sync:conflict
+SS2-035,how many tags does a fact end in,content-rules.md,good,yes,Every fact ends in exactly one tag,kb-git-sync:conflict
+SS2-036,may I type the KB-Topics and KB-Sources trailers myself,git.md,good,yes,Never type them by hand,kb-git-sync:conflict
+SS2-037,where is the whole output of a failed gate check written,git.md,good,yes,A failed check's whole output is written to a new file,kb-git-sync:gate
+SS2-038,what does the pre-push hook refuse,git.md,good,yes,refuses a push to the integration remote's `main`,kb-git-sync:gate
+SS2-039,how does sync replace a code/<id> branch that moved on the remote,git.md,good,yes,pushes with `--force-with-lease` against that tip,kb-git-sync:gate
+SS2-040,what to do when the remote takes no push options,git.md,good,yes,a merge or pull request must be opened from the branch,kb-git-sync:gate
+SS2-041,which check does the gate run for a file a kb/_self doc describes,git.md,good,yes,`selfdoc.py stale --since origin/main` for a file,kb-git-sync:gate
+SS2-042,why must new files be staged before tests.py runs,maintaining.md,good,yes,stage new files (`git add`) before running it,kb-git-sync:gate;kb-self:commit
+SS2-043,may a red gate be fixed by editing the lint baseline,git.md,good,yes,never the baseline,kb-git-sync:gate
+SS2-044,how are orphaned doc2query expansion rows removed after rewording facts,content-rules.md,good,yes,`doc2query.py prune` removes their rows,kb-git-sync:gate
+SS2-045,what must a fact resting on a run of our own state,content-rules.md,good,yes,state in the fact the version of what ran,kb-verify
+SS2-046,may a number come from a fetch tool's summary,content-rules.md,good,yes,never from a fetch tool's summary of it,kb-verify
+SS2-047,what must a new ledger entry end with,content-rules.md,good,yes,Each new entry ends with,kb-verify
+SS2-048,what does the kb-verify lint warn about in a DER fact,content-rules.md,good,yes,The kb-verify lint warns on a `DER` Facts bullet,kb-verify
+SS2-049,what does the kb-verify lint report for a DOC tag,content-rules.md,good,yes,reports a DOC or COMMUNITY tag without an id,kb-verify
+SS2-050,which skill brings stale kb docs back in line,README.md,good,yes,`/kb-self` is the runbook that brings them back in line,kb-verify;kb-self:stale
+SS2-051,which files does a kb/_self doc describe,README.md,good,yes,describes files named in `kb/_self/map.csv`,kb-self:stale
+SS2-052,what is the source of truth when a doc and the code disagree,README.md,good,yes,Code is the source of truth,kb-self:stale
+SS2-053,which commits does selfdoc.py stale --work read,README.md,good,yes,reads only the commits whose `KB-Work` trailer names the item,kb-self:stale
+SS2-054,may a kb/_self doc record a file's current size,README.md,good,yes,never record a file's current bytes,kb-self:update
+SS2-055,may I hand-edit a generated part of a doc,README.md,good,yes,Generated parts are never hand-edited,kb-self:update
+SS2-056,which flags may a doc write next to a tool,README.md,good,yes,Every `--flag` written next to a tool must exist in that tool,kb-self:update
+SS2-057,where does the table of tool commands live,README.md,good,yes,The tool table lives in `tools.md` only,kb-self:update
+SS2-058,what to do when a doc needs an edit outside the item's touches,maintaining.md,good,yes,stops the item's work with a report,kb-self:update
+SS2-059,how large may the root README.md be,README.md,good,yes,the root `README.md` under 8 KB,kb-self:update
+SS2-060,which docs go in the same commit as a tool or skill change,git.md,good,yes,goes with the `kb/_self/` docs that describe it,kb-self:commit
+SS2-061,can the Self-Reviewed trailer get past the docs gate,maintaining.md,good,yes,never a way past the gate,kb-self:commit
+SS2-062,who writes the Self-Reviewed trailer,git.md,good,yes,is typed by hand,kb-self:commit;kb-commit
+SS2-063,what does a change to tools or rules change in kb/_self,maintaining.md,good,yes,changes what `kb/_self/` says,kb-self:commit
+SS2-064,what does install-python.ps1 do when it finds a conflict on the host,maintaining.md,good,yes,stops without changing anything when it finds one,kb-setup
+SS2-065,does the commit-msg hook block a commit,git.md,good,yes,never blocks a commit,kb-setup
+SS2-066,what does the publish remote leave out,maintaining.md,good,yes,leaves out `kb/_querylog/` and any `_logs.csv`,kb-setup
+SS2-067,at which scope are the MCP servers registered,maintaining.md,good,yes,at local scope (this machine and this clone only),kb-setup
+SS2-068,why must the plugin not be loaded in the clone,maintaining.md,good,yes,Do not load the plugin in a clone,kb-setup
+SS2-069,may setup run fetch.py --diff over the whole kb,maintaining.md,good,yes,it is a long network job that writes `_fetch_state.csv`,kb-setup
+SS2-070,where is the query log choice written,querylog.md,good,yes,one uncommitted file,kb-setup
+SS3-001,can I take a number or a date for a fact from a WebFetch summary of the page,content-rules.md,good,yes,a fetch tool's summary of it,kb-research:research;kb-add-topic:research;kb-census:phase2
+SS3-002,how do I read a Claude Code or MCP docs page for a citation without printing the whole page,web-sources.md,good,yes,the section cannot be found,kb-research:research
+SS3-003,which url do I read for a fact that is on a GitHub blob page,web-sources.md,good,yes,same file at the same ref,kb-research:research
+SS3-004,how do I read a docs.gitlab.com page that has no markdown form,web-sources.md,good,yes,the page's source file under `doc/`,kb-research:research
+SS3-005,how do I date an anthropic.com page I cite,web-sources.md,good,yes,`article:modified_time` dates it,kb-research:research
+SS3-006,how do I read a PDF source,web-sources.md,good,yes,download with `curl` into `_cache/`,kb-research:research
+SS3-007,when is WebFetch acceptable for a page I will cite,web-sources.md,good,yes,WebFetch only to locate the passage,kb-research:research;kb-add-topic:research
+SS3-008,after how many failures on a host does it count as a family to stage,web-sources.md,good,yes,or more failures on the host,kb-probe
+SS3-009,how big a share of the sources must a host back before it is staged,web-sources.md,good,yes,at least 25 rows,kb-probe
+SS3-010,what must the commit body say when a host gets staged,web-sources.md,good,yes,the trigger in the commit body,kb-probe
+SS3-011,what do I do when a host answers with a bot wall or a login,web-sources.md,good,yes,is a level 1 problem,kb-probe
+SS3-012,where does a team's internal provider row go instead of providers.csv,tools.md,good,yes,a root's own `_providers.csv`,kb-probe
+SS3-013,may a team's own provider file name real hosts,content-rules.md,good,yes,may name real hosts,kb-probe
+SS3-014,when does provider.py probe exit with 1,tools.md,good,yes,the sample does not answer 200,kb-probe
+SS3-015,what does probe --write store in the registry,tools.md,good,yes,stores the measured columns,kb-probe
+SS3-016,how are the gaps of the research queue ordered,querylog.md,good,yes,by the number of logged lookups,kb-research:queue
+SS3-017,what happens to a queued gap that the pack now answers,querylog.md,good,yes,gets a `fixed-since` record,kb-research:queue
+SS3-018,which dated note closes a _gaps.md entry,content-rules.md,good,yes,(or `Superseded`) closes the entry,kb-research:queue
+SS3-019,what does a Tried note record and how long does the gap wait,querylog.md,good,yes,the gap waits `QUEUE_TRIED_DAYS`,kb-research:queue
+SS3-020,when may querylog.py close --claim be used on a finding,querylog.md,good,yes,carries a `Resolved <date>:` note,kb-research:queue
+SS3-021,which trailer must the findings record commit not carry,querylog.md,good,yes,never a `KB-Work` trailer,kb-research:queue
+SS3-022,when does querylog.py queue exit with 1,querylog.md,good,yes,a closed gap reappears,kb-research:queue
+SS3-023,what goes on a ledger entry that needs a lab or a login,maintaining.md,good,yes,dated note of what was tried,kb-research:queue;kb-census:phase4
+SS3-024,how do I record a fact that rests on a probe or measurement I ran myself,content-rules.md,good,yes,on a run of our own,kb-research:write;kb-add-topic:write
+SS3-025,from which sources may I copy text verbatim,content-rules.md,good,yes,Verbatim copies only from `copy` sources,kb-research:write;kb-add-topic:write;kb-census:phase2;kb-refresh:update
+SS3-026,which reuse class do I give a source whose terms I could not read,content-rules.md,good,yes,the terms could not be read,kb-add-topic:sources
+SS3-027,is a Microsoft Learn page copy or quote,content-rules.md,good,yes,the page's `github_feedback_content_git_url`,kb-research:write;kb-add-topic:sources
+SS3-028,what does the licence of an archived public mirror of a Learn page cover,content-rules.md,good,yes,licence covers only the archived text,kb-add-topic:sources
+SS3-029,how must a new entry in _gaps.md or _conflicts.md end,content-rules.md,good,yes,Each new entry ends with,kb-research:write;kb-add-topic:register;kb-refresh:update;kb-census:phase2;kb-ingest:write
+SS3-030,when does a topic get rows in signals.csv,content-rules.md,good,yes,gets `signals.csv` rows,kb-research:write;kb-add-topic:register;kb-ingest:write
+SS3-031,when does a product get rows in aliases.csv,content-rules.md,good,yes,gets `aliases.csv` rows,kb-add-topic:register
+SS3-032,is a published OpenAPI schema or a .proto file DOC or CODE,content-rules.md,good,yes,A published contract is `DOC`,kb-add-topic:research;kb-ingest:write
+SS3-033,is the --help output of a release binary DOC or CODE,content-rules.md,good,yes,own `--help` output is `DOC`,kb-add-topic:research
+SS3-034,is a doc comment or a docstring in source code DOC or CODE,content-rules.md,good,yes,a doc comment in source,kb-add-topic:research;kb-ingest:write
+SS3-035,which url may the source row of a CODE fact cite,content-rules.md,good,yes,at a release tag or commit,kb-add-topic:research;kb-ingest:survey
+SS3-036,how is a file on a self-managed GitLab host pinned,content-rules.md,good,yes,a self-managed GitLab host,kb-ingest:survey
+SS3-037,what tag does the absence of something from a release archive get,content-rules.md,good,yes,from a release archive is `DER`,kb-add-topic:research
+SS3-038,does check.py accept a source id I made up for a url,content-rules.md,good,yes,hash id that does not match,kb-add-topic:sources
+SS3-039,the url already has a row in _sources.csv: which id do I cite,content-rules.md,good,yes,the url already has a row,kb-add-topic:sources
+SS3-040,may I take the next number as a new source id,content-rules.md,good,yes,Never invent an id or take,kb-add-topic:sources;kb-refresh:update
+SS3-041,may I append a source row with a CSV writer,content-rules.md,good,yes,never appended with a CSV writer,kb-add-topic:sources;kb-research:write;kb-ingest:write;kb-census:phase2
+SS3-042,which licence does a MicrosoftDocs file pinned at a commit follow,content-rules.md,good,yes,follows its repository's LICENSE,kb-add-topic:sources
+SS3-043,what must a SNIPPET bullet carry as evidence,content-rules.md,good,yes,an evidence tag other than `UNK`,kb-add-topic:write
+SS3-044,what does checked: syntax claim for a snippet,content-rules.md,good,yes,the lint re-parses json,kb-add-topic:write
+SS3-045,what does the priority of a topic mean,content-rules.md,good,yes,research order it was gathered in,kb-add-topic:write
+SS3-046,how do I tag a fact I could not confirm,content-rules.md,good,yes,`[UNK]` or `[UNK: why]`,kb-add-topic:write
+SS3-047,when is a fact DER rather than DOC or CODE,content-rules.md,good,yes,derived from DOC or CODE facts,kb-add-topic:write;kb-ingest:write
+SS3-048,which files are generated and must never be edited by hand,content-rules.md,good,yes,never edited by hand,kb-add-topic:register
+SS3-049,must rag.py eval pass after I add a lookup_eval row,content-rules.md,good,yes,must pass every question,kb-add-topic:register
+SS3-050,may I write into the plugin copy of the kb,plugin.md,good,yes,the plugin copy stays read-only,kb-ingest:where
+SS3-051,do git census and fetch work on a root kept in KB_ROOTS,plugin.md,good,yes,work on the repository's roots only,kb-ingest:where
+SS3-052,where does organisation-specific knowledge belong,content-rules.md,good,yes,belongs in an `internal` root,kb-ingest:where
+SS3-053,a team fact rests on a public source: how is that source cited,content-rules.md,good,yes,the url to the team root,kb-ingest:where
+SS3-054,when does kbroot.py add refuse a name or a prefix,tools.md,good,yes,taken or bad name or prefix,kb-add-root
+SS3-055,may a root use D or L as its id prefix,plugin.md,good,yes,cannot be a root's id prefix,kb-add-root
+SS3-056,may a root cite a source of another root,content-rules.md,good,yes,cites only its own sources,kb-add-root;kb-ingest:where
+SS3-057,what must the operator set before the first decision of a new root,plugin.md,good,yes,its first decision waits for it,kb-add-root
+SS3-058,what does kbroot.py add create,tools.md,good,yes,create `kb/NAME/` with its `_root.md`,kb-add-root
+SS3-059,may an internal root be pushed to the upstream remotes,content-rules.md;plugin.md,good,yes,stay out of the upstream remotes;never go to the upstream remotes,kb-add-root;kb-ingest:where
+SS3-060,where does the internal root of a team live,plugin.md,good,yes,the team's own fork or clone,kb-add-root;kb-ingest:where
+SS3-061,may a public root hold real hostnames or tenants,content-rules.md,good,yes,secrets in a `public` root,kb-add-root;kb-ingest:where
+SS3-062,does kbingest.py survey read the working tree,tools.md,good,yes,never the working tree,kb-ingest:survey
+SS3-063,may the output of kbingest.py map go under kb,tools.md,good,yes,(never under `kb/`),kb-ingest:survey
+SS3-064,what does the CODE lint reject,content-rules.md,good,yes,or citing an unpinned source,kb-ingest:survey
+SS3-065,what is the pointer in a CODE tag,content-rules.md,good,yes,a pointer into that file,kb-ingest:write
+SS3-066,which reuse class does a repository with no licence file get,content-rules.md,good,yes,a no-licence repository,kb-ingest:write
+SS3-067,does kbgit.py sync --push work on a dirty tree,git.md,good,yes,refuses a dirty tree,kb-refresh:commit;kb-ingest:commit
+SS3-068,does sync --push stop when the range holds commits of another session,git.md,good,yes,another Claude session's commits,kb-ingest:commit
+SS3-069,which remote does sync --push push to,git.md,good,yes,pushes to the integration remote,kb-ingest:commit
+SS3-070,may I force push or push with a red gate,git.md,good,yes,never push with a red gate,kb-ingest:commit;kb-census:phase4
+SS3-071,what does factdiff.py apply do with facts found on another page,tools.md,good,yes,word for word on another page,kb-refresh:diff;kb-census:phase0
+SS3-072,what does factdiff.py dead do to the facts of a gone source,tools.md,good,yes,that cited only it become `[UNK]`,kb-refresh:diff;kb-census:phase0;kb-census:phase2
+SS3-073,does factdiff.py review print whole pages,tools.md,good,yes,never a whole page,kb-refresh:diff;kb-census:phase0
+SS3-074,when does factdiff.py detect exit with 1,tools.md,good,yes,exit 1 when facts need review,kb-refresh:diff;kb-census:phase0
+SS3-075,what does factdiff.py apply --commit commit with,tools.md,good,yes,`--commit` commits with `KB-Verified`,kb-refresh:diff;kb-census:phase0
+SS3-076,which change signal does factdiff.py detect try first,tools.md,good,yes,signal first per the source's provider,kb-refresh:diff;kb-census:phase0
+SS3-077,what do I do with the old source row when a pinned upstream changed,content-rules.md,good,yes,set the old row's `superseded_by`,kb-refresh:update;kb-census:phase2
+SS3-078,does a reworded fact need re-anchoring,content-rules.md,good,yes,reworded fact gets a new key,kb-refresh:update;kb-census:phase2
+SS3-079,where do sources that now disagree get recorded,content-rules.md,good,yes,both sides linked,kb-refresh:update;kb-census:phase2
+SS3-080,which decisions does kbdecide.py sweep invalidate when a source is replaced,content-rules.md,good,yes,a `source:` has a `superseded_by`,kb-refresh:update;kb-census:phase3
+SS3-081,what does the sweep do with a decision whose fact was reworded,content-rules.md,good,yes,the likeliest current fact,kb-census:phase3
+SS3-082,may an agent run kbdecide.py relink,content-rules.md,good,yes,(open to agents) repoints the reference,kb-refresh:update;kb-census:phase3
+SS3-083,when does a commit get the KB-Verified trailer,git.md,good,yes,confirms its sources are current,kb-refresh:commit;kb-census:phase3
+SS3-084,should I type the KB-* trailers by hand,git.md,good,yes,Never type them by hand,kb-refresh:commit;kb-commit
+SS3-085,how much goes into one commit,git.md,good,yes,One logical change per commit,kb-refresh:commit;kb-census:phase1
+SS3-086,in which commit does a new source row go,git.md,good,yes,same commit as the facts,kb-refresh:commit
+SS3-087,what form does a commit message take,maintaining.md,good,yes,Commit messages: conventional prefix,kb-refresh:commit;kb-census:phase1;kb-census:phase3;kb-commit
+SS3-088,when do I commit,maintaining.md,good,yes,Commit only when asked,kb-refresh:commit
+SS3-089,what does census.py check write for each source,tools.md,good,yes,a mechanical verdict per source,kb-census:phase1
+SS3-090,what is the census log under _census,content-rules.md,good,yes,a census verdict log,kb-census:phase1
+SS3-091,for which sources does census.py confirm set dates,tools.md,good,yes,dates only for confirmed sources,kb-census:phase3
+SS3-092,when may the census tag be created,git.md,good,yes,only after a full verification,kb-census:phase4
+SS3-093,what does the census tag say about the kb,git.md,good,yes,confirmed current as of this date,kb-census:phase4
+SS3-094,what does the census tag message count,git.md,good,yes,the tag message counts the sources,kb-census:phase4
+SS3-095,how is the census tag pushed,git.md,good,yes,`git push origin census-YYYY-MM-DD`,kb-census:phase4
+SS4-001,what does exit 1 of kbgit.py sync mean and what is fixed,git.md,good,yes,"fixes the cause, never the baseline",kb-commit
+SS4-002,which command pushes my own commits to the integration main,git.md,good,yes,pushes it with `sync --push`,kb-commit
+SS4-003,may I use a plain git push instead of sync,git.md,good,yes,Prefer `sync --push`,kb-commit
+SS4-004,"how must tool code read and write files, build paths and run subprocesses",backlog.md,good,yes,paths go through `pathlib`,kb-item:done;kb-worker
+SS4-005,may a tool add a third-party dependency,backlog.md,good,yes,standard library only,kb-item:done;kb-worker
+SS4-006,what does every item add of its own on top of the shared minimum,backlog.md,good,yes,three parts of its own,kb-backlog:plan
+SS4-007,what does a task need when it is filed,backlog.md,good,yes,"goal, checks, touches",kb-backlog:plan
+SS4-008,may an item note keep a dated log of what was tried,backlog.md,good,yes,Items describe the present,kb-backlog:plan
+SS4-009,what is a subtask and does it get a commit,backlog.md,good,yes,one agent step inside a task,kb-item:claim
+SS4-010,what is done with a story or bug that is too big for one push,backlog.md,good,yes,too big for one push,kb-item:claim
+SS4-011,which reuse class does a source whose terms could not be read get,content-rules.md,good,yes,treated as `paraphrase`,kb-refresh:update

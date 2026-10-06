@@ -8,13 +8,17 @@ argument-hint: "<provider name | new provider name and a sample url> [--root NAM
 
 Provider: $ARGUMENTS. If empty, run `python3 _tools/provider.py list` and ask which one.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" web-sources "Routes by family" web-sources "When a family needs staging" git.md "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` commits and pushes.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-probe`: before the first step
+- `kb-commit`: before committing or pushing
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 The registry's columns are in the docstring of `_tools/provider.py`.
 
@@ -32,6 +36,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops).
 4. `python3 _tools/provider.py show <sample url>` shows the form and the signals the fetch tools will use.
 
 ## 3. Check and report
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
+
 - `python3 _tools/check.py` and `python3 _tools/tests.py`.
 - A changed signal changes what the fetch tools trust: say so in the commit body.
 - Commit with the probe's evidence lines in the body (`/kb-verify`, then `python3 _tools/kbgit.py sync --push`); commit only when asked.

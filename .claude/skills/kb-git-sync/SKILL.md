@@ -8,13 +8,18 @@ argument-hint: "[--push]"
 
 Arguments: $ARGUMENTS. Push only if they contain `--push` or the user asked to push; otherwise sync without pushing.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ledgers and retrieval data" git.md "Workflow" git.md "Merging (what sync automates)" git.md "Commit trailers"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Facts and tags"` resolving articles; `content-rules "Ledgers and retrieval data"` resolving ledgers and tool data; `git "Workflow"` sync, the gate, exit codes.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-git-sync:sync`: before step 1, looking and syncing
+- `kb-git-sync:conflict`: before step 2, resolving the conflict
+- `kb-git-sync:gate`: before step 3, a failed gate
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 `AGENTS.md` covers lookups only.
 
@@ -23,6 +28,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Never `git push --force`, never `--no-verify`, never `git rebase --skip` a commit that carries the user's work, never rewrite pushed history. When a rule below says "ask", stop, leave the repository as it is (a rebase stays in progress) and explain what is decided and what is open.
 
 ## 1. Look, then sync
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-git-sync:sync`.
+
 1. `python3 _tools/kbgit.py sync --dry-run`: incoming commits, and the files both sides changed (`needs a human if it conflicts` marks articles, tools and docs).
 2. `python3 _tools/kbgit.py sync` (with `--push` only as allowed above). Read its report and branch on the exit code:
    - 0: done. Go to 5.
@@ -33,6 +40,8 @@ Never `git push --force`, never `--no-verify`, never `git rebase --skip` a commi
 Always rebase with `-c merge.conflictStyle=diff3` (sync does). Without it git merges the ledgers "zealously": two answers added at one place that both end in `_Agent: kb-research_` interleave, the second spliced into the first above its footer, and the rebased commit then edits the other side's answer (its `KB-Answers` trailer names it). `fix` repairs such a splice when it knows the sides, but only in the working tree, not in the commit that made it.
 
 ## 2. Exit 3: resolve the conflict
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-git-sync:conflict`.
+
 Sync printed `needs-human: PATH` lines, `mechanical: PATH` lines, a `sync-state: base=… upstream=… orig_head=…` line and a `fix --base … --upstream … --side …` command. The rebase is in progress, stopped at one local commit (`git log -1 REBASE_HEAD`). Leave `mechanical:` paths to `fix`.
 
 For each `needs-human` path, read the three versions: `git show :1:PATH` (base), `git show :2:PATH` (upstream, already pushed), `git show :3:PATH` (the local commit being replayed; in a rebase "theirs" is yours). Then edit the working file so no conflict markers remain; with diff3 each region also has a `||||||| base` part: remove it too.
@@ -59,6 +68,8 @@ Then, one command at a time:
 Exit 3 with "the rebase is complete" means `fix` itself needs a decision (e.g. one answer heading twice with different bodies): make it, commit it (`fix(kb): …`), rerun sync.
 
 ## 3. Exit 1: gate failed
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-git-sync:gate`.
+
 - Read the failing check's output in the report. Fix the cause in the files the user's commits touched (`git diff --name-only origin/main...HEAD`): an unknown source id, a missing front-matter key, a stale index (`python3 _tools/build_index.py`), a new lint error, a leak-scan hit, a duplicate row in the tool data or a failing `rag.py eval` question (see Tool data in section 2).
 - Never silence a check by editing `_tools/lint_baseline.txt`, `_tools/tests_allowlist.txt` or a test, unless the user agrees after you explain why.
 - Commit the fix as its own commit (`fix(kb): …`), then rerun `python3 _tools/kbgit.py sync`. Bad trailers are repaired by sync itself.

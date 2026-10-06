@@ -53,7 +53,7 @@ def report():
         f"- check.py: {check}",
         f"- test tools: {deps}",
         f"- branch {branch} at {head} ({sync})",
-        f"- The open work is the backlog ({SELF}/backlog.md; the horizon hook printed its state). Before any change run python3 _tools/selfdoc.py section maintaining \"Conduct for changes\"; {SELF}/README.md",
+        f"- The open work is the backlog ({SELF}/backlog.md; the horizon hook printed its state). Before any change run python3 _tools/selfdoc.py section maintaining \"Conduct for changes\"; rules: python3 _tools/rag.py pack --root _self \"<question>\" (a skill step's set: --set NAME); {SELF}/README.md",
         "  maps the kb's own docs (content rules, tools, git, plugin, design).",
         "- The gate is python3 _tools/kbgit.py sync --push: it runs only what the changed paths can break (the checks each",
         "  path needs and tests.py --changed: the whole small suite for a code change, nothing for backlog items). The suite",

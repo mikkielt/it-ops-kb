@@ -8,19 +8,27 @@ argument-hint: "<question or subject, optionally with the angle, e.g. 'X and how
 
 Question: $ARGUMENTS. If it is empty or too broad to answer in one pass, ask for the angle before starting. `--queue [N]` works the query log's gaps instead (next section).
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the steps below:
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ids" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git.md "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Ids"` source and answer ids, CSV writing; `git "Workflow"` commits and pushes.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-research:queue`: before the query log's queue (`--queue`)
+- `kb-research:research`: before step 3, researching
+- `kb-research:write`: before step 4, writing
+- `kb-commit`: before committing or pushing
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## The query log's queue (`--queue [N]`)
+Rules of this section: `python3 _tools/rag.py pack --root _self --set kb-research:queue`.
+
 - `python3 _tools/querylog.py queue N` (default 1): the open gap findings of `kb/_querylog`, each re-run with `pack` first (one that passes now is recorded `fixed-since` and left out), by topic, most-asked first. Each gap prints its question, its `_gaps.md` entry (`path:line`) and its finding id (`F-...`). Nothing listed: say so and stop.
 - Each gap is one question: run steps 1 to 6 below on it, within its topic (the entry's `(topic: ...)`).
 - Then close its `_gaps.md` entry by the content rules and record it (the queue's rules: `python3 _tools/selfdoc.py section querylog "The research queue"`):
@@ -48,6 +56,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
   - Never create a topic that only restates facts the kb already has elsewhere; cite those facts from the answer instead.
 
 ## 3. Research
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-research:research`.
+
 - Official sources first, most specific first:
   - The three docs servers through the `kb` server's cached tools, so a search or page read in the last 7 days costs no second call: `docs_search` with `server` `microsoft-learn`, `claude-code-docs` or `mcp-docs`, then `docs_fetch` on the page (`kb/_self/tools.md`, the `kb_mcp.py` row). Only when those tools are missing (a server started with `--roots`, or `KB_LIVE_DOCS=0`) call the servers directly: Microsoft `microsoft_docs_search` then `microsoft_docs_fetch`, Claude Code `search_claude_code_docs`, MCP spec `search_model_context_protocol`.
   - Other vendors and open-source projects: WebSearch to find the vendor's own docs, release notes, API reference or repository, then read the page by its family's route. Prefer a url pinned to a version, tag or commit.
@@ -64,6 +74,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Never call `submit_feedback`, sign up for anything, install software, or run a vendor CLI that changes state. Reading public docs only.
 
 ## 4. Write
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-research:write`.
+
 The contract in brief (the sections read above hold the rest):
 - Source rows first, in `_sources.csv` (`id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`), each written with `python3 _tools/kbid.py add <URL> --title T --publisher P --licence L --reuse R [--version V] [--sha256 H] [--root NAME]`, never appended with a CSV writer: it sets `retrieved_utc` to today and leaves `used_in` and `superseded_by` empty; `--version` is the page's own version or date (else `retrieved <date>`).
 - `licence` and `reuse` on every row: copy an existing row's pair for the same host or repository (`python3 _tools/rag.py src <id>`), else read the licence where it is stated (the repository's LICENSE, the page footer, the terms page). Microsoft Learn by the "Licensing and privacy" section; Anthropic docs `Anthropic terms (no open licence)`, `quote`; an open-source repository or spec its SPDX id, `copy` (NC, ND or source-available: `quote`); vendor pages, blogs and forums with no open licence the terms' name, `quote`; terms you could not read: say so, `unknown`.
@@ -96,6 +108,8 @@ The contract in brief (the sections read above hold the rest):
 - `python3 _tools/tests.py` must pass. It includes the leak scan: no real tenant ids, hostnames, addresses or tokens.
 
 ## 6. Report
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
+
 - The context map in brief: anchor topics and what the kb already knew.
 - What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id, and for each new `DOC` fact from a non-Microsoft page the verbatim quote it rests on; rows added to `signals.csv`, `aliases.csv` or `lookup_eval.csv`.
 - Where each fact went (extended topic or new topic) and why, per step 2's rules.

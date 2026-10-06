@@ -3,7 +3,7 @@
 Everything an agent needs to run, change and ship this kb, except the lookup rules that every session loads (`AGENTS.md`). People read the root `README.md`; nobody needs these files to use the kb, only to change it.
 
 - **Not in the pack.** `pack`, `kb_pack` and the `kb:` hook never see `kb/_self/`, so the kb's own vocabulary (hook, skill, plugin, pack) never competes with the domain articles. Search it on purpose: `python3 _tools/rag.py search "<words>" --index` (MCP `kb_search` with `index`).
-- **Read only what the job needs.** Each file serves one kind of work; the table says which. A skill names the files it relies on.
+- **Read only what the job needs.** Each file serves one kind of work; the table says which. A skill names the files it relies on, and gets their rules by question: `python3 _tools/rag.py pack --root _self "<question>"` names the line that answers it, and `--set NAME` prints a skill step's tested questions.
 
 | file | read it when | kind |
 |---|---|---|

@@ -24,8 +24,9 @@
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
                                            --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
-  rag.py eval [--file FILE]                pack against the lookup eval sets (every root's lookup_eval.csv, or FILE):
-                                           expected article found, verdict
+  rag.py eval [--file FILE] [--root NAME] [--free]   pack against the lookup eval sets (every root's lookup_eval.csv and
+                                           kb/_self's, or FILE): expected article found, verdict, expected phrase;
+                                           --free adds the _self rows' leave-one-out rate (slow)
   rag.py topics-for PATH... | --keywords TEXT [--imports]   kb topics that code touches, from the curated code signals in
                                            each root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client);
                                            --imports matches only the packages the files declare, not comments or strings
@@ -266,15 +267,16 @@ def eval_cases(path=None, root=None):
     return out
 
 
-def run_eval(path=None, root=None):
+def run_eval(path=None, root=None, free=False):
     """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root, to
     kb/_self for SELF_ROOT) must be among the pack's articles, the verdict must equal the expected one (`none` rows
     expect no path), and when the row has `expect_text` one of its `;`-separated phrases must occur in the pack's text.
     A `_self` row passes on its text alone: its phrase must be in one of its docs (it has an anchor, else
     `failed=anchor`) and in the pack's text (else `failed=text`); a row with no `expect_text` expects the verdict
-    `none`. `free` counts the anchored `_self` rows whose phrase is still printed when the pack leaves out that row's own
-    tested question (kbfacts.self_store with skip), out of `anchored`."""
-    rows, free, anchored, passages = [], 0, 0, None
+    `none`. With `free`, `free` counts the anchored `_self` rows whose phrase is still printed when the pack leaves out
+    that row's own tested question (kbfacts.self_store with skip), out of `anchored`: one store build per row, so the
+    gate's run leaves it out and the figure is None."""
+    rows, hits, anchored, passages = [], 0, 0, None
     for name, c in eval_cases(path, root):
         own = name == kbfacts.SELF_ROOT
         res = kbfacts.pack(c["question"], root=name) if own else kbfacts.pack(c["question"])
@@ -294,8 +296,9 @@ def run_eval(path=None, root=None):
                 failed = ["anchor"]
             else:
                 anchored += 1
-                loo = kbfacts.pack(c["question"], root=name, st=kbfacts.self_store(c["id"]))
-                free += any(t in loo["text"] for t in phrases)
+                if free:
+                    loo = kbfacts.pack(c["question"], root=name, st=kbfacts.self_store(c["id"]))
+                    hits += any(t in loo["text"] for t in phrases)
                 failed = [] if tok else ["text"]
         rows.append({"id": c["id"], "verdict": res["verdict"], "want_verdict": c["expect_verdict"], "found": found,
                      "paths": res["paths"], "chars": len(res["text"]), "ok": not failed, "verdict_ok": vok,
@@ -303,7 +306,7 @@ def run_eval(path=None, root=None):
     n = len(rows)
     return {"n": n, "passed": sum(r["ok"] for r in rows), "verdict_ok": sum(r["verdict_ok"] for r in rows),
             "found_ok": sum(r["found_ok"] for r in rows), "mean_chars": round(sum(r["chars"] for r in rows) / max(n, 1)),
-            "free": free, "anchored": anchored, "rows": rows}
+            "free": hits if free else None, "anchored": anchored, "rows": rows}
 
 
 def main():
@@ -338,6 +341,7 @@ def main():
     tf.add_argument("--imports", action="store_true", help="match the signals against the packages the files declare (imports, manifests), not their text")
     ev = sub.add_parser("eval"); ev.add_argument("--file", help="one eval file (default: every root's lookup_eval.csv and kb/_self's)")
     ev.add_argument("--root", help="one root only (a kb root or _self); with --file, the root the file's rows belong to")
+    ev.add_argument("--free", action="store_true", help="also the leave-one-out rate of the _self rows (slow: one store build per row)")
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     w.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
     a = ap.parse_args()
@@ -466,7 +470,7 @@ def main():
     elif a.cmd == "eval":
         if a.root and a.root not in {r.name for r in kbcommon.roots()} | {kbfacts.SELF_ROOT}:
             ap.error(f"no root {a.root!r}")
-        res = run_eval(a.file, a.root)
+        res = run_eval(a.file, a.root, a.free)
         if a.json:
             return print(json.dumps(res, indent=1))
         width = max((len(r["id"]) for r in res["rows"]), default=6)
@@ -474,7 +478,7 @@ def main():
             print(f"{'ok  ' if r['ok'] else 'FAIL'} {r['id']:<{width}} verdict={r['verdict']:<5} (want {r['want_verdict']:<5}) "
                   f"found={','.join(r['found']) or '-'} chars={r['chars']}" + (f" failed={','.join(r['failed'])}" if r["failed"] else ""))
         print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
-              f"mean_chars={res['mean_chars']}" + (f" free={res['free']}/{res['anchored']}" if res["anchored"] else ""))
+              f"mean_chars={res['mean_chars']}" + (f" free={res['free']}/{res['anchored']}" if res["free"] is not None else ""))
         if res["passed"] != res["n"]:
             sys.exit(1)
     else:

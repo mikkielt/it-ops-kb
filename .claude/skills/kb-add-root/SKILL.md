@@ -8,13 +8,17 @@ argument-hint: "<root-name> and what knowledge it will hold"
 
 Request: $ARGUMENTS. A root is a directory under `kb/` beside `kb/public/`, with its own articles, ledgers and source ids; the read tools serve every root together (`_tools/kbcommon.py`, "Roots"). A new topic inside an existing root is `/kb-add-topic`, not this.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command:
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Roots" git.md "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `content-rules "Roots"` what a root holds; `git "Workflow"` commits and pushes.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-add-root`: before the first step
+- `kb-commit`: before committing or pushing
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 Run each command on its own (no `;`, `&&`, pipes or loops).
 
@@ -31,4 +35,6 @@ Ask before creating anything when any of these is unclear:
 3. Add its first topics with `/kb-add-topic <name>/<domain>/<slug>`; each root cites only its own sources (add a public source again under the root's prefix when its facts need it).
 
 ## 3. Finish
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
+
 `/kb-verify`, then commit (`feat(kb): add the <name> root`) and push with `python3 _tools/kbgit.py sync --push` only to the remote the user confirmed.
