@@ -772,13 +772,16 @@ EXC_LINE = re.compile(r"[A-Za-z_][\w.]*(Error|Exception|Exit|Interrupt)\b(: |$)"
 OWN_CODE_ERRORS = ("TypeError", "NameError", "UnboundLocalError")  # the repro's code is wrong, not the value it tests
 
 
+NONE_TYPE_ERROR = re.compile(r"'NoneType' object is not (subscriptable|iterable)|object of type 'NoneType' has no len\(\)")
+
+
 def own_exception(argv, lines, root=None):
     """Why a repro failed by a Python error in its own code, or None: the traceback's last exception is one that says
     the repro's code itself is wrong (OWN_CODE_ERRORS: a TypeError from calling a function with the wrong arguments, a
     NameError, an UnboundLocalError), raised with the innermost frame in the repro's own code (the -c string or an
     untracked script, own_code), so it fails before the defect is tested (ST-ikh2h7m5). An exception on a value the
-    code under test returned (an AttributeError on its None, a KeyError of its output), one raised inside the code
-    under test, and an AssertionError are failures it accepts."""
+    code under test returned (an AttributeError on its None, a TypeError of subscripting, len() or iterating it, a
+    KeyError of its output), one raised inside the code under test, and an AssertionError are failures it accepts."""
     if not any(ln.startswith("Traceback (most recent call last)") for ln in lines):
         return None
     for i in range(len(lines) - 1, -1, -1):
@@ -786,7 +789,7 @@ def own_exception(argv, lines, root=None):
         if not m:
             continue
         cls = lines[i].split(":", 1)[0].rsplit(".", 1)[-1]
-        if cls not in OWN_CODE_ERRORS:
+        if cls not in OWN_CODE_ERRORS or (cls == "TypeError" and NONE_TYPE_ERROR.search(lines[i])):
             return None
         frame = next((f for f in map(FRAME.search, reversed(lines[:i])) if f), None)
         if frame and own_code(argv, frame.group(1), root):
