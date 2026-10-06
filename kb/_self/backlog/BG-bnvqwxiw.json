@@ -1,0 +1,31 @@
+{
+  "id": "BG-bnvqwxiw",
+  "kind": "bug",
+  "title": "The headless delegation sentences do not say where staging copies of .claude/ files go",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Where kb-sprint run step 3, kb/_self/backlog.md Running a sprint and kb-worker.md rule 1 name the staging copies a headless worker edits instead of .claude/ files, they say the copies sit outside the worker's worktree (such as the orchestrator's scratch directory, passed with --add-dir), since copies left in the worktree are untracked and land refuses it (bl_land.py release_worker_worktree). From the SP-pbekfhaz review (ST-zzsbdbi7).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys;L=[l for f in ('.claude/skills/kb-sprint/SKILL.md','kb/_self/backlog.md','.claude/agents/kb-worker.md') for l in pathlib.Path(f).read_text(encoding='utf-8').splitlines() if 'staging cop' in l];print(len(L),[('outside' in l) for l in L]);sys.exit(0 if L and all('outside' in l for l in L) else 1)"
+    ]
+  },
+  "repro_reason": "a defect in the docs' wording: no sentence says the staging copies sit outside the worker's worktree; no tool run shows a missing sentence",
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    ".claude/agents/kb-worker.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "relates_to": [
+    "BG-hu56lf65",
+    "BG-qkjgg3yj"
+  ]
+}

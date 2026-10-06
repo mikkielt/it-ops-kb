@@ -1,0 +1,27 @@
+{
+  "id": "BG-hu56lf65",
+  "kind": "bug",
+  "title": "The headless delegation sentences send land a worker worktree with untracked intake drafts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb-sprint run step 3 and kb/_self/backlog.md Running a sprint, where they say a headless worker starts with the project settings, also say that those settings run the SessionStart hook backlog.py intake --file --hook, which leaves untracked draft items under kb/_self/backlog/ of the worker's worktree, and that the orchestrator moves them out of that worktree before land (bl_land.py release_worker_worktree refuses untracked files), as kb/_self/usage.md In the query log already says; kb-worker.md rule 5 says such drafts are not the worker's to commit. From the SP-pbekfhaz review (ST-zzsbdbi7).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys;L=[l for f in ('.claude/skills/kb-sprint/SKILL.md','kb/_self/backlog.md') for l in pathlib.Path(f).read_text(encoding='utf-8').splitlines() if 'claude -p --model' in l];print(len(L),[('intake' in l) for l in L]);sys.exit(0 if L and all('intake' in l for l in L) else 1)"
+    ]
+  },
+  "repro_reason": "a defect in the docs' wording: the sentence that tells the orchestrator to start headless workers with the project settings never says those settings run the SessionStart intake hook; no tool run shows a missing sentence",
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    ".claude/agents/kb-worker.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ]
+}

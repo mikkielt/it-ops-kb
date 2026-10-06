@@ -1,0 +1,27 @@
+{
+  "id": "BG-qkjgg3yj",
+  "kind": "bug",
+  "title": "The headless delegation sentences state a .claude/ write refusal that depends on the permission mode as always true",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Where kb-sprint run step 3, kb/_self/backlog.md Running a sprint and kb-worker.md rule 1 say a headless session cannot write under .claude/, they name the permission mode it holds in (default and acceptEdits prompt, so a claude -p run refuses; bypassPermissions allows), as kb/public/claude/settings-and-scopes.md states (DOC S-zcuxapgb). From the SP-pbekfhaz review (ST-zzsbdbi7).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys;L=[l for f in ('.claude/skills/kb-sprint/SKILL.md','kb/_self/backlog.md','.claude/agents/kb-worker.md') for l in pathlib.Path(f).read_text(encoding='utf-8').splitlines() if 'cannot write under' in l];print(len(L),[('permission mode' in l) for l in L]);sys.exit(0 if L and all('permission mode' in l for l in L) else 1)"
+    ]
+  },
+  "repro_reason": "a defect in the docs' wording: the sentence omits the permission mode its cited fact names; no tool run shows a missing qualifier",
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    ".claude/agents/kb-worker.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ]
+}
