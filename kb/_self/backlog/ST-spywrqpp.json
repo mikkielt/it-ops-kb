@@ -2,7 +2,7 @@
   "id": "ST-spywrqpp",
   "kind": "story",
   "title": "Work done in a worktree session reaches backlog.py cost as work rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
-  "notes": "Housekeeping 2026-10-06: the -k worktree_session_work_rows selector named a test the suite rules no longer allow; the check builds a temporary clone with a linked worktree, replays a worktree session's hook events (claim, done, two prompts) through querylog.py capture and asks bl_cost.open_lines of the clone for the item's work line; it exits 1 today. Root cause found by the housekeeping: _tools/ql_base.py places() keys the spool on the checkout the running _tools sits in, so a worktree session spools beside its own worktree; the reader side (bl_cost.open_lines, bl_base.main_worktree_spool, ql_distill) reads only the clone's and the main worktree's spool. _tools/ql_base.py joins the touches for that; if the fix lands on the reader side instead, _tools/bl_cost.py, _tools/bl_base.py and _tools/ql_distill.py need adding first."
+  "notes": "Housekeeping 2026-10-06: the -k worktree_session_work_rows selector named a test the suite rules no longer allow; the check builds a temporary clone with a linked worktree, replays a worktree session's hook events (claim, done, two prompts) through querylog.py capture and asks bl_cost.open_lines of the clone for the item's work line; it exits 1 today. Root cause found by the housekeeping: _tools/ql_base.py places() keys the spool on the checkout the running _tools sits in, so a worktree session spools beside its own worktree; the reader side (bl_cost.open_lines, bl_base.main_worktree_spool, ql_distill) reads only the clone's and the main worktree's spool. _tools/ql_base.py joins the touches for that; if the fix lands on the reader side instead, _tools/bl_cost.py, _tools/bl_base.py and _tools/ql_distill.py need adding first.",
+  "claimed_by": "worker-spywrq"
 }
