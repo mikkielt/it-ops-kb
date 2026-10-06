@@ -2,7 +2,7 @@
   "id": "ST-f4egkymg",
   "kind": "story",
   "title": "Following reopen's hint for a gone touch leaves the item able to pass done",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise: the item's check shows done refusing after the hint is followed ('commit ... changed src/old_test.py, outside touches', exit 1, [True, True, False]) on 2026-10-06; with the gone touch kept and only the check repointed the same planted repo passes done (exit 0). In SP-hyp6o7hl, after BG-c4cjoyyi, following the hint made done refuse 'commit <work commit> changed _tools/test_bl_items.py, outside touches'. The hint is bl_items.cmd_reopen; the refusal is bl_land.out_of_scope in cmd_done. ST-zzsbdbi7 plans a runbook sentence that a gone path is removed by re-setting the touch list: whichever answer g1 gets, that sentence must agree with it."
+  "notes": "Premise: the item's check shows done refusing after the hint is followed ('commit ... changed src/old_test.py, outside touches', exit 1, [True, True, False]) on 2026-10-06; with the gone touch kept and only the check repointed the same planted repo passes done (exit 0). In SP-hyp6o7hl, after BG-c4cjoyyi, following the hint made done refuse 'commit <work commit> changed _tools/test_bl_items.py, outside touches'. The hint is bl_items.cmd_reopen; the refusal is bl_land.out_of_scope in cmd_done. ST-zzsbdbi7 plans a runbook sentence that a gone path is removed by re-setting the touch list: whichever answer g1 gets, that sentence must agree with it.",
+  "claimed_by": "worker-f4egky"
 }
