@@ -11,7 +11,7 @@ from pathlib import Path
 import bl_authority
 import bl_cli
 from bl_base import (
-    IN_SPRINT, KINDS, PRIORITIES, RESEARCH_CHECKS, REVIEW_CHECKS, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
+    IN_SPRINT, KINDS, PRIORITIES, REL_DIR, RESEARCH_CHECKS, REVIEW_CHECKS, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
     commit_message, commit_written, git, in_scope, item_file, need, new_id, research_in_planned, say, scope,
     trailer_problem, waits, withhold,
 )
@@ -429,7 +429,10 @@ def cmd_set(bl, a):
         except ValueError as e:
             raise Rejected(f"set: --repro is not a command line ({e})") from e
         ok, code, out = run_check(bl.root, given["repro"])
-        if ok:
+        if ok and was_done(bl, iid):  # a reopened bug's fix has landed: done reruns the repro and needs it to pass
+            ok = False
+            say(f"--repro passes now (exit {code}), accepted: {bl.label(iid)} was done before, so its fix has landed")
+        elif ok:
             raise Refused(f"--repro passes now (exit {code}): it must fail until the bug is fixed")
         why = own_failure(given["repro"]["run"], code, out, bl.root)
         if why:
@@ -539,6 +542,31 @@ def cmd_move(bl, a):
     return 0
 
 
+def reopened_ref(iid):
+    return f"refs/kb-reopened/{iid}"
+
+
+def mark_reopened(bl, iid):
+    """Keeps the done item's file as a git blob under refs/kb-reopened/<id>, so a reopen that is not committed yet
+    still shows the item was done (its evidence is cleared from the file)."""
+    p = subprocess.run(["git", "-C", str(bl.root), "hash-object", "-w", "--stdin"], input=bl.raw[iid], text=True,
+                       encoding="utf-8", capture_output=True)
+    if p.returncode == 0 and p.stdout.strip():
+        subprocess.run(["git", "-C", str(bl.root), "update-ref", reopened_ref(iid), p.stdout.strip()], capture_output=True)
+
+
+def was_done(bl, iid):
+    """True when the item has been done: a commit that wrote its file with an evidence key, or a reopen's mark."""
+    root = str(bl.root)
+    if subprocess.run(["git", "-C", root, "rev-parse", "--verify", "-q", reopened_ref(iid)],
+                      capture_output=True).returncode == 0:
+        return True
+    p = subprocess.run(["git", "-C", root, "log", "-1", "--format=%H", "-S", '"evidence"', "HEAD", "--",
+                        f"{REL_DIR}/{iid}.json"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return p.returncode == 0 and bool(p.stdout.strip())
+
+
 def cmd_reopen(bl, a):
     """reopen: a done item back to work, its evidence and claim cleared; the reason is printed, never stored."""
     iid = need(bl, a.id)
@@ -553,6 +581,7 @@ def cmd_reopen(bl, a):
                        "(a draft, todo or doing item is open already, and a dropped one is not reopened: file a new item)")
     sp = bl.sprint_of(iid)
     state = "draft" if sp in bl.items and bl.items[sp].get("status") == "planned" else "todo"
+    mark_reopened(bl, iid)
 
     def edit(new):
         new["status"] = state
