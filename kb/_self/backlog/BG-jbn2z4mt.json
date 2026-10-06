@@ -7,14 +7,12 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbgit.py check-trailers, the push gate, refuses each commit the trailers detector flags (a KB-Work line git does not read as a trailer, and a code change with no KB-Work and no KB-Auto trailer), so no such commit reaches origin/main and no commit of the last 7 days on origin/main is one.",
+  "goal": "kbgit.py check-trailers, the push gate, refuses each commit the trailers detector flags (a KB-Work line git does not read as a trailer, and a code change with no KB-Work and no KB-Auto trailer), so no such commit reaches origin/main. The 7-day window clause moved to BG-q5dg7poh on the operator's answer to gate g1.",
   "repro": {
     "run": [
       "python3",
-      "_tools/backlog.py",
-      "intake",
-      "--status",
-      "100be800a2b5"
+      "-c",
+      "import subprocess,sys; sys.exit(0 if subprocess.run(['python3','_tools/kbgit.py','check-trailers','7219acbb56~1..7219acbb56']).returncode else 1)"
     ]
   },
   "checks": [
@@ -30,6 +28,27 @@
     "_tools/kg_trailers.py",
     "kb/_self/git.md",
     "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The done repro (intake --status 100be800a2b5) passes only once the 6 flagged commits age out of the 7-day window (about 2026-10-11), whatever the fix. Fix now and move out, fix now and hold the sprint, or rescope the check?",
+      "options": [
+        "fix now, move out",
+        "fix now, hold sprint",
+        "rescope check"
+      ],
+      "recommendation": "fix now, move out",
+      "class": "push",
+      "do": {
+        "fix now, move out": "BG-jbn2z4mt",
+        "fix now, hold sprint": "BG-jbn2z4mt",
+        "rescope check": "BG-jbn2z4mt"
+      },
+      "answer": "fix now, move out",
+      "by": "operator"
+    }
   ],
   "links": [
     "fingerprint 100be800a2b5",

@@ -27,5 +27,26 @@
     "ST-yl5ihysf",
     "ST-qsppdmjv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The check names 5 retired forms (10 rules, Bash and PowerShell); the goal also says each remaining entry is named by a skill, the agent file or AGENTS.md. Remove only the 10 listed, audit all allow rules, or move the story out?",
+      "options": [
+        "only the 10 listed",
+        "full audit",
+        "move out"
+      ],
+      "recommendation": "only the 10 listed",
+      "class": "agents-rule",
+      "do": {
+        "only the 10 listed": "ST-xsxto3rh",
+        "full audit": "ST-xsxto3rh",
+        "move out": "ST-xsxto3rh"
+      },
+      "answer": "full audit",
+      "by": "operator"
+    }
+  ],
   "notes": "Housekeeping 2026-10-06: _tools/test_settings_allow.py, RUNNER_COMMANDS, RUNNER_TOOLS and bl_land's RUNNER_NAME went with the old suite and the runner, so the story keeps only its settings.json half; the check reads the allow list and fails while a retired form is in it."
 }

@@ -1,0 +1,19 @@
+{
+  "id": "BG-q5dg7poh",
+  "kind": "bug",
+  "title": "No commit of the last 7 days on main lacks a KB-Work trailer git reads (window clears after 2026-10-10)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Once BG-jbn2z4mt's check-trailers fix has landed and the six commits flagged before it (newest ffe1273a0c of 2026-10-03) leave the 7-day window, the trailers detector reports nothing: python3 _tools/backlog.py intake --status 100be800a2b5 exits 0. Split from BG-jbn2z4mt \"Trailers: 11 commit(s) on main without a KB-Work trailer git reads\" on the operator's answer to its gate g1 (fix now, move out); work it on or after 2026-10-11, and a commit the detector still flags then is a new gate gap.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/backlog.py",
+      "intake",
+      "--status",
+      "100be800a2b5"
+    ]
+  }
+}
