@@ -2,7 +2,7 @@
   "id": "ST-u3bx6w77",
   "kind": "story",
   "title": "Research sprint goal: Work windows count only a worker's own session",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-owbgisoj",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "worker-wresearch"
+  "evidence": {
+    "commit": "b93abc8d1a877c1f6814f474c456c94cde0a7b32",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "c53ba431fd11a33a"
+      }
+    ]
+  }
 }
