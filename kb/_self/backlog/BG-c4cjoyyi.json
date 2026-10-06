@@ -1,0 +1,24 @@
+{
+  "id": "BG-c4cjoyyi",
+  "kind": "bug",
+  "title": "reopen refuses a done item whose touches name a file a later commit deleted, so its stale check can never be fixed",
+  "status": "todo",
+  "sprint": "SP-hyp6o7hl",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py reopen takes a done item back to work when the only new check findings are its own gone-path touches or checks (a path git history has and the tree lacks, which check does not flag on a done item and reopening only reveals), so set --touch and set --check can then repoint them and done can run again; reopen still refuses every other finding the change would add. Found by the SP-hyp6o7hl review: ST-px3y26ti deleted the test files ten done items of this sprint check with tests.py -k and name in touches, so the review's rerun of done checks exits 5 for each and neither reopen nor set (refused on a done item) can fix them.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);os.makedirs(os.path.join(d,'src'));g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True);g('init','-q');open(os.path.join(d,'src','old_test.py'),'w').write('x=1\\n');g('add','-A');g('commit','-qm','a');os.remove(os.path.join(d,'src','old_test.py'));g('add','-A');g('commit','-qm','b');it={'id':'BG-aaaaaaaa','kind':'bug','title':'T','status':'done','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','-c','pass']},'checks':[{'run':['python3','src/old_test.py']}],'touches':['src/old_test.py'],'evidence':{'commit':'0'*40,'checks':[]}};open(os.path.join(b,'BG-aaaaaaaa.json'),'w').write(json.dumps(it));p=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'reopen','BG-aaaaaaaa','--why','its check names a deleted test'],capture_output=True,text=True);print(p.stdout+p.stderr);sys.exit(p.returncode)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
