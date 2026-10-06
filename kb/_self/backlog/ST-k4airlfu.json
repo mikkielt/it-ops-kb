@@ -19,5 +19,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "Research 2026-10-06: the goal is internal to rag.py pack --root _self and the query log's learn/apply; no clause needs facts from an outside source, so nothing goes into kb/public. The kb/_self docs hold the current behaviour each item changes: tools.md:128 and :135 (rules route, which decisions print), content-rules.md:97 (lookups show decisions), querylog.md:163-168 (apply's eval rows and rules findings: a word pair for aliases.csv is picked by a person today), querylog.md:54 and :65 (a rules lookup row's pinned and key_missing fields, which learn reads for ST-rhnku4mc). Open choices (window width around the anchor, which decisions bear on a question) are the items' own, recorded as gates there.",
   "claimed_by": "orchestrator SP-sz5fbvqn"
 }
