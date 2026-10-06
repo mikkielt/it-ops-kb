@@ -2,7 +2,7 @@
   "id": "BG-oh4chvef",
   "kind": "bug",
   "title": "new refuses a repro whose TypeError comes from a None the code under test returned as the repro's own error",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-oh4chv"
+  "evidence": {
+    "commit": "ec7e620fff652aea5cc198c980fd57b8f7684071",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;sys.path.insert(0,'_tools');import bl_land;A=lambda s:[sys.executable,'-c','import os;'+s];P=lambda a:subprocess.run(a,capture_output=True,text=True);W=[(s,bl_land.own_failure(a,p.returncode,p.stdout+p.stderr)) for s in ('os.getenv(os.sep*3)[0]','len(os.getenv(os.sep*3))','[x for x in os.getenv(os.sep*3)]') for a in [A(s)] for p in [P(a)]];[print(s,'->',w) for s,w in W];sys.exit(1 if any(w for s,w in W) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "024ac7344fa2585c"
+      }
+    ]
+  }
 }
