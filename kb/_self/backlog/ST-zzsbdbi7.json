@@ -2,7 +2,7 @@
   "id": "ST-zzsbdbi7",
   "kind": "story",
   "title": "The sprint, backlog and item skills, the kb-worker agent and the runbook describe the procedure the tools run",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pbekfhaz",
   "priority": "P2",
   "rank": 0,
@@ -41,5 +41,6 @@
     "kb/_self/token-efficiency.md",
     "AGENTS.md"
   ],
-  "notes": "From the SP-qzip6qar retrospective (accepted by the operator): the headless route's description also names the worker's worktree, made by the orchestrator after the claim sync under .claude/worktrees/agent-<id> on work/<id> so land removes it; starting the session with the project settings so its work reaches backlog.py cost (kb/_self/usage.md; BG-maqf3lxh for the claim window); and the orchestrator doing every edit under .claude/ itself."
+  "notes": "From the SP-qzip6qar retrospective (accepted by the operator): the headless route's description also names the worker's worktree, made by the orchestrator after the claim sync under .claude/worktrees/agent-<id> on work/<id> so land removes it; starting the session with the project settings so its work reaches backlog.py cost (kb/_self/usage.md; BG-maqf3lxh for the claim window); and the orchestrator doing every edit under .claude/ itself.",
+  "claimed_by": "worker-zzsbdbi7"
 }
