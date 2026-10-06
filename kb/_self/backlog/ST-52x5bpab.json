@@ -1,0 +1,32 @@
+{
+  "id": "ST-52x5bpab",
+  "kind": "story",
+  "title": "Calls of python repeat 311 times in 2026-W41",
+  "status": "todo",
+  "sprint": "SP-qzip6qar",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Sessions call python at most 300 times a week, or the reason they must is recorded, so the repeats detector does not report it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "intake",
+        "--status",
+        "05b103f48661"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-evlez5mw"
+  ],
+  "links": [
+    "fingerprint 05b103f48661",
+    "detector repeats"
+  ],
+  "notes": "311 calls of python in 2026-W41; the threshold is 300 a week (bl_intake.REPEAT_THRESHOLD) Plan: the breakdown reads the 2026-W41 call.tool rows (which sessions and commands drove the calls) and either adds the instead-command to bl_intake.INSTEAD and the skill that drove the calls, or records the reason in kb/_self/token-efficiency.md; the code touches are added then."
+}

@@ -2,7 +2,8 @@
   "id": "ST-rwq2rkhg",
   "kind": "story",
   "title": "Headless delegated claude -p sessions leave work rows backlog.py cost reads",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
   "goal": "An item worked by a delegated headless claude -p session (the orchestrator's small sonnet or haiku sessions) has work rows that distill delivers and backlog.py cost --rework reads, so a sprint worked that way does not report 0 runs and 0 prompts. Answers the SP-njilrify retrospective: cost --rework SP-njilrify printed zeros at review and at close although 28 Sonnet sessions did the work, whose cost exists only by hand in kb/_self/reports/2026-10-06-self-rules-retrieval.md; the same zero figure closed SP-fvztfmtm.",
@@ -17,6 +18,10 @@
   ],
   "touches": [
     "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-spywrqpp",
+    "ST-4mcyzrrz"
   ],
   "relates_to": [
     "ST-spywrqpp"

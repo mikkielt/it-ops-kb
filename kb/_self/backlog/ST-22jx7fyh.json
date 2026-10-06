@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A story whose goal names answer quality gets a held-out quality probe as its premise before the sprint starts",
   "status": "draft",
+  "sprint": "SP-pbekfhaz",
   "priority": "P2",
   "rank": 0,
   "goal": "At /kb-sprint plan, a committed story whose goal names a quality of answers (an answer rate, a verdict's accuracy, a ranking) records as its Premise a probe of that quality on held-out inputs (such as rag.py eval --file on questions the work will not tune on), run before the start gate is asked, so a gate the probe raises is asked before start, not mid-work. Answers the SP-njilrify retrospective: the accuracy gate of ST-dvf3xf52 came mid-work when a held-out run answered 14 of 20 with verdict good on all 20, and research story ST-ulhmplqh had to be filed in the sprint; the plan premise had only shown coverage none.",
@@ -18,7 +19,13 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-backlog/SKILL.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-vkp3bo5t",
+    "ST-zzsbdbi7"
   ],
   "gates": [
     {

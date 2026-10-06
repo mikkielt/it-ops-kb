@@ -1,0 +1,32 @@
+{
+  "id": "ST-evlez5mw",
+  "kind": "story",
+  "title": "Calls of tools.backlog repeat 601 times in 2026-W41",
+  "status": "todo",
+  "sprint": "SP-qzip6qar",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Sessions call tools.backlog at most 300 times a week, using python3 _tools/backlog.py show ID or next, rather than list and tree over the whole backlog instead, so the repeats detector does not report it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "intake",
+        "--status",
+        "4659f8fc0afc"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-mwtm7r7b"
+  ],
+  "links": [
+    "fingerprint 4659f8fc0afc",
+    "detector repeats"
+  ],
+  "notes": "601 calls of tools.backlog in 2026-W41; the threshold is 300 a week (bl_intake.REPEAT_THRESHOLD) Plan: the breakdown reads the 2026-W41 call.tool rows (which sessions and subcommands drove the calls; sprint orchestration runs many) and either adds the instead-command to bl_intake.INSTEAD and the skill that drove the calls, or records the reason in kb/_self/token-efficiency.md; the code touches are added then."
+}
