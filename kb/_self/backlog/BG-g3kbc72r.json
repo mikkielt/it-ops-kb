@@ -2,7 +2,7 @@
   "id": "BG-g3kbc72r",
   "kind": "bug",
   "title": "A pinned passage clipped at the print width hides the anchor phrase of its tested question",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sz5fbvqn",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Found by the review of ST-dvf3xf52: row SS2-004 of the skills' sets was left out of lookup_eval.csv because its pinned passage (backlog.md Escalation line, one sentence over the clip) prints without the phrase. The repro reads stdout only; the tool exits 0 on a pack, so a crash would show as a missing phrase too."
+  "notes": "Found by the review of ST-dvf3xf52: row SS2-004 of the skills' sets was left out of lookup_eval.csv because its pinned passage (backlog.md Escalation line, one sentence over the clip) prints without the phrase. The repro reads stdout only; the tool exits 0 on a pack, so a crash would show as a missing phrase too.",
+  "claimed_by": "worker sonnet BG-g3kbc72r"
 }
