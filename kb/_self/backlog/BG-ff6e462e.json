@@ -2,7 +2,7 @@
   "id": "BG-ff6e462e",
   "kind": "bug",
   "title": "usage.md says the kb's own headless runs load project hooks with --setting-sources project,local, but they also pass disableAllHooks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mlemdqbn",
   "priority": "P2",
   "rank": 0,
@@ -18,5 +18,18 @@
   "touches": [
     "kb/_self/usage.md"
   ],
-  "claimed_by": "worker-usage"
+  "evidence": {
+    "commit": "a16278ada034e9abc7b24e823450692ab2511ac4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import kbcommon; hooks_off = \"disableAllHooks\" in \" \".join(kbcommon.NO_HOOKS); text = open(\"kb/_self/usage.md\").read(); para = [l for l in text.splitlines() if \"kb's own headless runs pass\" in l]; ok = bool(para) and (not hooks_off or any((\"disableAllHooks\" in l or \"NO_HOOKS\" in l or \"no hook\" in l) for l in para)); print(ok); sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
