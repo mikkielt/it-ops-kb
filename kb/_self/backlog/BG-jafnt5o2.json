@@ -2,7 +2,7 @@
   "id": "BG-jafnt5o2",
   "kind": "bug",
   "title": "learn records a no-fix eval finding that was closed with --tried as fixed-since with its tried day, and querylog.py check rejects it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sz5fbvqn",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker sonnet BG-jafnt5o2"
+  "evidence": {
+    "commit": "7fb85c22317895ea8ac02a2b61a3066ec9cbd46a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import ql_learn, ql_store; prev = dict(id=\"F-0123456789ab\", kind=\"eval\", state=\"no-fix\", stage=\"miss\", entry=\"e1\", tried=\"2026-10-01\"); rec = dict(ql_learn._key(prev), state=\"fixed-since\", observed=dict()); probs = ql_store.record_problems(rec, \"w\", set([\"e1\"]), None); print(probs); sys.exit(1 if any(\"tried\" in x for x in probs) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
