@@ -1,0 +1,23 @@
+{
+  "id": "BG-2hqr7dg3",
+  "kind": "bug",
+  "title": "drop of an item outside a sprint deletes its descendants but leaves another item's depends_on naming them",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py drop of an item in no sprint either refuses while a remaining item's depends_on names one of the descendants it would delete (as it refuses a dependency on the item itself), or removes those ids from depends_on as BG-3aqoagow does for relates_to and gate do, so check never reports depends_on names an item that does not exist after a drop that exited 0. Found by the SP-hyp6o7hl review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);W=lambda it:open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it));R=lambda *a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);C=[{'run':['python3','-c','pass']}];W({'id':'ST-aaaaaaaa','kind':'story','title':'Sa','status':'draft','priority':'P3','rank':0,'goal':'g','checks':C});W({'id':'TK-aaaaaaaa','kind':'task','title':'T','status':'done','parent':'ST-aaaaaaaa','priority':'P3','rank':0,'goal':'g','touches':['src/x'],'checks':C,'evidence':{'commit':'0'*40,'checks':[]}});W({'id':'ST-bbbbbbbb','kind':'story','title':'Sb','status':'draft','priority':'P3','rank':0,'goal':'g','checks':C,'depends_on':['TK-aaaaaaaa']});p=R('drop','ST-aaaaaaaa','--why','not needed');c=R('check');o=c.stdout+c.stderr;print(p.returncode,p.stdout+p.stderr,o);sys.exit(1 if p.returncode==0 and 'depends_on names TK-aaaaaaaa' in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}

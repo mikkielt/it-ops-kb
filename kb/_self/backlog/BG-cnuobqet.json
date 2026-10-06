@@ -1,0 +1,23 @@
+{
+  "id": "BG-cnuobqet",
+  "kind": "bug",
+  "title": "land stops at wait-merge with exit 1 when the fetch of the pushed code branch times out after a successful push",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.pushed_tip returns None, said once, when its fetch of code/ID times out (kg_lock.GitNetworkTimeout) as it does when the fetch fails, so a land whose push succeeded ends its first pass with the not done yet line and exit 0 rather than land stopped at step wait-merge (BG-bd547fvz covered only a failing fetch). Found by the SP-hyp6o7hl review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import concurrent.futures as cf,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bl_land,kg_lock;d=tempfile.mkdtemp();subprocess.run(['git','init','-q',d]);kg_lock.run_git_bounded=lambda args,cwd,step,**k:(_ for _ in ()).throw(kg_lock.GitNetworkTimeout('git fetch did not finish within 1 s at step '+step));f=cf.ThreadPoolExecutor(1).submit(bl_land.pushed_tip,d,'origin','code/BG-aaaaaaaa');e=f.exception();print('raised' if e else 'returned',e or f.result());sys.exit(1 if e else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "BG-fyr5ncj5",
+  "kind": "bug",
+  "title": "selectors ignores done items, so a change that deletes the tests a done item of the active sprint checks is not told before the review",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py selectors also counts the tests.py -k selectors of the done items of an active sprint and names each that collects no test (a NONE or error line naming the item), so a change that deletes or renames the tests those checks select is told before the sprint review reruns the done checks: ST-px3y26ti's test cut deleted test files while ten done items of SP-hyp6o7hl still checked them with tests.py -k, selectors reported checks=0 and the review's rerun exited 5 for each. Found by the SP-hyp6o7hl review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);W=lambda it:open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it));G=lambda:[{'id':'start','kind':'blocking','question':'Q?','options':['approve'],'recommendation':'approve','answer':'approve','by':'operator'}];K=[{'run':['python3','_tools/tests.py','-k','nosuchtest_xyz']}];W({'id':'SP-aaaaaaaa','kind':'sprint','title':'A','status':'active','goal':'g','gates':G()});W({'id':'ST-aaaaaaaa','kind':'story','title':'S','status':'done','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'goal':'g','checks':K,'touches':['_tools/test_x.py'],'evidence':{'commit':'0'*40,'checks':[]}});p=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selectors'],capture_output=True,text=True);o=p.stdout+p.stderr;print(p.returncode,o);sys.exit(1 if 'ST-aaaaaaaa' not in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
