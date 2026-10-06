@@ -292,6 +292,11 @@ def cmd_answer(bl, a):
     return 0
 
 
+def gone_touch_prefix(bl, iid):
+    """How a `stale_touches` finding about the item's own touches begins."""
+    return f"{bl.label(iid)}: touches names "
+
+
 def changed_item(bl, iid, edit):
     """Apply `edit` to a copy of the item and write it when the copy differs and validates as `check` does: no error
     that was not there before (this item's, or another's that a dependency cycle or a review story's sprint would
@@ -300,9 +305,11 @@ def changed_item(bl, iid, edit):
     return changed_items(bl, {iid: edit})
 
 
-def changed_items(bl, edits):
+def changed_items(bl, edits, reveal=()):
     """`changed_item` for several items at once ({id: edit}): the copies are validated together, so either every
-    changed item is written or none is. Returns True when it wrote any file."""
+    changed item is written or none is. Returns True when it wrote any file. `reveal` names items whose own
+    gone-path touches (`stale_touches`) may appear new: an item the edit opens again, which `check` did not flag for
+    them while it was done, so the edit reveals them rather than adds them (`reopen`)."""
     olds = {i: bl.items[i] for i in edits}
     news = {}
     for i, edit in edits.items():
@@ -316,7 +323,8 @@ def changed_items(bl, edits):
     for i, n in news.items():
         bl.items[i], bl.raw[i] = n, canonical(n)
     try:
-        fresh = [x for x in validate(bl) + stale_touches(bl) if x not in before]
+        own = tuple(gone_touch_prefix(bl, i) for i in reveal)
+        fresh = [x for x in validate(bl) + [s for s in stale_touches(bl) if not s.startswith(own)] if x not in before]
     finally:
         for i in news:
             bl.items[i], bl.raw[i] = olds[i], raws[i]
@@ -544,8 +552,12 @@ def cmd_reopen(bl, a):
         new.pop("evidence", None)
         new.pop("claimed_by", None)
 
-    changed_item(bl, iid, edit)
+    # a done item's gone touches are no finding while it is done: reopening reveals them, and set --touch repoints them
+    changed_items(bl, {iid: edit}, reveal=(iid,))
     say(f"reopened {label}: status {state}, evidence and claim cleared. Why: {a.why.strip()}")
+    gone = [s for s in stale_touches(bl) if s.startswith(gone_touch_prefix(bl, iid))]
+    if gone:
+        say("  " + "\n  ".join(gone) + f"\n  repoint them: backlog.py set {iid} --touch PATH ...")
     return 0
 
 
