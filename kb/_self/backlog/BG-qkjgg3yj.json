@@ -2,7 +2,8 @@
   "id": "BG-qkjgg3yj",
   "kind": "bug",
   "title": "The headless delegation sentences state a .claude/ write refusal that depends on the permission mode as always true",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-mlemdqbn",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -23,5 +24,8 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-bnvqwxiw"
   ]
 }

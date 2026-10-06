@@ -2,7 +2,8 @@
   "id": "BG-maqf3lxh",
   "kind": "bug",
   "title": "A delegated worker in a worktree of an item the orchestrator claimed opens no work window, so its prompts reach no item",
-  "status": "draft",
+  "status": "dropped",
+  "sprint": "SP-mlemdqbn",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -20,5 +21,6 @@
     "kb/_self/code.md",
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
-  ]
+  ],
+  "notes": "Dropped: carried by ST-4ws6suk5 and its task TK-nwxefymo: the operator chose the branch mechanism (gate mechanism on ST-4ws6suk5), and this bug's repro is that story's and task's check"
 }

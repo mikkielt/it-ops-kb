@@ -1,0 +1,29 @@
+{
+  "id": "TK-nwxefymo",
+  "kind": "task",
+  "title": "The capture hook opens a work window from the session's work/<id> branch",
+  "status": "todo",
+  "parent": "ST-4ws6suk5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ql_capture writes a work row for the item of the work/<id> branch checked out at a session's directory on its first prompt (work_branch_item), ql_capture.usage_targets and ql_distill.work_windows treat it as an open window until that item's done or release, so backlog.py cost counts a headless worker's prompts on the item the orchestrator claimed; kb/_self/usage.md and kb/_self/querylog.md (work rows, windows) and kb/_self/code.md where it names these functions say so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,shutil,subprocess as sp,sys,tempfile\nfrom pathlib import Path\nS=Path.cwd();t=Path(tempfile.mkdtemp());c=1\ntry:\n    g=lambda *a,cwd:sp.run(['git','-c','user.name=t','-c','user.email=t@t',*a],cwd=cwd,capture_output=True,check=True)\n    m,w=t/'it-ops-kb',t/'it-ops-kb-worker2';m.mkdir();g('init','-q',cwd=m)\n    shutil.copytree(S/'_tools',m/'_tools',ignore=shutil.ignore_patterns('__pycache__','fixtures'));g('add','-A',cwd=m);g('commit','-qm','i',cwd=m)\n    g('worktree','add','-q','-b','work/ST-abcdefgh',str(w),cwd=m)\n    i='ST-abcdefgh';u=dict(input_tokens=1,cache_creation_input_tokens=2,cache_read_input_tokens=3,output_tokens=4)\n    (t/'tr').write_text(chr(10).join(json.dumps(r) for r in [dict(type='user',promptId='p1',message=dict(role='user',content='x')),dict(type='assistant',requestId='r1',message=dict(model='claude-sonnet-5-5',usage=u,content=[])),dict(type='user',promptId='p2',message=dict(role='user',content='y'))])+chr(10))\n    e=dict(os.environ,CLAUDE_PROJECT_DIR=str(w));e.pop('CLAUDE_PLUGIN_DATA',None);e.pop('CLAUDE_PLUGIN_ROOT',None)\n    def h(**k):sp.run([sys.executable,str(w/'_tools'/'querylog.py'),'capture'],input=json.dumps(dict(dict(session_id='s1',cwd=str(w),transcript_path=str(t/'tr')),**k)),text=True,cwd=w,env=e,capture_output=True)\n    h(hook_event_name='UserPromptSubmit',prompt_id='p1',prompt='x')\n    h(hook_event_name='UserPromptSubmit',prompt_id='p2',prompt='y')\n    sys.path.insert(0,str(m/'_tools'));import bl_cost\n    L=bl_cost.open_lines(str(m))[0];print('work lines for',i,':',[l for l in L if l.get('item')==i]);c=0 if any(l.get('item')==i for l in L) else 1\nexcept Exception as x:print('check error',type(x).__name__,str(x)[:150])\nfinally:shutil.rmtree(t,ignore_errors=True)\nsys.exit(c)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "kb/_self/code.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "BG-ff6e462e"
+  ]
+}

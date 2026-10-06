@@ -2,7 +2,8 @@
   "id": "BG-bnvqwxiw",
   "kind": "bug",
   "title": "The headless delegation sentences do not say where staging copies of .claude/ files go",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-mlemdqbn",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -23,6 +24,9 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-hu56lf65"
   ],
   "relates_to": [
     "BG-hu56lf65",
