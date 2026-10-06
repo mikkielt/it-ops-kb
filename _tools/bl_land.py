@@ -320,7 +320,7 @@ def ops_no_work_rows(root, iid):
         if not spools:
             return False
         ids = {iid, *Backlog(root).descendants(iid)}
-        if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in ql_capture.WORK_ACTIONS
+        if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in (*ql_capture.WORK_ACTIONS, *ql_capture.OPEN_ACTIONS)
                for d in spools for p in sorted(d.glob("*.jsonl")) for r in ql_distill.spool_rows(p)[0]):
             return False
         return not bl_cost.cost_lines(root, ids)[0]
