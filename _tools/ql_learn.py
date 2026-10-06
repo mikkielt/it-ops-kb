@@ -6,7 +6,7 @@ a miss whose pack on HEAD is none with an article in the lead that holds every w
 findings file holds the records that change a finding's state (none: no file). A weak or none lookup in the kb's own
 rule docs (an entry with `root` _self) is a `rules` finding of its own, never one of those.
 """
-import csv, re
+import csv, os, re
 from pathlib import Path
 
 from ql_base import HOME, places
@@ -169,7 +169,55 @@ def default_rules_pack(question):
             "known": any(" ".join((r.get("question") or "").lower().split()) == asked for r in kbfacts.self_eval_rows())}
 
 
-def rules_finding(e, now):
+PAIR_SHARED = 4  # characters a missing word and the line's word share at both ends together, at least, for a word pair
+
+
+def pair_word(word, line, question):
+    """The word of `line` that stands for the key word `word` no passage holds, else None: of the line's words not in
+    the question, the one sharing the most characters with it at the start and the end together (`unsaved`,
+    `uncommitted`: `un` and `ed`), at least PAIR_SHARED and with no other word as close."""
+    import kbfacts
+    asked = {w.lower() for w in kbfacts.WORD.findall(question)}
+    best = {}
+    for w in kbfacts.WORD.findall(line):
+        w = w.lower()
+        if w in asked or w in kbfacts.STOP or len(w) < 3 or w.isdigit() or w == word:
+            continue
+        lead = len(os.path.commonprefix([w, word]))
+        tail = len(os.path.commonprefix([w[::-1], word[::-1]]))
+        best[w] = min(lead + tail, len(w), len(word))
+    top = sorted(best.values(), reverse=True)
+    if not top or top[0] < PAIR_SHARED or top[1:2] == top[:1]:
+        return None
+    return next(w for w, n in best.items() if n == top[0])
+
+
+def default_rule_lines(refs):
+    """The text of each `kb/_self/<doc>.md:<line>` reference that is a line of a rule doc."""
+    import kbfacts
+    out = []
+    for ref in refs:
+        path, _, n = ref.rpartition(":")
+        lines = (kbfacts.read(path) or "").splitlines() if path in kbfacts.self_docs() else []
+        if n.isdigit() and 0 < int(n) <= len(lines):
+            out.append(lines[int(n) - 1])
+    return out
+
+
+def rules_pair(e, rule_lines=None):
+    """[missing word, the answering line's word] of a rules miss with `key_missing` words and a quoted line, else
+    None: the first missing word that has a `pair_word`."""
+    lines = (rule_lines or default_rule_lines)(e.get("answer_lines") or [])
+    for word in e.get("key_missing") or []:
+        word = str(word).lower()
+        for line in lines:
+            w = pair_word(word, line, e["question"])
+            if w:
+                return [word, w]
+    return None
+
+
+def rules_finding(e, now, rule_lines=None):
     """The `rules` finding of one missed rules lookup: `fixed-since` when the rule docs answer it now (the pack is
     `good` after a weak or none one) or the eval file holds the question; else `open`. It carries the question, the
     verdict, the `answer_lines` the reader quoted and the `key_missing` words, when the entry has them, and stays at
@@ -181,6 +229,9 @@ def rules_finding(e, now):
     for key in ("answer_lines", "key_missing"):
         if e.get(key):
             obs[key] = list(e[key])
+    pair = rules_pair(e, rule_lines)
+    if pair:
+        obs["pair"] = pair
     return {"id": finding_id("rules", e["id"]), "kind": "rules", "state": "fixed-since" if fixed else "open",
             "stage": "miss", "entry": e["id"], "observed": obs}
 

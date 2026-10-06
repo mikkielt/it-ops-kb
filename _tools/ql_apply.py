@@ -61,6 +61,11 @@ class Gate:
         import kbcommon
         return Path(kbcommon.SELF) / kbcommon.DATA_DIR / "lookup_eval.csv"
 
+    def rules_aliases(self):
+        """The `_self` aliases file, where a rules finding's word pair goes."""
+        import kbfacts
+        return Path(kbfacts.SELF_ALIASES)
+
     def rule_line(self, ref):
         """(the doc's name under kb/_self, the text of the line) of a `kb/_self/<doc>.md:<line>` reference, or None."""
         import kbfacts
@@ -355,12 +360,25 @@ def anchor_phrases(line, counts):
     return sorted(found, key=found.get)[:ANCHOR_CANDIDATES]
 
 
+def rules_alias_rows(f, gate):
+    """The aliases.csv rows of a rules finding's word pair (the missing word to the answering line's word, and the
+    word to itself when no alias file holds it), or [] when the finding has no pair or an alias file holds the term."""
+    pair = (f.get("observed") or {}).get("pair") or []
+    if len(pair) != 2 or not all(isinstance(w, str) and w.strip() for w in pair):
+        return []
+    term, canonical = (" ".join(w.lower().split()) for w in pair)
+    existing = gate.alias_terms()
+    if term in existing or existing.get(canonical, canonical) != canonical:
+        return []
+    return [[term, canonical]] + ([] if canonical in existing else [[canonical, canonical]])
+
+
 def rules_one(f, entry, gate, base):
     """(the record of one open `rules` finding or None, whether it needs a human): its eval row, anchored on the line
     the reader quoted, goes into kb/_self/_retrieval/lookup_eval.csv and stays only when the gates hold (`try_fix`: the
     whole `rag.py eval`, the pack size, off-kb `good`), `applied`; else the finding is `no-fix` with the failed gates in
-    `observed`. A finding with no answer line is left open and reported (a word pair for aliases.csv is a person's
-    to pick); a question the file already holds gets nothing (learn records it)."""
+    `observed`. With a `pair` on the finding (learn's), its aliases.csv rows go in with the eval row and stay only with it;
+    a finding with no answer line is left open and reported (a word pair for aliases.csv is then a person's to pick); a question the file already holds gets nothing (learn records it)."""
     import kbid
     refs = (f.get("observed") or {}).get("answer_lines") or []
     question = entry["question"]
@@ -388,10 +406,14 @@ def rules_one(f, entry, gate, base):
         if row is None:
             problems.append("no anchor phrase in the quoted lines")
     if row is not None:
-        ok, why = try_fix({}, row, {"eval": path}, gate, base)
-        if ok:
-            return {**without_observed(f), "state": "applied", "observed": {"eval": eid, "line": refs[0]}}, False
-        problems += why
+        pair = rules_alias_rows(f, gate)
+        for fix in ([{"aliases": pair}] if pair else []) + [{}]:
+            ok, why = try_fix(fix, row, {"eval": path, "aliases": gate.rules_aliases()}, gate, base)
+            if ok:
+                seen = {"eval": eid, "line": refs[0]}
+                return {**without_observed(f), "state": "applied",
+                        "observed": {**seen, "alias": fix["aliases"][0]} if fix else seen}, False
+            problems += why
     return {**without_observed(f), "state": "no-fix", "observed": {"gate": sorted(set(problems))[:6]}}, False
 
 
