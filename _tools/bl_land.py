@@ -1631,7 +1631,9 @@ def cmd_merge(bl, a):
     --auto-merge=false --yes`): the one way an agent merges, since .claude/settings.json allows no `glab mr merge`.
     Another item's branch and another project are refused (exit 2). Its state is read first (`glab mr view -F json`):
     one auto-merge already merged is reported merged, exit 0, so land runs next; a closed one is exit 1; only an open
-    one is merged (glab refuses a merged one before any call)."""
+    one is merged (glab refuses a merged one before any call). A branch with more than one request, which `mr view`
+    refuses, is read from `glab mr list --source-branch BRANCH --all`, newest first: an open one is merged by its
+    number, else a merged one is reported merged, else exit 1."""
     branch, project = merge_target(bl, a.id)
     # its state first: auto-merge may have merged it seconds before, and glab then refuses with no open request
     vcode, vout, _ = run(["glab", "mr", "view", branch, "-F", "json", "-R", project], cwd=bl.root)
@@ -1640,13 +1642,31 @@ def cmd_merge(bl, a):
     except ValueError:
         view = {}
     state = view.get("state") if isinstance(view, dict) else None
+    target = branch
+    if state is None:
+        # several requests on the branch: mr view refuses it, so read the list
+        lcode, lout, _ = run(["glab", "mr", "list", "--source-branch", branch, "--all", "-F", "json", "-R", project],
+                             cwd=bl.root)
+        try:
+            listed = json.loads(lout) if not lcode else []
+        except ValueError:
+            listed = []
+        listed = sorted((m for m in listed if isinstance(m, dict) and m.get("source_branch", branch) == branch),
+                        key=lambda m: m.get("iid") or 0, reverse=True)
+        for want in ("opened", "merged", "closed"):
+            found = next((m for m in listed if m.get("state") == want), None)
+            if found:
+                view, state = found, want
+                if want == "opened":
+                    target = str(found["iid"])
+                break
     if state == "merged":
         say(f"merge {branch} ({project}): already merged" + (f" at {view['merged_at']}" if view.get("merged_at") else ""))
         return 0
     if state == "closed":
         say(f"merge {branch} ({project}): the merge request is closed, not merged")
         return 1
-    code, out, err = run(["glab", "mr", "merge", branch, "--auto-merge=false", "--yes", "-R", project], cwd=bl.root)
+    code, out, err = run(["glab", "mr", "merge", target, "--auto-merge=false", "--yes", "-R", project], cwd=bl.root)
     say(f"merge {branch} ({project}): {'merged' if code == 0 else 'failed'}")
     text = (out or err or "").strip()
     if text:
