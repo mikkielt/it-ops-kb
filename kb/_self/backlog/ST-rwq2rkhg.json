@@ -14,6 +14,13 @@
         "_tools/querylog.py",
         "check"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; r=subprocess.run(['python3','_tools/selfdoc.py','section','usage','In the query log'],capture_output=True,text=True,encoding='utf-8'); sys.exit(r.returncode or 0 if '--setting-sources project,local' in r.stdout else 1)"
+      ]
     }
   ],
   "touches": [
