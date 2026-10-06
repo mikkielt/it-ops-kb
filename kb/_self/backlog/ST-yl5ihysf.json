@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "close_summary_names_goal_clauses"
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bl_land\nclass B:\n    items = {\n        'SP-1': {'kind': 'sprint', 'goal': \"story b exists and is written; the bug's file c exists, and the release notes carry every flag\"},\n        'ST-1': {'kind': 'story', 'status': 'done', 'title': 'Story', 'goal': 'story b exists and is written'},\n        'BG-1': {'kind': 'bug', 'status': 'done', 'title': 'Bug', 'goal': \"the bug's file c exists\"},\n        'ST-9': {'kind': 'story', 'status': 'open', 'title': 'Release notes', 'goal': 'the release notes carry every flag'},\n    }\n    def label(self, i):\n        return i + ' [' + self.items[i]['title'] + ']'\nout = bl_land.goal_clause_lines(B(), 'SP-1', ['ST-1', 'BG-1'])\nwant = ['goal clauses:',\n    '  1. story b exists and is written: ST-1 [Story]',\n    \"  2. the bug's file c exists: BG-1 [Bug]\",\n    '  3. the release notes carry every flag: unmet, carried by ST-9 [Release notes]']\nassert out == want, out\n"
       ]
     }
   ],
@@ -28,17 +27,16 @@
     "ST-24gbw2hw"
   ],
   "evidence": {
-    "commit": "d030053ab094c1e41a5e85a89db5b0855ab672bd",
+    "commit": "6b1617be95f75ec29122d60d4cd10c47688be9ba",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "close_summary_names_goal_clauses"
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport bl_land\nclass B:\n    items = {\n        'SP-1': {'kind': 'sprint', 'goal': \"story b exists and is written; the bug's file c exists, and the release notes carry every flag\"},\n        'ST-1': {'kind': 'story', 'status': 'done', 'title': 'Story', 'goal': 'story b exists and is written'},\n        'BG-1': {'kind': 'bug', 'status': 'done', 'title': 'Bug', 'goal': \"the bug's file c exists\"},\n        'ST-9': {'kind': 'story', 'status': 'open', 'title': 'Release notes', 'goal': 'the release notes carry every flag'},\n    }\n    def label(self, i):\n        return i + ' [' + self.items[i]['title'] + ']'\nout = bl_land.goal_clause_lines(B(), 'SP-1', ['ST-1', 'BG-1'])\nwant = ['goal clauses:',\n    '  1. story b exists and is written: ST-1 [Story]',\n    \"  2. the bug's file c exists: BG-1 [Bug]\",\n    '  3. the release notes carry every flag: unmet, carried by ST-9 [Release notes]']\nassert out == want, out\n"
         ],
         "exit": 0,
-        "sha256": "8ba675cfe31cb1f3"
+        "sha256": "e3b0c44298fc1c14"
       }
     ]
   }
