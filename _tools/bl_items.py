@@ -679,10 +679,15 @@ def cmd_drop(bl, a):
     users = [i for i, x in bl.items.items() if iid in x.get("depends_on", []) and x.get("status") != "dropped"]
     if users:
         raise Refused(f"{bl.label(iid)} is a dependency of " + ", ".join(bl.label(u) for u in users[:5]))
+    gone = {iid} if bl.sprint_of(iid) else {iid, *bl.descendants(iid)}  # a drop outside a sprint deletes the descendants too
+    inner = gone - {iid}
+    users = [i for i, x in bl.items.items() if i not in gone and inner & set(x.get("depends_on", [])) and x.get("status") != "dropped"]
+    if users:
+        raise Refused(f"{bl.label(iid)} would delete items that " + ", ".join(bl.label(u) for u in users[:5]) + " depend on")
     # a dropped item that depended on this one keeps no link to it: check reports a dependency on a dropped item
     for i, x in bl.items.items():
-        if x.get("status") == "dropped" and iid in x.get("depends_on", []):
-            left = [d for d in x["depends_on"] if d != iid]
+        if x.get("status") == "dropped" and gone & set(x.get("depends_on", [])):
+            left = [d for d in x["depends_on"] if d not in gone]
             if left:
                 x["depends_on"] = left
             else:
@@ -690,7 +695,6 @@ def cmd_drop(bl, a):
             bl.save(x)
     if not bl.sprint_of(iid):
         label = bl.label(iid)
-        gone = {iid, *bl.descendants(iid)}
         for i, x in sorted(bl.items.items()):  # no remaining item keeps a link to a deleted one (BG-3aqoagow)
             if i in gone or not set(x.get("relates_to") or []) & gone:
                 continue
