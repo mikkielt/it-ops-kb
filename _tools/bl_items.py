@@ -599,12 +599,13 @@ def cmd_reopen(bl, a):
         new.pop("evidence", None)
         new.pop("claimed_by", None)
 
-    # a done item's gone touches are no finding while it is done: reopening reveals them, and set --touch repoints them
+    # a done item's gone touches are no finding while it is done: reopening reveals them, and set --check repoints the checks that name them
     changed_items(bl, {iid: edit}, reveal=(iid,))
     say(f"reopened {label}: status {state}, evidence and claim cleared. Why: {a.why.strip()}")
     gone = [s for s in stale_touches(bl) if s.startswith(gone_touch_prefix(bl, iid))]
     if gone:
-        say("  " + "\n  ".join(gone) + f"\n  repoint them: backlog.py set {iid} --touch PATH ...")
+        say("  " + "\n  ".join(gone) + f"\n  keep a touch the item's own work commits changed (done needs it in touches) and repoint only its checks: "
+            f"backlog.py set {iid} --check CMD\n  (only a touch none of its work commits changed is dropped, with set --touch)")
     return 0
 
 
