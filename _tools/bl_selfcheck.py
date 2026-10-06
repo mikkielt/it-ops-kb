@@ -81,7 +81,6 @@ SKILL_COMMANDS = (
     "git rebase origin/main",
     "git add file",
     "git commit -m message",
-    "git cherry origin/main branch",
     "git worktree add path -b branch origin/main",
     "git -C clone fetch origin",
     "glab mr view code/ST-00000000 -F json",
