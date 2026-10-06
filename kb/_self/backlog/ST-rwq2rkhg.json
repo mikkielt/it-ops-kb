@@ -1,0 +1,25 @@
+{
+  "id": "ST-rwq2rkhg",
+  "kind": "story",
+  "title": "Headless delegated claude -p sessions leave work rows backlog.py cost reads",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "An item worked by a delegated headless claude -p session (the orchestrator's small sonnet or haiku sessions) has work rows that distill delivers and backlog.py cost --rework reads, so a sprint worked that way does not report 0 runs and 0 prompts. Answers the SP-njilrify retrospective: cost --rework SP-njilrify printed zeros at review and at close although 28 Sonnet sessions did the work, whose cost exists only by hand in kb/_self/reports/2026-10-06-self-rules-retrieval.md; the same zero figure closed SP-fvztfmtm.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/usage.md"
+  ],
+  "relates_to": [
+    "ST-spywrqpp"
+  ],
+  "notes": "Premise (2026-10-06): python3 _tools/backlog.py cost ST-reit3qmw prints 0 run(s), 0 prompt(s), although headless sessions did its work. Cause not yet found: candidates are the worktree spool place of ST-spywrqpp (Work done in a worktree session reaches backlog.py cost as work rows), a SessionEnd that claude -p skips (kb/_self/usage.md, What gets no usage) or hooks off in the delegating command; the breakdown finds it and names the code touches. querylog.py check passes before the work: it pins the store's shape; the breakdown adds a check that fails until the rows arrive."
+}
