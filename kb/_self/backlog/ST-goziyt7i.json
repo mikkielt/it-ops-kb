@@ -2,7 +2,7 @@
   "id": "ST-goziyt7i",
   "kind": "story",
   "title": "Research sprint goal: Headless workers measured and landed cleanly",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mlemdqbn",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "worker-research"
 }
