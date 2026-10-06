@@ -2,7 +2,7 @@
   "id": "ST-mwtm7r7b",
   "kind": "story",
   "title": "Calls of grep repeat 462 times in 2026-W41",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,5 @@
     "fingerprint 0d456aeb8801",
     "detector repeats"
   ],
-  "notes": "462 calls of grep in 2026-W41; the threshold is 300 a week (bl_intake.REPEAT_THRESHOLD) Plan: the breakdown reads the 2026-W41 call.tool rows (which sessions and patterns drove the calls) and either points the skill that drove them at rag.py search --index or backlog.py find, or records the reason in kb/_self/token-efficiency.md; the code touches are added then."
+  "notes": "462 calls of grep in 2026-W41; the threshold is 300 a week (bl_intake.REPEAT_THRESHOLD) Plan: the breakdown reads the 2026-W41 call.tool rows (which sessions and patterns drove the calls) and either points the skill that drove them at rag.py search --index or backlog.py find, or records the reason in kb/_self/token-efficiency.md; the code touches are added then. Dropped: its check reads the 2026-W41 repeats fingerprint, whose committed call count only grows past the threshold while the week runs, so no work can make it pass; operator's call 2026-10-06, detector bug filed"
 }
