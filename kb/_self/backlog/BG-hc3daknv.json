@@ -2,7 +2,7 @@
   "id": "BG-hc3daknv",
   "kind": "bug",
   "title": "set --repro cannot repoint a reopened bug whose fix has landed: it refuses every repro that passes now",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-hc3dak"
 }
