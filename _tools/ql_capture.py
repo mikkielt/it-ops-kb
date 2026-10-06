@@ -529,7 +529,22 @@ def refused_done(event, command):
     if not m or int(m.group(1)) != WORK_REFUSED_EXIT:
         return None
     work = work_action(command)
-    return work[0] if work and work[1] == "done" else None
+    if not work or work[1] != "done" or only_unlanded(str(event.get("error") or "")):
+        return None
+    return work[0]
+
+
+def only_unlanded(error):
+    """True when a refused `done`'s output names one problem and it is the code-lane order (bl_land.cmd_done's
+    `unlanded-code`: the item's code commits are not yet on the integration main, the `code/<id>` request still to
+    merge): that is the orchestrator's landing still to do, no rework. The text is read here and never stored."""
+    lines = error.split("\n")
+    at = next((n for n, ln in enumerate(lines) if ln.rstrip().endswith(" is not done:")), None)
+    if at is None:
+        return False
+    problems = [ln.strip() for ln in lines[at + 1:] if ln.startswith("  ") and ln.strip()]
+    return len(problems) == 1 and ("are not on " in problems[0] and "/main: merge the merge request" in problems[0]
+                                   or problems[0].startswith("code commits of the item, and refs/remotes/"))
 
 
 def fetch_outcome(tool, ok, event, host):
