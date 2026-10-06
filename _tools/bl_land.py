@@ -1110,10 +1110,16 @@ def land_once(bl, a):
 def pushed_tip(root, remote, code_branch):
     """[the tip of CODE_BRANCH on REMOTE] as sync pushed it, fetched: sync may rebase the range onto a newer main
     before it pushes, so the commits --wait-merge waits for are the pushed ones, not the ones land rebased. None when
-    the fetch fails (git dies with exit 128 on a ref the remote lacks) or leaves no ref, said once: a stale or
-    missing tip is never waited for, and the first pass still ends as not done yet (BG-bd547fvz)."""
+    the fetch fails (git dies with exit 128 on a ref the remote lacks), times out or leaves no ref, said once: a stale
+    or missing tip is never waited for, and the first pass still ends as not done yet (BG-bd547fvz)."""
+    import kg_lock
     tracking = f"refs/remotes/{remote}/{code_branch}"
-    p = land_git_network(root, "wait-merge", "fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}")
+    try:
+        p = kg_lock.run_git_bounded(("fetch", "--quiet", remote, f"+refs/heads/{code_branch}:{tracking}"), root,
+                                    "wait-merge")
+    except kg_lock.GitNetworkTimeout as e:
+        say(f"land: could not fetch {code_branch} from {remote} after the push ({e}): no tip to wait for")
+        return None
     if p.returncode:
         say(f"land: could not fetch {code_branch} from {remote} after the push "
             f"({(p.stderr or p.stdout).strip() or f'exit {p.returncode}'}): no tip to wait for")
