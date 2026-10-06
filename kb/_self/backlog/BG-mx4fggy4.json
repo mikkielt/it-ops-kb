@@ -1,0 +1,23 @@
+{
+  "id": "BG-mx4fggy4",
+  "kind": "bug",
+  "title": "start warns of a trigger that names two hosts as waiting on another host, though one of them is the host starting the sprint",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the review of SP-qzip6qar, item ST-qsppdmjv (start warns of an item that waits on a trigger or a host the sprint cannot reach): waiting_triggers in _tools/bl_plan.py names another host only when the trigger names no host that is the one starting the sprint (Windows or macOS started on macOS warns of no other host), and the item's check also asserts the warning's host wording, not only the story id and the word trigger.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import bl_plan; sys.platform='darwin'; bl = type('B', (), dict(items=dict(a=dict(trigger=dict(when='on Windows or macOS', fired=False), status='todo')), sprint_items=lambda self, sid: ['a']))(); r = bl_plan.waiting_triggers(bl, 'SP-x'); print(r); sys.exit(0 if r and r[0][2] is None else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "BG-ff6e462e",
+  "kind": "bug",
+  "title": "usage.md says the kb's own headless runs load project hooks with --setting-sources project,local, but they also pass disableAllHooks",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the review of SP-qzip6qar, item ST-rwq2rkhg (Headless delegated claude -p sessions leave work rows backlog.py cost reads): kb/_self/usage.md names kb_ask.py and ql_research.py as passing the flag that loads project hooks, and also says they run with the hooks off (kbcommon.NO_HOOKS, disableAllHooks), so a reader does not take them as sessions whose work is measured.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import kbcommon; hooks_off = \"disableAllHooks\" in \" \".join(kbcommon.NO_HOOKS); text = open(\"kb/_self/usage.md\").read(); para = [l for l in text.splitlines() if \"kb's own headless runs pass\" in l]; ok = bool(para) and (not hooks_off or any((\"disableAllHooks\" in l or \"NO_HOOKS\" in l or \"no hook\" in l) for l in para)); print(ok); sys.exit(0 if ok else 1)"
+    ]
+  },
+  "touches": [
+    "kb/_self/usage.md"
+  ]
+}

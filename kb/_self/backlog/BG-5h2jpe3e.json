@@ -1,0 +1,22 @@
+{
+  "id": "BG-5h2jpe3e",
+  "kind": "bug",
+  "title": "perfcheck names_successor accepts the retired-feature phrase beside the dropped test file itself",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Found in the review of SP-qzip6qar, item ST-l3ky22zo (The retired features' dropped test groups name where their live modules' calls went): names_successor in _tools/perfcheck.py accepts the live-module-calls-went-with phrase only beside a removed module, file or symbol that is not one of the dropped ids' own file or test, so a reason naming only the dropped test file is no successor.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile; sys.path.insert(0,'_tools'); import perfcheck; d=tempfile.mkdtemp(); r=perfcheck.names_successor('live-module calls went with test_gone.py', ['_tools/test_gone.py::test_a'], d, ''); print(r); sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/perfcheck.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ]
+}

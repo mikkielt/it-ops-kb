@@ -1,0 +1,22 @@
+{
+  "id": "BG-jxyfzf6d",
+  "kind": "bug",
+  "title": "backlog.md and tools.md say a --repro that passes now exits 1 on set, without the exception for a reopened bug",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the review of SP-qzip6qar, item BG-hc3daknv (set --repro cannot repoint a reopened bug whose fix has landed): the set refusal rule in kb/_self/backlog.md and the set row of kb/_self/tools.md say a --repro that passes now exits 1 and name the exception for a bug reopened after its fix landed, as the code and the reopen paragraph do.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys; bt=open('kb/_self/backlog.md').read(); tt=open('kb/_self/tools.md').read(); bm=re.search(r'a `--repro` that passes now[^)]*\\)', bt); tm=re.search(r'1 for a `--repro` that passes now[^|]*', tt); ok=bool(bm) and bool(tm) and 'reopen' in bm.group(0) and 'reopen' in tm.group(0); print(ok); sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of two doc sentences, so only their text can show it; the behaviour they describe is the subject of BG-hc3daknv",
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "BG-n54k5zud",
+  "kind": "bug",
+  "title": "selectors skips the done tasks and subtasks of an active sprint, and the repro of a bug",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the review of SP-qzip6qar, item BG-fyr5ncj5 (selectors ignores done items, so a change that deletes the tests a done item of the active sprint checks is not told before the review): backlog.py selectors counts the tests.py -k selectors of a done task or subtask whose story is in the active sprint (the sprint through bl.sprint_of, not the item's own sprint field) and of a bug's repro, as the sprint review reruns them.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);subprocess.run(['git','init','-q',d]);W=lambda it:open(os.path.join(b,it['id']+'.json'),'w').write(json.dumps(it));G=lambda:[{'id':'start','kind':'blocking','question':'Q?','options':['approve'],'recommendation':'approve','answer':'approve','by':'operator'}];K=lambda n:[{'run':['python3','_tools/tests.py','-k',n]}];E={'commit':'0'*40,'checks':[]};W({'id':'SP-aaaaaaaa','kind':'sprint','title':'A','status':'active','goal':'g','gates':G()});W({'id':'ST-aaaaaaaa','kind':'story','title':'S','status':'done','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'goal':'g','touches':['x'],'evidence':E});W({'id':'TK-aaaaaaaa','kind':'task','title':'T','status':'done','parent':'ST-aaaaaaaa','rank':0,'goal':'g','checks':K('nosuchtaskxyz'),'touches':['x'],'evidence':E});W({'id':'BG-aaaaaaaa','kind':'bug','title':'B','status':'done','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','_tools/tests.py','-k','nosuchbugxyz']},'touches':['x'],'evidence':E});p=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selectors'],capture_output=True,text=True);o=p.stdout+p.stderr;print(p.returncode,o);sys.exit(1 if ('TK-aaaaaaaa' not in o or 'BG-aaaaaaaa' not in o) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}
