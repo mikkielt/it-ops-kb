@@ -2,7 +2,7 @@
   "id": "BG-cnuobqet",
   "kind": "bug",
   "title": "land stops at wait-merge with exit 1 when the fetch of the pushed code branch times out after a successful push",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-cnuobq"
+  "evidence": {
+    "commit": "8bfd9c828ebae4e68ad4bcf9413d69b81bb0b55a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import concurrent.futures as cf,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bl_land,kg_lock;d=tempfile.mkdtemp();subprocess.run(['git','init','-q',d]);kg_lock.run_git_bounded=lambda args,cwd,step,**k:(_ for _ in ()).throw(kg_lock.GitNetworkTimeout('git fetch did not finish within 1 s at step '+step));f=cf.ThreadPoolExecutor(1).submit(bl_land.pushed_tip,d,'origin','code/BG-aaaaaaaa');e=f.exception();print('raised' if e else 'returned',e or f.result());sys.exit(1 if e else 0)"
+        ],
+        "exit": 0,
+        "sha256": "b1cb30439150aa45"
+      }
+    ]
+  }
 }
