@@ -431,7 +431,9 @@ def source_findings(entries, registry=None, routes=None, counts=None):
 
 
 def _key(rec):
-    return {k: v for k, v in rec.items() if k != "observed"}
+    """The finding fields a follow-up record carries: no `observed`, and no `tried` on an eval finding (the store
+    takes `tried` on a gap finding or a no-fix eval finding only, so a `fixed-since` eval record leaves it behind)."""
+    return {k: v for k, v in rec.items() if k != "observed" and not (k == "tried" and rec.get("kind") == "eval")}
 
 
 def later_stage(prev, rec):

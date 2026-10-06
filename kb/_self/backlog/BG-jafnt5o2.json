@@ -22,5 +22,20 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which fix: learn drops tried from the fixed-since record of a no-fix eval finding, or the store accepts tried on it? Reason for dropping: tried notes a still-open attempt, a passing question leaves it no reader, and the store keeps one narrow test (gap, or no-fix eval).",
+      "options": [
+        "learn drops tried",
+        "store accepts tried on a fixed-since eval record"
+      ],
+      "recommendation": "learn drops tried",
+      "class": "design",
+      "answer": "learn drops tried",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker sonnet BG-jafnt5o2"
 }
