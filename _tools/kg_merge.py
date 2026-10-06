@@ -1,10 +1,11 @@
 """The merge and ledger repair of kbgit.py (kb/_self/git.md): `kbgit.py fix` and `fmt`. Reads and writes through git and
 the working tree, resolves the _sources.csv, _fetch_state.csv, _anchors.csv and Markdown ledgers a merge left
 (conflict markers, duplicates, colliding ids and the citations of renumbered ones), the lint baseline and the pinned
-block of .gitattributes, then rebuilds each root's generated files. Standard library only; kbgit.py imports it and runs
-`run` for both commands; it imports no facade.
+block of .gitattributes, then rebuilds each root's generated files. Also `kbgit.py lost-definitions`: the definitions a
+resolved conflict in a Python file dropped (lost_definitions). Standard library only; kbgit.py imports it and runs `run`
+for fix and fmt and cmd_lost_definitions for lost-definitions; it imports no facade.
 """
-import csv, io, os, re, subprocess, sys
+import ast, csv, io, os, re, subprocess, sys
 from collections import Counter
 
 import kbcommon, kbid
@@ -683,6 +684,88 @@ def resolve_attrs(text, pinned):
     head = text[:i].rstrip("\n") + "\n" if text[:i].strip() else ""
     block = PIN_START + "\n" + "".join(f"{p} -text\n" for p in sorted(set(pinned))) + PIN_END
     return head + block + text[j + len(PIN_END):]
+
+
+# ---------------------------------------------------------------- a resolved conflict in a Python file
+
+DEF_NODES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+BLOCK_NODES = (ast.If, ast.Try, ast.With, ast.AsyncWith) + ((ast.TryStar,) if hasattr(ast, "TryStar") else ())
+
+
+def assigned_names(target):
+    """The plain names an assignment target binds (`X`, `A, B`, `[A, *B]`); an attribute or subscript binds none."""
+    if isinstance(target, ast.Name):
+        return [target.id]
+    if isinstance(target, ast.Starred):
+        return assigned_names(target.value)
+    if isinstance(target, (ast.Tuple, ast.List)):
+        return [n for t in target.elts for n in assigned_names(t)]
+    return []
+
+
+def body_definitions(body, prefix=""):
+    """The names a block of statements defines: functions, classes and assigned names, a class's own as `Class.name`
+    (nested classes too), and those inside an `if`, `try` or `with` at the same level."""
+    out = set()
+    for node in body:
+        if isinstance(node, DEF_NODES):
+            out.add(prefix + node.name)
+            if isinstance(node, ast.ClassDef):
+                out |= body_definitions(node.body, f"{prefix}{node.name}.")
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            for t in (node.targets if isinstance(node, ast.Assign) else [node.target]):
+                out.update(prefix + n for n in assigned_names(t))
+        elif isinstance(node, BLOCK_NODES):
+            for part in ("body", "orelse", "finalbody"):
+                out |= body_definitions(getattr(node, part, None) or [], prefix)
+            for h in getattr(node, "handlers", None) or []:
+                out |= body_definitions(h.body, prefix)
+    return out
+
+
+def definitions(text):
+    """The names Python source defines at module level and in its classes (body_definitions); SyntaxError when it does
+    not parse. Empty text (a side that has no such file) defines none."""
+    return body_definitions(ast.parse((text or "").lstrip("﻿")).body)
+
+
+def lost_definitions(base, ours, theirs, resolved):
+    """The sorted names ours or theirs added over base that the resolved text lacks: a top-level function, class or
+    assigned name, or a class's method or attribute as `Class.name`. Each argument is source text (None or "" for a side
+    without the file); SyntaxError when one does not parse."""
+    b = definitions(base)
+    return sorted(((definitions(ours) | definitions(theirs)) - b) - definitions(resolved))
+
+
+def cmd_lost_definitions(a):
+    """`kbgit.py lost-definitions FILE`: the stages of a conflicted Python file in the index (:1: base, :2: ours, :3:
+    theirs) against its resolved working-tree text. Prints `lost: NAME` for each definition a side added that the
+    resolution dropped and exits 1; a resolution that does not parse exits 1 too; 0 when none is lost; 2 when FILE is
+    unreadable or has no :2: or :3: stage (already added, or never in conflict)."""
+    path = os.path.abspath(a.file)
+    rel = os.path.relpath(path, kg_base.KB).replace(os.sep, "/")
+    sides = {n: git("cat-file", "blob", f":{n}:{rel}") for n in (1, 2, 3)}
+    if sides[2] is None and sides[3] is None:
+        print(f"ERROR {rel}: no conflict stages in the index (run it before `git add`, while the conflict is unresolved)")
+        return 2
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            resolved = f.read()
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"ERROR {rel}: cannot read the resolved file: {e}")
+        return 2
+    try:
+        lost = lost_definitions(sides[1], sides[2], sides[3], resolved)
+    except SyntaxError as e:
+        print(f"{rel}: a side or the resolution does not parse (line {e.lineno}: {e.msg}): fix the resolution")
+        return 1
+    for name in lost:
+        print(f"lost: {name}")
+    if lost:
+        print(f"{rel}: {len(lost)} definition(s) a side added are missing from the resolution: put them back")
+        return 1
+    print(f"{rel}: every definition either side added is kept")
+    return 0
 
 
 # ---------------------------------------------------------------- commands
