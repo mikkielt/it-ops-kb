@@ -50,7 +50,8 @@ def test_code_commit_goes_to_a_branch(scenario):
     c = clone(scenario)
     before = scenario.origin.rev("main")
     c.write("_tools/sync_e2e_probe.txt", "code\n")
-    c.commit("chore(tools): sync end-to-end probe", "_tools/sync_e2e_probe.txt")
+    # a code change needs a KB-Work or KB-Auto trailer (check-trailers); the scenario has no sprint to name
+    c.commit("chore(tools): sync end-to-end probe\n\nKB-Auto: querylog", "_tools/sync_e2e_probe.txt")
     head = c.rev("HEAD")
     r = sync(c)
     assert r.returncode == 0, r.stdout + r.stderr
