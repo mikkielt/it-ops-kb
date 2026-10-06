@@ -2,7 +2,7 @@
   "id": "ST-22jx7fyh",
   "kind": "story",
   "title": "A story whose goal names answer quality gets a held-out quality probe as its premise before the sprint starts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pbekfhaz",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise: the SP-njilrify history; ST-ulhmplqh's notes (git history) record the held-out run (rag.py eval --file of 20 held-out rule questions --root _self: 14 passed, verdict good on all 20) that raised the accuracy gate of ST-dvf3xf52 after work began. selfdoc.py check passes before the work: it pins that no heading reference goes dead when the skills change. Touches agents-rule paths (.claude/skills/): how the rule is enforced is an operator gate."
+  "notes": "Premise: the SP-njilrify history; ST-ulhmplqh's notes (git history) record the held-out run (rag.py eval --file of 20 held-out rule questions --root _self: 14 passed, verdict good on all 20) that raised the accuracy gate of ST-dvf3xf52 after work began. selfdoc.py check passes before the work: it pins that no heading reference goes dead when the skills change. Touches agents-rule paths (.claude/skills/): how the rule is enforced is an operator gate.",
+  "claimed_by": "worker-22jx7fyh"
 }
