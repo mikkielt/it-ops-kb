@@ -3,7 +3,8 @@
   "kind": "bug",
   "title": "The repeats detector files a finding for the running ISO week, whose intake --status check can never pass",
   "status": "draft",
-  "priority": "P2",
+  "sprint": "SP-vmxdxtru",
+  "priority": "P1",
   "rank": 0,
   "severity": "S3",
   "goal": "bl_intake.repeats_detector reports only ISO weeks that have ended, so the story it files is about a closed week's count, and the intake --status check it gives the story can pass once a later closed week stays at or under REPEAT_THRESHOLD (or the story's check reads a measure work can change); today the fingerprint is the running week, whose committed call count only grows, so ST-mwtm7r7b, ST-evlez5mw and ST-52x5bpab (2026-W41 grep, tools.backlog, python) were dropped from SP-qzip6qar as unpassable.",
@@ -19,5 +20,8 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-rbcr2tm6"
   ]
 }

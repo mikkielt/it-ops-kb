@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "apply's alias check for a rules finding's word pair reads every alias file but kb/_self's own, so a pair whose term kb/_self/_retrieval/aliases.csv holds gets a second row",
   "status": "draft",
+  "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

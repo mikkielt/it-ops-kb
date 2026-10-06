@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "rag.py eval prints its failing rows and totals, not every row",
   "status": "draft",
+  "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
   "goal": "python3 _tools/rag.py eval prints only the rows that fail and its totals line (questions= passed= ...) by default, and every row with a flag (such as --all); --json is unchanged, so an orchestrator or worker that runs the eval keeps 273 passing rows out of its context. _tools/test_live_kb.py still reads the totals. From the SP-pbekfhaz retrospective: the orchestrator ran rag.py eval --root _self twice, about 280 lines each, and that output stayed in an Opus context re-read on every later request (20.2M cache-read tokens for a docs-only sprint).",
@@ -22,5 +23,8 @@
     "kb/_self/code.md",
     "kb/_self/token-efficiency.md",
     "AGENTS.md"
+  ],
+  "depends_on": [
+    "ST-dsre52lb"
   ]
 }

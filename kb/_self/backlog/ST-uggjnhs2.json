@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "backlog check warns of a goal that names a kb path no touch covers",
   "status": "draft",
+  "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py check warns, for an open item whose goal names a kb/ path or directory (a path-shaped token such as kb/_self/reports/) that none of its touches covers, naming the item and the path; an item whose touches cover every such path gets no warning. Answers the SP-sz5fbvqn retrospective: ST-eegqfkah's goal named a report under kb/_self/reports/ but its touches held no reports path, found only at dispatch.",
@@ -20,5 +21,8 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-hr4hksct"
   ]
 }

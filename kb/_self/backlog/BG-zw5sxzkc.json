@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "derived_class classes every gate of an item touching kb/_self/token-efficiency.md as secrets, since SECRET_WORDS matches token in the path",
   "status": "draft",
+  "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -19,5 +20,8 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-mx4fggy4"
   ]
 }

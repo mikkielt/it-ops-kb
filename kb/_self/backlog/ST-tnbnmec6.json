@@ -3,7 +3,8 @@
   "kind": "story",
   "title": "precheck flags a committed item whose check is the intake --status of a time-windowed detector and names when it can first pass",
   "status": "draft",
-  "priority": "P2",
+  "sprint": "SP-vmxdxtru",
+  "priority": "P1",
   "rank": 0,
   "goal": "backlog.py precheck SP warns of a committed item whose check or repro is backlog.py intake --status FP of a time-windowed detector (repeats: the running ISO week; trailers: the last 7 days), naming when it can first pass, so the operator moves or gates the item before the start. Answers the SP-qzip6qar land, test and ops hygiene retrospective: ST-mwtm7r7b, ST-evlez5mw, ST-52x5bpab (2026-W41 repeats) and BG-jbn2z4mt (7-day trailers window) were found unpassable only during the run.",
   "checks": [
@@ -20,6 +21,9 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-p3jphxgb"
   ],
   "relates_to": [
     "BG-p3jphxgb"

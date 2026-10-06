@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "start warns of a trigger that names two hosts as waiting on another host, though one of them is the host starting the sprint",
   "status": "draft",
+  "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -19,5 +20,8 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-6kcoqz4d"
   ]
 }

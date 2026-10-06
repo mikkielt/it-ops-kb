@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "perfcheck names_successor accepts the retired-feature phrase beside the dropped test file itself",
   "status": "draft",
+  "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -18,5 +19,8 @@
     "_tools/perfcheck.py",
     "kb/_self/code.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-founcbvo"
   ]
 }

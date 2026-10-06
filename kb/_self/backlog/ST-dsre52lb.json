@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "learn pairs a rules miss's key word only with the one candidate word of the quoted line",
   "status": "draft",
+  "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
   "goal": "The operator's answer to gate g1 of ST-rhnku4mc (apply writes a kb/_self aliases row for a rules finding that names a word pair), changed in the SP-sz5fbvqn review from the worker's provisional 'shared characters at start and end (at least 4, unique best)' to 'only candidate line word': ql_learn.pair_word records a pair only when the quoted line has exactly one word that is not in the question, not a stop word, not a number and not the missing word itself; with two or more such words the finding carries no pair and stays open for a person. kb/_self/querylog.md's learn paragraph states the rule.",
@@ -19,5 +20,8 @@
     "_tools/ql_learn.py",
     "kb/_self/querylog.md",
     "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-czj7oox2"
   ]
 }

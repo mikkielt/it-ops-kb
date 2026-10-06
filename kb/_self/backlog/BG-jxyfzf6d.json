@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.md and tools.md say a --repro that passes now exits 1 on set, without the exception for a reopened bug",
   "status": "draft",
+  "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

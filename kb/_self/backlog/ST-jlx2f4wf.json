@@ -2,7 +2,8 @@
   "id": "ST-jlx2f4wf",
   "kind": "story",
   "title": "kb-sprint plan step 6 maps every goal clause to a check assertion, and the review brief names each clause a check does not read",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
   "goal": ".claude/skills/kb-sprint/SKILL.md plan step 6 asks, for every committed story, that each clause of its goal maps to a check assertion (not only the named figures), and the review brief names each clause a check does not read. Answers the SP-sz5fbvqn retrospective: ST-rhnku4mc's planted check proved the alias row but not its goal clause that the pair is in no alias file yet (review gap BG-czj7oox2).",
@@ -20,6 +21,9 @@
     "AGENTS.md",
     "kb/_self/maintaining.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-ebsbhbni"
   ],
   "notes": "Premise: no check planted. The change is wording in a skill's plan step and review brief; a grep proves the text, not that a planner maps clauses. Evidence: ST-rhnku4mc's check read the alias row only (BG-czj7oox2)."
 }

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "gate add names the word or touch that set a gate's class, and a worker never rewords a gate to change it",
   "status": "draft",
+  "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
   "goal": "gate add prints, for the gate it files, the class and the word or touch path that set it (for example class agents-rule from the word 'rule'), so a misclass is visible and filed as a bug instead of dodged; .claude/agents/kb-worker.md rule 6 says never to reword a gate's question or options to change its class. Does not repeat BG-zw5sxzkc (token in a touch path). Answers the SP-sz5fbvqn retrospective: BG-jafnt5o2's worker reworded its gate to drop 'rule' and got a provisional gate where the class was agents-rule.",
@@ -24,6 +25,9 @@
     "kb/_self/backlog.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-zw5sxzkc"
   ],
   "notes": "Premise: today gate add prints only 'gate g1 (blocking) added' for a question holding the word rule (class agents-rule); the check wants the word 'matched' in the output, e.g. \"class agents-rule (matched 'rule')\"."
 }

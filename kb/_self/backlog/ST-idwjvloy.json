@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "done accepts a goal research story whose notes say No outside facts, with no non-item commit",
   "status": "draft",
+  "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py done accepts a goal_research story with no commit that changes a non-item file when its notes hold a line 'No outside facts: <reason>' with a reason, and still refuses it without that line; any other item kind or a story without goal_research is refused as before (the no-work-commit rule in bl_land.py cmd_done), and kb/_self/backlog.md says so. Answers the SP-sz5fbvqn retrospective: ST-k4airlfu (the goal research story) had done refused once because its goal was internal to the repo's own tools and needed no outside facts, yet done demands a commit changing a non-item file.",
@@ -20,6 +21,9 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-cjizqzhq"
   ],
   "notes": "Premise: no check planted. A fixture needs an active sprint with a start commit, a goal research story and a git history of item-only commits, which is more than a temp-dir check can build in reasonable effort; the refusal is today's cmd_done no-work-commit reason (bl_land.py), seen on ST-k4airlfu."
 }

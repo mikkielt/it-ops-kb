@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Sprint close and drop delete the refs/kb-reopened ref of each item they remove",
   "status": "draft",
+  "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py close (and drop outside a sprint) deletes refs/kb-reopened/<id>, the done file reopen keeps since BG-hc3daknv, for each item it deletes, so the clone holds no such ref for an item that no longer exists; the operator kept the ref namespace in the SP-qzip6qar review and asked for its cleanup. Today 11 refs stay in the clone after SP-qzip6qar's review reopened its items.",
@@ -21,6 +22,9 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-5h2jpe3e"
   ],
   "notes": "The check passes while the reopened items still have files; it fails from the moment SP-qzip6qar's close deletes them with their 11 refs still in the clone."
 }

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The contract lint flags a fact line that holds a second bullet after its tag",
   "status": "draft",
+  "sprint": "SP-matmvkn6",
   "priority": "P3",
   "rank": 0,
   "goal": "python3 .claude/skills/kb-verify/lint.py reports an ERROR for a Facts line whose tag ([DOC ...], [CODE ...], [DER ...] and the others) is followed on the same line by '- ', the start of another bullet, naming path:line, and kb/_self/content-rules.md and kb/_self/tools.md say so; run over the live kb before the sprint commits it, its findings fixed or in a bug it depends on. From the SP-pbekfhaz retrospective: the research worker joined two bullets of kb/public/claude/skills-and-subagents.md on one line ([DOC S-hvuk3dqt]- `experimental.cacheTtl` ...) and check.py and the lint both passed it.",
@@ -27,6 +28,11 @@
     ".claude/skills/kb-verify/lint.py",
     ".claude/skills/kb-verify/SKILL.md",
     "kb/_self/content-rules.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-e5u5zhrc"
   ]
 }
