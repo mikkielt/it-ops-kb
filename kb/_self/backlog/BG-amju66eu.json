@@ -2,7 +2,7 @@
   "id": "BG-amju66eu",
   "kind": "bug",
   "title": "set --parent re-derives only the item's own status and leaves its draft subtasks draft in an active sprint",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-amju66"
 }
