@@ -2,7 +2,7 @@
   "id": "ST-rwq2rkhg",
   "kind": "story",
   "title": "Headless delegated claude -p sessions leave work rows backlog.py cost reads",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (2026-10-06): python3 _tools/backlog.py cost ST-reit3qmw prints 0 run(s), 0 prompt(s), although headless sessions did its work. Cause not yet found: candidates are the worktree spool place of ST-spywrqpp (Work done in a worktree session reaches backlog.py cost as work rows), a SessionEnd that claude -p skips (kb/_self/usage.md, What gets no usage) or hooks off in the delegating command; the breakdown finds it and names the code touches. querylog.py check passes before the work: it pins the store's shape; the breakdown adds a check that fails until the rows arrive."
+  "notes": "Premise (2026-10-06): python3 _tools/backlog.py cost ST-reit3qmw prints 0 run(s), 0 prompt(s), although headless sessions did its work. Cause not yet found: candidates are the worktree spool place of ST-spywrqpp (Work done in a worktree session reaches backlog.py cost as work rows), a SessionEnd that claude -p skips (kb/_self/usage.md, What gets no usage) or hooks off in the delegating command; the breakdown finds it and names the code touches. querylog.py check passes before the work: it pins the store's shape; the breakdown adds a check that fails until the rows arrive.",
+  "claimed_by": "worker-rwq2rk"
 }
