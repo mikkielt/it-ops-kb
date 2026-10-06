@@ -2,7 +2,7 @@
   "id": "ST-xsxto3rh",
   "kind": "story",
   "title": "settings.json allows no command form only the retired runner used",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-qzip6qar",
   "priority": "P3",
@@ -70,5 +70,18 @@
     }
   ],
   "notes": "Housekeeping 2026-10-06: _tools/test_settings_allow.py, RUNNER_COMMANDS, RUNNER_TOOLS and bl_land's RUNNER_NAME went with the old suite and the runner, so the story keeps only its settings.json half; the check reads the allow list and fails while a retired form is in it.",
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "b06f4aa3b4035a4c21cb539e51b87050adce3dda",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys;a=' '.join(json.load(open('.claude/settings.json',encoding='utf-8'))['permissions']['allow']);bad=[w for w in ('git worktree unlock','git cherry ','git checkout -b work/','kbgit.py fmt --check','kbgit.py check-lanes') if w in a];print('stale allow forms:',bad);sys.exit(int(bool(bad)))"
+        ],
+        "exit": 0,
+        "sha256": "9b36b53a8ded5c47"
+      }
+    ]
+  }
 }
