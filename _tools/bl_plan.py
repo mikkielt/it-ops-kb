@@ -257,6 +257,27 @@ def free_text_host_gates(bl, sid):
     return out
 
 
+# Host names a trigger's text may carry, by the sys.platform prefix of the host that is that one.
+TRIGGER_HOSTS = {"windows": "win32", "macos": "darwin", "linux": "linux"}
+
+
+def waiting_triggers(bl, sid):
+    """(item id, trigger text, other host or None) for each open item of the sprint (a story, task or subtask) whose
+    own trigger has not fired: the sprint's review waits on it unless the operator moves it out. The third part is
+    the host the trigger names when that is not the one starting the sprint (start warns; ST-qsppdmjv)."""
+    out = []
+    for i in bl.sprint_items(sid):
+        it = bl.items[i]
+        t = it.get("trigger")
+        if it.get("status") in ("done", "dropped") or not isinstance(t, dict) or t.get("fired"):
+            continue
+        when = str(t.get("when", ""))
+        other = next((h for h, p in TRIGGER_HOSTS.items()
+                      if not sys.platform.startswith(p) and re.search(rf"\b{h}\b", when, re.I)), None)
+        out.append((i, when, other))
+    return out
+
+
 def host_check_fails(root, hc):
     """Why a gate's host check fails on this host, run now without a shell, or None when it exits 0. start runs it
     itself: a `host_checked` result in the item file is committed and ties the pass to no host or clone
@@ -325,6 +346,10 @@ def cmd_start(bl, a):
         say(f"  warning: {bl.label(i)} gate {g.get('id')} names a host setup ({word!r}) with no --host-check: add the "
             "command that proves it on this host (gate add --host-check CMD), or the reason it cannot be checked as "
             "the gate's host_unchecked")
+    for i, when, other in waiting_triggers(bl, sid):
+        say(f"  warning: {bl.label(i)} waits on an unfired trigger ({when})"
+            + (f" that names a {other} host, not this one" if other else "")
+            + ": the sprint's review waits on it; move it out or accept the wait")
     for i in recurring_left_out(bl, sid):
         say(f"  warning: recurring P1 item {bl.label(i)} (recurs in {len(set(bl.items[i]['recurs']))} sprints) "
             "is not in this sprint")
