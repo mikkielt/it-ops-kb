@@ -413,3 +413,8 @@ CLAUDE_CODE_MESSAGING_TOKEN,claude/cross-session-messaging
 notify_when_idle,claude/cross-session-messaging
 adr-tools,agents/decision-records
 adr-template.md,agents/decision-records
+Get-MpPerformanceReport,defender/asr-and-antivirus
+CreateToolhelp32Snapshot,windows/process-parent-and-command-line
+th32ParentProcessID,windows/process-parent-and-command-line
+NtQueryInformationProcess,windows/process-parent-and-command-line
+Win32_Process,windows/process-parent-and-command-line

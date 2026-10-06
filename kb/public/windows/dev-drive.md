@@ -2,8 +2,8 @@
 topic: windows/dev-drive
 priority: P3
 applies_to: "Windows 11 Dev Drive (ReFS developer volume) and Microsoft Defender Antivirus performance mode, as documented on Microsoft Learn (read 2026-09-29)"
-retrieved_utc: 2026-09-29
-sources: [S-mmdoupim, S-zhrbtrgz, S-rxcgi365, S-wnoqgewy, S-et27ccvn]
+retrieved_utc: 2026-10-07
+sources: [S-mmdoupim, S-zhrbtrgz, S-rxcgi365, S-wnoqgewy, S-et27ccvn, S-c5vcqkia]
 status: partial
 ---
 
@@ -31,6 +31,10 @@ Exclusions themselves are in `defender/asr-and-antivirus.md`.
 - Since Windows 11 24H2 and Windows Server 2025 a Dev Drive supports ReFS block cloning, which copies a range of file bytes as a metadata operation instead of reading and writing the data, for faster copies and less I/O. [DOC S-mmdoupim]
 - Microsoft suggests considering moving `%TEMP%` and `%TMP%` to a Dev Drive, which then also needs the `WinSetupMon` filter for Windows Update. [DOC S-mmdoupim]
 - WSL project files see no performance gain from a Dev Drive (WSL runs in its own VHD), and the WSL `metadata` mount option is not supported on ReFS. [DOC S-mmdoupim]
+- From Windows Settings a Dev Drive is made under **System** > **Storage** > **Advanced Storage Settings** > **Disks & volumes** with **Create dev drive**, which offers three sources: a new VHD, a resized existing volume, or unallocated space on a disk (shown only when such space exists); each needs at least 50 GB. [DOC S-mmdoupim]
+- For a new VHD the wizard asks for a name, a location (default `C:\`; Microsoft recommends a per-user directory), a size (minimum 50 GB), a format (VHD to 2040 GB; VHDX, recommended, to 64 TB and more resilient to power loss) and a disk type (fixed size, or dynamically expanding, recommended). [DOC S-mmdoupim]
+- A VHD hosted on a fixed disk should not be copied to another machine and used there as a Dev Drive: the trust state and filter policy are kept per machine and do not travel with the file, so it has to be mounted and designated again. [DOC S-mmdoupim]
+- ReFS uses slightly more memory than NTFS, and more than one Dev Drive can exist (for example one per project, deleted when the project ends); a Dev Drive is deleted in Settings under the volume's **Properties** > **Delete**, or a VHD-backed one is detached in Disk Management. `diskpart` with `list vdisk` shows the path of an attached VHDX. [DOC S-mmdoupim]
 
 ### Trust and filters
 - A Dev Drive is marked *trusted* by a registry flag at format time; a Dev Drive moved to another machine is an ordinary volume there until it is trusted again with `fsutil devdrv trust <drive>:` (elevated); `fsutil devdrv query <drive>:` shows the state. [DOC S-mmdoupim]
@@ -46,6 +50,13 @@ Exclusions themselves are in `defender/asr-and-antivirus.md`.
 - Performance mode is managed with Intune (`./Device/Vendor/MSFT/Defender/Configuration/PerformanceModeStatus`, integer, `0` enable (default), `1` disable), Group Policy (**Configure performance mode status** under Real-time Protection, in the Windows 11 24H2 administrative templates) or `Set-MpPreference -PerformanceModeStatus Enabled`. [DOC S-zhrbtrgz]
 - Performance mode does not address high CPU or memory use of the Defender service itself (`MsMpEng.exe`); for that Microsoft points to the performance analyzer and exclusions. [DOC S-zhrbtrgz]
 - Performance mode is a Defender feature: with another antivirus product it does not apply, and only the filter allow list can be tuned. [DOC S-mmdoupim]
+
+### NTFS behaviour settings (volumes that are not a Dev Drive)
+- `fsutil behavior set disablelastaccess 1` stops NTFS from updating the Last Access Time stamp on every access; Microsoft says disabling it improves the speed of file and directory access, that NTFS defers an on-disk update by at most one hour, that queries still return the correct value from memory, and that programs such as Backup and Remote Storage which rely on the stamp can be affected. The parameter table says a restart is needed for it to take effect. [DOC S-c5vcqkia]
+- `fsutil behavior set disable8dot3 [<volumepath>] 1` stops NTFS from creating an 8.3 short name next to every long file name; with the default `0`, NTFS makes a second directory entry per file and must look up the short names when it creates files in a directory. [DOC S-c5vcqkia]
+- `fsutil behavior set memoryusage 2` raises the NTFS paged-pool limit and may help a system that opens and closes many files of the same set, but costs other processes pool memory when memory is already tight; a restart is needed. [DOC S-c5vcqkia]
+- The page introduces `fsutil behavior` as setting NTFS volume behaviour, so these three concern a scratch root on an NTFS volume, not a Dev Drive (ReFS). [DER S-c5vcqkia: "Queries or sets NTFS volume behavior" and the NTFS-only parameter descriptions]
+- Microsoft gives no figure for how much any of these shortens a build or a Python test run. [UNK: the `fsutil behavior` page states effects, not timings; measure on the host]
 
 ### How it fits
 - For a test suite on Windows that creates many short-lived files (throwaway git repositories, copied trees), a trusted Dev Drive keeps Defender scanning those files while taking the scan off the file-open path, which a folder exclusion does not do (it stops scanning). Pointing the suite's temp root at the Dev Drive needs no exclusion and no Defender setting change beyond the default. [DER S-zhrbtrgz, S-rxcgi365: performance mode versus exclusions; the temp root settings are in `python/pytest.md`]

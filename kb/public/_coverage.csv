@@ -106,7 +106,7 @@ defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,23
 defender/permissions-limits,P1,complete,defender/permissions-limits.md,6
 defender/response-actions-api,P1,complete,defender/response-actions-api.md;defender/machine-actions.csv,18
 defender/advanced-hunting,P2,complete,defender/advanced-hunting.md;defender/advanced-hunting-tables.csv,25
-defender/asr-and-antivirus,P2,complete,defender/asr-and-antivirus.md;defender/asr-rules.csv,21
+defender/asr-and-antivirus,P2,complete,defender/asr-and-antivirus.md;defender/asr-rules.csv,26
 dsc/cli-reference,P0,complete,dsc/cli-reference.md;dsc/cli/,13
 dsc/directives,P0,complete,dsc/directives.md,11
 dsc/functions,P0,complete,dsc/functions.md;dsc/functions-3.3.0.csv,7
@@ -290,6 +290,7 @@ windows/powershell-remoting-jea,P2,complete,windows/powershell-remoting-jea.md;w
 windows/windows-365,P2,complete,windows/windows-365.md,19
 windows/windows-update-management,P2,complete,windows/windows-update-management.md;windows/windows-update-management.csv,19
 windows/winget,P2,complete,windows/winget.md;windows/winget-policies.csv,14
-windows/dev-drive,P3,partial,windows/dev-drive.md,5
+windows/dev-drive,P3,partial,windows/dev-drive.md,6
 windows/powershell-static-analysis,P3,complete,windows/powershell-static-analysis.md,21
+windows/process-parent-and-command-line,P3,partial,windows/process-parent-and-command-line.md,8
 windows/windows-sandbox,P3,complete,windows/windows-sandbox.md,4
