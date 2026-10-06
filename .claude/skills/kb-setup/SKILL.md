@@ -10,6 +10,8 @@ Work from the repository root. Change no kb content (the only changes are the lo
 Read this section of the `kb/_self/` docs first, not the whole doc (`selfdoc.py section` prints the section under a heading with its line numbers). Nothing is committed and no kb content is written, so no other section is needed; the commands are spelled out in the steps below:
 - `python3 _tools/selfdoc.py section maintaining "Setup (first session in a fresh clone)"`
 
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
+
 `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.

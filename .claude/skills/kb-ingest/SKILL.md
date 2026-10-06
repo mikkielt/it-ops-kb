@@ -8,17 +8,25 @@ argument-hint: "<repository path or url> [root name] [what the facts should answ
 
 Request: $ARGUMENTS. The facts come from one repository at one pinned commit: its code as `CODE`, its own docs (README, `docs/`, ADRs, runbooks) as `DOC`, so the kb answers questions across a team's services beside `kb/public`. This is a conversation, not a script: at each **Ask** below, propose what you would do and why, and wait for the user.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers):
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Roots" content-rules "CODE: what the implementation does" content-rules "Licensing and privacy" plugin "6. A team's own knowledge: roots beside kb/public" git.md "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `plugin "6. A team's own knowledge: roots beside kb/public"` a team's own roots; `section` matches headings without their backticks; `git "Workflow"` commits and pushes.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-ingest:where`: before step 1, where the facts land (and step 2, which root)
+- `kb-ingest:survey`: before step 3, the survey at a pinned commit
+- `kb-ingest:write`: before step 6, writing
+- `kb-ingest:commit`: before step 8, commit and report
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 Facts on the signals used below: `agents/repository-ingestion.md`; on the mapping tools (ctags JSON, language servers, each language's own read-only commands, toolchain pins) `agents/codebase-mapping.md`; on reading PowerShell without running it (`#Requires`, manifests, the AST) `windows/powershell-static-analysis.md`. Run each command on its own (no `;`, `&&`, pipes or loops).
 
 ## 1. Where am I, and where do the facts land
+
+Rules of this step (and of step 2): `python3 _tools/rag.py pack --root _self --set kb-ingest:where`.
 
 - **In a clone of it-ops-kb** (the working directory has `_tools/kbroot.py`): "source `<repo>` and put it here" means a root in this clone's `kb/`. `<repo>` is a local clone; for a url, clone it into the scratchpad first (`git clone <url> <dir>`). `KB` below is `.`.
 - **In a host project** (the kb is an installed plugin): the plugin copy is read-only by design. Never write into it (`~/.claude/plugins/cache/...` is replaced on every update and deleted 14 days later) nor into `${CLAUDE_PLUGIN_DATA}` (no git history, deleted on uninstall): `claude/plugins.md` in the kb. `<repo>` is usually the host project itself. **Ask** where the facts go, in this order of preference:
@@ -35,6 +43,8 @@ Facts on the signals used below: `agents/repository-ingestion.md`; on the mappin
 - **Visibility:** at least as closed as the repository. A private or internal repository gives an `internal` root (real hostnames, service accounts, tenants and people are allowed there); a `public` root only for a public repository, and then with the placeholders rule (`AGENTS.md`, "Agent conduct"), which the leak tests enforce. Never put facts from a private repository into `kb/public`.
 
 ## 3. Survey at a pinned commit
+
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-ingest:survey`.
 
 - `python3 <KB>/_tools/kbingest.py survey <repo> [--rev <tag or sha>]`: the remote, the commit, the pinned url form, the attributes, per area the kept files by kind and the files left out; `--files` lists every file with its pinned url. It reads the commit (`git ls-tree`, `check-attr --source`, `cat-file`), never the working tree.
 - **Pick the commit:** a release tag or the default branch's head, and it must be on the remote (`on a remote branch: yes`): a pinned url others cannot open is no evidence. **Ask** the user to push, or pick a pushed commit.
@@ -77,6 +87,8 @@ Leave out: what the code says line by line (the repository stays the source; the
 
 ## 6. Write
 
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-ingest:write`.
+
 Follow the contract of `/kb-add-topic` steps 3 to 5 (source rows first, one tag per fact, four sections, `build_index.py`), in `<KB>/kb/<root>/`:
 - **Source rows** in the root's `_sources.csv`, one per file cited: url from `python3 <KB>/_tools/kbingest.py url <repo> <path> --rev <sha>`, the row written with `python3 <KB>/_tools/kbid.py add <URL> --root <root> --title T --publisher P --licence L --reuse R --version V`, which prints the id (never a CSV writer). `--title` `<repo> <path> at <short sha>`; `--publisher` the team; `--version` `<tag or branch> @<short sha> (<commit date>)`, and on the row of a pin file the pins it declares (`; python-version 3.14`); `--licence` the repository's licence (SPDX id, `--reuse copy`) or `internal: <team> repository, no licence file` (`--reuse quote`: paraphrase, quotes of 25 words or fewer).
 - **Facts:** `[CODE <P>-xxxxxxxx: path#symbol]` (or `path#L10-L20`), `[DOC <P>-xxxxxxxx]` for the team's docs, `[DER ...: how]` for what combines them. In your own words. The map relation a `CODE` fact rests on goes after the pointer in the same tag (`[CODE <P>-xxxxxxxx: src/app.py#run, imported by src/cli.py]`; the lint takes the first `path#symbol` of the note as the pointer and accepts the text after it), else in the sentence; a fact that rests on no relation needs none. `applies_to` names the repository, the commit and the pins that bear on the topic (the runtime or framework its code targets).
@@ -92,6 +104,8 @@ With `KB_ROOTS=<dir>` in front of each command for a root kept outside the clone
 - `python3 <KB>/_tools/tests.py` in a clone (stage new files first): the leak scan covers every tracked file, secrets in any root included.
 
 ## 8. Commit and report
+
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-ingest:commit`.
 
 - **Clone of the fork:** `/kb-verify`, then commit in the clone, `feat(kb): ingest <repo> into <root>`, the body naming the repository, the commit and what was left out and why; push with `python3 <KB>/_tools/kbgit.py sync --push` only to the remote the user confirmed (the fork's), never to the upstream kb with an internal root.
 - **`KB_ROOTS` directory:** commit in that repository with its own git (`git -C <dir>`), same message; `kbgit.py` does not work there.

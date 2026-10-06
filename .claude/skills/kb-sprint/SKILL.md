@@ -6,19 +6,30 @@ argument-hint: "plan \"<goal>\" | start SP-... | run [SP-...] | review SP-... | 
 
 # Run a sprint
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers):
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section backlog "Sprints" backlog "Dependencies, gates and triggers" backlog "Definition of done" backlog "Working on items" backlog "Git" backlog "Landing" backlog "Running a sprint" backlog "Processes left running" backlog "Self-check" backlog "Stalled work" maintaining "Conduct for changes" git.md "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `backlog "Git"` the `KB-Work` trailer; `backlog "Landing"` the steps `land` runs; `backlog "Running a sprint"` the orchestrator's rules; `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` sync and the gate.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-sprint:plan`: before `plan "<goal>"`
+- `kb-sprint:start`: before `start SP`
+- `kb-sprint:run`: before `run [SP]`
+- `kb-sprint:review`: before `review SP`
+- `kb-sprint:close`: before `close SP`
+- `kb-commit`: before a commit or a push of the orchestrator's own
+Once an item is claimed, for each item you brief: `python3 _tools/rag.py pack --root _self --item ID --budget 600` prints the rules of the docs its touches map to and the decisions that apply to it.
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 Whenever you name an item (in chat, a question, a subagent brief, a commit), give its id and its title together, never a bare id.
 
 ## plan "<goal>"
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-sprint:plan`.
+
 1. Run `python3 _tools/backlog.py new sprint --title T --goal G`. It creates the sprint, its blocking `start` gate, its review story and its goal research story (a research item: claim and work it first, with the kb tools and the live docs for gaps, writing kb facts and gap entries through the kb skills, then `done`).
 2. Check what covers the goal with `python3 _tools/backlog.py find WORDS`, then pick the stories and bugs with `python3 _tools/backlog.py tree --open` and `python3 _tools/backlog.py list --kind bug`: every `S1` and `P1`, then by priority and rank, as far as the goal needs. Put each in the sprint with `python3 _tools/backlog.py set ID --sprint SP` (every item edit goes through `set` or the commands below, never a hand edit of its JSON; a story or bug moves between sprints, or out of one, with `python3 _tools/backlog.py move ID --sprint SP|none`, which writes the status that sprint gives it, and a done item goes back to work with `python3 _tools/backlog.py reopen ID --why TEXT`; the planning commit names in `KB-Work` only the items whose files it changes). Break stories into tasks as `/kb-backlog` does, with `touches` and `checks` (an item's `touches` are planned, not guessed, when it is filed or scheduled: the files its change edits, each moved or renamed path or symbol's referrers (`python3 _tools/backlog.py referrers PATH|SYMBOL... --item ID`) and the `kb/_self/` docs `kb/_self/map.csv` maps its code to (`python3 _tools/selfdoc.py map <file>`), never a glob wider than those files (a `_tools/bl_*.py` glob meets every other worker's item, BG-ncpteupy); a docs warning `backlog.py check` gives for the item is acted on then, by adding the docs it names (`set ID --touch DOC --add`), so the warnings stay few enough to act on) (`new task --parent ID --touch G --check CMD`, later `set ID --touch G --add`); a task that changes code carries the `kb/_self/` docs `kb/_self/map.csv` maps to it in its own `touches`, not a later docs task. A change to how agents read docs or call a tool puts every consumer of that route (skills, `.claude/agents/` definitions, `AGENTS.md`, headless runs such as `_tools/ql_research.py`) in some item's `touches`.
    Paths other sessions hold: after `git fetch`, `python3 _tools/backlog.py held --ref origin/main` (each claimed item's touches, claimer and sprint), never messages to those sessions.
@@ -28,6 +39,8 @@ Whenever you name an item (in chat, a question, a subagent brief, a commit), giv
 6. Review each committed story's goal for the outputs or figures it names (such as four totals, a session total or a shared figure) against the checks of the story and its tasks: a named figure no check reads is a missing check, recorded before the start gate is asked (`set ID --check CMD --add`, or a task that adds it). Run each committed story's premise once, before the start gate is asked: the command in its `notes` or on a `Premise:` line there; record the result in its notes (`set ID --notes TEXT --add`), and a story whose premise does not reproduce is not committed: reshape it to a test-only item that pins the behaviour, or move it out (`move ID --sprint none`). Before asking, run `python3 _tools/backlog.py host-check SP`: it runs the `--host-check` command of each answered gate that names a host setup, on this host, and records the result; on exit 1 show the operator the failing gate and its output (the setup is not in place: enable it, or change the gate) and do not ask yet. Ask the operator to approve the goal and the committed items (AskUserQuestion: approve / change / cancel). Show each goal clause with the id and title of its item, any clause dropped as met with the earlier item that delivered it, and the gates the items will meet.
 
 ## start SP
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-sprint:start`.
+
 Only on the operator's approval in this conversation:
 1. `python3 _tools/backlog.py answer SP start --answer approve --by operator`.
 2. `python3 _tools/backlog.py start SP`. It prints `warning:` lines for a sprint item whose mapped docs sit outside its `touches` (an item planned before `check` warned of it): before any claim, ask the operator to move each named doc into that item's `touches` (`set ID --touch G --add`), and rerun `backlog.py check`. It runs each answered gate's host check on this host and refuses while one fails (`backlog.py host-check SP` shows the output), and warns of a gate that names a host setup with neither a host check nor a `host_unchecked` reason.
@@ -35,6 +48,8 @@ Only on the operator's approval in this conversation:
 Never answer the start gate yourself.
 
 ## run [SP]
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-sprint:run`.
+
 One suite, `python3 _tools/tests.py` (`kb/_self/backlog.md`, Working on items): a worker of step 3 runs the item's own checks and may run it, the gate per landing runs the `tests.py --changed origin/main` of `sync --push` in step 4, and the review story's checks run `backlog.py check` and `tests.py` once at sprint end (`## review SP`).
 
 You are the orchestrator. Run from your own clone or git worktree, never a checkout another session works in (each session works in its own git worktree from its first command (`git worktree add`), never a checkout another session works in: `claim` records the claims made in a working tree in its own git dir and refuses (exit 1, naming the other session) a claim by a second session while one of them is still doing there): a second orchestrator starts its own (`kb/_self/backlog.md`, Running a sprint). Loop:
@@ -79,6 +94,8 @@ You are the orchestrator. Run from your own clone or git worktree, never a check
 6. Stop when `next` prints nothing ready. Report the horizon: what landed, and what waits on which gate or trigger (each with its question).
 
 ## review SP
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-sprint:review`.
+
 The review story is ready once every other item is done or dropped. Its checks are `python3 _tools/backlog.py check` and `python3 _tools/tests.py`. Its work:
 1. Confirm or change each provisional answer with the operator (`answer ID GATE --confirm --by operator`, or a new answer plus a task or bug for the change), the ones workers recorded for choices their goals left open (run step 4.1) among them.
 2. Print what the work cost, one command per id, each on its own: `python3 _tools/backlog.py cost --rework SP`, then the same for each story and each bug of the sprint (`python3 _tools/backlog.py tree --sprint SP` lists them). Keep each output for step 4 and the close retrospective; a cost read while the sessions that did the work are still open is provisional (the output says `open session figures` or `no figure yet`, and zeros then mean no usage rows yet, not no work): the review says the figures are provisional, never reports those zeros as the sprint's cost, and close reruns `backlog.py cost --rework SP` once those sessions have closed, writing that rerun's figures into the retrospective, or says they are still provisional; and show the operator what the sprint's work cost, which items had rework, and where shared tokens stand out. Rework is the tokens an item spent from the prompt that ran its first refused `backlog.py done` (a `done` that exited 1) to its `done`; the output lists each item that has it with its work and rework tokens, and an item with none is not listed. Say it as a measure of the work, never as blame: it names no one and no cause. It reports tokens only, no prices, and a figure whose output names an unresolved id (`no item file and no git history for ...` on stderr) is incomplete: say so with the figure.
@@ -88,6 +105,8 @@ The review story is ready once every other item is done or dropped. Its checks a
 6. `python3 _tools/backlog.py done <review id> --commit --trailer 'Co-Authored-By: ...'`, then `python3 _tools/kbgit.py sync --push`. The review's done also re-runs the checks of every done item of the sprint once on the tip and refuses, naming each, when one fails there: reopen that item (`backlog.py reopen ID --why ...`) and fix it, or fix its check, before the review is done.
 
 ## close SP
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-sprint:close`.
+
 1. `python3 _tools/backlog.py close SP --summary` prints one line per item close will delete, then each goal clause with the item that carried it or `unmet` and where it went (an unmet clause goes into the retrospective) (id, title, kind, status and the commit `done` recorded, or `no evidence commit`) and changes nothing. It refuses while anything is open. Keep its `delivered by` list for the commit body.
 2. **Retrospective.** From this sprint's evidence, list what went wrong in the process, not in the product:
    - a `done` that refused;

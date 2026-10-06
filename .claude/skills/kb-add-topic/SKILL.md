@@ -8,13 +8,20 @@ argument-hint: "<domain>/<topic-slug> and what it should cover"
 
 Request: $ARGUMENTS. If the domain, slug or scope is unclear, ask before researching.
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The layout, ids and licence table are in the steps below; the commands are spelled out there too:
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "CODE: what the implementation does" content-rules "SNIPPET: a code example with evidence" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git.md "Workflow"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` commits and pushes.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-add-topic:research`: before step 2, researching official sources
+- `kb-add-topic:sources`: before step 3, adding sources
+- `kb-add-topic:write`: before step 4, writing the article
+- `kb-add-topic:register`: before step 5, registering and logging
+- `kb-commit`: before committing or pushing
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 `AGENTS.md` covers lookups only.
 
@@ -26,6 +33,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Use an existing domain directory when one fits: the domain of the article that will link to the new topic. Never create a new top-level directory without the user's decision. Slug: lowercase, hyphenated.
 
 ## 2. Research official sources
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-add-topic:research`.
 - Microsoft: `microsoft_docs_search` then `microsoft_docs_fetch`. Claude Code: `search_claude_code_docs`. MCP: `search_model_context_protocol`. Otherwise vendor docs, release notes, source repos. See `agents/doc-lookup-sources.md` for what is stable.
 - Never call `submit_feedback`.
 - Prefer a url pinned at a commit or version when one exists.
@@ -34,6 +42,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - A code example is a `SNIPPET:` bullet right above its fenced block: `- SNIPPET: <what it does>; context: <versions, prerequisites>; checked: no|syntax|run [DER S1: parameters from ...]`. It needs an evidence tag (not `UNK`), placeholders only, and `checked: syntax` only when you parsed it (json, toml and python blocks are parsed by the lint).
 
 ## 3. Add sources first
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-add-topic:sources`.
+
 Add one row per source to `_sources.csv` (`id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`) with `python3 _tools/kbid.py add <URL> --title T --publisher P --licence L --reuse R [--version V] [--sha256 H] [--root NAME]`. Never append a row with a CSV writer or by hand.
 - `add` computes the id, writes the row through a CSV writer (quoting commas), sets `retrieved_utc` to today (`YYYY-MM-DD`), leaves `used_in` (`build_index.py` fills it, step 5) and `superseded_by` empty, and prints the `S-xxxxxxxx` id to cite. Never invent an id or take "the next number": the id is a hash of the url, so parallel writers do not collide. A url already in the root with the same fields changes nothing and prints its id; one with different fields exits 2 (legacy `S<number>` ids stay valid): reuse the existing row's id.
 - `python3 _tools/kbid.py url <URL>` only prints the id, and says if the url has a row; use it to look an id up before writing.
@@ -47,6 +57,8 @@ Add one row per source to `_sources.csv` (`id,url,title,publisher,licence,reuse,
 - `--version` is the row's `version_or_date`: the page's own version or date when shown (`ms.date`, release tag), else `retrieved <date>`. `--sha256` is `artifact_sha256`, for a pinned artifact.
 
 ## 4. Write `<domain>/<slug>.md`
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-add-topic:write`.
+
 ```
 ---
 topic: <domain>/<slug>
@@ -74,11 +86,15 @@ files: [<path>, <dir>/]    # optional: only files beyond <slug>.md and <slug>.* 
 - `priority`: the research order, not importance (`kb/_self/content-rules.md`). A new topic gets the priority the user gives, else `P3`.
 
 ## 5. Register and log
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-add-topic:register`.
+
 - Run `python3 _tools/build_index.py`. It adds the topic's row to `_coverage.csv` and the root's `_coverage.md` table (ordered by domain, priority, topic id; `n_sources` = ids in the `sources:` header) and fills `used_in` in `_sources.csv`. Never edit those by hand.
 - Failed lookups go to `_gaps.md` (what, where you looked). Disagreements go to `_conflicts.md` with both sources. End each new entry with `(topic: <domain>/<slug>)`.
 - Retrieval data (`kb/_self/content-rules.md`): if code that uses the product has distinctive names (class names, API routes, library or package names, permission scopes), add `signal,<domain>/<slug>` rows to `kb/public/_retrieval/signals.csv`, so `topics-for` maps code to the topic; if the product has other names or abbreviations, add `term,canonical` rows to `_tools/aliases.csv` (term lowercase; reuse an existing canonical). Check with `python3 _tools/rag.py topics-for --keywords "<a signal>"`.
 
 ## 6. Check and report
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
+
 - `python3 _tools/check.py` must end `errors=0`. Then `python3 .claude/skills/kb-verify/lint.py <domain>/<slug>` must report `errors=0`.
 - `python3 _tools/rag.py pack "<a question the topic answers>"` finds the new article, and `python3 _tools/rag.py eval` still passes every question (a new article can outrank the expected one).
 - `python3 _tools/tests.py` must pass (leak scan, signals and aliases tables).

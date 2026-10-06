@@ -8,6 +8,12 @@ argument-hint: "[--since REV | <doc path, e.g. kb/_self/tools.md> | all | --repo
 
 Read `kb/_self/README.md` first (what each doc is for and the rules for keeping them current), then the section on conduct and the gate, not the whole of `maintaining.md`: `python3 _tools/selfdoc.py section maintaining "Conduct for changes"`. The docs describe the code as it is now; the code, the tools' docstrings and the config files are the source of truth.
 
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-self:stale`: before step 1, finding what is stale
+- `kb-self:update`: before step 2, updating each doc
+- `kb-self:commit`: before step 4, commit and report
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
+
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## Arguments
@@ -21,6 +27,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 | `--check` (with any of the above) | report only: what is stale, what would change and why; write nothing |
 
 ## 1. Find what is stale
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-self:stale`.
 
 1. `python3 _tools/selfdoc.py check` must say `problems=0`. Fix the map first:
    - a new tool, skill, hook or top-level `kb/_self/` doc needs rows in `kb/_self/map.csv` (`doc,pattern`, CSV writer, one row per line; pattern `-` for a doc that describes no file);
@@ -30,6 +37,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 4. `python3 _tools/selfdoc.py map <path>` answers the reverse question: which docs describe a file you are about to change.
 
 ## 2. Update each doc
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-self:update`.
 
 Change only what the code change made wrong or missing; keep each doc's scope. A listed doc that is still correct needs no edit: name it in the commit's `Self-Reviewed:` trailer (step 4), which clears it.
 
@@ -64,6 +72,7 @@ Rules for every doc:
 5. For a doc change that came with a code change, the full gate in `kb/_self/maintaining.md` before committing.
 
 ## 4. Commit and report
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-self:commit`.
 
 - The docs go in the same commit as the code change they describe (`kb/_self/git.md`), with a `Self-Reviewed: <doc>, <doc>` trailer (`git commit --trailer "Self-Reviewed: kb/_self/plugin.md, AGENTS.md"`) for each listed doc you checked and left unchanged; a docs-only catch-up is `docs(kb): bring _self in line with <what changed>`. Commit only when asked; push with `python3 _tools/kbgit.py sync --push`.
 - Report: each doc updated with one line on what changed and which file made it stale; docs still stale and why (e.g. a behaviour you could not confirm by running the tool).

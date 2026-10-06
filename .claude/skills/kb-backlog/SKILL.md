@@ -6,13 +6,19 @@ argument-hint: "[epic \"<outcome>\" | \"<what to plan>\" | bug \"<defect>\" | tr
 
 # Plan the backlog
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers):
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section backlog "Levels" backlog "The item file" backlog "Priority and severity" backlog "Dependencies, gates and triggers" backlog "Definition of done" maintaining "Conduct for changes"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `backlog "Levels"` the kinds and what each needs; `backlog "The item file"` the fields; `backlog "Dependencies, gates and triggers"` the always-blocking gates; `backlog "Definition of done"` the shared minimum; goal, checks and touches; `maintaining "Conduct for changes"` the gate, commit messages.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-backlog:plan`: before the Plan steps (also the Epic steps, which plan as the Plan does)
+- `kb-backlog:bug`: before the Bug steps
+- `kb-backlog:triage`: before the Triage steps
+- `kb-backlog:finish`: before the Finish step
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 `python3 _tools/backlog.py` with `-h` is the command reference.
 
@@ -21,6 +27,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Whenever you name an item (in chat, a question, a commit), give its id and its title together, never a bare id.
 
 ## Plan ("<what to plan>")
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-backlog:plan`.
+
 1. See what exists: `python3 _tools/backlog.py find WORDS` first (open items whose title or goal hold every word, with parent chains; exit 1 when none), then `python3 _tools/backlog.py tree --open` and `python3 _tools/backlog.py horizon`. Extend an epic or story that already covers the request rather than adding a parallel one.
 2. Find the facts the work rests on: `python3 _tools/rag.py pack -q "<part>" -q "<part>"` for the product side, and `kb/_self/` for how the kb works. Name them in the items' `links` or `notes` (`backlog.py set ID --link L --notes N`, `--add` appends).
 3. Interview the operator on anything the request leaves open: scope, what must not change, the checks that prove it, and gates. Ask with AskUserQuestion, a recommendation first, before writing items. Do not invent requirements.
@@ -59,12 +67,16 @@ An outcome that takes several pushes. Plan it as below, with these steps first:
 6. `fmt`, `check`, then `python3 _tools/backlog.py tree EP-...`. Report the epic's id and title, its stories, and the gates waiting on the operator.
 
 ## Bug ("<defect>")
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-backlog:bug`.
+
 1. Reproduce it with one command that fails now and will pass once it is fixed, running the failing behaviour: a tool call on a planted input, a command with a match, or, only when no log can show the defect, a test (`kb/_self/code.md`, Checks and their tests). A repro that only matches text in a file (a grep, a `python -c` reading source) proves the text, not the fix; `new` refuses one without `--repro-reason TEXT` saying why the behaviour cannot run (such as a defect in a doc's wording).
 2. Pick a severity by the table in "Priority and severity" and a priority. An `S1` goes into the active sprint (`--sprint`), and you tell the operator at once.
 3. `python3 _tools/backlog.py new bug --title T --severity S --repro "CMD" --goal G [--parent EP] [--sprint SP]`. `new` refuses a repro that passes: then the defect is not reproduced yet.
 4. Add tasks only if the fix is known. Otherwise the bug stays one item, and `/kb-item` breaks it down.
 
 ## Triage
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-backlog:triage`.
+
 List what needs deciding, intake's drafts first:
 - the uncommitted drafts the SessionStart hook (`backlog.py intake --file --hook`; `red-pipeline --hook` files a red main's bug the same way) wrote: the new item files in `git status --porcelain -uall kb/_self/backlog/` (`??`) whose `links` carry `fingerprint <12 hex>` and `detector <name>` (`python3 _tools/backlog.py show ID`). Show each with its detector, kind, title and goal. A kept one is committed with the rest of the triage (item files only, `KB-Work` naming them); a dropped one is deleted, since it was never committed, (intake files it again at a later session while a detector still reports it);
 - `python3 _tools/backlog.py list --status draft`;
@@ -74,4 +86,6 @@ List what needs deciding, intake's drafts first:
 Propose priority, severity, sprint or drop for each, in one AskUserQuestion batch. Apply the answers (`python3 _tools/backlog.py set ID --priority P`, `python3 _tools/backlog.py move ID --sprint SP|none` for a sprint, since it writes the status that sprint gives (todo in an active sprint), where `set --sprint` refuses a draft item into an active sprint, `python3 _tools/backlog.py drop ID --why W`, `python3 _tools/backlog.py reopen ID --why W` to take a done item back to work; a bug's severity is set by `new`), then run `fmt` and `check`.
 
 ## Finish
+Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-backlog:finish`.
+
 Commit the item files with a `KB-Work:` trailer naming the items, in the message's last paragraph with `Co-Authored-By` and the other trailers. Commit only when the user asked. Then run `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops).

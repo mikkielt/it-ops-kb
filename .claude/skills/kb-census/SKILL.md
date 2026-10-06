@@ -8,13 +8,20 @@ argument-hint: "[YYYY-MM-DD, default today] [--resume]"
 
 Census date: the argument, else today (`YYYY-MM-DD`). `--resume`: continue from the existing `kb/public/_census/<date>.csv` (skip phases done: its `outcome` column shows what phase 2 already read).
 
-Read these sections of the `kb/_self/` docs first, not the whole docs, in one command (`selfdoc.py section` prints the section under each heading with its line numbers). The commands are spelled out in the phases below:
+Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
 ```
-python3 _tools/selfdoc.py section maintaining "Conduct for changes" content-rules "Facts and tags" content-rules "Ledgers and retrieval data" content-rules "Licensing and privacy" git.md "Workflow" git.md "Commit trailers"
+python3 _tools/selfdoc.py section maintaining "Conduct for changes"
 ```
 
-What each gives: `maintaining "Conduct for changes"` the gate, commit messages; `git "Workflow"` the gate, the census tag; `git "Commit trailers"` `KB-Verified`.
+Every other rule of `kb/_self/` is asked for, not read up front. When a step below is reached, run its set: `python3 _tools/rag.py pack --root _self --set <name>` prints that step's tested rule questions, the line that answers each (`path:line`) and the decisions tied to them. The sets of this skill:
+- `kb-census:phase0`: before Phase 0, the fact diff
+- `kb-census:phase1`: before Phase 1, the mechanical verdicts
+- `kb-census:phase2`: before Phase 2, reading what the checks could not decide
+- `kb-census:phase3`: before Phase 3, dates
+- `kb-census:phase4`: before Phase 4, the independent check and the tag
+
+Any other rule: `python3 _tools/rag.py pack --root _self "<question>"` (`-q` for several parts, `--budget 400`). `coverage: good` names a tested question: follow its line. `weak` or `none`: `python3 _tools/kb_ask.py --root _self "<question>"` has a reader quote the answering lines from the sections, or read the section it names with `python3 _tools/selfdoc.py section DOC HEADING`. A rule you needed and no set or question gave you is a miss: say so in your report, with the question as you asked it.
 
 `AGENTS.md` covers lookups only.
 
@@ -28,17 +35,23 @@ Rules that hold throughout:
 - Never call `submit_feedback`. Never `--force` or `--no-verify`. One commit per logical step, with `--trailer "KB-Verified: <date>"` on commits that confirm sources.
 
 ## Phase 0: fact diff (no model)
+Rules of this phase: `python3 _tools/rag.py pack --root _self --set kb-census:phase0`.
+
 1. `python3 _tools/factdiff.py detect --date <date> --sitemaps` (every source; about 45 minutes at one request per 1.1 s per host, Learn being most of it). Each source is checked by its provider's cheapest reliable signal (`_tools/providers.csv`), then each fact of a changed, moved or gone source is resolved against its anchor. It writes `kb/public/_census/factdiff-<date>.csv`, the detection state in `_fetch_state.csv` and the snapshots of changed `copy` sources. Exit 1 only means some facts need review.
 2. `python3 _tools/factdiff.py apply kb/public/_census/factdiff-<date>.csv --date <date> --dry-run`, then with `--commit` instead of `--dry-run`: sources that did not change, or whose every fact was found word for word, are confirmed and dated, facts found word for word on another page are re-pointed to a new source row, and the result is committed with `KB-Verified: <date>`. No model reads any of it. Run the gate before pushing, as for any commit.
 3. `python3 _tools/factdiff.py review kb/public/_census/factdiff-<date>.csv` lists what is left for phase 2: each fact with its old and new passage (never the whole page).
 
 ## Phase 1: mechanical verdicts for the rest (no judgment)
+Rules of this phase: `python3 _tools/rag.py pack --root _self --set kb-census:phase1`.
+
 1. `python3 _tools/census.py check --date <date> --factdiff kb/public/_census/factdiff-<date>.csv` (about a minute with warm clones; clones go to `_cache/census/repos/`). It writes `kb/public/_census/<date>.csv` with one bucket per source: OK, CHANGED, GONE, NEWER-VERSION, NEEDS-READING, and the evidence (commit ids, dates, versions). The method per kind is in `census.py`'s docstring.
 2. `python3 _tools/census.py summary kb/public/_census/<date>.csv`. NEEDS-READING with note `blocked` means this environment's network policy denied the host: tell the user which hosts (the environment's network settings can allow them) and continue with the rest; those sources stay unconfirmed.
 3. Look at the non-OK rows for mechanical false positives before any reading (a monorepo tag family, a moved url, a shallow clone). Fix `census.py` if the rule is wrong, never the log by hand, and rerun check.
 4. Commit the log: `python3 _tools/build_index.py`, the gate, then `git add kb/public/_census/<date>.csv` and commit `docs(kb): census <date> phase 1 verdicts`.
 
 ## Phase 2: read what the checks could not decide
+Rules of this phase: `python3 _tools/rag.py pack --root _self --set kb-census:phase2`.
+
 Scope: every row whose bucket is not OK and whose note is not `blocked`.
 1. Group the rows by the domain of the files citing them (`used_in`), so each group owns a disjoint set of article files (a source cited in two groups goes to the group with most of its citations; its other files are listed as foreign).
 2. Start one subagent per group, in parallel, with this brief (fill in the group's rows and files):
@@ -57,11 +70,15 @@ Scope: every row whose bucket is not OK and whose note is not `blocked`.
 5. Per group: `python3 _tools/build_index.py`, `python3 _tools/doc2query.py stale` (reworded facts orphan their expansion keys: `python3 _tools/doc2query.py prune` removes them), the gate (`check.py`, `build_index.py --check`, `kbgit.py fix --check`, `tests.py`, which runs `rag.py eval`), and a commit (`docs(kb): census <date>: <group>`, `git commit --trailer "KB-Verified: <date>"`). Sources with hash ids never collide across groups; `_sources.csv` is only ever written by you.
 
 ## Phase 3: dates, by script
+Rules of this phase: `python3 _tools/rag.py pack --root _self --set kb-census:phase3`.
+
 1. `python3 _tools/census.py confirm kb/public/_census/<date>.csv --date <date> --dry-run`, then without `--dry-run`. It sets `retrieved_utc` and a `confirmed <date>: <proof>` suffix in `version_or_date` for confirmed sources (bucket OK, or outcome confirmed/updated), `checked_utc` in `_fetch_state.csv`, and `retrieved_utc` of every article whose sources all carry the date.
 2. Decisions whose context the census broke: `python3 _tools/kbdecide.py sweep --dry-run --date <date>`, then `sweep --date <date>` without `--dry-run`. It invalidates them and prints `ID relink ROOT fact:KEY PATH:LINE text` for a reworded fact; report each invalidation and relink line in the census report (`kbdecide.py relink ID --fact PATH:LINE` repoints a decision once the fact is the right one).
 3. `python3 _tools/build_index.py`, the gate, and commit `docs(kb): census <date>: confirmed dates` with `git commit --trailer "KB-Verified: <date>"`.
 
 ## Phase 4: independent check, then the tag
+Rules of this phase: `python3 _tools/rag.py pack --root _self --set kb-census:phase4`.
+
 1. `python3 _tools/census.py sample kb/public/_census/<date>.csv --changed 0.10 --ok 0.05 --seed <any>`.
 2. Give the sample to a fresh subagent that did not do phase 2: for each row it reads the source and the citing facts and answers agree/disagree with a reason. It changes nothing.
 3. Every disagreement is a finding: fix it (and look for the same mistake in its group), then rerun this phase's sample with another seed.
