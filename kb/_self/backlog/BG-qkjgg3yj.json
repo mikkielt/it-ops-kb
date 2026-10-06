@@ -2,7 +2,7 @@
   "id": "BG-qkjgg3yj",
   "kind": "bug",
   "title": "The headless delegation sentences state a .claude/ write refusal that depends on the permission mode as always true",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mlemdqbn",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,18 @@
   "depends_on": [
     "BG-bnvqwxiw"
   ],
-  "claimed_by": "worker-permmode"
+  "evidence": {
+    "commit": "471f05e0495d27e2029e51658bf6b2a73071b315",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;L=[l for f in ('.claude/skills/kb-sprint/SKILL.md','kb/_self/backlog.md','.claude/agents/kb-worker.md') for l in pathlib.Path(f).read_text(encoding='utf-8').splitlines() if 'cannot write under' in l];print(len(L),[('permission mode' in l) for l in L]);sys.exit(0 if L and all('permission mode' in l for l in L) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0b6b227b63d3e011"
+      }
+    ]
+  }
 }
