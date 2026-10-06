@@ -830,6 +830,7 @@ RESERVED = {"if", "then", "elif", "else", "do", "while", "until", "!", "{", "(",
 CLOSERS = {"fi", "done", "esac", "}", ")"}  # end a compound command: no command word
 PREFIX_RUNNERS = {"env", "command", "exec", "nohup", "nice"}  # run the utility named after their options and assignments
 RUNNER_ARG_OPTS = {"-u", "--unset", "-n", "-C", "--chdir", "-S"}  # options of a prefix runner that take a value
+TIMEOUT_ARG_OPTS = {"-s", "--signal", "-k", "--kill-after"}  # options of timeout that take a value
 
 
 def command_word(tokens):
@@ -841,13 +842,25 @@ def command_word(tokens):
         t = tokens[i]
         if t in RESERVED or t in CLOSERS or re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", t):
             i += 1
-        elif os.path.basename(t) in PREFIX_RUNNERS:
+            while t == "time" and i < len(tokens) and tokens[i].startswith("-") and tokens[i] != "--":
+                i += 1  # time's own options (-p)
+        elif os.path.basename(t) in PREFIX_RUNNERS or os.path.basename(t) == "timeout":
+            timeout = os.path.basename(t) == "timeout"
             i += 1
+            opts = TIMEOUT_ARG_OPTS if timeout else RUNNER_ARG_OPTS
             while i < len(tokens) and (tokens[i].startswith("-") or re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", tokens[i])):
-                i += 2 if tokens[i] in RUNNER_ARG_OPTS else 1
+                i += 2 if tokens[i] in opts else 1
+            if timeout and i < len(tokens):
+                i += 1  # timeout's duration
         else:
             return t, tokens[i + 1:]
     return None, []
+
+
+def is_c_flag(arg):
+    """True when ARG makes a shell read its next argument as the command string: -c, cmd's /c, -command, or short
+    flags combined with c (-ec, -xc)."""
+    return arg.lower() in ("-c", "/c", "-command") or bool(re.fullmatch(r"-[a-z]{0,3}c[a-z]{0,3}", arg))
 
 
 def own_words(argv, depth=3):
@@ -860,9 +873,9 @@ def own_words(argv, depth=3):
         return set()
     prog = os.path.basename(argv[0]).lower()
     rest = argv[1:]
-    while prog in SHELLS and rest and rest[0].startswith("-") and rest[0].lower() not in ("-c", "-command"):
+    while prog in SHELLS and rest and rest[0].startswith("-") and not is_c_flag(rest[0]):
         rest = rest[1:]
-    if not (prog in SHELLS and rest and rest[0].lower() in ("-c", "/c", "-command") and len(rest) > 1) or depth <= 0:
+    if not (prog in SHELLS and rest and is_c_flag(rest[0]) and len(rest) > 1) or depth <= 0:
         return {os.path.basename(argv[0])}
     try:
         lex = shlex.shlex(rest[1].replace("\n", " ; "), posix=prog not in ("cmd", "cmd.exe"), punctuation_chars=True)
