@@ -2,7 +2,7 @@
   "id": "BG-v2gqk7zd",
   "kind": "bug",
   "title": "land warns of no work rows for an item whose only window is a branch row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "BG-22jdzelu"
-  ]
+  ],
+  "claimed_by": "worker-landwarn"
 }
