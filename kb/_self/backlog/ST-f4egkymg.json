@@ -2,7 +2,7 @@
   "id": "ST-f4egkymg",
   "kind": "story",
   "title": "Following reopen's hint for a gone touch leaves the item able to pass done",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,18 @@
     }
   ],
   "notes": "Premise: the item's check shows done refusing after the hint is followed ('commit ... changed src/old_test.py, outside touches', exit 1, [True, True, False]) on 2026-10-06; with the gone touch kept and only the check repointed the same planted repo passes done (exit 0). In SP-hyp6o7hl, after BG-c4cjoyyi, following the hint made done refuse 'commit <work commit> changed _tools/test_bl_items.py, outside touches'. The hint is bl_items.cmd_reopen; the refusal is bl_land.out_of_scope in cmd_done. ST-zzsbdbi7 plans a runbook sentence that a gone path is removed by re-setting the touch list: whichever answer g1 gets, that sentence must agree with it.",
-  "claimed_by": "worker-f4egky"
+  "evidence": {
+    "commit": "2f8131d029fbda8e2150263a9ca9588357d113b0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,shlex,shutil,subprocess as sp,sys,tempfile\nfrom pathlib import Path\nS=Path.cwd();t=Path(tempfile.mkdtemp());d=t/'r';c=1\ntry:\n    b=d/'kb'/'_self'/'backlog';b.mkdir(parents=True);(d/'src').mkdir()\n    g=lambda *a:sp.run(['git','-C',str(d),'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True,check=True)\n    W=lambda p,s:Path(d/p).write_text(s)\n    B=lambda *a:sp.run([sys.executable,str(S/'_tools'/'backlog.py'),'--root',str(d),*a],capture_output=True,text=True)\n    g('init','-q','-b','main');W('src/old_test.py','x=1\\n');W('src/x.py','print(1)\\n');g('add','-A');g('commit','-qm','base')\n    W('src/old_test.py','x=2\\n');W('src/x.py','print(2)\\n');g('commit','-qam','work\\n\\nKB-Work: ST-aaaaaaaa')\n    g('rm','-q','src/old_test.py');g('commit','-qm','move tests\\n\\nKB-Work: ST-bbbbbbbb');g('update-ref','refs/remotes/origin/main','HEAD')\n    T=['src/x.py','src/old_test.py']\n    W('kb/_self/backlog/ST-aaaaaaaa.json',json.dumps({'id':'ST-aaaaaaaa','kind':'story','title':'T','status':'done','priority':'P3','rank':0,'goal':'g','checks':[{'run':['python3','src/old_test.py']}],'touches':T,'evidence':{'commit':'0'*40,'checks':[]}}))\n    r=B('reopen','ST-aaaaaaaa','--why','its check names a deleted test');o=r.stdout+r.stderr;print(o.strip())\n    gone=[p for p in T if 'names '+p in o]\n    hint=[ln.split('backlog.py',1)[1] for ln in o.splitlines() if 'backlog.py set' in ln and '--touch' in ln]\n    for h in hint[:1]:\n        a=shlex.split(h);k=a.index('PATH') if 'PATH' in a else None\n        if k is not None:a=a[:k]+[x for x in T if x not in gone][:1]+[y for p in [x for x in T if x not in gone][1:] for y in ('--touch',p)]+[x for x in a[k+1:] if x!='...']\n        print('follow:',a);s=B(*a);print(s.stdout+s.stderr)\n    s=B('set','ST-aaaaaaaa','--check','python3 src/x.py');print(s.stdout+s.stderr)\n    r2=B('done','ST-aaaaaaaa');print('done exit',r2.returncode,(r2.stdout+r2.stderr).strip()[-400:])\n    R=[r.returncode==0,bool(gone),r2.returncode==0];print(R);c=0 if all(R) else 1\nexcept Exception as x:print('check error',type(x).__name__,str(x)[:200])\nfinally:shutil.rmtree(t,ignore_errors=True)\nsys.exit(c)"
+        ],
+        "exit": 0,
+        "sha256": "7804a585c8a93340"
+      }
+    ]
+  }
 }
