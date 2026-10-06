@@ -2,7 +2,7 @@
   "id": "BG-4z7uzdj3",
   "kind": "bug",
   "title": "own_words misses the command words of a shell run with combined flags (bash -ec), after time -p and after timeout N",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-4z7uzd"
 }
