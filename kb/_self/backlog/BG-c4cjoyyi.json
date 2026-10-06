@@ -2,7 +2,7 @@
   "id": "BG-c4cjoyyi",
   "kind": "bug",
   "title": "reopen refuses a done item whose touches name a file a later commit deleted, so its stale check can never be fixed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyp6o7hl",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-c4cjoyyi"
+  "evidence": {
+    "commit": "e0f835e8edac02470e42c084df9f936a12c46fa9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile;d=tempfile.mkdtemp();b=os.path.join(d,'kb','_self','backlog');os.makedirs(b);os.makedirs(os.path.join(d,'src'));g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@example.com',*a],capture_output=True);g('init','-q');open(os.path.join(d,'src','old_test.py'),'w').write('x=1\\n');g('add','-A');g('commit','-qm','a');os.remove(os.path.join(d,'src','old_test.py'));g('add','-A');g('commit','-qm','b');it={'id':'BG-aaaaaaaa','kind':'bug','title':'T','status':'done','priority':'P3','rank':0,'severity':'S3','goal':'g','repro':{'run':['python3','-c','pass']},'checks':[{'run':['python3','src/old_test.py']}],'touches':['src/old_test.py'],'evidence':{'commit':'0'*40,'checks':[]}};open(os.path.join(b,'BG-aaaaaaaa.json'),'w').write(json.dumps(it));p=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'reopen','BG-aaaaaaaa','--why','its check names a deleted test'],capture_output=True,text=True);print(p.stdout+p.stderr);sys.exit(p.returncode)"
+        ],
+        "exit": 0,
+        "sha256": "d61e89ebb2a47cba"
+      }
+    ]
+  }
 }
