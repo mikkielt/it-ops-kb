@@ -2425,3 +2425,19 @@ _Agent: kb-research_
 - See windows/dev-drive.md, defender/asr-and-antivirus.md, windows/process-parent-and-command-line.md, python/interpreter-startup.md, gitlab/git-trailers-and-hooks.md, and the earlier answer QK-subprocess-heavy-pytest-suite-run-faster.
 
 _Agent: kb-research_
+
+## QK-hook-cwd-claude-p-plugin-env. To tell which session a hook belongs to: does the hook input `cwd` follow Claude's `cd` into a subdirectory or worktree, do a `claude -p` run's `UserPromptSubmit` and `SessionEnd` hooks run, and which environment variables does a plugin hook get?
+- `cwd` follows Claude: it is the worktree root after Claude enters a worktree and the new directory after Claude runs `cd`, while `${CLAUDE_PROJECT_DIR}` stays the project root where the session started. (`claude/hooks.md:71`) [DOC S743, S-j22fjuka]
+- A `cd` carries over to later Bash commands only inside the project directory or an added working directory; elsewhere the shell resets to the project directory, and subagent sessions never carry a directory change over. (`claude/hooks.md:72`) [DOC S-2ip5zngf]
+- `CwdChanged` runs when a shell command in the main conversation changes the directory, with `old_cwd` and `new_cwd` in its input. (`claude/hooks.md:73`) [DOC S743]
+- A `-p` run started in a worktree path gives its hooks that path as `cwd` until Claude `cd`s; that the first `cwd` is the launch directory is derived. (`claude/hooks.md:75`) [DER S743, S-pmhgjvef, S-2ip5zngf: `cwd` per invocation, the launch directory as primary working directory, the `cd` rule]
+- `SessionStart` hooks run in a `-p` run (stream-json events ahead of `system/init`). (`claude/hooks.md:89`) [DOC S1800]
+- `UserPromptSubmit` runs when a prompt is submitted, also for prompts nobody typed; no page names it in a `-p` run, and the kb's fact that it fires for the prompt a `-p` run is given is derived. (`claude/hooks.md:92`, `claude/hooks.md:93`) [DOC S743, S-av5665nf] [DER S1800, S743: `-p` runs settings hooks without `--bare`, `UserPromptSubmit` runs on a submitted prompt]
+- `SessionEnd` is listed as running "when a session terminates"; the pages state the `-p` case only for SIGTERM, where `SessionEnd` hooks are the only hooks that still run before exit with code 143; a normal end of a `-p` run is not stated. (`claude/hooks.md:94`, `claude/hooks.md:66`, `claude/ci-and-headless.md:28`) [DOC S743, S1800]
+- Both hook forms export `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` to the hook process. (`claude/hooks.md:133`) [DOC S743]
+- `${CLAUDE_PLUGIN_ROOT}` is the version-specific cache directory `cache/<marketplace>/<plugin>/<version>/`, which changes with every version; `${CLAUDE_PLUGIN_DATA}` is `data/<plugin-id>/`, persists across updates and is deleted on uninstall from the last scope unless `--keep-data`; `<id>` replaces characters other than letters, digits, `_` and `-` with `-`. (`claude/plugins.md:61`, `claude/plugins.md:62`, `claude/plugins.md:106`, `claude/plugins.md:107`) [DOC S-toe7z3kj, S-i7if5i7z]
+- Conclusion: a hook that must know where Claude works reads `cwd` from its input, and one that must find a script shipped with the project or plugin uses `${CLAUDE_PROJECT_DIR}` or `${CLAUDE_PLUGIN_ROOT}`; neither variable changes after a `cd`, and a plugin hook run from the cache copy reads the project through `cwd` and keeps state under `${CLAUDE_PLUGIN_DATA}`. A `-p` run's `SessionStart` and `UserPromptSubmit` hooks can be counted on, its `SessionEnd` hook not on the pages alone. [DER S743, S1800, S-toe7z3kj: from the bullets above]
+- Open: whether the first `cwd` equals the launch directory, whether `UserPromptSubmit` fires in a `-p` run, and whether a normal `-p` exit runs `SessionEnd` hooks are not stated (see `_gaps.md`). [UNK]
+- See claude/hooks.md, claude/plugins.md, claude/ci-and-headless.md, and the earlier answer QK-claude-p-runs-hooks-run-acceptedits.
+
+_Agent: kb-research_
