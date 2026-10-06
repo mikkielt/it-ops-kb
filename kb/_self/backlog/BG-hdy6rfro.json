@@ -20,9 +20,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "test_spool_escape_needs_own_spool"
+        "-c",
+        "import os,sys,tempfile\nsys.path.insert(0,'_tools')\nimport ql_deliver as q\ne=os.environ\ne['PYTEST_CURRENT_TEST']='t'\ne['KB_OPS_TEST_SPOOL']='1'\ne.pop('CLAUDE_PLUGIN_DATA',None)\nassert q.inside_test()\nfor p in (os.path.join(str(q.HOME),'_cache'),str(q.HOME)):\n    e['CLAUDE_PLUGIN_DATA']=p\n    assert q.inside_test(),p\ne['CLAUDE_PLUGIN_DATA']=tempfile.mkdtemp()\nassert not q.inside_test()\ndel e['KB_OPS_TEST_SPOOL']\nassert q.inside_test()\n"
       ]
     }
   ],
@@ -32,17 +31,16 @@
     "kb/_self/querylog.md"
   ],
   "evidence": {
-    "commit": "314173c099ddbcb8498516214dd530931761dc0e",
+    "commit": "70018828dff0b97c6488d4e635b8f16b55fe5d20",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "test_spool_escape_needs_own_spool"
+          "-c",
+          "import os,sys,tempfile\nsys.path.insert(0,'_tools')\nimport ql_deliver as q\ne=os.environ\ne['PYTEST_CURRENT_TEST']='t'\ne['KB_OPS_TEST_SPOOL']='1'\ne.pop('CLAUDE_PLUGIN_DATA',None)\nassert q.inside_test()\nfor p in (os.path.join(str(q.HOME),'_cache'),str(q.HOME)):\n    e['CLAUDE_PLUGIN_DATA']=p\n    assert q.inside_test(),p\ne['CLAUDE_PLUGIN_DATA']=tempfile.mkdtemp()\nassert not q.inside_test()\ndel e['KB_OPS_TEST_SPOOL']\nassert q.inside_test()\n"
         ],
         "exit": 0,
-        "sha256": "fa5621bdbd7e2d1c"
+        "sha256": "e3b0c44298fc1c14"
       },
       {
         "run": [
