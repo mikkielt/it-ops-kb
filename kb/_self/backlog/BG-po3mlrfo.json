@@ -1,0 +1,24 @@
+{
+  "id": "BG-po3mlrfo",
+  "kind": "bug",
+  "title": "Trailers: 5 commit(s) on main without a KB-Work trailer git reads",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "No commit of the last 7 days on origin/main has a KB-Work line git reads as no trailer, or changes code with no KB-Work and no KB-Auto trailer.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/backlog.py",
+      "intake",
+      "--status",
+      "100be800a2b5"
+    ]
+  },
+  "links": [
+    "fingerprint 100be800a2b5",
+    "detector trailers"
+  ],
+  "notes": "changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work or KB-Auto trailer: 5c3bfd0ea7, 9286c5e81c, ad70d90965, d7a88846d7, ffe1273a0c"
+}

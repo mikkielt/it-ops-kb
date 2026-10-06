@@ -42,7 +42,8 @@
     "kb/_self/token-efficiency.md"
   ],
   "depends_on": [
-    "ST-pg5jyebo"
+    "ST-pg5jyebo",
+    "BG-gkfogmmx"
   ],
   "links": [
     "kb/_self/reports/test-suite-speed.md",
