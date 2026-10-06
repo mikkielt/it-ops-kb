@@ -2,7 +2,7 @@
   "id": "BG-lbazs72w",
   "kind": "bug",
   "title": "A session on a work/<id> branch that is not that item's worker opens a work window no land closes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/querylog.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-leak"
+  "evidence": {
+    "commit": "d88f2d3d9335569917fb317a93af443c0d3fe77e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as sp,sys,tempfile,shutil\nfrom pathlib import Path\nS=Path.cwd();t=Path(tempfile.mkdtemp());c=1\ntry:\n    g=lambda *a:sp.run(['git','-c','user.name=t','-c','user.email=t@t',*a],cwd=t/'r',capture_output=True,check=True)\n    (t/'r').mkdir();g('init','-q');(t/'r'/'f').write_text('x');g('add','f');g('commit','-qm','i');g('checkout','-qb','work/ST-zzzzzzzz')\n    os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(S);(t/'d'/'querylog').mkdir(parents=True);(t/'d'/'querylog'/'config.json').write_text('{\"mode\": \"local\"}')\n    sys.path.insert(0,str(S/'_tools'));import ql_capture as q\n    sp_=q.spool_dir();assert sp_ is not None and str(sp_).startswith(str(t)),'spool not in the temp dir'\n    sp_.mkdir(parents=True,exist_ok=True)\n    r=q.branch_row(sp_,'s1',{'cwd':str(t/'r')},'p1')\n    print('branch row for a work/<id> branch with no item file:',r and r.get('item'));c=0 if r is None else 1\nexcept Exception as x:print('check error',type(x).__name__,str(x)[:150])\nfinally:shutil.rmtree(t,ignore_errors=True)\nsys.exit(c)\n"
+        ],
+        "exit": 0,
+        "sha256": "2182a8fbf603432e"
+      }
+    ]
+  }
 }
