@@ -2,7 +2,7 @@
   "id": "ST-spywrqpp",
   "kind": "story",
   "title": "Work done in a worktree session reaches backlog.py cost as work rows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qzip6qar",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,18 @@
     "kb/_self/usage.md"
   ],
   "notes": "Housekeeping 2026-10-06: the -k worktree_session_work_rows selector named a test the suite rules no longer allow; the check builds a temporary clone with a linked worktree, replays a worktree session's hook events (claim, done, two prompts) through querylog.py capture and asks bl_cost.open_lines of the clone for the item's work line; it exits 1 today. Root cause found by the housekeeping: _tools/ql_base.py places() keys the spool on the checkout the running _tools sits in, so a worktree session spools beside its own worktree; the reader side (bl_cost.open_lines, bl_base.main_worktree_spool, ql_distill) reads only the clone's and the main worktree's spool. _tools/ql_base.py joins the touches for that; if the fix lands on the reader side instead, _tools/bl_cost.py, _tools/bl_base.py and _tools/ql_distill.py need adding first.",
-  "claimed_by": "worker-spywrq"
+  "evidence": {
+    "commit": "c463d5bcbf447ff4f424427dbe6ad2b457b0f349",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,shutil,subprocess as sp,sys,tempfile\nfrom pathlib import Path\nS=Path.cwd();t=Path(tempfile.mkdtemp());c=1\ntry:\n    g=lambda *a,cwd:sp.run(['git','-c','user.name=t','-c','user.email=t@t',*a],cwd=cwd,capture_output=True,check=True)\n    m,w=t/'it-ops-kb',t/'it-ops-kb-worker2';m.mkdir();g('init','-q',cwd=m)\n    shutil.copytree(S/'_tools',m/'_tools',ignore=shutil.ignore_patterns('__pycache__','fixtures'));g('add','-A',cwd=m);g('commit','-qm','i',cwd=m)\n    g('worktree','add','-q','-b','work/ST-abcdefgh',str(w),cwd=m)\n    i='ST-abcdefgh';u=dict(input_tokens=1,cache_creation_input_tokens=2,cache_read_input_tokens=3,output_tokens=4)\n    (t/'tr').write_text(chr(10).join(json.dumps(r) for r in [dict(type='user',promptId='p1',message=dict(role='user',content='x')),dict(type='assistant',requestId='r1',message=dict(model='claude-sonnet-5-5',usage=u,content=[])),dict(type='user',promptId='p2',message=dict(role='user',content='y'))])+chr(10))\n    e=dict(os.environ,CLAUDE_PROJECT_DIR=str(w));e.pop('CLAUDE_PLUGIN_DATA',None);e.pop('CLAUDE_PLUGIN_ROOT',None)\n    def h(**k):sp.run([sys.executable,str(w/'_tools'/'querylog.py'),'capture'],input=json.dumps(dict(dict(session_id='s1',cwd=str(w),transcript_path=str(t/'tr')),**k)),text=True,cwd=w,env=e,capture_output=True)\n    h(hook_event_name='UserPromptSubmit',prompt_id='p1',prompt='x')\n    for v in ('claim','done'):h(hook_event_name='PostToolUse',prompt_id='p1',tool_name='Bash',tool_response=dict(stdout='ok'),tool_input=dict(command='python3 _tools/backlog.py %s %s'%(v,i)))\n    h(hook_event_name='UserPromptSubmit',prompt_id='p2',prompt='y')\n    sys.path.insert(0,str(m/'_tools'));import bl_cost\n    L=bl_cost.open_lines(str(m))[0];print('work lines for',i,':',[l for l in L if l.get('item')==i]);c=0 if any(l.get('item')==i for l in L) else 1\nexcept Exception as x:print('check error',type(x).__name__,str(x)[:150])\nfinally:shutil.rmtree(t,ignore_errors=True)\nsys.exit(c)"
+        ],
+        "exit": 0,
+        "sha256": "826ee709634e1e56"
+      }
+    ]
+  }
 }
