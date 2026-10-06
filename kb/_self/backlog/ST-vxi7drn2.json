@@ -12,9 +12,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "dropped_ids_partial_removal_warned"
+        "-c",
+        "import subprocess as S, sys, tempfile, pathlib, io, contextlib\nR = pathlib.Path.cwd()\nsys.path.insert(0, str(R / '_tools'))\nimport perfcheck\nd = pathlib.Path(tempfile.mkdtemp()); t = d / '_tools'; t.mkdir()\nw = {'mod_live.py': 'def f():\\n    return 1\\n', 'mod_auto.py': 'def g():\\n    return 2\\n', 'test_x.py': 'import mod_auto\\nimport mod_live\\n\\ndef test_c():\\n    pass\\n', 'test_stays.py': 'def test_new():\\n    pass\\n'}\nfor n, s in w.items(): (t / n).write_text(s)\ndef git(*a): S.run(['git', '-c', 'user.name=t', '-c', 'user.email=t@example.com', *a], cwd=d, check=True, capture_output=True)\ngit('init', '-q'); git('add', '-A'); git('commit', '-qm', 'b')\n(t / 'mod_auto.py').unlink(); (t / 'test_x.py').unlink(); git('add', '-A'); git('commit', '-qm', 'r')\ndef run(reason):\n    f = d / 'drop.txt'; f.write_text('# ' + reason + '\\n_tools/test_x.py::test_c\\n')\n    o = io.StringIO()\n    with contextlib.redirect_stdout(o): perfcheck.main(['dropped', '--file', str(f)], root=d)\n    return o.getvalue()\nm = '_tools/test_x.py (1 id(s)) is gone, but modules it tested are still present: mod_live'\na = run('test_x.py went with mod_auto.py'); b = run('its mod_live tests moved to test_stays.py')\nassert m in a, a\nassert m not in b, b\n"
       ]
     }
   ],
@@ -29,17 +28,16 @@
     "_tools/test_testmap.py"
   ],
   "evidence": {
-    "commit": "a0bab5a940df252abdb4bffa5915f342523b29dc",
+    "commit": "ad64fa868efda41055328fd3b1badaf98685403e",
     "checks": [
       {
         "run": [
           "python3",
-          "_tools/tests.py",
-          "-k",
-          "dropped_ids_partial_removal_warned"
+          "-c",
+          "import subprocess as S, sys, tempfile, pathlib, io, contextlib\nR = pathlib.Path.cwd()\nsys.path.insert(0, str(R / '_tools'))\nimport perfcheck\nd = pathlib.Path(tempfile.mkdtemp()); t = d / '_tools'; t.mkdir()\nw = {'mod_live.py': 'def f():\\n    return 1\\n', 'mod_auto.py': 'def g():\\n    return 2\\n', 'test_x.py': 'import mod_auto\\nimport mod_live\\n\\ndef test_c():\\n    pass\\n', 'test_stays.py': 'def test_new():\\n    pass\\n'}\nfor n, s in w.items(): (t / n).write_text(s)\ndef git(*a): S.run(['git', '-c', 'user.name=t', '-c', 'user.email=t@example.com', *a], cwd=d, check=True, capture_output=True)\ngit('init', '-q'); git('add', '-A'); git('commit', '-qm', 'b')\n(t / 'mod_auto.py').unlink(); (t / 'test_x.py').unlink(); git('add', '-A'); git('commit', '-qm', 'r')\ndef run(reason):\n    f = d / 'drop.txt'; f.write_text('# ' + reason + '\\n_tools/test_x.py::test_c\\n')\n    o = io.StringIO()\n    with contextlib.redirect_stdout(o): perfcheck.main(['dropped', '--file', str(f)], root=d)\n    return o.getvalue()\nm = '_tools/test_x.py (1 id(s)) is gone, but modules it tested are still present: mod_live'\na = run('test_x.py went with mod_auto.py'); b = run('its mod_live tests moved to test_stays.py')\nassert m in a, a\nassert m not in b, b\n"
         ],
         "exit": 0,
-        "sha256": "d7f4eb00fddf34cb"
+        "sha256": "e3b0c44298fc1c14"
       }
     ]
   }
