@@ -72,8 +72,8 @@ Earlier the same day, under the CI jobs' load (23:34), the system Python took 78
 
 ## Cold trees: first open and the pack index
 
-- **First open of new files** (`firstopen.py`, `hardlink.py`): in a fresh `git clone` of the kb, reading every one of its 1,841 files once took 18.9 s and the second read 0.3 s; `check.py` then took 1.5 s. In a second fresh clone not read first, `check.py` took 15.3 s, then 1.4 s. A `shutil.copytree` of a read clone gave 15.3 s for its first `check.py`. A hard-linked copy (`os.link` per file) of a read template took 0.42 s for its first full read, a plain copy 19.4 s. The cost follows the file, not the name: it fits Defender's synchronous scan of a new file on open, which a Defender performance recording would confirm (ST-xjb4wykm).
-- **Cold pack index** (`cold.py`): in a fresh clone the first `rag.py pack` took 12.8 s and the next 0.29 s; `rag.py eval` took 21.2 s cold and 7.5 s warm. The index is a file named by the content fingerprint (`kbfacts.index_path`), so every clone of the same seed could reuse one built once (ST-4mcoplex).
+- **First open of new files** (`firstopen.py`, `hardlink.py`): in a fresh `git clone` of the kb, reading every one of its 1,841 files once took 18.9 s and the second read 0.3 s; `check.py` then took 1.5 s. In a second fresh clone not read first, `check.py` took 15.3 s, then 1.4 s. A `shutil.copytree` of a read clone gave 15.3 s for its first `check.py`. A hard-linked copy (`os.link` per file) of a read template took 0.42 s for its first full read, a plain copy 19.4 s. The cost follows the file, not the name: it fits Defender's synchronous scan of a new file on open, which the Defender performance recording below confirms.
+- **Cold pack index** (`cold.py`): in a fresh clone the first `rag.py pack` took 12.8 s and the next 0.29 s; `rag.py eval` took 21.2 s cold and 7.5 s warm. The index is a file named by a content key (`kbfacts.index_path`), and a linked worktree of a clone reuses the clone's index for unchanged content: on 2026-10-07 a fresh worktree's first `rag.py pack` took 0.7 s against 14.3 s before. No git scenario of today's suite builds an index.
 
 ## stress_test.py
 
@@ -107,3 +107,22 @@ The figures above describe the suite as it was on 2026-09-29/30. It has since be
 | full, `KB_TEST_WORKERS=6` | 6 | 53 | 11 | 16.1 s | not read |
 
 The four end-to-end scenarios hold most of the worker time (sync 13.6 s, land 13.4 s, pre-push 10.9 s, publish 10.1 s); no other file takes 5 s. The wall time is the slowest file plus the workers' start, which is why files are handed to the workers slow ones first (`conftest.SLOW_FIRST`) and the default worker cap covers one worker per file. The ceiling's seconds are 20 on macOS and 60 on Windows and Linux; the Windows host and the two CI runners are not measured in this section.
+
+## Defender's cost on the suite (Windows host, 2026-10-07)
+
+One full `python3 _tools/tests.py` at `96c30c7` (54 tests, 11 files, 8 workers), run while an elevated session recorded Defender for 180 s: `New-MpPerformanceRecording -RecordTo <file.etl> -Seconds 180`, then `Get-MpPerformanceReport -Path <file.etl>` with `-TopProcesses`, `-TopExtensions`, `-TopFiles` and `-TopScans 20000` (`kb/public/defender/asr-and-antivirus.md`). Defender platform 4.18.26090.9, real-time protection on with no exclusions. The suite passed in 97.5 s (pytest's time) against 84-88 s for the same suite on the quiet host the same day (`kb/_self/reports/windows-run.md`), the recording's own load included.
+
+The recording holds 9,106 scans and 84.2 s of scan time. Scan time is summed over the scans, which the 8 workers make at once, so it is not wall time.
+
+| scanned files under | scans | scan seconds |
+|---|---|---|
+| pytest's scratch trees (`%LOCALAPPDATA%\Temp\pytest-of-<user>\`) | 3,644 | 44.2 |
+| the clone the suite runs in (its worktree) | 4,046 | 38.0 |
+| other Temp, Python and uv, the main checkout, the rest | 1,416 | 1.8 |
+
+- By process: `python.exe` 7,668 scans, 70.4 s; `python3.exe` 703, 11.7 s; every other process under 0.6 s.
+- By extension: `.md` 1,752 scans, 32.3 s; `.txt` 790, 19.3 s; `.json` 863, 9.0 s; `.csv` 608, 7.8 s; `.py` 353, 5.1 s; `.jsonl` 413, 4.5 s; `.pyc` 2,810, 1.7 s.
+- The single costliest scans, about 0.4-0.5 s each, are first opens of `kb/public/_anchors.csv`, `_conflicts.md` and `kb/_self/tools.md`, in the clone and in each scenario's `clone1` under pytest's scratch root.
+- `Get-MpPerformanceReport -TopPaths` grouped every scan under `c:` whatever `-TopPathsDepth` was given, so the table above groups `-TopScans` by path prefix instead.
+
+Settled by the operator (gate `scratch-root` of ST-xjb4wykm): no change. The scratch trees stay in the default per-user Temp root with synchronous scanning, so nothing was applied, and the cost above is the suite's standing cost on this host: about half of the scan time is the scratch trees, the other half the clone's own kb files read by the tools.
