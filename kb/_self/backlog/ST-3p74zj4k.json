@@ -45,6 +45,23 @@
       },
       "answer": "tempdir",
       "by": "operator"
+    },
+    {
+      "id": "testrows",
+      "kind": "provisional",
+      "question": "Isolating the query log home of every check and repro drops the test.run ops row of each tests.py run that done, land and precheck make through run_check (many item checks run tests.py -k NAME; the digest's ops block, ql_report.ops_lines, counts test.run rows and gives their median ms, and perfcheck reads none): what becomes of those rows? lose: accept losing them; the rows of direct runs and of the sync gate's tests.py --changed stay in the clone's spool. keep: keep them in the clone's spool, which needs tests.py to write its row to a spool run_check names in an environment variable, a change to _tools/tests.py outside this item's touches.",
+      "options": [
+        "lose",
+        "keep"
+      ],
+      "recommendation": "lose",
+      "class": "querylog",
+      "do": {
+        "lose": "ST-3p74zj4k",
+        "keep": "ST-3p74zj4k"
+      },
+      "answer": "lose",
+      "by": "agent"
     }
   ],
   "claimed_by": "worker-isolate"
