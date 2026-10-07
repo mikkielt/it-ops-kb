@@ -12,14 +12,17 @@
     "run": [
       "python3",
       "-c",
-      "import subprocess,sys;sys.path.insert(0,'_tools');import bl_items;r=[subprocess.run(c['run'],capture_output=True).returncode for c in bl_items.RESEARCH_CHECKS];print('research checks before any research:',r);sys.exit(1 if all(x==0 for x in r) else 0)"
+      "import subprocess,sys;sys.path.insert(0,'_tools');import bl_base,bl_items,bl_land;bl=bl_base.Backlog('.');s=[i for i,t in sorted(bl.items.items()) if t.get('goal_research') and t.get('status') in ('draft','todo') and not bl_land.research_without_facts(t) and not bl_land.item_commits(bl.root,[i])][:1];r=[subprocess.run([a.replace('{id}',i) for a in c['run']],capture_output=True).returncode for i in s for c in bl_items.RESEARCH_CHECKS];print('research checks of',s,'before any research:',r);sys.exit(0 if r and all(x==1 for x in r) else 1)"
     ]
   },
   "touches": [
     "_tools/bl_items.py",
     "kb/_self/code.md",
     "kb/_self/tools.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "_tools/bl_base.py",
+    "_tools/backlog.py",
+    "_tools/bl_land.py"
   ],
   "depends_on": [
     "ST-2zl47dfu",
