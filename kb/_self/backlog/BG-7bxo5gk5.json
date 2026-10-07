@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;c='e9a7d0bc45ea';ps=[p for _,ch in k.history_changes(c,c+'~1','.') for s,_,_,p in ch if s!='D'];a=k.allowlist('origin/main','.');h=[x for p,t in k.blobs(c,ps,'.').items() for x in k.file_hits(p,t,a)];print(h);sys.exit(1 if h else 0)"
+      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;c='e9a7d0bc45ea';ps=[p for _,ch in k.history_changes(c,c+'~1','.') for s,_,_,p in ch if s!='D'];a=k.allowlist('HEAD','.');h=[x for p,t in k.blobs(c,ps,'.').items() for x in k.file_hits(p,t,a)];print(h);sys.exit(1 if h else 0)"
     ]
   },
   "touches": [
