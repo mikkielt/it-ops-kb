@@ -1,0 +1,22 @@
+{
+  "id": "BG-7bxo5gk5",
+  "kind": "bug",
+  "title": "Publish refuses the made-up GUID in BG-nf6gcqsz's old repro, so nothing reaches the public home",
+  "status": "doing",
+  "sprint": "SP-gkbtjjce",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbgit.py publish passes commit e9a7d0bc: the patterned test id 00000000-0000-4000-8000-000000000001 its BG-nf6gcqsz repro added is in the allowlist publish reads from the projected origin/main (_tools/tests_allowlist.txt), so the GUID leak scan of the published range finds nothing in that file",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;c='e9a7d0bc45ea';ps=[p for _,ch in k.history_changes(c,c+'~1','.') for s,_,_,p in ch if s!='D'];a=k.allowlist('HEAD','.');h=[x for p,t in k.blobs(c,ps,'.').items() for x in k.file_hits(p,t,a)];print(h);sys.exit(1 if h else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/tests_allowlist.txt"
+  ],
+  "claimed_by": "bg-7bxo5gk5-session"
+}

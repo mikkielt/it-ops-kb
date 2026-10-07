@@ -62,6 +62,7 @@ secret  secret: "kq4gihvszzgn1p0r"  # Kubernetes Secret documentation sample val
 
 # synthetic ids in the query-log usage code and its tests (all-zero or repeated-digit stand-ins, not real sessions or entries)
 guid  00000000-0000-4000-8000-000000000000  # stand-in entry id to read a usage record with usage_line (_tools/ql_store.py)
+guid  00000000-0000-4000-8000-000000000001  # made-up row id in a backlog item's repro command (kb/_self/backlog/BG-nf6gcqsz.json, commit e9a7d0bc)
 guid  3f2a4c1e-0000-4000-8000-00000000abcd  # made-up session id in the usage tests (_tools/test_kbusage.py)
 guid  11111111-0000-4000-8000-0000000000b1  # repeated-digit entry id in the usage tests (_tools/test_kbusage.py)
 guid  11111111-0000-4000-8000-0000000000b2  # repeated-digit entry id in the usage tests (_tools/test_kbusage.py)
