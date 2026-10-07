@@ -2,7 +2,7 @@
   "id": "ST-uifoyk4w",
   "kind": "story",
   "title": "Review and retrospective gaps park as drafts; triage promotes one only when it names the fitness test it blocks",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-4rq725fe",
   "priority": "P1",
@@ -83,5 +83,38 @@
     }
   ],
   "notes": "Premise run 2026-10-08 (plan step 6): the rule is live text, kb/_self/backlog.md:225 (every gap becomes a bug, in this sprint if it is S1, else in the backlog) and .claude/skills/kb-sprint/SKILL.md review step 5; git log --diff-filter=A on kb/_self/backlog/*.json shows 375 of 501 item-adding commits are chore(backlog): file ..., most named file the SP-... review's gaps. Reproduces. Checks pass before the work by design (precheck 2026-10-08): rag.py eval --root _self pins every tested rule question and runs over the new row once it exists (eval has no per-row selection; the row's id in the eval output is the proof the review reads); backlog.py check and selfdoc.py check pin that the docs and items stay consistent after the rule change. The behaviour change is in prose rules the skills read, so no check can fail before it.",
-  "claimed_by": "worker-uifoyk4w"
+  "evidence": {
+    "commit": "497763b10230cf9a2ad7c74c71998aa43a94d5be",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--root",
+          "_self"
+        ],
+        "exit": 0,
+        "sha256": "1b201de4e81333a1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "56687122708c46f5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
