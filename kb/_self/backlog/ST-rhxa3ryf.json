@@ -2,7 +2,7 @@
   "id": "ST-rhxa3ryf",
   "kind": "story",
   "title": "The goal research story skips the live docs when the pack is good for every committed item",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,18 @@
   "depends_on": [
     "ST-bum7owtw"
   ],
-  "claimed_by": "kb-worker-rhxa3ryf"
+  "evidence": {
+    "commit": "4b6f0abe2c0eaddd8a3381a2f098bc2c7216b969",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;F=(\".claude/skills/kb-sprint/SKILL.md\",\"kb/_self/backlog.md\");r=[any(\"research story\" in l and \"weak or none\" in l for l in pathlib.Path(f).read_text(encoding=\"utf-8\").splitlines()) for f in F];print(r);sys.exit(0 if all(r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d72c373df05f3aae"
+      }
+    ]
+  }
 }
