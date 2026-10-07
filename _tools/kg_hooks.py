@@ -222,9 +222,94 @@ def cmd_install_hooks(a):
     return 0
 
 
+_NT = None  # _nt_api's bindings, made on first use
+
+
+def _nt_api():
+    """The Win32 and native calls _nt_parent_args needs, bound once with their argument types (ctypes, kernel32 and
+    ntdll; kb/public/windows/process-parent-and-command-line.md)."""
+    global _NT
+    if _NT is None:
+        import ctypes
+        from ctypes import wintypes
+        k32, nt = ctypes.WinDLL("kernel32", use_last_error=True), ctypes.WinDLL("ntdll")
+        k32.OpenProcess.argtypes, k32.OpenProcess.restype = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD), wintypes.HANDLE
+        k32.CloseHandle.argtypes, k32.CloseHandle.restype = (wintypes.HANDLE,), wintypes.BOOL
+        k32.ReadProcessMemory.argtypes = (wintypes.HANDLE, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t,
+                                          ctypes.POINTER(ctypes.c_size_t))
+        k32.ReadProcessMemory.restype = wintypes.BOOL
+        nt.NtQueryInformationProcess.argtypes = (wintypes.HANDLE, wintypes.ULONG, ctypes.c_void_p, wintypes.ULONG,
+                                                 ctypes.POINTER(wintypes.ULONG))
+        nt.NtQueryInformationProcess.restype = ctypes.c_long
+
+        class Basic(ctypes.Structure):  # PROCESS_BASIC_INFORMATION
+            _fields_ = [("ExitStatus", ctypes.c_void_p), ("PebBaseAddress", ctypes.c_void_p),
+                        ("Reserved2", ctypes.c_void_p * 2), ("UniqueProcessId", ctypes.c_size_t),
+                        ("InheritedFromUniqueProcessId", ctypes.c_size_t)]
+
+        class Peb(ctypes.Structure):  # the documented head of the PEB, up to ProcessParameters
+            _fields_ = [("Reserved1", ctypes.c_byte * 2), ("BeingDebugged", ctypes.c_byte), ("Reserved2", ctypes.c_byte),
+                        ("Reserved3", ctypes.c_void_p * 2), ("Ldr", ctypes.c_void_p),
+                        ("ProcessParameters", ctypes.c_void_p)]
+
+        class UString(ctypes.Structure):  # UNICODE_STRING
+            _fields_ = [("Length", wintypes.USHORT), ("MaximumLength", wintypes.USHORT), ("Buffer", ctypes.c_void_p)]
+
+        class Params(ctypes.Structure):  # RTL_USER_PROCESS_PARAMETERS, up to CommandLine
+            _fields_ = [("Reserved1", ctypes.c_byte * 16), ("Reserved2", ctypes.c_void_p * 10),
+                        ("ImagePathName", UString), ("CommandLine", UString)]
+
+        _NT = (ctypes, wintypes, k32, nt, Basic, Peb, Params)
+    return _NT
+
+
+def _nt_split(cmd):
+    """A Windows command line as an argv: split on blanks outside double quotes, the quotes dropped."""
+    import shlex
+    try:
+        return [a[1:-1] if len(a) > 1 and a[0] == a[-1] == '"' else a for a in shlex.split(cmd, posix=False)]
+    except ValueError:
+        return cmd.split()
+
+
+def _nt_parent_args(pid):
+    """parent_args on Windows: the parent id from NtQueryInformationProcess (ProcessBasicInformation), the command
+    line read from the process's PEB and RTL_USER_PROCESS_PARAMETERS with ReadProcessMemory. A process this user
+    may not read (another user's, an elevated one) still gives its parent when the limited right opens it."""
+    try:
+        ctypes, wintypes, k32, nt, Basic, Peb, Params = _nt_api()
+    except (ImportError, OSError, AttributeError):
+        return None, []
+    h = k32.OpenProcess(0x1000 | 0x0010, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ
+    readable = bool(h)
+    h = h or k32.OpenProcess(0x1000, False, pid)
+    if not h:
+        return None, []
+    try:
+        info = Basic()
+        if nt.NtQueryInformationProcess(h, 0, ctypes.byref(info), ctypes.sizeof(info), None) != 0:
+            return None, []
+        ppid = int(info.InheritedFromUniqueProcessId) or None
+
+        def read(addr, obj):
+            got = ctypes.c_size_t()
+            return bool(addr) and bool(k32.ReadProcessMemory(h, addr, ctypes.byref(obj), ctypes.sizeof(obj),
+                                                             ctypes.byref(got))) and got.value == ctypes.sizeof(obj)
+        peb, params = Peb(), Params()
+        if not (readable and read(info.PebBaseAddress, peb) and read(peb.ProcessParameters, params)):
+            return ppid, []
+        line = params.CommandLine
+        buf = (ctypes.c_char * line.Length)()
+        if not line.Length or not read(line.Buffer, buf):
+            return ppid, []
+        return ppid, _nt_split(buf.raw.decode("utf-16-le", "replace"))
+    finally:
+        k32.CloseHandle(h)
+
+
 def parent_args(pid):
-    """(the parent pid, the argv) of process PID: /proc on Linux, `ps` on other POSIX hosts; (None, []) when this host
-    gives no way to tell (Windows)."""
+    """(the parent pid, the argv) of process PID: /proc on Linux, the process's PEB through ctypes on Windows
+    (_nt_parent_args), `ps` on other POSIX hosts; (None, []) when the process cannot be read."""
     proc = Path("/proc") / str(pid)
     if (proc / "stat").exists():
         try:
@@ -234,7 +319,7 @@ def parent_args(pid):
         except (OSError, ValueError, IndexError):
             return None, []
     if os.name == "nt":
-        return None, []
+        return _nt_parent_args(pid)
     try:
         p = subprocess.run(["ps", "-o", "ppid=", "-o", "command=", "-p", str(pid)], capture_output=True, text=True,
                            encoding="utf-8", errors="replace", timeout=5)
