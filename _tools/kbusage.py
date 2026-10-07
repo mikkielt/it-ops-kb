@@ -15,8 +15,8 @@ only; no model and no network.
 prompt_usage(transcript_path, prompt_id) is what the query log's distill calls: a dict of counts, tool groups and
 model ids, or None when the transcript cannot be read or holds no request of the prompt. A subagent that worked on a
 `work/<id>` branch is counted under `routed`, by that item id, not under `sub`. find_transcript(session_id) and
-transcript_ended(path) are what the launcher uses to close a session whose SessionEnd never ran: the transcript of a
-session id, and whether the session has exited.
+transcript_ended(path) are what the launcher uses to close a session whose SessionEnd never ran: the newest transcript
+of a session id, and whether the session has exited.
 """
 import argparse, json, os, re, shlex, sys
 from pathlib import Path
@@ -331,12 +331,23 @@ def prompt_usage(transcript_path, prompt_id):
 
 def find_transcript(session_id):
     """The main transcript of a session, `<Claude config dir>/projects/<project>/<session id>.jsonl` (the config dir:
-    CLAUDE_CONFIG_DIR, else `~/.claude`), or None. `session_id` is a safe file name (ql_capture.SAFE_SESSION)."""
+    CLAUDE_CONFIG_DIR, else `~/.claude`), or None. When several project directories hold one (`/cd` and a worktree
+    entry or exit move a session's transcript to another project directory, a copy can stay behind), the most recently
+    modified one, the path breaking a tie, not the first the glob lists. `session_id` is a safe file name
+    (ql_capture.SAFE_SESSION)."""
     base = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude") / "projects"
+    best = None
     try:
-        return next(base.glob(f"*/{session_id}.jsonl"), None)
+        for p in base.glob(f"*/{session_id}.jsonl"):
+            try:
+                key = (p.stat().st_mtime, str(p))
+            except OSError:
+                continue
+            if best is None or key > best[0]:
+                best = (key, p)
     except OSError:
         return None
+    return best[1] if best else None
 
 
 def transcript_ended(path):
