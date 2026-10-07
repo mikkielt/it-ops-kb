@@ -2,7 +2,7 @@
   "id": "BG-ese7wmz3",
   "kind": "bug",
   "title": "bl_land.ops_no_work_rows warns 'landed with no work rows' for every Agent-tool worker, whose capture writes agent rows, not a branch row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vmxdxtru",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "sonnet-worker-ese7wmz3"
 }
