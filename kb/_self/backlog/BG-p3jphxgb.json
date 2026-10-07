@@ -2,7 +2,7 @@
   "id": "BG-p3jphxgb",
   "kind": "bug",
   "title": "The repeats detector files a finding for the running ISO week, whose intake --status check can never pass",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vmxdxtru",
   "priority": "P1",
   "rank": 0,
@@ -55,5 +55,27 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "sonnet-worker-p3jphxgb"
+  "evidence": {
+    "commit": "1557c51d6c496822a7f777e7079fd1bf521a513d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,datetime;sys.path.insert(0,'_tools');import bl_intake as b;d=datetime.date.today();f=lambda c:f'{c[0]}-W{c[1]:02d}';lc=f((d-datetime.timedelta(days=7)).isocalendar());cw=f(d.isocalendar());n=b.REPEAT_THRESHOLD+1;rows=[(lc,'grep')]*n+[(cw,'python')]*n;b.committed_calls=lambda root,budget=None:(rows,0);k=[x.key for x in b.repeats_detector('.')];print('keys:',k);sys.exit(0 if k==['grep'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f5868c784181a24c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,datetime;sys.path.insert(0,'_tools');import bl_intake;y,w,_=datetime.date.today().isocalendar();cur=f'{y}-W{w:02d}';f=[c.title for c in bl_intake.repeats_detector('.') if cur in c.title];print(cur,f);sys.exit(1 if f else 0)"
+        ],
+        "exit": 0,
+        "sha256": "a1111cc9b385e9a4"
+      }
+    ]
+  }
 }
