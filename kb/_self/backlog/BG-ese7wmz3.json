@@ -2,7 +2,7 @@
   "id": "BG-ese7wmz3",
   "kind": "bug",
   "title": "bl_land.ops_no_work_rows warns 'landed with no work rows' for every Agent-tool worker, whose capture writes agent rows, not a branch row",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vmxdxtru",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "sonnet-worker-ese7wmz3"
+  "evidence": {
+    "commit": "7f857c20655270de65c1d5fb85a07951bb485c01",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,tempfile;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import ql_capture as q,bl_land as b;q.record('work','s1',prompt_id='p1',agent_id='a1',item='ST-aaaaaaaa',action='agent-start');q.record('work','s1',prompt_id='p2',agent_id='a1',item='ST-aaaaaaaa',action='agent-stop');r=b.ops_no_work_rows(Path.cwd(),'ST-aaaaaaaa');print('warns although a subagent worked:',r);sys.exit(1 if r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "eea10463cd61a2ce"
+      }
+    ]
+  }
 }
