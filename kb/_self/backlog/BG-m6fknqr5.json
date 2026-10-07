@@ -2,7 +2,7 @@
   "id": "BG-m6fknqr5",
   "kind": "bug",
   "title": "Non-worker sessions are still attributed to items: the orchestrator's claim windows never close after land",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-s5fdczv7",
   "priority": "P2",
   "rank": 0,
