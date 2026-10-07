@@ -2,7 +2,7 @@
   "id": "BG-2uqmyman",
   "kind": "bug",
   "title": "The drift detector runs todo items' checks without an isolated query log home",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vmxdxtru",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     "ST-rbcr2tm6",
     "ST-tnbnmec6",
     "BG-ese7wmz3"
-  ]
+  ],
+  "claimed_by": "sonnet-worker-2uqmyman"
 }
