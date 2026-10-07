@@ -2,7 +2,7 @@
   "id": "ST-ebsbhbni",
   "kind": "story",
   "title": "A check for a new attribution rule also covers a session that must not be attributed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,18 @@
   "depends_on": [
     "ST-3p74zj4k"
   ],
-  "claimed_by": "worker-attrcheck"
+  "evidence": {
+    "commit": "492532d9543f42d76815f5fa0db60e78bf8cd574",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;F=(\".claude/skills/kb-sprint/SKILL.md\",\"kb/_self/backlog.md\");r=[any(\"not attributed\" in l for l in pathlib.Path(f).read_text(encoding=\"utf-8\").splitlines()) for f in F];print(r);sys.exit(0 if all(r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d72c373df05f3aae"
+      }
+    ]
+  }
 }
