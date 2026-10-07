@@ -62,8 +62,10 @@ def test_land_content_item_then_planted_failure(scenario):
     before = origin_main(scenario)
 
     work(repo, good, "kb/_self/good.md")
+    repo.git("checkout", "-q", "main")  # land runs on main, whose upstream is origin/main: it ends level with it
     code, out = bl(repo, "land", good)
-    assert code == 0 and "landed" in out, out
+    assert code == 0 and "landed" in out and "fast-forwarded main" in out, out
+    assert repo.rev("main") == origin_main(scenario) and repo.git("branch", "--show-current").strip() == "main"
     assert item(scenario, good)["status"] == "done" and item(scenario, good).get("evidence"), item(scenario, good)
     log = scenario.origin.git("log", "--format=%B", f"{before}..main")
     assert f"KB-Work: {good}" in log and f"done {good}" in log, log
