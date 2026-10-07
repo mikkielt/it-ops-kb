@@ -2,7 +2,7 @@
   "id": "ST-bum7owtw",
   "kind": "story",
   "title": "land moves a worker worktree's untracked intake drafts aside itself",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -55,5 +55,6 @@
       "answer": "keep",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "kb-worker-bum7owtw"
 }
