@@ -2,7 +2,7 @@
   "id": "BG-qqdfqx2d",
   "kind": "bug",
   "title": "new sprint gives its goal research story a check that passes before any research",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "priority": "P3",
   "rank": 0,
@@ -67,5 +67,6 @@
       "answer": "repoint them",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "worker-qqdfqx2d"
 }
