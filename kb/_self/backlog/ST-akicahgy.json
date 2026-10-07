@@ -7,6 +7,15 @@
   "priority": "P3",
   "rank": 0,
   "goal": "After an edit to one kb article, or to _tools/kbfacts.py that leaves INDEX_VERSION unchanged, the next rag.py pack or eval on the Windows host reuses the index for unchanged content instead of a full 14-22 s rebuild, while every changed fact is still found; measured before and after on that host.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile,time,os,shutil;d=os.path.join(tempfile.mkdtemp(),'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);q=[sys.executable,os.path.join(d,'_tools','rag.py'),'pack','kerberos delegation'];s.run(q,cwd=d,capture_output=True,check=True);a=os.path.join(d,'kb','public','windows','process-parent-and-command-line.md');open(a,'a',encoding='utf-8').write('\\n');t=time.time();r=s.run(q,cwd=d,capture_output=True);e=time.time()-t;shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('pack after one article edit',round(e,2),'s exit',r.returncode);sys.exit(r.returncode or int(e>5))"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "kb/_self/tools.md",
