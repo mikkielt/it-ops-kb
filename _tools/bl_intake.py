@@ -29,7 +29,8 @@ the detectors and the filing of their candidates:
   started after the last item the previous run reached (`rotated`, `read_cursor`, `write_cursor`; the commit count of
   main's tip, `rotation`, only seeds the first run), so every eligible item is reached within as many runs as there
   are whatever moved the tip between them, each check as a process group of
-  its own that a timeout or this process's exit ends whole (`end_tree`, `end_live`), and a check that runs the whole
+  its own that a timeout or this process's exit ends whole (`end_tree`, `end_live`), with an isolated query log home
+  as `bl_base.run_check`'s checks have (`bl_base.check_env`), and a check that runs the whole
   test suite (`heavy_check`: `_tools/tests.py` or pytest with no narrowing `-k`, a wrapper such as
   `perfcheck.py`, also inside `sh -c '...'`) never runs, nor one that is not of drift's read-only forms
   (`check_program_refusal` with `inline=False`: exactly python3 on one of DRIFT_SCRIPTS, so a committed `git push`,
@@ -62,11 +63,13 @@ import shlex
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import bl_base
 from bl_base import REL_DIR, TEXT_MAX, Refused
 
 DETECTORS = {}  # name -> fn(root) -> iterable of Candidate; the registry
@@ -472,12 +475,6 @@ def touches_changed_since_file(root, iid, touches):
     return bool(git_out(root, "log", "-1", "--format=%H", f"{last}..HEAD", "--", *specs).strip())
 
 
-def check_env():
-    env = {k: v for k, v in os.environ.items() if k not in ("FORCE_COLOR", "PYTHON_COLORS", "CLICOLOR_FORCE")}
-    env["NO_COLOR"] = "1"
-    return env
-
-
 def is_shell(word):
     return word.rsplit("/", 1)[-1].lower().removesuffix(".exe") in SHELLS
 
@@ -613,35 +610,40 @@ def end_live():
 def check_result(root, check, timeout):
     """"pass", "fail" or "timeout" for one item check (`run` argv, optional `exit` and `match`), run in `root` without a
     shell as the leader of a process group of its own, which a timeout or an exit ends whole; a check that cannot
-    start fails. python3 runs with the interpreter running this tool."""
+    start fails. python3 runs with the interpreter running this tool. It runs with an isolated query log home as
+    `bl_base.run_check`'s checks do (`bl_base.check_env` and a fresh temporary directory, removed afterwards), so the
+    check adds no row to the clone's own spool but the `test.run` row of a tests.py run."""
     argv = list(check["run"])
     if argv and argv[0] in ("python3", "python"):
         argv[0] = sys.executable
     group = {"start_new_session": True} if os.name == "posix" else {
         "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
-    try:
-        proc = subprocess.Popen(argv, cwd=root, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace",
-                                env=check_env(), **group)
-    except OSError:
-        return "fail"
-    with LIVE_LOCK:
-        LIVE.add(proc)
-    try:
-        out, err = proc.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        end_tree(proc)
+    with tempfile.TemporaryDirectory(prefix="kb-check-", ignore_cleanup_errors=True) as home:
+        (Path(home) / "querylog").mkdir()
+        (Path(home) / "querylog" / "config.json").write_text(json.dumps({"mode": "local"}), encoding="utf-8")
         try:
-            proc.communicate(timeout=2)  # the pipes close once the group is gone
-        except subprocess.TimeoutExpired:
-            pass
-        return "timeout"
-    except BaseException:
-        end_tree(proc)
-        raise
-    finally:
+            proc = subprocess.Popen(argv, cwd=root, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace",
+                                    env=bl_base.check_env(str(Path(root).resolve()), home), **group)
+        except OSError:
+            return "fail"
         with LIVE_LOCK:
-            LIVE.discard(proc)
+            LIVE.add(proc)
+        try:
+            out, err = proc.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            end_tree(proc)
+            try:
+                proc.communicate(timeout=2)  # the pipes close once the group is gone
+            except subprocess.TimeoutExpired:
+                pass
+            return "timeout"
+        except BaseException:
+            end_tree(proc)
+            raise
+        finally:
+            with LIVE_LOCK:
+                LIVE.discard(proc)
     ok = proc.returncode == check.get("exit", 0)
     if ok and check.get("match"):
         ok = re.search(check["match"], (out or "") + (err or ""), re.M) is not None
