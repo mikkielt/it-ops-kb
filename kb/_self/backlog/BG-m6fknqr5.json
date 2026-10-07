@@ -1,0 +1,28 @@
+{
+  "id": "BG-m6fknqr5",
+  "kind": "bug",
+  "title": "Non-worker sessions are still attributed to items: the orchestrator's claim windows never close after land",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Found in the SP-owbgisoj review: the orchestrator runs backlog.py claim for every item it delegates, so its session writes a claim row per item, but land runs done as its own subprocess and the session never writes the done row, so each claim window stays open and every later orchestrator prompt counts on that item (one open window) or on a shared line naming them all; bl_land.ops_no_work_rows always meets that claim row, so its warning cannot tell a worker's capture from the orchestrator's; pre-fix branch rows in a long session (an item with no file, such as a stale work/<id> checkout) force the shared line; and ql_capture.item_doing reads the checkout's own copy of the item file, so a helper session in a worker worktree whose branch predates the done commit is attributed too. A successful backlog.py land or merge of ID in a session closes that session's window of ID as done does (ql_capture.work_action), a branch or claim row of an item with no item file opens no window in ql_distill, ops_no_work_rows looks for a worker's branch or capture rather than the claim, and usage.md and querylog.md say so.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import ql_capture as q;r=q.work_action(\"python3 _tools/backlog.py land ST-abcdefgh --wait-merge 1800\");print(\"land closes a window:\",r);sys.exit(0 if r and r[0]==\"ST-abcdefgh\" else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "_tools/bl_land.py",
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "BG-tyuwiin7",
+  "kind": "bug",
+  "title": "launch runs the missed-SessionEnd catch-up before it marks its own session, and takes the first transcript glob hit",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the SP-owbgisoj review (BG-ay4w32jc): on SessionEnd, ql_distill.launch globs and tail-reads every open spool session and may start up to 8 distills before it touches the ending session's own .end marker, inside the hook's time budget, so a kill leaves the session unmarked until a later launch; and kbusage.find_transcript takes the first unsorted glob hit across project directories, so a resumed session copied under a second project directory may read a stale transcript. launch touches its own marker first, and find_transcript prefers the newest matching transcript.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import inspect,sys;sys.path.insert(0,\"_tools\");import ql_distill as d;s=inspect.getsource(d.launch);i=s.find(\".touch()\");j=s.find(\"missed_ends(\");ok=0<=i<j;print(\"launch marks its own session before the catch-up:\",ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "a kill inside the SessionEnd budget cannot be staged in a check; the repro reads the order of the two steps in launch",
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/kbusage.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md"
+  ]
+}
