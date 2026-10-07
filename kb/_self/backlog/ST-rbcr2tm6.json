@@ -2,7 +2,7 @@
   "id": "ST-rbcr2tm6",
   "kind": "story",
   "title": "The sync gate refuses a push whose deleted or renamed test leaves a done or open item's check selecting no test",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vmxdxtru",
   "priority": "P1",
   "rank": 0,
@@ -64,5 +64,18 @@
     }
   ],
   "notes": "Premise: python3 -c \"import sys;sys.path.insert(0,'_tools');import kg_sync;print(kg_sync.gate_needs({'_tools/test_x.py'}))\" shows no selectors entry: the gate runs check and selfdoc for a changed test file and never backlog.py selectors, which itself exits 0 even when a selector selects none (backlog selectors prints none=N), so the gate must read its none= count. gate_paths diffs names from the merge base, where a rename shows only the new name. Premise run 2026-10-07 on origin/main eee5a6eb: gate_needs({'_tools/test_x.py'}) has no selectors key; reproduces.",
-  "claimed_by": "sonnet-worker-rbcr2tm6"
+  "evidence": {
+    "commit": "57244df911e69d6ff19f1ac4ab8c51a4226e67d8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kg_sync\na=kg_sync.gate_needs({'_tools/test_x.py'}).get('selectors');b=kg_sync.gate_needs({'_tools/foo.py'}).get('selectors')\nprint(a,b);sys.exit(0 if a and not b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9881d7b57295c10"
+      }
+    ]
+  }
 }
