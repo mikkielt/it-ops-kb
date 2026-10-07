@@ -54,6 +54,21 @@
       },
       "answer": "keep",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does land put the intake drafts it moves out of a worker's worktree? scratch: _cache/intake-drafts/<worktree name>/ of the clone land runs in (gitignored, so the next land's clean-tree check is unaffected); intake: kb/_self/backlog/ of the checkout land runs in (triage sees them at once, but they are untracked there and the next land refuses the tree)",
+      "options": [
+        "scratch",
+        "intake"
+      ],
+      "recommendation": "scratch",
+      "class": "agents-rule",
+      "do": {
+        "scratch": "ST-bum7owtw",
+        "intake": "ST-bum7owtw"
+      }
     }
   ],
   "claimed_by": "kb-worker-bum7owtw"
