@@ -299,7 +299,8 @@ def cost_report(bl, iid, rework=False):
     item work lines, research left out as in the figures above; without it, no line and no key of the report
     differs from a report that never heard of rework. With `rework` the report also has `open`: the sessions still open
     with work in the scope (`open_lines`), their prompts and the `split` of their figures, kept apart from every figure
-    above, which stay the sidecars'."""
+    above, which stay the sidecars'. A report whose scope has no item line at all (and, with `rework`, no open session
+    with work in it) also has `no_line` (`cost_no_line`): why it reads 0, with no figure."""
     all_lines, skipped = cost_lines(bl.root, None, rework=True) if rework else cost_lines(bl.root, None)
     extra, opened = open_lines(bl.root) if rework else ([], [])  # sessions still open: no sidecar line yet
     named = {i for w in all_lines + extra for i in (w["items"] if "items" in w else [w["item"]])}
@@ -327,6 +328,8 @@ def cost_report(bl, iid, rework=False):
         own = [w for w in extra if w.get("item") in keep and w["item"] not in research]
         rep["open"] = {"sessions": len(mine), "missing": sum(o["missing"] for o in mine),
                        "prompts": cost_sum(own)["prompts"], "split": cost_split(own)}
+    if not lines and not (rework and rep["open"]["sessions"]):  # an open session's block below says why it reads 0
+        rep["no_line"] = cost_no_line(bl.root, view, iid, shared, all_lines)
     rep["restored"] = sorted(({w["item"] for w in lines} | {iid}) & set(restored))
     if sprint:
         res = cost_sum([w for w in lines if w["item"] in research])
@@ -421,6 +424,81 @@ def cost_overhead(root, sid):
             cost_add(one["main"], w["main"])
             cost_add(out["total"], w["main"])
     return out
+
+
+# `cost ID`, no item line: an item that reads 0 prompts says why, in one line with `because` and no figure of its own, so
+# 0 is never shown with no reason and no shared or other item's figure is moved into the item. The reason is read from
+# what the committed store holds and, only for an item no work sidecar names, from git. A shared line names the item: its
+# session's run and prompts are given as the session's, outside any window or on the sprint's line where windows
+# overlapped (`ql_distill.work_lines_of`), never split per item. No sidecar names it: git is asked once for the time of
+# the commit that first set the item's file `done` (`item_done_time`) and the time is compared with the first and the
+# newest work sidecar's run id (UTC): before the first one no session had the capture hooks yet, after the newest one the
+# item's rows are not distilled or delivered yet, else the store cannot say which of a missing delivery and a session
+# without hooks it is.
+def run_epoch(stem):
+    """Epoch seconds of the UTC time in a run id (`YYYYMMDDThhmmssZ-...`); ValueError for an impossible date."""
+    import datetime
+    return datetime.datetime.strptime(stem[:16], "%Y%m%dT%H%M%SZ").replace(tzinfo=datetime.timezone.utc).timestamp()
+
+
+def store_runs(root):
+    """[(epoch, run id)] of the work sidecars of the committed store, oldest first; a name that is no run id is left out."""
+    import ql_store
+    out = []
+    for p in ql_store.work_files(Path(root) / "kb" / "_querylog"):
+        if ql_store.RUN_ID.fullmatch(p.stem):
+            try:
+                out.append((run_epoch(p.stem), p.stem))
+            except ValueError:
+                continue
+    return out
+
+
+def item_done_time(root, iid):
+    """Epoch seconds of the oldest commit that adds `"status": "done"` to the item's file (one `git log`), or None: a
+    shallow clone (the commit may be cut from history), git missing or failing, or no such commit."""
+    shallow = git_text(root, "rev-parse", "--is-shallow-repository")
+    if shallow is None or shallow.strip() == "true":
+        return None
+    times = git_times(root, "--diff-filter=AM", "-S", '"status": "done"', "--", f"{REL_DIR}/{iid}.json")
+    return min(times) if times else None
+
+
+def cost_no_line(root, view, iid, shared, all_lines):
+    """{kind, reason[, runs]} for an item with no item line (`cost_report` calls it only then): `reason` is one line with
+    `because`. kind `shared`: `shared` (the shared lines naming the scope) are the session's prompts, `runs` each
+    shared line's run and prompts and the prompts of the item's sprint line in the same run; `before-first-sidecar`,
+    `after-newest-run` and `unnamed` as the comment above says. No figure is added to the item."""
+    if shared:
+        sprint = view.sprint_of(iid)
+        runs = [{"run": w["run"], "prompts": w["prompts"],
+                 "sprint_prompts": sum(x["prompts"] for x in all_lines
+                                       if sprint and x["run"] == w["run"] and x.get("item") == sprint)}
+                for w in shared]
+        parts = [f"run {r['run']}: {r['prompts']} prompt(s) in the session's shared line" + (
+                 f", {r['sprint_prompts']} on the sprint's line {sprint}" if r["sprint_prompts"] else "") for r in runs]
+        return {"kind": "shared", "runs": runs,
+                "reason": "no item line: because its session counted its prompts as the session's, not as the item's: "
+                          "outside any window, or on the sprint's line when windows overlapped, never split per item "
+                          f"({'; '.join(parts)})"}
+    done, runs = item_done_time(root, iid), store_runs(root)
+    if done is not None and runs and done < runs[0][0]:
+        return {"kind": "before-first-sidecar",
+                "reason": f"no item line: because it was done {epoch_iso(done)}, before the first work sidecar "
+                          f"(no capture hooks yet; first run {runs[0][1]})"}
+    if done is not None and runs and done > runs[-1][0]:
+        return {"kind": "after-newest-run",
+                "reason": f"no item line: because it was done {epoch_iso(done)}, after the newest run "
+                          f"(not distilled or delivered yet; newest run {runs[-1][1]})"}
+    return {"kind": "unnamed",
+            "reason": "no item line: because no work sidecar names it: its session's rows were not delivered or the "
+                      "session ran without the capture hooks, the store not saying which"}
+
+
+def epoch_iso(t):
+    """`YYYY-MM-DDThh:mm:ssZ` (UTC) of epoch seconds `t`."""
+    import datetime
+    return datetime.datetime.fromtimestamp(t, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 # `cost --research`: the items that did research against the query log's gap findings, each with its tokens and the gap
@@ -680,6 +758,8 @@ def cmd_cost(bl, a):
         out = {k: rep[k] for k in ("id", "items", "runs", "prompts", "shared_prompts", "by_item", "skipped", "restored",
                                    "unresolved", COST_SHARED, COST_TOTAL, *(g[0] for g in COST_GROUPS))}
         out.update({k: rep[k] for k in ("research", "overhead") if k in rep})  # a sprint's report only
+        if "no_line" in rep:
+            out["no_line"] = rep["no_line"]
         if a.rework:
             out["rework_split"] = cost_split_json(rep["rework_split"])
             out["open_sessions"] = {**{k: rep["open"][k] for k in ("sessions", "missing", "prompts")},
@@ -694,6 +774,8 @@ def cmd_cost(bl, a):
         " (the item and its descendants)")
     if rep["restored"]:
         say("from git history (item file deleted): " + ", ".join(view.label(i) for i in rep["restored"]))
+    if "no_line" in rep:
+        say(rep["no_line"]["reason"])
     for x in cost_block(rep, ""):
         say(x)
     for x in cost_apart(rep, view):
