@@ -2,7 +2,7 @@
   "id": "ST-ebsbhbni",
   "kind": "story",
   "title": "A check for a new attribution rule also covers a session that must not be attributed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
   ],
   "depends_on": [
     "ST-3p74zj4k"
-  ]
+  ],
+  "claimed_by": "worker-attrcheck"
 }
