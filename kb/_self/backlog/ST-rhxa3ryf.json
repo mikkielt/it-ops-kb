@@ -2,7 +2,7 @@
   "id": "ST-rhxa3ryf",
   "kind": "story",
   "title": "The goal research story skips the live docs when the pack is good for every committed item",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   ],
   "depends_on": [
     "ST-bum7owtw"
-  ]
+  ],
+  "claimed_by": "kb-worker-rhxa3ryf"
 }
