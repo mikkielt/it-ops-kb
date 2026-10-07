@@ -2,7 +2,7 @@
   "id": "ST-3p74zj4k",
   "kind": "story",
   "title": "Repros and checks that import the query log capture write to an isolated spool, never the clone's own",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -64,5 +64,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-isolate"
+  "evidence": {
+    "commit": "147825de755601df4d5e0f4c42d21ba5d6e8fde6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_base;ok,code,out=bl_base.run_check(\".\",{\"run\":[\"python3\",\"-c\",\"import os,sys;d=os.environ.get(\\\"CLAUDE_PLUGIN_DATA\\\",\\\"\\\");sys.exit(0 if d and os.environ.get(\\\"CLAUDE_PLUGIN_ROOT\\\") and \\\"_cache\\\" not in d else 1)\"]});print(\"check runs with an isolated query log home:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0a9f1078145e0943"
+      }
+    ]
+  }
 }
