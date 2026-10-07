@@ -2464,3 +2464,13 @@ _Agent: kb-research_
 - See claude/hooks.md, claude/ci-and-headless.md.
 
 _Agent: kb-research_
+
+## QK-python-decide-iso-week-closed-next. How does Python decide whether an ISO calendar week has closed and when the next one starts: isocalendar, fromisocalendar, the %G %V %u codes and year boundaries?
+- `date.isocalendar()` returns `year`, `week` and `weekday` as a named tuple (3.9+); a week runs Monday to Sunday, week 1 is the week with the year's first Thursday, a year has 52 or 53 weeks, and `fromisocalendar(year, week, day)` (3.8+) is its inverse. (`python/stdlib-datetime-iso-week.md:22`, `:25`, `:34`) [DOC S-gaeidf4e]
+- `%G` is the ISO year of `%V` (week 01 contains Jan 4) and `%u` the weekday with 1 as Monday; the docs say `%G` and `%Y` are not interchangeable, and the codes may be missing on some platforms, so `%G-W%V` is the label and `%Y-W%V` is wrong at a year boundary. (`python/stdlib-datetime-iso-week.md:40`, `:43`, `:45`, `:50`) [DOC S-gaeidf4e]
+- A `date` plus `timedelta` moves by `timedelta.days` days. (`python/stdlib-datetime-iso-week.md:62`) [DOC S-gaeidf4e]
+- Conclusion: the first day after ISO week `(y, w)` is `date.fromisocalendar(y, w, 1) + timedelta(days=7)`, a week has closed on every date on or after it (its Sunday is still inside it), the latest closed week of a date is the ISO week of that date minus seven days, and `fromisocalendar(y, w + 1, 1)` fails for a year's last week, which is 52 or 53 by year (read from the week of 28 December). A timestamp is put in one zone before its week is taken, because `isocalendar()` does no conversion. (`python/stdlib-datetime-iso-week.md:64`, `:68`, `:71`) [DER S-gaeidf4e: the week, Monday, `timedelta` and `datetime.isocalendar` rules, run on Python 3.13.2]
+- Open: which platforms lack `%G`, `%V` and `%u` in `strftime()`, and whether Windows is one of them (see `_gaps.md`). [UNK]
+- See python/stdlib-datetime-iso-week.md, python/pytest.md.
+
+_Agent: kb-research_

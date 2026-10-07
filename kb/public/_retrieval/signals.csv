@@ -418,3 +418,7 @@ CreateToolhelp32Snapshot,windows/process-parent-and-command-line
 th32ParentProcessID,windows/process-parent-and-command-line
 NtQueryInformationProcess,windows/process-parent-and-command-line
 Win32_Process,windows/process-parent-and-command-line
+isocalendar,python/stdlib-datetime-iso-week
+fromisocalendar,python/stdlib-datetime-iso-week
+isoweekday,python/stdlib-datetime-iso-week
+%G-W%V,python/stdlib-datetime-iso-week

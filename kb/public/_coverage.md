@@ -248,6 +248,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 10 |
 | `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 3 |
 | `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 9 |
+| `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 1 |
 | `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 14 |
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |
 | `python/windows-python-install` | P3 | partial | `python/windows-python-install.md` | 6 |
