@@ -6,6 +6,16 @@
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-vmxdxtru retrospective: ST-d35ns45r's check calls bl_base.run_check, and land's checks step ran it from the landing process, which had imported the old run_check before the rebase, so the outer run named no KB_TEST_RUN_HOME and the check failed at step checks until the orchestrator preset the variable. land's checks and done steps run an item's checks through a fresh process of the rebased branch's backlog.py, so the code under test is the branch's at every level; backlog.md and tools.md say so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_checks_branch_code"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
     "kb/_self/backlog.md",

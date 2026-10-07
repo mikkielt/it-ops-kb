@@ -6,6 +6,15 @@
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-vmxdxtru retrospective: ST-rbcr2tm6's goal, refuse a push while any open item's selector selects no test, would have refused every push of a test file on the day it was planned (ST-founcbvo's selector collects none), and BG-p3jphxgb's goal could not be met with the week in the finding key; both were gated only after the start. kb-sprint plan step 6 runs a committed item's new refusal or detector condition once against today's main and asks a gate before the start when it would fire now. And ST-d35ns45r's change made kb/_self/querylog.md false although selfdoc.py map named it for neither _tools/tests.py nor _tools/bl_base.py: kb/_self/map.csv maps both to querylog.md.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=[subprocess.run([sys.executable,'_tools/selfdoc.py','map',f],capture_output=True,text=True).stdout for f in ('_tools/tests.py','_tools/bl_base.py')];print(o);sys.exit(0 if all('kb/_self/querylog.md' in x for x in o) else 1)"
+      ]
+    }
+  ],
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/map.csv",

@@ -6,6 +6,16 @@
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-vmxdxtru retrospective: ST-rbcr2tm6's worker recorded a provisional gate, which gate add made blocking and of class push because the item's touches name _tools/kg_; the worker could not answer it, implemented its recommendation and the item waited for the operator. gate add --kind provisional on a gate whose class is in bl_authority.OPERATOR_CLASSES prints that the gate is blocking and the operator's, with the class and why, so the worker stops and reports; the kb-worker agent and the runbook say what a worker does then.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "provisional_operator_class"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_items.py",
     "_tools/bl_authority.py",

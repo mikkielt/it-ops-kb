@@ -6,6 +6,16 @@
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-vmxdxtru retrospective: seven of its eight work items named kb/_self/code.md in their touches (map.csv maps every _tools module to it), none edited it, and the shared touch made the sprint one serial chain of eight steps. An item's touches mark a doc it only reads and names in Self-Reviewed apart from a file it edits; the overlap rule of held, next and check's serial-chain warning counts only edits; done still refuses an edit outside the edit touches; the runbook and the sprint and backlog skills say how to mark each.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "reviewed_touch"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_base.py",
     "_tools/bl_check.py",
