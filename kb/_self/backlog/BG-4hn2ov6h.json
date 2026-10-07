@@ -1,0 +1,22 @@
+{
+  "id": "BG-4hn2ov6h",
+  "kind": "bug",
+  "title": "backlog.py's usage text says selectors reads only the checks of open items",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the SP-vmxdxtru review: BG-n54k5zud made selectors read the done items of an active sprint (a done task or subtask through its story) and a bug's repro, and tools.md and backlog.md say so, but backlog.USAGE (_tools/backlog.py, the selectors line) still says 'in the checks of open items'. The usage line names the checks and bug repros of open items and of the done items of an active sprint.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import backlog;t=backlog.USAGE;i=t.index('backlog.py selectors');s=t[i:i+500];print(s);sys.exit(0 if 'done' in s and 'repro' in s else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the usage text itself; the repro reads the selectors entry of backlog.USAGE",
+  "touches": [
+    "_tools/backlog.py",
+    "kb/_self/tools.md"
+  ]
+}

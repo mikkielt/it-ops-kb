@@ -1,0 +1,23 @@
+{
+  "id": "BG-4tvqk5tp",
+  "kind": "bug",
+  "title": "committed_calls keeps the oldest call rows within its read budget, so the repeats detector's latest closed week is the first cut",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Found in the SP-vmxdxtru review: bl_intake.committed_calls reads the ops sidecars' call.tool rows in git grep path order, which is chronological, and keeps the first REPEAT_ROWS_MAX; since BG-p3jphxgb the repeats detector judges only the latest closed ISO week, the newest rows, so once history passes the budget its counts drop and filed stories pass because their rows were cut, not because the calls fell. committed_calls keeps the newest rows within the budget (or reads only the weeks the detector judges), and the notes still count what was left out.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_intake as b;rows,over=b.committed_calls('.',budget=10);allr,_=b.committed_calls('.');print(rows[-1],allr[-1],over);sys.exit(0 if over==0 or rows[-1]==allr[-1] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_intake.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
