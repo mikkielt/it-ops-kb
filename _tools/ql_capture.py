@@ -31,6 +31,7 @@ SKILL = re.compile(r"\s*/(?:it-ops-kb:)?kb-[\w-]+")  # a kb skill typed as a sla
 SAFE_SESSION = re.compile(r"[A-Za-z0-9_-]{1,80}")  # a session id that is safe as a file name
 STATUS = re.compile(r"\b(?:HTTP(?:/[\d.]+)?|status(?: code)?)\D{0,3}([1-5]\d\d)\b", re.I)
 WORK_ACTIONS = ("claim", "done", "release")  # the backlog.py commands that open or end a window of work on an item
+LAND_ACTIONS = ("land", "merge")  # the commands that end the orchestrator's work on an item; a success is stored as `done`
 BRANCH_ACTION = "branch"  # the `work` row of a session's first prompt on a `work/<id>` branch (branch_row)
 OPEN_ACTIONS = ("claim", BRANCH_ACTION)  # the `work` rows that open an item's window (usage_targets, ql_distill.work_windows)
 AGENT_ACTIONS = ("agent-start", "agent-stop")  # the `work` rows of a subagent's start and stop (agent_row)
@@ -40,7 +41,7 @@ WORK_BRANCH_REF = "ref: refs/heads/work/"
 WORK_REFUSED_EXIT = 1  # the exit code of a refused backlog.py command (its Refused; bad usage exits 2)
 WORK_ITEM = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")  # backlog.py's ID_RE
 WORK_LAUNCHER = re.compile(r"(?:sh|bash|python[\d.]*|py)(?:\.exe)?|kbpy|-[\w.-]+|[A-Za-z_]\w*=\S*", re.I)  # beside backlog.py
-WORK_VALUE_FLAGS = ("--by", "--trailer", "--root", "--branch", "--why")  # backlog.py options that take a value
+WORK_VALUE_FLAGS = ("--by", "--trailer", "--root", "--branch", "--why", "--wait-merge")  # backlog.py options that take a value
 SHELL_TOKEN = re.compile(r"\"[^\"]*\"|'[^']*'|[^\s\"']+")
 CUT = " [...]"
 ARG_MAX_CHARS = 1000
@@ -478,14 +479,15 @@ def shell_segments(command):
     return [*out, ("".join(cur), "")]
 
 
-def work_action(command):
-    """(item, action) of the first piece of a shell command that runs `backlog.py claim|done|release ID`, or None.
-    Only the command's own shape counts: the script's name after nothing but an interpreter, a launcher, its flags
-    and environment assignments (a path, `python3`, `py -3`, `sh .../kbpy`, a PowerShell `&` call), then an optional
-    `--root DIR`, the action and the item id, with any `--by`, `--commit` or `--trailer` after it. `done --dry-run`
-    changes nothing and is none; so is a mention in a quoted text, in `echo`, `git commit -m` or a search, and a
-    command piped into another (`done ID | tail`, `done ID || echo`: the exit code is the last command's, so a
-    refusal would read as a success). Never the command's other text."""
+def work_call(command):
+    """(item, command) of the first piece of a shell command that runs `backlog.py claim|done|release|land|merge ID`,
+    as typed, or None. Only the command's own shape counts: the script's name after nothing but an interpreter, a
+    launcher, its flags and environment assignments (a path, `python3`, `py -3`, `sh .../kbpy`, a PowerShell `&`
+    call), then an optional `--root DIR`, the action and the item id, with any `--by`, `--commit`, `--trailer`,
+    `--branch` or `--wait-merge` after it. `done --dry-run` changes nothing and is none; so is a mention in a quoted
+    text, in `echo`, `git commit -m` or a search, and a command piped into another (`done ID | tail`, `done ID ||
+    echo`: the exit code is the last command's, so a refusal would read as a success). Never the command's other
+    text."""
     def unquote(t):
         return t[1:-1] if len(t) > 1 and t[0] == t[-1] and t[0] in "\"'" else t
 
@@ -502,7 +504,7 @@ def work_action(command):
             rest = rest[2:]
         elif rest and rest[0].startswith("--root="):
             rest = rest[1:]
-        if not rest or rest[0] not in WORK_ACTIONS:
+        if not rest or rest[0] not in (*WORK_ACTIONS, *LAND_ACTIONS):
             continue
         flags, item, skip = rest[1:], None, False
         for t in flags:
@@ -518,19 +520,30 @@ def work_action(command):
     return None
 
 
+def work_action(command):
+    """(item, action) a successful shell command writes as a `work` row, or None: `work_call` with `land` and `merge`
+    read as `done`. A landing ends the orchestrator's work on the item as `done` does, but runs `done` as a process of
+    its own, so no hook sees that one: the `land` or `merge` the session ran closes the session's window of the item
+    (usage_targets, ql_distill.work_windows) and a session that never claimed or branched the item gets a `done` that
+    opens and closes nothing."""
+    call = work_call(command)
+    return (call[0], "done" if call[1] in LAND_ACTIONS else call[1]) if call else None
+
+
 def refused_done(event, command):
     """The item of a `backlog.py done ID` that ran and was refused, from a `PostToolUseFailure` event, else None. The
-    command is read as `work_action` reads a success (the same parser: a mention or a dry run is none), and the
+    command is read as `work_call` reads it (the same parser: a mention or a dry run is none), and the
     failure must be the command's own exit: the first line of `error` is `Exit code 1`, backlog.py's refusal code
     (WORK_REFUSED_EXIT). An interrupt, a start failure or timeout with no such line, another exit code (2 is bad
-    usage, 127 and 9009 a missing interpreter) and a failed `claim` or `release` are none. Never the error's text."""
+    usage, 127 and 9009 a missing interpreter) and a failed `claim`, `release`, `land` or `merge` are none. Never the
+    error's text."""
     if event.get("is_interrupt"):
         return None
     first = str(event.get("error") or "").split("\n", 1)[0].strip()
     m = re.fullmatch(r"Exit code (\d+)", first)
     if not m or int(m.group(1)) != WORK_REFUSED_EXIT:
         return None
-    work = work_action(command)
+    work = work_call(command)
     if not work or work[1] != "done" or only_unlanded(str(event.get("error") or "")):
         return None
     return work[0]
@@ -795,7 +808,7 @@ def capture(event):
             else:
                 item = refused_done(event, args["command"])
                 work = (item, "refused") if item else None
-        if work:  # a successful claim, done or release, or a refused done: only the item and the action, never the command
+        if work:  # a successful claim, done, release, land or merge (the last two as `done`), or a refused done: only the item and the action, never the command
             agent = event.get("agent_id")
             return record("work", sid, prompt_id=pid, agent_id=agent if isinstance(agent, str) and agent else None,
                           item=work[0], action=work[1])

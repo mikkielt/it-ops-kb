@@ -26,5 +26,18 @@
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "A claim or branch row of an item with no item file: no window at all (the goal's wording), or no window unless a later done or release row of the same session closes it? A sprint close deletes the item files, and the orchestrator's session is distilled after it, so no window at all drops that session's whole attribution to the closed sprint's items.",
+      "options": [
+        "no window, whatever the session's later rows are",
+        "no window unless a later done or release row (a land or merge is stored as done) of the same item closes it in the session's rows"
+      ],
+      "recommendation": "no window unless a later done or release row (a land or merge is stored as done) of the same item closes it in the session's rows",
+      "class": "push"
+    }
+  ],
   "claimed_by": "worker-m6fknqr5"
 }
