@@ -117,6 +117,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           no-op marker, such as no public remote, or all tests skipped) with no
                                           other passing check that runs tests and no operator accept on gate
                                           host-bound; warns of each such check and of one that runs no code
+  backlog.py researched ID                the goal research story's check, which new sprint gives it: exit 0 once
+                                          its research is written by done's rules (a commit on HEAD whose KB-Work
+                                          names it and changes a file other than item files, or its notes' No
+                                          outside facts: <reason>), 1 before; read-only
   backlog.py land ID [--branch B] [--trailer 'KEY: VALUE']...
                                           land a finished item's branch (default work/ID) from a clean tree: fetch
                                           and rebase it on the integration main, then a content item: done --commit,
@@ -265,7 +269,7 @@ import bl_selfcheck  # noqa: F401 - registers `selfcheck`
 
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
-         "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "land", "merge", "drop", "start", "precheck",
+         "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
          "host-check", "close", "tidy", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
          "selfcheck")
 bl_cli.order(USAGE)

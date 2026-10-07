@@ -1,13 +1,13 @@
 """The landing side of backlog.py (kb/_self/backlog.md, What done refuses, Landing; kb/_self/tools.md): `done`, which runs an
 item's checks and records the evidence, `land`, which rebases a worker's branch and runs the steps to the integration
-main, and `close`, which deletes a finished sprint; with what they share: the commits an item's trailers name
-(`item_commits`, `unlanded_code`, `out_of_scope`), the runner of a check (`run_check`), the worker's worktree
+main, `close`, which deletes a finished sprint, and `researched`, the goal research story's check by done's rules;
+with what they share: the commits an item's trailers name (`item_commits`, `unlanded_code`, `out_of_scope`), the runner of a check (`run_check`), the worker's worktree
 (`live_processes`, `release_worker_worktree`), the landed work/<id> branch (`delete_landed_branch`) and the stuck merge
 request line.
 
 Standard library only; imports `bl_base`, `bl_check` (the no-op rules `done` applies), `bl_cli` and `bl_intake` (the
 time windows of the detectors that `precheck` names) and never `backlog`. The branch `land` expects sync to open for code commits is named by
-`kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `land`, `merge` and `close` with `bl_cli` itself when
+`kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `researched`, `land`, `merge` and `close` with `bl_cli` itself when
 imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there call `run_check` from
 here."""
 import argparse, datetime, hashlib, json, os, re, shlex, shutil, subprocess, sys, time
@@ -177,6 +177,24 @@ NO_OUTSIDE_FACTS = re.compile(r"(?:^|(?<=[.;!?]) |\n)No outside facts:[ \t]*\S")
 def research_without_facts(it):
     """True for a story that is the sprint's goal research and whose notes say `No outside facts: <reason>`."""
     return bool(it.get("kind") == "story" and it.get("goal_research") and NO_OUTSIDE_FACTS.search(it.get("notes") or ""))
+
+
+def cmd_researched(bl, a):
+    """The goal research story's check (bl_base.RESEARCH_CHECKS): exit 0 once its research is written, by done's own
+    rules, a work commit on HEAD naming it or one of its descendants (`item_commits`) or its notes' `No outside facts:
+    <reason>` (`research_without_facts`); exit 1 before. Read-only."""
+    iid = need(bl, a.id)
+    it = bl.items[iid]
+    if research_without_facts(it):
+        say(f"researched {bl.label(iid)}: its notes say No outside facts")
+        return 0
+    commits = item_commits(bl.root, [iid] + bl.descendants(iid))
+    if commits:
+        say(f"researched {bl.label(iid)}: {len(commits)} work commit(s), the first {next(iter(commits))[:10]}")
+        return 0
+    say(f"not researched {bl.label(iid)}: no commit on HEAD carries KB-Work: {iid} and changes a file other than item "
+        "files, and its notes hold no `No outside facts: <reason>`")
+    return 1
 
 
 def cmd_done(bl, a):
@@ -1688,7 +1706,8 @@ PRECHECK_NOTE = "passes before the work"  # an item's notes saying so keep its p
 
 def precheck_rows(bl, sid):
     """[(item id, check, exit code, passed)] of each check of the sprint's open committed items, run once on the checkout as
-    it is (before any work commit); the review and research stories, whose checks pass by design, are left out."""
+    it is (before any work commit); the review and research stories are left out: the review's checks pass by design,
+    and the research story's (`researched`) fails until its research is written."""
     rows = []
     for iid in sorted(bl.sprint_items(sid)):
         it = bl.items[iid]
@@ -1868,6 +1887,7 @@ def args_close(p):
 
 
 bl_cli.register("done", cmd_done, args_done)
+bl_cli.register("researched", cmd_researched, lambda p: p.add_argument("id"))
 bl_cli.register("precheck", cmd_precheck, lambda p: p.add_argument("sprint"))
 bl_cli.register("land", cmd_land, args_land)
 bl_cli.register("merge", cmd_merge, args_merge)
