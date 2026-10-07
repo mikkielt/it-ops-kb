@@ -1,0 +1,20 @@
+{
+  "id": "ST-fplrilri",
+  "kind": "story",
+  "title": "An item's touches tell the docs it may edit from the docs it only reviews, and only edits serialise items",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-vmxdxtru retrospective: seven of its eight work items named kb/_self/code.md in their touches (map.csv maps every _tools module to it), none edited it, and the shared touch made the sprint one serial chain of eight steps. An item's touches mark a doc it only reads and names in Self-Reviewed apart from a file it edits; the overlap rule of held, next and check's serial-chain warning counts only edits; done still refuses an edit outside the edit touches; the runbook and the sprint and backlog skills say how to mark each.",
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/bl_check.py",
+    "_tools/bl_view.py",
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md"
+  ]
+}

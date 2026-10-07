@@ -1,0 +1,15 @@
+{
+  "id": "ST-j27o77wi",
+  "kind": "story",
+  "title": "land runs an item's checks with the branch's own code, so a change to run_check proves itself",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-vmxdxtru retrospective: ST-d35ns45r's check calls bl_base.run_check, and land's checks step ran it from the landing process, which had imported the old run_check before the rebase, so the outer run named no KB_TEST_RUN_HOME and the check failed at step checks until the orchestrator preset the variable. land's checks and done steps run an item's checks through a fresh process of the rebased branch's backlog.py, so the code under test is the branch's at every level; backlog.md and tools.md say so.",
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
