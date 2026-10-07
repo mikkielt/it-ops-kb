@@ -22,7 +22,8 @@
     "_tools/kg_hooks.py",
     "kb/_self/git.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_sync_e2e.py"
   ],
   "depends_on": [
     "BG-qqdfqx2d",
