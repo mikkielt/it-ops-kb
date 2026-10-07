@@ -1,0 +1,18 @@
+{
+  "id": "ST-akicahgy",
+  "kind": "story",
+  "title": "The suite's rag.py eval rebuilds the pack index only for what an edit changed",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "After an edit to one kb article, or to _tools/kbfacts.py that leaves INDEX_VERSION unchanged, the next rag.py pack or eval on the Windows host reuses the index for unchanged content instead of a full 14-22 s rebuild, while every changed fact is still found; measured before and after on that host.",
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-4mcoplex"
+  ]
+}
