@@ -19,7 +19,10 @@
   ],
   "touches": [
     "kb/_self/reports/windows-run.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "_tools/tests_ceiling.json",
+    "kb/_self/tools.md",
+    "kb/_self/README.md"
   ],
   "gates": [
     {
