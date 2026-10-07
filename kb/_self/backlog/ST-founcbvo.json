@@ -20,7 +20,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "lint"
+        "second_bullet"
       ]
     }
   ],
@@ -30,9 +30,11 @@
     "kb/_self/content-rules.md",
     "kb/_self/tools.md",
     "AGENTS.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "_tools/test_live_kb.py"
   ],
   "depends_on": [
     "ST-e5u5zhrc"
-  ]
+  ],
+  "notes": "Operator 2026-10-07: the work adds one planted-failure test to _tools/test_live_kb.py named for second_bullet (a planted Facts line with '- ' after its tag fails the lint), within the ceiling; check 2 selects no test until then. Check 1 passes before the work on purpose: it pins a clean live kb."
 }

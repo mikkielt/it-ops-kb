@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "backlog.py set --add no longer appends to every list field in the call",
   "status": "draft",
+  "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
   "goal": "A backlog.py set call that names --add with a list field (--check, --touch, --link, --depends, --relates) beside --notes or another field never silently appends to a list the caller meant to replace: either --add applies per field or set refuses the mix, naming the fields, as the gate add-scope settles; every skill and agent that documents --add says the same. Found in SP-eahtellz: set ST-4mcoplex --check ... --notes ... --add appended a check instead of replacing it.",
@@ -24,7 +25,20 @@
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md",
     ".claude/skills/kb-ingest/SKILL.md",
-    ".claude/agents/kb-worker.md"
+    ".claude/agents/kb-worker.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-jxyfzf6d",
+    "BG-mx4fggy4",
+    "BG-zw5sxzkc",
+    "ST-6kcoqz4d",
+    "ST-atorqkvw",
+    "ST-hr4hksct",
+    "ST-uggjnhs2"
   ],
   "gates": [
     {
@@ -36,7 +50,7 @@
         "per-field: separate append flags (--add-check, --add-touch, --add-notes, ...) replace the shared --add"
       ],
       "recommendation": "refuse: set refuses a call that mixes --add with more than one field, naming them, so each append is its own call",
-      "class": "agents-rule",
+      "class": "secrets",
       "do": {
         "refuse: set refuses a call that mixes --add with more than one field, naming them, so each append is its own call": "ST-juoeq36g",
         "per-field: separate append flags (--add-check, --add-touch, --add-notes, ...) replace the shared --add": "ST-juoeq36g"

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "launch runs the missed-SessionEnd catch-up before it marks its own session, and takes the first transcript glob hit",
   "status": "draft",
+  "sprint": "SP-s5fdczv7",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -23,5 +24,8 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "BG-m6fknqr5"
   ]
 }

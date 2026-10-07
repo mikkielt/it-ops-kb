@@ -14,7 +14,10 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Added 2026-10-07 by the operator's triage, outside the goal's clauses: BG-2uqmyman (drift detector runs todo items' checks without an isolated query log home), ordered after the sprint's other items."
 }

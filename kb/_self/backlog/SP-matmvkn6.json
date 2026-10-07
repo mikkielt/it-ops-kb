@@ -14,7 +14,10 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Added 2026-10-07 by the operator's triage, outside the goal's clauses: ST-iafyj5f5 (perfcheck.py time defaults to the platform's ceiling), ordered after the sprint's other items."
 }

@@ -14,8 +14,10 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ],
-  "notes": "Goal clause on drifted items is met at planning: ST-4nnm2aee dropped as already met (its intake --status passes)."
+  "notes": "Goal clause on drifted items is met at planning: ST-4nnm2aee dropped as already met (its intake --status passes). Added 2026-10-07 by the operator's triage: ST-5xshevwu (drift finding on ST-oolpcwu6, carried by the goal's drift clause; dropped once ST-oolpcwu6 is done), and outside the goal's clauses BG-qqdfqx2d (research story check passes before research) and BG-dsab2ti3 (KB-* line outside the trailer block), ordered after the sprint's other items."
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A KB-Work or Self-Reviewed line outside the trailer block passes the commit and the push unread",
   "status": "draft",
+  "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -22,6 +23,14 @@
     "kb/_self/git.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-qqdfqx2d",
+    "ST-2zl47dfu",
+    "ST-bum7owtw",
+    "ST-idwjvloy",
+    "ST-ocfkanth",
+    "ST-rhxa3ryf"
   ],
   "links": [
     "fingerprint 100be800a2b5",

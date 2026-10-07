@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "backlog.py cost shows no work for items done in a sprint's earlier sessions",
   "status": "draft",
+  "sprint": "SP-s5fdczv7",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py cost ID gives the work figures of an item done in an earlier session of its sprint (a claim and a done on another day or host whose usage rows reached the committed store), or names why it has none (no work rows delivered, a session without the capture hooks), instead of 0 prompts with no reason; found in the SP-eahtellz close, where 12 bugs done in earlier sessions (BG-r5fab2td among them) showed 0 runs and 0 prompts.",
@@ -19,6 +20,11 @@
     "_tools/bl_cost.py",
     "kb/_self/usage.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-m6fknqr5",
+    "BG-tyuwiin7"
   ]
 }

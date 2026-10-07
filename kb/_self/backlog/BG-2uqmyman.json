@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The drift detector runs todo items' checks without an isolated query log home",
   "status": "draft",
+  "sprint": "SP-vmxdxtru",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -20,5 +21,12 @@
     "kb/_self/backlog.md",
     "kb/_self/code.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-n54k5zud",
+    "BG-p3jphxgb",
+    "ST-d35ns45r",
+    "ST-rbcr2tm6",
+    "ST-tnbnmec6"
   ]
 }

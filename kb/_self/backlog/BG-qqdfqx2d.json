@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "new sprint gives its goal research story a check that passes before any research",
   "status": "draft",
+  "sprint": "SP-gkbtjjce",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -19,5 +20,16 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-2zl47dfu",
+    "ST-57ssk65s",
+    "ST-bum7owtw",
+    "ST-cjizqzhq",
+    "ST-idwjvloy",
+    "ST-kqfdal66",
+    "ST-ocfkanth",
+    "ST-psshdtwu",
+    "ST-rhxa3ryf"
   ]
 }
