@@ -82,6 +82,7 @@ Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-backlog:tr
 List what needs deciding, intake's drafts first:
 - the uncommitted drafts the SessionStart hook (`backlog.py intake --file --hook`; `red-pipeline --hook` files a red main's bug the same way) wrote: the new item files in `git status --porcelain -uall kb/_self/backlog/` (`??`) whose `links` carry `fingerprint <12 hex>` and `detector <name>` (`python3 _tools/backlog.py show ID`). Show each with its detector, kind, title and goal. A kept one is committed with the rest of the triage (item files only, `KB-Work` naming them); a dropped one is deleted, since it was never committed, (intake files it again at a later session while a detector still reports it);
 - `python3 _tools/backlog.py list --status draft`;
+- the parked drafts among them, the ones whose `links` name the review or close that found them (`parked: SP-... review` or `parked: SP-... close`): propose a sprint for one only when its `notes` carry a line naming the fitness test it blocks (the held-out answer rate, a content sprint) or a real user's report; list one that names neither as parked, with no sprint offered, and leave it a draft in no sprint (`kb/_self/backlog.md`, Sprints);
 - bugs without a sprint;
 - items whose trigger may have fired (fire them with `python3 _tools/backlog.py fire ID` once the event is confirmed).
 

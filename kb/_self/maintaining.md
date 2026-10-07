@@ -44,7 +44,7 @@ The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPr
 | `/kb-verify [prefixes]` | quality gate before a commit or a push | content rules, tools |
 | `/kb-git-sync [--push]` | sync with `origin/main` when `kbgit.py sync` stops (exit 1 or 3): resolves conflicts by meaning, fixes a red gate, pushes only when asked | git, content rules |
 | `/kb-backlog [epic "<outcome>"\|"<what>"\|bug\|triage]` | plan an epic (interview, then the epic and its first stories), stories, tasks and subtasks, file or triage a bug, in `kb/_self/backlog/` | backlog |
-| `/kb-sprint plan\|start\|run\|review\|close` | run a sprint end to end: the operator approves its start, ready items go to subagents in worktrees and land one at a time, the review story checks it, the retrospective turns process failures into stories at close | backlog, git |
+| `/kb-sprint plan\|start\|run\|review\|close` | run a sprint end to end: the operator approves its start, ready items go to subagents in worktrees and land one at a time, the review story checks it and parks its non-`S1` gaps as drafts, the retrospective parks process failures as draft stories at close | backlog, git |
 | `/kb-item [ID]` | work one backlog item: claim, work within its `touches`, `backlog.py done`, land | backlog, git |
 | `/kb-self [doc\|--since REV\|all]` | bring `kb/_self/` back in line with the code, skills and config it describes | `kb/_self/README.md`, `kb/_self/map.csv` |
 
