@@ -998,6 +998,35 @@ def land_checks(bl, iid):
     raise land_stop("checks", f"{len(failed)} check(s) of {bl.label(iid)} failed: nothing was pushed")
 
 
+def fast_forward_start(root, remote, start_ref, upstream):
+    """After a pushed landing, bring the checkout `land` started on level with the integration main: `git merge
+    --ff-only` when it is on a branch whose `@{upstream}` is REMOTE/main and has no uncommitted changes. Anything
+    else is left alone and said, and the exit status never depends on it: the next `claim --commit` must start from
+    the pushed main, and a refusal here only costs a manual fast-forward."""
+    if not start_ref.startswith("refs/heads/"):
+        return
+    name = start_ref[len("refs/heads/"):]
+    p = subprocess.run(["git", "rev-parse", "--abbrev-ref", f"{name}@{{upstream}}"], cwd=root, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace")
+    if p.returncode or p.stdout.strip() != f"{remote}/main" or not has_ref(root, upstream):
+        return
+    behind = subprocess.run(["git", "rev-list", "--count", f"HEAD..{upstream}"], cwd=root, capture_output=True,
+                            text=True, encoding="utf-8", errors="replace").stdout.strip()
+    if behind in ("", "0"):
+        return
+    if git(root, "status", "--porcelain").strip():
+        say(f"land: left {name} {behind} commit(s) behind {remote}/main: it has uncommitted changes "
+            f"(git merge --ff-only {remote}/main once they are committed)")
+        return
+    p = subprocess.run(["git", "merge", "--ff-only", "--quiet", upstream], cwd=root, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    if p.returncode:
+        why = ((p.stderr or p.stdout).strip().splitlines() or ["diverged"])[-1]
+        say(f"land: left {name} {behind} commit(s) behind {remote}/main: it cannot fast-forward ({why})")
+    else:
+        say(f"land: fast-forwarded {name} {behind} commit(s) to {remote}/main")
+
+
 def land_once(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
     heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the item's checks and
@@ -1013,6 +1042,7 @@ def land_once(bl, a):
     branch = a.branch or f"work/{iid}"
     upstream = f"refs/remotes/{remote}/main"
     landed = False  # set once the item is done on the integration main: then its work/<id> branch is deleted
+    pushed = False  # set once this run's push went through (a landing or a code item's merge request)
     if git(root, "status", "--porcelain").strip():
         raise land_stop("clean tree", "uncommitted changes: commit or stash them first (git status --short)")
     if not has_ref(root, f"refs/heads/{branch}"):
@@ -1107,11 +1137,12 @@ def land_once(bl, a):
             LAND_OPS["pending"] = (tip, code_branch) if tip else None
             say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
                 f"once it has merged, run backlog.py land {iid} again (fetch, rebase, done --commit, sync --push)")
+            pushed = True
         else:
             verify_landed(root, remote, upstream, iid)
             subprocess.run(["git", "update-ref", "-d", f"{LAND_REF}/{iid}"], cwd=root, capture_output=True)
             say(f"land: {bl.label(iid)} landed")
-            landed = True
+            landed = pushed = True
         return 0
     except kg_lock.MainLockTimeout as e:  # a live holder kept the main lock for the whole bound: report blocked
         raise land_stop("fetch and rebase", str(e)) from None
@@ -1122,10 +1153,13 @@ def land_once(bl, a):
                            errors="replace")
         if p.returncode:
             say(f"land: could not return to {start_ref or start[:10]}: {(p.stderr or p.stdout).strip()}")
-        elif landed:  # the worker's branches, landed: never the one land runs on
-            for done_branch in (branch, agent_branch):
-                if done_branch and start_ref != f"refs/heads/{done_branch}":
-                    delete_landed_branch(root, done_branch, upstream)
+        else:
+            if pushed:  # a refusal is said and changes no exit status
+                fast_forward_start(root, remote, start_ref, upstream)
+            if landed:  # the worker's branches, landed: never the one land runs on
+                for done_branch in (branch, agent_branch):
+                    if done_branch and start_ref != f"refs/heads/{done_branch}":
+                        delete_landed_branch(root, done_branch, upstream)
 
 
 def pushed_tip(root, remote, code_branch):
