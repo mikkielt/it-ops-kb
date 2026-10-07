@@ -1,0 +1,26 @@
+{
+  "id": "ST-mdhaee4q",
+  "kind": "story",
+  "title": "Review sprint: The kb's first fitness tests: a held-out answer rate and parked review gaps",
+  "status": "draft",
+  "sprint": "SP-4rq725fe",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

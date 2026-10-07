@@ -1,0 +1,20 @@
+{
+  "id": "SP-4rq725fe",
+  "kind": "sprint",
+  "title": "The kb's first fitness tests: a held-out answer rate and parked review gaps",
+  "status": "planned",
+  "goal": "kb/public/_retrieval/lookup_heldout.csv holds 20 real questions from the query log that never feed the eval set, and rag.py eval --min 16 on it exits 0 as the kb's answer-rate fitness test; and a sprint review files only an S1 gap into its sprint, every other gap and retrospective finding as a draft in no sprint with a parked link, promoted by triage or plan only with a notes line naming the fitness test it blocks or a real user's report",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
