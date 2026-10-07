@@ -20,5 +20,8 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-ese7wmz3"
   ]
 }
