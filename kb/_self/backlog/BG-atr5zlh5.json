@@ -1,0 +1,17 @@
+{
+  "id": "BG-atr5zlh5",
+  "kind": "bug",
+  "title": "check_env points KB_INDEX at a linked worktree's own _cache, not the clone's shared index directory",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A backlog check or repro run from a linked git worktree gets KB_INDEX set to the directory the tools themselves would use there (kbfacts.index_dir(): the clone's main worktree's _cache/ unless KB_INDEX or CLAUDE_PLUGIN_DATA is set), not the worktree's own _cache/, so the check reuses the clone's pack index instead of building one; querylog.md's 'the isolated directory costs no index rebuild' holds in a worktree too.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, sys; sys.path.insert(0, '_tools'); os.environ.pop('KB_INDEX', None); os.environ.pop('CLAUDE_PLUGIN_DATA', None); import bl_base, kbfacts; got = bl_base.check_env(kbfacts.kbcommon.HOME, 'h')['KB_INDEX']; want = kbfacts.index_dir(); print('check_env', got, 'index_dir', want); sys.exit(os.path.normcase(os.path.abspath(got)) != os.path.normcase(os.path.abspath(want)))"
+    ]
+  }
+}
