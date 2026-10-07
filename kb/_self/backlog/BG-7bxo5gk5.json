@@ -2,7 +2,7 @@
   "id": "BG-7bxo5gk5",
   "kind": "bug",
   "title": "Publish refuses the made-up GUID in BG-nf6gcqsz's old repro, so nothing reaches the public home",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "priority": "P1",
   "rank": 0,
@@ -17,5 +17,6 @@
   },
   "touches": [
     "_tools/tests_allowlist.txt"
-  ]
+  ],
+  "claimed_by": "bg-7bxo5gk5-session"
 }
