@@ -2,7 +2,7 @@
   "id": "ST-plxipqiu",
   "kind": "story",
   "title": "Research sprint goal: Work attribution and capture close cleanly",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5fdczv7",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "worker-plxipqiu"
+  "evidence": {
+    "commit": "400e7cec154c0cffce2603d3bf1bdcc7979a44a2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "69f3a572d52b4560"
+      }
+    ]
+  }
 }
