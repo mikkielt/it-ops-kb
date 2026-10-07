@@ -63,6 +63,21 @@
       },
       "answer": "a draft in no sprint with a parked link naming the review that found it (no new state or tool change)",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What link text marks a parked draft?",
+      "options": [
+        "parked: SP-... review|close",
+        "a Parked: notes line"
+      ],
+      "recommendation": "parked: SP-... review|close",
+      "class": "agents-rule",
+      "do": {
+        "parked: SP-... review|close": "ST-uifoyk4w",
+        "a Parked: notes line": "ST-uifoyk4w"
+      }
     }
   ],
   "notes": "Premise run 2026-10-08 (plan step 6): the rule is live text, kb/_self/backlog.md:225 (every gap becomes a bug, in this sprint if it is S1, else in the backlog) and .claude/skills/kb-sprint/SKILL.md review step 5; git log --diff-filter=A on kb/_self/backlog/*.json shows 375 of 501 item-adding commits are chore(backlog): file ..., most named file the SP-... review's gaps. Reproduces. Checks pass before the work by design (precheck 2026-10-08): rag.py eval --root _self pins every tested rule question and runs over the new row once it exists (eval has no per-row selection; the row's id in the eval output is the proof the review reads); backlog.py check and selfdoc.py check pin that the docs and items stay consistent after the rule change. The behaviour change is in prose rules the skills read, so no check can fail before it.",
