@@ -2,7 +2,7 @@
   "id": "BG-tyuwiin7",
   "kind": "bug",
   "title": "launch runs the missed-SessionEnd catch-up before it marks its own session, and takes the first transcript glob hit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5fdczv7",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,6 @@
   ],
   "depends_on": [
     "BG-m6fknqr5"
-  ]
+  ],
+  "claimed_by": "worker-tyuwiin7"
 }
