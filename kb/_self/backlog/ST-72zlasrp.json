@@ -2,7 +2,7 @@
   "id": "ST-72zlasrp",
   "kind": "story",
   "title": "Research sprint goal: Checks keep selecting tests; detectors judge closed windows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vmxdxtru",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "sonnet-research-72zlasrp"
 }
