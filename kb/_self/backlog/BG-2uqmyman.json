@@ -2,7 +2,7 @@
   "id": "BG-2uqmyman",
   "kind": "bug",
   "title": "The drift detector runs todo items' checks without an isolated query log home",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vmxdxtru",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,18 @@
     "ST-tnbnmec6",
     "BG-ese7wmz3"
   ],
-  "claimed_by": "sonnet-worker-2uqmyman"
+  "evidence": {
+    "commit": "527dce910e016c3eda38bb3212e8d58fd39ffaa4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;t=pathlib.Path(\"_tools/bl_intake.py\").read_text(encoding=\"utf-8\");ok=\"bl_base.check_env\" in t or \"check_env(\" in t and \"tempfile\" in t;print(\"drift runs checks with an isolated home:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e2ce0b297c7b139e"
+      }
+    ]
+  }
 }
