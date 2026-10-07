@@ -1,0 +1,46 @@
+{
+  "id": "BG-xyhtwsdp",
+  "kind": "bug",
+  "title": "A done bug whose check or repro names a deleted test fails the review's rerun with no route out",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A sprint review whose done items carry a check or bug repro naming a test that a later change deleted (a -k selection that collects nothing, exit 5) has a route to finish, as gate dead-test settles, and SP-eahtellz's seven such bugs (BG-2luo4b26, BG-co3nthy4, BG-hway4bjs, BG-kc7uzged, BG-kjpbqany, BG-mnnihwaf, BG-r5fab2td) take it, so ST-lpazcjki's done passes; today set refuses to clear a repro and refuses a repro that passes, and reopen leaves the bug unable to pass done. Found in the SP-eahtellz review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_base,bl_land;bl=bl_base.Backlog('.');bl.sprint_items=lambda s:['BG-2luo4b26'];r=bl_land.rerun_done_checks(bl,'SP-eahtellz');print('failing reruns',[(i,c) for i,_,c in r]);sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "gates": [
+    {
+      "id": "dead-test",
+      "kind": "blocking",
+      "question": "How should a done item's check or repro that names a deleted test (its -k collects nothing, exit 5) be handled at the review's rerun?",
+      "options": [
+        "skip-gone: rerun_done_checks reports such a check or repro as gone (a warning naming the item and the selector), not a failure; the items stay as they are, and a new item's done still refuses a selection that collects nothing",
+        "retire: set --check and --repro on a done item accept a replacement with a reason naming the deleted test, without reopening it; the seven bugs get python3 _tools/tests.py"
+      ],
+      "recommendation": "skip-gone: rerun_done_checks reports such a check or repro as gone (a warning naming the item and the selector), not a failure; the items stay as they are, and a new item's done still refuses a selection that collects nothing",
+      "class": "agents-rule",
+      "do": {
+        "skip-gone: rerun_done_checks reports such a check or repro as gone (a warning naming the item and the selector), not a failure; the items stay as they are, and a new item's done still refuses a selection that collects nothing": "BG-xyhtwsdp",
+        "retire: set --check and --repro on a done item accept a replacement with a reason naming the deleted test, without reopening it; the seven bugs get python3 _tools/tests.py": "BG-xyhtwsdp"
+      },
+      "answer": "skip-gone: rerun_done_checks reports such a check or repro as gone (a warning naming the item and the selector), not a failure; the items stay as they are, and a new item's done still refuses a selection that collects nothing",
+      "by": "operator"
+    }
+  ]
+}
