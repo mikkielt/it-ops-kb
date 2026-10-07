@@ -62,7 +62,9 @@
         "git-common: a kb-index/ directory under the git common dir"
       ],
       "recommendation": "main-cache: the main worktree's _cache/ (found from a linked worktree's .git file, as ql_base.clone_home does for the spool)",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "main-cache: the main worktree's _cache/ (found from a linked worktree's .git file, as ql_base.clone_home does for the spool)",
+      "by": "operator"
     },
     {
       "id": "index-key",
@@ -73,7 +75,9 @@
         "sha-all: sha1 of every indexed file's bytes, read on each stat-fingerprint change, no git"
       ],
       "recommendation": "git-blobs: git's blob ids from ls-files -s for tracked unchanged files, a modified or untracked file hashed as git would, a file outside the repository by path, time and size; computed only when a per-checkout stat fingerprint changes (a memo file beside the index)",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "git-blobs: git's blob ids from ls-files -s for tracked unchanged files, a modified or untracked file hashed as git would, a file outside the repository by path, time and size; computed only when a per-checkout stat fingerprint changes (a memo file beside the index)",
+      "by": "operator"
     },
     {
       "id": "index-prune",
@@ -85,7 +89,9 @@
         "never: no pruning in a shared directory"
       ],
       "recommendation": "keep-recent: those beyond the 4 most recently used (mtime, set when a process opens the file and once a minute while it serves from it) and unused for 15 minutes",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "keep-recent: those beyond the 4 most recently used (mtime, set when a process opens the file and once a minute while it serves from it) and unused for 15 minutes",
+      "by": "operator"
     }
   ],
   "links": [
