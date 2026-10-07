@@ -2,7 +2,7 @@
   "id": "BG-dsab2ti3",
   "kind": "bug",
   "title": "A KB-Work or Self-Reviewed line outside the trailer block passes the commit and the push unread",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,18 @@
     "detector trailers"
   ],
   "notes": "a KB-Work line git does not read as a trailer (a blank line before Co-Authored-By?): 03412dee03, 178087d30b, 27901ee5a7, 3c8cf8bdd5, 4b4e17be61, 7219acbb56, 744ea615bc, 8da30157b3, 9cb820ecb3, a4c6373d20, ac03d1b3fa, b5765e22b9, e468ddb4dd; changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work or KB-Auto trailer: 39f643b18e, 5a2a45778e, 5c3bfd0ea7, 9286c5e81c, 9fc143f3b1, ad70d90965, b8c95fccdd, d7a88846d7, e4537efc12, fc795c8e1f, ffe1273a0c Triaged 2026-10-07 by the operator: reshaped from the intake finding to prevention. The repro is still intake's status of the detector's fingerprint; when the bug is scheduled, repoint it to a planted commit with a KB-Work line above a blank line run through check-trailers, which must fail before the fix.",
-  "claimed_by": "worker-dsab2ti3"
+  "evidence": {
+    "commit": "f901329dfc0c34f6376dba4f890ed09f57461f59",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import kg_trailers as k;t=Path(tempfile.mkdtemp());g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com','-c','commit.gpgsign=false',*a],cwd=t,check=True,capture_output=True,text=True).stdout;g('init','-q');(t/'notes.txt').write_text('x\\n',encoding='utf-8');g('add','notes.txt');g('commit','-q','--no-verify','-m','chore: planted\\n\\nKB-Work: BG-aaaaaaaa\\nSelf-Reviewed: kb/_self/git.md\\n\\nCo-Authored-By: Jan Kowalski <jan.kowalski@corp.example.com>');k.KB=str(t);a=k.trailer_audit(g('rev-parse','HEAD').strip(),quiet=True);out='\\n'.join(ln for _,ls in a[2] for ln in ls);print(out or 'check-trailers passes the planted commit');sys.exit(0 if 'KB-Work: BG-aaaaaaaa' in out and 'Self-Reviewed: kb/_self/git.md' in out else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ee5a7c0fc6db1fe2"
+      }
+    ]
+  }
 }
