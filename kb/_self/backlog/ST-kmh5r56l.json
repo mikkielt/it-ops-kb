@@ -1,0 +1,35 @@
+{
+  "id": "ST-kmh5r56l",
+  "kind": "story",
+  "title": "A gate on a rule-guarding item names the exact marker text before the start",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Plan step 6 of /kb-sprint and kb/_self/backlog.md say that a blocking gate on an item whose touches are rule-guarding, when its answer introduces a marker other items or tools will match (a link text, a notes prefix, a name), names that exact text in the chosen option, so no worker meets the choice mid-work; a tested question of kb/_self's lookup_eval.csv answers it from backlog.md. It answers SP-4rq725fe, where ST-uifoyk4w's gate g1 chose a parked link but not its text, the worker's provisional gate became blocking on a rule-guarding item and was dropped from the commit, and the orchestrator recorded and answered g2 after the work.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-4rq725fe close"
+  ]
+}

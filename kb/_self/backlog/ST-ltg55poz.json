@@ -1,0 +1,30 @@
+{
+  "id": "ST-ltg55poz",
+  "kind": "story",
+  "title": "backlog.py list shows which drafts are parked, so triage needs no show per draft",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py list marks a draft whose links hold a parked: SP-... review or parked: SP-... close link (or filters to them), so /kb-backlog triage lists the parked drafts and their fitness-test notes from one command; kb/_self/tools.md and the kb-backlog triage step name it. It answers SP-4rq725fe, whose review found that list prints no links and triage's new parked step needs a backlog.py show per draft.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "list",
+        "--status",
+        "draft"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_view.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/code.md",
+    ".claude/skills/kb-backlog/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-4rq725fe close"
+  ]
+}

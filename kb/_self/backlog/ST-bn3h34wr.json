@@ -1,0 +1,32 @@
+{
+  "id": "ST-bn3h34wr",
+  "kind": "story",
+  "title": "The held-out answer-rate test refuses a held-out row that rewords a tuned eval row",
+  "status": "draft",
+  "parent": "EP-gzr4mmkm",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "rag.py eval with --file on the held-out file (or a check the held-out run makes) fails, naming the row pair, when a held-out row shares its expected article with a lookup_eval.csv or doc2query expansion row and most of its words, so a reworded tuned question cannot lift the held-out rate; one planted-failure test within the ceiling proves it. It answers SP-4rq725fe, where the goal clause none of which is a lookup_eval.csv row was read only as exact text, no check read it, and HO-session-id-bash-env (a rewording of EV-claude-code-expose-session-id-bash) passed into the file (BG-4wqn6kog).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/rag.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/token-efficiency.md",
+    "AGENTS.md"
+  ],
+  "links": [
+    "parked: SP-4rq725fe close"
+  ],
+  "notes": "Blocks the held-out answer rate fitness test of EP-gzr4mmkm: without it a reworded tuned question can lift the measured rate (BG-4wqn6kog)."
+}
