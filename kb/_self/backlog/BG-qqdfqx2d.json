@@ -31,5 +31,41 @@
     "ST-ocfkanth",
     "ST-psshdtwu",
     "ST-rhxa3ryf"
+  ],
+  "gates": [
+    {
+      "id": "form",
+      "kind": "blocking",
+      "question": "What check does the goal research story that new sprint files carry instead of check.py, given ST-idwjvloy's No outside facts route?",
+      "options": [
+        "commit or note: passes when a commit with KB-Work naming the story changes a non-item file, or its notes hold No outside facts: <reason>",
+        "kb content commit only: passes only on a KB-Work commit changing kb/public/**"
+      ],
+      "recommendation": "commit or note: passes when a commit with KB-Work naming the story changes a non-item file, or its notes hold No outside facts: <reason>",
+      "class": "agents-rule",
+      "do": {
+        "commit or note: passes when a commit with KB-Work naming the story changes a non-item file, or its notes hold No outside facts: <reason>": "BG-qqdfqx2d",
+        "kb content commit only: passes only on a KB-Work commit changing kb/public/**": "BG-qqdfqx2d"
+      },
+      "answer": "commit or note: passes when a commit with KB-Work naming the story changes a non-item file, or its notes hold No outside facts: <reason>",
+      "by": "operator"
+    },
+    {
+      "id": "existing",
+      "kind": "blocking",
+      "question": "Does the fix also repoint the research stories already filed in planned sprints to the new check?",
+      "options": [
+        "repoint them",
+        "new sprints only"
+      ],
+      "recommendation": "repoint them",
+      "class": "agents-rule",
+      "do": {
+        "repoint them": "BG-qqdfqx2d",
+        "new sprints only": "BG-qqdfqx2d"
+      },
+      "answer": "repoint them",
+      "by": "operator"
+    }
   ]
 }
