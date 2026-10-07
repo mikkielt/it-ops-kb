@@ -2,7 +2,7 @@
   "id": "BG-tyuwiin7",
   "kind": "bug",
   "title": "launch runs the missed-SessionEnd catch-up before it marks its own session, and takes the first transcript glob hit",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5fdczv7",
   "priority": "P2",
   "rank": 0,
@@ -55,5 +55,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-tyuwiin7"
+  "evidence": {
+    "commit": "9b10baa9a467916d971e5c6c065e395a3ce5d325",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import inspect,sys;sys.path.insert(0,\"_tools\");import ql_distill as d;s=inspect.getsource(d.launch);i=s.find(\".touch()\");j=s.find(\"missed_ends(\");ok=0<=i<j;print(\"launch marks its own session before the catch-up:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "cab0669ddc3a7662"
+      }
+    ]
+  }
 }
