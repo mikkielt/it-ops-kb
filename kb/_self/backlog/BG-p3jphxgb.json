@@ -7,7 +7,7 @@
   "priority": "P1",
   "rank": 0,
   "severity": "S3",
-  "goal": "bl_intake.repeats_detector reports only ISO weeks that have ended, so the story it files is about a closed week's count, and the intake --status check it gives the story can pass once a later closed week stays at or under REPEAT_THRESHOLD (or the story's check reads a measure work can change); today the fingerprint is the running week, whose committed call count only grows, so ST-mwtm7r7b, ST-evlez5mw and ST-52x5bpab (2026-W41 grep, tools.backlog, python) were dropped from SP-qzip6qar as unpassable.",
+  "goal": "bl_intake.repeats_detector judges only the latest closed ISO week (the running week is never reported) and keys each finding by the command class or tool group alone, the week staying in its title and notes (gate window, answered latest-class by the operator), so the story it files is about a closed week's count and its intake --status check passes once a later closed week stays at or under REPEAT_THRESHOLD; one story per class, not one per week. Today the fingerprint is the running week and the class, whose committed call count only grows, so ST-mwtm7r7b, ST-evlez5mw and ST-52x5bpab (2026-W41 grep, tools.backlog, python) were dropped from SP-qzip6qar as unpassable. code.md, tools.md and backlog.md say which week is judged and what the key is.",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,15 @@
       "import sys,datetime;sys.path.insert(0,'_tools');import bl_intake;y,w,_=datetime.date.today().isocalendar();cur=f'{y}-W{w:02d}';f=[c.title for c in bl_intake.repeats_detector('.') if cur in c.title];print(cur,f);sys.exit(1 if f else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,datetime;sys.path.insert(0,'_tools');import bl_intake as b;d=datetime.date.today();f=lambda c:f'{c[0]}-W{c[1]:02d}';lc=f((d-datetime.timedelta(days=7)).isocalendar());cw=f(d.isocalendar());n=b.REPEAT_THRESHOLD+1;rows=[(lc,'grep')]*n+[(cw,'python')]*n;b.committed_calls=lambda root,budget=None:(rows,0);k=[x.key for x in b.repeats_detector('.')];print('keys:',k);sys.exit(0 if k==['grep'] else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_intake.py",
     "kb/_self/code.md",
@@ -24,5 +33,26 @@
   "depends_on": [
     "ST-rbcr2tm6",
     "BG-ese7wmz3"
+  ],
+  "gates": [
+    {
+      "id": "window",
+      "kind": "blocking",
+      "question": "Which closed ISO week does the repeats detector judge, and what is a finding's fingerprint key, so the intake --status check of the story it files can pass?",
+      "options": [
+        "latest-class",
+        "every-week",
+        "latest-week-class"
+      ],
+      "recommendation": "latest-class",
+      "class": "agents-rule",
+      "do": {
+        "latest-class": "BG-p3jphxgb",
+        "every-week": "BG-p3jphxgb",
+        "latest-week-class": "BG-p3jphxgb"
+      },
+      "answer": "latest-class",
+      "by": "operator"
+    }
   ]
 }
