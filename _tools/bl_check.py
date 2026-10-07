@@ -283,17 +283,18 @@ def collected(root, cmd, targets, k, m):
 
 
 def selector_rows(bl, cmd):
-    """[(count or None, why, selector text, item id)] for every tests.py -k selector in the checks of the open items
-    and of the done items of an active sprint (the sprint review reruns those), each distinct selector collected once,
-    fewest tests first (collection errors, then zeros)."""
+    """[(count or None, why, selector text, item id)] for every tests.py -k selector in the checks and the bug repro
+    of the open items and of the done items of an active sprint (the sprint review reruns those; a done task or
+    subtask has no `sprint` of its own, so its sprint is the one of its story, `sprint_of`), each distinct selector
+    collected once, fewest tests first (collection errors, then zeros)."""
     seen, rows = {}, []
     for iid, it in bl.items.items():
         if it.get("kind") == "sprint":
             continue
         if it.get("status") not in OPEN_STATUSES and not (
-                it.get("status") == "done" and bl.items.get(it.get("sprint"), {}).get("status") == "active"):
+                it.get("status") == "done" and bl.items.get(bl.sprint_of(iid), {}).get("status") == "active"):
             continue
-        for c in it.get("checks", []) or []:
+        for c in list(it.get("checks", []) or []) + ([it["repro"]] if it.get("repro") else []):
             sel = selector_of(c.get("run") if isinstance(c, dict) else None)
             if sel is None:
                 continue
