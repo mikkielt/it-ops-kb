@@ -1,0 +1,24 @@
+{
+  "id": "ST-ls2ge3bz",
+  "kind": "story",
+  "title": "Research sprint goal: Rules findings converge: no item-text findings, tested rows for real misses, code-anchored rows",
+  "status": "draft",
+  "sprint": "SP-rvslem3h",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-ls2ge3bz"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}
