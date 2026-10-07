@@ -2,7 +2,7 @@
   "id": "ST-pm3uuqte",
   "kind": "story",
   "title": "Review sprint: Checks keep selecting tests; detectors judge closed windows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vmxdxtru",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "5400b6a1ab7819e0fe70ddc95a142fd627031d00",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b0fdc03a0f855a61"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f62429cfc92cc3f1"
+      }
+    ]
+  }
 }
