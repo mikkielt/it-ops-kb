@@ -2,7 +2,7 @@
   "id": "ST-tnbnmec6",
   "kind": "story",
   "title": "precheck flags a committed item whose check is the intake --status of a time-windowed detector and names when it can first pass",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vmxdxtru",
   "priority": "P1",
   "rank": 0,
@@ -30,5 +30,18 @@
     "BG-p3jphxgb"
   ],
   "notes": "Premise: python3 _tools/backlog.py precheck SP-qzip6qar style runs each check once and only warns of one that passes already; python3 _tools/backlog.py intake --status <fingerprint of repeats key '<running ISO week> <class>'> exits 1 until the week ends, and the trailers fingerprint (key open) until the commits leave the 7-day window, with no warning from precheck now (the story's check plants both and shows no warning line). The fingerprint is a hash, so precheck finds the detector by matching the item's fingerprint against bl_intake.collect's findings or the detectors' keys.",
-  "claimed_by": "sonnet-worker-tnbnmec6"
+  "evidence": {
+    "commit": "695f5318c29d28ca27aa7e1067044690a1c92673",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,tempfile,os,datetime\nsys.path.insert(0,'_tools')\nimport bl_intake\nlive=os.getcwd()\nt=tempfile.mkdtemp();subprocess.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog')\nb=[sys.executable,live+'/_tools/backlog.py','--root',t]\ndef run(*a):\n    r=subprocess.run(b+list(a),capture_output=True,text=True,cwd=t);assert r.returncode==0,(a,r.stdout,r.stderr);return r.stdout\nsp=run('new','sprint','--title','S').split()[2]\ny,w,_=datetime.date.today().isocalendar()\nids=[]\nfor n,fp in (('repeats',bl_intake.fingerprint('repeats','grep')),('trailers',bl_intake.fingerprint('trailers',bl_intake.WHOLE_KEY))):\n    ids.append(run('new','story','--title','T '+n,'--sprint',sp,'--goal','g','--check','python3 _tools/backlog.py intake --status '+fp).split()[2])\nout=run('precheck',sp).splitlines()\nok=[any(i in l and 'warning' in l and k in l for l in out) for i,k in zip(ids,('week','7 days'))]\nprint(out,ok);sys.exit(0 if all(ok) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "23f1c058919cffaa"
+      }
+    ]
+  }
 }
