@@ -41,7 +41,9 @@
       "do": {
         "sidecars": "ST-dets7lkp",
         "sidecars+git": "ST-dets7lkp"
-      }
+      },
+      "answer": "sidecars+git",
+      "by": "operator"
     }
   ],
   "claimed_by": "worker-dets7lkp"
