@@ -139,17 +139,28 @@ def refuse_done(iid, t0, reasons, message, checks=()):
     raise Refused(message)
 
 
+def selected_nothing(code, out):
+    """True when a pytest run selected no tests (exit 5 with everything deselected, or no tests ran)."""
+    return bool(re.search(r"\bno tests ran\b", out) or (code == 5 and re.search(r"\bdeselected\b", out)))
+
+
 def rerun_done_checks(bl, sid):
     """[(item id, check, exit code)] of each check and bug repro of the sprint's done items, the review story left
     out, that fails when run once more on the checkout as it is (the sprint's tip): a check that passed when its item
-    was done and fails now (another item broke it, or it never passed on main) is named before the sprint closes."""
+    was done and fails now (another item broke it, or it never passed on main) is named before the sprint closes. One
+    whose test run selects no test (selected_nothing: a later change deleted the test it names) is said as `gone` and
+    not counted, since a done item's check cannot be repointed to a run that passes; a new item's done still refuses
+    such a selection as malformed (land_checks)."""
     out = []
     for i in sorted(bl.sprint_items(sid)):
         it = bl.items[i]
         if it.get("status") != "done" or it.get("review"):
             continue
         for c in list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else []):
-            ok, code, _ = run_check(bl.root, c)
+            ok, code, text = run_check(bl.root, c)
+            if not ok and selected_nothing(code, text):
+                say(f"gone rerun {i}: {shlex.join(c['run'])} selects no test (a later change deleted it); not counted")
+                continue
             say(f"{'ok  ' if ok else 'FAIL'} rerun {i}: {shlex.join(c['run'])}")
             if not ok:
                 out.append((i, c, code))
@@ -950,7 +961,7 @@ def own_failure(argv, code, out, root=None):
         err = next((ln for ln in lines if re.match(r"\S+: error: ", ln)), last)[:200]
         return (f"the tool rejects the repro's arguments ({err}): a usage error tests nothing (when the rejection is "
                 "the defect, write a repro that runs the tool and exits 1 on it)")
-    if re.search(r"\bno tests ran\b", out) or (code == 5 and re.search(r"\bdeselected\b", out)):
+    if selected_nothing(code, out):
         return f"the test run selected no tests (exit {code}: {last}): a -k or path that matches nothing reproduces nothing"
     return None
 
