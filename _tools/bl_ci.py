@@ -8,6 +8,7 @@ runner of a check), never `backlog`. It registers `red-pipeline` and `intake` wi
 imported, and `backlog.py`'s USAGE puts them in the usage order."""
 import sys
 import threading
+from pathlib import Path
 
 import bl_cli
 import bl_intake
@@ -162,12 +163,24 @@ INTAKE_HOOK_BUDGET_S = 50  # intake --hook stops waiting for the detectors after
 INTAKE_HOOK_SLOW = {"drift"}  # intake --hook runs these after the other offline detectors: drift runs item checks
 
 
+def in_worker_worktree(root):
+    """True when ROOT is a linked git worktree directly under a `.claude/worktrees/` directory (a headless worker's):
+    its `.git` is a file, not a directory."""
+    p = Path(root).resolve()
+    return p.parent.name == "worktrees" and p.parent.parent.name == ".claude" and (p / ".git").is_file()
+
+
 def hook_intake(bl, a, budget=None):
     """`intake --file --hook`, the async SessionStart form: runs the fast offline detectors first, then the slow ones
     (INTAKE_HOOK_SLOW, on what is left of the budget), then the network ones (only with `--network`), and stops
     waiting after `budget` seconds (default INTAKE_HOOK_BUDGET_S); what the detectors that finished by then found is
     filed, so a slow one costs only its own findings. It writes each new candidate as an uncommitted draft item as
-    `--file` does, prints nothing, never commits or pushes, and returns 0 whatever happens."""
+    `--file` does, prints nothing, never commits or pushes, and returns 0 whatever happens. With `--file` in a
+    worker's linked worktree (in_worker_worktree) it files nothing and prints one line on stderr saying so: the
+    drafts would be untracked files there that `land` refuses."""
+    if a.file and in_worker_worktree(bl.root):
+        print("intake: files nothing in a worker's worktree (a linked worktree under .claude/worktrees/)", file=sys.stderr)
+        return 0
     budget = INTAKE_HOOK_BUDGET_S if budget is None else budget
     names = sorted(bl_intake.DETECTORS, key=lambda n: (n in bl_intake.NETWORK_DETECTORS, n in INTAKE_HOOK_SLOW, n))
     found = []  # candidates of the detectors that finished, in order
