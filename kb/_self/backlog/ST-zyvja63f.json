@@ -1,0 +1,24 @@
+{
+  "id": "ST-zyvja63f",
+  "kind": "story",
+  "title": "kb-sprint plan raises a rule-guarding item's open choices with a read-only probe before the start gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-s5fdczv7 retrospective: two blocking gates on rule-guarding paths came up mid-work, BG-m6fknqr5 g1 (rows of an item with no file, against the sprint close that deletes them) and ST-dets7lkp g1 (which reason cost names), so ST-dets7lkp's worker stopped after its investigation and was resumed, spending 1.30 then 3.83 USD. kb-sprint plan step 6 runs, for each committed item whose touches name an agents-rule path, one short read-only probe (a headless session or the orchestrator, capped in turns) that reads the goal against the code and lists the choices the goal leaves open, and each becomes a blocking gate asked with the start gate.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='read-only probe' in t;print('rule-guarding probe before start:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ]
+}

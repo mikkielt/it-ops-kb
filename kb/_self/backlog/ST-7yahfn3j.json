@@ -1,0 +1,24 @@
+{
+  "id": "ST-7yahfn3j",
+  "kind": "story",
+  "title": "kb-sprint run gives a headless worker brief with a scratch dir, a turn cap by item kind and subshell-only cd",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-s5fdczv7 retrospective: the first headless worker had no scratch directory, so its proof script went to /tmp and its cleanup was refused; the goal research worker stopped at its 100-turn cap; and the orchestrator's own foreground cd into a worker worktree moved its session's working directory there. kb-sprint run step 3 gives the headless claude -p brief's fixed parts: a scratch directory passed with --add-dir and named in the brief for throwaway files, a --max-turns by item kind (research and investigation bugs higher than a one-file task), and that the orchestrator runs a command in a worker's worktree only in a subshell or with git -C, never a bare cd.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='--add-dir' in t and '--max-turns' in t and 'subshell' in t;print('headless brief template:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ]
+}

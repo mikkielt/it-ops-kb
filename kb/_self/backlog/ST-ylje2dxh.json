@@ -1,0 +1,45 @@
+{
+  "id": "ST-ylje2dxh",
+  "kind": "story",
+  "title": "precheck names each committed item's goal clauses with the check that reads each, and warns of a clause no check reads",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-s5fdczv7 retrospective: all three code items (BG-m6fknqr5, BG-tyuwiin7, ST-dets7lkp) carried a check that read one clause of a several-clause goal (a source-order read, one command mapping, one cost header line), so the other clauses were proved only by the orchestrator and the reviewer, and BG-ese7wmz3 and BG-47kw57ed got through. backlog.py precheck SP prints, for each committed item, its goal's clauses (split as close --summary splits a sprint goal) and the check or repro that reads each, from a mapping the planner records on the item, and warns of a clause no check reads, so kb-sprint plan step 6 is a tool output, not a reading; kb-sprint plan step 6, backlog.md and tools.md say so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "precheck",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_plan.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the planner record which check reads each goal clause, so precheck can warn of an unread one?",
+      "options": [
+        "a clauses field on the item: a list of {clause, check} pairs, the check an index into checks or repro, validated by backlog.py check",
+        "a notes line per clause (Clause: <text> -> check <n>), parsed by precheck, no schema change"
+      ],
+      "recommendation": "a clauses field on the item: a list of {clause, check} pairs, the check an index into checks or repro, validated by backlog.py check",
+      "class": "agents-rule",
+      "do": {
+        "a clauses field on the item: a list of {clause, check} pairs, the check an index into checks or repro, validated by backlog.py check": "ST-ylje2dxh",
+        "a notes line per clause (Clause: <text> -> check <n>), parsed by precheck, no schema change": "ST-ylje2dxh"
+      }
+    }
+  ],
+  "notes": "Its check is a placeholder that passes before the work: once gate g1 is answered, sprint planning replaces it with a planted item whose clause no check reads, which precheck must warn of."
+}
