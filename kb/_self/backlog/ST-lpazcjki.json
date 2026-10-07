@@ -2,7 +2,7 @@
   "id": "ST-lpazcjki",
   "kind": "story",
   "title": "Review sprint: Windows host: suite runs recorded and sped up",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,26 @@
     }
   ],
   "notes": "Known at review: six done bugs of this sprint (BG-kc7uzged, BG-kjpbqany, BG-co3nthy4, BG-2luo4b26, BG-r5fab2td, BG-hway4bjs) have checks and repros whose tests -k names were deleted by the suite rewrite (ST-px3y26ti), so tests.py exits 5 and done's rerun refuses. Operator's call (2026-10-07): leave it to the Windows worker. At review: reopen each (backlog.py reopen ID --why ...), repoint its check and repro to the surviving test file of its area (kbingest: _tools/test_kbingest_guards.py; allowlist: -k test_backlog_check_refuses_programs_outside_the_allowlist; sync hook: _tools/test_sync_e2e.py; project paths: _tools/test_check_programs.py; host lock and cost spool: no surviving test, the whole suite), and done it again; python3 _tools/backlog.py selectors lists them as NONE.",
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "dc8ad0a2c241fd6a3d5e83f95f3ae46d3a3f82a0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "dc7160cbd291822d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "158d3414015d3b99"
+      }
+    ]
+  }
 }
