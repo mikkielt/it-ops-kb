@@ -2,7 +2,7 @@
   "id": "ST-psshdtwu",
   "kind": "story",
   "title": "A sprint whose goal is about attribution lists every row that opens or closes a window before it starts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
   ],
   "depends_on": [
     "ST-kqfdal66"
-  ]
+  ],
+  "claimed_by": "kb-worker-psshdtwu"
 }
