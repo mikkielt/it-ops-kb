@@ -52,6 +52,42 @@
     "ST-pg5jyebo",
     "BG-gkfogmmx"
   ],
+  "gates": [
+    {
+      "id": "index-dir",
+      "kind": "blocking",
+      "question": "Where does the index directory a clone's worktrees share live, when neither KB_INDEX nor CLAUDE_PLUGIN_DATA is set?",
+      "options": [
+        "main-cache: the main worktree's _cache/ (found from a linked worktree's .git file, as ql_base.clone_home does for the spool)",
+        "git-common: a kb-index/ directory under the git common dir"
+      ],
+      "recommendation": "main-cache: the main worktree's _cache/ (found from a linked worktree's .git file, as ql_base.clone_home does for the spool)",
+      "class": "secrets"
+    },
+    {
+      "id": "index-key",
+      "kind": "blocking",
+      "question": "What is the content key that names the index file?",
+      "options": [
+        "git-blobs: git's blob ids from ls-files -s for tracked unchanged files, a modified or untracked file hashed as git would, a file outside the repository by path, time and size; computed only when a per-checkout stat fingerprint changes (a memo file beside the index)",
+        "sha-all: sha1 of every indexed file's bytes, read on each stat-fingerprint change, no git"
+      ],
+      "recommendation": "git-blobs: git's blob ids from ls-files -s for tracked unchanged files, a modified or untracked file hashed as git would, a file outside the repository by path, time and size; computed only when a per-checkout stat fingerprint changes (a memo file beside the index)",
+      "class": "secrets"
+    },
+    {
+      "id": "index-prune",
+      "kind": "blocking",
+      "question": "Which index files of the root set does store() remove after it saves a new one in the shared directory?",
+      "options": [
+        "keep-recent: those beyond the 4 most recently used (mtime, set when a process opens the file and once a minute while it serves from it) and unused for 15 minutes",
+        "age-only: those unused for 7 days",
+        "never: no pruning in a shared directory"
+      ],
+      "recommendation": "keep-recent: those beyond the 4 most recently used (mtime, set when a process opens the file and once a minute while it serves from it) and unused for 15 minutes",
+      "class": "secrets"
+    }
+  ],
   "links": [
     "kb/_self/reports/test-suite-speed.md",
     "kb/public/python/pytest.md (tmp_path_factory, session scope)",

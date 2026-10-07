@@ -49,10 +49,11 @@ a path of an existing topic file in its text, or a `## <domain>/<slug>` section 
 `topic: <domain>/<slug>` marker.
 
 The pack index. `store()` holds the pack corpus as postings lists (per term: the units that hold it). A process
-that finds an index file for the current fingerprint (sha1 over path, mtime and size of every file the tools read)
-reads only the postings of the question's words from it (stdlib sqlite3); otherwise it builds the corpus, answers
-from memory and saves the index for the next process. Output is identical either way: scores are summed in the same
-term order per unit and ties keep corpus order. Where the file goes: `index_path()`.
+that finds an index file for the current fingerprint (a key of the content of every file the tools read, the same in
+every checkout of that content: `fingerprint()`) reads only the postings of the question's words from it (stdlib
+sqlite3); otherwise it builds the corpus, answers from memory and saves the index for the next process. Output is
+identical either way: scores are summed in the same term order per unit and ties keep corpus order. Where the file
+goes: `index_path()`, in a directory a clone's worktrees share (`index_dir()`); which old files go: `prune_indexes()`.
 The same index serves `search()` (rag.py search, kb_search): the corpus also holds untagged prose paragraphs, and at
 its end the index files (README.md, each root's ledgers, the kb's own docs in kb/_self/), which only a search with
 `index` sees.
@@ -373,30 +374,158 @@ _FP = [0.0, None]
 
 
 def fingerprint():
-    """sha1 over (path, mtime_ns, size) of every file the tools read (domain .md/.csv, _sources.csv, the ledgers,
-    aliases.csv, signals.csv, doc2query/expansions.csv, the `_self` eval and aliases files, this module and kbid.py)
-    and KB_DOC2QUERY: any edit gives a
-    new value. Replaces a time-to-live cache: nothing is rebuilt while no file changed, however long a server idles.
-    The domain files' times and sizes come from the directory listing (kb_entries): an os.stat per file costs about
-    0.7 ms in a Hyper-V container, most of a warm pack there, and on a loaded host each pack outlasted FP_MEMO and
-    paid it again. The memo counts from the end of the computation."""
+    """The key of the current kb's content, which names its index file (index_path) and keys the in-process caches:
+    any edit of a file the tools read gives a new value, and two checkouts of one content (a clone and its fresh
+    worktree) get the same one, so a new worktree reads the index its clone already built. Replaces a time-to-live
+    cache: nothing is rebuilt while no file changed, however long a server idles.
+    Two steps keep a warm call cheap. stat_fingerprint(), over each file's path, time and size, says whether
+    anything changed since this checkout last asked; a memo file in the index directory maps it to the content key
+    (content_key: git's blob ids, independent of the checkout's path and the files' times), which is computed, with
+    two git calls, only when the stat fingerprint is new. Without an index directory (KB_INDEX=0) or git, the stat
+    fingerprint is the key, as before. The memo counts from the end of the computation."""
     if _FP[1] is not None and time.monotonic() - _FP[0] < FP_MEMO:
         return _FP[1]
-    h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
+    files = fingerprint_files()
+    sfp = stat_fingerprint(files)
+    d = index_dir()
+    fp = _memo_key(d, sfp, files) if d else sfp
+    _FP[:] = [time.monotonic(), fp]
+    return _FP[1]
+
+
+def fingerprint_files():
+    """[(label, absolute path, os.DirEntry or None)] of every file the tools read: domain .md/.csv, _sources.csv,
+    the ledgers, aliases.csv, signals.csv, doc2query/expansions.csv, the `_self` eval and aliases files, this module
+    and kbid.py. The domain files come with their directory entry (kb_entries): on Windows its stat() needs no call."""
     extra = [*root_files((kbcommon.SOURCES,)), *index_files(), *alias_files(), *data_files("signals.csv"),
              *data_files("doc2query/expansions.csv"), kbcommon.repo_rel(SELF_EVAL), kbcommon.repo_rel(SELF_ALIASES),
-             os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py"),
-             os.pathsep.join(r.path for r in kbcommon.roots())]  # the set of roots: a root added or removed
-    stats = [*((rel, e.stat) for rel, e in kb_entries()),
-             *((rel, functools.partial(os.stat, kbcommon.path_of(rel))) for rel in extra)]
-    for rel, stat in stats:
+             os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py")]
+    return [*((rel, e.path, e) for rel, e in kb_entries()), *((rel, kbcommon.path_of(rel), None) for rel in extra)]
+
+
+def _stat(path, entry):
+    return entry.stat() if entry is not None else os.stat(path)
+
+
+def stat_fingerprint(files):
+    """sha1 over (path, mtime_ns, size) of `files`, the set of roots and KB_DOC2QUERY: whether anything changed in
+    this checkout. The domain files' times and sizes come from the directory listing: an os.stat per file costs about
+    0.7 ms in a Hyper-V container, most of a warm pack there, and on a loaded host each pack outlasted FP_MEMO and
+    paid it again."""
+    h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
+    h.update(os.pathsep.join(r.path for r in kbcommon.roots()).encode())  # the set of roots: one added or removed
+    for rel, path, entry in files:
         try:
-            st = stat()
+            st = _stat(path, entry)
             h.update(f"{rel}\0{st.st_mtime_ns}\0{st.st_size}\n".encode())
         except OSError:
             h.update(f"{rel}\0-\n".encode())
-    _FP[:] = [time.monotonic(), h.hexdigest()]
-    return _FP[1]
+    return h.hexdigest()
+
+
+def home_label(path):
+    """`path` relative to this repository with `/` (the same in every checkout), or the absolute path outside it."""
+    try:
+        rel = os.path.relpath(path, kbcommon.HOME)
+    except ValueError:  # another drive (Windows)
+        return os.path.abspath(path)
+    return os.path.abspath(path) if rel == os.pardir or rel.startswith(os.pardir + os.sep) else rel.replace(os.sep, "/")
+
+
+def _git(*args):
+    """stdout bytes of a read-only git command in this repository, or None when git fails or is missing."""
+    try:
+        p = subprocess.run(["git", "-C", kbcommon.HOME, *args], capture_output=True, timeout=60,
+                           env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"})
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return p.stdout if p.returncode == 0 else None
+
+
+def git_blob_id(path):
+    """The blob id git would give the file's bytes (sha1 of `blob <size>\\0` and the bytes)."""
+    with open(path, "rb") as f:
+        data = f.read()
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+def content_key(files):
+    """sha1 over (repository path, blob id) of `files`, the set of roots by repository path and KB_DOC2QUERY, or
+    None when git cannot list this repository. A tracked file git reports unchanged takes its blob id from git's
+    index (`ls-files -s`); a modified or untracked one is hashed as git would hash it (`ls-files -m -o`); a file
+    outside the repository (a KB_ROOTS root) by its absolute path, time and size, which every checkout shares."""
+    staged, changed = _git("ls-files", "-s", "-z"), _git("ls-files", "-z", "-m", "-o", "--exclude-standard")
+    if staged is None or changed is None:
+        return None
+    blobs = {}
+    for rec in staged.split(b"\0"):
+        meta, _, name = rec.partition(b"\t")
+        parts = meta.split()
+        if len(parts) == 3 and parts[2] == b"0":  # stage 0: no unmerged entry
+            blobs[name.decode("utf-8", "surrogateescape")] = parts[1].decode()
+    dirty = set(changed.decode("utf-8", "surrogateescape").split("\0"))
+    h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}|content".encode())
+    h.update(os.pathsep.join(home_label(r.path) for r in kbcommon.roots()).encode())
+    for _rel, path, entry in files:
+        label = home_label(path)
+        try:
+            if os.path.isabs(label):
+                st = _stat(path, entry)
+                h.update(f"{label}\0{st.st_mtime_ns}\0{st.st_size}\n".encode())
+            else:
+                h.update(f"{label}\0{blobs[label] if label in blobs and label not in dirty else git_blob_id(path)}\n".encode())
+        except OSError:
+            h.update(f"{label}\0-\n".encode())
+    return h.hexdigest()
+
+
+MEMO_DAYS = 7  # a checkout's memo file unused this long is removed (a worktree gone)
+
+
+def _memo_key(d, sfp, files):
+    """The content key for stat fingerprint `sfp`: from this checkout's memo file in index directory `d` when it was
+    written for `sfp`, else content_key() now, written there for the next process (best effort). The stat
+    fingerprint when git cannot give a key."""
+    memo = os.path.join(d, f"kbkey-{hashlib.sha1(kbcommon.HOME.encode()).hexdigest()[:12]}.txt")
+    try:
+        with open(memo, encoding="utf-8") as f:
+            got = f.read().split()
+        if len(got) == 2 and got[0] == sfp:
+            return got[1]
+    except OSError:
+        pass
+    key = content_key(files)
+    if key is None:
+        return sfp
+    tmp = None
+    try:
+        os.makedirs(d, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix=".kbkey-", suffix=".tmp", dir=d)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(f"{sfp} {key}\n")
+        os.replace(tmp, memo)
+        names = os.listdir(d)
+    except OSError:
+        names = []
+    finally:
+        if tmp and os.path.exists(tmp):
+            _remove(tmp)
+    now = time.time()
+    for name in names:
+        full = os.path.join(d, name)
+        try:
+            if name.startswith("kbkey-") and full != memo and now - os.stat(full).st_mtime > MEMO_DAYS * 86400:
+                os.remove(full)
+        except OSError:
+            pass
+    return key
+
+
+def _remove(path):
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 def cached(key, build):
@@ -1779,26 +1908,53 @@ class Prefix(Store):
         return self.base.unit(i)
 
 
-def index_path(fp):
-    """Where the index for fingerprint `fp` lives, or None when KB_INDEX=0: KB_INDEX (a directory), else the
-    plugin's data directory (CLAUDE_PLUGIN_DATA, survives plugin updates), else _cache/ in this repository, else a
-    temp directory. One file per fingerprint and doc2query mode, so a new index never replaces a file a server has
-    open. One index covers every served root; with KB_ROOTS set or the roots limited the files are named `kbindex-r<hash of the root set>-...`,
-    so servers with different root sets can share CLAUDE_PLUGIN_DATA without pruning each other's index (store())."""
+def clone_home():
+    """The checkout whose _cache/ holds the index: this repository, or the clone's main worktree when this
+    repository is a linked git worktree (its `.git` is a file naming `<common dir>/worktrees/<name>`), so the
+    worktrees of one clone share one index directory (ql_base.clone_home reads the spool's place the same way)."""
+    try:
+        with open(os.path.join(kbcommon.HOME, ".git"), encoding="utf-8") as f:
+            text = f.read().strip()
+    except OSError:
+        return kbcommon.HOME
+    if text.startswith("gitdir:"):
+        gitdir = os.path.normpath(text[len("gitdir:"):].strip())
+        parent = os.path.dirname(gitdir)
+        if os.path.basename(parent) == "worktrees" and os.path.basename(os.path.dirname(parent)) == ".git":
+            return os.path.dirname(os.path.dirname(parent))
+    return kbcommon.HOME
+
+
+def index_dir():
+    """The index directory, or None when KB_INDEX=0: KB_INDEX (a directory), else the plugin's data directory
+    (CLAUDE_PLUGIN_DATA, survives plugin updates), else _cache/ of the clone (its main worktree's, shared by its
+    linked worktrees: clone_home), else a temp directory."""
     where = os.environ.get("KB_INDEX", "")
     if where == "0":
         return None
     if not where:
-        where = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(kbcommon.HOME, "_cache")
+        home = clone_home()
+        where = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(home, "_cache")
         if not _writable(where):
-            where = os.path.join(tempfile.gettempdir(), "it-ops-kb-" + hashlib.sha1(kbcommon.HOME.encode()).hexdigest()[:8])
-    return os.path.join(where, f"kbindex-{_root_key()}{fp[:16]}.sqlite")
+            where = os.path.join(tempfile.gettempdir(), "it-ops-kb-" + hashlib.sha1(home.encode()).hexdigest()[:8])
+    return where
+
+
+def index_path(fp):
+    """Where the index for fingerprint `fp` lives (in index_dir()), or None when KB_INDEX=0. One file per
+    fingerprint and doc2query mode, so a new index never replaces a file a server has open. One index covers every
+    served root; with KB_ROOTS set or the roots limited the files are named `kbindex-r<hash of the root set>-...`,
+    so servers with different root sets can share a directory without pruning each other's index (store())."""
+    where = index_dir()
+    return os.path.join(where, f"kbindex-{_root_key()}{fp[:16]}.sqlite") if where else None
 
 
 def _root_key():
     """'' for this repository's roots alone, else `r<8 hex>-` for the root set KB_ROOTS adds (the fingerprint is
-    hex, so never starts with r); a server limited to some roots (kbcommon.serve_only) keys on every root it serves."""
-    extra = [r.path for r in kbcommon.roots() if kbcommon.serving() or os.path.dirname(r.path) != kbcommon.KB_DIR]
+    hex, so never starts with r); a server limited to some roots (kbcommon.serve_only) keys on every root it serves.
+    A root inside this repository counts by its repository path, so every checkout of the clone gets the same key."""
+    extra = [home_label(r.path) for r in kbcommon.roots()
+             if kbcommon.serving() or os.path.dirname(r.path) != kbcommon.KB_DIR]
     if kbcommon.serving():
         extra.insert(0, "only")
     return "r" + hashlib.sha1(os.pathsep.join(extra).encode()).hexdigest()[:8] + "-" if extra else ""
@@ -1816,8 +1972,42 @@ def _writable(d):
     return os.access(os.path.dirname(d) or ".", os.W_OK)
 
 
-_STORE = [None]
+_STORE = [None, None, 0.0]  # the store this process holds, its index file, when this process last marked it used
 _STORE_LOCK = threading.Lock()
+KEEP_INDEXES = 4  # index files of the root set store() keeps besides the current one, the most recently used
+PRUNE_GRACE = 900  # seconds: an index file used this recently is never pruned, however many newer ones there are
+USED_EVERY = 60  # seconds: a process serving from an index file marks it used (its mtime) at most this often
+
+
+def _mark_used(path):
+    """Set the index file's mtime to now: what prune_indexes() reads as its last use. Best effort."""
+    _STORE[2] = time.monotonic()
+    try:
+        os.utime(path)
+    except OSError:
+        pass
+
+
+def prune_indexes(d, keep):
+    """Remove the index files of the current root set in directory `d` other than `keep` that are beyond the
+    KEEP_INDEXES most recently used and unused for PRUNE_GRACE: the worktrees of one clone share the directory, so
+    one checkout's new index never deletes another's current one, and a process holding a file open marks it used
+    (store()). A file that cannot be removed (open in another process on Windows) is left."""
+    now, found = time.time(), []
+    try:
+        names = os.listdir(d)
+    except OSError:
+        return
+    for f in names:
+        if _same_root(f) and f.endswith(".sqlite") and f != keep:
+            try:
+                found.append((os.stat(os.path.join(d, f)).st_mtime, f))
+            except OSError:
+                pass
+    found.sort(reverse=True)
+    for mtime, f in found[KEEP_INDEXES:]:
+        if now - mtime > PRUNE_GRACE:
+            _remove(os.path.join(d, f))
 
 
 def store(domain=None, index=False):
@@ -1833,6 +2023,7 @@ def store(domain=None, index=False):
             if path and os.path.exists(path):
                 try:
                     st = SqlStore(path)
+                    _mark_used(path)
                 except (sqlite3.Error, ValueError, KeyError):
                     st = None
             if st is None:
@@ -1840,15 +2031,13 @@ def store(domain=None, index=False):
                 if path:
                     try:
                         st.save(path)
-                        for f in os.listdir(os.path.dirname(path)):
-                            if _same_root(f) and f.endswith(".sqlite") and f != os.path.basename(path):
-                                try:
-                                    os.remove(os.path.join(os.path.dirname(path), f))
-                                except OSError:
-                                    pass
+                        _mark_used(path)
+                        prune_indexes(os.path.dirname(path), os.path.basename(path))
                     except (OSError, sqlite3.Error):
-                        pass
-            _STORE[0] = st
+                        path = None
+            _STORE[:2] = [st, path]
+        elif _STORE[1] and time.monotonic() - _STORE[2] > USED_EVERY:
+            _mark_used(_STORE[1])
     return st.view(domain, index)
 
 
