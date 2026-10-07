@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "No outside facts: every question the sprint goal rests on is about the kb's own mechanics and is answered by kb/_self on 2026-10-08: how learn derives a rules finding and which entry fields it reads (kb/_self/querylog.md, Learn, Rules findings: ql_learn.rules_miss, rules_finding), how apply anchors and gates a tested row (kb/_self/querylog.md, Apply, Rules findings: anchor_phrases, try_fix), and the lookup_eval.csv row format (kb/_self/content-rules.md, Ledgers). The pack --root _self of each is weak with no tested question, so this story's done adds one tested row per question to kb/_self/_retrieval/lookup_eval.csv (the rows ST-fsjwit6r does not already add), anchored on those lines, and writes the kb facts of no product.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,6 @@
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/_self/_retrieval/lookup_eval.csv"
   ]
 }

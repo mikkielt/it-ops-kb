@@ -1,0 +1,36 @@
+{
+  "id": "ST-5mcefeen",
+  "kind": "story",
+  "title": "Distill judges by code an entry whose reply cites the pack's lines on a good verdict, and Haiku only the rest",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "ql_distill writes judged answered and best as the first cited article, with no Haiku call, for an entry with verdict good, cited reply, no check: line in its pack verdict and at least two reply-cited lines of one article; every other entry goes to Haiku as before; the digest counts the entries judged by code apart from Haiku's. The rule is adopted only if the premise's replay over the committed store shows it agreeing with Haiku's stored judgement on every entry it would take; the one disagreement found on 2026-10-08 (a partly on cited reply plus good) must fall outside the rule's conditions, else the story is dropped.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_redact.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/ql_report.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "kb/_self/querylog.md Distill (Haiku judges)"
+  ],
+  "notes": "Premise (committed store kb/_querylog, 2026-10-08): of 90 judged entries, cited reply with verdict good: 4 answered, 1 partly; cited reply with weak: 3 answered, 2 partly. So the plain rule (cited reply and good means answered) disagrees with Haiku on 1 entry in 5 and would save about 5 Haiku judgements of 90. The premise is thin: the saving is small and the rule is not yet exact, which is why this story is P3, outside the first sprints, and carries the drop condition in its goal. The larger signal in the same count is 25 entries of verdict good that Haiku judged missed (false good): that is a verdict question for the fitness tests (EP-gzr4mmkm), not for this story."
+}

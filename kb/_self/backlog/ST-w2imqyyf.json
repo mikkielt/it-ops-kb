@@ -1,0 +1,48 @@
+{
+  "id": "ST-w2imqyyf",
+  "kind": "story",
+  "title": "learn derives no rules finding from a backlog item's text, and the 14 open ones it did converge",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "sprint": "SP-rvslem3h",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "ql_learn.rules_miss skips a rules entry that carries item (a pack --root _self --item lookup, whose question is the item's title and goal) or whose question is longer than a closed word cap, so a rules finding is only ever a question a person or skill asked; on the next learn over kb/_querylog the open rules findings of such entries are recorded fixed-since by the rule that learn no longer derives them, and querylog.py show --findings --kind rules --state open lists only questions. One planted failure: a fixture entry with item and a weak verdict writes no finding.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "learn",
+        "--store",
+        "_tools/fixtures/querylog/store"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check",
+        "_tools/fixtures/querylog/store"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_redact.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_learn.py",
+    "_tools/test_redact.py",
+    "_tools/fixtures/querylog/store/**",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "kb/_self/querylog.md Learn, Rules findings",
+    "kb/_querylog/findings/ (the 14 item-text rules findings at main 6be3dcd0)"
+  ],
+  "notes": "Premise (run 2026-10-08 on main 6be3dcd0): python3 _tools/querylog.py show --findings --kind rules --state open --limit 0 lists 28; of them 14 have observed.question equal to a backlog item's title plus goal (pack --root _self --item lookups by /kb-sprint plan and /kb-item), e.g. F-739ee15dfafa and F-7920e9ed1e44 whose questions begin 'Found in the SP-mlemdqbn review'; all 14 have answer_lines null and key_missing of 12 item words, so apply can never write a row for them. Digest 2026-W41: rules lookups 76, open rules findings 28. Related: ST-dsre52lb (learn pairs a rules miss's key word with one candidate word) touches the same function; order this story after it or in the same sprint with depends_on. Precheck 2026-10-08: all three checks pass before the work because the fixture store holds no rules entry with item yet; the work adds that planted entry (and its expected absence from the findings) to _tools/fixtures/querylog/store and test_redact.py, so learn on the fixture fails until rules_miss skips it. The checks pin the fixture run afterwards. Check side effect found at precheck: querylog.py learn --store _tools/fixtures/querylog/store writes findings/2026-09/<run>.jsonl under the fixture (removed by hand after the precheck). The work commits the fixture's expected findings file beside its run file, so learn on the fixture converges (a second run on the same store writes nothing, kb/_self/querylog.md Learn, State converges) and the check leaves the tree clean; the planted item-text entry then has no finding in that file."
+}

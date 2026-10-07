@@ -53,6 +53,9 @@
       ]
     }
   ],
+  "relates_to": [
+    "EP-6iiony54"
+  ],
   "links": [
     "fingerprint 4659f8fc0afc",
     "fingerprint 0d456aeb8801",
@@ -61,5 +64,5 @@
     "detector repeats",
     "fingerprint 9a764fbaab0a"
   ],
-  "notes": "Counts at HEAD on 2026-10-07 (threshold bl_intake.REPEAT_THRESHOLD, 300 a week): tools.backlog 1563, grep 931, sed 443, python 343, python-c 306; they only grow while 2026-W41 runs. Holds the intake drafts ST-pnzggr7b (grep), ST-ixykepwn (sed), ST-a3apvmkg (python) and ST-c42ul2mg (python-c). python-c by purpose: kb-read 109, parse 106, other 70, backlog-edit 17, test-run 3; main loop 258 of 306. W41 held the SP-eahtellz run on the Windows host. Waits on BG-p3jphxgb: the W41 checks fail now, pass vacuously once the running week is no longer reported, then fail on the frozen count after W41 closes; once it lands, replace them with a closed later week's fingerprints (bl_intake.fingerprint('repeats', '2026-W42 <class>')) after that week ends."
+  "notes": "Counts at HEAD on 2026-10-07 (threshold bl_intake.REPEAT_THRESHOLD, 300 a week): tools.backlog 1563, grep 931, sed 443, python 343, python-c 306; they only grow while 2026-W41 runs. Holds the intake drafts ST-pnzggr7b (grep), ST-ixykepwn (sed), ST-a3apvmkg (python) and ST-c42ul2mg (python-c). python-c by purpose: kb-read 109, parse 106, other 70, backlog-edit 17, test-run 3; main loop 258 of 306. W41 held the SP-eahtellz run on the Windows host. Waits on BG-p3jphxgb: the W41 checks fail now, pass vacuously once the running week is no longer reported, then fail on the frozen count after W41 closes; once it lands, replace them with a closed later week's fingerprints (bl_intake.fingerprint('repeats', '2026-W42 <class>')) after that week ends. Counts on 2026-10-08 (call.tool rows since 2026-10-05): grep 1105 (878 main, 228 general-purpose), sed 483, cat 181, python-c 428 (kb-read 165, parse 126, other 122, backlog-edit 21), tools.backlog 1973 with 133 errors; 33 grep, 23 sed and 12 cat results in the lt100k size class. The hook that points cat and sed on an article at rag.py show is the mechanism already in place; the same hook extended to grep over kb/ and to a python3 -c whose purpose is kb-read (ql_capture.python_purpose) would turn this goal's guidance into a refusal naming the tool, as ST-5zpbfax2 (EP-6iiony54) does for WebFetch. Whether to extend it is a choice for this story's plan, not settled here."
 }

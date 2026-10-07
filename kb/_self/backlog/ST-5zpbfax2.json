@@ -1,0 +1,77 @@
+{
+  "id": "ST-5zpbfax2",
+  "kind": "story",
+  "title": "A PreToolUse hook denies WebFetch on a host whose routes-table row avoids it, naming the route to take",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "sprint": "SP-evkj4avq",
+  "priority": "P2",
+  "rank": 4,
+  "goal": "A synchronous PreToolUse hook on WebFetch in .claude/settings.json and the plugin's hooks reads the url's host, looks it up in the routes table of kb/_self/web-sources.md (the 'avoid' column names WebFetch) through the one function the query log's source findings already use for the route signal, and for a match answers with a deny decision whose reason names the row's search and read routes (the docs server tool, fetch.py, or the raw form), so the agent takes the route instead of choosing; every other host, a url with no host, and an unreadable table pass through unchanged; the hook runs with the clone's python3 and prints nothing on a pass. After it lands the digest's open source findings of signal route stay at their count and no new one is written for those hosts. The consumers of the route listed in notes are each in this story's touches or confirmed unchanged there.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_leaks.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "--ceiling"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    ".claude-plugin/plugin.json",
+    "_tools/kb_hook.py",
+    "_tools/ql_learn.py",
+    "_tools/test_leaks.py",
+    "kb/_self/web-sources.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-r7cftjex"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Should the hook deny WebFetch on a routed host, or only add the route as context and let the call go on?",
+      "options": [
+        "deny with the route in the reason",
+        "allow and add the route as additionalContext",
+        "deny only for learn.microsoft.com, context for the others"
+      ],
+      "recommendation": "deny with the route in the reason",
+      "class": "secrets",
+      "do": {
+        "deny with the route in the reason": "ST-5zpbfax2",
+        "allow and add the route as additionalContext": "ST-5zpbfax2",
+        "deny only for learn.microsoft.com, context for the others": "ST-5zpbfax2"
+      },
+      "answer": "deny with the route in the reason",
+      "by": "operator"
+    }
+  ],
+  "links": [
+    "kb/_self/web-sources.md routes table",
+    "kb/public/claude/hooks.md PreToolUse decision output"
+  ],
+  "notes": "Premise (2026-10-08, querylog.py status): 4 open source findings, all signal route: F-d015ccb9f733 learn.microsoft.com (528374 result chars), F-a69c6dbdf291 code.claude.com and modelcontextprotocol.io (37321), F-0d33aecc72fe docs.gitlab.com (5852), F-44bcdafa4499 www.anthropic.com (712); report-only today (kb/_self/querylog.md, Learn, Source findings). Consumers of the WebFetch route (grep WebFetch over .claude/, AGENTS.md, _tools/, .claude-plugin/ on main): .claude/settings.json (capture hook on WebFetch; the new hook sits beside it), .claude-plugin/plugin.json (same for the plugin), .claude/skills/kb-research/SKILL.md (names WebFetch as a locating tool: unchanged, the deny reason tells the route), _tools/ql_research.py and _tools/kb_ask.py (claude -p with hooks off: unaffected, confirmed by kbcommon.NO_HOOKS), _tools/agent_bench.py and bench_lookup.py (hooks off: unaffected), _tools/ql_capture.py (capture reads the same event after the hook: a denied call fires no PostToolUse, so the fetch row is not written, which is right), _tools/ql_learn.py (the route signal: the lookup moves to a shared function), _tools/kbusage.py (tool groups: unchanged). AGENTS.md is in touches only for its 4 KB cap check: no sentence is planned there. A PreToolUse hook's deny decision is the documented JSON output (kb/public/claude/hooks.md); the hook must be synchronous, since an async hook cannot block. Precheck 2026-10-08: all three checks pass before the work: the hook's test (a planted WebFetch event on learn.microsoft.com gets a deny with the route in the reason; one on an unlisted host passes through) is added to test_leaks.py by the work, within the ceiling; learn on the fixture store pins that the shared route lookup still writes the fixture's source finding; --ceiling pins the suite size."
+}

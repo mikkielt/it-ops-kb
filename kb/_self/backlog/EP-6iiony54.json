@@ -1,0 +1,9 @@
+{
+  "id": "EP-6iiony54",
+  "kind": "epic",
+  "title": "The query log pipeline wastes less: findings converge, the model judges less, wasted runs are refused",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The 2026-W41 digest's waste is gone from the week after each story lands: no rules finding is derived from a backlog item's text, every real kb/_self miss of the week has a tested row, a tests.py run that collects nothing is refused once with its selector named and never repeated by a landing, a code item's stale doc is found at its done, the sync gate reuses a test result for the same selection on the same tree, WebFetch on a host the routes table routes elsewhere is denied by a hook, selfdoc.py and backlog.py usage errors fall below one in twenty calls, and distill and apply decide by code where the data already decides (a reply that cites the pack, a weak rules miss with no missing key word, a narrower expansion before an alias)"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "ST-pvtfs43r",
+  "kind": "story",
+  "title": "A tests.py run that collects nothing is refused once, naming its selector, and no landing repeats it",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "sprint": "SP-evkj4avq",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "python3 _tools/tests.py with a -k selector, a file or a changed selection that collects no test exits 2 before pytest's summary with one line naming the selector and the files it looked in (pytest's exit 5 is never returned), records its test.run row with exit 2 and selected 0, and runs no workers; backlog.py land's rerun_done_checks records a done item's check whose run collects nothing as gone once per sprint (in the sprint's close summary) and does not run it again at the sprint's next landing; the week after this lands, querylog.py digest counts test.run exit 5 at 0 and selected nothing under 10. One planted failure: tests.py -k zzz_no_such_test exits 2 and names zzz_no_such_test.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_land_e2e.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "--ceiling"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "kb/_self/tools.md tests.py (modes, test.run row)",
+    "kb/_self/backlog.md Sprints (rerun of done items' checks at land)"
+  ],
+  "notes": "Premise (2026-10-08, ops sidecars kb/_querylog/ops/2026-10, rows since 2026-10-05): 174 test.run rows with exit 5 and selected 0 (mode keyword 77, full 97: a full-mode row with selected 0 and total 98-102 is a run whose selection collected nothing); 51 of them within two minutes of a land.step row, the rest from checks and repros run by hand or by precheck. Digest 2026-W41 prints 'test.run: 402, failed 9, selected nothing 153'. bl_land.selected_nothing already reads exit 5 at land (said as gone) but tests.py still runs pytest to find out, every landing, for every done item's check that names a deleted test (two open rules findings asked how to handle exactly that: F-0940ff8d1cad, F-e5fb20058d62). Planted failure for the story: python3 _tools/tests.py -k zzz_no_such_test exits 2 and names zzz_no_such_test (today: exit 5 after a full collection). The check that proves it lives inside test_land_e2e.py or replaces an id at the ceiling (kb/_self/code.md, Checks and their tests). Precheck 2026-10-08: both checks pass before the work: the test of the refusal (tests.py -k zzz_no_such_test exits 2 naming the selector) is added inside test_land_e2e.py by the work, within the ceiling, and --ceiling pins that the suite did not grow past it."
+}
