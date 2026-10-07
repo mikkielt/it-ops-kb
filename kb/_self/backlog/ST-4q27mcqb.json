@@ -2,7 +2,7 @@
   "id": "ST-4q27mcqb",
   "kind": "story",
   "title": "Review sprint: Work windows count only a worker's own session",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-owbgisoj",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
