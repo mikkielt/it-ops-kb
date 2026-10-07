@@ -2,7 +2,7 @@
   "id": "ST-57ssk65s",
   "kind": "story",
   "title": "Before a bug is dispatched, a goal that names a fix mechanism is checked against the kb/_self rules",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,18 @@
   "depends_on": [
     "ST-idwjvloy"
   ],
-  "claimed_by": "kb-worker-57ssk65s"
+  "evidence": {
+    "commit": "49727d8c8ff1313cdc150aa6f425c779ba519eff",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\".claude/skills/kb-backlog/SKILL.md\",encoding=\"utf-8\").read();ok=\"names a fix mechanism\" in t;print(\"names a fix mechanism:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5fe9d9e4f7a11dbe"
+      }
+    ]
+  }
 }
