@@ -2,7 +2,7 @@
   "id": "BG-m6fknqr5",
   "kind": "bug",
   "title": "Non-worker sessions are still attributed to items: the orchestrator's claim windows never close after land",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5fdczv7",
   "priority": "P2",
   "rank": 0,
@@ -41,5 +41,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-m6fknqr5"
+  "evidence": {
+    "commit": "034cd1f7fe55175e738460c67be5d0fceb6feb6f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import ql_capture as q;r=q.work_action(\"python3 _tools/backlog.py land ST-abcdefgh --wait-merge 1800\");print(\"land closes a window:\",r);sys.exit(0 if r and r[0]==\"ST-abcdefgh\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3a404e24e995758c"
+      }
+    ]
+  }
 }
