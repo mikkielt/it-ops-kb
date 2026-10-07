@@ -2,7 +2,7 @@
   "id": "ST-jlx2f4wf",
   "kind": "story",
   "title": "kb-sprint plan step 6 maps every goal clause to a check assertion, and the review brief names each clause a check does not read",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   "depends_on": [
     "ST-ebsbhbni"
   ],
-  "notes": "Premise: no check planted. The change is wording in a skill's plan step and review brief; a grep proves the text, not that a planner maps clauses. Evidence: ST-rhnku4mc's check read the alias row only (BG-czj7oox2)."
+  "notes": "Premise: no check planted. The change is wording in a skill's plan step and review brief; a grep proves the text, not that a planner maps clauses. Evidence: ST-rhnku4mc's check read the alias row only (BG-czj7oox2).",
+  "claimed_by": "worker-clauses"
 }
