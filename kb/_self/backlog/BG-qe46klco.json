@@ -1,0 +1,24 @@
+{
+  "id": "BG-qe46klco",
+  "kind": "bug",
+  "title": "check-trailers names a body line starting with a lowercase skill name such as kb-sprint: as a stray trailer and refuses the push",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "check-trailers, the commit-msg hook and sync's gate no longer name a body line that starts with a lowercase skill or tool name followed by a colon (kb-sprint:, kb-backlog:, kb-worker:) as a stray trailer, while a stray KB-Work, KB-* or Self-Reviewed line above the trailer block is still named and refused. Found by the SP-gkbtjjce review: kg_trailers.STRAY_KEY is compiled with re.I since BG-dsab2ti3, and 51bd8c38 on main (body opening 'kb-sprint: the planning commit before the claim sync') would be refused if pushed today.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import kg_trailers as k;t=Path(tempfile.mkdtemp());g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com','-c','commit.gpgsign=false',*a],cwd=t,check=True,capture_output=True,text=True).stdout;g('init','-q');(t/'notes.txt').write_text('x\\n',encoding='utf-8');g('add','notes.txt');g('commit','-q','--no-verify','-m','chore: planted\\n\\nkb-sprint: the planning commit before the claim sync.\\n\\nCo-Authored-By: Jan Kowalski <jan.kowalski@corp.example.com>');k.KB=str(t);a=k.trailer_audit(g('rev-parse','HEAD').strip(),quiet=True);out='\\n'.join(ln for _,ls in a[2] for ln in ls);print(out or 'check-trailers passes the prose line');sys.exit(1 if 'kb-sprint:' in out else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_trailers.py",
+    "_tools/kg_hooks.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md",
+    "kb/_self/code.md"
+  ]
+}

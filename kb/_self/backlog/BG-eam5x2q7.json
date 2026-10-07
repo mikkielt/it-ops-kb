@@ -1,0 +1,23 @@
+{
+  "id": "BG-eam5x2q7",
+  "kind": "bug",
+  "title": "intake --file --hook's stderr line in a worker worktree does not name the worktree",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "In a linked worktree under .claude/worktrees/, backlog.py intake --file --hook prints one stderr line that names the worktree (its directory name or path) as the reason it files nothing, as ST-ocfkanth's goal and kb/_self/backlog.md (Running a sprint; The hook) say; today _tools/bl_ci.py prints a fixed string. Found by the SP-gkbtjjce review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import tempfile,subprocess,sys,os;d=tempfile.mkdtemp();g=lambda *a,c=d:subprocess.run(['git','-c','user.name=t','-c','user.email=t@t','-C',c,*a],capture_output=True,text=True);g('init','-q');g('commit','-q','--allow-empty','-m','x');w=d+'/.claude/worktrees/w1';g('worktree','add','-q','-b','b1',w);os.makedirs(w+'/kb/_self/backlog',exist_ok=True);p=subprocess.run([sys.executable,os.getcwd()+'/_tools/backlog.py','--root',w,'intake','--file','--hook'],capture_output=True,text=True);ok=p.returncode==0 and 'w1' in p.stderr;print('intake exit',p.returncode,'stderr:',p.stderr.strip() or 'empty','| names the worktree:',ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_ci.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}

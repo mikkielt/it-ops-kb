@@ -1,0 +1,22 @@
+{
+  "id": "BG-dnojxemz",
+  "kind": "bug",
+  "title": "kb-sprint and backlog.md say land moves intake drafts aside from a worktree made outside .claude/worktrees/, which land refuses to release",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/backlog.md (Running a sprint, headless delegation) and .claude/skills/kb-sprint/SKILL.md (run step 3) no longer say land moves intake drafts aside from a worktree made outside .claude/worktrees/: release_worker_worktree (_tools/bl_land.py, the worker_dirs check) refuses such a worktree, so land's draft handling covers only worktrees under .claude/worktrees/ (sessions started before ST-ocfkanth, older clones); the docs say what happens to drafts in a worktree made elsewhere. Found by the SP-gkbtjjce review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys;t=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8');bad='a worktree made elsewhere still gets them, and `land` moves them aside itself' in t;print('backlog.md claims land moves drafts from a worktree made elsewhere:',bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "The defect is the docs' wording: release_worker_worktree correctly refuses a worktree not under .claude/worktrees/, so no tool run shows the false sentence; the repro reads the sentence.",
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ]
+}
