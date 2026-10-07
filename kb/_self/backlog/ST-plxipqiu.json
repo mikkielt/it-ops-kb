@@ -2,7 +2,7 @@
   "id": "ST-plxipqiu",
   "kind": "story",
   "title": "Research sprint goal: Work attribution and capture close cleanly",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5fdczv7",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "worker-plxipqiu"
 }
