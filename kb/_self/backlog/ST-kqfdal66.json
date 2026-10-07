@@ -2,7 +2,7 @@
   "id": "ST-kqfdal66",
   "kind": "story",
   "title": "A bug whose cause is unproven gets one orchestrator probe before dispatch, named in the brief",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,18 @@
   "depends_on": [
     "ST-57ssk65s"
   ],
-  "claimed_by": "kb-worker-kqfdal66"
+  "evidence": {
+    "commit": "af1c3f680a4d6db5d15d5fa42ea7c9e81bf19a82",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read();ok=\"cause is unproven\" in t;print(\"cause is unproven:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "b2ce2d5506617ef6"
+      }
+    ]
+  }
 }
