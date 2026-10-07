@@ -67,14 +67,17 @@ def test_lookup_eval_passes_on_the_live_kb():
 
 def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):
     row = good_row()
-    wrong = dict(row, expect_paths="dsc/what-if.md" if row["expect_paths"] != "dsc/what-if.md" else "auth/kerberos.md")
+    wrong = dict(row, id="EV-planted-wrong-article",
+                 expect_paths="dsc/what-if.md" if row["expect_paths"] != "dsc/what-if.md" else "auth/kerberos.md")
     bad = tmp_path / "lookup_eval.csv"
     with open(bad, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(row), lineterminator="\n")
         w.writeheader()
-        w.writerow(wrong)
+        w.writerows([wrong, row])
     code, out = tool("rag.py", "eval", "--file", str(bad))
-    assert code != 0 and f"FAIL {row['id']}" in out and "questions=1 passed=0" in out, out[-1500:]
+    assert code == 1 and f"FAIL {wrong['id']}" in out and "questions=2 passed=1" in out, out[-1500:]
+    code, out = tool("rag.py", "eval", "--file", str(bad), "--min", "1")  # the held-out rate's form: at least N pass
+    assert code == 0 and "questions=2 passed=1" in out, out[-1500:]
 
 
 def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
