@@ -2,7 +2,7 @@
   "id": "ST-tnbnmec6",
   "kind": "story",
   "title": "precheck flags a committed item whose check is the intake --status of a time-windowed detector and names when it can first pass",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vmxdxtru",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,6 @@
   "relates_to": [
     "BG-p3jphxgb"
   ],
-  "notes": "Premise: python3 _tools/backlog.py precheck SP-qzip6qar style runs each check once and only warns of one that passes already; python3 _tools/backlog.py intake --status <fingerprint of repeats key '<running ISO week> <class>'> exits 1 until the week ends, and the trailers fingerprint (key open) until the commits leave the 7-day window, with no warning from precheck now (the story's check plants both and shows no warning line). The fingerprint is a hash, so precheck finds the detector by matching the item's fingerprint against bl_intake.collect's findings or the detectors' keys."
+  "notes": "Premise: python3 _tools/backlog.py precheck SP-qzip6qar style runs each check once and only warns of one that passes already; python3 _tools/backlog.py intake --status <fingerprint of repeats key '<running ISO week> <class>'> exits 1 until the week ends, and the trailers fingerprint (key open) until the commits leave the 7-day window, with no warning from precheck now (the story's check plants both and shows no warning line). The fingerprint is a hash, so precheck finds the detector by matching the item's fingerprint against bl_intake.collect's findings or the detectors' keys.",
+  "claimed_by": "sonnet-worker-tnbnmec6"
 }
