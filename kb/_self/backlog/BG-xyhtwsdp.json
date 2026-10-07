@@ -2,7 +2,7 @@
   "id": "BG-xyhtwsdp",
   "kind": "bug",
   "title": "A done bug whose check or repro names a deleted test fails the review's rerun with no route out",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-eahtellz",
   "priority": "P1",
   "rank": 0,
@@ -42,5 +42,6 @@
       "answer": "skip-gone: rerun_done_checks reports such a check or repro as gone (a warning naming the item and the selector), not a failure; the items stay as they are, and a new item's done still refuses a selection that collects nothing",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
