@@ -19,7 +19,26 @@
   ],
   "touches": [
     "kb/_self/reports/windows-run.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "_tools/tests_ceiling.json",
+    "kb/_self/tools.md",
+    "kb/_self/README.md"
+  ],
+  "gates": [
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "tests.py on the Windows host passed 54/54 in 88 s quiet (136 s with a worker running), over the win32 ceiling of 60 s (D-7zbgyagn): raise win32 max_seconds in _tools/tests_ceiling.json to which value? darwin 20, linux 60, ids 100 and files 15 stay.",
+      "options": [
+        "tests-ceiling ids=100 files=15 seconds=darwin:20,linux:60,win32:90",
+        "tests-ceiling ids=100 files=15 seconds=darwin:20,linux:60,win32:120",
+        "tests-ceiling ids=100 files=15 seconds=darwin:20,linux:60,win32:150"
+      ],
+      "recommendation": "tests-ceiling ids=100 files=15 seconds=darwin:20,linux:60,win32:120",
+      "class": "design",
+      "answer": "tests-ceiling ids=100 files=15 seconds=darwin:20,linux:60,win32:150",
+      "by": "operator"
+    }
   ],
   "trigger": {
     "when": "a Claude session runs in a clone on the Windows host and can run tests.py and stress_test.py there",
