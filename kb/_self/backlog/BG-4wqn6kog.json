@@ -1,0 +1,27 @@
+{
+  "id": "BG-4wqn6kog",
+  "kind": "bug",
+  "title": "Held-out row HO-session-id-bash-env rewords a tuned eval row, so the held-out rate counts a tuned question",
+  "status": "draft",
+  "parent": "EP-gzr4mmkm",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/_retrieval/lookup_heldout.csv holds no question that rewords a lookup_eval.csv question with the same expected article: HO-session-id-bash-env (rewording of EV-claude-code-expose-session-id-bash, both expecting claude/hooks.md) is replaced by another real lookup record no eval row covers, and HO-max-mcp-output-tokens is judged the same way against EV-mcp-tool-output-limit; the held-out run is measured again and kb/_self/tools.md states the new rate and date, rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 16 still exiting 0 or the shortfall reported",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,difflib,sys; h=list(csv.DictReader(open('kb/public/_retrieval/lookup_heldout.csv'))); e=list(csv.DictReader(open('kb/public/_retrieval/lookup_eval.csv'))); bad=[a['id'] for a in h for b in e if a['expect_paths']==b['expect_paths'] and difflib.SequenceMatcher(None,a['question'].lower(),b['question'].lower()).ratio()>=0.75]; print(bad); sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "The defect is the content of a data file: a held-out question that rewords a lookup_eval.csv question with the same expected article; no tool behaviour runs it, so the repro compares the two files' rows.",
+  "touches": [
+    "kb/public/_retrieval/lookup_heldout.csv",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-4rq725fe review"
+  ],
+  "notes": "Found by the SP-4rq725fe review (fresh-context reviewer, 2026-10-08): fuzzy match 0.89 between HO-session-id-bash-env and EV-claude-code-expose-session-id-bash; every other held-out row scored 0.53 or less. Blocks the held-out answer rate fitness test of EP-gzr4mmkm (the measured 19 of 20 counts one tuned question)."
+}
