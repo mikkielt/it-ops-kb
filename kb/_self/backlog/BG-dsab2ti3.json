@@ -1,0 +1,31 @@
+{
+  "id": "BG-dsab2ti3",
+  "kind": "bug",
+  "title": "A KB-Work or Self-Reviewed line outside the trailer block passes the commit and the push unread",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "check-trailers, run by sync --push and the pre-push hook, refuses a commit of the pushed range whose message holds a KB-* or Self-Reviewed line that git does not read as a trailer (in a paragraph above the last one), naming the commit and the line, and the commit-msg hook warns of it at commit time, so no such commit reaches main again; pushed history is never rewritten. Found by intake: 13 commits on main had an unread KB-Work line, and on 2026-10-07 an unread Self-Reviewed line made land stop at step stale (SP-eahtellz).",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/backlog.py",
+      "intake",
+      "--status",
+      "100be800a2b5"
+    ]
+  },
+  "touches": [
+    "_tools/kg_trailers.py",
+    "_tools/kg_hooks.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "fingerprint 100be800a2b5",
+    "detector trailers"
+  ],
+  "notes": "a KB-Work line git does not read as a trailer (a blank line before Co-Authored-By?): 03412dee03, 178087d30b, 27901ee5a7, 3c8cf8bdd5, 4b4e17be61, 7219acbb56, 744ea615bc, 8da30157b3, 9cb820ecb3, a4c6373d20, ac03d1b3fa, b5765e22b9, e468ddb4dd; changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work or KB-Auto trailer: 39f643b18e, 5a2a45778e, 5c3bfd0ea7, 9286c5e81c, 9fc143f3b1, ad70d90965, b8c95fccdd, d7a88846d7, e4537efc12, fc795c8e1f, ffe1273a0c Triaged 2026-10-07 by the operator: reshaped from the intake finding to prevention. The repro is still intake's status of the detector's fingerprint; when the bug is scheduled, repoint it to a planted commit with a KB-Work line above a blank line run through check-trailers, which must fail before the fix."
+}

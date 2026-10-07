@@ -21,7 +21,5 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
-  "depends_on": [
-    "ST-4mcoplex"
-  ]
+  "notes": "ST-4mcoplex (done 2026-10-07, SP-eahtellz) delivered the content-keyed index this builds on."
 }

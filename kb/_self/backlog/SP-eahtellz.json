@@ -31,7 +31,10 @@
       "do": {
         "rescope": "SP-eahtellz",
         "keep": "SP-eahtellz"
-      }
+      },
+      "answer": "rescope",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Goal rescoped 2026-10-07 by the operator (gate goal-stress: rescope; and in the review interview): the clauses 'records a run of both suites', 'stress_test.py in 5 minutes or less' and 'every run collecting the same test ids with every planted-failure test still present' read as 'records a run of tests.py' and 'tests.py within the Windows ceiling of _tools/tests_ceiling.json' (ST-pg5jyebo); 'fresh scenario clones reuse the seed's pack index' reads as 'a fresh worktree reuses the clone's pack index for unchanged content' (ST-4mcoplex, reshaped after its premise did not hold). A sprint's goal field cannot be edited, so the rewording lives here."
 }

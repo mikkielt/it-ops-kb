@@ -1,0 +1,23 @@
+{
+  "id": "BG-nlp5aat5",
+  "kind": "bug",
+  "title": "On Windows land deletes a worker worktree's files, then fails, when a process has its working directory there",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "On Windows, where bl_land.live_processes cannot list working directories, release_worker_worktree finds out before git worktree remove whether a process holds the worktree (for example by trying to rename the directory, which Windows refuses while a process has it as its working directory) and refuses with that reason, leaving the worktree registered and every file in place, so land never leaves a half-deleted, unregistered worktree. Found in SP-eahtellz: the orchestrator session's own working directory was inside the story's worktree.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,subprocess as s,tempfile,time;sys.path.insert(0,os.path.abspath('_tools'));import bl_land;from pathlib import Path;r=Path(tempfile.mkdtemp())/'c';r.mkdir();g=lambda *a,cwd=r:s.run(['git',*a],cwd=cwd,check=True,capture_output=True);g('init','-q','-b','main');(r/'f.txt').write_text('x');g('add','f.txt');g('-c','user.name=t','-c','user.email=t@example.com','-c','core.hooksPath=','commit','-q','-m','i');w=r/'.claude'/'worktrees'/'agent-x';g('worktree','add','-q','-b','work/X',str(w));p=s.Popen([sys.executable,'-c','import time;time.sleep(60)'],cwd=w);time.sleep(1);why=bl_land.release_worker_worktree(str(r),w,None,'work/X');left=(w/'f.txt').exists();p.kill();p.wait();print('why:',why,'| tracked file still there:',left);sys.exit(0 if (why and left) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}

@@ -2,7 +2,8 @@
   "id": "BG-atr5zlh5",
   "kind": "bug",
   "title": "check_env points KB_INDEX at a linked worktree's own _cache, not the clone's shared index directory",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +14,12 @@
       "-c",
       "import os, sys; sys.path.insert(0, '_tools'); os.environ.pop('KB_INDEX', None); os.environ.pop('CLAUDE_PLUGIN_DATA', None); import bl_base, kbfacts; got = bl_base.check_env(kbfacts.kbcommon.HOME, 'h')['KB_INDEX']; want = kbfacts.index_dir(); print('check_env', got, 'index_dir', want); sys.exit(os.path.normcase(os.path.abspath(got)) != os.path.normcase(os.path.abspath(want)))"
     ]
-  }
+  },
+  "touches": [
+    "_tools/bl_base.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md"
+  ]
 }

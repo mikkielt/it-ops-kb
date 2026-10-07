@@ -1,0 +1,23 @@
+{
+  "id": "BG-qqdfqx2d",
+  "kind": "bug",
+  "title": "new sprint gives its goal research story a check that passes before any research",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The goal research story that backlog.py new sprint files carries a check that fails until the research has written its output (for example a commit naming the story in KB-Work that changes kb content, or a findings entry it names), so precheck and intake's drift detector stop reporting the four planned sprints' research stories (ST-3xjmzebr, ST-72zlasrp, ST-oolpcwu6, ST-tudbg2a6) as already passing; found by intake draft ST-lfc42m76.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;sys.path.insert(0,'_tools');import bl_items;r=[subprocess.run(c['run'],capture_output=True).returncode for c in bl_items.RESEARCH_CHECKS];print('research checks before any research:',r);sys.exit(1 if all(x==0 for x in r) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}

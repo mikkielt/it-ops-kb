@@ -1,0 +1,23 @@
+{
+  "id": "ST-iafyj5f5",
+  "kind": "story",
+  "title": "perfcheck.py time defaults to the platform's ceiling in tests_ceiling.json",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "python3 _tools/perfcheck.py time with no --max-seconds bounds the run by max_seconds of the running platform in _tools/tests_ceiling.json (times KB_TEST_TIMEOUT_FACTOR on a CI runner, as tests.py does), and an explicit --max-seconds still wins, so an item's time check follows the operator's ceiling decision without hand edits. Found in SP-eahtellz: ST-4mcoplex and ST-xjb4wykm said --max-seconds 60 and needed a planning commit when D-776rvpx2 raised the win32 ceiling to 150 s.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "time"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/perfcheck.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}

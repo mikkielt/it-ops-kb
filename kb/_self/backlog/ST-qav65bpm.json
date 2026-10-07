@@ -1,0 +1,55 @@
+{
+  "id": "ST-qav65bpm",
+  "kind": "story",
+  "title": "Sessions repeat raw shell and backlog calls the kb tools answer: 2026-W41 over the weekly threshold",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Sessions call tools.backlog, grep, sed and python at most 300 times a week each, or the reason they must is recorded: backlog.py show ID or next rather than list and tree over the whole backlog, rag.py search --index or backlog.py find rather than grep, rag.py show PATH:LINE or selfdoc.py section rather than sed, so the repeats detector reports none of the four.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "intake",
+        "--status",
+        "4659f8fc0afc"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "intake",
+        "--status",
+        "0d456aeb8801"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "intake",
+        "--status",
+        "d32beddd1f67"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "intake",
+        "--status",
+        "05b103f48661"
+      ]
+    }
+  ],
+  "links": [
+    "fingerprint 4659f8fc0afc",
+    "fingerprint 0d456aeb8801",
+    "fingerprint d32beddd1f67",
+    "fingerprint 05b103f48661",
+    "detector repeats"
+  ],
+  "notes": "1241 calls of tools.backlog in 2026-W41; the threshold is 300 a week (bl_intake.REPEAT_THRESHOLD) Merged 2026-10-07 by the operator's triage with intake drafts ST-pnzggr7b (grep 857 calls), ST-ixykepwn (sed 417) and ST-a3apvmkg (python 327) of 2026-W41; W41 held the SP-eahtellz run on the Windows host."
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-pjkmiyqe",
+  "kind": "story",
+  "title": "A host-bound sprint runs its stories' premises on the host before any dispatch",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A sprint whose goal or items can only run on one host (a host precondition, a trigger on a host session) and was planned elsewhere runs each committed story's premise as the first step of its first run pass on that host, records each result in the story's notes, and reshapes or drops a story whose premise does not reproduce before any worker is dispatched; the rule is a tested question of the kb-sprint:run set, so rag.py pack --root _self answers it with coverage good. Found in SP-eahtellz: ST-4mcoplex's premise (planned on macOS) failed only mid-sprint on Windows.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','a sprint planned off its host: when are its stories premises run','--budget','300'],capture_output=True,text=True);o=r.stdout;print(o.splitlines()[0] if o else r.stderr[:200]);sys.exit(r.returncode or int(not (o.startswith('coverage: good') and 'host' in o.lower())))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "notes": "Premise (run 2026-10-07): rag.py pack --root _self 'a sprint planned off its host: when are its stories premises run' gives coverage weak; the plan-step premise rule (backlog.md:209) assumes the planner can run the premise where it plans."
+}
