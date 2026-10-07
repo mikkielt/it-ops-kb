@@ -1,9 +1,9 @@
 ---
 topic: agents/agent-evaluation
 priority: P1
-applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 1.1.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview), OpenAI cookbook self-evolving agents (commit 2182005b), promptfoo assertions (commit e6b46046), Claude Code plugin evals (2026-09)"
-retrieved_utc: 2026-10-06
-sources: [S-w2g2bnsw, S-h7tjbts3, S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s, S1920, S-lkcsn2fs, S-m2glighe, S-ll5srdcw]
+applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 1.1.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview), OpenAI cookbook self-evolving agents (commit 2182005b), promptfoo assertions (commit e6b46046), Claude Code plugin evals (2026-09), held-out evaluation sets (Azure WAF AI testing, AutoML test data (preview), Azure Databricks evaluation sets, retrieved 2026-10-08)"
+retrieved_utc: 2026-10-08
+sources: [S-w2g2bnsw, S-h7tjbts3, S-bdecdv65, S-rwgksb6h, S-qmfejifr, S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s, S1920, S-lkcsn2fs, S-m2glighe, S-ll5srdcw]
 status: complete
 ---
 
@@ -170,6 +170,16 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 - BEIR chose nDCG@k because it gives a good balance for tasks with binary as well as graded relevance judgements [DOC S-w2g2bnsw].
 - Microsoft Foundry's document-retrieval evaluator describes its Fidelity metric as the number of good documents returned out of the total number of known good documents in a dataset, a recall-style score against labelled ground truth [DOC S-h7tjbts3].
 - The same evaluator reports Holes, the number of documents with missing query relevance judgments (ground truth), so a labelled set has to judge the documents the retriever returns [DOC S-h7tjbts3].
+
+### Keeping a held-out set apart from the tuning set
+- The Azure Well-Architected Framework's AI testing guidance splits source data into three distinct datasets: training builds the model, evaluation tunes it, and the test set validates final performance. [DOC S-bdecdv65]
+- The same guidance says to keep all datasets separate and non-overlapping, to maintain objectivity and prevent bias, and not to reuse training data for evaluation or evaluation data for testing; it also asks for checks that data splits have no overlapping samples, since "even subtle leakage can harm model performance". [DOC S-bdecdv65]
+- It treats evaluation (iterative experiments during development to find the best model and tuning) and testing (verifying the whole system on each change, a go or no-go decision) as separate processes that use distinct datasets. [DOC S-bdecdv65]
+- Azure Machine Learning's AutoML page explains why a set used for tuning stops measuring generalisation: the same validation data is used in every tuning iteration, which "introduces model evaluation bias" as the model keeps fitting to that data; a separate test dataset evaluates the final recommended model to check that this bias is not applied to it (the AutoML test-data feature is preview). [DOC S-rwgksb6h]
+- Azure Databricks' generative AI cookbook (a RAG and agent evaluation guide) recommends splitting a question evaluation set to avoid overfitting: about 70% training questions for a first pass over every experiment, about 20% test questions for the best experiments, and about 10% validation questions for a final check before production. [DOC S-qmfejifr]
+- The same page recommends at least 30 questions, ideally 100 to 200, growing to thousands, and a set that is representative, challenging (including adversarial questions such as prompt injection) and periodically updated to match production use. [DOC S-qmfejifr]
+- A held-out row that fails is a measurement of generalisation, not a tuning target: moving it into the tuning set (or tuning against it and keeping it held out) makes it data the system is fitted to, which is the reuse the Well-Architected guidance forbids and the evaluation bias AutoML describes, so the held-out rate would no longer estimate behaviour on unseen questions. The fix is made against tuning rows, and the held-out row stays where it is to show whether the fix generalises. [DER S-bdecdv65, S-rwgksb6h: separate non-overlapping sets, no reuse of evaluation data for testing; a set reused across tuning iterations biases the evaluation]
+- None of the three pages says how often a held-out set may be replaced or refreshed; Databricks asks for periodic updates of the evaluation set as a whole, which a held-out split keeps only if new rows are assigned to splits before anyone tunes against them. [DER S-qmfejifr, S-bdecdv65: periodic updates; separate sets]
 
 ### Rule-based and code-based checks before a model judge (graders, evals, self-improving pipelines)
 - Anthropic's eval guidance names the methods of a **code-based grader**: string-match checks (exact, regex, fuzzy),

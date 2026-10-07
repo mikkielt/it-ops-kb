@@ -11,7 +11,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 9 |
 | `agents/agent-dispatch-and-shared-services` | P1 | complete | `agents/agent-dispatch-and-shared-services.md` | 10 |
 | `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
-| `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 36 |
+| `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 39 |
 | `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
 | `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 18 |
 | `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 15 |
@@ -42,7 +42,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |
 | `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
-| `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 6 |
+| `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 7 |
 | `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 100 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |

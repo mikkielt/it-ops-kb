@@ -2483,3 +2483,15 @@ _Agent: kb-research_
 - See gitlab/git-test-repositories.md, gitlab/git-trailers-and-hooks.md.
 
 _Agent: kb-research_
+
+## QK-held-out-evaluation-set-kept-apart. How is a held-out evaluation set kept apart from the tuning set so it measures generalisation, why is a failing held-out row not moved into the tuning set, and what bounds a backlog that grows from every review finding becoming a work item?
+- Microsoft's Well-Architected AI testing guidance partitions data into training, evaluation (tuning) and test sets, keeps them separate and non-overlapping, and says not to reuse evaluation data for testing. (`agents/agent-evaluation.md:175`, `:176`) [DOC S-bdecdv65]
+- Azure Machine Learning AutoML: validation data reused in every tuning iteration introduces evaluation bias, so a separate test set (preview feature) evaluates the final model. (`agents/agent-evaluation.md:178`) [DOC S-rwgksb6h]
+- Azure Databricks' RAG and agent evaluation guide splits a question set about 70/20/10 into training, test and validation questions to avoid overfitting, with at least 30 questions. (`agents/agent-evaluation.md:179`, `:180`) [DOC S-qmfejifr]
+- The Kanban Guide (v2025.5) makes WIP control mandatory between an item's defined started and finished points, with work selected only on a signal of capacity, explicit policies and a service level expectation. (`agents/agent-planning-and-done.md:34`, `:35`, `:36`) [DOC S-cbzadytw]
+- The Scrum Guide orders the Product Backlog under the Product Owner, takes one Product Goal at a time, deems items ready for selection when they fit one Sprint, and makes done an outcome: a usable, verified Increment. (`agents/agent-planning-and-done.md:21`, `:30`, `:31`, `:32`) [DOC S-2wwcyoa4]
+- Conclusion: a held-out set measures generalisation only while nothing is tuned against it, so a failing held-out row is fixed through tuning rows and stays held out to show whether the fix generalises (`agents/agent-evaluation.md:181`). Neither guide caps a backlog's length: what bounds it is a limit on started work (WIP control or Sprint Goal), an explicit policy for when an item may start, a done that is an outcome, and ordering that leaves low-value items unstarted (`agents/agent-planning-and-done.md:38`). [DER S-bdecdv65, S-rwgksb6h, S-cbzadytw, S-2wwcyoa4]
+- Open: none of the sources says how often a held-out set may be refreshed, and the Scrum Guide has no "Definition of Ready". (`agents/agent-evaluation.md:182`, `agents/agent-planning-and-done.md:33`) [UNK]
+- See agents/agent-evaluation.md, agents/agent-planning-and-done.md.
+
+_Agent: kb-research_
