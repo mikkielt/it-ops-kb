@@ -477,15 +477,44 @@ def routed_of(rs):
 
 # ---------------------------------------------------------------- work windows
 
-def work_windows(rows):
+def item_finder(directory=None):
+    """has_file(item id): whether the item's file is in `directory` (default: the clone's kb/_self/backlog), a file
+    test and nothing else."""
+    d = Path(directory) if directory else HOME / BACKLOG_REL
+    return lambda item: (d / f"{item}.json").is_file()
+
+
+def kept_rows(rows, known):
+    """`rows` without the `claim` and `branch` rows that open no window for lack of an item file: those of an item
+    `known` (item_finder) says has none, unless a later `done` or `release` row of the same item closes the window in
+    these rows. A `branch` row of a stale `work/<id>` checkout, left by a capture that did not read the file (the
+    session's later prompts would all sit in a window nothing closes), has no closing row; a `claim` row of an item
+    whose sprint was closed, its files deleted, is closed by the `done` of the `land` the session ran, so the
+    session's work on the item still counts when it is distilled after the close. `known` None: every item has one."""
+    if known is None:
+        return rows
+    closing, kept = set(), []
+    for r in reversed(rows):
+        item = r.get("item") if r.get("surface") == "work" else None
+        if r.get("action") in ("done", "release") and isinstance(item, str):
+            closing.add(item)
+        elif r.get("action") in OPEN_ACTIONS and isinstance(item, str) and item not in closing and not known(item):
+            continue
+        kept.append(r)
+    return kept[::-1]
+
+
+def work_windows(rows, known=None):
     """({prompt id: the items whose window holds it}, the items the rows claimed), the prompts in the order they began.
     The windows of `ql_capture.usage_targets`: a prompt is inside an item's window when the item was open as the
     prompt began, or the prompt's own row opens it (a `claim`, or the `branch` row of the session's `work/<id>`
-    branch, ql_capture.branch_row), or closes it with `done` or `release`; a `done` or `release` with no open window
-    in these rows opens and closes nothing. Windows of several items may overlap. A branch-opened item is one the rows
-    worked, as a claimed one is."""
+    branch, ql_capture.branch_row), or closes it with `done` (a successful `land` or `merge` is stored as one) or
+    `release`; a `done` or `release` with no open window in these rows opens and closes nothing. Windows of several
+    items may overlap. A branch-opened item is one the rows worked, as a claimed one is. `known` (item_finder) says
+    which items have a file: a `claim` or `branch` row of an item without one, that no later `done` or `release` row
+    closes, opens no window (kept_rows)."""
     inside, worked, open_items = {}, set(), set()
-    for r in rows:
+    for r in kept_rows(rows, known):
         pid = r.get("prompt_id")
         if r.get("surface") == "usage" or not isinstance(pid, str):
             continue
@@ -503,15 +532,15 @@ def work_windows(rows):
     return inside, worked
 
 
-def rework_windows(rows):
+def rework_windows(rows, known=None):
     """{prompt id: the items in rework at it}, for the prompts in the order they began: an item is in rework from the
     prompt of its first `refused` row (a `backlog.py done` that exited 1) while its window is open, up to the prompt
     that closes it with `done` or `release`, both included. A `refused` row of an item with no open claim in these
     rows is none, and a later `claim` of an item that was released starts a window with no rework (a `branch` row
     opens a window as a `claim` does): the windows are
-    those of work_windows, and a session's refusals never carry into another session's rows."""
+    those of work_windows, `known` included, and a session's refusals never carry into another session's rows."""
     out, open_items, refused = {}, set(), set()
-    for r in rows:
+    for r in kept_rows(rows, known):
         pid = r.get("prompt_id")
         if r.get("surface") == "usage" or not isinstance(pid, str):
             continue
@@ -572,7 +601,7 @@ def add_sub(tally, sub):
     tally["prompts"] -= 1
 
 
-def session_work(rows, done, items, sprint_of=None, rework=None, interrupts=None):
+def session_work(rows, done, items, sprint_of=None, rework=None, interrupts=None, known=None):
     """One closed session's work: (its shared line or None, the window prompts without usage, the prompt ids
     counted). Each prompt not in `done` with a usage record of this reader (usage_of) adds its counts to the tally of
     the line work_lines_of names (`items`: {item or sprint: tally}, which the run's sessions share), or to the
@@ -580,13 +609,13 @@ def session_work(rows, done, items, sprint_of=None, rework=None, interrupts=None
     to those items' tallies. A session that worked no item (no `claim` or `branch` row) is unrecorded. `rework` ({item: tally}, shared by the
     run's sessions like `items`) also takes the counts that fall in an item's rework (rework_windows): a prompt of
     one window only, and a subagent routed to an item, in rework at that prompt; a prompt in several windows counts
-    on its sprint's line with no split."""
+    on its sprint's line with no split. `known` (item_finder) says which items have a file, as in work_windows."""
     rework = {} if rework is None else rework
     interrupts = {} if interrupts is None else interrupts  # {item: interrupted calls in its window's prompts}
-    inside, worked = work_windows(rows)
+    inside, worked = work_windows(rows, known)
     if not worked:
         return None, 0, set()
-    again = rework_windows(rows)
+    again = rework_windows(rows, known)
     by_prompt = {}
     for r in rows:
         if isinstance(r.get("prompt_id"), str):
@@ -620,17 +649,17 @@ def session_work(rows, done, items, sprint_of=None, rework=None, interrupts=None
     return (store_.work_line("items", sorted(worked), shared) if shared["prompts"] else None), missing, counted
 
 
-def plan_work(sessions, worked, sprint_of=None):
+def plan_work(sessions, worked, sprint_of=None, known=None):
     """(the work sidecar's lines, the window prompts without usage, {session id: prompt ids counted}) of the closed
     sessions: the items' lines in id order, then the sessions' shared lines. `worked` ({session id: prompt ids}) holds
     the prompts an earlier run counted, so a session whose rows stayed in the spool is never counted twice;
-    `sprint_of` (sprint_finder) names the sprint of an item."""
+    `sprint_of` (sprint_finder) names the sprint of an item and `known` (item_finder) says which items have a file."""
     items, rework, shared, missing, counted, interrupts = {}, {}, [], 0, {}, {}
     for sid in sorted(sessions):
         if not sessions[sid]["closed"]:
             continue
         line, m, pids = session_work(sessions[sid]["rows"], set(worked.get(sid, ())), items, sprint_of, rework,
-                                     interrupts)
+                                     interrupts, known)
         missing += m
         if pids:
             counted[sid] = pids
@@ -889,7 +918,7 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
     worked = read_json(qdir / WORKED_NAME, {})
     worked = {sid: ids for sid, ids in worked.items() if sid in sessions and isinstance(ids, list)} \
         if isinstance(worked, dict) else {}
-    work_lines, work_missing, work_counted = plan_work(sessions, worked, sprint_finder())
+    work_lines, work_missing, work_counted = plan_work(sessions, worked, sprint_finder(), item_finder())
     overhead = spend.lines() if spend is not None else []
     if written or dropped or skipped or work_lines or overhead or ops_lines or ops_bad:
         run_id = run_id or f"{now_dt.strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
@@ -924,19 +953,20 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
     return 0
 
 
-def uncounted_work(rows, done):
+def uncounted_work(rows, done, known=None):
     """Whether a session's rows hold a prompt inside a work window that `done` (the prompt ids worked.json holds for
-    it) does not list: a prompt no work sidecar counted."""
-    inside, _ = work_windows(rows)
+    it) does not list: a prompt no work sidecar counted. `known` (item_finder) says which items have a file, as in
+    work_windows."""
+    inside, _ = work_windows(rows, known)
     return any(windows and pid not in done for pid, windows in inside.items())
 
 
-def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay, skipped=None, work_pending=False):
+def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay, skipped=None, work_pending=False, known=None):
     """The spool after a pass: the rows of the `gone` entries and of the prompts that never used the kb go, the rows
     of the `stay` entries stay (a closed session keeps its window end), a finished day's tools file goes once all
     its rows are consumed, and the `skipped` rows (counted in this pass) go from the files that stay. With
     `work_pending` (a settle outside a distill pass: no plan_work counted the sessions) a closed session with work
-    prompts that worked.json does not hold stays whole, for the pass that counts them."""
+    prompts that worked.json does not hold stays whole, for the pass that counts them (`known`: item_finder)."""
     wait_keys = {(t["sid"], t["key"]) for t in stay if t["sid"]}
     worked = read_json(qdir / WORKED_NAME, {})
     worked = worked if isinstance(worked, dict) else {}
@@ -946,7 +976,7 @@ def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay, skipped=N
     for sid, s in sessions.items():
         if not s["closed"]:
             continue
-        if work_pending and uncounted_work(s["rows"], set(worked.get(sid) or ())):
+        if work_pending and uncounted_work(s["rows"], set(worked.get(sid) or ()), known):
             continue  # the whole file waits for the pass that counts its work
         for extra in s.get("skipped", []):
             for name, r in extra:
@@ -991,7 +1021,7 @@ def spool_delivered(qdir, ids, now_dt=None):
     gone = [t for t in todo if t["entry"]["id"] in ids]
     if gone:
         _settle(spool, sessions, tools, consumed, Path(qdir), today, gone,
-                [t for t in todo if t["entry"]["id"] not in ids], work_pending=True)
+                [t for t in todo if t["entry"]["id"] not in ids], work_pending=True, known=item_finder())
     return len(gone)
 
 

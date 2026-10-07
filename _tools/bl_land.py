@@ -314,10 +314,13 @@ def ops_mark(label):
 def ops_no_work_rows(root, iid):
     """Whether neither this host's spool, the spool of the main worktree of the clone's git common dir (read only,
     and only when it is another directory than this one: a session started in the main checkout that orchestrates a
-    clone writes its rows there) nor the committed work sidecars hold a `work` row (claim, done, release) of the item
-    or of a descendant of it: distill moves the spool's work rows into the sidecars (an item line, or a shared line
-    naming the item), so a consumed spool is not an item that was worked without the capture hooks. False when capture
-    is off, no spool directory exists or anything cannot be read."""
+    clone writes its rows there) holds a worker's `branch` row of the item or of a descendant of it (the row that opens
+    a headless worker's window, `ql_capture.BRANCH_ACTION`), nor the committed work sidecars a line of it. The
+    orchestrator's own `claim`, `done` and `release` rows are no worker's capture: it claims every item it delegates,
+    so its row would always be met. Distill moves the spool's work rows into the sidecars (an item line, or a shared
+    line naming the item), so a consumed spool is not an item that was worked without the capture hooks; a line names
+    no session, so the windows of an earlier orchestrator session count there. False when capture is off, no spool
+    directory exists or anything cannot be read."""
     try:
         import bl_cost, ql_capture, ql_distill
         own = ql_capture.spool_dir()
@@ -331,7 +334,7 @@ def ops_no_work_rows(root, iid):
         if not spools:
             return False
         ids = {iid, *Backlog(root).descendants(iid)}
-        if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in (*ql_capture.WORK_ACTIONS, *ql_capture.OPEN_ACTIONS)
+        if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") == ql_capture.BRANCH_ACTION
                for d in spools for p in sorted(d.glob("*.jsonl")) for r in ql_distill.spool_rows(p)[0]):
             return False
         return not bl_cost.cost_lines(root, ids)[0]
