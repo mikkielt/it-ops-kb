@@ -2,7 +2,7 @@
   "id": "ST-idwjvloy",
   "kind": "story",
   "title": "done accepts a goal research story whose notes say No outside facts, with no non-item commit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   "depends_on": [
     "ST-cjizqzhq"
   ],
-  "notes": "Premise: no check planted. A fixture needs an active sprint with a start commit, a goal research story and a git history of item-only commits, which is more than a temp-dir check can build in reasonable effort; the refusal is today's cmd_done no-work-commit reason (bl_land.py), seen on ST-k4airlfu."
+  "notes": "Premise: no check planted. A fixture needs an active sprint with a start commit, a goal research story and a git history of item-only commits, which is more than a temp-dir check can build in reasonable effort; the refusal is today's cmd_done no-work-commit reason (bl_land.py), seen on ST-k4airlfu.",
+  "claimed_by": "kb-worker-idwjvloy"
 }
