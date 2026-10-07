@@ -54,7 +54,10 @@ STOP_WORDS = frozenset("""a an and are as at be by for from has have in into is 
     then there these this those to was were what when which with without""".split())
 RECURRING_MIN = 2  # start: an open P1 item with this many sprint ids in its recurs list belongs in the sprint
 REVIEW_CHECKS = [{"run": ["python3", "_tools/backlog.py", "check"]}, {"run": ["python3", "_tools/tests.py"]}]  # once, before review
-RESEARCH_CHECKS = [{"run": ["python3", "_tools/check.py"]}]  # the goal research story's: the kb it wrote passes the checks
+# the goal research story's: its research is written (a work commit naming it, or its notes' `No outside facts:`), so
+# it fails until then; `new sprint` fills RESEARCH_ID with the story's id
+RESEARCH_ID = "{id}"
+RESEARCH_CHECKS = [{"run": ["python3", "_tools/backlog.py", "researched", RESEARCH_ID]}]
 
 
 class Refused(Exception):

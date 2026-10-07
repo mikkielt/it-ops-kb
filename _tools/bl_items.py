@@ -11,7 +11,7 @@ from pathlib import Path
 import bl_authority
 import bl_cli
 from bl_base import (
-    IN_SPRINT, KINDS, PRIORITIES, REL_DIR, RESEARCH_CHECKS, REVIEW_CHECKS, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
+    IN_SPRINT, KINDS, PRIORITIES, REL_DIR, RESEARCH_CHECKS, RESEARCH_ID, REVIEW_CHECKS, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
     commit_message, commit_written, git, in_scope, item_file, need, new_id, research_in_planned, say, scope,
     trailer_problem, waits, withhold,
 )
@@ -50,12 +50,14 @@ def cmd_new(bl, a):
                       "and a fresh-context review of the sprint's diff found no unfiled defect.",
               "checks": REVIEW_CHECKS}
         bl.save(rv)
-        rs = {"id": new_id("story"), "kind": "story", "title": f"Research sprint goal: {it['title']}"[:TEXT_MAX],
+        rid = new_id("story")
+        rs = {"id": rid, "kind": "story", "title": f"Research sprint goal: {it['title']}"[:TEXT_MAX],
               "status": "draft", "sprint": it["id"], "goal_research": True, "priority": "P1", "rank": 0,
               "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for "
                       "the gaps, and the findings are written as kb facts and gap entries through the kb skills, so "
                       "each committed item can name the knowledge it needs.",
-              "checks": RESEARCH_CHECKS, "touches": ["kb/public/**"]}
+              "checks": [{**c, "run": [rid if w == RESEARCH_ID else w for w in c["run"]]} for c in RESEARCH_CHECKS],
+              "touches": ["kb/public/**"]}
         bl.save(rs)
         say(f"new sprint {bl.label(it['id'])}, review story {bl.label(rv['id'])}, "
             f"research story {bl.label(rs['id'])}")

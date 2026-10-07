@@ -12,7 +12,9 @@
     {
       "run": [
         "python3",
-        "_tools/check.py"
+        "_tools/backlog.py",
+        "researched",
+        "ST-xj4mijnb"
       ]
     }
   ],
