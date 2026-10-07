@@ -2,7 +2,7 @@
   "id": "ST-fzvj57al",
   "kind": "story",
   "title": "A held-out file of real questions answers at a recorded rate, and never feeds the eval set",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-4rq725fe",
   "priority": "P1",
@@ -47,7 +47,8 @@
     "kb/_self/code.md",
     "kb/_self/maintaining.md",
     "AGENTS.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/test_live_kb.py"
   ],
   "gates": [
     {
@@ -70,5 +71,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (quality of answers, held-out): before a sprint commits this story, draft the 20 rows from the query log store's lookup records and run python3 _tools/rag.py eval --file <draft> --root public once; record passed= here. Earlier held-out run (SP-njilrify, ST-dvf3xf52): 14 of 20 answered with verdict good on all 20. The tuned set passes 273 of 273 on 2026-10-07 (python3 _tools/rag.py eval --root public), so only a held-out set measures anything. Threshold N: see the gate. Premise run 2026-10-08 (plan step 6): a 20-row draft from the committed store's lookup records (87 candidates after dropping eval-set duplicates and kb/_self rule questions), expected path = the record's best article: python3 _tools/rag.py eval --file <scratch>/lookup_heldout_draft.csv --root public gave questions=20 passed=19 verdict_ok=20 found_ok=19 (HO-msbuild-getproperty: verdict good, no article found for agents/codebase-mapping.csv). Caveat the goal must state: these questions were asked before and researched since (46 of 87 were judged missed at the time), so the file is held out from lookup_eval.csv and doc2query, not from research; the worker words the rows as asked, verifies each expected path by reading the article, and prefers questions whose research closed after 2026-10-01 or whose verdict was good when asked. Checks (precheck 2026-10-08): the --min 16 held-out check fails before the work (no --min flag, no file) and is the proof; rag.py eval --root public and tests.py -k eval pin that the tuned set and the eval tests keep passing after the flag lands."
+  "notes": "Premise (quality of answers, held-out): before a sprint commits this story, draft the 20 rows from the query log store's lookup records and run python3 _tools/rag.py eval --file <draft> --root public once; record passed= here. Earlier held-out run (SP-njilrify, ST-dvf3xf52): 14 of 20 answered with verdict good on all 20. The tuned set passes 273 of 273 on 2026-10-07 (python3 _tools/rag.py eval --root public), so only a held-out set measures anything. Threshold N: see the gate. Premise run 2026-10-08 (plan step 6): a 20-row draft from the committed store's lookup records (87 candidates after dropping eval-set duplicates and kb/_self rule questions), expected path = the record's best article: python3 _tools/rag.py eval --file <scratch>/lookup_heldout_draft.csv --root public gave questions=20 passed=19 verdict_ok=20 found_ok=19 (HO-msbuild-getproperty: verdict good, no article found for agents/codebase-mapping.csv). Caveat the goal must state: these questions were asked before and researched since (46 of 87 were judged missed at the time), so the file is held out from lookup_eval.csv and doc2query, not from research; the worker words the rows as asked, verifies each expected path by reading the article, and prefers questions whose research closed after 2026-10-01 or whose verdict was good when asked. Checks (precheck 2026-10-08): the --min 16 held-out check fails before the work (no --min flag, no file) and is the proof; rag.py eval --root public and tests.py -k eval pin that the tuned set and the eval tests keep passing after the flag lands.",
+  "claimed_by": "worker-fzvj57al"
 }
