@@ -11,10 +11,8 @@
   "repro": {
     "run": [
       "python3",
-      "_tools/backlog.py",
-      "intake",
-      "--status",
-      "100be800a2b5"
+      "-c",
+      "import subprocess,sys,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import kg_trailers as k;t=Path(tempfile.mkdtemp());g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com','-c','commit.gpgsign=false',*a],cwd=t,check=True,capture_output=True,text=True).stdout;g('init','-q');(t/'notes.txt').write_text('x\\n',encoding='utf-8');g('add','notes.txt');g('commit','-q','--no-verify','-m','chore: planted\\n\\nKB-Work: BG-aaaaaaaa\\nSelf-Reviewed: kb/_self/git.md\\n\\nCo-Authored-By: Jan Kowalski <jan.kowalski@corp.example.com>');k.KB=str(t);a=k.trailer_audit(g('rev-parse','HEAD').strip(),quiet=True);out='\\n'.join(ln for _,ls in a[2] for ln in ls);print(out or 'check-trailers passes the planted commit');sys.exit(0 if 'KB-Work: BG-aaaaaaaa' in out and 'Self-Reviewed: kb/_self/git.md' in out else 1)"
     ]
   },
   "touches": [
