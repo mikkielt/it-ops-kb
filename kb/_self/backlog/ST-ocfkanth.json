@@ -2,7 +2,7 @@
   "id": "ST-ocfkanth",
   "kind": "story",
   "title": "intake --file --hook files nothing in a worker's linked worktree and says so on stderr",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "kb-worker-ocfkanth"
 }
