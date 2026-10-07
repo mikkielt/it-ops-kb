@@ -2,7 +2,7 @@
   "id": "ST-bum7owtw",
   "kind": "story",
   "title": "land moves a worker worktree's untracked intake drafts aside itself",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -74,5 +74,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "kb-worker-bum7owtw"
+  "evidence": {
+    "commit": "88cc3eb7455d98707ff538b0f06f62bfa78dbffd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;t=pathlib.Path(\"_tools/bl_land.py\").read_text(encoding=\"utf-8\");ok=\"intake\" in t and \"kb/_self/backlog/\" in t;print(\"land handles intake drafts:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "577026290dda7a41"
+      }
+    ]
+  }
 }
