@@ -5,7 +5,7 @@ behind everything the tool prints, the helpers that commit the item files a comm
 backlog.py and the bl_ modules import it, and it imports no bl_ module at load and never backlog (`run`
 reaches bl_intake.run_argv by an import in the function, so a caller that patches the reader is heard).
 """
-import base64, functools, getpass, json, os, re, secrets, socket, subprocess, sys
+import base64, functools, getpass, json, os, re, secrets, socket, subprocess, sys, tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -530,20 +530,40 @@ def colourless_env():
     return env
 
 
+def check_env(root, home):
+    """The environment of a check or a repro: colourless_env with an isolated query log home. CLAUDE_PLUGIN_DATA is
+    HOME, a temporary directory whose querylog/config.json is mode local, and CLAUDE_PLUGIN_ROOT the clone at ROOT,
+    which ql_base.plugin_data takes for this copy running as the plugin: capture still runs, into HOME, never into the
+    clone's own spool. The pack index and the live-docs cache stay where the inherited environment keeps them (KB_INDEX,
+    KB_DOCS_CACHE), not in HOME, which is deleted after the run. A check that sets its own CLAUDE_PLUGIN_DATA in its own
+    code keeps it."""
+    env = colourless_env()
+    kept = env.get("CLAUDE_PLUGIN_DATA") or os.path.join(root, "_cache")
+    env["KB_INDEX"] = env.get("KB_INDEX") or kept
+    env["KB_DOCS_CACHE"] = env.get("KB_DOCS_CACHE") or os.path.join(kept, "live-docs")
+    env["CLAUDE_PLUGIN_DATA"], env["CLAUDE_PLUGIN_ROOT"] = str(home), root
+    return env
+
+
 def run_check(root, c):
     """Run one check, or a bug's repro, without a shell and with colour off; its output comes back with any colour
     codes taken out. A check that names python3 or python runs with the interpreter running this tool: on a host
-    whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
+    whose python3 is the Windows Store alias, or none on PATH, it still proves the item. It runs with an isolated query
+    log home (check_env), a fresh temporary directory removed afterwards, so no check or repro adds a row to the
+    clone's own spool."""
     argv = list(c["run"])
     if argv and argv[0] in ("python3", "python"):
         argv[0] = sys.executable
-    try:
-        p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           timeout=CHECK_TIMEOUT_S, env=colourless_env())
-        code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or ""))
-    except OSError as e:
-        code, out = None, f"cannot start: {e}"
-    except subprocess.TimeoutExpired as e:
-        code, out = None, str(e)
+    with tempfile.TemporaryDirectory(prefix="kb-check-", ignore_cleanup_errors=True) as home:
+        (Path(home) / "querylog").mkdir()
+        (Path(home) / "querylog" / "config.json").write_text(json.dumps({"mode": "local"}), encoding="utf-8")
+        try:
+            p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                               timeout=CHECK_TIMEOUT_S, env=check_env(str(Path(root).resolve()), home))
+            code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or ""))
+        except OSError as e:
+            code, out = None, f"cannot start: {e}"
+        except subprocess.TimeoutExpired as e:
+            code, out = None, str(e)
     ok = code == c.get("exit", 0) and (not c.get("match") or re.search(c["match"], out, re.M) is not None)
     return ok, code, out

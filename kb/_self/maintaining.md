@@ -67,6 +67,6 @@ Work is planned and tracked in the backlog (`kb/_self/backlog.md`); a commit tha
   - tests are few and under the ceiling in `_tools/tests_ceiling.json`, and a bug gets a retrospective finding, not a test (`kb/_self/code.md`, Checks and their tests);
   - after reworded or removed facts, `python3 _tools/doc2query.py stale` (the gate runs it for article changes).
 - `tests.py` scans tracked files only: stage new files (`git add`) before running it, or they pass unchecked.
-- Every `tests.py` run records an ops row `test.run` (`kb/_self/tools.md`) in the query log's spool: the suite's times are read from those rows.
+- Every `tests.py` run records an ops row `test.run` (`kb/_self/tools.md`) in the query log's spool: the suite's times are read from those rows. A run a backlog check or repro makes records it in that check's temporary query log home instead, which is removed after the run (`kb/_self/backlog.md`).
 - A whole-suite `tests.py` run takes a host-wide lock and waits for another such run on the same host, naming its pid and clone (`kb/_self/tools.md`): sessions sharing a host, a sprint worker too, need no message to avoid overlapping runs. A selection takes no lock.
 - Commit messages: conventional prefix (`docs(kb):`, `fix(kb):`, `feat(kb):`, `chore:`), imperative, body explaining why; your own trailers (e.g. `Co-Authored-By`) in the last paragraph, and the hook appends the KB-* ones after them. Commit only when asked. Push with `python3 _tools/kbgit.py sync --push` (`kb/_self/git.md`).
