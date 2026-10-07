@@ -24,8 +24,9 @@
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
                                            --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
-  rag.py eval [--file FILE] [--root NAME] [--free]   pack against the lookup eval sets (every root's lookup_eval.csv and
-                                           kb/_self's, or FILE): expected article found, verdict, expected phrase;
+  rag.py eval [--file FILE] [--root NAME] [--free] [--min N]   pack against the lookup eval sets (every root's
+                                           lookup_eval.csv and kb/_self's, or FILE): expected article found, verdict,
+                                           expected phrase; exit 1 unless every row (or at least N) passes;
                                            --free adds the _self rows' leave-one-out rate (slow)
   rag.py topics-for PATH... | --keywords TEXT [--imports]   kb topics that code touches, from the curated code signals in
                                            each root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client);
@@ -342,6 +343,8 @@ def main():
     ev = sub.add_parser("eval"); ev.add_argument("--file", help="one eval file (default: every root's lookup_eval.csv and kb/_self's)")
     ev.add_argument("--root", help="one root only (a kb root or _self); with --file, the root the file's rows belong to")
     ev.add_argument("--free", action="store_true", help="also the leave-one-out rate of the _self rows (slow: one store build per row)")
+    ev.add_argument("--min", type=positive_int, help="exit 0 when at least MIN rows pass (default: every row), e.g. the "
+                    "held-out file kb/public/_retrieval/lookup_heldout.csv's answer rate")
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     w.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
     a = ap.parse_args()
@@ -479,7 +482,7 @@ def main():
                   f"found={','.join(r['found']) or '-'} chars={r['chars']}" + (f" failed={','.join(r['failed'])}" if r["failed"] else ""))
         print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
               f"mean_chars={res['mean_chars']}" + (f" free={res['free']}/{res['anchored']}" if res["free"] is not None else ""))
-        if res["passed"] != res["n"]:
+        if res["passed"] < (res["n"] if a.min is None else a.min):
             sys.exit(1)
     else:
         path, _, line = a.target.partition(":")
