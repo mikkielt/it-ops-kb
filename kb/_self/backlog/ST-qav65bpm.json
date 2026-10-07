@@ -53,9 +53,6 @@
       ]
     }
   ],
-  "depends_on": [
-    "BG-p3jphxgb"
-  ],
   "links": [
     "fingerprint 4659f8fc0afc",
     "fingerprint 0d456aeb8801",
