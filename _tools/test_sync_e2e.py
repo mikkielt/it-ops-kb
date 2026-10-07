@@ -50,8 +50,18 @@ def test_code_commit_goes_to_a_branch(scenario):
     c = clone(scenario)
     before = scenario.origin.rev("main")
     c.write("_tools/sync_e2e_probe.txt", "code\n")
-    # a code change needs a KB-Work or KB-Auto trailer (check-trailers); the scenario has no sprint to name
-    c.commit("chore(tools): sync end-to-end probe\n\nKB-Auto: querylog", "_tools/sync_e2e_probe.txt")
+    # a code change needs a KB-Work or KB-Auto trailer (check-trailers); the scenario has no sprint to name. A
+    # Self-Reviewed line above a blank line is no trailer git reads: the commit-msg hook warns, sync refuses the push
+    c.git("add", "_tools/sync_e2e_probe.txt")
+    stray = "not a trailer: 'Self-Reviewed: kb/_self/git.md'"
+    p = c.run_git("commit", "-q", "-m", "chore(tools): sync end-to-end probe", "-m", "Self-Reviewed: kb/_self/git.md",
+                  "-m", "KB-Auto: querylog")
+    assert p.returncode == 0 and stray in p.stderr, p.stdout + p.stderr
+    r = sync(c)
+    assert r.returncode == 1 and stray in r.stdout, r.stdout + r.stderr
+    assert scenario.origin.rev("main") == before
+    c.git("commit", "-q", "--amend", "-m", "chore(tools): sync end-to-end probe\n\nSelf-Reviewed: kb/_self/git.md\n"
+          "KB-Auto: querylog")
     head = c.rev("HEAD")
     r = sync(c)
     assert r.returncode == 0, r.stdout + r.stderr

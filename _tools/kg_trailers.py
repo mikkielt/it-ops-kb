@@ -415,7 +415,7 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
     if recs is None:
         return None
     changes = commit_changes(spec) or {}
-    bodies = work_lines(spec)
+    strays = stray_lines_of(spec)
     blobs = BlobReader()
     bad, kb = [], 0
     try:
@@ -442,17 +442,17 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
         work = have.get(WORK)
         state = []
         paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
-        if bodies.get(sha, 0) > len(work or []):
-            state.append(STRAY_WORK)
-        elif not work and not auto and any(code_path(p) for p in paths):
-            state.append(MISSING_WORK)
+        stray = strays.get(sha, [])
+        if not work and not auto and not any(WORK_LINE.match(ln) for ln in stray) and any(code_path(p) for p in paths):
+            state.append(MISSING_WORK)  # a stray KB-Work line says it already: move it into the trailer block
         if work and not work_ok(sha, work):
             wrong.append(WORK)
         elif work and work_state_on and not on_origin_main(sha):
             state += work_state(work, paths, lambda rel: at_or_parent(sha, rel))
         kb += bool(want)
-        if wrong or state:
+        if wrong or state or stray:
             lines = [f"BAD {short} {date} {subject[:70]}"]
+            lines += [f"    not a trailer: {ln!r}" for ln in stray] + ([f"    {STRAY}"] if stray else [])
             for k in wrong:
                 exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES),
                                                                                                  WORK: "once, backlog item ids that exist at the commit or its parent"}.get(k, f"(no {k})"))
@@ -466,13 +466,16 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
     return len(recs), kb, bad
 
 
-STRAY_WORK = ("a KB-Work line outside the trailer block, which git does not read as a trailer (a blank line before "
-              "Co-Authored-By?): put it in the message's last paragraph, with the other trailers")
+STRAY = ("git reads trailers only in the message's last paragraph (a blank line before Co-Authored-By starts a new one, "
+         "and a line there that is no trailer can stop git reading it): move each KB-* or Self-Reviewed line named into "
+         "that paragraph, one block with Co-Authored-By and the other trailers")
+STRAY_WORK = STRAY  # the name kbgit.py re-exports
+STRAY_KEY = re.compile(r"(KB-[A-Za-z]+(?:-[A-Za-z]+)*|Self-Reviewed)[ \t]*:[ \t]*\S", re.I)  # a trailer of ours, by key
 
 
 MISSING_WORK = ("changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work and no KB-Auto trailer: "
                 "name the item it works on")
-FORM_ONLY = (STRAY_WORK, MISSING_WORK)
+FORM_ONLY = (MISSING_WORK,)
 WORK_PATHS = ("_tools/", ".claude/", ".githooks/", ".gitlab-ci.yml")  # a change to these is work: it needs a KB-Work
 
 
@@ -480,22 +483,37 @@ def code_path(path):
     return any(path == p or (p.endswith("/") and path.startswith(p)) for p in WORK_PATHS)
 
 
-def work_lines(spec):
-    """{sha: number of KB-Work lines anywhere in the message} for the non-merge commits of `git log SPEC`, from one git
-    call: more of them than git reads as trailers is a KB-Work line outside the trailer block."""
-    out = git("log", "--no-merges", "--format=%x1e%H%x1f%B", *spec) or ""
+def stray_lines(body, trailers):
+    """The lines of a commit message BODY that start a KB-* or Self-Reviewed trailer git does not read as one. TRAILERS
+    is git's own reading of the message's trailer block (`%(trailers:only,unfold)`, `interpret-trailers --parse`):
+    per key, the lines beyond the number of its trailers there are stray, and since git reads trailers from the last
+    paragraph only, they are the key's first lines (kb/public/gitlab/git-trailers-and-hooks.md)."""
+    count = lambda text: [m.group(1).lower() for m in map(STRAY_KEY.match, (text or "").splitlines()) if m]  # noqa: E731
+    read, lines = count(trailers), [ln for ln in (body or "").splitlines() if STRAY_KEY.match(ln)]
+    keys, out, seen = count(body), [], {}
+    for ln, key in zip(lines, keys):
+        seen[key] = seen.get(key, 0) + 1
+        if seen[key] <= keys.count(key) - read.count(key):
+            out.append(ln.strip())
+    return out
+
+
+def stray_lines_of(spec):
+    """{sha: [stray lines]} (stray_lines) of the non-merge commits of `git log SPEC`, from one git call."""
+    out = git("log", "--no-merges", "--format=%x1e%H%x1f%(trailers:only,unfold)%x1f%B", *spec) or ""
     res = {}
     for rec in out.split("\x1e")[1:]:
-        sha, _, body = rec.partition("\x1f")
-        n = sum(1 for ln in body.splitlines() if WORK_LINE.match(ln))
-        if n:
-            res[sha.strip()] = n
+        sha, _, rest = rec.partition("\x1f")
+        trailers, _, body = rest.partition("\x1f")
+        lines = stray_lines(body, trailers)
+        if lines:
+            res[sha.strip()] = lines
     return res
 
 
-def message_trailers(message):
+def read_message(message):
     """(the message's lines as the commit will keep them: comment lines and anything below a scissors line left out,
-    {key: [values]} of the KB-* trailers git reads in them)."""
+    the trailers `git interpret-trailers --parse` reads in them, as text)."""
     cc = comment_char()
     kept = []
     for ln in message.splitlines():
@@ -503,14 +521,25 @@ def message_trailers(message):
             break
         if not ln.startswith(cc):
             kept.append(ln)
-    parsed = git("interpret-trailers", "--parse", stdin=("\n".join(kept) + "\n").encode("utf-8"))
+    return kept, git("interpret-trailers", "--parse", stdin=("\n".join(kept) + "\n").encode("utf-8")) or ""
+
+
+def message_trailers(message):
+    """(the message's kept lines (read_message), {key: [values]} of the KB-* trailers git reads in them)."""
+    kept, parsed = read_message(message)
     return kept, parse_trailers(parsed)
 
 
+def message_strays(message):
+    """The KB-* and Self-Reviewed lines of a commit message that git will not read as trailers (stray_lines)."""
+    kept, parsed = read_message(message)
+    return stray_lines("\n".join(kept), parsed)
+
+
 def stray_work(message):
-    """True when a commit message has a KB-Work line that `git interpret-trailers --parse` does not read as a trailer."""
-    kept, have = message_trailers(message)
-    return sum(1 for ln in kept if WORK_LINE.match(ln)) > len(have.get(WORK, []))
+    """True when a commit message has a KB-* or Self-Reviewed line git does not read as a trailer (kbgit.py re-exports
+    it)."""
+    return bool(message_strays(message))
 
 
 def work_ok(sha, values):
@@ -621,5 +650,8 @@ def cmd_check_trailers(a):
         print("fix unpushed commits: python3 _tools/kbgit.py trailers --amend (HEAD), or "
               "git rebase --exec \"python3 _tools/kbgit.py trailers --amend\" <base>; "
               "install the hook once per clone: python3 _tools/kbgit.py install-hooks")
+    if any(f"    {STRAY}" in lines for _, lines in bad_list):
+        print("a line that is not a trailer: rewrite the unpushed commit's message (HEAD: git commit --amend -F FILE, "
+              "then python3 _tools/kbgit.py check-trailers); pushed history is never rewritten")
     return 1 if bad else 0
 
