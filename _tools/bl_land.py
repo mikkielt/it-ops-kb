@@ -168,6 +168,17 @@ def rerun_done_checks(bl, sid):
     return out
 
 
+# a goal research story that needs no outside facts is done with no work commit when its notes say why: the notes hold
+# `No outside facts: <reason>` at their start, on a line of its own or after a sentence's end (`set --notes --add` joins
+# notes with a space)
+NO_OUTSIDE_FACTS = re.compile(r"(?:^|(?<=[.;!?]) |\n)No outside facts:[ \t]*\S")
+
+
+def research_without_facts(it):
+    """True for a story that is the sprint's goal research and whose notes say `No outside facts: <reason>`."""
+    return bool(it.get("kind") == "story" and it.get("goal_research") and NO_OUTSIDE_FACTS.search(it.get("notes") or ""))
+
+
 def cmd_done(bl, a):
     t0 = time.monotonic()
     iid = need(bl, a.id)
@@ -206,11 +217,13 @@ def cmd_done(bl, a):
             problems.append("uncommitted changes in scope (checks run on HEAD): " + ", ".join(dirty[:5]))
             reasons.append("uncommitted")
         family = [iid] + bl.descendants(iid)
-        if it.get("touches") and not item_commits(bl.root, [iid] + bl.descendants(iid)):
+        if (it.get("touches") and not research_without_facts(it)
+                and not item_commits(bl.root, [iid] + bl.descendants(iid))):
             reasons.append("no-work-commit")
             problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} or one of its descendants' ids "
                             "and changes a file other than item files (git reads a trailer only in the message's last "
-                            "paragraph, with the others; a claim or planning commit is not the work)")
+                            "paragraph, with the others; a claim or planning commit is not the work; a goal research story "
+                            "needing no outside facts says so in its notes: No outside facts: <reason>)")
         late, remote, owners = unlanded_code(bl.root, family)
         if late:
             reasons.append("unlanded-code")

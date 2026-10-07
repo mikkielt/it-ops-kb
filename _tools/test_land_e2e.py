@@ -86,6 +86,15 @@ def test_land_content_item_then_planted_failure(scenario):
     moved = origin_main(scenario)
     assert moved != before
 
+    research = re.search(r"(ST-[a-z0-9]+)\s.*Research sprint goal", ok(repo, "list", "--sprint", sp)).group(1)
+    ok(repo, "claim", research, "--by", "t", "--commit")
+    for notes, accepted in ((None, False), ("No outside facts:", False), ("Other. No outside facts: the goal is internal.", True)):
+        if notes:
+            ok(repo, "set", research, "--notes", notes)
+        code, out = bl(repo, "done", research, "--dry-run")  # no commit changes a non-item file: only the note lets it pass
+        assert (code == 0 and "would be done" in out) == accepted and (accepted or "KB-Work" in out), out
+    repo.git("checkout", "--", PLAN)  # the notes were an experiment
+
     repo.git("checkout", "-q", "main")
     work(repo, bad, "kb/_self/bad.md")
     code, out = bl(repo, "land", bad)

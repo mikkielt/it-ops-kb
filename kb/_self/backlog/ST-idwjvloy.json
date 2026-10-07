@@ -26,6 +26,20 @@
   "depends_on": [
     "ST-cjizqzhq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where must the No outside facts line sit in a goal research story's notes, since set --notes --add joins notes with a space?",
+      "options": [
+        "at the start, on a line of its own or after a sentence end",
+        "anywhere in the notes",
+        "only as the whole notes"
+      ],
+      "recommendation": "at the start, on a line of its own or after a sentence end",
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Premise: no check planted. A fixture needs an active sprint with a start commit, a goal research story and a git history of item-only commits, which is more than a temp-dir check can build in reasonable effort; the refusal is today's cmd_done no-work-commit reason (bl_land.py), seen on ST-k4airlfu.",
   "claimed_by": "kb-worker-idwjvloy"
 }
