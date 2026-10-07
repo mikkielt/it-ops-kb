@@ -72,8 +72,9 @@ Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-backlog:bu
 
 1. Reproduce it with one command that fails now and will pass once it is fixed, running the failing behaviour: a tool call on a planted input, a command with a match, or, only when no log can show the defect, a test (`kb/_self/code.md`, Checks and their tests). A repro that only matches text in a file (a grep, a `python -c` reading source) proves the text, not the fix; `new` refuses one without `--repro-reason TEXT` saying why the behaviour cannot run (such as a defect in a doc's wording).
 2. Pick a severity by the table in "Priority and severity" and a priority. An `S1` goes into the active sprint (`--sprint`), and you tell the operator at once.
-3. `python3 _tools/backlog.py new bug --title T --severity S --repro "CMD" --goal G [--parent EP] [--sprint SP]`. `new` refuses a repro that passes: then the defect is not reproduced yet.
-4. Add tasks only if the fix is known. Otherwise the bug stays one item, and `/kb-item` breaks it down.
+3. A goal that names a fix mechanism (a hook, a capture point, a file to write, a command to call) has it run through `python3 _tools/rag.py pack --root _self` before `new` writes it: a rule it meets is named in the goal, or the mechanism is left open (`kb/_self/backlog.md`, Sprints), as SP-owbgisoj showed.
+4. `python3 _tools/backlog.py new bug --title T --severity S --repro "CMD" --goal G [--parent EP] [--sprint SP]`. `new` refuses a repro that passes: then the defect is not reproduced yet.
+5. Add tasks only if the fix is known. Otherwise the bug stays one item, and `/kb-item` breaks it down.
 
 ## Triage
 Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-backlog:triage`.
