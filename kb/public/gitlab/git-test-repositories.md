@@ -2,8 +2,8 @@
 topic: gitlab/git-test-repositories
 priority: P3
 applies_to: "Git 2.55.0 (documentation at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration)"
-retrieved_utc: 2026-10-05
-sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz]
+retrieved_utc: 2026-10-07
+sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily]
 status: complete
 ---
 
@@ -63,6 +63,17 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
 - `git worktree list --porcelain` prints a format that "will remain stable across Git versions and
   regardless of user configuration", so a tool that reads which branch each worktree holds parses it.
   [DOC S-wyfuoqs5]
+- Within a linked worktree, `$GIT_DIR` points to the worktree's private directory under the main
+  repository's `$GIT_DIR/worktrees/` (named after the worktree's base name, a number appended when taken),
+  and `$GIT_COMMON_DIR` points back to the main worktree's `$GIT_DIR`; both are set by a `.git` file at
+  the linked worktree's top directory. [DOC S-j4qkzgvv]
+- `git rev-parse --git-dir` shows `$GIT_DIR` (a relative path is relative to the current directory) and
+  exits non-zero with a message on stderr outside a repository; `--git-common-dir` shows
+  `$GIT_COMMON_DIR` if defined, else `$GIT_DIR`; `--absolute-git-dir` always prints the canonical
+  absolute path. [DOC S-rscocily]
+- So a tool tells a linked worktree from the main working tree by comparing `git rev-parse
+  --absolute-git-dir` with the absolute form of `--git-common-dir`: they differ only in a linked
+  worktree, whatever directory the worktree was created in. [DER S-j4qkzgvv, S-rscocily]
 - So a cleanup that may only remove what is safe keeps `git branch -d` semantics (a branch whose every
   commit is on the integration branch) and removes a worktree without `--force`, leaving a dirty or locked
   one in place with the reason. [DER S-fqaj6jn5, S-wyfuoqs5]

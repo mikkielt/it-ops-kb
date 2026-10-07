@@ -19,5 +19,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "Research 2026-10-07: the kb already answered SessionStart in claude -p runs (claude/hooks.md:79-90), worktree isolation and worktree.baseRef (claude/skills-and-subagents.md:76-82), trailer parsing and the commit-msg/pre-push hooks (gitlab/git-trailers-and-hooks.md:21-34, :25, :30) and git merge --ff-only refusal (gitlab/git-trailers-and-hooks.md:43, a pack miss now an eval row). Added: linked-worktree GIT_DIR vs GIT_COMMON_DIR and git rev-parse --git-dir/--git-common-dir/--absolute-git-dir (gitlab/git-test-repositories.md:66-76, S-j4qkzgvv, S-rscocily), answer QK-tool-tell-linked-git-worktree-main. Knowledge refs: ST-ocfkanth -> git-test-repositories.md:66-76, hooks.md:79-90; ST-2zl47dfu -> git-trailers-and-hooks.md:43; ST-bum7owtw -> git-test-repositories.md:60; BG-dsab2ti3 -> git-trailers-and-hooks.md:21-34; the rest are kb/_self rules only.",
   "claimed_by": "orchestrator"
 }

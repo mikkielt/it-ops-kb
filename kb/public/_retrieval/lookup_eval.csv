@@ -271,3 +271,4 @@ EV-claude-code-expose-session-id-bash,Does Claude Code expose the session id to 
 EV-bash-command-that-exits-non-zero,Does a Bash command that exits non-zero fire PostToolUseFailure?,claude/hooks.md,good,
 EV-precompact-hook-exit-code-2-blocks,PreCompact hook exit code 2 blocks compaction; SessionStart compact matcher stdout added to context,claude/hooks.md,good,
 EV-structured-logging-json-lines-format,structured logging JSON Lines format,logs/otel-log-data-model.md,good,
+EV-git-merge-ff-only-fast-forward,git merge --ff-only fast-forward the current branch to origin/main and refuse when diverged,gitlab/git-trailers-and-hooks.md,good,

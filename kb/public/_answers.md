@@ -2474,3 +2474,12 @@ _Agent: kb-research_
 - See python/stdlib-datetime-iso-week.md, python/pytest.md.
 
 _Agent: kb-research_
+
+## QK-tool-tell-linked-git-worktree-main. How does a tool tell a linked git worktree from the main working tree, and does git merge --ff-only refuse a branch that cannot fast-forward?
+- In a linked worktree `$GIT_DIR` is the worktree's private directory under the main repository's `$GIT_DIR/worktrees/`, and `$GIT_COMMON_DIR` points back to the main worktree's `$GIT_DIR`, both set by the `.git` file at the worktree's top. (`gitlab/git-test-repositories.md:66`) [DOC S-j4qkzgvv]
+- `git rev-parse --git-dir` shows `$GIT_DIR`, `--git-common-dir` shows `$GIT_COMMON_DIR` if defined, else `$GIT_DIR`, and `--absolute-git-dir` always prints the canonical absolute path. (`gitlab/git-test-repositories.md:70`) [DOC S-rscocily]
+- `git merge --ff-only` fast-forwards when it can and otherwise refuses and exits non-zero. (`gitlab/git-trailers-and-hooks.md:43`) [DOC S-zhftykfq]
+- Conclusion: a tool tells a linked worktree by comparing `git rev-parse --absolute-git-dir` with the absolute `--git-common-dir`, which differ only there, not by the directory the worktree sits in; and a checkout is brought level with the integration branch by `git merge --ff-only`, whose refusal says the checkout has diverged. (`gitlab/git-test-repositories.md:74`) [DER S-j4qkzgvv, S-rscocily, S-zhftykfq]
+- See gitlab/git-test-repositories.md, gitlab/git-trailers-and-hooks.md.
+
+_Agent: kb-research_
