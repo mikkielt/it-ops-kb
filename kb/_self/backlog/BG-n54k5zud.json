@@ -2,7 +2,7 @@
   "id": "BG-n54k5zud",
   "kind": "bug",
   "title": "selectors skips the done tasks and subtasks of an active sprint, and the repro of a bug",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vmxdxtru",
   "priority": "P1",
   "rank": 0,

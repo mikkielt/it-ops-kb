@@ -2,7 +2,7 @@
   "id": "ST-d35ns45r",
   "kind": "story",
   "title": "A tests.py run a check makes still records its test.run row in the clone's spool",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-vmxdxtru",
   "priority": "P2",

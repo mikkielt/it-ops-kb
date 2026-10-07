@@ -2,7 +2,7 @@
   "id": "BG-p3jphxgb",
   "kind": "bug",
   "title": "The repeats detector files a finding for the running ISO week, whose intake --status check can never pass",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vmxdxtru",
   "priority": "P1",
   "rank": 0,

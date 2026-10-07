@@ -2,7 +2,7 @@
   "id": "SP-vmxdxtru",
   "kind": "sprint",
   "title": "Checks keep selecting tests; detectors judge closed windows",
-  "status": "planned",
+  "status": "active",
   "goal": "backlog.py selectors counts the selectors of a sprint's done tasks and subtasks and of bug repros; the sync gate refuses a push whose deleted or renamed test leaves a done or open item's check selecting no test; the repeats detector reports only closed ISO weeks; and precheck warns of a committed item whose check is the intake --status of a time-windowed detector, naming when it can first pass",
   "gates": [
     {

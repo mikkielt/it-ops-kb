@@ -2,7 +2,7 @@
   "id": "ST-rbcr2tm6",
   "kind": "story",
   "title": "The sync gate refuses a push whose deleted or renamed test leaves a done or open item's check selecting no test",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vmxdxtru",
   "priority": "P1",
   "rank": 0,

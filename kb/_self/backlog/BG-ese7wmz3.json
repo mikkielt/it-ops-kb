@@ -2,7 +2,7 @@
   "id": "BG-ese7wmz3",
   "kind": "bug",
   "title": "bl_land.ops_no_work_rows warns 'landed with no work rows' for every Agent-tool worker, whose capture writes agent rows, not a branch row",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vmxdxtru",
   "priority": "P2",
   "rank": 0,
