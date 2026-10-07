@@ -4,6 +4,7 @@
   "title": "The suite's rag.py eval rebuilds the pack index only for what an edit changed",
   "status": "draft",
   "parent": "EP-hlnsqx4f",
+  "sprint": "SP-kjqdiudr",
   "priority": "P3",
   "rank": 0,
   "goal": "After an edit to one kb article, or to _tools/kbfacts.py that leaves INDEX_VERSION unchanged, the next rag.py pack or eval on the Windows host reuses the index for unchanged content instead of a full 14-22 s rebuild, while every changed fact is still found; measured before and after on that host.",
@@ -12,14 +13,47 @@
       "run": [
         "python3",
         "-c",
-        "import subprocess as s,sys,tempfile,time,os,shutil;d=os.path.join(tempfile.mkdtemp(),'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);q=[sys.executable,os.path.join(d,'_tools','rag.py'),'pack','kerberos delegation'];s.run(q,cwd=d,capture_output=True,check=True);a=os.path.join(d,'kb','public','windows','process-parent-and-command-line.md');open(a,'a',encoding='utf-8').write('\\n');t=time.time();r=s.run(q,cwd=d,capture_output=True);e=time.time()-t;shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('pack after one article edit',round(e,2),'s exit',r.returncode);sys.exit(r.returncode or int(e>5))"
+        "import subprocess as s,sys,tempfile,time,os,shutil;t=tempfile.mkdtemp();d=os.path.join(t,'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);e={**os.environ,'KB_INDEX':os.path.join(t,'ix')};rag=os.path.join(d,'_tools','rag.py');run=lambda *a:s.run([sys.executable,rag,*a],cwd=d,env=e,capture_output=True,text=True);tm=lambda *a:(lambda t0:(run(*a),time.time()-t0)[1])(time.time());cold=tm('pack','kerberos delegation');open(os.path.join(d,'kb','public','windows','process-parent-and-command-line.md'),'a',encoding='utf-8').write('\\n- The plantedzzqx7 marker is a planted fact for a test. [DOC S-u6fzpqel]\\n');after=tm('pack','kerberos delegation');hit=run('search','plantedzzqx7');found='plantedzzqx7' in hit.stdout;shutil.rmtree(t,ignore_errors=True);s.run(['git','worktree','prune']);print('cold',round(cold,2),'after edit',round(after,2),'planted word found',found);sys.exit(0 if (found and after<=0.5*cold) else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/kbfacts.py",
     "kb/_self/tools.md",
-    "kb/_self/content-rules.md"
+    "kb/_self/content-rules.md",
+    "kb/_self/code.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/reports/test-suite-speed.md"
   ],
-  "notes": "ST-4mcoplex (done 2026-10-07, SP-eahtellz) delivered the content-keyed index this builds on."
+  "depends_on": [
+    "BG-2hjxwg64",
+    "BG-nlp5aat5"
+  ],
+  "gates": [
+    {
+      "id": "windows",
+      "kind": "blocking",
+      "question": "Is this item worked and proven on the project's Windows 11 host?",
+      "options": [
+        "on the Windows 11 host",
+        "on any host"
+      ],
+      "recommendation": "on the Windows 11 host",
+      "class": "secrets",
+      "do": {
+        "on the Windows 11 host": "ST-akicahgy",
+        "on any host": "ST-akicahgy"
+      },
+      "host_check": {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;print('platform',sys.platform);sys.exit(0 if sys.platform=='win32' else 1)"
+        ]
+      },
+      "answer": "on the Windows 11 host",
+      "by": "operator"
+    }
+  ],
+  "notes": "ST-4mcoplex (done 2026-10-07, SP-eahtellz) delivered the content-keyed index this builds on. Premise (macOS, 2026-10-07): with an isolated KB_INDEX a cold rag.py pack took 3.18 s and the pack after one planted article line 3.08 s, so the rebuild is full on every host; the check asks for at most half the cold time and the planted line found by rag.py search. The Windows before and after figures (cold 12.8-14.3 s, test-suite-speed.md) are measured on the host and written to that report."
 }

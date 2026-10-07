@@ -3,15 +3,23 @@
   "kind": "story",
   "title": "An operator can rescope a sprint's goal, and close --summary maps clauses to the sprint's own items",
   "status": "draft",
+  "sprint": "SP-matmvkn6",
   "priority": "P3",
   "rank": 0,
-  "goal": "A sprint's goal changes only by the operator (set SP --goal G --by operator, refused without it), so a rescope that a gate answers lands in the goal close --summary reads, not only in notes; and close --summary credits a goal clause only to an item of that sprint, never to another sprint's item. Found in the SP-eahtellz close: the rescoped clauses showed as unmet and the clause 'passing' was credited to ST-e5u5zhrc of SP-matmvkn6.",
+  "goal": "A sprint's goal changes only by the operator (set SP --goal G --by operator, refused without it), so a rescope that a gate answers lands in the goal close --summary reads, not only in notes; and close --summary names an open item outside the sprint beside an unmet clause only as gate g2's answer says, never as its carrier, so a one-word clause such as 'passing' is no longer matched to another sprint's item (SP-eahtellz: 'passing' was shown as carried by ST-e5u5zhrc of SP-matmvkn6). goal_clause_lines already credits a clause only to a done item of the sprint itself; the fallback 'unmet, carried by <open item elsewhere>' (bl_land.py, a 50% word match) is what changes.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess as s,sys,tempfile,os,json,shutil;d=os.path.join(tempfile.mkdtemp(),'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);r=s.run([sys.executable,os.path.join(d,'_tools','backlog.py'),'set','SP-ktup3cha','--goal','rescoped goal clause','--by','operator'],cwd=d,capture_output=True,text=True);g=json.loads(open(os.path.join(d,'kb','_self','backlog','SP-ktup3cha.json'),encoding='utf-8-sig').read()).get('goal');shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('set exit',r.returncode,(r.stderr or r.stdout).strip()[:160],'| goal now',g[:40]);sys.exit(0 if r.returncode==0 and g=='rescoped goal clause' else 1)"
+        "import subprocess as s,sys,tempfile,os,json,shutil;t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,os.getcwd()+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S','--goal','old goal clause').stdout.split()[2];goal=lambda:json.load(open(f'{t}/kb/_self/backlog/{sp}.json',encoding='utf-8-sig')).get('goal');a=run('set',sp,'--goal','rescoped goal clause');ga=goal();b2=run('set',sp,'--goal','rescoped goal clause','--by','operator');gb=goal();shutil.rmtree(t,ignore_errors=True);print('no --by: exit',a.returncode,'goal',repr(ga),'| --by operator: exit',b2.returncode,'goal',repr(gb),(b2.stderr or b2.stdout).strip()[:100]);sys.exit(0 if a.returncode!=0 and ga=='old goal clause' and b2.returncode==0 and gb=='rescoped goal clause' else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,types;sys.path.insert(0,'_tools');import bl_land;it={'SP-a':{'kind':'sprint','goal':'the alpha reader works; passing'},'ST-1':{'kind':'story','status':'done','title':'Alpha reader','goal':'the alpha reader works'},'ST-2':{'kind':'story','status':'todo','title':'Checks passing','goal':'make passing stable'}};bl=types.SimpleNamespace(items=it,label=lambda i:i);out=bl_land.goal_clause_lines(bl,'SP-a',['ST-1']);print(out);sys.exit(0 if 'ST-1' in ' '.join(out) and 'ST-2' not in ' '.join(out) else 1)"
       ]
     }
   ],
@@ -24,5 +32,52 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "AGENTS.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "depends_on": [
+    "ST-ihtjygip",
+    "ST-juoeq36g",
+    "ST-ylje2dxh",
+    "ST-iafyj5f5"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When set changes a planned sprint's goal after its start gate was approved, does the approval stand?",
+      "options": [
+        "the approval stands",
+        "the start gate is reopened for a new answer",
+        "set refuses a goal change on an approved sprint"
+      ],
+      "recommendation": "the approval stands",
+      "class": "agents-rule",
+      "do": {
+        "the approval stands": "ST-ifljijni",
+        "the start gate is reopened for a new answer": "ST-ifljijni",
+        "set refuses a goal change on an approved sprint": "ST-ifljijni"
+      },
+      "answer": "the approval stands",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does close --summary name an open item outside the sprint whose words match an unmet clause?",
+      "options": [
+        "only with two or more shared words, labelled similar open item outside the sprint",
+        "never: print unmet only",
+        "as today, a 50% word match"
+      ],
+      "recommendation": "only with two or more shared words, labelled similar open item outside the sprint",
+      "class": "agents-rule",
+      "do": {
+        "only with two or more shared words, labelled similar open item outside the sprint": "ST-ifljijni",
+        "never: print unmet only": "ST-ifljijni",
+        "as today, a 50% word match": "ST-ifljijni"
+      },
+      "answer": "only with two or more shared words, labelled similar open item outside the sprint",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise (by code read 2026-10-07): bl_items.py refuses any sprint field but notes, links and delegates, so clause 1 reproduces; goal_clause_lines credits only the sprint's own done items, and its unmet fallback matches an open item elsewhere on half its words. Its check names the live SP-ktup3cha and breaks once that sprint closes: before the claim, replace it with a planted --root repo (new sprint, set --goal with and without --by operator) and an in-process bl_land.goal_clause_lines over planted items, one assertion per clause."
 }

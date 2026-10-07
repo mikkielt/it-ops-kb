@@ -1,0 +1,30 @@
+{
+  "id": "ST-wxqzucyn",
+  "kind": "story",
+  "title": "The digest's ops block reports sprint closes, CI reads, intake runs and land steps",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-kan6spiy",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ql_report.ops_lines adds one indented detail line each for sprint.close (count, landed, dropped, refused, median ms), ci.pipeline (by state, calls), intake.detect (by detector: rows, found, median ms) and land.step (per step: n, failed, median ms), as it does for land.end, and querylog.py digest prints them for a planted week.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,json,subprocess as sp,tempfile,shutil;from pathlib import Path;sys.path.insert(0,'_tools');import ql_store as s;t=Path(tempfile.mkdtemp());S=t/'s';rid='20261007T100000Z-abcdef01';p=S/'2026-10'/(rid+'.jsonl');p.parent.mkdir(parents=True);p.write_text(json.dumps(s.header(rid,{'entries':0,'dropped':0,'waiting':0}))+'\\n');ev=[{'event':'sprint.close','sprint':'SP-aaaaaaaa','landed':3,'dropped':0,'bugs':1,'confirmed':2,'refused':1,'ms':5},{'event':'ci.pipeline','state':'success','calls':2},{'event':'intake.detect','detector':'drift','found':1},{'event':'land.step','item':'ST-aaaaaaaa','step':'merge','exit':0,'ms':5}];s.write_ops(S,rid,[{'id':'11111111-1111-4111-8111-11111111111'+str(n),'ts':'2026-10-07T10:00:00.000Z',**e} for n,e in enumerate(ev)]);r=sp.run([sys.executable,'_tools/querylog.py','digest','--store',str(S),'--week','2026-W41'],capture_output=True,text=True);shutil.rmtree(t);L=r.stdout.splitlines();miss=[e['event'] for e in ev if not any(l.startswith('  '+e['event']) for l in L)];print('digest',r.returncode,'ops lines:',[l for l in L if l.startswith('ops')],'no detail line for',miss);sys.exit(1 if r.returncode or miss else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_report.py",
+    "kb/_self/code.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-whkmqgfg"
+  ],
+  "notes": "Premise (2026-10-07): querylog.py digest prints ci.pipeline 26, intake.detect 151, land.step 1522 and sprint.close 10 in its ops header and no detail line for them."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "ST-fxly2caj",
+  "kind": "story",
+  "title": "hooks.md states when PostToolUse fires for a Bash command run in the background",
+  "status": "draft",
+  "sprint": "SP-wgx4pq4r",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Through /kb-research with the claude-code-docs server, kb/public/claude/hooks.md carries a tagged fact line naming PostToolUse and run_in_background that says whether PostToolUse fires when a background Bash command starts or when it finishes, and what a Stop hook's background_tasks entries hold, or kb/public/_gaps.md records that the docs do not say; python3 _tools/check.py exits 0.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;h=open('kb/public/claude/hooks.md',encoding='utf-8').read().splitlines();g=open('kb/public/_gaps.md',encoding='utf-8').read().splitlines();ok=[l for l in h+g if 'PostToolUse' in l and 'run_in_background' in l];print('background PostToolUse line:',len(ok));sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/claude/hooks.md",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv"
+  ],
+  "depends_on": [
+    "ST-kdw6dkyb"
+  ],
+  "notes": "Premise (run 2026-10-07): python3 _tools/rag.py pack 'PostToolUse hook background Bash command run_in_background when does it fire' gives coverage good, but no cited line gives the fire time: hooks.md:120 and :122 say PostToolUse fires after a tool executed successfully, :124 lists run_in_background in Bash tool_input, :127 names Stop's background_tasks without its entry shape. BG-cwoyc7yh's mechanism rests on this answer. python3 _tools/check.py passes before the work: it keeps the edited article within the contract; the first check is the failing proof."
+}

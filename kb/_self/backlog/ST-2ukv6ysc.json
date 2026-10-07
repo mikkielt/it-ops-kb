@@ -1,0 +1,60 @@
+{
+  "id": "ST-2ukv6ysc",
+  "kind": "story",
+  "title": "A clean Windows account goes from no Python to the /kb-setup steps on the current main, on record",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-kjqdiudr",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "_tools/cleanhost-run.ps1 is run elevated on a fresh Windows account of the project's host at the current origin/main, and kb/_self/reports/windows-fresh-host.md's run sections are replaced with that run: the commit, every step's exit code and last line, and the current suite's counts; the signed-in half (Claude Code sign-in, kb_mcp.py --register-local, MCP calls) stays out of scope.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess as s,sys;t=open('kb/_self/reports/windows-fresh-host.md',encoding='utf-8').read();hs=sorted(set(re.findall(r'\\b[0-9a-f]{7,40}\\b',t)));ok=[h for h in hs if not h.startswith('4d70166f') and s.run(['git','merge-base','--is-ancestor','4d70166f',h],capture_output=True).returncode==0];print('report runs at commits after the suite rewrite 4d70166f:',ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/windows-fresh-host.md",
+    "_tools/cleanhost-run.ps1"
+  ],
+  "depends_on": [
+    "ST-w3ikanna"
+  ],
+  "gates": [
+    {
+      "id": "windows",
+      "kind": "blocking",
+      "question": "Is this item worked and proven on the project's Windows 11 host?",
+      "options": [
+        "on the Windows 11 host",
+        "on any host"
+      ],
+      "recommendation": "on the Windows 11 host",
+      "class": "design",
+      "do": {
+        "on the Windows 11 host": "ST-2ukv6ysc",
+        "on any host": "ST-2ukv6ysc"
+      },
+      "host_check": {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;print('platform',sys.platform);sys.exit(0 if sys.platform=='win32' else 1)"
+        ]
+      },
+      "answer": "on the Windows 11 host",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise (2026-10-07): the report's newest run is at origin/main d10da8d (2026-09-30), before the suite rewrite 4d70166f, so the first check exits 1. Order after the revision-read story, since a deep clone path trips those readers. python3 _tools/check.py passes before the work: it keeps the report within the docs checks; the first check is the failing proof."
+}

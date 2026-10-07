@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A branch row of a stale worker worktree opens a window when the item's file says done: distill tests only that the file exists",
   "status": "draft",
+  "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,10 +15,39 @@
       "import sys,json,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import ql_distill as d;t=Path(tempfile.mkdtemp());(t/'ST-aaaaaaaa.json').write_text(json.dumps({'id':'ST-aaaaaaaa','status':'done'}));rows=[{'surface':'prompt','prompt_id':'p1'},{'surface':'work','prompt_id':'p1','action':'branch','item':'ST-aaaaaaaa'},{'surface':'prompt','prompt_id':'p2'},{'surface':'prompt','prompt_id':'p3'}];inside,worked=d.work_windows(rows,d.item_finder(t));print('stale branch row of a done item opens a window:',inside);sys.exit(1 if any(inside.get(p) for p in ('p2','p3')) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,json,tempfile,shutil;from pathlib import Path;sys.path.insert(0,'_tools');import ql_distill as d;t=Path(tempfile.mkdtemp());(t/'ST-aaaaaaaa.json').write_text(json.dumps({'id':'ST-aaaaaaaa','status':'doing'}));rows=[{'surface':'prompt','prompt_id':'p1'},{'surface':'work','prompt_id':'p1','action':'branch','item':'ST-aaaaaaaa'},{'surface':'prompt','prompt_id':'p2'},{'surface':'prompt','prompt_id':'p3'}];inside,worked=d.work_windows(rows,d.item_finder(t));shutil.rmtree(t,ignore_errors=True);print('branch row of a doing item opens a window:',inside);sys.exit(0 if all(inside.get(p) for p in ('p2','p3')) else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/ql_distill.py",
     "kb/_self/querylog.md",
     "kb/_self/usage.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What tells a stale worktree's branch row from a worker's own, when distill runs after the item landed (a lock wait, or a session whose end was missed)?",
+      "options": [
+        "the row's time is after the commit that set the item done: it opens no window; a row before it keeps its window",
+        "the item file in the distilling clone says done or dropped, as the goal says now"
+      ],
+      "recommendation": "the row's time is after the commit that set the item done: it opens no window; a row before it keeps its window",
+      "class": "design",
+      "do": {
+        "the row's time is after the commit that set the item done: it opens no window; a row before it keeps its window": "BG-47kw57ed",
+        "the item file in the distilling clone says done or dropped, as the goal says now": "BG-47kw57ed"
+      },
+      "answer": "the row's time is after the commit that set the item done: it opens no window; a row before it keeps its window",
+      "by": "operator"
+    }
+  ],
+  "notes": "Its check passes before the work: it pins that a branch row of a doing item still opens a window, which the fix must keep; the repro is the failing proof."
 }

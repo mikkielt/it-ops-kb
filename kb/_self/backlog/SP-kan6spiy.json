@@ -1,0 +1,22 @@
+{
+  "id": "SP-kan6spiy",
+  "kind": "sprint",
+  "title": "Operational rows reach the digest and the sprint review",
+  "status": "planned",
+  "goal": "intake.detect rows carry the detector's run time; distill writes a worker.run line per closed headless worker session and none for an orchestrator's; the weekly digest prints a detail line for sprint closes, CI reads, intake runs and land steps; the committed ops sidecars hold no landing of an item no item file or commit names; backlog.py ops SP prints a sprint's operational rows; and the kb-sprint review and close read them",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

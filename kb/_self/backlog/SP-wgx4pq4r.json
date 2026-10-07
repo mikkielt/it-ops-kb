@@ -1,0 +1,22 @@
+{
+  "id": "SP-wgx4pq4r",
+  "kind": "sprint",
+  "title": "Work windows and cost figures are right",
+  "status": "planned",
+  "goal": "hooks.md says when PostToolUse fires for a Bash command run in the background, and says a plain --resume appends to the original transcript only as a DER inference; a stale worktree's branch row of a done item opens no window in distill; an open session's cost figures drop what distill drops; backlog.py cost dates a reopened item by its last done and words the no-line causes as likely; and a background land writes no done row at launch, its window closing only once the landing succeeded",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

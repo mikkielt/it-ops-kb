@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "kb_mcp.py --status does not say when the project's registered kb server runs another clone",
   "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-kyvu526t",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -21,6 +23,11 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md",
-    ".claude/skills/kb-setup/SKILL.md"
+    ".claude/skills/kb-setup/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "BG-2hjxwg64"
   ]
 }

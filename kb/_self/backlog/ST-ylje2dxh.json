@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "precheck names each committed item's goal clauses with the check that reads each, and warns of a clause no check reads",
   "status": "draft",
+  "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-s5fdczv7 retrospective: all three code items (BG-m6fknqr5, BG-tyuwiin7, ST-dets7lkp) carried a check that read one clause of a several-clause goal (a source-order read, one command mapping, one cost header line), so the other clauses were proved only by the orchestrator and the reviewer, and BG-ese7wmz3 and BG-47kw57ed got through. backlog.py precheck SP prints, for each committed item, its goal's clauses (split as close --summary splits a sprint goal) and the check or repro that reads each, from a mapping the planner records on the item, and warns of a clause no check reads, so kb-sprint plan step 6 is a tool output, not a reading; kb-sprint plan step 6, backlog.md and tools.md say so.",
@@ -10,19 +11,33 @@
     {
       "run": [
         "python3",
-        "_tools/backlog.py",
-        "precheck",
-        "--help"
+        "-c",
+        "import subprocess as s,sys,tempfile,os,json,shutil;from pathlib import Path;live=os.getcwd();t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,live+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S').stdout.split()[2];st=run('new','story','--title','T','--sprint',sp,'--goal','the alpha reader works; the beta writer works','--check','python3 -c 1/0').stdout.split()[2];p=Path(t,'kb','_self','backlog',st+'.json');d=json.loads(p.read_text());d['clauses']=[{'clause':'the alpha reader works','check':0}];p.write_text(json.dumps(d,indent=2));out=run('precheck',sp).stdout.splitlines();w=[l for l in out if 'warning' in l];ok=any(st in l and 'beta writer' in l for l in w) and not any('alpha reader' in l for l in w);shutil.rmtree(t,ignore_errors=True);print(sp,st,out);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile,os,shutil;live=os.getcwd();t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,live+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S').stdout.split()[2];st=run('new','story','--title','T','--sprint',sp,'--goal','the alpha reader works','--check','python3 -c 1/0').stdout.split()[2];out=run('precheck',sp).stdout.splitlines();shutil.rmtree(t,ignore_errors=True);print(out);sys.exit(0 if out and not any('warning' in l and st in l for l in out) else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/bl_land.py",
-    "_tools/bl_plan.py",
+    "_tools/bl_base.py",
+    "_tools/bl_check.py",
+    "_tools/bl_items.py",
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-tnbnmec6",
+    "ST-juoeq36g"
   ],
   "gates": [
     {
@@ -38,8 +53,29 @@
       "do": {
         "a clauses field on the item: a list of {clause, check} pairs, the check an index into checks or repro, validated by backlog.py check": "ST-ylje2dxh",
         "a notes line per clause (Clause: <text> -> check <n>), parsed by precheck, no schema change": "ST-ylje2dxh"
-      }
+      },
+      "answer": "a clauses field on the item: a list of {clause, check} pairs, the check an index into checks or repro, validated by backlog.py check",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does precheck do for a committed item with no clause mapping?",
+      "options": [
+        "warn only when its goal splits into two or more clauses",
+        "warn always",
+        "stay silent"
+      ],
+      "recommendation": "warn only when its goal splits into two or more clauses",
+      "class": "agents-rule",
+      "do": {
+        "warn only when its goal splits into two or more clauses": "ST-ylje2dxh",
+        "warn always": "ST-ylje2dxh",
+        "stay silent": "ST-ylje2dxh"
+      },
+      "answer": "warn only when its goal splits into two or more clauses",
+      "by": "operator"
     }
   ],
-  "notes": "Its check is a placeholder that passes before the work: once gate g1 is answered, sprint planning replaces it with a planted item whose clause no check reads, which precheck must warn of."
+  "notes": "Gate g1 picks the clauses field: the first check plants a --root repo with a two-clause goal and a clauses entry for clause one written into the planted item file (the set flag does not exist yet), and passes only when precheck warns of clause two alone; rename its keys if the field is named otherwise. The second check (gate g2) keeps a one-clause goal free of warnings and passes before the work. CLAUSE_SPLIT (bl_land.py) splits only at '; ' and ', and ', as close --summary does."
 }

@@ -1,0 +1,31 @@
+{
+  "id": "ST-xuhig3u6",
+  "kind": "story",
+  "title": "backlog.py ops SP prints a sprint's operational rows",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-kan6spiy",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A read-only backlog.py ops SP (a bl_ops module behind the backlog.py facade, reusing bl_stall.ops_rows) prints, from the spool and the committed ops sidecars, the rows of the sprint's items: land.end and land.step per item, done.refused with its reasons, agent.run and worker.run, and nothing of an item outside the sprint; tools.md and backlog.md list it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys,json,subprocess as sp,tempfile,shutil;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import ql_capture as q;b=t/'r/kb/_self/backlog';b.mkdir(parents=True);it=lambda i,k,**kw:(b/(i+'.json')).write_text(json.dumps({'id':i,'kind':k,'title':'t '+i,'status':'done','goal':'g','priority':'P3','rank':0,**kw}));it('SP-aaaaaaaa','sprint',status='active');it('ST-bbbbbbbb','story',sprint='SP-aaaaaaaa');it('ST-cccccccc','story',sprint='SP-aaaaaaaa');it('ST-dddddddd','story');q.record('ops',event='land.end',item='ST-bbbbbbbb',exit=0,ms=5);q.record('ops',event='done.refused',item='ST-cccccccc',reasons=['check-failed'],ms=5);q.record('ops',event='land.end',item='ST-dddddddd',exit=0,ms=5);r=sp.run([sys.executable,'_tools/backlog.py','--root',str(t/'r'),'ops','SP-aaaaaaaa'],capture_output=True,text=True);shutil.rmtree(t);o=r.stdout;ok=r.returncode==0 and 'ST-bbbbbbbb' in o and 'ST-cccccccc' in o and 'check-failed' in o and 'ST-dddddddd' not in o;print('ops rc',r.returncode,'stdout lines',len(o.splitlines()),'stderr',r.stderr.strip()[-60:]);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_ops.py",
+    "_tools/backlog.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-fd33riif"
+  ],
+  "notes": "Premise: backlog.py ops is an invalid choice (exit 2). .claude/settings.json already allows Bash(python3 _tools/backlog.py *). A closed sprint's items come from git history as bl_cost restores them; the check plants an open sprint only."
+}

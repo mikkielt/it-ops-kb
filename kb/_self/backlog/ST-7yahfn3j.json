@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kb-sprint run gives a headless worker brief with a scratch dir, a turn cap by item kind and subshell-only cd",
   "status": "draft",
+  "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-s5fdczv7 retrospective: the first headless worker had no scratch directory, so its proof script went to /tmp and its cleanup was refused; the goal research worker stopped at its 100-turn cap; and the orchestrator's own foreground cd into a worker worktree moved its session's working directory there. kb-sprint run step 3 gives the headless claude -p brief's fixed parts: a scratch directory passed with --add-dir and named in the brief for throwaway files, a --max-turns by item kind (research and investigation bugs higher than a one-file task), and that the orchestrator runs a command in a worker's worktree only in a subshell or with git -C, never a bare cd.",
@@ -20,5 +21,30 @@
     "kb/_self/backlog.md",
     "AGENTS.md",
     "kb/_self/maintaining.md"
-  ]
+  ],
+  "depends_on": [
+    "ST-r7wvfqvw"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which --max-turns per item kind, and where is a headless worker's scratch directory?",
+      "options": [
+        "task 60, bug or untasked story 100, research or investigation bug 200; scratch _cache/scratch/<id>/ outside the worktree",
+        "one cap of 150 for every kind; the OS temp directory",
+        "no turn cap, --max-budget-usd only; scratch _cache/scratch/<id>/"
+      ],
+      "recommendation": "task 60, bug or untasked story 100, research or investigation bug 200; scratch _cache/scratch/<id>/ outside the worktree",
+      "class": "agents-rule",
+      "do": {
+        "task 60, bug or untasked story 100, research or investigation bug 200; scratch _cache/scratch/<id>/ outside the worktree": "ST-7yahfn3j",
+        "one cap of 150 for every kind; the OS temp directory": "ST-7yahfn3j",
+        "no turn cap, --max-budget-usd only; scratch _cache/scratch/<id>/": "ST-7yahfn3j"
+      },
+      "answer": "task 60, bug or untasked story 100, research or investigation bug 200; scratch _cache/scratch/<id>/ outside the worktree",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise (run 2026-10-07): its check prints False (--add-dir True, --max-turns False, subshell False); --add-dir is in SKILL.md only for .claude/ staging copies. The --max-turns flag works in this CLI though claude --help does not list it: a headless research session started with --max-turns 60 ended with subtype error_max_turns at 61 turns. kb DOC: kb/public/claude/ci-and-headless.md:39 (print mode, exits with error at the limit, no default)."
 }

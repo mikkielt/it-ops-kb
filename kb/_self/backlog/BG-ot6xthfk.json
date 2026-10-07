@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py cost dates a reopened item by its first done, and states the no-line cause as fact from the time alone",
   "status": "draft",
+  "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -20,5 +21,9 @@
     "kb/_self/tools.md",
     "kb/_self/usage.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "depends_on": [
+    "BG-ucnr4lo3"
+  ],
+  "notes": "Probe (2026-10-07): git log -S on the done status also matches the reopen commit that removes it (a reopened item now doing gave ['2026-02-01', '2026-01-03']), so max() over the -S times is as wrong as min(): the fix tells the commit that adds the done status from the one that removes it."
 }

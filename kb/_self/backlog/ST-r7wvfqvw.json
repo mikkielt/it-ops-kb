@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kb-sprint run starts workers as Sonnet headless sessions by default, the session model only on request",
   "status": "draft",
+  "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-s5fdczv7 retrospective: kb-sprint run step 3 sends an S1 or S2 bug and a story with no tasks to a subagent on the session model, but the operator's budget preference is Sonnet headless claude -p sessions, which did that work in this sprint (an S2 investigation bug at 4.89 USD, an untasked story at 5.13 USD, all modelUsage sonnet). kb-sprint run step 3 makes a headless claude -p --model sonnet session the default worker for every item kind, keeps kb-worker.md as its role file, and takes the session model only when the operator asks for it; the review's fresh-context reviewer follows the same default; backlog.md says so.",
@@ -20,6 +21,27 @@
     ".claude/agents/kb-worker.md",
     "kb/_self/backlog.md",
     "AGENTS.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/plugin.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Do tasks and subtasks also leave the kb-worker subagent for a headless claude -p --model sonnet session?",
+      "options": [
+        "every kind headless Sonnet at high effort; kb-worker on the Agent tool only as the fallback",
+        "only S1/S2 bugs and stories with no tasks; tasks keep kb-worker"
+      ],
+      "recommendation": "every kind headless Sonnet at high effort; kb-worker on the Agent tool only as the fallback",
+      "class": "secrets",
+      "do": {
+        "every kind headless Sonnet at high effort; kb-worker on the Agent tool only as the fallback": "ST-r7wvfqvw",
+        "only S1/S2 bugs and stories with no tasks; tasks keep kb-worker": "ST-r7wvfqvw"
+      },
+      "answer": "every kind headless Sonnet at high effort; kb-worker on the Agent tool only as the fallback",
+      "by": "operator"
+    }
   ]
 }

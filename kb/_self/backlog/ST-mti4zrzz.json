@@ -1,0 +1,29 @@
+{
+  "id": "ST-mti4zrzz",
+  "kind": "story",
+  "title": "kb-sprint review and close read backlog.py ops",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-kan6spiy",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The review and close sections of .claude/skills/kb-sprint/SKILL.md each run python3 _tools/backlog.py ops SP and show its output to the operator; the close retrospective takes its refused dones and failed land steps from it instead of by hand.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sec={s.split(chr(10),1)[0].split()[0]:s for s in re.split(r'(?m)^## ',t)[1:]};miss=[n for n in ('review','close') if not re.search(r'backlog\\.py ops\\b',sec.get(n,''))];print('kb-sprint sections without backlog.py ops:',miss);sys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md"
+  ],
+  "depends_on": [
+    "ST-xuhig3u6"
+  ]
+}

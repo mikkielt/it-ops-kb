@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "kbfacts.content_key keeps an assume-unchanged or skip-worktree file's index blob after a local edit",
   "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-kyvu526t",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -20,5 +22,8 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-dzbzskjq"
   ]
 }

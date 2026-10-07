@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A host-bound sprint runs its stories' premises on the host before any dispatch",
   "status": "draft",
+  "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,
   "goal": "A sprint whose goal or items can only run on one host (a host precondition, a trigger on a host session) and was planned elsewhere runs each committed story's premise as the first step of its first run pass on that host, records each result in the story's notes, and reshapes or drops a story whose premise does not reproduce before any worker is dispatched; the rule is a tested question of the kb-sprint:run set, so rag.py pack --root _self answers it with coverage good. Found in SP-eahtellz: ST-4mcoplex's premise (planned on macOS) failed only mid-sprint on Windows.",
@@ -18,7 +19,33 @@
   "touches": [
     "kb/_self/backlog.md",
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/_retrieval/lookup_eval.csv"
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-7yahfn3j"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "On a host-bound sprint, who reshapes or drops a story whose premise does not reproduce on the host?",
+      "options": [
+        "the orchestrator asks the operator before any dispatch",
+        "the orchestrator reshapes it to a test-only item and tells the operator after",
+        "the orchestrator drops it itself"
+      ],
+      "recommendation": "the orchestrator asks the operator before any dispatch",
+      "class": "agents-rule",
+      "do": {
+        "the orchestrator asks the operator before any dispatch": "ST-pjkmiyqe",
+        "the orchestrator reshapes it to a test-only item and tells the operator after": "ST-pjkmiyqe",
+        "the orchestrator drops it itself": "ST-pjkmiyqe"
+      },
+      "answer": "the orchestrator asks the operator before any dispatch",
+      "by": "operator"
+    }
   ],
   "notes": "Premise (run 2026-10-07): rag.py pack --root _self 'a sprint planned off its host: when are its stories premises run' gives coverage weak; the plan-step premise rule (backlog.md:209) assumes the planner can run the premise where it plans."
 }

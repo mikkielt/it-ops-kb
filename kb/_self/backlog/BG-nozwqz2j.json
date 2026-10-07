@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "hooks.md states as DOC that a plain --resume appends to the original transcript, an inference from the two-terminal sentence",
   "status": "draft",
+  "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -11,12 +12,17 @@
     "run": [
       "python3",
       "-c",
-      "import sys;t=open('kb/public/claude/hooks.md',encoding='utf-8').read();bad=[l for l in t.splitlines() if 'appends to the original session' in l and '[DOC' in l];print('inferred fact tagged DOC:',len(bad));sys.exit(1 if bad else 0)"
+      "import sys;bad=[(f,l) for f in ('kb/public/claude/hooks.md','kb/public/_answers.md') for l in open(f,encoding='utf-8').read().splitlines() if ('appends to the original session' in l or 'appends to its transcript' in l) and '[DOC' in l and 'DER' not in l];print('inferred resume-append fact tagged DOC only:',len(bad));sys.exit(1 if bad else 0)"
     ]
   },
-  "repro_reason": "the defect is a fact's tag in an article, which only its text can show",
+  "repro_reason": "The defect is a fact line's tag in two kb files; no tool behaviour shows it, so the repro reads the lines.",
   "touches": [
     "kb/public/claude/hooks.md",
-    "kb/public/_gaps.md"
+    "kb/public/_gaps.md",
+    "kb/public/_answers.md"
+  ],
+  "depends_on": [
+    "ST-fxly2caj",
+    "ST-kdw6dkyb"
   ]
 }

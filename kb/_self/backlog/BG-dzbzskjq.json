@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "clone_home and main_worktree resolve a relative gitdir against the working directory",
   "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-kyvu526t",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -11,7 +13,7 @@
     "run": [
       "python3",
       "-c",
-      "import subprocess as s,sys,tempfile,os,shutil;t=tempfile.mkdtemp();d=os.path.join(t,'wt');s.run(['git','worktree','add','-q','--relative-paths','--detach',d],check=True);top=os.path.normcase(os.path.realpath(s.run(['git','rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip()));e={**os.environ,'PYTHONPATH':os.path.join(d,'_tools')};r=s.run([sys.executable,'-c','import sys,kbfacts,bl_base;print(kbfacts.clone_home());print(bl_base.main_worktree(sys.argv[1]))',d],cwd=t,env=e,capture_output=True,text=True);got=[os.path.normcase(os.path.realpath(x)) for x in r.stdout.split()];shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('main worktree',top,'clone_home and main_worktree from another cwd',got,r.stderr[-200:]);sys.exit(0 if len(got)==2 and all(g==top for g in got) else 1)"
+      "import subprocess as s,sys,tempfile,os,shutil;g=lambda *a:s.run(['git',*a],capture_output=True,text=True);top=os.path.dirname(os.path.realpath(os.path.join(os.getcwd(),g('rev-parse','--git-common-dir').stdout.strip())));t=tempfile.mkdtemp(dir=os.path.dirname(top));d=os.path.join(t,'wt');p=g('worktree','add','-q','--relative-paths','--detach',d);rel=p.returncode==0 and open(os.path.join(d,'.git')).read().startswith('gitdir: ..');e={**os.environ,'PYTHONPATH':os.path.join(d,'_tools')};r=s.run([sys.executable,'-c','import sys,kbfacts,bl_base,ql_base;print(kbfacts.clone_home());print(ql_base.clone_home());print(bl_base.main_worktree(sys.argv[1]))',d],cwd=t,env=e,capture_output=True,text=True) if rel else None;got=[os.path.realpath(x) for x in r.stdout.split()] if r else [];shutil.rmtree(d,ignore_errors=True);g('worktree','prune');shutil.rmtree(t,ignore_errors=True);print('main worktree',top,'| relative gitdir planted',rel,'| from another cwd',got);sys.exit(2 if not rel else 0 if len(got)==3 and all(x==top for x in got) else 1)"
     ]
   },
   "touches": [
@@ -24,5 +26,8 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/backlog.md",
     "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-w3ikanna"
   ]
 }

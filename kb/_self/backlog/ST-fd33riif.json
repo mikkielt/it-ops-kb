@@ -1,0 +1,55 @@
+{
+  "id": "ST-fd33riif",
+  "kind": "story",
+  "title": "The committed ops sidecars hold no fixture landing",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-kan6spiy",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py prune-ops [--root R] [--store S] [--dry-run] deletes the ops lines whose item no item file in R's kb/_self/backlog and no commit message of R names, rewrites each sidecar header's row counts and prints counts per event; --dry-run changes nothing; querylog.py check exits 0 after it; it is run once on kb/_querylog as gate g1 says, and querylog.md says when to run it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,json,subprocess as sp,tempfile,shutil;from pathlib import Path;sys.path.insert(0,'_tools');import ql_store as s;t=Path(tempfile.mkdtemp());S=t/'s';R=t/'r';b=R/'kb/_self/backlog';b.mkdir(parents=True);(b/'ST-aaaaaaaa.json').write_text('{}');g=lambda *a:sp.run(['git','-C',str(R),'-c','user.name=x','-c','user.email=x@x','-c','commit.gpgsign=false',*a],capture_output=True);g('init','-q');g('add','.');g('commit','-q','-m','m','-m','KB-Work: ST-bbbbbbbb');rid='20261007T100000Z-abcdef01';p=S/'2026-10'/(rid+'.jsonl');p.parent.mkdir(parents=True);p.write_text(json.dumps(s.header(rid,{'entries':0,'dropped':0,'waiting':0}))+'\\n');s.write_ops(S,rid,[{'id':'11111111-1111-4111-8111-11111111111'+n,'ts':'2026-10-07T10:00:00.000Z','event':'land.end','item':'ST-'+c*8,'exit':0,'ms':5} for n,c in zip('123','abc')]);q=lambda *a:sp.run([sys.executable,'_tools/querylog.py',*a],capture_output=True,text=True);d=q('prune-ops','--dry-run','--root',str(R),'--store',str(S));r=q('prune-ops','--root',str(R),'--store',str(S));k=[w['item'] for _,w in s.load_run(s.ops_files(S)[0])[1:]];c=q('check',str(S));shutil.rmtree(t);print('dry',d.returncode,'run',r.returncode,'kept',k,'check',c.returncode);sys.exit(0 if (d.returncode,r.returncode,c.returncode)==(0,0,0) and k==['ST-aaaaaaaa','ST-bbbbbbbb'] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/querylog.py",
+    "_tools/ql_store.py",
+    "kb/_querylog/ops/**",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-wxqzucyn"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Run prune-ops on the committed store, deleting about 19,583 of 31,895 ops rows whose item no item file or commit names?",
+      "options": [
+        "prune after a --dry-run whose counts are shown in the commit",
+        "prune only rows dated before 2026-10-06",
+        "leave the store; digest and export skip unknown items instead"
+      ],
+      "recommendation": "prune after a --dry-run whose counts are shown in the commit",
+      "class": "querylog",
+      "do": {
+        "prune after a --dry-run whose counts are shown in the commit": "ST-fd33riif",
+        "prune only rows dated before 2026-10-06": "ST-fd33riif",
+        "leave the store; digest and export skip unknown items instead": "ST-fd33riif"
+      },
+      "answer": "prune after a --dry-run whose counts are shown in the commit",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise (2026-10-07): 19,583 of 31,895 committed ops rows (3,602 items, mostly TK- ids with about 13 land.step and 3 land.end rows each) name an item no item file or commit names: test-fixture landings delivered before BG-5pz44tdi stopped the source on 2026-10-05 (de77fb5e); digest 2026-W41 prints land.end 322, failed 105, 240 of them fixtures. That scan is not a check: later fixture deliveries would turn it red at the review."
+}

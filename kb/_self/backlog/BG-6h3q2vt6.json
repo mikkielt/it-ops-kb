@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "The Defender section of test-suite-speed.md sums its groups to 84.0 s against a stated 84.2 s and names no duration unit",
   "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-kyvu526t",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -17,5 +19,9 @@
   "repro_reason": "The defect is the report's wording and figures: the recording that produced them is a one-off .etl, so the repro checks that the table's rows sum to the stated total within rounding and that the 100 ns unit is named.",
   "touches": [
     "kb/_self/reports/test-suite-speed.md"
-  ]
+  ],
+  "depends_on": [
+    "ST-iivqx6kr"
+  ],
+  "notes": "Arithmetic (2026-10-07): scans 3,644 + 4,046 + 1,416 = 9,106 match; seconds 44.2 + 38.0 + 1.8 = 84.0 against 84.2, more than rounding of three rows explains. By process 84.2 - 70.4 - 11.7 = 2.1 s, by path 84.2 - 44.2 - 38.0 = 2.0 s, so the third row (1.8) is the likely error; commit 178654e5 holds only 84.2, 44.2 and 38.0, and the .etl is not in the repo (re-read on the Windows host if it is still there). The extension line lists 79.7 s of 84.2 and does not say the rest is left out. The unit is 100 ns only for -Raw output: ST-iivqx6kr."
 }

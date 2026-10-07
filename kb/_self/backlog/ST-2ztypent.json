@@ -1,0 +1,30 @@
+{
+  "id": "ST-2ztypent",
+  "kind": "story",
+  "title": "intake.detect rows carry the detector's run time",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "sprint": "SP-kan6spiy",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_intake.collect(record=True) times each detector run and the intake.detect row it writes holds an integer ms; OPS_EVENTS['intake.detect'] takes an optional ms, and querylog.md and tools.md say so; a detector run that finds nothing writes no new row.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys,json,time,tempfile,shutil;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import bl_intake as i,ql_capture as q;i.DETECTORS['planted']=lambda root:(time.sleep(.05),[i.Candidate(kind='bug',title='t',goal='g',key='k')])[1];c,f=i.collect(str(t),only='planted',record=True);rows=[json.loads(l) for p in Path(q.spool_dir()).glob('*.jsonl') for l in p.read_text().splitlines() if l.strip()];shutil.rmtree(t);d=[r for r in rows if r.get('event')=='intake.detect'];print('candidates',len(c),'failures',f,'intake.detect rows:',[{k:v for k,v in r.items() if k in ('detector','found','ms')} for r in d]);sys.exit(0 if len(d)==1 and type(d[0].get('ms')) is int and d[0]['ms']>=40 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/ql_capture.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "notes": "Premise (2026-10-07): the check's planted detector sleeps 50 ms and its intake.detect row holds no ms."
+}

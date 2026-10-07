@@ -1,0 +1,35 @@
+{
+  "id": "ST-iivqx6kr",
+  "kind": "story",
+  "title": "The kb states that Get-MpPerformanceReport -Raw durations are 100-nanosecond intervals",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-kyvu526t",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Through /kb-refresh or /kb-research with the microsoft-learn server, kb/public/defender/asr-and-antivirus.md carries a DOC fact line, with its source row, that Get-MpPerformanceReport -Raw reports TimeSpan values as numbers of 100-nanosecond intervals (and what the output without -Raw shows), so rag.py pack on that question gives coverage good and cites the line; python3 _tools/check.py exits 0.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','Get-MpPerformanceReport -Raw duration unit 100-nanosecond intervals','--budget','400'],capture_output=True,text=True);o=r.stdout;ok=o.startswith('coverage: good') and any('asr-and-antivirus.md' in l and 'nanosecond' in l for l in o.splitlines());print(o.splitlines()[0] if o else r.stderr[:200],'| cited unit line:',ok);sys.exit(r.returncode or int(not ok))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/defender/asr-and-antivirus.md",
+    "kb/public/_sources.csv",
+    "kb/public/_gaps.md"
+  ],
+  "depends_on": [
+    "ST-umjb55sg"
+  ],
+  "notes": "Premise (run 2026-10-07): python3 _tools/rag.py pack 'Get-MpPerformanceReport duration unit ticks' gives coverage weak, kb lacks unit, ticks; asr-and-antivirus.md:67, :68 and :70 name no unit. Live docs, not in the kb (Microsoft Learn, Get-MpPerformanceReport, read 2026-10-07): -Raw represents TimeSpan values as a number of 100-nanosecond intervals. BG-6h3q2vt6 cites this line. python3 _tools/check.py passes before the work: it keeps the edited article within the contract; the first check is the failing proof."
+}

@@ -1,0 +1,52 @@
+{
+  "id": "ST-bgfsi3n2",
+  "kind": "story",
+  "title": "The query log's SessionEnd launcher is proven on the Windows host",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-kjqdiudr",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "On the project's Windows 11 host, querylog.py launch started for a SessionEnd event over a planted spool returns at once and its detached distill writes the run file (the check), and one interactive Claude Code session there, in a clone with the project's hooks, ends leaving the .end marker, a started distill and a run file within LAUNCH_BUDGET_S; kb/_self/reports/windows-run.md records both with the Claude Code version, the shell and the exit codes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys,json,time,shutil,tempfile,subprocess as s;from pathlib import Path;sys.path.insert(0,'_tools');t=Path(tempfile.mkdtemp());d=t/'d';q=d/'querylog';q.mkdir(parents=True);(q/'config.json').write_text(json.dumps({'mode':'local'}));os.environ.update(CLAUDE_PLUGIN_DATA=str(d),CLAUDE_PLUGIN_ROOT=os.getcwd());import ql_capture as c;c.record('prompt','s1',prompt_id='p1',prompt='x');c.record('kb_hook','s1',prompt_id='p1');(t/'tr.jsonl').write_text('');ev=json.dumps({'hook_event_name':'SessionEnd','session_id':'s1','transcript_path':str(t/'tr.jsonl')});r=s.run([sys.executable,'_tools/querylog.py','launch'],input=ev,text=True,capture_output=True,timeout=30);ok=lambda:list((q/'store').glob('*/*.jsonl')) and not (q/'distill.lock').exists();[time.sleep(.5) for _ in range(60) if not ok()];runs=[p.name for p in (q/'store').glob('*/*.jsonl')];log=(q/'distill.log').read_text()[-200:] if (q/'distill.log').exists() else '';shutil.rmtree(t,ignore_errors=True);print('launch exit',r.returncode,r.stderr[-100:],'| run files',runs,'| log',log.strip());sys.exit(0 if r.returncode==0 and runs else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/windows-run.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "gates": [
+    {
+      "id": "windows",
+      "kind": "blocking",
+      "question": "Is this item worked and proven on the project's Windows 11 host?",
+      "options": [
+        "on the Windows 11 host",
+        "on any host"
+      ],
+      "recommendation": "on the Windows 11 host",
+      "class": "design",
+      "do": {
+        "on the Windows 11 host": "ST-bgfsi3n2",
+        "on any host": "ST-bgfsi3n2"
+      },
+      "host_check": {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;print('platform',sys.platform);sys.exit(0 if sys.platform=='win32' else 1)"
+        ]
+      },
+      "answer": "on the Windows 11 host",
+      "by": "operator"
+    }
+  ],
+  "notes": "Its check passes before the work on macOS (2026-10-07: launch exit 0, a run file written): the proof is its run on the Windows host, where the detach flags (CREATE_BREAKAWAY_FROM_JOB) matter; the windows gate makes start refuse elsewhere. The 2026-09-30 probe (kb/public/_answers.md, a probe hook's detached child outlives the hook) predates the real launcher's change in a9fe54c6. SessionEnd does not always run in claude -p (usage.md), so the session half is interactive."
+}
