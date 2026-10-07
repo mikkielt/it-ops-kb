@@ -2,7 +2,7 @@
   "id": "ST-c3wmxj6i",
   "kind": "story",
   "title": "Research sprint goal: The kb's first fitness tests: a held-out answer rate and parked review gaps",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4rq725fe",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "researcher-c3wmxj6i"
 }
