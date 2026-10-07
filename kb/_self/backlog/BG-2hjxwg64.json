@@ -1,0 +1,24 @@
+{
+  "id": "BG-2hjxwg64",
+  "kind": "bug",
+  "title": "kbfacts.content_key keeps an assume-unchanged or skip-worktree file's index blob after a local edit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "content_key gives a new key when any indexed file's bytes differ from the blob it takes from git's index, including a file marked assume-unchanged or skip-worktree (which git ls-files -m leaves out), so no checkout is served the clone's shared index of other content; the stat-memo fast path stays. Found by the SP-eahtellz review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess as s,sys,tempfile,os,shutil;d=os.path.join(tempfile.mkdtemp(),'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);e={**os.environ,'PYTHONPATH':os.path.join(d,'_tools')};k=[sys.executable,'-c','import kbfacts as f;print(f.content_key(f.fingerprint_files()))'];a='kb/public/windows/process-parent-and-command-line.md';b=s.run(k,cwd=d,env=e,capture_output=True,text=True).stdout.strip();s.run(['git','update-index','--assume-unchanged',a],cwd=d,check=True);open(os.path.join(d,a),'a',encoding='utf-8').write('planted edit');c=s.run(k,cwd=d,env=e,capture_output=True,text=True).stdout.strip();shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('key before',b[:12],'after an edit of an assume-unchanged file',c[:12]);sys.exit(1 if (not b or b==c) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ]
+}

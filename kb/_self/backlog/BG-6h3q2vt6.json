@@ -1,0 +1,21 @@
+{
+  "id": "BG-6h3q2vt6",
+  "kind": "bug",
+  "title": "The Defender section of test-suite-speed.md sums its groups to 84.0 s against a stated 84.2 s and names no duration unit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The Defender section of kb/_self/reports/test-suite-speed.md states that Get-MpPerformanceReport's durations are 100 ns ticks and gives group figures whose sum matches the stated scan-time total within rounding (the third row summed unrounded, or every group shown). Found by the SP-eahtellz review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys,pathlib;t=pathlib.Path('kb/_self/reports/test-suite-speed.md').read_text(encoding='utf-8');sec=t.split('## Defender')[1];rows=[float(m.group(1)) for m in re.finditer(r'^\\|[^|]+\\|[^|]+\\|\\s*([0-9.]+)\\s*\\|$',sec,re.M)];tot=float(re.search(r'([0-9.]+) s of scan time',sec).group(1));unit='100 ns' in sec or '100-ns' in sec;print('rows',rows,'sum',round(sum(rows),2),'stated total',tot,'unit named',unit);sys.exit(0 if rows and abs(sum(rows)-tot)<=0.05*len(rows) and unit else 1)"
+    ]
+  },
+  "repro_reason": "The defect is the report's wording and figures: the recording that produced them is a one-off .etl, so the repro checks that the table's rows sum to the stated total within rounding and that the 100 ns unit is named.",
+  "touches": [
+    "kb/_self/reports/test-suite-speed.md"
+  ]
+}

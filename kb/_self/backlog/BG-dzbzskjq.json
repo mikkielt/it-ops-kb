@@ -1,0 +1,28 @@
+{
+  "id": "BG-dzbzskjq",
+  "kind": "bug",
+  "title": "clone_home and main_worktree resolve a relative gitdir against the working directory",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kbfacts.clone_home, ql_base.clone_home and bl_base.main_worktree resolve a linked worktree's relative gitdir: line (git worktree add --relative-paths, worktree.useRelativePaths) against the worktree, not the process's working directory, so a tool run from any directory finds the clone's main worktree and its shared _cache/ and spool. Found by the SP-eahtellz review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess as s,sys,tempfile,os,shutil;t=tempfile.mkdtemp();d=os.path.join(t,'wt');s.run(['git','worktree','add','-q','--relative-paths','--detach',d],check=True);top=os.path.normcase(os.path.realpath(s.run(['git','rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip()));e={**os.environ,'PYTHONPATH':os.path.join(d,'_tools')};r=s.run([sys.executable,'-c','import sys,kbfacts,bl_base;print(kbfacts.clone_home());print(bl_base.main_worktree(sys.argv[1]))',d],cwd=t,env=e,capture_output=True,text=True);got=[os.path.normcase(os.path.realpath(x)) for x in r.stdout.split()];shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('main worktree',top,'clone_home and main_worktree from another cwd',got,r.stderr[-200:]);sys.exit(0 if len(got)==2 and all(g==top for g in got) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/ql_base.py",
+    "_tools/bl_base.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md"
+  ]
+}
