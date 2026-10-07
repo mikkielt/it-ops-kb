@@ -314,8 +314,10 @@ def ops_mark(label):
 def ops_no_work_rows(root, iid):
     """Whether neither this host's spool, the spool of the main worktree of the clone's git common dir (read only,
     and only when it is another directory than this one: a session started in the main checkout that orchestrates a
-    clone writes its rows there) holds a worker's `branch` row of the item or of a descendant of it (the row that opens
-    a headless worker's window, `ql_capture.BRANCH_ACTION`), nor the committed work sidecars a line of it. The
+    clone writes its rows there) holds a worker's row of the item or of a descendant of it, nor the committed work
+    sidecars a line of it. A worker's row is a `branch` row (the row that opens a headless worker's window,
+    `ql_capture.BRANCH_ACTION`) or an `agent-start` or `agent-stop` row (`ql_capture.AGENT_ACTIONS`: a worker started
+    with the Agent tool runs inside the orchestrator's session and writes those, never a `branch` row). The
     orchestrator's own `claim`, `done` and `release` rows are no worker's capture: it claims every item it delegates,
     so its row would always be met. Distill moves the spool's work rows into the sidecars (an item line, or a shared
     line naming the item), so a consumed spool is not an item that was worked without the capture hooks; a line names
@@ -334,7 +336,8 @@ def ops_no_work_rows(root, iid):
         if not spools:
             return False
         ids = {iid, *Backlog(root).descendants(iid)}
-        if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") == ql_capture.BRANCH_ACTION
+        worker_actions = (ql_capture.BRANCH_ACTION, *ql_capture.AGENT_ACTIONS)
+        if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in worker_actions
                for d in spools for p in sorted(d.glob("*.jsonl")) for r in ql_distill.spool_rows(p)[0]):
             return False
         return not bl_cost.cost_lines(root, ids)[0]
