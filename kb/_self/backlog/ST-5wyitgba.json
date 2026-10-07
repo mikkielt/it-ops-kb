@@ -1,0 +1,26 @@
+{
+  "id": "ST-5wyitgba",
+  "kind": "story",
+  "title": "drop of an intake item as a duplicate names the carrying item and refuses one whose detector finding kind differs",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py drop of an intake-filed item (links: fingerprint, detector) whose why names another item as its duplicate or carrier checks that the named item carries the same detector and finding kind, and refuses with both kinds named when it does not; kb/_self/backlog.md Triage says so. Answers the SP-gkbtjjce retrospective: BG-po3mlrfo (trailers detector, missing-trailer kind) was dropped as a duplicate of BG-dsab2ti3 (stray trailer lines), the sprint goal clause on commits without a KB-Work trailer stayed unmet, and intake re-filed the finding as BG-lyciljf5.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_intake.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "The check passes before the work: planning repoints it to a drop run on a planted intake item whose why names an item of another finding kind, which must refuse."
+}

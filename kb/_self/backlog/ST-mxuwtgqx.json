@@ -1,0 +1,24 @@
+{
+  "id": "ST-mxuwtgqx",
+  "kind": "story",
+  "title": "The orchestrator records an operator's gate answer on a worker branch by a documented route",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint run step 4.1 and kb/_self/backlog.md Running a sprint say how the orchestrator records an answer the operator gave in its session to a gate that exists only on a worker's work/<id> branch (the command run against the worker's worktree, backlog.py --root <worktree> answer ID GATE --by operator, and the commit there), and kb-worker.md says a worker does not sign by operator for a relayed answer and hands the gate back. Answers the SP-gkbtjjce retrospective: BG-qqdfqx2d's worker refused to sign a relayed operator answer, and the orchestrator recorded it in the worker's worktree with no rule naming that route.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    ".claude/agents/kb-worker.md"
+  ],
+  "notes": "The check passes before the work: the change is rule text; planning gives it a tested rule question in set kb-sprint:run (as ST-cjizqzhq did) as its check."
+}

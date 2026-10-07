@@ -1,0 +1,28 @@
+{
+  "id": "ST-xdyk2ugr",
+  "kind": "story",
+  "title": "land moves the intake drafts in the checkout it runs in aside, as it does for a worker's worktree",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land, run in a checkout holding untracked kb/_self/backlog/*.json intake drafts (those whose links carry a fingerprint and a detector) and no other change, moves them to _cache/intake-drafts/ of the clone and says so before its clean-tree step, then lands; any other untracked or modified file still stops it at clean tree. Answers the SP-gkbtjjce retrospective: land stopped twice at clean tree because the orchestrator's own SessionStart hook re-filed a drift draft in its checkout, which the orchestrator moved by hand; ST-ocfkanth and ST-bum7owtw cover only worker worktrees.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_land_content_item_then_planted_failure"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "notes": "The check passes before the work on purpose: it is the land e2e test the work extends with a planted main-checkout draft; planning adds the failing assertion's selector or repoints the check before the sprint starts."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-a5q6vaji",
+  "kind": "story",
+  "title": "Sprint planning gives a code item a check that runs its behaviour, with the test it extends in touches",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-sprint plan (steps 2 and 6) and kb/_self/backlog.md Sprints (Plan) say that a committed item whose touches name code under _tools/ has at least one check that runs the changed behaviour (a test selection it extends, or the tool run on a planted input), not only a read of source text, and that the test file it extends is in its touches before the start gate; backlog.py check warns of an open item in a planned sprint whose touches name _tools/ code and whose every check only reads files. Answers the SP-gkbtjjce retrospective: ST-2zl47dfu, ST-bum7owtw, ST-idwjvloy and BG-dsab2ti3 were committed with checks that grepped bl_land.py, the orchestrator added the e2e tests to their touches at claim time, and ST-ocfkanth's check passed while its stderr named no worktree (BG-eam5x2q7).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "_tools/bl_check.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "The check passes before the work: planning repoints it to a run of backlog.py check on a planted item whose only check greps _tools/ code, which must warn."
+}
