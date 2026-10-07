@@ -1038,18 +1038,22 @@ def committed_calls(root, budget=None):
 @detector("repeats")
 def repeats_detector(root):
     """One story per command class or tool group (call.tool's `class`, else its `tool`) called more than
-    REPEAT_THRESHOLD times in one ISO week by the sessions of the committed ops sidecars, the REPEAT_MAX most called
-    first, naming the section-sized command to use instead when INSTEAD has one. The fingerprint is the week and the
-    class, so each finding is filed once; nothing at or below the threshold is reported."""
+    REPEAT_THRESHOLD times in the latest closed ISO week (the week before the one today's UTC date is in, never the
+    running week, whose count only grows) by the sessions of the committed ops sidecars, the REPEAT_MAX most called
+    first, naming the section-sized command to use instead when INSTEAD has one. The fingerprint is the class alone,
+    the week staying in the title and notes, so each class is filed once and its `intake --status` check passes once
+    a later closed week is at or under the threshold; nothing at or below the threshold is reported."""
     calls, over = committed_calls(root)
+    y, w, _ = (datetime.datetime.now(datetime.timezone.utc).date() - datetime.timedelta(days=7)).isocalendar()
+    week = f"{y}-W{w:02d}"
     counts = {}
-    for week, key in calls:
-        counts[(week, key)] = counts.get((week, key), 0) + 1
-    found = sorted(((n, week, key) for (week, key), n in counts.items() if n > REPEAT_THRESHOLD),
-                   key=lambda t: (-t[0], t[1], t[2]))[:REPEAT_MAX]
+    for call_week, key in calls:
+        if call_week == week:
+            counts[key] = counts.get(key, 0) + 1
+    found = sorted(((n, key) for key, n in counts.items() if n > REPEAT_THRESHOLD),
+                   key=lambda t: (-t[0], t[1]))[:REPEAT_MAX]
     out = []
-    for n, week, key in found:
-        fkey = f"{week} {key}"
+    for n, key in found:
         instead = INSTEAD.get(key)
         notes = (f"{n} calls of {key} in {week}; the threshold is {REPEAT_THRESHOLD} a week (bl_intake.REPEAT_THRESHOLD)"
                  + (f"; {over} call rows past the read budget were not counted" if over else ""))
@@ -1058,7 +1062,7 @@ def repeats_detector(root):
             goal=(f"Sessions call {key} at most {REPEAT_THRESHOLD} times a week"
                   + (f", using {instead} instead" if instead else ", or the reason they must is recorded")
                   + ", so the repeats detector does not report it."),
-            key=fkey, checks=[STATUS_REPRO + [fingerprint("repeats", fkey)]], notes=notes))
+            key=key, checks=[STATUS_REPRO + [fingerprint("repeats", key)]], notes=notes))
     return out
 
 
