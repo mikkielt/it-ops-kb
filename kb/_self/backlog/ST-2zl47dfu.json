@@ -31,7 +31,8 @@
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "AGENTS.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "_tools/test_land_e2e.py"
   ],
   "depends_on": [
     "ST-ocfkanth"
