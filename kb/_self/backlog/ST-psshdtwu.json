@@ -2,7 +2,7 @@
   "id": "ST-psshdtwu",
   "kind": "story",
   "title": "A sprint whose goal is about attribution lists every row that opens or closes a window before it starts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,18 @@
   "depends_on": [
     "ST-kqfdal66"
   ],
-  "claimed_by": "kb-worker-psshdtwu"
+  "evidence": {
+    "commit": "ce76e442a3d621ea372159fca8a4af5af53dab34",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read();ok=\"every row kind\" in t;print(\"every row kind:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3968955587d4a590"
+      }
+    ]
+  }
 }
