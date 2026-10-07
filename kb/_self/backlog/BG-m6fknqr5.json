@@ -36,7 +36,9 @@
         "no window unless a later done or release row (a land or merge is stored as done) of the same item closes it in the session's rows"
       ],
       "recommendation": "no window unless a later done or release row (a land or merge is stored as done) of the same item closes it in the session's rows",
-      "class": "push"
+      "class": "push",
+      "answer": "no window unless a later done or release row (a land or merge is stored as done) of the same item closes it in the session's rows",
+      "by": "operator"
     }
   ],
   "claimed_by": "worker-m6fknqr5"
