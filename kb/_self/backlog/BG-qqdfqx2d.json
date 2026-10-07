@@ -83,7 +83,9 @@
       "do": {
         "subcommand: a read-only backlog.py researched ID reusing bl_land.item_commits and research_without_facts, RESEARCH_CHECKS a template whose {id} new sprint fills; touches widened to _tools/bl_base.py and _tools/backlog.py": "BG-qqdfqx2d",
         "inline: a python3 -c check calling the same bl_land helpers, built in _tools/bl_items.py, which shadows RESEARCH_CHECKS; bl_base.RESEARCH_CHECKS left unused": "BG-qqdfqx2d"
-      }
+      },
+      "answer": "subcommand: a read-only backlog.py researched ID reusing bl_land.item_commits and research_without_facts, RESEARCH_CHECKS a template whose {id} new sprint fills; touches widened to _tools/bl_base.py and _tools/backlog.py",
+      "by": "operator"
     }
   ],
   "claimed_by": "worker-qqdfqx2d"
