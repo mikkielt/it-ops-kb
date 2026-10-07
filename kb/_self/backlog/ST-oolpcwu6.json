@@ -2,7 +2,7 @@
   "id": "ST-oolpcwu6",
   "kind": "story",
   "title": "Research sprint goal: Headless workers and goal research leave less for the orchestrator",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "goal_research": true,
   "priority": "P1",
@@ -18,5 +18,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
