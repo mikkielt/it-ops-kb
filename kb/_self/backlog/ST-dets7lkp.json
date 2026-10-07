@@ -2,7 +2,7 @@
   "id": "ST-dets7lkp",
   "kind": "story",
   "title": "backlog.py cost shows no work for items done in a sprint's earlier sessions",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-s5fdczv7",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-dets7lkp"
+  "evidence": {
+    "commit": "1ec294c6034e6017b39decb925299090f54998d4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/backlog.py','cost','BG-r5fab2td'],capture_output=True,text=True);h=(r.stdout.splitlines() or [''])[0];print(h);sys.exit(r.returncode or int(' 0 prompt(s)' in h and 'because' not in r.stdout))"
+        ],
+        "exit": 0,
+        "sha256": "1ac1f780ec96f9b2"
+      }
+    ]
+  }
 }
