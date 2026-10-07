@@ -2,7 +2,7 @@
   "id": "ST-57ssk65s",
   "kind": "story",
   "title": "Before a bug is dispatched, a goal that names a fix mechanism is checked against the kb/_self rules",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,

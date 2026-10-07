@@ -2,7 +2,7 @@
   "id": "ST-ocfkanth",
   "kind": "story",
   "title": "intake --file --hook files nothing in a worker's linked worktree and says so on stderr",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,

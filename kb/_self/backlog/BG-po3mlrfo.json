@@ -2,7 +2,7 @@
   "id": "BG-po3mlrfo",
   "kind": "bug",
   "title": "Trailers: 5 commit(s) on main without a KB-Work trailer git reads",
-  "status": "draft",
+  "status": "dropped",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,5 @@
     "fingerprint 100be800a2b5",
     "detector trailers"
   ],
-  "notes": "changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work or KB-Auto trailer: 5c3bfd0ea7, 9286c5e81c, ad70d90965, d7a88846d7, ffe1273a0c"
+  "notes": "changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work or KB-Auto trailer: 5c3bfd0ea7, 9286c5e81c, ad70d90965, d7a88846d7, ffe1273a0c Dropped: Duplicate of BG-dsab2ti3 “A KB-Work or Self-Reviewed line outside the trailer block passes the commit and the push unread”, which carries the same intake fingerprint 100be800a2b5 as prevention; the commits still flagged (2026-10-01 to 10-03) leave the 7-day window by 2026-10-11 and pushed history is never rewritten. Operator's call, 2026-10-07."
 }

@@ -2,7 +2,7 @@
   "id": "BG-dsab2ti3",
   "kind": "bug",
   "title": "A KB-Work or Self-Reviewed line outside the trailer block passes the commit and the push unread",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,

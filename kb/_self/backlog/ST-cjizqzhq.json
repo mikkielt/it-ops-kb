@@ -2,7 +2,7 @@
   "id": "ST-cjizqzhq",
   "kind": "story",
   "title": "The orchestrator checks staged .claude/ edits after copying them back, before land",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,

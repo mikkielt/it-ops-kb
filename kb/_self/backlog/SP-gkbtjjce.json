@@ -2,7 +2,7 @@
   "id": "SP-gkbtjjce",
   "kind": "sprint",
   "title": "Headless workers and goal research leave less for the orchestrator",
-  "status": "planned",
+  "status": "active",
   "goal": "A headless worker's SessionStart intake files no drafts in its linked worktree, and land handles any that remain; the goal research story is narrowed to the questions the kb pack does not answer; after land the orchestrator's checkout is level with origin/main before its next claim; and the intake findings on drifted items and on commits without a KB-Work trailer are cleared",
   "gates": [
     {
