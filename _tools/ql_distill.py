@@ -1117,12 +1117,13 @@ def detach(argv, log, note=None):
 
 
 def launch(event):
-    """The PID of the distill a SessionEnd or SessionStart event starts, or None. Each session of the spool whose
-    transcript says it exited without a SessionEnd (missed_ends) gets a distill of its own with `--session` and
-    `--transcript`, as a SessionEnd would have started; that distill marks the session closed after its usage rows
-    (close_ended). SessionEnd then marks its session closed; when the session has a spool file and the event names its
-    transcript, the distill it starts gets the session id and the transcript path and waits for the lock. Otherwise
-    nothing more starts when logging is off, nothing is ready, or a distill holds a fresh lock."""
+    """The PID of the distill a SessionEnd or SessionStart event starts, or None. SessionEnd first marks its own
+    session closed (the `.end` marker) and, when the session has a spool file and the event names its transcript,
+    starts the distill that reads that transcript (`--session` and `--transcript`, waiting for the lock): this is all
+    that must fit the hook's time budget, so a kill leaves nothing unmarked. Then each other session of the spool
+    whose transcript says it exited without a SessionEnd (missed_ends) gets a distill of its own, as a SessionEnd
+    would have started; that distill marks the session closed after its usage rows (close_ended). Otherwise nothing
+    more starts when logging is off, nothing is ready, or a distill holds a fresh lock."""
     if not isinstance(event, dict) or event.get("hook_event_name") not in ("SessionEnd", "SessionStart"):
         return None
     qdir, cfg = places()
@@ -1131,16 +1132,19 @@ def launch(event):
     spool = qdir / "spool"
     sid = event.get("session_id")
     argv = [sys.executable, str(ENTRY), "distill", "--settle", str(LAUNCH_SETTLE_S)]
-    pid = None
-    for missed, path in missed_ends(spool, sid):
-        pid = detach(argv + ["--session", missed, "--transcript", path], qdir / LOG_NAME,
-                     note=f"launch: session {missed} exited without a SessionEnd: closed, its usage read")
+    own = None
     if event["hook_event_name"] == "SessionEnd" and isinstance(sid, str) and SAFE_SESSION.fullmatch(sid) \
             and (spool / f"{sid}.jsonl").exists():
         (spool / f"{sid}.end").touch()
         transcript = event.get("transcript_path")
         if isinstance(transcript, str) and transcript:
-            return detach(argv + ["--session", sid, "--transcript", transcript], qdir / LOG_NAME)
+            own = detach(argv + ["--session", sid, "--transcript", transcript], qdir / LOG_NAME)
+    pid = None
+    for missed, path in missed_ends(spool, sid):
+        pid = detach(argv + ["--session", missed, "--transcript", path], qdir / LOG_NAME,
+                     note=f"launch: session {missed} exited without a SessionEnd: closed, its usage read")
+    if own is not None:
+        return own
     if pid is not None or not ready(spool, time.time()):
         return pid
     age = lock_age(qdir / LOCK_NAME)

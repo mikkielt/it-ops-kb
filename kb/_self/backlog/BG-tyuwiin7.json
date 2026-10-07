@@ -28,5 +28,32 @@
   "depends_on": [
     "BG-m6fknqr5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "In launch on SessionEnd, when does the ending session's own transcript distill start: right after its marker, before the catch-up (after-marker), or after the catch-up as before (after-catch-up)? The marker makes missed_ends skip the session, so a kill during the catch-up would leave it marked with its usage distill never started, and no later launch reads its transcript.",
+      "options": [
+        "after-marker",
+        "after-catch-up"
+      ],
+      "recommendation": "after-marker",
+      "class": "design",
+      "do": {
+        "after-marker": [
+          "python3",
+          "-c",
+          "import inspect,sys;sys.path.insert(0,\"_tools\");import ql_distill as d;s=inspect.getsource(d.launch);sys.exit(0 if s.find(\"--transcript\")<s.find(\"missed_ends(\") else 1)"
+        ],
+        "after-catch-up": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(0)"
+        ]
+      },
+      "answer": "after-marker",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-tyuwiin7"
 }
