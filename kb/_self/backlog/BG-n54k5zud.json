@@ -2,7 +2,7 @@
   "id": "BG-n54k5zud",
   "kind": "bug",
   "title": "selectors skips the done tasks and subtasks of an active sprint, and the repro of a bug",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vmxdxtru",
   "priority": "P1",
   "rank": 0,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "BG-ese7wmz3"
-  ]
+  ],
+  "claimed_by": "sonnet-worker-n54k5zud"
 }
