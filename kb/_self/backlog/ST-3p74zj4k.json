@@ -2,7 +2,7 @@
   "id": "ST-3p74zj4k",
   "kind": "story",
   "title": "Repros and checks that import the query log capture write to an isolated spool, never the clone's own",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-owbgisoj",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,25 @@
   "depends_on": [
     "BG-v2gqk7zd",
     "BG-ay4w32jc"
-  ]
+  ],
+  "gates": [
+    {
+      "id": "home",
+      "kind": "blocking",
+      "question": "How does bl_base.run_check give every check and repro an isolated query log home? tempdir: CLAUDE_PLUGIN_DATA set to a fresh temporary directory (config mode local) and CLAUDE_PLUGIN_ROOT to the clone, so capture still runs and writes there, then the directory is deleted; off: CLAUDE_PLUGIN_DATA set to a temporary directory holding the DISABLED marker, so capture writes nothing. A check that sets its own CLAUDE_PLUGIN_DATA keeps its own in both.",
+      "options": [
+        "tempdir",
+        "off"
+      ],
+      "recommendation": "tempdir",
+      "class": "querylog",
+      "do": {
+        "tempdir": "ST-3p74zj4k",
+        "off": "ST-3p74zj4k"
+      },
+      "answer": "tempdir",
+      "by": "operator"
+    }
+  ],
+  "claimed_by": "worker-isolate"
 }
