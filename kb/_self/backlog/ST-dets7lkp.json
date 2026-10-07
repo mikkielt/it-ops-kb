@@ -2,7 +2,7 @@
   "id": "ST-dets7lkp",
   "kind": "story",
   "title": "backlog.py cost shows no work for items done in a sprint's earlier sessions",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-s5fdczv7",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,6 @@
   "depends_on": [
     "BG-m6fknqr5",
     "BG-tyuwiin7"
-  ]
+  ],
+  "claimed_by": "worker-dets7lkp"
 }
