@@ -2,7 +2,7 @@
   "id": "BG-atr5zlh5",
   "kind": "bug",
   "title": "check_env points KB_INDEX at a linked worktree's own _cache, not the clone's shared index directory",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 0,
@@ -58,5 +58,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "44311337d5b883fa976883d01b120abff56a3fe0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, sys; sys.path.insert(0, '_tools'); os.environ.pop('KB_INDEX', None); os.environ.pop('CLAUDE_PLUGIN_DATA', None); import bl_base, kbfacts; got = bl_base.check_env(kbfacts.kbcommon.HOME, 'h')['KB_INDEX']; want = kbfacts.index_dir(); print('check_env', got, 'index_dir', want); sys.exit(os.path.normcase(os.path.abspath(got)) != os.path.normcase(os.path.abspath(want)))"
+        ],
+        "exit": 0,
+        "sha256": "dfad2d3e7af90526"
+      }
+    ]
+  }
 }
