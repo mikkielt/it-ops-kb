@@ -509,13 +509,49 @@ def detached_workers(root, branch):
     return out
 
 
+INTAKE_DRAFT = re.compile(r"\?\? (kb/_self/backlog/[^/\"]+\.json)")  # an untracked item file of the intake
+INTAKE_ASIDE = ("_cache", "intake-drafts")  # under the clone land runs in (gitignored): <worktree name>/<draft file>
+
+
+def intake_drafts(path, status_lines, branch=None):
+    """[relative path] of the untracked kb/_self/backlog/*.json files in `git status --porcelain -uall` STATUS_LINES of
+    the worktree PATH that no commit of BRANCH (or of the worktree's HEAD) names: the drafts the SessionStart intake
+    hook files (`backlog.py intake --file --hook`); any other line (modified, staged, another untracked file) is not one."""
+    found = []
+    for line in status_lines:
+        m = INTAKE_DRAFT.fullmatch(line)
+        if not m:
+            continue
+        named = subprocess.run(["git", "log", "-1", "--format=%H", branch or "HEAD", "--", m.group(1)], cwd=path,
+                               capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if not named.returncode and not named.stdout.strip():
+            found.append(m.group(1))
+    return found
+
+
+def set_aside_drafts(root, path, drafts):
+    """Move the DRAFTS (relative paths) of the worker's worktree PATH to INTAKE_ASIDE of ROOT, under the worktree's
+    name, never over a file there. Returns [(source, destination)] of those moved."""
+    moved = []
+    for rel in drafts:
+        src = Path(path) / rel
+        dest = Path(root).joinpath(*INTAKE_ASIDE, Path(path).name, src.name)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if dest.exists():
+            dest = dest.with_name(f"{dest.stem}-{int(time.time())}{dest.suffix}")
+        shutil.move(str(src), str(dest))
+        moved.append((src, dest))
+    return moved
+
+
 def release_worker_worktree(root, path, lock, branch=None):
     """Remove the finished worker's worktree PATH that holds the branch land needs, with `git worktree remove` (never
     --force), unlocking it first when Claude Code locked it: agents' shells may not remove a worktree
     (.claude/settings.json denies it), so land, a process of its own, does. Only a worktree under the clone's
     .claude/worktrees/ of the clone land runs in (`git rev-parse --show-toplevel` there: a linked worktree is its own
-    clone, its workers sit under its own directory) that is not the one land runs in, has no uncommitted changes and
-    no live process, is on BRANCH when that is given, and is either locked by a Claude Code agent (WORKER_LOCK) or,
+    clone, its workers sit under its own directory) that is not the one land runs in, has no uncommitted changes
+    (except untracked intake drafts that no commit of BRANCH names: moved to INTAKE_ASIDE of ROOT, and said) and no
+    live process, is on BRANCH when that is given, and is either locked by a Claude Code agent (WORKER_LOCK) or,
     unlocked, named as the Agent tool names a worker's (WORKER_NAME, `agent-*`; the test
     land_removes_clean_unlocked_worker_worktree) or by the item id of BRANCH (`work/<id>`; the test
     land_removes_worker_worktree_of_a_linked_clone_named_by_item_id). Returns None once it is removed,
@@ -542,8 +578,10 @@ def release_worker_worktree(root, path, lock, branch=None):
                 return f"it is {state} but not on {branch}"
         elif out != f"refs/heads/{branch}":
             return f"it is {state} but not on {branch}"
-    code, out = run_git("status", "--porcelain", cwd=path)
-    if code or out:
+    code, out = run_git("status", "--porcelain", "-uall", cwd=path)
+    dirty = out.splitlines()
+    drafts = [] if code else intake_drafts(path, dirty, branch)
+    if code or len(drafts) < len(dirty):
         return f"it is {state} and has uncommitted changes: commit or discard them there, then run land again"
     procs, unchecked = live_processes(path)
     if procs:  # the worker left background work running there: removing the worktree would pull it from under it
@@ -552,15 +590,26 @@ def release_worker_worktree(root, path, lock, branch=None):
                 f"background command and monitor it started), then run land again")
     if unchecked:
         say(f"land: could not check {path} for live processes ({unchecked}); removing it as a clean worker's")
+    kept = set_aside_drafts(root, path, drafts)
+
+    def put_back():
+        for src, dest in kept:
+            if dest.is_file() and not src.exists():
+                shutil.move(str(dest), str(src))
     if lock is not None:
         code, out = run_git("worktree", "unlock", str(path))
         if code:
+            put_back()
             return f"git worktree unlock: {out}"
     code, out = run_git("worktree", "remove", str(path))
     if code:
+        put_back()
         if lock is not None:
             run_git("worktree", "lock", "--reason", lock, str(path))
         return f"git worktree remove: {out}"
+    for _, dest in kept:
+        say(f"land: moved the untracked intake draft {dest.name} out of the worker's worktree to {dest.parent} "
+            "(copy it back to kb/_self/backlog/ to triage it)")
     say(f"land: removed the finished worker's worktree {path} ({'unlocked; its lock was: ' + lock if lock else 'it was not locked'})")
     return None
 

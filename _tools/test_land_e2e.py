@@ -1,7 +1,10 @@
 """`backlog.py land ID` end to end in a scenario clone: a content-only item lands on origin/main; an item whose check
-fails stops `land` at its step and leaves origin/main where it was."""
+fails stops `land` at its step and leaves origin/main where it was. The first item's branch sits in a finished worker's
+worktree that holds an untracked intake draft: `land` moves the draft aside and says so, and still refuses any other
+untracked file."""
 import json
 import re
+from pathlib import Path
 
 import pytest
 
@@ -63,8 +66,18 @@ def test_land_content_item_then_planted_failure(scenario):
 
     work(repo, good, "kb/_self/good.md")
     repo.git("checkout", "-q", "main")  # land runs on main, whose upstream is origin/main: it ends level with it
+    worker = Path(repo.file(f".claude/worktrees/agent-{good}"))
+    repo.git("worktree", "add", "-q", str(worker), f"work/{good}")
+    draft, stray = "kb/_self/backlog/ST-0d1e2f3a.json", "kb/_self/stray.md"
+    for rel in (draft, stray):  # an intake draft the worker's session filed, and a file that is no draft
+        (worker / rel).write_text("{}\n", encoding="utf-8", newline="\n")
+    code, out = bl(repo, "land", good)
+    assert code != 0 and "uncommitted changes" in out and (worker / draft).is_file(), out  # nothing moves on a refusal
+    (worker / stray).unlink()
     code, out = bl(repo, "land", good)
     assert code == 0 and "landed" in out and "fast-forwarded main" in out, out
+    kept = Path(repo.file("_cache/intake-drafts")) / worker.name / Path(draft).name
+    assert "moved the untracked intake draft ST-0d1e2f3a.json" in out and kept.is_file() and not worker.exists(), out
     assert repo.rev("main") == origin_main(scenario) and repo.git("branch", "--show-current").strip() == "main"
     assert item(scenario, good)["status"] == "done" and item(scenario, good).get("evidence"), item(scenario, good)
     log = scenario.origin.git("log", "--format=%B", f"{before}..main")
