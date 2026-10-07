@@ -1,0 +1,28 @@
+{
+  "id": "ST-psshdtwu",
+  "kind": "story",
+  "title": "A sprint whose goal is about attribution lists every row that opens or closes a window before it starts",
+  "status": "draft",
+  "sprint": "SP-gkbtjjce",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answers the SP-owbgisoj retrospective: the sprint goal was that no orchestrator prompt counts on an item, but planning looked only at branch rows and missed the orchestrator's own claim rows, leaving S2 BG-m6fknqr5. kb-sprint plan step 6 says that a goal about attributing work (windows, cost lines) lists, before the start gate, every row kind and every session that writes one (ql_capture WORK_ACTIONS, OPEN_ACTIONS, the orchestrator's and workers' sessions), each with the item that covers it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read();ok=\"every row kind\" in t;print(\"every row kind:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-kqfdal66"
+  ]
+}
