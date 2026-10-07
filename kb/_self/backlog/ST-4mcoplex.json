@@ -2,7 +2,7 @@
   "id": "ST-4mcoplex",
   "kind": "story",
   "title": "Fresh scenario clones reuse the seed's pack index",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-eahtellz",
   "priority": "P2",
@@ -50,5 +50,6 @@
     "kb/public/python/pytest.md (tmp_path_factory, session scope)",
     "kb/public/python/pytest-xdist.md (session fixture once per worker, FileLock pattern)"
   ],
-  "notes": "Deferred, outside any sprint: kbfacts.fingerprint hashes each file's mtime_ns and the absolute root paths, so a clone at another path never matches the seed's index file and a copied index is never read. It needs a fingerprint independent of the clone's path and mtimes (_tools/kbfacts.py, outside these touches) and a Windows measurement first: on the Mac a fresh clone's first rag.py pack costs about 3 s cold against 0.05 s warm, about 10% of the scenario files' time; the Windows premise (check.py 14.5 s cold, 25-35% of worker time) is file-cache and Defender cost. kbfacts.store() prunes other indexes of its root in the same directory, so a shared KB_INDEX directory across scenarios could delete a file another test holds open on Windows; a per-clone copy avoids that. Its checks name perfcheck.py (ST-c35i7vjx). Its full tests.py and perfcheck ids checks pass before the work by design: they guard that the speed-up loses no test; -k seed_index and the time bound are what the work must make pass. Housekeeping 2026-10-06: the -k seed_index selector and 'perfcheck time tests --max 900' went with the old suite; the time bound is now perfcheck time --max-seconds 60, the Windows ceiling of _tools/tests_ceiling.json, and the worker proves the reuse by a tool run on a planted scenario clone, not by a new test. 2026-10-07: the time bound follows the win32 ceiling raised to 150 s (D-776rvpx2, gate ceiling of ST-pg5jyebo)."
+  "notes": "Deferred, outside any sprint: kbfacts.fingerprint hashes each file's mtime_ns and the absolute root paths, so a clone at another path never matches the seed's index file and a copied index is never read. It needs a fingerprint independent of the clone's path and mtimes (_tools/kbfacts.py, outside these touches) and a Windows measurement first: on the Mac a fresh clone's first rag.py pack costs about 3 s cold against 0.05 s warm, about 10% of the scenario files' time; the Windows premise (check.py 14.5 s cold, 25-35% of worker time) is file-cache and Defender cost. kbfacts.store() prunes other indexes of its root in the same directory, so a shared KB_INDEX directory across scenarios could delete a file another test holds open on Windows; a per-clone copy avoids that. Its checks name perfcheck.py (ST-c35i7vjx). Its full tests.py and perfcheck ids checks pass before the work by design: they guard that the speed-up loses no test; -k seed_index and the time bound are what the work must make pass. Housekeeping 2026-10-06: the -k seed_index selector and 'perfcheck time tests --max 900' went with the old suite; the time bound is now perfcheck time --max-seconds 60, the Windows ceiling of _tools/tests_ceiling.json, and the worker proves the reuse by a tool run on a planted scenario clone, not by a new test. 2026-10-07: the time bound follows the win32 ceiling raised to 150 s (D-776rvpx2, gate ceiling of ST-pg5jyebo).",
+  "claimed_by": "worker-ST-4mcoplex"
 }
