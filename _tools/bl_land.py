@@ -6,14 +6,15 @@ main, and `close`, which deletes a finished sprint; with what they share: the co
 request line.
 
 Standard library only; imports `bl_base`, `bl_check` (the no-op rules `done` applies), `bl_cli` and `bl_intake` (the
-colour codes) and never `backlog`. The branch `land` expects sync to open for code commits is named by
+time windows of the detectors that `precheck` names) and never `backlog`. The branch `land` expects sync to open for code commits is named by
 `kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `land`, `merge` and `close` with `bl_cli` itself when
 imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there call `run_check` from
 here."""
-import argparse, hashlib, json, os, re, shlex, shutil, subprocess, sys, time
+import argparse, datetime, hashlib, json, os, re, shlex, shutil, subprocess, sys, time
 from pathlib import Path
 
 import bl_cli
+import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, ID_RE, REL_DIR, colourless_env, run_check, Refused, commit_written, git, in_scope, item_file, line, main_worktree_spool,
     need, run, say, scope, waits,
@@ -1603,16 +1604,72 @@ def precheck_rows(bl, sid):
     return rows
 
 
+def intake_fingerprint(c):
+    """The fingerprint FP of a check that is `backlog.py intake --status FP` (bl_intake.STATUS_REPRO and one more
+    word), else None."""
+    argv = c.get("run") or []
+    n = len(bl_intake.STATUS_REPRO)
+    if len(argv) == n + 1 and list(argv[:n]) == bl_intake.STATUS_REPRO and bl_intake.FP_RE.fullmatch(str(argv[n])):
+        return argv[n]
+    return None
+
+
+def windowed_detector(root, fp, calls):
+    """(detector, what it judges, when the check can first pass) when the fingerprint `fp` is a finding of a detector
+    that judges a window of time, so the check follows the calendar and no work: `trailers` (the last
+    bl_intake.TRAILER_WINDOW_DAYS days of main) and `repeats` (the latest closed ISO week, so it can first pass once
+    the running week has closed); else None. `calls` is a dict that holds the command classes of the committed ops
+    sidecars once read, for the first repeats fingerprint that INSTEAD's keys do not name."""
+    today = datetime.datetime.now(datetime.timezone.utc).date()
+    days = bl_intake.TRAILER_WINDOW_DAYS
+    if fp == bl_intake.fingerprint("trailers", bl_intake.WHOLE_KEY):
+        when = f"once the commits it names are older than {days} days"
+        try:
+            found = bl_intake.trailer_findings(root)
+            times = git(root, "log", "--no-walk=unsorted", "--format=%ct", *[s for s, _ in found]).split() if found else []
+        except (Refused, RuntimeError, OSError, ValueError):
+            found, times = [], []
+        if found and len(times) == len(found):
+            newest = max(zip((int(t) for t in times), (s for s, _ in found)))
+            day = datetime.datetime.fromtimestamp(newest[0], datetime.timezone.utc).date() + datetime.timedelta(days=days)
+            when = f"on {day}, once the newest commit it names ({newest[1]}) is older than {days} days"
+        return "trailers", f"the commits of the last {days} days on main", when
+    classes = set(bl_intake.INSTEAD)
+    if not any(fp == bl_intake.fingerprint("repeats", k) for k in classes):
+        if "classes" not in calls:
+            try:
+                calls["classes"] = {k for _, k in bl_intake.committed_calls(root)[0]}
+            except (OSError, ValueError):
+                calls["classes"] = set()
+        classes = calls["classes"]
+    if any(fp == bl_intake.fingerprint("repeats", k) for k in classes):
+        year, week, _ = today.isocalendar()
+        monday = today + datetime.timedelta(days=8 - today.isoweekday())  # the Monday after the running week
+        return "repeats", "the latest closed ISO week", f"on {monday}, once the week {year}-W{week:02d} has closed"
+    return None
+
+
 def cmd_precheck(bl, a):
     """precheck SP: run each committed item's checks once before any work and warn (exit 0) of each that passes
     already: it proves nothing yet, unless the item's notes say the check passes before the work (one that pins
-    behaviour that must stay). kb-sprint plan runs it before the start gate is asked, so start stays fast."""
+    behaviour that must stay). It also warns, whether the check passes or not, of one that is the `intake --status` of
+    a time-windowed detector (repeats, trailers), naming when it can first pass, so the item is moved or gated before
+    the start. kb-sprint plan runs it before the start gate is asked, so start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
         raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
     rows = precheck_rows(bl, sid)
     passing = 0
+    calls = {}
     for iid, c, code, ok in rows:
+        fp = intake_fingerprint(c)
+        win = windowed_detector(bl.root, fp, calls) if fp else None
+        if win:
+            name, judges, when = win
+            tail = (f"it passes now, but its result follows the calendar, not the work: it can change {when}" if ok else
+                    f"it can first pass {when}; move the item to a sprint that starts after that, or gate it, before the start")
+            say(f"warning: {bl.label(iid)}: `{shlex.join(c['run'])}` is the intake --status of the time-windowed "
+                f"detector {name}: it judges {judges}; {tail}")
         if not ok or PRECHECK_NOTE in (bl.items[iid].get("notes") or ""):
             continue
         passing += 1
