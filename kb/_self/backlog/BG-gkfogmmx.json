@@ -11,9 +11,8 @@
   "repro": {
     "run": [
       "python3",
-      "_tools/tests.py",
-      "-k",
-      "test_commit_msg_amend_with_message_file_reads_the_parent"
+      "-c",
+      "import os,sys;sys.path.insert(0,'_tools');import kg_hooks;p,a=kg_hooks.parent_args(os.getppid());print(p,a);sys.exit(0 if a else 1)"
     ]
   },
   "checks": [
