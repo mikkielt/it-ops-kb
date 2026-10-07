@@ -4,7 +4,6 @@
   "title": "The committed ops sidecars hold no fixture landing",
   "status": "draft",
   "parent": "EP-ajw3oywi",
-  "sprint": "SP-kan6spiy",
   "priority": "P2",
   "rank": 0,
   "goal": "querylog.py prune-ops [--root R] [--store S] [--dry-run] deletes the ops lines whose item no item file in R's kb/_self/backlog and no commit message of R names, rewrites each sidecar header's row counts and prints counts per event; --dry-run changes nothing; querylog.py check exits 0 after it; it is run once on kb/_querylog as gate g1 says, and querylog.md says when to run it.",

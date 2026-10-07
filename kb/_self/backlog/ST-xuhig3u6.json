@@ -4,7 +4,6 @@
   "title": "backlog.py ops SP prints a sprint's operational rows",
   "status": "draft",
   "parent": "EP-ajw3oywi",
-  "sprint": "SP-kan6spiy",
   "priority": "P2",
   "rank": 0,
   "goal": "A read-only backlog.py ops SP (a bl_ops module behind the backlog.py facade, reusing bl_stall.ops_rows) prints, from the spool and the committed ops sidecars, the rows of the sprint's items: land.end and land.step per item, done.refused with its reasons, agent.run and worker.run, and nothing of an item outside the sprint; tools.md and backlog.md list it.",

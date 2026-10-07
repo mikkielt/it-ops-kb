@@ -1,0 +1,64 @@
+{
+  "id": "ST-uifoyk4w",
+  "kind": "story",
+  "title": "Review and retrospective gaps park as drafts; triage promotes one only when it names the fitness test it blocks",
+  "status": "draft",
+  "parent": "EP-gzr4mmkm",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint review (kb/_self/backlog.md Sprints step 4, .claude/skills/kb-sprint/SKILL.md review step 5) files a gap as a bug in this sprint only when it is S1; every other gap and every retrospective finding is filed as a draft in no sprint with a parked link naming the review or close that found it, under its epic or none; /kb-backlog triage and /kb-sprint plan commit a parked draft to a sprint only with a notes line naming the fitness test of EP-gzr4mmkm it blocks (the held-out rate, the content sprint) or a real user's report; a parked draft that names neither stays a draft and is listed, never promoted; the new rule is a tested question of kb/_self's lookup_eval.csv (what happens to a gap the sprint review finds) that python3 _tools/rag.py eval --root _self answers from backlog.md; and the commit names the failure it answers: a backlog of 106 live items and about 500 item files in 10 days, grown by the review rule every gap becomes a bug",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How is a parked review gap marked?",
+      "options": [
+        "a draft in no sprint with a parked link naming the review that found it (no new state or tool change)",
+        "a new parked status in backlog.py, with list --status parked",
+        "a draft under one Parked epic"
+      ],
+      "recommendation": "a draft in no sprint with a parked link naming the review that found it (no new state or tool change)",
+      "class": "agents-rule",
+      "do": {
+        "a draft in no sprint with a parked link naming the review that found it (no new state or tool change)": "ST-uifoyk4w",
+        "a new parked status in backlog.py, with list --status parked": "ST-uifoyk4w",
+        "a draft under one Parked epic": "ST-uifoyk4w"
+      },
+      "answer": "a draft in no sprint with a parked link naming the review that found it (no new state or tool change)",
+      "by": "operator"
+    }
+  ]
+}

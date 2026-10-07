@@ -3,7 +3,6 @@
   "kind": "story",
   "title": "precheck names each committed item's goal clauses with the check that reads each, and warns of a clause no check reads",
   "status": "draft",
-  "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
   "goal": "Answers the SP-s5fdczv7 retrospective: all three code items (BG-m6fknqr5, BG-tyuwiin7, ST-dets7lkp) carried a check that read one clause of a several-clause goal (a source-order read, one command mapping, one cost header line), so the other clauses were proved only by the orchestrator and the reviewer, and BG-ese7wmz3 and BG-47kw57ed got through. backlog.py precheck SP prints, for each committed item, its goal's clauses (split as close --summary splits a sprint goal) and the check or repro that reads each, from a mapping the planner records on the item, and warns of a clause no check reads, so kb-sprint plan step 6 is a tool output, not a reading; kb-sprint plan step 6, backlog.md and tools.md say so.",

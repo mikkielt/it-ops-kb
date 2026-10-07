@@ -3,7 +3,6 @@
   "kind": "story",
   "title": "An operator can rescope a sprint's goal, and close --summary maps clauses to the sprint's own items",
   "status": "draft",
-  "sprint": "SP-matmvkn6",
   "priority": "P3",
   "rank": 0,
   "goal": "A sprint's goal changes only by the operator (set SP --goal G --by operator, refused without it), so a rescope that a gate answers lands in the goal close --summary reads, not only in notes; and close --summary names an open item outside the sprint beside an unmet clause only as gate g2's answer says, never as its carrier, so a one-word clause such as 'passing' is no longer matched to another sprint's item (SP-eahtellz: 'passing' was shown as carried by ST-e5u5zhrc of SP-matmvkn6). goal_clause_lines already credits a clause only to a done item of the sprint itself; the fallback 'unmet, carried by <open item elsewhere>' (bl_land.py, a 50% word match) is what changes.",

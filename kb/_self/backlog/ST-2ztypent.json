@@ -4,7 +4,6 @@
   "title": "intake.detect rows carry the detector's run time",
   "status": "draft",
   "parent": "EP-ajw3oywi",
-  "sprint": "SP-kan6spiy",
   "priority": "P2",
   "rank": 0,
   "goal": "bl_intake.collect(record=True) times each detector run and the intake.detect row it writes holds an integer ms; OPS_EVENTS['intake.detect'] takes an optional ms, and querylog.md and tools.md say so; a detector run that finds nothing writes no new row.",

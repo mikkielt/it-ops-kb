@@ -4,7 +4,6 @@
   "title": "kb-sprint review and close read backlog.py ops",
   "status": "draft",
   "parent": "EP-ajw3oywi",
-  "sprint": "SP-kan6spiy",
   "priority": "P2",
   "rank": 0,
   "goal": "The review and close sections of .claude/skills/kb-sprint/SKILL.md each run python3 _tools/backlog.py ops SP and show its output to the operator; the close retrospective takes its refused dones and failed land steps from it instead of by hand.",

@@ -19,5 +19,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Added 2026-10-07 by the operator's triage, outside the goal's clauses: ST-iafyj5f5 (perfcheck.py time defaults to the platform's ceiling), ordered after the sprint's other items."
+  "notes": "Added 2026-10-07 by the operator's triage, outside the goal's clauses: ST-iafyj5f5 (perfcheck.py time defaults to the platform's ceiling), ordered after the sprint's other items. Parked 2026-10-07 by the operator: ST-ifljijni (rescope a sprint's goal, close --summary clause map) moved out to no sprint until the kb's fitness tests pass; it was outside the goal's clauses."
 }

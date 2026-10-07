@@ -19,5 +19,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Added 2026-10-07 by the operator's triage, outside the goal's clauses: ST-juoeq36g (backlog.py set --add per list field), ordered after the sprint's other items."
+  "notes": "Added 2026-10-07 by the operator's triage, outside the goal's clauses: ST-juoeq36g (backlog.py set --add per list field), ordered after the sprint's other items. Parked 2026-10-07 by the operator: ST-ylje2dxh (precheck maps goal clauses to checks) moved out to no sprint until the kb's fitness tests pass; it was outside the goal's clauses."
 }

@@ -18,5 +18,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Parked 2026-10-07 by the operator: the goal's last clause (plan step 6 probes rule-guarding items) is ST-zyvja63f, moved out to no sprint until the kb's fitness tests (EP: kb ready) pass; close maps that clause as unmet."
 }

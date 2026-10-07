@@ -1,0 +1,24 @@
+{
+  "id": "BG-j7f3dlop",
+  "kind": "bug",
+  "title": "drop SP deletes a planned sprint but leaves its research and review stories naming it, so check errors and set --clear sprint refuses",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "drop of a planned sprint drops its goal research story and its review story with it (or refuses while they exist, naming them), so python3 _tools/backlog.py check prints errors=0 after it; the two items ST-4jmp54ma and ST-7pnsoy42 of the parked SP-kan6spiy were deleted by hand on 2026-10-07 for want of this",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, sys, tempfile\nroot = tempfile.mkdtemp()\nbl = lambda *a: subprocess.run([sys.executable, '_tools/backlog.py', '--root', root, *a], capture_output=True, text=True)\np = bl('new', 'sprint', '--title', 'Subject', '--goal', 'goal'); p.check_returncode()\nsp = p.stdout.split()[2]\nbl('drop', sp, '--why', 'parked').check_returncode()\nc = bl('check')\nprint(c.stdout.strip().splitlines()[-1])\nsys.exit(0 if c.returncode == 0 and ' errors=0 ' in c.stdout else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "parked link: found by the operator's triage of 2026-10-07 while parking SP-kan6spiy, not by a sprint review; promote only when a sprint needs to drop a planned sprint again. No rule in kb/_self/backlog.md says how a planned sprint is cancelled (a miss of this session: asked as how is a planned sprint cancelled or dropped before it starts)."
+}

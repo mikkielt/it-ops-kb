@@ -1,0 +1,10 @@
+{
+  "id": "EP-gzr4mmkm",
+  "kind": "epic",
+  "title": "kb ready: fitness tests, not an empty backlog",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The kb is called ready when its fitness tests pass, not when the backlog is empty: a held-out probe of real questions answers at a recorded rate; a content sprint from the research queue lands on headless Sonnet with no operator step beyond its gates; and a sprint review files its gaps as parked drafts that triage promotes only when one blocks a fitness test. Mac or Windows setup readiness is no fitness test: feedback from real users decides it.",
+  "notes": "Why (operator, 2026-10-07): 106 live items and about 500 item files in 10 days; the generator is the review step (every gap becomes a bug, kb/_self/backlog.md Sprints step 4, .claude/skills/kb-sprint/SKILL.md review step 5) and the close retrospective, so the backlog never dries on its own. Parked the same day until this epic's tests pass: SP-kan6spiy (dropped; its stories ST-2ztypent, ST-fd33riif, ST-mti4zrzz, ST-whkmqgfg, ST-wxqzucyn, ST-xuhig3u6 stay drafts in no sprint) and ST-zyvja63f, ST-ylje2dxh, ST-ifljijni. Benchmarking and kb improvements do not wait for an empty backlog: they start once the first two stories pass."
+}

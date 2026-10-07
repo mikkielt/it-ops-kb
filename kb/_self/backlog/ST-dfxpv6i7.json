@@ -1,0 +1,42 @@
+{
+  "id": "ST-dfxpv6i7",
+  "kind": "story",
+  "title": "A content sprint from the research queue lands on headless Sonnet with no operator step beyond its gates",
+  "status": "draft",
+  "parent": "EP-gzr4mmkm",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "A sprint whose committed items are one research item per gap finding of python3 _tools/querylog.py queue (at least three) runs through /kb-sprint run with every worker a headless claude -p --model sonnet session; every item lands and closes its gap finding (a Resolved note under its _gaps.md entry naming the finding id, DOC or CODE facts in the topic, python3 _tools/backlog.py cost --research listing the item with at least one closed gap); the operator's only steps are the sprint's start gate and the gates the items raise; and the review files its gaps as parked drafts (ST: review gaps park). The sprint's close commit is this story's evidence.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "cost",
+        "--research"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "public"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "depends_on": [
+    "ST-r7wvfqvw"
+  ],
+  "notes": "Queue on 2026-10-07: 5 gap findings (python3 _tools/querylog.py queue), all raised by the kb's own development sessions; a real user's gap, when one arrives, goes first. Depends on ST-r7wvfqvw (Sonnet headless default, SP-d3hybrlv) so the run is the cheap one; a run before that lands is still evidence if every worker was started headless by hand. Benchmarking of the kb (retrieval, answer rate, cost per closed gap from backlog.py cost --research) starts with this sprint, not after the backlog is empty."
+}

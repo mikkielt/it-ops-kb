@@ -4,7 +4,6 @@
   "title": "The digest's ops block reports sprint closes, CI reads, intake runs and land steps",
   "status": "draft",
   "parent": "EP-ajw3oywi",
-  "sprint": "SP-kan6spiy",
   "priority": "P2",
   "rank": 0,
   "goal": "ql_report.ops_lines adds one indented detail line each for sprint.close (count, landed, dropped, refused, median ms), ci.pipeline (by state, calls), intake.detect (by detector: rows, found, median ms) and land.step (per step: n, failed, median ms), as it does for land.end, and querylog.py digest prints them for a planted week.",
