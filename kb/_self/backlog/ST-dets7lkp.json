@@ -27,5 +27,22 @@
     "BG-m6fknqr5",
     "BG-tyuwiin7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When backlog.py cost ID finds no item line for the item or its descendants (0 prompts), which reason does it print and what does it read? Found: BG-r5fab2td's rows did reach the committed store, in run 20261005T204835Z-74a2ceb0, as a shared line (11 prompts) and the sprint line of SP-eahtellz (2 prompts), never an item line, because a prompt inside several windows is counted on the sprint's line and one outside any window on the shared line; of 760 items with a done commit, 59 have an item line, 163 only a shared line, 134 done after the first work sidecar no line, the rest were done before it. Neither of the goal's two reasons (no rows delivered, no capture hooks) is true of it, and the work sidecars cannot tell those two apart. Option sidecars: cost reads only the work sidecars it reads now and prints one reason line with `because` and no new figure: for an item a shared line names, the run and prompts of the line, said to be the session's (outside any window, or on the sprint's line when windows overlapped), not split per item; for an item no sidecar names, that no work sidecar names it, so its session's rows were not delivered or the session ran without the capture hooks, the store not saying which. Option sidecars+git: the same, and cost also asks git for the item's done commit time and compares it with the store's first and newest run, to say 'done before the first work sidecar (no capture hooks yet)' or 'done after the newest run (not distilled or delivered yet)' where it holds, one more git call for each item without a line.",
+      "options": [
+        "sidecars",
+        "sidecars+git"
+      ],
+      "recommendation": "sidecars",
+      "class": "agents-rule",
+      "do": {
+        "sidecars": "ST-dets7lkp",
+        "sidecars+git": "ST-dets7lkp"
+      }
+    }
+  ],
   "claimed_by": "worker-dets7lkp"
 }
