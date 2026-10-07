@@ -1,0 +1,28 @@
+{
+  "id": "ST-ifljijni",
+  "kind": "story",
+  "title": "An operator can rescope a sprint's goal, and close --summary maps clauses to the sprint's own items",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A sprint's goal changes only by the operator (set SP --goal G --by operator, refused without it), so a rescope that a gate answers lands in the goal close --summary reads, not only in notes; and close --summary credits a goal clause only to an item of that sprint, never to another sprint's item. Found in the SP-eahtellz close: the rescoped clauses showed as unmet and the clause 'passing' was credited to ST-e5u5zhrc of SP-matmvkn6.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile,os,json,shutil;d=os.path.join(tempfile.mkdtemp(),'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);r=s.run([sys.executable,os.path.join(d,'_tools','backlog.py'),'set','SP-ktup3cha','--goal','rescoped goal clause','--by','operator'],cwd=d,capture_output=True,text=True);g=json.loads(open(os.path.join(d,'kb','_self','backlog','SP-ktup3cha.json'),encoding='utf-8-sig').read()).get('goal');shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('set exit',r.returncode,(r.stderr or r.stdout).strip()[:160],'| goal now',g[:40]);sys.exit(0 if r.returncode==0 and g=='rescoped goal clause' else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ]
+}
