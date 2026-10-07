@@ -31,9 +31,6 @@
     "kb/_self/querylog.md",
     "kb/_self/doc2query.md"
   ],
-  "depends_on": [
-    "ST-fzvj57al"
-  ],
   "links": [
     "kb/_self/doc2query.md (expansion rows and the Doc2Query-- filter the gates stand in for)",
     "kb/_self/querylog.md Apply (alias and expansion candidates)"
