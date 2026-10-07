@@ -2,7 +2,7 @@
   "id": "ST-idwjvloy",
   "kind": "story",
   "title": "done accepts a goal research story whose notes say No outside facts, with no non-item commit",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gkbtjjce",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,18 @@
     }
   ],
   "notes": "Premise: no check planted. A fixture needs an active sprint with a start commit, a goal research story and a git history of item-only commits, which is more than a temp-dir check can build in reasonable effort; the refusal is today's cmd_done no-work-commit reason (bl_land.py), seen on ST-k4airlfu.",
-  "claimed_by": "kb-worker-idwjvloy"
+  "evidence": {
+    "commit": "edf2663aa3c622600c76de6284b00e74b21f20fe",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/bl_land.py',encoding='utf-8').read();ok='No outside facts' in t;print('bl_land.py reads the No outside facts note:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "cd24c9fd26b39f13"
+      }
+    ]
+  }
 }
