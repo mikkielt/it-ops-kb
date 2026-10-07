@@ -1,13 +1,13 @@
 {
   "id": "ST-4mcoplex",
   "kind": "story",
-  "title": "Fresh scenario clones reuse the seed's pack index",
+  "title": "A fresh worktree reuses the clone's pack index for unchanged content",
   "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-eahtellz",
   "priority": "P2",
   "rank": 2,
-  "goal": "A git scenario's clone or worktree of the kb seed starts with the pack index the session built once for the seed commit, so no tool run in it rebuilds the index for unchanged content; tests that test index building keep their own index directory.",
+  "goal": "A fresh git worktree of a clone, at content the clone already indexed, finds that pack index instead of rebuilding it: the index key no longer depends on the checkout's path or the files' mtimes, and the worktrees of one clone share the index directory, so the first rag.py pack in a new worktree takes under 5 s on the Windows host where it took 14 s; an edit of any indexed file still gives a new index, a server holding an index open never has it pruned by another worktree, and tests that test index building keep their own index directory.",
   "checks": [
     {
       "run": [
@@ -32,6 +32,13 @@
         "--max-seconds",
         "150"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile,time,os,shutil;q=[sys.executable,'_tools/rag.py','pack','kerberos delegation'];s.run(q,capture_output=True,check=True);d=os.path.join(tempfile.mkdtemp(),'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);t=time.time();r=s.run([sys.executable,os.path.join(d,'_tools','rag.py'),'pack','kerberos delegation'],cwd=d,capture_output=True);e=time.time()-t;shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('fresh worktree first pack',round(e,2),'s exit',r.returncode);sys.exit(r.returncode or int(e>5))"
+      ]
     }
   ],
   "touches": [
@@ -50,6 +57,6 @@
     "kb/public/python/pytest.md (tmp_path_factory, session scope)",
     "kb/public/python/pytest-xdist.md (session fixture once per worker, FileLock pattern)"
   ],
-  "notes": "Deferred, outside any sprint: kbfacts.fingerprint hashes each file's mtime_ns and the absolute root paths, so a clone at another path never matches the seed's index file and a copied index is never read. It needs a fingerprint independent of the clone's path and mtimes (_tools/kbfacts.py, outside these touches) and a Windows measurement first: on the Mac a fresh clone's first rag.py pack costs about 3 s cold against 0.05 s warm, about 10% of the scenario files' time; the Windows premise (check.py 14.5 s cold, 25-35% of worker time) is file-cache and Defender cost. kbfacts.store() prunes other indexes of its root in the same directory, so a shared KB_INDEX directory across scenarios could delete a file another test holds open on Windows; a per-clone copy avoids that. Its checks name perfcheck.py (ST-c35i7vjx). Its full tests.py and perfcheck ids checks pass before the work by design: they guard that the speed-up loses no test; -k seed_index and the time bound are what the work must make pass. Housekeeping 2026-10-06: the -k seed_index selector and 'perfcheck time tests --max 900' went with the old suite; the time bound is now perfcheck time --max-seconds 60, the Windows ceiling of _tools/tests_ceiling.json, and the worker proves the reuse by a tool run on a planted scenario clone, not by a new test. 2026-10-07: the time bound follows the win32 ceiling raised to 150 s (D-776rvpx2, gate ceiling of ST-pg5jyebo). 2026-10-07 Windows premise: a fresh clone's first rag.py pack takes 14.0 s cold (twice) vs 0.17 s warm. But a full tests.py (54 passed, 97.6 s) with a temporary log at each store() build logged one build, rag.py eval on the repo itself, and none in any scenario clone: no scenario runs a tool that reaches store(). Suite saving: zero; change not built.",
+  "notes": "Deferred, outside any sprint: kbfacts.fingerprint hashes each file's mtime_ns and the absolute root paths, so a clone at another path never matches the seed's index file and a copied index is never read. It needs a fingerprint independent of the clone's path and mtimes (_tools/kbfacts.py, outside these touches) and a Windows measurement first: on the Mac a fresh clone's first rag.py pack costs about 3 s cold against 0.05 s warm, about 10% of the scenario files' time; the Windows premise (check.py 14.5 s cold, 25-35% of worker time) is file-cache and Defender cost. kbfacts.store() prunes other indexes of its root in the same directory, so a shared KB_INDEX directory across scenarios could delete a file another test holds open on Windows; a per-clone copy avoids that. Its checks name perfcheck.py (ST-c35i7vjx). Its full tests.py and perfcheck ids checks pass before the work by design: they guard that the speed-up loses no test; -k seed_index and the time bound are what the work must make pass. Housekeeping 2026-10-06: the -k seed_index selector and 'perfcheck time tests --max 900' went with the old suite; the time bound is now perfcheck time --max-seconds 60, the Windows ceiling of _tools/tests_ceiling.json, and the worker proves the reuse by a tool run on a planted scenario clone, not by a new test. 2026-10-07: the time bound follows the win32 ceiling raised to 150 s (D-776rvpx2, gate ceiling of ST-pg5jyebo). 2026-10-07 Windows premise: a fresh clone's first pack takes 14.0 s cold vs 0.17 s warm; a full tests.py logging each store() build showed no scenario clone builds an index. Reshaped 2026-10-07 by the operator after the premise measurement: scenario clones build no index, but a fresh worktree's first pack costs 14 s cold on the Windows host (0.17 s warm), since kbfacts.fingerprint hashes mtimes and absolute root paths and index_path puts the index in each checkout's _cache/. The rebuild after a kb or kbfacts.py edit is a separate story.",
   "claimed_by": "worker-ST-4mcoplex"
 }
