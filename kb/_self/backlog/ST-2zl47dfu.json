@@ -2,7 +2,7 @@
   "id": "ST-2zl47dfu",
   "kind": "story",
   "title": "After land the orchestrator's checkout is level with origin/main before its next claim",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gkbtjjce",
   "priority": "P3",
   "rank": 0,
@@ -55,5 +55,6 @@
       "by": "operator"
     }
   ],
-  "notes": "The second check, tests.py -k land, passes before the work on purpose: it pins the landing behaviour the change must keep. The first check fails until land fast-forwards its checkout (operator's gate how: tool)."
+  "notes": "The second check, tests.py -k land, passes before the work on purpose: it pins the landing behaviour the change must keep. The first check fails until land fast-forwards its checkout (operator's gate how: tool).",
+  "claimed_by": "kb-worker-2zl47dfu"
 }
