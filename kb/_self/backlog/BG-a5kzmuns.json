@@ -6,12 +6,12 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "kb_mcp.py --status (and /kb-setup's MCP step, which reads it) reads the kb server registered for this project (local, then project scope) and, when its kb_mcp.py lies in another clone, prints that clone's path, its commit and how far behind it is, with the command that re-registers this clone (kb_mcp.py --register-local), so a session never answers from another clone unawares. Found in SP-eahtellz on the Windows host: the local registration ran C:/Users/Public/it-ops-kb-perf (3,404 commits behind), whose kb_pack lacked the Defender facts committed that day. The repro is host-bound: it reads this host's registration, which names it-ops-kb-perf until it is re-registered.",
+  "goal": "kb_mcp.py --status prints a 'registered:' line naming the kb_mcp.py the project's registered kb server runs (local, then project scope) and, when that lies in another clone, that clone's path, its commit and how far behind it is, with the command that re-registers this clone; and kb_mcp.py --register-local replaces a registration that runs another clone's kb_mcp.py instead of reporting 'already registered'. Found in SP-eahtellz on the Windows host: the local registration ran C:/Users/Public/it-ops-kb-perf (3,404 commits behind), and --register-local left it in place until it was removed by hand on 2026-10-07.",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kb_mcp.py','--status'],capture_output=True,text=True);o=r.stdout+r.stderr;bad='it-ops-kb-perf' not in o;print('status names the registered server clone:',not bad);sys.exit(r.returncode or int(bad))"
+      "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kb_mcp.py','--status'],capture_output=True,text=True);o=r.stdout;ok=any(l.startswith('registered') and 'kb_mcp.py' in l for l in o.splitlines());print('status names the registered kb server script:',ok);sys.exit(r.returncode or int(not ok))"
     ]
   },
   "touches": [

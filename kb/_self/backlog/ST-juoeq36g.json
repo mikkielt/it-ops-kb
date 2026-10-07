@@ -40,7 +40,9 @@
       "do": {
         "refuse: set refuses a call that mixes --add with more than one field, naming them, so each append is its own call": "ST-juoeq36g",
         "per-field: separate append flags (--add-check, --add-touch, --add-notes, ...) replace the shared --add": "ST-juoeq36g"
-      }
+      },
+      "answer": "per-field: separate append flags (--add-check, --add-touch, --add-notes, ...) replace the shared --add",
+      "by": "operator"
     }
   ],
   "notes": "Premise (run 2026-10-07 on origin/main): the check prints 'set exit 0 checks before 1 after 2' and exits 1. bl_items.py, .claude/skills/ and .claude/agents/ are rule-guarding, so gate add-scope is blocking and asked before any code."
