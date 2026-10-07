@@ -1,0 +1,23 @@
+{
+  "id": "BG-47kw57ed",
+  "kind": "bug",
+  "title": "A branch row of a stale worker worktree opens a window when the item's file says done: distill tests only that the file exists",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the SP-s5fdczv7 review (BG-m6fknqr5 goal clause on ql_capture.item_doing, not fixed there): a helper session started in a worker worktree whose work/<id> branch predates the item's done commit reads its own copy of the item file (status doing) in ql_capture.item_doing, so branch_row writes a branch row; distill in the main clone then finds the item file (now done) and ql_distill.kept_rows keeps the row, since item_finder tests only that the file exists, so every later prompt of that session sits in a window nothing closes until a sprint close deletes the file. A branch row opens no window in distill when the item file in the distilling clone says done (or dropped) and no later done or release row of the same item in the session closes it, as kept_rows already does for a missing file; the repro exits 0 and querylog.md and usage.md say so.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,json,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import ql_distill as d;t=Path(tempfile.mkdtemp());(t/'ST-aaaaaaaa.json').write_text(json.dumps({'id':'ST-aaaaaaaa','status':'done'}));rows=[{'surface':'prompt','prompt_id':'p1'},{'surface':'work','prompt_id':'p1','action':'branch','item':'ST-aaaaaaaa'},{'surface':'prompt','prompt_id':'p2'},{'surface':'prompt','prompt_id':'p3'}];inside,worked=d.work_windows(rows,d.item_finder(t));print('stale branch row of a done item opens a window:',inside);sys.exit(1 if any(inside.get(p) for p in ('p2','p3')) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_distill.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md",
+    "kb/_self/code.md"
+  ]
+}

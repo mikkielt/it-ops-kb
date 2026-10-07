@@ -1,0 +1,23 @@
+{
+  "id": "BG-cwoyc7yh",
+  "kind": "bug",
+  "title": "A backlog.py land run in the background writes its done row when it starts, so a failed landing still closes the window",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the SP-s5fdczv7 review: kb-sprint run step 4 starts land in the background, and PostToolUse fires when the background command starts (the SP-s5fdczv7 orchestrator's spool has BG-tyuwiin7's done row at 16:13:58, 9 s into the prompt that launched land, minutes before the landing finished), so ql_capture.work_action stores done for a land or merge that has not run yet; a land that later stops at a step or is refused still closes the session's window, and the rework prompts until the next land count on no item. A land or merge whose tool_input has run_in_background true writes no done row at launch; the session's window of the item closes only by a row written once the landing succeeded (the item's done commit or a foreground land), and querylog.md and usage.md say which; the repro exits 0.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,json,tempfile;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import ql_capture as q;q.capture({'hook_event_name':'PostToolUse','session_id':'s1','tool_name':'Bash','tool_input':{'command':'python3 _tools/backlog.py land ST-aaaaaaaa','run_in_background':True},'tool_response':{'stdout':'','stderr':'','backgroundTaskId':'b1'}});d=q.spool_dir();rows=[json.loads(l) for p in Path(d).glob('*.jsonl') for l in p.read_text().splitlines() if l.strip()];w=[r for r in rows if r.get('surface')=='work'];print('work rows at a background land launch:',[(r.get('item'),r.get('action')) for r in w]);sys.exit(1 if any(r.get('action')=='done' for r in w) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md",
+    "kb/_self/code.md"
+  ]
+}
