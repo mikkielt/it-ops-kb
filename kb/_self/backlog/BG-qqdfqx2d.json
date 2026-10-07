@@ -2,7 +2,7 @@
   "id": "BG-qqdfqx2d",
   "kind": "bug",
   "title": "new sprint gives its goal research story a check that passes before any research",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gkbtjjce",
   "priority": "P3",
   "rank": 0,
@@ -88,5 +88,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-qqdfqx2d"
+  "evidence": {
+    "commit": "efff99e929f311b6a6ce3cb8822168223f010e53",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;sys.path.insert(0,'_tools');import bl_base,bl_items,bl_land;bl=bl_base.Backlog('.');s=[i for i,t in sorted(bl.items.items()) if t.get('goal_research') and t.get('status') in ('draft','todo') and not bl_land.research_without_facts(t) and not bl_land.item_commits(bl.root,[i])][:1];r=[subprocess.run([a.replace('{id}',i) for a in c['run']],capture_output=True).returncode for i in s for c in bl_items.RESEARCH_CHECKS];print('research checks of',s,'before any research:',r);sys.exit(0 if r and all(x==1 for x in r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "923bc28ab5dee8e3"
+      }
+    ]
+  }
 }
