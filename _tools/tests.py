@@ -23,7 +23,9 @@ seconds were set on. A new test id needs room under max_ids, else it replaces on
 Each run appends one ops row `test.run` to the query log's spool (ql_capture.record, best effort: nothing is written
 when capture is off, inside a test, or when the row breaks its closed shape, and a failure to write never changes the
 exit code): mode, selected and total test files, workers, milliseconds, exit, passed, failed and skipped counts, the
-slowest files, every file's time for a full run and the names of the test files with a failure.
+slowest files, every file's time for a full run and the names of the test files with a failure. A run a backlog check
+makes writes it to the spool of the query log directory KB_TEST_RUN_HOME names (bl_base.check_env: the clone's real
+one), the one capture of that check outside its isolated home.
 
 A full run and a --changed run take a host-wide lock first (host_lock): an O_EXCL file in KB_HOST_LOCK_DIR (default
 /tmp, or the public directory on Windows) holding the pid, clone and start time. A second run prints who holds it and
@@ -39,7 +41,7 @@ pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lo
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
 under test stay stdlib-only. Shared fixtures and helpers are in conftest.py.
 """
-import contextlib, csv, datetime, json, os, re, shutil, signal, subprocess, sys, tempfile, time
+import contextlib, csv, datetime, json, os, pathlib, re, shutil, signal, subprocess, sys, tempfile, time
 import xml.etree.ElementTree as ET
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -213,11 +215,15 @@ def inside_test():
 def record_run(mode, entry, args):
     """Append the `test.run` row of one tests.py run; best effort: it returns None and raises nothing when ops capture is
     unavailable, when the run is inside a test (a scenario clone's run never writes into the real spool) or when the
-    row breaks its shape."""
+    row breaks its shape. A run a backlog check makes (bl_base.check_env) has KB_TEST_RUN_HOME, the clone's real query
+    log directory: the row goes to that spool, not to the check's isolated home."""
     try:
         if inside_test():
             return None
         import ql_capture
+        home = os.environ.get("KB_TEST_RUN_HOME")
+        if home:
+            ql_capture.spool_dir = lambda: pathlib.Path(home) / "spool"
         return ql_capture.record("ops", event="test.run", **run_fields(mode, entry, worker_count(args), mode == "full"))
     except Exception:  # noqa: BLE001 - a run never fails for its log
         return None

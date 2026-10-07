@@ -39,7 +39,7 @@ A story or bug too big for one push is split into two. A task too big for one co
 | `priority`, `rank` | `P1` to `P3`, then an integer order within the priority |
 | `severity`, `repro` | bugs: `S1` to `S4`, and the check that fails until the fix lands |
 | `goal` | the end state, as a fact about the repository once done |
-| `checks` | the commands that prove the goal: `{"run": [argv], "exit": 0, "match": "regex"}`, run without a shell and with an isolated query log home (`CLAUDE_PLUGIN_DATA` a fresh temporary directory, removed afterwards; `kb/_self/querylog.md`, Tests), so no check adds a row to the clone's own spool |
+| `checks` | the commands that prove the goal: `{"run": [argv], "exit": 0, "match": "regex"}`, run without a shell and with an isolated query log home (`CLAUDE_PLUGIN_DATA` a fresh temporary directory, removed afterwards; `kb/_self/querylog.md`, Tests), so no check adds a row to the clone's own spool but the `test.run` row of a `tests.py` run it makes, which `KB_TEST_RUN_HOME` (the clone's real query log directory, kept when a check runs a check) sends to that spool |
 | `touches` | path globs the item's commits may change (`*` within a directory, `**` across) |
 | `depends_on`, `relates_to` | hard dependencies (not ready until they are done); soft links |
 | `gates` | questions for the operator: `{"id", "kind": "blocking"\|"provisional", "question", "options", "recommendation", "answer", "by"}` |

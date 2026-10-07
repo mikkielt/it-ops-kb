@@ -552,11 +552,21 @@ def check_env(root, home):
     clone's own spool. The pack index and the live-docs cache stay where the inherited environment keeps them (KB_INDEX,
     KB_DOCS_CACHE), not in HOME, which is deleted after the run: without them, the pack index is the clone's shared one
     (main_worktree's _cache/, as kbfacts.index_dir finds it from a linked worktree) and the live-docs cache ROOT's own
-    _cache/live-docs (kb_mcp.docs_cache_dir). A check that sets its own CLAUDE_PLUGIN_DATA in its own code keeps it."""
+    _cache/live-docs (kb_mcp.docs_cache_dir). A check that sets its own CLAUDE_PLUGIN_DATA in its own code keeps it.
+    KB_TEST_RUN_HOME names the query log directory this process would write to before the isolation (ql_base.places:
+    the plugin data's, else the clone's own _cache/querylog, the main worktree's for a linked one), unless capture is
+    off there: tests.py writes the `test.run` row of a run the check makes into that directory's spool, so the digest's
+    ops block counts it; every other capture of the check stays in HOME. A value the environment already holds stays: a
+    check that itself runs a check runs in an isolated home, and its run still names the clone's."""
     env = colourless_env()
     data = env.get("CLAUDE_PLUGIN_DATA")
     env["KB_INDEX"] = env.get("KB_INDEX") or data or os.path.join(main_worktree(root), "_cache")
     env["KB_DOCS_CACHE"] = env.get("KB_DOCS_CACHE") or os.path.join(data or os.path.join(root, "_cache"), "live-docs")
+    if not env.get("KB_TEST_RUN_HOME"):
+        import ql_base
+        qdir, cfg = ql_base.places()
+        if not ql_base.logging_off(qdir, cfg):
+            env["KB_TEST_RUN_HOME"] = str(qdir)
     env["CLAUDE_PLUGIN_DATA"], env["CLAUDE_PLUGIN_ROOT"] = str(home), root
     return env
 
@@ -566,7 +576,7 @@ def run_check(root, c):
     codes taken out. A check that names python3 or python runs with the interpreter running this tool: on a host
     whose python3 is the Windows Store alias, or none on PATH, it still proves the item. It runs with an isolated query
     log home (check_env), a fresh temporary directory removed afterwards, so no check or repro adds a row to the
-    clone's own spool."""
+    clone's own spool, except the `test.run` row of a tests.py run it makes (KB_TEST_RUN_HOME, check_env)."""
     argv = list(c["run"])
     if argv and argv[0] in ("python3", "python"):
         argv[0] = sys.executable
