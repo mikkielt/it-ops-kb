@@ -2,7 +2,7 @@
   "id": "ST-pg5jyebo",
   "kind": "story",
   "title": "A Claude session on the Windows host records a run of the test suite",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-eahtellz",
   "priority": "P1",
@@ -45,5 +45,18 @@
     "fired": true
   },
   "notes": "Its run needs a Claude session in a clone on the Windows host; the trigger holds it until one exists (fire it with backlog.py fire ST-pg5jyebo), and the same session can run ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator”. Housekeeping 2026-10-06: the stress suite is gone, so the record covers tests.py only; the -k windows_run_record test became a check that reads the record's commit and asks git whether it is an ancestor of HEAD (a doc-reading test is not written). The trigger's text still names stress_test.py: backlog.py has no command to reword a trigger.",
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "0df0dbeafc0fa62e0fcd19f5524e6c4cefb148f9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys,pathlib;t=pathlib.Path('kb/_self/reports/windows-run.md').read_text(encoding='utf-8');c=re.search(r'\\b[0-9a-f]{9,40}\\b',t).group(0);sys.exit(subprocess.run(['git','merge-base','--is-ancestor',c,'HEAD']).returncode or int('tests.py' not in t))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
