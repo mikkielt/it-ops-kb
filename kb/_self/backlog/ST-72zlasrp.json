@@ -2,7 +2,7 @@
   "id": "ST-72zlasrp",
   "kind": "story",
   "title": "Research sprint goal: Checks keep selecting tests; detectors judge closed windows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vmxdxtru",
   "goal_research": true,
   "priority": "P1",
@@ -19,5 +19,17 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "sonnet-research-72zlasrp"
+  "evidence": {
+    "commit": "2e545b196ef5d32e62f824bd031f54e830fd1bb9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "d9622d5b1744b545"
+      }
+    ]
+  }
 }
