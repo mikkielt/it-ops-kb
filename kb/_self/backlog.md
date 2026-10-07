@@ -171,7 +171,7 @@ When it succeeds it records the commit and each check's exit code and output dig
 
 `python3 _tools/backlog.py done ID` refuses when any of these hold:
 - the item waits on anything;
-- a review story: a check or bug repro of a done item of its sprint fails when run once more on the sprint's tip (`bl_land.rerun_done_checks`), named with its item, so an item whose check fails on main does not close with the sprint;
+- a review story: a check or bug repro of a done item of its sprint fails when run once more on the sprint's tip (`bl_land.rerun_done_checks`), named with its item, so an item whose check fails on main does not close with the sprint; one whose test run selects no test (exit 5: a later change deleted the test it names) is printed as `gone` and not counted, since a done item's check or repro cannot be repointed to a run that passes;
 - a file in scope has uncommitted changes (the checks run on `HEAD`);
 - a work item (not an epic or a review story) has no `touches` of its own or under it: `start` requires a scope of every work item, and a story or bug filed with `--sprint` into an active sprint is `todo` at once without one, so `done` holds the same rule (`backlog.py set ID --touch GLOB`);
 - the item has `touches` of its own and no commit reachable from `HEAD` carries a `KB-Work` trailer, as git reads trailers, naming the item or one of its descendants and changing a file other than item files (a claim or planning commit, which changes only `kb/_self/backlog/*.json`, is not the work; a story or bug whose tasks carried the work needs no commit of its own);
