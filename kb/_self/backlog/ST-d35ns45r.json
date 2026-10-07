@@ -2,7 +2,7 @@
   "id": "ST-d35ns45r",
   "kind": "story",
   "title": "A tests.py run a check makes still records its test.run row in the clone's spool",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-vmxdxtru",
   "priority": "P2",
@@ -28,5 +28,6 @@
   "depends_on": [
     "ST-tnbnmec6",
     "BG-ese7wmz3"
-  ]
+  ],
+  "claimed_by": "sonnet-worker-d35ns45r"
 }
