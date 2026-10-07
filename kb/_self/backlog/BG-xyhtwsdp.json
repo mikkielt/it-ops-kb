@@ -2,7 +2,7 @@
   "id": "BG-xyhtwsdp",
   "kind": "bug",
   "title": "A done bug whose check or repro names a deleted test fails the review's rerun with no route out",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eahtellz",
   "priority": "P1",
   "rank": 0,
@@ -43,5 +43,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "f93c595061795a8c06350bb37aaf362c498f5d9c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_base,bl_land;bl=bl_base.Backlog('.');bl.sprint_items=lambda s:['BG-2luo4b26'];r=bl_land.rerun_done_checks(bl,'SP-eahtellz');print('failing reruns',[(i,c) for i,_,c in r]);sys.exit(1 if r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "8ccbc104363d18e3"
+      }
+    ]
+  }
 }
