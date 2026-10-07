@@ -407,12 +407,15 @@ def artifact_paths():
     return out
 
 
+TEST_FILE = re.compile(r"_tools/test_[^/]*\.py")
+
+
 def gate_needs(paths):
     """{check: the reason it runs, or None to skip}. Each check runs only when a path it reads changed; with no
     known paths (None) every check runs."""
     if paths is None:
         return {k: "no base to compare with" for k in ("check", "fetch", "doc2query", "selfdoc", "backlog", "querylog",
-                                                       "dropped")}
+                                                       "dropped", "selectors")}
     ps = {p.replace("\\", "/") for p in paths}
     kb = {p for p in ps if p.startswith("kb/")}
     tools = {p for p in ps if p.startswith("_tools/")}
@@ -432,7 +435,8 @@ def gate_needs(paths):
             "selfdoc": why(ps - content - items - store, "a file kb/_self describes"),
             "backlog": why(items | ({"_tools/backlog.py"} & ps), "a backlog item"),
             "querylog": why(store, "the query log store"),
-            "dropped": why(ps & {"_tools/test_ids_dropped.txt", "_tools/perfcheck.py"}, "the dropped test ids")}
+            "dropped": why(ps & {"_tools/test_ids_dropped.txt", "_tools/perfcheck.py"}, "the dropped test ids"),
+            "selectors": why({p for p in tools if TEST_FILE.fullmatch(p)}, "a test file")}  # a deleted or renamed one too
 
 
 GATE_NOTE = re.compile(r"tests\.py --changed \S+: (no test can be affected by the changed paths"
@@ -525,11 +529,48 @@ def record_gate(r, code):
         return None
 
 
+SELECTOR_ROW = re.compile(r"^\s*\S+\s+(?P<flag>NONE|error)\s+.+?\s(?P<id>(?:EP|ST|TK|SB|BG)-[a-z2-7]{8})\s[“(]")
+
+
+def item_done(iid):
+    """True when the item file of IID says `status` done; an unreadable file is not done."""
+    try:
+        with open(Path(KB, kbcommon.repo_rel(kbcommon.SELF), "backlog", f"{iid}.json"), encoding="utf-8") as f:
+            return json.load(f).get("status") == "done"
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
+def selector_gate(out):
+    """(exit code, output) of the gate's `backlog.py selectors` run, whose own exit is always 0. A NONE row (the
+    selector selects no test) of a done item refuses: `selectors` lists a done item only when its sprint is active, and
+    the sprint review reruns its check. A NONE row of any other item prints a warning (an open item's test may be yet to
+    write), and so does an `error` row (a failed collection: the suite run beside it fails on a test file that does not
+    collect)."""
+    refused, warned = [], []
+    for ln in out.splitlines():
+        m = SELECTOR_ROW.match(ln)
+        if not m:
+            continue
+        if m["flag"] == "error":
+            warned.append("warning: a selector failed to collect, not refused: " + ln.strip())
+        elif item_done(m["id"]):
+            refused.append("refused: the check of a done item selects no test (restore the test or point the check at "
+                           "one that exists): " + ln.strip())
+        else:
+            warned.append("warning: the selector of an item not done selects no test, not refused: " + ln.strip())
+    for ln in warned:
+        print(ln)
+    return int(bool(refused)), "\n".join(refused + [f"selectors: refused={len(refused)} warned={len(warned)}"])
+
+
 def gate(r, up, host, fix_check=False, since=None):
     """The checks the changed paths (gate_paths) can break, then check-trailers on up..HEAD:
     check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
-    clears a doc), backlog.py check for backlog items, querylog.py check for the query log store, and tests.py
+    clears a doc), backlog.py check for backlog items, backlog.py selectors for a changed, deleted or renamed
+    _tools/test_*.py file (selector_gate: refused for a done item whose check selects no test), querylog.py check for the
+    query log store, and tests.py
     --changed UP (KB_TESTS_FAST=1: nothing for backlog items and the query log store, the suite without the git
     scenarios for kb content only, the whole suite for any other path).
     `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
@@ -552,6 +593,7 @@ def gate(r, up, host, fix_check=False, since=None):
                ("fetch.py --offline", "fetch.py", ["--offline"], None, need["fetch"]),
                ("doc2query.py stale", "doc2query.py", ["stale"], None, need["doc2query"]),
                ("backlog.py check", "backlog.py", ["check"], None, need["backlog"]),
+               ("backlog.py selectors", "backlog.py", ["selectors"], None, need["selectors"]),
                ("querylog.py check", "querylog.py", ["check"], None, need["querylog"])]
     if up:
         checks.append((f"selfdoc.py stale --since {short(up)}", "selfdoc.py", ["stale", "--since", up], None, need["selfdoc"]))
@@ -572,6 +614,8 @@ def gate(r, up, host, fix_check=False, since=None):
             continue
         t0 = time.monotonic()
         code, out = tool(name, *args, env=env)
+        if args[:1] == ["selectors"] and not code:
+            code, out = selector_gate(out)
         gate_mark(r, label, code=code, since=t0)
         if name == "tests.py":
             gate_scope(r, None, out)
