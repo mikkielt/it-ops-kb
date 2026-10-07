@@ -2,7 +2,7 @@
   "id": "ST-4q27mcqb",
   "kind": "story",
   "title": "Review sprint: Work windows count only a worker's own session",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-owbgisoj",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "c6ca54c8a3c855c651dfdea66316def34a3720dd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "d5454cf0d7651a90"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "ec7cdc80ac041bbd"
+      }
+    ]
+  }
 }
