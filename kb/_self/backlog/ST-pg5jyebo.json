@@ -2,7 +2,7 @@
   "id": "ST-pg5jyebo",
   "kind": "story",
   "title": "A Claude session on the Windows host records a run of the test suite",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-eahtellz",
   "priority": "P1",
@@ -23,7 +23,8 @@
   ],
   "trigger": {
     "when": "a Claude session runs in a clone on the Windows host and can run tests.py and stress_test.py there",
-    "fired": false
+    "fired": true
   },
-  "notes": "Its run needs a Claude session in a clone on the Windows host; the trigger holds it until one exists (fire it with backlog.py fire ST-pg5jyebo), and the same session can run ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator”. Housekeeping 2026-10-06: the stress suite is gone, so the record covers tests.py only; the -k windows_run_record test became a check that reads the record's commit and asks git whether it is an ancestor of HEAD (a doc-reading test is not written). The trigger's text still names stress_test.py: backlog.py has no command to reword a trigger."
+  "notes": "Its run needs a Claude session in a clone on the Windows host; the trigger holds it until one exists (fire it with backlog.py fire ST-pg5jyebo), and the same session can run ST-xjb4wykm “Defender's cost on test scratch files is measured and settled by the operator”. Housekeeping 2026-10-06: the stress suite is gone, so the record covers tests.py only; the -k windows_run_record test became a check that reads the record's commit and asks git whether it is an ancestor of HEAD (a doc-reading test is not written). The trigger's text still names stress_test.py: backlog.py has no command to reword a trigger.",
+  "claimed_by": "orchestrator"
 }
