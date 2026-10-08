@@ -22,7 +22,8 @@
     "kb/public/_answers.md",
     "kb/public/_gaps.md",
     "kb/public/_coverage.csv",
-    "kb/public/_coverage.md"
+    "kb/public/_coverage.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "depends_on": [
     "ST-hhimevk7"

@@ -463,9 +463,6 @@ f9afed7bacc7,Claude cache: ephemeral vs. long-term retention periods
 174c06de8cb6,prompt cache write cost
 174c06de8cb6,How much do cache writes cost compared to base input tokens?
 174c06de8cb6,Claude cached token pricing: 5-minute vs. 1-hour TTL
-8b45db4b4b05,prompt cache read cost
-8b45db4b4b05,What is the pricing for reading from cache?
-8b45db4b4b05,Claude cache hit pricing: cost multiplier per cached token
 76507ce623d4,prompt cache invalidation hierarchy
 76507ce623d4,What order does cache invalidation follow when different parts change?
 76507ce623d4,Claude cache: when does tool definition change affect system and messages
