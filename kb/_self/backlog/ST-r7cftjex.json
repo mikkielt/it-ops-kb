@@ -33,7 +33,8 @@
     "kb/_self/maintaining.md",
     "kb/_self/querylog.md",
     "kb/_self/code.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "_tools/test_sync_e2e.py"
   ],
   "depends_on": [
     "ST-pvtfs43r",
