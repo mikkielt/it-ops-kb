@@ -374,6 +374,7 @@ LAND_STALE = ("stale", ["_tools/selfdoc.py", "stale", "--since"])  # + the integ
 # run once, when the landing changes _tools/; the full tests.py is no step here: it runs once at the sprint's review story
 LAND_HEAVY = (("rag.py eval", ["_tools/rag.py", "eval"]),
               ("lint", [".claude/skills/kb-verify/lint.py"]))
+LAND_LINT = LAND_HEAVY[1]  # a landing that changes articles and not _tools/ runs it on those articles' paths only
 LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])
 LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
 
@@ -1205,9 +1206,16 @@ def fast_forward_start(root, remote, start_ref, upstream):
         say(f"land: fast-forwarded {name} {behind} commit(s) to {remote}/main")
 
 
+def changed_articles(changed):
+    """The qualified paths (`<root>/<path in the root>`, as lint.py takes them) of the .md files CHANGED (repository
+    paths) holds under a kb root, in order."""
+    return ["/".join(parts[1:]) for parts in (p.split("/") for p in changed)
+            if len(parts) > 2 and parts[0] == "kb" and parts[-1].endswith(".md")]
+
+
 def land_once(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
-    heavy checks when _tools/ changed, sync --push. Code not yet on the integration main: the item's checks and
+    heavy checks when _tools/ changed (else the lint on the changed articles), sync --push. Code not yet on the integration main: the item's checks and
     a bug's repro, the heavy checks, sync --push (a code/<id> merge request; main does not move), and a re-run once
     it has merged finishes it as content does. Stops at the first failing step, naming it. Every run and every stop ends
     on the branch (or the detached commit) it started on: the rebase switches to the landed branch, and a claim
@@ -1309,6 +1317,10 @@ def land_once(bl, a):
             land_run(root, LAND_STALE[0], [*LAND_STALE[1], upstream])  # a missing Self-Reviewed fails in seconds
             for step, argv in LAND_HEAVY:
                 land_run(root, step, argv)
+        else:  # lint.py takes qualified article paths: the changed articles only, before sync --push
+            articles = changed_articles(changed)
+            if articles:
+                land_run(root, LAND_LINT[0], [*LAND_LINT[1], *articles])
         land_run(root, *LAND_SYNC, whole=True)
         if late:
             tip = pushed_tip(root, remote, code_branch)
