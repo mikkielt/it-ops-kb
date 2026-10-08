@@ -2,7 +2,7 @@
   "id": "BG-kwxzwsfd",
   "kind": "bug",
   "title": "The pool dry run prices an arm with no earlier record at a default run half its real cost, and the spend cap starves the arms that run last",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -26,5 +26,6 @@
   ],
   "depends_on": [
     "BG-rbokisbc"
-  ]
+  ],
+  "claimed_by": "worker-BG-kwxzwsfd"
 }
