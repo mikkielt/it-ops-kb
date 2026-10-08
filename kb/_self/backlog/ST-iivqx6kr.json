@@ -2,7 +2,7 @@
   "id": "ST-iivqx6kr",
   "kind": "story",
   "title": "The kb states that Get-MpPerformanceReport -Raw durations are 100-nanosecond intervals",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kyvu526t",
   "priority": "P3",
@@ -31,5 +31,6 @@
   "depends_on": [
     "ST-umjb55sg"
   ],
-  "notes": "Premise (run 2026-10-07): python3 _tools/rag.py pack 'Get-MpPerformanceReport duration unit ticks' gives coverage weak, kb lacks unit, ticks; asr-and-antivirus.md:67, :68 and :70 name no unit. Live docs, not in the kb (Microsoft Learn, Get-MpPerformanceReport, read 2026-10-07): -Raw represents TimeSpan values as a number of 100-nanosecond intervals. BG-6h3q2vt6 cites this line. python3 _tools/check.py passes before the work: it keeps the edited article within the contract; the first check is the failing proof."
+  "notes": "Premise (run 2026-10-07): python3 _tools/rag.py pack 'Get-MpPerformanceReport duration unit ticks' gives coverage weak, kb lacks unit, ticks; asr-and-antivirus.md:67, :68 and :70 name no unit. Live docs, not in the kb (Microsoft Learn, Get-MpPerformanceReport, read 2026-10-07): -Raw represents TimeSpan values as a number of 100-nanosecond intervals. BG-6h3q2vt6 cites this line. python3 _tools/check.py passes before the work: it keeps the edited article within the contract; the first check is the failing proof.",
+  "claimed_by": "worker-iivqx6kr"
 }
