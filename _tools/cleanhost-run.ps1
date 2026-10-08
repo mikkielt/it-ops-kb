@@ -3,8 +3,8 @@
 #
 #   powershell -ExecutionPolicy Bypass -File _tools\cleanhost-run.ps1 [-Short] [-KeepAccount] [-Out DIR]
 #
-# Run it elevated, from a clone whose main is origin/main. It creates the account kb-cleanhost (Users only, a random
-# password held as a SecureString and never printed), bundles main into C:\Users\Public\kb-cleanhost (Administrators,
+# Run it elevated, from a clone whose main is origin/main. It creates the account kbch (Users only, a random
+# password held as a SecureString and never printed), bundles main into C:\Users\Public\kbch (Administrators,
 # SYSTEM and the account only), runs this script again as that account through Start-Process -Credential (no user
 # rights changed), copies its results.txt and one log per step to -Out (default _cache\cleanhost, never committed),
 # then deletes the account, its profile and the work folder. -Short leaves out tests.py and adds the step 4 and 5 commands that need no sign-in. -KeepAccount keeps the account and the
@@ -12,8 +12,10 @@
 # run could not start. The results name no host or user: profile paths print as %USERPROFILE%.
 param([switch]$Short, [switch]$KeepAccount, [string]$Out, [switch]$AsAccount)
 $ProgressPreference = 'SilentlyContinue'
-$name = 'kb-cleanhost'
-$root = 'C:\Users\Public\kb-cleanhost'
+# four letters, no digit: bl_base.name_pieces finds no piece in it, so the suite's host and user name guard, which
+# reads the account's name from the environment, does not match the kb's own text (a longer name did: cleanhost)
+$name = 'kbch'
+$root = 'C:\Users\Public\kbch'
 
 if ($AsAccount) {
     # the account's part: record the host, install Python, run the steps; each step's exit code and last line
