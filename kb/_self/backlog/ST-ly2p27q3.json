@@ -86,6 +86,20 @@
       "class": "design",
       "answer": "the build refuses to call when more than 12 rows would be asked or the estimate is over 0.50 USD",
       "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which breadth guard and limits judge a regenerated regex before a redone row accepts it, and how does an offline rebuild reuse a reply?",
+      "options": [
+        "refuse a regex with a bare-word alternative found in more than 10 kb articles or matching more than 2 other eval rows' facts or questions; --replies FILE answers the redone rows from a pool csv, no model",
+        "refuse only a regex matching more than 2 other eval rows, no word test",
+        "no guard, the reviewer reads the regexes"
+      ],
+      "recommendation": "refuse a regex with a bare-word alternative found in more than 10 kb articles or matching more than 2 other eval rows' facts or questions; --replies FILE answers the redone rows from a pool csv, no model",
+      "class": "design",
+      "answer": "refuse a regex with a bare-word alternative found in more than 10 kb articles or matching more than 2 other eval rows' facts or questions; --replies FILE answers the redone rows from a pool csv, no model",
+      "by": "agent"
     }
   ],
   "notes": "Operator, 2026-10-08: approved one small paid Sonnet call for these rows in this sprint, after ST-yob4py65 kept the committed checks offline (its gate g2). Premise: ST-yob4py65's report counted 10 of 40 eval rows path-only on the committed csv, before and after its fix.",

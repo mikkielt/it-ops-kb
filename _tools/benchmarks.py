@@ -27,12 +27,14 @@
                                             does not run is an error; --sample N keeps N rows of each kind, seeded by
                                             --seed
   benchmarks.py pool build [--querylog] [--seed N] [--out FILE] [--redo ID]... [--dry-run]
+                                            [--replies FILE]
                                             write the stratified question pool, with a check per row, to
                                             kb/public/_retrieval/bench_pool.csv, or with --querylog the redacted
                                             query-log questions to kb/_querylog/bench/pool.csv (bench_pool.py);
                                             --redo asks the paid call again for the eval rows it names (a pool row
                                             id or an eval case id), --dry-run lists the rows it would ask and the
-                                            estimated spend, and asks nothing
+                                            estimated spend, and asks nothing; --replies FILE answers the --redo
+                                            rows from the first check of the same rows in a pool csv, no model
   benchmarks.py pool check [--querylog] [FILE]
                                             exit 1 on a pool row without a usable check, a held-out row with text, a
                                             leak or a kind off its count
@@ -143,6 +145,7 @@ def main(argv=None):
     pb.add_argument("--out")
     pb.add_argument("--redo", action="append", metavar="ID",
                     help="ask again for the check of this eval row (a pool row id or an eval case id); repeatable")
+    pb.add_argument("--replies", metavar="FILE", help="with --redo: take the new checks from the eval rows of this pool csv, no model")
     pb.add_argument("--dry-run", action="store_true", help="list the rows a build would ask and the estimated spend; write nothing")
     pc = pool.add_parser("check")
     pc.add_argument("--querylog", action="store_true")

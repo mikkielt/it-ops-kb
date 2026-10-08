@@ -194,6 +194,55 @@ def path_only(checks):
     return all("|" not in c and re.search(r"\\\.(md|csv)$", c) for c in checks)
 
 
+COMMON_ARTICLES = 10  # a bare word in more articles of the kb than this is common
+BREADTH = 2  # a regenerated regex may match the fact or question of this many other eval rows
+BARE = re.compile(r"(?:\\b)?[A-Za-z][A-Za-z0-9_-]*(?:\\b)?")
+
+
+def alternatives(rx):
+    """The top-level alternatives of a regex (split at a `|` outside groups, classes and escapes)."""
+    out, cur, depth, cls, esc = [], "", 0, False, False
+    for ch in rx:
+        if not esc and not cls and ch == "|" and depth == 0:
+            out.append(cur)
+            cur = ""
+            continue
+        cur += ch
+        if esc:
+            esc = False
+        elif ch == "\\":
+            esc = True
+        elif cls:
+            cls = ch != "]"
+        elif ch == "[":
+            cls = True
+        elif ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+    return out + [cur]
+
+
+def too_broad(rx, own, texts, articles):
+    """Why a regenerated regex would pass almost any answer, else "": one alternative is a bare word (letters, digits,
+    `-`, `_`) found in more than COMMON_ARTICLES articles of the kb (`articles`: their texts), or the regex matches the
+    fact or question of more than BREADTH other eval rows (`texts`: {source: (fact place, text)}; a row on the same
+    fact line as `own` is not another)."""
+    for alt in alternatives(rx):
+        if BARE.fullmatch(alt):
+            word = re.compile(r"\b" + re.escape(alt.replace("\\b", "")) + r"\b", re.I)
+            n = sum(1 for a in articles if word.search(a))
+            if n > COMMON_ARTICLES:
+                return f"`{alt}` is in {n} articles"
+    hit = [src for src, (place, text) in texts.items() if src != own and place != texts[own][0] and re.search(rx, text, re.I)]
+    return f"it matches {len(hit)} other eval rows" if len(hit) > BREADTH else ""
+
+
+def article_texts(home):
+    return [p.read_text(encoding="utf-8") for p in sorted((Path(home) / "kb" / "public").glob("*/*.md"))
+            if not p.parent.name.startswith("_")]
+
+
 def redo_sources(prior, names):
     """The `lookup_eval.csv:ID` sources `names` pick: a pool row id (BP-xxxxxxxx) of the file a rebuild replaces, or an
     eval case id (with or without the `lookup_eval.csv:` prefix)."""
@@ -205,8 +254,9 @@ def eval_section(home, seed, ask, out, redo=(), kept=None):
     """(eval rows, their variants, the near-miss rows built on eval questions), one `ask` call for the checks of the
     rows the file at `out` lacks. The eval rows and near-miss bases that file holds stay, so a case added to
     lookup_eval.csv moves no row; the seed draws only the rows it lacks (a build to a new `out` draws all). The rows
-    `redo` names (see redo_sources) are asked again too, and keep their committed check, appended to `kept`, when the
-    new regex is unusable or only an article path; a name that is no row of the pool is a PoolError."""
+    `redo` names (see redo_sources) are asked again too, and keep their committed check, appended to `kept` with the
+    reason, when the new regex is unusable, only an article path or too broad (too_broad); a name that is no row of the
+    pool is a PoolError."""
     prior = committed_rows(out)
     cases = []
     for c in sorted(read_csv(Path(home) / EVAL_FILE), key=lambda c: c["id"]):
@@ -233,13 +283,19 @@ def eval_section(home, seed, ask, out, redo=(), kept=None):
     todo = [c for c in ask_for if f"lookup_eval.csv:{c['id']}" not in have or f"lookup_eval.csv:{c['id']}" in again]
     got = {}
     if todo:
+        texts = {f"lookup_eval.csv:{c['id']}": (c["fact"][:2], c["question"] + "\n" + c["fact"][2]) for c in ask_for}
+        articles = article_texts(home) if again else []
         regexes = ask([{"row": f"lookup_eval.csv:{c['id']}", "question": c["question"],
                         "where": f"{c['fact'][0]}:{c['fact'][1]}", "fact": c["fact"][2]} for c in todo])
         for c, rx in zip(todo, regexes):
             src = f"lookup_eval.csv:{c['id']}"
-            if src in again and src in have and (not usable(rx, c["fact"][2]) or path_only([rx])):
+            why = ""
+            if src in again and src in have:
+                why = ("unusable" if not usable(rx, c["fact"][2]) else "an article path" if path_only([rx])
+                       else too_broad(rx, src, texts, articles))
+            if why:
                 if kept is not None:
-                    kept.append(src)
+                    kept.append((src, why))
             else:
                 got[src] = [rx if usable(rx, c["fact"][2]) else fallback_check(c["fact"][0])]
     checks = {**have, **got}
@@ -567,6 +623,14 @@ ASK_MAX_ROWS = 12  # a --redo build asks no more rows than this, nor spends more
 ASK_MAX_USD = 0.50
 
 
+def csv_replies(path):
+    """An ask that answers from the first check of the eval rows of a pool csv, by row source (no model): the checks a
+    paid call wrote once, judged again by the build's guards."""
+    got = {r["source"]: json.loads(r["checks"])[0] for r in read_csv(path)
+           if r["kind"] in EVAL_KINDS and r["source"].startswith("lookup_eval.csv:")}
+    return lambda items: [got.get(i["row"], "") for i in items]
+
+
 class Asked(Exception):
     """A `--dry-run` that reached the paid call: carries nothing, the listing is printed."""
 
@@ -599,13 +663,15 @@ def cli(a, home=HOME):
     """`pool build` and `pool check`; the argparse namespace comes from benchmarks.py."""
     if a.pool_cmd == "build":
         out = Path(a.out) if a.out else Path(home) / (QUERYLOG_FILE if a.querylog else PUBLIC_FILE)
-        redo, dry = getattr(a, "redo", None) or [], getattr(a, "dry_run", False)
+        redo, dry, replies = getattr(a, "redo", None) or [], getattr(a, "dry_run", False), getattr(a, "replies", None)
         kept = []
         try:
             if a.querylog and (redo or dry):
                 raise PoolError("--redo and --dry-run are for the public pool")
-            rows = (build_querylog(home, a.seed, out) if a.querylog else
-                    build_public(home, a.seed, listed_ask(sonnet_regexes, dry, bool(redo)), out, redo, kept))
+            if replies and (dry or not redo):
+                raise PoolError("--replies goes with --redo and not with --dry-run")
+            ask = csv_replies(replies) if replies else listed_ask(sonnet_regexes, dry, bool(redo))
+            rows = build_querylog(home, a.seed, out) if a.querylog else build_public(home, a.seed, ask, out, redo, kept)
         except Asked:
             return 0
         except PoolError as e:
@@ -614,8 +680,8 @@ def cli(a, home=HOME):
         if dry:
             print("pool build: dry run, no row would be asked")
             return 0
-        for src in kept:
-            print(f"pool build: {src} keeps its committed check (the new regex was unusable or an article path)")
+        for src, why in kept:
+            print(f"pool build: {src} keeps its committed check ({why})")
         write_csv(out, rows)
         counts = {}
         for r in rows:
