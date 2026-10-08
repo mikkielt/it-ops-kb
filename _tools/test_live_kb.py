@@ -1,10 +1,13 @@
 """The checks the kb's content lives by, over the live kb: check.py (sources, citations, tags), build_index.py --check
-(the generated index), the lookup eval (rag.py eval), and the pack format. Each gate also fails on a planted input."""
-import csv, os, re
+(the generated index), the lookup eval (rag.py eval), and the pack format. Each gate also fails on a planted input. The pack index's unit cache is pinned on
+a planted fixture root, not on the live kb."""
+import csv, os, re, sqlite3, subprocess, sys
 
 
-import kbcommon
-from conftest import tool
+import pytest
+
+import kbcommon, kbfacts, kbid
+from conftest import TOOLS, tool
 
 EVAL_CSV = os.path.join(kbcommon.PUBLIC, kbcommon.DATA_DIR, "lookup_eval.csv")
 SID = "FXT-" + "a" * 8  # not a source of the fixture root's _sources.csv
@@ -114,3 +117,105 @@ def test_pack_prints_coverage_and_fact_lines_with_path_line_and_tag():
     assert code == 0, out[-1500:]
     assert re.search(r"^coverage: good\b", out, re.M), out[:1500]
     assert re.search(r"\S+\.md:\d+.*\[(DOC|CODE|DER|COMMUNITY|UNK)\b", out), out[:1500]
+
+
+# rag.py pack on the fixture root alone (serve_only), so a cold index weighs one article and not the live kb
+PACK_FIXTURE = ("import sys; sys.path.insert(0, sys.argv[1]); import kbcommon; kbcommon.serve_only(['fixture']); "
+                "import rag; sys.argv = ['rag.py', 'pack', sys.argv[2]]; rag.main()")
+
+
+def variant(orig):
+    """A function that does what `orig` does with other code: _weigh_code() digests the code, not the behaviour."""
+    def v(*args, **kwargs):
+        return orig(*args, **kwargs)
+    return v
+
+
+def test_unit_cache_equals_a_fresh_weighing_re_weighs_on_each_key_input_and_finds_an_edited_fact(tmp_path, monkeypatch):
+    cache = tmp_path / "idx" / kbfacts.UNIT_CACHE
+    monkeypatch.setenv("KB_INDEX", str(cache.parent))
+    monkeypatch.delenv("KB_DOC2QUERY", raising=False)
+    monkeypatch.setattr(kbfacts, "UNIT_CACHE_SLACK", 1000)  # no pruning: a key that did not change is still a row
+    summary = ["Kept 14 days."]
+    monkeypatch.setattr(kbfacts, "summary_text", lambda rel: summary[0])
+    base = dict(path="public/print/queues.md", section="Facts", text="Finished jobs are kept for 14 days.",
+                tags=[{"kind": "DOC"}], lead="", anchors=[])
+    metas = {base["path"]: {"title": "Print queues"}}
+    exps = {kbfacts.fact_key(base["text"]): ["how long are print jobs kept"]}
+
+    def weigh(unit=None, metas=metas, exps=exps):
+        return kbfacts.weighed([dict(base, **(unit or {}))], metas, exps)[0]
+
+    def keys():
+        con = sqlite3.connect(cache)
+        try:
+            return {k for (k,) in con.execute("SELECT k FROM u")}
+        finally:
+            con.close()
+
+    kbfacts._weigh_code.cache_clear()
+    first = weigh()
+    assert len(keys()) == 1 and first["tf"] and first["own"]
+    with monkeypatch.context() as m:  # a hit weighs nothing, and equals a weighing with no cache (KB_INDEX=0)
+        m.setattr(kbfacts, "_weigh", lambda *a: pytest.fail("the unit was weighed again"))
+        hit = weigh()
+    with monkeypatch.context() as m:
+        m.setenv("KB_INDEX", "0")
+        fresh = weigh()
+    assert [hit[k] for k in ("len", "own", "tf")] == [fresh[k] for k in ("len", "own", "tf")]
+    assert len(keys()) == 1
+
+    cases = {  # each input _unit_key hashes: a change must make a new key, so the unit is weighed again
+        "INDEX_VERSION": lambda m: m.setattr(kbfacts, "INDEX_VERSION", kbfacts.INDEX_VERSION + 1),
+        "KB_DOC2QUERY": lambda m: m.setenv("KB_DOC2QUERY", "1"),
+        "TITLE_WEIGHT": lambda m: m.setattr(kbfacts, "TITLE_WEIGHT", kbfacts.TITLE_WEIGHT + 1),
+        "SUMMARY_WEIGHT": lambda m: m.setattr(kbfacts, "SUMMARY_WEIGHT", kbfacts.SUMMARY_WEIGHT + 1),
+        "EXPANSION_WEIGHT": lambda m: m.setattr(kbfacts, "EXPANSION_WEIGHT", kbfacts.EXPANSION_WEIGHT + 1),
+        "STOP": lambda m: m.setattr(kbfacts, "STOP", kbfacts.STOP | {"zzstop"}),
+        "kbid.STOP": lambda m: m.setattr(kbid, "STOP", kbid.STOP | {"zzstop"}),
+    }
+    for name in ("WORD", "CAMEL", "NUMBER"):
+        cases[name] = lambda m, name=name: m.setattr(kbfacts, name, re.compile(getattr(kbfacts, name).pattern + "|zz"))
+    for name in ("_weigh", "terms", "stem", "bare"):
+        cases[name + " code"] = lambda m, name=name: m.setattr(kbfacts, name, variant(getattr(kbfacts, name)))
+    inputs = {
+        "path": {"unit": {"path": "public/print/other.md"}},
+        "title": {"metas": {base["path"]: {"title": "Print queue"}}},
+        "lead": {"unit": {"lead": "Jobs"}},
+        "section": {"unit": {"section": "Reference"}},
+        "text": {"unit": {"text": base["text"] + " Held jobs wait."}},
+        "expansions": {"exps": {kbfacts.fact_key(base["text"]): ["how long are queued jobs kept"]}},
+        "anchors": {"unit": {"anchors": [(1, "how long are print jobs kept")]}},
+    }
+    cases["summary"] = lambda m: summary.__setitem__(0, "Kept 21 days.")
+    for name in sorted(cases) + sorted(inputs):
+        before = keys()
+        with monkeypatch.context() as m:
+            try:
+                if name in cases:
+                    cases[name](m)
+                    kbfacts._weigh_code.cache_clear()  # the digest is computed once: recompute it for the changed code
+                weigh(**inputs.get(name, {}))
+            finally:
+                summary[0] = "Kept 14 days."
+                kbfacts._weigh_code.cache_clear()
+        assert keys() - before, f"a change to {name} reused the cached weighing"
+
+    # an edited fact is found by rag.py pack: the unit cache holds the unit weighed before the edit
+    root = tmp_path / "root"
+    fixture_root(root, SID)
+    art = root / "print" / "queues.md"
+    env = {**os.environ, "KB_ROOTS": str(root), "KB_INDEX": str(tmp_path / "packidx")}
+    env.pop("KB_DOC2QUERY", None)
+
+    def pack():
+        p = subprocess.run([sys.executable, "-c", PACK_FIXTURE, TOOLS, "which sweeper purges finished jobs"],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+        assert p.returncode == 0, p.stdout[-1500:] + p.stderr[-1500:]
+        return p.stdout
+
+    assert not re.search(r"^coverage: good\b", pack(), re.M)
+    write(art, art.read_text(encoding="utf-8").replace(
+        "kept for 14 days.", "kept for 14 days, then purged by the sweeper."))
+    out = pack()
+    assert re.search(r"^coverage: good\b", out, re.M) and re.search(r"queues\.md:\d+ .*sweeper.*\[DOC ", out), out[:1500]
