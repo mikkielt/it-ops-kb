@@ -66,6 +66,38 @@
       "class": "design",
       "answer": "cap 120 USD: the full set as the goal states",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which pool subsets does the first record run, where the goal's figures meet the scenario's flags (run pool selects by kind, not by row count, and has no opus arm)?",
+      "options": [
+        "kb arms, router and hook on every row at 3 reps; web arms on the kinds csv_fact, multi, synthesis, false_good, snippet and offkb (29 rows) at 2 reps; session shape on 5 groups of six from 11 non-fact kinds at 2 reps; no opus subset, parked as a gap; no separate one-rep pass, the 3-rep run's per-row checks show rows no arm passes",
+        "the goal's figures exactly, after a code change for a row limit and an opus arm"
+      ],
+      "recommendation": "kb arms, router and hook on every row at 3 reps; web arms on the kinds csv_fact, multi, synthesis, false_good, snippet and offkb (29 rows) at 2 reps; session shape on 5 groups of six from 11 non-fact kinds at 2 reps; no opus subset, parked as a gap; no separate one-rep pass, the 3-rep run's per-row checks show rows no arm passes",
+      "class": "design",
+      "answer": "kb arms, router and hook on every row at 3 reps; web arms on the kinds csv_fact, multi, synthesis, false_good, snippet and offkb (29 rows) at 2 reps; session shape on 5 groups of six from 11 non-fact kinds at 2 reps; no opus subset, parked as a gap; no separate one-rep pass, the 3-rep run's per-row checks show rows no arm passes",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Haiku 5.5 runs cost about 0.007 USD and Sonnet 5.5 about 0.10 per question, so the 3-rep plan comes to about 140 USD against the 120 USD cap: how does the record stay within it?",
+      "options": [
+        "Sonnet 5.5 kb arm at 2 reps, router 3 reps, web and session as planned: about 117 USD; the Haiku arms keep 3 reps",
+        "raise the cap to about 150 USD",
+        "Sonnet 5.5 at 3 reps, low effort only"
+      ],
+      "recommendation": "Sonnet 5.5 kb arm at 2 reps, router 3 reps, web and session as planned: about 117 USD; the Haiku arms keep 3 reps",
+      "do": {
+        "Sonnet 5.5 kb arm at 2 reps, router 3 reps, web and session as planned: about 117 USD; the Haiku arms keep 3 reps": "ST-ji32ouga",
+        "raise the cap to about 150 USD": "ST-ji32ouga",
+        "Sonnet 5.5 at 3 reps, low effort only": "ST-ji32ouga"
+      },
+      "class": "design",
+      "answer": "Sonnet 5.5 kb arm at 2 reps, router 3 reps, web and session as planned: about 117 USD; the Haiku arms keep 3 reps",
+      "by": "operator"
     }
   ],
   "links": [

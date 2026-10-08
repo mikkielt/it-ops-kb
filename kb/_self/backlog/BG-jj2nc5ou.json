@@ -1,0 +1,18 @@
+{
+  "id": "BG-jj2nc5ou",
+  "kind": "bug",
+  "title": "The pool scenario's out metric records 7-24 tokens per run, far below the output its cost implies",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The pool scenario's out metric agrees with the run's output: the newest pool record's all-kinds out of every kb arm is above 100 tokens per run, and its cost matches the list price of the counted tokens within 20%",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,sys; rows=[r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if r['scenario']=='pool' and r['case']=='all' and r['metric']=='out' and r['arm'] in ('haiku-5-5:default','sonnet-5-5:low','haiku-4-5')]; sys.exit(1 if any(float(r['value'])<100 for r in rows) else 0)"
+    ]
+  },
+  "repro_reason": "The metric is wrong in the recorded rows of the 2026-10-08 pool record; a rerun needs paid model runs, so the repro reads the record's rows."
+}
