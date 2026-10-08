@@ -445,7 +445,7 @@ def test_bench_pool_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row_and_
     b.dry, b.rows = True, []
     with pytest.raises(bp.Skip) as e:  # the estimate prices the stated default tokens at bench_core's prices
         bp.s_pool(b)
-    run = (2000 * 2.0 + 8000 * 2.5 + 80000 * 0.10 + 1200 * 10.0) / 1e6
+    run = (2000 * 2.0 + 8000 * 4.0 + 80000 * 0.10 + 1200 * 10.0) / 1e6  # a cache write at the 1-hour price
     assert f"estimated spend ${12 * run:.2f}" in str(e.value) and "the default" in capsys.readouterr().out
     hist = [{"scenario": "pool", "record": "2026-10-09", "case": "all", "arm": "x", "model": "claude-haiku-4-5", "metric": m,
              "value": v} for m, v in (("input", "1000"), ("cache_read", "600"), ("cache_write", "100"), ("out", "50"))]
@@ -535,3 +535,82 @@ def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(m
     err = capsys.readouterr().err
     assert "--arm-reps: opus-5-5 is not run by this command (opt-in: name it in --arms)" in err
     assert "--arm-kinds: sonnet-5-5/session is not run by this command (the --shape has no session)" in err
+
+
+def test_bench_pool_verify_exits_1_naming_each_planted_break_of_a_fake_record(monkeypatch, tmp_path, capsys):
+    import types
+    import agent_bench
+    import benchmarks as bm
+    import bench_pool as bp
+    kinds = ["fact", "csv_fact", "multi", "synthesis", "false_good", "near_miss", "offkb", "snippet", "count", "cites",
+             "decision", "conflict", "gap"]
+    pool = [{**bp.row(k, "d0", "original", f"fixture:{k}{i}", f"Question {k}{i}?", [r"value1"], "good"), "question": f"Question {k}{i}?"}
+            for k in kinds for i in range(4)]
+    stream = agent_bench.result_of(pool_stream("value1", cost=0.0094), "", 5.0)  # $0.0094 against $0.00936 at list price (cache write at 2x input)
+
+    def fresh(arm, effort, row):
+        r = dict(stream)
+        bc.spent_run(r)
+        return r
+    monkeypatch.setattr(bp, "load_pool", lambda home, kinds=None: pool)
+    monkeypatch.setattr(bp, "live_runner", lambda b, sh: fresh)
+    monkeypatch.setattr(bp, "live_session_runner", lambda b: lambda arm, effort, row, sid, position: fresh(arm, effort, row))
+    monkeypatch.setattr(bp, "read_rows", lambda path: [] if path == bp.RESULTS else bc.read_rows(path))  # no earlier record
+    monkeypatch.setitem(bc.SPEND, "usd", 0.0)
+    monkeypatch.setitem(bc.SPEND, "runs", 0)
+    b = types.SimpleNamespace(arms=["sonnet-5-5", "web-sonnet-5-5"], efforts=["low"], kinds=None, shape="fresh,session", seed=11,
+                              dry=False, reps=1, jobs=1, max_usd=None, sample=2, arm_reps={}, arm_kinds={}, rows=[], status=0)
+    b.row = lambda scenario, case, arm, metric, value, runs="", model="", note="": b.rows.append(
+        {"scenario": scenario, "record": "2026-10-09", "case": case, "arm": arm, "model": model, "metric": metric,
+         "value": str(value), "runs": str(runs), "note": note})
+    bp.s_pool(b)
+    labels = sorted({r["arm"] for r in b.rows})
+    spend = {"scenario": "pool", "record": "2026-10-09", "case": "all paid runs", "arm": "paid: " + ",".join(labels),
+             "metric": "spend_usd", "value": str(round(bc.SPEND["usd"], 6)), "runs": str(bc.SPEND["runs"]), "note": ""}
+    record = b.rows + [spend]
+    assert labels == ["sonnet-5-5:low", "sonnet-5-5:low/session", "web-sonnet-5-5"]
+    assert next(r for r in record if r["metric"] == "planned_kinds" and r["arm"] == "web-sonnet-5-5")["value"] == (
+        "csv_fact+fact+false_good+multi+offkb+snippet+synthesis")  # a web arm plans the kinds a web search can answer
+    assert bp.verify_problems(record, "2026-10-09") == ([], [])
+
+    def planted(change):
+        rows = [dict(r) for r in record]
+        change(rows)
+        path = tmp_path / "planted.csv"
+        bc.write_rows(rows, path)
+        capsys.readouterr()
+        code = bm.main(["pool", "verify", "--file", str(path), "--record", "2026-10-09"])
+        return code, capsys.readouterr().out
+
+    def setv(rows, label, case, metric, value, runs=None):
+        for r in rows:
+            if (r["arm"], r["case"], r["metric"]) == (label, case, metric):
+                r["value"] = str(value)
+                if runs:
+                    r["runs"] = str(runs)
+                return
+        rows.append({**record[0], "arm": label, "case": case, "metric": metric, "value": str(value), "runs": str(runs or 1), "note": ""})
+    clean_code, clean = planted(lambda rows: None)
+    assert clean_code == 0 and "is consistent" in clean, clean
+    def drop_gap(rows):
+        rows[:] = [r for r in rows if not (r["arm"] == "sonnet-5-5:low" and r["case"] == "gap")]
+    breaks = [
+        ("(a) sonnet-5-5:low: no row for the planned kind gap", drop_gap),
+        ("(a) web-sonnet-5-5: 4 runs not started", lambda rows: rows.append(
+            {**record[0], "case": "not started", "arm": "web-sonnet-5-5", "metric": "spend_stopped", "value": "4", "runs": "4"})),
+        ("(b) web-sonnet-5-5: 3 of ", lambda rows: setv(rows, "web-sonnet-5-5", "all", "off_list", 3)),
+        ("(c) spend of ", lambda rows: setv(rows, "paid: " + ",".join(labels), "all paid runs", "spend_usd", bc.SPEND["usd"] + 1)),
+        ("(d) sonnet-5-5:low/session: the mean cost rises at every position", lambda rows: [
+            setv(rows, "sonnet-5-5:low/session", f"position {p}", "cost", 0.01 * p) for p in range(1, 7)]),
+        ("(e) web-sonnet-5-5: out is 0", lambda rows: setv(rows, "web-sonnet-5-5", "all", "out", 0)),
+        ("(f) 3 of ", lambda rows: setv(rows, "sonnet-5-5:low", "all", "errors", 3, 26))]
+    for text, change in breaks:
+        code, out = planted(change)
+        assert code == 1 and text in out, (text, out)
+    # a record that predates the figures is checked for the properties its rows can carry, a newer one is not excused
+    old = [{**r, "record": "2026-10-08"} for r in record if r["metric"] not in ("planned_kinds", "off_list", "list_cost")
+           and not (r["metric"] == "cost" and r["case"].startswith("position"))]
+    problems, notes = bp.verify_problems(old, "2026-10-08")
+    assert problems == [] and [n[:3] for n in notes] == ["(a)", "(b)", "(d)"]
+    newer = [{**r, "record": "2026-10-20"} for r in old]
+    assert any(p.startswith("(a) sonnet-5-5:low: rows, and no `planned_kinds` row") for p in bp.verify_problems(newer, "2026-10-20")[0])

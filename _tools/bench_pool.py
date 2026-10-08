@@ -19,8 +19,8 @@ from pathlib import Path
 from typing import NamedTuple
 
 import agent_bench
-from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, Skip, est_cost, no_plugin_env, prompt_tokens, read_rows,
-                        resolve_model, run_tokens, spent_run, spent_usd, usage_sum)
+from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, WEB_SEARCH_USD, Skip, est_cost, no_plugin_env, prompt_tokens,
+                        read_rows, resolve_model, run_tokens, spent_run, spent_usd, usage_sum)
 from bench_retrieval import numbered, sonnet_json
 
 SEED = 11
@@ -671,7 +671,20 @@ def listed_ask(ask, dry_run, limits):
 
 
 def cli(a, home=HOME):
-    """`pool build` and `pool check`; the argparse namespace comes from benchmarks.py."""
+    """`pool build`, `pool check` and `pool verify`; the argparse namespace comes from benchmarks.py."""
+    if a.pool_cmd == "verify":
+        path = Path(a.file) if a.file else RESULTS
+        if not path.is_file():
+            print(f"pool verify: {path} does not exist")
+            return 1
+        rows = read_rows(path)
+        record = a.record or max((r["record"] for r in rows if r["scenario"] == "pool"), default="")
+        problems, notes = verify_problems(rows, record)
+        for line in notes + problems:
+            print(f"pool verify: {line}")
+        if not problems:
+            print(f"pool verify: the record {record} of {path.name} is consistent")
+        return 1 if problems else 0
     if a.pool_cmd == "build":
         out = Path(a.out) if a.out else Path(home) / (QUERYLOG_FILE if a.querylog else PUBLIC_FILE)
         redo, dry, replies = getattr(a, "redo", None) or [], getattr(a, "dry_run", False), getattr(a, "replies", None)
@@ -727,6 +740,8 @@ ROUTER_TIMEOUT_S = 1800
 SHAPES = ("fresh", "session")  # a fresh session per question, or six questions in one session
 SESSION_ARMS = ("haiku-5-5", "sonnet-5-5")  # the arms of the session shape: the kb's tools, models pinned by id
 GROUP_SIZE = 6
+CACHE_WRITE_1H = 2.0  # x the input price: the prompt cache a `claude -p` run writes lives 1 hour (agent-caching.md), and PRICE holds the 5-minute rate
+LIST_TOLERANCE = 0.2  # a run's cost is within this share of the list price of its counted tokens, or `pool verify` fails
 RESAMPLES = 1000  # the bootstrap draws of a cell's 95% interval (`interval`)
 SESSION_SUFFIX = "/session"  # an arm label of the session shape: `model:level/session`, beside the fresh label
 
@@ -850,16 +865,43 @@ def record_of(row, arm, label, r, cc=""):
     """One run's record: the pool row's id and kind, the arm and its label, the tokens (run_tokens, priced as the arm's
     alias resolves on Claude Code version `cc` when the transcript names no model), the kb results' tokens
     (`pack_tokens`: those of the stream plus the router's pack text at CHARS_PER_TOKEN), tool calls, turns, seconds,
-    cost and one boolean per check; or the error."""
+    cost, the list-price cost of the counted tokens (`list_usd`) and one boolean per check; or the error."""
     base = {"id": row["id"], "kind": row["kind"], "arm": arm, "label": label}
     if "error" in r:
         return {**base, "error": str(r["error"])[:200]}
-    t = run_tokens(r, agent_bench.MODEL.get(arm.removeprefix("web-"), ""), cc)
+    name = agent_bench.MODEL.get(arm.removeprefix("web-"), "")
+    t = run_tokens(r, name, cc)
     checks = [bool(agent_bench.check(c, r)) for c in json.loads(row["checks"])]
     return {**base, **t, "model": "+".join(sorted(set(t.pop("models")))),
+            "list_cost": list_usd(r, name, cc, r.get("searches", 0) if arm in WEB_ARMS else 0),
             "pack_tokens": r.get("kb_tokens", 0) + r.get("pack_chars", 0) // agent_bench.CHARS_PER_TOKEN,
             "tool_calls": sum(r.get("tools", {}).values()) + sum(r.get("sub_tools", {}).values()),
             "turns": r.get("turns", 0), "wall_s": r.get("wall_s", 0), "cost": r.get("cost", 0), "checks": checks}
+
+
+def billed_usd(s):
+    """`est_cost` of a `usage_sum` run with each price tier's cache writes at CACHE_WRITE_1H times that tier's input price."""
+    return est_cost(s) + sum(t["cache_write"] * (CACHE_WRITE_1H * p[1] - p[3])
+                             for t, p in zip(s["by_tier"], PRICE[s["model"]])) / 1e6
+
+
+def list_usd(r, name="", cc="", searches=0):
+    """The list-price cost (`billed_usd`) of the tokens run `r` counts (`run_tokens`): its requests priced per model, the
+    run's own `out` in place of the requests' partial counts (the difference put in the highest price tier the requests
+    reached, shared between models in proportion to their partial counts), and `searches` web searches."""
+    groups = {}
+    for q in r.get("requests") or []:
+        groups.setdefault(q.get("model") or name, []).append(q)
+    sums = [usage_sum(rs, m, cc) for m, rs in groups.items()]
+    partial = sum(s["out"] for s in sums)
+    extra = r["out"] - partial if sums and r.get("out") is not None else 0
+    total = 0.0
+    for s in sums:
+        top = max(i for i, t in enumerate(s["by_tier"]) if any(t.values()))
+        add = extra * s["out"] / partial if partial else extra / len(sums)
+        s["by_tier"][top]["out"] += max(add, -s["by_tier"][top]["out"])
+        total += billed_usd(s)
+    return total + searches * WEB_SEARCH_USD
 
 
 def interval(rs, resamples=RESAMPLES):
@@ -912,7 +954,8 @@ def cell_metrics(rs):
 
 def cell_rows(runs):
     """[(case, label, metric, value, runs, model, note)] of the results rows: per arm label, one cell for each kind and
-    one for all kinds (`all`); a cell with failed runs also has an `errors` row."""
+    one for all kinds (`all`); a cell with failed runs also has an `errors` row, and the `all` cell the mean `list_cost`
+    of its runs and `off_list`, the runs whose cost is more than LIST_TOLERANCE from their own list cost (`pool verify`)."""
     out = []
     labels = list(dict.fromkeys(r["label"] for r in runs))
     for label in labels:
@@ -930,6 +973,10 @@ def cell_rows(runs):
                 note = (f"highest price tier {tier}" if tier and metric == "effective_input" else
                         "no effort setting: one level" if metric == "checks" and ok[0]["arm"] in NO_EFFORT else "")
                 out.append((case, label, metric, value, len(ok), model, note))
+            if case == "all":
+                out.append((case, label, "list_cost", sum(r["list_cost"] for r in ok) / len(ok), len(ok), model, ""))
+                out.append((case, label, "off_list", sum(abs(r["cost"] - r["list_cost"]) > LIST_TOLERANCE * r["list_cost"]
+                                                         for r in ok), len(ok), model, ""))
     return out
 
 
@@ -1063,7 +1110,7 @@ def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=
 def session_rows(runs):
     """[(case, label, metric, value, runs, model, note)] of the session shape: per arm label and position (case
     `position N`), the means of `marginal_input`, the pooled `cache_read_share` (cache reads over input of the position's
-    runs) and the checks passed over all; a position with failed runs also has an `errors` row."""
+    runs), the mean `cost` and the checks passed over all; a position with failed runs also has an `errors` row."""
     out = []
     for label in dict.fromkeys(r["label"] for r in runs):
         mine = [r for r in runs if r["label"] == label]
@@ -1081,6 +1128,7 @@ def session_rows(runs):
             inp = sum(r["input"] for r in ok)
             if inp:
                 out.append((case, label, "cache_read_share", sum(r["cache_read"] for r in ok) / inp, len(ok), model, ""))
+            out.append((case, label, "cost", sum(r["cost"] for r in ok) / len(ok), len(ok), model, ""))
             out.append((case, label, "checks", f"{sum(sum(r['checks']) for r in ok)}/{sum(len(r['checks']) for r in ok)}",
                         len(ok), model, ""))
     return out
@@ -1265,6 +1313,11 @@ def s_pool(b):
         if RAW.get("path"):
             with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
                 f.write(json.dumps({**rec, "answer": (r.get("answer") or "")[:2000]}) + "\n")
+    for leg in legs:  # the plan, written before any run: `pool verify` reads the kinds each arm label was to run
+        for arm, _, label in leg.cells:
+            if leg.runs(arm):
+                kinds = {r["kind"] for g in leg.groups[arm] for r in g} if leg.session else {r["kind"] for r in leg.rows[arm]}
+                b.row("pool", "all", label + leg.suffix, "planned_kinds", "+".join(sorted(kinds)), leg.runs(arm))
     not_started, base = [], spent_usd()
     for leg in legs:
         if not any(leg.runs(arm) for arm, _, _ in leg.cells):
@@ -1320,7 +1373,7 @@ def run_usd(tokens, model):
     """The list-price cost of one run of `tokens` ({uncached, cache_write, cache_read, out}) as a single request of `model`."""
     usage = {"input_tokens": tokens["uncached"], "cache_creation_input_tokens": tokens["cache_write"],
              "cache_read_input_tokens": tokens["cache_read"], "output_tokens": tokens["out"]}
-    return est_cost(usage_sum([{"model": model, "usage": usage}], model))
+    return billed_usd(usage_sum([{"model": model, "usage": usage}], model))
 
 
 def estimate_lines(legs, history, jobs, cap):
@@ -1342,3 +1395,92 @@ def estimate_lines(legs, history, jobs, cap):
     if cap is not None and total > cap:
         print(f"pool: the estimate is over --max-usd ${cap:.2f}: a run would stop before the last runs start")
     return total
+
+
+# ----------------------------------------------------------------------------------------------------- pool verify
+
+ERROR_SHARE = 0.02  # a record's errors are under this share of its runs
+POSITIONS = 3  # a session label's mean cost per position is judged from this many positions on
+# records written before the figures `verify_problems` reads existed, each with the properties its rows cannot carry
+# (property: why); a record of such a date that holds `planned_kinds` rows was written by this code and is checked in full
+LEGACY_RECORDS = {"2026-10-08": {
+    "a": "its rows do not name the kinds each arm label was to run",
+    "b": "its `out` is the stream's partial count (7 to 24 tokens a run) and its rows hold no list cost of a run",
+    "d": "its session rows hold no cost per position"}}
+
+
+def verify_problems(rows, record):
+    """([problem], [note]) of the pool record `record` in the results `rows`, from the record's rows alone. A problem
+    starts with the letter of the property it breaks: (a) every arm label planned has rows for each kind it was to run
+    (a label the cap stopped, with `spend_stopped` rows, has runs not started); (b) no run of a model arm cost more than
+    LIST_TOLERANCE from the list price of its counted tokens (`off_list` is 0): a cumulative session cost or an output
+    undercount breaks it; (c) the spend rows of a set of labels equal the sum of those labels' runs' costs; (d) no session
+    label's mean cost rises at every one of its positions; (e) `out` is above 0 on every model arm; (f) errors are under
+    ERROR_SHARE of the runs. A note names what a LEGACY_RECORDS record is not checked for."""
+    mine = [r for r in rows if r["scenario"] == "pool" and r["record"] == record]
+    if not mine:
+        return [f"no pool rows of the record {record}"], []
+    cell = {(r["arm"], r["case"], r["metric"]): r for r in mine}
+    value = lambda label, case, metric: float(cell[(label, case, metric)]["value"]) if (label, case, metric) in cell else None  # noqa: E731
+    skip, problems, notes = {}, [], []
+    planned = {r["arm"]: r for r in mine if r["metric"] == "planned_kinds"}
+    if record in LEGACY_RECORDS and not planned:
+        skip = LEGACY_RECORDS[record]
+        notes += [f"({k}) not checked, the record of {record} predates it: {why}" for k, why in skip.items()]
+    ran = list(dict.fromkeys(r["arm"] for r in mine if r["arm"] and not r["arm"].startswith("paid: ")
+                             and r["metric"] not in ("planned_kinds", "spend_stopped")))
+    models = [label for label in ran if label.split(":")[0].removesuffix(SESSION_SUFFIX) not in NO_MODEL_ARMS]
+    problems += [f"the scenario failed: {r['note']}" for r in mine if r["case"] == "run" and r["metric"] == "errors"]
+    if "a" not in skip:
+        for label in ran:
+            if label not in planned:
+                problems.append(f"(a) {label}: rows, and no `planned_kinds` row: the plan was not recorded")
+        for label, r in planned.items():
+            missing = [k for k in r["value"].split("+") if not any(a == label and c == k for a, c, _ in cell)]
+            if missing:
+                problems.append(f"(a) {label}: no row for the planned kind {', '.join(missing)}")
+        problems += [f"(a) {r['arm']}: {r['value']} runs not started, the run stopped at its --max-usd" for r in mine
+                     if r["metric"] == "spend_stopped"]
+    if "b" not in skip:
+        for label in models:
+            off, listed = value(label, "all", "off_list"), value(label, "all", "list_cost")
+            if off is None:
+                if value(label, "all", "cost") is not None:
+                    problems.append(f"(b) {label}: no `off_list` row: the runs' cost against their list price was not recorded")
+            elif off > 0:
+                problems.append(f"(b) {label}: {off:.0f} of {cell[(label, 'all', 'off_list')]['runs']} runs cost more than {LIST_TOLERANCE:.0%} from the list price "
+                                f"of their counted tokens (mean cost ${value(label, 'all', 'cost'):.4f}, list ${listed:.4f})")
+    spent = {label: value(label, "all", "cost") * float(cell[(label, "all", "cost")]["runs"])
+             for label in ran if value(label, "all", "cost") is not None}
+    named = set()
+    for r in mine:
+        if r["metric"] == "spend_usd":
+            labels = r["arm"].removeprefix("paid: ").split(",")
+            named |= set(labels)
+            runs = sum(float(cell[(label, "all", "cost")]["runs"]) for label in labels if label in spent)
+            total = sum(spent.get(label, 0) for label in labels)
+            if abs(float(r["value"]) - total) > 0.001 + 1e-6 * runs:
+                problems.append(f"(c) spend of {', '.join(labels)}: the spend row is ${float(r['value']):.4f}, the runs cost ${total:.4f}")
+    problems += [f"(c) {label}: its runs cost ${usd:.4f} and no spend row names it" for label, usd in spent.items()
+                 if label not in named and usd > 0.0005]
+    if "d" not in skip:
+        for label in ran:
+            if not label.endswith(SESSION_SUFFIX):
+                continue
+            by = {int(c.split()[1]): float(r["value"]) for (a, c, m), r in cell.items()
+                  if a == label and m == "cost" and c.startswith("position ")}
+            costs = [by[p] for p in sorted(by)]
+            if not by and any(a == label and c.startswith("position ") for a, c, _ in cell):
+                problems.append(f"(d) {label}: no `cost` row per position")
+            elif len(costs) >= POSITIONS and all(b > a for a, b in zip(costs, costs[1:])):
+                problems.append(f"(d) {label}: the mean cost rises at every position: " + ", ".join(f"${c:.4f}" for c in costs))
+    for label in models:
+        out = value(label, "all", "out")
+        if out is None or out <= 0:
+            problems.append(f"(e) {label}: no run counted an output token" if out is None else f"(e) {label}: out is {out:g}")
+    errors = sum(value(label, "all", "errors") or 0 for label in ran)
+    runs = sum(float((cell.get((label, "all", "errors")) or cell.get((label, "all", "cost")) or {"runs": 0})["runs"]) for label in ran)
+    if runs and errors / runs >= ERROR_SHARE:
+        worst = ", ".join(f"{label} {value(label, 'all', 'errors'):.0f}" for label in ran if value(label, "all", "errors"))
+        problems.append(f"(f) {errors:.0f} of {runs:.0f} runs failed ({errors / runs:.1%}, under {ERROR_SHARE:.0%} allowed): {worst}")
+    return sorted(problems), notes
