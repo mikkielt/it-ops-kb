@@ -1,0 +1,28 @@
+{
+  "id": "ST-732j5ufa",
+  "kind": "story",
+  "title": "apply's lead-passage row is refused when the lead does not answer: no route miss, the lead line holds most of the question's key words",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ql_apply.from_lead skips a rules finding whose observed route is miss, and a lead-passage row is tried only when the lead line holds most of the question's key words, since an _self eval row passes on anchor-in-doc plus phrase-in-pack (_tools/rag.py:290-299) and so a lead that does not answer still passes the gates; one planted failure pins a lead that does not answer staying no-fix, and kb/_self/querylog.md (Apply, Rules findings) stops saying a wrong lead fails the eval.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_redact.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_apply.py",
+    "_tools/test_redact.py",
+    "_tools/fixtures/querylog/store/**",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-rvslem3h review"
+  ]
+}
