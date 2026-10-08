@@ -1,0 +1,28 @@
+{
+  "id": "ST-v5arok4f",
+  "kind": "story",
+  "title": "A code item the orchestrator works in its own session lands through backlog.py land",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint run step that lets the orchestrator do a narrow item in its own session names how a code-lane item done there lands: backlog.py land accepts the item's commits on the orchestrator's branch (or the step says to commit on a work/<id> branch first), so land waits for its code/<id> merge request and runs done and the push, with no hand poll of origin/main. Answers the SP-ktup3cha retrospective: ST-atorqkvw was committed on orch/mac, pushed as code/ST-atorqkvw by sync, and its merge was polled by hand before done.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read(); ok='in its own session lands' in t; print(ok); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-ktup3cha close"
+  ]
+}

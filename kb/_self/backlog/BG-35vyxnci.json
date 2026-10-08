@@ -6,7 +6,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "A gate's text (question, options, do and host-check words) that names a Markdown doc whose file name holds token, such as kb/_self/token-efficiency.md, is not classed secrets for that path alone, as BG-zw5sxzkc made true for touches (bl_authority.names_secret, md-name-exempt); a gate whose text names a token file or asks about a token still classes secrets. Found in the SP-ktup3cha review.",
+  "goal": "A gate's text (question, options, do and host-check words) that names a Markdown doc whose file name holds token, such as the token-efficiency doc under kb/_self, is not classed secrets for that path alone, as BG-zw5sxzkc made true for touches (bl_authority.names_secret, md-name-exempt); a gate whose text names a token file or asks about a token still classes secrets. Found in the SP-ktup3cha review.",
   "repro": {
     "run": [
       "python3",

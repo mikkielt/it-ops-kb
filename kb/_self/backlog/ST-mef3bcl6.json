@@ -1,0 +1,26 @@
+{
+  "id": "ST-mef3bcl6",
+  "kind": "story",
+  "title": "A worker brief says a gate on a rule-guarding item is blocking and the operator's, not provisional",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint run brief and kb-worker rule 6 say that a choice left open on an item whose touches are rule-guarding (bl_authority agents-rule paths) or name a secret becomes a blocking gate the operator answers, so a worker does not try a provisional gate the class refuses; and plan step 6 asks such choices before the start. Answers the SP-ktup3cha retrospective: BG-zw5sxzkc's gate match and ST-uggjnhs2's gates cover and research were raised mid-work as blocking, after the orchestrator's brief asked for provisional gates.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read(); ok='rule-guarding' in t and 'blocking gate the operator answers' in t; print(ok); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ktup3cha close"
+  ]
+}
