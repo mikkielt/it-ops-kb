@@ -24,9 +24,10 @@
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
                                            --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
-  rag.py eval [--file FILE] [--root NAME] [--free] [--min N]   pack against the lookup eval sets (every root's
-                                           lookup_eval.csv and kb/_self's, or FILE): expected article found, verdict,
-                                           expected phrase; exit 1 unless every row (or at least N) passes;
+  rag.py eval [--file FILE] [--root NAME] [--free] [--min N] [--all]   pack against the lookup eval sets (every
+                                           root's lookup_eval.csv and kb/_self's, or FILE): expected article found,
+                                           verdict, expected phrase; prints the failing rows and the totals line
+                                           (--all: every row); exit 1 unless every row (or at least N) passes;
                                            --free adds the _self rows' leave-one-out rate (slow)
   rag.py topics-for PATH... | --keywords TEXT [--imports]   kb topics that code touches, from the curated code signals in
                                            each root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client);
@@ -345,6 +346,7 @@ def main():
     ev.add_argument("--free", action="store_true", help="also the leave-one-out rate of the _self rows (slow: one store build per row)")
     ev.add_argument("--min", type=positive_int, help="exit 0 when at least MIN rows pass (default: every row), e.g. the "
                     "held-out file kb/public/_retrieval/lookup_heldout.csv's answer rate")
+    ev.add_argument("--all", action="store_true", help="print every row, passing ones too (default: the failing rows and the totals)")
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     w.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
     a = ap.parse_args()
@@ -477,7 +479,7 @@ def main():
         if a.json:
             return print(json.dumps(res, indent=1))
         width = max((len(r["id"]) for r in res["rows"]), default=6)
-        for r in res["rows"]:
+        for r in (r for r in res["rows"] if a.all or not r["ok"]):
             print(f"{'ok  ' if r['ok'] else 'FAIL'} {r['id']:<{width}} verdict={r['verdict']:<5} (want {r['want_verdict']:<5}) "
                   f"found={','.join(r['found']) or '-'} chars={r['chars']}" + (f" failed={','.join(r['failed'])}" if r["failed"] else ""))
         print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
