@@ -2,7 +2,7 @@
   "id": "BG-qe46klco",
   "kind": "bug",
   "title": "check-trailers names a body line starting with a lowercase skill name such as kb-sprint: as a stray trailer and refuses the push",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vayhvwfy",
   "priority": "P2",
   "rank": 0,
@@ -51,5 +51,27 @@
     }
   ],
   "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the repro names 'not a trailer: kb-sprint: the planning commit before the claim sync.' as BAD, exit 1: reproduces. Gate stray-key options: known-keys = STRAY_KEY matches, case-insensitively, only the trailer keys kg_trailers knows (KB-Work, KB-Auto, the other KB-* keys it writes or reads, Self-Reviewed), so a lowercase 'kb-work:' typo is still refused and 'kb-sprint:' passes (recommended: keeps BG-dsab2ti3's typo catch); case-sensitive = drop re.I, so only 'KB-' and 'Self-Reviewed' in their own case count, and a lowercase typo of a real key passes unread. Check 1 passes before the work and why: it pins that a stray KB-Work line above the trailer block is still named and refused (the goal's second clause); the repro proves the fix.",
-  "claimed_by": "headless-sonnet"
+  "evidence": {
+    "commit": "3373eddd5a0b24433314d0e92040a69e47c82cf8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import kg_trailers as k;t=Path(tempfile.mkdtemp());g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com','-c','commit.gpgsign=false',*a],cwd=t,check=True,capture_output=True,text=True).stdout;g('init','-q');(t/'notes.txt').write_text('x',encoding='utf-8');g('add','notes.txt');g('commit','-q','--no-verify','-m','chore: planted'+chr(10)*2+'KB-Work: ST-aaaaaaaa'+chr(10)*2+'Co-Authored-By: Jan Kowalski <jan.kowalski@corp.example.com>');k.KB=str(t);a=k.trailer_audit(g('rev-parse','HEAD').strip(),quiet=True);out=chr(10).join(ln for _,ls in a[2] for ln in ls);print(out or 'stray KB-Work passes');sys.exit(0 if 'KB-Work: ST-aaaaaaaa' in out else 1)"
+        ],
+        "exit": 0,
+        "sha256": "b93cb78b88f7ecfb"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import kg_trailers as k;t=Path(tempfile.mkdtemp());g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com','-c','commit.gpgsign=false',*a],cwd=t,check=True,capture_output=True,text=True).stdout;g('init','-q');(t/'notes.txt').write_text('x\\n',encoding='utf-8');g('add','notes.txt');g('commit','-q','--no-verify','-m','chore: planted\\n\\nkb-sprint: the planning commit before the claim sync.\\n\\nCo-Authored-By: Jan Kowalski <jan.kowalski@corp.example.com>');k.KB=str(t);a=k.trailer_audit(g('rev-parse','HEAD').strip(),quiet=True);out='\\n'.join(ln for _,ls in a[2] for ln in ls);print(out or 'check-trailers passes the prose line');sys.exit(1 if 'kb-sprint:' in out else 0)"
+        ],
+        "exit": 0,
+        "sha256": "54b3c49c735d0908"
+      }
+    ]
+  }
 }
