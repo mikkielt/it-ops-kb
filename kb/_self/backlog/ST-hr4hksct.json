@@ -2,7 +2,7 @@
   "id": "ST-hr4hksct",
   "kind": "story",
   "title": "gate add names the word or touch that set a gate's class, and a worker never rewords a gate to change it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,18 @@
     "BG-zw5sxzkc"
   ],
   "notes": "Premise: today gate add prints only 'gate g1 (blocking) added' for a question holding the word rule (class agents-rule); the check wants the word 'matched' in the output, e.g. \"class agents-rule (matched 'rule')\".",
-  "claimed_by": "worker-ST-hr4hksct"
+  "evidence": {
+    "commit": "5546af1e680536af7e788dacc72b57d9bcbfc7df",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import tempfile,subprocess,sys,os;d=tempfile.mkdtemp();os.makedirs(d+'/kb/_self/backlog');R=os.getcwd()+'/_tools/backlog.py';r=lambda *a:subprocess.run([sys.executable,R,'--root',d,*a],capture_output=True,text=True);i=r('new','story','--title','t','--goal','g','--touch','_tools/x.py').stdout.split()[2];p=r('gate','add',i,'--question','Which rule wording?','--option','a','--option','b','--recommendation','a');ok=p.returncode==0 and 'matched' in p.stdout;print('gate add exit',p.returncode,'output:',p.stdout.strip(),'| names the matched word:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4559655873085cc7"
+      }
+    ]
+  }
 }
