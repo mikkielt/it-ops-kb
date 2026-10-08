@@ -31,6 +31,16 @@ def _text_ok(v):
     return isinstance(v, str) and v.strip() and len(v) <= TEXT_MAX
 
 
+def _text_problem(name, v, missing="empty"):
+    """Why the text field `name` fails _text_ok, naming its length and the limit when it is too long, so one
+    retry can shorten it; None when it passes."""
+    if _text_ok(v):
+        return None
+    if isinstance(v, str) and v.strip():
+        return f"{name} is {len(v)} characters, at most {TEXT_MAX} (TEXT_MAX)"
+    return f"{name} {missing}"
+
+
 def _check_ok(c):
     return (isinstance(c, dict) and isinstance(c.get("run"), list) and c["run"]
             and all(isinstance(x, str) for x in c["run"]) and set(c) <= {"run", "exit", "match"}
@@ -544,11 +554,11 @@ def validate(bl, pieces=None):
                 isinstance(d, dict) and set(d) == {"name", "by"} and isinstance(d["name"], str)
                 and re.fullmatch(r"[\w.-]+", d["name"]) and d["by"] in ("operator", "agent") for d in it["delegates"])):
             e("delegates is a sprint's list of {name, by} grants (set SP --delegate NAME --by operator)")
-        if not _text_ok(it.get("title")):
-            e("title missing or longer than TEXT_MAX")
+        if _text_problem("title", it.get("title"), "missing"):
+            e(_text_problem("title", it.get("title"), "missing"))
         for f in ("goal", "notes"):
-            if f in it and not _text_ok(it[f]):
-                e(f"{f} empty or longer than TEXT_MAX")
+            if f in it and _text_problem(f, it[f]):
+                e(_text_problem(f, it[f]))
         if "links" in it and not (isinstance(it["links"], list) and all(_text_ok(x) for x in it["links"])):
             e("links must be a list of texts (each non-empty, at most TEXT_MAX)")
         if bl.raw.get(iid) != canonical(it):
