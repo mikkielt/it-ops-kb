@@ -2,7 +2,7 @@
   "id": "ST-uggjnhs2",
   "kind": "story",
   "title": "backlog check warns of a goal that names a kb path no touch covers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -50,5 +50,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-ST-uggjnhs2"
+  "evidence": {
+    "commit": "85b74b1cc2595e9636096e9ec0dd8a255c7116d2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import tempfile,subprocess,sys,os;d=tempfile.mkdtemp();os.makedirs(d+'/kb/_self/backlog');R=os.getcwd()+'/_tools/backlog.py';r=lambda *a:subprocess.run([sys.executable,R,'--root',d,*a],capture_output=True,text=True);i=r('new','story','--title','t','--goal','writes a report under kb/_self/reports/ for the sprint','--touch','_tools/x.py','--check','python3 -c pass').stdout.split()[2];p=r('check');w=[l for l in (p.stdout+p.stderr).splitlines() if i in l and 'kb/_self/reports/' in l and 'touch' in l.lower()];print('check exit',p.returncode,'| warning naming the uncovered goal path:',w or 'none');sys.exit(0 if w else 1)"
+        ],
+        "exit": 0,
+        "sha256": "17967ee2da950f43"
+      }
+    ]
+  }
 }
