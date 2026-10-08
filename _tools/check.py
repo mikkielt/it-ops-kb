@@ -45,9 +45,11 @@
 - every `topic: <domain>/<slug>` marker in a root's _gaps.md and _conflicts.md names a topic of that root;
 - every `path:line` citation in a root's _answers.md and _gaps.md (and the `:N` shorthand after one) names a line of a
   tagged fact of a file of that root: not a heading, a Reference row, a blank line or a line past the end.
+- no path git tracks in this repository is longer than TRACKED_PATH_MAX (a Windows clone's worker worktree prefix and the
+  260-character MAX_PATH leave that many characters; git for Windows without core.longpaths fails past it).
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
 """
-import argparse, csv, datetime, os, re, sys
+import argparse, csv, datetime, os, re, subprocess, sys
 from collections import Counter
 from pathlib import Path
 import kbcommon, kbfacts, kbid, selfdoc
@@ -76,6 +78,10 @@ RAW_EVENT = (  # what a derived aggregate never holds: the shapes of a raw spool
     (re.compile(r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}|\b\d{8}T\d{6}Z\b"), "a timestamp with a time of day"),
 )
 SKIP = {"_cache", "_private", "node_modules", "__pycache__"}
+WINDOWS_MAX_PATH = 260  # characters, the terminating NUL included: git for Windows without core.longpaths fails at it
+# A worker worktree on a Windows clone: C:\Users\<24 characters>\it-ops-kb\.claude\worktrees\agent-ST-xxxxxxxx\
+WORKTREE_PREFIX = len("C:\\Users\\" + "u" * 24 + "\\it-ops-kb\\.claude\\worktrees\\agent-ST-xxxxxxxx\\")
+TRACKED_PATH_MAX = WINDOWS_MAX_PATH - 1 - WORKTREE_PREFIX  # the longest tracked path (`/` counts as `\`)
 errors = []
 
 
@@ -557,6 +563,19 @@ def check_logs(root, owner, known):
         errors.extend(f"{name}:{n} {b}" for b in bad)
 
 
+def long_tracked_paths():
+    """Error lines for the repository's tracked paths longer than TRACKED_PATH_MAX; none outside a git work tree."""
+    try:
+        p = subprocess.run(["git", "ls-files", "-z"], cwd=kbcommon.HOME, capture_output=True)
+    except OSError:
+        return []
+    if p.returncode:
+        return []
+    paths = sorted(x for x in p.stdout.decode("utf-8", "replace").split("\0") if len(x) > TRACKED_PATH_MAX)
+    return [f"{x} is {len(x)} characters, over the {TRACKED_PATH_MAX} a worker worktree of a Windows clone leaves under "
+            f"the {WINDOWS_MAX_PATH}-character path limit (git without core.longpaths): shorten the path" for x in paths]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", help="check only this root (default: every root and the files outside them)")
@@ -665,6 +684,8 @@ def main():
                     if t not in topics:
                         errors.append(f"{kbcommon.qualify(root, name)}:{n} names unknown topic {t!r} of root "
                                       f"{root.name} (topic: <domain>/<slug>)")
+    if not a.root:
+        errors.extend(long_tracked_paths())
     n_sources = sum(len(v) for k, v in known.items() if k != "*" and (not a.root or k == a.root))
     print(f"sources={n_sources} citations={cited} errors={len(errors)}")
     for e in errors:
