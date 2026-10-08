@@ -2,7 +2,7 @@
   "id": "TK-6emrxewd",
   "kind": "task",
   "title": "Research queue gap F-114b1ea76574: Python os.link across filesystems (EXDEV) and on Windows NTFS",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-dfxpv6i7",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
   "depends_on": [
     "ST-x3di6t23",
     "TK-xr7fgoia"
-  ]
+  ],
+  "claimed_by": "headless-sonnet"
 }
