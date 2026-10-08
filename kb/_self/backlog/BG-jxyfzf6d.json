@@ -2,7 +2,7 @@
   "id": "BG-jxyfzf6d",
   "kind": "bug",
   "title": "backlog.md and tools.md say a --repro that passes now exits 1 on set, without the exception for a reopened bug",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,18 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orchestrator-mac"
+  "evidence": {
+    "commit": "0cfdeba2b6837bd7ddf72a69d5614faebe912410",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys; bt=open('kb/_self/backlog.md').read(); tt=open('kb/_self/tools.md').read(); bm=re.search(r'a `--repro` that passes now[^)]*\\)', bt); tm=re.search(r'1 for a `--repro` that passes now[^|]*', tt); ok=bool(bm) and bool(tm) and 'reopen' in bm.group(0) and 'reopen' in tm.group(0); print(ok); sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
