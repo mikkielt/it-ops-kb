@@ -2,7 +2,7 @@
   "id": "ST-founcbvo",
   "kind": "story",
   "title": "The contract lint flags a fact line that holds a second bullet after its tag",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-matmvkn6",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,28 @@
     "ST-e5u5zhrc"
   ],
   "notes": "Operator 2026-10-07: the work adds one planted-failure test to _tools/test_live_kb.py named for second_bullet (a planted Facts line with '- ' after its tag fails the lint), within the ceiling; check 2 selects no test until then. Check 1 passes before the work on purpose: it pins a clean live kb.",
-  "claimed_by": "worker-founc"
+  "evidence": {
+    "commit": "cd0fab72d6334baa4180a6399d24153efca799a3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as sp,sys;sys.exit(sp.run([sys.executable,'.claude/skills/kb-verify/lint.py','public']).returncode)"
+        ],
+        "exit": 0,
+        "sha256": "c7d1d787701ffd8c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "second_bullet"
+        ],
+        "exit": 0,
+        "sha256": "0a48bac5e6136cf9"
+      }
+    ]
+  }
 }
