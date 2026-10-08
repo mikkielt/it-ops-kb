@@ -2575,3 +2575,12 @@ _Agent: kb-research_
 - See agents/dataverse-mcp-server.md.
 
 _Agent: kb-research_
+
+## QK-cargo-metadata-no-deps-invoke-rustc. Does cargo metadata --no-deps invoke rustc, and does it honour .cargo/config.toml build.rustc?
+- The Cargo book documents `build.rustc` (environment `CARGO_BUILD_RUSTC` or `RUSTC`) as the executable Cargo uses for `rustc`, read from `.cargo/config.toml` in the current and parent directories; its cargo-metadata page says nothing about running `rustc`. [DOC S-7jjocmag, S-53fkmfzh, S-orgevefw]
+- At Cargo @797e8a9, `cargo metadata --no-deps` builds its output from the workspace members and loads no `rustc` (no `rustc -vV`, no target-info query), so `build.rustc` and `RUSTC` have no effect on it. [CODE S-ubjrtutg, S-oplh5k3d]
+- Without `--no-deps`, the command creates `RustcTargetData`, which runs `rustc -vV` and `--print` queries through the compiler named by `RUSTC`, else `build.rustc`, else `PATH`; the outputs are cached in `.rustc_info.json` in the build directory. [CODE S-ubjrtutg, S-gkpddy5i, S-trq5hdxv, S-f6y5we3c]
+- Conclusion: a mapping agent that must run no repository-chosen compiler passes `--no-deps`; the docs do not promise this, so it holds for the pinned source only and is re-read when the pin moves. [DER S-7jjocmag, S-ubjrtutg, S-trq5hdxv]
+- See agents/codebase-mapping.md.
+
+_Agent: kb-research_

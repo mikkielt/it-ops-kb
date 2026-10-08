@@ -44,7 +44,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 7 |
-| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 100 |
+| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 107 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 36 |
