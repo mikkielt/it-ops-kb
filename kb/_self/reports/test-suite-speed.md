@@ -128,3 +128,15 @@ The third row's seconds are the total less the first two rows (the recording is 
 - `Get-MpPerformanceReport -TopPaths` grouped every scan under `c:` whatever `-TopPathsDepth` was given, so the table above groups `-TopScans` by path prefix instead.
 
 Settled by the operator (gate `scratch-root` of ST-xjb4wykm): no change. The scratch trees stay in the default per-user Temp root with synchronous scanning, so nothing was applied, and the cost above is the suite's standing cost on this host: about half of the scan time is the scratch trees, the other half the clone's own kb files read by the tools.
+
+## The pack index after an edit (Windows host, 2026-10-08)
+
+The item check of ST-akicahgy, run on the project's Windows 11 host (CPython 3.14.7): a fresh detached worktree of the commit with its own `KB_INDEX` directory times one cold `rag.py pack "kerberos delegation"`, appends one fact line to `kb/public/windows/process-parent-and-command-line.md`, times the same `pack` again and looks the planted word up with `rag.py search`.
+
+| commit | cold `pack` | `pack` after the edit | share | planted word found |
+|---|---|---|---|---|
+| `d5a26e12` (before, the sprint's premise run) | 14.98 s | 10.52 s | 70% | yes |
+| `1cee0307` (before, at the claim) | 15.48 s | 10.88 s | 70% | yes |
+| ST-akicahgy's commit (after), three runs | 16.00, 15.99, 16.51 s | 4.89, 4.75, 4.89 s | 29-31% | yes |
+
+Where a build's time went before, in one process at `1cee0307`: the content key 0.34 s, reading the units 1.37 s, `weighed()` (splitting and weighting the words of 22,291 units) 11.12 s, the in-memory postings 1.05 s and writing the sqlite file 4.04 s, of which most was inserting the 37,872 terms' postings in hash order into a `WITHOUT ROWID` table. After: a cold build still weighs every unit and also writes the unit cache (`kbunits.sqlite`, about 65 MB for this kb), and the postings go in term order; a build after one edit reads the cache (0.08 s), weighs only the changed units (`weighed()` 0.99 s in all, most of it hashing each unit's inputs), builds the postings (0.71 s) and writes them (1.15 s). An edit to `_tools/kbfacts.py` that keeps `INDEX_VERSION` (a planted comment) cost the same as an article edit, 4.70 s against a cold 11.28 s in the working tree, and every pack printed the same text. A unit weighed from the cache equals one weighed afresh (all 22,291, compared field by field), and `rag.py eval` passes 560 of 560.

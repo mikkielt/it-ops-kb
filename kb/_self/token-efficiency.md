@@ -59,7 +59,7 @@ The cost model all of them follow: a lookup costs the agent's fixed start contex
 
 ## Speed that keeps turns short
 
-- **A persisted index.** Postings lists in a stdlib `sqlite3` file keyed by a fingerprint of the kb files: a cold `pack` in about 0.04 s instead of 4 s, output unchanged [CODE _tools/kbfacts.py#store] ("Tool speed"). The fingerprint is of the files' content, not their path or times, and a clone's worktrees share the index directory, so a sprint worker's fresh worktree reads the index its clone built instead of rebuilding it (14 s on a Windows host) [CODE _tools/kbfacts.py#content_key].
+- **A persisted index.** Postings lists in a stdlib `sqlite3` file keyed by a fingerprint of the kb files: a cold `pack` in about 0.04 s instead of 4 s, output unchanged [CODE _tools/kbfacts.py#store] ("Tool speed"). The fingerprint is of the files' content, not their path or times, and a clone's worktrees share the index directory, so a sprint worker's fresh worktree reads the index its clone built instead of rebuilding it (14 s on a Windows host) [CODE _tools/kbfacts.py#content_key]. A rebuild after an edit reuses the weighing of every unchanged unit from a cache beside the index, so it costs well under half a first build (4.7 s against 11 s on that host) [CODE _tools/kbfacts.py#weighed].
 - **Live docs are paid once a week.** `docs_search` and `docs_fetch` on the `kb` server keep each remote answer 7 days on disk, keyed by server, tool and arguments, so a repeated search or fetch makes no HTTP call; one answer runs to about 10-26k characters [CODE _tools/kb_mcp.py#docs_cache_read].
 - **A warm server.** `kb_mcp.py` builds or loads the index while the client connects, so the first `kb_pack` does not wait [CODE _tools/kb_mcp.py#warm].
 
