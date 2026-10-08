@@ -141,6 +141,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 37 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 7 |
+| `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 3 |
 | `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 30 |
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 13 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |

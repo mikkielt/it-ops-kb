@@ -396,6 +396,9 @@ RFC 4180,python/stdlib-sqlite3-csv
 GIT_CONFIG_COUNT,gitlab/git-test-repositories
 git fast-import,gitlab/git-test-repositories
 maintenance.auto,gitlab/git-test-repositories
+git update-ref,gitlab/git-refs
+git for-each-ref,gitlab/git-refs
+refname:lstrip,gitlab/git-refs
 PYTEST_DEBUG_TEMPROOT,python/pytest
 tmp_path_factory,python/pytest
 PYTEST_XDIST_AUTO_NUM_WORKERS,python/pytest-xdist

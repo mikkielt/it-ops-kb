@@ -2530,3 +2530,15 @@ _Agent: kb-research_
 - See gitlab/git-test-repositories.md, claude/hooks.md.
 
 _Agent: kb-research_
+
+## QK-git-update-ref-d-delete-ref. How does git update-ref -d delete a ref, with and without an old value, and how does git for-each-ref list the refs under a namespace such as refs/kb-reopened/?
+- `git update-ref -d <ref>` deletes the ref; `git update-ref -d <ref> <old-oid>` deletes it only after verifying it still holds `<old-oid>`; in `--stdin` mode `delete <ref> [<old-oid>]` does the same and a given `<old-oid>` may not be zero. (`gitlab/git-refs.md:25`, `:28`) [DOC S-sgbkwka4]
+- The create form takes 40 zeroes or an empty `<old-oid>` to require that the ref does not exist; `--stdin` applies all updates or none. (`gitlab/git-refs.md:26`, `:30`) [DOC S-sgbkwka4]
+- `git for-each-ref <pattern>` matches by `fnmatch` or literally, a literal pattern matching completely or from the start up to a slash, so `refs/kb-reopened/` lists the whole namespace. (`gitlab/git-refs.md:35`) [DOC S-xahbgevi, S-cacomkjs]
+- `--format` interpolates `%(fieldname)`; `%(refname)` is the full `refs/...` name and `%(refname:lstrip=2)` drops its first two components (`refs/tags/foo` to `foo`); too few components give an empty string, not an error. (`gitlab/git-refs.md:37`, `:38`, `:39`) [DOC S-xahbgevi, S-cacomkjs]
+- Observed with git 2.50.1 on macOS: a wrong old value under `-d` exits 1 and keeps the ref, `-d` of a missing ref without an old value exits 0, and an empty namespace lists nothing with exit 0. (`gitlab/git-refs.md:34`, `:36`) [DER S-sgbkwka4, S-xahbgevi: one run with git 2.50.1]
+- Conclusion: list a namespace's ids with `git for-each-ref --format='%(refname:lstrip=2)' refs/kb-reopened/` and remove one with `git update-ref -d refs/kb-reopened/<id>`, adding the old value when a ref moved by someone else must survive. (`gitlab/git-refs.md:43`) [DER S-sgbkwka4, S-xahbgevi, S-cacomkjs]
+- Open: the git pages state no exit status for either command; the observed ones are from git 2.50.1 only (`_gaps.md`, gitlab/git-refs). [UNK]
+- See gitlab/git-refs.md, gitlab/git-trailers-and-hooks.md.
+
+_Agent: kb-research_

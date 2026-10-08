@@ -59,7 +59,7 @@ Git reads a trailer only inside the trailer block: the last group of lines of th
 | skip commit hooks | `git commit --no-verify` | S-ziyhuwyc |
 | skip pre-push | `git push --no-verify` | S-l6s4hfqp |
 
-See also `gitlab/automated-merge-requests.md` (push refusals, server-side hooks, `git push -o`), `gitlab/protected-branches-tags.md`.
+See also `gitlab/automated-merge-requests.md` (push refusals, server-side hooks, `git push -o`), `gitlab/protected-branches-tags.md`, `gitlab/git-refs.md` (creating, listing and deleting local refs with `update-ref` and `for-each-ref`).
 
 ## Examples
 - SNIPPET: read the trailers of a commit message exactly as git does; context: git 2.55 (any release with `--parse`), message on stdin; checked: run (local git; prints the two trailers of the last paragraph and omits the `KB-Work` line above them) [DER S-wtbq3lvm: `--parse` is `--only-trailers --only-input --unfold`]

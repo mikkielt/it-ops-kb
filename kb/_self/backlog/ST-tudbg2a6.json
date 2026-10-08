@@ -21,5 +21,24 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the update-ref and for-each-ref facts live: a new small article on git refs, or folded into the git trailers and hooks article?",
+      "options": [
+        "new-article",
+        "fold-into-trailers-article"
+      ],
+      "recommendation": "new-article",
+      "do": {
+        "new-article": "ST-tudbg2a6",
+        "fold-into-trailers-article": "ST-tudbg2a6"
+      },
+      "class": "design",
+      "answer": "new-article",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-research"
 }
