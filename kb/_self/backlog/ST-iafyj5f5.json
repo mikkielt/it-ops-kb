@@ -2,7 +2,7 @@
   "id": "ST-iafyj5f5",
   "kind": "story",
   "title": "perfcheck.py time defaults to the platform's ceiling in tests_ceiling.json",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-matmvkn6",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,6 @@
     "ST-e5u5zhrc",
     "ST-founcbvo",
     "ST-ihtjygip"
-  ]
+  ],
+  "claimed_by": "worker-iafy"
 }
