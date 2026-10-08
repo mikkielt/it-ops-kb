@@ -2,7 +2,7 @@
   "id": "ST-juoeq36g",
   "kind": "story",
   "title": "backlog.py set --add no longer appends to every list field in the call",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -63,5 +63,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (run 2026-10-07 on origin/main): the check prints 'set exit 0 checks before 1 after 2' and exits 1. bl_items.py, .claude/skills/ and .claude/agents/ are rule-guarding, so gate add-scope is blocking and asked before any code."
+  "notes": "Premise (run 2026-10-07 on origin/main): the check prints 'set exit 0 checks before 1 after 2' and exits 1. bl_items.py, .claude/skills/ and .claude/agents/ are rule-guarding, so gate add-scope is blocking and asked before any code.",
+  "claimed_by": "worker-ST-juoeq36g"
 }
