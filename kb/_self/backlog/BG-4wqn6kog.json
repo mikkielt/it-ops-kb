@@ -47,6 +47,19 @@
     "ST-hhimevk7",
     "ST-5vtfd3y4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which real query-log lookup replaces HO-session-id-bash-env in lookup_heldout.csv? Candidates weighed: the headless --bare default record (agents/headless-agent-runtimes.md, 0.41 best ratio to any eval row, article states it) and the Bash wildcard permission record (claude/powershell-tool.md, whose article covers PowerShell rules, not Bash ones). HO-max-mcp-output-tokens stays: 0.43 against EV-mcp-tool-output-limit, below the 0.75 rule.",
+      "options": [
+        "headless-bare",
+        "bash-wildcard"
+      ],
+      "recommendation": "headless-bare",
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-4rq725fe review"
   ],

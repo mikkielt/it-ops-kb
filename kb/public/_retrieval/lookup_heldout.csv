@@ -2,7 +2,7 @@ id,question,expect_paths,expect_verdict,allow_weak
 HO-sessionend-hook-input,"What does the SessionEnd hook input contain (session_id, transcript_path, reason)?",claude/hooks.md,good,
 HO-defender-performance-recording,New-MpPerformanceRecording Seconds RecordTo Get-MpPerformanceReport TopPaths TopProcesses TopExtensions,defender/asr-and-antivirus.md,good,
 HO-rag-chunk-size,"RAG chunking: sentence or passage level chunks versus long paragraphs, chunk size and retrieval precision",agents/hybrid-retrieval.md,good,
-HO-session-id-bash-env,Claude Code expose session id to Bash commands environment variable,claude/hooks.md,good,
+HO-bare-headless-default,claude -p --bare default headless mode future release skip hooks plugins settings,agents/headless-agent-runtimes.md,good,
 HO-job-token-mr-endpoints,GitLab CI_JOB_TOKEN allowed API endpoints merge requests associated with commit,gitlab/detecting-mr-merges-in-ci.md,good,
 HO-glab-merge-already-merged,glab mr merge on a merge request that is already merged: exit code and message,gitlab/automated-merge-requests.md,good,
 HO-otel-api-request-attributes,Claude Code OpenTelemetry api_request event attributes request_id prompt.id tool_result tool_use_id,claude/otel-monitoring.md,good,
