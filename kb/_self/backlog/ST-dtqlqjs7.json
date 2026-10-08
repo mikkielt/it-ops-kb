@@ -2,7 +2,7 @@
   "id": "ST-dtqlqjs7",
   "kind": "story",
   "title": "claude/models.csv and the Claude Code model facts carry Claude Haiku 5.5 with its prices, effort default and retirement date",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",
@@ -57,5 +57,28 @@
     "https://code.claude.com/docs/en/model-config#adjust-effort-level"
   ],
   "notes": "Premise: python3 _tools/rag.py pack 'Claude Haiku 5.5 model id price context window' packs none or weak today (claude/models.csv has only claude-haiku-4-5-20251001, retirement not sooner than 2026-10-15). Facts to take from the live pages, never from memory: the models overview table (id claude-haiku-5-5, 1M context, 128K out, adaptive thinking, default effort medium, retirement not sooner than 2027-10-07, cache read 10% of base) and the pricing page (the input and output price tiers behind 'from 0.10 / 0.50 USD per MTok'); the Claude Code model-config page for --effort, CLAUDE_CODE_EFFORT_LEVEL and the medium default on Opus 5.5, Sonnet 5.5 and Haiku 5.5. One lookup_eval.csv row for the new fact; doc2query expansions only if the eval row misses on paraphrase. A conflict with the Haiku 4.5 retirement row, if the page changed it, goes to _conflicts.md, not a silent edit. Both checks pass before the work and must stay green: check.py pins the root's contract and rag.py eval pins the eval set; the story's own proof is the lookup_eval.csv row it adds (EV id from kbid.py eval), which eval then reads against the new models.csv row, and the pack of its goal question citing that row (rag.py pack has no exit code by verdict: run it at done and quote the cited line in the evidence). kb_ask.py --no-model on the question prints a false-good pack today (the Haiku 4.5 row with a check: line), probed 2026-10-08. Premise run at planning (2026-10-08): rag.py pack on the Haiku 5.5 question packs good with 'check: public/claude/models.csv never mentions 5.5' and 'kb lacks: 5.5, date': a false good, no Haiku 5.5 line. Reproduces.",
-  "claimed_by": "worker-ST-dtqlqjs7"
+  "evidence": {
+    "commit": "dd7116dce7e125f2b103adfb732890c2fc3aa108",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py",
+          "--root",
+          "public"
+        ],
+        "exit": 0,
+        "sha256": "2d9840463e1d8e3c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "eb707772916f8cd1"
+      }
+    ]
+  }
 }
