@@ -25,6 +25,13 @@
         "--since",
         "origin/main"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; sys.exit(0 if any(r['scenario']=='pool' for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8'))) else 1)"
+      ]
     }
   ],
   "touches": [
@@ -37,7 +44,8 @@
   "depends_on": [
     "ST-k4uqib77",
     "ST-ohz5si2o",
-    "ST-dtqlqjs7"
+    "ST-dtqlqjs7",
+    "ST-uxgaazfi"
   ],
   "gates": [
     {
@@ -63,5 +71,5 @@
   "links": [
     "kb/_self/reports/benchmarks.md"
   ],
-  "notes": "Estimate behind the gate, from the 2026-09-28 records: a kb question costs about 0.03 USD on Haiku and 0.10 on Sonnet 5.5, the router 0.01-0.03, a web question 0.01-0.20; 120 rows x 3 kb arms x 2 efforts x 3 reps is 2,160 runs at a mean near 0.04 USD, so about 85 USD, plus router (5), web subset (15), session shape (10) and the Opus subset (3): about 100-120 USD. Run order: the free scenarios first (always-on for the 2.1.290 fixed context, retrieval, verdict, tool-speed on 311 topics), then pool at one rep as a dry run that checks every row's regex fires on some arm, then the full set. Record the resolved model of each alias from the result event. A pool row whose check no arm passes at any rep is a finding for the review (a bad regex or a real miss), not a reason to edit the row mid-run. Write the design.md conclusions only from cells whose spread is below their difference, as the navigation section does. Checks before the work: report --check passes on today's tree and fails once ST-k4uqib77's pool markers are in benchmarks.md with no rows (its no-rows rule), so it proves this story's record; selfdoc.py stale pins that design.md and token-efficiency.md edits leave no doc stale, a check that must stay green. From ST-k4uqib77's operator gates (2026-10-08): g1, the pool section's bench: table markers in kb/_self/reports/benchmarks.md land with this story's record (ST-k4uqib77 landed the setup text, Counting and the no-rows rule, no markers), so report --check fails only once this story adds the markers and passes when the record is in benchmarks.csv; ST-ohz5si2o's marginal-input marker lands here too. g3, the web arms' kind list covers 62 rows per arm: this run selects the 20-row web subset with run pool's --kinds and --reps flags to stay within the 120 USD cap. run pool --dry-run prints the run count before any paid run."
+  "notes": "Estimate behind gate g1 (2026-09-28 records): a kb question about 0.03 USD on Haiku, 0.10 on Sonnet 5.5, router 0.01-0.03, web 0.01-0.20; the full set about 100-120 USD. Run order: the free scenarios first (always-on, retrieval, verdict, tool-speed), then pool at one rep as a dry run that checks every row's regex fires on some arm, then the full set with ST-uxgaazfi's --jobs and --max-usd 120. Record each alias's resolved model from the result event. A row no arm passes at any rep is a review finding, never edited mid-run. design.md conclusions only from cells whose spread is below their difference. ST-k4uqib77 g1 (operator): this story adds the pool section's bench: table and bench:session markers with the record, so report --check passes before and after the work and pins that every marker has rows; the check on benchmarks.csv's pool rows fails until the record exists. ST-k4uqib77 g3 (operator): the web kind list covers 62 rows per arm; select the 20-row subset with --kinds and --reps. Resume probe 2026-10-08: a --resume turn's stream-json holds the new turn only (no replay), so marginal_input holds. Sizing 2026-10-08: kb arms, router and hook at 3 reps dry-run 3,150 runs (2,700 paid), sequential 20-30 h, hence ST-uxgaazfi. selfdoc.py stale passes before the work and pins that the design.md and token-efficiency.md edits leave no doc stale."
 }
