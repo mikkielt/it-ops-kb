@@ -1,0 +1,25 @@
+{
+  "id": "BG-rbpzf6cj",
+  "kind": "bug",
+  "title": "gate add classes a gate as secrets when its text says output tokens",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority.class_reasons does not class a gate as secrets because its question or options say tokens in the sense of a model's token counts (output tokens, token counts); a credential-sense token (bearer token, access token, API token, PAT) still classes it secrets",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as a; c=a.class_reasons({}, {\"id\":\"g1\",\"question\":\"Which count is the output tokens?\",\"options\":[\"the main loop\",\"the whole run\"]})[0]; assert c!=\"secrets\", c"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o run"
+  ]
+}
