@@ -2,7 +2,7 @@
   "id": "ST-founcbvo",
   "kind": "story",
   "title": "The contract lint flags a fact line that holds a second bullet after its tag",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-matmvkn6",
   "priority": "P3",
   "rank": 0,

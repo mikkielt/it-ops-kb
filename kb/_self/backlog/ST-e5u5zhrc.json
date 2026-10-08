@@ -2,7 +2,7 @@
   "id": "ST-e5u5zhrc",
   "kind": "story",
   "title": "rag.py eval prints its failing rows and totals, not every row",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,

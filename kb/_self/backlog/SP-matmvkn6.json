@@ -2,7 +2,7 @@
   "id": "SP-matmvkn6",
   "kind": "sprint",
   "title": "Query log learn and apply, eval and lint output",
-  "status": "planned",
+  "status": "active",
   "goal": "apply's alias check reads kb/_self's own aliases file and learn pairs a rules miss's key word only with the one candidate word; rag.py eval prints only failing rows and totals by default; the contract lint flags a second bullet after a fact's tag; perfcheck's names_successor rejects a reason naming only the dropped test file; and close and drop delete each removed item's refs/kb-reopened ref",
   "gates": [
     {
