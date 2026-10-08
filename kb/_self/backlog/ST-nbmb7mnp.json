@@ -2,7 +2,7 @@
   "id": "ST-nbmb7mnp",
   "kind": "story",
   "title": "Research sprint goal: Token efficiency is measured on a wide pool with Haiku 5.5",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hm4qgf3t",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Packed on 2026-10-08 with rag.py pack -q over the five questions: Q1 good with a check: line (false good, no 5.5 line), Q2 good but the effort lines omit Haiku 5.5, Q3-Q5 good.",
-  "claimed_by": "worker-ST-nbmb7mnp"
+  "evidence": {
+    "commit": "8a092e64b23e555df234dee1bfad29f1477023b1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-nbmb7mnp"
+        ],
+        "exit": 0,
+        "sha256": "fbb854ff5a7e851c"
+      }
+    ]
+  }
 }
