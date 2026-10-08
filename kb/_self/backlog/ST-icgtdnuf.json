@@ -46,6 +46,20 @@
       "class": "design",
       "answer": "keep",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which worker worktree prefix does check.py budget a tracked path against (C:\\Users\\<24 characters>\\it-ops-kb\\.claude\\worktrees\\agent-ST-xxxxxxxx\\ is 80 characters, so 260 less the NUL less 80 leaves 179; the longest tracked path today is 85)?",
+      "options": [
+        "80-prefix-limit-179",
+        "100-prefix-limit-159",
+        "no-prefix-limit-259"
+      ],
+      "recommendation": "80-prefix-limit-179",
+      "class": "design",
+      "answer": "80-prefix-limit-179",
+      "by": "agent"
     }
   ],
   "links": [
