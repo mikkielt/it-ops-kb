@@ -187,10 +187,11 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
 
 # ---- the pool scenario (bench_pool.py): synthetic streams, no model
 
-def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost=0.01, main_out=None):
+def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost=0.01, main_out=None, billed=None):
     """A stream-json run of two requests: a kb_pack call whose result is `chars` characters, then the answer. The
     messages' output counts are partial (50 and 30); the result event's `modelUsage` counts `final_out` and its `usage`
-    (the main loop) `main_out`, by default the same."""
+    (the main loop) `main_out`, by default the same. `billed` is merged into the `modelUsage`, per model: the fields a
+    tool's own model call is billed (a WebFetch's summary, a WebSearch) and no message of the stream shows."""
     usage = lambda unc, write, read, out: {"input_tokens": unc, "cache_creation_input_tokens": write,  # noqa: E731
                                            "cache_creation": {"ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": write},
                                            "cache_read_input_tokens": read, "output_tokens": out}
@@ -201,7 +202,9 @@ def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost
         {"type": "assistant", "message": {"id": "m2", "model": model, "usage": usage(170, 0, 2010, 30),
                                           "content": [{"type": "text", "text": answer}]}},
         {"type": "result", "usage": usage(180, 2000, 2010, final_out if main_out is None else main_out), "total_cost_usd": cost, "duration_api_ms": 4000,
-         "num_turns": 2, "modelUsage": {model: {"costUSD": cost, "outputTokens": final_out}}, "result": answer}]
+         "num_turns": 2, "result": answer,
+         "modelUsage": {m: {**({"costUSD": cost, "outputTokens": final_out} if m == model else {}), **(billed or {}).get(m, {})}
+                        for m in {model, *(billed or {})}}}]
     return "\n".join(json.dumps(e) for e in events)
 
 
@@ -240,6 +243,18 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     assert planted["requests"][0]["usage"]["cache_creation"]["ephemeral_1h_input_tokens"] == 2000
     listed = bp.list_usd(planted, "sonnet")
     assert abs(listed - planted["cost"]) <= 0.2 * planted["cost"]  # the 5-minute rate would price it 22% under
+    # a tool's own model call is billed and in no message of the stream: a WebFetch summary runs Haiku 5.5 inside a Sonnet
+    # run (62k uncached input, 12k output: priced at Haiku's prices, not at the session's $10 per MTok of output), and a
+    # WebSearch is billed $0.01 on a kb arm too, with the input of its own call on the session's model
+    fetch = {"claude-haiku-5-5": {"inputTokens": 60_000, "outputTokens": 12_000, "webSearchRequests": 1,
+                                  "costUSD": 0.022}}
+    summary = agent_bench.result_of(pool_stream("value1", final_out=200, cost=0.0326, billed=fetch), "", 5.0)
+    assert summary["out"] == 12_200 and summary["web_searches"] == 1  # 0.0106 the session, 0.0220 the Haiku call and its search
+    assert abs(bp.list_usd(summary, "sonnet") - summary["cost"]) <= 0.2 * summary["cost"]
+    search = {"claude-haiku-5-5": {"inputTokens": 20_180, "webSearchRequests": 1}}
+    kb_search = agent_bench.result_of(pool_stream("value1", model="claude-haiku-5-5", final_out=4000, cost=0.0144, billed=search), "", 5.0)
+    assert kb_search["web_searches"] == 1 and kb_search["searches"] == 0
+    assert abs(bp.list_usd(kb_search, "haiku") - kb_search["cost"]) <= 0.2 * kb_search["cost"]
     assert cell("fact", "sonnet-5-5:low", "checks") == "1/2" and cell("fact", "sonnet-5-5:low", "fully_right") == "1 of 2"
     assert round(cell("fact", "sonnet-5-5:low", "fixed_share"), 4) == round(2010 / 4190, 4)
     assert cell("fact", "sonnet-5-5:low", "tokens_per_right") == 2 * 4280.5  # two runs' effective input over the one right

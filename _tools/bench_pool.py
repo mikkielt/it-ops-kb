@@ -872,29 +872,46 @@ def record_of(row, arm, label, r, cc=""):
     t = run_tokens(r, name, cc)
     checks = [bool(agent_bench.check(c, r)) for c in json.loads(row["checks"])]
     return {**base, **t, "model": "+".join(sorted(set(t.pop("models")))),
-            "list_cost": list_usd(r, name, cc, r.get("searches", 0) if arm in WEB_ARMS else 0),
+            "list_cost": list_usd(r, name, cc), "web_searches": r.get("web_searches", r.get("searches", 0)),
+            "model_usage": r.get("model_usage", {}),
             "pack_tokens": r.get("kb_tokens", 0) + r.get("pack_chars", 0) // agent_bench.CHARS_PER_TOKEN,
             "tool_calls": sum(r.get("tools", {}).values()) + sum(r.get("sub_tools", {}).values()),
             "turns": r.get("turns", 0), "wall_s": r.get("wall_s", 0), "cost": r.get("cost", 0), "checks": checks}
 
 
-def list_usd(r, name="", cc="", searches=0):
-    """The list-price cost (`est_cost`) of the tokens run `r` counts (`run_tokens`): its requests priced per model, the
-    run's own `out` in place of the requests' partial counts (the difference put in the highest price tier the requests
-    reached, shared between models in proportion to their partial counts), and `searches` web searches."""
+def list_usd(r, name="", cc=""):
+    """The list-price cost (`est_cost`) of everything run `r` bills: its requests priced per model, and, from the
+    run's `model_usage` (what `modelUsage` bills each model), the output and the uncached input a request does not
+    show (the difference put in the lowest price tier for the input, the highest the requests reached for the output)
+    and a model that has no request of the main session at all (the model a WebFetch or WebSearch call runs inside the
+    tool, billed in the lowest tier), each at its own model's prices; a run with no `model_usage` takes its own `out`
+    in place of the requests' partial counts, shared between models in proportion to them. Plus the web searches the run
+    is billed (`web_searches`, else the `searches` counted) at WEB_SEARCH_USD each, on every arm."""
     groups = {}
     for q in r.get("requests") or []:
         groups.setdefault(q.get("model") or name, []).append(q)
     sums = [usage_sum(rs, m, cc) for m, rs in groups.items()]
+    billed = r.get("model_usage") or {}
     partial = sum(s["out"] for s in sums)
-    extra = r["out"] - partial if sums and r.get("out") is not None else 0
+    extra = r["out"] - partial if sums and r.get("out") is not None and not billed else 0
     total = 0.0
     for s in sums:
         top = max(i for i, t in enumerate(s["by_tier"]) if any(t.values()))
-        add = extra * s["out"] / partial if partial else extra / len(sums)
+        mine = billed.get(s["model"], {})
+        if billed:
+            s["by_tier"][0]["uncached"] += max(mine.get("uncached", 0) - s["uncached"], 0)
+            add = mine.get("out", s["out"]) - s["out"]
+        else:
+            add = extra * s["out"] / partial if partial else extra / len(sums)
         s["by_tier"][top]["out"] += max(add, -s["by_tier"][top]["out"])
         total += est_cost(s)
-    return total + searches * WEB_SEARCH_USD
+    for model, u in billed.items():
+        if model not in {s["model"] for s in sums}:
+            if model not in PRICE:
+                raise KeyError(f"no price for model {model!r}: add it to bench_core.PRICE")
+            p = PRICE[model][0]
+            total += (u["uncached"] * p[1] + u["cache_write"] * write_rate(p) + u["cache_read"] * p[4] + u["out"] * p[2]) / 1e6
+    return total + r.get("web_searches", r.get("searches", 0)) * WEB_SEARCH_USD
 
 
 def interval(rs, resamples=RESAMPLES):
