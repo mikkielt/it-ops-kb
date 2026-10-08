@@ -2,7 +2,7 @@
   "id": "ST-ctomsu4i",
   "kind": "story",
   "title": "check.py refuses a path:line citation in _answers.md or _gaps.md that points at a line with none of the cited sources",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-caqrexqw",
   "priority": "P3",
   "rank": 0,
@@ -95,5 +95,38 @@
     "parked: SP-wgx4pq4r close"
   ],
   "notes": "Premise run 2026-10-08 at plan (a probe over kb/public/_answers.md and _gaps.md, 117 path:line citations with the :N shorthand): 22 problems, all in kb/public/_answers.md. 3 name no fact at all (claude/plugins.md:106 and :107, Reference table rows; gitlab/git-test-repositories.md:144, a heading); 14 name a continuation or tag line inside a tagged wrapped fact bullet (git-test-repositories.md:66, 102, 106, 109, 113, 123, 126, 128, 135, 138, 147, 153, 160, 164); 5 name a fact sharing no source id with the ledger bullet (git-test-repositories.md:70, :91; python/interpreter-startup.md:40, 45, 56). The triage's 17 of 79 counted only the full path:line form and first lines; 13 of those were first lines of wrapped facts, which are fine. Correction to gate citable-line's question: it is 14 continuation or tag lines, not 19. With the recommended answer (any line of a tagged fact bullet, no id rule) 3 citations are re-pointed; premise reproduces. Selected by the operator for SP-caqrexqw on 2026-10-08: wrong ledger citations send a reader of a recorded answer to a line that does not state it; the notes name no fitness test, so gate promote asks whether it joins. Passes before the work (precheck 2026-10-08): check.py pins that the tree passes once the new rule lands, which needs the rejected citations re-pointed; selfdoc.py stale --work ST-ctomsu4i pins that the item's commits leave no doc stale (it judges only commits naming the item, so none yet). The planted-failure test -k ledger_citation is the check that fails until the work is done. Passes before the work: python3 _tools/check.py (pins the tree green once the rule lands) and python3 _tools/selfdoc.py stale --work ST-ctomsu4i (pins the item's docs current). (precheck note: check.py and selfdoc.py stale each passes before the work, as above.)",
-  "claimed_by": "worker-ST-ctomsu4i"
+  "evidence": {
+    "commit": "51d0651c7d80a6f6b89d66f03a0f4011ec12c6d3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "9e1fed75d1b2b2f5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ledger_citation"
+        ],
+        "exit": 0,
+        "sha256": "b244d10b34ec7fe4"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale",
+          "--work",
+          "ST-ctomsu4i"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
