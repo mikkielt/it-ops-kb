@@ -1,0 +1,13 @@
+{
+  "id": "ST-vua43tob",
+  "kind": "story",
+  "title": "The pool scenario has an Opus arm",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.py run pool accepts an opus-5-5 kb arm (pinned id, the kb's tools, one effort level or both), so a record can run the Opus sanity subset ST-ji32ouga's goal named; today --arms refuses opus and the 2026-10-08 record has no Opus rows. Found in SP-hm4qgf3t's run.",
+  "links": [
+    "parked: SP-hm4qgf3t review"
+  ]
+}

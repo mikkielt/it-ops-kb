@@ -1,0 +1,12 @@
+{
+  "id": "ST-oshcopb3",
+  "kind": "story",
+  "title": "The gate classifier does not read the word 'token' in a model-usage question as a secret",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_authority's class of a gate reads 'token' as a secrets word only where it means a credential, so a question about input tokens or the spend of a run stays a design gate; today an unbounded 'token' match makes it blocking (a SP-hm4qgf3t worker dropped a gate for it). ST-yn3fa5ts covers the same misreading of 'rule'.",
+  "links": [
+    "parked: SP-hm4qgf3t review"
+  ]
+}

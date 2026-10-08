@@ -1,0 +1,12 @@
+{
+  "id": "ST-asstsi7t",
+  "kind": "story",
+  "title": "A headless sprint worker's tokens reach backlog.py cost for its item",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A worker that /kb-sprint run starts with claude -p in .claude/worktrees/agent-<id> on work/<id>, with the project settings, has its usage attributed to its item, so backlog.py cost ID and cost --rework SP show it; in SP-hm4qgf3t every item's cost read zero apart from the orchestrator's own prompts and land warned 'landed with no work rows' for ST-ji32ouga and ST-3kw6d6cz, while the workers' own result events counted about 45M tokens.",
+  "links": [
+    "parked: SP-hm4qgf3t review"
+  ]
+}

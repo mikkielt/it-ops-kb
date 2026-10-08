@@ -1,0 +1,12 @@
+{
+  "id": "ST-z5uh6oj7",
+  "kind": "story",
+  "title": "rag.py pack ranks a table's rows before its budget cut",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "pack prints a CSV article's matching rows by score, not in file order, before it cuts at the character budget, so a question about one model reaches its row of kb/public/claude/models.csv; today a Claude Opus 5.5 model question never reaches models.csv although its row is on line 4, and ST-dtqlqjs7 moved the Haiku 5.5 row to the first data row to be cited. Found in SP-hm4qgf3t's run and confirmed by its review.",
+  "links": [
+    "parked: SP-hm4qgf3t review"
+  ]
+}

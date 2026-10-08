@@ -1,0 +1,13 @@
+{
+  "id": "ST-omc66sr5",
+  "kind": "story",
+  "title": "A claude -p timeout in a pool kb or web run is one failed run, not a lost chunk",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_pool's kb and web runners catch agent_bench.execute's TimeoutExpired and record the run as an error, as the router and hook runners do, so run_tasks writes the chunk's cells and rows; today the exception is re-raised at run_tasks and the chunk writes no rows. Found by the SP-hm4qgf3t review (no chunk hit it).",
+  "links": [
+    "parked: SP-hm4qgf3t review"
+  ]
+}

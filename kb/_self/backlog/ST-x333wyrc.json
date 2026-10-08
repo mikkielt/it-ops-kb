@@ -1,0 +1,13 @@
+{
+  "id": "ST-x333wyrc",
+  "kind": "story",
+  "title": "bench_core.resolve_model prices a run with no observed model and an unknown Claude Code version without an IndexError",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "resolve_model with an alias, no observed model and an empty or '?' Claude Code version returns the alias's first model or raises a named error, not an IndexError from the ALIAS lookup; run_tokens passes the run's version to usage_sum. Found by the SP-hm4qgf3t review.",
+  "links": [
+    "parked: SP-hm4qgf3t review"
+  ]
+}

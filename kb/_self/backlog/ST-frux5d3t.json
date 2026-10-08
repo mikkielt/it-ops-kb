@@ -1,0 +1,13 @@
+{
+  "id": "ST-frux5d3t",
+  "kind": "story",
+  "title": "The pool's router arm scores both parts of a split route's answer",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "When kb_ask's router splits a question (the reader answers what the kb has, the researcher the rest), the pool record's answer, tools and checks cover both parts; today agent_bench.add keeps the second run's answer, so the reader's 'kb has:' part is not checked. Measure first how many 2026-10-08 router runs took the split route. Found by the SP-hm4qgf3t review.",
+  "links": [
+    "parked: SP-hm4qgf3t review"
+  ]
+}

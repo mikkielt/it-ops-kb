@@ -1,0 +1,13 @@
+{
+  "id": "ST-yob4py65",
+  "kind": "story",
+  "title": "benchmarks.py pool build rebuilds the committed pool without a paid call and picks a fact line, never front matter",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "An offline pool build on today's tree reproduces kb/public/_retrieval/bench_pool.csv row for row (new lookup_eval.csv rows do not move the stratified sample, or the build keeps the committed sample) and asks no Sonnet call for a row it already has, as bench_pool.py's docstring says; fact_for never picks a front-matter line (applies_to:, topic:) as a row's fact, so fewer eval rows fall back to a path-only check. Found by the SP-hm4qgf3t review: a rebuild replaced BP-c552cb0f with BP-ae1e4987 and 10 of 40 eval rows have path-only checks.",
+  "links": [
+    "parked: SP-hm4qgf3t review"
+  ]
+}
