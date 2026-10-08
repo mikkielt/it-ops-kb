@@ -381,6 +381,26 @@ def test_bench_pool_session_shape_groups_resume_marginal_input_and_cache_share(m
     live = bp.live_session_runner(type("B", (), {"lookup": lambda self: "."})())
     costs = [live("haiku-5-5", "default", {"question": "q"}, sid, n)["cost"] for sid, n in (("A", 1), ("A", 2), ("A", 3), ("B", 1))]
     assert [round(c, 6) for c in costs] == [0.10, 0.15, 0.06, 0.04] and spent == costs
+    # modelUsage is the running total too: each question's out, model usage and web searches are its own share, and
+    # its list cost lands within 20% of its cost
+    model, keys = "claude-sonnet-5-5", ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens")
+    own = [(10, 21400, 45500, 381), (20, 2237, 69070, 1052), (30, 3454, 86129, 3046)]
+    price = lambda u: (u[0] * 2 + u[1] * 4 + u[2] * 0.1 + u[3] * 10) / 1e6  # noqa: E731
+
+    def resumed(n):
+        u, t = dict(zip(keys, own[n])), [sum(o[i] for o in own[:n + 1]) for i in range(4)]
+        mu = {model: {"inputTokens": t[0], "cacheCreationInputTokens": t[1], "cacheReadInputTokens": t[2], "outputTokens": t[3],
+                      "costUSD": price(t), "webSearchRequests": n}}
+        total = price(t) + 0.01 * n
+        events = [{"type": "assistant", "message": {"id": "m", "model": model, "usage": u, "content": [{"type": "text", "text": "a"}]}},
+                  {"type": "result", "usage": u, "total_cost_usd": total, "duration_api_ms": 1000, "num_turns": 1, "modelUsage": mu, "result": "a"}]
+        return agent_bench.result_of("\n".join(json.dumps(e) for e in events), "", 1.0)
+    results = iter([resumed(0), resumed(1), resumed(2)])
+    monkeypatch.setattr(agent_bench, "execute", lambda *a, **k: next(results))
+    recs = [bp.record_of({"id": "x", "kind": "fact", "checks": "[]"}, "sonnet-5-5", "l", live("sonnet-5-5", "low", {"question": "q"}, "S", n))
+            for n in (1, 2, 3)]
+    assert [r["out"] for r in recs] == [o[3] for o in own] and [r["model_usage"][model]["out"] for r in recs] == [o[3] for o in own]
+    assert [r["web_searches"] for r in recs] == [0, 1, 1] and all(abs(r["cost"] - r["list_cost"]) <= 0.2 * r["list_cost"] for r in recs)
 
 
 def pool_rows(n):
