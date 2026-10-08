@@ -6,7 +6,7 @@
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
-  "goal": ".claude/agents/kb-worker.md rule 4 says to read every doc 'selfdoc.py stale --since origin/main' lists for the item's own changed files, whether in touches or not, and to name it in Self-Reviewed when it is still correct; a doc that needs an edit outside touches still stops the work. Answers the SP-sz5fbvqn retrospective: the workers of ST-tuzfns6e and ST-rhnku4mc skipped kb/_self/code.md because it was outside their touches, so land stopped at stale and the orchestrator amended Self-Reviewed.",
+  "goal": ".claude/agents/kb-worker.md rule 4 says to read every doc 'selfdoc.py stale --since origin/main' lists for the item's own changed files, whether in touches or not, and to name it in Self-Reviewed when it is still correct; a doc that needs an edit outside touches still stops the work. Answers the SP-sz5fbvqn retrospective: the workers of ST-tuzfns6e and ST-rhnku4mc skipped the code map doc (code.md) because it was outside their touches, so land stopped at stale and the orchestrator amended Self-Reviewed.",
   "checks": [
     {
       "run": [
