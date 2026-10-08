@@ -6,6 +6,16 @@
   "priority": "P2",
   "rank": 0,
   "goal": "check.py's ledger citation rule (ST-ctomsu4i, 815428cd1) refuses a range citation such as x.md:7-9 in a root's _answers.md or _gaps.md when any line of the range names no line of a tagged fact, not only when its first line does; found by the SP-caqrexqw review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ledger_citation"
+      ]
+    }
+  ],
   "links": [
     "parked: SP-caqrexqw review"
   ]
