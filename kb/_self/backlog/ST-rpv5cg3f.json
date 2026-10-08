@@ -2,7 +2,7 @@
   "id": "ST-rpv5cg3f",
   "kind": "story",
   "title": "Review sprint: Workers read what they change and gates say why they block",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ktup3cha",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-mac"
 }
