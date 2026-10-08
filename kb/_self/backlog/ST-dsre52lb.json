@@ -36,7 +36,7 @@
       "recommendation": "min-length-3",
       "class": "design",
       "answer": "min-length-3",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -49,7 +49,7 @@
       "recommendation": "word-pair-left-to-a-person",
       "class": "querylog",
       "answer": "word-pair-left-to-a-person",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

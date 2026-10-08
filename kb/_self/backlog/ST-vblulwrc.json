@@ -1,0 +1,26 @@
+{
+  "id": "ST-vblulwrc",
+  "kind": "story",
+  "title": "prune_reopened_refs judges a gone item file against the integration main, not the checkout it runs in",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the fresh-context review of SP-matmvkn6, item ST-ihtjygip (Sprint close and drop delete the refs/kb-reopened ref of each item they remove): refs/kb-reopened/* is shared by every worktree of a clone, but prune_reopened_refs judges an item file gone by the checkout the command runs in, so a drop outside a sprint run in an older worktree deletes the reopen ref of a live item filed on main after that worktree branched. The prune deletes a ref only when the item file is absent from the integration main tree too (origin/main), and a ref of an item that exists there is kept.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "reopened_refs"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-matmvkn6 review"
+  ]
+}

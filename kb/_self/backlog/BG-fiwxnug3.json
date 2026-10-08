@@ -1,0 +1,24 @@
+{
+  "id": "BG-fiwxnug3",
+  "kind": "bug",
+  "title": "perfcheck names_successor still lets a dropped test excuse itself by its class, full id or bare parametrized name",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found by the fresh-context review of SP-matmvkn6, item BG-5h2jpe3e (perfcheck names_successor accepts the retired-feature phrase beside the dropped test file itself): the skip set of names_removed holds only the dropped test function names and file basenames, so a reason naming the dropped test's class (TestAudit), its full id (_tools/test_audit.py::test_x) or the bare name of a parametrized id (test_x for test_x[a]) beside the live-module-calls-went-with phrase still counts as a successor. names_successor skips every form of the dropped ids' own names.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile; sys.path.insert(0,'_tools'); import perfcheck; d=tempfile.mkdtemp(); r=perfcheck.names_successor('live-module calls went with `TestAudit`', ['_tools/test_audit.py::TestAudit::test_x'], d, ''); print(r); sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/perfcheck.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-matmvkn6 review"
+  ]
+}

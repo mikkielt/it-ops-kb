@@ -32,7 +32,7 @@
       "recommendation": "default-rules: alias_terms(rules=True) by default; alias_fixes passes rules=False",
       "class": "design",
       "answer": "default-rules: alias_terms(rules=True) by default; alias_fixes passes rules=False",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

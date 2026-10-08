@@ -1,0 +1,25 @@
+{
+  "id": "ST-yeymcu7l",
+  "kind": "story",
+  "title": "pair_word's docstring and querylog.md give an example the one-candidate rule does not pair",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the fresh-context review of SP-matmvkn6, item ST-dsre52lb (learn pairs a rules miss's key word only with the one candidate word of the quoted line): the worked example 'unsaved and land: uncommitted changes give uncommitted' in pair_word's docstring (_tools/ql_learn.py) and kb/_self/querylog.md's learn paragraph leaves out that land must be in the question; with a question of only 'unsaved changes' the line has two candidates (land, uncommitted) and gives no pair. The example names the question it assumes, so it agrees with what pair_word returns.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,'_tools'); import ql_learn as l; sys.exit(0 if l.pair_word('unsaved','land: uncommitted changes','unsaved changes') is None else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_learn.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-matmvkn6 review"
+  ]
+}
