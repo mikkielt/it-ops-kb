@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-d3hybrlv review"
   ],
-  "notes": "Lead: kb/_self/usage.md:76 says background headless workers with the prompt on stdin end with no SessionEnd marker, closed by the next launch, so their rows may arrive late; the close rerun of backlog.py cost SP-d3hybrlv shows whether they did. The work: say in usage.md how a headless worker in an orchestrator-made worktree is attributed, and make land's 'no work rows' warning tell a late row from a missing one."
+  "notes": "Lead: kb/_self/usage.md:76 says background headless workers with the prompt on stdin end with no SessionEnd marker, closed by the next launch, so their rows may arrive late; the close rerun of backlog.py cost SP-d3hybrlv shows whether they did. The work: say in usage.md how a headless worker in an orchestrator-made worktree is attributed, and make land's 'no work rows' warning tell a late row from a missing one. Close rerun 2026-10-08: the rows did arrive late (ST-7yahfn3j and ST-pjkmiyqe show Sonnet work lines), so the attribution works; what is left is land's 'landed with no work rows' warning, which cannot tell a late row from a missing one, and the usage.md wording."
 }

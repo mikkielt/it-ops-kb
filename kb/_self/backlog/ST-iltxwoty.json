@@ -1,0 +1,26 @@
+{
+  "id": "ST-iltxwoty",
+  "kind": "story",
+  "title": "land waits for a finished headless worker's SessionEnd hook before refusing a live process in its worktree",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found in SP-d3hybrlv: right after the headless worker of ST-7yahfn3j exited, land stopped at step branch naming a live python3 in its worktree (the session's own end hook, gone seconds later); a rerun landed. land waits a bounded time for a process whose parent claude session has exited before refusing, and names it as a hook when it is one.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_waits_hook"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-d3hybrlv close"
+  ]
+}

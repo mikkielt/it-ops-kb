@@ -1,0 +1,25 @@
+{
+  "id": "ST-qfea7pvk",
+  "kind": "story",
+  "title": "_self rule questions cover what backlog.py researched needs and how the rule questions are tested",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found in SP-d3hybrlv: rag.py pack --root _self gave weak for 'what does backlog.py researched check for a goal research story with no outside facts' (orchestrator) and 'how are the _self rule questions tested' (a worker), and --item ST-7yahfn3j gave coverage none, so both read sections by hand. Rows in kb/_self/_retrieval/lookup_eval.csv answer both with coverage good.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','how are the _self rule questions tested','--budget','200'],capture_output=True,text=True);o=r.stdout;print(o.splitlines()[0] if o else r.stderr[:200]);sys.exit(r.returncode or int(not o.startswith('coverage: good')))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-d3hybrlv close"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-7avb5uo6",
+  "kind": "story",
+  "title": "A gate's host_unchecked reason can be set with backlog.py, and the host word check skips 'host-bound' wording",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found at the SP-d3hybrlv start: ST-pjkmiyqe gate g1 asked who reshapes a story on a host-bound sprint, and start warned that it names a host setup with no --host-check; no backlog.py command sets a gate's host_unchecked reason (only gate add --host-check exists), so the warning could not be answered. backlog.py sets host_unchecked on an existing gate, and the host-word check does not fire on a gate that names no setup.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "host_unchecked"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/bl_cli.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-d3hybrlv close"
+  ]
+}

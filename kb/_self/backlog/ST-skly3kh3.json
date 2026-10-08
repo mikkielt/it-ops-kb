@@ -1,0 +1,25 @@
+{
+  "id": "ST-skly3kh3",
+  "kind": "story",
+  "title": "A review's parked draft is filed with a check, so backlog.py check has no error and the land e2e test stays green",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found in the SP-d3hybrlv review: the orchestrator parked a gap with backlog.py new story and no --check; new only said 'to fill in: checks missing', but backlog.py check counted it an error, and tests.py's land e2e scenario, which clones the working tree, failed on that gate. kb-sprint review step 5 and backlog.md say a parked draft carries a check (or new refuses a story without one outside a planning context), so the review's own checks stay green.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();r=t.split('## review SP')[1].split('## close SP')[0];ok='--check' in r;print('parked draft check:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-d3hybrlv close"
+  ]
+}
