@@ -179,6 +179,14 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     assert cell("fact", "sonnet-5-5:low", "checks") == "1/2" and cell("fact", "sonnet-5-5:low", "fully_right") == "1 of 2"
     assert round(cell("fact", "sonnet-5-5:low", "fixed_share"), 4) == round(2010 / 4190, 4)
     assert cell("fact", "sonnet-5-5:low", "tokens_per_right") == 2 * 4280.5  # two runs' effective input over the one right
+    # the 95% interval over the cell's rows (a row's reps kept together), fixed seed: the same runs give the same bounds
+    lo, hi, tpr = (cell("fact", "sonnet-5-5:low", m) for m in ("right_share_lo", "right_share_hi", "tokens_per_right"))
+    assert 0 <= lo <= 0.5 <= hi <= 1 and cell("fact", "sonnet-5-5:low", "tokens_per_right_lo") <= tpr
+    assert cell("fact", "sonnet-5-5:low", "tokens_per_right_hi") >= tpr
+    assert bp.cell_metrics([r for r in runs if r["label"] == "sonnet-5-5:low"]) == bp.cell_metrics(
+        [r for r in runs if r["label"] == "sonnet-5-5:low"])
+    twice = [{**r, "id": "one"} for r in runs if r["label"] == "sonnet-5-5:low"]
+    assert dict(bp.cell_metrics(twice + twice))["right_share_lo"] == dict(bp.cell_metrics(twice + twice))["right_share_hi"]  # one row: a point
     assert got[("fact", "haiku-4-5", "checks")][2] == "no effort setting: one level"
     assert cell("all", "hook", "effective_input") == 0 and ("all", "hook", "fixed_share") not in got
     assert cell("all", "hook", "tokens_per_right") == 0 and got[("all", "web-sonnet-5-5", "input")][1] == 2
