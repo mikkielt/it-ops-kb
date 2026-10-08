@@ -2,7 +2,7 @@
   "id": "BG-czj7oox2",
   "kind": "bug",
   "title": "apply's alias check for a rules finding's word pair reads every alias file but kb/_self's own, so a pair whose term kb/_self/_retrieval/aliases.csv holds gets a second row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
     "_tools/ql_apply.py",
     "kb/_self/querylog.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-czj7"
 }
