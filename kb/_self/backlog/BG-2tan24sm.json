@@ -2,7 +2,7 @@
   "id": "BG-2tan24sm",
   "kind": "bug",
   "title": "Pool session shape records each follow-up's cost as the session's running total, and same-day pool chunks overwrite each other's spend rows",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",
@@ -47,5 +47,38 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "orchestrator-SP-hm4qgf3t"
+  "evidence": {
+    "commit": "88f300f7346aa81282fcf48f91c24d313d310ca8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bench_pool"
+        ],
+        "exit": 0,
+        "sha256": "d96c68c702697401"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types; sys.path.insert(0,'_tools'); import bench_pool, agent_bench; seq=iter([{'cost':0.1},{'cost':0.25}]); agent_bench.execute=lambda *a,**k: dict(next(seq)); bench_pool.spent_run=lambda r: None; run=bench_pool.live_session_runner(types.SimpleNamespace(lookup=lambda: '.')); run('haiku-5-5','default',{'question':'q'},'s',1); r=run('haiku-5-5','default',{'question':'q'},'s',2); assert abs(r['cost']-0.15)<1e-9, r['cost']"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
