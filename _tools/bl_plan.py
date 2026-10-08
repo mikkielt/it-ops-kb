@@ -361,16 +361,35 @@ def cmd_start(bl, a):
 
 
 # A file named in the touches of more than half of a sprint's items makes them run one after another (`held
-# --overlaps`: SP-x2pvljz6's items mostly touched the sprint skill). The docs in SHARED_DOCS are the exception: items
-# edit them by section at the same time, so naming one is no finding. Fewer than SHARED_FILE_MIN items never is.
-SHARED_DOCS = ("kb/_self/backlog.md", "kb/_self/tools.md", "kb/_self/git.md")
+# --overlaps`: SP-x2pvljz6's items mostly touched the sprint skill). A kb/_self doc is the exception (shared_doc):
+# items edit it by section at the same time and a landing's rebase merges their hunks, so naming one is no finding.
+# Fewer than SHARED_FILE_MIN items never is.
+SHARED_DOC_DIR = "kb/_self/"
 SHARED_FILE_MIN = 3
+
+
+def shared_doc(path):
+    """True for a kb/_self doc, kb/_self/<name>.md (or a glob that names only such docs, kb/_self/*.md): two items
+    that share one run at once, since a landing's rebase merges their doc hunks and the stale check still runs, so
+    it is no overlap for `held --overlaps` or check's unordered-overlap warning, and no shared-file finding."""
+    rest = path[len(SHARED_DOC_DIR):] if path.startswith(SHARED_DOC_DIR) else ""
+    return rest.endswith(".md") and "/" not in rest
+
+
+def touches_meet(a, b, files):
+    """True when two touches globs can name one path that is not a kb/_self doc (shared_doc): either, read as a path,
+    matches the other, or a tracked file of FILES that is no such doc matches both. The serializing overlap of `held
+    --overlaps`; touches_overlap without the doc exception."""
+    if shared_doc(a) or shared_doc(b):
+        return False
+    ra, rb = glob_re(a), glob_re(b)
+    return bool(ra.match(b) or rb.match(a) or any(ra.match(f) and rb.match(f) for f in files if not shared_doc(f)))
 
 
 def shared_files(bl, items):
     """([(path, [item ids])], n): each file in the touches of more than half of the n items of ITEMS that have touches
     of their own (a review story and a dropped item have none to count) and of at least SHARED_FILE_MIN of them, the
-    most shared first; a path in SHARED_DOCS is left out."""
+    most shared first; a kb/_self doc (shared_doc) is left out."""
     scoped = [i for i in items if not bl.items[i].get("review") and bl.items[i].get("status") != "dropped"
               and bl.items[i].get("touches")]
     by = {}
@@ -378,7 +397,7 @@ def shared_files(bl, items):
         for p in set(bl.items[i]["touches"]):
             by.setdefault(p, []).append(i)
     found = [(p, ids) for p, ids in by.items()
-             if p not in SHARED_DOCS and len(ids) >= SHARED_FILE_MIN and 2 * len(ids) > len(scoped)]
+             if not shared_doc(p) and len(ids) >= SHARED_FILE_MIN and 2 * len(ids) > len(scoped)]
     return sorted(found, key=lambda f: (-len(f[1]), f[0])), len(scoped)
 
 
@@ -404,8 +423,9 @@ def unordered_overlap_warnings(bl):
     against the tracked files) while neither depends on the other, directly, through another item or through an
     ancestor (`dependencies`), neither is the other's ancestor, and neither depends on an ancestor of the other
     (BG-7kyxgcn3): they would run at once on one file, so the plan
-    orders them (depends_on) before the start. One line per pair, naming both and the shared paths; the review story
-    and a dropped item are left out."""
+    orders them (depends_on) before the start. A kb/_self doc (shared_doc) is no common path: items that share only
+    docs run at once. One line per pair, naming both and the shared paths; the review story and a dropped item are
+    left out."""
     files, out = None, []
     for sid, sp in sorted(bl.items.items()):
         if sp.get("kind") != "sprint" or sp.get("status") not in ("planned", "active"):
@@ -418,7 +438,7 @@ def unordered_overlap_warnings(bl):
         deps = {i: dependencies(bl, i) for i in ids}
         for n, a in enumerate(ids):
             for c in ids[n + 1:]:
-                shared = paths[a] & paths[c]
+                shared = {p for p in paths[a] & paths[c] if not shared_doc(p)}
                 if not shared or c in deps[a] or a in deps[c] or a in bl.ancestors(c) or c in bl.ancestors(a):
                     continue
                 if any(x in deps[c] for x in bl.ancestors(a)) or any(x in deps[a] for x in bl.ancestors(c)):
