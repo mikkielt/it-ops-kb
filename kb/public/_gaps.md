@@ -1165,6 +1165,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## arch/gitlab-ci-components
 
 - **GitLab CI job log timestamps format FF_TIMESTAMPS** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-98c7f667e2cd). Looked in the kb 2026-09-29: `rag.py pack` gives `none`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: arch/gitlab-ci-components)
+  - Resolved 2026-10-08: answered by the new topic `gitlab/job-log-timestamps`: the runner feature flags page (S-fn452qtu) gives `FF_TIMESTAMPS` default `true` and the three ways to set it, the job logs page (S-5qytzl6u) gives the ISO 8601 default, GitLab 18.9 GA and runner 18.7 or later, and the runner source (S-crjqbibt, S-k3j6wjbx, S-yfgczc7d) gives the line header. (topic: gitlab/job-log-timestamps)
 
 ## privacy/nist-sp800-38g
 

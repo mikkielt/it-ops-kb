@@ -2553,3 +2553,13 @@ _Agent: kb-research_
 - See agents/agent-caching.md, claude/models.csv.
 
 _Agent: kb-research_
+
+## QK-i-enable-timestamps-gitlab-ci-job. How do I enable timestamps in GitLab CI job logs with FF_TIMESTAMPS and what is the log line format?
+- Job logs carry an ISO 8601 timestamp on every line by default; the feature is generally available in GitLab 18.9 (introduced in 17.1 behind `parse_ci_job_timestamps`, removed in 17.2), on Free, Premium and Ultimate, and costs about 10% more log storage. [DOC S-5qytzl6u]
+- `FF_TIMESTAMPS` defaults to `true`; set it to `false` (or `0`) to turn timestamps off and to `true` (or `1`) to state them explicitly. The job logs page documents it as a CI/CD variable and asks for GitLab Runner 18.7 or later. [DOC S-fn452qtu, S-5qytzl6u]
+- Set it under `variables:` in `.gitlab-ci.yml` (globally or per job), in the `environment` array of a `[[runners]]` section, or under `[runners.feature_flags]` so that no job can override it. [DOC S-fn452qtu]
+- The runner writes a header before each message: a UTC date `YYYY-mm-ddTHH:MM:SS.UUUUUUZ` with microseconds, a space, a two-digit hex stream id, the stream type `O` (stdout) or `E` (stderr), and a flag that is a space for a full line or `+` for a continuation. [CODE S-crjqbibt: common/buildlogger/internal/timestamper/timestamper.go#L26-L51]
+- Conclusion: timestamps are on unless a variable or the runner configuration turns them off, so a job that wants them needs no setting on a current runner; a parser of raw traces must handle the header and its absence when the flag is off. [DER S-5qytzl6u, S-fn452qtu, S-crjqbibt]
+- See gitlab/job-log-timestamps.md.
+
+_Agent: kb-research_
