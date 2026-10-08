@@ -211,8 +211,15 @@ def run_ids(a, collect=collect_ids, root=ROOT):
     return 1 if removed else 0
 
 
+def suite_env():
+    """The environment a timed suite run gets: the caller's, without the variables that name a repository. Unlike
+    clean_env it leaves bytecode writing on, so pytest keeps its assertion-rewrite cache and the run is timed as
+    tests.py normally runs."""
+    return {k: v for k, v in os.environ.items() if k not in REPO_VARS}
+
+
 def run_suite(args):
-    return subprocess.run([sys.executable, str(TOOLS / "tests.py")] + args, cwd=str(ROOT), env=clean_env()).returncode
+    return subprocess.run([sys.executable, str(TOOLS / "tests.py")] + args, cwd=str(ROOT), env=suite_env()).returncode
 
 
 def ceiling_seconds(platform=None):
