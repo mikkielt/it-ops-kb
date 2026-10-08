@@ -2,7 +2,7 @@
   "id": "ST-tudbg2a6",
   "kind": "story",
   "title": "Research sprint goal: Query log learn and apply, eval and lint output",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-matmvkn6",
   "goal_research": true,
   "priority": "P1",
@@ -40,5 +40,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-research"
+  "evidence": {
+    "commit": "3fe26ad3cdf37a4506293781e1e1b32748788d85",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-tudbg2a6"
+        ],
+        "exit": 0,
+        "sha256": "3fd4f7476d3934af"
+      }
+    ]
+  }
 }
