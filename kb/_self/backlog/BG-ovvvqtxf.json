@@ -12,13 +12,31 @@
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0,\"_tools\"); import agent_bench as a; u=lambda p,o: {\"input_tokens\":p,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":o}; assert a.kb_tokens([{\"usage\":u(1000,5),\"results\":[]},{\"usage\":u(1300,5),\"results\":[400]}])<=300-200"
+      "import sys,json; sys.path.insert(0,\"_tools\"); import agent_bench as a; u=lambda p,o: {\"input_tokens\":p,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":o}; ev=[{\"type\":\"assistant\",\"message\":{\"id\":\"m1\",\"model\":\"m\",\"usage\":u(1000,5),\"content\":[{\"type\":\"tool_use\",\"id\":\"t1\",\"name\":\"mcp__kb__kb_pack\",\"input\":{}}]}},{\"type\":\"user\",\"message\":{\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"t1\",\"content\":\"x\"*400}]}},{\"type\":\"assistant\",\"message\":{\"id\":\"m2\",\"model\":\"m\",\"usage\":u(1300,5),\"content\":[{\"type\":\"text\",\"text\":\"a\"}]}},{\"type\":\"result\",\"usage\":u(1300,100)}]; seen,_=a.parse(chr(10).join(json.dumps(e) for e in ev)); assert seen[\"kb_tokens\"]==250, seen[\"kb_tokens\"]"
     ]
   },
+  "repro_reason": "The pool record's pack_tokens come from paid runs; the repro plants a stream (partial output 5 per message, 100 on the result event) and fails with 295.",
   "touches": [
     "_tools/agent_bench.py",
     "kb/_self/code.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the benchmark get each earlier request's real output count when the stream gives only a partial count per message and the run's total on the result event?",
+      "options": [
+        "Scale the partial counts of the main-session requests so they sum to the main-loop output count of the result event, and subtract the earlier request's scaled share",
+        "Count the characters of each earlier message's tool-call input and text and apportion the result event's total by them",
+        "Split the result event's total evenly over the main-session requests"
+      ],
+      "recommendation": "Scale the partial counts of the main-session requests so they sum to the main-loop output count of the result event, and subtract the earlier request's scaled share",
+      "class": "design",
+      "answer": "Scale the partial counts of the main-session requests so they sum to the main-loop output count of the result event, and subtract the earlier request's scaled share",
+      "by": "agent"
+    }
   ],
   "claimed_by": "worker-BG-ovvvqtxf"
 }

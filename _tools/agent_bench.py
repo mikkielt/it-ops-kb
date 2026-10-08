@@ -142,19 +142,24 @@ def norm_url(u):
 CHARS_PER_TOKEN = 4  # what a kb result is counted at when the stream gives no usable growth of the prompt (kb_tokens)
 
 
-def kb_tokens(reqs):
+def kb_tokens(reqs, out=None):
     """The tokens of the kb tool results of a run's main-session requests, `reqs` ({usage, results}: the characters of
     each kb result that came back before the request). A result is the growth of the prompt from the request before
-    it, less that request's output (the run's own characters per token), at most its characters; a request with no
-    earlier one, or whose prompt did not grow, is counted at CHARS_PER_TOKEN characters per token."""
+    it, less that request's output, at most its characters; a request with no earlier one, or whose prompt did not
+    grow, is counted at CHARS_PER_TOKEN characters per token. The messages' own output counts are partial, so `out`,
+    the main loop's output count of the result event, is shared by the requests in proportion to them (evenly when
+    they are all zero); with no `out` a request's own count is its output."""
     prompt = lambda r: sum(r["usage"].get(k, 0) or 0 for k in ("input_tokens", "cache_creation_input_tokens",  # noqa: E731
                                                                   "cache_read_input_tokens"))
+    partial = lambda r: r["usage"].get("output_tokens", 0) or 0  # noqa: E731
+    total = sum(partial(r) for r in reqs)
+    real = lambda r: partial(r) * out / total if out and total else out / len(reqs) if out else partial(r)  # noqa: E731
     n, prev = 0, None
     for r in reqs:
         chars = sum(r["results"])
         if chars:
-            grew = prompt(r) - prompt(prev) - (prev["usage"].get("output_tokens", 0) or 0) if prev else 0
-            n += min(grew, chars) if grew > 0 else chars // CHARS_PER_TOKEN
+            grew = prompt(r) - prompt(prev) - real(prev) if prev else 0
+            n += round(min(grew, chars)) if grew > 0 else chars // CHARS_PER_TOKEN
         prev = r
     return n
 
@@ -162,7 +167,8 @@ def kb_tokens(reqs):
 def parse(stdout):
     """The stream-json events of one run: tool counts (main and subagents), the call route, every url a kb tool
     returned, the urls a fetch tool read, the number of web and docs searches, the main session's requests (`requests`:
-    one per message id, its model and usage), the tokens of its kb tool results (`kb_tokens`), and the result event."""
+    one per message id, its model and usage), the tokens of its kb tool results (`kb_tokens`, which shares the result event's main-loop output count over the
+    requests), and the result event."""
     tools, subs, path, res = Counter(), Counter(), [], None
     names, kb_urls, fetched, searches = {}, set(), [], 0
     reqs, waiting = {}, []
@@ -208,7 +214,7 @@ def parse(stdout):
     return {"tools": dict(tools), "sub_tools": dict(subs), "route": path, "kb_urls": len(kb_urls),
             "fetched": fetched, "refetched": refetched, "searches": searches,
             "requests": [{"model": r["model"], "usage": r["usage"]} for r in reqs.values()],
-            "kb_tokens": kb_tokens(list(reqs.values()))}, res
+            "kb_tokens": kb_tokens(list(reqs.values()), ((res or {}).get("usage") or {}).get("output_tokens"))}, res
 
 
 def execute(cmd, prompt, cwd=KB, env=None, clean=False):
