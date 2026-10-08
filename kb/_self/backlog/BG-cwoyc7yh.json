@@ -2,7 +2,7 @@
   "id": "BG-cwoyc7yh",
   "kind": "bug",
   "title": "A backlog.py land run in the background writes its done row when it starts, so a failed landing still closes the window",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
@@ -75,5 +75,36 @@
     }
   ],
   "notes": "Its check passes before the work: it pins that a foreground land still writes the item's done row, which the fix must keep; the repro is the failing proof.",
-  "claimed_by": "worker-BG-cwoyc7yh"
+  "evidence": {
+    "commit": "3d26ac390f10be04933f0830a23f526a4789a19a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,json,tempfile,shutil;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import ql_capture as q;q.capture({'hook_event_name':'PostToolUse','session_id':'s1','tool_name':'Bash','tool_input':{'command':'python3 _tools/backlog.py land ST-aaaaaaaa'},'tool_response':{'stdout':'landed ST-aaaaaaaa','stderr':''}});d=q.spool_dir();rows=[json.loads(l) for p in Path(d).glob('*.jsonl') for l in p.read_text().splitlines() if l.strip()];w=[r for r in rows if r.get('surface')=='work'];shutil.rmtree(t,ignore_errors=True);print('work rows at a foreground land:',[(r.get('item'),r.get('action')) for r in w]);sys.exit(0 if any((r.get('item'),r.get('action'))==('ST-aaaaaaaa','done') for r in w) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ba1c856ccddf7acf"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,json,tempfile,shutil;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import ql_capture as q;c=t/'c';(c/'.git').mkdir(parents=True);(c/'.git'/'HEAD').write_text('ref: refs/heads/main\\n');b=c/'kb'/'_self'/'backlog';b.mkdir(parents=True);f=b/'ST-aaaaaaaa.json';f.write_text(json.dumps({'id':'ST-aaaaaaaa','status':'doing'}));ev=lambda n,p,**k:q.capture(dict(hook_event_name=n,session_id='s1',prompt_id=p,cwd=str(c),**k));done=lambda:[r for p in Path(q.spool_dir()).glob('*.jsonl') for r in map(json.loads,p.read_text().splitlines()) if r.get('surface')=='work' and r.get('item')=='ST-aaaaaaaa' and r.get('action')=='done'];ev('PostToolUse','p1',tool_name='Bash',tool_input={'command':'python3 _tools/backlog.py land ST-aaaaaaaa','run_in_background':True},tool_response={'stdout':'','stderr':'','backgroundTaskId':'b1'});a=len(done());ev('Stop','p1');b1=len(done());f.write_text(json.dumps({'id':'ST-aaaaaaaa','status':'done'}));ev('Stop','p2');e=done();ev('Stop','p3');n=len(done());shutil.rmtree(t,ignore_errors=True);print('done rows: at launch',a,'while landing',b1,'after the landing',len(e),'at prompt',[r.get('prompt_id') for r in e],'later',n);sys.exit(0 if (a,b1,len(e),n)==(0,0,1,1) and e[0].get('prompt_id')=='p2' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0e31f01592749b23"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,json,tempfile;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import ql_capture as q;q.capture({'hook_event_name':'PostToolUse','session_id':'s1','tool_name':'Bash','tool_input':{'command':'python3 _tools/backlog.py land ST-aaaaaaaa','run_in_background':True},'tool_response':{'stdout':'','stderr':'','backgroundTaskId':'b1'}});d=q.spool_dir();rows=[json.loads(l) for p in Path(d).glob('*.jsonl') for l in p.read_text().splitlines() if l.strip()];w=[r for r in rows if r.get('surface')=='work'];print('work rows at a background land launch:',[(r.get('item'),r.get('action')) for r in w]);sys.exit(1 if any(r.get('action')=='done' for r in w) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "1f9e2fa94c7fad0e"
+      }
+    ]
+  }
 }
