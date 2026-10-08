@@ -2,7 +2,7 @@
   "id": "ST-fuflyzxc",
   "kind": "story",
   "title": "The query-log pool rows no arm passed check the article that answers them",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -93,5 +93,29 @@
     }
   ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found by the SP-hm4qgf3t record: the runs answered BP-36864ffb from _self/backlog.md and agents/agent-planning-and-done.md, BP-9b5aab96 from agents/test-suite-size-and-agent-overengineering.md, BP-ab7a8cc2 from claude/powershell-tool.md and en/permissions.md, while their checks name claude/settings-and-scopes.md, agents/foundry-agent-service.md and claude/permissions-mcp.md. The first check fails while any of the three keeps that check. Rows read on 2026-10-08. BP-36864ffb (can a second sprint be planned and started while another sprint is active): the store's cited answer is only kb/_self/backlog.md, _decisions.csv and querylog.md; the public kb has the Scrum Guide's sprint lines (agents/agent-planning-and-done.md:25) but not the project's own sprint rule, so no public article checks it: the row leaves the pool (build skips an entry whose citations lie outside public/) and another row, BP-b58a1dea (answered by claude/hooks.md:47), is drawn in its place. BP-9b5aab96 (what keeps a test suite small): agents/test-suite-size-and-agent-overengineering.md:34-37 answers it; the article was written after the 2026-10-05 query, so the stored pack named foundry-agent-service.md; the check now names it. BP-ab7a8cc2 (Bash permission rule trailing space star): claude/powershell-tool.md:29 answers it; the stored best article claude/permissions-mcp.md is not in the kb's pack; the check now names powershell-tool.md. Build change: check_article keeps the stored article while the wide pack (eight articles) still prints it, else the pack's best; committed rows stay. Rebuild diff: 17 rows unchanged, 2 checks changed, 1 row out, 1 in; no paid call.",
-  "claimed_by": "worker-ST-fuflyzxc"
+  "evidence": {
+    "commit": "cc6243bd78dd1bdd8761b6a5448cb14d877b1175",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; old={'BP-36864ffb':'scopes','BP-9b5aab96':'foundry','BP-ab7a8cc2':'mcp'}; rows={r['id']:r for r in csv.DictReader(open('kb/_querylog/bench/pool.csv',encoding='utf-8'))}; bad=[i for i,c in old.items() if i in rows and c in rows[i]['checks']]; sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check",
+          "--querylog"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
