@@ -2,7 +2,7 @@
   "id": "BG-isv7273p",
   "kind": "bug",
   "title": "backlog.py set and new refuse an over-long notes, goal or title without naming its length or the TEXT_MAX limit",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-evkj4avq",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "0fa6d80144981c88f4c09ad65d8fad24217eb0dc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess as s,sys,tempfile as t; d=t.mkdtemp(); r=lambda *a:s.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True); e=re.search(r'EP-\\w{8}',r('new','epic','--title','E','--goal','g').stdout)[0]; p=r('set',e,'--notes','x'*2001); sys.exit(0 if p.returncode==2 and '2001' in p.stderr and '2000' in p.stderr else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
