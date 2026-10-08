@@ -2,7 +2,7 @@
   "id": "BG-zw5sxzkc",
   "kind": "bug",
   "title": "derived_class classes every gate of an item touching kb/_self/token-efficiency.md as secrets, since SECRET_WORDS matches token in the path",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "worker-BG-zw5sxzkc"
 }
