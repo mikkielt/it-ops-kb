@@ -2,7 +2,7 @@
   "id": "ST-m4ri6gmh",
   "kind": "story",
   "title": "Review sprint: Rules findings converge: no item-text findings, tested rows for real misses, code-anchored rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rvslem3h",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-mac"
 }
