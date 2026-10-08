@@ -1,0 +1,26 @@
+{
+  "id": "ST-lxldgx3x",
+  "kind": "story",
+  "title": "A test run with any untracked non-ignored file in the clone records no reuse key",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "tests.run_key leaves a run without a key when git ls-files -o --exclude-standard lists any file (not only a .py under _tools/), since conftest.seed_files copies every untracked non-ignored file into the git scenarios and the sync gate allows untracked files; a gate run after such a file was removed or edited then runs pytest instead of reusing a pass it never earned. Found by the SP-evkj4avq review in _tools/tests.py untracked_tools and run_key after ST-r7cftjex.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_sync_e2e.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-evkj4avq review"
+  ]
+}

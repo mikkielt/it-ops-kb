@@ -1,0 +1,26 @@
+{
+  "id": "ST-zltblzgq",
+  "kind": "story",
+  "title": "A review's done --dry-run writes no gone evidence that its --commit run then leaves uncommitted",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_land.rerun_done_checks records a gone check in its item's evidence only on a run that commits (never under done --dry-run), or done --commit commits every item file whose evidence a dry run already wrote, so done SP-review --dry-run followed by done --commit leaves a clean tree; the stale-docs branch's commit_written also runs only after the dry-run return. Found by the SP-evkj4avq review in _tools/bl_land.py rerun_done_checks (called before the dry-run return).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_land_e2e.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-evkj4avq review"
+  ]
+}
