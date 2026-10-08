@@ -2,7 +2,7 @@
   "id": "ST-fuflyzxc",
   "kind": "story",
   "title": "The query-log pool rows no arm passed check the article that answers them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -37,5 +37,6 @@
   "depends_on": [
     "ST-yob4py65"
   ],
-  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found by the SP-hm4qgf3t record: the runs answered BP-36864ffb from _self/backlog.md and agents/agent-planning-and-done.md, BP-9b5aab96 from agents/test-suite-size-and-agent-overengineering.md, BP-ab7a8cc2 from claude/powershell-tool.md and en/permissions.md, while their checks name claude/settings-and-scopes.md, agents/foundry-agent-service.md and claude/permissions-mcp.md. The first check fails while any of the three keeps that check."
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found by the SP-hm4qgf3t record: the runs answered BP-36864ffb from _self/backlog.md and agents/agent-planning-and-done.md, BP-9b5aab96 from agents/test-suite-size-and-agent-overengineering.md, BP-ab7a8cc2 from claude/powershell-tool.md and en/permissions.md, while their checks name claude/settings-and-scopes.md, agents/foundry-agent-service.md and claude/permissions-mcp.md. The first check fails while any of the three keeps that check.",
+  "claimed_by": "worker-ST-fuflyzxc"
 }
