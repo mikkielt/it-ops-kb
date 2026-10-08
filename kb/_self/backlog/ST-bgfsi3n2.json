@@ -2,7 +2,7 @@
   "id": "ST-bgfsi3n2",
   "kind": "story",
   "title": "The query log's SessionEnd launcher is proven on the Windows host",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P2",
@@ -52,5 +52,6 @@
       }
     }
   ],
-  "notes": "Its check passes before the work on macOS (2026-10-07: launch exit 0, a run file written): the proof is its run on the Windows host, where the detach flags (CREATE_BREAKAWAY_FROM_JOB) matter; the windows gate makes start refuse elsewhere. The 2026-09-30 probe (kb/public/_answers.md, a probe hook's detached child outlives the hook) predates the real launcher's change in a9fe54c6. SessionEnd does not always run in claude -p (usage.md), so the session half is interactive. Premise on the Windows host (2026-10-08, origin/main d5a26e12): the launch check passes there too (launch exit 0, one run file, distill log entries=1); the remaining proof is the interactive session half and the report."
+  "notes": "Its check passes before the work on macOS (2026-10-07: launch exit 0, a run file written): the proof is its run on the Windows host, where the detach flags (CREATE_BREAKAWAY_FROM_JOB) matter; the windows gate makes start refuse elsewhere. The 2026-09-30 probe (kb/public/_answers.md, a probe hook's detached child outlives the hook) predates the real launcher's change in a9fe54c6. SessionEnd does not always run in claude -p (usage.md), so the session half is interactive. Premise on the Windows host (2026-10-08, origin/main d5a26e12): the launch check passes there too (launch exit 0, one run file, distill log entries=1); the remaining proof is the interactive session half and the report.",
+  "claimed_by": "worker-win"
 }
