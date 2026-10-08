@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Review: cost figures provisional (orchestrator session open, no usage rows yet; no item had a refused done). Reviewer found no S1-S3 gaps; two S4 gaps parked as drafts: BG-gqftybuq (backlog.md Running a sprint sentence on shared files) and BG-35vyxnci (gate text naming a token-named Markdown doc still classed secrets). No provisional gates to confirm: every gate of the sprint was blocking and answered by the operator. Query log not touched.",
   "claimed_by": "orchestrator-mac"
 }

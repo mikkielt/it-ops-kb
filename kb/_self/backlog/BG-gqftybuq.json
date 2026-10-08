@@ -1,0 +1,24 @@
+{
+  "id": "BG-gqftybuq",
+  "kind": "bug",
+  "title": "backlog.md Running a sprint still says items that share a file run one after another, though a shared kb/_self doc no longer orders them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The sentence in kb/_self/backlog.md, Running a sprint, that says items that share a file run one after another names the exception ST-6kcoqz4d made: a shared kb/_self/<name>.md doc does not order two items, as held --overlaps and check's unordered-overlap warning (bl_plan.shared_doc) already treat it. Found in the SP-ktup3cha review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/_self/backlog.md',encoding='utf-8').read(); bad='Items that share a file run one after another.' in t; print('unqualified sentence present:', bad); sys.exit(0 if not bad else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of one doc sentence, so only its text can show it; the behaviour it describes is already right in bl_plan.shared_doc",
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ktup3cha review"
+  ]
+}

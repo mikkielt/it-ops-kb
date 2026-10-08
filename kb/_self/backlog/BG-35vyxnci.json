@@ -1,0 +1,26 @@
+{
+  "id": "BG-35vyxnci",
+  "kind": "bug",
+  "title": "A gate whose question or do command names kb/_self/token-efficiency.md is still classed secrets, since QUESTION_WORDS matches token in the gate text",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "A gate's text (question, options, do and host-check words) that names a Markdown doc whose file name holds token, such as kb/_self/token-efficiency.md, is not classed secrets for that path alone, as BG-zw5sxzkc made true for touches (bl_authority.names_secret, md-name-exempt); a gate whose text names a token file or asks about a token still classes secrets. Found in the SP-ktup3cha review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import bl_authority as a; c=a.derived_class({'touches':['src/a.py']},{'id':'g1','question':'Should kb/_self/token-efficiency.md name the clip window?'}); print(c); sys.exit(0 if c!='secrets' else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ktup3cha review"
+  ]
+}
