@@ -50,6 +50,19 @@
       "class": "design",
       "answer": "like the other kb arms: --effort sets the levels (default low,default), one cell per level, labels opus-5-5:low and opus-5-5:default",
       "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does a pool run with no --arms include the opus-5-5 arm?",
+      "options": [
+        "no: opus-5-5 runs only when --arms names it",
+        "yes: opus-5-5 joins the default arm list"
+      ],
+      "recommendation": "no: opus-5-5 runs only when --arms names it",
+      "class": "design",
+      "answer": "no: opus-5-5 runs only when --arms names it",
+      "by": "agent"
     }
   ],
   "links": [
