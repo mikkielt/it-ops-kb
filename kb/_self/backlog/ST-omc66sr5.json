@@ -2,7 +2,7 @@
   "id": "ST-omc66sr5",
   "kind": "story",
   "title": "A claude -p timeout in a pool kb or web run is one failed run, not a lost chunk",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -39,5 +39,28 @@
     "parked: SP-hm4qgf3t review"
   ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Premise run 2026-10-08: a planted TimeoutExpired from agent_bench.execute propagates out of bench_pool.live_runner's run (bench_pool.py:813), so run_tasks re-raises it and the chunk writes no rows; the first check fails until the runner records it as an error. -k bench_pool passes before and pins the pool's tests.",
-  "claimed_by": "worker-ST-omc66sr5"
+  "evidence": {
+    "commit": "596db87dfbc732ef67c4ccd4620199f4c6c2e740",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types,subprocess,tempfile,pathlib; sys.path.insert(0,'_tools'); import bench_pool, agent_bench; agent_bench.execute=lambda *a,**k: (_ for _ in ()).throw(subprocess.TimeoutExpired('claude',900)); bench_pool.spent_run=lambda r: None; run=bench_pool.live_runner(types.SimpleNamespace(lookup=lambda: '.', scratch=pathlib.Path(tempfile.mkdtemp())),'sh'); r=run('haiku-5-5','default',{'question':'q'}); assert 'error' in r, r"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bench_pool"
+        ],
+        "exit": 0,
+        "sha256": "20c1f2477e7cdb22"
+      }
+    ]
+  }
 }
