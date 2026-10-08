@@ -2,7 +2,7 @@
   "id": "ST-x3di6t23",
   "kind": "story",
   "title": "Research sprint goal: Pushes and gates are safe and the content queue shrinks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vayhvwfy",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the goal's three outside-fact questions (Dataverse MCP server, cargo metadata/rustc, os.link EXDEV/NTFS) are each researched by their own committed item (ST-aqjcisdi, TK-xr7fgoia, TK-6emrxewd); the false-good triage (ST-hcc7a3fd) reads the committed query log store; the code clauses are answered from kb/_self/git.md, tools.md, maintaining.md and the code. The pack results of 2026-10-08 recorded in the goal stand as this story's findings.",
-  "claimed_by": "headless-sonnet"
+  "evidence": {
+    "commit": "d674023da4637eb481e62629834ebedd867a7b44",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-x3di6t23"
+        ],
+        "exit": 0,
+        "sha256": "1a1d313391c368ec"
+      }
+    ]
+  }
 }
