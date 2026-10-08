@@ -2,7 +2,7 @@
   "id": "BG-dzbzskjq",
   "kind": "bug",
   "title": "clone_home and main_worktree resolve a relative gitdir against the working directory",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kyvu526t",
   "priority": "P3",
@@ -30,5 +30,18 @@
   "depends_on": [
     "ST-w3ikanna"
   ],
-  "claimed_by": "worker-dzbzskjq"
+  "evidence": {
+    "commit": "9e3d82aac6f288abaced0658b45ce304c48bb0cc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile,os,shutil;g=lambda *a:s.run(['git',*a],capture_output=True,text=True);top=os.path.dirname(os.path.realpath(os.path.join(os.getcwd(),g('rev-parse','--git-common-dir').stdout.strip())));t=tempfile.mkdtemp(dir=os.path.dirname(top));d=os.path.join(t,'wt');p=g('worktree','add','-q','--relative-paths','--detach',d);rel=p.returncode==0 and open(os.path.join(d,'.git')).read().startswith('gitdir: ..');e={**os.environ,'PYTHONPATH':os.path.join(d,'_tools')};r=s.run([sys.executable,'-c','import sys,kbfacts,bl_base,ql_base;print(kbfacts.clone_home());print(ql_base.clone_home());print(bl_base.main_worktree(sys.argv[1]))',d],cwd=t,env=e,capture_output=True,text=True) if rel else None;got=[os.path.realpath(x) for x in r.stdout.split()] if r else [];shutil.rmtree(d,ignore_errors=True);g('worktree','prune');shutil.rmtree(t,ignore_errors=True);print('main worktree',top,'| relative gitdir planted',rel,'| from another cwd',got);sys.exit(2 if not rel else 0 if len(got)==3 and all(x==top for x in got) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f6b2077f247b68a5"
+      }
+    ]
+  }
 }
