@@ -1233,20 +1233,33 @@ def session_argv(arm, effort, sid, position):
     return argv[:2] + ["--session-id" if position == 1 else "--resume", sid] + argv[2:] + effort_args(arm, effort)
 
 
+def own_share(r, before):
+    """Run `r` (a resumed question's result) less `before`, what the session's question before it reported: the result
+    event's `modelUsage` (so `out`, `model_usage`, `web_searches` and the `models` costs) is the session's running
+    total, where the request-based fields are the question's own. A model the earlier total lacks keeps its figures."""
+    if "model_usage" not in r:
+        return r
+    mine, prior = r["model_usage"], before.get("model_usage", {})
+    own = {m: {k: max(v - prior.get(m, {}).get(k, 0), 0) for k, v in u.items()} for m, u in mine.items()}
+    return {**r, "model_usage": own, "out": sum(u["out"] for u in own.values()),
+            "web_searches": max(r.get("web_searches", 0) - before.get("web_searches", 0), 0),
+            "models": {m: round(max(c - before.get("models", {}).get(m, 0), 0), 4) for m, c in r.get("models", {}).items()}}
+
+
 def live_session_runner(b):
     """The runner of a paid session run: `claude -p` in the lookup clone (kb server registered, hooks off) per question,
     the follow-ups resuming the first question's session in the same directory. A resumed run's result event reports
-    the session's running total cost, so a question's cost is that total less the question before it's; the spend
-    counts the question's own cost."""
+    the session's running totals (cost, and `modelUsage`: output, model usage, web searches), so a question's own share
+    of each is that total less the question before it's (`own_share`); the spend counts the question's own cost."""
     clone, env = b.lookup(), no_plugin_env()
-    total = {}  # session id: the running cost its last question's result event reported
+    total = {}  # session id: the running totals its last question's result event reported
 
     def run(arm, effort, row, sid, position):
         r = execute_run(session_argv(arm, effort, sid, position), row["question"], cwd=str(clone), env=env, clean=True)
         if "error" not in r:
-            before = total.get(sid, 0.0) if position > 1 else 0.0
-            total[sid] = r.get("cost") or 0.0
-            r["cost"] = total[sid] - before
+            before = total.get(sid, {}) if position > 1 else {}
+            total[sid] = r
+            r = {**own_share(r, before), "cost": (r.get("cost") or 0.0) - (before.get("cost") or 0.0)}
         spent_run(r)
         return r
     return run
