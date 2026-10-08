@@ -2,7 +2,7 @@
   "id": "BG-yvqgg3cc",
   "kind": "bug",
   "title": "The full tests.py run exceeds the 20 s darwin ceiling since test_land_e2e grew to about 18.8 s",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,27 @@
     "parked: SP-caqrexqw review"
   ],
   "notes": "SP-caqrexqw review, 2026-10-08: whole-suite runs at 21-23 s on darwin across the sprint (61 tests); test_land_e2e takes about 18.8 s since 87f04925a (ST-urfa4ntj added a planted content landing). Landing gates still passed, so the overrun is load-dependent. Blocks the review story's own tests.py check on this host. 2026-10-08: the operator chose to fix it in SP-caqrexqw, ceiling unchanged, since it blocks the review story's tests.py check.",
-  "claimed_by": "worker-BG-yvqgg3cc"
+  "evidence": {
+    "commit": "6e34b93215391b0dca4fd929d085bd239e9c5c39",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_runs_lint"
+        ],
+        "exit": 0,
+        "sha256": "8634af44f213ec8d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "275613dc003cc0d0"
+      }
+    ]
+  }
 }
