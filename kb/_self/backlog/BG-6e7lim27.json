@@ -2,7 +2,7 @@
   "id": "BG-6e7lim27",
   "kind": "bug",
   "title": "bench_core prices every cache write at the 5-minute rate, while claude -p on a subscription writes 1-hour cache",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -23,5 +23,6 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md"
-  ]
+  ],
+  "claimed_by": "worker-BG-6e7lim27"
 }
