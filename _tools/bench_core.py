@@ -21,17 +21,20 @@ FIELDS = ["scenario", "record", "date", "commit", "claude_code", "kb_topics", "c
 # list prices per MTok of each pinned model, from the pricing page (PRICE_SOURCE): one tier per prompt length, each
 # (largest prompt in tokens it covers, None for the last, input, output, 5-minute cache write, cache read); a
 # run's cost and its effective input weights read the tier each request's prompt falls in. Plus $0.01 per web search
-# (the method of the subagent measurement)
+# (the method of the subagent measurement). Each row's kb fact, all [DOC S2131]:
 PRICE_SOURCE = "S2131"
 PRICE = {
-    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10),),
-    "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01), (None, 0.50, 2.50, 0.625, 0.05)),
-    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20),),
-    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10),),
-    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20),),
+    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10),),  # kb/public/claude/ci-and-headless.md:87
+    "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01),  # kb/public/claude/ci-and-headless.md:90
+                         (None, 0.50, 2.50, 0.625, 0.05)),
+    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20),),  # kb/public/claude/ci-and-headless.md:89
+    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10),),  # kb/public/claude/ci-and-headless.md:87
+    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20),),  # kb/public/claude/ci-and-headless.md:88
 }
 # the alias arms of a run and the model each names from a Claude Code version on; a run's own transcript names the model
-# it used, and that wins: this table only prices a run that reports none
+# it used, and that wins: this table only prices a run that reports none. The versions' kb facts: haiku from 2.1.293
+# kb/public/claude/ci-and-headless.md:85 [DOC S-ezqg74ki], sonnet from 2.1.284 kb/public/claude/ci-and-headless.md:86
+# [DOC S1864]
 ARMS = ("haiku", "sonnet", "opus")
 ALIAS = {"haiku": (((0,), "claude-haiku-4-5"), ((2, 1, 293), "claude-haiku-5-5")),
          "sonnet": (((0,), "claude-sonnet-5"), ((2, 1, 284), "claude-sonnet-5-5")),
