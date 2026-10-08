@@ -10,7 +10,8 @@ and the suite is within its ceiling.
                                    scenarios when only kb content changed, the whole suite for any other path
   tests.py --ceiling               collect the test ids without running them and compare ids and files with the ceiling
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
-  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git")
+  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git"); reuse a passing run of the same key
+  tests.py --no-reuse              run pytest even when a passing run of the same key is recorded
 
 Before pytest, every run (a selection and a --changed run too, not --ceiling or --write-lint-baseline) compiles each
 _tools/*.py in-process from its source text, writing no .pyc, and exits 1 naming each file and line whose compile warns
@@ -23,6 +24,15 @@ the selection as given and the files it looked in (empty_selection_line, `collec
 row with exit 2, selected 0 and workers 0. pytest's exit 5 is never returned: a run that still ends with it is said
 the same way and exits 2.
 
+Each pytest run is keyed (run_key) by its selection (the pytest arguments that choose its tests, without the worker and
+report ones: they and the tree decide the collected ids), the git tree of the index plus the tracked files' working-tree
+changes (work_tree: `git add -u` and `git write-tree` on a copy of the index named by GIT_INDEX_FILE, never the
+person's own index) and the Python version that runs pytest (.venv/pyvenv.cfg, else this one). An untracked .py file
+under _tools/ leaves the run without a key: nothing is reused or recorded for it. A run that exits 0 records its key
+with its UTC time in _cache/tests/results.json (RESULTS); a failing run records none and drops its key. A run with
+KB_TESTS_FAST=1 (the sync gate's) whose key the file holds as passed prints `reused: KEY from UTC-TIME`, records its
+test.run row with `reused` true, and exits 0 without starting pytest; --no-reuse forces the run.
+
 The ceiling (_tools/tests_ceiling.json: max_ids, max_files, max_seconds per sys.platform, decision) is the most the
 suite may hold and the longest a full run may take. Every run checks the file count and that `decision` names an active
 decision of kb/_self/_decisions.csv made by the operator whose text holds the file's own numbers (ceiling_token), so a
@@ -34,7 +44,8 @@ seconds were set on. A new test id needs room under max_ids, else it replaces on
 Each run appends one ops row `test.run` to the query log's spool (ql_capture.record, best effort: nothing is written
 when capture is off, inside a test, or when the row breaks its closed shape, and a failure to write never changes the
 exit code): mode, selected and total test files, workers, milliseconds, exit, passed, failed and skipped counts, the
-slowest files, every file's time for a full run and the names of the test files with a failure. A run a backlog check
+slowest files, every file's time for a full run, the names of the test files with a failure and, for a reused run,
+`reused` true. A run a backlog check
 makes writes it to the spool of the query log directory KB_TEST_RUN_HOME names (bl_base.check_env: the clone's real
 one), the one capture of that check outside its isolated home.
 
@@ -52,7 +63,7 @@ pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lo
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
 under test stay stdlib-only. Shared fixtures and helpers are in conftest.py.
 """
-import contextlib, csv, datetime, json, os, pathlib, re, shlex, shutil, signal, subprocess, sys, tempfile, time, warnings
+import contextlib, csv, datetime, hashlib, json, os, pathlib, re, shlex, shutil, signal, subprocess, sys, tempfile, time, warnings
 import xml.etree.ElementTree as ET
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -239,10 +250,11 @@ def junit_files(path):
     return {k: [int(round(v[0] * 1000))] + v[1:] for k, v in out.items()}
 
 
-def run_fields(mode, entry, workers, full):
+def run_fields(mode, entry, workers, full, reused=False):
     """The keys of the ops row `test.run` for one pytest run (`entry`: {"exit", "ms", "files"}, `files` from
     junit_files): counts and times only, and test file names that match the row's closed shape. `full`: the run
-    covered every test file, so each file's time is kept."""
+    covered every test file, so each file's time is kept. `reused`: no pytest ran, a recorded passing run of the same
+    key stood for it."""
     import ql_capture
     files = entry["files"]
     ok = {k: v for k, v in files.items() if ql_capture.OPS_TEST_FILE.fullmatch(k)}
@@ -257,6 +269,8 @@ def run_fields(mode, entry, workers, full):
     failed = sorted(k for k, v in ok.items() if v[2])
     if failed:
         f["failed_files"] = failed[:ql_capture.OPS_LIST_MAX]
+    if reused:
+        f["reused"] = True
     return f
 
 
@@ -265,9 +279,9 @@ def inside_test():
     return bool(os.environ.get("PYTEST_CURRENT_TEST"))
 
 
-def record_run(mode, entry, args, workers=None):
+def record_run(mode, entry, args, workers=None, reused=False):
     """Append the `test.run` row of one tests.py run (`workers`: the count to record, default the run's
-    worker_count); best effort: it returns None and raises nothing when ops capture is
+    worker_count; `reused`: a recorded run stood for it); best effort: it returns None and raises nothing when ops capture is
     unavailable, when the run is inside a test (a scenario clone's run never writes into the real spool) or when the
     row breaks its shape. A run a backlog check makes (bl_base.check_env) has KB_TEST_RUN_HOME, the clone's real query
     log directory: the row goes to that spool, not to the check's isolated home."""
@@ -279,7 +293,7 @@ def record_run(mode, entry, args, workers=None):
         if home:
             ql_capture.spool_dir = lambda: pathlib.Path(home) / "spool"
         return ql_capture.record("ops", event="test.run", **run_fields(
-            mode, entry, worker_count(args) if workers is None else workers, mode == "full"))
+            mode, entry, worker_count(args) if workers is None else workers, mode == "full", reused))
     except Exception:  # noqa: BLE001 - a run never fails for its log
         return None
 
@@ -380,6 +394,145 @@ def scope(paths):
     if not rest:
         return "none"
     return "content" if all(p.startswith(CONTENT) for p in rest) else "all"
+
+
+# Reusing a passing run
+
+RESULTS = ("_cache", "tests", "results.json")  # under the clone; _cache/ is never committed
+RESULTS_KEEP = 200  # the most recent keys the file keeps
+KEY_CHARS = 16
+NO_REUSE = "--no-reuse"
+
+
+def git_out(*args, env=None):
+    """git's stdout in the clone, or None when it fails."""
+    try:
+        p = subprocess.run(["git", *args], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           env=env)
+    except OSError:
+        return None
+    return p.stdout if p.returncode == 0 else None
+
+
+def untracked_tools():
+    """The untracked (not ignored) .py files under _tools/, as git names them; None when git cannot tell."""
+    out = git_out("ls-files", "--others", "--exclude-standard", "-z", "--", "_tools")
+    if out is None:
+        return None
+    return sorted(n.replace("\\", "/") for n in out.split("\0") if n.endswith(".py"))
+
+
+def work_tree():
+    """The tree hash of the index plus the tracked files' working-tree changes, written with the person's own index
+    untouched: a copy of the index in a temporary file named by GIT_INDEX_FILE, `git add -u` (tracked entries only),
+    `git write-tree`, then the file removed. None when git fails (an unmerged index, no repository)."""
+    index = git_out("rev-parse", "--git-path", "index")
+    if index is None:
+        return None
+    index = os.path.join(KB, index.strip())
+    fd, tmp = tempfile.mkstemp(prefix="kb-tests-index-")
+    os.close(fd)
+    try:
+        try:
+            shutil.copyfile(index, tmp)
+        except FileNotFoundError:  # no index yet: git starts an empty one
+            os.unlink(tmp)
+        env = {**os.environ, "GIT_INDEX_FILE": tmp}
+        if git_out("add", "-u", env=env) is None:
+            return None
+        tree = git_out("write-tree", env=env)
+        return tree.strip() if tree else None
+    finally:
+        for p in (tmp, tmp + ".lock"):
+            with contextlib.suppress(OSError):
+                os.unlink(p)
+
+
+def runner_python():
+    """The version of the Python that runs pytest: .venv/pyvenv.cfg's (uv's environment) when uv runs it, else this
+    interpreter's."""
+    if shutil.which("uv"):
+        try:
+            with open(os.path.join(KB, ".venv", "pyvenv.cfg"), encoding="utf-8") as f:
+                cfg = dict(ln.split("=", 1) for ln in f.read().splitlines() if "=" in ln)
+            got = {k.strip(): v.strip() for k, v in cfg.items()}
+            version = got.get("version_info") or got.get("version")
+            if version:
+                return version
+        except OSError:
+            pass
+    return ".".join(str(n) for n in sys.version_info[:3])
+
+
+def selection(pytest_args):
+    """The arguments that choose a run's tests (collect_args: no worker or report ones), each path relative to the
+    clone with forward slashes, so the same selection keys alike from any directory and on Windows."""
+    out = []
+    for a in collect_args(pytest_args):
+        base, sep, node = a.partition("::")
+        if not a.startswith("-") and os.path.isabs(base):
+            with contextlib.suppress(ValueError):
+                base = os.path.relpath(base, KB)
+        out.append((base.replace("\\", "/") + sep + node) if not a.startswith("-") else a)
+    return out
+
+
+def run_key(pytest_args):
+    """(key, why) of a run: the key hashes its selection, work_tree() and runner_python(); key None, with why, when an
+    untracked .py under _tools/ or a git failure leaves it without one."""
+    stray = untracked_tools()
+    if stray is None:
+        return None, "git cannot list the untracked files"
+    if stray:
+        return None, f"untracked {', '.join(stray[:3])}{' ...' if len(stray) > 3 else ''} (git add it)"
+    tree = work_tree()
+    if tree is None:
+        return None, "git cannot write the working tree's tree"
+    body = json.dumps({"selection": selection(pytest_args), "tree": tree, "python": runner_python()}, sort_keys=True)
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()[:KEY_CHARS], None
+
+
+def results_path():
+    return os.path.join(KB, *RESULTS)
+
+
+def read_results():
+    """{key: {"outcome", "utc", "mode"}} of RESULTS; {} when it is missing or unreadable."""
+    try:
+        with open(results_path(), encoding="utf-8") as f:
+            got = json.load(f).get("runs")
+        return got if isinstance(got, dict) else {}
+    except (OSError, ValueError, AttributeError):
+        return {}
+
+
+def passed_at(key):
+    """The UTC time of the recorded passing run of `key`, or None."""
+    got = read_results().get(key) if key else None
+    return got.get("utc") if isinstance(got, dict) and got.get("outcome") == "passed" else None
+
+
+def remember(key, passed, mode):
+    """Record `key` as passed now, or drop it when the run failed; best effort (written to a temporary file and
+    renamed, the RESULTS_KEEP most recent kept)."""
+    if not key:
+        return
+    try:
+        runs = read_results()
+        runs.pop(key, None)
+        if passed:
+            runs[key] = {"outcome": "passed", "mode": mode,
+                         "utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+        keep = sorted(runs.items(), key=lambda kv: str(kv[1].get("utc", "")) if isinstance(kv[1], dict) else "")
+        path = results_path()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        part = f"{path}.{os.getpid()}.part"
+        with open(part, "w", encoding="utf-8", newline="\n") as f:
+            json.dump({"runs": dict(keep[-RESULTS_KEEP:])}, f, indent=1, sort_keys=True)
+            f.write("\n")
+        os.replace(part, path)
+    except OSError:
+        pass
 
 
 HOST_LOCK_NAME = "kb-tests.lock"
@@ -662,8 +815,9 @@ def run_main(argv):
         return code
     if compile_report():
         return 1
-    args = list(argv)
+    args = [a for a in argv if a != NO_REUSE]
     fast = os.environ.get("KB_TESTS_FAST") == "1"
+    reuse = fast and NO_REUSE not in argv  # the sync gate's runs
     changed_run = "--changed" in args
     if changed_run:
         i = args.index("--changed")
@@ -678,6 +832,17 @@ def run_main(argv):
                                                           if fast else "the whole suite"))
     mode = run_scope(args, changed_run, fast)
     pytest_args = ([] if path_args(args) else [TOOLS]) + ([] if "-m" in args or not fast else ["-m", FAST_M]) + args
+    start = time.monotonic()
+    key, why = run_key(pytest_args)
+    if reuse:
+        when = passed_at(key)
+        if when:
+            print(f"reused: {key} from {when}", flush=True)
+            record_run(mode, {"exit": 0, "ms": int((time.monotonic() - start) * 1000), "files": {}}, args, workers=0,
+                       reused=True)
+            return 0
+        if why:
+            print(f"tests.py: no reuse: {why}", flush=True)
     if args:  # a selection: collect it first, so one that matches nothing is refused before any worker starts
         start = time.monotonic()
         if selected_ids(pytest_args) == 0:
@@ -696,7 +861,9 @@ def run_main(argv):
     ran = sum(v[1] + v[2] + v[3] for v in entry["files"].values())
     over = ceiling_report(ids=ran if whole and not fast else None,
                           seconds=entry["ms"] / 1000 if mode == "full" else None)
-    return entry["exit"] or over
+    code = entry["exit"] or over
+    remember(key, code == 0, mode)
+    return code
 
 
 if __name__ == "__main__":
