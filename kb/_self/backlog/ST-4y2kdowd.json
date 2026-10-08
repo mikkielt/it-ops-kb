@@ -40,6 +40,60 @@
   "depends_on": [
     "ST-37c3f5l5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the query-log question pool go?",
+      "options": [
+        "kb/_querylog/bench/pool.csv",
+        "a sidecar directory the query log store already defines"
+      ],
+      "recommendation": "kb/_querylog/bench/pool.csv",
+      "class": "querylog",
+      "answer": "kb/_querylog/bench/pool.csv",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which seed and which draw pick the pool's samples and the 10 facts the variants rephrase?",
+      "options": [
+        "default seed 11, one generator per pool section, the variant facts drawn one per domain first",
+        "one generator for the whole pool"
+      ],
+      "recommendation": "default seed 11, one generator per pool section, the variant facts drawn one per domain first",
+      "class": "querylog",
+      "answer": "default seed 11, one generator per pool section, the variant facts drawn one per domain first",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How do the 10 rows from _gaps.md and the verdict design misses get their kind and route, and what check does an eval row get when Sonnet's regex is unusable?",
+      "options": [
+        "kind gap (route web, a generic admission check) for open gaps, false_good and near_miss for the design misses, the cited article's path as the fallback check",
+        "gap rows folded into false_good and a fixed word as the fallback check"
+      ],
+      "recommendation": "kind gap (route web, a generic admission check) for open gaps, false_good and near_miss for the design misses, the cited article's path as the fallback check",
+      "class": "querylog",
+      "answer": "kind gap (route web, a generic admission check) for open gaps, false_good and near_miss for the design misses, the cited article's path as the fallback check",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which stored query-log questions enter the query-log pool?",
+      "options": [
+        "good and weak verdict entries that cite an article, checked by that article's path; none-verdict entries left out, since the kb may answer them by now",
+        "all verdicts, a none entry checked by the kb's admission of a gap"
+      ],
+      "recommendation": "good and weak verdict entries that cite an article, checked by that article's path; none-verdict entries left out, since the kb may answer them by now",
+      "class": "querylog",
+      "answer": "good and weak verdict entries that cite an article, checked by that article's path; none-verdict entries left out, since the kb may answer them by now",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/public/_retrieval/lookup_eval.csv",
     "kb/public/_retrieval/lookup_heldout.csv",

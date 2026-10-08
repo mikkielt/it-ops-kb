@@ -1,0 +1,17 @@
+{
+  "id": "BG-v4tsdwyh",
+  "kind": "bug",
+  "title": "selfdoc.py check fails: tools.md names a Sources heading content-rules.md no longer has",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/selfdoc.py check exits 0: the reference at kb/_self/tools.md:31 to the heading Sources of kb/_self/content-rules.md names a heading that exists",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/selfdoc.py",
+      "check"
+    ]
+  }
+}

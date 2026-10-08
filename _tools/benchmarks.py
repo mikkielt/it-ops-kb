@@ -8,6 +8,13 @@
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
                                             --arm names the arm of `navigation` (default `current`): a run replaces
                                             only its own arm's rows
+  benchmarks.py pool build [--querylog] [--seed N] [--out FILE]
+                                            write the stratified question pool, with a check per row, to
+                                            kb/public/_retrieval/bench_pool.csv, or with --querylog the redacted
+                                            query-log questions to kb/_querylog/bench/pool.csv (bench_pool.py)
+  benchmarks.py pool check [--querylog] [FILE]
+                                            exit 1 on a pool row without a usable check, a held-out row with text, a
+                                            leak or a kind off its count
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file
@@ -35,6 +42,7 @@ from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
+import bench_pool  # noqa: E402
 from bench_core import (ARMED, HOME, RAW, RESULTS, SPEND, Bench, Skip, merge_rows, read_rows,  # noqa: E402
                         write_rows)
 from bench_report import readme_misses, render  # noqa: E402
@@ -87,6 +95,14 @@ def main(argv=None):
     r.add_argument("--reps", type=int, default=1)
     r.add_argument("--arm", default="current", help="the arm of the navigation scenario's rows (default: current)")
     r.add_argument("--out")
+    pool = sub.add_parser("pool").add_subparsers(dest="pool_cmd", required=True)
+    pb = pool.add_parser("build")
+    pb.add_argument("--querylog", action="store_true")
+    pb.add_argument("--seed", type=int, default=bench_pool.SEED)
+    pb.add_argument("--out")
+    pc = pool.add_parser("check")
+    pc.add_argument("--querylog", action="store_true")
+    pc.add_argument("file", nargs="?")
     rep = sub.add_parser("report")
     rep.add_argument("--check", action="store_true")
     a = ap.parse_args(argv)
@@ -94,6 +110,8 @@ def main(argv=None):
         for name, (section, _) in SCENARIOS.items():
             print(f"{name:18} {section}")
         return 0
+    if a.cmd == "pool":
+        return bench_pool.cli(a)
     if a.cmd == "report":
         rows = read_rows(RESULTS)
         text = REPORT.read_text(encoding="utf-8")

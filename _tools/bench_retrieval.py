@@ -12,7 +12,7 @@ from bench_core import (HOME, TOOLS, claude_json, mcp_session, no_plugin_env, st
 from kbcommon import NO_HOOKS
 
 
-def _sonnet_json(prompt, cwd):
+def sonnet_json(prompt, cwd):
     """A tool-less Sonnet reply parsed as the JSON array it was asked for, and its cost."""
     ev = claude_json(["claude", "-p", "--no-session-persistence", "--model", "sonnet", *NO_HOOKS, "--tools", "",
                       "--setting-sources", "project,local", "--strict-mcp-config"], prompt, cwd)
@@ -27,6 +27,11 @@ def _sonnet_json(prompt, cwd):
 BLIND = ("For each numbered fact below, write one question a person would ask whose answer is that fact. Use your own "
          "words, not the fact's distinctive terms where a person would not know them. Reply with only a JSON array: "
          '[{"i": 0, "question": "..."}, ...].\n\n')
+
+
+def numbered(texts):
+    """The numbered list a blind prompt ends with: one line per text, cut at 400 characters."""
+    return "\n".join(f"{i}. {t[:400]}" for i, t in enumerate(texts))
 
 
 def s_retrieval(b):
@@ -48,7 +53,7 @@ def s_retrieval(b):
         b.row("retrieval", f"{label}, line in pack (keyword probes)", "current", "value", f"{100 * h / max(n, 1):.0f}%",
               1, note=f"{h} of {n} sampled units")
     blind = rng.sample([u for u in all_units if u["tags"]], 72)
-    qs, cost = _sonnet_json(BLIND + "\n".join(f"{i}. {u['text'][:400]}" for i, u in enumerate(blind)), b.scratch)
+    qs, cost = sonnet_json(BLIND + numbered([u["text"] for u in blind]), b.scratch)
     found = false_none = 0
     for q in qs:
         u = blind[q["i"]] if isinstance(q, dict) and q.get("i") in range(len(blind)) else None
@@ -119,7 +124,7 @@ def s_doc2query(b):
                        capture_output=True, env=no_plugin_env())
         facts = json.loads(out.read_text(encoding="utf-8"))
         pick = rng.sample(facts, min(40, len(facts)))
-        qs, cost = _sonnet_json(BLIND + "\n".join(f"{i}. {f['text'][:400]}" for i, f in enumerate(pick)), b.scratch)
+        qs, cost = sonnet_json(BLIND + numbered([f["text"] for f in pick]), b.scratch)
         b.row("doc2query", "blind questions", arm, "cost", cost, 1, "sonnet")
         tests += [{"key": pick[q["i"]]["key"], "question": q["question"]} for q in qs
                   if isinstance(q, dict) and q.get("i") in range(len(pick))]
