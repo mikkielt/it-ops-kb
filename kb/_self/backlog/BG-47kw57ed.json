@@ -63,7 +63,7 @@
         "yes: claim and branch rows alike": "BG-47kw57ed"
       },
       "answer": "no: only branch rows; backlog.py claim refuses an item that is not open, so a claim row always predates the done commit",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -80,7 +80,7 @@
         "yes: it keeps its window until a commit dates the status": "BG-47kw57ed"
       },
       "answer": "no: it counts as written after the done commit, as the goal's file-status test reads",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Its check passes before the work: it pins that a branch row of a doing item still opens a window, which the fix must keep; the repro is the failing proof.",

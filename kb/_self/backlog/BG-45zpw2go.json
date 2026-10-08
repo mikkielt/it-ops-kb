@@ -1,0 +1,26 @@
+{
+  "id": "BG-45zpw2go",
+  "kind": "bug",
+  "title": "A background land closes its window once land's own checkout holds the done commit, though the landing may still fail",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Found in the SP-wgx4pq4r review of BG-cwoyc7yh: backlog.py land rebases work/<id> and runs done --commit in the orchestrator's own checkout (bl_land.land_once) before the heavy checks, sync --push and verify_landed; a later hook of a session that launched land in the background runs ql_capture.settle_pending, which reads the item file there as done and writes the done row; if the checks or sync then fail, land switches back to the start branch (the file says doing again) but the done row stays, so a failed landing still closes the window. settle_pending writes the deferred done row only once the landing has pushed (not while the checkout is on the item's work/<id> branch mid-land), the repro exits 0, and querylog.md and usage.md say so.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,json,tempfile;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import ql_capture as q;co=t/'co';(co/'.git').mkdir(parents=True);(co/'.git'/'HEAD').write_text('ref: refs/heads/work/ST-aaaaaaaa\\n');f=co/'kb'/'_self'/'backlog'/'ST-aaaaaaaa.json';f.parent.mkdir(parents=True);f.write_text(json.dumps({'id':'ST-aaaaaaaa','status':'done'}));q.record('prompt','s1',prompt_id='p1',prompt='x');q.record('work','s1',prompt_id='p1',action='done-pending',item='ST-aaaaaaaa');r=q.settle_pending(Path(q.spool_dir()),'s1',{'cwd':str(co)},'p2');print('done rows while land holds the work branch checked out:',r);sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-wgx4pq4r review"
+  ]
+}

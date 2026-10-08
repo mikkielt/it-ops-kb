@@ -71,7 +71,7 @@
       "recommendation": "a done-pending work row at launch, settled at every later PostToolUse, PostToolUseFailure, UserPromptSubmit and Stop of the session",
       "class": "design",
       "answer": "a done-pending work row at launch, settled at every later PostToolUse, PostToolUseFailure, UserPromptSubmit and Stop of the session",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Its check passes before the work: it pins that a foreground land still writes the item's done row, which the fix must keep; the repro is the failing proof.",
