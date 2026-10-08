@@ -2,7 +2,7 @@
   "id": "ST-dku4a6ob",
   "kind": "story",
   "title": "benchmarks.py run pool runs a whole record in one command under one spend cap",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -44,5 +44,6 @@
   "depends_on": [
     "ST-vua43tob"
   ],
-  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found in SP-hm4qgf3t: the 2026-10-08 record took six runs from a hand-written detached chain script with six caps, and a mid-run spend change needed the chain stopped by hand. Premise: the first check exits 2 today (--arm-reps unknown, --shape takes one value)."
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found in SP-hm4qgf3t: the 2026-10-08 record took six runs from a hand-written detached chain script with six caps, and a mid-run spend change needed the chain stopped by hand. Premise: the first check exits 2 today (--arm-reps unknown, --shape takes one value).",
+  "claimed_by": "worker-ST-dku4a6ob"
 }
