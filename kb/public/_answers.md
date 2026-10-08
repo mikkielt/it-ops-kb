@@ -2507,3 +2507,13 @@ _Agent: kb-research_
 - See gitlab/git-test-repositories.md, python/interpreter-startup.md.
 
 _Agent: kb-research_
+
+## QK-background-bash-agent-call-return-hooks. What does a background Bash or Agent call return to hooks, and what do a Stop hook's background_tasks entries hold?
+- A Bash command run with `run_in_background: true` starts as a background task: Claude Code runs it asynchronously and immediately returns a background task ID while Claude keeps working. (`claude/hooks.md:130`) [DOC S-3yod3u7q, S-eumxht6x]
+- A background subagent's Agent call returns when the task moves to the background, so its `PostToolUse` `tool_response` has `status: "async_launched"` and no usage fields. (`claude/hooks.md:131`) [DOC S743]
+- `Stop` input's `background_tasks` lists each in-flight task (`id`, `type`, `status`, `description`, `command` for shell tasks, and per-type fields), present when the task registry is reachable and empty when nothing is in flight. (`claude/hooks.md:128`, `:129`) [DOC S743]
+- Conclusion: a background launch's tool call returns at launch with a task id, not the command's result; a hook that needs to know whether background work is still running reads `Stop`'s `background_tasks`. (`claude/hooks.md:128`, `:130`) [DER S743, S-3yod3u7q, S-eumxht6x]
+- Open: the hooks page does not say in words whether `PostToolUse` fires for a background Bash call at its launch or when the command finishes. [UNK]
+- See claude/hooks.md.
+
+_Agent: kb-research_

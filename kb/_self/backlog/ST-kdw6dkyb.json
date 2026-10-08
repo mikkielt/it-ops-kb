@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "The sprint goal's one open question, whose pack (rag.py pack 'when does PostToolUse fire for a Bash command run in the background') reads good but cites no line that gives the fire time, is researched in the live docs (claude-code-docs) and its source facts written to kb/public/claude/hooks.md through /kb-research: what a Bash call with run_in_background returns and when, and what a Stop hook's background_tasks entries hold; the other clauses (--resume append wording, distill windows, cost dating and wording, land's done row) need no outside facts: the resume clause retags a line whose source the pack already cites (hooks.md:106, S-uzkb4duq), and the rest are the kb's own tools, read from their code. ST-fxly2caj draws the PostToolUse conclusion from these facts.",
   "checks": [
     {
       "run": [

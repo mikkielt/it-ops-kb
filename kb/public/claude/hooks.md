@@ -1,9 +1,9 @@
 ---
 topic: claude/hooks
 priority: P1
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28; subagent agent_type values and failure input re-read 2026-10-01; permission, compaction, failure and instructions events read 2026-10-04; hooks in `-p` runs and the `cwd` input field read 2026-10-07; transcript storage, resume and fork, SessionStart and SessionEnd input, and the SessionEnd budget read 2026-10-07)"
-retrieved_utc: 2026-10-07
-sources: [S743, S744, S745, S746, S747, S1800, S1824, S2157, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf, S-uzkb4duq, S-npnkw4t2, S-j22fjuka, S-2ip5zngf, S-pmhgjvef, S-hvuk3dqt, S-svt73npe, S-fmj24q2u]
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28; subagent agent_type values and failure input re-read 2026-10-01; permission, compaction, failure and instructions events read 2026-10-04; hooks in `-p` runs and the `cwd` input field read 2026-10-07; transcript storage, resume and fork, SessionStart and SessionEnd input, and the SessionEnd budget read 2026-10-07; Stop background_tasks entries, background Bash and background Agent results read 2026-10-08)"
+retrieved_utc: 2026-10-08
+sources: [S743, S744, S745, S746, S747, S1800, S1824, S2157, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf, S-uzkb4duq, S-npnkw4t2, S-j22fjuka, S-2ip5zngf, S-pmhgjvef, S-hvuk3dqt, S-svt73npe, S-fmj24q2u, S-eumxht6x]
 status: complete
 ---
 # Hooks relevant to MCP tools
@@ -125,6 +125,10 @@ instead, so a hook can answer a prompt without a model call.
 - On Windows where the PowerShell tool is enabled, Claude routes shell commands through it, and without Git Bash the Bash tool is not registered at all, so a hook that inspects shell commands matches `Bash|PowerShell`. [DOC S743]
 - WebFetch converts an HTML page to Markdown and runs its prompt on it with a small, fast model, so Claude usually receives that model's answer, not the page; large pages are truncated first, and a redirect to a different host returns a text result naming the original URL and the target instead of following it. [DOC S-3yod3u7q]
 - `Stop` hooks receive `stop_hook_active`, `last_assistant_message`, `background_tasks` and `session_crons` beyond the common input fields. [DOC S743]
+- `background_tasks` and `session_crons` let a `Stop` hook tell a finished session from one paused until background work wakes it; both are present when the task registry is reachable and empty when nothing is in flight or scheduled. [DOC S743]
+- Each `background_tasks` entry describes one in-flight task: `id`, `type` (a label such as `shell`, `subagent`, `monitor`, `workflow`, `teammate`, `cloud session` or `MCP task`), `status` and `description`, plus `command` for `shell` tasks, `agent_type` for `subagent` tasks, `server` and `tool` for `monitor` and `MCP task` tasks and `name` for `workflow` tasks; `description` and `command` are capped at 1000 characters. [DOC S743]
+- A Bash command Claude runs with `run_in_background: true` starts as a background task and Claude keeps working while it runs; Claude Code runs it asynchronously and immediately returns a background task ID. [DOC S-3yod3u7q, S-eumxht6x]
+- For a background subagent the Agent tool returns when the task moves to the background, so its `PostToolUse` `tool_response` has `status: "async_launched"` and no usage fields. [DOC S743]
 - `--settings '{"disableAllHooks": true}'` turns hooks off for one run and takes precedence over project and local settings; `disableAllHooks` outside managed settings cannot disable managed hooks. [DOC S743]
 - A logging hook on `PostToolUse` and `Stop` joins its rows to the prompt by `prompt_id`, a common input field, and a fetch's outcome needs `PostToolUseFailure` as well, since `PostToolUse` sees only successful calls. [DER S743: common input fields, PostToolUse and PostToolUseFailure input above]
 

@@ -92,7 +92,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `autopilot/lifecycle` | P1 | complete | `autopilot/lifecycle.md` | 5 |
 | `claude/data-retention` | P1 | complete | `claude/data-retention.md` | 6 |
 | `claude/elicitation` | P1 | complete | `claude/elicitation.md` | 5 |
-| `claude/hooks` | P1 | complete | `claude/hooks.md` | 20 |
+| `claude/hooks` | P1 | complete | `claude/hooks.md` | 21 |
 | `claude/managed-mcp` | P1 | complete | `claude/managed-mcp.md` | 2 |
 | `claude/messages-api` | P1 | complete | `claude/messages-api.md`, `claude/models.csv`, `claude/api-limits.csv` | 10 |
 | `claude/otel-monitoring` | P1 | complete | `claude/otel-monitoring.md` | 7 |
