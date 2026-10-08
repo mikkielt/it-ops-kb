@@ -25,7 +25,8 @@
   ],
   "touches": [
     "kb/_self/reports/windows-fresh-host.md",
-    "_tools/cleanhost-run.ps1"
+    "_tools/cleanhost-run.ps1",
+    "kb/_self/tools.md"
   ],
   "gates": [
     {
