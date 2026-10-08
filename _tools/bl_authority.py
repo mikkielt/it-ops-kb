@@ -31,7 +31,21 @@ PATHS = {
                     "_tools/bl_", "_tools/tests.py", "_tools/conftest.py", "_tools/kb_hook.py", "_tools/kbdecide.py",
                     "_tools/backlog.py", "_tools/kbpy"),
 }
-SECRET_WORDS = re.compile(r"secret|credential|password|\.env\b|token|private[-_ ]?key", re.I)
+SECRET_WORDS = re.compile(r"secret|credential|password|\.env\b|private[-_ ]?key", re.I)
+# `token` names a token file (`api.token`, `tokens.json`, `auth-token.db`) or a directory of them, so it classes a touch
+# `secrets` anywhere but in the file name of a Markdown doc (`kb/_self/token-efficiency.md` is about token cost).
+TOKEN_WORD = re.compile(r"token", re.I)
+
+
+def names_secret(touch):
+    """Whether the touch's path names a secret, credential, password, `.env`, private key or token file."""
+    if not isinstance(touch, str):
+        return False
+    if SECRET_WORDS.search(touch):
+        return True
+    head, _, name = touch.strip().replace("\\", "/").rstrip("/").rpartition("/")
+    return bool(TOKEN_WORD.search(head) or TOKEN_WORD.search(name) and not name.lower().endswith(".md"))
+
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
 # `release` are word-bounded (`original` is not `origin`) and take their endings (`releases`, `released`, `mirrored`),
 # so a gate about a release note is `push` too: the classifier fails closed.
@@ -89,7 +103,7 @@ def derived_class(item, gate):
     for cls, paths in PATHS.items():
         if any(touch_names(t, p) for t in item.get("touches", []) or [] for p in paths):
             found.add(cls)
-    if any(isinstance(t, str) and SECRET_WORDS.search(t) for t in item.get("touches", []) or []):
+    if any(names_secret(t) for t in item.get("touches", []) or []):
         found.add("secrets")
     text = f"{gate.get('question', '')} {' '.join(map(str, gate.get('options', []) or []))} {command_words(gate)}"
     for cls, rx in QUESTION_WORDS.items():
