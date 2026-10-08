@@ -49,6 +49,11 @@ REGEX_ASK = ("For each numbered item below (a question, then the fact line of th
              "expression (Python re, case-insensitive) that a correct answer to the question matches because it states "
              "the fact's own value: a number, a name, a setting, a cmdlet. Do not build it from the question's words. "
              'Reply with only a JSON array: [{"i": 0, "regex": "..."}, ...].\n\n')
+REDO_ASK = ("These items are asked a second time because an earlier regex was refused as too broad. A regex is refused unless "
+            "every alternative is specific to its fact: a named setting, a number, a product or command name, or a multi-word "
+            "phrase. A bare single word that is common across the kb is refused (one found in more than {articles} of its "
+            "articles, such as other, timeout, clear, outbound or duplicate), and so is a regex that also matches the fact "
+            "or question of more than {rows} other items. The regex must match its own fact line as written.\n\n")
 
 
 class PoolError(Exception):
@@ -164,12 +169,18 @@ def usable(rx, fact):
         return False
 
 
+def regex_prompt(items):
+    """The prompt of the paid call: REGEX_ASK, REDO_ASK (the limits of `too_broad`) when an item is a redone row, and the
+    numbered items."""
+    redo = REDO_ASK.format(articles=COMMON_ARTICLES, rows=BREADTH) if any(i.get("redo") for i in items) else ""
+    return REGEX_ASK + redo + numbered([f"QUESTION: {i['question']}\nFACT ({i['where']}): {i['fact']}" for i in items])
+
+
 def sonnet_regexes(items):
     """The paid call: one tool-less Sonnet reply with a regex per item (question and fact line), [""] for a miss."""
     scratch = Path(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench")
     scratch.mkdir(parents=True, exist_ok=True)
-    got, cost = sonnet_json(REGEX_ASK + numbered([f"QUESTION: {i['question']}\nFACT ({i['where']}): {i['fact']}" for i in items]),
-                            scratch)
+    got, cost = sonnet_json(regex_prompt(items), scratch)
     out = [""] * len(items)
     for r in got:
         if isinstance(r, dict) and r.get("i") in range(len(items)) and isinstance(r.get("regex"), str):
@@ -286,7 +297,8 @@ def eval_section(home, seed, ask, out, redo=(), kept=None):
         texts = {f"lookup_eval.csv:{c['id']}": (c["fact"][:2], c["question"] + "\n" + c["fact"][2]) for c in ask_for}
         articles = article_texts(home) if again else []
         regexes = ask([{"row": f"lookup_eval.csv:{c['id']}", "question": c["question"],
-                        "where": f"{c['fact'][0]}:{c['fact'][1]}", "fact": c["fact"][2]} for c in todo])
+                        "where": f"{c['fact'][0]}:{c['fact'][1]}", "fact": c["fact"][2],
+                        "redo": f"lookup_eval.csv:{c['id']}" in again} for c in todo])
         for c, rx in zip(todo, regexes):
             src = f"lookup_eval.csv:{c['id']}"
             why = ""
@@ -639,8 +651,7 @@ def ask_estimate(items):
     """The list-price cost in USD of the one call that asks `items` (sonnet-5-5, an estimate: the prompt at 4 characters
     a token, the claude -p overhead as a cache write)."""
     p = PRICE["claude-sonnet-5-5"][0]
-    text = len(REGEX_ASK) + sum(len(i["question"]) + min(len(i["fact"]), 400) + len(i["where"]) + 40 for i in items)
-    return (ASK_OVERHEAD * p[3] + text / 4 * p[1] + ASK_OUT * len(items) * p[2]) / 1e6
+    return (ASK_OVERHEAD * p[3] + len(regex_prompt(items)) / 4 * p[1] + ASK_OUT * len(items) * p[2]) / 1e6
 
 
 def listed_ask(ask, dry_run, limits):

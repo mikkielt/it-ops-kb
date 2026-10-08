@@ -136,6 +136,14 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
     kept2 = []
     assert bp.build_public(tmp_path, 3, bp.csv_replies(replies), out, names[:1], kept2) == rows and [w[:10] for _, w in kept2] == [
         "it matches"]  # a csv answers without a model, and the guards judge its reply
+    prompts = []
+    monkeypatch.setattr(bp, "sonnet_json", lambda prompt, cwd: (prompts.append(prompt), ([], 0.0))[1])
+    monkeypatch.setenv("BENCH_SCRATCH", str(tmp_path / "scratch"))
+    item = {"row": "lookup_eval.csv:EV-0", "question": "q?", "where": "d0/a0.md:8", "fact": "f"}
+    bp.sonnet_regexes([item])
+    bp.sonnet_regexes([{**item, "redo": True}])
+    limits = f"more than {bp.COMMON_ARTICLES} of its articles"
+    assert limits not in prompts[0] and limits in prompts[1] and f"more than {bp.BREADTH} other items" in prompts[1]  # a redone row's prompt names the guard's limits
     before = out.read_text(encoding="utf-8")
     monkeypatch.setattr(bp, "sonnet_regexes", lambda items: pytest.fail("a dry run or a refused call pays"))
     rns = argparse.Namespace(pool_cmd="build", querylog=False, seed=3, out=str(out), redo=names, dry_run=True)
