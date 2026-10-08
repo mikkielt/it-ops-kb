@@ -66,6 +66,19 @@
       "class": "design",
       "answer": "cap 120 USD: the full set as the goal states",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which pool subsets does the first record run, where the goal's figures meet the scenario's flags (run pool selects by kind, not by row count, and has no opus arm)?",
+      "options": [
+        "kb arms, router and hook on every row at 3 reps; web arms on the kinds csv_fact, multi, synthesis, false_good, snippet and offkb (29 rows) at 2 reps; session shape on 5 groups of six from 11 non-fact kinds at 2 reps; no opus subset, parked as a gap; no separate one-rep pass, the 3-rep run's per-row checks show rows no arm passes",
+        "the goal's figures exactly, after a code change for a row limit and an opus arm"
+      ],
+      "recommendation": "kb arms, router and hook on every row at 3 reps; web arms on the kinds csv_fact, multi, synthesis, false_good, snippet and offkb (29 rows) at 2 reps; session shape on 5 groups of six from 11 non-fact kinds at 2 reps; no opus subset, parked as a gap; no separate one-rep pass, the 3-rep run's per-row checks show rows no arm passes",
+      "class": "design",
+      "answer": "kb arms, router and hook on every row at 3 reps; web arms on the kinds csv_fact, multi, synthesis, false_good, snippet and offkb (29 rows) at 2 reps; session shape on 5 groups of six from 11 non-fact kinds at 2 reps; no opus subset, parked as a gap; no separate one-rep pass, the 3-rep run's per-row checks show rows no arm passes",
+      "by": "agent"
     }
   ],
   "links": [
