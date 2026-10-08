@@ -2,7 +2,7 @@
   "id": "ST-r7wvfqvw",
   "kind": "story",
   "title": "kb-sprint run starts workers as Sonnet headless sessions by default, the session model only on request",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,6 @@
       "answer": "every kind headless Sonnet at high effort; kb-worker on the Agent tool only as the fallback",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "worker-ST-r7wvfqvw"
 }
