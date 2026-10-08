@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import ql_capture, ql_distill, ql_store, redact
+import ql_capture, ql_distill, ql_learn, ql_store, redact
 from conftest import KB, TOOLS
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
@@ -134,6 +134,15 @@ def test_store_check_passes_a_clean_store_and_names_the_run_file_with_a_leak(tmp
     assert capsys.readouterr().out == "querylog check: problems=0\n"
     run = store / RUN_REL
     lines = run.read_text(encoding="utf-8").splitlines()
+    # learn's rules guard: a `pack --item` lookup (an entry with `item`) asks the item's text, not a question
+    planted = next(e for e in map(json.loads, lines[1:]) if e.get("item"))
+    assert planted["verdict"] == "weak" and not ql_learn.rules_miss(planted)
+    asked = {k: v for k, v in planted.items() if k != "item"}
+    assert ql_learn.rules_miss(asked)  # the same lookup without its item is a rules miss
+    assert ql_learn.rules_miss({**asked, "question": "word " * ql_learn.RULES_QUESTION_WORDS})
+    assert not ql_learn.rules_miss({**asked, "question": "word " * (ql_learn.RULES_QUESTION_WORDS + 1)})
+    assert not any(planted["id"] == json.loads(ln).get("entry") for f in FIXTURE_STORE.glob("findings/*/*.jsonl")
+                   for ln in f.read_text(encoding="utf-8").splitlines()[1:])  # and the committed findings hold none of it
     entry = json.loads(lines[1])
     entry["question"] = f"How long is the LAPS password for {EMAIL}?"
     lines[1] = json.dumps(entry)

@@ -40,6 +40,39 @@
     "_tools/fixtures/querylog/store/**",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What is the closed word cap above which ql_learn.rules_miss treats a rules question as pasted text and writes no finding?",
+      "options": [
+        "30 words",
+        "40 words",
+        "20 words"
+      ],
+      "recommendation": "30 words",
+      "do": {
+        "30 words": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_redact.py"
+        ],
+        "40 words": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_redact.py"
+        ],
+        "20 words": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_redact.py"
+        ]
+      },
+      "class": "querylog",
+      "answer": "30 words",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/_self/querylog.md Learn, Rules findings",
     "kb/_querylog/findings/ (the 14 item-text rules findings at main 6be3dcd0)"
