@@ -2,7 +2,7 @@
   "id": "BG-rqkc66vj",
   "kind": "bug",
   "title": "querylog.py digest counts an empty tests.py selection (exit 2, selected 0) as failed, not as selected nothing",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-evkj4avq",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/code.md",
     "kb/_self/usage.md"
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "4414e77ebca71560206e7953b1aed8b15c2c6c79",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import ql_report; sys.exit(0 if ql_report.NOTHING_SELECTED == 2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
