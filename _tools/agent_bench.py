@@ -231,21 +231,29 @@ def result_of(stdout, stderr, wall):
     tokens are those of the result event's `usage` (the main loop). `out` is the sum of the event's `modelUsage`
     `outputTokens` (the whole run: subagents and internal calls too, thinking included), else its `usage` output
     count; the `usage` of the stream's messages (`requests`) carries partial output counts, so it gives the model
-    and the prompt of each request, not the output."""
+    and the prompt of each request, not the output. `model_usage` keeps what `modelUsage` bills each model ({model:
+    {uncached, cache_write, cache_read, out}}): a WebFetch or WebSearch call runs a model of its own inside the tool
+    (Haiku 5.5, whatever the session's model), billed there and in no message of the stream; `web_searches` is the
+    searches `modelUsage` bills (`webSearchRequests`), set when the event has a `modelUsage`."""
     seen, res = parse(stdout)
     if not res:
         return {"error": stderr[-500:]}
     if res.get("is_error") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
         return {"error": (res.get("result") or "is_error")[:200]}  # a refused run is void, not a cheap answer
     u = res["usage"]
-    counts = [v["outputTokens"] for v in (res.get("modelUsage") or {}).values()
-              if isinstance(v, dict) and isinstance(v.get("outputTokens"), int)]
+    billed = {m: v for m, v in (res.get("modelUsage") or {}).items() if isinstance(v, dict)}
+    counts = [v["outputTokens"] for v in billed.values() if isinstance(v.get("outputTokens"), int)]
+    num = lambda v, k: v.get(k) if isinstance(v.get(k), int) else 0  # noqa: E731
+    extra = ({"model_usage": {m: {"uncached": num(v, "inputTokens"), "cache_write": num(v, "cacheCreationInputTokens"),
+                                  "cache_read": num(v, "cacheReadInputTokens"), "out": num(v, "outputTokens")}
+                              for m, v in billed.items()},
+              "web_searches": sum(num(v, "webSearchRequests") for v in billed.values())} if billed else {})
     return {"wall_s": round(wall, 1), "api_s": round(res["duration_api_ms"] / 1000, 1),
             "cost": round(res["total_cost_usd"], 4), "turns": res["num_turns"],
             "in_uncached": u["input_tokens"], "cache_write": u["cache_creation_input_tokens"],
             "cache_read": u["cache_read_input_tokens"], "out": sum(counts) if counts else u["output_tokens"],
             "models": {m: round(v["costUSD"], 4) for m, v in res.get("modelUsage", {}).items()},
-            **seen, "answer": res.get("result") or ""}
+            **seen, **extra, "answer": res.get("result") or ""}
 
 
 def add(a, b, sep="escalate"):
@@ -267,6 +275,11 @@ def add(a, b, sep="escalate"):
         out[k] = round(a[k] + b[k], 4)
     out["models"] = {m: round(a["models"].get(m, 0) + b["models"].get(m, 0), 4) for m in {*a["models"], *b["models"]}}
     out["requests"] = a.get("requests", []) + b.get("requests", [])
+    if "model_usage" in a or "model_usage" in b:
+        out["model_usage"] = {m: {k: a.get("model_usage", {}).get(m, {}).get(k, 0) + b.get("model_usage", {}).get(m, {}).get(k, 0)
+                                  for k in ("uncached", "cache_write", "cache_read", "out")}
+                              for m in {*a.get("model_usage", {}), *b.get("model_usage", {})}}
+        out["web_searches"] = a.get("web_searches", 0) + b.get("web_searches", 0)
     for k in ("kb_tokens", "pack_chars"):
         out[k] = a.get(k, 0) + b.get(k, 0)
     return out

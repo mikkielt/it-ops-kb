@@ -26,5 +26,20 @@
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A Sonnet 5.5 probe run reports a cost that prices its cache reads at 0.20 USD per MTok, while the pricing page (S2131) and PRICE say 0.10: which read price does PRICE keep for Sonnet 5.5?",
+      "options": [
+        "Keep the pricing page's 0.10 (a Sonnet run's list cost reads about 8% under its reported cost, inside the 20% bound)",
+        "Change to 0.20 to match the cost the CLI reports"
+      ],
+      "recommendation": "Keep the pricing page's 0.10 (a Sonnet run's list cost reads about 8% under its reported cost, inside the 20% bound)",
+      "class": "design",
+      "answer": "Keep the pricing page's 0.10 (a Sonnet run's list cost reads about 8% under its reported cost, inside the 20% bound)",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-BG-rbokisbc"
 }
