@@ -2,7 +2,7 @@
   "id": "BG-cwoyc7yh",
   "kind": "bug",
   "title": "A backlog.py land run in the background writes its done row when it starts, so a failed landing still closes the window",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
@@ -54,5 +54,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Its check passes before the work: it pins that a foreground land still writes the item's done row, which the fix must keep; the repro is the failing proof."
+  "notes": "Its check passes before the work: it pins that a foreground land still writes the item's done row, which the fix must keep; the repro is the failing proof.",
+  "claimed_by": "worker-BG-cwoyc7yh"
 }
