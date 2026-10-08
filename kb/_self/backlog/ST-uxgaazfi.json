@@ -2,7 +2,7 @@
   "id": "ST-uxgaazfi",
   "kind": "story",
   "title": "run pool --jobs N runs the pool's paid runs in parallel within a --max-usd cap and keeps one record date",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",
@@ -38,5 +38,6 @@
   "depends_on": [
     "ST-ohz5si2o"
   ],
-  "notes": "Operator's choice 2026-10-08, over cutting the record or running it over two days: ST-ji32ouga's full set is about 2,700 paid runs, 20-30 h sequential, and a record is one date. report --check passes before the work and pins every existing table; the failing check is -k bench_pool_jobs, which collects no test until the work adds one. Today no spend cap is enforced: benchmarks.py only reports SPEND after a scenario."
+  "notes": "Operator's choice 2026-10-08, over cutting the record or running it over two days: ST-ji32ouga's full set is about 2,700 paid runs, 20-30 h sequential, and a record is one date. report --check passes before the work and pins every existing table; the failing check is -k bench_pool_jobs, which collects no test until the work adds one. Today no spend cap is enforced: benchmarks.py only reports SPEND after a scenario.",
+  "claimed_by": "worker-ST-uxgaazfi"
 }
