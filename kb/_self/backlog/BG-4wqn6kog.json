@@ -2,7 +2,7 @@
   "id": "BG-4wqn6kog",
   "kind": "bug",
   "title": "Held-out row HO-session-id-bash-env rewords a tuned eval row, so the held-out rate counts a tuned question",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-caqrexqw",
   "priority": "P3",

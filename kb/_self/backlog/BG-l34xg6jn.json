@@ -2,7 +2,7 @@
   "id": "BG-l34xg6jn",
   "kind": "bug",
   "title": "The pack index's unit cache reuses stale weights after a weighing change that keeps INDEX_VERSION",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-caqrexqw",
   "priority": "P2",

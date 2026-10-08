@@ -2,7 +2,7 @@
   "id": "ST-dvzdykit",
   "kind": "story",
   "title": "Tests pin the pack index's unit cache: cached equals fresh, each key input re-weighs, an edited fact is found",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-caqrexqw",
   "priority": "P3",

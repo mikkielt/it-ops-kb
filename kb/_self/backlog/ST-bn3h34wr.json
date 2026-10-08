@@ -2,7 +2,7 @@
   "id": "ST-bn3h34wr",
   "kind": "story",
   "title": "The held-out answer-rate test refuses a held-out row that rewords a tuned eval row",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
@@ -59,7 +59,9 @@
         "eval-word-overlap": "ST-bn3h34wr",
         "separate-check": "ST-bn3h34wr"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "eval-difflib",
+      "by": "operator"
     }
   ],
   "links": [

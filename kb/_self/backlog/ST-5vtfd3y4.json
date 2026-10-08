@@ -2,7 +2,7 @@
   "id": "ST-5vtfd3y4",
   "kind": "story",
   "title": "Research: prompt-caching pricing of cache reads, cache writes and uncached input tokens",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,

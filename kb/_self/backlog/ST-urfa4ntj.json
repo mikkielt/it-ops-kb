@@ -2,7 +2,7 @@
   "id": "ST-urfa4ntj",
   "kind": "story",
   "title": "A content landing runs the contract lint on the articles it changes, so a CODE tag without a pointer cannot reach main",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-caqrexqw",
   "priority": "P3",
   "rank": 0,
@@ -40,7 +40,9 @@
         "whole-lint": "ST-urfa4ntj",
         "land-heavy": "ST-urfa4ntj"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "scoped-lint",
+      "by": "operator"
     }
   ],
   "links": [

@@ -2,7 +2,7 @@
   "id": "ST-ctomsu4i",
   "kind": "story",
   "title": "check.py refuses a path:line citation in _answers.md or _gaps.md that points at a line with none of the cited sources",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-caqrexqw",
   "priority": "P3",
   "rank": 0,
@@ -60,7 +60,9 @@
         "first-line-only": "ST-ctomsu4i",
         "any-line-plus-ids": "ST-ctomsu4i"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "any-line-of-fact",
+      "by": "operator"
     },
     {
       "id": "promote",
@@ -82,7 +84,9 @@
           "none"
         ]
       },
-      "class": "design"
+      "class": "design",
+      "answer": "commit",
+      "by": "operator"
     }
   ],
   "links": [
