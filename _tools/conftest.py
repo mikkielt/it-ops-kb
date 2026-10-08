@@ -195,6 +195,8 @@ def kb_seed(tmp_path_factory):
         tree.git("-c", "core.autocrlf=false", "add", "-f", f"--pathspec-from-file={spec}", "--pathspec-file-nul")
         tree.git("commit", "-q", "-m", "base")
         Repo(bare).git("config", "core.bare", "true")
+        # one pack instead of a loose object per file: every scenario's two clones then link one file, not each object
+        Repo(bare).git("repack", "-a", "-d", "-q", "--window=0", "--depth=0")
         got = {"bare": str(bare), "base": Repo(bare).rev("HEAD")}
     finally:
         part = done.with_suffix(".part")
