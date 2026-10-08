@@ -1,0 +1,26 @@
+{
+  "id": "ST-icgtdnuf",
+  "kind": "story",
+  "title": "check.py refuses a tracked path too long for a Windows clone's worker worktree",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "check.py (or the gate a kb content commit runs) refuses a tracked path whose length, under a typical worker worktree prefix, passes the Windows path limit git hits without core.longpaths, so a long artifact path such as the 2025 STIG xccdf file (8a1e2de6) is caught on macOS at commit time instead of first failing a Windows landing; found by the SP-kjqdiudr close (BG-6sdkqlsu).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/check.py',encoding='utf-8').read();ok='MAX_PATH' in t or 'longpaths' in t;print('check.py guards Windows path length:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/check.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "links": [
+    "parked: SP-kjqdiudr close"
+  ]
+}

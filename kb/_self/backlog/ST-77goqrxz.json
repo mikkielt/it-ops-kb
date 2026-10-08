@@ -1,0 +1,25 @@
+{
+  "id": "ST-77goqrxz",
+  "kind": "story",
+  "title": "Planning reads a goal clause that names a constant against what the constant bounds",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The /kb-sprint plan step's clause-to-check mapping asks, for a goal clause that names a code constant (such as LAUNCH_BUDGET_S), what the constant bounds in the code, and rewrites a clause that asks it to bound something else before the start gate; found by the SP-kjqdiudr close: ST-bgfsi3n2 asked for a run file within LAUNCH_BUDGET_S (0.5 s), which bounds the launcher's return, and closed with the clause unmet as written.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='names a constant' in t;print('plan step reads constants in goal clauses:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kjqdiudr close"
+  ]
+}

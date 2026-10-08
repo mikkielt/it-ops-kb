@@ -1,0 +1,25 @@
+{
+  "id": "ST-zo4lguos",
+  "kind": "story",
+  "title": "A sprint whose gates all name another host is started through that host's route, as the start step says",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The /kb-sprint start step and kb/_self/backlog.md say that a sprint whose answered gates' host checks pass only on another host (the Windows 11 host) is started there, through the project's route for that host, with start --commit and kbgit.py sync --push, and its premises run there in the same task; found by the SP-kjqdiudr close: start refused on macOS (platform darwin) and the orchestrator had to work out the route.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read().split('## start SP',1)[1].split('## run',1)[0];ok='route' in t and 'host' in t;print('start step names the host route:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kjqdiudr close"
+  ]
+}
