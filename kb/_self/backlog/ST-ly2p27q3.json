@@ -36,6 +36,8 @@
     "kb/_self/reports/benchmarks.md"
   ],
   "depends_on": [
-    "ST-yob4py65"
-  ]
+    "ST-yob4py65",
+    "ST-fuflyzxc"
+  ],
+  "notes": "Operator, 2026-10-08: approved one small paid Sonnet call for these rows in this sprint, after ST-yob4py65 kept the committed checks offline (its gate g2). Premise: ST-yob4py65's report counted 10 of 40 eval rows path-only on the committed csv, before and after its fix."
 }

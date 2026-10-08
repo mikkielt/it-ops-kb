@@ -38,7 +38,8 @@
   ],
   "depends_on": [
     "ST-fuflyzxc",
-    "ST-lwmcmied"
+    "ST-lwmcmied",
+    "ST-ly2p27q3"
   ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. The operator wants the record after this sprint to need no further fix sprint, so the smoke record runs the whole command once at a small cost inside this sprint. Premise: pool verify does not exist (the first check exits 2 today); on the 2026-10-08 record it must exit 0 only once that record's spend and session costs are corrected (BG-2tan24sm). --sample is added by the one-command story if it is not there yet; this story may add it. The smoke's paid runs are the orchestrator's (a worker's foreground command has a 10-minute limit): the brief names the command and the worker writes verify and the test."
 }
