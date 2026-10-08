@@ -452,17 +452,19 @@ def git_blob_id(path):
 def content_key(files):
     """sha1 over (repository path, blob id) of `files`, the set of roots by repository path and KB_DOC2QUERY, or
     None when git cannot list this repository. A tracked file git reports unchanged takes its blob id from git's
-    index (`ls-files -s`); a modified or untracked one is hashed as git would hash it (`ls-files -m -o`); a file
-    outside the repository (a KB_ROOTS root) by its absolute path, time and size, which every checkout shares."""
-    staged, changed = _git("ls-files", "-s", "-z"), _git("ls-files", "-z", "-m", "-o", "--exclude-standard")
+    index (`ls-files -s`); a modified or untracked one is hashed as git would hash it (`ls-files -m -o`), and so is
+    one marked assume-unchanged or skip-worktree (`ls-files -v` tags it lowercase or `S`), which `-m` never reports
+    however its bytes differ; a file outside the repository (a KB_ROOTS root) by its absolute path, time and size,
+    which every checkout shares."""
+    staged, changed = _git("ls-files", "-s", "-v", "-z"), _git("ls-files", "-z", "-m", "-o", "--exclude-standard")
     if staged is None or changed is None:
         return None
     blobs = {}
     for rec in staged.split(b"\0"):
         meta, _, name = rec.partition(b"\t")
         parts = meta.split()
-        if len(parts) == 3 and parts[2] == b"0":  # stage 0: no unmerged entry
-            blobs[name.decode("utf-8", "surrogateescape")] = parts[1].decode()
+        if len(parts) == 4 and parts[3] == b"0" and not (parts[0].islower() or parts[0] == b"S"):  # stage 0, git checks it
+            blobs[name.decode("utf-8", "surrogateescape")] = parts[2].decode()
     dirty = set(changed.decode("utf-8", "surrogateescape").split("\0"))
     h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}|content".encode())
     h.update(os.pathsep.join(home_label(r.path) for r in kbcommon.roots()).encode())
