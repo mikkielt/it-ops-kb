@@ -15,7 +15,8 @@ coverage lists a missing file (fix the `files:` front matter); a missing section
 without a source id, a bare [DER] (tags are parsed by _tools/kbfacts.py, the grammar is in its docstring); a Facts bullet with no tag;
 a CODE part without a `path#symbol` pointer, whose pointer path matches no pinned file path of its sources, or citing a source that is not pinned to a tag or commit; a `SNIPPET:`
 bullet without `context:`, a `checked: no|syntax|run` value, an evidence tag other than UNK, or a fenced block right
-below it; a `checked: syntax` json, toml or python block that does not parse.
+below it; a `checked: syntax` json, toml or python block that does not parse; a Facts line where a tag is followed by
+`- `, a second bullet joined onto it (named by path:line).
 WARN: no H1 title; a Facts bullet mixing tag kinds; a DER Facts bullet (not a SNIPPET) that says it rests on a run or
 probe of our own (OBSERVED_RUN) and names no version (has_version: 2.1.285, 3.3, "version N", "vN"; a measurement
 such as 2.5 s or TLS 1.2 is none); header source ids never cited in the body, or cited ids missing from the header.
@@ -107,6 +108,22 @@ def unversioned_run(item, kinds):
     return ("DER" in kinds and not item.startswith("- SNIPPET:") and bool(OBSERVED_RUN.search(item))
             and not has_version(item))
 FENCE = re.compile(r"^```(\w*)[^\n]*\n(.*?)^```", re.M | re.S)
+# A second bullet joined onto a fact's line: a tag's closing bracket, optional spaces, then `- ` (`[DOC S1]- next`,
+# `[DOC S1] - next`). A dash inside the fact (a range `1 - 3`, `-based`) is not after a tag and does not match.
+JOINED_BULLET = re.compile(r"\s*- ")
+
+
+def joined_bullets(text):
+    """(line number, line) of each Facts line, outside a fenced block, where a tag is followed by `- `."""
+    out, facts, fenced = [], False, False
+    for n, ln in enumerate(text.split("\n"), 1):
+        if ln.startswith("```"):
+            fenced = not fenced
+        elif not fenced and ln.startswith("## "):
+            facts = ln.startswith("## Facts")
+        elif facts and not fenced and any(JOINED_BULLET.match(ln, m.end()) for m in kbfacts.TAG.finditer(ln)):
+            out.append((n, ln))
+    return out
 
 
 def snippet_problems(body):
@@ -272,6 +289,8 @@ def lint_root(root, args, add):
                     add("WARN", q(p), f"fact mixes tags {sorted(kinds)}: {item[2:60]!r}")
                 if unversioned_run(item, kinds):
                     add("WARN", q(p), f"DER fact rests on a run or probe but names no version: {item[2:60]!r}")
+        for n, ln in joined_bullets(text):
+            add("ERROR", f"{q(p)}:{n}", f"Facts line holds a second bullet after its tag (split it): {ln.strip()[2:70]!r}")
         cited = {s for tag in re.findall(r"\[(?:DOC|CODE|DER|COMMUNITY)[^\]]*\]", body) for s in SID.findall(tag)}
         fms = set(SID.findall(fm.get("sources", "")))
         if fms - cited:
