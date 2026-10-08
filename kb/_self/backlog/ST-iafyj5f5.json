@@ -29,5 +29,24 @@
     "ST-founcbvo",
     "ST-ihtjygip"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Should perfcheck.py time run the suite under the env tests.py normally runs with (repo variables stripped, bytecode writing on), or keep clean_env's PYTHONDONTWRITEBYTECODE=1, which skips pytest's assertion-rewrite cache and adds ~3 s per run?",
+      "options": [
+        "time-env-like-tests",
+        "keep-dontwritebytecode"
+      ],
+      "recommendation": "time-env-like-tests",
+      "do": {
+        "time-env-like-tests": "ST-iafyj5f5",
+        "keep-dontwritebytecode": "ST-iafyj5f5"
+      },
+      "class": "design",
+      "answer": "time-env-like-tests",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-iafy"
 }
