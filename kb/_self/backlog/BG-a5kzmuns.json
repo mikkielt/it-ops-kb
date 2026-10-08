@@ -2,7 +2,7 @@
   "id": "BG-a5kzmuns",
   "kind": "bug",
   "title": "kb_mcp.py --status does not say when the project's registered kb server runs another clone",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kyvu526t",
   "priority": "P2",
@@ -30,5 +30,18 @@
   "depends_on": [
     "BG-2hjxwg64"
   ],
-  "claimed_by": "worker-a5kzmuns"
+  "evidence": {
+    "commit": "da8d1d494fb9cb3830fe9ad17fe2b100d5554751",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kb_mcp.py','--status'],capture_output=True,text=True);o=r.stdout;ok=any(l.startswith('registered') and 'kb_mcp.py' in l for l in o.splitlines());print('status names the registered kb server script:',ok);sys.exit(r.returncode or int(not ok))"
+        ],
+        "exit": 0,
+        "sha256": "c228719bece5843e"
+      }
+    ]
+  }
 }
