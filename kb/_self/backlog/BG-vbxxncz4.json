@@ -1,0 +1,22 @@
+{
+  "id": "BG-vbxxncz4",
+  "kind": "bug",
+  "title": "The Defender section of test-suite-speed.md ties its figures to -Raw output the run never used and backs its derived third row with an unrelated remainder",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/reports/test-suite-speed.md's Defender section states the duration unit only as the unit of -Raw output, without implying the figures came from a -Raw run (the recorded command has no -Raw: the figures are the formatted TimeSpans in seconds), and its third group's 2.0 s is named as derived from the total without the per-process remainder offered as corroboration (that remainder covers other scans). Found by the SP-kyvu526t review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,pathlib;s=pathlib.Path('kb/_self/reports/test-suite-speed.md').read_text(encoding='utf-8').split('## Defender')[1];bad=('figures here are those durations' in s) or ('gives the same remainder' in s);print('misleading wording present:',bad);sys.exit(int(bad))"
+    ]
+  },
+  "repro_reason": "The defect is the report's wording: the recording is a one-off .etl outside the repository, so the repro checks the two misleading phrases are gone.",
+  "touches": [
+    "kb/_self/reports/test-suite-speed.md"
+  ]
+}
