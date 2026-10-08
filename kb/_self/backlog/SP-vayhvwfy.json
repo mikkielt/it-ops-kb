@@ -2,7 +2,7 @@
   "id": "SP-vayhvwfy",
   "kind": "sprint",
   "title": "Pushes and gates are safe and the content queue shrinks",
-  "status": "planned",
+  "status": "active",
   "goal": "check-trailers accepts a valid commit whose body has a line like 'kb-sprint:'; the sync gate sees a test file renamed out of _tools/test_*.py; a test run with untracked files still records a correct reuse key; check.py refuses tracked paths too long for a Windows worker worktree; the pack's unit cache is kept per root set; the Dataverse MCP server question packs good; the false-good rate on public-root user questions is triaged with each question listed and given a filed gap or eval row; and the queued gaps cargo metadata/rustc and os.link/EXDEV pack good",
   "gates": [
     {
@@ -14,7 +14,10 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Goal clause 'the pack's unit cache is kept per root set' dropped at start: its item ST-a5hhfp3z “The unit cache is kept per root set and the docs carry no measured sizes of it” moved out on the operator's parked-rule answer (move-out, 2026-10-08); set refuses a sprint goal edit, so the clause stays in the goal text and close lists it as moved out."
 }

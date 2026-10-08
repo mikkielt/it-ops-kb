@@ -2,7 +2,7 @@
   "id": "ST-dfxpv6i7",
   "kind": "story",
   "title": "A content sprint from the research queue lands on headless Sonnet with no operator step beyond its gates",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-vayhvwfy",
   "priority": "P1",
@@ -75,7 +75,9 @@
         "two": "ST-dfxpv6i7",
         "add-third": "ST-dfxpv6i7"
       },
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "two",
+      "by": "operator"
     }
   ],
   "notes": "Queue on 2026-10-07: 5 gap findings (python3 _tools/querylog.py queue), all raised by the kb's own development sessions; a real user's gap, when one arrives, goes first. Depends on ST-r7wvfqvw (Sonnet headless default, SP-d3hybrlv) so the run is the cheap one; a run before that lands is still evidence if every worker was started headless by hand. Benchmarking of the kb (retrieval, answer rate, cost per closed gap from backlog.py cost --research) starts with this sprint, not after the backlog is empty. Premise (2026-10-08, plan of SP-vayhvwfy): python3 _tools/querylog.py queue lists F-68c59a20a679 and F-114b1ea76574 (check 4 exit 1): reproduces; their questions pack weak and none. Checks 1-3 (backlog.py cost --research, rag.py eval --root public, check.py) pass before the work: they pin that the landed research keeps the eval and the contract green and that cost --research reads; the tasks' pack checks and check 4 prove the work. Pass before the work, pinning behaviour that must stay: `python3 _tools/backlog.py cost --research` (it reads), `python3 _tools/rag.py eval --root public` (the eval stays green), `python3 _tools/check.py` (the contract stays green). Each of those three checks passes before the work and why: each pins behaviour that must stay."

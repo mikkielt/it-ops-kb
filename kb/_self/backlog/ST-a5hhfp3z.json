@@ -4,7 +4,6 @@
   "title": "The unit cache is kept per root set and the docs carry no measured sizes of it",
   "status": "draft",
   "parent": "EP-hlnsqx4f",
-  "sprint": "SP-vayhvwfy",
   "priority": "P3",
   "rank": 0,
   "goal": "kbunits.sqlite is keyed by the root set as the index files are (_root_key), or prunes only rows past a grace period, so a smaller root set's build does not drop the full corpus's rows; and kb/_self/tools.md and kb/_self/reports/test-suite-speed.md hold no current size or count of the cache or index; found by the SP-kjqdiudr review (ST-akicahgy).",
@@ -53,7 +52,9 @@
           "none"
         ]
       },
-      "class": "design"
+      "class": "design",
+      "answer": "move-out",
+      "by": "operator"
     }
   ],
   "links": [

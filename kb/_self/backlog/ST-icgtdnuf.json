@@ -2,7 +2,7 @@
   "id": "ST-icgtdnuf",
   "kind": "story",
   "title": "check.py refuses a tracked path too long for a Windows clone's worker worktree",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vayhvwfy",
   "priority": "P3",
   "rank": 0,
@@ -43,7 +43,9 @@
           "none"
         ]
       },
-      "class": "design"
+      "class": "design",
+      "answer": "keep",
+      "by": "operator"
     }
   ],
   "links": [

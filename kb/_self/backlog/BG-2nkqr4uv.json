@@ -2,7 +2,7 @@
   "id": "BG-2nkqr4uv",
   "kind": "bug",
   "title": "The sync gate's selectors check misses a test file renamed out of the _tools/test_*.py pattern",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vayhvwfy",
   "priority": "P3",
   "rank": 0,
@@ -35,7 +35,9 @@
         "no-renames": "BG-2nkqr4uv",
         "name-status": "BG-2nkqr4uv"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "no-renames",
+      "by": "operator"
     }
   ],
   "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the repro prints 'gate_paths sees a rename source: False', exit 1: reproduces; kg_sync.gate_paths still lists git diff --name-only from the merge base. Gate rename-paths options: no-renames = gate_paths runs git diff --name-only --no-renames, so a rename lists its old and new path and every gate rule keyed on paths sees both (recommended: one flag, no parsing); name-status = parse git diff --name-status and add a rename's source path only, keeping rename detection elsewhere."

@@ -2,7 +2,7 @@
   "id": "TK-xr7fgoia",
   "kind": "task",
   "title": "Research queue gap F-68c59a20a679: does cargo metadata --no-deps invoke rustc, and does it honour .cargo/config.toml build.rustc",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-dfxpv6i7",
   "priority": "P2",
   "rank": 0,

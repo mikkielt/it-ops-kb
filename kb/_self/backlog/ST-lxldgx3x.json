@@ -2,7 +2,7 @@
   "id": "ST-lxldgx3x",
   "kind": "story",
   "title": "A test run with any untracked non-ignored file in the clone records no reuse key",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-vayhvwfy",
   "priority": "P3",
@@ -44,7 +44,9 @@
         "hash-untracked": "ST-lxldgx3x",
         "no-key": "ST-lxldgx3x"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "hash-untracked",
+      "by": "operator"
     },
     {
       "id": "parked-rule",
@@ -66,7 +68,9 @@
           "none"
         ]
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "keep",
+      "by": "operator"
     }
   ],
   "links": [
