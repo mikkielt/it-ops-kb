@@ -1,0 +1,27 @@
+{
+  "id": "ST-wjm2ipaf",
+  "kind": "story",
+  "title": "A landing whose range changes lookup_eval.csv or lookup_heldout.csv refuses a held-out row that rewords a tuned row",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "S2 gap found by the SP-vayhvwfy review: a821b9a5d (ST-hcc7a3fd) landed four lookup_eval.csv rows identical to or rewording lookup_heldout.csv rows; backlog.py land ran rag.py eval and the contract lint and passed, and only rag.py eval --file kb/public/_retrieval/lookup_heldout.csv prints the REWORD lines (BG-mtyaxud3 removed the rows). A landing or sync gate whose range changes either file runs the held-out reword check and refuses on a REWORD line.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/bl_land.py',encoding='utf-8').read()+open('_tools/kg_sync.py',encoding='utf-8').read();ok='lookup_heldout' in t;print('land or sync gate reads lookup_heldout:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/kg_sync.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-vayhvwfy review"
+  ]
+}

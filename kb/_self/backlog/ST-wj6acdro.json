@@ -1,0 +1,21 @@
+{
+  "id": "ST-wj6acdro",
+  "kind": "story",
+  "title": "The pack can lead with a fact held only in a data table, so a question answered by claude/models.csv packs it first",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found in SP-vayhvwfy (ST-hcc7a3fd, gate g1): the false-good question 'Claude Sonnet 5.5 model release capabilities pricing context window' is answered by claude/models.csv, but rag.py pack leads with agents/agent-caching.md; an eval row expecting the csv fails on its path and doc2query expands only .md facts, so no eval row or expansion could fix it. The pack ranks a data table's rows as it ranks article facts (or an expansion route exists for them), and that question packs with models.csv in the lead.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/rag.py','pack','Claude Sonnet 5.5 model release capabilities pricing context window','--budget','300'],capture_output=True,text=True).stdout;lead=o.split('## ',1)[-1].split(chr(10),1)[0];print('lead:',lead[:80]);sys.exit(0 if 'models.csv' in lead else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-vayhvwfy review"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-owblgazg",
+  "kind": "story",
+  "title": "agents/dataverse-mcp-server.md cites each fact to the page that states it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "S2 gap found by the SP-vayhvwfy review: kb/public/agents/dataverse-mcp-server.md:21 (centrally hosted managed remote service vs local MCP setups needing an SDK, a proxy and manual environment access) cites S-f6atlxlo, whose page holds none of it; the wording is from learn.microsoft.com/power-platform/release-plan/2025wave2/data-platform/dataverse-mcp-server, not a source row. Line 25 ('must be updated') and line 14 ('each environment has its own server') say more than S-f6atlxlo/S-oxdtvzaw state; the per-environment client list rests on S-lv2haaxp, not cited there. Each fact is cited to the page that states it, or reworded to what its page says.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ls=[l for l in open('kb/public/agents/dataverse-mcp-server.md',encoding='utf-8') if 'centrally' in l.lower()];bad=[l[:80] for l in ls if 'S-f6atlxlo' in l and l.count('S-')==1];print('centrally lines citing only S-f6atlxlo:',bad or 'none');sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/dataverse-mcp-server.md",
+    "kb/public/_sources.csv"
+  ],
+  "links": [
+    "parked: SP-vayhvwfy review"
+  ]
+}

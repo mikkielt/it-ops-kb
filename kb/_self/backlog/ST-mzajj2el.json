@@ -1,0 +1,25 @@
+{
+  "id": "ST-mzajj2el",
+  "kind": "story",
+  "title": "bl_authority classes a gate push by what it decides, not by the word 'release' in its quoted subject",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "S3 gap found in SP-vayhvwfy: ST-hcc7a3fd's worker recorded a provisional gate about the 'Sonnet 5.5 model release' question; the word 'release' classed it push (an OPERATOR_CLASSES class), so answer --provisional was refused and the item waited on the operator for a content triage choice. The push class is given by what the gate decides (a push, a branch, a tag, a release of the kb), not by the word appearing in quoted subject matter, as BG-qe46klco narrowed STRAY_KEY.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;q='How is the Sonnet 5.5 release question dispositioned?';hit=bool(a.QUESTION_WORDS['push'].search(q));print('push classes a quoted release subject:',hit);sys.exit(1 if hit else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-vayhvwfy review"
+  ]
+}

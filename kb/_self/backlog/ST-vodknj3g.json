@@ -1,0 +1,25 @@
+{
+  "id": "ST-vodknj3g",
+  "kind": "story",
+  "title": "python/stdlib-windows-portability.md states os.copy_file_range's EXDEV with its kernel condition and POSIX link's cross-filesystem rule as permissive",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "S2 gap found by the SP-vayhvwfy review: kb/public/python/stdlib-windows-portability.md:84 (and kb/public/_gaps.md:1062, the DER fact at :85) give the os.copy_file_range EXDEV mapping unconditionally, but the Python page says it holds 'In Linux kernel older than 5.3' (Availability: Linux >= 4.5 with glibc >= 2.27); lines 90 and 107 ('one mounted filesystem on POSIX', 'same-volume rule on both platforms') are stronger than POSIX link(2), which only says an implementation may refuse and that some allow links across file systems. Each fact says what its page says, with its condition.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ls=[l for l in open('kb/public/python/stdlib-windows-portability.md',encoding='utf-8') if 'copy_file_range' in l and 'EXDEV' in l];bad=[l[:80] for l in ls if '5.3' not in l];print('copy_file_range EXDEV lines without the 5.3 condition:',bad or 'none');sys.exit(1 if bad or not ls else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/_gaps.md"
+  ],
+  "links": [
+    "parked: SP-vayhvwfy review"
+  ]
+}

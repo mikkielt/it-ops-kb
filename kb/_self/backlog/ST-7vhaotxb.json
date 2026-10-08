@@ -1,0 +1,27 @@
+{
+  "id": "ST-7vhaotxb",
+  "kind": "story",
+  "title": "A headless worker's query log rows reach origin/main after its SessionEnd with no manual apply --push",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "S2 gap found in SP-vayhvwfy: run files 20261008T124111Z through 20261008T130806Z with usage and work sidecars sat in _cache/querylog/store while origin/main's newest run was 20261008T123824Z, so land warned 'landed with no work rows' (ST-icgtdnuf, ST-lxldgx3x) and backlog.py cost read zeros for every worker; a manual querylog.py apply --push delivered them (2cfc3233d). Find why the SessionEnd distill's apply --push did not push (lock, CI wait, mode) and make delivery happen without a manual run, or have land name the undelivered store.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/bl_land.py',encoding='utf-8').read();ok='undelivered' in t;print('land names an undelivered store:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/ql_distill.py",
+    "kb/_self/querylog.md",
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-vayhvwfy review"
+  ]
+}
