@@ -1,0 +1,18 @@
+{
+  "id": "BG-huavhgoh",
+  "kind": "bug",
+  "title": "claude/models.csv and the Sonnet 5.5 answer still give a 0.1x cache-read price",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "claude/models.csv (claude-sonnet-5-5 row) and the Sonnet 5.5 answer QK-claude-sonnet-5-5-model-facts state the cache-read price as the pricing page S2131 and prompt-caching page S2130 do: 0.05x base input, 0.10 USD per million tokens",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,pathlib;t=pathlib.Path('kb/public/claude/models.csv').read_text(encoding='utf-8');row=[l for l in t.splitlines() if 'claude-sonnet-5-5' in l][0];sys.exit(int('cache read price 0.05x' not in row))"
+    ]
+  },
+  "repro_reason": "a data row's wording: the pricing page (S2131) gives Sonnet 5.5 cache hits at 0.05x, 0.10 USD per MTok, on 2026-10-08, while claude/models.csv row claude-sonnet-5-5 and QK-claude-sonnet-5-5-model-facts in _answers.md still say 0.1x and 0.20 USD"
+}
