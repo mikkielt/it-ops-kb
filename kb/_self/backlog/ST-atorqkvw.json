@@ -2,7 +2,7 @@
   "id": "ST-atorqkvw",
   "kind": "story",
   "title": "kb-worker rule 4: read every doc stale lists for the item's own files, in touches or not",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
   "depends_on": [
     "ST-hr4hksct"
   ],
-  "notes": "Premise: no check planted. The change is a sentence of agent instructions; a grep proves the wording, not that a worker follows it. The retrospective evidence is the two amended Self-Reviewed trailers."
+  "notes": "Premise: no check planted. The change is a sentence of agent instructions; a grep proves the wording, not that a worker follows it. The retrospective evidence is the two amended Self-Reviewed trailers.",
+  "claimed_by": "orchestrator-mac"
 }
