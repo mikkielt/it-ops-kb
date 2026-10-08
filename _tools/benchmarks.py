@@ -3,6 +3,7 @@
 
   benchmarks.py list                        the scenarios, each with its report section
   benchmarks.py run [SCENARIO ...] [--reps N] [--arm ARM] [--out FILE] [--arms A,B] [--kinds K,K] [--effort L,L] [--dry-run]
+                    [--shape fresh|session] [--seed N]
                                             run every scenario, or the named ones, and write their rows to the results
                                             file (kb/_self/reports/benchmarks.csv; rows of the same scenario and date
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
@@ -10,7 +11,10 @@
                                             only its own arm's rows; `pool` runs the question pool (bench_pool.py)
                                             on the --arms (default all of bench_pool.ARMS), the --kinds (default all)
                                             and the --effort levels (default low,default) and replaces the rows of the
-                                            arms it ran; --dry-run prints its plan and starts no model
+                                            arms it ran; --dry-run prints its plan and starts no model; --shape
+                                            session runs the pool in groups of six questions, each group in one
+                                            session (the kb arms haiku-5-5 and sonnet-5-5, seed --seed) and records
+                                            per position the marginal input and the cache-read share
   benchmarks.py pool build [--querylog] [--seed N] [--out FILE]
                                             write the stratified question pool, with a check per row, to
                                             kb/public/_retrieval/bench_pool.csv, or with --querylog the redacted
@@ -104,6 +108,9 @@ def main(argv=None):
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
                    + ",".join(bench_pool.EFFORTS) + ")")
     r.add_argument("--dry-run", action="store_true", help="print the plan of `pool` and start no model")
+    r.add_argument("--shape", choices=bench_pool.SHAPES, default="fresh",
+                   help="`pool`: a fresh session per question, or groups of six questions in one session (default: fresh)")
+    r.add_argument("--seed", type=int, default=bench_pool.SEED, help="the seed that orders the groups of `pool --shape session`")
     pool = sub.add_parser("pool").add_subparsers(dest="pool_cmd", required=True)
     pb = pool.add_parser("build")
     pb.add_argument("--querylog", action="store_true")
@@ -147,14 +154,15 @@ def main(argv=None):
         print(f"unknown scenario: {', '.join(unknown)} (benchmarks.py list)", file=sys.stderr)
         return 2
     arms, efforts = (x.split(",") if x else None for x in (a.arms, a.effort))
-    for flag, got, known in (("--arms", arms, bench_pool.ARMS), ("--effort", efforts, bench_pool.EFFORTS)):
+    for flag, got, known in (("--arms", arms, bench_pool.SESSION_ARMS if a.shape == "session" else bench_pool.ARMS),
+                             ("--effort", efforts, bench_pool.EFFORTS)):
         bad = [x for x in got or [] if x not in known]
         if bad:
             print(f"{flag}: unknown {', '.join(bad)} (one of {', '.join(known)})", file=sys.stderr)
             return 2
     b = Bench(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench", a.reps)
     b.arm = a.arm
-    b.arms, b.efforts, b.dry = arms, efforts, a.dry_run
+    b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
     b.kinds = a.kinds.split(",") if a.kinds else None
     out = Path(a.out) if a.out else RESULTS
     try:

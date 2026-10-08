@@ -430,6 +430,11 @@ def usage_sum(reqs, model="", cc=""):
                              for t, p in zip(by_tier, PRICE[mid]))}
 
 
+def prompt_tokens(usage):
+    """The whole prompt of one request's `usage`: uncached input + cache write + cache read."""
+    return sum(usage.get(k, 0) or 0 for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
+
+
 def run_tokens(r, name=""):
     """The token fields of one run `r` (agent_bench.result_of's fields, or any run with a `requests` list of {model,
     usage}), from its own requests: input, its cache split, the effective input (each model's requests weighted by that
@@ -450,9 +455,7 @@ def run_tokens(r, name=""):
         out["models"].append(s["model"])
         out["tier"] = max(out["tier"], s["tier"])
     if reqs:
-        first = reqs[0]["usage"]
-        out["start_ctx"] = sum(first.get(k, 0) or 0 for k in ("input_tokens", "cache_creation_input_tokens",
-                                                                "cache_read_input_tokens"))
+        out["start_ctx"] = prompt_tokens(reqs[0]["usage"])
     return out
 
 

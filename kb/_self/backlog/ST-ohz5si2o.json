@@ -40,6 +40,47 @@
   "depends_on": [
     "ST-k4uqib77"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a follow-up question of a session group reach the first question's session?",
+      "options": [
+        "session-id then resume",
+        "continue the most recent session"
+      ],
+      "recommendation": "session-id then resume",
+      "class": "design",
+      "answer": "session-id then resume",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which seed orders the pool rows into groups of six?",
+      "options": [
+        "the pool's SEED, overridable with --seed on run",
+        "a fresh random seed each run"
+      ],
+      "recommendation": "the pool's SEED, overridable with --seed on run",
+      "class": "design",
+      "answer": "the pool's SEED, overridable with --seed on run",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which arms and effort levels does the session shape run by default?",
+      "options": [
+        "haiku-5-5 and sonnet-5-5, each at low and default",
+        "haiku-5-5 and sonnet-5-5 at default only"
+      ],
+      "recommendation": "haiku-5-5 and sonnet-5-5, each at low and default",
+      "class": "design",
+      "answer": "haiku-5-5 and sonnet-5-5, each at low and default",
+      "by": "agent"
+    }
+  ],
   "links": [
     "_tools/bench_core.py",
     "_tools/bench_lookup.py"

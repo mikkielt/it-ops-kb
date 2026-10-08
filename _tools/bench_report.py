@@ -40,7 +40,7 @@ FORMATS = {"cost": "${:.3f}", "cost_est": "${:.3f}", "wall_s": "{:.0f} s", "api_
            "input_per_entry": "{:,.0f}", "out_per_entry": "{:,.0f}", "cost_per_fact": "${:.3f}",
            "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%", "ratio": "{:.2f}x",
            "cache_read": "{:,.0f}", "cache_write": "{:,.0f}", "pack_tokens": "{:,.0f}", "tokens_per_right": "{:,.0f}",
-           "fixed_share": "{:.1%}"}
+           "fixed_share": "{:.1%}", "cache_read_share": "{:.1%}", "marginal_input": "{:,.0f}"}
 
 
 def fmt(metric, v):
@@ -166,6 +166,29 @@ def effort(rows, scenario, metrics, cases=None):
     return "\n".join(out)
 
 
+def session(rows, scenario, metrics=None):
+    """A Markdown table of the session shape: a line per position of the question in its session (the rows with the case
+    `position N`), per arm label a column for each of `metrics` (default `marginal_input` and `cache_read_share`); cells as
+    in `table`."""
+    metrics = metrics or ["marginal_input", "cache_read_share"]
+    order = list(dict.fromkeys(rec for rec, _ in records(rows, scenario)))
+    cells, positions, arms = {}, [], []
+    for r in rows:
+        if r["scenario"] != scenario or r["metric"] not in metrics or not re.fullmatch(r"position \d+", r["case"]):
+            continue
+        if r["case"] not in positions:
+            positions.append(r["case"])
+        if r["arm"] not in arms:
+            arms.append(r["arm"])
+        cells.setdefault((r["case"], r["arm"], r["metric"]), {})[r["record"]] = r["value"]
+    positions.sort(key=lambda c: int(c.split()[1]))
+    cols = [(a, m) for a in arms for m in metrics]
+    out = ["| position | " + " | ".join(f"{a} {m}" for a, m in cols) + " |", "|---|" + "---|" * len(cols)]
+    for c in positions:
+        out.append(f"| {c.split()[1]} | " + " | ".join(history(m, cells.get((c, a, m), {}), order) for a, m in cols) + " |")
+    return "\n".join(out)
+
+
 def records_table(rows, scenario):
     out = ["| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |", "|---|---|---|---|---|---|---|"]
     for rec, first in records(rows, scenario):
@@ -190,7 +213,7 @@ def _isnum(v):
         return False
 
 
-BLOCK = re.compile(r"(<!-- bench:(table|records|spend|matrix|effort)((?: [^\n]*?)?) -->\n)(.*?)(<!-- /bench -->)", re.S)
+BLOCK = re.compile(r"(<!-- bench:(table|records|spend|matrix|effort|session)((?: [^\n]*?)?) -->\n)(.*?)(<!-- /bench -->)", re.S)
 OPT = re.compile(r"(\w+)=(.*?)(?= \w+=|$)")
 
 
@@ -232,6 +255,8 @@ def render(text, rows):
                 body = matrix(rows, scen, opts["metric"], split("cases"), split("arms"))
             elif kind == "effort":
                 body = effort(rows, scen, split("metrics"), split("cases"))
+            elif kind == "session":
+                body = session(rows, scen, split("metrics"))
             else:
                 body = table(rows, scen, split("metrics"), split("cases"), split("arms"))
         return m.group(1) + body + "\n" + m.group(5)

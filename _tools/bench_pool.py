@@ -7,15 +7,16 @@ has at least one check regex, a kind the report groups by and the route a pack s
 lookup_heldout.csv rows by id and hold no question text: `question_of` reads it at run time. The only paid step is one
 Sonnet call that writes the answer regexes of the eval rows, through bench_retrieval's blind-question call; a rebuild
 reuses the regexes of the file it replaces, so it asks nothing. `benchmarks.py run pool` is `s_pool` (the arms, the
-effort levels, the per-run record and the per-cell figures, described in kb/_self/reports/benchmarks.md). This module
+effort levels, the per-run record and the per-cell figures, described in kb/_self/reports/benchmarks.md); its
+`--shape session` runs the rows in groups of six, one `claude -p` session per group. This module
 imports agent_bench, bench_core and bench_retrieval and no facade (kb/_self/code.md, Layout and Imports).
 """
-import csv, hashlib, json, os, random, re, shutil, subprocess, sys, tempfile, time
+import csv, hashlib, json, os, random, re, shutil, subprocess, sys, tempfile, time, uuid
 from collections import Counter
 from pathlib import Path
 
 import agent_bench
-from bench_core import HOME, RAW, SPEND, Skip, no_plugin_env, run_tokens, spent_run
+from bench_core import HOME, RAW, SPEND, Skip, no_plugin_env, prompt_tokens, run_tokens, spent_run
 from bench_retrieval import numbered, sonnet_json
 
 SEED = 11
@@ -521,6 +522,10 @@ WEB_KINDS = (*EVAL_KINDS, "offkb", "snippet", "false_good")  # the kinds a web s
 WEB_ASK = " Cite the source urls."
 HOOK_TIMEOUT_S = 120
 ROUTER_TIMEOUT_S = 1800
+SHAPES = ("fresh", "session")  # a fresh session per question, or six questions in one session
+SESSION_ARMS = ("haiku-5-5", "sonnet-5-5")  # the arms of the session shape: the kb's tools, models pinned by id
+GROUP_SIZE = 6
+SESSION_SUFFIX = "/session"  # an arm label of the session shape: `model:level/session`, beside the fresh label
 
 
 def load_pool(home=HOME, kinds=None):
@@ -621,6 +626,92 @@ def run_pool(rows, cells, reps, runner, sink=None):
     return runs
 
 
+def session_groups(rows, seed=SEED, size=GROUP_SIZE):
+    """([groups of `size` rows], [rows left out]). The rows are shuffled by their own generator (`seed`), and a group
+    takes rows of different kinds first, then any, never two of one `source` (a base question and its variants name the
+    same fact). The rows that cannot fill a last group are left out."""
+    pending = sorted(rows, key=lambda r: r["id"])
+    rng_for(seed, "session").shuffle(pending)
+    groups = []
+    while len(pending) >= size:
+        group = []
+        for distinct_kind in (True, False):
+            for r in list(pending):
+                if (len(group) < size and r["source"] not in {g["source"] for g in group}
+                        and not (distinct_kind and r["kind"] in {g["kind"] for g in group})):
+                    group.append(r)
+                    pending.remove(r)
+        if len(group) < size:
+            return groups, pending + group
+        groups.append(group)
+    return groups, pending
+
+
+def session_fields(r, before):
+    """The fields a session run adds to its record: `marginal_input`, the whole prompt of the run's last request less
+    `before`, the last prompt of the question before it (0 for the first question: all of its prompt is new), and
+    `cache_read_share`, the run's cache reads over its input; and that last prompt, for the next question."""
+    last = prompt_tokens(r["requests"][-1]["usage"]) if r.get("requests") else before
+    inp = r["in_uncached"] + r["cache_write"] + r["cache_read"]
+    out = {"marginal_input": last - before}
+    if inp:
+        out["cache_read_share"] = r["cache_read"] / inp
+    return out, last
+
+
+def run_sessions(groups, cells, reps, runner, sink=None):
+    """Every group on every cell, `reps` times, each in one session of its own: the run records in cell order, with the
+    arm label `SESSION_SUFFIX` added, the group's number, the question's `position` and the `session_fields`.
+    `runner(arm, effort, row, sid, position)` is one question's result: the first starts the session `sid`, each later
+    one resumes it. A failed question ends its session: the questions after it are recorded as errors."""
+    runs = []
+    for arm, effort, label in cells:
+        label += SESSION_SUFFIX
+        for number, group in enumerate(groups, 1):
+            for _ in range(reps):
+                sid, before, ended = str(uuid.uuid4()), 0, 0
+                for position, row in enumerate(group, 1):
+                    r = {"error": f"the session ended at position {ended}"} if ended else runner(arm, effort, row, sid, position)
+                    rec = {**record_of(row, arm, label, r), "group": number, "position": position}
+                    if "error" in r:
+                        ended = ended or position
+                    else:
+                        extra, before = session_fields(r, before)
+                        rec.update(extra)
+                    runs.append(rec)
+                    if sink:
+                        sink(rec, r)
+        print(f"pool: {label}: {len(groups) * len(groups[0]) * reps} runs, "
+              f"{sum('error' in x for x in runs if x['label'] == label)} failed", flush=True)
+    return runs
+
+
+def session_rows(runs):
+    """[(case, label, metric, value, runs, model, note)] of the session shape: per arm label and position (case
+    `position N`), the means of `marginal_input`, the pooled `cache_read_share` (cache reads over input of the position's
+    runs) and the checks passed over all; a position with failed runs also has an `errors` row."""
+    out = []
+    for label in dict.fromkeys(r["label"] for r in runs):
+        mine = [r for r in runs if r["label"] == label]
+        for position in sorted({r["position"] for r in mine}):
+            rs = [r for r in mine if r["position"] == position]
+            ok = [r for r in rs if "error" not in r]
+            case = f"position {position}"
+            if len(ok) < len(rs):
+                out.append((case, label, "errors", len(rs) - len(ok), len(rs), "", rs[0].get("error", "")[:80] if not ok else ""))
+            if not ok:
+                continue
+            model = Counter(r["model"] for r in ok).most_common(1)[0][0]
+            note = "the whole prompt: no request before it" if position == 1 else ""
+            out.append((case, label, "marginal_input", sum(r["marginal_input"] for r in ok) / len(ok), len(ok), model, note))
+            inp = sum(r["input"] for r in ok)
+            if inp:
+                out.append((case, label, "cache_read_share", sum(r["cache_read"] for r in ok) / inp, len(ok), model, ""))
+            out.append((case, label, "checks", f"{sum(sum(r['checks']) for r in ok)}/{sum(len(r['checks']) for r in ok)}",
+                        len(ok), model, ""))
+    return out
+
+
 def hook_result(stdout, wall):
     """The run of the `kb:` hook: its block reason or context as the answer, no model tokens."""
     try:
@@ -674,8 +765,31 @@ def live_runner(b, sh):
             r = agent_bench.execute(agent_bench.web_argv(agent_bench.MODEL[arm.removeprefix("web-")]), q + WEB_ASK,
                                     cwd=str(empty), env=env, clean=True)
         else:
-            extra = ["--effort", effort] if effort != "default" and arm not in NO_EFFORT else []
-            r = agent_bench.execute(agent_bench.kb_argv(arm) + extra, q, cwd=str(clone), env=env, clean=True)
+            r = agent_bench.execute(agent_bench.kb_argv(arm) + effort_args(arm, effort), q, cwd=str(clone), env=env, clean=True)
+        spent_run(r)
+        return r
+    return run
+
+
+def effort_args(arm, effort):
+    return ["--effort", effort] if effort != "default" and arm not in NO_EFFORT else []
+
+
+def session_argv(arm, effort, sid, position):
+    """The kb arm's command for one question of a session: the first question starts the session `sid` (`--session-id`,
+    the session kept), a later one resumes it (`--resume`), both with the arm's effort. The session flag sits before
+    the variadic `--allowedTools` list."""
+    argv = [a for a in agent_bench.kb_argv(arm) if a != "--no-session-persistence"]
+    return argv[:2] + ["--session-id" if position == 1 else "--resume", sid] + argv[2:] + effort_args(arm, effort)
+
+
+def live_session_runner(b):
+    """The runner of a paid session run: `claude -p` in the lookup clone (kb server registered, hooks off) per question,
+    the follow-ups resuming the first question's session in the same directory. A paid run is counted in the spend."""
+    clone, env = b.lookup(), no_plugin_env()
+
+    def run(arm, effort, row, sid, position):
+        r = agent_bench.execute(session_argv(arm, effort, sid, position), row["question"], cwd=str(clone), env=env, clean=True)
         spent_run(r)
         return r
     return run
@@ -683,10 +797,13 @@ def live_runner(b, sh):
 
 def s_pool(b):
     """The question pool over the arms of `b.arms` (default ARMS) at the effort levels of `b.efforts`, on the kinds of
-    `b.kinds` (default all), `b.reps` runs of each row on each cell, each run a fresh session. Rows per kind and arm
-    label, and for all kinds (cell_rows); each run's record is appended to the scenario's runs file. With `b.dry` it
-    prints the plan and starts nothing."""
-    arms = list(getattr(b, "arms", None) or ARMS)
+    `b.kinds` (default all), `b.reps` runs of each row on each cell. Shape `fresh` (default) makes each run a fresh
+    session; shape `session` (`b.shape`) runs groups of six rows (`session_groups`, seed `b.seed`) each in one session on
+    the kb arms of SESSION_ARMS, and records per position (`session_rows`) beside the per-kind rows of its arm labels.
+    Rows per kind and arm label, and for all kinds (cell_rows); each run's record is appended to the scenario's runs
+    file. With `b.dry` it prints the plan and starts nothing."""
+    session = getattr(b, "shape", "fresh") == "session"
+    arms = list(getattr(b, "arms", None) or (SESSION_ARMS if session else ARMS))
     sh = shutil.which("sh")
     if "hook" in arms and not sh:
         print("pool: the hook arm needs sh on PATH (Windows: run it from Git Bash); left out")
@@ -695,16 +812,28 @@ def s_pool(b):
     rows = load_pool(HOME, getattr(b, "kinds", None))
     if not rows:
         raise Skip("no pool rows: python3 _tools/benchmarks.py pool build, or the --kinds list matches none")
-    total = sum(sum(accepts(a, r["kind"]) for r in rows) for a, _, _ in cells) * b.reps
+    groups, left = session_groups(rows, getattr(b, "seed", SEED)) if session else ([], [])
+    if session and not groups:
+        raise Skip(f"{len(rows)} rows make no group of {GROUP_SIZE}")
+    runs_of = (lambda arm: len(groups) * GROUP_SIZE * b.reps) if session else (  # noqa: E731
+        lambda arm: sum(accepts(arm, r["kind"]) for r in rows) * b.reps)
+    total = sum(runs_of(a) for a, _, _ in cells)
     if getattr(b, "dry", False):
         for arm, _, label in cells:
-            print(f"pool: {label}: {sum(accepts(arm, r['kind']) for r in rows) * b.reps} runs")
-        raise Skip(f"dry run: {len(rows)} rows, {len(cells)} cells, {total} runs, no model started")
+            print(f"pool: {label}{SESSION_SUFFIX if session else ''}: {runs_of(arm)} runs")
+        what = (f"{len(groups)} groups of {GROUP_SIZE} ({len(left)} rows left out), {len(cells) * len(groups) * b.reps} sessions"
+                if session else f"{len(rows)} rows")
+        raise Skip(f"dry run: {what}, {len(cells)} cells, {total} runs, no model started")
 
     def sink(rec, r):
         if RAW.get("path"):
             with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
                 f.write(json.dumps({**rec, "answer": (r.get("answer") or "")[:2000]}) + "\n")
-    runs = run_pool(rows, cells, b.reps, live_runner(b, sh), sink)
+    if session:
+        runs = run_sessions(groups, cells, b.reps, live_session_runner(b), sink)
+        for case, label, metric, value, n, model, note in session_rows(runs):
+            b.row("pool", case, label, metric, value, n, model, note)
+    else:
+        runs = run_pool(rows, cells, b.reps, live_runner(b, sh), sink)
     for case, label, metric, value, n, model, note in cell_rows(runs):
         b.row("pool", case, label, metric, value, n, model, note)
