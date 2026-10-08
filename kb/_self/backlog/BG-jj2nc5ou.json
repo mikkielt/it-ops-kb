@@ -39,6 +39,21 @@
   "depends_on": [
     "ST-x333wyrc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which count of the result event is a run's output tokens: the main loop's or the whole run's?",
+      "options": [
+        "usage.output_tokens: the main loop, the same scope as the main-session requests the input counts come from",
+        "sum of modelUsage outputTokens: the whole run, subagent requests and compaction calls included, the scope of total_cost_usd"
+      ],
+      "recommendation": "usage.output_tokens: the main loop, the same scope as the main-session requests the input counts come from",
+      "class": "secrets",
+      "answer": "sum of modelUsage outputTokens: the whole run, subagent requests and compaction calls included, the scope of total_cost_usd",
+      "by": "operator"
+    }
+  ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. The old repro read the 2026-10-08 record, which no code fix changes; the repro now plants a stream (out 5 in the assistant message, 500 in the result event) and fails with 5. -k bench_pool passes before the work and pins the pool's tests; the repro is the failing proof.",
   "claimed_by": "worker-BG-jj2nc5ou"
 }
