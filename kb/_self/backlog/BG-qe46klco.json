@@ -2,7 +2,7 @@
   "id": "BG-qe46klco",
   "kind": "bug",
   "title": "check-trailers names a body line starting with a lowercase skill name such as kb-sprint: as a stray trailer and refuses the push",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vayhvwfy",
   "priority": "P2",
   "rank": 0,
@@ -50,5 +50,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the repro names 'not a trailer: kb-sprint: the planning commit before the claim sync.' as BAD, exit 1: reproduces. Gate stray-key options: known-keys = STRAY_KEY matches, case-insensitively, only the trailer keys kg_trailers knows (KB-Work, KB-Auto, the other KB-* keys it writes or reads, Self-Reviewed), so a lowercase 'kb-work:' typo is still refused and 'kb-sprint:' passes (recommended: keeps BG-dsab2ti3's typo catch); case-sensitive = drop re.I, so only 'KB-' and 'Self-Reviewed' in their own case count, and a lowercase typo of a real key passes unread. Check 1 passes before the work and why: it pins that a stray KB-Work line above the trailer block is still named and refused (the goal's second clause); the repro proves the fix."
+  "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the repro names 'not a trailer: kb-sprint: the planning commit before the claim sync.' as BAD, exit 1: reproduces. Gate stray-key options: known-keys = STRAY_KEY matches, case-insensitively, only the trailer keys kg_trailers knows (KB-Work, KB-Auto, the other KB-* keys it writes or reads, Self-Reviewed), so a lowercase 'kb-work:' typo is still refused and 'kb-sprint:' passes (recommended: keeps BG-dsab2ti3's typo catch); case-sensitive = drop re.I, so only 'KB-' and 'Self-Reviewed' in their own case count, and a lowercase typo of a real key passes unread. Check 1 passes before the work and why: it pins that a stray KB-Work line above the trailer block is still named and refused (the goal's second clause); the repro proves the fix.",
+  "claimed_by": "headless-sonnet"
 }
