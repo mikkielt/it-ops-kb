@@ -1,47 +1,29 @@
 # Windows fresh host: from no Python to the /kb-setup environment steps
 
-A clean Windows account going from no Python to every `/kb-setup` step that needs no Claude Code sign-in, run by the steps' own commands (`.claude/skills/kb-setup/SKILL.md`, steps 1 to 3). Re-run it with `_tools/cleanhost-run.ps1` (elevated; `-Short` for run 3's selection without the test suites; `kb/_self/tools.md`), which makes the setup below and prints each step's exit code and last line, and replace the run sections when a new run supersedes them.
+A clean Windows account going from no Python to every `/kb-setup` step that needs no Claude Code sign-in, run by the steps' own commands (`.claude/skills/kb-setup/SKILL.md`, steps 1 to 3). Re-run it with `_tools/cleanhost-run.ps1` (elevated; `-Short` for the step 4 and 5 commands that need no sign-in, without the test suite; `kb/_self/tools.md`), which makes the setup below and prints each step's exit code and last line, and replace the run sections when a new run supersedes them.
 
-**Setup.** The Windows 11 Pro 25H2 host `PL-LT-00123` (build 26200.8655, AMD64), with Git for Windows 2.55.0 installed machine-wide and only `C:\Program Files\Git\cmd` of it on PATH (Git's defaults: no `sh`, `test` or other `usr\bin` tools). A temporary local **standard** account (not an Administrators member, no Developer Mode, so no symbolic-link privilege), created for the run with a random in-memory password and deleted with its profile afterwards; its steps ran in Windows PowerShell 5.1 through `Start-Process -Credential`, not in Git Bash. The kb came from a git bundle of `origin/main`, cloned by that account (no git credentials). The operator's account (`jan.kowalski`) only drove the run. Not run, by the operator's decision for this unattended run: the Claude Code sign-in for that account and what needs it, `/kb-setup` step 4's `kb_mcp.py --register-local` and MCP calls and step 5's question to the person; step 4's `kb_mcp.py --status` and step 5's `querylog.py where`, which need no sign-in, ran in run 3. The steps below are the same commands the skill runs.
+**Setup.** The Windows 11 Pro 25H2 host `PL-LT-00123` (build 26200.9448, AMD64), with Git for Windows 2.55.0.windows.3 installed machine-wide and only `C:\Program Files\Git\cmd` of it on PATH (beside the GitHub CLI's and the GitLab Runner's directories; Git's defaults: no `sh`, `test` or other `usr\bin` tools). A temporary local **standard** account (not an Administrators member, no Developer Mode, so no symbolic-link privilege), created for the run with a random in-memory password and deleted with its profile afterwards; its steps ran in Windows PowerShell 5.1 through `Start-Process -Credential`, not in Git Bash. The kb came from a git bundle of `origin/main`, cloned by that account (no git credentials). The operator's account (`jan.kowalski`) only drove the run. Not run, by the operator's decision for this unattended run: the Claude Code sign-in for that account and what needs it, `/kb-setup` step 4's `kb_mcp.py --register-local` and MCP calls and step 5's question to the person; step 4's `kb_mcp.py --status` and step 5's `querylog.py where`, which need no sign-in, run with `-Short` and did not run here (they ran at d10da8d, 2026-09-30, both exit 0). The steps below are the same commands the skill runs.
 
 Before the install the account had no `python`, `python3`, `py` or `uv` on PATH (`python3` was not a command).
 
-## Run 1: tests fail without Git Bash's tools
+## Run
 
-At `origin/main` c671478, 2026-09-30. `install-python.ps1 -CheckOnly` reported no conflict; `install-python.ps1` installed CPython 3.14.7 and uv 0.12.19 per user and added `python3.exe` (38 s). Every step up to the test suites passed (the same as run 2, below). `stress_test.py` failed 2 (86 passed) and `tests.py` failed 7 (1262 passed, 18 skipped, 1 xfailed):
-
-- the item checks of `test_backlog.py` ran `test -f` and `true`, and `test_benchmarks.py` ran its shims through `sh`: Git Bash tools the account did not have on PATH (`[WinError 2]`);
-- the two symbolic-link mutations of `test_stress.py` needed the privilege a standard account lacks (`[WinError 1314]`).
-
-The operator's own sessions had hidden both: they run in Git Bash (its `usr\bin` on PATH) and elevated. Filed and fixed as BG-2j5ba56h (item checks as Python commands, shim steps skip without `sh`, the mutations skip on WinError 1314, with a planted test); its worker found and filed BG-ndgci3gc (benchmark shims Windows never resolves) and BG-37t2orjz (WSL's bash launcher taken for a hook shell).
-
-## Run 2: every step passes
-
-At `origin/main` ea85ddb, 2026-09-30, the same setup:
+At `origin/main` `97e650478ca6a62eeacf3e2c8bae476b15ac1d33`, 2026-10-08 08:54 to 08:58 local time, `cleanhost-run.ps1` without `-Short` (exit 0), started by a Claude session of the operator's account (ST-2ukv6ysc):
 
 | step | exit | result |
 |---|---|---|
-| `install-python.ps1 -CheckOnly` | 0 | Preflight: nothing on this host conflicts with the install (2 s) |
-| `install-python.ps1` | 0 | CPython 3.14.7 and uv 0.12.19 per user; `python`, `python3`, `py` and `uv` on the account's PATH (44 s) |
+| `git clone` of the bundle | 0 | `97e65047 Merge branch 'code/ST-2ukv6ysc' into 'main'` (3 s) |
+| `install-python.ps1 -CheckOnly` | 0 | Preflight: nothing on this host conflicts with the install. (1 s) |
+| `install-python.ps1` | 0 | Done. Open a new terminal (and restart Claude Code) so the new PATH applies, then run /kb-setup. (44 s): CPython 3.14.7 and uv 0.12.19 per user; `python`, `python3`, `py` and `uv` on the account's PATH |
 | `python3 --version` | 0 | Python 3.14.7 |
-| `uv --version` | 0 | uv 0.12.19 |
-| `check.py` | 0 | sources=2988 citations=16093 errors=0 (23 s) |
-| `fetch.py --offline` | 0 | ok=164 mismatch=0 unknown=0 (3 s) |
-| `rag.py eval` | 0 | questions=267 passed=267 (19 s) |
-| `rag.py pack "kerberos delegation"` | 0 | a coverage line, fact lines and a sources footer |
-| `kbgit.py install-hooks` | 0 | installed: core.hooksPath=.githooks |
-| `stress_test.py` | 0 | 87 passed, 3 skipped (10:17) |
-| `tests.py` | 0 | 1288 passed, 19 skipped, 1 xfailed (28:39) |
+| `uv --version` | 0 | uv 0.12.19 (bea138450 2026-09-24 x86_64-pc-windows-msvc) |
+| `check.py` | 0 | sources=3106 citations=16934 errors=0 (20 s) |
+| `fetch.py --offline` | 0 | ok=164 mismatch=0 unknown=0 sources_with_sha=68 artifacts=164 (2 s) |
+| `rag.py eval` | 0 | questions=560 passed=560 verdict_ok=560 found_ok=560 mean_chars=2493 (24 s) |
+| `rag.py pack "kerberos delegation"` | 0 | a coverage line, fact lines and a sources footer (last line its S1297 source url) |
+| `kbgit.py install-hooks` | 0 | installed: core.hooksPath=.githooks (prepare-commit-msg, commit-msg, pre-push); kb commits now get KB-* trailers (1 s) |
+| `tests.py` | 0 | 57 passed, 1 skipped in 124.06 s, 8 workers (131 s with the start), under the win32 ceiling of 150 s |
 
-The 19 `tests.py` skips are the tests that need `sh`, which the account did not have, and the OS-specific ones. Of the 3 `stress_test.py` skips, 2 are the symbolic-link mutations, which skip for a standard account (WinError 1314, no Developer Mode) since BG-2j5ba56h and run on an elevated one; the third skips on every Windows host. Another session ran short test selections on the host during the run.
+The suite is the one after the rewrite `4d70166f` (58 ids, `_tools/tests_ceiling.json`); `stress_test.py` is no longer a `/kb-setup` step. pytest's short summary does not name the skipped test.
 
-## Run 3: the step 4 and 5 commands without a sign-in
-
-At `origin/main` d10da8d, 2026-09-30, a new temporary standard account of the same setup (no test suites): `install-python.ps1` again (installer SHA-256 and the Python Software Foundation signature checked, uv 0.12.19 SHA-256 checked), then:
-
-| step | exit | result |
-|---|---|---|
-| `kb_mcp.py --status` | 0 | names the clone's commit, `upstream: origin/main`, `behind_upstream: 0 commits`, 292 topics, 2990 sources |
-| `querylog.py where` | 0 | `mode=auto`, `writes=yes`: no answer recorded, so the default applies |
-
-result: pass
+A first run the same morning at `42148c0e`, with the account then named after the script, failed `tests.py` (1 failed, 56 passed, 1 skipped): in the land scenario, `backlog.py check` read the account's user name from the environment, and its piece matched the script's own name in this story's goal and touches, so the gate refused the push. The account is now `kbch`, a name in which `bl_base.name_pieces` finds no piece; every other step of that run gave the same results as above.
