@@ -141,7 +141,7 @@ def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost
     return "\n".join(json.dumps(e) for e in events)
 
 
-def test_bench_pool_scenario_rows_derived_cells_and_report_tables():
+def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     import agent_bench
     import bench_pool as bp
     import bench_report as br
@@ -190,6 +190,16 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables():
     assert "| all | sonnet-5-5 | 6,421 (+0%) | 6,421 |" in shown  # low against default
     assert "| all | haiku-4-5 (no effort setting) | - | 6,421 |" in shown and "| hook" not in shown.split("bench:effort")[1]
     assert br.empty_markers(text, out) == []
+    # a `claude -p` timeout in a kb or web run is one error run: the other runs of the chunk still come back
+    import subprocess
+
+    def slow(cmd, prompt, **kw):
+        raise subprocess.TimeoutExpired("claude", 900)
+    monkeypatch.setattr(agent_bench, "execute", slow)
+    mixed = bp.run_pool(rows[:2], bp.plan_cells(["sonnet-5-5", "hook"], bp.EFFORTS), 1,
+                        lambda arm, effort, row: bp.hook_result("{}", 0.1) if arm == "hook" else bp.execute_run(["claude"], "q"),
+                        lambda rec, r: None)
+    assert [("error" in r) for r in mixed].count(True) == 4 and len(mixed) == 6 and mixed[0]["error"] == "the claude run took over 900 s"
 
 
 def test_bench_pool_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monkeypatch, capsys):
