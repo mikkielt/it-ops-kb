@@ -78,6 +78,29 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist():
     assert [k for k, _ in kbpublic.file_hits("kb/x/artifacts/a.txt", " ".join(values.values()), {})] == ["secret"]
 
 
+def test_webfetch_hook_denies_a_routed_host_and_passes_the_rest(tmp_path, monkeypatch):
+    """The PreToolUse guard on WebFetch (kb_hook.webfetch_deny): a host the routes table routes away from WebFetch is
+    denied with the row's find and read routes as the reason; another host, a url with no host and an unreadable
+    table pass. Both hook files wire it synchronously (an async hook cannot deny)."""
+    import kb_hook, ql_learn
+    ev = lambda url: {"hook_event_name": "PreToolUse", "tool_name": "WebFetch", "tool_input": {"url": url}}
+    out = kb_hook.webfetch_deny(ev("https://learn.microsoft.com/en-us/intune/"))["hookSpecificOutput"]
+    row = ql_learn.avoided_route("learn.microsoft.com")
+    assert out["permissionDecision"] == "deny" and row["find"] in out["permissionDecisionReason"] \
+        and row["read"] in out["permissionDecisionReason"], out
+    assert kb_hook.webfetch_deny(ev("https://pypi.org/project/x/")) is None
+    assert kb_hook.webfetch_deny(ev("not a url")) is None
+    p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=json.dumps(ev("https://pypi.org/")),
+                       capture_output=True, text=True, encoding="utf-8")
+    assert p.returncode == 0 and p.stdout == "", p.stdout + p.stderr  # a pass prints nothing
+    monkeypatch.setattr(ql_learn, "WEB_SOURCES", tmp_path / "missing.md")
+    assert kb_hook.webfetch_deny(ev("https://learn.microsoft.com/")) is None
+    for path in (".claude/settings.json", ".claude-plugin/plugin.json"):
+        pre = json.loads(text(path))["hooks"]["PreToolUse"]
+        hooks = [h for m in pre if m.get("matcher") == "WebFetch" for h in m["hooks"]]
+        assert [h for h in hooks if "kb_hook.py" in h["command"] and not h.get("async")], path
+
+
 def test_backlog_check_refuses_leak_in_item_text(tmp_path):
     def backlog(*args):
         p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", str(tmp_path), *args],

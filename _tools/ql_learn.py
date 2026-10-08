@@ -69,6 +69,13 @@ def staging_level(host, registry=None, routes=None):
     return 0, None
 
 
+def avoided_route(host, routes=None):
+    """The routes-table row of HOST (the first that names it) when its avoid cell names WebFetch, else None: the
+    route signal of source_findings and the WebFetch hook's deny (kb_hook.webfetch_deny) both read it here."""
+    route = next((r for r in (routes_table() if routes is None else routes) if host in r["hosts"]), None)
+    return route if route and "WebFetch" in route["avoid"] else None
+
+
 def registry_problems(registry=None, routes=None):
     """A registry row whose host the routes table does not name: a staged family adds its routes row first, so the
     two sources of a host's level agree. The shared registry only; a root's own providers are its team's."""
@@ -473,8 +480,8 @@ def source_findings(entries, registry=None, routes=None, counts=None):
                         "signal": "stage", "host": host, "level": level, "needs": STAGE_NEEDED_LEVEL,
                         "triggers": triggers, "observed": {"rows": rows, "failures": failures,
                                                            "entries": len(s["entries"])}})
-        route = next((r for r in routes if host in r["hosts"]), None)
-        if s["webfetch"] and route and "WebFetch" in route["avoid"]:
+        route = avoided_route(host, routes) if s["webfetch"] else None
+        if route:
             out.append({"id": finding_id("source", "route", host), "kind": "source", "state": "open",
                         "signal": "route", "host": host, "tool": "WebFetch", "route": route["family"].replace("`", ""),
                         "observed": {"entries": len(s["webfetch"])}})

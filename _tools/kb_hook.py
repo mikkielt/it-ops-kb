@@ -28,6 +28,11 @@ naming the rag.py tools that print only the lines a lookup needs (raw_read_nudge
 so the command runs as it would without the hook; any other command or tool, and any input it cannot read, gets no
 output.
 
+A PreToolUse event on WebFetch whose url's host has a row in the routes table of kb/_self/web-sources.md whose avoid
+cell names WebFetch (ql_learn.avoided_route, the lookup the query log's route findings use) gets a deny decision whose
+reason names the row's find and read routes, so the agent takes the route (webfetch_deny); any other host, a url
+with no host and a table it cannot read get no output, and the fetch runs.
+
 Claude Code runs it from .claude/settings.json (a clone) and from the plugin's plugin.json (an installed plugin); it
 reads the hook's JSON on stdin and prints the hook's JSON answer on stdout. `--test "kb: question"` prints what the
 hook would answer, for a check from a shell (no query log row). It runs on every prompt of every session that has the
@@ -306,6 +311,29 @@ def raw_read_nudge(event):
     return None
 
 
+def webfetch_deny(event, routes=None):
+    """The PreToolUse deny for a WebFetch event whose url's host the routes table routes away from WebFetch, else None
+    (no output: the fetch runs). ROUTES is the table's rows (ql_learn.routes_table), read from web-sources.md when
+    None; a table that cannot be read denies nothing."""
+    try:
+        tool_input = event.get("tool_input")
+        if event.get("tool_name") != "WebFetch" or not isinstance(tool_input, dict):
+            return None
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import ql_learn
+        host, _ = ql_learn.host_path(tool_input.get("url"))
+        row = ql_learn.avoided_route(host, routes) if host else None
+    except Exception:  # an unreadable table or event: never block a fetch over the hook itself
+        return None
+    if row is None:
+        return None
+    reason = (f"WebFetch is not used on {host}: its row {row['family']} in the routes table of kb/_self/web-sources.md "
+              f"avoids it ({row['avoid']}). Find with: {row['find']}. Read for the citation: {row['read']}. Take that "
+              "route instead.")
+    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
+                                   "permissionDecisionReason": reason}}
+
+
 def main():
     # the hook's JSON is UTF-8 on every OS; Windows would otherwise read and write the locale code page (cp1252)
     sys.stdin.reconfigure(encoding="utf-8", errors="replace")
@@ -319,7 +347,7 @@ def main():
         return  # not our input: never block a prompt on a parse error
     event = event if isinstance(event, dict) else {}
     if event.get("hook_event_name") == "PreToolUse" or "tool_input" in event:
-        out = raw_read_nudge(event)
+        out = webfetch_deny(event) if event.get("tool_name") == "WebFetch" else raw_read_nudge(event)
         if out is not None:
             print(json.dumps(out, ensure_ascii=False))
         return
