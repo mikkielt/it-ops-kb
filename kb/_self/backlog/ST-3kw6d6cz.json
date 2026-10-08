@@ -2,7 +2,7 @@
   "id": "ST-3kw6d6cz",
   "kind": "story",
   "title": "The benchmark report and README.md summarise the pool record of 2026-10-08",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",
@@ -28,5 +28,6 @@
   "touches": [
     "kb/_self/reports/benchmarks.md",
     "README.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-hm4qgf3t"
 }
