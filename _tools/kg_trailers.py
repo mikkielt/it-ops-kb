@@ -470,7 +470,9 @@ STRAY = ("git reads trailers only in the message's last paragraph (a blank line 
          "and a line there that is no trailer can stop git reading it): move each KB-* or Self-Reviewed line named into "
          "that paragraph, one block with Co-Authored-By and the other trailers")
 STRAY_WORK = STRAY  # the name kbgit.py re-exports
-STRAY_KEY = re.compile(r"(KB-[A-Za-z]+(?:-[A-Za-z]+)*|Self-Reviewed)[ \t]*:[ \t]*\S", re.I)  # a trailer of ours, by key
+REVIEWED = "Self-Reviewed"  # selfdoc.py's trailer; kg_trailers does not import selfdoc
+TRAILER_KEYS = (*KEYS, VERIFIED, AUTO, WORK, REVIEWED)  # the trailers of ours: a prose line like `kb-sprint:` is none
+STRAY_KEY = re.compile(r"(" + "|".join(re.escape(k) for k in TRAILER_KEYS) + r")[ \t]*:[ \t]*\S", re.I)  # by key, any case
 
 
 MISSING_WORK = ("changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work and no KB-Auto trailer: "
