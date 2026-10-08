@@ -2,7 +2,7 @@
   "id": "ST-w3ikanna",
   "kind": "story",
   "title": "Every revision read in the tools uses git cat-file blob, so a deep Windows checkout reads it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kyvu526t",
   "priority": "P1",
@@ -30,5 +30,18 @@
     "kb/_self/content-rules.md"
   ],
   "notes": "Premise (2026-10-07): the check exits 1 with every reader returning None, empty or an error once git show REV:PATH is refused; commits 8f89bb8f and 1d6abb8d converted the other readers. kbdecide.old_text is not exercised by the check (it needs a fact key) and follows deleted_version's pattern.",
-  "claimed_by": "worker-w3ikanna"
+  "evidence": {
+    "commit": "39b0fad539076f7440f700150838fc3b8c6a87e9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,re,sys,atexit,shutil,tempfile,subprocess as s;sys.path.insert(0,'_tools');from pathlib import Path;t=Path(tempfile.mkdtemp()).resolve();atexit.register(shutil.rmtree,t,True);g=lambda*a:s.run(['git','-C',str(t),'-c','user.name=t','-c','user.email=t@e.x','-c','core.hooksPath=',*a],check=True,capture_output=True,text=True);w=lambda p,x:((t/p).parent.mkdir(parents=True,exist_ok=True),(t/p).write_text(x));L='kb/public/_gaps.md';A='a\\n# pinned:start\\n%s\\n# pinned:end\\n';g('init','-q','-b','main');w('.gitattributes',A%'x');w('gone.txt','gone\\n');w(L,'- F-000000000001 g\\n');g('add','.');g('commit','-q','-m','1');w('.gitattributes',A%'y');w(L,'- F-000000000001 g\\n  - Resolved 2026-01-01 ok\\n');os.remove(t/'gone.txt');g('add','-A');g('commit','-q','-m','2','-m','KB-Work: ST-aaaaaaaa');import perfcheck,bl_check,bl_cost,kblane,kbdecide,kbcommon;kbcommon.HOME=str(t);h=g('rev-parse','HEAD').stdout.strip();r=lambda:[perfcheck.last_text(t,'gone.txt'),bl_check.KbAtHead(t).text(t/L),kbdecide.Context.deleted_version('gone.txt'),bl_cost.closed_gaps_by_item(t,{'ST-aaaaaaaa'}),kblane.commit_paths(t,h)];b=r();o=s.run;setattr(s,'run',lambda a,*x,**k:s.CompletedProcess(a,128,'','fatal: Filename too long') if 'show' in a and any(re.match(r'[\\w^]{2,}:[^/]',z) for z in a) else o(a,*x,**k));p=r();setattr(s,'run',o);print('plain',b,'| show refused',p);sys.exit(int(p!=b) if all(b[:3]) and b[3][0] and '.gitattributes' not in b[4] else 2)"
+        ],
+        "exit": 0,
+        "sha256": "14fbc927057d1bfe"
+      }
+    ]
+  }
 }
