@@ -3,7 +3,7 @@ topic: claude/ci-and-headless
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
 retrieved_utc: 2026-10-08
-sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130]
+sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864]
 status: complete
 ---
 
@@ -83,7 +83,10 @@ article's `claude -p` exit-code/`--output-format` summary or its runtime-compari
 - In Claude Code, `--effort` (or `CLAUDE_CODE_EFFORT_LEVEL`) is the first source of the session's effort, ahead of saved settings and the model default; the model default is `high` except `medium` for Opus 5.5, Sonnet 5.5 and Haiku 5.5 and `xhigh` for Opus 4.7. The models overview lists Sonnet 5.5's default effort as `high` and Haiku 5.5's as `medium`; that page describes the model, the Claude Code page describes the CLI's default, so a Haiku 5.5 run agrees on `medium` and a Sonnet 5.5 run does not. [DOC S-ezqg74ki, S-eu3n3hyf]
 - Thinking cannot be turned off on Sonnet 5.5 (nor Opus 5.5, Haiku 5.5 or the Fable models): the model decides per step how much to think from the effort level, so `--effort low` is the lever for a lean run there. An organization's effort cap clamps a higher `--effort` silently under `json` and `stream-json` output. [DOC S-ezqg74ki]
 - `--model` takes an alias or a full name; `sonnet` is the latest Sonnet, `haiku` is described only as "the fast and efficient Haiku model" without a version, and aliases move over time (from Claude Code v2.1.293 `haiku` resolves to Haiku 5.5 on the Anthropic API, full id `claude-haiku-5-5`), so a reproducible benchmark pins the full model name. [DOC S-ezqg74ki]
+- Claude Code v2.1.284 added Sonnet 5.5 (`claude-sonnet-5-5`) as the default Sonnet model on the Anthropic API, so from v2.1.284 the `sonnet` alias resolves to Sonnet 5.5 there; the entry gives no earlier version for it, and the releases before it (v2.1.283 and older) are not stated to resolve `sonnet` to Sonnet 5.5. [DOC S1864]
 - Claude API list prices per million tokens: Sonnet 5.5 $2 input, $10 output, $2.50 (5-minute) or $4 (1-hour) cache write, $0.10 cache read; Haiku 4.5 $1 input, $5 output, $1.25 or $2 cache write, $0.10 cache read. [DOC S2131]
+- Opus 5.5 list prices per million tokens: $4 input, $20 output, $5 (5-minute) or $8 (1-hour) cache write, $0.20 cache read (0.05x the input price). [DOC S2131]
+- Sonnet 5 list prices per million tokens: $2 input, $10 output, $2.50 (5-minute) or $4 (1-hour) cache write, $0.20 cache read (0.1x the input price); the $2/$10 launch price announced as introductory through 2026-08-31 is now the standard price, and the planned rise to $3/$15 on 2026-09-01 will not occur. [DOC S2131]
 - Haiku 5.5 list prices depend on prompt length: a prompt of up to 100,000 tokens pays $0.10 input, $0.50 output, $0.125 (5-minute) or $0.20 (1-hour) cache write and $0.01 cache read per million tokens; a longer prompt pays $0.50, $2.50, $0.625 or $1, and $0.05. [DOC S2131]
 - Web search on the Claude API costs $10 per 1,000 searches on top of token costs; results retrieved in a conversation count as input tokens; a search that errors is not billed. [DOC S2131, S-ehhvgjky]
 - A cached prefix must reach the model's minimum: 512 tokens for Sonnet 5.5, 4,096 for Haiku 4.5 (see `agents/agent-caching`), so a lean reader prompt under 4,096 tokens cannot be cached on Haiku 4.5 at all. [DER S2130: minimums compared with a prompt size chosen by the caller]
