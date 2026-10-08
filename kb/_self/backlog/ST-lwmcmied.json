@@ -2,7 +2,7 @@
   "id": "ST-lwmcmied",
   "kind": "story",
   "title": "Research sprint goal: The next pool benchmark record runs as one capped command on trustworthy measurements",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2vhfsn4o",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Packed on 2026-10-08 with rag.py pack -q over five questions: Q1 claude -p usage fields good (ci-and-headless.md:77 modelUsage outputTokens); Q2 Opus 5.5 output price, Q3 sonnet alias version, Q5 Sonnet 5 output price false good (no line states them); Q4 Opus 5.5 effort good. Takes over ST-symxdv7r's goal, found by the SP-hm4qgf3t review."
+  "notes": "Packed on 2026-10-08 with rag.py pack -q over five questions: Q1 claude -p usage fields good (ci-and-headless.md:77 modelUsage outputTokens); Q2 Opus 5.5 output price, Q3 sonnet alias version, Q5 Sonnet 5 output price false good (no line states them); Q4 Opus 5.5 effort good. Takes over ST-symxdv7r's goal, found by the SP-hm4qgf3t review.",
+  "claimed_by": "worker-ST-lwmcmied"
 }
