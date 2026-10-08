@@ -1911,14 +1911,15 @@ class Prefix(Store):
 def clone_home():
     """The checkout whose _cache/ holds the index: this repository, or the clone's main worktree when this
     repository is a linked git worktree (its `.git` is a file naming `<common dir>/worktrees/<name>`), so the
-    worktrees of one clone share one index directory (ql_base.clone_home reads the spool's place the same way)."""
+    worktrees of one clone share one index directory (ql_base.clone_home reads the spool's place the same way). A
+    relative `gitdir:` (git worktree add --relative-paths) is relative to the worktree, not the working directory."""
     try:
         with open(os.path.join(kbcommon.HOME, ".git"), encoding="utf-8") as f:
             text = f.read().strip()
     except OSError:
         return kbcommon.HOME
     if text.startswith("gitdir:"):
-        gitdir = os.path.normpath(text[len("gitdir:"):].strip())
+        gitdir = os.path.normpath(os.path.join(kbcommon.HOME, text[len("gitdir:"):].strip()))
         parent = os.path.dirname(gitdir)
         if os.path.basename(parent) == "worktrees" and os.path.basename(os.path.dirname(parent)) == ".git":
             return os.path.dirname(os.path.dirname(parent))

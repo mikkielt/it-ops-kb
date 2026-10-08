@@ -536,13 +536,14 @@ def colourless_env():
 def main_worktree(root):
     """The checkout at ROOT, or the clone's main worktree when ROOT is a linked git worktree (its `.git` is a file
     naming `<common dir>/worktrees/<name>`): where kbfacts.index_dir keeps the clone's shared pack index (the
-    clone_home of kbfacts and ql_base, which read kbcommon.HOME, not a path)."""
+    clone_home of kbfacts and ql_base, which read kbcommon.HOME, not a path). A relative `gitdir:` (git worktree add
+    --relative-paths) is relative to ROOT, not the working directory."""
     try:
         text = Path(root, ".git").read_text(encoding="utf-8").strip()
     except OSError:
         return str(root)
     if text.startswith("gitdir:"):
-        gitdir = Path(text[len("gitdir:"):].strip())
+        gitdir = Path(os.path.normpath(Path(root, text[len("gitdir:"):].strip())))
         if gitdir.parent.name == "worktrees" and gitdir.parent.parent.name == ".git":
             return str(gitdir.parent.parent.parent)
     return str(root)
