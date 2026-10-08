@@ -2,7 +2,7 @@
   "id": "BG-3h4g5jdc",
   "kind": "bug",
   "title": "bench_pool.record_of prices a run with no observed model without the run's Claude Code version",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P2",
@@ -21,5 +21,18 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-BG-3h4g5jdc"
+  "evidence": {
+    "commit": "3f708889db19f05eabb5c784643d60207c2e29d8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,inspect; sys.path.insert(0,\"_tools\"); import bench_pool; assert \"cc\" in inspect.signature(bench_pool.record_of).parameters"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
