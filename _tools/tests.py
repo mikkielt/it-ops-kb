@@ -27,8 +27,9 @@ the same way and exits 2.
 Each pytest run is keyed (run_key) by its selection (the pytest arguments that choose its tests, without the worker and
 report ones: they and the tree decide the collected ids), the git tree of the index plus the tracked files' working-tree
 changes (work_tree: `git add -u` and `git write-tree` on a copy of the index named by GIT_INDEX_FILE, never the
-person's own index) and the Python version that runs pytest (.venv/pyvenv.cfg, else this one). An untracked .py file
-under _tools/ leaves the run without a key: nothing is reused or recorded for it. A run that exits 0 records its key
+person's own index), the Python version that runs pytest (.venv/pyvenv.cfg, else this one) and the name and content of
+each other untracked non-ignored file a git scenario copies (untracked_digest). An untracked .py file under _tools/
+leaves the run without a key: nothing is reused or recorded for it. A run that exits 0 records its key
 with its UTC time in _cache/tests/results.json (RESULTS); a failing run records none and drops its key. A run with
 KB_TESTS_FAST=1 (the sync gate's) whose key the file holds as passed prints `reused: KEY from UTC-TIME`, records its
 test.run row with `reused` true, and exits 0 without starting pytest; --no-reuse forces the run.
@@ -414,12 +415,47 @@ def git_out(*args, env=None):
     return p.stdout if p.returncode == 0 else None
 
 
-def untracked_tools():
-    """The untracked (not ignored) .py files under _tools/, as git names them; None when git cannot tell."""
-    out = git_out("ls-files", "--others", "--exclude-standard", "-z", "--", "_tools")
+def untracked_files():
+    """The untracked (not ignored) files as git names them, sorted; None when git cannot tell."""
+    out = git_out("ls-files", "--others", "--exclude-standard", "-z")
     if out is None:
         return None
-    return sorted(n.replace("\\", "/") for n in out.split("\0") if n.endswith(".py"))
+    return sorted(n.replace("\\", "/") for n in out.split("\0") if n)
+
+
+def untracked_tools(files):
+    """The untracked .py files under _tools/ among `files`."""
+    return [n for n in files if n.startswith("_tools/") and n.endswith(".py")]
+
+
+# The untracked files a git scenario's kb holds are conftest.seed_files' (its SEED_SKIP, SEED_SKIP_NAMES and
+# SEED_SKIP_DIRS, repeated here: conftest imports pytest, which this runner does not).
+SEED_SKIP = ("kb/_querylog/", ".claude/worktrees/")
+SEED_SKIP_NAMES = ("_fetch_state.csv",)
+SEED_SKIP_DIRS = ("_snapshots",)
+
+
+def seeded(name):
+    return (not name.startswith(SEED_SKIP) and name.rsplit("/", 1)[-1] not in SEED_SKIP_NAMES
+            and not set(name.split("/")[:-1]) & set(SEED_SKIP_DIRS))
+
+
+def untracked_digest(files):
+    """A hash of the name and content of each untracked file a scenario copies (seeded), or None when there is none;
+    a file that cannot be read counts by its name alone."""
+    h = hashlib.sha256()
+    count = 0
+    for name in files:
+        if not seeded(name):
+            continue
+        count += 1
+        h.update(name.encode("utf-8") + b"\0")
+        try:
+            with open(os.path.join(KB, name), "rb") as f:
+                h.update(hashlib.sha256(f.read()).digest())
+        except OSError:
+            h.update(b"unreadable")
+    return h.hexdigest() if count else None
 
 
 def work_tree():
@@ -478,17 +514,23 @@ def selection(pytest_args):
 
 
 def run_key(pytest_args):
-    """(key, why) of a run: the key hashes its selection, work_tree() and runner_python(); key None, with why, when an
-    untracked .py under _tools/ or a git failure leaves it without one."""
-    stray = untracked_tools()
-    if stray is None:
+    """(key, why) of a run: the key hashes its selection, work_tree(), runner_python() and the name and content of each
+    untracked file a scenario copies (untracked_digest); key None, with why, when an untracked .py under _tools/ or a
+    git failure leaves it without one."""
+    files = untracked_files()
+    if files is None:
         return None, "git cannot list the untracked files"
+    stray = untracked_tools(files)
     if stray:
         return None, f"untracked {', '.join(stray[:3])}{' ...' if len(stray) > 3 else ''} (git add it)"
     tree = work_tree()
     if tree is None:
         return None, "git cannot write the working tree's tree"
-    body = json.dumps({"selection": selection(pytest_args), "tree": tree, "python": runner_python()}, sort_keys=True)
+    parts = {"selection": selection(pytest_args), "tree": tree, "python": runner_python()}
+    digest = untracked_digest(files)
+    if digest:  # no field without untracked files, so a clean clone keeps the key it had
+        parts["untracked"] = digest
+    body = json.dumps(parts, sort_keys=True)
     return hashlib.sha256(body.encode("utf-8")).hexdigest()[:KEY_CHARS], None
 
 
