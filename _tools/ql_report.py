@@ -141,7 +141,8 @@ def work_lines(files, week_run):
 
 
 OPS_TOP = 5  # the command classes the ops block names, most calls first
-NOTHING_SELECTED = 5  # pytest's exit when no test was collected or selected: a test.run row with it is no failure
+NOTHING_SELECTED = 2  # tests.py's exit, with selected 0, for a selection that collects no test: no failure
+PYTEST_NOTHING = 5  # pytest's own exit for it, which test.run rows held before tests.py refused such a run
 OPS_TIMED = ("land.end", "sync.gate", "test.run")  # the events whose count, failures and median ms the block gives
 
 
@@ -173,7 +174,8 @@ def ops_lines(files, in_week):
     out = [f"ops: {len(rows)} rows ({_counts((e, len(by[e])) for e in sorted(by))})"]
     for e in OPS_TIMED:
         if e in by:
-            empty = sum(1 for r in by[e] if e == "test.run" and r.get("exit") == NOTHING_SELECTED)
+            empty = sum(1 for r in by[e] if e == "test.run" and (r.get("exit") == PYTEST_NOTHING or (
+                r.get("exit") == NOTHING_SELECTED and r.get("selected") == 0)))
             failed = sum(1 for r in by[e] if r.get("exit") not in (0, None)) - empty
             out.append(f"  {e}: {len(by[e])}, failed {failed}, median {rank([r['ms'] for r in by[e]], 0.5)} ms"
                        + (f", selected nothing {empty}" if empty else ""))
