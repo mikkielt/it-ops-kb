@@ -55,7 +55,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
 import bench_pool  # noqa: E402
-from bench_core import (ARMED, HOME, RAW, RESULTS, SPEND, Bench, Skip, merge_rows, read_rows,  # noqa: E402
+from bench_core import (ARMED, HOME, RAW, RESULTS, SLOTTED, SPEND, Bench, Skip, merge_rows, read_rows,  # noqa: E402
                         write_rows)
 from bench_report import empty_markers, readme_misses, render  # noqa: E402
 from bench_install import s_host_roots, s_ingest, s_kbpy, s_new_model  # noqa: E402
@@ -191,6 +191,8 @@ def main(argv=None):
             except Exception as e:  # one failed scenario does not lose the others' rows
                 b.row(n, "run", arm, "errors", 1, 1, note=f"{type(e).__name__}: {e}"[:200])
             if SPEND["runs"]:
+                if n in SLOTTED and n not in ARMED:  # a same-day run of other arms keeps its own spend rows beside these
+                    arm = "paid: " + ",".join(sorted({r["arm"] for r in b.rows[start:]}))
                 b.row(n, "all paid runs", arm, "spend_usd", SPEND["usd"], SPEND["runs"])
                 b.row(n, "all paid runs", arm, "spend_input_tokens", SPEND["input"], SPEND["runs"])
                 b.row(n, "all paid runs", arm, "spend_output_tokens", SPEND["out"], SPEND["runs"])

@@ -200,7 +200,7 @@ def test_bench_pool_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monk
     assert bm.main(["report", "--check"]) == 0
 
 
-def test_bench_pool_session_shape_groups_resume_marginal_input_and_cache_share():
+def test_bench_pool_session_shape_groups_resume_marginal_input_and_cache_share(monkeypatch):
     import agent_bench
     import bench_pool as bp
     import bench_report as br
@@ -251,6 +251,14 @@ def test_bench_pool_session_shape_groups_resume_marginal_input_and_cache_share()
     assert "| position | sonnet-5-5:low/session marginal_input | sonnet-5-5:low/session cache_read_share |" in shown
     assert "| 1 | 2,010 | 0.0% |" in shown and "| 2 | 120 | 94.4% |" in shown and shown.index("| 2 |") < shown.index("| 6 |")
     assert br.empty_markers("<!-- bench:session pool -->\n<!-- /bench -->\n", out) == []
+    # a resumed run's result event reports the session's running total: each question costs its own share, and so
+    # does the spend; a new session starts from 0
+    totals, spent = iter([0.10, 0.25, 0.31, 0.04]), []
+    monkeypatch.setattr(agent_bench, "execute", lambda *a, **k: {"cost": next(totals)})
+    monkeypatch.setattr(bp, "spent_run", lambda r: spent.append(r["cost"]))
+    live = bp.live_session_runner(type("B", (), {"lookup": lambda self: "."})())
+    costs = [live("haiku-5-5", "default", {"question": "q"}, sid, n)["cost"] for sid, n in (("A", 1), ("A", 2), ("A", 3), ("B", 1))]
+    assert [round(c, 6) for c in costs] == [0.10, 0.15, 0.06, 0.04] and spent == costs
 
 
 def pool_rows(n):

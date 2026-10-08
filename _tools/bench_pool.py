@@ -830,11 +830,18 @@ def session_argv(arm, effort, sid, position):
 
 def live_session_runner(b):
     """The runner of a paid session run: `claude -p` in the lookup clone (kb server registered, hooks off) per question,
-    the follow-ups resuming the first question's session in the same directory. A paid run is counted in the spend."""
+    the follow-ups resuming the first question's session in the same directory. A resumed run's result event reports
+    the session's running total cost, so a question's cost is that total less the question before it's; the spend
+    counts the question's own cost."""
     clone, env = b.lookup(), no_plugin_env()
+    total = {}  # session id: the running cost its last question's result event reported
 
     def run(arm, effort, row, sid, position):
         r = agent_bench.execute(session_argv(arm, effort, sid, position), row["question"], cwd=str(clone), env=env, clean=True)
+        if "error" not in r:
+            before = total.get(sid, 0.0) if position > 1 else 0.0
+            total[sid] = r.get("cost") or 0.0
+            r["cost"] = total[sid] - before
         spent_run(r)
         return r
     return run
