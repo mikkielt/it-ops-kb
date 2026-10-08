@@ -1,0 +1,25 @@
+{
+  "id": "ST-2ldhug4l",
+  "kind": "story",
+  "title": "Worker briefs and gate questions give measured figures with the command that measured them, and the sprint reviewer runs in a worktree of its own",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-vayhvwfy: ST-icgtdnuf's worker modelled the worker worktree name on the brief's example agent-ST-xxxxxxxx, and the operator confirmed gate g1 (limit 179) on it, while Agent-tool worktrees here are agent-<17 hex>, 6 characters longer (parked ST-6xdymgtg); and the fresh-context reviewer, started in the orchestrator's checkout, had its SessionStart intake hook file drafts there, which made one landing refuse a dirty tree. The kb-sprint skill's brief parts say a figure a worker or a gate relies on is measured (with its command) rather than given as an example, and the review step starts the reviewer in a worktree or scratch checkout of its own.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='measured' in t and 'reviewer' in t and 'worktree of its own' in t;print('kb-sprint asks for measured figures and a reviewer worktree:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-vayhvwfy close"
+  ]
+}

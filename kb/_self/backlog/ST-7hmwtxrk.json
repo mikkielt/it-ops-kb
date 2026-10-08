@@ -1,0 +1,25 @@
+{
+  "id": "ST-7hmwtxrk",
+  "kind": "story",
+  "title": "backlog.py check warns when an item's goal names a gap finding its links lack",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-vayhvwfy: TK-xr7fgoia and TK-6emrxewd were filed with goals naming F-68c59a20a679 and F-114b1ea76574 but with neither research true nor a link to those findings, so backlog.py cost --research left them out and ST-dfxpv6i7's done refused until the links were added by hand. backlog.py check warns for an item whose goal names an F-<12 hex> gap finding its links do not name.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/bl_check.py',encoding='utf-8').read();ok='F-' in t and 'gap finding' in t;print('bl_check names a goal gap finding missing from links:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-vayhvwfy close"
+  ]
+}
