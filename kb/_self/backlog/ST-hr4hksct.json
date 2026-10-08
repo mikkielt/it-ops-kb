@@ -2,7 +2,7 @@
   "id": "ST-hr4hksct",
   "kind": "story",
   "title": "gate add names the word or touch that set a gate's class, and a worker never rewords a gate to change it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "depends_on": [
     "BG-zw5sxzkc"
   ],
-  "notes": "Premise: today gate add prints only 'gate g1 (blocking) added' for a question holding the word rule (class agents-rule); the check wants the word 'matched' in the output, e.g. \"class agents-rule (matched 'rule')\"."
+  "notes": "Premise: today gate add prints only 'gate g1 (blocking) added' for a question holding the word rule (class agents-rule); the check wants the word 'matched' in the output, e.g. \"class agents-rule (matched 'rule')\".",
+  "claimed_by": "worker-ST-hr4hksct"
 }
