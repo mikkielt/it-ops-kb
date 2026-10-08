@@ -1,0 +1,18 @@
+{
+  "id": "BG-ovvvqtxf",
+  "kind": "bug",
+  "title": "agent_bench.kb_tokens subtracts a request's partial output count from the prompt's growth",
+  "status": "todo",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_tokens subtracts the previous request's real output (the result event's count shared by the run's requests), not the stream's partial per-message count, so a run's pack_tokens is not over-counted where the prompt grew by more than the result's characters",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import agent_bench as a; u=lambda p,o: {\"input_tokens\":p,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":o}; assert a.kb_tokens([{\"usage\":u(1000,5),\"results\":[]},{\"usage\":u(1300,5),\"results\":[400]}])<=300-200"
+    ]
+  }
+}

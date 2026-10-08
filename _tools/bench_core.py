@@ -452,9 +452,11 @@ def prompt_tokens(usage):
 def run_tokens(r, name="", cc=""):
     """The token fields of one run `r` (agent_bench.result_of's fields, or any run with a `requests` list of {model,
     usage}), from its own requests: input, its cache split, the effective input (each model's requests weighted by that
-    model's own prices, usage_sum), output, the first request's prompt (`start_ctx`), the models and the highest price
-    tier reached. A run with no requests (a tool's answer, a hook) is all zeros. `name` prices a request that reports
-    no model, as the alias resolves on the run's Claude Code version `cc`."""
+    model's own prices, usage_sum), the first request's prompt (`start_ctx`), the models and the highest price tier
+    reached. The output is the run's own `out` (agent_bench.result_of: its result event's count, which a stream's
+    per-message usage, a partial count, undercuts) and only a run with no `out` sums its requests'. A run with no requests (a tool's answer, a hook)
+    is all zeros. `name` prices a request that reports no model, as the alias resolves on the run's Claude Code version
+    `cc`."""
     reqs = r.get("requests") or []
     out = {"input": 0, "uncached": 0, "cache_read": 0, "cache_write": 0, "effective_input": 0.0, "out": 0, "start_ctx": 0,
            "models": [], "tier": ""}
@@ -470,6 +472,8 @@ def run_tokens(r, name="", cc=""):
         out["tier"] = max(out["tier"], s["tier"])
     if reqs:
         out["start_ctx"] = prompt_tokens(reqs[0]["usage"])
+        if r.get("out") is not None:
+            out["out"] = r["out"]
     return out
 
 
