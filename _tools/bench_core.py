@@ -60,14 +60,15 @@ def write_rows(rows, path=None):
 
 
 ARMED = ("navigation",)  # scenarios whose run names one arm (--arm): a run replaces only its own arm's rows
+SLOTTED = ARMED + ("pool",)  # scenarios whose rows a same-day run replaces by arm; the pool's arms are its --arms
 
 
 def _slot(r):
-    return r["scenario"], r["record"], r["arm"] if r["scenario"] in ARMED else ""
+    return r["scenario"], r["record"], r["arm"] if r["scenario"] in SLOTTED else ""
 
 
 def merge_rows(old, new):
-    """The results with `new` in place of every row of the same scenario and record (and, for an ARMED scenario, arm)."""
+    """The results with `new` in place of every row of the same scenario and record (and, for a SLOTTED scenario, arm)."""
     keys = {_slot(r) for r in new}
     return [r for r in old if _slot(r) not in keys] + new
 
@@ -427,6 +428,32 @@ def usage_sum(reqs, model="", cc=""):
                           + u(reqs[0], "cache_read_input_tokens")) if reqs else 0,
             "effective": sum(t["uncached"] + 2 * t["cache_write"] + round(p[4] / p[1], 6) * t["cache_read"]
                              for t, p in zip(by_tier, PRICE[mid]))}
+
+
+def run_tokens(r, name=""):
+    """The token fields of one run `r` (agent_bench.result_of's fields, or any run with a `requests` list of {model,
+    usage}), from its own requests: input, its cache split, the effective input (each model's requests weighted by that
+    model's own prices, usage_sum), output, the first request's prompt (`start_ctx`), the models and the highest price
+    tier reached. A run with no requests (a tool's answer, a hook) is all zeros. `name` prices a request that reports
+    no model."""
+    reqs = r.get("requests") or []
+    out = {"input": 0, "uncached": 0, "cache_read": 0, "cache_write": 0, "effective_input": 0.0, "out": 0, "start_ctx": 0,
+           "models": [], "tier": ""}
+    groups = {}
+    for q in reqs:
+        groups.setdefault(q.get("model") or name, []).append(q)
+    for model, rs in groups.items():
+        s = usage_sum(rs, model)
+        for k, f in (("input", "input"), ("uncached", "uncached"), ("cache_read", "cache_read"),
+                     ("cache_write", "cache_write"), ("out", "out"), ("effective_input", "effective")):
+            out[k] += s[f]
+        out["models"].append(s["model"])
+        out["tier"] = max(out["tier"], s["tier"])
+    if reqs:
+        first = reqs[0]["usage"]
+        out["start_ctx"] = sum(first.get(k, 0) or 0 for k in ("input_tokens", "cache_creation_input_tokens",
+                                                                "cache_read_input_tokens"))
+    return out
 
 
 def est_cost(s, searches=0):

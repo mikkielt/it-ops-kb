@@ -1,17 +1,21 @@
-"""The benchmarks' question pool: a stratified, checked set of questions built from the kb's own sources (stdlib only).
+"""The benchmarks' question pool: a stratified, checked set of questions built from the kb's own sources, and the
+`pool` scenario that runs it over the kb, router, hook and web arms (stdlib only).
 
 `benchmarks.py pool build` writes kb/public/_retrieval/bench_pool.csv, `pool build --querylog` writes the query-log
 pool under kb/_querylog/bench/, and `pool check` reads either back (kb/_self/tools.md, benchmarks.py pool). Every row
 has at least one check regex, a kind the report groups by and the route a pack should take. The held-out rows name
 lookup_heldout.csv rows by id and hold no question text: `question_of` reads it at run time. The only paid step is one
 Sonnet call that writes the answer regexes of the eval rows, through bench_retrieval's blind-question call; a rebuild
-reuses the regexes of the file it replaces, so it asks nothing. This module imports bench_core and bench_retrieval and
-no facade (kb/_self/code.md, Layout and Imports).
+reuses the regexes of the file it replaces, so it asks nothing. `benchmarks.py run pool` is `s_pool` (the arms, the
+effort levels, the per-run record and the per-cell figures, described in kb/_self/reports/benchmarks.md). This module
+imports agent_bench, bench_core and bench_retrieval and no facade (kb/_self/code.md, Layout and Imports).
 """
-import csv, hashlib, json, os, random, re, tempfile
+import csv, hashlib, json, os, random, re, shutil, subprocess, sys, tempfile, time
+from collections import Counter
 from pathlib import Path
 
-from bench_core import HOME, SPEND
+import agent_bench
+from bench_core import HOME, RAW, SPEND, Skip, no_plugin_env, run_tokens, spent_run
 from bench_retrieval import numbered, sonnet_json
 
 SEED = 11
@@ -504,3 +508,203 @@ def cli(a, home=HOME):
     for p in problems:
         print(f"pool check: {p}")
     return 1 if problems else 0
+
+
+# ------------------------------------------------------------------------------------------------------ the scenario
+
+KB_ARMS = ("haiku-5-5", "haiku-4-5", "sonnet-5-5")  # agent_bench configs: the models pinned by id, with the kb's tools
+NO_EFFORT = ("haiku-4-5",)  # Claude Code sets no effort level for Haiku 4.5: its arm runs once, at its only level
+WEB_ARMS = ("web-haiku-5-5", "web-sonnet-5-5")
+ARMS = (*KB_ARMS, "router", "hook", *WEB_ARMS)
+EFFORTS = ("low", "default")  # `default` passes no --effort: the level the model starts with
+WEB_KINDS = (*EVAL_KINDS, "offkb", "snippet", "false_good")  # the kinds a web search can answer; the web arms run these
+WEB_ASK = " Cite the source urls."
+HOOK_TIMEOUT_S = 120
+ROUTER_TIMEOUT_S = 1800
+
+
+def load_pool(home=HOME, kinds=None):
+    """The rows of the public pool file and, when it exists, the query-log file, each with its question text read
+    (`question_of`), only the kinds in `kinds` when given."""
+    rows = []
+    for rel in (PUBLIC_FILE, QUERYLOG_FILE):
+        if (Path(home) / rel).is_file():
+            rows += read_csv(Path(home) / rel)
+    return [{**r, "question": question_of(r, home)} for r in rows if not kinds or r["kind"] in kinds]
+
+
+def plan_cells(arms, efforts):
+    """[(arm, effort, label)] to run: a kb arm once per effort level (Haiku 4.5 once), every other arm at its default."""
+    out = []
+    for arm in arms:
+        if arm in KB_ARMS and arm not in NO_EFFORT:
+            out += [(arm, e, f"{arm}:{e}") for e in efforts]
+        else:
+            out.append((arm, "default", arm))
+    return out
+
+
+def accepts(arm, kind):
+    return arm not in WEB_ARMS or kind in WEB_KINDS
+
+
+def record_of(row, arm, label, r):
+    """One run's record: the pool row's id and kind, the arm and its label, the tokens (run_tokens), the kb results'
+    tokens (`pack_tokens`: those of the stream plus the router's pack text at CHARS_PER_TOKEN), tool calls, turns,
+    seconds, cost and one boolean per check; or the error."""
+    base = {"id": row["id"], "kind": row["kind"], "arm": arm, "label": label}
+    if "error" in r:
+        return {**base, "error": str(r["error"])[:200]}
+    t = run_tokens(r, agent_bench.MODEL.get(arm.removeprefix("web-"), ""))
+    checks = [bool(agent_bench.check(c, r)) for c in json.loads(row["checks"])]
+    return {**base, **t, "model": "+".join(sorted(set(t.pop("models")))),
+            "pack_tokens": r.get("kb_tokens", 0) + r.get("pack_chars", 0) // agent_bench.CHARS_PER_TOKEN,
+            "tool_calls": sum(r.get("tools", {}).values()) + sum(r.get("sub_tools", {}).values()),
+            "turns": r.get("turns", 0), "wall_s": r.get("wall_s", 0), "cost": r.get("cost", 0), "checks": checks}
+
+
+def cell_metrics(rs):
+    """[(metric, value)] of one cell's good runs: the means of the token fields, tool calls, turns, seconds and cost, the
+    checks passed over all, the runs whose checks all passed, `fixed_share` (the mean first prompt over the mean input)
+    and `tokens_per_right` (the effective input of all the runs over the runs that were right, left out when none was)."""
+    n = len(rs)
+    mean = lambda k: sum(r[k] for r in rs) / n  # noqa: E731
+    right = sum(bool(r["checks"]) and all(r["checks"]) for r in rs)
+    out = [(k, mean(k)) for k in ("input", "cache_read", "cache_write", "effective_input", "out", "start_ctx",
+                                  "pack_tokens", "tool_calls", "turns", "wall_s", "cost")]
+    out.append(("checks", f"{sum(sum(r['checks']) for r in rs)}/{sum(len(r['checks']) for r in rs)}"))
+    out.append(("fully_right", f"{right} of {n}"))
+    if mean("input"):
+        out.append(("fixed_share", mean("start_ctx") / mean("input")))
+    if right:
+        out.append(("tokens_per_right", sum(r["effective_input"] for r in rs) / right))
+    return out
+
+
+def cell_rows(runs):
+    """[(case, label, metric, value, runs, model, note)] of the results rows: per arm label, one cell for each kind and
+    one for all kinds (`all`); a cell with failed runs also has an `errors` row."""
+    out = []
+    labels = list(dict.fromkeys(r["label"] for r in runs))
+    for label in labels:
+        mine = [r for r in runs if r["label"] == label]
+        for case in [*dict.fromkeys(r["kind"] for r in mine), "all"]:
+            rs = [r for r in mine if case == "all" or r["kind"] == case]
+            ok = [r for r in rs if "error" not in r]
+            if len(ok) < len(rs):
+                out.append((case, label, "errors", len(rs) - len(ok), len(rs), "", rs[0].get("error", "")[:80] if not ok else ""))
+            if not ok:
+                continue
+            model = Counter(r["model"] for r in ok).most_common(1)[0][0]
+            tier = max(r["tier"] for r in ok)
+            for metric, value in cell_metrics(ok):
+                note = (f"highest price tier {tier}" if tier and metric == "effective_input" else
+                        "no effort setting: one level" if metric == "checks" and ok[0]["arm"] in NO_EFFORT else "")
+                out.append((case, label, metric, value, len(ok), model, note))
+    return out
+
+
+def run_pool(rows, cells, reps, runner, sink=None):
+    """Every row on every cell (a web arm only on WEB_KINDS), `reps` times: the run records, in cell order. `runner(arm,
+    effort, row)` is one run's result; `sink(record, result)` sees each as it is made."""
+    runs = []
+    for arm, effort, label in cells:
+        mine = [r for r in rows if accepts(arm, r["kind"])]
+        for row in mine:
+            for _ in range(reps):
+                r = runner(arm, effort, row)
+                runs.append(record_of(row, arm, label, r))
+                if sink:
+                    sink(runs[-1], r)
+        print(f"pool: {label}: {len(mine) * reps} runs, {sum('error' in x for x in runs if x['label'] == label)} failed",
+              flush=True)
+    return runs
+
+
+def hook_result(stdout, wall):
+    """The run of the `kb:` hook: its block reason or context as the answer, no model tokens."""
+    try:
+        out = json.loads(stdout) if stdout.strip() else {}
+    except ValueError:
+        return {"error": "the hook printed no JSON: " + stdout[-200:]}
+    text = out.get("reason") or (out.get("hookSpecificOutput") or {}).get("additionalContext") or ""
+    return {"wall_s": round(wall, 3), "cost": 0, "turns": 0, "in_uncached": 0, "cache_write": 0, "cache_read": 0, "out": 0,
+            "tools": {}, "sub_tools": {}, "requests": [], "kb_tokens": 0, "answer": text}
+
+
+def hook_run(sh, clone, question, env):
+    """The `kb:` hook as the query log's hook scenarios start it (`sh _tools/kbpy _tools/kb_hook.py`, the prompt event on
+    stdin), in the throwaway clone."""
+    event = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "bench-pool", "prompt": "kb: " + question,
+                        "cwd": str(clone)})
+    t = time.perf_counter()
+    try:
+        p = subprocess.run([sh, str(clone / "_tools" / "kbpy"), "_tools/kb_hook.py"], cwd=str(clone), input=event,
+                           capture_output=True, text=True, encoding="utf-8", env=env, timeout=HOOK_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        return {"error": f"the hook took over {HOOK_TIMEOUT_S} s"}
+    return hook_result(p.stdout, time.perf_counter() - t)
+
+
+def router_run(clone, question, env):
+    """kb_ask.py's routing with the routed models pinned (agent_bench `--route`), run from the throwaway clone."""
+    try:
+        p = subprocess.run([sys.executable, str(clone / "_tools" / "agent_bench.py"), "--route", question], cwd=str(clone),
+                           capture_output=True, text=True, encoding="utf-8", env=env, timeout=ROUTER_TIMEOUT_S)
+        return json.loads(p.stdout.strip().splitlines()[-1])
+    except (subprocess.TimeoutExpired, ValueError, IndexError) as e:
+        return {"error": f"the router run failed: {type(e).__name__}"}
+
+
+def live_runner(b, sh):
+    """The runner of a paid run: a kb arm is `claude -p` in the lookup clone (kb server registered, hooks off) with
+    --effort for a non-default level, a web arm the bare web session of agent_bench in an empty directory, the router and
+    the hook run from the clone. A paid run is counted in the run's spend."""
+    clone, env = b.lookup(), no_plugin_env()
+    empty = b.scratch / "pool-web"
+    empty.mkdir(parents=True, exist_ok=True)
+
+    def run(arm, effort, row):
+        q = row["question"]
+        if arm == "hook":
+            return hook_run(sh, clone, q, env)
+        if arm == "router":
+            r = router_run(clone, q, env)
+        elif arm in WEB_ARMS:
+            r = agent_bench.execute(agent_bench.web_argv(agent_bench.MODEL[arm.removeprefix("web-")]), q + WEB_ASK,
+                                    cwd=str(empty), env=env, clean=True)
+        else:
+            extra = ["--effort", effort] if effort != "default" and arm not in NO_EFFORT else []
+            r = agent_bench.execute(agent_bench.kb_argv(arm) + extra, q, cwd=str(clone), env=env, clean=True)
+        spent_run(r)
+        return r
+    return run
+
+
+def s_pool(b):
+    """The question pool over the arms of `b.arms` (default ARMS) at the effort levels of `b.efforts`, on the kinds of
+    `b.kinds` (default all), `b.reps` runs of each row on each cell, each run a fresh session. Rows per kind and arm
+    label, and for all kinds (cell_rows); each run's record is appended to the scenario's runs file. With `b.dry` it
+    prints the plan and starts nothing."""
+    arms = list(getattr(b, "arms", None) or ARMS)
+    sh = shutil.which("sh")
+    if "hook" in arms and not sh:
+        print("pool: the hook arm needs sh on PATH (Windows: run it from Git Bash); left out")
+        arms.remove("hook")
+    cells = plan_cells(arms, getattr(b, "efforts", None) or EFFORTS)
+    rows = load_pool(HOME, getattr(b, "kinds", None))
+    if not rows:
+        raise Skip("no pool rows: python3 _tools/benchmarks.py pool build, or the --kinds list matches none")
+    total = sum(sum(accepts(a, r["kind"]) for r in rows) for a, _, _ in cells) * b.reps
+    if getattr(b, "dry", False):
+        for arm, _, label in cells:
+            print(f"pool: {label}: {sum(accepts(arm, r['kind']) for r in rows) * b.reps} runs")
+        raise Skip(f"dry run: {len(rows)} rows, {len(cells)} cells, {total} runs, no model started")
+
+    def sink(rec, r):
+        if RAW.get("path"):
+            with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
+                f.write(json.dumps({**rec, "answer": (r.get("answer") or "")[:2000]}) + "\n")
+    runs = run_pool(rows, cells, b.reps, live_runner(b, sh), sink)
+    for case, label, metric, value, n, model, note in cell_rows(runs):
+        b.row("pool", case, label, metric, value, n, model, note)

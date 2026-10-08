@@ -3,11 +3,12 @@
 
   agent_bench.py OUT.jsonl CONFIG[,CONFIG] SCENARIO[,SCENARIO] [REPS]
   agent_bench.py --summary OUT.jsonl [OUT.jsonl ...]
+  agent_bench.py --route "QUESTION"        the pinned route (`router-pinned`) on one question, its run as one JSON line
 
 Appends one JSON line per run: cost (USD), wall and API seconds, turns, uncached / cache-write / cache-read input
 tokens, output tokens, cost per model, tool calls of the main session and of subagents, and a regex check per
 expected answer element. CONFIG: `haiku`, `sonnet`, `opus` (that model answers alone; `sonnet-5`,
-`sonnet-5-5` pin a model id where an alias would follow the newest); `opus+delegate` (asked to hand
+`sonnet-5-5`, `haiku-4-5`, `haiku-5-5` pin a model id where an alias would follow the newest); `opus+delegate` (asked to hand
 the lookup to the Haiku kb-lookup agent); `haiku+escalate` (Haiku told to hand live-docs work to a Sonnet agent
 defined with --agents); `+strict` also denies the docs tools (note: the deny reaches subagents too); `router`
 (kb_ask.py's routing), `router-pinned` (the same with the routed models as full names); `web-haiku`, `web-sonnet`, `web-opus`,
@@ -122,7 +123,8 @@ ROUTER = ("Routing for it-ops questions: call kb_pack first. If the pack's facts
           "relay its answer labelled 'live docs, not in the kb'.")
 MODEL = {"opus": "opus", "sonnet": "sonnet", "haiku": "haiku",
          # pinned ids, for comparing a new model with the one before it (benchmarks.py's `new-model`)
-         "sonnet-5": "claude-sonnet-5", "sonnet-5-5": "claude-sonnet-5-5", "haiku-4-5": "claude-haiku-4-5"}
+         "sonnet-5": "claude-sonnet-5", "sonnet-5-5": "claude-sonnet-5-5", "haiku-4-5": "claude-haiku-4-5",
+         "haiku-5-5": "claude-haiku-5-5"}
 DELEGATE = (" Delegate the kb lookup to the kb-lookup subagent (Haiku) and only relay its answer; do the live-docs step "
             "yourself only if it reports the kb lacks the answer.")
 
@@ -137,11 +139,33 @@ def norm_url(u):
     return re.sub(r"^(learn\.microsoft\.com)/[a-z]{2}-[a-z]{2}/", r"\1/", u)
 
 
+CHARS_PER_TOKEN = 4  # what a kb result is counted at when the stream gives no usable growth of the prompt (kb_tokens)
+
+
+def kb_tokens(reqs):
+    """The tokens of the kb tool results of a run's main-session requests, `reqs` ({usage, results}: the characters of
+    each kb result that came back before the request). A result is the growth of the prompt from the request before
+    it, less that request's output (the run's own characters per token), at most its characters; a request with no
+    earlier one, or whose prompt did not grow, is counted at CHARS_PER_TOKEN characters per token."""
+    prompt = lambda r: sum(r["usage"].get(k, 0) or 0 for k in ("input_tokens", "cache_creation_input_tokens",  # noqa: E731
+                                                                  "cache_read_input_tokens"))
+    n, prev = 0, None
+    for r in reqs:
+        chars = sum(r["results"])
+        if chars:
+            grew = prompt(r) - prompt(prev) - (prev["usage"].get("output_tokens", 0) or 0) if prev else 0
+            n += min(grew, chars) if grew > 0 else chars // CHARS_PER_TOKEN
+        prev = r
+    return n
+
+
 def parse(stdout):
     """The stream-json events of one run: tool counts (main and subagents), the call route, every url a kb tool
-    returned, the urls a fetch tool read, the number of web and docs searches, and the result event."""
+    returned, the urls a fetch tool read, the number of web and docs searches, the main session's requests (`requests`:
+    one per message id, its model and usage), the tokens of its kb tool results (`kb_tokens`), and the result event."""
     tools, subs, path, res = Counter(), Counter(), [], None
     names, kb_urls, fetched, searches = {}, set(), [], 0
+    reqs, waiting = {}, []
     for line in stdout.splitlines():
         try:
             ev = json.loads(line)
@@ -151,6 +175,12 @@ def parse(stdout):
             continue
         content = (ev.get("message") or {}).get("content", []) if isinstance(ev.get("message"), dict) else []
         if ev.get("type") == "assistant":
+            msg = ev["message"] if isinstance(ev.get("message"), dict) else {}
+            if msg.get("usage") and not ev.get("parent_tool_use_id"):
+                r = reqs.setdefault(msg.get("id") or f"r{len(reqs)}", {"results": waiting})
+                if r["results"] is waiting:
+                    waiting = []
+                r.update(usage=msg["usage"], model=msg.get("model", ""))
             for c in content:
                 if c.get("type") != "tool_use":
                     continue
@@ -170,22 +200,31 @@ def parse(stdout):
                     body = c.get("content")
                     text = body if isinstance(body, str) else " ".join(b.get("text", "") for b in body or [] if isinstance(b, dict))
                     kb_urls.update(norm_url(u) for u in URL.findall(text))
+                    if not ev.get("parent_tool_use_id"):
+                        waiting.append(len(text))
         elif ev.get("type") == "result":
             res = ev
     refetched = sorted({norm_url(u) for u in fetched} & kb_urls)
     return {"tools": dict(tools), "sub_tools": dict(subs), "route": path, "kb_urls": len(kb_urls),
-            "fetched": fetched, "refetched": refetched, "searches": searches}, res
+            "fetched": fetched, "refetched": refetched, "searches": searches,
+            "requests": [{"model": r["model"], "usage": r["usage"]} for r in reqs.values()],
+            "kb_tokens": kb_tokens(list(reqs.values()))}, res
 
 
-def execute(cmd, prompt, cwd=KB, env=None):
-    """Run one headless claude and parse its stream: the result fields (or {"error": ...})."""
+def execute(cmd, prompt, cwd=KB, env=None, clean=False):
+    """Run one headless claude and parse its stream: the result fields (or {"error": ...}). `env` is added to this
+    process's environment, or with `clean` is the whole environment."""
     t = time.time()
     p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, encoding="utf-8", timeout=900,
-                       env={**os.environ, **env} if env else None)
-    wall = time.time() - t
-    seen, res = parse(p.stdout)
+                       env=env if clean else {**os.environ, **env} if env else None)
+    return result_of(p.stdout, p.stderr, time.time() - t)
+
+
+def result_of(stdout, stderr, wall):
+    """The result fields of one run's stream-json `stdout` that took `wall` seconds (or {"error": ...})."""
+    seen, res = parse(stdout)
     if not res:
-        return {"error": p.stderr[-500:]}
+        return {"error": stderr[-500:]}
     if res.get("is_error") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
         return {"error": (res.get("result") or "is_error")[:200]}  # a refused run is void, not a cheap answer
     u = res["usage"]
@@ -204,6 +243,9 @@ def add(a, b, sep="escalate"):
     for k in ("wall_s", "api_s", "cost", "turns", "in_uncached", "cache_write", "cache_read", "out"):
         out[k] = round(a[k] + b[k], 4)
     out["models"] = {m: round(a["models"].get(m, 0) + b["models"].get(m, 0), 4) for m in {*a["models"], *b["models"]}}
+    out["requests"] = a.get("requests", []) + b.get("requests", [])
+    for k in ("kb_tokens", "pack_chars"):
+        out[k] = a.get(k, 0) + b.get(k, 0)
     return out
 
 
@@ -216,15 +258,16 @@ def _stream_argv(model, tools, system):
     return kb_ask.claude_argv(model, tools, "stream-json") + ["--verbose", "--append-system-prompt", system]
 
 
-def _step(model, tools, system, user, steps):
-    """One run of the route (a stream-json `claude -p` of kb_ask.claude_argv) with `steps` put before its own route."""
-    r = execute(_stream_argv(model, tools, system), user)
+def _step(model, tools, system, user, steps, cwd=KB, env=None):
+    """One run of the route (a stream-json `claude -p` of kb_ask.claude_argv) with `steps` put before its own route;
+    `env` is the whole environment of the run."""
+    r = execute(_stream_argv(model, tools, system), user, cwd=cwd, env=env, clean=env is not None)
     if "error" not in r:
         r["route"] = steps + r.get("route", [])
     return r
 
 
-def route(q, pin=None):
+def route(q, pin=None, cwd=KB, env=None):
     """kb_ask.py's routing as a benchmark run, step for step (its plan, prompts and models): tool answers cost nothing;
     a web pack (the kb lacks the question) goes to the researcher (live docs through the kb server's cached docs_search and docs_fetch) with the question,
     what the kb lacks and the nearest articles; a split pack with a `kb has:` and a `kb lacks:` line (a `-` line is empty: kb_ask.has_lacks)
@@ -233,7 +276,8 @@ def route(q, pin=None):
     the researcher; a good pack, and a split pack that cannot be divided, go to the tool-less reader with the pack,
     whose INSUFFICIENT escalates to the researcher with the pack. `pin` maps the routed aliases to full model names.
     The route lists `pack:KIND`, then each run (`reader:MODEL`, `researcher:MODEL`), with `escalate` between an
-    escalation's two runs and `and` between a split's two."""
+    escalation's two runs and `and` between a split's two. `pack_chars` is the length of the pack the reader is given.
+    The runs start in `cwd` with `env` as their whole environment."""
     sys.path.insert(0, os.path.join(KB, "_tools"))
     import kb_ask
     t = time.time()
@@ -247,16 +291,17 @@ def route(q, pin=None):
     kind, researcher = p["kind"], name("sonnet")
     if kind == "web":
         return _step(researcher, True, kb_ask.WEB_RESEARCHER, kb_ask.web_prompt(q, p),
-                     [f"pack:{kind}", f"researcher:{researcher}"])
+                     [f"pack:{kind}", f"researcher:{researcher}"], cwd, env)
     divided = kind == "split" and bool(p["has"] and p["lacks"])
     reader = name(p["model"] if kind == "good" else kb_ask.READER_MODEL)
     if divided:
         system, user = kb_ask.SPLIT_READER, kb_ask.split_prompt(q, p)
     else:
         system, user = kb_ask.READER, kb_ask.prompt(q, p["text"])
-    first = _step(reader, False, system, user, [f"pack:{kind}", f"reader:{reader}"])
+    first = _step(reader, False, system, user, [f"pack:{kind}", f"reader:{reader}"], cwd, env)
     if "error" in first:
         return first
+    first["pack_chars"] = len(p["text"])
     said = first["answer"].strip()
     insufficient = said.startswith(kb_ask.SENTINEL)
     note = f"\n\nA first reader of {'the kb' if divided else 'this'} evidence said: {said.splitlines()[0] if said else ''}"
@@ -268,7 +313,7 @@ def route(q, pin=None):
         system, user = kb_ask.WEB_RESEARCHER, kb_ask.web_prompt(q, p, whole=True) + note
     else:
         system, user = kb_ask.WEB_RESEARCHER, kb_ask.web_prompt(q, p)
-    second = _step(researcher, True, system, user, [f"researcher:{researcher}"])
+    second = _step(researcher, True, system, user, [f"researcher:{researcher}"], cwd, env)
     return second if "error" in second else add(first, second, "escalate" if insufficient else "and")
 
 
@@ -461,6 +506,9 @@ def summary(paths):
 def main():
     if sys.argv[1:2] == ["--summary"]:
         return summary(sys.argv[2:])
+    if sys.argv[1:2] == ["--route"]:  # one question through the pinned route, its run as one JSON line (benchmarks.py pool)
+        print(json.dumps(route(sys.argv[2], PIN)))
+        return
     out, cfgs, scens = sys.argv[1], sys.argv[2].split(","), sys.argv[3].split(",")
     reps = int(sys.argv[4]) if len(sys.argv) > 4 else 1
     copies = {}  # host scenarios build each scratch kb copy once per invocation

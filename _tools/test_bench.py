@@ -120,3 +120,81 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path):
     public = out.read_text(encoding="utf-8")
     assert not any(r["question"] in public for r in qlrows) and "fixture session question" not in public
     assert org not in qlfile.read_text(encoding="utf-8") and not any(r["kind"] == "querylog" for r in rows)
+
+
+# ---- the pool scenario (bench_pool.py): synthetic streams, no model
+
+def pool_stream(answer, chars=480, model="claude-sonnet-5-5"):
+    """A stream-json run of two requests: a kb_pack call whose result is `chars` characters, then the answer."""
+    usage = lambda unc, write, read, out: {"input_tokens": unc, "cache_creation_input_tokens": write,  # noqa: E731
+                                           "cache_read_input_tokens": read, "output_tokens": out}
+    events = [
+        {"type": "assistant", "message": {"id": "m1", "model": model, "usage": usage(10, 2000, 0, 50),
+                                          "content": [{"type": "tool_use", "id": "t1", "name": "mcp__kb__kb_pack", "input": {}}]}},
+        {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": "x" * chars}]}},
+        {"type": "assistant", "message": {"id": "m2", "model": model, "usage": usage(170, 0, 2010, 30),
+                                          "content": [{"type": "text", "text": answer}]}},
+        {"type": "result", "usage": usage(180, 2000, 2010, 80), "total_cost_usd": 0.01, "duration_api_ms": 4000, "num_turns": 2,
+         "modelUsage": {model: {"costUSD": 0.01}}, "result": answer}]
+    return "\n".join(json.dumps(e) for e in events)
+
+
+def test_bench_pool_scenario_rows_derived_cells_and_report_tables():
+    import agent_bench
+    import bench_pool as bp
+    import bench_report as br
+    rows = [{**bp.row(kind, "d0", "original", f"fixture:{i}", f"Question {i}?", [rf"value{i}"], "good"), "question": f"Question {i}?"}
+            for i, kind in enumerate(["fact", "fact", "count"])]
+    cells = bp.plan_cells(["sonnet-5-5", "haiku-4-5", "hook", "web-sonnet-5-5"], bp.EFFORTS)
+    assert [c[2] for c in cells] == ["sonnet-5-5:low", "sonnet-5-5:default", "haiku-4-5", "hook", "web-sonnet-5-5"]
+
+    def runner(arm, effort, row):
+        if arm == "hook":
+            return bp.hook_result(json.dumps({"decision": "block", "reason": "pack: value0 value2"}), 0.02)
+        return agent_bench.result_of(pool_stream("value1 is the answer" if row["kind"] == "fact" else "value2"), "", 5.0)
+
+    seen = []
+    runs = bp.run_pool(rows, cells, 1, runner, lambda rec, r: seen.append(rec["id"]))
+    assert len(runs) == len(seen) == 3 * 4 + 2 and not any("error" in r for r in runs)  # the web arm skips the `count` row
+    got = {(c, label, m): (v, n, note) for c, label, m, v, n, model, note in bp.cell_rows(runs)}
+    cell = lambda case, label, m: got[(case, label, m)][0]  # noqa: E731
+    assert cell("fact", "sonnet-5-5:low", "input") == 180 + 2000 + 2010 and cell("fact", "sonnet-5-5:low", "start_ctx") == 2010
+    assert cell("fact", "sonnet-5-5:low", "effective_input") == 180 + 2 * 2000 + 0.05 * 2010  # Sonnet 5.5 reads at 0.05x
+    assert cell("fact", "sonnet-5-5:low", "pack_tokens") == 120  # the prompt's growth less the request's output, not 480 / 4
+    assert cell("fact", "sonnet-5-5:low", "checks") == "1/2" and cell("fact", "sonnet-5-5:low", "fully_right") == "1 of 2"
+    assert round(cell("fact", "sonnet-5-5:low", "fixed_share"), 4) == round(2010 / 4190, 4)
+    assert cell("fact", "sonnet-5-5:low", "tokens_per_right") == 2 * 4280.5  # two runs' effective input over the one right
+    assert got[("fact", "haiku-4-5", "checks")][2] == "no effort setting: one level"
+    assert cell("all", "hook", "effective_input") == 0 and ("all", "hook", "fixed_share") not in got
+    assert cell("all", "hook", "tokens_per_right") == 0 and got[("all", "web-sonnet-5-5", "input")][1] == 2
+    out = [{"scenario": "pool", "record": "2026-10-09", "date": "2026-10-09", "commit": "abc1234", "claude_code": "2.1.300",
+            "kb_topics": "1", "case": c, "arm": label, "model": "", "metric": m, "value": str(v), "runs": str(n), "note": note}
+           for (c, label, m), (v, n, note) in got.items()]
+    text = ("<!-- bench:matrix pool metric=tokens_per_right -->\n<!-- /bench -->\n"
+            "<!-- bench:table pool metrics=fixed_share,start_ctx cases=all -->\n<!-- /bench -->\n"
+            "<!-- bench:effort pool metrics=tokens_per_right cases=all -->\n<!-- /bench -->\n")
+    shown = br.render(text, out)
+    assert "| fact | 8,561 | 8,561 | 8,561 | 0 | 8,561 |" in shown and "| count | 4,280 | 4,280 | 4,280 | 0 | - |" in shown  # kind by arm
+    assert "| all | sonnet-5-5:low | 48.0% | 2,010 |" in shown  # the fixed share by arm
+    assert "| all | sonnet-5-5 | 6,421 (+0%) | 6,421 |" in shown  # low against default
+    assert "| all | haiku-4-5 (no effort setting) | - | 6,421 |" in shown and "| hook" not in shown.split("bench:effort")[1]
+    assert br.empty_markers(text, out) == []
+
+
+def test_bench_pool_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monkeypatch, capsys):
+    import benchmarks as bm
+    import bench_core as bc
+    import bench_report as br
+    other = {"scenario": "tool-speed", "record": "2026-10-09", "date": "2026-10-09", "case": "c", "arm": "a", "metric": "ms",
+             "value": "1", "runs": "1"}
+    for name, value in (("RESULTS", tmp_path / "results.csv"), ("REPORT", tmp_path / "report.md"),
+                        ("README", tmp_path / "README.md"), ("HOME", tmp_path)):
+        monkeypatch.setattr(bm, name, value)
+    bm.README.write_text("No numbers here.\n", encoding="utf-8")
+    bc.write_rows([other], bm.RESULTS)
+    marker = "<!-- bench:matrix pool metric=tokens_per_right -->\n<!-- /bench -->\n"
+    bm.REPORT.write_text(br.render(marker, [other]), encoding="utf-8")  # every table agrees: only the marker is bare
+    assert bm.main(["report", "--check"]) == 1 and "marker of scenario 'pool' has no rows" in capsys.readouterr().out
+    bc.write_rows([other, {**other, "scenario": "pool", "metric": "tokens_per_right"}], bm.RESULTS)
+    bm.REPORT.write_text(br.render(marker, [other, {**other, "scenario": "pool", "metric": "tokens_per_right"}]), encoding="utf-8")
+    assert bm.main(["report", "--check"]) == 0

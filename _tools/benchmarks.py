@@ -2,12 +2,15 @@
 """The kb's benchmarks: every measurement of kb/_self/reports/benchmarks.md, run again by one command (stdlib only).
 
   benchmarks.py list                        the scenarios, each with its report section
-  benchmarks.py run [SCENARIO ...] [--reps N] [--arm ARM] [--out FILE]
+  benchmarks.py run [SCENARIO ...] [--reps N] [--arm ARM] [--out FILE] [--arms A,B] [--kinds K,K] [--effort L,L] [--dry-run]
                                             run every scenario, or the named ones, and write their rows to the results
                                             file (kb/_self/reports/benchmarks.csv; rows of the same scenario and date
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
                                             --arm names the arm of `navigation` (default `current`): a run replaces
-                                            only its own arm's rows
+                                            only its own arm's rows; `pool` runs the question pool (bench_pool.py)
+                                            on the --arms (default all of bench_pool.ARMS), the --kinds (default all)
+                                            and the --effort levels (default low,default) and replaces the rows of the
+                                            arms it ran; --dry-run prints its plan and starts no model
   benchmarks.py pool build [--querylog] [--seed N] [--out FILE]
                                             write the stratified question pool, with a check per row, to
                                             kb/public/_retrieval/bench_pool.csv, or with --querylog the redacted
@@ -17,7 +20,7 @@
                                             leak or a kind off its count
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
-                                            the results file
+                                            the results file, or a `bench:` marker names a scenario with no rows in it
 
 The results file has one row per scenario, record, case, arm and metric: `record` names one measurement (the date of a
 run of this tool, or the commit of a historical number taken from the reports it replaced), with its date, commit,
@@ -45,7 +48,7 @@ sys.path.insert(0, str(TOOLS))
 import bench_pool  # noqa: E402
 from bench_core import (ARMED, HOME, RAW, RESULTS, SPEND, Bench, Skip, merge_rows, read_rows,  # noqa: E402
                         write_rows)
-from bench_report import readme_misses, render  # noqa: E402
+from bench_report import empty_markers, readme_misses, render  # noqa: E402
 from bench_install import s_host_roots, s_ingest, s_kbpy, s_new_model  # noqa: E402
 from bench_lookup import (s_always_on, s_files_headless, s_files_subagents, s_headless, s_host_lookups, s_howto,
                           s_kb_lookup_agent, s_models, s_navigation, s_partial, s_route_by_verdict, s_router,
@@ -83,6 +86,7 @@ SCENARIOS = {  # name: (report section, function)
     "kbpy": ("Hook launcher start-up", s_kbpy),
     "new-model": ("A new model against the one it replaces", s_new_model),
     "navigation": ("Finding the code", s_navigation),
+    "pool": ("A question pool over the kb, router, hook and web arms", bench_pool.s_pool),
 }
 
 
@@ -95,6 +99,11 @@ def main(argv=None):
     r.add_argument("--reps", type=int, default=1)
     r.add_argument("--arm", default="current", help="the arm of the navigation scenario's rows (default: current)")
     r.add_argument("--out")
+    r.add_argument("--arms", help="the arms of `pool`, comma separated (default: " + ",".join(bench_pool.ARMS) + ")")
+    r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: all)")
+    r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
+                   + ",".join(bench_pool.EFFORTS) + ")")
+    r.add_argument("--dry-run", action="store_true", help="print the plan of `pool` and start no model")
     pool = sub.add_parser("pool").add_subparsers(dest="pool_cmd", required=True)
     pb = pool.add_parser("build")
     pb.add_argument("--querylog", action="store_true")
@@ -124,7 +133,10 @@ def main(argv=None):
                       "python3 _tools/benchmarks.py report rewrites it")
             for m in misses:
                 print(f"README.md: {m!r} matches no row of {RESULTS.relative_to(HOME)}")
-            return 1 if bad or misses else 0
+            empty = empty_markers(text, rows)
+            for m in empty:
+                print(f"{REPORT.relative_to(HOME)}: {m}")
+            return 1 if bad or misses or empty else 0
         REPORT.write_text(new, encoding="utf-8", newline="\n")
         for m in misses:
             print(f"README.md: {m!r} matches no row of {RESULTS.relative_to(HOME)}")
@@ -134,8 +146,16 @@ def main(argv=None):
     if unknown:
         print(f"unknown scenario: {', '.join(unknown)} (benchmarks.py list)", file=sys.stderr)
         return 2
+    arms, efforts = (x.split(",") if x else None for x in (a.arms, a.effort))
+    for flag, got, known in (("--arms", arms, bench_pool.ARMS), ("--effort", efforts, bench_pool.EFFORTS)):
+        bad = [x for x in got or [] if x not in known]
+        if bad:
+            print(f"{flag}: unknown {', '.join(bad)} (one of {', '.join(known)})", file=sys.stderr)
+            return 2
     b = Bench(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench", a.reps)
     b.arm = a.arm
+    b.arms, b.efforts, b.dry = arms, efforts, a.dry_run
+    b.kinds = a.kinds.split(",") if a.kinds else None
     out = Path(a.out) if a.out else RESULTS
     try:
         for n in names:
