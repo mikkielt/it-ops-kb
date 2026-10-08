@@ -2,7 +2,7 @@
   "id": "SP-ktup3cha",
   "kind": "sprint",
   "title": "Workers read what they change and gates say why they block",
-  "status": "planned",
+  "status": "active",
   "goal": "kb-worker reads every doc stale lists for its own files; two items that share only kb/_self docs run at once; gate add names what set a gate's class and token-efficiency.md no longer makes a gate secret; backlog check warns of a goal path no touch covers; start names the right host for a trigger; and backlog.md and tools.md state set --repro's exception for a reopened bug",
   "gates": [
     {

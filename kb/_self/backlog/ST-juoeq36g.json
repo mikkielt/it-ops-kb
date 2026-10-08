@@ -2,7 +2,7 @@
   "id": "ST-juoeq36g",
   "kind": "story",
   "title": "backlog.py set --add no longer appends to every list field in the call",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,

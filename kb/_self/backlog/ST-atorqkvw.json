@@ -2,7 +2,7 @@
   "id": "ST-atorqkvw",
   "kind": "story",
   "title": "kb-worker rule 4: read every doc stale lists for the item's own files, in touches or not",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
