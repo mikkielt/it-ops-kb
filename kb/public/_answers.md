@@ -2542,3 +2542,14 @@ _Agent: kb-research_
 - See gitlab/git-refs.md, gitlab/git-trailers-and-hooks.md.
 
 _Agent: kb-research_
+
+## QK-prompt-caching-price-cache-reads-versus. How does prompt caching price cache reads versus cache writes and uncached input tokens?
+- Anthropic bills three input classes: regular (uncached) input tokens at the base input price, cache writes at 1.25x (5-minute) or 2x (1-hour) that price, and cache reads at 0.1x, with 0.05x on Claude Opus 5.5 and Claude Sonnet 5.5 and 0.025x on Claude Fable 5.1 and Claude Mythos 5.1; a breakpoint itself costs nothing. [DOC S2130, S2131]
+- At $5 per million base input tokens (Claude Opus 5) that is $6.25 for a 5-minute write, $10 for a 1-hour write and $0.50 for a read; the pricing page's worked example bills 40,000 read tokens at $0.02 against $0.05 for 10,000 uncached ones. [DOC S2131]
+- One read repays a 5-minute write and two reads repay a 1-hour write; the multipliers stack with the Batch API discount and the 1.1x US data-residency multiplier. [DOC S2131]
+- OpenAI GPT-5.6 and later charge a write at 1.25x the uncached input rate and a read at 0.1x (0.05x on GPT-6.1 Sol); earlier models have no write charge and a model-dependent cached-input rate. [DOC S2133]
+- Conclusion: Anthropic and OpenAI price an input token at one rate of three, with the uncached rate as the base; a prefix reused at least twice is cheaper cached, and the read multiplier is model-specific, so read it from the model's row, not from 0.1x. [DER S2130, S2131, S2133]
+- Open: the pricing page changed from the kb's earlier reading: Sonnet 5.5 reads were recorded at 0.1x ($0.20) on 2026-09-28 and are 0.05x ($0.10) on the page of 2026-10-08; `claude/models.csv` and the earlier Sonnet 5.5 answer still carry the old figure. [UNK]
+- See agents/agent-caching.md, claude/models.csv.
+
+_Agent: kb-research_

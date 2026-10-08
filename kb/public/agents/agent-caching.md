@@ -2,7 +2,7 @@
 topic: agents/agent-caching
 priority: P1
 applies_to: "Anthropic prompt caching (Claude Developer Platform, retrieved 2026-09-25); Claude Code >=2.1.251; OpenAI Responses/Completions API; Azure OpenAI/Foundry Models; MCP spec 2026-07-28"
-retrieved_utc: 2026-10-05
+retrieved_utc: 2026-10-08
 sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159, S1512]
 status: complete
 ---
@@ -19,9 +19,15 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 
 - Up to 4 explicit cache breakpoints per request are supported via `cache_control` blocks [DOC S2130].
 - Two TTLs: 5-minute (default/ephemeral, refreshed on each cache hit) and 1-hour (opt-in, `"ttl": "1h"`) [DOC S2130].
-- Minimum cacheable prefix length is model-dependent: as low as 512 tokens for some newer/thinking-oriented models (per the fetched page: "Claude Fable 5.1, Mythos 5.1, Opus 5.5, Opus 5, Sonnet 5.5, Fable 5, Mythos 5"), 1,024 tokens for Sonnet 5 / Sonnet 4.6 / Sonnet 4.5 / Opus 4.8, 2,048 tokens for Opus 4.7/Mythos Preview, and 4,096 tokens for Haiku 4.5 and Opus 4.6/4.5 [DOC S2130].
+- Minimum cacheable prefix length is model-dependent: as low as 512 tokens for some newer/thinking-oriented models (per the fetched page: "Claude Fable 5.1, Mythos 5.1, Opus 5.5, Opus 5, Sonnet 5.5, Fable 5, Mythos 5", and Haiku 5.5), 1,024 tokens for Sonnet 5 / Sonnet 4.6 / Sonnet 4.5 / Opus 4.8, 2,048 tokens for Opus 4.7/Mythos Preview, and 4,096 tokens for Haiku 4.5 and Opus 4.6/4.5 [DOC S2130].
 - Cache write pricing: 5-minute writes cost 1.25x the base input token price; 1-hour writes cost 2x [DOC S2130,S2131].
-- Cache read (hit and refresh) pricing: 0.1x base input price for all models except Claude Fable 5.1 and Claude Mythos 5.1 (0.025x) and Claude Opus 5.5 (0.05x); the prompt-caching and pricing pages give the same multipliers [DOC S2130, S2131].
+- Cache read (hit and refresh) pricing: 0.1x base input price for all models except Claude Fable 5.1 and Claude Mythos 5.1 (0.025x) and Claude Opus 5.5 and Claude Sonnet 5.5 (0.05x); the prompt-caching and pricing pages give the same multipliers [DOC S2130, S2131].
+- Prompt caching prices input tokens in three classes, cache reads versus cache writes versus uncached input tokens: uncached (regular) input tokens are billed at the base input price, cache writes at 1.25x (5-minute) or 2x (1-hour) that price, and cache reads at a fraction of it (0.1x, 0.05x or 0.025x by model); a cache breakpoint adds no charge by itself [DOC S2130].
+- Per-million-token prices (uncached input / 5-minute write / 1-hour write / cache read): Opus 4.5 to Opus 5 $5 / $6.25 / $10 / $0.50; Opus 5.5 $4 / $5 / $8 / $0.20; Sonnet 4.5 and 4.6 $3 / $3.75 / $6 / $0.30; Sonnet 5 $2 / $2.50 / $4 / $0.20; Sonnet 5.5 $2 / $2.50 / $4 / $0.10; Fable 5 and Mythos 5 $10 / $12.50 / $20 / $1; Fable 5.1 and Mythos 5.1 $10 / $12.50 / $20 / $0.25; Haiku 4.5 $1 / $1.25 / $2 / $0.10 [DOC S2130, S2131].
+- Claude Haiku 5.5 is priced by prompt length: up to 100,000 tokens $0.10 uncached input / $0.125 5-minute write / $0.20 1-hour write / $0.01 read; over 100,000 tokens $0.50 / $0.625 / $1 / $0.05 [DOC S2130, S2131].
+- Break-even: a cache hit at 0.1x pays off the 5-minute write (1.25x) after one read, and the 1-hour write (2x) after two reads [DOC S2131].
+- Worked example (Claude Opus 5, $5 per million base input): 40,000 cache-read tokens plus 10,000 uncached input tokens cost $0.02 for the reads (40,000 x $5 x 0.1 / 1,000,000) and $0.05 for the uncached tokens (10,000 x $5 / 1,000,000) [DOC S2131].
+- The caching multipliers stack with other price modifiers: the Batch API discount, and the 1.1x data-residency multiplier for US-only inference (`inference_geo`), which applies to input, output, cache writes and cache reads on Claude 4.6 and later models [DOC S2131].
 - Invalidation hierarchy: caching follows the order **tools → system → messages**; a change to tool definitions invalidates everything (tools, system, messages); toggling web search or citations, or switching `speed`, invalidates system+messages but not tools; a change to `tool_choice` or adding/removing images invalidates only the messages cache; thinking parameters and `output_config.effort` always invalidate messages and, depending on the model, tools and system too [DOC S2130]. This is the concrete "invalidation hierarchy" the assignment asked for.
 - Usage fields: responses report `cache_creation_input_tokens` (tokens newly written to cache) and `cache_read_input_tokens` (tokens served from cache); `input_tokens` covers only what follows the last cache breakpoint; total input = read + creation + input [DOC S2130].
 - Practical rules: a cache breakpoint must sit on a block identical across requests (never on a changing timestamp or per-request value); the server looks back up to 20 blocks for a prior cache write; a hit requires the full prefix, text and images, to match exactly; a cache can be pre-warmed with a `max_tokens: 0` request that only writes the cache [DOC S2130].
@@ -41,6 +47,7 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 
 - OpenAI: caching is on by default for supported models; minimum prefix is 1,024 visible input tokens for GPT-5.6 and later (varies by settings for earlier models); cache reuse requires the *entire* rendered prefix to match exactly (model, tools, schemas, reasoning effort, verbosity all count); caches are not shared across organizations or across regional processing boundaries [DOC S2133].
 - OpenAI pricing and breakpoints by generation: GPT-5.6 and later charge 1.25x the uncached input rate for a cache write and 0.1x for a read, and support explicit breakpoints (`prompt_cache_options.mode: explicit`, `prompt_cache_breakpoint` on a content block, up to four cache writes per request) besides the default implicit breakpoint at the latest eligible message; earlier models are implicit-only, with a model-dependent cached-input rate and no cache-write charge [DOC S2133].
+- OpenAI bills each input token at exactly one of the uncached-input, cached-input or cache-write rates, so a cache write is no extra fee on top; on GPT-5.6 and later a read costs 0.1x the uncached input rate, or 0.05x on GPT-6.1 Sol, and a prefix written once and fully reused once costs 1.35x its ordinary input cost against 2x without caching [DOC S2133].
 - TTL: GPT-5.6+ uses `prompt_cache_options.ttl`, only `30m` supported (also the default); earlier models use `prompt_cache_retention` with `in_memory` (typically 5-10 minutes of inactivity, up to an hour) or `24h` (GPT-5.5 and GPT-5.5 Pro: `24h` only); where both exist the default is `24h` unless the organization has Zero Data Retention, then `in_memory` [DOC S2133].
 - Azure OpenAI (Microsoft Foundry Models): same 1,024-token minimum-prefix rule (first 1,024 tokens must be identical); discount applies to Standard deployments' input pricing, with up to 100% discount on Provisioned deployment types; supported on GPT-4o and newer [DOC S2134].
 - Azure OpenAI cache lifetime matches OpenAI's: on GPT-5.6 and later `prompt_cache_options.ttl` sets a minimum lifetime whose only (and default) value is `30m` (the service may keep the prefix longer); earlier models use `prompt_cache_retention` with in-memory retention (all GPT-4o+ models) or extended retention of up to 24 hours on listed models. [DOC S2134]
@@ -73,11 +80,11 @@ this article's cache-write/cache-read pricing).
 | Anthropic (Sonnet 5/4.6/4.5, Opus 4.8) | 1,024 tokens | 5 min (default) or 1 h | 1.25x (5m) / 2x (1h) | 0.1x |
 | Anthropic (Haiku 4.5 / Opus 4.6-4.5) | 4,096 tokens | 5 min or 1 h | 1.25x / 2x | 0.1x |
 | Anthropic (Fable 5.1, Mythos 5.1) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.025x |
-| Anthropic (Opus 5.5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.05x |
-| Anthropic (Sonnet 5.5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.1x |
+| Anthropic (Opus 5.5, Sonnet 5.5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.05x |
+| Anthropic (Haiku 5.5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.1x |
 | Anthropic (Opus 5, Fable 5, Mythos 5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.1x |
-| OpenAI GPT-5.6+ | 1,024 visible tokens | 30 min (only option) | n/a (automatic) | ~0.1x |
-| OpenAI earlier models | varies | 5-10 min or 24h | n/a (automatic) | ~0.1x |
+| OpenAI GPT-5.6+ | 1,024 visible tokens | 30 min (only option) | 1.25x uncached input | 0.1x (0.05x GPT-6.1 Sol) |
+| OpenAI earlier models | varies | 5-10 min or 24h | no cache-write charge | model-dependent cached-input rate |
 | Azure OpenAI (GPT-4o+) | 1,024 tokens | GPT-5.6+: 30 min minimum (`ttl` 30m only); earlier: in-memory or extended (up to 24 h) | n/a (automatic) | discount, up to 100% on Provisioned |
 
 Invalidation hierarchy (Anthropic): `tools` (top) → `system` → `messages` (bottom); changing something at a level invalidates that level and everything below it [DOC S2130].
