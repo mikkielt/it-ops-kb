@@ -35,8 +35,5 @@
   "touches": [
     "kb/public/**"
   ],
-  "depends_on": [
-    "ST-r7wvfqvw"
-  ],
   "notes": "Queue on 2026-10-07: 5 gap findings (python3 _tools/querylog.py queue), all raised by the kb's own development sessions; a real user's gap, when one arrives, goes first. Depends on ST-r7wvfqvw (Sonnet headless default, SP-d3hybrlv) so the run is the cheap one; a run before that lands is still evidence if every worker was started headless by hand. Benchmarking of the kb (retrieval, answer rate, cost per closed gap from backlog.py cost --research) starts with this sprint, not after the backlog is empty."
 }

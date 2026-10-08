@@ -21,9 +21,6 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
-  "depends_on": [
-    "ST-pjkmiyqe"
-  ],
   "gates": [
     {
       "id": "g1",
