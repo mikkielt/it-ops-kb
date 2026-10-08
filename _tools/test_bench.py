@@ -124,9 +124,10 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path):
 
 # ---- the pool scenario (bench_pool.py): synthetic streams, no model
 
-def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost=0.01):
+def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost=0.01, main_out=None):
     """A stream-json run of two requests: a kb_pack call whose result is `chars` characters, then the answer. The
-    messages' output counts are partial (50 and 30); the result event's is `final_out`."""
+    messages' output counts are partial (50 and 30); the result event's `modelUsage` counts `final_out` and its `usage`
+    (the main loop) `main_out`, by default the same."""
     usage = lambda unc, write, read, out: {"input_tokens": unc, "cache_creation_input_tokens": write,  # noqa: E731
                                            "cache_read_input_tokens": read, "output_tokens": out}
     events = [
@@ -135,7 +136,7 @@ def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost
         {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": "x" * chars}]}},
         {"type": "assistant", "message": {"id": "m2", "model": model, "usage": usage(170, 0, 2010, 30),
                                           "content": [{"type": "text", "text": answer}]}},
-        {"type": "result", "usage": usage(180, 2000, 2010, final_out), "total_cost_usd": cost, "duration_api_ms": 4000,
+        {"type": "result", "usage": usage(180, 2000, 2010, final_out if main_out is None else main_out), "total_cost_usd": cost, "duration_api_ms": 4000,
          "num_turns": 2, "modelUsage": {model: {"costUSD": cost, "outputTokens": final_out}}, "result": answer}]
     return "\n".join(json.dumps(e) for e in events)
 
@@ -162,8 +163,9 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables():
     assert cell("fact", "sonnet-5-5:low", "input") == 180 + 2000 + 2010 and cell("fact", "sonnet-5-5:low", "start_ctx") == 2010
     assert cell("fact", "sonnet-5-5:low", "effective_input") == 180 + 2 * 2000 + 0.05 * 2010  # Sonnet 5.5 reads at 0.05x
     assert cell("fact", "sonnet-5-5:low", "pack_tokens") == 120  # the prompt's growth less the request's output, not 480 / 4
-    # the output is the result event's count, not the messages' partial ones (50 + 30), and prices the run near its cost
-    planted = agent_bench.result_of(pool_stream("value1", final_out=500, cost=0.0105), "", 5.0)
+    # the output is the sum of the result event's modelUsage counts (500: the main loop's 200 and a subagent's), not the
+    # messages' partial ones (50 + 30) nor the event's usage, and prices the run near its cost
+    planted = agent_bench.result_of(pool_stream("value1", final_out=500, cost=0.0105, main_out=200), "", 5.0)
     t = bc.run_tokens(planted, "sonnet")
     assert t["out"] == planted["out"] == 500
     usage = {"input_tokens": t["uncached"], "cache_creation_input_tokens": t["cache_write"],

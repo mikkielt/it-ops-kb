@@ -221,19 +221,23 @@ def execute(cmd, prompt, cwd=KB, env=None, clean=False):
 
 
 def result_of(stdout, stderr, wall):
-    """The result fields of one run's stream-json `stdout` that took `wall` seconds (or {"error": ...}). The run's
-    tokens, `out` too, are those of the result event's `usage` (the main loop); the `usage` of the stream's messages
-    (`requests`) carries partial output counts, so it gives the model and the prompt of each request, not the output."""
+    """The result fields of one run's stream-json `stdout` that took `wall` seconds (or {"error": ...}). The input
+    tokens are those of the result event's `usage` (the main loop). `out` is the sum of the event's `modelUsage`
+    `outputTokens` (the whole run: subagents and internal calls too, thinking included), else its `usage` output
+    count; the `usage` of the stream's messages (`requests`) carries partial output counts, so it gives the model
+    and the prompt of each request, not the output."""
     seen, res = parse(stdout)
     if not res:
         return {"error": stderr[-500:]}
     if res.get("is_error") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
         return {"error": (res.get("result") or "is_error")[:200]}  # a refused run is void, not a cheap answer
     u = res["usage"]
+    counts = [v["outputTokens"] for v in (res.get("modelUsage") or {}).values()
+              if isinstance(v, dict) and isinstance(v.get("outputTokens"), int)]
     return {"wall_s": round(wall, 1), "api_s": round(res["duration_api_ms"] / 1000, 1),
             "cost": round(res["total_cost_usd"], 4), "turns": res["num_turns"],
             "in_uncached": u["input_tokens"], "cache_write": u["cache_creation_input_tokens"],
-            "cache_read": u["cache_read_input_tokens"], "out": u["output_tokens"],
+            "cache_read": u["cache_read_input_tokens"], "out": sum(counts) if counts else u["output_tokens"],
             "models": {m: round(v["costUSD"], 4) for m, v in res.get("modelUsage", {}).items()},
             **seen, "answer": res.get("result") or ""}
 
