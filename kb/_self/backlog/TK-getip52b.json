@@ -2,7 +2,7 @@
   "id": "TK-getip52b",
   "kind": "task",
   "title": "bench_core.PRICE and ALIAS cite the kb lines that state each price and alias version",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-xy5kmisr",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "eb2d318456cd03a233bcdd339842a55f70b13ae5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,re; t=open('_tools/bench_core.py',encoding='utf-8').read(); assert len(re.findall(r'ci-and-headless\\.md:\\d+', t))>=4, 'no kb line cited'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
