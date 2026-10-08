@@ -33,7 +33,7 @@ PRICE = {
 # the alias arms of a run and the model each names from a Claude Code version on; a run's own transcript names the model
 # it used, and that wins: this table only prices a run that reports none
 ARMS = ("haiku", "sonnet", "opus")
-ALIAS = {"haiku": (((0,), "claude-haiku-4-5"),),
+ALIAS = {"haiku": (((0,), "claude-haiku-4-5"), ((2, 1, 293), "claude-haiku-5-5")),
          "sonnet": (((0,), "claude-sonnet-5"), ((2, 1, 284), "claude-sonnet-5-5")),
          "opus": (((0,), "claude-opus-5-5"),)}
 WEB_SEARCH_USD = 0.01

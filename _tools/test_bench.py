@@ -28,3 +28,5 @@ def test_bench_price_tier_is_recorded_and_alias_follows_the_run():
     assert bc.resolve_model("sonnet", "claude-sonnet-5-5") == "claude-sonnet-5-5"
     assert bc.resolve_model("sonnet", "", "2.1.283") == "claude-sonnet-5"
     assert bc.resolve_model("sonnet", "", "2.1.284") == "claude-sonnet-5-5"
+    assert bc.resolve_model("haiku", "", "2.1.292") == "claude-haiku-4-5"
+    assert bc.resolve_model("haiku", "", "2.1.293") == "claude-haiku-5-5"
