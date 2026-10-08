@@ -2,7 +2,7 @@
   "id": "ST-7yahfn3j",
   "kind": "story",
   "title": "kb-sprint run gives a headless worker brief with a scratch dir, a turn cap by item kind and subshell-only cd",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (run 2026-10-07): its check prints False (--add-dir True, --max-turns False, subshell False); --add-dir is in SKILL.md only for .claude/ staging copies. The --max-turns flag works in this CLI though claude --help does not list it: a headless research session started with --max-turns 60 ended with subtype error_max_turns at 61 turns. kb DOC: kb/public/claude/ci-and-headless.md:39 (print mode, exits with error at the limit, no default)."
+  "notes": "Premise (run 2026-10-07): its check prints False (--add-dir True, --max-turns False, subshell False); --add-dir is in SKILL.md only for .claude/ staging copies. The --max-turns flag works in this CLI though claude --help does not list it: a headless research session started with --max-turns 60 ended with subtype error_max_turns at 61 turns. kb DOC: kb/public/claude/ci-and-headless.md:39 (print mode, exits with error at the limit, no default).",
+  "claimed_by": "worker-ST-7yahfn3j"
 }
