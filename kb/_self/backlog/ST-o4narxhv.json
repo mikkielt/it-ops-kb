@@ -1,0 +1,25 @@
+{
+  "id": "ST-o4narxhv",
+  "kind": "story",
+  "title": "A goal research story whose rows land in kb/_self/_retrieval/lookup_eval.csv is landed with land, not done, since that file is code lane",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint skill's plan step 1 and the research story's goal text say that a goal research story finished with tested rows in kb/_self/_retrieval/lookup_eval.csv (a code-lane path, _tools/kblane.py) lands through backlog.py land --wait-merge, not done --commit, so no orchestrator meets the refusal 'code commit(s) ... are not on origin/main' (SP-rvslem3h: done of ST-ls2ge3bz refused once for this).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rvslem3h close"
+  ]
+}
