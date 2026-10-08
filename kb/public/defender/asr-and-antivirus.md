@@ -2,7 +2,7 @@
 topic: defender/asr-and-antivirus
 priority: P2
 applies_to: "Microsoft Defender Antivirus and Attack Surface Reduction (ASR) rules on Windows 10/11 and Windows Server, managed via Intune, Configuration Manager, Group Policy, MDM CSP or local PowerShell; docs retrieved 2026-09-26"
-retrieved_utc: 2026-10-07
+retrieved_utc: 2026-10-08
 sources: [S-oc7bghb6, S-jlx5q3eb, S-tn7i36es, S-4adqmykc, S-bmoruabr, S-mxlwzhw5, S-3odg3w3u, S-tateky4b, S-kp35fytq, S-sfs6hoqq, S-f4gw3rhj, S-3ed4q5kx, S1472, S-oeh7ui3h, S-wqwf7kt5, S-pfbl6p36, S1402, S-bzyxqg37, S-rxcgi365, S-lkbn5y6v, S-go2hxmtt, S-wwlnekbg, S-idhc2ard, S-cbmoutip, S-3ecopsoa, S-e76qb37t]
 status: complete
 files: [defender/asr-rules.csv]
@@ -66,7 +66,7 @@ enables 15 of the 19 documented ASR rules in Block mode; the baseline's exact ro
 - An interactive recording is stopped and saved with Enter and cancelled with Ctrl+C; one that fails with "Cannot start performance recording because Windows Performance Recorder is already recording" is cleared with `wpr -cancel -instancename MSFT_MpPerformanceRecording`. [DOC S-go2hxmtt]
 - `Get-MpPerformanceReport -Path <file.etl>` takes one report switch per view, each with a count of entries sorted by "Duration": `-TopFiles`, `-TopExtensions`, `-TopProcesses`, `-TopScans` and `-TopPaths` (grouped per folder, with `-TopPathsDepth` for the grouping depth); the combined views are named `-Top<A>Per<B>` (for example `-TopScansPerFile`, `-TopFilesPerExtension`, `-TopProcessesPerPath`, `-TopScansPerProcessPerFile`). [DOC S-idhc2ard]
 - `Get-MpPerformanceReport` also narrows a report with `-MinDuration` (a value such as `0.1234ms` or a TimeSpan, applied to single scans and to the total duration of files, extensions and processes), `-MinStartTime`, `-MinEndTime`, `-MaxStartTime` and `-MaxEndTime`; `-Overview` adds a summary of the scans in the trace and `-Raw` makes the output machine readable for JSON and CSV conversion. [DOC S-idhc2ard, S-go2hxmtt]
-- In `-Raw` output, TimeSpan values are counts of 100-nanosecond intervals and DateTime values are 100-nanosecond intervals since 1 January 1601 UTC. [DOC S-idhc2ard]
+- `Get-MpPerformanceReport -Raw` makes the report machine readable for formats such as JSON: collections and elements are not formatted, TimeSpan values (durations) are numbers of 100-nanosecond intervals and DateTime values are numbers of 100-nanosecond intervals since 1 January 1601 (UTC); without `-Raw` the output is the formatted report, and the cmdlet page states the 100-nanosecond unit only for `-Raw`. [DOC S-idhc2ard]
 - Microsoft's example asks for four views in one call: `Get-MpPerformanceReport -Path:.\Defender-scans.etl -TopFiles:10 -TopExtensions:10 -TopProcesses:10 -TopScans:10`. The report shows scan counts, durations (total, minimum, average, maximum, median), path, process and reason for scan. [DOC S-idhc2ard, S-go2hxmtt]
 - To export, read the report's `TopScans` property: `(Get-MpPerformanceReport -Path .\x.etl -Topscans 1000).TopScans | Export-CSV -Path .\scans.csv -Encoding UTF8 -NoTypeInformation`, or `| ConvertTo-Json -Depth 1`. [DOC S-go2hxmtt]
 - Microsoft calls the analyzer "AS IS" and not a source of exclusion suggestions, and warns that exclusions can reduce protection. [DOC S-wwlnekbg, S-idhc2ard]
