@@ -2,7 +2,7 @@
   "id": "BG-huavhgoh",
   "kind": "bug",
   "title": "claude/models.csv and the Sonnet 5.5 answer still give a 0.1x cache-read price",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,18 @@
     "ST-zqxgo47z"
   ],
   "notes": "Filed by the ST-5vtfd3y4 worker on 2026-10-08 and moved into SP-caqrexqw by the orchestrator: a wrong cache-read price the kb now contradicts itself on, inside the sprint goal (answers stay right). Ordered after ST-zqxgo47z and before ST-ctomsu4i, which share kb/public/_answers.md and _sources.csv; the _conflicts.md entry on the Sonnet 5.5 read price may close with it, since both Anthropic pages now agree.",
-  "claimed_by": "worker-BG-huavhgoh"
+  "evidence": {
+    "commit": "96d23c1a388ffbe0fce60b595fbcd8f7d811d36c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib;t=pathlib.Path('kb/public/claude/models.csv').read_text(encoding='utf-8');row=[l for l in t.splitlines() if 'claude-sonnet-5-5' in l][0];sys.exit(int('cache read price 0.05x' not in row))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
