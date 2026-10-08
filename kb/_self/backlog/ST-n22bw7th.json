@@ -2,7 +2,7 @@
   "id": "ST-n22bw7th",
   "kind": "story",
   "title": "backlog.py done runs selfdoc stale over the item's own commits, so a stale doc is found by the worker, not at land",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-6iiony54",
   "sprint": "SP-evkj4avq",
   "priority": "P2",
@@ -42,5 +42,6 @@
     "kb/_self/backlog.md Definition of done",
     "kb/_self/git.md (sync's selfdoc stale gate)"
   ],
-  "notes": "Premise (ops sidecars since 2026-10-05): land.step rows with step stale and exit 1: 7 this week, 13 all time; each is a landing the orchestrator ran, failed and handed back after the worker had reported done, so the fix costs a second worker turn. The reason class stale-docs is new: ql_capture.OPS_REFUSED (the closed classes of done.refused reasons) and the paragraph in kb/_self/querylog.md Surfaces that lists them change in the same commit, which is why _tools/ql_capture.py and querylog.md are in touches. Related: ST-atorqkvw (kb-worker rule 4 reads every doc stale lists) is the skill side of the same miss; this story is the tool side. Precheck 2026-10-08: both checks pass before the work: the planted failure (a fixture item whose commit changes a mapped tool and no doc, refused at done with stale-docs) is added to test_land_e2e.py by the work, and backlog.py check pins that the new reason class and the item files stay consistent."
+  "notes": "Premise (ops sidecars since 2026-10-05): land.step rows with step stale and exit 1: 7 this week, 13 all time; each is a landing the orchestrator ran, failed and handed back after the worker had reported done, so the fix costs a second worker turn. The reason class stale-docs is new: ql_capture.OPS_REFUSED (the closed classes of done.refused reasons) and the paragraph in kb/_self/querylog.md Surfaces that lists them change in the same commit, which is why _tools/ql_capture.py and querylog.md are in touches. Related: ST-atorqkvw (kb-worker rule 4 reads every doc stale lists) is the skill side of the same miss; this story is the tool side. Precheck 2026-10-08: both checks pass before the work: the planted failure (a fixture item whose commit changes a mapped tool and no doc, refused at done with stale-docs) is added to test_land_e2e.py by the work, and backlog.py check pins that the new reason class and the item files stay consistent.",
+  "claimed_by": "worker-n22bw7th"
 }
