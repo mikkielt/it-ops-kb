@@ -2,7 +2,7 @@
   "id": "BG-rbokisbc",
   "kind": "bug",
   "title": "A pool run's list cost leaves out a kb arm's web searches and overcounts a Sonnet or Opus off-kb run, so pool verify (b) fails the smoke record",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -25,5 +25,6 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md"
-  ]
+  ],
+  "claimed_by": "worker-BG-rbokisbc"
 }
