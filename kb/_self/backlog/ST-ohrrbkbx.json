@@ -1,0 +1,26 @@
+{
+  "id": "ST-ohrrbkbx",
+  "kind": "story",
+  "title": "backlog.py new refuses a touch git history has and the working tree lacks, as check does",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "From the SP-matmvkn6 close retrospective: the review story's done refused once because a parked story filed in the review named _tools/test_bl_land.py, a path an earlier change removed; backlog.py new filed it and only check (run by done) refused it. new refuses, or set warns of, a touch that git history has and the working tree lacks, naming the same remedy check names, so a gone path is caught at filing.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "new_refuses_gone_touch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-matmvkn6 close"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-cwy6sojk",
+  "kind": "story",
+  "title": "A worker's brief says every choice its report names is a gate on its branch before it returns",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "From the SP-matmvkn6 close retrospective: the ST-dsre52lb worker named two open choices in its report (a minimum word length, a doc wording) and recorded no gate, so the orchestrator sent it back to record two provisional gates before landing. The brief and kb-worker.md say a choice named in the report and not recorded as a gate on work/<id> sends the item back, so the worker records it before returning.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-matmvkn6 close"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-myhtzlb3",
+  "kind": "story",
+  "title": "An unanswered gate its session just added can be reworded or removed with a backlog.py command",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "From the SP-matmvkn6 close retrospective: the ST-tudbg2a6 research worker's gate question named gitlab, which classed it as a push gate only the operator answers; with no command to edit or remove a gate it reverted the item file and added the gate again. backlog.py removes or rewords an unanswered gate (re-classing it), refusing an answered one.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "gate_remove"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_gates.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-matmvkn6 close"
+  ]
+}
