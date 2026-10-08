@@ -2,7 +2,7 @@
   "id": "ST-p6g7vagy",
   "kind": "story",
   "title": "Review sprint: Pushes and gates are safe and the content queue shrinks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vayhvwfy",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "c2c8319daec166f42cf68eaea08f8a3e62c9280a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "40b77e372ae6644f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a0e4f83dfd95c124"
+      }
+    ]
+  }
 }
