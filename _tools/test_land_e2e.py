@@ -2,7 +2,8 @@
 fails stops `land` at its step and leaves origin/main where it was. The first item's branch sits in a finished worker's
 worktree that holds an untracked intake draft: `land` moves the draft aside and says so, and still refuses any other
 untracked file. Before the second item lands, a commit of it that changes a mapped tool and no doc is refused at
-`done` with stale-docs, and a `Self-Reviewed:` trailer naming the docs clears that."""
+`done` with stale-docs, and a `Self-Reviewed:` trailer naming the docs clears that. A content landing that adds a CODE tag with no pointer to
+an article stops at step `lint`, which ran on that article's path alone."""
 import json
 import re
 from pathlib import Path
@@ -48,18 +49,21 @@ def work(repo, iid, rel):
     repo.git("commit", "-q", "-m", f"docs(kb): {iid} work", "-m", f"KB-Work: {iid}")
 
 
-def test_land_content_item_then_planted_failure(scenario):
+def test_land_runs_lint_on_content_item_then_planted_failures(scenario):
     repo = scenario.clone()
     repo.git("config", "core.fileMode", "false")
     sp = new_id(ok(repo, "new", "sprint", "--title", "Landing sprint"))
-    good, bad = (new_id(ok(repo, "new", "story", "--title", f"Landing {n}", "--sprint", sp, "--goal",
-                           f"The doc {n}.md exists.", "--touch", f"kb/_self/{n}.md", "--check", chk))
-                 for n, chk in (("good", "python3 _tools/backlog.py list --kind sprint"),
-                                ("bad", "python3 _tools/backlog.py show ST-00000000")))
+    article = "kb/public/agents/codebase-mapping.md"
+    good, bad, lint = (new_id(ok(repo, "new", "story", "--title", f"Landing {n}", "--sprint", sp, "--goal",
+                                 f"The doc {n}.md exists.", "--touch", rel, "--check", chk))
+                       for n, rel, chk in (("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"),
+                                           ("bad", "kb/_self/bad.md", "python3 _tools/backlog.py show ST-00000000"),
+                                           ("lint", article, "python3 _tools/backlog.py list --kind sprint")))
     ok(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")
     ok(repo, "start", sp)
     ok(repo, "claim", good, "--by", "t", "--commit")
     ok(repo, "claim", bad, "--by", "t", "--commit")
+    ok(repo, "claim", lint, "--by", "t", "--commit")
     repo.commit(f"chore(backlog): plan {sp}", PLAN)
     p = repo.kbgit("sync", "--push", env=NOSYNC)
     assert p.returncode == 0, p.stdout + p.stderr
@@ -114,6 +118,17 @@ def test_land_content_item_then_planted_failure(scenario):
     assert code != 0 and "land stopped at step done" in out and "check(s) failed" in out, out
     assert origin_main(scenario) == moved
     assert item(scenario, bad)["status"] == "doing"
+
+    # planted failure of the lint step: a content landing (no _tools/) adds a CODE tag with no path#symbol pointer
+    repo.git("checkout", "-q", "main")
+    repo.git("checkout", "-q", "-b", f"work/{lint}", "main")
+    repo.write(article, Path(repo.file(article)).read_text(encoding="utf-8") + "\n- Planted fact. [CODE S0000001]\n")
+    repo.git("commit", "-q", "-am", f"docs(kb): {lint} work", "-m", f"KB-Work: {lint}")
+    repo.git("checkout", "-q", "main")
+    code, out = bl(repo, "land", lint)
+    assert code != 0 and "land stopped at step lint" in out, out
+    assert "CODE tag without a path#symbol pointer" in out and f"lint.py {article[3:]} exited 1" in out, out
+    assert origin_main(scenario) == moved and item(scenario, lint)["status"] == "doing"
 
 
 def test_empty_selection_refused_and_gone_once(monkeypatch, capsys):
