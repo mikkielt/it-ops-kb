@@ -284,3 +284,4 @@ EV-subagentstart-subagentstop-hook-input-fields-agent,SubagentStart SubagentStop
 EV-posttooluse-hook-input-fields-duration-ms,PostToolUse hook input fields duration_ms tool_use_id,claude/hooks.md,good,
 EV-ci-job-token-rest-api-endpoints,"CI_JOB_TOKEN which REST API endpoints can a job token access, repository commits merge_requests",gitlab/detecting-mr-merges-in-ci.md,good,
 EV-claude-code-expose-session-id-bash,Claude Code expose session id to Bash commands environment variable,claude/hooks.md,good,
+EV-claude-haiku-5-5-model-id,"Claude Haiku 5.5 model id price context window",claude/models.csv,good,

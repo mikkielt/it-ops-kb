@@ -36,6 +36,21 @@
   "depends_on": [
     "ST-nbmb7mnp"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the claude-haiku-5-5 row sit in claude/models.csv?",
+      "options": [
+        "First data row",
+        "After claude-sonnet-5"
+      ],
+      "recommendation": "First data row",
+      "class": "design",
+      "answer": "First data row",
+      "by": "agent"
+    }
+  ],
   "links": [
     "https://platform.claude.com/docs/en/about-claude/models/overview",
     "https://platform.claude.com/docs/en/about-claude/pricing",
