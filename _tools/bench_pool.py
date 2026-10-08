@@ -794,6 +794,15 @@ def router_run(clone, question, env):
         return {"error": f"the router run failed: {type(e).__name__}"}
 
 
+def execute_run(cmd, prompt, **kw):
+    """agent_bench.execute, a `claude -p` that outlives its timeout recorded as an error run (as the router and the hook
+    are), so one slow run fails its cell's run and not the chunk."""
+    try:
+        return agent_bench.execute(cmd, prompt, **kw)
+    except subprocess.TimeoutExpired as e:
+        return {"error": f"the claude run took over {e.timeout:g} s"}
+
+
 def live_runner(b, sh):
     """The runner of a paid run: a kb arm is `claude -p` in the lookup clone (kb server registered, hooks off) with
     --effort for a non-default level, a web arm the bare web session of agent_bench in an empty directory, the router and
@@ -809,10 +818,10 @@ def live_runner(b, sh):
         if arm == "router":
             r = router_run(clone, q, env)
         elif arm in WEB_ARMS:
-            r = agent_bench.execute(agent_bench.web_argv(agent_bench.MODEL[arm.removeprefix("web-")]), q + WEB_ASK,
-                                    cwd=str(empty), env=env, clean=True)
+            r = execute_run(agent_bench.web_argv(agent_bench.MODEL[arm.removeprefix("web-")]), q + WEB_ASK,
+                            cwd=str(empty), env=env, clean=True)
         else:
-            r = agent_bench.execute(agent_bench.kb_argv(arm) + effort_args(arm, effort), q, cwd=str(clone), env=env, clean=True)
+            r = execute_run(agent_bench.kb_argv(arm) + effort_args(arm, effort), q, cwd=str(clone), env=env, clean=True)
         spent_run(r)
         return r
     return run
@@ -839,7 +848,7 @@ def live_session_runner(b):
     total = {}  # session id: the running cost its last question's result event reported
 
     def run(arm, effort, row, sid, position):
-        r = agent_bench.execute(session_argv(arm, effort, sid, position), row["question"], cwd=str(clone), env=env, clean=True)
+        r = execute_run(session_argv(arm, effort, sid, position), row["question"], cwd=str(clone), env=env, clean=True)
         if "error" not in r:
             before = total.get(sid, 0.0) if position > 1 else 0.0
             total[sid] = r.get("cost") or 0.0
