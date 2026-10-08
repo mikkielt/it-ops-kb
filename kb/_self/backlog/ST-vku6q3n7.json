@@ -2,7 +2,7 @@
   "id": "ST-vku6q3n7",
   "kind": "story",
   "title": "Each pool cell keeps the 95% interval of its tokens per right answer and its right share in benchmarks.csv",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -28,5 +28,6 @@
   "depends_on": [
     "ST-dku4a6ob"
   ],
-  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found by the SP-hm4qgf3t run: the results file keeps means only, so the report's intervals came from the runs file, which is not committed. Premise: the check fails today (cell_metrics has no interval metric)."
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found by the SP-hm4qgf3t run: the results file keeps means only, so the report's intervals came from the runs file, which is not committed. Premise: the check fails today (cell_metrics has no interval metric).",
+  "claimed_by": "worker-ST-vku6q3n7"
 }
