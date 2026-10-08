@@ -2,7 +2,7 @@
   "id": "ST-7dnj7fb7",
   "kind": "story",
   "title": "Research sprint goal: Wasted runs are refused: empty test runs, stale docs at done, reused gate tests, routed fetches, CLI usage errors",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-evkj4avq",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "research-7dnj7fb7"
+  "evidence": {
+    "commit": "236fb1982fd45627dc1669ed4641799bd82d66b9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-7dnj7fb7"
+        ],
+        "exit": 0,
+        "sha256": "1f1e836db05cbc88"
+      }
+    ]
+  }
 }
