@@ -541,7 +541,7 @@ def live_processes(path):
     """([(pid, command)], None) of the processes whose working directory is PATH or under it, or (None, why) when this
     host gives no way to tell: Linux reads /proc/<pid>/cwd, other POSIX hosts (macOS) ask `lsof -d cwd` for every
     process's working directory; Windows exposes no process's working directory to the standard library, so it is
-    never checked there. Never signals a process."""
+    never listed there (release_worker_worktree tries held_by_process instead). Never signals a process."""
     target = os.path.realpath(path)
 
     def inside(cwd):
@@ -582,6 +582,28 @@ def live_processes(path):
     if not seen:  # lsof lists at least itself: nothing read means it could not look
         return None, f"lsof listed no process (exit {p.returncode})"
     return sorted(set(out)), None
+
+
+PROBE_SUFFIX = ".land-probe"  # + pid: the sibling name held_by_process renames a worktree to and back
+
+
+def held_by_process(path):
+    """Why the directory PATH cannot be moved, or None once it was renamed to a sibling and back: Windows locks a
+    process's current directory while it runs ("That prevents the directory from being deleted, moved, or renamed",
+    SetCurrentDirectory), and a file a process holds open, so a refused rename tells what live_processes cannot list
+    there. On POSIX hosts the rename succeeds whatever runs there, so it proves nothing beyond the path being movable."""
+    probe = path.with_name(f"{path.name}{PROBE_SUFFIX}-{os.getpid()}")
+    if os.path.lexists(probe):
+        return f"its probe name {probe.name} is taken"
+    try:
+        os.rename(path, probe)
+    except OSError as e:
+        return f"{type(e).__name__}: {e.strerror or e}"
+    try:
+        os.rename(probe, path)
+    except OSError as e:
+        return f"it was renamed to {probe} and could not be renamed back ({e.strerror or e}): rename it back by hand"
+    return None
 
 
 def worker_dirs(root):
@@ -652,7 +674,8 @@ def release_worker_worktree(root, path, lock, branch=None):
     .claude/worktrees/ of the clone land runs in (`git rev-parse --show-toplevel` there: a linked worktree is its own
     clone, its workers sit under its own directory) that is not the one land runs in, has no uncommitted changes
     (except untracked intake drafts that no commit of BRANCH names: moved to INTAKE_ASIDE of ROOT, and said) and no
-    live process, is on BRANCH when that is given, and is either locked by a Claude Code agent (WORKER_LOCK) or,
+    live process (where live_processes cannot list them, Windows, one the worktree cannot be renamed and back past:
+    held_by_process), is on BRANCH when that is given, and is either locked by a Claude Code agent (WORKER_LOCK) or,
     unlocked, named as the Agent tool names a worker's (WORKER_NAME, `agent-*`; the test
     land_removes_clean_unlocked_worker_worktree) or by the item id of BRANCH (`work/<id>`; the test
     land_removes_worker_worktree_of_a_linked_clone_named_by_item_id). Returns None once it is removed,
@@ -689,8 +712,13 @@ def release_worker_worktree(root, path, lock, branch=None):
         named = ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
         return (f"it is {state} and a process still runs there: {named}; end it (the worker ends every "
                 f"background command and monitor it started), then run land again")
-    if unchecked:
-        say(f"land: could not check {path} for live processes ({unchecked}); removing it as a clean worker's")
+    if unchecked:  # Windows: a rename to a sibling and back fails while a process has it as its working directory
+        held = held_by_process(path)
+        if held:
+            return (f"it is {state} and could not be moved ({held}): a process may still run there, its working "
+                    f"directory in it ({unchecked}, so land cannot name it); end it, then run land again")
+        say(f"land: could not check {path} for live processes ({unchecked}); it could be renamed and back, so "
+            "no process holds it; removing it as a clean worker's")
     kept = set_aside_drafts(root, path, drafts)
 
     def put_back():

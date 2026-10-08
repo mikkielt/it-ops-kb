@@ -16,6 +16,7 @@ The same code runs on Linux, macOS and Windows.
 - **Subprocesses take an argument list**, never a string and never `shell=True`. A tool starts Python with `sys.executable`, not `python3`, which on Windows can be a Store alias.
 - **A file at a revision is read with `git cat-file blob REV:PATH`**, never `git show REV:PATH`: `show` also checks its argument as a file name, which fails as "Filename too long" in a deep Windows checkout.
 - **No Unix-only calls** (`fcntl`, signalling a PID to probe it, `os.fork`). A lock is an `O_EXCL` file; a detached child sets the creation flags of each OS.
+- **Windows names no process's working directory.** Before removing or moving a directory a process may hold there, a tool renames it to a sibling and back (`bl_land.held_by_process`, with `os.rename`): Windows refuses while a process runs with it as its current directory or holds a file open in it, so a refused rename is a reason to leave the directory as it is.
 - **A test skips what a host lacks** (no `sh`, no `git`, no PowerShell) with a marker that names the missing part; it never passes without running.
 
 ## Git in tests
