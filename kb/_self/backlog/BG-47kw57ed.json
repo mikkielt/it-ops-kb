@@ -47,6 +47,40 @@
       },
       "answer": "the row's time is after the commit that set the item done: it opens no window; a row before it keeps its window",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Is a claim row of an item whose file says done or dropped also held stale when written after the done commit, as a branch row is?",
+      "options": [
+        "no: only branch rows; backlog.py claim refuses an item that is not open, so a claim row always predates the done commit",
+        "yes: claim and branch rows alike"
+      ],
+      "recommendation": "no: only branch rows; backlog.py claim refuses an item that is not open, so a claim row always predates the done commit",
+      "class": "design",
+      "do": {
+        "no: only branch rows; backlog.py claim refuses an item that is not open, so a claim row always predates the done commit": "BG-47kw57ed",
+        "yes: claim and branch rows alike": "BG-47kw57ed"
+      },
+      "answer": "no: only branch rows; backlog.py claim refuses an item that is not open, so a claim row always predates the done commit",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "When no commit dates the done or dropped status (a directory outside a git checkout, a status not yet committed) or the branch row has no time, does the branch row open a window?",
+      "options": [
+        "no: it counts as written after the done commit, as the goal's file-status test reads",
+        "yes: it keeps its window until a commit dates the status"
+      ],
+      "recommendation": "no: it counts as written after the done commit, as the goal's file-status test reads",
+      "class": "design",
+      "do": {
+        "no: it counts as written after the done commit, as the goal's file-status test reads": "BG-47kw57ed",
+        "yes: it keeps its window until a commit dates the status": "BG-47kw57ed"
+      },
+      "answer": "no: it counts as written after the done commit, as the goal's file-status test reads",
+      "by": "agent"
     }
   ],
   "notes": "Its check passes before the work: it pins that a branch row of a doing item still opens a window, which the fix must keep; the repro is the failing proof.",

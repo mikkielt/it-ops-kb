@@ -19,8 +19,8 @@ import kbusage
 import ql_store as store_
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
-from ql_capture import (AGENT_ACTIONS, OPEN_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage,
-                        pack_lines)
+from ql_capture import (AGENT_ACTIONS, BRANCH_ACTION, OPEN_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS,
+                        WORK_ITEM, add_usage, pack_lines)
 from ql_store import (ANSWER_LINE, ANSWER_LINES_MAX, ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, KEY_MISSING_MAX,
                       KEY_WORD, NAME, OUTCOME, QUESTION_MAX_CHARS, ROW_SURFACES, RULES_ROOT, SET_NAME, SKIPPED_KEY,
                       SOURCES_MAX, TESTED_ID, TESTED_MAX, URL_PATH, public_host)
@@ -477,20 +477,60 @@ def routed_of(rs):
 
 # ---------------------------------------------------------------- work windows
 
+CLOSED_STATUSES = ("done", "dropped")  # an item file status after which a `branch` row may be stale (kept_rows)
+
+
 def item_finder(directory=None):
     """has_file(item id): whether the item's file is in `directory` (default: the clone's kb/_self/backlog), a file
-    test and nothing else."""
+    test and nothing else. Its `closed_ms(item id)` (item_closed_ms) is when the item was set done or dropped."""
     d = Path(directory) if directory else HOME / BACKLOG_REL
-    return lambda item: (d / f"{item}.json").is_file()
+
+    def has_file(item):
+        return (d / f"{item}.json").is_file()
+    has_file.closed_ms = functools.lru_cache(maxsize=None)(lambda item: item_closed_ms(d, item))
+    return has_file
+
+
+def item_closed_ms(directory, item):
+    """None when the item's file in `directory` does not say done or dropped; else the milliseconds since the epoch of
+    the latest commit that changed the file's count of its `"status": "<status>"` text (`git log -S`, the commit that
+    set the status), or 0 when no commit says (a directory outside a git checkout, a status not yet committed)."""
+    path = Path(directory) / f"{item}.json"
+    data = read_json(path, None)
+    status = data.get("status") if isinstance(data, dict) else None
+    if status not in CLOSED_STATUSES:
+        return None
+    code, out, _ = run_cmd(["git", "-C", str(path.parent), "log", "-1", "--format=%ct", "-S",
+                            f'"status": "{status}"', "--", path.name], timeout=30)
+    seconds = out.strip()
+    return int(seconds) * 1000 if code == 0 and seconds.isdigit() else 0
+
+
+def stale_branch(r, known):
+    """Whether a `branch` row is one of a stale `work/<id>` checkout: its item's file says done or dropped
+    (`known.closed_ms`, item_finder) and the row was written at or after the commit that set that status, or has no
+    time, or no commit says when the status was set. A `claim` row is never stale: `backlog.py claim` refuses an item
+    that is not open, so its row predates the item's done."""
+    closed_ms = getattr(known, "closed_ms", None)
+    if r.get("action") != BRANCH_ACTION or closed_ms is None:
+        return False
+    at = closed_ms(r.get("item"))
+    if at is None:
+        return False
+    row_ms = _epoch_ms(ts_of(r))
+    return not at or row_ms is None or row_ms >= at
 
 
 def kept_rows(rows, known):
-    """`rows` without the `claim` and `branch` rows that open no window for lack of an item file: those of an item
-    `known` (item_finder) says has none, unless a later `done` or `release` row of the same item closes the window in
-    these rows. A `branch` row of a stale `work/<id>` checkout, left by a capture that did not read the file (the
-    session's later prompts would all sit in a window nothing closes), has no closing row; a `claim` row of an item
-    whose sprint was closed, its files deleted, is closed by the `done` of the `land` the session ran, so the
-    session's work on the item still counts when it is distilled after the close. `known` None: every item has one."""
+    """`rows` without the `claim` and `branch` rows that open no window: those of an item `known` (item_finder) says
+    has no file, and the `branch` rows of a stale checkout (stale_branch: the item was done or dropped before the row
+    was written), unless a later `done` or `release` row of the same item closes the window in these rows. A `branch`
+    row of a stale `work/<id>` checkout, left by a capture that did not read the file or read a worktree's own copy
+    of it that predates the item's done (the session's later prompts would all sit in a window nothing closes), has
+    no closing row; a worker's own `branch` row, written before the done commit, keeps its window when distill runs
+    after the landing. A `claim` row of an item whose sprint was closed, its files deleted, is closed by the `done`
+    of the `land` the session ran, so the session's work on the item still counts when it is distilled after the
+    close. `known` None: every item has one."""
     if known is None:
         return rows
     closing, kept = set(), []
@@ -498,7 +538,8 @@ def kept_rows(rows, known):
         item = r.get("item") if r.get("surface") == "work" else None
         if r.get("action") in ("done", "release") and isinstance(item, str):
             closing.add(item)
-        elif r.get("action") in OPEN_ACTIONS and isinstance(item, str) and item not in closing and not known(item):
+        elif (r.get("action") in OPEN_ACTIONS and isinstance(item, str) and item not in closing
+              and (not known(item) or stale_branch(r, known))):
             continue
         kept.append(r)
     return kept[::-1]
@@ -511,8 +552,9 @@ def work_windows(rows, known=None):
     branch, ql_capture.branch_row), or closes it with `done` (a successful `land` or `merge` is stored as one) or
     `release`; a `done` or `release` with no open window in these rows opens and closes nothing. Windows of several
     items may overlap. A branch-opened item is one the rows worked, as a claimed one is. `known` (item_finder) says
-    which items have a file: a `claim` or `branch` row of an item without one, that no later `done` or `release` row
-    closes, opens no window (kept_rows)."""
+    which items have a file: a `claim` or `branch` row of an item without one, or a `branch` row written after its
+    item was set done or dropped (stale_branch), that no later `done` or `release` row closes, opens no window
+    (kept_rows)."""
     inside, worked, open_items = {}, set(), set()
     for r in kept_rows(rows, known):
         pid = r.get("prompt_id")
