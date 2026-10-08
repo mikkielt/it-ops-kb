@@ -35,6 +35,34 @@
     "kb/_self/code.md",
     "_tools/test_bench.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is the alias-to-model resolution of a benchmark run read?",
+      "options": [
+        "transcript model first, version table fallback",
+        "version table alone"
+      ],
+      "recommendation": "transcript model first, version table fallback",
+      "class": "design",
+      "answer": "transcript model first, version table fallback",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How is a tiered price recorded for a run?",
+      "options": [
+        "per request tier, the run's highest tier in the row note",
+        "one tier from the run's total input"
+      ],
+      "recommendation": "per request tier, the run's highest tier in the row note",
+      "class": "design",
+      "answer": "per request tier, the run's highest tier in the row note",
+      "by": "agent"
+    }
+  ],
   "links": [
     "_tools/bench_core.py",
     "kb/public/claude/models.csv"

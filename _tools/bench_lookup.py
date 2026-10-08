@@ -10,7 +10,7 @@ import json, re, shlex, shutil, subprocess, time, uuid
 from pathlib import Path
 
 import agent_bench
-from bench_core import (OK_PROMPT, PRICE, RAW, claude_json, est_cost, git, no_plugin_env, plugin_copy, span_s,
+from bench_core import (ARMS, OK_PROMPT, RAW, claude_json, est_cost, git, no_plugin_env, plugin_copy, span_s,
                         spent_run, stream_run, subagent, task_argv, transcript, usage_sum)
 from kbcommon import NO_HOOKS
 
@@ -68,10 +68,10 @@ SUB_TASKS = {  # the subagent measurement's four questions, with agent_bench's c
 
 def s_subagents(b):
     """Bare agent against agent with the kb, as subagents of a running session: one agent per arm and model, its usage
-    from the subagent transcript, its cost estimated at list price (PRICE)."""
+    from the subagent transcript, its cost estimated at the list price of the model the run reports (PRICE)."""
     clone = b.lookup()
     agents = {}
-    for m in PRICE:
+    for m in ARMS:
         agents[f"bench-bare-{m}"] = {"description": "Answers with web search and Microsoft Learn only.", "model": m,
                                      "prompt": "Answer the question with web search and the Microsoft Learn docs "
                                                "server only. Cite the source urls.",
@@ -85,25 +85,25 @@ def s_subagents(b):
     totals = {}
     for case, (task, checks) in SUB_TASKS.items():
         for arm in ("bare", "kb"):
-            for m in PRICE:
+            for m in ARMS:
                 ev, reqs = subagent(b, clone, "haiku", agents, f"bench-{arm}-{m}", task, allowed)
                 if "error" in ev or not reqs:
                     b.row("subagents", case, f"{arm}-{m}", "errors", 1, 1, note=str(ev.get("error", "no transcript"))[:80])
                     continue
-                s = usage_sum(reqs)
+                s = usage_sum(reqs, m, b.cc)
                 tools = [t for r in reqs for t in r["tools"]]
                 answer = ev.get("result") or ""
                 passed = sum(bool(re.search(c, answer)) for c in checks)
                 arm_name = f"{arm}-{m}"
                 for metric, v in (("input", s["input"]), ("out", s["out"]),
-                                  ("cost_est", est_cost(m, s, tools.count("WebSearch"))),
+                                  ("cost_est", est_cost(s, tools.count("WebSearch"))),
                                   ("wall_s", span_s(reqs)), ("requests", s["requests"]), ("tool_calls", len(tools)),
                                   ("start_ctx", s["start_ctx"]), ("checks", f"{passed}/{len(checks)}"),
                                   ("route", " > ".join(t.replace("mcp__", "") for t in tools) or "no tool call")):
-                    b.row("subagents", case, arm_name, metric, v, 1, reqs[0]["model"])
+                    b.row("subagents", case, arm_name, metric, v, 1, reqs[0]["model"], s["tier"])
                 totals.setdefault(arm_name, [0, 0.0, 0, 0])
                 t = totals[arm_name]
-                t[0] += s["input"]; t[1] += est_cost(m, s, tools.count("WebSearch")); t[2] += passed == len(checks); t[3] += 1
+                t[0] += s["input"]; t[1] += est_cost(s, tools.count("WebSearch")); t[2] += passed == len(checks); t[3] += 1
     for arm_name, (inp, cost, right, n) in totals.items():
         b.row("subagents", "total (4 scenarios)", arm_name, "input", inp, n)
         b.row("subagents", "total (4 scenarios)", arm_name, "cost_est", cost, n)
@@ -257,13 +257,13 @@ def s_files_subagents(b):
         if not reqs:
             b.row("files-subagents", case, "subagent", "errors", 1, 1, note=str(ev.get("error", "no transcript"))[:80])
             continue
-        s = usage_sum(reqs)
+        s = usage_sum(reqs, "sonnet", b.cc)
         tools = [t for r in reqs for t in r["tools"]]
         for metric, v in (("tool_calls", len(tools)), ("requests", s["requests"]), ("start_ctx", s["start_ctx"]),
                           ("input", s["input"]), ("start_share_pct", 100 * s["start_ctx"] * s["requests"] / max(s["input"], 1)),
                           ("tool_output_kb", reqs[-1].get("tool_result_chars", 0) / 1024),
                           ("effective_input", s["effective"]), ("wall_s", span_s(reqs))):
-            b.row("files-subagents", case, "subagent", metric, v, 1, "sonnet")
+            b.row("files-subagents", case, "subagent", metric, v, 1, "sonnet", s["tier"])
     for arm, cwd, extra in (("empty directory", b.scratch / "empty", ["--setting-sources", "project,local", "--strict-mcp-config"]),
                             ("old clone, no servers", old, ["--strict-mcp-config"]), ("old clone", old, [])):
         Path(cwd).mkdir(exist_ok=True)
@@ -372,7 +372,7 @@ def s_host_lookups(b):
     ev, reqs = subagent(b, host, "haiku", agents, "bench-general", T_TASKS["T1"],
                         ["mcp__plugin_it-ops-kb_kb"], extra=common + ["--plugin-dir", str(clone)], env=env)
     if reqs:
-        b.row("host-lookups", "general-purpose agent", "host", "start_ctx", usage_sum(reqs)["start_ctx"], 1, "sonnet")
+        b.row("host-lookups", "general-purpose agent", "host", "start_ctx", usage_sum(reqs, "sonnet", b.cc)["start_ctx"], 1, "sonnet")
 
 
 def _ok_runs(argv, cwd, n, env=None):
@@ -424,7 +424,7 @@ def s_kb_lookup_agent(b):
         if not reqs:
             b.row("kb-lookup-agent", f"run {i + 1}", "kb-lookup", "errors", 1, 1, note=str(ev.get("error", ""))[:80])
             continue
-        s = usage_sum(reqs)
+        s = usage_sum(reqs, "haiku", b.cc)
         b.row("kb-lookup-agent", f"run {i + 1}", "kb-lookup", "start_ctx", s["start_ctx"], 1, reqs[0]["model"])
         b.row("kb-lookup-agent", f"run {i + 1}", "kb-lookup", "input", s["input"], 1, reqs[0]["model"])
         b.row("kb-lookup-agent", f"run {i + 1}", "kb-lookup", "requests", s["requests"], 1, reqs[0]["model"])
