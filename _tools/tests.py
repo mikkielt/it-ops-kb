@@ -12,6 +12,11 @@ and the suite is within its ceiling.
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
   KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git")
 
+Before pytest, every run (a selection and a --changed run too, not --ceiling or --write-lint-baseline) compiles each
+_tools/*.py in-process from its source text, writing no .pyc, and exits 1 naming each file and line whose compile warns
+(compile_warnings), such as an invalid escape sequence: a SyntaxWarning, a DeprecationWarning before Python 3.12. A
+cached .pyc does not warn and pytest only prints a warning, so a file no test imports would otherwise pass.
+
 The ceiling (_tools/tests_ceiling.json: max_ids, max_files, max_seconds per sys.platform, decision) is the most the
 suite may hold and the longest a full run may take. Every run checks the file count and that `decision` names an active
 decision of kb/_self/_decisions.csv made by the operator whose text holds the file's own numbers (ceiling_token), so a
@@ -41,7 +46,7 @@ pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lo
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
 under test stay stdlib-only. Shared fixtures and helpers are in conftest.py.
 """
-import contextlib, csv, datetime, json, os, pathlib, re, shutil, signal, subprocess, sys, tempfile, time
+import contextlib, csv, datetime, json, os, pathlib, re, shutil, signal, subprocess, sys, tempfile, time, warnings
 import xml.etree.ElementTree as ET
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -66,6 +71,48 @@ def pytest_cmd():
 
 def test_files():
     return sorted(f for f in os.listdir(TOOLS) if f.startswith("test_") and f.endswith(".py"))
+
+
+# The compile check
+
+
+def compile_warnings(tools=None):
+    """`path:line: Category: message` for each warning (and SyntaxError) compiling each *.py of `tools` (default
+    _tools/) from its source text gives, in file order; compile() writes no .pyc and a cached one is never read. The
+    warnings are recorded, not raised: raised, a SyntaxWarning turns into a SyntaxError and loses its category."""
+    base = pathlib.Path(tools or TOOLS)
+    out = []
+    for path in sorted(base.glob("*.py")):
+        name = path.relative_to(base.parent).as_posix()
+        try:
+            src = path.read_bytes()
+        except OSError as e:
+            out.append(f"{name}: unreadable ({e.__class__.__name__})")
+            continue
+        with warnings.catch_warnings(record=True) as got:
+            warnings.simplefilter("always")
+            try:
+                compile(src, str(path), "exec", dont_inherit=True)
+            except SyntaxError as e:
+                out.append(f"{name}:{e.lineno}: SyntaxError: {e.msg}")
+        seen = []
+        for w in got:
+            line = f"{name}:{w.lineno}: {w.category.__name__}: {w.message}"
+            if line not in seen:
+                seen.append(line)
+        out += seen
+    return out
+
+
+def compile_report(tools=None):
+    """Print each compile warning of compile_warnings(); 1 when there is one, else 0."""
+    bad = compile_warnings(tools)
+    for b in bad:
+        print(f"tests.py: compile warning: {b}", file=sys.stderr)
+    if bad:
+        print(f"tests.py: {len(bad)} compile warning(s) in _tools/, an error here: fix them (a raw string r\"...\" or "
+              "a doubled backslash for an escape) before the tests run", file=sys.stderr)
+    return 1 if bad else 0
 
 
 # The ceiling
@@ -561,6 +608,8 @@ def run_main(argv):
         if not code:
             print(f"tests.py --ceiling: {ids} test ids in {len(test_files())} files, within the ceiling")
         return code
+    if compile_report():
+        return 1
     args = list(argv)
     fast = os.environ.get("KB_TESTS_FAST") == "1"
     changed_run = "--changed" in args
