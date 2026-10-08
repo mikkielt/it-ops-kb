@@ -97,19 +97,20 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
   tree the names in it. [DOC S-nftrmgem]
 - `git cat-file` resolves its object name with `get_oid_with_context` and makes no working-tree check of the
   argument, while `git show` parses its arguments through `setup_revisions`, whose revision handling calls
-  `verify_non_filename` on each revision argument not marked as one (no `--` after it). [CODE S-tdddef3t,
-  S-xcnkwrn4, S-zwbgb73y]
+  `verify_non_filename` on each revision argument not marked as one (no `--` after it). [CODE S-tdddef3t:
+  builtin/cat-file.c#cat_one_file; CODE S-xcnkwrn4: builtin/log.c#cmd_show; CODE S-zwbgb73y:
+  revision.c#handle_revision_arg_1]
 - Inside a working tree, `verify_non_filename` runs `lstat` on the whole argument (`HEAD:kb/x.md`, prefixed
   with the current subdirectory) to refuse a revision that is also a file name; `check_filename` treats only
   `ENOENT` and `ENOTDIR` as "no such file" and dies with `failed to stat '<arg>'` on any other error.
-  [CODE S-nxowyi4h, S-qovha7ae]
+  [CODE S-nxowyi4h: setup.c#check_filename; CODE S-qovha7ae: git-compat-util.h#is_missing_file_error]
 - `core.longpaths` is a Git for Windows setting that enables long path (more than 260 characters) support for
   builtin commands; it is off by default because Windows Explorer, `cmd.exe` and the Git for Windows tool chain
   (msys, bash, tcl, perl) do not support long paths. [DOC S-y5k6dlda]
 - In Git for Windows, `lstat` converts its path with `xutftowcs_long_path`: a path whose length plus the
   current directory's reaches `MAX_PATH` (260) is turned into a `\\?\` absolute path only when
   `core.longpaths` is on, and fails with `ENAMETOOLONG` ("Filename too long") when it is off. [CODE
-  S-hnrqsiz4, S-slmllv74]
+  S-hnrqsiz4: compat/mingw.c#mingw_lstat; CODE S-slmllv74: compat/mingw.h#xutftowcs_long_path]
 - So in a deep Windows checkout without `core.longpaths`, `git show REV:PATH` can die before reading any
   object, because its `lstat` of the argument fails with `ENAMETOOLONG`, while `git cat-file blob REV:PATH`
   reads the same blob from the object database without touching the working tree; a tool that reads a file
