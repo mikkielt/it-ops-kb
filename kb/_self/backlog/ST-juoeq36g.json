@@ -2,7 +2,7 @@
   "id": "ST-juoeq36g",
   "kind": "story",
   "title": "backlog.py set --add no longer appends to every list field in the call",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -64,5 +64,18 @@
     }
   ],
   "notes": "Premise (run 2026-10-07 on origin/main): the check prints 'set exit 0 checks before 1 after 2' and exits 1. bl_items.py, .claude/skills/ and .claude/agents/ are rule-guarding, so gate add-scope is blocking and asked before any code.",
-  "claimed_by": "worker-ST-juoeq36g"
+  "evidence": {
+    "commit": "8cdc9bd5aa1f8e36f51d8aa181f61341bdb30bdd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile,os,json,shutil;d=os.path.join(tempfile.mkdtemp(),'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);f=os.path.join(d,'kb','_self','backlog','ST-akicahgy.json');n=len(json.loads(open(f,encoding='utf-8-sig').read())['checks']);r=s.run([sys.executable,os.path.join(d,'_tools','backlog.py'),'set','ST-akicahgy','--check','python3 _tools/check.py','--notes','x','--add'],cwd=d,capture_output=True,text=True);m=len(json.loads(open(f,encoding='utf-8-sig').read())['checks']);shutil.rmtree(d,ignore_errors=True);s.run(['git','worktree','prune']);print('set exit',r.returncode,'checks before',n,'after',m);sys.exit(0 if m<=n else 1)"
+        ],
+        "exit": 0,
+        "sha256": "38fe03d5b0993f6e"
+      }
+    ]
+  }
 }
