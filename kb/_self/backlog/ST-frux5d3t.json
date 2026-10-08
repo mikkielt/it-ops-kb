@@ -29,6 +29,21 @@
   "depends_on": [
     "ST-omc66sr5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is a split route's pool row joined from its two runs?",
+      "options": [
+        "The reader's answer first, a blank line, then the researcher's; tool counts and searches summed, fetched urls concatenated",
+        "The researcher's answer alone, with the reader's checks scored on a separate row"
+      ],
+      "recommendation": "The reader's answer first, a blank line, then the researcher's; tool counts and searches summed, fetched urls concatenated",
+      "class": "design",
+      "answer": "The reader's answer first, a blank line, then the researcher's; tool counts and searches summed, fetched urls concatenated",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-hm4qgf3t review"
   ],

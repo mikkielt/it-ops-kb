@@ -249,9 +249,20 @@ def result_of(stdout, stderr, wall):
 
 
 def add(a, b, sep="escalate"):
-    """Two runs of one question (reader, then escalation or the lacks part) as one row; `sep` joins their routes."""
+    """Two runs of one question (reader, then escalation or the lacks part) as one row; `sep` joins their routes. An
+    escalation (`escalate`) keeps the second run's answer, tools and urls alone, as it answered the whole question. A
+    split (`and`) answered one part in each run, so the row's answer is both answers (the reader's first, a blank line
+    between), its tool counts and searches the sums and its fetched urls both runs' (the refetched ones their union)."""
     out = dict(b)
     out["route"] = a.get("route", []) + [sep] + b.get("route", [])
+    if sep == "and":
+        out["answer"] = "\n\n".join(x for x in (a.get("answer", "").strip(), b.get("answer", "").strip()) if x)
+        for k in ("tools", "sub_tools"):
+            out[k] = dict(Counter(a.get(k, {})) + Counter(b.get(k, {})))
+        out["fetched"] = a.get("fetched", []) + b.get("fetched", [])
+        out["refetched"] = sorted({*a.get("refetched", []), *b.get("refetched", [])})
+        for k in ("searches", "kb_urls"):
+            out[k] = a.get(k, 0) + b.get(k, 0)
     for k in ("wall_s", "api_s", "cost", "turns", "in_uncached", "cache_write", "cache_read", "out"):
         out[k] = round(a[k] + b[k], 4)
     out["models"] = {m: round(a["models"].get(m, 0) + b["models"].get(m, 0), 4) for m in {*a["models"], *b["models"]}}
