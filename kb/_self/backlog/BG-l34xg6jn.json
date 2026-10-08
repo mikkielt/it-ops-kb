@@ -23,6 +23,22 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does kbfacts._unit_key cover of the weighing code: the weighing constants, the weighing functions' compiled code, or both?",
+      "options": [
+        "constants only",
+        "functions' code only",
+        "both"
+      ],
+      "recommendation": "both",
+      "class": "design",
+      "answer": "both",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kjqdiudr review"
   ],
