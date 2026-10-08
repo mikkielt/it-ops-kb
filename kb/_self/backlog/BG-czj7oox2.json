@@ -2,7 +2,7 @@
   "id": "BG-czj7oox2",
   "kind": "bug",
   "title": "apply's alias check for a rules finding's word pair reads every alias file but kb/_self's own, so a pair whose term kb/_self/_retrieval/aliases.csv holds gets a second row",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-czj7"
+  "evidence": {
+    "commit": "9568c144860c9cb806c781080ba06f21f5ca9bd4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,csv; sys.path.insert(0,'_tools'); import ql_apply,kbfacts; t=ql_apply.Gate().alias_terms(); rows=list(csv.DictReader(open(kbfacts.SELF_ALIASES,encoding='utf-8'))); miss=[r['term'] for r in rows if ' '.join(r['term'].lower().split()) not in t]; print(miss[:5]); sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
