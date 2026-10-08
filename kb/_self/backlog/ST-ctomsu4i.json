@@ -3,14 +3,32 @@
   "kind": "story",
   "title": "check.py refuses a path:line citation in _answers.md or _gaps.md that points at a line with none of the cited sources",
   "status": "draft",
+  "sprint": "SP-caqrexqw",
   "priority": "P3",
   "rank": 0,
-  "goal": "Retrospective of SP-wgx4pq4r: ST-fxly2caj and BG-nozwqz2j inserted lines into claude/hooks.md and had to re-point the claude/hooks.md:N citations in _answers.md and _gaps.md by hand; one (hooks.md:133, now :160) had already been stale since an earlier change, and no gate noticed. check.py warns or fails when a (path:line) citation in a ledger names a line that is no fact or carries none of the bullet's source ids, the content rules say so, and check.py passes on the tree.",
+  "goal": "Retrospective of SP-wgx4pq4r: ST-fxly2caj and BG-nozwqz2j inserted lines into claude/hooks.md and had to re-point the claude/hooks.md:N citations in _answers.md and _gaps.md by hand; one (hooks.md:133, now :160) had already been stale since an earlier change, and no gate noticed. check.py fails, naming the ledger line and the citation, when a (path:line) citation in a root's _answers.md or _gaps.md (the full path:line form and the :N shorthand that follows one) names a line that is no fact: a heading, a table or Reference row, a blank line or a line past the end, with which lines of a wrapped fact bullet count and whether the cited fact must share a source id with the ledger bullet as the gate 'citable-line' answers; the citations in the tree that the answered rule rejects are re-pointed to the facts they mean (kb/public/_answers.md), kb/_self/content-rules.md states the rule, one planted-failure test within the ceiling proves it, and check.py passes on the tree.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/check.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ledger_citation"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale",
+        "--work",
+        "ST-ctomsu4i"
       ]
     }
   ],
@@ -18,9 +36,57 @@
     "_tools/check.py",
     "kb/_self/content-rules.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "kb/public/_answers.md",
+    "_tools/test_live_kb.py"
+  ],
+  "depends_on": [
+    "ST-dvzdykit",
+    "ST-zqxgo47z"
+  ],
+  "gates": [
+    {
+      "id": "citable-line",
+      "kind": "blocking",
+      "question": "Which ledger path:line citations should check.py accept? A plan-time run over kb/public (117 citations, :N shorthand included) finds 22 that do not name the first line of a fact bullet, 19 of them a continuation or tag line inside a tagged wrapped bullet, and 5 whose cited fact shares no source id with the ledger bullet (DER answers citing the facts they derive from).",
+      "options": [
+        "any-line-of-fact",
+        "first-line-only",
+        "any-line-plus-ids"
+      ],
+      "recommendation": "any-line-of-fact",
+      "do": {
+        "any-line-of-fact": "ST-ctomsu4i",
+        "first-line-only": "ST-ctomsu4i",
+        "any-line-plus-ids": "ST-ctomsu4i"
+      },
+      "class": "design"
+    },
+    {
+      "id": "promote",
+      "kind": "blocking",
+      "question": "ST-ctomsu4i is a parked draft (parked: SP-wgx4pq4r close) whose notes name no fitness test it blocks and no real user's report, so kb/_self/backlog.md (Sprints, Plan) keeps it out of a sprint; the operator listed it for this sprint. Commit it on the operator's selection, or move it out?",
+      "options": [
+        "commit",
+        "move-out"
+      ],
+      "recommendation": "commit",
+      "do": {
+        "commit": "ST-ctomsu4i",
+        "move-out": [
+          "python3",
+          "_tools/backlog.py",
+          "move",
+          "ST-ctomsu4i",
+          "--sprint",
+          "none"
+        ]
+      },
+      "class": "design"
+    }
   ],
   "links": [
     "parked: SP-wgx4pq4r close"
-  ]
+  ],
+  "notes": "Premise run 2026-10-08 at plan (a probe over kb/public/_answers.md and _gaps.md, 117 path:line citations with the :N shorthand): 22 problems, all in kb/public/_answers.md. 3 name no fact at all (claude/plugins.md:106 and :107, Reference table rows; gitlab/git-test-repositories.md:144, a heading); 14 name a continuation or tag line inside a tagged wrapped fact bullet (git-test-repositories.md:66, 102, 106, 109, 113, 123, 126, 128, 135, 138, 147, 153, 160, 164); 5 name a fact sharing no source id with the ledger bullet (git-test-repositories.md:70, :91; python/interpreter-startup.md:40, 45, 56). The triage's 17 of 79 counted only the full path:line form and first lines; 13 of those were first lines of wrapped facts, which are fine. Correction to gate citable-line's question: it is 14 continuation or tag lines, not 19. With the recommended answer (any line of a tagged fact bullet, no id rule) 3 citations are re-pointed; premise reproduces. Selected by the operator for SP-caqrexqw on 2026-10-08: wrong ledger citations send a reader of a recorded answer to a line that does not state it; the notes name no fitness test, so gate promote asks whether it joins. Passes before the work (precheck 2026-10-08): check.py pins that the tree passes once the new rule lands, which needs the rejected citations re-pointed; selfdoc.py stale --work ST-ctomsu4i pins that the item's commits leave no doc stale (it judges only commits naming the item, so none yet). The planted-failure test -k ledger_citation is the check that fails until the work is done. Passes before the work: python3 _tools/check.py (pins the tree green once the rule lands) and python3 _tools/selfdoc.py stale --work ST-ctomsu4i (pins the item's docs current). (precheck note: check.py and selfdoc.py stale each passes before the work, as above.)"
 }

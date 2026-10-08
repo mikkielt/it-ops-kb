@@ -1,0 +1,31 @@
+{
+  "id": "ST-5vtfd3y4",
+  "kind": "story",
+  "title": "Research: prompt-caching pricing of cache reads, cache writes and uncached input tokens",
+  "status": "draft",
+  "sprint": "SP-caqrexqw",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A user asked on 2026-10-07 how prompt caching prices cache reads versus cache writes and uncached input tokens, and the held-out row HO-prompt-cache-pricing of the public lookup_heldout.csv fails with coverage weak on kb/public/agents/agent-caching.md, which states write multipliers but no read price beside them. Research it through /kb-research from the official pricing and prompt-caching pages (S2130, S2131 and the other providers' cited pages first): kb/public/agents/agent-caching.md gains the tagged facts for the read and the uncached input price against the write prices, with source rows, the gap and answer ledgers updated; the held-out question then packs coverage good. The held-out row stays as it is: it is not moved into or reworded in lookup_eval.csv and gets no doc2query expansion (maintaining.md, Conduct for changes).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','How does prompt caching price cache reads versus cache writes and uncached input tokens','--budget','200'],capture_output=True,text=True);o=r.stdout;print(o.splitlines()[0] if o else r.stderr[:200]);sys.exit(r.returncode or int(not o.startswith('coverage: good')))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/agent-caching.md",
+    "kb/public/_sources.csv",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md"
+  ],
+  "depends_on": [
+    "ST-hhimevk7"
+  ],
+  "notes": "Premise: the story's check (rag.py pack of the held-out wording). Run 2026-10-08 at plan: coverage weak (route split; agent-caching.md:23 gives write prices only), exit 1, reproduces. Blocks the held-out answer rate fitness test (kb/_self/tools.md): HO-prompt-cache-pricing is its one failing row (19 of 20). Real user's report: asked 2026-10-07, answered weak."
+}

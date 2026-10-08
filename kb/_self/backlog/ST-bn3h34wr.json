@@ -4,6 +4,7 @@
   "title": "The held-out answer-rate test refuses a held-out row that rewords a tuned eval row",
   "status": "draft",
   "parent": "EP-gzr4mmkm",
+  "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
   "goal": "rag.py eval with --file on the held-out file (or a check the held-out run makes) fails, naming the row pair, when a held-out row shares its expected article with a lookup_eval.csv or doc2query expansion row and most of its words, so a reworded tuned question cannot lift the held-out rate; one planted-failure test within the ceiling proves it. It answers SP-4rq725fe, where the goal clause none of which is a lookup_eval.csv row was read only as exact text, no check read it, and HO-session-id-bash-env (a rewording of EV-claude-code-expose-session-id-bash) passed into the file (BG-4wqn6kog).",
@@ -13,7 +14,20 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "eval"
+        "heldout_reword"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "16"
       ]
     }
   ],
@@ -25,8 +39,31 @@
     "kb/_self/token-efficiency.md",
     "AGENTS.md"
   ],
+  "depends_on": [
+    "BG-4wqn6kog",
+    "ST-ctomsu4i"
+  ],
+  "gates": [
+    {
+      "id": "reword-rule",
+      "kind": "blocking",
+      "question": "ST-bn3h34wr touches AGENTS.md (rule-guarding). What makes a held-out row a rewording of a tuned row, and where is it refused? (a) rag.py eval --file fails, naming the pair, when a row shares its expected article with a lookup_eval.csv row or a doc2query expansion of that article and its lower-cased question has a difflib ratio of 0.75 or more (BG-4wqn6kog's repro; at plan time the reworded row scores 0.89 and every other row 0.53 or less); (b) the same with a word-overlap rule (most of the row's key words, as the goal says) instead of difflib; (c) a separate check (check.py or a test) over the two files, leaving rag.py eval unchanged.",
+      "options": [
+        "eval-difflib",
+        "eval-word-overlap",
+        "separate-check"
+      ],
+      "recommendation": "eval-difflib",
+      "do": {
+        "eval-difflib": "ST-bn3h34wr",
+        "eval-word-overlap": "ST-bn3h34wr",
+        "separate-check": "ST-bn3h34wr"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-4rq725fe close"
   ],
-  "notes": "Blocks the held-out answer rate fitness test of EP-gzr4mmkm: without it a reworded tuned question can lift the measured rate (BG-4wqn6kog)."
+  "notes": "Blocks the held-out answer rate fitness test of EP-gzr4mmkm: without it a reworded tuned question can lift the measured rate (BG-4wqn6kog). Premise run 2026-10-08 at plan: BG-4wqn6kog's repro lists ['HO-session-id-bash-env'] (difflib 0.89 against EV-claude-code-expose-session-id-bash, same expected article) while rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 16 exits 0 (19 of 20), so nothing refuses the reworded row: reproduces. Check replaced: tests.py -k eval already selects passing tests; -k heldout_reword names the planted-failure test (collects none today). Depends on BG-4wqn6kog, which removes the row this refusal would fail on. Passes before the work (precheck 2026-10-08): the held-out eval check pins that the live held-out file still passes once the refusal lands (no false refusal, floor 16), so it must stay green; the planted-failure test -k heldout_reword is the check that fails until the work is done. Passes before the work: python3 _tools/rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 16 (pins no false refusal on the live file). (precheck note: the held-out eval check passes before the work, as above.)"
 }
