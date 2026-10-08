@@ -16,5 +16,6 @@
       ],
       "recommendation": "approve"
     }
-  ]
+  ],
+  "notes": "Operator, 2026-10-08: after this sprint the next pool record must run with no further fix sprint; the sprint therefore also carries ST-xy5kmisr (benchmarks.py pool verify, and a 5 USD smoke record of the whole command that must pass it, any defect it shows fixed here as an S1 bug of this sprint) and the --sample flag of ST-dku4a6ob. Left for later, not needed for a trustworthy record: ST-unqfho3v, ST-z5uh6oj7, ST-asstsi7t, BG-35vyxnci. The record itself runs after the sprint closes, from the procedure ST-xy5kmisr writes into the pool section."
 }

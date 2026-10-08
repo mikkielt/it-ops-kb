@@ -4,10 +4,33 @@
   "title": "The pool's router arm scores both parts of a split route's answer",
   "status": "draft",
   "parent": "EP-4nl2jr4q",
-  "priority": "P2",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
   "rank": 0,
   "goal": "When kb_ask's router splits a question (the reader answers what the kb has, the researcher the rest), the pool record's answer, tools and checks cover both parts; today agent_bench.add keeps the second run's answer, so the reader's 'kb has:' part is not checked. Measure first how many 2026-10-08 router runs took the split route. Found by the SP-hm4qgf3t review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/agent_bench.py",
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-omc66sr5"
+  ],
   "links": [
     "parked: SP-hm4qgf3t review"
-  ]
+  ],
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Premise run 2026-10-08 on the record's runs file: 83 of 450 router runs used both claude-haiku-4-5 and claude-sonnet-5-5 (the split route), whose reader part agent_bench.add drops (agent_bench.py:239), so their checks read the researcher's answer only. -k bench_pool passes before the work; the work adds a split-route assertion to an existing bench_pool test, which is its failing proof."
 }

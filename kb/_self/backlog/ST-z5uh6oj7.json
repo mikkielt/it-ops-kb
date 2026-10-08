@@ -6,6 +6,15 @@
   "priority": "P2",
   "rank": 0,
   "goal": "pack prints a CSV article's matching rows by score, not in file order, before it cuts at the character budget, so a question about one model reaches its row of kb/public/claude/models.csv; today a Claude Opus 5.5 model question never reaches models.csv although its row is on line 4, and ST-dtqlqjs7 moved the Haiku 5.5 row to the first data row to be cited. Found in SP-hm4qgf3t's run and confirmed by its review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; p=subprocess.run([sys.executable,'_tools/rag.py','pack','Claude Opus 5.5 model id context window max output'],capture_output=True,text=True); sys.exit(0 if p.returncode==0 and 'models.csv' in p.stdout else 1)"
+      ]
+    }
+  ],
   "links": [
     "parked: SP-hm4qgf3t review"
   ]

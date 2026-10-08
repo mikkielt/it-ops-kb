@@ -3,7 +3,9 @@
   "kind": "bug",
   "title": "selfdoc.py check fails: tools.md names a Sources heading content-rules.md no longer has",
   "status": "draft",
-  "priority": "P2",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
   "rank": 0,
   "severity": "S3",
   "goal": "python3 _tools/selfdoc.py check exits 0: the reference at kb/_self/tools.md:31 to the heading Sources of kb/_self/content-rules.md names a heading that exists",
@@ -13,5 +15,10 @@
       "_tools/selfdoc.py",
       "check"
     ]
-  }
+  },
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Every sprint worker runs selfdoc.py check and hits this problem."
 }

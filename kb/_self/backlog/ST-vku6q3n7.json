@@ -1,0 +1,32 @@
+{
+  "id": "ST-vku6q3n7",
+  "kind": "story",
+  "title": "Each pool cell keeps the 95% interval of its tokens per right answer and its right share in benchmarks.csv",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "bench_pool's cell rows carry, besides the means, the 95% interval of tokens_per_right and of the share of runs right over the cell's pool rows (a bootstrap over rows with a fixed seed, a row's reps kept together): metrics tokens_per_right_lo, tokens_per_right_hi, right_share_lo and right_share_hi, so a later report can judge a difference from benchmarks.csv alone, as SP-hm4qgf3t's report did from the runs file outside the repository; the pool section's Counting says how they are computed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,'_tools'); import bench_pool; rs=[{'id':f'r{i%5}','input':100,'cache_read':0,'cache_write':0,'effective_input':100+i,'out':1,'start_ctx':10,'pack_tokens':0,'tool_calls':1,'turns':1,'wall_s':1,'cost':0.01,'checks':[i%3!=0]} for i in range(30)]; m=dict(bench_pool.cell_metrics(rs)); assert {'tokens_per_right_lo','tokens_per_right_hi','right_share_lo','right_share_hi'} <= set(m), sorted(m)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/bench_report.py",
+    "_tools/test_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-dku4a6ob"
+  ],
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found by the SP-hm4qgf3t run: the results file keeps means only, so the report's intervals came from the runs file, which is not committed. Premise: the check fails today (cell_metrics has no interval metric)."
+}

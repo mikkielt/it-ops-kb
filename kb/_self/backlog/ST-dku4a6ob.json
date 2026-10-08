@@ -1,0 +1,48 @@
+{
+  "id": "ST-dku4a6ob",
+  "kind": "story",
+  "title": "benchmarks.py run pool runs a whole record in one command under one spend cap",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py run pool takes per-arm reps and kinds (--arm-reps ARM=N, --arm-kinds ARM=K+K, the default for an arm not named being --reps and --kinds), both shapes in one run (--shape fresh,session) and a stratified subset (--sample N: N rows per kind, seeded), so a record such as 2026-10-08's (kb arms at 3 reps, Sonnet 5.5 at 2, web arms on six kinds, the session shape) is one invocation with one --max-usd over all of it, one set of spend rows and one log; --dry-run prints the plan per arm label and the spend estimate; a test plans such a record with a fake runner and checks the runs per label, --sample's rows and the cap across both shapes; kb/_self/tools.md and the pool section name the flags",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "run",
+        "pool",
+        "--shape",
+        "fresh,session",
+        "--arm-reps",
+        "sonnet-5-5=2",
+        "--arm-kinds",
+        "web-haiku-5-5=offkb+snippet",
+        "--dry-run"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-vua43tob"
+  ],
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found in SP-hm4qgf3t: the 2026-10-08 record took six runs from a hand-written detached chain script with six caps, and a mid-run spend change needed the chain stopped by hand. Premise: the first check exits 2 today (--arm-reps unknown, --shape takes one value)."
+}

@@ -4,10 +4,42 @@
   "title": "benchmarks.py pool build rebuilds the committed pool without a paid call and picks a fact line, never front matter",
   "status": "draft",
   "parent": "EP-4nl2jr4q",
-  "priority": "P2",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
   "rank": 0,
   "goal": "An offline pool build on today's tree reproduces kb/public/_retrieval/bench_pool.csv row for row (new lookup_eval.csv rows do not move the stratified sample, or the build keeps the committed sample) and asks no Sonnet call for a row it already has, as bench_pool.py's docstring says; fact_for never picks a front-matter line (applies_to:, topic:) as a row's fact, so fewer eval rows fall back to a path-only check. Found by the SP-hm4qgf3t review: a rebuild replaced BP-c552cb0f with BP-ae1e4987 and 10 of 40 eval rows have path-only checks.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-vku6q3n7",
+    "ST-lwmcmied"
+  ],
   "links": [
     "parked: SP-hm4qgf3t review"
-  ]
+  ],
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Premise (SP-hm4qgf3t review, 2026-10-08): an offline build_public differs from the committed pool by one row (BP-c552cb0f replaced by BP-ae1e4987) and would ask Sonnet for claude/enterprise-admin.md:94; fact_for picks front-matter lines, and 10 of 40 eval rows have path-only checks. Both checks pass before the work and pin the pool; the work adds a rebuild-equality assertion to the existing bench_pool build test, its failing proof."
 }

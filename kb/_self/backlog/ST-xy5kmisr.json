@@ -1,0 +1,44 @@
+{
+  "id": "ST-xy5kmisr",
+  "kind": "story",
+  "title": "benchmarks.py pool verify checks a record's consistency, and a capped smoke record passes it",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py pool verify [--file F] [--record R] exits 1, naming each, when a pool record breaks one of: every arm label the run planned has rows for all kinds it ran; each run's cost is within 20% of the list-price cost of its counted tokens (bench_core.PRICE), which catches a cumulative session cost and an output undercount; a label's spend rows equal the sum of its runs' costs; no position of a session label has a mean cost rising with position; out is above zero on every model arm; errors are under 2% of runs; it exits 0 otherwise, and a test plants each break. Then the smoke record: the orchestrator runs the record's one command (all arms with the Opus arm, both shapes, --sample 2 rows per kind, 1 rep, --jobs 8, --max-usd 5) with --out into the scratch directory, never benchmarks.csv, and pool verify on that file exits 0; a defect the smoke shows is filed as an S1 bug in this sprint and fixed before this story is done. kb/_self/reports/benchmarks.md's pool section states the record procedure: the one command, its cap, the smoke first, then verify",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "verify",
+        "--record",
+        "2026-10-08"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-fuflyzxc",
+    "ST-lwmcmied"
+  ],
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. The operator wants the record after this sprint to need no further fix sprint, so the smoke record runs the whole command once at a small cost inside this sprint. Premise: pool verify does not exist (the first check exits 2 today); on the 2026-10-08 record it must exit 0 only once that record's spend and session costs are corrected (BG-2tan24sm). --sample is added by the one-command story if it is not there yet; this story may add it. The smoke's paid runs are the orchestrator's (a worker's foreground command has a 10-minute limit): the brief names the command and the worker writes verify and the test."
+}

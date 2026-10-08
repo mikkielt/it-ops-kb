@@ -1,0 +1,41 @@
+{
+  "id": "ST-fuflyzxc",
+  "kind": "story",
+  "title": "The query-log pool rows no arm passed check the article that answers them",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Each of the three query-log pool rows no arm passed on 2026-10-08 (BP-36864ffb, BP-9b5aab96, BP-ab7a8cc2) is read against the kb: a row whose check names the wrong article gets the article that answers it (through pool build --querylog's choice of article, not a hand edit), and a row the kb does not answer leaves the pool or becomes a gap-kind row, with the reason in the item's notes; benchmarks.py pool check --querylog exits 0",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; old={'BP-36864ffb':'scopes','BP-9b5aab96':'foundry','BP-ab7a8cc2':'mcp'}; rows={r['id']:r for r in csv.DictReader(open('kb/_querylog/bench/pool.csv',encoding='utf-8'))}; bad=[i for i,c in old.items() if i in rows and c in rows[i]['checks']]; sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check",
+        "--querylog"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_querylog/bench/pool.csv",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-yob4py65"
+  ],
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found by the SP-hm4qgf3t record: the runs answered BP-36864ffb from _self/backlog.md and agents/agent-planning-and-done.md, BP-9b5aab96 from agents/test-suite-size-and-agent-overengineering.md, BP-ab7a8cc2 from claude/powershell-tool.md and en/permissions.md, while their checks name claude/settings-and-scopes.md, agents/foundry-agent-service.md and claude/permissions-mcp.md. The first check fails while any of the three keeps that check."
+}
