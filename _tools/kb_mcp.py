@@ -7,7 +7,8 @@
                                      KB_ROOTS directories; an unknown name stops the start with an error on stderr
   python3 _tools/kb_mcp.py --register-local   in a clone: register this server as `kb` and the three documentation
                                      servers of .claude-plugin/it-ops-kb-docs/.mcp.json at local scope (`claude mcp
-                                     add --scope local`: this machine and this clone only), skipping names already there
+                                     add --scope local`: this machine and this clone only), skipping names already there,
+                                     but replacing a `kb` server that runs another clone's kb_mcp.py
 
 Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network):
   kb_pack    the evidence pack for a question, like `rag.py pack`: a coverage verdict (good, weak, none), the best fact
@@ -31,7 +32,10 @@ Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb 
   kb_status  how current this copy is: its commit and date, the latest census-* tag (or _census/ log), source and
              topic counts, the newest retrieved_utc, the roots it serves, and how many commits it is behind the branch
              it follows (a clone's upstream, or an installed plugin's marketplace clone; local refs, never the
-             network) with the update command. When it is behind, kb_pack opens with one `kb copy:` line saying so.
+             network) with the update command, and (unlimited server only) `registered:`, the kb_mcp.py the `kb`
+             server registered for this clone runs (local, then project, then user scope), with, when that is another
+             clone's, its path, commit, how far it is behind and the command that registers this clone's instead.
+             When it is behind, kb_pack opens with one `kb copy:` line saying so.
              A server limited to named roots (--roots; kb_http.py always is) serves clients outside the team:
              kb_status and that line then name no local path and no update command (behind_note).
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
@@ -63,6 +67,7 @@ requires. Only JSON-RPC messages go to stdout; the server exits on EOF.
 """
 import contextlib, csv, hashlib, http.client, io, json, os, re, subprocess, sys, threading, time
 import urllib.error, urllib.request
+from pathlib import Path
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
@@ -439,6 +444,8 @@ def status():
         info["census_tag"] = git("describe", "--tags", "--abbrev=0", "--match", "census-*", commit, cwd=repo) or "none"
         info.update((k, v) for k, v in upstream(repo, commit, plugin=repo != home).items() if k != "stale")
     info.setdefault("commit", "unknown (not a git clone or an installed plugin copy)")
+    if not limited() and os.path.exists(os.path.join(home, ".git")):  # local paths, of a clone: the team's own server
+        info.update(registration())
     pub = kbcommon.public()
     census_dir = os.path.join(pub.path, kbcommon.CENSUS_DIR)
     served = pub in kbcommon.roots()  # a server limited to other roots (--roots) reports no public census log
@@ -469,11 +476,8 @@ def upstream(repo, commit, plugin):
     it is behind; `update`, the command that brings it level, only on an unlimited server (limited()), since it
     names the clone's path. A clone detached at a census tag is told to check out the newest census tag, not to
     pull."""
-    target = git("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}", cwd=repo)
-    if not target:
-        remote = kbpublic.integration_remote(repo)
-        target = "HEAD" if plugin else next((r for r in (f"{remote}/HEAD", f"{remote}/main")
-                                             if git("rev-parse", "--verify", "-q", r, cwd=repo)), None)
+    target = git("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}", cwd=repo) or \
+        ("HEAD" if plugin else remote_main(repo))
     counts = git("rev-list", "--left-right", "--count", f"{commit}...{target}", cwd=repo) if target else None
     if not counts:
         return {}
@@ -492,6 +496,13 @@ def upstream(repo, commit, plugin):
                 census_update(repo, commit) or f"git -C {repo} pull --ff-only"
             out["update"] = cmd + " (this copy is older than the kb it follows)"
     return out
+
+
+def remote_main(repo):
+    """The HEAD (else main) of a clone's integration remote, the one kbpublic.integration_remote names, when a local
+    ref has it; None otherwise."""
+    remote = kbpublic.integration_remote(repo)
+    return next((r for r in (f"{remote}/HEAD", f"{remote}/main") if git("rev-parse", "--verify", "-q", r, cwd=repo)), None)
 
 
 def census_update(repo, commit):
@@ -857,22 +868,127 @@ def serve(stdin=None, stdout=None):
 DOCS_MCP = os.path.join(kbcommon.HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
 
 
+SCRIPT = Path(TOOLS, "kb_mcp.py")
+
+
+def claude_config():
+    """Claude Code's own config, which holds the local and user scope servers: ~/.claude.json, or .claude.json in
+    CLAUDE_CONFIG_DIR; {} when it is missing or unreadable."""
+    home = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home())
+    try:
+        data = json.loads((home / ".claude.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def same_path(a, b):
+    return os.path.normcase(Path(a).resolve()) == os.path.normcase(Path(b).resolve())
+
+
+def common_dir(path):
+    """The git directory a clone and its linked worktrees share, resolved; None outside a clone."""
+    d = git("rev-parse", "--git-common-dir", cwd=path) if Path(path).is_dir() else None
+    return Path(path, d).resolve() if d else None
+
+
+def registered_kb():
+    """(scope, script) of the `kb` server Claude Code starts in this clone, in its order of precedence: local (the
+    entry under `projects` in claude_config() of the clone's main worktree, which `claude mcp add` also writes from a
+    linked worktree, else of this directory), project (the clone's .mcp.json), user (claude_config()'s own
+    `mcpServers`). script is the kb_mcp.py its command or arguments name, as an absolute Path, or None when they name
+    none; (None, None) when no scope has a `kb` server."""
+    cfg = claude_config()
+    projects = cfg.get("projects") if isinstance(cfg.get("projects"), dict) else {}
+    home, common = Path(kbcommon.HOME), common_dir(kbcommon.HOME)
+    keys = ([common.parent] if common and common.name == ".git" else []) + [home]
+    local = next((v for key in keys for k, v in projects.items() if same_path(k, key)), {})
+    try:
+        project = json.loads((home / ".mcp.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        project = {}
+    for scope, holder in (("local", local), ("project", project), ("user", cfg)):
+        servers = holder.get("mcpServers") if isinstance(holder, dict) else None
+        server = servers.get("kb") if isinstance(servers, dict) else None
+        if not isinstance(server, dict):
+            continue
+        words = [server.get("command"), *(server.get("args") if isinstance(server.get("args"), list) else [])]
+        script = next((w.replace("${CLAUDE_PROJECT_DIR}", str(home)) for w in words
+                       if isinstance(w, str) and w.replace("\\", "/").endswith("kb_mcp.py")), None)
+        return scope, (home / script if script else None)  # a relative path: from the clone
+    return None, None
+
+
+def other_clone(script):
+    """True when a registered kb_mcp.py is neither this clone's nor a worktree's of the same repository (whose
+    registration the main worktree's sessions use, so a linked worktree never replaces it)."""
+    if not script or same_path(script, SCRIPT):
+        return False
+    theirs = common_dir(Path(script).parent.parent)
+    return theirs is None or theirs != common_dir(kbcommon.HOME)
+
+
+def registration():
+    """{registered: which kb_mcp.py the `kb` server registered for this clone runs, and at which scope}; when that
+    script lies in another clone, also that clone's commit and how many commits it is behind this clone's
+    integration main (else HEAD), and the command that registers this clone's script instead."""
+    fix = f"{sys.executable} {SCRIPT} --register-local"
+    scope, script = registered_kb()
+    if not scope:
+        return {"registered": f"no kb server at local, project or user scope for this clone ({fix} registers {SCRIPT})"}
+    if not script:
+        return {"registered": f"kb ({scope} scope) runs no kb_mcp.py ({fix} registers {SCRIPT})"}
+    if same_path(script, SCRIPT):
+        return {"registered": f"kb ({scope} scope) runs {script} (this clone)"}
+    clone = script.parent.parent
+    if not other_clone(script):
+        return {"registered": f"kb ({scope} scope) runs {script} (another worktree of this clone: {clone})"}
+    out = {"registered": f"kb ({scope} scope) runs {script}"}
+    theirs = git("rev-parse", "HEAD", cwd=clone) if clone.is_dir() else None
+    ref = remote_main(kbcommon.HOME) or "HEAD"
+    ours = git("rev-parse", ref, cwd=kbcommon.HOME)
+    behind = None
+    if theirs and ours:
+        behind = git("rev-list", "--count", f"{theirs}..{ours}", cwd=kbcommon.HOME) or \
+            git("rev-list", "--count", f"{theirs}..{ours}", cwd=clone)  # its commit may be unknown here, ours there
+    out["registered_clone"] = (f"another clone: {clone}" + ("" if clone.is_dir() else " (missing)") + ", at "
+                               + (theirs[:12] if theirs else "an unknown commit") + ", "
+                               + (f"{behind} commits behind {ref}" if behind else "behind by an unknown count"))
+    out["reregister"] = fix + " (the kb server runs another clone's kb_mcp.py)"
+    return out
+
+
 def register_local():
     """A clone gets the servers a host gets from the plugins, under the names the clone's settings allow: `kb`
     (tools mcp__kb__*) and the docs servers (mcp__microsoft-learn__*, ...). The root has no .mcp.json because a
-    plugin sourced from the root would load it. Returns the exit code."""
+    plugin sourced from the root would load it. A `kb` server that runs another clone's kb_mcp.py is replaced: removed
+    first when it is at local scope, and shadowed by the local one when it is at project or user scope. Returns the
+    exit code."""
     with open(DOCS_MCP, encoding="utf-8") as f:
-        servers = {"kb": {"command": sys.executable, "args": [os.path.join(TOOLS, "kb_mcp.py")]}, **json.load(f)["mcpServers"]}
+        servers = {"kb": {"command": sys.executable, "args": [str(SCRIPT)]}, **json.load(f)["mcpServers"]}
+    scope, script = registered_kb()
+    other = other_clone(script)
     code = 0
     for name, cfg in servers.items():
         try:
-            have = subprocess.run(["claude", "mcp", "get", name], cwd=kbcommon.HOME, capture_output=True, text=True, encoding="utf-8", timeout=60)
+            if name == "kb" and other:
+                if scope == "local":
+                    rm = subprocess.run(["claude", "mcp", "remove", "--scope", "local", name], cwd=kbcommon.HOME,
+                                        capture_output=True, text=True, encoding="utf-8", timeout=60)
+                    if rm.returncode != 0:
+                        print(f"{name}: runs {script}; removing it failed: {(rm.stderr or rm.stdout).strip()}")
+                        code = code or rm.returncode
+                        continue
+                print(f"{name}: replacing the {scope} scope server, which runs another clone's {script}")
+            else:
+                have = subprocess.run(["claude", "mcp", "get", name], cwd=kbcommon.HOME, capture_output=True, text=True,
+                                      encoding="utf-8", timeout=60)
+                if have.returncode == 0:
+                    print(f"{name}: already registered")
+                    continue
         except OSError:
             print("the claude CLI is not installed: nothing registered", file=sys.stderr)
             return 1
-        if have.returncode == 0:
-            print(f"{name}: already registered")
-            continue
         p = subprocess.run(["claude", "mcp", "add-json", "--scope", "local", name, json.dumps(cfg)], cwd=kbcommon.HOME,
                            capture_output=True, text=True, encoding="utf-8", timeout=60)
         print(f"{name}: " + ("registered (local scope)" if p.returncode == 0 else f"failed: {(p.stderr or p.stdout).strip()}"))

@@ -42,11 +42,11 @@ A failure here is a finding. Do not "fix" kb files to make a check pass.
 
 ## 4. MCP servers
 A clone uses four servers at local scope (this machine and this clone only): `kb` (`_tools/kb_mcp.py`) and the three no-auth documentation servers of `.claude-plugin/it-ops-kb-docs/.mcp.json`: `microsoft-learn`, `claude-code-docs`, `mcp-docs`. There is no root `.mcp.json` (it would load into the `it-ops-kb` plugin).
-- Run `python3 _tools/kb_mcp.py --register-local`. It registers the missing ones with `claude mcp add-json --scope local` and reports `already registered` for the rest. This is the one change besides step 3; it is local to this user and clone and can be undone with `claude mcp remove <name>`.
+- Run `python3 _tools/kb_mcp.py --register-local`. It registers the missing ones with `claude mcp add-json --scope local` and reports `already registered` for the rest, except a `kb` server that runs another clone's `kb_mcp.py`, which it replaces. This is the one change besides step 3; it is local to this user and clone and can be undone with `claude mcp remove <name>`.
 - Run `claude mcp list` and note each server's state. Servers registered in this session load only after a restart: tell the user to restart and run `/kb-setup` again for the calls below.
 - The deciding test is the read-only call below: a server that answers is a PASS, whatever `claude mcp list` says.
 - `Failed`: note the error. Test reachability with `curl.exe -sI https://learn.microsoft.com/api/mcp` (`curl.exe` on Windows, where PowerShell 5.1 maps `curl` to `Invoke-WebRequest`; `curl` elsewhere) (any HTTP status means the host is reachable; proxies and firewalls are the usual cause).
-- `kb`: call `kb_status` and confirm it names this clone's commit. Before a restart, `python3 _tools/kb_mcp.py --status` shows the same from a shell.
+- `kb`: call `kb_status` and confirm it names this clone's commit. Before a restart, `python3 _tools/kb_mcp.py --status` shows the same from a shell, and its `registered:` line names the `kb_mcp.py` the registered `kb` server runs: a `registered_clone:` line means another clone's, so run the `reregister:` command it prints and restart.
 - For each connected server make one read-only call and confirm it returns content:
   - `microsoft_docs_search` with query `DSC v3 resource manifest`
   - `search_claude_code_docs` with query `hooks`
