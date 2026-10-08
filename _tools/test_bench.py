@@ -200,6 +200,16 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
                         lambda arm, effort, row: bp.hook_result("{}", 0.1) if arm == "hook" else bp.execute_run(["claude"], "q"),
                         lambda rec, r: None)
     assert [("error" in r) for r in mixed].count(True) == 4 and len(mixed) == 6 and mixed[0]["error"] == "the claude run took over 900 s"
+    # a split route's row scores both parts: the reader's answer and tool calls count beside the researcher's, while an
+    # escalation (the researcher answered the whole question) is scored on the researcher's run alone
+    reader = agent_bench.result_of(pool_stream("kb has: value1", model="claude-haiku-4-5"), "", 5.0)
+    researcher = agent_bench.result_of(pool_stream("live docs: value2"), "", 5.0)
+    split_row = bp.row("fact", "d0", "original", "fixture:split", "Question?", ["value1", "value2", "tool:kb_pack"], "split")
+    split = bp.record_of(split_row, "router", "router", agent_bench.add(reader, researcher, "and"))
+    assert split["checks"] == [True, True, True] and split["tool_calls"] == 2 and split["model"].count("+") == 1
+    assert agent_bench.add(reader, researcher, "and")["answer"] == "kb has: value1\n\nlive docs: value2"
+    escalated = bp.record_of(split_row, "router", "router", agent_bench.add(reader, researcher, "escalate"))
+    assert escalated["checks"] == [False, True, True] and escalated["tool_calls"] == 1
 
 
 def test_bench_pool_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monkeypatch, capsys):
