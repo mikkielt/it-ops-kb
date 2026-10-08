@@ -38,7 +38,9 @@ FORMATS = {"cost": "${:.3f}", "cost_est": "${:.3f}", "wall_s": "{:.0f} s", "api_
            "out": "{:,.0f}", "turns": "g1", "tool_calls": "g1", "files_read": "g1", "requests": "g1", "start_ctx": "{:,.0f}",
            "effective_input": "{:,.0f}", "chars_per_s": "{:,.0f}", "median_us": "{:.1f} us", "size_mb": "{:.1f} MB",
            "input_per_entry": "{:,.0f}", "out_per_entry": "{:,.0f}", "cost_per_fact": "${:.3f}",
-           "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%", "ratio": "{:.2f}x"}
+           "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%", "ratio": "{:.2f}x",
+           "cache_read": "{:,.0f}", "cache_write": "{:,.0f}", "pack_tokens": "{:,.0f}", "tokens_per_right": "{:,.0f}",
+           "fixed_share": "{:.1%}"}
 
 
 def fmt(metric, v):
@@ -79,6 +81,17 @@ def records(rows, scenario):
                   key=lambda kv: (kv[1]["date"], kv[0] == kv[1]["date"], order.index((kv[0], kv[1]["arm"] if scenario in ARMED else ""))))
 
 
+def history(m, by_record, order):
+    """One cell: the value of metric `m` of each record of `order` that has one, `->` between them, and the change of
+    the last from the one before; `-` when no record has one."""
+    vals = [(rec, by_record.get(rec)) for rec in order]
+    vals = [(rec, v) for rec, v in vals if v not in (None, "")]
+    text = " -> ".join(fmt(m, v) for _, v in vals)
+    if len(vals) >= 2:
+        text += change(vals[-2][1], vals[-1][1])
+    return text or "-"
+
+
 def table(rows, scenario, metrics, cases=None, arms=None):
     """A Markdown table: one line per case and arm, a column per metric; each cell holds every record's value in date
     order, `->` between them, and the change of the last from the one before."""
@@ -95,15 +108,61 @@ def table(rows, scenario, metrics, cases=None, arms=None):
         cells.setdefault((k, r["metric"]), {})[r["record"]] = r["value"]
     out = ["| case | arm | " + " | ".join(metrics) + " |", "|---|---|" + "---|" * len(metrics)]
     for k in keys:
-        line = []
-        for m in metrics:
-            vals = [(rec, cells.get((k, m), {}).get(rec)) for rec in order]
-            vals = [(rec, v) for rec, v in vals if v not in (None, "")]
-            text = " -> ".join(fmt(m, v) for _, v in vals)
-            if len(vals) >= 2:
-                text += change(vals[-2][1], vals[-1][1])
-            line.append(text or "-")
+        line = [history(m, cells.get((k, m), {}), order) for m in metrics]
         out.append(f"| {k[0] or '-'} | {k[1] or '-'} | " + " | ".join(line) + " |")
+    return "\n".join(out)
+
+
+def matrix(rows, scenario, metric, cases=None, arms=None):
+    """A Markdown table of one metric: a line per case, a column per arm (cells as in `table`); the case `all` last."""
+    order = list(dict.fromkeys(rec for rec, _ in records(rows, scenario)))
+    cells, cs, ams = {}, [], []
+    for r in rows:
+        if r["scenario"] != scenario or r["metric"] != metric:
+            continue
+        if (cases and r["case"] not in cases) or (arms and r["arm"] not in arms):
+            continue
+        if r["case"] not in cs:
+            cs.append(r["case"])
+        if r["arm"] not in ams:
+            ams.append(r["arm"])
+        cells.setdefault((r["case"], r["arm"]), {})[r["record"]] = r["value"]
+    cs.sort(key=lambda c: c == "all")
+    out = ["| case | " + " | ".join(ams) + " |", "|---|" + "---|" * len(ams)]
+    for c in cs:
+        out.append(f"| {c} | " + " | ".join(history(metric, cells.get((c, a), {}), order) for a in ams) + " |")
+    return "\n".join(out)
+
+
+def effort(rows, scenario, metrics, cases=None):
+    """A Markdown table of the effort levels: a line per case and model, and per metric the value at effort `low`
+    (with its change from the value at `default`) and at `default`, from the newest record that has one. An arm label
+    is `model:level`; a bare label is a model with one level, shown under `default` and marked, when its `checks` row's
+    note says `no effort setting` (an arm that has no effort level at all, such as the router, is left out)."""
+    order = [rec for rec, _ in reversed(records(rows, scenario))]
+    one_level = {r["arm"] for r in rows if r["scenario"] == scenario and r["metric"] == "checks"
+                 and r["note"].startswith("no effort setting")}
+    got = {}
+    for rec in order:  # the newest record's value wins
+        for r in rows:
+            if (r["scenario"] == scenario and r["record"] == rec and r["metric"] in metrics
+                    and (":" in r["arm"] or r["arm"] in one_level)):
+                got.setdefault((r["case"], r["arm"], r["metric"]), r["value"])
+    models = list(dict.fromkeys(a.partition(":")[0] for _, a, _ in got))
+    cs = [c for c in dict.fromkeys(c for c, _, _ in got) if not cases or c in cases]
+    head = " | ".join(f"{m} low | {m} default" for m in metrics)
+    out = [f"| case | model | {head} |", "|---|---|" + "---|---|" * len(metrics)]
+    for c in cs:
+        for model in models:
+            leveled = any((c, f"{model}:default", m) in got for m in metrics)
+            if not leveled and not any((c, model, m) in got for m in metrics):
+                continue
+            line = []
+            for m in metrics:
+                low, dflt = got.get((c, f"{model}:low", m)), got.get((c, f"{model}:default" if leveled else model, m))
+                line += [(fmt(m, low) + change(dflt, low)) if low not in (None, "") else "-",
+                         fmt(m, dflt) if dflt not in (None, "") else "-"]
+            out.append(f"| {c} | {model}{'' if leveled else ' (no effort setting)'} | " + " | ".join(line) + " |")
     return "\n".join(out)
 
 
@@ -131,7 +190,7 @@ def _isnum(v):
         return False
 
 
-BLOCK = re.compile(r"(<!-- bench:(table|records|spend)((?: [^\n]*?)?) -->\n)(.*?)(<!-- /bench -->)", re.S)
+BLOCK = re.compile(r"(<!-- bench:(table|records|spend|matrix|effort)((?: [^\n]*?)?) -->\n)(.*?)(<!-- /bench -->)", re.S)
 OPT = re.compile(r"(\w+)=(.*?)(?= \w+=|$)")
 
 
@@ -169,9 +228,23 @@ def render(text, rows):
             body = records_table(rows, scen)
         else:
             split = lambda k: opts[k].split(",") if k in opts else None  # noqa: E731
-            body = table(rows, scen, split("metrics"), split("cases"), split("arms"))
+            if kind == "matrix":
+                body = matrix(rows, scen, opts["metric"], split("cases"), split("arms"))
+            elif kind == "effort":
+                body = effort(rows, scen, split("metrics"), split("cases"))
+            else:
+                body = table(rows, scen, split("metrics"), split("cases"), split("arms"))
         return m.group(1) + body + "\n" + m.group(5)
     return BLOCK.sub(one, text)
+
+
+def empty_markers(text, rows):
+    """One line per `bench:` marker of `text` (except `spend`) whose scenario has no rows in `rows`: its table would be
+    empty."""
+    have = {r["scenario"] for r in rows}
+    scen = lambda m: (m.group(3).split() or [""])[0]  # noqa: E731
+    return [f"bench:{m.group(2)} marker of scenario {scen(m)!r} has no rows in the results file"
+            for m in BLOCK.finditer(text) if m.group(2) != "spend" and scen(m) not in have]
 
 
 def readme_misses(text, rows):

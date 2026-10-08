@@ -41,6 +41,45 @@
     "ST-37c3f5l5",
     "ST-4y2kdowd"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The goal makes the pool section's bench: markers fail report --check until ST-ji32ouga's record exists, but report --check is this item's own done check: when do the section's table markers land?",
+      "options": [
+        "Build the scenario, the bench_report.py tables and report --check's no-rows rule now (proved by a planted-marker test); the section of benchmarks.md gets its setup text and Counting method now and its bench: table markers land with ST-ji32ouga's record",
+        "Land the markers now and change this item's check (operator-only)"
+      ],
+      "recommendation": "Build the scenario, the bench_report.py tables and report --check's no-rows rule now (proved by a planted-marker test); the section of benchmarks.md gets its setup text and Counting method now and its bench: table markers land with ST-ji32ouga's record",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "The goal divides effective input by checks passed to get the per-right figure of a cell, and a pool row can hold several checks: what counts as one right answer?",
+      "options": [
+        "A run whose checks all pass is one right answer; the cell figure is the effective input summed over its runs, divided by those runs; the passed and total checks stay as their own count",
+        "Each passed check is one right answer, so a run passing two of three checks counts twice"
+      ],
+      "recommendation": "A run whose checks all pass is one right answer; the cell figure is the effective input summed over its runs, divided by those runs; the passed and total checks stay as their own count",
+      "class": "design",
+      "answer": "A run whose checks all pass is one right answer; the cell figure is the effective input summed over its runs, divided by those runs; the passed and total checks stay as their own count",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "The goal runs the web arms on rows whose kind is in a subset list but does not name the list or the web arms' effort: which kinds, and which effort levels?",
+      "options": [
+        "Web arms run the kinds fact, csv_fact, multi, synthesis, offkb, snippet and false_good (questions a web search can answer), at the model's default effort only; the kb arms run at both levels",
+        "Web arms run every kind and both effort levels"
+      ],
+      "recommendation": "Web arms run the kinds fact, csv_fact, multi, synthesis, offkb, snippet and false_good (questions a web search can answer), at the model's default effort only; the kb arms run at both levels",
+      "class": "design",
+      "answer": "Web arms run the kinds fact, csv_fact, multi, synthesis, offkb, snippet and false_good (questions a web search can answer), at the model's default effort only; the kb arms run at both levels",
+      "by": "agent"
+    }
+  ],
   "links": [
     "_tools/agent_bench.py",
     "_tools/bench_lookup.py",
