@@ -2,7 +2,7 @@
   "id": "ST-wkhxffun",
   "kind": "story",
   "title": "Review sprint: Wasted runs are refused: empty test runs, stale docs at done, reused gate tests, routed fetches, CLI usage errors",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-evkj4avq",
   "review": true,
   "priority": "P1",

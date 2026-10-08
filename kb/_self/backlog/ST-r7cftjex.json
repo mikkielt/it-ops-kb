@@ -2,7 +2,7 @@
   "id": "ST-r7cftjex",
   "kind": "story",
   "title": "The sync gate reuses a test run's result for the same selection on the same tree",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-evkj4avq",
   "priority": "P2",

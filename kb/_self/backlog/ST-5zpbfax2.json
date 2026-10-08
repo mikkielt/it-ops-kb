@@ -2,7 +2,7 @@
   "id": "ST-5zpbfax2",
   "kind": "story",
   "title": "A PreToolUse hook denies WebFetch on a host whose routes-table row avoids it, naming the route to take",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-6iiony54",
   "sprint": "SP-evkj4avq",
   "priority": "P2",
