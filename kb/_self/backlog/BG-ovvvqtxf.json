@@ -2,7 +2,7 @@
   "id": "BG-ovvvqtxf",
   "kind": "bug",
   "title": "agent_bench.kb_tokens subtracts a request's partial output count from the prompt's growth",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2vhfsn4o",
   "priority": "P2",
   "rank": 0,
@@ -14,5 +14,11 @@
       "-c",
       "import sys; sys.path.insert(0,\"_tools\"); import agent_bench as a; u=lambda p,o: {\"input_tokens\":p,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":o}; assert a.kb_tokens([{\"usage\":u(1000,5),\"results\":[]},{\"usage\":u(1300,5),\"results\":[400]}])<=300-200"
     ]
-  }
+  },
+  "touches": [
+    "_tools/agent_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "worker-BG-ovvvqtxf"
 }
