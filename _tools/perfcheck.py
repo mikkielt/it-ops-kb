@@ -13,9 +13,11 @@
                                                 test file that still exists whose reason names no removed file or symbol
                                                 and no successor test, and of a dropped test file whose local imports are
                                                 all still present (tests of live code); exit 0 with or without warnings
-  perfcheck.py time --max-seconds N [ARGS...]
+  perfcheck.py time [--max-seconds N] [ARGS...]
                                                 run tests.py with ARGS and fail when it takes longer than N seconds, or
-                                                fails itself
+                                                fails itself; without N, the bound is the running platform's max_seconds
+                                                in _tools/tests_ceiling.json, times KB_TEST_TIMEOUT_FACTOR on a CI runner
+                                                (as tests.py reads them)
 
 The ids are what `pytest --collect-only -q` prints for the selection tests.py runs: `_tools`. Nothing runs and nothing
 touches the network.
@@ -54,9 +56,14 @@ def clean_env():
     return env
 
 
-def pytest_command():
+def tests_module():
     sys.path.insert(0, str(TOOLS))
     import tests
+    return tests
+
+
+def pytest_command():
+    tests = tests_module()
     cmd = tests.pytest_cmd()
     if cmd is None:
         raise PerfError("pytest is needed: install uv (https://docs.astral.sh/uv/) and rerun, or `pip install pytest`")
@@ -208,7 +215,24 @@ def run_suite(args):
     return subprocess.run([sys.executable, str(TOOLS / "tests.py")] + args, cwd=str(ROOT), env=clean_env()).returncode
 
 
+def ceiling_seconds(platform=None):
+    """The running platform's max_seconds in the test ceiling, times the CI factor, read with tests.py's own functions;
+    PerfError when the ceiling is refused or names no bound for the platform."""
+    tests = tests_module()
+    platform = platform or sys.platform
+    try:
+        c = tests.read_ceiling()
+    except tests.CeilingError as e:
+        raise PerfError(f"ceiling refused: {e}") from None
+    limit = c["max_seconds"].get(platform)
+    if limit is None:
+        raise PerfError(f"{os.path.basename(tests.CEILING)} has no max_seconds for {platform}: pass --max-seconds")
+    return limit * tests.seconds_factor()
+
+
 def run_time(a, extra, runner=run_suite, clock=time.monotonic):
+    if a.max_seconds is None:
+        a.max_seconds = ceiling_seconds()
     start = clock()
     code = runner(extra)
     seconds = clock() - start
@@ -402,7 +426,7 @@ def main(argv=None, collect=collect_ids, runner=run_suite, clock=time.monotonic,
     dr.add_argument("--file", help=f"a dropped-ids file (default {DROPPED_FILE})")
     dr.add_argument("--since", metavar="REV", help="only the groups whose ids the range since REV added (sync's gate)")
     tm = sub.add_parser("time", help="time a suite run against a bound; other arguments go to tests.py")
-    tm.add_argument("--max-seconds", type=float, required=True)
+    tm.add_argument("--max-seconds", type=float, help="the bound (default: this platform's max_seconds in the test ceiling)")
     a, extra = ap.parse_known_args(argv)
     try:
         if a.cmd == "ids":
