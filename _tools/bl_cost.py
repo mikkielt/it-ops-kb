@@ -581,10 +581,11 @@ def closed_gaps_by_item(root, wanted):
         if not ids:
             continue
         for path in sorted({n for n in names.split("\n") if n.strip()}):
-            after = git_text(root, "show", f"{sha}:{path}")
+            # cat-file, not show: `git show REV:PATH` checks it as a file name ("Filename too long" on Windows)
+            after = git_text(root, "cat-file", "blob", f"{sha}:{path}")
             first = parents.split()[0] if parents.split() else None
             held = git_text(root, "ls-tree", "--name-only", first, "--", path) if first else ""  # "" when absent
-            before = git_text(root, "show", f"{first}:{path}") if held and held.strip() else ""
+            before = git_text(root, "cat-file", "blob", f"{first}:{path}") if held and held.strip() else ""
             if after is None or before is None or held is None:
                 return None, "git could not read a commit's ledger"
             closed = gaps_settled(after) - gaps_settled(before)

@@ -271,8 +271,9 @@ def last_text(root, path):
     sha = p.stdout.strip()
     if p.returncode or not sha:
         return None
-    q = subprocess.run(["git", "show", f"{sha}^:{path}"], cwd=root, capture_output=True, text=True, encoding="utf-8",
-                       errors="replace")
+    # cat-file, not show: `git show REV:PATH` checks its argument as a file name ("Filename too long" on Windows)
+    q = subprocess.run(["git", "cat-file", "blob", f"{sha}^:{path}"], cwd=root, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
     return q.stdout if q.returncode == 0 else None
 
 

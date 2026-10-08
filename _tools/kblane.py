@@ -89,7 +89,8 @@ def commit_paths(repo, sha):
         return None
     names = sorted(x for x in out.split("\0") if x)
     if ATTRS in names:
-        old, new = _git(repo, "show", f"{base}:{ATTRS}"), _git(repo, "show", f"{sha}:{ATTRS}")
+        # cat-file, not show: `git show REV:PATH` checks its argument as a file name ("Filename too long" on Windows)
+        old, new = _git(repo, "cat-file", "blob", f"{base}:{ATTRS}"), _git(repo, "cat-file", "blob", f"{sha}:{ATTRS}")
         if old is not None and new is not None and attrs_block_only(old, new):
             names.remove(ATTRS)
     return names
