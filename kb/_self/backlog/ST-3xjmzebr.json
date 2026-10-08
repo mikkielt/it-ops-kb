@@ -2,7 +2,7 @@
   "id": "ST-3xjmzebr",
   "kind": "story",
   "title": "Research sprint goal: Workers read what they change and gates say why they block",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ktup3cha",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,20 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "orchestrator-mac"
+  "notes": "No outside facts: every goal clause is about the kb's own tools (kb-worker rule 4 and selfdoc.py stale, held/overlap of kb/_self docs, bl_authority gate classes, backlog check of goal paths, start's trigger host warning, set --repro for a reopened bug); rag.py pack --root _self answers each from kb/_self/backlog.md, tools.md and the code (backlog.md:63, :131, :216, :280; tools.md:72, :75, :97), so no official outside source applies.",
+  "evidence": {
+    "commit": "f2a02b054ebe6496ac449bd14193bf02e7b5a568",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-3xjmzebr"
+        ],
+        "exit": 0,
+        "sha256": "d4a6aef9e830eb35"
+      }
+    ]
+  }
 }
