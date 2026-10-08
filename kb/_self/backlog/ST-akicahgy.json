@@ -2,7 +2,7 @@
   "id": "ST-akicahgy",
   "kind": "story",
   "title": "The suite's rag.py eval rebuilds the pack index only for what an edit changed",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kjqdiudr",
   "priority": "P3",
@@ -59,5 +59,18 @@
     }
   ],
   "notes": "ST-4mcoplex (done 2026-10-07, SP-eahtellz) delivered the content-keyed index this builds on. Premise (macOS, 2026-10-07): with an isolated KB_INDEX a cold rag.py pack took 3.18 s and the pack after one planted article line 3.08 s, so the rebuild is full on every host; the check asks for at most half the cold time and the planted line found by rag.py search. The Windows before and after figures (cold 12.8-14.3 s, test-suite-speed.md) are measured on the host and written to that report. Premise on the Windows host (2026-10-08, origin/main d5a26e12): the check exits 1, cold 14.98 s, after one planted article line 10.52 s (70% of cold, target at most 50%), planted word found. Worked on the Windows host (2026-10-08): weighed() keeps each unit's result in kbunits.sqlite beside the index, keyed by INDEX_VERSION, the doc2query mode and the unit's inputs, and MemStore.save writes postings in term order. Item check after: exit 0, cold 16.0 / 15.99 / 16.51 s, after edit 4.89 / 4.75 / 4.89 s (29-31%), planted word found; before at 1cee0307: exit 1, cold 15.48, after edit 10.88. kbfacts.py edit with INDEX_VERSION unchanged: 4.70 s against 11.28 s cold. rag.py eval 560/560; tests.py -k 'index or rag or pack or kbfacts' 2 passed. kb/_self/reports/test-suite-speed.md records it.",
-  "claimed_by": "worker-win"
+  "evidence": {
+    "commit": "240d26fc88e220db6bb8d53ddeec8e125c2b3f1b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile,time,os,shutil;t=tempfile.mkdtemp();d=os.path.join(t,'wt');s.run(['git','worktree','add','-q','--detach',d],check=True);e={**os.environ,'KB_INDEX':os.path.join(t,'ix')};rag=os.path.join(d,'_tools','rag.py');run=lambda *a:s.run([sys.executable,rag,*a],cwd=d,env=e,capture_output=True,text=True);tm=lambda *a:(lambda t0:(run(*a),time.time()-t0)[1])(time.time());cold=tm('pack','kerberos delegation');open(os.path.join(d,'kb','public','windows','process-parent-and-command-line.md'),'a',encoding='utf-8').write('\\n- The plantedzzqx7 marker is a planted fact for a test. [DOC S-u6fzpqel]\\n');after=tm('pack','kerberos delegation');hit=run('search','plantedzzqx7');found='plantedzzqx7' in hit.stdout;shutil.rmtree(t,ignore_errors=True);s.run(['git','worktree','prune']);print('cold',round(cold,2),'after edit',round(after,2),'planted word found',found);sys.exit(0 if (found and after<=0.5*cold) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0cb9b893b809e84e"
+      }
+    ]
+  }
 }
