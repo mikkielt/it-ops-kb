@@ -86,13 +86,15 @@ def git_env(**extra):
     for k in LEAKY:
         env.pop(k, None)
     env.update(extra)
-    # No automatic maintenance in a throwaway repository: appended after the caller's GIT_CONFIG_COUNT entries (CI's
-    # safe.directory), never replacing them.
+    # No automatic maintenance in a throwaway repository, and long paths on Windows (a scenario's worktree under a
+    # pytest temp directory passes 260 characters, and no host setting reaches past GIT_CONFIG_GLOBAL and NOSYSTEM;
+    # other hosts ignore it): appended after the caller's GIT_CONFIG_COUNT entries (CI's safe.directory), never
+    # replacing them.
     try:
         n = max(int(env.get("GIT_CONFIG_COUNT") or 0), 0)
     except ValueError:
         n = 0
-    for k, v in (("gc.auto", "0"), ("maintenance.auto", "false")):
+    for k, v in (("gc.auto", "0"), ("maintenance.auto", "false"), ("core.longpaths", "true")):
         env[f"GIT_CONFIG_KEY_{n}"], env[f"GIT_CONFIG_VALUE_{n}"] = k, v
         n += 1
     env["GIT_CONFIG_COUNT"] = str(n)
