@@ -2,7 +2,7 @@
   "id": "BG-mtyaxud3",
   "kind": "bug",
   "title": "Four eval rows ST-hcc7a3fd added copy or reword held-out questions, so the held-out answer-rate test fails",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-vayhvwfy",
   "priority": "P1",
@@ -23,5 +23,22 @@
   "touches": [
     "kb/public/_retrieval/lookup_eval.csv"
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "d80166434b3c536f3af2efe44cc855c2c3465d0f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--min",
+          "1"
+        ],
+        "exit": 0,
+        "sha256": "98ec4cd55bbd94b3"
+      }
+    ]
+  }
 }
