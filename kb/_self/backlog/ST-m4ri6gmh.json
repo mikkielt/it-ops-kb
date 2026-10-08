@@ -2,7 +2,7 @@
   "id": "ST-m4ri6gmh",
   "kind": "story",
   "title": "Review sprint: Rules findings converge: no item-text findings, tested rows for real misses, code-anchored rows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rvslem3h",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-mac"
+  "evidence": {
+    "commit": "5fa24384d646c852c02d0e85a0acecd1d0ac591d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "80e148310187110f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "c99d37afc74765ce"
+      }
+    ]
+  }
 }
