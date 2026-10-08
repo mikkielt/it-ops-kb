@@ -2,7 +2,7 @@
   "id": "BG-cwoyc7yh",
   "kind": "bug",
   "title": "A backlog.py land run in the background writes its done row when it starts, so a failed landing still closes the window",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,

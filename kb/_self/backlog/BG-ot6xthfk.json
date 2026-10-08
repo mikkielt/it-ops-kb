@@ -2,7 +2,7 @@
   "id": "BG-ot6xthfk",
   "kind": "bug",
   "title": "backlog.py cost dates a reopened item by its first done, and states the no-line cause as fact from the time alone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,

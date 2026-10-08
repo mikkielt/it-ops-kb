@@ -2,7 +2,7 @@
   "id": "BG-47kw57ed",
   "kind": "bug",
   "title": "A branch row of a stale worker worktree opens a window when the item's file says done: distill tests only that the file exists",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,

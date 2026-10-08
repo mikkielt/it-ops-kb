@@ -2,7 +2,7 @@
   "id": "ST-fxly2caj",
   "kind": "story",
   "title": "hooks.md states when PostToolUse fires for a Bash command run in the background",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wgx4pq4r",
   "priority": "P2",
   "rank": 0,

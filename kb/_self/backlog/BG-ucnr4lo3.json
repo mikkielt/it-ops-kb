@@ -2,7 +2,7 @@
   "id": "BG-ucnr4lo3",
   "kind": "bug",
   "title": "backlog.py cost: an open session's figures count windows of items with no item file, which distill no longer does",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wgx4pq4r",
   "priority": "P2",
   "rank": 0,
