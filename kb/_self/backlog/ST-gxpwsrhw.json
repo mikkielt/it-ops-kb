@@ -2,7 +2,7 @@
   "id": "ST-gxpwsrhw",
   "kind": "story",
   "title": "tests.py fails on a compile warning in any tool or test file",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kyvu526t",
   "priority": "P2",
@@ -33,5 +33,6 @@
   "depends_on": [
     "BG-a5kzmuns"
   ],
-  "notes": "Premise (2026-10-07): tests.py has no compile step; a planted unimported tool file holding an invalid escape passes (exit 0), and a planted test file holding one only prints the warning. Both checks run tests.py on a copy of _tools/, pyproject.toml, uv.lock and kb/_self/_decisions.csv. compileall -W error over _tools passes today (83 files)."
+  "notes": "Premise (2026-10-07): tests.py has no compile step; a planted unimported tool file holding an invalid escape passes (exit 0), and a planted test file holding one only prints the warning. Both checks run tests.py on a copy of _tools/, pyproject.toml, uv.lock and kb/_self/_decisions.csv. compileall -W error over _tools passes today (83 files).",
+  "claimed_by": "worker-gxpwsrhw"
 }
