@@ -2,7 +2,7 @@
   "id": "BG-xbxtbqwd",
   "kind": "bug",
   "title": "A resumed pool session question records the session's running output and model usage, so its out and list cost overcount",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -24,5 +24,6 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md"
-  ]
+  ],
+  "claimed_by": "worker-BG-xbxtbqwd"
 }
