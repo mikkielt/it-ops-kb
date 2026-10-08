@@ -84,7 +84,7 @@ def pool_home(tmp_path, ql_questions):
     (run / "20261008T000000Z-aaaaaaaa.jsonl").write_text(head % len(ql_questions) + ents, encoding="utf-8")
 
 
-def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, monkeypatch):
+def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, monkeypatch, capsys):
     import argparse, re
     import bench_pool as bp
     ql = [f"fixture session question number {i} about topic {i} in detail" for i in range(26)]
@@ -113,6 +113,29 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
         for d in range(6)), encoding="utf-8")
     assert rows == bp.build_public(tmp_path, 3, lambda items: pytest.fail("a new eval row moves a row or asks"), out)  # the committed sample stays
     assert bp.fact_for(tmp_path, {"question": "which status is complete for the topic", "expect_paths": "d0/a0.md"}) is None  # no front-matter line
+    evrows = [r for r in rows if r["kind"] in bp.EVAL_KINDS]
+    asked, kept = [], []
+
+    def redo_ask(items):
+        asked.append([i["row"] for i in items])
+        return [r"equals value\d+", r"d0/a0\.md", "nomatch"]
+    names = [evrows[0]["id"], evrows[1]["source"].split(":", 1)[1], evrows[2]["id"]]  # a row id, a case id, a row id
+    again = bp.build_public(tmp_path, 3, redo_ask, out, names, kept)
+    now = {r["source"]: r["checks"] for r in again if r["kind"] in bp.EVAL_KINDS}
+    was = {r["source"]: r["checks"] for r in rows if r["kind"] in bp.EVAL_KINDS}
+    assert asked == [[r["source"] for r in evrows[:3]]]  # only the named rows are asked
+    assert [s for s in now if now[s] != was[s]] == [evrows[0]["source"]] and json.loads(now[evrows[0]["source"]]) == [r"equals value\d+"]
+    assert kept == [evrows[1]["source"], evrows[2]["source"]]  # an article path and an unusable regex keep the committed check
+    with pytest.raises(bp.PoolError):
+        bp.build_public(tmp_path, 3, redo_ask, out, ["EV-nope"])
+    before = out.read_text(encoding="utf-8")
+    monkeypatch.setattr(bp, "sonnet_regexes", lambda items: pytest.fail("a dry run or a refused call pays"))
+    rns = argparse.Namespace(pool_cmd="build", querylog=False, seed=3, out=str(out), redo=names, dry_run=True)
+    assert bp.cli(rns, tmp_path) == 0 and out.read_text(encoding="utf-8") == before  # the listing writes nothing
+    listing = capsys.readouterr().out
+    assert "would ask 3 rows" in listing and "estimated $" in listing and all(r["source"] in listing for r in evrows[:3])
+    rns.redo, rns.dry_run = [r["id"] for r in evrows[:bp.ASK_MAX_ROWS + 1]], False
+    assert bp.cli(rns, tmp_path) == 1 and "no call" in capsys.readouterr().out and out.read_text(encoding="utf-8") == before  # the planted failure
     held = [r for r in rows if r["kind"] == "heldout"]
     assert all(r["question"] == "" and json.loads(r["checks"]) for r in held)
     assert "HELDOUT TEXT" not in out.read_text(encoding="utf-8") and "HELDOUT TEXT" in bp.question_of(held[0], tmp_path)

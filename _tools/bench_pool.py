@@ -189,10 +189,24 @@ def cached_checks(prior):
             if r["source"].startswith("lookup_eval.csv:") and r["checks"]}
 
 
-def eval_section(home, seed, ask, out):
+def path_only(checks):
+    """True when every check is an article path (fallback_check's form): the answer need only cite the article."""
+    return all("|" not in c and re.search(r"\\\.(md|csv)$", c) for c in checks)
+
+
+def redo_sources(prior, names):
+    """The `lookup_eval.csv:ID` sources `names` pick: a pool row id (BP-xxxxxxxx) of the file a rebuild replaces, or an
+    eval case id (with or without the `lookup_eval.csv:` prefix)."""
+    ids = {r["id"]: r["source"] for r in prior}
+    return {ids.get(n) or (n if n.startswith("lookup_eval.csv:") else f"lookup_eval.csv:{n}") for n in names}
+
+
+def eval_section(home, seed, ask, out, redo=(), kept=None):
     """(eval rows, their variants, the near-miss rows built on eval questions), one `ask` call for the checks of the
     rows the file at `out` lacks. The eval rows and near-miss bases that file holds stay, so a case added to
-    lookup_eval.csv moves no row; the seed draws only the rows it lacks (a build to a new `out` draws all)."""
+    lookup_eval.csv moves no row; the seed draws only the rows it lacks (a build to a new `out` draws all). The rows
+    `redo` names (see redo_sources) are asked again too, and keep their committed check, appended to `kept`, when the
+    new regex is unusable or only an article path; a name that is no row of the pool is a PoolError."""
     prior = committed_rows(out)
     cases = []
     for c in sorted(read_csv(Path(home) / EVAL_FILE), key=lambda c: c["id"]):
@@ -212,13 +226,22 @@ def eval_section(home, seed, ask, out):
             near.append((brand, base))
     ask_for = picked + [b for _, b in near if b not in picked]
     have = cached_checks(prior)
-    todo = [c for c in ask_for if f"lookup_eval.csv:{c['id']}" not in have]
+    again = redo_sources(prior, redo)
+    unknown = sorted(again - {f"lookup_eval.csv:{c['id']}" for c in ask_for})
+    if unknown:
+        raise PoolError("--redo names no eval row of the pool: " + ", ".join(unknown))
+    todo = [c for c in ask_for if f"lookup_eval.csv:{c['id']}" not in have or f"lookup_eval.csv:{c['id']}" in again]
     got = {}
     if todo:
-        regexes = ask([{"question": c["question"], "where": f"{c['fact'][0]}:{c['fact'][1]}", "fact": c["fact"][2]}
-                       for c in todo])
+        regexes = ask([{"row": f"lookup_eval.csv:{c['id']}", "question": c["question"],
+                        "where": f"{c['fact'][0]}:{c['fact'][1]}", "fact": c["fact"][2]} for c in todo])
         for c, rx in zip(todo, regexes):
-            got[f"lookup_eval.csv:{c['id']}"] = [rx if usable(rx, c["fact"][2]) else fallback_check(c["fact"][0])]
+            src = f"lookup_eval.csv:{c['id']}"
+            if src in again and src in have and (not usable(rx, c["fact"][2]) or path_only([rx])):
+                if kept is not None:
+                    kept.append(src)
+            else:
+                got[src] = [rx if usable(rx, c["fact"][2]) else fallback_check(c["fact"][0])]
     checks = {**have, **got}
 
     def chk(c):
@@ -408,10 +431,11 @@ def snippet_section(home, seed):
 
 # ------------------------------------------------------------------------------------------------ build and check
 
-def build_public(home=HOME, seed=SEED, ask=sonnet_regexes, out=None):
-    """The public pool's rows, in the order of the kinds, or a PoolError naming a kind short of rows."""
+def build_public(home=HOME, seed=SEED, ask=sonnet_regexes, out=None, redo=(), kept=None):
+    """The public pool's rows, in the order of the kinds, or a PoolError naming a kind short of rows. `redo` and `kept`
+    are eval_section's."""
     out = Path(out or Path(home) / PUBLIC_FILE)
-    ev, variants, near = eval_section(home, seed, ask, out)
+    ev, variants, near = eval_section(home, seed, ask, out, redo, kept)
     design = design_section()
     rows = (ev + heldout_section(home, seed) + offkb_section(home, seed) + design[:2] + near + design[2:]
             + gap_section(home, seed) + tool_section(home, seed) + snippet_section(home, seed) + variants)
@@ -537,15 +561,61 @@ def check_problems(rows, home=HOME, querylog=False):
     return out
 
 
+ASK_OVERHEAD = 12_000  # input tokens a tool-less `claude -p` call carries before the prompt, priced as a cache write
+ASK_OUT = 80  # output tokens assumed per regex
+ASK_MAX_ROWS = 12  # a --redo build asks no more rows than this, nor spends more than ASK_MAX_USD (estimated)
+ASK_MAX_USD = 0.50
+
+
+class Asked(Exception):
+    """A `--dry-run` that reached the paid call: carries nothing, the listing is printed."""
+
+
+def ask_estimate(items):
+    """The list-price cost in USD of the one call that asks `items` (sonnet-5-5, an estimate: the prompt at 4 characters
+    a token, the claude -p overhead as a cache write)."""
+    p = PRICE["claude-sonnet-5-5"][0]
+    text = len(REGEX_ASK) + sum(len(i["question"]) + min(len(i["fact"]), 400) + len(i["where"]) + 40 for i in items)
+    return (ASK_OVERHEAD * p[3] + text / 4 * p[1] + ASK_OUT * len(items) * p[2]) / 1e6
+
+
+def listed_ask(ask, dry_run, limits):
+    """`ask` behind the listing of the rows it would ask and the estimate; a dry run stops there (Asked), and with
+    `limits` a call of more than ASK_MAX_ROWS rows or ASK_MAX_USD is a PoolError."""
+    def asking(items):
+        usd = ask_estimate(items)
+        print(f"pool build: would ask {len(items)} rows in one call, estimated ${usd:.3f}")
+        for i in items:
+            print(f"  {i['row']}  {i['where']}")
+        if limits and (len(items) > ASK_MAX_ROWS or usd > ASK_MAX_USD):
+            raise PoolError(f"no call: more than {ASK_MAX_ROWS} rows or over ${ASK_MAX_USD:.2f}")
+        if dry_run:
+            raise Asked()
+        return ask(items)
+    return asking
+
+
 def cli(a, home=HOME):
     """`pool build` and `pool check`; the argparse namespace comes from benchmarks.py."""
     if a.pool_cmd == "build":
         out = Path(a.out) if a.out else Path(home) / (QUERYLOG_FILE if a.querylog else PUBLIC_FILE)
+        redo, dry = getattr(a, "redo", None) or [], getattr(a, "dry_run", False)
+        kept = []
         try:
-            rows = build_querylog(home, a.seed, out) if a.querylog else build_public(home, a.seed, out=out)
+            if a.querylog and (redo or dry):
+                raise PoolError("--redo and --dry-run are for the public pool")
+            rows = (build_querylog(home, a.seed, out) if a.querylog else
+                    build_public(home, a.seed, listed_ask(sonnet_regexes, dry, bool(redo)), out, redo, kept))
+        except Asked:
+            return 0
         except PoolError as e:
             print(f"pool build: {e}")
             return 1
+        if dry:
+            print("pool build: dry run, no row would be asked")
+            return 0
+        for src in kept:
+            print(f"pool build: {src} keeps its committed check (the new regex was unusable or an article path)")
         write_csv(out, rows)
         counts = {}
         for r in rows:

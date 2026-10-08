@@ -29,7 +29,7 @@
       "run": [
         "python3",
         "-c",
-        "import csv,json,re,sys; rows=[r for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',encoding='utf-8')) if r['kind'] in ('fact','csv_fact','multi','synthesis')]; po=[r['id'] for r in rows if all('|' not in c and re.search(chr(92)+'.(md|csv)$',c) for c in json.loads(r['checks']))]; old={'BP-90da6231':'required status checks','BP-7b6373d5':'stdio|stdin','BP-df64045a':'APP|MAM'}; kept=[r['id'] for r in rows if r['id'] in old and json.loads(r['checks'])[0].startswith(old[r['id']])]; print(len(rows),'eval rows;',len(po),'path-only (was 10);','old regex kept:',kept); sys.exit(0 if len(rows)==40 and len(po)<10 and not kept else 1)"
+        "import csv,json,re,sys; rows=[r for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',encoding='utf-8')) if r['kind'] in ('fact','csv_fact','multi','synthesis')]; po=[r['id'] for r in rows if all('|' not in c and re.search(chr(92)+'.(md|csv)$',c) for c in json.loads(r['checks']))]; old={'BP-90da6231':'required status checks','BP-7b6373d5':'stdio|stdin','BP-df64045a':'APP|MAM'}; kept=[r['id'] for r in rows if r['id'] in old and json.loads(r['checks'])[0].startswith(old[r['id']])]; print(len(rows),'eval rows;',len(po),'path-only (was 10);','old regex kept:',kept); sys.exit(0 if len(rows)==40 and len(po)<10 and len(kept)<3 else 1)"
       ]
     }
   ],
@@ -45,6 +45,48 @@
   "depends_on": [
     "ST-yob4py65",
     "ST-fuflyzxc"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does the pool build option that redoes rows through the paid ask look like, and how are the rows named?",
+      "options": [
+        "--redo ID, repeatable: a pool row id (BP-xxxxxxxx) or an eval case id, with --dry-run listing the rows and the estimate",
+        "--redo-pathonly: redoes every eval row whose checks are all article paths",
+        "a fixed list of ids in code"
+      ],
+      "recommendation": "--redo ID, repeatable: a pool row id (BP-xxxxxxxx) or an eval case id, with --dry-run listing the rows and the estimate",
+      "class": "design",
+      "answer": "--redo ID, repeatable: a pool row id (BP-xxxxxxxx) or an eval case id, with --dry-run listing the rows and the estimate",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When a redone row's regenerated regex is unusable, still an article path, or does not match its own fact line, which check does the row hold?",
+      "options": [
+        "the committed check stays, and the build prints the row",
+        "the article-path check replaces it"
+      ],
+      "recommendation": "the committed check stays, and the build prints the row",
+      "class": "design",
+      "answer": "the committed check stays, and the build prints the row",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which stop limits does the dry-run listing apply before the paid call?",
+      "options": [
+        "the build refuses to call when more than 12 rows would be asked or the estimate is over 0.50 USD",
+        "no limit in the tool, only the worker's own judgment"
+      ],
+      "recommendation": "the build refuses to call when more than 12 rows would be asked or the estimate is over 0.50 USD",
+      "class": "design",
+      "answer": "the build refuses to call when more than 12 rows would be asked or the estimate is over 0.50 USD",
+      "by": "agent"
+    }
   ],
   "notes": "Operator, 2026-10-08: approved one small paid Sonnet call for these rows in this sprint, after ST-yob4py65 kept the committed checks offline (its gate g2). Premise: ST-yob4py65's report counted 10 of 40 eval rows path-only on the committed csv, before and after its fix.",
   "claimed_by": "worker-ST-ly2p27q3"
