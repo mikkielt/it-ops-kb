@@ -2,7 +2,7 @@
   "id": "BG-nozwqz2j",
   "kind": "bug",
   "title": "hooks.md states as DOC that a plain --resume appends to the original transcript, an inference from the two-terminal sentence",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,18 @@
     "ST-fxly2caj",
     "ST-kdw6dkyb"
   ],
-  "claimed_by": "orchestrator-mac"
+  "evidence": {
+    "commit": "d15d0a1e53915b27368a003a8ecd5b223de32a46",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;bad=[(f,l) for f in ('kb/public/claude/hooks.md','kb/public/_answers.md') for l in open(f,encoding='utf-8').read().splitlines() if ('appends to the original session' in l or 'appends to its transcript' in l) and '[DOC' in l and 'DER' not in l];print('inferred resume-append fact tagged DOC only:',len(bad));sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "be610a0ec2e3b975"
+      }
+    ]
+  }
 }
