@@ -8,7 +8,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           a new item (KIND: epic, story, task, subtask, bug, sprint); prints its id
                                           and title. A bug's --repro must fail now, and for the defect: one that
                                           cannot start, dies of a SyntaxError in its own code, gets a usage error
-                                          (argparse exit 2) or runs no tests (pytest exit 5) is refused with the
+                                          (argparse exit 2) or runs no tests (tests.py's exit 2 that names a
+                                          selection collecting no test, or pytest's exit 5) is refused with the
                                           cause; one that only matches text in a file (grep, a python -c that
                                           reads a file) is refused (exit 2, nothing written) without
                                           --repro-reason, kept as repro_reason; a warning names a check or repro that runs no test or tool code,
