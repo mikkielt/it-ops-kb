@@ -1,0 +1,12 @@
+{
+  "id": "ST-6qllltz3",
+  "kind": "story",
+  "title": "The kb records that a Sonnet 5.5 run was billed 0.20 USD per MTok for cache reads against the documented 0.10",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A _conflicts.md entry, through /kb-research, records that a claude -p Sonnet 5.5 probe (BG-rbokisbc, 2026-10-09) was billed cache reads at 0.20 USD per MTok while the pricing page (S2131) and kb/public/agents/agent-caching.md:24 and kb/public/claude/ci-and-headless.md:87 state 0.10 (0.05x input); the entry names the probe's stream evidence and what would settle it (a re-read of the pricing page, a billing statement); bench_core.PRICE keeps 0.10 until it is settled",
+  "touches": [
+    "kb/public/**"
+  ]
+}
