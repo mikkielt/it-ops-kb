@@ -2,7 +2,7 @@
   "id": "ST-r7wvfqvw",
   "kind": "story",
   "title": "kb-sprint run starts workers as Sonnet headless sessions by default, the session model only on request",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,
@@ -44,5 +44,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-ST-r7wvfqvw"
+  "evidence": {
+    "commit": "4b3cfc64cbf51bba3068a2f1905dd31061afb2a1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='--model sonnet' in t and 'session model only' in t;print('sonnet headless default:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e5e2e46df68d9c0f"
+      }
+    ]
+  }
 }
