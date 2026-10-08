@@ -2,7 +2,7 @@
   "id": "BG-2tan24sm",
   "kind": "bug",
   "title": "Pool session shape records each follow-up's cost as the session's running total, and same-day pool chunks overwrite each other's spend rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",
@@ -46,5 +46,6 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-hm4qgf3t"
 }
