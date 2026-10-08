@@ -1,0 +1,29 @@
+{
+  "id": "BG-rbokisbc",
+  "kind": "bug",
+  "title": "A pool run's list cost leaves out a kb arm's web searches and overcounts a Sonnet or Opus off-kb run, so pool verify (b) fails the smoke record",
+  "status": "todo",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "On the 2026-10-08 smoke record (_cache/scratch/ST-xy5kmisr/smoke/pool-smoke.csv, runs in the bench scratch runs file) six runs were more than 20% off their list price: Haiku 5.5 kb-arm runs cost 2 to 4 times list (BP-90da6231, BP-4d1528e8, BP-46067e5e: web searches at 0.01 USD each not priced on a kb arm, to be confirmed), and Sonnet 5.5 and Opus 5.5 runs of the off-kb row BP-4d1528e8 cost 25 to 38% under list (cause unproven: find it). Each run's list cost (bench_pool.list_usd through bench_core.est_cost) prices every billed part the run's stream reports, on every arm, so a rerun of those rows lands within 20% of each run's reported cost; the cause of the under-list runs is found from a raw stream (paid probe runs that keep their stream, at most 1 USD in all, approved by the operator on 2026-10-08) and named in the fix's commit; a planted stream for each cause is priced within 20% of its reported cost",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import bench_pool; r={'arm':'haiku-5-5','model':'claude-haiku-5-5','cost':0.05,'out':100,'uncached':10,'cache_write':1000,'cache_read':1000,'searches':4,'requests':[{'model':'claude-haiku-5-5','usage':{'input_tokens':10,'cache_creation_input_tokens':1000,'cache_read_input_tokens':1000,'output_tokens':100}}]}; l=bench_pool.list_usd(r); assert l>=0.04, l"
+    ]
+  },
+  "repro_reason": "The smoke record's rows are fixed figures a code fix does not change; the repro plants a kb-arm run with four web searches.",
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/bench_core.py",
+    "_tools/agent_bench.py",
+    "_tools/test_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ]
+}
