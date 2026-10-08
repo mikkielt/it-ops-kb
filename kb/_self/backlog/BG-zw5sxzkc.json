@@ -2,7 +2,7 @@
   "id": "BG-zw5sxzkc",
   "kind": "bug",
   "title": "derived_class classes every gate of an item touching kb/_self/token-efficiency.md as secrets, since SECRET_WORDS matches token in the path",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-BG-zw5sxzkc"
+  "evidence": {
+    "commit": "b9012b3b9bc902c8b67f705adddbc7153182be70",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bl_authority as a; c=a.derived_class({'touches':['kb/_self/token-efficiency.md']},{'id':'g1','question':'which window width'}); print(c); sys.exit(0 if c=='design' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f52c370da768f628"
+      }
+    ]
+  }
 }
