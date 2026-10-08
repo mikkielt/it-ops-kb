@@ -1,0 +1,24 @@
+{
+  "id": "BG-isv7273p",
+  "kind": "bug",
+  "title": "backlog.py set and new refuse an over-long notes, goal or title without naming its length or the TEXT_MAX limit",
+  "status": "todo",
+  "sprint": "SP-evkj4avq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A field refused as empty or longer than TEXT_MAX names its length and the limit in characters (for example 'notes is 2001 characters, at most 2000'), so an agent shortens it in one retry; kbusage.py errors ranked this refusal, behind 'unchanged: the change would make check fail', first among backlog.py's exit-2 messages on 2026-W41 transcripts (8 of its 16 calls), and its fix needs bl_check.py, outside ST-b7ste3hx's touches. The same report ranked two more refusals from bl_items.py outside those touches: 'gate add: --recommendation must be one of the --option values' and 'set refuses goal on a sprint'.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,subprocess as s,sys,tempfile as t; d=t.mkdtemp(); r=lambda *a:s.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True); e=re.search(r'EP-\\w{8}',r('new','epic','--title','E','--goal','g').stdout)[0]; p=r('set',e,'--notes','x'*2001); sys.exit(0 if p.returncode==2 and '2001' in p.stderr and '2000' in p.stderr else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
