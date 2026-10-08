@@ -98,17 +98,28 @@ def domain_of(rel):
 
 # ------------------------------------------------------------------------------------------------------ eval rows
 
+def front_matter_end(lines):
+    """The number of the last line of an article's front matter (0 when it has none)."""
+    if lines and lines[0].strip() == "---":
+        for n, ln in enumerate(lines[1:], 2):
+            if ln.strip() == "---":
+                return n
+    return 0
+
+
 def fact_for(home, case):
-    """(path, line number, text) of the line of the case's expected articles that shares most words with its question,
-    or None under two shared words."""
+    """(path, line number, text) of the body line of the case's expected articles that shares most words with its
+    question (never a heading or a front-matter line), or None under two shared words."""
     q = set(words(case["question"]))
     best = None
     for rel in [p for p in case["expect_paths"].split(";") if p][:2]:
         path = Path(home) / "kb" / "public" / rel
         if not path.is_file():
             continue
-        for n, ln in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            if ln.startswith(("#", "---")) or not ln.strip():
+        lines = path.read_text(encoding="utf-8").splitlines()
+        head = front_matter_end(lines)
+        for n, ln in enumerate(lines, 1):
+            if n <= head or ln.startswith(("#", "---")) or not ln.strip():
                 continue
             score = len(q & set(words(ln)))
             if score >= 2 and (best is None or score > best[0]):
@@ -167,31 +178,40 @@ def sonnet_regexes(items):
     return out
 
 
-def cached_checks(out):
+def committed_rows(out):
+    """The rows of the file a rebuild replaces (none when there is no file)."""
+    return read_csv(out) if Path(out).is_file() else []
+
+
+def cached_checks(prior):
     """{source: checks} of the rows of the file a rebuild replaces: the regexes a paid call wrote once."""
-    path = Path(out)
-    if not path.is_file():
-        return {}
-    return {r["source"]: json.loads(r["checks"]) for r in read_csv(path)
+    return {r["source"]: json.loads(r["checks"]) for r in prior
             if r["source"].startswith("lookup_eval.csv:") and r["checks"]}
 
 
 def eval_section(home, seed, ask, out):
-    """(eval rows, their variants, the near-miss rows built on eval questions), one `ask` call for the checks."""
+    """(eval rows, their variants, the near-miss rows built on eval questions), one `ask` call for the checks of the
+    rows the file at `out` lacks. The eval rows and near-miss bases that file holds stay, so a case added to
+    lookup_eval.csv moves no row; the seed draws only the rows it lacks (a build to a new `out` draws all)."""
+    prior = committed_rows(out)
     cases = []
     for c in sorted(read_csv(Path(home) / EVAL_FILE), key=lambda c: c["id"]):
         if c["expect_verdict"] == "good" and c["expect_paths"]:
             fact = fact_for(home, c)
             if fact:
                 cases.append({**c, "fact": fact})
-    picked = stratified(cases, EVAL_ROWS, rng_for(seed, "eval"))
+    by_source = {f"lookup_eval.csv:{c['id']}": c for c in cases}
+    picked = [by_source[r["source"]] for r in prior if r["kind"] in EVAL_KINDS and r["source"] in by_source][:EVAL_ROWS]
+    picked += stratified([c for c in cases if c not in picked], EVAL_ROWS - len(picked), rng_for(seed, "eval"))
+    held = {r["source"] for r in prior if r["kind"] == "near_miss"}
     near = []
     for brand in ("cmpivot", "bitlocker"):
-        base = next((c for c in cases if brand in c["question"].lower()), None)
+        named = [c for c in cases if brand in c["question"].lower()]
+        base = next((c for c in named if f"lookup_eval.csv:{c['id']}" in held), None) or next(iter(named), None)
         if base:
             near.append((brand, base))
     ask_for = picked + [b for _, b in near if b not in picked]
-    have = cached_checks(out)
+    have = cached_checks(prior)
     todo = [c for c in ask_for if f"lookup_eval.csv:{c['id']}" not in have]
     got = {}
     if todo:
