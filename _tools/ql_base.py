@@ -43,13 +43,14 @@ def plugin_data():
 
 def clone_home():
     """The checkout that owns this copy's spool: HOME, or the main worktree of the clone when HOME is a linked git
-    worktree (its `.git` is a file naming `<common dir>/worktrees/<name>`), where the readers look."""
+    worktree (its `.git` is a file naming `<common dir>/worktrees/<name>`, relative to HOME when git wrote it with
+    --relative-paths), where the readers look."""
     try:
         text = (HOME / ".git").read_text(encoding="utf-8").strip()
     except OSError:
         return HOME
     if text.startswith("gitdir:"):
-        gitdir = Path(text[len("gitdir:"):].strip())
+        gitdir = Path(os.path.normpath(HOME / text[len("gitdir:"):].strip()))
         if gitdir.parent.name == "worktrees" and gitdir.parent.parent.name == ".git":
             return gitdir.parent.parent.parent
     return HOME
