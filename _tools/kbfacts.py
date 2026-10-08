@@ -1670,10 +1670,31 @@ UNIT_CACHE = "kbunits.sqlite"  # in index_dir(): weighed()'s result per unit, ke
 UNIT_CACHE_SLACK = 2  # the cache keeps up to this many times the units weighed; beyond, rows no unit used are dropped
 
 
+def _code_digest(code):
+    """A hash of a code object's instructions, names and constants, nested code included, with no line numbers: a
+    comment or a moved function keeps it, an edited statement changes it."""
+    consts = [_code_digest(c) if hasattr(c, "co_code") else repr(c) for c in code.co_consts]
+    return hashlib.sha1(repr((code.co_code, code.co_names, code.co_varnames, consts)).encode()).hexdigest()
+
+
+@functools.lru_cache(maxsize=1)
+def _weigh_code():
+    """The digest of the functions that weigh a unit: _weigh, terms, stem (without its cache wrapper) and bare."""
+    return [_code_digest(f.__code__) for f in (_weigh, terms, getattr(stem, "__wrapped__", stem), bare)]
+
+
+@functools.lru_cache(maxsize=4)
+def _weigh_data(stop, kbid_stop, patterns):
+    """The digest of the sets and patterns the weighing functions read as globals (see _unit_key)."""
+    return hashlib.sha1(repr((sorted(stop), sorted(kbid_stop), patterns)).encode()).hexdigest()
+
+
 def _unit_key(u, art, meta, sums, exps):
-    """The cache key of unit `u`'s weighing: a hash of INDEX_VERSION, the doc2query mode and every input weighed()
-    reads for it (path, title or lead, section, text, its article's Summary, its expansions, its tested questions),
-    so an unchanged unit keeps its key across an edit elsewhere or a change to this file that keeps INDEX_VERSION."""
+    """The cache key of unit `u`'s weighing: a hash of INDEX_VERSION, the doc2query mode, the weighing code (the
+    weights, the STOP sets and the word patterns that terms() reads, and the code of _weigh, terms, stem and bare)
+    and every input weighed() reads for the unit (path, title or lead, section, text, its article's Summary, its
+    expansions, its tested questions), so an unchanged unit keeps its key across an edit elsewhere or a change to
+    this file outside the weighing, while an edit to the weighing re-weighs every unit without an INDEX_VERSION bump."""
     if meta and not u["section"].startswith("Summary"):
         if art not in sums:
             sums[art] = hashlib.sha1(summary_text(art).encode()).hexdigest()
@@ -1681,7 +1702,9 @@ def _unit_key(u, art, meta, sums, exps):
     else:
         summ = None
     ex = exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ()
-    raw = json.dumps([INDEX_VERSION, os.environ.get("KB_DOC2QUERY", ""), u["path"], u["title"], u.get("lead", ""),
+    wdata = _weigh_data(frozenset(STOP), frozenset(kbid.STOP), (WORD.pattern, CAMEL.pattern, NUMBER.pattern))
+    raw = json.dumps([INDEX_VERSION, os.environ.get("KB_DOC2QUERY", ""), _weigh_code(), wdata,
+                      TITLE_WEIGHT, SUMMARY_WEIGHT, EXPANSION_WEIGHT, u["path"], u["title"], u.get("lead", ""),
                       u["section"], u["text"], summ, list(ex), [q for _, q in u.get("anchors", ())]], ensure_ascii=False)
     return hashlib.sha1(raw.encode()).digest()
 
