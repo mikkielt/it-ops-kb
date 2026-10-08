@@ -19,7 +19,9 @@
   "touches": [
     "kb/public/claude/hooks.md",
     "kb/public/_gaps.md",
-    "kb/public/_answers.md"
+    "kb/public/_answers.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_fetch_state.csv"
   ],
   "depends_on": [
     "ST-fxly2caj",
