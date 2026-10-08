@@ -37,6 +37,34 @@
   "depends_on": [
     "ST-frux5d3t"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the opus-5-5 arm take its effort level?",
+      "options": [
+        "like the other kb arms: --effort sets the levels (default low,default), one cell per level, labels opus-5-5:low and opus-5-5:default",
+        "one fixed level in the arm's name (an opus-5-5-medium arm), no --effort"
+      ],
+      "recommendation": "like the other kb arms: --effort sets the levels (default low,default), one cell per level, labels opus-5-5:low and opus-5-5:default",
+      "class": "design",
+      "answer": "like the other kb arms: --effort sets the levels (default low,default), one cell per level, labels opus-5-5:low and opus-5-5:default",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does a pool run with no --arms include the opus-5-5 arm?",
+      "options": [
+        "no: opus-5-5 runs only when --arms names it",
+        "yes: opus-5-5 joins the default arm list"
+      ],
+      "recommendation": "no: opus-5-5 runs only when --arms names it",
+      "class": "design",
+      "answer": "no: opus-5-5 runs only when --arms names it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-hm4qgf3t review"
   ],

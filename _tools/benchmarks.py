@@ -9,8 +9,8 @@
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
                                             --arm names the arm of `navigation` (default `current`): a run replaces
                                             only its own arm's rows; `pool` runs the question pool (bench_pool.py)
-                                            on the --arms (default all of bench_pool.ARMS), the --kinds (default all)
-                                            and the --effort levels (default low,default) and replaces the rows of the
+                                            on the --arms (default bench_pool.DEFAULT_ARMS, and opus-5-5 when named),
+                                            the --kinds (default all) and the --effort levels (default low,default) and replaces the rows of the
                                             arms it ran; --dry-run prints its plan and starts no model; --shape
                                             session runs the pool in groups of six questions, each group in one
                                             session (the kb arms haiku-5-5 and sonnet-5-5, seed --seed) and records
@@ -108,7 +108,8 @@ def main(argv=None):
     r.add_argument("--reps", type=int, default=1)
     r.add_argument("--arm", default="current", help="the arm of the navigation scenario's rows (default: current)")
     r.add_argument("--out")
-    r.add_argument("--arms", help="the arms of `pool`, comma separated (default: " + ",".join(bench_pool.ARMS) + ")")
+    r.add_argument("--arms", help="the arms of `pool`, comma separated (default: " + ",".join(bench_pool.DEFAULT_ARMS) + "; also "
+                   + ",".join(bench_pool.OPT_IN) + ", named here only)")
     r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: all)")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
                    + ",".join(bench_pool.EFFORTS) + ")")
