@@ -3,7 +3,8 @@
 
   benchmarks.py list                        the scenarios, each with its report section
   benchmarks.py run [SCENARIO ...] [--reps N] [--arm ARM] [--out FILE] [--arms A,B] [--kinds K,K] [--effort L,L] [--dry-run]
-                    [--shape fresh|session] [--seed N] [--jobs N] [--max-usd X]
+                    [--shape fresh|session|fresh,session] [--seed N] [--jobs N] [--max-usd X] [--sample N]
+                    [--arm-reps ARM=N,...] [--arm-kinds ARM=K+K,...]
                                             run every scenario, or the named ones, and write their rows to the results
                                             file (kb/_self/reports/benchmarks.csv; rows of the same scenario and date
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
@@ -19,7 +20,12 @@
                                             order), the rows and their order the same as with 1; --max-usd X starts no
                                             new run once the finished runs have cost X (those in flight finish), records
                                             a `spend_stopped` row per arm naming the runs not started and exits 1;
-                                            --dry-run also prints an estimate of the spend
+                                            --dry-run also prints an estimate of the spend; --shape fresh,session runs both
+                                            shapes in one run under the one --max-usd; --arm-reps and --arm-kinds give an
+                                            arm (or ARM/session, in the session shape only) its own reps and kinds, the
+                                            arms not named taking --reps and --kinds, and an arm they name that the run
+                                            does not run is an error; --sample N keeps N rows of each kind, seeded by
+                                            --seed
   benchmarks.py pool build [--querylog] [--seed N] [--out FILE]
                                             write the stratified question pool, with a check per row, to
                                             kb/public/_retrieval/bench_pool.csv, or with --querylog the redacted
@@ -114,11 +120,19 @@ def main(argv=None):
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
                    + ",".join(bench_pool.EFFORTS) + ")")
     r.add_argument("--dry-run", action="store_true", help="print the plan of `pool` and start no model")
-    r.add_argument("--shape", choices=bench_pool.SHAPES, default="fresh",
-                   help="`pool`: a fresh session per question, or groups of six questions in one session (default: fresh)")
+    r.add_argument("--shape", default="fresh",
+                   help="`pool`: a fresh session per question, or groups of six questions in one session, or both, comma "
+                   "separated (default: fresh)")
     r.add_argument("--seed", type=int, default=bench_pool.SEED, help="the seed that orders the groups of `pool --shape session`")
     r.add_argument("--jobs", type=int, default=1, help="`pool`: runs at once (default: 1)")
     r.add_argument("--max-usd", type=float, help="`pool`: start no new run once the finished runs cost this many US dollars")
+    r.add_argument("--sample", type=int, help="`pool`: keep this many rows of each kind, drawn with --seed (default: all)")
+    r.add_argument("--arm-reps", action="append", metavar="ARM=N",
+                   help="`pool`: the reps of an arm (ARM/session: of the session shape), comma separated or repeated; the arms "
+                   "not named take --reps")
+    r.add_argument("--arm-kinds", action="append", metavar="ARM=K+K",
+                   help="`pool`: the kinds of an arm (ARM/session: of the session shape), K+K, comma separated or repeated; "
+                   "the arms not named take --kinds")
     pool = sub.add_parser("pool").add_subparsers(dest="pool_cmd", required=True)
     pb = pool.add_parser("build")
     pb.add_argument("--querylog", action="store_true")
@@ -165,17 +179,31 @@ def main(argv=None):
         print("--jobs needs 1 or more, --max-usd more than 0", file=sys.stderr)
         return 2
     arms, efforts = (x.split(",") if x else None for x in (a.arms, a.effort))
-    for flag, got, known in (("--arms", arms, bench_pool.SESSION_ARMS if a.shape == "session" else bench_pool.ARMS),
-                             ("--effort", efforts, bench_pool.EFFORTS)):
+    shapes = bench_pool.shapes_of(a.shape)
+    kinds = a.kinds.split(",") if a.kinds else None
+    arm_reps, bad_reps = bench_pool.parse_arm_map(a.arm_reps, "--arm-reps", bench_pool.reps_value)
+    arm_kinds, bad_kinds = bench_pool.parse_arm_map(a.arm_kinds, "--arm-kinds", bench_pool.kinds_value)
+    problems = [f"--shape: unknown {s} (one of {', '.join(bench_pool.SHAPES)}, or both, comma separated)"
+                for s in shapes if s not in bench_pool.SHAPES] + bad_reps + bad_kinds
+    for flag, got, known in (("--arms", arms, bench_pool.ARMS if "fresh" in shapes else bench_pool.SESSION_ARMS),
+                             ("--effort", efforts, bench_pool.EFFORTS), ("--kinds", kinds, bench_pool.KINDS)):
         bad = [x for x in got or [] if x not in known]
         if bad:
-            print(f"{flag}: unknown {', '.join(bad)} (one of {', '.join(known)})", file=sys.stderr)
-            return 2
+            problems.append(f"{flag}: unknown {', '.join(bad)} (one of {', '.join(known)})")
+    if a.sample is not None and a.sample < 1:
+        problems.append("--sample needs 1 or more")
+    if not problems:
+        by_shape = bench_pool.arms_by_shape(arms, shapes)
+        problems = (bench_pool.unrun_problems("--arm-reps", arm_reps, by_shape)
+                    + bench_pool.unrun_problems("--arm-kinds", arm_kinds, by_shape))
+    if problems:
+        print("\n".join(problems), file=sys.stderr)
+        return 2
     b = Bench(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench", a.reps)
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
-    b.jobs, b.max_usd = a.jobs, a.max_usd
-    b.kinds = a.kinds.split(",") if a.kinds else None
+    b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
+    b.kinds, b.arm_reps, b.arm_kinds = kinds, arm_reps, arm_kinds
     out = Path(a.out) if a.out else RESULTS
     try:
         for n in names:

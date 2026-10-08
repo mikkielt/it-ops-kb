@@ -391,3 +391,86 @@ def test_bench_pool_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row_and_
     tokens, model, basis = bp.assumed_run("x", "haiku-4-5", hist)
     assert (tokens, model, basis) == ({"uncached": 300, "cache_write": 100, "cache_read": 600, "out": 50}, "claude-haiku-4-5",
                                       "the means of the record 2026-10-09")
+
+
+def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(monkeypatch, capsys):
+    import types
+    import agent_bench
+    import benchmarks as bm
+    import bench_pool as bp
+    web = "csv_fact+multi+synthesis+false_good+snippet+offkb"
+    sess = "csv_fact+multi+synthesis+false_good+near_miss+snippet+count+cites+decision+conflict+gap"
+    kinds = ["fact", "csv_fact", "multi", "synthesis", "false_good", "near_miss", "offkb", "snippet", "count", "cites",
+             "decision", "conflict", "gap"]
+    rows = [{**bp.row(k, "d0", "original", f"fixture:{k}{i}", f"Question {k}{i}?", [r"value1"], "good"), "question": f"Question {k}{i}?"}
+            for k in kinds for i in range(4)]
+    # the flags of a record shaped like 2026-10-08's: kb arms at 3 reps, Sonnet 5.5 at 2, the web arms on six kinds at 2, sessions
+    reps, bad = bp.parse_arm_map(["sonnet-5-5=2,web-haiku-5-5=2", "web-sonnet-5-5=2,haiku-5-5/session=2,sonnet-5-5/session=2"],
+                                 "--arm-reps", bp.reps_value)
+    akinds, bad2 = bp.parse_arm_map([f"web-haiku-5-5={web},web-sonnet-5-5={web}", f"haiku-5-5/session={sess},sonnet-5-5/session={sess}"],
+                                    "--arm-kinds", bp.kinds_value)
+    assert not bad and not bad2 and reps["sonnet-5-5"] == 2 and akinds["web-haiku-5-5"] == web.split("+")
+    # --sample: N rows of each kind, seeded, one kind's rows independent of the others', every row when N is above a kind's count
+    picked = bp.sample_rows(rows, 2, 11)
+    assert [sum(r["kind"] == k for r in picked) for k in kinds] == [2] * 13 and bp.sample_rows(rows, 2, 11) == picked
+    assert bp.sample_rows(rows, 2, 12) != picked and bp.sample_rows(rows, 9) == rows
+    assert bp.sample_rows([r for r in rows if r["kind"] != "fact"], 2, 11) == [r for r in picked if r["kind"] != "fact"]
+    stream = agent_bench.result_of(pool_stream("value1"), "", 5.0)  # one parsed run, $0.01, copied for each fake run
+    seen = {}
+
+    def fresh(arm, effort, row):
+        seen.setdefault(f"{arm}:{effort}" if arm in bp.KB_ARMS else arm, set()).add(row["kind"])
+        r = dict(stream)
+        bc.spent_run(r)
+        return r
+    monkeypatch.setattr(bp, "load_pool", lambda home, kinds=None: rows)
+    monkeypatch.setattr(bp, "live_runner", lambda b, sh: fresh)
+    monkeypatch.setattr(bp, "live_session_runner", lambda b: lambda arm, effort, row, sid, position: fresh(arm, effort, row))
+    monkeypatch.setattr(bp, "read_rows", lambda path: [])
+
+    def record(**more):
+        monkeypatch.setitem(bc.SPEND, "usd", 0.0)
+        monkeypatch.setitem(bc.SPEND, "runs", 0)
+        seen.clear()
+        b = types.SimpleNamespace(arms=["haiku-5-5", "sonnet-5-5", "web-haiku-5-5", "web-sonnet-5-5"], efforts=["low", "default"],
+                                  kinds=None, shape="fresh,session", seed=11, dry=False, reps=3, jobs=1, max_usd=None, sample=2,
+                                  arm_reps=reps, arm_kinds=akinds, rows=[], status=0)
+        for k, v in more.items():
+            setattr(b, k, v)
+        b.row = lambda scenario, case, arm, metric, value, runs="", model="", note="": b.rows.append((case, arm, metric, value, runs, note))
+        try:
+            bp.s_pool(b)
+        except bp.Skip as e:
+            return b, str(e)
+        return b, ""
+    per_label = lambda b: {arm: n for case, arm, m, v, n, note in b.rows if case == "all" and m == "input"}  # noqa: E731
+    full, _ = record()
+    assert per_label(full) == {"haiku-5-5:low": 78, "haiku-5-5:default": 78, "sonnet-5-5:low": 52, "sonnet-5-5:default": 52,
+                               "web-haiku-5-5": 24, "web-sonnet-5-5": 24, **{f"{m}-5-5:{e}/session": 36 for m in ("haiku", "sonnet")
+                                                                            for e in ("low", "default")}}
+    assert seen["web-haiku-5-5"] == set(web.split("+")) and seen["haiku-5-5:low"] == set(kinds) and full.status == 0
+    assert bc.SPEND["runs"] == 452 and not any(m == "spend_stopped" for _, _, m, *_ in full.rows)
+    assert any(c == "position 6" and a == "sonnet-5-5:low/session" for c, a, *_ in full.rows)  # the session shape's rows beside
+    # one cap over both shapes: this one lets the fresh runs finish ($3.08 of $3.505) and stops the session runs
+    late, _ = record(max_usd=3.505)
+    stopped = {a: v for c, a, m, v, n, note in late.rows if m == "spend_stopped"}
+    assert late.status == 1 and stopped and all(a.endswith("/session") for a in stopped)
+    assert per_label(late)["haiku-5-5:low"] == 78 and 3.505 <= bc.SPEND["usd"] <= 3.505 + 0.06
+    assert sum(stopped.values()) == 24 - (bc.SPEND["runs"] - 308) // 6 and "sessions not started" in capsys.readouterr().out
+    # a cap the fresh runs reach first leaves every session unstarted
+    early, _ = record(max_usd=1.0)
+    assert early.status == 1 and bc.SPEND["runs"] <= 101 and not any(c.startswith("position") for c, *_ in early.rows)
+    assert {a: v for c, a, m, v, n, note in early.rows if m == "spend_stopped" and a.endswith("/session")} == {
+        f"{m}-5-5:{e}/session": 6 for m in ("haiku", "sonnet") for e in ("low", "default")}
+    # --dry-run: the plan per arm label and the estimate, no run
+    capsys.readouterr()
+    dry, msg = record(dry=True)
+    out = capsys.readouterr().out
+    assert not dry.rows and bc.SPEND["runs"] == 0 and "estimated spend $" in msg and "shapes fresh+session" in msg
+    assert "pool: sonnet-5-5:low: 52 runs (26 rows x 2 reps)" in out and "pool: web-haiku-5-5: 24 runs (12 rows x 2 reps)" in out
+    assert "pool: haiku-5-5:low/session: 36 runs (3 groups x 2 reps, 4 of 22 rows left out)" in out
+    # an arm the flags name and the run does not run is an error, not an option left unused
+    assert bm.main(["run", "pool", "--arm-reps", "opus-5-5=2", "--arm-kinds", "sonnet-5-5/session=fact", "--dry-run"]) == 2
+    err = capsys.readouterr().err
+    assert "--arm-reps: opus-5-5 is not run by this command (opt-in: name it in --arms)" in err
+    assert "--arm-kinds: sonnet-5-5/session is not run by this command (the --shape has no session)" in err
