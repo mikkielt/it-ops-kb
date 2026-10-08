@@ -1,0 +1,25 @@
+{
+  "id": "ST-yk7wwfg3",
+  "kind": "story",
+  "title": "kb-sprint run resumes a headless worker with claude -p --resume, not SendMessage, in the land and retry steps",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found in the SP-d3hybrlv review: run step 4.2 ('ask the worker to end it (SendMessage)') and the Stalled work retry ('send the work back once (SendMessage)') name only SendMessage, which reaches a fallback subagent, while a headless worker has exited and is reached with claude -p --resume <session_id> as step 4.1 says. Both steps name the resume route first.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();s=t.split('## Stalled work')[1];ok='--resume' in s;print('stalled resume:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-d3hybrlv review"
+  ]
+}

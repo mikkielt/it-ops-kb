@@ -1,0 +1,27 @@
+{
+  "id": "ST-bhkdqaku",
+  "kind": "story",
+  "title": "Headless Sonnet workers' tokens reach backlog.py cost for the item they worked",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Found in the SP-d3hybrlv review: ST-7yahfn3j and ST-pjkmiyqe were worked by headless claude -p --model sonnet sessions launched with the project settings, in a subshell whose cwd was their .claude/worktrees/agent-<id> worktree on work/<id>, yet land warned 'landed with no work rows' and backlog.py cost showed 0 runs for them (the orchestrator's own Opus rows did show). Find why (delivery timing, the branch row of a hand-made worktree, or the session's attribution) and make a headless worker's usage count as that item's work, with a check that a planted headless worker session's rows land in its item's cost and an orchestrator session's do not.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/usage.md',encoding='utf-8').read();ok='orchestrator-made worktree' in t;print('usage.md names the headless worker in an orchestrator-made worktree:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/usage.md",
+    ".claude/agents/kb-worker.md",
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-d3hybrlv review"
+  ],
+  "notes": "Lead: kb/_self/usage.md:76 says background headless workers with the prompt on stdin end with no SessionEnd marker, closed by the next launch, so their rows may arrive late; the close rerun of backlog.py cost SP-d3hybrlv shows whether they did. The work: say in usage.md how a headless worker in an orchestrator-made worktree is attributed, and make land's 'no work rows' warning tell a late row from a missing one."
+}
