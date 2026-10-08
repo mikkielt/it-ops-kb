@@ -65,7 +65,9 @@
         "exit 2 only: usage errors and refusals; exit 1 lines are gate verdicts (done reasons, selfdoc stale, selfcheck) a tool fix would hide": "ST-b7ste3hx",
         "every exit: the raw ranking, done's not-done line and selfdoc stale lines first": "ST-b7ste3hx"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "exit 2 only: usage errors and refusals; exit 1 lines are gate verdicts (done reasons, selfdoc stale, selfcheck) a tool fix would hide",
+      "by": "operator"
     }
   ],
   "links": [
