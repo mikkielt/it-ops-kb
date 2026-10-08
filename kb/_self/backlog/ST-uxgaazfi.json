@@ -1,0 +1,41 @@
+{
+  "id": "ST-uxgaazfi",
+  "kind": "story",
+  "title": "run pool --jobs N runs the pool's paid runs in parallel within a --max-usd cap and keeps one record date",
+  "status": "todo",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-hm4qgf3t",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py run pool --jobs N runs up to N claude -p runs at once (fresh shape: one run per pool row, cell and rep; session shape: one session per group, its six questions in order inside it), writes the same rows in the same order as --jobs 1 whatever order the runs finish in, and stamps every row with the record date the run started on, so a run that crosses midnight is one record; --max-usd X stops launching new runs once the spend of finished runs reaches X, lets the runs in flight finish, records a spend_stopped row naming the runs not started, and exits 1; --dry-run prints the run count and an estimate of the spend from the per-model prices of bench_core; a test runs a fake runner with out-of-order completion at --jobs 3 and checks the rows equal --jobs 1's, one record date across a planted date change, and the stop at the cap; kb/_self/tools.md and kb/_self/reports/benchmarks.md name the flags",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool_jobs"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/benchmarks.py",
+    "_tools/bench_core.py",
+    "_tools/test_bench.py",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-ohz5si2o"
+  ]
+}
