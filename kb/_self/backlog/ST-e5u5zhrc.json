@@ -2,7 +2,7 @@
   "id": "ST-e5u5zhrc",
   "kind": "story",
   "title": "rag.py eval prints its failing rows and totals, not every row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,25 @@
   ],
   "depends_on": [
     "ST-dsre52lb"
-  ]
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which flag makes rag.py eval print every row again, now that the default prints only failing rows and totals?",
+      "options": [
+        "all",
+        "verbose"
+      ],
+      "recommendation": "all",
+      "do": {
+        "all": "ST-e5u5zhrc",
+        "verbose": "ST-e5u5zhrc"
+      },
+      "class": "agents-rule",
+      "answer": "all",
+      "by": "operator"
+    }
+  ],
+  "claimed_by": "worker-e5u5"
 }
