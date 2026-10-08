@@ -6,7 +6,7 @@ a miss whose pack on HEAD is none with an article in the lead that holds every w
 findings file holds the records that change a finding's state (none: no file). A weak or none lookup in the kb's own
 rule docs (an entry with `root` _self) is a `rules` finding of its own, never one of those.
 """
-import csv, os, re
+import csv, re
 from pathlib import Path
 
 from ql_base import HOME, places
@@ -182,27 +182,16 @@ def default_rules_pack(question):
             "known": any(" ".join((r.get("question") or "").lower().split()) == asked for r in kbfacts.self_eval_rows())}
 
 
-PAIR_SHARED = 4  # characters a missing word and the line's word share at both ends together, at least, for a word pair
-
-
 def pair_word(word, line, question):
-    """The word of `line` that stands for the key word `word` no passage holds, else None: of the line's words not in
-    the question, the one sharing the most characters with it at the start and the end together (`unsaved`,
-    `uncommitted`: `un` and `ed`), at least PAIR_SHARED and with no other word as close."""
+    """The word of `line` that stands for the key word `word` no passage holds, else None: the line's only word that
+    is not in the question, not a stop word, not a number, not shorter than three characters and not `word` itself
+    (`unsaved` in `land: uncommitted changes`, asked about unsaved changes: `uncommitted`). With two or more such
+    words the line names no pair."""
     import kbfacts
     asked = {w.lower() for w in kbfacts.WORD.findall(question)}
-    best = {}
-    for w in kbfacts.WORD.findall(line):
-        w = w.lower()
-        if w in asked or w in kbfacts.STOP or len(w) < 3 or w.isdigit() or w == word:
-            continue
-        lead = len(os.path.commonprefix([w, word]))
-        tail = len(os.path.commonprefix([w[::-1], word[::-1]]))
-        best[w] = min(lead + tail, len(w), len(word))
-    top = sorted(best.values(), reverse=True)
-    if not top or top[0] < PAIR_SHARED or top[1:2] == top[:1]:
-        return None
-    return next(w for w, n in best.items() if n == top[0])
+    words = {w for w in (w.lower() for w in kbfacts.WORD.findall(line))
+             if w not in asked and w not in kbfacts.STOP and len(w) >= 3 and not w.isdigit() and w != word}
+    return words.pop() if len(words) == 1 else None
 
 
 def default_rule_lines(refs):
