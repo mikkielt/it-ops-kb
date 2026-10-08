@@ -198,3 +198,56 @@ def test_bench_pool_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monk
     bc.write_rows([other, {**other, "scenario": "pool", "metric": "tokens_per_right"}], bm.RESULTS)
     bm.REPORT.write_text(br.render(marker, [other, {**other, "scenario": "pool", "metric": "tokens_per_right"}]), encoding="utf-8")
     assert bm.main(["report", "--check"]) == 0
+
+
+def test_bench_pool_session_shape_groups_resume_marginal_input_and_cache_share():
+    import agent_bench
+    import bench_pool as bp
+    import bench_report as br
+    kinds = ["fact", "count", "cites", "snippet", "offkb", "gap"]
+    rows = [{**bp.row(kinds[i % 6] if i < 12 else "variant_typo", "d0", "original", "fixture:0" if i in (0, 12, 13) else f"fixture:{i}",
+                      f"Question {i}?", [rf"value{i}"], "good"), "question": f"Question {i}?"} for i in range(15)]
+    groups, left = bp.session_groups(rows)
+    assert len(groups) == 2 and len(left) == 3 and all(len(g) == 6 for g in groups)
+    assert all(len({r["source"] for r in g}) == 6 for g in groups)  # a base question and its variants never share a group
+    assert bp.session_groups(rows)[0] == groups  # the seed decides: the same rows, the same groups
+    first, later = (bp.session_argv("sonnet-5-5", "low", "SID", n) for n in (1, 2))
+    assert "--no-session-persistence" not in first + later and first[2:4] == ["--session-id", "SID"] and later[2:4] == ["--resume", "SID"]
+    assert later[-2:] == ["--effort", "low"] and bp.session_argv("sonnet-5-5", "default", "SID", 2)[-1] != "default"
+    # six requests of one session, one per question: (uncached, cache write, cache read, output) of each
+    usages = [(10, 2000, 0, 50), (20, 100, 2010, 40), (30, 200, 2130, 60), (40, 0, 2360, 30), (50, 300, 2400, 20), (60, 0, 2750, 10)]
+
+    def stream(answer, usage, model="claude-sonnet-5-5"):
+        u = dict(zip(("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens"), usage))
+        events = [{"type": "assistant", "message": {"id": "m1", "model": model, "usage": u, "content": [{"type": "text", "text": answer}]}},
+                  {"type": "result", "usage": u, "total_cost_usd": 0.01, "duration_api_ms": 1000, "num_turns": 1,
+                   "modelUsage": {model: {"costUSD": 0.01}}, "result": answer}]
+        return "\n".join(json.dumps(e) for e in events)
+    seen, cells = [], [("sonnet-5-5", "low", "sonnet-5-5:low")]
+
+    def runner(arm, effort, row, sid, position):
+        seen.append((sid, position))
+        if position == 4 and row is groups[1][3]:
+            return {"error": "usage limit"}
+        return agent_bench.result_of(stream("nope" if position == 3 else row["checks"][2:-2], usages[position - 1]), "", 3.0)
+    runs = bp.run_sessions(groups, cells, 1, runner)
+    assert [s[0] for s in seen[:6]] == [seen[0][0]] * 6 and seen[0][0] != seen[6][0]  # one session id per group
+    one = [r for r in runs if r["group"] == 1]
+    assert [r["position"] for r in one] == [1, 2, 3, 4, 5, 6] and {r["label"] for r in runs} == {"sonnet-5-5:low/session"}
+    assert [r["marginal_input"] for r in one] == [2010, 120, 230, 40, 350, 60]  # each request's prompt less the one before
+    assert round(one[1]["cache_read_share"], 4) == round(2010 / 2130, 4) and one[0]["cache_read_share"] == 0
+    assert [r["checks"] for r in one] == [[True], [True], [False], [True], [True], [True]]
+    two = [r for r in runs if r["group"] == 2]
+    assert [("error" in r) for r in two] == [False, False, False, True, True, True]  # a failed question ends its session
+    assert two[5]["error"] == "the session ended at position 4"
+    got = {(c, m): (v, n, note) for c, label, m, v, n, model, note in bp.session_rows(runs)}
+    assert got[("position 1", "marginal_input")] == (2010, 2, "the whole prompt: no request before it")
+    assert got[("position 2", "marginal_input")][0] == 120 and got[("position 5", "cache_read_share")][0] == 2400 / 2750
+    assert got[("position 3", "checks")][0] == "0/2" and got[("position 4", "checks")][0] == "1/1" and got[("position 4", "errors")][0] == 1
+    out = [{"scenario": "pool", "record": "2026-10-09", "date": "2026-10-09", "commit": "abc1234", "claude_code": "2.1.300",
+            "kb_topics": "1", "case": c, "arm": label, "model": "", "metric": m, "value": str(v), "runs": str(n), "note": note}
+           for c, label, m, v, n, model, note in bp.session_rows(runs)]
+    shown = br.render("<!-- bench:session pool -->\n<!-- /bench -->\n", out)
+    assert "| position | sonnet-5-5:low/session marginal_input | sonnet-5-5:low/session cache_read_share |" in shown
+    assert "| 1 | 2,010 | 0.0% |" in shown and "| 2 | 120 | 94.4% |" in shown and shown.index("| 2 |") < shown.index("| 6 |")
+    assert br.empty_markers("<!-- bench:session pool -->\n<!-- /bench -->\n", out) == []
