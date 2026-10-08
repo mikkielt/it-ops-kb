@@ -1,0 +1,3 @@
+{"run":"20260928T130001Z-f172fde7","pipeline":7,"retrieval":8,"kb_commit":"dfe79c8319b0432c8fa9dda8b4e6a7082c45ec95","counts":{"findings":2,"open":2,"fixed-since":0}}
+{"id":"F-459226bf2d05","kind":"rules","state":"open","stage":"miss","entry":"55555555-0000-4000-8000-0000000000ff","observed":{"question":"Where does the vrelkanor snurbulate quibblewick?","verdict":"weak"}}
+{"id":"F-93554113e9f6","kind":"rules","state":"open","stage":"miss","entry":"55555555-0000-4000-8000-0000000000d2","observed":{"question":"What does the zqxwidget plomkinator frobnicator quuxify?","verdict":"weak"}}
