@@ -1,5 +1,8 @@
 """`kbgit.py sync --push` end to end in a throwaway clone and bare origin: a content commit reaches main, a commit the
-gate rejects does not, and a code commit goes to a code/ branch while main stays."""
+gate rejects does not, a passing gate test run is reused for the same tree, and a code commit goes to a code/ branch
+while main stays."""
+import json, os, re
+
 import pytest
 
 from conftest import requires_git
@@ -31,7 +34,45 @@ def article(c, name, sid):
     c.commit(f"docs(kb): sync e2e {name}")
 
 
-def test_content_commit_reaches_main_and_a_red_gate_stops_the_next(scenario):
+def gate_tests_reuse(c, monkeypatch, capsys):
+    """The gate's tests.py (KB_TESTS_FAST=1 --changed) in clone `c`, pytest faked: a passing run is reused for the same
+    tree, never after a tracked test file's edit (the planted failure), with an untracked test file, with --no-reuse
+    or after a failing run."""
+    import tests as kbtests
+    monkeypatch.setattr(kbtests, "KB", c.path)
+    monkeypatch.setattr(kbtests, "TOOLS", c.file("_tools"))
+    monkeypatch.setattr(kbtests, "compile_report", lambda tools=None: 0)
+    monkeypatch.setenv("KB_TESTS_FAST", "1")
+    runs, rows, outcome = [], [], [0]
+    monkeypatch.setattr(kbtests, "run_pytest", lambda args: runs.append(args) or {"exit": outcome[0], "ms": 1, "files": {}})
+    monkeypatch.setattr(kbtests, "record_run", lambda mode, entry, args, workers=None, reused=False: rows.append(
+        (mode, entry["exit"], reused)))
+
+    def run(*extra):
+        code = kbtests.run_main(["--changed", "HEAD", *extra])
+        return code, len(runs), capsys.readouterr().out
+
+    probe, stray = "_tools/test_sync_e2e.py", "_tools/test_sync_e2e_stray.py"
+    c.append(probe, "\n# edited\n")
+    assert run()[:2] == (0, 1)
+    code, n, out = run()
+    assert (code, n) == (0, 1) and re.search(r"^reused: [0-9a-f]{16} from \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$", out, re.M), out
+    assert rows[-1] == ("changed", 0, True), rows
+    assert run(kbtests.NO_REUSE)[:2] == (0, 2)
+    c.append(probe, "# edited after the passing run\n")  # planted: a tracked test file's edit changes the key
+    assert run()[:2] == (0, 3)
+    c.write(stray, "")
+    code, n, out = run()
+    assert (code, n) == (0, 4) and f"no reuse: untracked {stray}" in out, out
+    assert run()[:2] == (0, 5)
+    os.unlink(c.file(stray))
+    outcome[0] = 1
+    c.append(probe, "# failing\n")
+    assert run()[:2] == (1, 6) and run()[:2] == (1, 7)  # a failing run records no key
+    assert ("changed", 1, False) in rows and json.loads(c.read("_cache/tests/results.json"))["runs"]
+
+
+def test_content_commit_reaches_main_and_a_red_gate_stops_the_next(scenario, monkeypatch, capsys):
     c = clone(scenario)
     article(c, "content", "S100")
     r = sync(c)
@@ -44,6 +85,7 @@ def test_content_commit_reaches_main_and_a_red_gate_stops_the_next(scenario):
     assert r.returncode == 1, r.stdout + r.stderr
     assert "check.py" in r.stdout and "ok: sources" not in r.stdout, r.stdout
     assert scenario.origin.rev("main") == pushed
+    gate_tests_reuse(c, monkeypatch, capsys)
 
 
 def test_code_commit_goes_to_a_branch(scenario):

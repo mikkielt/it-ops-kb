@@ -40,6 +40,38 @@
     "ST-pvtfs43r",
     "ST-n22bw7th"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which part of a run stands for its selected test ids in the reuse key?",
+      "options": [
+        "the run's selection arguments (pytest arguments without worker and report options, paths relative to the clone): with the tree and Python they decide the ids, and no pytest starts for the key",
+        "the collected test ids (a pytest --collect-only before each reuse check)"
+      ],
+      "recommendation": "the run's selection arguments (pytest arguments without worker and report options, paths relative to the clone): with the tree and Python they decide the ids, and no pytest starts for the key",
+      "do": {
+        "the run's selection arguments (pytest arguments without worker and report options, paths relative to the clone): with the tree and Python they decide the ids, and no pytest starts for the key": "ST-r7cftjex",
+        "the collected test ids (a pytest --collect-only before each reuse check)": "ST-r7cftjex"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does an untracked .py file under _tools/ break the reuse key?",
+      "options": [
+        "the run gets no key: nothing is reused or recorded while the file is untracked",
+        "the file's path and content are hashed into the key"
+      ],
+      "recommendation": "the run gets no key: nothing is reused or recorded while the file is untracked",
+      "do": {
+        "the run gets no key: nothing is reused or recorded while the file is untracked": "ST-r7cftjex",
+        "the file's path and content are hashed into the key": "ST-r7cftjex"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "kb/_self/git.md Workflow (the gate's tests.py --changed)",
     "kb/_self/tools.md tests.py"
