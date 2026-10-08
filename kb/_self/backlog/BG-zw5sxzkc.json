@@ -35,7 +35,9 @@
       "do": {
         "md-name-exempt": "BG-zw5sxzkc",
         "file-name-word": "BG-zw5sxzkc"
-      }
+      },
+      "answer": "md-name-exempt",
+      "by": "operator"
     }
   ],
   "claimed_by": "worker-BG-zw5sxzkc"
