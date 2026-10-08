@@ -1,0 +1,26 @@
+{
+  "id": "ST-zvpffogs",
+  "kind": "story",
+  "title": "backlog.py answer refuses an answer that is none of the gate's options, naming them",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py answer ID GATE --answer TEXT exits 2 naming the options when the gate has options and TEXT is none of them (unless a flag says a free answer is meant), so a mistyped answer is not recorded as the operator's. Answers SP-evkj4avq, where an answer that reworded an option of ST-pvtfs43r's gate test-file was recorded and had to be answered again with the exact text.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-evkj4avq close"
+  ]
+}

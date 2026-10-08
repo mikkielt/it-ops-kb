@@ -1,0 +1,26 @@
+{
+  "id": "ST-dt6xl537",
+  "kind": "story",
+  "title": "A bug filed into an active sprint without touches is refused or warned at new",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py new bug --sprint SP of an active sprint without --touch exits 2 naming --touch (or files it with a warning that done will refuse every file), so a worker's filed bug is ready to claim. Answers SP-evkj4avq, where BG-rqkc66vj and BG-6i6pdahh were filed into the sprint with no touches and the orchestrator added them before the claim.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-evkj4avq close"
+  ]
+}
