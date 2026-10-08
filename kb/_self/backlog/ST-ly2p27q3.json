@@ -2,7 +2,7 @@
   "id": "ST-ly2p27q3",
   "kind": "story",
   "title": "The pool's eval rows with a path-only or front-matter check get a fact check from one paid Sonnet call",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -116,5 +116,38 @@
     }
   ],
   "notes": "Operator, 2026-10-08: approved one small paid Sonnet call for these rows in this sprint, after ST-yob4py65 kept the committed checks offline (its gate g2). Premise: ST-yob4py65's report counted 10 of 40 eval rows path-only on the committed csv, before and after its fix.",
-  "claimed_by": "worker-ST-ly2p27q3"
+  "evidence": {
+    "commit": "54d894fbdd4f794ff80a1a6f8753891da2284328",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bench_pool"
+        ],
+        "exit": 0,
+        "sha256": "9e27331b8badc483"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,json,re,sys; rows=[r for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',encoding='utf-8')) if r['kind'] in ('fact','csv_fact','multi','synthesis')]; po=[r['id'] for r in rows if all('|' not in c and re.search(chr(92)+'.(md|csv)$',c) for c in json.loads(r['checks']))]; old={'BP-90da6231':'required status checks','BP-7b6373d5':'stdio|stdin','BP-df64045a':'APP|MAM'}; kept=[r['id'] for r in rows if r['id'] in old and json.loads(r['checks'])[0].startswith(old[r['id']])]; print(len(rows),'eval rows;',len(po),'path-only (was 10);','old regex kept:',kept); sys.exit(0 if len(rows)==40 and len(po)<10 and len(kept)<3 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3288f2a870ed9641"
+      }
+    ]
+  }
 }
