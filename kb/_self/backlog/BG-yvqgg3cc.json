@@ -2,7 +2,7 @@
   "id": "BG-yvqgg3cc",
   "kind": "bug",
   "title": "The full tests.py run exceeds the 20 s darwin ceiling since test_land_e2e grew to about 18.8 s",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-caqrexqw review"
   ],
-  "notes": "SP-caqrexqw review, 2026-10-08: whole-suite runs at 21-23 s on darwin across the sprint (61 tests); test_land_e2e takes about 18.8 s since 87f04925a (ST-urfa4ntj added a planted content landing). Landing gates still passed, so the overrun is load-dependent. Blocks the review story's own tests.py check on this host. 2026-10-08: the operator chose to fix it in SP-caqrexqw, ceiling unchanged, since it blocks the review story's tests.py check."
+  "notes": "SP-caqrexqw review, 2026-10-08: whole-suite runs at 21-23 s on darwin across the sprint (61 tests); test_land_e2e takes about 18.8 s since 87f04925a (ST-urfa4ntj added a planted content landing). Landing gates still passed, so the overrun is load-dependent. Blocks the review story's own tests.py check on this host. 2026-10-08: the operator chose to fix it in SP-caqrexqw, ceiling unchanged, since it blocks the review story's tests.py check.",
+  "claimed_by": "worker-BG-yvqgg3cc"
 }
