@@ -30,7 +30,8 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_land_e2e.py"
   ],
   "gates": [
     {
@@ -42,7 +43,9 @@
         "no test file: a done check tests.py -k zzz_no_such_test with exit 2 and match zzz_no_such_test"
       ],
       "recommendation": "add _tools/test_land_e2e.py to touches and put the test there",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "add _tools/test_land_e2e.py to touches and put the test there",
+      "by": "operator"
     }
   ],
   "links": [
