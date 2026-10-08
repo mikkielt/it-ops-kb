@@ -38,6 +38,19 @@
   "depends_on": [
     "ST-pvtfs43r"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does done's docs check refuse: listed with the other pre-check refusals (so a worker's done --dry-run shows stale-docs beside unlanded-code), or only after them, just before the item's checks run?",
+      "options": [
+        "with-refusals",
+        "after-refusals"
+      ],
+      "recommendation": "with-refusals",
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "kb/_self/backlog.md Definition of done",
     "kb/_self/git.md (sync's selfdoc stale gate)"

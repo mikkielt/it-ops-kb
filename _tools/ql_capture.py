@@ -65,7 +65,7 @@ OPS_SHA = re.compile(r"[0-9a-f]{7,12}")
 OPS_AGENT = re.compile(r"[0-9a-f]{8,16}")  # a salted short hash of an agent id, never the id
 OPS_TEST_FILE = re.compile(r"(?:test_[a-z0-9_]{1,60}|conftest)\.py")  # a test file's name, never a node id or a path
 OPS_REFUSED = ("children-open", "not-ready", "status", "provisional-answer", "uncommitted", "no-work-commit",
-               "unlanded-code", "outside-touches", "check-failed", "no-op-proof")  # why a `done` was refused
+               "unlanded-code", "outside-touches", "stale-docs", "check-failed", "no-op-proof")  # why a `done` was refused
 OPS_TEST_MODES = ("full", "changed", "fast", "files", "keyword", "stress")
 
 

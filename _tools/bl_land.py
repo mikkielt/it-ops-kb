@@ -90,6 +90,42 @@ def out_of_scope(root, commits, globs):
     return [(sha, p) for p, sha in first.items() if blob_id(root, f"{sha}^", p) != blob_id(root, "HEAD", p)]
 
 
+def stale_since(root, commits):
+    """The revision done's docs check compares with: the merge base of HEAD and the integration main as last fetched
+    (the range land's step stale reads after its rebase), else, with no such ref or no common history, the parent of
+    the oldest of COMMITS (the item's KB-Work commits, oldest first); None when neither exists."""
+    import kbpublic
+    p = subprocess.run(["git", "merge-base", "HEAD", f"refs/remotes/{kbpublic.integration_remote(root)}/main"],
+                       cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if p.returncode == 0 and p.stdout.strip():
+        return p.stdout.strip()
+    first = next(iter(commits), None)
+    if first is None:
+        return None
+    p = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{first}^"], cwd=root, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace")
+    return p.stdout.strip() if p.returncode == 0 and p.stdout.strip() else None
+
+
+def stale_docs(root, commits):
+    """([(doc, [the item's changed files it describes])], since): the kb/_self docs `selfdoc.py stale --since SINCE`
+    lists (stale_since: a doc edited in the range, or named in a `Self-Reviewed:` trailer of a commit in it, is up to
+    date, as at the sync gate) that describe a file the item's COMMITS ({commit: [paths]}) changed. Another change's
+    stale doc in the range is not the item's; a landed item's commits are below the merge base, so they are not read
+    again."""
+    import selfdoc
+    since = stale_since(root, commits)
+    if since is None:
+        return [], None
+    mine = {p for paths in commits.values() for p in paths}
+    out = []
+    for doc, _, hit in selfdoc.stale(root=Path(root), since=since):
+        own = [p for p in hit if p in mine]
+        if own:
+            out.append((doc, own))
+    return out, since
+
+
 def noop_proof(bl, iid, passed):
     """done's rule for checks that passed ([(check, output)]) without doing their work: one that runs no test or tool
     code is warned of; one whose output says it did nothing in this clone (noop_output) is warned of too, and refuses
@@ -273,9 +309,22 @@ def cmd_done(bl, a):
             problems.append(f"code commit(s) {', '.join(late)} are not on {remote}/main: merge the merge request sync "
                             f"opened for them (branch {branch}, named for the first KB-Work id of the range sync "
                             f"pushes), fetch {remote} and run done again")
-        for sha, path in out_of_scope(bl.root, item_commits(bl.root, family), globs):
+        commits = item_commits(bl.root, family)
+        for sha, path in out_of_scope(bl.root, commits, globs):
             problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
             reasons.append("outside-touches")
+        try:
+            behind, since = stale_docs(bl.root, commits)
+        except Exception as e:  # noqa: BLE001 - selfdoc's own error (a git failure, an unreadable map) is said, not raised
+            behind, since = [], None
+            say(f"warning: the docs check could not run: {e}")
+        if behind:
+            reasons.append("stale-docs")
+            problems.append(f"stale-docs: kb/_self docs older than the item's change (python3 _tools/selfdoc.py stale --since "
+                            f"{since[:10]}): " + "; ".join(f"{doc} is older than {', '.join(own[:8])}"
+                                                           for doc, own in behind)
+                            + " (edit each in the item's touches, or name one read and found still correct in the "
+                              "Self-Reviewed: trailer of a commit of the item)")
     if problems:
         refuse_done(iid, t0, reasons, f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
     checks = list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else [])
