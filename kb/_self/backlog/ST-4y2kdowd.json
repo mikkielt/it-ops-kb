@@ -34,7 +34,8 @@
     "kb/_querylog/bench/pool.csv",
     "kb/_self/tools.md",
     "kb/_self/code.md",
-    "_tools/test_bench.py"
+    "_tools/test_bench.py",
+    "kb/_self/map.csv"
   ],
   "depends_on": [
     "ST-37c3f5l5"
