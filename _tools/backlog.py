@@ -40,7 +40,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py find WORD...                 the open items whose title or goal holds every word (case-insensitive), each
                                           with its parent chain; no match prints one line and exits 1
   backlog.py show ID                      one item, its parent chain, children, the knowledge state of each ask and
-                                          ref of its `knowledge` and what it waits on
+                                          ref of its `knowledge` and what it waits on; an item whose file was
+                                          deleted (a closed sprint's) prints its last version from git history
   backlog.py next [--sprint ID] [--any] [--all]   the ready item to work on first (--all: every ready item in
                                           order; --any: items outside an active sprint too, for single-item work),
                                           with the knowledge state of each of its asks and refs
@@ -225,6 +226,9 @@ item files it wrote or deleted and nothing else (`git commit --only`: what was s
 a new sprint and its review story), then each --trailer (the session's own, e.g. Co-Authored-By; a KB-* key is
 refused). close's commit body is its --summary list.
 
+Several ids after one --depends, --add-depends, --relates or --add-relates are taken as if each had its own flag
+(bl_cli.parse).
+
 --root DIR (before the command) runs against another clone. Exit: 0 ok, 1 a refused command or check errors,
 2 bad arguments, an unknown id, or a refused `set` or `gate add`.
 
@@ -281,7 +285,7 @@ bl_cli.order(USAGE)
 
 def main(argv=None):
     ap = bl_cli.build_parser(__doc__.split("\n\n")[0], str(ROOT))
-    a = ap.parse_args(argv)
+    a = bl_cli.parse(ap, argv)
     OUTPUT_ROOT[0] = a.root
     for s in (sys.stdout, sys.stderr):  # refusals go to stderr; on Windows a pipe defaults to the ANSI code page
         s.reconfigure(encoding="utf-8")
@@ -310,8 +314,18 @@ def main(argv=None):
             if why:
                 raise Refused(why)
         return bl_cli.handler_of(a.cmd)(bl, a)
-    except KeyError as e:
-        print(withhold(f"no item {e.args[0]}"), file=sys.stderr)
+    except KeyError as e:  # an id with no item file: a closed sprint's item is in git history
+        iid = e.args[0]
+        old = bl_cost.history_items(bl.root, [iid]).get(iid) if isinstance(iid, str) else None
+        if old is not None and a.cmd == "show" and getattr(a, "id", None) == iid:
+            print(withhold(f"{iid}: no item file (deleted, as a closed sprint's items are); its last version in git "
+                           "history:"))
+            print(withhold(canonical(old)), end="")
+            return 0
+        print(withhold(f"no item {iid}: its file was deleted (a closed sprint's item); `backlog.py show {iid}` prints "
+                       "its last version" if old is not None else
+                       f"no item {iid} in {REL_DIR}/ or its git history (`backlog.py find WORD` or `list` names the "
+                       "items)"), file=sys.stderr)
         return 2
     except Rejected as e:
         print(withhold(str(e)), file=sys.stderr)

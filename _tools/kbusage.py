@@ -11,6 +11,15 @@ only; no model and no network.
                                                transcripts' usage (exit 1 when they do not add up, 2 for no input);
                                                then, per tick (a prompt of the main transcript), the compactions with
                                                their preTokens, the tokens and the files read more than once
+  kbusage.py errors [--days N] [--path P] [--script S] [--exit CODE] [--top N]
+                                               the failed shell calls of _tools/ scripts in this clone's (and its
+                                               worktrees') transcripts of the last N days (default 7): the message
+                                               line of each, normalised (titles, paths, ids, commits, hosts, numbers
+                                               and this host's user and host name as placeholders), grouped by script
+                                               and message with counts, exit codes and subcommands, most frequent
+                                               first. A call that never ran (a permission or hook refusal) is counted
+                                               apart. Reads only; prints no command line and writes nothing; --path
+                                               outside the Claude config directory's projects/ is refused (exit 2)
 
 prompt_usage(transcript_path, prompt_id) is what the query log's distill calls: a dict of counts, tool groups and
 model ids, or None when the transcript cannot be read or holds no request of the prompt. A subagent that worked on a
@@ -18,7 +27,8 @@ model ids, or None when the transcript cannot be read or holds no request of the
 transcript_ended(path) are what the launcher uses to close a session whose SessionEnd never ran: the newest transcript
 of a session id, and whether the session has exited.
 """
-import argparse, json, os, re, shlex, sys
+import argparse, getpass, json, os, re, shlex, socket, sys, time
+from datetime import datetime
 from pathlib import Path
 
 READER_VERSION = 1
@@ -819,10 +829,220 @@ def tree_main(argv):
     return 0 if rep["check"]["ok"] else 1
 
 
+# ---------------------------------------------------------------- errors: failed calls of _tools/ scripts, normalised
+
+ERRORS_DOC = "Failed Bash calls of _tools/ scripts in this clone's transcripts, by script and normalised message."
+EXIT_LINE = re.compile(r"Exit code (\d{1,3})")
+ARGPARSE_ERROR = re.compile(r"\S[^:]*: error: .*")  # `prog: error:`, a subcommand's prog with a space in it
+MESSAGE_MAX = 160
+# What a message keeps of a value that varies between calls, in order: terminal colour codes dropped, a quoted title, an
+# absolute path, an email, a uuid, a backlog or source id, a commit, a host name, any number; then a run of one
+# placeholder as one.
+NORMALISE = (
+    (re.compile(r"\x1b\[[0-9;?]*[A-Za-z]"), ""),
+    (re.compile(r"“[^”]*”"), "“<title>”"),
+    (re.compile(r"(?:[A-Za-z]:[\\/]|~[\\/]|(?<![\w.-])/)[^\s'\"`,;)\]]*"), "<path>"),
+    (re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+"), "<email>"),
+    (re.compile(r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"), "<uuid>"),
+    (re.compile(r"\b(?:EP|ST|TK|SB|BG|SP|D|S|ep|st|tk|sb|bg|sp)-[a-z0-9]{8}\b"), "<id>"),
+    (re.compile(r"\b(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b"), "<sha>"),
+    (re.compile(r"\b[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+){2,}\b"), "<host>"),
+    (re.compile(r"\d+"), "<n>"),
+    (re.compile(r"(<(\w+)>)(?:[ ,]+<\2>)+"), r"\1…"),  # a run of one placeholder: `<id> <id> <id>` as `<id>…`
+)
+
+
+def config_dir():
+    return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
+
+
+def project_name(path):
+    """The directory name Claude Code gives a working directory's transcripts: every character but a letter or a
+    digit as `-`."""
+    return re.sub(r"[^A-Za-z0-9]", "-", str(path))
+
+
+def clone_projects(base, clone):
+    """The project directories of a clone under `base`: its own and its worktrees' (`.claude/worktrees/<name>`)."""
+    own = project_name(clone)
+    try:
+        return sorted(d for d in base.iterdir() if d.is_dir() and (d.name == own
+                      or d.name.startswith(own + "--claude-worktrees-")))
+    except OSError:
+        return []
+
+
+def normalise(line, private=()):
+    """A message line with what varies between calls (titles, paths, ids, commits, hosts, numbers) and the given
+    private words (this host's user and host name) replaced by placeholders, spaces collapsed, cut at MESSAGE_MAX."""
+    s = line
+    for word in private:
+        if word and len(word) > 2:
+            s = s.replace(word, "<private>")
+    for rx, sub in NORMALISE:
+        s = rx.sub(sub, s)
+    s = " ".join(s.split())
+    return s if len(s) <= MESSAGE_MAX else s[:MESSAGE_MAX - 1] + "…"
+
+
+def result_text(content):
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "\n".join(b["text"] for b in content if isinstance(b, dict) and isinstance(b.get("text"), str))
+    return ""
+
+
+def failure(text):
+    """(exit code, message line) of a failed shell call's result, or None when it did not run (no `Exit code N` first
+    line: a permission or hook refusal). The message is the first line after the exit code; argparse's `usage:` block
+    is passed over for its `prog: error:` line."""
+    lines = [ln.strip() for ln in text.splitlines()]
+    m = EXIT_LINE.fullmatch(lines[0]) if lines else None
+    if not m:
+        return None
+    rest = [ln for ln in lines[1:] if ln]
+    if rest and rest[0].startswith("usage:"):
+        err = next((ln for ln in rest if ARGPARSE_ERROR.fullmatch(ln)), None)
+        if err:
+            return int(m.group(1)), err
+    return int(m.group(1)), rest[0] if rest else "(no output)"
+
+
+def stamp(r):
+    """A record's time as seconds since the epoch, or None."""
+    ts = r.get("timestamp")
+    if not isinstance(ts, str):
+        return None
+    try:
+        return datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return None
+
+
+class Errors:
+    """The tally of failed `_tools/` script calls: by (script, message), each tool use once."""
+
+    def __init__(self, since, private=()):
+        self.since, self.private = since, private
+        self.groups, self.seen = {}, set()
+        self.files = self.failed = self.refused = 0
+
+    def scan(self, path):
+        self.files += 1
+        uses = {}
+        for r in read_all(path):
+            msg = r.get("message") if isinstance(r.get("message"), dict) else {}
+            for b in msg.get("content") if isinstance(msg.get("content"), list) else ():
+                if not isinstance(b, dict):
+                    continue
+                if r.get("type") == "assistant" and b.get("type") == "tool_use" and b.get("name") in SHELLS \
+                        and isinstance(b.get("input"), dict) and isinstance(b.get("id"), str):
+                    uses[b["id"]] = b["input"].get("command")
+                elif r.get("type") == "user" and b.get("type") == "tool_result" and b.get("is_error"):
+                    self.result(r, uses, b)
+
+    def result(self, r, uses, b):
+        tid = b.get("tool_use_id")
+        if tid not in uses or tid in self.seen:
+            return
+        t = stamp(r)
+        if t is not None and t < self.since:
+            return
+        cls = command_class(uses[tid])
+        if not cls.startswith("tools."):
+            return
+        self.seen.add(tid)
+        got = failure(result_text(b.get("content")))
+        if got is None:
+            self.refused += 1
+            return
+        self.failed += 1
+        code, line = got
+        head = command_head(uses[tid]).split(" ")
+        sub = head[2] if len(head) > 2 else ""
+        g = self.groups.setdefault((cls[len("tools."):] + ".py", normalise(line, self.private)),
+                                   {"count": 0, "exits": {}, "subs": {}})
+        g["count"] += 1
+        g["exits"][code] = g["exits"].get(code, 0) + 1
+        if sub:
+            g["subs"][sub] = g["subs"].get(sub, 0) + 1
+
+    def rows(self, script=None, code=None):
+        """The groups, most frequent first; `script` keeps one script's, `code` one exit code's calls."""
+        out = [{"script": s, "message": m, **g} for (s, m), g in self.groups.items()
+               if (script is None or s in (script, script + ".py")) and (code is None or code in g["exits"])]
+        if code is not None:
+            out = [{**r, "count": r["exits"][code], "exits": {code: r["exits"][code]}} for r in out]
+        out.sort(key=lambda r: (-r["count"], r["script"], r["message"]))
+        return out
+
+
+def top_of(counts, n=3):
+    return ",".join(f"{k}×{v}" for k, v in sorted(counts.items(), key=lambda kv: (-kv[1], str(kv[0])))[:n])
+
+
+def errors_main(argv):
+    ap = argparse.ArgumentParser(prog="kbusage.py errors", description=ERRORS_DOC)
+    ap.add_argument("--days", type=int, default=7, help="the last N days (default 7)")
+    ap.add_argument("--path", help="a project directory or transcript under the Claude config directory's projects/ "
+                                   "(default: this clone's and its worktrees' project directories)")
+    ap.add_argument("--script", help="one script (`backlog` or `backlog.py`)")
+    ap.add_argument("--exit", type=int, dest="code", metavar="CODE",
+                    help="only calls that exited CODE (2: the tools' bad-arguments code, argparse's too)")
+    ap.add_argument("--top", type=int, default=25, help="rows to print (0: all; default 25)")
+    a = ap.parse_args(argv)
+    sys.stdout.reconfigure(encoding="utf-8")
+    base = config_dir() / "projects"
+    if a.path:
+        p = Path(a.path).expanduser().resolve()
+        if base.resolve() not in p.parents:
+            print(f"kbusage errors: refused: {a.path} is not under the Claude config directory's projects/",
+                  file=sys.stderr)
+            return 2
+        if not p.exists():
+            print(f"kbusage errors: {a.path}: no such file or directory", file=sys.stderr)
+            return 2
+        dirs = [p]
+    else:
+        clone = WORKTREE.sub("", str(Path(__file__).resolve().parent.parent).replace("\\", "/"))
+        dirs = clone_projects(base, clone)  # the name keeps letters and digits only, so `/` or `\` reads the same
+    since = time.time() - max(a.days, 0) * 86400
+    try:
+        private = (getpass.getuser(), socket.gethostname().split(".")[0])
+    except (OSError, KeyError):
+        private = ()
+    tally = Errors(since, private)
+    for d in dirs:
+        files = [d] if d.is_file() else sorted(d.rglob("*.jsonl"))
+        for f in files:
+            try:
+                if f.stat().st_mtime < since:
+                    continue
+            except OSError:
+                continue
+            tally.scan(f)
+    rows = tally.rows(a.script, a.code)
+    print(f"errors: last {a.days} days, {len(dirs)} project directories, {tally.files} transcripts; "
+          f"{tally.failed} failed calls of _tools/ scripts in {len(rows)} groups, "
+          f"{tally.refused} refused before running (not grouped)")
+    shown = rows[:a.top] if a.top else rows
+    if shown:
+        print(f"{'count':>6}  {'exit':<8} {'script':<14} message  [subcommands]")
+    for r in shown:
+        subs = f"  [{top_of(r['subs'])}]" if r["subs"] else ""
+        print(f"{r['count']:>6}  {top_of(r['exits'], 2):<8} {r['script']:<14} {r['message']}{subs}")
+    if len(shown) < len(rows):
+        print(f"... {len(rows) - len(shown)} more groups (--top 0 shows all)")
+    return 0
+
+
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else list(argv)
     if argv and argv[0] == "tree":
         return tree_main(argv[1:])
+    if argv and argv[0] == "errors":
+        return errors_main(argv[1:])
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("transcript")
     ap.add_argument("--prompt", help="one prompt id (default: every prompt of the transcript)")

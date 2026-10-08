@@ -51,6 +51,23 @@
   "depends_on": [
     "ST-5zpbfax2"
   ],
+  "gates": [
+    {
+      "id": "rank",
+      "kind": "blocking",
+      "question": "Which of the report's messages rank for the three fixes: the usage errors only (exit 2, the tools' bad-arguments and refusal code) or every failed call (exit 1 too)?",
+      "options": [
+        "exit 2 only: usage errors and refusals; exit 1 lines are gate verdicts (done reasons, selfdoc stale, selfcheck) a tool fix would hide",
+        "every exit: the raw ranking, done's not-done line and selfdoc stale lines first"
+      ],
+      "recommendation": "exit 2 only: usage errors and refusals; exit 1 lines are gate verdicts (done reasons, selfdoc stale, selfcheck) a tool fix would hide",
+      "do": {
+        "exit 2 only: usage errors and refusals; exit 1 lines are gate verdicts (done reasons, selfdoc stale, selfcheck) a tool fix would hide": "ST-b7ste3hx",
+        "every exit: the raw ranking, done's not-done line and selfdoc stale lines first": "ST-b7ste3hx"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "kb/_self/usage.md (kbusage reads transcripts)",
     "kb/_self/querylog.md Surfaces, ops call.tool"

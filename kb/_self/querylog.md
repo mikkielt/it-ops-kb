@@ -9,7 +9,7 @@ Every kb lookup leaves a redacted, judged record in the repository, in `kb/_quer
 | stage | module | commands |
 |---|---|---|
 | capture | `_tools/ql_capture.py` (`record`, which `kb_hook.py`, `kb_ask.py`, `fetch.py` and `census.py` call) | `capture`, `where` |
-| distill | `_tools/ql_distill.py`, with `_tools/redact.py` and `_tools/kbusage.py` (a prompt's token counts from its transcript, `kb/_self/usage.md`; its `tree` command is a report outside the stages) | `launch`, `distill` |
+| distill | `_tools/ql_distill.py`, with `_tools/redact.py` and `_tools/kbusage.py` (a prompt's token counts from its transcript, `kb/_self/usage.md`; its `tree` and `errors` commands are reports outside the stages, `errors` reading the shell failures' messages a `call.tool` row never keeps) | `launch`, `distill` |
 | store | `_tools/ql_store.py` (the run and findings files, their readers and writers, the gates) | `check` |
 | learn | `_tools/ql_learn.py` | `learn` |
 | apply | `_tools/ql_apply.py` (eval rows with their fixes, the gap step), `_tools/ql_research.py` (research, the quote check, the research queue) | `apply`, `gap-replay`, `quotecheck`, `queue`, `close` |

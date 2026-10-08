@@ -18,6 +18,7 @@
                                    the section under each heading, down to the next heading of the same or a higher
                                    level, each line with its line number; exit 1 when a heading matches none, naming
                                    it and its doc's headings (the other pairs still print)
+  selfdoc.py section DOC           (a last DOC with no HEADING) that doc's headings, each with its section's line range
 
 kb/_self/map.csv (doc,pattern) says what each doc describes: one row per doc and glob, repository-relative paths; `*` stays within a
 directory, `**` crosses directories. A pattern of `-` marks a doc that describes no file: it is never
@@ -400,13 +401,37 @@ def section(doc, heading, root=KB):
     return found, [f"{'#' * lvl} {text}" for _, lvl, text in headings(text_lines)]
 
 
-def print_sections(pairs, root=KB):
+def outline(doc, root=KB):
+    """[(first line, last line, `##` marks and text)] of every heading of a doc, its section's line range as
+    `section` prints it; line numbers start at 1."""
+    path = resolve_doc(doc, root)
+    try:
+        text_lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError) as e:
+        raise SelfdocError(f"cannot read {doc}: {getattr(e, 'strerror', None) or e}")
+    heads = headings(text_lines)
+    out = []
+    for n, (i, lvl, text) in enumerate(heads):
+        end = next((j for j, l2, _ in heads[n + 1:] if l2 <= lvl), len(text_lines))
+        while end > i + 1 and not text_lines[end - 1].strip():
+            end -= 1
+        out.append((i + 1, end, f"{'#' * lvl} {text}"))
+    return out
+
+
+def print_sections(pairs, root=KB, lone=None):
     """Print the sections of each (doc, heading) pair in order, a blank line between pairs; a heading that matches
-    none prints `NO SECTION` with its doc's headings. 0 when every heading matched, else 1."""
+    none prints `NO SECTION` with its doc's headings. `lone`, a last DOC given with no HEADING, prints that doc's
+    headings with their line ranges. 0 when every heading matched, else 1."""
     missing = 0
-    for n, (doc, heading) in enumerate(pairs):
+    for n, (doc, heading) in enumerate(pairs + ([(lone, None)] if lone else [])):
         if n:
             print()
+        if heading is None:
+            print(f"{doc}: headings (name one: selfdoc.py section {doc} HEADING)")
+            for first, last, h in outline(doc, root):
+                print(f"{first}-{last}: {h}")
+            continue
         found, heads = section(doc, heading, root)
         if not found:
             missing += 1
@@ -573,15 +598,14 @@ def main(argv=None):
     m.add_argument("paths", nargs="+")
     sub.add_parser("check", help="map rows naming a missing doc or matching no file; _self docs with no row; "
                                    "(doc, Section) references to a missing heading")
-    c = sub.add_parser("section", help="sections of docs, with line numbers: one or more DOC HEADING pairs")
+    c = sub.add_parser("section", help="sections of docs, with line numbers: one or more DOC HEADING pairs; a last "
+                                       "DOC alone lists its headings with their line ranges")
     c.add_argument("pairs", nargs="+", metavar="DOC HEADING",
                    help="DOC: path from the repository root, or a name under kb/_self; HEADING: the heading's text "
                         "(case-insensitive), `## text` pins the level")
     t = sub.add_parser("map-tools", help="the symbols and tests of _tools/*.py, with file:line")
     t.add_argument("file", metavar="FILE", nargs="?", help="one file: a path, or a name under _tools (`rag`)")
     a = ap.parse_args(argv)
-    if a.cmd == "section" and len(a.pairs) % 2:
-        c.error(f"section takes DOC HEADING pairs; {a.pairs[-1]!r} has no HEADING")
     try:
         if a.cmd == "map-tools":
             out = map_tools(a.file)
@@ -590,7 +614,8 @@ def main(argv=None):
             print(f"files={kinds.count('module') + kinds.count('unparsed')} symbols={len(kinds) - kinds.count('module') - kinds.count('unparsed')}")
             return 0
         if a.cmd == "section":
-            return print_sections(list(zip(a.pairs[::2], a.pairs[1::2])))
+            lone = a.pairs[-1] if len(a.pairs) % 2 else None
+            return print_sections(list(zip(a.pairs[::2], a.pairs[1::2])), lone=lone)
         if a.cmd == "map":
             found = describing(load_map(), [os.path.normpath(p).replace(os.sep, "/") for p in a.paths])
             for doc, hit in found.items():
