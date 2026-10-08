@@ -1,7 +1,8 @@
 """`backlog.py land ID` end to end in a scenario clone: a content-only item lands on origin/main; an item whose check
 fails stops `land` at its step and leaves origin/main where it was. The first item's branch sits in a finished worker's
 worktree that holds an untracked intake draft: `land` moves the draft aside and says so, and still refuses any other
-untracked file."""
+untracked file. Before the second item lands, a commit of it that changes a mapped tool and no doc is refused at
+`done` with stale-docs, and a `Self-Reviewed:` trailer naming the docs clears that."""
 import json
 import re
 from pathlib import Path
@@ -97,6 +98,18 @@ def test_land_content_item_then_planted_failure(scenario):
 
     repo.git("checkout", "-q", "main")
     work(repo, bad, "kb/_self/bad.md")
+    # planted failure of done's docs check: a commit of the item changes a mapped tool and no doc
+    tool = "_tools/provider.py"
+    repo.write(tool, Path(repo.file(tool)).read_text(encoding="utf-8") + "# changed\n")
+    repo.git("commit", "-q", "-am", f"fix(kb): {bad} tool", "-m", f"KB-Work: {bad}")
+    code, out = bl(repo, "done", bad, "--dry-run")
+    assert code != 0 and "stale-docs:" in out and f"kb/_self/tools.md is older than {tool}" in out, out
+    reviewed = "kb/_self/tools.md, kb/_self/code.md, kb/_self/web-sources.md"  # read and still correct: not stale
+    repo.git("commit", "-q", "--allow-empty", "-m", f"docs(kb): {bad} review",
+             "-m", f"Self-Reviewed: {reviewed}\nKB-Work: {bad}")
+    code, out = bl(repo, "done", bad, "--dry-run")
+    assert "stale-docs" not in out and "outside touches" in out, out
+    repo.git("reset", "-q", "--hard", "HEAD~2")
     code, out = bl(repo, "land", bad)
     assert code != 0 and "land stopped at step done" in out and "check(s) failed" in out, out
     assert origin_main(scenario) == moved
