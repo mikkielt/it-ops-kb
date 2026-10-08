@@ -2,7 +2,7 @@
   "id": "ST-2ukv6ysc",
   "kind": "story",
   "title": "A clean Windows account goes from no Python to the /kb-setup steps on the current main, on record",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P2",
@@ -59,5 +59,26 @@
     }
   ],
   "notes": "Premise (2026-10-07): the report's newest run is at origin/main d10da8d (2026-09-30), before the suite rewrite 4d70166f, so the first check exits 1. Order after the revision-read story, since a deep clone path trips those readers. python3 _tools/check.py passes before the work: it keeps the report within the docs checks; the first check is the failing proof. Premise on the Windows host (2026-10-08, origin/main d5a26e12): the first check exits 1 (no report run after 4d70166f); check.py passes (errors=0). Run on the Windows host (2026-10-08): cleanhost-run.ps1 elevated, full mode. At 42148c0e tests.py failed 1 (the land scenario's backlog check matched the account name's piece 'cleanhost' in this item's goal and touches); fixed in 40cff022 (account kbch, touches widened to kb/_self/tools.md, merged as 97e65047). Rerun at 97e65047: every step exit 0, tests.py 57 passed, 1 skipped in 124.06 s; account, profile and work folder deleted. Both checks exit 0 after the report.",
-  "claimed_by": "worker-win"
+  "evidence": {
+    "commit": "fb16aa2d4d6b2b374e4947f33264eef0c445ae53",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess as s,sys;t=open('kb/_self/reports/windows-fresh-host.md',encoding='utf-8').read();hs=sorted(set(re.findall(r'\\b[0-9a-f]{7,40}\\b',t)));ok=[h for h in hs if not h.startswith('4d70166f') and s.run(['git','merge-base','--is-ancestor','4d70166f',h],capture_output=True).returncode==0];print('report runs at commits after the suite rewrite 4d70166f:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "aaa75ac018098eb1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "12b3dd38925c890f"
+      }
+    ]
+  }
 }
