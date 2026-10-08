@@ -2,7 +2,7 @@
   "id": "ST-tuarlgzv",
   "kind": "story",
   "title": "Review sprint: Answers stay right and correctly cited",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-caqrexqw",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "9f1ae8588f84200e1f19194d40703b4b29cff615",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "c64d8fdb2fb49580"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "20f6f011bc8a31af"
+      }
+    ]
+  }
 }
