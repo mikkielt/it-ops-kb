@@ -3,7 +3,7 @@ only the operator answers.
 
 Every gate has a class, one of CLASSES, listed from the most restricted to the least. `gate_class(item, gate)` derives
 it from the item's `touches` and the gate's question and id: the strictest class any of them names, `design` when none
-does. A class a gate stores (`gate add` writes it) is read as a floor for nothing but the record: the class in force is
+does; `class_reasons` also names the touches and words that set it, which `gate add` prints. A class a gate stores (`gate add` writes it) is read as a floor for nothing but the record: the class in force is
 the stricter of the stored and the derived, so an agent that writes a lower class into an item file changes nothing,
 and `lowered` names it for `check`. A gate of a class in OPERATOR_CLASSES (secrets, push and agents-rule) is blocking
 and takes only the operator's answer; the operator answers every class.
@@ -95,23 +95,38 @@ def rank(cls):
     return CLASSES.index(cls) if cls in CLASSES else 0
 
 
-def derived_class(item, gate):
-    """The strictest class the item's touches and the gate's id and question name; `design` when none."""
-    found = set()
+def class_reasons(item, gate):
+    """The strictest class the item's touches and the gate's id and question name (`design` when none), with what set
+    it: each touch (`touch '_tools/bl_items.py'`) and each word of the gate's text (`matched 'rule'`) that names that
+    class, in that order; no reason for `design`. `derived_class` reads its class here, so the two never diverge."""
+    found = {}
     if gate.get("id") == START_GATE:
-        found.add("start")
+        found.setdefault("start", []).append(f"gate id '{START_GATE}'")
+    touches = [t for t in item.get("touches", []) or [] if isinstance(t, str)]
     for cls, paths in PATHS.items():
-        if any(touch_names(t, p) for t in item.get("touches", []) or [] for p in paths):
-            found.add(cls)
-    if any(names_secret(t) for t in item.get("touches", []) or []):
-        found.add("secrets")
+        for t in touches:
+            if any(touch_names(t, p) for p in paths):
+                found.setdefault(cls, []).append(f"touch '{t}'")
+    for t in touches:
+        if names_secret(t):
+            found.setdefault("secrets", []).append(f"touch '{t}'")
     text = f"{gate.get('question', '')} {' '.join(map(str, gate.get('options', []) or []))} {command_words(gate)}"
     for cls, rx in QUESTION_WORDS.items():
-        if rx.search(text):
-            found.add(cls)
-    if re.search(r"sprint'?s? start|start (?:the )?sprint", text, re.I):
-        found.add("start")
-    return min(found, key=rank) if found else "design"
+        m = rx.search(text)
+        if m:
+            found.setdefault(cls, []).append(f"matched '{m.group(0)}'")
+    m = re.search(r"sprint'?s? start|start (?:the )?sprint", text, re.I)
+    if m:
+        found.setdefault("start", []).append(f"matched '{m.group(0)}'")
+    if not found:
+        return "design", []
+    cls = min(found, key=rank)
+    return cls, list(dict.fromkeys(found[cls]))
+
+
+def derived_class(item, gate):
+    """The strictest class the item's touches and the gate's id and question name; `design` when none."""
+    return class_reasons(item, gate)[0]
 
 
 def gate_class(item, gate):
