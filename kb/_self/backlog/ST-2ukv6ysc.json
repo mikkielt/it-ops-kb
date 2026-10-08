@@ -27,9 +27,6 @@
     "kb/_self/reports/windows-fresh-host.md",
     "_tools/cleanhost-run.ps1"
   ],
-  "depends_on": [
-    "ST-w3ikanna"
-  ],
   "gates": [
     {
       "id": "windows",

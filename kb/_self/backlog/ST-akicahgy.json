@@ -26,7 +26,6 @@
     "kb/_self/reports/test-suite-speed.md"
   ],
   "depends_on": [
-    "BG-2hjxwg64",
     "BG-nlp5aat5"
   ],
   "gates": [
