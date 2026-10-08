@@ -2,7 +2,7 @@
   "id": "ST-3ngfp62o",
   "kind": "story",
   "title": "Review sprint: Token efficiency is measured on a wide pool with Haiku 5.5",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hm4qgf3t",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-SP-hm4qgf3t"
+  "evidence": {
+    "commit": "0f8b01e89ecc2c02144a7ff23efc17e80550d69f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "f1f74d5301a81a8c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "fa091403f0ff1eb2"
+      }
+    ]
+  }
 }
