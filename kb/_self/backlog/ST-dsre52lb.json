@@ -2,7 +2,7 @@
   "id": "ST-dsre52lb",
   "kind": "story",
   "title": "learn pairs a rules miss's key word only with the one candidate word of the quoted line",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
@@ -52,5 +52,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-dsre"
+  "evidence": {
+    "commit": "6f22e93b767bed62eb96372cefb6e0f70478f55d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import ql_learn as l; q='what does land refuse when a file has unsaved changes'; one=l.pair_word('unsaved','land: uncommitted changes',q); two=l.pair_word('unsaved','land: uncommitted or staged changes',q); print(one,two); sys.exit(0 if one=='uncommitted' and two is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3091a79db4f1cda9"
+      }
+    ]
+  }
 }
