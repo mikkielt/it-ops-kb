@@ -2,7 +2,7 @@
   "id": "BG-5h2jpe3e",
   "kind": "bug",
   "title": "perfcheck names_successor accepts the retired-feature phrase beside the dropped test file itself",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,18 @@
   "depends_on": [
     "ST-founcbvo"
   ],
-  "claimed_by": "worker-5h2j"
+  "evidence": {
+    "commit": "b30880c78493904fac8a16f17cd9e875f1c4ad24",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile; sys.path.insert(0,'_tools'); import perfcheck; d=tempfile.mkdtemp(); r=perfcheck.names_successor('live-module calls went with test_gone.py', ['_tools/test_gone.py::test_a'], d, ''); print(r); sys.exit(1 if r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "7fc755fadc1b31a6"
+      }
+    ]
+  }
 }
