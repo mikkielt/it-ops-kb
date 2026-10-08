@@ -2,7 +2,7 @@
   "id": "ST-6kcoqz4d",
   "kind": "story",
   "title": "Two items that share only a kb/_self doc run at once",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,18 @@
     }
   ],
   "notes": "Premise: python3 _tools/backlog.py check in a planted root with two draft stories of one planned sprint that touch kb/_self/code.md and different code files prints '... both touch kb/_self/code.md and neither depends on the other', so they would run one at a time; held --overlaps ID uses the same touches_overlap on each doing item. shared_files already leaves SHARED_DOCS (backlog.md, tools.md, git.md) out of its own warning; code.md is not in it.",
-  "claimed_by": "worker-ST-6kcoqz4d"
+  "evidence": {
+    "commit": "2ab5f7b5afb6f6ad242e686a7fb329d020037d38",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,tempfile,os\nlive=os.getcwd()\nt=tempfile.mkdtemp();subprocess.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog')\nb=[sys.executable,live+'/_tools/backlog.py','--root',t]\ndef run(*a):\n    r=subprocess.run(b+list(a),capture_output=True,text=True,cwd=t);assert r.returncode==0,(a,r.stdout,r.stderr);return r.stdout\nsp=run('new','sprint','--title','S').split()[2]\nids=[]\nfor n,tp in enumerate((['kb/_self/code.md','_tools/a.py'],['kb/_self/code.md','_tools/b.py'],['_tools/x.py'],['_tools/x.py'])):\n    a=['new','story','--title','T%d'%n,'--sprint',sp,'--goal','g']\n    for p in tp: a+=['--touch',p]\n    ids.append(run(*a).split()[2])\nout=[l for l in subprocess.run(b+['check'],capture_output=True,text=True,cwd=t).stdout.splitlines() if 'both touch' in l]\ndoc=any(ids[0] in l and ids[1] in l for l in out);code=any(ids[2] in l and ids[3] in l for l in out)\nprint(doc,code);sys.exit(0 if code and not doc else 1)"
+        ],
+        "exit": 0,
+        "sha256": "6bb666d23e647f13"
+      }
+    ]
+  }
 }
