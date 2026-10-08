@@ -2,7 +2,7 @@
   "id": "BG-6h3q2vt6",
   "kind": "bug",
   "title": "The Defender section of test-suite-speed.md sums its groups to 84.0 s against a stated 84.2 s and names no duration unit",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kyvu526t",
   "priority": "P3",
@@ -23,5 +23,6 @@
   "depends_on": [
     "ST-iivqx6kr"
   ],
-  "notes": "Arithmetic (2026-10-07): scans 3,644 + 4,046 + 1,416 = 9,106 match; seconds 44.2 + 38.0 + 1.8 = 84.0 against 84.2, more than rounding of three rows explains. By process 84.2 - 70.4 - 11.7 = 2.1 s, by path 84.2 - 44.2 - 38.0 = 2.0 s, so the third row (1.8) is the likely error; commit 178654e5 holds only 84.2, 44.2 and 38.0, and the .etl is not in the repo (re-read on the Windows host if it is still there). The extension line lists 79.7 s of 84.2 and does not say the rest is left out. The unit is 100 ns only for -Raw output: ST-iivqx6kr."
+  "notes": "Arithmetic (2026-10-07): scans 3,644 + 4,046 + 1,416 = 9,106 match; seconds 44.2 + 38.0 + 1.8 = 84.0 against 84.2, more than rounding of three rows explains. By process 84.2 - 70.4 - 11.7 = 2.1 s, by path 84.2 - 44.2 - 38.0 = 2.0 s, so the third row (1.8) is the likely error; commit 178654e5 holds only 84.2, 44.2 and 38.0, and the .etl is not in the repo (re-read on the Windows host if it is still there). The extension line lists 79.7 s of 84.2 and does not say the rest is left out. The unit is 100 ns only for -Raw output: ST-iivqx6kr.",
+  "claimed_by": "sprint-orchestrator"
 }
