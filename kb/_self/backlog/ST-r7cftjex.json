@@ -54,7 +54,9 @@
         "the run's selection arguments (pytest arguments without worker and report options, paths relative to the clone): with the tree and Python they decide the ids, and no pytest starts for the key": "ST-r7cftjex",
         "the collected test ids (a pytest --collect-only before each reuse check)": "ST-r7cftjex"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the run's selection arguments (pytest arguments without worker and report options, paths relative to the clone): with the tree and Python they decide the ids, and no pytest starts for the key",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -69,7 +71,9 @@
         "the run gets no key: nothing is reused or recorded while the file is untracked": "ST-r7cftjex",
         "the file's path and content are hashed into the key": "ST-r7cftjex"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the run gets no key: nothing is reused or recorded while the file is untracked",
+      "by": "operator"
     }
   ],
   "links": [
