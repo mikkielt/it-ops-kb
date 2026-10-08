@@ -11,10 +11,10 @@ import json, re, subprocess
 import bl_cli
 from bl_base import (
     IN_SPRINT, OPEN, REL_DIR, SIMILAR_MIN, SIMILAR_SHOWN, SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, Backlog,
-    KINDS, Refused, Rejected, canonical, git, line, need, open_gates, say, scope, touches_overlap, waits, withhold,
+    KINDS, Refused, Rejected, canonical, git, line, need, open_gates, say, scope, waits, withhold,
 )
 from bl_check import knowledge_lines
-from bl_plan import start_approved, tracked_files, where_outside
+from bl_plan import start_approved, touches_meet, tracked_files, where_outside
 
 
 def ready(bl, sprint=None, any_sprint=False):
@@ -178,7 +178,8 @@ def held_line(bl, iid, glob):
 def cmd_held(bl, a):
     """The touches of every claimed (doing) item, one line per glob: the glob, the item, its claimer and its sprint.
     --overlaps ID: only the claimed items outside ID's own chain whose touches overlap ID's scope (its touches and
-    its descendants'), each line naming the glob of ID's it meets; exit 1 when there is one."""
+    its descendants'), each line naming the glob of ID's it meets; exit 1 when there is one. A kb/_self doc meets
+    nothing (bl_plan.touches_meet): items that share only docs run at once."""
     mine = bl
     if a.ref:
         bl = Backlog(bl.root)
@@ -202,7 +203,7 @@ def cmd_held(bl, a):
         if i in chain:
             continue
         for t in bl.items[i].get("touches", []) or []:
-            met = [m for m in own if isinstance(t, str) and t and touches_overlap(m, t, files)]
+            met = [m for m in own if isinstance(t, str) and t and touches_meet(m, t, files)]
             if met:
                 hits.append(f"{held_line(bl, i, t)}  meets {', '.join(met)}")
     for x in sorted(hits):

@@ -1,0 +1,21 @@
+{
+  "id": "BG-6cq4zeai",
+  "kind": "bug",
+  "title": "backlog.py's touches_overlap re-export says bl_view's held and tests use it; neither does",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "_tools/backlog.py's re-export of bl_base.touches_overlap carries no comment naming users it does not have: drop the re-export if nothing reads it, else name its real readers.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1 if 'held uses it' in open('_tools/backlog.py',encoding='utf-8').read() else 0)"
+    ]
+  },
+  "repro_reason": "The defect is a code comment's wording: bl_view's held now calls bl_plan.touches_meet and no test reads backlog.touches_overlap, so no behaviour runs.",
+  "touches": [
+    "_tools/backlog.py"
+  ]
+}
