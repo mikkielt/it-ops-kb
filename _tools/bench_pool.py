@@ -555,14 +555,15 @@ def accepts(arm, kind):
     return arm not in WEB_ARMS or kind in WEB_KINDS
 
 
-def record_of(row, arm, label, r):
-    """One run's record: the pool row's id and kind, the arm and its label, the tokens (run_tokens), the kb results'
-    tokens (`pack_tokens`: those of the stream plus the router's pack text at CHARS_PER_TOKEN), tool calls, turns,
-    seconds, cost and one boolean per check; or the error."""
+def record_of(row, arm, label, r, cc=""):
+    """One run's record: the pool row's id and kind, the arm and its label, the tokens (run_tokens, priced as the arm's
+    alias resolves on Claude Code version `cc` when the transcript names no model), the kb results' tokens
+    (`pack_tokens`: those of the stream plus the router's pack text at CHARS_PER_TOKEN), tool calls, turns, seconds,
+    cost and one boolean per check; or the error."""
     base = {"id": row["id"], "kind": row["kind"], "arm": arm, "label": label}
     if "error" in r:
         return {**base, "error": str(r["error"])[:200]}
-    t = run_tokens(r, agent_bench.MODEL.get(arm.removeprefix("web-"), ""))
+    t = run_tokens(r, agent_bench.MODEL.get(arm.removeprefix("web-"), ""), cc)
     checks = [bool(agent_bench.check(c, r)) for c in json.loads(row["checks"])]
     return {**base, **t, "model": "+".join(sorted(set(t.pop("models")))),
             "pack_tokens": r.get("kb_tokens", 0) + r.get("pack_chars", 0) // agent_bench.CHARS_PER_TOKEN,
@@ -634,16 +635,17 @@ def run_tasks(tasks, work, jobs=1, cap=None, emit=None):
     return [done[i] for i in range(nxt)], tasks[nxt:]
 
 
-def run_pool(rows, cells, reps, runner, sink=None, jobs=1, cap=None, left=None):
+def run_pool(rows, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc=""):
     """Every row on every cell (a web arm only on WEB_KINDS), `reps` times: the run records, in cell order whatever order
     `jobs` parallel runs finish in. `runner(arm, effort, row)` is one run's result; `sink(record, result)` sees each as it
-    is made, in that order. With `cap` (run_tasks), `left` is extended with (label, "id#rep") of each run not started."""
+    is made, in that order. With `cap` (run_tasks), `left` is extended with (label, "id#rep") of each run not started.
+    `cc` is the run's Claude Code version, which record_of prices an alias arm by."""
     tasks = [(arm, effort, label, row, rep) for arm, effort, label in cells for row in rows if accepts(arm, row["kind"])
              for rep in range(1, reps + 1)]
     runs = []
 
     def emit(i, t, r):
-        runs.append(record_of(t[3], t[0], t[2], r))
+        runs.append(record_of(t[3], t[0], t[2], r, cc))
         if sink:
             sink(runs[-1], r)
     _, rest = run_tasks(tasks, lambda t: runner(t[0], t[1], t[3]), jobs, cap, emit)
@@ -689,13 +691,13 @@ def session_fields(r, before):
     return out, last
 
 
-def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=None):
+def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc=""):
     """Every group on every cell, `reps` times, each in one session of its own: the run records in cell order, with the
     arm label `SESSION_SUFFIX` added, the group's number, the question's `position` and the `session_fields`.
     `runner(arm, effort, row, sid, position)` is one question's result: the first starts the session `sid`, each later
     one resumes it. A failed question ends its session: the questions after it are recorded as errors. Up to `jobs`
     sessions run at once (a session's questions stay in order inside it), the records come in the order `jobs` 1 gives,
-    and `cap` and `left` work as in run_pool, a session being the unit started or not (the name `group N#rep`)."""
+    and `cap`, `left` and `cc` work as in run_pool, a session being the unit started or not (the name `group N#rep`)."""
     tasks = [(arm, effort, label + SESSION_SUFFIX, number, group, rep) for arm, effort, label in cells
              for number, group in enumerate(groups, 1) for rep in range(1, reps + 1)]
 
@@ -713,7 +715,7 @@ def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=
     def emit(i, t, results):
         before = 0
         for position, (row, r) in enumerate(zip(t[4], results), 1):
-            rec = {**record_of(row, t[0], t[2], r), "group": t[3], "position": position}
+            rec = {**record_of(row, t[0], t[2], r, cc), "group": t[3], "position": position}
             if "error" not in r:
                 extra, before = session_fields(r, before)
                 rec.update(extra)
@@ -870,7 +872,7 @@ def s_pool(b):
     runs_of = (lambda arm: len(groups) * GROUP_SIZE * b.reps) if session else (  # noqa: E731
         lambda arm: sum(accepts(arm, r["kind"]) for r in rows) * b.reps)
     total = sum(runs_of(a) for a, _, _ in cells)
-    jobs, cap = max(1, getattr(b, "jobs", 1)), getattr(b, "max_usd", None)
+    jobs, cap, cc = max(1, getattr(b, "jobs", 1)), getattr(b, "max_usd", None), getattr(b, "cc", "")
     if getattr(b, "dry", False):
         for arm, _, label in cells:
             print(f"pool: {label}{SESSION_SUFFIX if session else ''}: {runs_of(arm)} runs")
@@ -885,11 +887,11 @@ def s_pool(b):
                 f.write(json.dumps({**rec, "answer": (r.get("answer") or "")[:2000]}) + "\n")
     not_started = []
     if session:
-        runs = run_sessions(groups, cells, b.reps, live_session_runner(b), sink, jobs, cap, not_started)
+        runs = run_sessions(groups, cells, b.reps, live_session_runner(b), sink, jobs, cap, not_started, cc)
         for case, label, metric, value, n, model, note in session_rows(runs):
             b.row("pool", case, label, metric, value, n, model, note)
     else:
-        runs = run_pool(rows, cells, b.reps, live_runner(b, sh), sink, jobs, cap, not_started)
+        runs = run_pool(rows, cells, b.reps, live_runner(b, sh), sink, jobs, cap, not_started, cc)
     for case, label, metric, value, n, model, note in cell_rows(runs):
         b.row("pool", case, label, metric, value, n, model, note)
     for label in dict.fromkeys(label for label, _ in not_started):
