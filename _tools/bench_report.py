@@ -40,7 +40,9 @@ FORMATS = {"cost": "${:.3f}", "cost_est": "${:.3f}", "wall_s": "{:.0f} s", "api_
            "input_per_entry": "{:,.0f}", "out_per_entry": "{:,.0f}", "cost_per_fact": "${:.3f}",
            "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%", "ratio": "{:.2f}x",
            "cache_read": "{:,.0f}", "cache_write": "{:,.0f}", "pack_tokens": "{:,.0f}", "tokens_per_right": "{:,.0f}",
-           "fixed_share": "{:.1%}", "cache_read_share": "{:.1%}", "marginal_input": "{:,.0f}"}
+           "fixed_share": "{:.1%}", "cache_read_share": "{:.1%}", "marginal_input": "{:,.0f}",
+           "tokens_per_right_lo": "{:,.0f}", "tokens_per_right_hi": "{:,.0f}", "right_share_lo": "{:.1%}",
+           "right_share_hi": "{:.1%}"}
 
 
 def fmt(metric, v):

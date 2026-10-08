@@ -531,6 +531,7 @@ ROUTER_TIMEOUT_S = 1800
 SHAPES = ("fresh", "session")  # a fresh session per question, or six questions in one session
 SESSION_ARMS = ("haiku-5-5", "sonnet-5-5")  # the arms of the session shape: the kb's tools, models pinned by id
 GROUP_SIZE = 6
+RESAMPLES = 1000  # the bootstrap draws of a cell's 95% interval (`interval`)
 SESSION_SUFFIX = "/session"  # an arm label of the session shape: `model:level/session`, beside the fresh label
 
 
@@ -665,10 +666,36 @@ def record_of(row, arm, label, r, cc=""):
             "turns": r.get("turns", 0), "wall_s": r.get("wall_s", 0), "cost": r.get("cost", 0), "checks": checks}
 
 
+def interval(rs, resamples=RESAMPLES):
+    """((lo, hi) of `tokens_per_right`, (lo, hi) of the right share) of one cell's good runs, the 95% bootstrap interval:
+    pool rows are drawn with replacement (a row's reps stay together, so rows and not runs are the unit), as many as the
+    cell has, `resamples` times, by a generator seeded from SEED. Each resample gives the share of runs right and the
+    effective input of all runs over the runs right; one with no right run has no `tokens_per_right` and is left out of
+    that interval. The bounds are the sorted values at index 2.5% and 97.5% of their count. The first pair is None when
+    no resample had a right run (the cell has none)."""
+    per = {}
+    for r in sorted(rs, key=lambda r: r["id"]):
+        runs, right, eff = per.get(r["id"], (0, 0, 0))
+        per[r["id"]] = (runs + 1, right + (bool(r["checks"]) and all(r["checks"])), eff + r["effective_input"])
+    rows = list(per.values())
+    rng = random.Random(f"{SEED}:interval")
+    shares, costs = [], []
+    for _ in range(resamples):
+        runs, right, eff = map(sum, zip(*rng.choices(rows, k=len(rows))))
+        shares.append(right / runs)
+        if right:
+            costs.append(eff / right)
+    bound = lambda vals, q: sorted(vals)[min(len(vals) - 1, int(q * len(vals)))]  # noqa: E731
+    lo_hi = lambda vals: (bound(vals, 0.025), bound(vals, 0.975)) if vals else None  # noqa: E731
+    return lo_hi(costs), lo_hi(shares)
+
+
 def cell_metrics(rs):
     """[(metric, value)] of one cell's good runs: the means of the token fields, tool calls, turns, seconds and cost, the
     checks passed over all, the runs whose checks all passed, `fixed_share` (the mean first prompt over the mean input)
-    and `tokens_per_right` (the effective input of all the runs over the runs that were right, left out when none was)."""
+    and `tokens_per_right` (the effective input of all the runs over the runs that were right, left out when none was),
+    then the 95% interval of `tokens_per_right` and of the right share (`interval`): `tokens_per_right_lo`/`_hi` and
+    `right_share_lo`/`_hi`."""
     n = len(rs)
     mean = lambda k: sum(r[k] for r in rs) / n  # noqa: E731
     right = sum(bool(r["checks"]) and all(r["checks"]) for r in rs)
@@ -680,6 +707,10 @@ def cell_metrics(rs):
         out.append(("fixed_share", mean("start_ctx") / mean("input")))
     if right:
         out.append(("tokens_per_right", sum(r["effective_input"] for r in rs) / right))
+    cost, share = interval(rs)
+    if cost:
+        out += [("tokens_per_right_lo", cost[0]), ("tokens_per_right_hi", cost[1])]
+    out += [("right_share_lo", share[0]), ("right_share_hi", share[1])]
     return out
 
 
