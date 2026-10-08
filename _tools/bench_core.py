@@ -6,7 +6,7 @@ bench_retrieval.py, bench_querylog.py and bench_install.py the scenarios. This m
 and benchmarks.py, the facade, holds the command line (kb/_self/code.md, Layout and Imports; the commands and the
 scenarios are described in kb/_self/reports/benchmarks.md).
 """
-import csv, datetime, io, json, os, shutil, statistics, subprocess, sys, time, uuid
+import csv, datetime, io, json, os, re, shutil, statistics, subprocess, sys, time, uuid
 from pathlib import Path
 
 import agent_bench
@@ -18,9 +18,24 @@ TOOLS = Path(__file__).resolve().parent
 RESULTS = HOME / "kb" / "_self" / "reports" / "benchmarks.csv"
 FIELDS = ["scenario", "record", "date", "commit", "claude_code", "kb_topics", "case", "arm", "model", "metric", "value",
           "runs", "note"]
-# list prices per MTok used to estimate a subagent's cost from its transcript (input, output); cache writes 1.25x input,
-# cache reads 0.1x input (Opus 5.5: $0.20), plus $0.01 per web search (the method of the subagent measurement)
-PRICE = {"haiku": (1.0, 5.0, 0.1), "sonnet": (2.0, 10.0, 0.2), "opus": (4.0, 20.0, 0.2)}
+# list prices per MTok of each pinned model, from the pricing page (PRICE_SOURCE): one tier per prompt length, each
+# (largest prompt in tokens it covers, None for the last, input, output, 5-minute cache write, cache read); a
+# run's cost and its effective input weights read the tier each request's prompt falls in. Plus $0.01 per web search
+# (the method of the subagent measurement)
+PRICE_SOURCE = "S2131"
+PRICE = {
+    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10),),
+    "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01), (None, 0.50, 2.50, 0.625, 0.05)),
+    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20),),
+    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10),),
+    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20),),
+}
+# the alias arms of a run and the model each names from a Claude Code version on; a run's own transcript names the model
+# it used, and that wins: this table only prices a run that reports none
+ARMS = ("haiku", "sonnet", "opus")
+ALIAS = {"haiku": (((0,), "claude-haiku-4-5"),),
+         "sonnet": (((0,), "claude-sonnet-5"), ((2, 1, 284), "claude-sonnet-5-5")),
+         "opus": (((0,), "claude-opus-5-5"),)}
 WEB_SEARCH_USD = 0.01
 
 # ---------------------------------------------------------------------------------------------------- results file
@@ -360,22 +375,64 @@ def read_requests(path):
     return out
 
 
-def usage_sum(reqs):
+def pinned(name):
+    """The pinned model id of a name a run reports: no date suffix, no context-window marker."""
+    return re.sub(r"-\d{8}$", "", name.split("[")[0])
+
+
+def resolve_model(name, observed="", cc=""):
+    """The pinned id a run is priced at: the model its transcript reports, else what the alias `name` names on Claude
+    Code version `cc`, else `name` itself."""
+    if observed:
+        return pinned(observed)
+    if name in ALIAS:
+        ver = tuple(int(n) for n in re.findall(r"\d+", cc)[:3])
+        return [m for since, m in ALIAS[name] if since <= ver][-1]
+    return pinned(name)
+
+
+def tier_of(model, prompt):
+    """The index of the price tier of `model` that a request of `prompt` input tokens falls in."""
+    return next(i for i, t in enumerate(PRICE[model]) if t[0] is None or prompt <= t[0])
+
+
+def tier_label(model, i):
+    """What a run records of tier `i` of `model`: empty for a model with one price, else its prompt range."""
+    tiers = PRICE[model]
+    if len(tiers) == 1:
+        return ""
+    return f"<={tiers[i][0] // 1000}k" if tiers[i][0] else f">{tiers[i - 1][0] // 1000}k"
+
+
+def usage_sum(reqs, model="", cc=""):
+    """Token sums of a run's requests, priced as `model` (an alias or a pinned id) resolves on the run (resolve_model):
+    the model, the tokens of each of its price tiers, the highest tier reached (`tier`) and the effective input, which
+    weights a cache write 2x and a cache read by the model's read price over its input price."""
     u = lambda r, k: r["usage"].get(k, 0) or 0  # noqa: E731
-    unc = sum(u(r, "input_tokens") for r in reqs)
-    cw = sum(u(r, "cache_creation_input_tokens") for r in reqs)
-    cr = sum(u(r, "cache_read_input_tokens") for r in reqs)
-    return {"uncached": unc, "cache_write": cw, "cache_read": cr, "input": unc + cw + cr,
-            "out": sum(u(r, "output_tokens") for r in reqs), "requests": len(reqs),
+    mid = resolve_model(model, next((r["model"] for r in reqs if r.get("model")), ""), cc)
+    if mid not in PRICE:
+        raise KeyError(f"no price for model {mid!r}: add it to bench_core.PRICE")
+    by_tier, top = [dict(uncached=0, cache_write=0, cache_read=0, out=0) for _ in PRICE[mid]], 0
+    for r in reqs:
+        i = tier_of(mid, u(r, "input_tokens") + u(r, "cache_creation_input_tokens") + u(r, "cache_read_input_tokens"))
+        top = max(top, i)
+        for k, f in (("uncached", "input_tokens"), ("cache_write", "cache_creation_input_tokens"),
+                     ("cache_read", "cache_read_input_tokens"), ("out", "output_tokens")):
+            by_tier[i][k] += u(r, f)
+    unc, cw, cr = (sum(t[k] for t in by_tier) for k in ("uncached", "cache_write", "cache_read"))
+    return {"model": mid, "tier": tier_label(mid, top), "by_tier": by_tier,
+            "uncached": unc, "cache_write": cw, "cache_read": cr, "input": unc + cw + cr,
+            "out": sum(t["out"] for t in by_tier), "requests": len(reqs),
             "start_ctx": (u(reqs[0], "input_tokens") + u(reqs[0], "cache_creation_input_tokens")
                           + u(reqs[0], "cache_read_input_tokens")) if reqs else 0,
-            "effective": unc + 2 * cw + 0.1 * cr}
+            "effective": sum(t["uncached"] + 2 * t["cache_write"] + round(p[4] / p[1], 6) * t["cache_read"]
+                             for t, p in zip(by_tier, PRICE[mid]))}
 
 
-def est_cost(model, s, searches=0):
-    pin, pout, pread = PRICE[model]
-    return (s["uncached"] * pin + s["cache_write"] * pin * 1.25 + s["cache_read"] * pread * (1 if model == "opus" else pin)
-            + s["out"] * pout) / 1e6 + searches * WEB_SEARCH_USD
+def est_cost(s, searches=0):
+    """The list-price cost of a usage_sum run: each tier's tokens at that tier's prices."""
+    return sum(t["uncached"] * p[1] + t["cache_write"] * p[3] + t["cache_read"] * p[4] + t["out"] * p[2]
+               for t, p in zip(s["by_tier"], PRICE[s["model"]])) / 1e6 + searches * WEB_SEARCH_USD
 
 
 def span_s(reqs):
