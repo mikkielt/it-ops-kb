@@ -2,7 +2,7 @@
   "id": "BG-47kw57ed",
   "kind": "bug",
   "title": "A branch row of a stale worker worktree opens a window when the item's file says done: distill tests only that the file exists",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
@@ -49,5 +49,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Its check passes before the work: it pins that a branch row of a doing item still opens a window, which the fix must keep; the repro is the failing proof."
+  "notes": "Its check passes before the work: it pins that a branch row of a doing item still opens a window, which the fix must keep; the repro is the failing proof.",
+  "claimed_by": "worker-BG-47kw57ed"
 }
