@@ -2,7 +2,7 @@
   "id": "BG-47kw57ed",
   "kind": "bug",
   "title": "A branch row of a stale worker worktree opens a window when the item's file says done: distill tests only that the file exists",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
@@ -84,5 +84,27 @@
     }
   ],
   "notes": "Its check passes before the work: it pins that a branch row of a doing item still opens a window, which the fix must keep; the repro is the failing proof.",
-  "claimed_by": "worker-BG-47kw57ed"
+  "evidence": {
+    "commit": "3d40ab6dbb56a2679c665b22981cf94188c4183b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,tempfile,shutil;from pathlib import Path;sys.path.insert(0,'_tools');import ql_distill as d;t=Path(tempfile.mkdtemp());(t/'ST-aaaaaaaa.json').write_text(json.dumps({'id':'ST-aaaaaaaa','status':'doing'}));rows=[{'surface':'prompt','prompt_id':'p1'},{'surface':'work','prompt_id':'p1','action':'branch','item':'ST-aaaaaaaa'},{'surface':'prompt','prompt_id':'p2'},{'surface':'prompt','prompt_id':'p3'}];inside,worked=d.work_windows(rows,d.item_finder(t));shutil.rmtree(t,ignore_errors=True);print('branch row of a doing item opens a window:',inside);sys.exit(0 if all(inside.get(p) for p in ('p2','p3')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2bfc21e50336c3ac"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import ql_distill as d;t=Path(tempfile.mkdtemp());(t/'ST-aaaaaaaa.json').write_text(json.dumps({'id':'ST-aaaaaaaa','status':'done'}));rows=[{'surface':'prompt','prompt_id':'p1'},{'surface':'work','prompt_id':'p1','action':'branch','item':'ST-aaaaaaaa'},{'surface':'prompt','prompt_id':'p2'},{'surface':'prompt','prompt_id':'p3'}];inside,worked=d.work_windows(rows,d.item_finder(t));print('stale branch row of a done item opens a window:',inside);sys.exit(1 if any(inside.get(p) for p in ('p2','p3')) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "04ea5101a08d0d87"
+      }
+    ]
+  }
 }
