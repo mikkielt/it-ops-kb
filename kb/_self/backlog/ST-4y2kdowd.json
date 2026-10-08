@@ -52,7 +52,7 @@
       "recommendation": "kb/_querylog/bench/pool.csv",
       "class": "querylog",
       "answer": "kb/_querylog/bench/pool.csv",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -78,7 +78,7 @@
       "recommendation": "kind gap (route web, a generic admission check) for open gaps, false_good and near_miss for the design misses, the cited article's path as the fallback check",
       "class": "querylog",
       "answer": "kind gap (route web, a generic admission check) for open gaps, false_good and near_miss for the design misses, the cited article's path as the fallback check",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
