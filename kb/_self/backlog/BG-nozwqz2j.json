@@ -2,7 +2,7 @@
   "id": "BG-nozwqz2j",
   "kind": "bug",
   "title": "hooks.md states as DOC that a plain --resume appends to the original transcript, an inference from the two-terminal sentence",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wgx4pq4r",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,6 @@
   "depends_on": [
     "ST-fxly2caj",
     "ST-kdw6dkyb"
-  ]
+  ],
+  "claimed_by": "orchestrator-mac"
 }
