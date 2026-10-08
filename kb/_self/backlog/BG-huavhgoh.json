@@ -21,7 +21,8 @@
     "kb/public/_answers.md",
     "kb/public/_sources.csv",
     "kb/public/_conflicts.md",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/claude/ci-and-headless.md"
   ],
   "depends_on": [
     "ST-zqxgo47z"
