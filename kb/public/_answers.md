@@ -2584,3 +2584,13 @@ _Agent: kb-research_
 - See agents/codebase-mapping.md.
 
 _Agent: kb-research_
+
+## QK-python-os-link-hard-link-same. Python os.link hard link: same filesystem requirement, EXDEV, Windows NTFS support
+- A hard link needs both paths on one filesystem: POSIX `link()` fails with `[EXDEV]` when the two paths are on different file systems and the implementation does not support hard links between them, and Win32 states that "all hard links to a file must be on the same volume". [DOC S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb]
+- On Windows `CreateHardLinkW` "is only supported on the NTFS file system, and only for files, not directories", allows 1023 links per file, and the overview forbids links between `C:` and `D:` or to a mapped network drive. [DOC S-oqrlzkwe, S-ip5ugdeb]
+- `os.link` is available on Unix and Windows (Windows since 3.2); the `os` module raises `OSError` or a subclass for paths the operating system does not accept, and `errno.EXDEV` is "Cross-device link". [DOC S-5brdhqgo, S-qo63gfo7]
+- Conclusion: across filesystems `os.link` raises `OSError` with `errno.EXDEV` on a POSIX system that refuses such links (derived from the `link()` error list; the `os` page states the mapping only for `os.copy_file_range`), and on Windows it fails when the paths are on different volumes or not on NTFS; a tool copies the file when `os.link` raises `OSError`. [DER S-5brdhqgo, S-edjp43o7, S-qo63gfo7, S-oqrlzkwe, S-ip5ugdeb]
+- Open: the Windows `winerror` or `errno` that `os.link` raises across volumes is not stated on the pages read. [UNK]
+- See python/stdlib-windows-portability.md.
+
+_Agent: kb-research_

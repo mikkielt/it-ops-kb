@@ -3,7 +3,7 @@ topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
 retrieved_utc: 2026-10-08
-sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i]
+sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb]
 status: partial
 ---
 
@@ -76,13 +76,24 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 - With `shell=True` on Windows, the shell is `%COMSPEC%` (normally `cmd.exe`), and the docs say `shell=True` is needed only for shell built-ins such as `dir` or `copy`, not for batch files or console executables. [DOC S-dabwnzz5]
 - The system error code for a command line, path or extension that is too long is 206, `ERROR_FILENAME_EXCED_RANGE`: "The filename or extension is too long." A `[WinError 206]` from `subprocess` is therefore the string limit above, not a missing program. [DOC S-ttcgrkbl; DER S-6bobcclf: the 32,767-character maximum and the error code meaning]
 - A child started with a list of arguments and `shell=False` faces the 32,767-character limit (and its quoted form counts); through `cmd /c` the 8191 limit applies. A test or tool that must pass more than about 30,000 characters to a Windows child sends it through stdin or a file, not argv. [DER S-6bobcclf, S-e4zz24dq, S-dabwnzz5: the two limits and `subprocess`'s conversion; the "about 30,000" margin allows for quoting and the program path]
-- `os.link(src, dst)` creates a hard link named *dst* to *src* and is available on Unix and on Windows (since Python 3.2); the page does not say what it raises when the two paths are on different filesystems. [DOC S-5brdhqgo]
+- `os.link(src, dst)` creates a hard link named *dst* to *src* and is available on Unix and on Windows (since Python 3.2); the `os.link` entry does not say what it raises when the two paths are on different filesystems. [DOC S-5brdhqgo]
+- The `os` module's rule for its errors: "All functions in this module raise `OSError` (or subclasses thereof)" for invalid or inaccessible paths and for arguments the operating system does not accept, so `os.link` failing on a pair of paths surfaces as `OSError` or a subclass. [DOC S-5brdhqgo]
+- The `errno` module defines `EXDEV` as "Cross-device link"; symbols not used on the current platform are not defined by the module, so `errno.EXDEV` is not guaranteed on every platform. [DOC S-qo63gfo7]
+- POSIX `link()` fails with `[EXDEV]` when the file named by `path1` and the directory that is to hold the entry `path2` "are on different file systems and the implementation does not support hard links between file systems". [DOC S-edjp43o7]
+- POSIX allows the other case: "Some implementations do allow hard links between file systems", so a cross-filesystem `os.link` that succeeds on one POSIX system can fail with `EXDEV` on another. [DOC S-edjp43o7]
+- For `os.copy_file_range` the `os` page states the mapping: `src` and `dst` "must reside in the same filesystem, otherwise an `OSError` is raised with `errno` set to `errno.EXDEV`". [DOC S-5brdhqgo]
+- The `os.link` entry has no such sentence. On a POSIX system whose `link()` refuses a cross-filesystem pair, `os.link` raises `OSError` and its `errno` is `errno.EXDEV` (a `link()` failure surfaces as `OSError` under the module's error rule, with the `errno` the C call sets); the `os` page does not name `link()` as the call underneath, so this is derived, not stated. [DER S-5brdhqgo, S-edjp43o7, S-qo63gfo7: the module's error rule, the `link()` error list and the `EXDEV` symbol]
+- Win32 `CreateHardLink` has the same limit in its own words: "all hard links to a file must be on the same volume". [DOC S-oqrlzkwe]
+- The Win32 overview adds that hard links "can't reference files on different volumes", and its examples forbid linking `C:\dira\ethel.txt` to `D:\dirb\lucy.txt` and to a mapped network drive `Z:`; a hard link also cannot reference a directory, only a file. [DOC S-ip5ugdeb]
+- `CreateHardLinkW` "is only supported on the NTFS file system, and only for files, not directories"; on failure it returns zero and the reason is read with `GetLastError`. [DOC S-oqrlzkwe]
+- The same page caps a file at 1023 hard links ("If more than 1023 links are created for a file, an error results"), and in Windows 8 and Windows Server 2012 lists ReFS as not supported for this function. [DOC S-oqrlzkwe]
+- So a tool that hard-links files from a source tree into a copy puts both on one volume (one drive letter, one NTFS filesystem on Windows; one mounted filesystem on POSIX), and treats `OSError` from `os.link` as the signal to copy the file instead, whatever the platform's error number. [DER S-5brdhqgo, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb: same-volume rule on both platforms, NTFS-only on Windows, `OSError` as the error type]
 - `shutil.copytree(src, dst, copy_function=...)` copies each file with the callable it is given, called with the source and the destination path (default `shutil.copy2`); with `dirs_exist_ok=True` it continues into existing directories and overwrites files there. [DOC S-jwv5eevl]
 - So a test that copies a tree it only partly writes can pass `copy_function=os.link` (falling back to a copy where the link fails, such as across filesystems) and replace each file it writes with a fresh copy before writing, since a write through a hard link changes every name of the file. [DER S-5brdhqgo, S-jwv5eevl]
 - `shutil.copy2` is `copy` that also attempts to preserve file metadata, through `copystat`, which copies the permission bits, last access time, last modification time and flags; `copy2` never raises because it could not preserve metadata. [DOC S-jwv5eevl]
 - So a cache keyed on files' modification times (`st_mtime_ns`) still matches after a `copytree` with the default `copy2`, but not after a plain `shutil.copy`, which leaves them out; a key that must survive a copy at another path hashes the files' content and their paths relative to the root instead. [DER S-jwv5eevl: copy2 keeps the times, copy does not]
 - Open: what modification time a fresh `git clone` or `git worktree add` gives the files it checks out is not stated on a git page the kb cites. [UNK: see `_gaps.md`]
-- Open: the error `os.link` raises across filesystems or volumes is not on the page. [UNK]
+- Open: the Windows error number (`winerror` or `errno`) that `os.link` raises when the two paths are on different volumes, or on a filesystem other than NTFS, is not stated on the `os` page or on the Win32 pages, which say only that the function fails and `GetLastError` has the code. [UNK: see `_gaps.md`]
 
 ## Reference
 | Need | POSIX | Windows | Source |
@@ -93,6 +104,7 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 | Advisory lock | `fcntl.flock` | `msvcrt.locking` | S-oavxfpsn, S-f5bnvamj |
 | Is PID alive | `os.kill(pid, 0)` | not `os.kill` (terminates) | S-ew7mucsg |
 | Interpreter | `python3` | `python`, `py -3` | S-sjuwcuhk |
+| Hard link (`os.link`) | one filesystem; `OSError`, `errno.EXDEV` across filesystems (derived) | one NTFS volume; `OSError` (error number not stated) | S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb |
 | Longest command line | not this limit | 32,767 characters (`CreateProcessW`); 8191 through `cmd.exe` | S-6bobcclf, S-e4zz24dq |
 
 Related: `python/windows-python-install.md` (installing Python and the Store `python3` shortcut); `python/stdlib-sqlite3-csv.md` (csv files open with `newline=''`); `claude/hooks.md` (how Claude Code runs
