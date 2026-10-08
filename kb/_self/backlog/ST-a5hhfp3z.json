@@ -32,10 +32,6 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
-  "depends_on": [
-    "BG-l34xg6jn",
-    "ST-dvzdykit"
-  ],
   "gates": [
     {
       "id": "parked-rule",
