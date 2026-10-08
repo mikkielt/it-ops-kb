@@ -2,7 +2,7 @@
   "id": "BG-ucnr4lo3",
   "kind": "bug",
   "title": "backlog.py cost: an open session's figures count windows of items with no item file, which distill no longer does",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wgx4pq4r",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   "depends_on": [
     "BG-47kw57ed"
   ],
-  "notes": "Its check passes before the work: it pins that a session working an item with an item file is still listed in the open session's figures; the repro is the failing proof."
+  "notes": "Its check passes before the work: it pins that a session working an item with an item file is still listed in the open session's figures; the repro is the failing proof.",
+  "claimed_by": "worker-BG-ucnr4lo3"
 }
