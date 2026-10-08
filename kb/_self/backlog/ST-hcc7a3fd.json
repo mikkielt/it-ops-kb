@@ -2,7 +2,7 @@
   "id": "ST-hcc7a3fd",
   "kind": "story",
   "title": "Triage the false-good lookups of public-root user questions: each listed with a filed gap or eval row",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-vayhvwfy",
   "priority": "P2",
@@ -34,5 +34,6 @@
   "depends_on": [
     "ST-aqjcisdi"
   ],
-  "notes": "Premise: check 1, run 2026-10-08 at plan over the committed store: 23 distinct false-good questions (25 entries: verdict good, judged missed), 22 without an eval row, gap entry or triage line, exit 1: reproduces. The questions are real user lookups no eval row was tuned on, so the probe is on held-out inputs; the work then tunes on them, so the held-out answer rate (lookup_heldout.csv) stays the untuned measure. Check 2 (rag.py eval --root public) passes before the work: it pins that the added rows and expansions break no existing row. Blocks the held-out answer rate fitness test (kb/_self/tools.md): false goods inflate the answer rate."
+  "notes": "Premise: check 1, run 2026-10-08 at plan over the committed store: 23 distinct false-good questions (25 entries: verdict good, judged missed), 22 without an eval row, gap entry or triage line, exit 1: reproduces. The questions are real user lookups no eval row was tuned on, so the probe is on held-out inputs; the work then tunes on them, so the held-out answer rate (lookup_heldout.csv) stays the untuned measure. Check 2 (rag.py eval --root public) passes before the work: it pins that the added rows and expansions break no existing row. Blocks the held-out answer rate fitness test (kb/_self/tools.md): false goods inflate the answer rate.",
+  "claimed_by": "headless-sonnet"
 }
