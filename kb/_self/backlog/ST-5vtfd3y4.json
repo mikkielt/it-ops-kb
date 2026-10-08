@@ -2,7 +2,7 @@
   "id": "ST-5vtfd3y4",
   "kind": "story",
   "title": "Research: prompt-caching pricing of cache reads, cache writes and uncached input tokens",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,18 @@
     "ST-hhimevk7"
   ],
   "notes": "Premise: the story's check (rag.py pack of the held-out wording). Run 2026-10-08 at plan: coverage weak (route split; agent-caching.md:23 gives write prices only), exit 1, reproduces. Blocks the held-out answer rate fitness test (kb/_self/tools.md): HO-prompt-cache-pricing is its one failing row (19 of 20). Real user's report: asked 2026-10-07, answered weak.",
-  "claimed_by": "worker-ST-5vtfd3y4"
+  "evidence": {
+    "commit": "c151e63043df26f962aced2ee94d237962e43b18",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','How does prompt caching price cache reads versus cache writes and uncached input tokens','--budget','200'],capture_output=True,text=True);o=r.stdout;print(o.splitlines()[0] if o else r.stderr[:200]);sys.exit(r.returncode or int(not o.startswith('coverage: good')))"
+        ],
+        "exit": 0,
+        "sha256": "6e45a43783101844"
+      }
+    ]
+  }
 }
