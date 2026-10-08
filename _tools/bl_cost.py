@@ -435,10 +435,11 @@ def cost_overhead(root, sid):
 # what the committed store holds and, only for an item no work sidecar names, from git. A shared line names the item: its
 # session's run and prompts are given as the session's, outside any window or on the sprint's line where windows
 # overlapped (`ql_distill.work_lines_of`), never split per item. No sidecar names it: git is asked once for the time of
-# the commit that first set the item's file `done` (`item_done_time`) and the time is compared with the first and the
-# newest work sidecar's run id (UTC): before the first one no session had the capture hooks yet, after the newest one the
-# item's rows are not distilled or delivered yet, else the store cannot say which of a missing delivery and a session
-# without hooks it is.
+# the commit that last set the item's file `done` (`item_done_time`; a reopened item is dated by its last done) and the
+# time is compared with the first and the newest work sidecar's run id (UTC). The reason says what the time shows and
+# names the likely cause, never as fact, since a host with capture off reads the same: before the first one, likely no
+# session had the capture hooks yet; after the newest one, likely the item's rows are not distilled or delivered yet;
+# else the store cannot say which of a missing delivery and a session without hooks it is.
 def run_epoch(stem):
     """Epoch seconds of the UTC time in a run id (`YYYYMMDDThhmmssZ-...`); ValueError for an impossible date."""
     import datetime
@@ -458,14 +459,28 @@ def store_runs(root):
     return out
 
 
+DONE_STATUS = '"status": "done"'
+
+
 def item_done_time(root, iid):
-    """Epoch seconds of the oldest commit that adds `"status": "done"` to the item's file (one `git log`), or None: a
-    shallow clone (the commit may be cut from history), git missing or failing, or no such commit."""
+    """Epoch seconds of the newest commit that adds `"status": "done"` to the item's file, its last transition to done
+    (one `git log` with the patches), or None: a shallow clone (the commit may be cut from history), git missing or
+    failing, or no such commit. `-S` also finds the commit that reopens the item, which removes the status: only a
+    commit whose patch has an added line with the status counts."""
     shallow = git_text(root, "rev-parse", "--is-shallow-repository")
     if shallow is None or shallow.strip() == "true":
         return None
-    times = git_times(root, "--diff-filter=AM", "-S", '"status": "done"', "--", f"{REL_DIR}/{iid}.json")
-    return min(times) if times else None
+    out = git_text(root, "--literal-pathspecs", "log", "--all", "-p", "-U0", "--format=%x00%ct", "--diff-filter=AM",
+                   "-S", DONE_STATUS, "--", f"{REL_DIR}/{iid}.json")
+    if out is None:
+        return None
+    times = []
+    for commit in out.split("\x00")[1:]:
+        head, _, patch = commit.partition("\n")
+        if any(line.startswith("+") and not line.startswith("+++") and DONE_STATUS in line
+               for line in patch.splitlines()):
+            times.append(int(head.strip()))
+    return max(times) if times else None
 
 
 def cost_no_line(root, view, iid, shared, all_lines):
@@ -489,11 +504,13 @@ def cost_no_line(root, view, iid, shared, all_lines):
     if done is not None and runs and done < runs[0][0]:
         return {"kind": "before-first-sidecar",
                 "reason": f"no item line: because it was done {epoch_iso(done)}, before the first work sidecar "
-                          f"(no capture hooks yet; first run {runs[0][1]})"}
+                          f"(first run {runs[0][1]}): the likely cause is that no session had the capture hooks "
+                          "yet; a host with capture off reads the same"}
     if done is not None and runs and done > runs[-1][0]:
         return {"kind": "after-newest-run",
                 "reason": f"no item line: because it was done {epoch_iso(done)}, after the newest run "
-                          f"(not distilled or delivered yet; newest run {runs[-1][1]})"}
+                          f"(newest run {runs[-1][1]}): the likely cause is that its rows are not distilled or "
+                          "delivered yet; a host with capture off reads the same"}
     return {"kind": "unnamed",
             "reason": "no item line: because no work sidecar names it: its session's rows were not delivered or the "
                       "session ran without the capture hooks, the store not saying which"}
