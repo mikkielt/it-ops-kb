@@ -2,7 +2,7 @@
   "id": "SP-kjqdiudr",
   "kind": "sprint",
   "title": "The Windows host proves land, index reuse, the launcher and a clean setup",
-  "status": "planned",
+  "status": "active",
   "goal": "on the project's Windows 11 host land refuses, leaving every file and the registration, a worker worktree a process holds; the pack index is reused for unchanged content after an edit, measured before and after there; the SessionEnd launcher is proven there; and a clean account has gone from no Python to the /kb-setup steps at the current main, on record",
   "gates": [
     {

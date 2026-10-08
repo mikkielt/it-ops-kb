@@ -2,7 +2,7 @@
   "id": "ST-akicahgy",
   "kind": "story",
   "title": "The suite's rag.py eval rebuilds the pack index only for what an edit changed",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kjqdiudr",
   "priority": "P3",
@@ -51,7 +51,11 @@
         ]
       },
       "answer": "on the Windows 11 host",
-      "by": "operator"
+      "by": "operator",
+      "host_checked": {
+        "ok": true,
+        "exit": 0
+      }
     }
   ],
   "notes": "ST-4mcoplex (done 2026-10-07, SP-eahtellz) delivered the content-keyed index this builds on. Premise (macOS, 2026-10-07): with an isolated KB_INDEX a cold rag.py pack took 3.18 s and the pack after one planted article line 3.08 s, so the rebuild is full on every host; the check asks for at most half the cold time and the planted line found by rag.py search. The Windows before and after figures (cold 12.8-14.3 s, test-suite-speed.md) are measured on the host and written to that report."

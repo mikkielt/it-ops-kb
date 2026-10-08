@@ -2,7 +2,7 @@
   "id": "ST-2ukv6ysc",
   "kind": "story",
   "title": "A clean Windows account goes from no Python to the /kb-setup steps on the current main, on record",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P2",
@@ -50,7 +50,11 @@
         ]
       },
       "answer": "on the Windows 11 host",
-      "by": "operator"
+      "by": "operator",
+      "host_checked": {
+        "ok": true,
+        "exit": 0
+      }
     }
   ],
   "notes": "Premise (2026-10-07): the report's newest run is at origin/main d10da8d (2026-09-30), before the suite rewrite 4d70166f, so the first check exits 1. Order after the revision-read story, since a deep clone path trips those readers. python3 _tools/check.py passes before the work: it keeps the report within the docs checks; the first check is the failing proof."

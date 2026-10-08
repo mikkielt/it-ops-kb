@@ -2,7 +2,7 @@
   "id": "BG-nlp5aat5",
   "kind": "bug",
   "title": "On Windows land deletes a worker worktree's files, then fails, when a process has its working directory there",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P2",
@@ -54,7 +54,11 @@
         ]
       },
       "answer": "on the Windows 11 host",
-      "by": "operator"
+      "by": "operator",
+      "host_checked": {
+        "ok": true,
+        "exit": 0
+      }
     }
   ],
   "notes": "Premise (2026-10-07): the repro passes on macOS, where bl_land.live_processes asks lsof and the Windows branch (os.name == 'nt' returns None) never runs; the check forces that branch on any host (live_processes patched to (None, why), renames of the worktree refused) and exits 1 now (why None, file gone, unregistered). The proof is a Windows run. release_worker_worktree is also edited by ST-bum7owtw (SP-gkbtjjce), which lands first."
