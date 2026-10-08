@@ -2,7 +2,7 @@
   "id": "ST-dt2mf7z7",
   "kind": "story",
   "title": "Review sprint: Tools read revisions, worktrees and the index key right on any host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kyvu526t",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "sprint-orchestrator"
+  "evidence": {
+    "commit": "445a213e116cd2d6dd632444356142077d168be1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "5a3dd32d5f58c8fe"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "8847589970e34506"
+      }
+    ]
+  }
 }
