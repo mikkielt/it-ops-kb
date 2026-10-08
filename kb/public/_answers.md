@@ -2518,3 +2518,15 @@ _Agent: kb-research_
 - See claude/hooks.md.
 
 _Agent: kb-research_
+
+## QK-temp-index-tree-hash-failed-bash-call. How does a tool hash the index plus the tracked working tree changes on a temporary index without touching the person's index, and where does a failed Bash call's command and output appear for a hook or a transcript reader?
+- `git write-tree` creates a tree object from the current index and prints its name; the index must be fully merged, and a `git update-index` phase must run first for the tree to match the working directory. (`gitlab/git-test-repositories.md:171`) [DOC S-vif3vb3s]
+- `GIT_INDEX_FILE` names an alternate index file in place of `$GIT_DIR/index`; `git read-tree --index-output=<file>` writes its result to a named file instead. (`gitlab/git-test-repositories.md:176`, `:178`) [DOC S-dcbs6vpj, S-3iovxrkf]
+- `git add -u` updates only entries the index already has, modifying and removing them to match the working tree, and adds no new files. (`gitlab/git-test-repositories.md:182`) [DOC S-q2ovao5z]
+- A failed Bash call fires `PostToolUseFailure` with `tool_input.command` and an `error` string whose first line is `Exit code N`; the SDK message stream carries the `tool_result` block plus a structured `tool_use_result`, and `BashOutput` has no exit-code field. (`claude/hooks.md:122`, `:123`, `:135`, `:136`) [DOC S743, S-wgllyvwc]
+- The transcript `.jsonl` holds one JSON object per message, tool use or metadata entry, in a format internal to Claude Code that changes between versions. (`claude/hooks.md:54`) [DOC S-uzkb4duq]
+- Conclusion: set `GIT_INDEX_FILE` to a temporary copy of the index, run `git add -u` then `git write-tree` under it, and remove the file: the person's index stays as it was, untracked files stay out, and objects are still written. A failed Bash call's command is its input and its output the result, joined by `tool_use_id`; read them from a hook or the SDK stream, not the transcript file. (`gitlab/git-test-repositories.md:185`, `claude/hooks.md:137`) [DER S-vif3vb3s, S-dcbs6vpj, S-q2ovao5z, S743, S-wgllyvwc, S-uzkb4duq]
+- Open: how a transcript entry records a failed Bash call (`is_error`, `content`, a structured result) is not documented (`_gaps.md`, claude/hooks). [UNK]
+- See gitlab/git-test-repositories.md, claude/hooks.md.
+
+_Agent: kb-research_

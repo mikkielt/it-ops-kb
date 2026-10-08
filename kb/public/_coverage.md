@@ -92,7 +92,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `autopilot/lifecycle` | P1 | complete | `autopilot/lifecycle.md` | 5 |
 | `claude/data-retention` | P1 | complete | `claude/data-retention.md` | 6 |
 | `claude/elicitation` | P1 | complete | `claude/elicitation.md` | 5 |
-| `claude/hooks` | P1 | complete | `claude/hooks.md` | 22 |
+| `claude/hooks` | P1 | complete | `claude/hooks.md` | 23 |
 | `claude/managed-mcp` | P1 | complete | `claude/managed-mcp.md` | 2 |
 | `claude/messages-api` | P1 | complete | `claude/messages-api.md`, `claude/models.csv`, `claude/api-limits.csv` | 10 |
 | `claude/otel-monitoring` | P1 | complete | `claude/otel-monitoring.md` | 7 |
@@ -141,7 +141,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 37 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 7 |
-| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 27 |
+| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 30 |
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 13 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |

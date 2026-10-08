@@ -1,9 +1,9 @@
 ---
 topic: gitlab/git-test-repositories
 priority: P3
-applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links and index bits; Git for Windows v2.56.0.windows.2 (core.longpaths)"
+applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links, index bits and a temporary index (`GIT_INDEX_FILE`, `git write-tree`); Git for Windows v2.56.0.windows.2 (core.longpaths)"
 retrieved_utc: 2026-10-08
-sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb]
+sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z]
 status: complete
 ---
 
@@ -166,6 +166,29 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
   diff` to report an edit to an assume-unchanged path or the absence of a skip-worktree path; it lists such
   paths with `git ls-files -v` (lowercase or `S` tags) or compares content directly. [DER S-lr3jwdq2,
   S-4h6wi6hb]
+
+### Hashing the working tree on a temporary index: `GIT_INDEX_FILE` and `git write-tree`
+- `git write-tree` creates a tree object from the current index and prints the new tree object's name on
+  standard output; the index must be in a fully merged state, and for the tree to match the working directory
+  a `git update-index` phase has to run first. [DOC S-vif3vb3s]
+- `git write-tree --missing-ok` turns off its check that the objects the tree references exist in the object
+  database; `--prefix=<prefix>/` writes the tree object of that subdirectory only. [DOC S-vif3vb3s]
+- The `GIT_INDEX_FILE` environment variable names an alternate index file; when it is not set, git uses
+  `$GIT_DIR/index`. [DOC S-dcbs6vpj]
+- `git read-tree <tree-ish>` reads a tree into the index without updating the files it caches;
+  `--index-output=<file>` writes the resulting index to that file instead of `$GIT_INDEX_FILE`, keeps the
+  original index locked while it runs, and needs the file renameable from a temporary file made next to the
+  usual index (in practice the same filesystem, with write permission on both directories). [DOC S-3iovxrkf]
+- `git add -u` (`--update`) updates the index only where it already has an entry matching the pathspec,
+  removing as well as modifying entries to match the working tree, and adds no new files; with no pathspec
+  it covers every tracked file in the whole working tree. [DOC S-q2ovao5z]
+- So one tree hash of the index plus the tracked files' working tree changes, with the person's own index
+  untouched, comes from running git with `GIT_INDEX_FILE` set to a temporary file seeded from the real index
+  (a copy of `$GIT_DIR/index`, or `git read-tree HEAD` into it for a HEAD-based view), then `git add -u` and
+  `git write-tree` under that same variable, then removing the file. Untracked files stay out (`add -u`
+  adds no new files), an unmerged index makes `write-tree` fail, and the run still writes objects to the
+  repository's object database: only the index is spared. [DER S-vif3vb3s, S-dcbs6vpj, S-3iovxrkf,
+  S-q2ovao5z: the five facts above; copying the index file is not a documented interface]
 
 ## Reference
 - Related: `python/pytest.md` (session fixtures, `tmp_path_factory`, `--durations`), `python/pytest-xdist.md` (a session fixture runs once per worker), `python/stdlib-windows-portability.md` (process start on Windows), `gitlab/git-trailers-and-hooks.md` (what `git commit` runs), `windows/dev-drive.md` (where the repositories live on Windows).
