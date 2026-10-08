@@ -2,7 +2,7 @@
   "id": "ST-5vtfd3y4",
   "kind": "story",
   "title": "Research: prompt-caching pricing of cache reads, cache writes and uncached input tokens",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,6 @@
   "depends_on": [
     "ST-hhimevk7"
   ],
-  "notes": "Premise: the story's check (rag.py pack of the held-out wording). Run 2026-10-08 at plan: coverage weak (route split; agent-caching.md:23 gives write prices only), exit 1, reproduces. Blocks the held-out answer rate fitness test (kb/_self/tools.md): HO-prompt-cache-pricing is its one failing row (19 of 20). Real user's report: asked 2026-10-07, answered weak."
+  "notes": "Premise: the story's check (rag.py pack of the held-out wording). Run 2026-10-08 at plan: coverage weak (route split; agent-caching.md:23 gives write prices only), exit 1, reproduces. Blocks the held-out answer rate fitness test (kb/_self/tools.md): HO-prompt-cache-pricing is its one failing row (19 of 20). Real user's report: asked 2026-10-07, answered weak.",
+  "claimed_by": "worker-ST-5vtfd3y4"
 }
