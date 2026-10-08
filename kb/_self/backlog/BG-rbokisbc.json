@@ -2,7 +2,7 @@
   "id": "BG-rbokisbc",
   "kind": "bug",
   "title": "A pool run's list cost leaves out a kb arm's web searches and overcounts a Sonnet or Opus off-kb run, so pool verify (b) fails the smoke record",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -41,5 +41,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-BG-rbokisbc"
+  "evidence": {
+    "commit": "1f6a21c7892dbfff6ea5a77ba3ac5118defc3575",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bench_pool; r={'arm':'haiku-5-5','model':'claude-haiku-5-5','cost':0.05,'out':100,'uncached':10,'cache_write':1000,'cache_read':1000,'searches':4,'requests':[{'model':'claude-haiku-5-5','usage':{'input_tokens':10,'cache_creation_input_tokens':1000,'cache_read_input_tokens':1000,'output_tokens':100}}]}; l=bench_pool.list_usd(r); assert l>=0.04, l"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
