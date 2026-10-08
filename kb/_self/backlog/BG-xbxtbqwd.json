@@ -1,0 +1,28 @@
+{
+  "id": "BG-xbxtbqwd",
+  "kind": "bug",
+  "title": "A resumed pool session question records the session's running output and model usage, so its out and list cost overcount",
+  "status": "todo",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "In the second smoke record (_cache/scratch/ST-xy5kmisr/smoke2/pool-smoke.csv; runs in the bench scratch runs file) a resumed session question's out and model_usage are the session's running totals (sonnet-5-5:low/session group 3: out 381, 1052, 1910, 2742, 3046, 3943 over positions 1 to 6) while its cache figures are the question's own, so pool verify (b) fails 12 to 21 of 30 runs on every session label (list above cost). A session question's out, model_usage and web searches are its own share, the running total less the question before it's, as its cost already is (live_session_runner), so its list cost lands within 20% of its cost; a planted resumed session of three questions with running totals is priced per question within 20% and its out is per question; the fix re-derives nothing from earlier records",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,sys; p=os.path.join(os.environ.get('TMPDIR','/tmp'),'it-ops-kb-bench','raw','pool-2026-10-08-runs.jsonl'); sys.path.insert(0,'_tools'); import bench_pool; rs=[json.loads(x) for x in open(p).read().splitlines()]; s=[r for r in rs if str(r.get('label','')).endswith('/session')][-120:]; bad=[r for r in s if r.get('list_cost') and abs(r['cost']-r['list_cost'])/r['list_cost']>0.2]; sys.exit(1 if len(bad)>6 else 0)"
+    ]
+  },
+  "repro_reason": "The repro reads the second smoke's recorded session runs, which a code fix does not rewrite; the fix's proof is the planted session and the third smoke the operator approves.",
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/agent_bench.py",
+    "_tools/test_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ]
+}
