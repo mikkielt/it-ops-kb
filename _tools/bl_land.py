@@ -1479,6 +1479,25 @@ def merged_into(root, rev, upstream):
     return not code and not any(ln.startswith("+") for ln in out.splitlines())
 
 
+REOPENED_REFS = "refs/kb-reopened/"  # reopen keeps a done item's file there, one ref per item id (bl_items)
+
+
+def prune_reopened_refs(bl):
+    """Delete each refs/kb-reopened/<id> whose item file <id>.json no longer exists in the backlog directory: close and
+    drop outside a sprint call it after their deletions, so the clone keeps no reopen mark of a removed item, the
+    items they remove now and any left by earlier removals alike. A ref of an existing item stays. Returns the ids
+    whose ref was deleted."""
+    code, out, _ = run(["git", "for-each-ref", "--format=%(refname)", REOPENED_REFS], cwd=bl.root)
+    gone = []
+    for ref in ([] if code else out.split()):
+        iid = ref[len(REOPENED_REFS):]
+        if iid and not (bl.dir / f"{iid}.json").exists() and not run(["git", "update-ref", "-d", ref], cwd=bl.root)[0]:
+            gone.append(iid)
+    if gone:
+        say(f"deleted {len(gone)} reopen mark(s) of removed items: {', '.join(gone)}")
+    return gone
+
+
 def clean_worker_leftovers(root, sid, ids):
     """Remove what the closed sprint SID's workers left in the clone ROOT, as a process of its own because agents'
     shells may not run `git worktree remove` or `git branch -D` (.claude/settings.json): the clean `agent-*` worktrees
@@ -1764,6 +1783,7 @@ def cmd_close(bl, a):
     label = bl.label(sid)
     bl.delete(sid)
     say(f"closed {label}; its items stay in git history (git log --grep 'KB-Work: <id>')")
+    prune_reopened_refs(bl)
     # the body is the summary: the retrospective's findings, written by hand, go in with git commit --amend
     commit_written(bl, a, "close", sid, body="\n".join(summary), title=title)
     try:  # the workers' leftovers go last, and whatever goes wrong there never undoes or fails the close
