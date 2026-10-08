@@ -2,7 +2,7 @@
   "id": "ST-dvzdykit",
   "kind": "story",
   "title": "Tests pin the pack index's unit cache: cached equals fresh, each key input re-weighs, an edited fact is found",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-caqrexqw",
   "priority": "P3",
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-kjqdiudr review"
   ],
-  "notes": "Premise: python3 _tools/tests.py -k unit_cache. Run 2026-10-08 at plan: collects no test, exit 2: no test pins the unit cache, reproduces. Blocks the held-out answer rate fitness test (kb/_self/tools.md) the same way as BG-l34xg6jn: without it a cache regression silently changes the measured rate. Selected by the operator for SP-caqrexqw on 2026-10-08; depends on BG-l34xg6jn (same file, the key fix first)."
+  "notes": "Premise: python3 _tools/tests.py -k unit_cache. Run 2026-10-08 at plan: collects no test, exit 2: no test pins the unit cache, reproduces. Blocks the held-out answer rate fitness test (kb/_self/tools.md) the same way as BG-l34xg6jn: without it a cache regression silently changes the measured rate. Selected by the operator for SP-caqrexqw on 2026-10-08; depends on BG-l34xg6jn (same file, the key fix first).",
+  "claimed_by": "worker-ST-dvzdykit"
 }
