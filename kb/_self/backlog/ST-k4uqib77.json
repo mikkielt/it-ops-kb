@@ -2,7 +2,7 @@
   "id": "ST-k4uqib77",
   "kind": "story",
   "title": "Scenario pool runs the question pool over the kb, router, hook and web arms at two effort levels and reports tokens per right answer by kind and arm",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",
@@ -46,5 +46,6 @@
     "_tools/bench_lookup.py",
     "https://code.claude.com/docs/en/model-config#adjust-effort-level"
   ],
-  "notes": "Effort on a -p run: --effort LEVEL or CLAUDE_CODE_EFFORT_LEVEL (Claude Code model-config page, live docs 2026-10-08): levels low..max on Haiku 5.5, Sonnet 5.5 and Opus 5.5, default medium; Haiku 4.5 does not support effort, so its arm runs one level and the effort table marks it. pack_tokens: count the characters of each kb tool_result in the stream and convert with the run's own ratio (input tokens of the request that carried it minus the request before), or the result event's usage when it names the tool result; state the method in the report's Counting. Reuse agent_bench.py's arms, checks and the stream scorer; the hook arm runs the kb: hook command as querylog-hooks does and records 0 model tokens and its wall time. Reps and arms are flags so ST-ji32ouga's gate answer selects the set without code changes. The existing navigation scenario's --arm and same-day replacement rules apply (one record per day per arm). report --check passes before the work: it pins every existing table. After this story lands it fails on the new pool markers until the record of ST-ji32ouga is written, which is that story's failing check."
+  "notes": "Effort on a -p run: --effort LEVEL or CLAUDE_CODE_EFFORT_LEVEL (Claude Code model-config page, live docs 2026-10-08): levels low..max on Haiku 5.5, Sonnet 5.5 and Opus 5.5, default medium; Haiku 4.5 does not support effort, so its arm runs one level and the effort table marks it. pack_tokens: count the characters of each kb tool_result in the stream and convert with the run's own ratio (input tokens of the request that carried it minus the request before), or the result event's usage when it names the tool result; state the method in the report's Counting. Reuse agent_bench.py's arms, checks and the stream scorer; the hook arm runs the kb: hook command as querylog-hooks does and records 0 model tokens and its wall time. Reps and arms are flags so ST-ji32ouga's gate answer selects the set without code changes. The existing navigation scenario's --arm and same-day replacement rules apply (one record per day per arm). report --check passes before the work: it pins every existing table. After this story lands it fails on the new pool markers until the record of ST-ji32ouga is written, which is that story's failing check.",
+  "claimed_by": "worker-ST-k4uqib77"
 }
