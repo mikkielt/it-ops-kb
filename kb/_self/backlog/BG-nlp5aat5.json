@@ -2,7 +2,7 @@
   "id": "BG-nlp5aat5",
   "kind": "bug",
   "title": "On Windows land deletes a worker worktree's files, then fails, when a process has its working directory there",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P2",
@@ -62,5 +62,27 @@
     }
   ],
   "notes": "Premise (2026-10-07): the repro passes on macOS, where bl_land.live_processes asks lsof and the Windows branch (os.name == 'nt' returns None) never runs; the check forces that branch on any host (live_processes patched to (None, why), renames of the worktree refused) and exits 1 now (why None, file gone, unregistered). The proof is a Windows run. release_worker_worktree is also edited by ST-bum7owtw (SP-gkbtjjce), which lands first. Premise on the Windows host (2026-10-08, origin/main d5a26e12): the check exits 1 there: land removed the worktree as a clean worker's (why None, file kept False, still registered False). Fix on the Windows host (2026-10-08, Python 3.14.7, base origin/main 4409fe7b): release_worker_worktree runs bl_land.held_by_process (rename to a sibling and back) when live_processes cannot list working directories, and refuses when the rename is refused. Check, exit 0: 'why: it is not locked and could not be moved (PermissionError: in use): a process may still run there, its working directory in it (Windows: cannot list working directories, so land cannot name it); end it, then run land again | file kept: True | still registered: True'. Repro (a live child process with its cwd in the worktree), exit 0: 'why: it is not locked and could not be moved (PermissionError: [WinError 32, the sharing violation, in the host's Polish locale]): a process may still run there ... | tracked file still there: True'. Before the fix (precheck, origin/main d5a26e12) the check exited 1: 'why: None | file kept: False | still registered: False'. tests.py -k land: test_land_content_item_then_planted_failure fails in its own setup on this host (git worktree add: 'Filename too long' for a kb/public/security/artifacts/disa STIG xml under the pytest temp dir; git core.longpaths is not set here), before any land code runs; the other passes.",
-  "claimed_by": "worker-win"
+  "evidence": {
+    "commit": "ac7457a393239c6c2ba12b40a5843e5628920095",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,shutil,subprocess as s,tempfile;sys.path.insert(0,os.path.abspath('_tools'));import bl_land;from pathlib import Path;t=tempfile.mkdtemp();r=Path(t)/'c';r.mkdir();g=lambda *a,cwd=r:s.run(['git',*a],cwd=cwd,check=True,capture_output=True);g('init','-q','-b','main');(r/'f.txt').write_text('x');g('add','f.txt');g('-c','user.name=t','-c','user.email=t@example.com','-c','core.hooksPath=','commit','-q','-m','i');w=r/'.claude'/'worktrees'/'agent-x';g('worktree','add','-q','-b','work/X',str(w));bl_land.live_processes=lambda p:(None,'Windows: cannot list working directories');rp=os.path.realpath;wrap=lambda f:(lambda a,*b,**k:(_ for _ in ()).throw(PermissionError(13,'in use')) if rp(str(a))==rp(str(w)) else f(a,*b,**k));o=(os.rename,os.replace,shutil.move);os.rename,os.replace,shutil.move=map(wrap,o);why=bl_land.release_worker_worktree(str(r),w,None,'work/X');os.rename,os.replace,shutil.move=o;left=(w/'f.txt').exists();reg='agent-x' in s.run(['git','worktree','list'],cwd=r,capture_output=True,text=True).stdout;shutil.rmtree(t,ignore_errors=True);print('why:',why,'| file kept:',left,'| still registered:',reg);sys.exit(0 if (why and left and reg) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7b0afb3e118516dd"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,subprocess as s,tempfile,time;sys.path.insert(0,os.path.abspath('_tools'));import bl_land;from pathlib import Path;r=Path(tempfile.mkdtemp())/'c';r.mkdir();g=lambda *a,cwd=r:s.run(['git',*a],cwd=cwd,check=True,capture_output=True);g('init','-q','-b','main');(r/'f.txt').write_text('x');g('add','f.txt');g('-c','user.name=t','-c','user.email=t@example.com','-c','core.hooksPath=','commit','-q','-m','i');w=r/'.claude'/'worktrees'/'agent-x';g('worktree','add','-q','-b','work/X',str(w));p=s.Popen([sys.executable,'-c','import time;time.sleep(60)'],cwd=w);time.sleep(1);why=bl_land.release_worker_worktree(str(r),w,None,'work/X');left=(w/'f.txt').exists();p.kill();p.wait();print('why:',why,'| tracked file still there:',left);sys.exit(0 if (why and left) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3c697e26afc2b5dd"
+      }
+    ]
+  }
 }
