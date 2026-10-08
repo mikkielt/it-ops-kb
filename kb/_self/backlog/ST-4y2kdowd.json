@@ -2,7 +2,7 @@
   "id": "ST-4y2kdowd",
   "kind": "story",
   "title": "benchmarks.py pool build writes a stratified question pool with a check per row, from the eval, held-out, off-kb, gaps and query-log sources plus phrasing variants",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",

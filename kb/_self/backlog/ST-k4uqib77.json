@@ -2,7 +2,7 @@
   "id": "ST-k4uqib77",
   "kind": "story",
   "title": "Scenario pool runs the question pool over the kb, router, hook and web arms at two effort levels and reports tokens per right answer by kind and arm",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",

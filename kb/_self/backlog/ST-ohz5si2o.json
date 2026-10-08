@@ -2,7 +2,7 @@
   "id": "ST-ohz5si2o",
   "kind": "story",
   "title": "Scenario pool's session shape runs six pool questions in one claude -p session and records the marginal input and cache-read share of each follow-up",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P2",
