@@ -2,7 +2,7 @@
   "id": "ST-pjkmiyqe",
   "kind": "story",
   "title": "A host-bound sprint runs its stories' premises on the host before any dispatch",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,18 @@
     }
   ],
   "notes": "Premise (run 2026-10-07): rag.py pack --root _self 'a sprint planned off its host: when are its stories premises run' gives coverage weak; the plan-step premise rule (backlog.md:209) assumes the planner can run the premise where it plans.",
-  "claimed_by": "worker-ST-pjkmiyqe"
+  "evidence": {
+    "commit": "efbeb340df8955009b754517c39ef78ed325d6e0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','a sprint planned off its host: when are its stories premises run','--budget','300'],capture_output=True,text=True);o=r.stdout;print(o.splitlines()[0] if o else r.stderr[:200]);sys.exit(r.returncode or int(not (o.startswith('coverage: good') and 'host' in o.lower())))"
+        ],
+        "exit": 0,
+        "sha256": "00e5e0c77a61588c"
+      }
+    ]
+  }
 }
