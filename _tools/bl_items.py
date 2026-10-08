@@ -641,10 +641,6 @@ def cmd_gate(bl, a):
                        f"and not {START_GATE!r}, the sprint's own")
     gate = {"id": gid, "kind": a.kind, "question": a.question.strip(), "options": options,
             "recommendation": a.recommendation.strip()}
-    gate["class"] = bl_authority.derived_class(it, gate)
-    if gate["class"] in bl_authority.OPERATOR_CLASSES and gate["kind"] != "blocking":
-        gate["kind"] = "blocking"
-        say(f"gate {gid} of {bl.label(iid)} is class {gate['class']}: made blocking, only the operator answers it")
     if a.do:
         gate["do"] = {}
         for d in a.do:
@@ -659,7 +655,13 @@ def cmd_gate(bl, a):
         gate["host_check"] = {"run": parse_cmd(a.host_check)}
         if not gate["host_check"]["run"]:
             raise Rejected("gate add: --host-check needs a command")
-    same = [g for g in gates if g.get("question") == gate["question"] or g.get("id") == gid]
+    # classed over the whole gate, `do` and `host_check` words too, as gate_class reads it; the reasons name what set it
+    gate["class"], reasons = bl_authority.class_reasons(it, gate)
+    why = f"class {gate['class']}" + (f" ({', '.join(reasons)})" if reasons else "")
+    if gate["class"] in bl_authority.OPERATOR_CLASSES and gate["kind"] != "blocking":
+        gate["kind"] = "blocking"
+        say(f"gate {gid} of {bl.label(iid)} is {why}: made blocking, only the operator answers it")
+    same =[g for g in gates if g.get("question") == gate["question"] or g.get("id") == gid]
     if same:
         known = same[0]
         if len(same) > 1 or any(known.get(k) != v for k, v in gate.items() if k not in ("id", "class")) \
@@ -673,7 +675,7 @@ def cmd_gate(bl, a):
         new["gates"] = list(new.get("gates", [])) + [gate]
 
     changed_item(bl, iid, edit)
-    say(f"gate {gid} ({gate['kind']}) added to {bl.label(iid)}: {gate['question']}")
+    say(f"gate {gid} ({gate['kind']}) added to {bl.label(iid)}, {why}: {gate['question']}")
     return 0
 
 
