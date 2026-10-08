@@ -2,7 +2,7 @@
 item file must meet, the knowledge an item names (`KbAtHead`, `knowledge_check`) and the state of it (`KnowledgeState`,
 `knowledge_lines`), the host and user name findings `validate` reports, the selector helpers `selectors` counts with,
 the repro and no-op warnings (`text_only_repro`, `trivial_command`, `noop_output`, `noop_warnings`, the warnings
-`check` prints), the errors `check` adds for an open item's refused repro or check (`refused_command_errors`) and the
+`check` prints, with the goal path warning `goal_path_warnings`), the errors `check` adds for an open item's refused repro or check (`refused_command_errors`) and the
 commands `check` and `selectors`.
 
 Standard library only; imports `bl_base`, `bl_intake` (the program rule an open item's commands meet) and `bl_plan`
@@ -17,9 +17,10 @@ import bl_cli
 import bl_authority
 import bl_intake
 from bl_base import (
-    APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS, PREFIX_KIND,
-    PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED, canonical,
-    REL_DIR, glob_re, host_user_pieces, items_holding_names, research_in_planned, say, scope, withhold_names,
+    ALWAYS_IN_SCOPE, APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
+    PREFIX_KIND, PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
+    canonical, REL_DIR, glob_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
+    touches_overlap, withhold_names,
 )
 from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches, unordered_overlap_warnings
 
@@ -1019,6 +1020,55 @@ def facade_touch_warnings(bl):
     return out
 
 
+# A kb path in an item's goal: `kb/` and at least one more character, not inside a longer path or a url; a trailing
+# full stop, comma or other sentence mark is the sentence's, not the path's.
+GOAL_KB_PATH = re.compile(r"(?<![\w./:-])kb/[\w.*/-]+")
+
+
+def goal_kb_paths(goal):
+    """The kb paths and directories (`kb/_self/reports/`, `kb/_self/code.md`, `kb/public/**`) an item's goal names,
+    each once, in order."""
+    out = []
+    for m in GOAL_KB_PATH.finditer(goal or ""):
+        tok = m.group(0).rstrip(".,;:")
+        if len(tok) > len("kb/") and tok not in out:
+            out.append(tok)
+    return out
+
+
+def goal_path_covered(tok, touches):
+    """True when a touches glob (or a path always in scope) can name a path under goal path TOK: a file inside a
+    touched directory glob, a touch inside a named directory, or the same path or glob. A token whose last segment
+    has no extension may be a directory and is read as one too."""
+    cands = [tok + "**"] if tok.endswith("/") else [tok]
+    if not tok.endswith("/") and "." not in tok.rsplit("/", 1)[-1] and "*" not in tok:
+        cands.append(tok + "/**")
+    globs = [t for t in touches if isinstance(t, str) and t] + list(ALWAYS_IN_SCOPE)
+    return any(touches_overlap(c, t, ()) for c in cands for t in globs)
+
+
+def goal_path_warnings(bl):
+    """check's warnings: an open item whose goal names a kb path or directory (goal_kb_paths) that no touches glob of
+    its scope (its own and its descendants') covers, naming the item and the path, so a goal's file is in scope
+    before dispatch (SP-sz5fbvqn, where a goal's report under kb/_self/reports/ had no touch); an item with no
+    touches yet is left to planning, and so is a sprint's goal research story, whose goal restates the sprint's and
+    whose touches are kb content by rule."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES or not isinstance(it.get("goal"), str) \
+                or it.get("goal_research"):
+            continue
+        globs = scope(bl, iid)
+        if not globs:
+            continue
+        for tok in goal_kb_paths(it["goal"]):
+            if not goal_path_covered(tok, globs):
+                out.append(f"{bl.label(iid)}: its goal names {tok}, which no touch covers: add the path the work "
+                           "changes (set ID --touch PATH --add), or reword the goal when the path is not the item's to "
+                           "change")
+    return out
+
+
 def is_test_run(argv):
     """True when a check runs tests: tests.py or pytest, so it exercises the code it proves."""
     return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
@@ -1103,7 +1153,7 @@ def cmd_check(bl, a):
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) \
         + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl) + item_files_warnings(bl) \
-        + facade_touch_warnings(bl) + gone_path_warnings(bl) + unordered_overlap_warnings(bl)
+        + facade_touch_warnings(bl) + gone_path_warnings(bl) + unordered_overlap_warnings(bl) + goal_path_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")

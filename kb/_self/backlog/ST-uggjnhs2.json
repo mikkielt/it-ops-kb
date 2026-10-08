@@ -22,5 +22,29 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "cover",
+      "kind": "blocking",
+      "question": "When does a touches glob cover a kb path the goal names?",
+      "options": [
+        "overlap: a file inside a touched directory glob, a touch inside a named directory, or the same path",
+        "exact: only a touch naming the same path or glob"
+      ],
+      "recommendation": "overlap: a file inside a touched directory glob, a touch inside a named directory, or the same path",
+      "class": "agents-rule"
+    },
+    {
+      "id": "research",
+      "kind": "blocking",
+      "question": "Does the goal path warning leave out a sprint's goal research story, whose goal restates the sprint goal and whose touches are kb content?",
+      "options": [
+        "leave out: no warning for a goal research story",
+        "warn: judge it like any other item"
+      ],
+      "recommendation": "leave out: no warning for a goal research story",
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "worker-ST-uggjnhs2"
 }
