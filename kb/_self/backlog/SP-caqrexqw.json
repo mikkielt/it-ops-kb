@@ -1,0 +1,20 @@
+{
+  "id": "SP-caqrexqw",
+  "kind": "sprint",
+  "title": "Answers stay right and correctly cited",
+  "status": "planned",
+  "goal": "The pack index's unit cache never reuses stale weights after a weighting change and tests pin it; check.py refuses a ledger path:line citation that points at a line that is no fact; the held-out eval holds no row that rewords a tuned eval row and refuses one that does; land runs the contract lint when a landing changes articles; and the two user-asked gaps, prompt-caching pricing and GitLab CI job log timestamps (FF_TIMESTAMPS), pack good",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
