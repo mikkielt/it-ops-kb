@@ -42,7 +42,8 @@
   ],
   "depends_on": [
     "ST-dvzdykit",
-    "ST-zqxgo47z"
+    "ST-zqxgo47z",
+    "BG-huavhgoh"
   ],
   "gates": [
     {
