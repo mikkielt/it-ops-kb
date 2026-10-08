@@ -2,7 +2,7 @@
   "id": "BG-4wqn6kog",
   "kind": "bug",
   "title": "Held-out row HO-session-id-bash-env rewords a tuned eval row, so the held-out rate counts a tuned question",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-caqrexqw",
   "priority": "P3",
@@ -50,5 +50,6 @@
   "links": [
     "parked: SP-4rq725fe review"
   ],
-  "notes": "Found by the SP-4rq725fe review (fresh-context reviewer, 2026-10-08): fuzzy match 0.89 between HO-session-id-bash-env and EV-claude-code-expose-session-id-bash; every other held-out row scored 0.53 or less. Blocks the held-out answer rate fitness test of EP-gzr4mmkm (the measured 19 of 20 counts one tuned question). Premise (repro) run 2026-10-08 at plan: ['HO-session-id-bash-env'], exit 1, reproduces. Held-out probe the same day: rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 16 gives 19 of 20 (FAIL HO-prompt-cache-pricing, verdict weak), exit 0; that check passes before the work and stays as the floor after the swap. Content lane: lookup_heldout.csv and kb/_self/tools.md only, no code. The replacement row is picked from the query log's real lookups (a provisional gate if the pick is a judgment). Lands before ST-bn3h34wr, whose refusal would otherwise fail on this row. Ordered after ST-5vtfd3y4 (the prompt-caching research, which can turn HO-prompt-cache-pricing good) so the rate kb/_self/tools.md states is measured on the final file; the added check reads that the stated 'measured N of 20' equals the eval's passed count. It passes before the work (tools.md says 19 of 20, the eval gives 19): it pins the goal's clause that the stated rate is current once the row is swapped."
+  "notes": "Found by the SP-4rq725fe review (fresh-context reviewer, 2026-10-08): fuzzy match 0.89 between HO-session-id-bash-env and EV-claude-code-expose-session-id-bash; every other held-out row scored 0.53 or less. Blocks the held-out answer rate fitness test of EP-gzr4mmkm (the measured 19 of 20 counts one tuned question). Premise (repro) run 2026-10-08 at plan: ['HO-session-id-bash-env'], exit 1, reproduces. Held-out probe the same day: rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 16 gives 19 of 20 (FAIL HO-prompt-cache-pricing, verdict weak), exit 0; that check passes before the work and stays as the floor after the swap. Content lane: lookup_heldout.csv and kb/_self/tools.md only, no code. The replacement row is picked from the query log's real lookups (a provisional gate if the pick is a judgment). Lands before ST-bn3h34wr, whose refusal would otherwise fail on this row. Ordered after ST-5vtfd3y4 (the prompt-caching research, which can turn HO-prompt-cache-pricing good) so the rate kb/_self/tools.md states is measured on the final file; the added check reads that the stated 'measured N of 20' equals the eval's passed count. It passes before the work (tools.md says 19 of 20, the eval gives 19): it pins the goal's clause that the stated rate is current once the row is swapped.",
+  "claimed_by": "worker-BG-4wqn6kog"
 }
