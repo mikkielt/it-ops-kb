@@ -58,7 +58,7 @@ The same index serves `search()` (rag.py search, kb_search): the corpus also hol
 its end the index files (README.md, each root's ledgers, the kb's own docs in kb/_self/), which only a search with
 `index` sees.
 """
-import array, ast, bisect, csv, functools, hashlib, io, json, math, os, re, sqlite3, subprocess, sys, tempfile, threading, time, warnings
+import array, ast, bisect, csv, functools, hashlib, io, json, marshal, math, os, re, sqlite3, subprocess, sys, tempfile, threading, time, warnings
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 from fractions import Fraction
@@ -1666,34 +1666,109 @@ def _corpus(domain):
     return weighed(us, articles(), expansions())
 
 
+UNIT_CACHE = "kbunits.sqlite"  # in index_dir(): weighed()'s result per unit, keyed by everything it reads
+UNIT_CACHE_SLACK = 2  # the cache keeps up to this many times the units weighed; beyond, rows no unit used are dropped
+
+
+def _unit_key(u, art, meta, sums, exps):
+    """The cache key of unit `u`'s weighing: a hash of INDEX_VERSION, the doc2query mode and every input weighed()
+    reads for it (path, title or lead, section, text, its article's Summary, its expansions, its tested questions),
+    so an unchanged unit keeps its key across an edit elsewhere or a change to this file that keeps INDEX_VERSION."""
+    if meta and not u["section"].startswith("Summary"):
+        if art not in sums:
+            sums[art] = hashlib.sha1(summary_text(art).encode()).hexdigest()
+        summ = sums[art]
+    else:
+        summ = None
+    ex = exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ()
+    raw = json.dumps([INDEX_VERSION, os.environ.get("KB_DOC2QUERY", ""), u["path"], u["title"], u.get("lead", ""),
+                      u["section"], u["text"], summ, list(ex), [q for _, q in u.get("anchors", ())]], ensure_ascii=False)
+    return hashlib.sha1(raw.encode()).digest()
+
+
+def _unit_cache_open():
+    """A connection to the unit cache in index_dir() with its table, or None (KB_INDEX=0, or it cannot be opened)."""
+    d = index_dir()
+    if not d:
+        return None
+    try:
+        os.makedirs(d, exist_ok=True)
+        con = sqlite3.connect(os.path.join(d, UNIT_CACHE), timeout=10)
+        con.execute("CREATE TABLE IF NOT EXISTS u(k BLOB PRIMARY KEY, v BLOB) WITHOUT ROWID")
+        return con
+    except (OSError, sqlite3.Error):
+        return None
+
+
+def _unit_cache_save(con, new, keys):
+    """Add the `new` {key: value} rows; when the cache holds more than UNIT_CACHE_SLACK times `keys` (the keys of this
+    weighing), drop every row not in `keys`. Best effort: another process may hold the file."""
+    try:
+        with con:
+            con.executemany("INSERT OR IGNORE INTO u VALUES (?, ?)", sorted(new.items()))
+            if con.execute("SELECT count(*) FROM u").fetchone()[0] > UNIT_CACHE_SLACK * max(len(keys), 1):
+                con.execute("CREATE TEMP TABLE keep(k BLOB PRIMARY KEY) WITHOUT ROWID")
+                con.executemany("INSERT OR IGNORE INTO keep VALUES (?)", ((k,) for k in sorted(keys)))
+                con.execute("DELETE FROM u WHERE k NOT IN (SELECT k FROM keep)")
+                con.execute("DROP TABLE keep")
+    except sqlite3.Error:
+        pass
+
+
 def weighed(us, metas, exps):
     """`us` with each unit's `title`, `len`, `own` (the words it holds) and `tf` (its weighted words: title, Summary,
-    doc2query expansions of a fact `exps` holds, tested questions of a passage)."""
-    summaries = {}
+    doc2query expansions of a fact `exps` holds, tested questions of a passage). A unit whose inputs are unchanged
+    since an earlier weighing reads its result from the unit cache (UNIT_CACHE) instead of splitting its words again,
+    so an edit to one article re-weighs only that article's units."""
+    con = _unit_cache_open()
+    try:
+        memo = dict(con.execute("SELECT k, v FROM u")) if con else {}
+    except sqlite3.Error:
+        memo = {}
+    summaries, sums, new, keys = {}, {}, {}, []
     for u in us:
         art = u["path"] if u["path"] in metas else u["path"][:-4] + ".md"
         meta = metas.get(art) or {}
         u["title"] = meta.get("title", "")
-        tf = Counter(terms(f"{bare(u['path'])} {u['title']} {u['section']} {u['text']}"))  # a root name is no word
-        # own: words the unit itself has (verdict, df). Directory names rank but are not own words: every unit of a
-        # domain holds its name, so a growing domain (agents/) would push that word past the 20% common-word cut.
-        own = terms(f"{os.path.basename(bare(u['path']))} {u['title']} {u['section']} {u['text']}")
-        u["len"], u["own"] = sum(tf.values()), frozenset(own)
-        for t in terms(u["title"] or u.get("lead", "")):
-            tf[t] += TITLE_WEIGHT - 1
-        if meta and not u["section"].startswith("Summary"):
-            if art not in summaries:
-                summaries[art] = Counter(terms(summary_text(art)))
-            for t, c in summaries[art].items():
-                tf[t] += SUMMARY_WEIGHT * c
-        for q in exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ():
-            for t in terms(q):
-                tf[t] += EXPANSION_WEIGHT  # ranks the fact for other wordings; never a verdict word (not in own)
-        for _, q in u.get("anchors", ()):
-            for t in terms(q):
-                tf[t] += EXPANSION_WEIGHT  # a tested question: ranks its passage for other wordings; never a verdict word
-        u["tf"] = tf
+        if con:
+            key = _unit_key(u, art, meta, sums, exps)
+            keys.append(key)
+            hit = memo.get(key)
+            if hit is not None:
+                u["len"], own, tf = marshal.loads(hit)
+                u["own"], u["tf"] = frozenset(own), Counter(tf)
+                continue
+        _weigh(u, art, meta, summaries, exps)
+        if con:
+            new[key] = marshal.dumps((u["len"], tuple(sorted(u["own"])), dict(u["tf"])))
+    if con:
+        if new or len(memo) > UNIT_CACHE_SLACK * max(len(keys), 1):
+            _unit_cache_save(con, new, keys)
+        con.close()
     return us
+
+
+def _weigh(u, art, meta, summaries, exps):
+    """Set unit `u`'s `len`, `own` and `tf` (weighed()'s work for one unit; `summaries` caches each article's)."""
+    tf = Counter(terms(f"{bare(u['path'])} {u['title']} {u['section']} {u['text']}"))  # a root name is no word
+    # own: words the unit itself has (verdict, df). Directory names rank but are not own words: every unit of a
+    # domain holds its name, so a growing domain (agents/) would push that word past the 20% common-word cut.
+    own = terms(f"{os.path.basename(bare(u['path']))} {u['title']} {u['section']} {u['text']}")
+    u["len"], u["own"] = sum(tf.values()), frozenset(own)
+    for t in terms(u["title"] or u.get("lead", "")):
+        tf[t] += TITLE_WEIGHT - 1
+    if meta and not u["section"].startswith("Summary"):
+        if art not in summaries:
+            summaries[art] = Counter(terms(summary_text(art)))
+        for t, c in summaries[art].items():
+            tf[t] += SUMMARY_WEIGHT * c
+    for q in exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ():
+        for t in terms(q):
+            tf[t] += EXPANSION_WEIGHT  # ranks the fact for other wordings; never a verdict word (not in own)
+    for _, q in u.get("anchors", ()):
+        for t in terms(q):
+            tf[t] += EXPANSION_WEIGHT  # a tested question: ranks its passage for other wordings; never a verdict word
+    u["tf"] = tf
 
 
 # ---------------------------------------------------------------- the pack index (postings; persisted with sqlite3)
@@ -1803,7 +1878,8 @@ class MemStore(Store):
                     "paths": json.dumps(pathlist), "arts": json.dumps(self.arts), "srcs": json.dumps(self.srcs),
                     "anchors": json.dumps(self.anchors)}
             con.executemany("INSERT INTO meta VALUES (?, ?)", meta.items())
-            terms_ = set(self.own_lists) | set(self.tf_lists)
+            terms_ = sorted(set(self.own_lists) | set(self.tf_lists))  # in key order: a WITHOUT ROWID table fills
+            # its b-tree in order, where random order splits pages on every insert (a third of a build's time on Windows)
             con.executemany("INSERT INTO post VALUES (?, ?, ?, ?)", (
                 (t, array.array("I", self.own_lists.get(t, ())).tobytes(),
                  array.array("I", (i for i, _ in self.tf_lists.get(t, ()))).tobytes(),
