@@ -2,7 +2,7 @@
   "id": "ST-ls2ge3bz",
   "kind": "story",
   "title": "Research sprint goal: Rules findings converge: no item-text findings, tested rows for real misses, code-anchored rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rvslem3h",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/_self/_retrieval/lookup_eval.csv"
-  ]
+  ],
+  "claimed_by": "orchestrator-mac"
 }
