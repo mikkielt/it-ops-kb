@@ -1015,7 +1015,7 @@ def facade_touch_warnings(bl):
             if not any(t.startswith(f"_tools/{prefix}") for t in touches if isinstance(t, str)) \
                     and not any(rx.fullmatch(module) for rx in rxs):
                 out.append(f"{bl.label(iid)}: touches name the facade {facade} and no module behind it: add the "
-                           f"_tools/{prefix}*.py module its change is in (set --touch PATH --add), unless the change is "
+                           f"_tools/{prefix}*.py module its change is in (set --add-touch PATH), unless the change is "
                            "the facade's own command line")
     return out
 
@@ -1064,7 +1064,7 @@ def goal_path_warnings(bl):
         for tok in goal_kb_paths(it["goal"]):
             if not goal_path_covered(tok, globs):
                 out.append(f"{bl.label(iid)}: its goal names {tok}, which no touch covers: add the path the work "
-                           "changes (set ID --touch PATH --add), or reword the goal when the path is not the item's to "
+                           "changes (set ID --add-touch PATH), or reword the goal when the path is not the item's to "
                            "change")
     return out
 

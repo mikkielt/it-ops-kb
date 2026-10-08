@@ -350,6 +350,16 @@ def changed_items(bl, edits, reveal=()):
 
 
 SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to")
+# the fields set appends to, each by its own flag (with its value's name), the twin of the flag that replaces it
+# (--add-check of --check), so an append names its field and never reaches another one in the same call
+SET_APPEND = {"notes": ("--add-notes", "TEXT"), "links": ("--add-link", "TEXT"), "touches": ("--add-touch", "GLOB"),
+              "checks": ("--add-check", "CMD"), "depends_on": ("--add-depends", "ID"),
+              "relates_to": ("--add-relates", "ID")}
+
+
+def replace_flag(field):
+    """The flag that replaces `field`, the twin of its append flag (--check for --add-check)."""
+    return "--" + SET_APPEND[field][0].removeprefix("--add-")
 SET_FIELDS = ("notes", "priority", "rank", "sprint", "title", "goal", "repro", "repro_reason", "severity",
               "parent", "delegates") + SET_LISTS  # what set changes; the others are refused
 SET_REFUSED = {  # a field set refuses, with the rule it states
@@ -413,12 +423,17 @@ def cmd_set(bl, a):
                                      if not any(d.get("name") == n for d in have)]
     given.update({f: getattr(a, f) for f in SET_LISTS})
     given = {f: v for f, v in given.items() if v is not None}
-    both = sorted(set(given) & set(a.clear))
+    adds = {f: getattr(a, "add_" + f) for f in SET_APPEND if getattr(a, "add_" + f, None) is not None}
+    mixed = sorted(set(given) & set(adds))
+    if mixed:
+        raise Rejected("set: " + ", ".join(f"{replace_flag(f)} and {SET_APPEND[f][0]}" for f in mixed) + " together: "
+                       f"{', '.join(mixed)} is either replaced or appended to, not both in one call")
+    both = sorted((set(given) | set(adds)) & set(a.clear))
     if both:
         raise Rejected(f"set: {', '.join(both)} given a value and --clear together")
-    if not given and not a.clear:
+    if not given and not adds and not a.clear:
         raise Rejected("set: nothing to change: name a field (" + ", ".join(SET_FIELDS) + ")")
-    named = sorted(set(given) | set(a.clear))
+    named = sorted(set(given) | set(adds) | set(a.clear))
     if it.get("kind") == "sprint" and set(named) - {"notes", "links", "delegates"}:
         raise Rejected(f"set refuses {', '.join(sorted(set(named) - {'notes', 'links', 'delegates'}))} on a sprint: "
                        "a sprint takes notes, links and delegates only")
@@ -462,24 +477,26 @@ def cmd_set(bl, a):
     if a.sprint is not None and bl.items.get(a.sprint, {}).get("status") == "active" and it.get("status") == "draft":
         raise Rejected(f"set refuses sprint {a.sprint} for {bl.label(iid)}: the sprint is active and the item is "
                        "draft, so it would never be ready")
-    if "checks" in given:
-        try:
-            given["checks"] = [{"run": parse_cmd(c)} for c in given["checks"]]
-        except ValueError as e:
-            raise Rejected(f"set: --check is not a command line ({e})") from e
+    for vals, flag in ((given, "--check"), (adds, "--add-check")):
+        if "checks" in vals:
+            try:
+                vals["checks"] = [{"run": parse_cmd(c)} for c in vals["checks"]]
+            except ValueError as e:
+                raise Rejected(f"set: {flag} is not a command line ({e})") from e
 
     def edit(new):
         for f, v in given.items():
-            if f in SET_LISTS and a.add:
-                new[f] = appended(new.get(f, []) if isinstance(new.get(f, []), list) else [], v)
-            elif f == "notes" and a.add:
-                old = new.get("notes", "")
-                new[f] = old if v in old else f"{old} {v}".strip()
+            new[f] = v
+        for f, v in adds.items():
+            if f == "notes":
+                for note in v:
+                    old = new.get("notes", "")
+                    new[f] = old if note in old else f"{old} {note}".strip()
             else:
-                new[f] = v
+                new[f] = appended(new.get(f, []) if isinstance(new.get(f, []), list) else [], v)
         for f in a.clear:
             new.pop(f, None)
-        if "touches" in given or "touches" in a.clear:  # new touches may put a gate in a stricter class: store it
+        if "touches" in named:  # new touches may put a gate in a stricter class: store it
             for g in new.get("gates", []) or []:
                 reclass_gate(new, g)
         if "parent" in given and not new.get("sprint") and new.get("status") in ("draft", "todo"):
@@ -901,7 +918,9 @@ def args_set(p):
     p.add_argument("--delegate", action="append", metavar="NAME",
                    help="on a sprint, with --by operator: grant NAME the confirming of its provisional answers")
     p.add_argument("--by", dest="set_by", metavar="operator", help="who writes a --delegate grant: the operator only")
-    p.add_argument("--add", action="store_true", help="append to a list (or to the notes) instead of replacing it")
+    for f, (flag, value) in SET_APPEND.items():  # each appends to its own field; the plain flag replaces it
+        p.add_argument(flag, dest="add_" + f, action="append", metavar=value,
+                       help=f"append to {f} (repeatable; refused beside {replace_flag(f)})")
     p.add_argument("--clear", action="append", default=[], metavar="FIELD", help="remove a field (repeatable)")
     for f in SET_REFUSED:  # accepted only to be refused with the rule that applies
         p.add_argument("--" + f.replace("_", "-"), dest="no_" + f, help=argparse.SUPPRESS)

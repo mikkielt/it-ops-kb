@@ -72,10 +72,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py set ID [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...
                  [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--title T] [--goal T]
                  [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID]
-                 [--delegate NAME --by operator] [--add] [--clear FIELD]...
-                                          change an item after new: each list option replaces its list (--add:
-                                          appends what is missing, so a second run changes nothing; for --notes,
-                                          appends the text unless the notes hold it), --clear FIELD removes one.
+                 [--delegate NAME --by operator] [--add-notes T]... [--add-link T]... [--add-touch GLOB]...
+                 [--add-check CMD]... [--add-depends ID]... [--add-relates ID]... [--clear FIELD]...
+                                          change an item after new: each list option replaces its list, and its
+                                          --add-<option> twin appends what is missing to it, so a second run changes
+                                          nothing (--add-notes appends the text unless the notes hold it); a call
+                                          that names both for one field is refused, naming it. --clear FIELD
+                                          removes one.
                                           The result is validated as check does and written only when it adds no
                                           error; title, goal and parent, and a bug's repro (one that fails now, as
                                           new bug's), repro_reason and severity are replaced whole; status,

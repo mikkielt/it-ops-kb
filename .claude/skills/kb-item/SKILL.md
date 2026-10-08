@@ -35,11 +35,11 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    2. The claim commit is made before any work: `--commit` stages only the item's file in `kb/_self/backlog/` and commits it on its own with the trailer `KB-Work: ID` (a backlog-planning commit); without `--commit` stage and commit it by hand the same way. `check-trailers` reads the item as each commit has it, so work committed while the claim is uncommitted counts as unclaimed and its push is refused (`kb/_self/backlog.md`, Git).
 3. **Goal.** `python3 _tools/backlog.py goal ID` prints the condition. Keep it in view; the operator may set it as `/goal`.
 4. **Break down if needed.**
-   - A story or bug with no tasks: add tasks (`new task --parent ID --touch G --check CMD`, later `set ID --touch G --add` or `--check CMD --add`; `set --touch` alone replaces the whole list, so a gone path leaves it by setting the list again without that path), one commit each.
+   - A story or bug with no tasks: add tasks (`new task --parent ID --touch G --check CMD`, later `set ID --add-touch G` or `--add-check CMD`; `set --touch` replaces the whole list, so a gone path leaves it by setting the list again without that path), one commit each.
    - A task with several distinct steps may get subtasks.
    - Work the children first, each through steps 2 to 7.
 5. **Work.** Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-item:work`.
-   - Change only files matching `touches`. If the work needs another file, widen `touches` with `python3 _tools/backlog.py set ID --touch PATH --add` and say so in the commit body.
+   - Change only files matching `touches`. If the work needs another file, widen `touches` with `python3 _tools/backlog.py set ID --add-touch PATH` and say so in the commit body.
    - A defect outside the item becomes a bug (`/kb-backlog bug`), not a fix.
    - Before any code: a choice the goal leaves open on an item whose `touches` name a rule-guarding path (the `agents-rule` paths of `_tools/bl_authority.py`: `_tools/bl_*`, `_tools/backlog.py`, `.claude/skills/`, `.claude/settings.json`, `AGENTS.md` and the others) is a blocking operator gate, added and asked before any code is written, never settled by the worker and held after the work; and a provisional answer about a shared map or naming rule (a map such as `kb/_self/map.csv`, an id or name scheme other items follow) is put to the operator when it is recorded, not left for the review.
    - A question only the operator can settle becomes a gate: `python3 _tools/backlog.py gate add ID --question Q --option O --option O --recommendation R [--kind blocking|provisional]`, the recommendation one of the options:
