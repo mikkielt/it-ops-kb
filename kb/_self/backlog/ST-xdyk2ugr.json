@@ -12,7 +12,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "test_land_content_item_then_planted_failure"
+        "test_land_runs_lint_on_content_item_then_planted_failures"
       ]
     }
   ],

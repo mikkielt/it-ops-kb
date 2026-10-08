@@ -1,0 +1,12 @@
+{
+  "id": "ST-vlkxprhy",
+  "kind": "story",
+  "title": "check.py checks every line of a ledger path:line range citation, not only its first",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "check.py's ledger citation rule (ST-ctomsu4i, 815428cd1) refuses a range citation such as x.md:7-9 in a root's _answers.md or _gaps.md when any line of the range names no line of a tagged fact, not only when its first line does; found by the SP-caqrexqw review.",
+  "links": [
+    "parked: SP-caqrexqw review"
+  ]
+}

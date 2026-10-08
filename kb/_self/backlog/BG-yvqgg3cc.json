@@ -12,5 +12,9 @@
       "python3",
       "_tools/tests.py"
     ]
-  }
+  },
+  "links": [
+    "parked: SP-caqrexqw review"
+  ],
+  "notes": "SP-caqrexqw review, 2026-10-08: whole-suite runs at 21-23 s on darwin across the sprint (61 tests); test_land_e2e takes about 18.8 s since 87f04925a (ST-urfa4ntj added a planted content landing). Landing gates still passed, so the overrun is load-dependent. Blocks the review story's own tests.py check on this host."
 }

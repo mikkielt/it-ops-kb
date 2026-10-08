@@ -1,0 +1,13 @@
+{
+  "id": "ST-fravxf4v",
+  "kind": "story",
+  "title": "The unit cache test isolates the path and text key inputs, so dropping either from _unit_key fails it",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "In the unit-cache test of _tools/test_live_kb.py (ST-dvzdykit, 3678c14eb), the cases for the unit's path and text change only that input, so a _unit_key that drops u['path'] or u['text'] fails the test; today a changed path also changes the title through its meta and a changed text also misses the expansions, so both drops still pass. Found by the SP-caqrexqw review.",
+  "links": [
+    "parked: SP-caqrexqw review"
+  ]
+}

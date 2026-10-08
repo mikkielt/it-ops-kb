@@ -1,0 +1,22 @@
+{
+  "id": "BG-mxptguxo",
+  "kind": "bug",
+  "title": "_tools/test_ids_baseline.txt still lists the land e2e test ST-urfa4ntj renamed, so perfcheck ids --against reports it MISSING",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "perfcheck.py ids --against _tools/test_ids_baseline.txt reports no MISSING id for a test that was renamed, not lost: the baseline names test_land_runs_lint_on_content_item_then_planted_failures where it named test_land_content_item_then_planted_failure (renamed by ST-urfa4ntj, 87f04925a); found by the SP-caqrexqw review",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/perfcheck.py",
+      "ids",
+      "--against",
+      "_tools/test_ids_baseline.txt"
+    ]
+  },
+  "links": [
+    "parked: SP-caqrexqw review"
+  ]
+}

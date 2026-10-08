@@ -1,0 +1,12 @@
+{
+  "id": "ST-owuunsvl",
+  "kind": "story",
+  "title": "gitlab/job-log-timestamps cites the runner source that maps FF_TIMESTAMPS to UseTimestamps",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The fact in kb/public/gitlab/job-log-timestamps.md that the build takes the timestamp option from UseTimestamps cites, beside its current sources, the runner source file that maps the UseTimestamps feature flag to FF_TIMESTAMPS (helpers/featureflags/flags.go at the pinned runner commit), with its source row; found by the SP-caqrexqw review of ST-zqxgo47z (e0b8a53fa).",
+  "links": [
+    "parked: SP-caqrexqw review"
+  ]
+}
