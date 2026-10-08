@@ -2,7 +2,7 @@
   "id": "SP-d3hybrlv",
   "kind": "sprint",
   "title": "Sprints plan with probes and run on headless Sonnet",
-  "status": "planned",
+  "status": "active",
   "goal": "kb-sprint run starts every item kind as a headless claude -p --model sonnet session unless the operator asks for the session model, and the review follows; the headless brief names a scratch directory, a --max-turns by item kind and subshell-only cd; a host-bound sprint runs its stories' premises on the host before any dispatch; and plan step 6 probes each rule-guarding item read-only and asks its open choices as blocking gates with the start gate",
   "gates": [
     {

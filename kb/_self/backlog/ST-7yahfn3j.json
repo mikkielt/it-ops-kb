@@ -2,7 +2,7 @@
   "id": "ST-7yahfn3j",
   "kind": "story",
   "title": "kb-sprint run gives a headless worker brief with a scratch dir, a turn cap by item kind and subshell-only cd",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,

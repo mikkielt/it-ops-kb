@@ -2,7 +2,7 @@
   "id": "ST-r7wvfqvw",
   "kind": "story",
   "title": "kb-sprint run starts workers as Sonnet headless sessions by default, the session model only on request",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-d3hybrlv",
   "priority": "P2",
   "rank": 0,
