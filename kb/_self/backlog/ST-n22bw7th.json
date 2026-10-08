@@ -48,7 +48,9 @@
         "after-refusals"
       ],
       "recommendation": "with-refusals",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "with-refusals",
+      "by": "operator"
     }
   ],
   "links": [
