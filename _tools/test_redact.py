@@ -1,11 +1,12 @@
 """Redaction and the query log's privacy guards: redact.py's rules, what distill stores of a captured prompt, the closed
-shape of an ops row, and the store check that blocks a leak. Planted values are assembled at run time."""
-import json, os, shutil, subprocess, sys
+shape of an ops row, the store check that blocks a leak, and apply's rule for a weak rules miss over the fixture store.
+Planted values are assembled at run time."""
+import csv, json, os, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
 
-import ql_capture, ql_distill, ql_learn, ql_store, redact
+import ql_apply, ql_capture, ql_distill, ql_learn, ql_store, redact
 from conftest import KB, TOOLS
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
@@ -150,3 +151,74 @@ def test_store_check_passes_a_clean_store_and_names_the_run_file_with_a_leak(tmp
     assert ql_store.check(str(store)) == 1
     out = capsys.readouterr().out
     assert RUN_REL in out and "question" in out and EMAIL not in out, out
+
+
+class LeadGate(ql_apply.Gate):
+    """apply's kb gates for a rules finding with the kb out of it: `pack --root _self` prints a canned passage list per
+    question, the eval file is a temporary one, and the eval, pack-size and off-kb gates hold."""
+
+    def __init__(self, tmp, packs, lines):
+        self.eval, self.aliases, self.packs, self.lines = tmp / "lookup_eval.csv", tmp / "aliases.csv", packs, lines
+
+    def fresh(self):
+        pass
+
+    def measure(self):
+        return {"n": 1, "passed": 1, "failed": [], "chars": {"EV-x": 100}, "offkb_good": 0}
+
+    def rules_eval(self):
+        return self.eval
+
+    def rules_aliases(self):
+        return self.aliases
+
+    def rules_pack(self, question):
+        return {"text": self.packs[question]}
+
+    def rule_line(self, ref):
+        return self.lines.get(ref)
+
+    def token_counts(self):
+        return {}
+
+    def anchored(self, row):
+        return any(row[5] in text for doc, text in self.lines.values() if doc == row[2])
+
+
+def test_apply_anchors_a_weak_rules_miss_on_the_lead_passage_and_the_committed_outcome_converges(tmp_path):
+    store = tmp_path / "store"
+    shutil.copytree(FIXTURE_STORE, store)
+    lead, short = (e for _, e in ql_store.store_entries(store) if ql_learn.rules_miss(e) and not e.get("key_missing"))
+    ids = {ql_store.finding_id("rules", e["id"]): e for e in (lead, short)}
+    held = {i for i, r in ql_store.finding_states(store).items() if r["kind"] != "rules"}
+    for f in store.glob("findings/*/*.jsonl"):  # the committed outcome: no row, the kb's own pack prints no passage for their words
+        recs = [json.loads(ln) for ln in f.read_text(encoding="utf-8").splitlines()[1:]]
+        if any(r["id"] in ids and r["state"] == "no-fix" for r in recs):
+            assert {r["id"]: r["observed"]["gate"] for r in recs if r["id"] in ids} == {i: ["no anchor phrase in the lead passage"] for i in ids}
+            f.unlink()
+    assert {r["state"] for i, r in ql_store.finding_states(store).items() if i in ids} == {"open"}
+    first = "The zqxwidget plomkinator frobnicator quuxifies every plomkin on commit."
+    other = "Another passage that would anchor as well."
+    packs = {lead["question"]: f"coverage: weak\n\n## kb/_self/widgets.md\n- kb/_self/widgets.md:7 {first}\n- kb/_self/other.md:3 {other}\n",
+             short["question"]: f"coverage: weak\n\n## kb/_self/short.md\n- kb/_self/short.md:9 Too short here.\n- kb/_self/other.md:3 {other}\n"}
+    lines = {"kb/_self/widgets.md:7": ("widgets.md", first), "kb/_self/short.md:9": ("short.md", "Too short here."),
+             "kb/_self/other.md:3": ("other.md", other)}
+    gate, said = LeadGate(tmp_path, packs, lines), []
+    assert ql_apply.apply(store=store, gate=gate, hold=held, out=said.append, kb_commit="0" * 40) == 0
+    states = ql_store.finding_states(store)
+    done = next(i for i, e in ids.items() if e is lead)
+    assert states[done]["state"] == "applied" and states[done]["observed"] == {"eval": states[done]["observed"]["eval"], "line": "kb/_self/widgets.md:7", "lead": True}
+    with open(gate.eval, encoding="utf-8", newline="") as f:
+        rows = list(csv.reader(f))[1:]
+    assert len(rows) == 1  # the first passage only: the second would have anchored, the short lead gives no row
+    eid, question, doc, verdict, weak, phrase, sets = rows[0]
+    assert eid == states[done]["observed"]["eval"] and eid.startswith(ql_apply.RULES_ID) and question == lead["question"]
+    assert (doc, verdict, weak, sets) == ("widgets.md", "good", "yes", "") and phrase in first and 4 <= len(phrase.split()) <= 6
+    failed = next(i for i in ids if i != done)
+    assert states[failed]["state"] == "no-fix" and states[failed]["observed"] == {"gate": ["no anchor phrase in the lead passage"]}
+    # a finding with a missing key word, a none verdict or an answer line is no lead finding: it waits for a person
+    miss = {"id": "F-0", "observed": {"verdict": "weak", "key_missing": ["kbfacts"]}}
+    assert ql_apply.rules_one(miss, lead, gate, None) == (None, True)
+    assert not ql_apply.from_lead({"observed": {"verdict": "none"}}) and ql_apply.from_lead({"observed": {"verdict": "weak"}})
+    said.clear()
+    assert ql_apply.apply(store=store, gate=gate, hold=held, out=said.append, kb_commit="0" * 40) == 0 and said == ["apply: nothing to apply"]

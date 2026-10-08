@@ -2,8 +2,9 @@
 tree, never committed here (`apply --push` commits them in its worktree). Each open eval finding's row is written
 together with its alias or expansion fix when the kb gates pass; an open gap candidate the pack still reproduces
 under an article becomes a `_gaps.md` entry; an open `rules` finding (a missed lookup in the rule docs) whose reader
-quoted a line becomes a row of kb/_self/_retrieval/lookup_eval.csv anchored on a phrase of that line; then opt-in
-research (ql_research). One findings file records each outcome.
+quoted a line, or that is a weak miss with no missing key word (then the pack's lead passage stands for the line),
+becomes a row of kb/_self/_retrieval/lookup_eval.csv anchored on a phrase of that line; then opt-in research
+(ql_research). One findings file records each outcome.
 """
 import csv, datetime, re, sys
 from pathlib import Path
@@ -11,7 +12,7 @@ from pathlib import Path
 from ql_base import HOME, one_line, places, restore, run_cmd, write_text
 from ql_learn import article_facts, article_of, domain_article, held_article, passes, unknown_words
 from ql_research import add_under, research_one
-from ql_store import (APPLY_STATES, FIX_KINDS, failed_counts, finding_states, store_entries, write_findings)
+from ql_store import (APPLY_STATES, FIX_KINDS, RULES_ROOT, failed_counts, finding_states, store_entries, write_findings)
 
 FAILED_RETRIES = 0  # times a finding recorded apply-failed is applied again: never
 ALIAS_CANDIDATES = 3  # canonical words tried per alias finding: the article's file-name words, then its title's
@@ -24,6 +25,7 @@ SPECIFIC_ONE_IN = 15  # a specific word is in at most one article in this many
 RULES_ID = "SQ-"  # a rules eval row's id: this and the slug of its question, as a public row's `EV-` id
 ANCHOR_WORDS = (4, 6)  # the words an anchor phrase has, at least and at most
 ANCHOR_CANDIDATES = 5  # phrases of the answering line tried for the anchor, rarest first
+PASSAGE = re.compile(r"^- (kb/_self/\S+?\.md:\d+) ", re.M)  # a passage line of `pack --root _self`, as it prints it
 CSV_HEADERS = {"eval": ["id", "question", "expect_paths", "expect_verdict", "allow_weak"],
                "aliases": ["term", "canonical"], "expansions": ["key", "question"]}
 
@@ -65,6 +67,12 @@ class Gate:
         """The `_self` aliases file, where a rules finding's word pair goes."""
         import kbfacts
         return Path(kbfacts.SELF_ALIASES)
+
+    def rules_pack(self, question):
+        """`pack --root _self` for the question on the working tree."""
+        import kbfacts
+        self.fresh()
+        return kbfacts.pack(question, fmt="concise", root=RULES_ROOT)
 
     def rule_line(self, ref):
         """(the doc's name under kb/_self, the text of the line) of a `kb/_self/<doc>.md:<line>` reference, or None."""
@@ -373,26 +381,46 @@ def rules_alias_rows(f, gate):
     return [[term, canonical]] + ([] if canonical in existing else [[canonical, canonical]])
 
 
+def lead_passage(res):
+    """The `kb/_self/<doc>.md:<line>` reference of the first passage a `pack --root _self` result prints, or None."""
+    m = PASSAGE.search(res.get("text") or "")
+    return m.group(1) if m else None
+
+
+def from_lead(f):
+    """Whether an open `rules` finding is a weak miss that names no line and no missing key word: every key word of its
+    question is in some printed passage, so the pack's lead passage is the line to try."""
+    obs = f.get("observed") or {}
+    return obs.get("verdict") == "weak" and not obs.get("answer_lines") and not obs.get("key_missing")
+
+
 def rules_one(f, entry, gate, base):
     """(the record of one open `rules` finding or None, whether it needs a human): its eval row, anchored on the line
     the reader quoted, goes into kb/_self/_retrieval/lookup_eval.csv and stays only when the gates hold (`try_fix`: the
     whole `rag.py eval`, the pack size, off-kb `good`), `applied`; else the finding is `no-fix` with the failed gates in
-    `observed`. With a `pair` on the finding (learn's), its aliases.csv rows go in with the eval row and stay only with it;
-    a finding with no answer line is left open and reported (a word pair for aliases.csv is then a person's to pick); a question the file already holds gets nothing (learn records it)."""
+    `observed`. With a `pair` on the finding (learn's), its aliases.csv rows go in with the eval row and stay only with
+    it. A weak finding with no answer line and no missing key word (`from_lead`) takes the first passage
+    `pack --root _self` prints as the line, a guess the same gates check (`observed` then has `lead`); any other finding
+    with no answer line is left open and reported (a word pair for aliases.csv is then a person's to pick); a question
+    the file already holds gets nothing (learn records it)."""
     import kbid
     refs = (f.get("observed") or {}).get("answer_lines") or []
     question = entry["question"]
     path = gate.rules_eval()
-    if not refs:
+    if not refs and not from_lead(f):
         return None, True
     if any(len(r) > 1 and " ".join(r[1].split()).lower() == " ".join(question.split()).lower() for r in csv_rows(path)):
         return None, False
     eid = RULES_ID + kbid.eval_id(question)[3:]
     taken = {r[0]: r[1] for r in csv_rows(path) if len(r) > 1}
+    lead = not refs
     problems, row = [], None
     if eid in taken:
         problems.append(f"eval id {eid} is taken by another question")
     else:
+        if lead:
+            ref = lead_passage(gate.rules_pack(question))
+            refs = [ref] if ref else []
         counts = gate.token_counts()
         for ref in refs:
             got = gate.rule_line(ref)
@@ -404,13 +432,13 @@ def rules_one(f, entry, gate, base):
             if row:
                 break
         if row is None:
-            problems.append("no anchor phrase in the quoted lines")
+            problems.append("no anchor phrase in the " + ("lead passage" if lead else "quoted lines"))
     if row is not None:
         pair = rules_alias_rows(f, gate)
         for fix in ([{"aliases": pair}] if pair else []) + [{}]:
             ok, why = try_fix(fix, row, {"eval": path, "aliases": gate.rules_aliases()}, gate, base)
             if ok:
-                seen = {"eval": eid, "line": refs[0]}
+                seen = {"eval": eid, "line": refs[0], **({"lead": True} if lead else {})}
                 return {**without_observed(f), "state": "applied",
                         "observed": {**seen, "alias": fix["aliases"][0]} if fix else seen}, False
             problems += why
@@ -561,7 +589,7 @@ def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=No
     rules = sorted((r for r in last.values() if r.get("kind") == "rules" and r.get("state") == "open"
                     and actionable(r) and entry_of(r)), key=lambda r: r["id"])
     new, base, human = [], None, 0
-    if evals or any((r.get("observed") or {}).get("answer_lines") for r in rules):
+    if evals or any((r.get("observed") or {}).get("answer_lines") or from_lead(r) for r in rules):
         base = gate.measure()
         if base["passed"] != base["n"]:
             out(f"apply: rag.py eval fails before any change ({base['passed']} of {base['n']} pass); nothing applied")
