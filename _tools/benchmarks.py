@@ -3,7 +3,7 @@
 
   benchmarks.py list                        the scenarios, each with its report section
   benchmarks.py run [SCENARIO ...] [--reps N] [--arm ARM] [--out FILE] [--arms A,B] [--kinds K,K] [--effort L,L] [--dry-run]
-                    [--shape fresh|session] [--seed N]
+                    [--shape fresh|session] [--seed N] [--jobs N] [--max-usd X]
                                             run every scenario, or the named ones, and write their rows to the results
                                             file (kb/_self/reports/benchmarks.csv; rows of the same scenario and date
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
@@ -14,7 +14,12 @@
                                             arms it ran; --dry-run prints its plan and starts no model; --shape
                                             session runs the pool in groups of six questions, each group in one
                                             session (the kb arms haiku-5-5 and sonnet-5-5, seed --seed) and records
-                                            per position the marginal input and the cache-read share
+                                            per position the marginal input and the cache-read share; --jobs N
+                                            runs up to N of its `claude -p` runs at once (a session's questions stay in
+                                            order), the rows and their order the same as with 1; --max-usd X starts no
+                                            new run once the finished runs have cost X (those in flight finish), records
+                                            a `spend_stopped` row per arm naming the runs not started and exits 1;
+                                            --dry-run also prints an estimate of the spend
   benchmarks.py pool build [--querylog] [--seed N] [--out FILE]
                                             write the stratified question pool, with a check per row, to
                                             kb/public/_retrieval/bench_pool.csv, or with --querylog the redacted
@@ -111,6 +116,8 @@ def main(argv=None):
     r.add_argument("--shape", choices=bench_pool.SHAPES, default="fresh",
                    help="`pool`: a fresh session per question, or groups of six questions in one session (default: fresh)")
     r.add_argument("--seed", type=int, default=bench_pool.SEED, help="the seed that orders the groups of `pool --shape session`")
+    r.add_argument("--jobs", type=int, default=1, help="`pool`: runs at once (default: 1)")
+    r.add_argument("--max-usd", type=float, help="`pool`: start no new run once the finished runs cost this many US dollars")
     pool = sub.add_parser("pool").add_subparsers(dest="pool_cmd", required=True)
     pb = pool.add_parser("build")
     pb.add_argument("--querylog", action="store_true")
@@ -153,6 +160,9 @@ def main(argv=None):
     if unknown:
         print(f"unknown scenario: {', '.join(unknown)} (benchmarks.py list)", file=sys.stderr)
         return 2
+    if a.jobs < 1 or (a.max_usd is not None and a.max_usd <= 0):
+        print("--jobs needs 1 or more, --max-usd more than 0", file=sys.stderr)
+        return 2
     arms, efforts = (x.split(",") if x else None for x in (a.arms, a.effort))
     for flag, got, known in (("--arms", arms, bench_pool.SESSION_ARMS if a.shape == "session" else bench_pool.ARMS),
                              ("--effort", efforts, bench_pool.EFFORTS)):
@@ -163,6 +173,7 @@ def main(argv=None):
     b = Bench(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench", a.reps)
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
+    b.jobs, b.max_usd = a.jobs, a.max_usd
     b.kinds = a.kinds.split(",") if a.kinds else None
     out = Path(a.out) if a.out else RESULTS
     try:
@@ -190,7 +201,7 @@ def main(argv=None):
             write_rows(merge_rows(read_rows(out), mine), out)
     finally:
         b.close()
-    return 0
+    return b.status
 
 
 if __name__ == "__main__":

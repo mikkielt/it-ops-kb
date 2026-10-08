@@ -251,3 +251,100 @@ def test_bench_pool_session_shape_groups_resume_marginal_input_and_cache_share()
     assert "| position | sonnet-5-5:low/session marginal_input | sonnet-5-5:low/session cache_read_share |" in shown
     assert "| 1 | 2,010 | 0.0% |" in shown and "| 2 | 120 | 94.4% |" in shown and shown.index("| 2 |") < shown.index("| 6 |")
     assert br.empty_markers("<!-- bench:session pool -->\n<!-- /bench -->\n", out) == []
+
+
+def pool_rows(n):
+    import bench_pool as bp
+    kinds = ["fact", "count", "cites", "snippet", "offkb", "gap"]
+    return [{**bp.row(kinds[i % 6], "d0", "original", f"fixture:{i}", f"Question {i}?", [rf"value{i}"], "good"),
+             "question": f"Question {i}?"} for i in range(n)]
+
+
+def slow_first(finished):
+    """A fake runner: every run costs $0.01, and the first one started is the slowest, so runs finish out of start order."""
+    import itertools, time
+    import agent_bench
+    count = itertools.count()
+
+    def run(*args):
+        n = next(count)
+        time.sleep(0.04 if n == 0 else 0.001 * (n % 3))
+        r = agent_bench.result_of(pool_stream("value1"), "", 5.0)
+        bc.spent_run(r)
+        finished.append(n)
+        return r
+    return run
+
+
+def test_bench_pool_jobs_parallel_rows_equal_one_job_cap_stops_and_the_record_date_holds(monkeypatch, tmp_path):
+    import bench_pool as bp
+    rows, cells = pool_rows(12), bp.plan_cells(["sonnet-5-5", "haiku-4-5"], bp.EFFORTS)
+    spend = lambda: (round(bc.SPEND["usd"], 6), bc.SPEND["runs"])  # noqa: E731
+
+    def reset():
+        monkeypatch.setitem(bc.SPEND, "usd", 0.0)
+        monkeypatch.setitem(bc.SPEND, "runs", 0)
+    reset()
+    seen_one, seen_three, fin = [], [], []
+    one = bp.run_pool(rows[:4], cells, 2, slow_first([]), lambda rec, r: seen_one.append(rec["id"]))
+    assert len(one) == len(seen_one) == 24 and spend() == (0.24, 24)
+    reset()
+    three = bp.run_pool(rows[:4], cells, 2, slow_first(fin), lambda rec, r: seen_three.append(rec["id"]), jobs=3)
+    assert fin != sorted(fin) and three == one and seen_three == seen_one  # out of order in flight, in order in the rows
+    assert spend() == (0.24, 24)  # the shared spend lost no update to a thread
+    for jobs in (1, 3):  # the cap: no run starts once the finished runs cost it, those in flight finish, the rest are named
+        reset()
+        left = []
+        got = bp.run_pool(rows[:4], cells, 2, slow_first([]), None, jobs=jobs, cap=0.045, left=left)
+        assert got == one[:len(got)] and len(got) + len(left) == 24 and 5 <= len(got) <= 4 + jobs and spend()[1] == len(got)
+        assert (jobs > 1 or len(got) == 5) and left[0] == (one[len(got)]["label"], f"{one[len(got)]['id']}#{len(got) % 2 + 1}")
+    groups, _ = bp.session_groups(rows)  # a group's six questions stay in order inside one session, the records equal one job's
+    cell, order = [("sonnet-5-5", "low", "sonnet-5-5:low")], {}
+    fresh = slow_first([])
+
+    def session_runner(arm, effort, row, sid, position):
+        order.setdefault(sid, []).append(position)
+        return fresh(arm, effort, row)
+    flat = bp.run_sessions(groups, cell, 2, session_runner)
+    assert len(order) == 4 and all(p == [1, 2, 3, 4, 5, 6] for p in order.values())
+    order.clear()
+    fresh = slow_first([])
+    assert bp.run_sessions(groups, cell, 2, session_runner, jobs=3) == flat
+    assert len(order) == 4 and all(p == [1, 2, 3, 4, 5, 6] for p in order.values())
+    days = iter(["2026-10-09", "2026-10-10"])  # one record date: read once, at the start; a later midnight changes no row
+    monkeypatch.setattr(bc, "today", lambda: next(days))
+    monkeypatch.setattr(bc, "git", lambda *a, **k: "abc1234")
+    monkeypatch.setattr(bc.subprocess, "run", lambda *a, **k: type("P", (), {"stdout": "2.1.300 (Claude Code)"})())
+    monkeypatch.setattr("kbfacts.articles", lambda: [])
+    b = bc.Bench(tmp_path, 1)
+    b.row("pool", "all", "a", "m", 1)
+    assert bc.today() == "2026-10-10"  # the clock has passed midnight
+    b.row("pool", "all", "a", "m", 2)
+    assert {(r["record"], r["date"]) for r in b.rows} == {("2026-10-09", "2026-10-09")}
+
+
+def test_bench_pool_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row_and_dry_run_estimates(monkeypatch, capsys):
+    import types
+    import bench_pool as bp
+    monkeypatch.setitem(bc.SPEND, "usd", 0.0)
+    monkeypatch.setitem(bc.SPEND, "runs", 0)
+    monkeypatch.setattr(bp, "load_pool", lambda home, kinds=None: pool_rows(6))
+    monkeypatch.setattr(bp, "live_runner", lambda b, sh: slow_first([]))
+    monkeypatch.setattr(bp, "read_rows", lambda path: [])
+    b = types.SimpleNamespace(arms=["sonnet-5-5"], efforts=["low"], kinds=None, shape="fresh", seed=1, dry=False, reps=2, jobs=2,
+                              max_usd=0.045, rows=[], status=0)
+    b.row = lambda scenario, case, arm, metric, value, runs="", model="", note="": b.rows.append((case, arm, metric, value, note))
+    bp.s_pool(b)
+    stopped = [r for r in b.rows if r[2] == "spend_stopped"]
+    assert b.status == 1 and len(stopped) == 1 and stopped[0][:3] == ("not started", "sonnet-5-5:low", "spend_stopped")
+    assert stopped[0][3] == len(stopped[0][4].split(", ")) and 12 - stopped[0][3] in (5, 6) and "#" in stopped[0][4]
+    b.dry, b.rows = True, []
+    with pytest.raises(bp.Skip) as e:  # the estimate prices the stated default tokens at bench_core's prices
+        bp.s_pool(b)
+    run = (2000 * 2.0 + 8000 * 2.5 + 80000 * 0.10 + 1200 * 10.0) / 1e6
+    assert f"estimated spend ${12 * run:.2f}" in str(e.value) and "the default" in capsys.readouterr().out
+    hist = [{"scenario": "pool", "record": "2026-10-09", "case": "all", "arm": "x", "model": "claude-haiku-4-5", "metric": m,
+             "value": v} for m, v in (("input", "1000"), ("cache_read", "600"), ("cache_write", "100"), ("out", "50"))]
+    tokens, model, basis = bp.assumed_run("x", "haiku-4-5", hist)
+    assert (tokens, model, basis) == ({"uncached": 300, "cache_write": 100, "cache_read": 600, "out": 50}, "claude-haiku-4-5",
+                                      "the means of the record 2026-10-09")
