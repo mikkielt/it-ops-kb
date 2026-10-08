@@ -2563,3 +2563,15 @@ _Agent: kb-research_
 - See gitlab/job-log-timestamps.md.
 
 _Agent: kb-research_
+
+## QK-dataverse-mcp-server-connect-agents. How do agents connect to the Dataverse MCP server, which clients does it support, and what must be in place first?
+- Microsoft Dataverse acts as a remote MCP server at `https://{dataverseOrgName}.crm.dynamics.com/api/mcp`; Microsoft names Copilot Studio agents, GitHub Copilot in VS Code, GitHub Copilot CLI, Claude desktop and Claude Code as clients. [DOC S-f6atlxlo]
+- Prerequisite: a Power Platform administrator allows the client for the environment (Power Platform admin center, Settings, Product, Features, Dataverse Model Context Protocol, Advanced Settings, client record, Is Enabled = Yes); only Copilot Studio is on by default. [DOC S-lv2haaxp]
+- Copilot Studio: Tools, + Add tool, Model Context Protocol, Dataverse MCP Server, Add to agent. [DOC S-odxayrvf]
+- VS Code: Command Palette, MCP: Add Server, HTTP, the instance URL with `/api/mcp`; Copilot CLI: an `http` entry in `~/.copilot/mcp-config.json`. Both need the Microsoft GitHub Copilot client enabled. [DOC S-evcdmlat]
+- Claude desktop and Claude Code run the `@microsoft/dataverse` local proxy (`npx -y @microsoft/dataverse mcp <environment URL>`, Node.js 18 or later) after a tenant administrator grants admin consent to the Dataverse CLI app and the Dataverse CLI client is enabled; a direct connection to `/api/mcp` instead uses a custom Entra app with the `mcp.tools` permission whose client ID is added to the allowed clients. [DOC S-z3p44lkf]
+- Authorization at the data level follows Dataverse security roles and row-level security, with no separate MCP access control; use of the tools by agents built outside Copilot Studio is billed from 2025-12-15. [DOC S-oxdtvzaw, S-f6atlxlo]
+- The grant type, redirect URI and token audience of a direct Entra-app connection are not documented. [UNK]
+- See agents/dataverse-mcp-server.md.
+
+_Agent: kb-research_
