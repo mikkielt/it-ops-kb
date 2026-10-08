@@ -76,8 +76,9 @@ def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):
         w.writerows([wrong, row])
     code, out = tool("rag.py", "eval", "--file", str(bad))
     assert code == 1 and f"FAIL {wrong['id']}" in out and "questions=2 passed=1" in out, out[-1500:]
-    code, out = tool("rag.py", "eval", "--file", str(bad), "--min", "1")  # the held-out rate's form: at least N pass
-    assert code == 0 and "questions=2 passed=1" in out, out[-1500:]
+    assert f" {row['id']} " not in out, out[-1500:]  # a passing row is printed only with --all
+    code, out = tool("rag.py", "eval", "--file", str(bad), "--min", "1", "--all")  # the held-out rate's form: at least N pass
+    assert code == 0 and "questions=2 passed=1" in out and f"ok   {row['id']} " in out, out[-1500:]
 
 
 def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
