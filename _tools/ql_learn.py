@@ -160,10 +160,16 @@ def is_miss(e):
     return e.get("verdict") == "none" or (e.get("verdict") == "weak" and e.get("judged") != "answered")
 
 
+RULES_QUESTION_WORDS = 30  # the most words of a question a person or skill asks; a longer one is pasted text
+
+
 def rules_miss(e):
     """A lookup in the kb's own rule docs (an entry with `root` _self) that missed: it has a question (a set run has
-    none), no set, and its pack verdict was weak or none or the reader found no answer (route `miss`)."""
-    return (e.get("root") == RULES_ROOT and isinstance(e.get("question"), str) and "set" not in e
+    none), no set, no `item` (a `pack --item` lookup's question is the item's title and goal, text and no question)
+    and at most RULES_QUESTION_WORDS words, and its pack verdict was weak or none or the reader found no answer
+    (route `miss`)."""
+    return (e.get("root") == RULES_ROOT and isinstance(e.get("question"), str) and "set" not in e and "item" not in e
+            and len(e["question"].split()) <= RULES_QUESTION_WORDS
             and (e.get("verdict") in ("weak", "none") or e.get("route") == "miss"))
 
 
