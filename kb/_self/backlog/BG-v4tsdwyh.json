@@ -2,7 +2,7 @@
   "id": "BG-v4tsdwyh",
   "kind": "bug",
   "title": "selfdoc.py check fails: tools.md names a Sources heading content-rules.md no longer has",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -21,5 +21,18 @@
     "kb/_self/content-rules.md"
   ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Every sprint worker runs selfdoc.py check and hits this problem.",
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "a6c020cb5a1da10298cd1efa6636108789bf941d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
