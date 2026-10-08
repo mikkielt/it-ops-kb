@@ -2,7 +2,7 @@
   "id": "BG-6sdkqlsu",
   "kind": "bug",
   "title": "On Windows the land e2e test cannot add a worker worktree of its scenario clone: Filename too long",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P1",
@@ -23,5 +23,19 @@
     "kb/_self/tools.md"
   ],
   "notes": "Fixed on the Windows host (2026-10-08, CPython 3.14.7, Git for Windows): git_env() adds core.longpaths=true to its GIT_CONFIG_KEY entries. Repro before (origin/main 9b1a1ccc, inside sync's whole-suite gate): test_land_content_item_then_planted_failure failed at git worktree add, 'Filename too long' for the disa STIG xml. Repro after: exit 0, '1 passed in 62.49s'.",
-  "claimed_by": "worker-win"
+  "evidence": {
+    "commit": "b1ac52fcaa895b48aaff64cd1dca847f12123a5b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_land_content_item_then_planted_failure"
+        ],
+        "exit": 0,
+        "sha256": "d914ed76b0f0a601"
+      }
+    ]
+  }
 }
