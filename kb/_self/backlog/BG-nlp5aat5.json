@@ -2,7 +2,7 @@
   "id": "BG-nlp5aat5",
   "kind": "bug",
   "title": "On Windows land deletes a worker worktree's files, then fails, when a process has its working directory there",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P2",
@@ -61,5 +61,6 @@
       }
     }
   ],
-  "notes": "Premise (2026-10-07): the repro passes on macOS, where bl_land.live_processes asks lsof and the Windows branch (os.name == 'nt' returns None) never runs; the check forces that branch on any host (live_processes patched to (None, why), renames of the worktree refused) and exits 1 now (why None, file gone, unregistered). The proof is a Windows run. release_worker_worktree is also edited by ST-bum7owtw (SP-gkbtjjce), which lands first. Premise on the Windows host (2026-10-08, origin/main d5a26e12): the check exits 1 there: land removed the worktree as a clean worker's (why None, file kept False, still registered False)."
+  "notes": "Premise (2026-10-07): the repro passes on macOS, where bl_land.live_processes asks lsof and the Windows branch (os.name == 'nt' returns None) never runs; the check forces that branch on any host (live_processes patched to (None, why), renames of the worktree refused) and exits 1 now (why None, file gone, unregistered). The proof is a Windows run. release_worker_worktree is also edited by ST-bum7owtw (SP-gkbtjjce), which lands first. Premise on the Windows host (2026-10-08, origin/main d5a26e12): the check exits 1 there: land removed the worktree as a clean worker's (why None, file kept False, still registered False).",
+  "claimed_by": "worker-win"
 }
