@@ -221,7 +221,9 @@ def execute(cmd, prompt, cwd=KB, env=None, clean=False):
 
 
 def result_of(stdout, stderr, wall):
-    """The result fields of one run's stream-json `stdout` that took `wall` seconds (or {"error": ...})."""
+    """The result fields of one run's stream-json `stdout` that took `wall` seconds (or {"error": ...}). The run's
+    tokens, `out` too, are those of the result event's `usage` (the main loop); the `usage` of the stream's messages
+    (`requests`) carries partial output counts, so it gives the model and the prompt of each request, not the output."""
     seen, res = parse(stdout)
     if not res:
         return {"error": stderr[-500:]}
