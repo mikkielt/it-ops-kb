@@ -2,7 +2,7 @@
   "id": "ST-zqxgo47z",
   "kind": "story",
   "title": "Research: GitLab CI job log timestamps (FF_TIMESTAMPS) and the log line format",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "depends_on": [
     "ST-5vtfd3y4"
   ],
-  "notes": "Premise: the story's check (rag.py pack of the asked question). Run 2026-10-08 at plan: coverage none (not in the kb: ff_timestamp; route web), exit 1, reproduces. Real user's report: asked 2026-09-29 and 2026-09-30, queued gap F-98c7f667e2cd (kb/public/_gaps.md:1166)."
+  "notes": "Premise: the story's check (rag.py pack of the asked question). Run 2026-10-08 at plan: coverage none (not in the kb: ff_timestamp; route web), exit 1, reproduces. Real user's report: asked 2026-09-29 and 2026-09-30, queued gap F-98c7f667e2cd (kb/public/_gaps.md:1166).",
+  "claimed_by": "worker-ST-zqxgo47z"
 }
