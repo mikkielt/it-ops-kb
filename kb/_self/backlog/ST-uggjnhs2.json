@@ -21,8 +21,5 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ],
-  "depends_on": [
-    "ST-hr4hksct"
   ]
 }
