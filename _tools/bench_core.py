@@ -6,7 +6,7 @@ bench_retrieval.py, bench_querylog.py and bench_install.py the scenarios. This m
 and benchmarks.py, the facade, holds the command line (kb/_self/code.md, Layout and Imports; the commands and the
 scenarios are described in kb/_self/reports/benchmarks.md).
 """
-import csv, datetime, io, json, os, re, shutil, statistics, subprocess, sys, time, uuid
+import csv, datetime, io, json, os, re, shutil, statistics, subprocess, sys, threading, time, uuid
 from pathlib import Path
 
 import agent_bench
@@ -191,15 +191,22 @@ def no_plugin_env(extra=None):
 # ---------------------------------------------------------------------------------------------------- a run
 
 
+def today():
+    """The UTC date a run starts on."""
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+
+
 class Bench:
     """One `run`: the record's identity (date, commit, Claude Code version, kb size), the scratch directory and its
-    clones, and the rows written so far."""
+    clones, and the rows written so far. The date is read once, here, and stamps every row and every file name of the
+    run, so a run that crosses midnight stays one record."""
 
     def __init__(self, scratch, reps):
         self.scratch, self.reps = Path(scratch), reps
         self.scratch.mkdir(parents=True, exist_ok=True)
-        self.date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+        self.date = today()
         self.record = self.date
+        self.status = 0  # the exit code a scenario asks for (1: `pool` stopped at its --max-usd)
         self.commit = git("rev-parse", "--short=7", "HEAD", cwd=HOME)
         self.cc = (subprocess.run(["claude", "--version"], capture_output=True, text=True).stdout.split() or ["?"])[0]
         import kbfacts
@@ -290,14 +297,21 @@ class Bench:
 
 
 SPEND = {"usd": 0.0, "input": 0, "out": 0, "runs": 0}  # every paid run of this process
+SPEND_LOCK = threading.Lock()  # runs of a parallel scenario (`pool --jobs`) add to SPEND from their own threads
 RAW = {}  # the file a scenario's own stream runs are appended to
 
 
 def spent(cost, inp, out):
-    SPEND["usd"] += cost or 0
-    SPEND["input"] += inp or 0
-    SPEND["out"] += out or 0
-    SPEND["runs"] += 1
+    with SPEND_LOCK:
+        SPEND["usd"] += cost or 0
+        SPEND["input"] += inp or 0
+        SPEND["out"] += out or 0
+        SPEND["runs"] += 1
+
+
+def spent_usd():
+    with SPEND_LOCK:
+        return SPEND["usd"]
 
 
 def claude_json(argv, prompt, cwd, env=None, timeout=900):

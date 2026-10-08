@@ -29,6 +29,7 @@ The same code runs on Linux, macOS and Windows.
 ## Output
 
 - **Output is deterministic.** The same inputs give the same bytes: sorted iteration where order is not data, `\n` line endings, no BOM, and a clock or an environment value only where recording it is the tool's purpose.
+- **Threads leave the output as one worker's would.** A tool that runs subprocesses in parallel uses `concurrent.futures` threads and no extra dependency, writes what the runs return in the order of its input on the calling thread (never in the order they finish), and guards a counter the threads share with a lock (`bench_pool.run_tasks`, `bench_core.SPEND_LOCK`).
 - **Derived state converges.** A second run on unchanged inputs writes nothing and changes nothing (`build_index.py` twice, `querylog.py learn` and `apply` twice, `kbid.py add` with the same row). A `--check` form writes nothing and exits 1 when a run would change a file.
 - **A derived cache's key holds the form of its rule.** A cache of results one of our rules computed (a projection, a leak scan's verdicts or values) puts a form constant of that rule in its key or file name (`kbpublic.PROJECTION_FORM`, `SCAN_FORM`), bumped whenever the rule changes what it yields, so no result cached under an older rule is read; a cache of verbatim fetched text needs none.
 - **A file another process reads while a run writes it** (the query log's) is written whole or not at all: to a temporary name, then replaced.

@@ -38,6 +38,44 @@
   "depends_on": [
     "ST-ohz5si2o"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What is the default of benchmarks.py run --jobs when the flag is not given?",
+      "options": [
+        "1 (one run at a time, as before)",
+        "4",
+        "8"
+      ],
+      "recommendation": "1 (one run at a time, as before)",
+      "do": {
+        "1 (one run at a time, as before)": "ST-uxgaazfi",
+        "4": "ST-uxgaazfi",
+        "8": "ST-uxgaazfi"
+      },
+      "class": "design",
+      "answer": "1 (one run at a time, as before)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What exit code does run pool --dry-run give when its estimated spend is above --max-usd?",
+      "options": [
+        "0, with a line saying the estimate is over the cap",
+        "1"
+      ],
+      "recommendation": "0, with a line saying the estimate is over the cap",
+      "do": {
+        "0, with a line saying the estimate is over the cap": "ST-uxgaazfi",
+        "1": "ST-uxgaazfi"
+      },
+      "class": "design",
+      "answer": "0, with a line saying the estimate is over the cap",
+      "by": "agent"
+    }
+  ],
   "notes": "Operator's choice 2026-10-08, over cutting the record or running it over two days: ST-ji32ouga's full set is about 2,700 paid runs, 20-30 h sequential, and a record is one date. report --check passes before the work and pins every existing table; the failing check is -k bench_pool_jobs, which collects no test until the work adds one. Today no spend cap is enforced: benchmarks.py only reports SPEND after a scenario.",
   "claimed_by": "worker-ST-uxgaazfi"
 }

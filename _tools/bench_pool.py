@@ -13,10 +13,12 @@ imports agent_bench, bench_core and bench_retrieval and no facade (kb/_self/code
 """
 import csv, hashlib, json, os, random, re, shutil, subprocess, sys, tempfile, time, uuid
 from collections import Counter
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 
 import agent_bench
-from bench_core import HOME, RAW, SPEND, Skip, no_plugin_env, prompt_tokens, run_tokens, spent_run
+from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, Skip, est_cost, no_plugin_env, prompt_tokens, read_rows,
+                        resolve_model, run_tokens, spent_run, spent_usd, usage_sum)
 from bench_retrieval import numbered, sonnet_json
 
 SEED = 11
@@ -609,20 +611,48 @@ def cell_rows(runs):
     return out
 
 
-def run_pool(rows, cells, reps, runner, sink=None):
-    """Every row on every cell (a web arm only on WEB_KINDS), `reps` times: the run records, in cell order. `runner(arm,
-    effort, row)` is one run's result; `sink(record, result)` sees each as it is made."""
+def run_tasks(tasks, work, jobs=1, cap=None, emit=None):
+    """([result of each task started], [the tasks not started]): `work(task)` runs up to `jobs` at once, each task started
+    in list order; `emit(i, task, result)` sees the results in list order, on the calling thread, whatever order the
+    runs finish in. With `cap` (US dollars), no task is started once the spend of finished runs (bench_core.spent_usd,
+    since the call began) has reached it; the runs in flight finish."""
+    base = spent_usd()
+    done, flight, nxt, emitted = {}, {}, 0, 0
+    with ThreadPoolExecutor(max_workers=max(1, jobs)) as ex:
+        while True:
+            while nxt < len(tasks) and len(flight) < jobs and not (cap is not None and spent_usd() - base >= cap):
+                flight[ex.submit(work, tasks[nxt])] = nxt
+                nxt += 1
+            if not flight:
+                break
+            for f in wait(flight, return_when=FIRST_COMPLETED)[0]:
+                done[flight.pop(f)] = f.result()
+            while emitted in done:
+                if emit:
+                    emit(emitted, tasks[emitted], done[emitted])
+                emitted += 1
+    return [done[i] for i in range(nxt)], tasks[nxt:]
+
+
+def run_pool(rows, cells, reps, runner, sink=None, jobs=1, cap=None, left=None):
+    """Every row on every cell (a web arm only on WEB_KINDS), `reps` times: the run records, in cell order whatever order
+    `jobs` parallel runs finish in. `runner(arm, effort, row)` is one run's result; `sink(record, result)` sees each as it
+    is made, in that order. With `cap` (run_tasks), `left` is extended with (label, "id#rep") of each run not started."""
+    tasks = [(arm, effort, label, row, rep) for arm, effort, label in cells for row in rows if accepts(arm, row["kind"])
+             for rep in range(1, reps + 1)]
     runs = []
-    for arm, effort, label in cells:
-        mine = [r for r in rows if accepts(arm, r["kind"])]
-        for row in mine:
-            for _ in range(reps):
-                r = runner(arm, effort, row)
-                runs.append(record_of(row, arm, label, r))
-                if sink:
-                    sink(runs[-1], r)
-        print(f"pool: {label}: {len(mine) * reps} runs, {sum('error' in x for x in runs if x['label'] == label)} failed",
-              flush=True)
+
+    def emit(i, t, r):
+        runs.append(record_of(t[3], t[0], t[2], r))
+        if sink:
+            sink(runs[-1], r)
+    _, rest = run_tasks(tasks, lambda t: runner(t[0], t[1], t[3]), jobs, cap, emit)
+    if left is not None:
+        left += [(t[2], f"{t[3]['id']}#{t[4]}") for t in rest]
+    for _, _, label in cells:
+        n = sum(t[2] == label for t in tasks)
+        print(f"pool: {label}: {n} runs, {sum('error' in x for x in runs if x['label'] == label)} failed"
+              + (f", {sum(t[2] == label for t in rest)} not started" if rest else ""), flush=True)
     return runs
 
 
@@ -659,30 +689,45 @@ def session_fields(r, before):
     return out, last
 
 
-def run_sessions(groups, cells, reps, runner, sink=None):
+def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=None):
     """Every group on every cell, `reps` times, each in one session of its own: the run records in cell order, with the
     arm label `SESSION_SUFFIX` added, the group's number, the question's `position` and the `session_fields`.
     `runner(arm, effort, row, sid, position)` is one question's result: the first starts the session `sid`, each later
-    one resumes it. A failed question ends its session: the questions after it are recorded as errors."""
+    one resumes it. A failed question ends its session: the questions after it are recorded as errors. Up to `jobs`
+    sessions run at once (a session's questions stay in order inside it), the records come in the order `jobs` 1 gives,
+    and `cap` and `left` work as in run_pool, a session being the unit started or not (the name `group N#rep`)."""
+    tasks = [(arm, effort, label + SESSION_SUFFIX, number, group, rep) for arm, effort, label in cells
+             for number, group in enumerate(groups, 1) for rep in range(1, reps + 1)]
+
+    def session(t):
+        arm, effort, _, _, group, _ = t
+        sid, got, ended = str(uuid.uuid4()), [], 0
+        for position, row in enumerate(group, 1):
+            r = {"error": f"the session ended at position {ended}"} if ended else runner(arm, effort, row, sid, position)
+            if "error" in r:
+                ended = ended or position
+            got.append(r)
+        return got
     runs = []
-    for arm, effort, label in cells:
+
+    def emit(i, t, results):
+        before = 0
+        for position, (row, r) in enumerate(zip(t[4], results), 1):
+            rec = {**record_of(row, t[0], t[2], r), "group": t[3], "position": position}
+            if "error" not in r:
+                extra, before = session_fields(r, before)
+                rec.update(extra)
+            runs.append(rec)
+            if sink:
+                sink(rec, r)
+    _, rest = run_tasks(tasks, session, jobs, cap, emit)
+    if left is not None:
+        left += [(t[2], f"group {t[3]}#{t[5]}") for t in rest]
+    for _, _, label in cells:
         label += SESSION_SUFFIX
-        for number, group in enumerate(groups, 1):
-            for _ in range(reps):
-                sid, before, ended = str(uuid.uuid4()), 0, 0
-                for position, row in enumerate(group, 1):
-                    r = {"error": f"the session ended at position {ended}"} if ended else runner(arm, effort, row, sid, position)
-                    rec = {**record_of(row, arm, label, r), "group": number, "position": position}
-                    if "error" in r:
-                        ended = ended or position
-                    else:
-                        extra, before = session_fields(r, before)
-                        rec.update(extra)
-                    runs.append(rec)
-                    if sink:
-                        sink(rec, r)
-        print(f"pool: {label}: {len(groups) * len(groups[0]) * reps} runs, "
-              f"{sum('error' in x for x in runs if x['label'] == label)} failed", flush=True)
+        n = sum(t[2] == label for t in tasks)
+        print(f"pool: {label}: {n * len(groups[0])} runs, {sum('error' in x for x in runs if x['label'] == label)} failed"
+              + (f", {sum(t[2] == label for t in rest)} sessions not started" if rest else ""), flush=True)
     return runs
 
 
@@ -818,22 +863,85 @@ def s_pool(b):
     runs_of = (lambda arm: len(groups) * GROUP_SIZE * b.reps) if session else (  # noqa: E731
         lambda arm: sum(accepts(arm, r["kind"]) for r in rows) * b.reps)
     total = sum(runs_of(a) for a, _, _ in cells)
+    jobs, cap = max(1, getattr(b, "jobs", 1)), getattr(b, "max_usd", None)
     if getattr(b, "dry", False):
         for arm, _, label in cells:
             print(f"pool: {label}{SESSION_SUFFIX if session else ''}: {runs_of(arm)} runs")
         what = (f"{len(groups)} groups of {GROUP_SIZE} ({len(left)} rows left out), {len(cells) * len(groups) * b.reps} sessions"
                 if session else f"{len(rows)} rows")
-        raise Skip(f"dry run: {what}, {len(cells)} cells, {total} runs, no model started")
+        usd = estimate_lines(cells, runs_of, SESSION_SUFFIX if session else "", read_rows(RESULTS), jobs, cap)
+        raise Skip(f"dry run: {what}, {len(cells)} cells, {total} runs, no model started; estimated spend ${usd:.2f}")
 
     def sink(rec, r):
         if RAW.get("path"):
             with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
                 f.write(json.dumps({**rec, "answer": (r.get("answer") or "")[:2000]}) + "\n")
+    not_started = []
     if session:
-        runs = run_sessions(groups, cells, b.reps, live_session_runner(b), sink)
+        runs = run_sessions(groups, cells, b.reps, live_session_runner(b), sink, jobs, cap, not_started)
         for case, label, metric, value, n, model, note in session_rows(runs):
             b.row("pool", case, label, metric, value, n, model, note)
     else:
-        runs = run_pool(rows, cells, b.reps, live_runner(b, sh), sink)
+        runs = run_pool(rows, cells, b.reps, live_runner(b, sh), sink, jobs, cap, not_started)
     for case, label, metric, value, n, model, note in cell_rows(runs):
         b.row("pool", case, label, metric, value, n, model, note)
+    for label in dict.fromkeys(label for label, _ in not_started):
+        names = [name for lab, name in not_started if lab == label]
+        b.row("pool", "not started", label, "spend_stopped", len(names), len(names), note=", ".join(names))
+    if not_started:
+        b.status = 1
+        print(f"pool: stopped at the --max-usd cap of ${cap:.2f} with {len(not_started)} runs "
+              f"({'sessions' if session else 'runs'}) not started; the rows `spend_stopped` name them", flush=True)
+
+
+# ------------------------------------------------------------------------------------------------ the spend estimate
+
+# one run when the results hold no earlier pool record of its arm: about the mean of a Sonnet 5.5 lookup with the kb tools
+# (the `new-model` record of 2026-09-28: 90,140 input, 1,161 output), the input split as a run mostly reads its cache
+DEFAULT_RUN = {"uncached": 2_000, "cache_write": 8_000, "cache_read": 80_000, "out": 1_200}
+NO_MODEL_ARMS = ("hook",)  # no model: costs nothing
+
+
+def assumed_run(label, arm, history):
+    """(the figures of one run of arm label `label`, the pinned model that prices it, where they come from): the means of
+    the label's `all` cell in the newest earlier record of the results `history` when that record holds them, else
+    DEFAULT_RUN (none for the hook arm) priced as the arm's model (the router as sonnet-5-5)."""
+    mine = [r for r in history if r["scenario"] == "pool" and r["arm"] == label and r["case"] == "all"]
+    if mine:
+        record = max(r["record"] for r in mine)
+        got = {r["metric"]: r for r in mine if r["record"] == record}
+        if all(m in got for m in ("input", "cache_read", "cache_write", "out")):
+            v = {m: float(got[m]["value"]) for m in ("input", "cache_read", "cache_write", "out")}
+            model = got["input"]["model"]
+            return ({"uncached": v["input"] - v["cache_read"] - v["cache_write"], "cache_write": v["cache_write"],
+                     "cache_read": v["cache_read"], "out": v["out"]},
+                    model if model in PRICE else "claude-sonnet-5-5",
+                    f"the means of the record {record}")
+    model = resolve_model(agent_bench.MODEL.get(arm.removeprefix("web-"), "claude-sonnet-5-5"))
+    return ({k: 0 for k in DEFAULT_RUN} if arm in NO_MODEL_ARMS else dict(DEFAULT_RUN)), model, "the default"
+
+
+def run_usd(tokens, model):
+    """The list-price cost of one run of `tokens` ({uncached, cache_write, cache_read, out}) as a single request of `model`."""
+    usage = {"input_tokens": tokens["uncached"], "cache_creation_input_tokens": tokens["cache_write"],
+             "cache_read_input_tokens": tokens["cache_read"], "output_tokens": tokens["out"]}
+    return est_cost(usage_sum([{"model": model, "usage": usage}], model))
+
+
+def estimate_lines(cells, runs_of, suffix, history, jobs, cap):
+    """Print one line per cell with its expected spend, then the total; return the total in US dollars. An estimate, not a
+    measurement: each run is priced (bench_core.PRICE, single request) at the tokens `assumed_run` states for its cell,
+    web searches are not included, and the real spend depends on the runs."""
+    total = 0.0
+    for arm, _, label in cells:
+        tokens, model, basis = assumed_run(label + suffix, arm, history)
+        usd = runs_of(arm) * run_usd(tokens, model)
+        total += usd
+        print(f"pool: {label}{suffix}: estimate ${usd:.2f} for {runs_of(arm)} runs at {"no model" if arm in NO_MODEL_ARMS else model}: per run uncached "
+              f"{tokens['uncached']:,.0f}, cache write {tokens['cache_write']:,.0f}, cache read {tokens['cache_read']:,.0f}, "
+              f"output {tokens['out']:,.0f} tokens ({basis})")
+    print(f"pool: estimate ${total:.2f} in all at --jobs {jobs}: an estimate from the per-run token figures above and "
+          "bench_core's list prices (web searches left out), not a measurement")
+    if cap is not None and total > cap:
+        print(f"pool: the estimate is over --max-usd ${cap:.2f}: a run would stop before the last runs start")
+    return total
