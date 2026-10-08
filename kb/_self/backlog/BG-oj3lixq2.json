@@ -1,0 +1,20 @@
+{
+  "id": "BG-oj3lixq2",
+  "kind": "bug",
+  "title": "Three CODE tags in git-test-repositories.md carry no path#symbol pointer, so the contract lint fails",
+  "status": "todo",
+  "sprint": "SP-kyvu526t",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Each CODE part of the facts ST-umjb55sg added to kb/public/gitlab/git-test-repositories.md (the git show / cat-file and Git for Windows long-path facts) names its path#symbol pointer per source, so python3 .claude/skills/kb-verify/lint.py exits 0 and code landings stop at no lint step.",
+  "repro": {
+    "run": [
+      "python3",
+      ".claude/skills/kb-verify/lint.py"
+    ]
+  },
+  "touches": [
+    "kb/public/gitlab/git-test-repositories.md"
+  ]
+}
