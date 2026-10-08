@@ -2,7 +2,7 @@
   "id": "ST-dfxpv6i7",
   "kind": "story",
   "title": "A content sprint from the research queue lands on headless Sonnet with no operator step beyond its gates",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-vayhvwfy",
   "priority": "P1",
@@ -80,5 +80,57 @@
       "by": "operator"
     }
   ],
-  "notes": "Queue on 2026-10-07: 5 gap findings (python3 _tools/querylog.py queue), all raised by the kb's own development sessions; a real user's gap, when one arrives, goes first. Depends on ST-r7wvfqvw (Sonnet headless default, SP-d3hybrlv) so the run is the cheap one; a run before that lands is still evidence if every worker was started headless by hand. Benchmarking of the kb (retrieval, answer rate, cost per closed gap from backlog.py cost --research) starts with this sprint, not after the backlog is empty. Premise (2026-10-08, plan of SP-vayhvwfy): python3 _tools/querylog.py queue lists F-68c59a20a679 and F-114b1ea76574 (check 4 exit 1): reproduces; their questions pack weak and none. Checks 1-3 (backlog.py cost --research, rag.py eval --root public, check.py) pass before the work: they pin that the landed research keeps the eval and the contract green and that cost --research reads; the tasks' pack checks and check 4 prove the work. Pass before the work, pinning behaviour that must stay: `python3 _tools/backlog.py cost --research` (it reads), `python3 _tools/rag.py eval --root public` (the eval stays green), `python3 _tools/check.py` (the contract stays green). Each of those three checks passes before the work and why: each pins behaviour that must stay."
+  "notes": "Queue on 2026-10-07: 5 gap findings (python3 _tools/querylog.py queue), all raised by the kb's own development sessions; a real user's gap, when one arrives, goes first. Depends on ST-r7wvfqvw (Sonnet headless default, SP-d3hybrlv) so the run is the cheap one; a run before that lands is still evidence if every worker was started headless by hand. Benchmarking of the kb (retrieval, answer rate, cost per closed gap from backlog.py cost --research) starts with this sprint, not after the backlog is empty. Premise (2026-10-08, plan of SP-vayhvwfy): python3 _tools/querylog.py queue lists F-68c59a20a679 and F-114b1ea76574 (check 4 exit 1): reproduces; their questions pack weak and none. Checks 1-3 (backlog.py cost --research, rag.py eval --root public, check.py) pass before the work: they pin that the landed research keeps the eval and the contract green and that cost --research reads; the tasks' pack checks and check 4 prove the work. Pass before the work, pinning behaviour that must stay: `python3 _tools/backlog.py cost --research` (it reads), `python3 _tools/rag.py eval --root public` (the eval stays green), `python3 _tools/check.py` (the contract stays green). Each of those three checks passes before the work and why: each pins behaviour that must stay.",
+  "evidence": {
+    "commit": "76a531ca0991990f3504b566e4a9157926a5b35b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "cost",
+          "--research"
+        ],
+        "exit": 0,
+        "sha256": "7146e662f713586a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--root",
+          "public"
+        ],
+        "exit": 0,
+        "sha256": "4a2061c6f2506a17"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "1f36c66e381d49b1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/querylog.py','queue'],capture_output=True,text=True).stdout;left=[f for f in ('F-68c59a20a679','F-114b1ea76574') if f in o];print('still queued:',left or 'none');sys.exit(1 if left else 0)"
+        ],
+        "exit": 0,
+        "sha256": "d72d8ca0c1b91dc2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/backlog.py','cost','--research'],capture_output=True,text=True).stdout;miss=[i for i in ('TK-xr7fgoia','TK-6emrxewd') if i not in o];print('cost --research misses:',miss or 'none');sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "b1c6c3882e6c5a21"
+      }
+    ]
+  }
 }
