@@ -78,7 +78,9 @@
         "flag": "ST-bn3h34wr",
         "path-only": "ST-bn3h34wr"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "file-name",
+      "by": "operator"
     }
   ],
   "links": [
