@@ -1,0 +1,29 @@
+{
+  "id": "ST-rtmwsqgj",
+  "kind": "story",
+  "title": "list_usd prices a dated modelUsage key such as claude-haiku-4-5-20251001 at its pinned model instead of raising KeyError",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A run whose modelUsage names a dated model id (claude-haiku-4-5-20251001, as Claude Code reported on 2026-09-26) is priced at its pinned model's row (bench_pool.py near 909, bench_core.PRICE), or stops with a named error before any paid run, never a KeyError mid-scenario; found by the SP-2vhfsn4o review",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/bench_core.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o review"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ST-4w4yo6ca",
+  "kind": "story",
+  "title": "A same-day partial pool rerun replaces the earlier run's paid spend row, so pool verify (c) passes a correct record",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A same-day run of arm labels that overlap an earlier same-day run's paid: spend row replaces or splits that row (bench_pool.py near 1525), so pool verify (c) reads spend rows that equal the runs' costs; found by the SP-2vhfsn4o review in a simulated rerun (spend row 2.5566 against runs 2.5834)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o review"
+  ]
+}

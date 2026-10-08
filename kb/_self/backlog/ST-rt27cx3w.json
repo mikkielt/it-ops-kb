@@ -1,0 +1,26 @@
+{
+  "id": "ST-rt27cx3w",
+  "kind": "story",
+  "title": "bench_core.ALIAS's opus row cites a kb line that states which model the opus alias names",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb states which model Claude Code's opus alias resolves to and from which version (research through /kb-research if it lacks it), and bench_core.ALIAS's opus row cites that line as the haiku and sonnet rows do; found by the SP-2vhfsn4o review (rag.py pack coverage none)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_core.py",
+    "kb/public/**",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o review"
+  ]
+}

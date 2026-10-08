@@ -1,0 +1,29 @@
+{
+  "id": "ST-2p5ywkam",
+  "kind": "story",
+  "title": "fact_for skips a CSV header or a wrapped continuation line, so the last five path-only eval rows get a fact check",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "fact_for (bench_pool.py near 127) never picks a CSV header line or a wrapped continuation line as a row's fact; the five eval rows of kb/public/_retrieval/bench_pool.csv still path-only after ST-ly2p27q3 (BP-90f14342, BP-2413ce41, BP-f454bc83, BP-005970a5, BP-9e209bb8) and their variants get a fact check through pool build --redo under its breadth guard; found by the SP-2vhfsn4o review",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o review"
+  ]
+}

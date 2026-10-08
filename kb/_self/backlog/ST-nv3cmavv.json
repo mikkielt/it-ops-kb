@@ -1,0 +1,28 @@
+{
+  "id": "ST-nv3cmavv",
+  "kind": "story",
+  "title": "A two-shape pool run under a small --max-usd leaves every label of both shapes with runs",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Under a --max-usd below the dry-run estimate, a two-shape pool run leaves every label of both shapes with runs, as BG-kwxzwsfd meant (bench_pool.py near 1360, leg_cap): the first shape's overrun does not take the later shape's whole share; found by the SP-2vhfsn4o review (--max-usd 0.6: session labels 0 of 5 sessions)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o review"
+  ]
+}
