@@ -19,18 +19,25 @@ RESULTS = HOME / "kb" / "_self" / "reports" / "benchmarks.csv"
 FIELDS = ["scenario", "record", "date", "commit", "claude_code", "kb_topics", "case", "arm", "model", "metric", "value",
           "runs", "note"]
 # list prices per MTok of each pinned model, from the pricing page (PRICE_SOURCE): one tier per prompt length, each
-# (largest prompt in tokens it covers, None for the last, input, output, 5-minute cache write, cache read); a
-# run's cost and its effective input weights read the tier each request's prompt falls in. Plus $0.01 per web search
-# (the method of the subagent measurement). Each row's kb fact, all [DOC S2131]:
+# (largest prompt in tokens it covers, None for the last, input, output, 5-minute cache write, cache read, 1-hour
+# cache write); a run's cost and its effective input weights read the tier each request's prompt falls in, and each
+# request's cache writes at the TTL they were written for (`usage_sum`). Plus $0.01 per web search (the method of the
+# subagent measurement). Each row's kb fact, all [DOC S2131]; the 1-hour write is also at
+# kb/public/agents/agent-caching.md:23 (2x the input price) and :27 (Haiku 5.5's per-tier 5-minute and 1-hour writes):
 PRICE_SOURCE = "S2131"
 PRICE = {
-    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10),),  # kb/public/claude/ci-and-headless.md:87
-    "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01),  # kb/public/claude/ci-and-headless.md:90
-                         (None, 0.50, 2.50, 0.625, 0.05)),
-    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20),),  # kb/public/claude/ci-and-headless.md:89
-    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10),),  # kb/public/claude/ci-and-headless.md:87
-    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20),),  # kb/public/claude/ci-and-headless.md:88
+    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10, 2.0),),  # kb/public/claude/ci-and-headless.md:87
+    "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01, 0.20),  # kb/public/claude/ci-and-headless.md:90
+                         (None, 0.50, 2.50, 0.625, 0.05, 1.0)),
+    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:89
+    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10, 4.0),),  # kb/public/claude/ci-and-headless.md:87
+    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20, 8.0),),  # kb/public/claude/ci-and-headless.md:88
 }
+# the TTL a request's cache writes are priced at when its usage carries no per-TTL split (`cache_creation`), by the
+# billing surface of the run (kb/public/agents/agent-caching.md:41): one hour on a Claude subscription, five minutes on
+# an API key. The pool runs on a subscription on this host.
+SURFACE_WRITE_TTL = {"subscription": "1h", "api": "5m"}
+BILLING_SURFACE = "subscription"
 # the alias arms of a run and the model each names from a Claude Code version on; a run's own transcript names the model
 # it used, and that wins: this table only prices a run that reports none. The versions' kb facts: haiku from 2.1.293
 # kb/public/claude/ci-and-headless.md:85 [DOC S-ezqg74ki], sonnet from 2.1.284 kb/public/claude/ci-and-headless.md:86
@@ -422,28 +429,49 @@ def tier_label(model, i):
     return f"<={tiers[i][0] // 1000}k" if tiers[i][0] else f">{tiers[i - 1][0] // 1000}k"
 
 
-def usage_sum(reqs, model="", cc=""):
+def write_1h(usage, surface=BILLING_SURFACE):
+    """The cache-write tokens of one request's `usage` priced at the 1-hour rate: the `ephemeral_1h_input_tokens` of its
+    `cache_creation` split when it carries one (the rest at the 5-minute rate), else all of them when the run's billing
+    `surface` writes a 1-hour cache and none when it writes a 5-minute one (SURFACE_WRITE_TTL)."""
+    total = usage.get("cache_creation_input_tokens", 0) or 0
+    split = usage.get("cache_creation")
+    if isinstance(split, dict):
+        return min(total, split.get("ephemeral_1h_input_tokens", 0) or 0)
+    return total if SURFACE_WRITE_TTL[surface] == "1h" else 0
+
+
+def write_rate(p, surface=BILLING_SURFACE):
+    """The price per MTok of a cache write of a PRICE tier `p` on a run with no per-TTL split: its 1-hour or its 5-minute rate."""
+    return p[5] if SURFACE_WRITE_TTL[surface] == "1h" else p[3]
+
+
+def usage_sum(reqs, model="", cc="", surface=BILLING_SURFACE):
     """Token sums of a run's requests, priced as `model` (an alias or a pinned id) resolves on the run (resolve_model):
-    the model, the tokens of each of its price tiers, the highest tier reached (`tier`) and the effective input, which
-    weights a cache write 2x and a cache read by the model's read price over its input price."""
+    the model, the tokens of each of its price tiers (`cache_write` of which `write_1h` are written for one hour,
+    write_1h), the highest tier reached (`tier`) and the effective input, which weights a cache write by its rate over
+    the input price (1.25x for five minutes, 2x for one hour) and a cache read by the model's read price over its input
+    price."""
     u = lambda r, k: r["usage"].get(k, 0) or 0  # noqa: E731
     mid = resolve_model(model, next((r["model"] for r in reqs if r.get("model")), ""), cc)
     if mid not in PRICE:
         raise KeyError(f"no price for model {mid!r}: add it to bench_core.PRICE")
-    by_tier, top = [dict(uncached=0, cache_write=0, cache_read=0, out=0) for _ in PRICE[mid]], 0
+    by_tier, top = [dict(uncached=0, cache_write=0, write_1h=0, cache_read=0, out=0) for _ in PRICE[mid]], 0
     for r in reqs:
         i = tier_of(mid, u(r, "input_tokens") + u(r, "cache_creation_input_tokens") + u(r, "cache_read_input_tokens"))
         top = max(top, i)
         for k, f in (("uncached", "input_tokens"), ("cache_write", "cache_creation_input_tokens"),
                      ("cache_read", "cache_read_input_tokens"), ("out", "output_tokens")):
             by_tier[i][k] += u(r, f)
+        by_tier[i]["write_1h"] += write_1h(r["usage"], surface)
     unc, cw, cr = (sum(t[k] for t in by_tier) for k in ("uncached", "cache_write", "cache_read"))
     return {"model": mid, "tier": tier_label(mid, top), "by_tier": by_tier,
-            "uncached": unc, "cache_write": cw, "cache_read": cr, "input": unc + cw + cr,
+            "uncached": unc, "cache_write": cw, "write_1h": sum(t["write_1h"] for t in by_tier),
+            "cache_read": cr, "input": unc + cw + cr,
             "out": sum(t["out"] for t in by_tier), "requests": len(reqs),
             "start_ctx": (u(reqs[0], "input_tokens") + u(reqs[0], "cache_creation_input_tokens")
                           + u(reqs[0], "cache_read_input_tokens")) if reqs else 0,
-            "effective": sum(t["uncached"] + 2 * t["cache_write"] + round(p[4] / p[1], 6) * t["cache_read"]
+            "effective": sum(t["uncached"] + round(p[3] / p[1], 6) * (t["cache_write"] - t["write_1h"])
+                             + round(p[5] / p[1], 6) * t["write_1h"] + round(p[4] / p[1], 6) * t["cache_read"]
                              for t, p in zip(by_tier, PRICE[mid]))}
 
 
@@ -481,8 +509,10 @@ def run_tokens(r, name="", cc=""):
 
 
 def est_cost(s, searches=0):
-    """The list-price cost of a usage_sum run: each tier's tokens at that tier's prices."""
-    return sum(t["uncached"] * p[1] + t["cache_write"] * p[3] + t["cache_read"] * p[4] + t["out"] * p[2]
+    """The list-price cost of a usage_sum run: each tier's tokens at that tier's prices, its cache writes at their TTL's
+    rate (the 1-hour ones at the 1-hour rate)."""
+    return sum(t["uncached"] * p[1] + (t["cache_write"] - t["write_1h"]) * p[3] + t["write_1h"] * p[5]
+               + t["cache_read"] * p[4] + t["out"] * p[2]
                for t, p in zip(s["by_tier"], PRICE[s["model"]])) / 1e6 + searches * WEB_SEARCH_USD
 
 

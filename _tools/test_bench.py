@@ -18,7 +18,17 @@ def test_bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio():
     s = bc.usage_sum([req("claude-sonnet-5-5", 100, 1000, 10000, 500)], "sonnet", "2.1.284")
     assert s["model"] == "claude-sonnet-5-5" and s["tier"] == ""
     assert s["effective"] == 100 + 2 * 1000 + 0.05 * 10000  # the old fixed 0.1 gives 3100
-    assert round(bc.est_cost(s), 6) == round((100 * 2 + 1000 * 2.5 + 10000 * 0.10 + 500 * 10) / 1e6, 6)
+    # no per-TTL split in the usage: the writes are priced at the billing surface's TTL, one hour on a subscription
+    assert round(bc.est_cost(s), 6) == round((100 * 2 + 1000 * 4.0 + 10000 * 0.10 + 500 * 10) / 1e6, 6)
+    api = bc.usage_sum([req("claude-sonnet-5-5", 100, 1000, 10000, 500)], "sonnet", "2.1.284", surface="api")
+    assert api["effective"] == 100 + 1.25 * 1000 + 0.05 * 10000
+    assert round(bc.est_cost(api), 6) == round((100 * 2 + 1000 * 2.5 + 10000 * 0.10 + 500 * 10) / 1e6, 6)
+    # a split in the usage wins over the surface: 400 of the 1000 written tokens for one hour, 600 for five minutes
+    mixed = req("claude-sonnet-5-5", 100, 1000, 10000, 500)
+    mixed["usage"]["cache_creation"] = {"ephemeral_5m_input_tokens": 600, "ephemeral_1h_input_tokens": 400}
+    for surface in ("subscription", "api"):
+        m = bc.usage_sum([mixed], "sonnet", surface=surface)
+        assert round(bc.est_cost(m), 6) == round((100 * 2 + 600 * 2.5 + 400 * 4.0 + 10000 * 0.10 + 500 * 10) / 1e6, 6)
     opus = bc.usage_sum([req("claude-opus-5-5", 0, 0, 10000, 0)], "opus")
     haiku = bc.usage_sum([req("claude-haiku-4-5-20251001", 0, 0, 10000, 0)], "haiku")
     assert (opus["effective"], haiku["effective"]) == (500, 1000)
@@ -28,7 +38,7 @@ def test_bench_price_tier_is_recorded_and_alias_follows_the_run():
     run = [req("claude-haiku-5-5", 100, 1000, 10000, 500), req("claude-haiku-5-5", 100, 0, 150000, 500)]
     s = bc.usage_sum(run, "haiku")
     assert s["tier"] == ">100k" and bc.usage_sum(run[:1], "haiku")["tier"] == "<=100k"
-    first, second = (100 * 0.10 + 1000 * 0.125 + 10000 * 0.01 + 500 * 0.50), (100 * 0.50 + 150000 * 0.05 + 500 * 2.50)
+    first, second = (100 * 0.10 + 1000 * 0.20 + 10000 * 0.01 + 500 * 0.50), (100 * 0.50 + 150000 * 0.05 + 500 * 2.50)
     assert round(bc.est_cost(s), 6) == round((first + second) / 1e6, 6)
     # the transcript's model wins over the alias; with none reported the alias names its model on the Claude Code version
     assert bc.resolve_model("sonnet", "claude-sonnet-5-5") == "claude-sonnet-5-5"
@@ -182,6 +192,7 @@ def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost
     messages' output counts are partial (50 and 30); the result event's `modelUsage` counts `final_out` and its `usage`
     (the main loop) `main_out`, by default the same."""
     usage = lambda unc, write, read, out: {"input_tokens": unc, "cache_creation_input_tokens": write,  # noqa: E731
+                                           "cache_creation": {"ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": write},
                                            "cache_read_input_tokens": read, "output_tokens": out}
     events = [
         {"type": "assistant", "message": {"id": "m1", "model": model, "usage": usage(10, 2000, 0, 50),
@@ -221,14 +232,14 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     assert cell("fact", "sonnet-5-5:low", "effective_input") == 180 + 2 * 2000 + 0.05 * 2010  # Sonnet 5.5 reads at 0.05x
     assert cell("fact", "sonnet-5-5:low", "pack_tokens") == 120  # the prompt's growth less the request's output, not 480 / 4
     # the output is the sum of the result event's modelUsage counts (500: the main loop's 200 and a subagent's), not the
-    # messages' partial ones (50 + 30) nor the event's usage, and prices the run near its cost
-    planted = agent_bench.result_of(pool_stream("value1", final_out=500, cost=0.0105, main_out=200), "", 5.0)
+    # messages' partial ones (50 + 30) nor the event's usage; the stream writes its cache for one hour (its usage splits
+    # the writes by TTL), and the list cost, priced at the 1-hour rate, is near the run's reported cost
+    planted = agent_bench.result_of(pool_stream("value1", final_out=500, cost=0.0136, main_out=200), "", 5.0)
     t = bc.run_tokens(planted, "sonnet")
     assert t["out"] == planted["out"] == 500
-    usage = {"input_tokens": t["uncached"], "cache_creation_input_tokens": t["cache_write"],
-             "cache_read_input_tokens": t["cache_read"], "output_tokens": t["out"]}
-    listed = bc.est_cost(bc.usage_sum([{"model": "claude-sonnet-5-5", "usage": usage}], "sonnet"))
-    assert abs(listed - planted["cost"]) <= 0.2 * planted["cost"]
+    assert planted["requests"][0]["usage"]["cache_creation"]["ephemeral_1h_input_tokens"] == 2000
+    listed = bp.list_usd(planted, "sonnet")
+    assert abs(listed - planted["cost"]) <= 0.2 * planted["cost"]  # the 5-minute rate would price it 22% under
     assert cell("fact", "sonnet-5-5:low", "checks") == "1/2" and cell("fact", "sonnet-5-5:low", "fully_right") == "1 of 2"
     assert round(cell("fact", "sonnet-5-5:low", "fixed_share"), 4) == round(2010 / 4190, 4)
     assert cell("fact", "sonnet-5-5:low", "tokens_per_right") == 2 * 4280.5  # two runs' effective input over the one right

@@ -24,5 +24,20 @@
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which billing surface does a run default to when its usage has no per-TTL split of cache writes?",
+      "options": [
+        "subscription: cache writes priced at the 1-hour rate",
+        "API key: cache writes priced at the 5-minute rate"
+      ],
+      "recommendation": "subscription: cache writes priced at the 1-hour rate",
+      "class": "secrets",
+      "answer": "subscription: cache writes priced at the 1-hour rate",
+      "by": "operator"
+    }
+  ],
   "claimed_by": "worker-BG-6e7lim27"
 }

@@ -20,7 +20,7 @@ from typing import NamedTuple
 
 import agent_bench
 from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, WEB_SEARCH_USD, Skip, est_cost, no_plugin_env, prompt_tokens,
-                        read_rows, resolve_model, run_tokens, spent_run, spent_usd, usage_sum)
+                        read_rows, resolve_model, run_tokens, spent_run, spent_usd, usage_sum, write_rate)
 from bench_retrieval import numbered, sonnet_json
 
 SEED = 11
@@ -649,9 +649,9 @@ class Asked(Exception):
 
 def ask_estimate(items):
     """The list-price cost in USD of the one call that asks `items` (sonnet-5-5, an estimate: the prompt at 4 characters
-    a token, the claude -p overhead as a cache write)."""
+    a token, the claude -p overhead as a cache write at the billing surface's rate, `write_rate`)."""
     p = PRICE["claude-sonnet-5-5"][0]
-    return (ASK_OVERHEAD * p[3] + len(regex_prompt(items)) / 4 * p[1] + ASK_OUT * len(items) * p[2]) / 1e6
+    return (ASK_OVERHEAD * write_rate(p) + len(regex_prompt(items)) / 4 * p[1] + ASK_OUT * len(items) * p[2]) / 1e6
 
 
 def listed_ask(ask, dry_run, limits):
@@ -740,7 +740,6 @@ ROUTER_TIMEOUT_S = 1800
 SHAPES = ("fresh", "session")  # a fresh session per question, or six questions in one session
 SESSION_ARMS = ("haiku-5-5", "sonnet-5-5")  # the arms of the session shape: the kb's tools, models pinned by id
 GROUP_SIZE = 6
-CACHE_WRITE_1H = 2.0  # x the input price: the prompt cache a `claude -p` run writes lives 1 hour (agent-caching.md), and PRICE holds the 5-minute rate
 LIST_TOLERANCE = 0.2  # a run's cost is within this share of the list price of its counted tokens, or `pool verify` fails
 RESAMPLES = 1000  # the bootstrap draws of a cell's 95% interval (`interval`)
 SESSION_SUFFIX = "/session"  # an arm label of the session shape: `model:level/session`, beside the fresh label
@@ -879,14 +878,8 @@ def record_of(row, arm, label, r, cc=""):
             "turns": r.get("turns", 0), "wall_s": r.get("wall_s", 0), "cost": r.get("cost", 0), "checks": checks}
 
 
-def billed_usd(s):
-    """`est_cost` of a `usage_sum` run with each price tier's cache writes at CACHE_WRITE_1H times that tier's input price."""
-    return est_cost(s) + sum(t["cache_write"] * (CACHE_WRITE_1H * p[1] - p[3])
-                             for t, p in zip(s["by_tier"], PRICE[s["model"]])) / 1e6
-
-
 def list_usd(r, name="", cc="", searches=0):
-    """The list-price cost (`billed_usd`) of the tokens run `r` counts (`run_tokens`): its requests priced per model, the
+    """The list-price cost (`est_cost`) of the tokens run `r` counts (`run_tokens`): its requests priced per model, the
     run's own `out` in place of the requests' partial counts (the difference put in the highest price tier the requests
     reached, shared between models in proportion to their partial counts), and `searches` web searches."""
     groups = {}
@@ -900,7 +893,7 @@ def list_usd(r, name="", cc="", searches=0):
         top = max(i for i, t in enumerate(s["by_tier"]) if any(t.values()))
         add = extra * s["out"] / partial if partial else extra / len(sums)
         s["by_tier"][top]["out"] += max(add, -s["by_tier"][top]["out"])
-        total += billed_usd(s)
+        total += est_cost(s)
     return total + searches * WEB_SEARCH_USD
 
 
@@ -1373,7 +1366,7 @@ def run_usd(tokens, model):
     """The list-price cost of one run of `tokens` ({uncached, cache_write, cache_read, out}) as a single request of `model`."""
     usage = {"input_tokens": tokens["uncached"], "cache_creation_input_tokens": tokens["cache_write"],
              "cache_read_input_tokens": tokens["cache_read"], "output_tokens": tokens["out"]}
-    return billed_usd(usage_sum([{"model": model, "usage": usage}], model))
+    return est_cost(usage_sum([{"model": model, "usage": usage}], model))
 
 
 def estimate_lines(legs, history, jobs, cap):
