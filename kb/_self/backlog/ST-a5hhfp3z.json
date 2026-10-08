@@ -4,6 +4,7 @@
   "title": "The unit cache is kept per root set and the docs carry no measured sizes of it",
   "status": "draft",
   "parent": "EP-hlnsqx4f",
+  "sprint": "SP-vayhvwfy",
   "priority": "P3",
   "rank": 0,
   "goal": "kbunits.sqlite is keyed by the root set as the index files are (_root_key), or prunes only rows past a grace period, so a smaller root set's build does not drop the full corpus's rows; and kb/_self/tools.md and kb/_self/reports/test-suite-speed.md hold no current size or count of the cache or index; found by the SP-kjqdiudr review (ST-akicahgy).",
@@ -14,15 +15,53 @@
         "-c",
         "import inspect,sys;sys.path.insert(0,'_tools');import kbfacts as k;s=inspect.getsource(k._unit_cache_open);ok='_root_key' in s;print('unit cache keyed by root set:',ok);sys.exit(0 if ok else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;hits=[(p,m.group(0)) for p in ('kb/_self/tools.md','kb/_self/reports/test-suite-speed.md') for m in re.finditer(r'(kbunits[^.]{0,80}?|unit cache[^.]{0,80}?)\\d[\\d,.]*\\s*(MB|KB|MiB|KiB|GB|bytes)|\\d[\\d,.]*\\s*(MB|KiB|MiB) for this kb',open(p,encoding='utf-8').read())];print('measured cache sizes in docs:',hits or 'none');sys.exit(1 if hits else 0)"
+      ]
     }
   ],
   "touches": [
     "_tools/kbfacts.py",
     "kb/_self/tools.md",
     "kb/_self/reports/test-suite-speed.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-l34xg6jn",
+    "ST-dvzdykit"
+  ],
+  "gates": [
+    {
+      "id": "parked-rule",
+      "kind": "blocking",
+      "question": "This parked draft names no fitness test or real user's report (backlog.md, Sprints), only speed, and waits on sprint 1's BG-l34xg6jn and ST-dvzdykit: keep it in SP-vayhvwfy on the operator's selection, or move it out?",
+      "options": [
+        "keep",
+        "move-out"
+      ],
+      "recommendation": "move-out",
+      "do": {
+        "keep": "ST-a5hhfp3z",
+        "move-out": [
+          "python3",
+          "_tools/backlog.py",
+          "move",
+          "ST-a5hhfp3z",
+          "--sprint",
+          "none"
+        ]
+      },
+      "class": "design"
+    }
   ],
   "links": [
     "parked: SP-kjqdiudr review"
-  ]
+  ],
+  "notes": "Cross-sprint dependency: BG-l34xg6jn and ST-dvzdykit of sprint 1 (SP-caqrexqw) change the same _tools/kbfacts.py unit cache (_unit_cache_open and its key); this item is ordered after both have landed. Premise (2026-10-08, plan of SP-vayhvwfy): check 1 fails (kbfacts._unit_cache_open has no _root_key: unit cache keyed by root set: False, exit 1), reproduces; check 2 fails on kb/_self/reports/test-suite-speed.md:142 ('kbunits.sqlite, about 65 MB for this kb'), reproduces. Parked draft (parked: SP-kjqdiudr review) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out."
 }

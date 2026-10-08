@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "The goal's questions run through rag.py pack on 2026-10-08: the three outside-fact questions, the Dataverse MCP server (coverage good with a check: line on dsc/mcp-server.md, a false good, so none), cargo metadata --no-deps and rustc/build.rustc (coverage weak) and Python os.link EXDEV/NTFS (coverage none), are each researched by their own item, ST-aqjcisdi, TK-xr7fgoia and TK-6emrxewd; the false-good triage (ST-hcc7a3fd) works from the committed query log store, needing no outside facts; the code clauses' questions (which body lines check-trailers reads as trailers, how the sync gate lists renamed test files, whether a tests.py run with untracked files records a reuse key, a Windows path length guard in check.py, the unit cache's key by root set) are weak or none in rag.py pack --root _self only for want of tested _self questions and are answered from kb/_self/git.md, kb/_self/tools.md, kb/_self/maintaining.md and the code, needing no outside facts. Done with a 'No outside facts: <reason>' note naming that split.",
   "checks": [
     {
       "run": [

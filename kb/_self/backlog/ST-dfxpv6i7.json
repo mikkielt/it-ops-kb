@@ -4,9 +4,10 @@
   "title": "A content sprint from the research queue lands on headless Sonnet with no operator step beyond its gates",
   "status": "draft",
   "parent": "EP-gzr4mmkm",
+  "sprint": "SP-vayhvwfy",
   "priority": "P1",
   "rank": 0,
-  "goal": "A sprint whose committed items are one research item per gap finding of python3 _tools/querylog.py queue (at least three) runs through /kb-sprint run with every worker a headless claude -p --model sonnet session; every item lands and closes its gap finding (a Resolved note under its _gaps.md entry naming the finding id, DOC or CODE facts in the topic, python3 _tools/backlog.py cost --research listing the item with at least one closed gap); the operator's only steps are the sprint's start gate and the gates the items raise; and the review files its gaps as parked drafts (ST: review gaps park). The sprint's close commit is this story's evidence.",
+  "goal": "This sprint is the content sprint from the research queue, narrowed by the operator on 2026-10-08 to two queue gap findings: F-68c59a20a679 (cargo metadata --no-deps and whether it invokes rustc, .cargo/config.toml build.rustc; topic agents/codebase-mapping, kb/public/_gaps.md:1124) and F-114b1ea76574 (Python os.link: same-filesystem requirement, EXDEV, Windows NTFS support; topic python/stdlib-windows-portability, kb/public/_gaps.md:1058); F-384650090243 is left out, its question being backlog text. Each finding gets one research task worked by a headless claude -p --model sonnet worker through /kb-research --queue: DOC or CODE facts in the topic with source rows, a Resolved note under its _gaps.md entry naming the finding id, python3 _tools/querylog.py close F-ID --claim, and its question packs coverage good; python3 _tools/backlog.py cost --research then lists each task with a closed gap. The operator's only steps are the sprint's start gate and the gates its items raise, and the review files its gaps as parked drafts. The sprint's close commit is this story's evidence.",
   "checks": [
     {
       "run": [
@@ -30,10 +31,52 @@
         "python3",
         "_tools/check.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/querylog.py','queue'],capture_output=True,text=True).stdout;left=[f for f in ('F-68c59a20a679','F-114b1ea76574') if f in o];print('still queued:',left or 'none');sys.exit(1 if left else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/backlog.py','cost','--research'],capture_output=True,text=True).stdout;miss=[i for i in ('TK-xr7fgoia','TK-6emrxewd') if i not in o];print('cost --research misses:',miss or 'none');sys.exit(1 if miss else 0)"
+      ]
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/agents/codebase-mapping.csv",
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/_sources.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_answers.md",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md",
+    "kb/_querylog/findings/**"
   ],
-  "notes": "Queue on 2026-10-07: 5 gap findings (python3 _tools/querylog.py queue), all raised by the kb's own development sessions; a real user's gap, when one arrives, goes first. Depends on ST-r7wvfqvw (Sonnet headless default, SP-d3hybrlv) so the run is the cheap one; a run before that lands is still evidence if every worker was started headless by hand. Benchmarking of the kb (retrieval, answer rate, cost per closed gap from backlog.py cost --research) starts with this sprint, not after the backlog is empty."
+  "depends_on": [
+    "ST-hcc7a3fd"
+  ],
+  "gates": [
+    {
+      "id": "queue-size",
+      "kind": "blocking",
+      "question": "The story's fitness test asked for at least three queue gap findings; the plan narrows it to two (F-68c59a20a679, F-114b1ea76574). Accept two as its evidence, or add the queue's F-ae2f85ba904e (test suite size and test budget) as a third task?",
+      "options": [
+        "two",
+        "add-third"
+      ],
+      "recommendation": "two",
+      "do": {
+        "two": "ST-dfxpv6i7",
+        "add-third": "ST-dfxpv6i7"
+      },
+      "class": "querylog"
+    }
+  ],
+  "notes": "Queue on 2026-10-07: 5 gap findings (python3 _tools/querylog.py queue), all raised by the kb's own development sessions; a real user's gap, when one arrives, goes first. Depends on ST-r7wvfqvw (Sonnet headless default, SP-d3hybrlv) so the run is the cheap one; a run before that lands is still evidence if every worker was started headless by hand. Benchmarking of the kb (retrieval, answer rate, cost per closed gap from backlog.py cost --research) starts with this sprint, not after the backlog is empty. Premise (2026-10-08, plan of SP-vayhvwfy): python3 _tools/querylog.py queue lists F-68c59a20a679 and F-114b1ea76574 (check 4 exit 1): reproduces; their questions pack weak and none. Checks 1-3 (backlog.py cost --research, rag.py eval --root public, check.py) pass before the work: they pin that the landed research keeps the eval and the contract green and that cost --research reads; the tasks' pack checks and check 4 prove the work. Pass before the work, pinning behaviour that must stay: `python3 _tools/backlog.py cost --research` (it reads), `python3 _tools/rag.py eval --root public` (the eval stays green), `python3 _tools/check.py` (the contract stays green). Each of those three checks passes before the work and why: each pins behaviour that must stay."
 }

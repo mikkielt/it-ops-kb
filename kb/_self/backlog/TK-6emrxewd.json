@@ -1,0 +1,32 @@
+{
+  "id": "TK-6emrxewd",
+  "kind": "task",
+  "title": "Research queue gap F-114b1ea76574: Python os.link across filesystems (EXDEV) and on Windows NTFS",
+  "status": "draft",
+  "parent": "ST-dfxpv6i7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Close query log gap finding F-114b1ea76574 (kb/public/_gaps.md:1058, topic python/stdlib-windows-portability) through /kb-research --queue: from the Python docs and the platform docs they rest on (POSIX link(2) EXDEV, Win32 CreateHardLink on NTFS), that a hard link needs both paths on one filesystem or volume, what os.link raises when they are not (OSError with errno EXDEV on POSIX, the Windows error otherwise), and NTFS support; DOC facts in kb/public/python/stdlib-windows-portability.md with source rows, a Resolved note under the gap entry naming F-114b1ea76574, python3 _tools/querylog.py close F-114b1ea76574 --claim; the question then packs coverage good.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','Python os.link hard link: same filesystem requirement, EXDEV, Windows NTFS support','--budget','200'],capture_output=True,text=True);o=r.stdout;ls=o.splitlines();print(ls[0] if ls else r.stderr[:200]);sys.exit(r.returncode or int(not o.startswith('coverage: good') or any(l.startswith('check:') for l in ls)))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/_sources.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_answers.md",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md",
+    "kb/_querylog/findings/**"
+  ],
+  "depends_on": [
+    "ST-x3di6t23",
+    "TK-xr7fgoia"
+  ]
+}

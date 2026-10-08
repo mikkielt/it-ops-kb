@@ -1,0 +1,38 @@
+{
+  "id": "ST-hcc7a3fd",
+  "kind": "story",
+  "title": "Triage the false-good lookups of public-root user questions: each listed with a filed gap or eval row",
+  "status": "draft",
+  "parent": "EP-gzr4mmkm",
+  "sprint": "SP-vayhvwfy",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The committed query log store holds 25 entries the pack judged coverage good that Haiku judged missed (22 prompt, 3 kb_hook), 23 distinct questions, all on public-root articles and all real user questions, not backlog text; 22 of them have neither a lookup_eval.csv row nor a _gaps.md entry. Each distinct question is re-run with rag.py pack worded as asked and given one disposition per maintaining.md, Conduct for changes: the kb has the answer but the pack misses it or gives a false verdict, a kb/public/_retrieval/lookup_eval.csv row (with a doc2query expansion of only that article when the miss is paraphrase); the kb lacks the fact, a kb/public/_gaps.md entry under its topic; a row that fails only through the false good no verdict rule separates stays out of the eval file and is named in the commit. The questions are listed, each with its disposition, in this story's notes (a 'Triage:' line per question) and in the commit body. lookup_heldout.csv rows are left as they are.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,glob,sys;ev=open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8').read()+open('kb/public/_gaps.md',encoding='utf-8').read()+open('kb/_self/backlog/ST-hcc7a3fd.json',encoding='utf-8').read();qs=set();[qs.add(e['question']) for f in glob.glob('kb/_querylog/2026-*/**/*.jsonl',recursive=True) for l in open(f,encoding='utf-8') for e in [json.loads(l) if l.startswith('{') else {}] if e.get('verdict')=='good' and e.get('judged')=='missed'];miss=sorted(q for q in qs if q not in ev and json.dumps(q)[1:-1] not in ev);print('false-good questions:',len(qs),'without an eval row, gap entry or triage line:',len(miss));[print(' -',q[:100]) for q in miss];sys.exit(1 if miss or len(qs)<23 else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "public"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-aqjcisdi"
+  ],
+  "notes": "Premise: check 1, run 2026-10-08 at plan over the committed store: 23 distinct false-good questions (25 entries: verdict good, judged missed), 22 without an eval row, gap entry or triage line, exit 1: reproduces. The questions are real user lookups no eval row was tuned on, so the probe is on held-out inputs; the work then tunes on them, so the held-out answer rate (lookup_heldout.csv) stays the untuned measure. Check 2 (rag.py eval --root public) passes before the work: it pins that the added rows and expansions break no existing row. Blocks the held-out answer rate fitness test (kb/_self/tools.md): false goods inflate the answer rate."
+}

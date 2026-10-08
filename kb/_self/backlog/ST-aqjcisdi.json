@@ -1,0 +1,39 @@
+{
+  "id": "ST-aqjcisdi",
+  "kind": "story",
+  "title": "Research: the Dataverse MCP server and how agents connect to it",
+  "status": "draft",
+  "sprint": "SP-vayhvwfy",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A user asked on 2026-09-28 'Dataverse MCP server connect agents' and the pack answers coverage good with a check: line, because its lead is the DSC v3 article on the dsc mcp subcommand, which never mentions Dataverse: a false good, and the eval row EV-dataverse-mcp-server-connect-agents in kb/public/_retrieval/lookup_eval.csv pins that wrong article. Research it through /kb-add-topic (or /kb-research into an existing agents article) from Microsoft Learn: what the Dataverse MCP server is, which clients and agents connect to it (Copilot Studio, Claude, VS Code and others the docs name), how a client is connected and authorized, and its prerequisites; tagged DOC facts with source rows, the gap and answer ledgers updated; the eval row is repointed to the article that answers it. The question then packs coverage good with no check: line and a lead article that names Dataverse.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','Dataverse MCP server connect agents','--budget','300'],capture_output=True,text=True);o=r.stdout;ls=o.splitlines();print(ls[0] if ls else r.stderr[:200]);bad=[l for l in ls if l.startswith('check:')];print(*bad);lead=o.split('## ',1)[-1].split(chr(10),1)[0];print('lead:',lead[:80]);sys.exit(r.returncode or int(not o.startswith('coverage: good') or bool(bad) or 'dataverse' not in lead.lower()))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r=[x for x in csv.reader(open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8')) if x and x[0]=='EV-dataverse-mcp-server-connect-agents'];print(r);sys.exit(int(not r or not r[0][2].startswith('agents/')))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/dataverse-mcp-server.md",
+    "kb/public/_sources.csv",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md",
+    "kb/public/_retrieval/lookup_eval.csv"
+  ],
+  "depends_on": [
+    "ST-x3di6t23"
+  ],
+  "notes": "Premise: check 1 (rag.py pack of the question as asked). Run 2026-10-08 at plan: coverage good with 'check: public/dsc/mcp-server.md never mentions Dataverse', lead the DSC article, exit 1: a false good, reproduces; check 2: EV-dataverse-mcp-server-connect-agents expects the DSC article, exit 1. Real user's report: asked 2026-09-28 (query log entry 7a600174, judged answered by Haiku on a reply that went to Microsoft Learn)."
+}

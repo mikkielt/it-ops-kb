@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "check-trailers names a body line starting with a lowercase skill name such as kb-sprint: as a stray trailer and refuses the push",
   "status": "draft",
+  "sprint": "SP-vayhvwfy",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,11 +15,38 @@
       "import subprocess,sys,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import kg_trailers as k;t=Path(tempfile.mkdtemp());g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com','-c','commit.gpgsign=false',*a],cwd=t,check=True,capture_output=True,text=True).stdout;g('init','-q');(t/'notes.txt').write_text('x\\n',encoding='utf-8');g('add','notes.txt');g('commit','-q','--no-verify','-m','chore: planted\\n\\nkb-sprint: the planning commit before the claim sync.\\n\\nCo-Authored-By: Jan Kowalski <jan.kowalski@corp.example.com>');k.KB=str(t);a=k.trailer_audit(g('rev-parse','HEAD').strip(),quiet=True);out='\\n'.join(ln for _,ls in a[2] for ln in ls);print(out or 'check-trailers passes the prose line');sys.exit(1 if 'kb-sprint:' in out else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import kg_trailers as k;t=Path(tempfile.mkdtemp());g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@corp.example.com','-c','commit.gpgsign=false',*a],cwd=t,check=True,capture_output=True,text=True).stdout;g('init','-q');(t/'notes.txt').write_text('x',encoding='utf-8');g('add','notes.txt');g('commit','-q','--no-verify','-m','chore: planted'+chr(10)*2+'KB-Work: ST-aaaaaaaa'+chr(10)*2+'Co-Authored-By: Jan Kowalski <jan.kowalski@corp.example.com>');k.KB=str(t);a=k.trailer_audit(g('rev-parse','HEAD').strip(),quiet=True);out=chr(10).join(ln for _,ls in a[2] for ln in ls);print(out or 'stray KB-Work passes');sys.exit(0 if 'KB-Work: ST-aaaaaaaa' in out else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kg_trailers.py",
     "_tools/kg_hooks.py",
     "_tools/test_sync_e2e.py",
     "kb/_self/git.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "gates": [
+    {
+      "id": "stray-key",
+      "kind": "blocking",
+      "question": "How should kg_trailers.STRAY_KEY tell a stray trailer from a prose line like 'kb-sprint: ...'?",
+      "options": [
+        "known-keys",
+        "case-sensitive"
+      ],
+      "recommendation": "known-keys",
+      "do": {
+        "known-keys": "BG-qe46klco",
+        "case-sensitive": "BG-qe46klco"
+      },
+      "class": "push"
+    }
+  ],
+  "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the repro names 'not a trailer: kb-sprint: the planning commit before the claim sync.' as BAD, exit 1: reproduces. Gate stray-key options: known-keys = STRAY_KEY matches, case-insensitively, only the trailer keys kg_trailers knows (KB-Work, KB-Auto, the other KB-* keys it writes or reads, Self-Reviewed), so a lowercase 'kb-work:' typo is still refused and 'kb-sprint:' passes (recommended: keeps BG-dsab2ti3's typo catch); case-sensitive = drop re.I, so only 'KB-' and 'Self-Reviewed' in their own case count, and a lowercase typo of a real key passes unread. Check 1 passes before the work and why: it pins that a stray KB-Work line above the trailer block is still named and refused (the goal's second clause); the repro proves the fix."
 }

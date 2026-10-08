@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "check.py refuses a tracked path too long for a Windows clone's worker worktree",
   "status": "draft",
+  "sprint": "SP-vayhvwfy",
   "priority": "P3",
   "rank": 0,
   "goal": "check.py (or the gate a kb content commit runs) refuses a tracked path whose length, under a typical worker worktree prefix, passes the Windows path limit git hits without core.longpaths, so a long artifact path such as the 2025 STIG xccdf file (8a1e2de6) is caught on macOS at commit time instead of first failing a Windows landing; found by the SP-kjqdiudr close (BG-6sdkqlsu).",
@@ -18,9 +19,35 @@
   "touches": [
     "_tools/check.py",
     "kb/_self/tools.md",
-    "kb/_self/content-rules.md"
+    "kb/_self/content-rules.md",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "parked-rule",
+      "kind": "blocking",
+      "question": "This parked draft names no fitness test or real user's report (backlog.md, Sprints): keep it in SP-vayhvwfy on the operator's selection, or move it out?",
+      "options": [
+        "keep",
+        "move-out"
+      ],
+      "recommendation": "keep",
+      "do": {
+        "keep": "ST-icgtdnuf",
+        "move-out": [
+          "python3",
+          "_tools/backlog.py",
+          "move",
+          "ST-icgtdnuf",
+          "--sprint",
+          "none"
+        ]
+      },
+      "class": "design"
+    }
   ],
   "links": [
     "parked: SP-kjqdiudr close"
-  ]
+  ],
+  "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the check prints 'check.py guards Windows path length: False', exit 1: reproduces; the longest tracked path is 85 characters (git ls-files). The check reads text only; the worker adds the behaviour proof (a planted long path refused) within the test ceiling, and records the length budget it picks as a provisional gate. Parked draft (parked: SP-kjqdiudr close) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out."
 }
