@@ -2,7 +2,7 @@
   "id": "ST-icgtdnuf",
   "kind": "story",
   "title": "check.py refuses a tracked path too long for a Windows clone's worker worktree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vayhvwfy",
   "priority": "P3",
   "rank": 0,
@@ -51,5 +51,6 @@
   "links": [
     "parked: SP-kjqdiudr close"
   ],
-  "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the check prints 'check.py guards Windows path length: False', exit 1: reproduces; the longest tracked path is 85 characters (git ls-files). The check reads text only; the worker adds the behaviour proof (a planted long path refused) within the test ceiling, and records the length budget it picks as a provisional gate. Parked draft (parked: SP-kjqdiudr close) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out."
+  "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the check prints 'check.py guards Windows path length: False', exit 1: reproduces; the longest tracked path is 85 characters (git ls-files). The check reads text only; the worker adds the behaviour proof (a planted long path refused) within the test ceiling, and records the length budget it picks as a provisional gate. Parked draft (parked: SP-kjqdiudr close) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out.",
+  "claimed_by": "headless-sonnet"
 }
