@@ -38,6 +38,35 @@
     "ST-vku6q3n7",
     "ST-lwmcmied"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a pool rebuild keep the committed sample when the eval set grows?",
+      "options": [
+        "The build keeps the eval rows and near-miss bases of the file at --out and draws only the rows it lacks; a build to a new --out resamples",
+        "The build keeps the sample only when --seed equals a seed recorded in the file",
+        "The build resamples by a hash of seed and case id, so an added case may displace a row"
+      ],
+      "recommendation": "The build keeps the eval rows and near-miss bases of the file at --out and draws only the rows it lacks; a build to a new --out resamples",
+      "class": "design",
+      "answer": "The build keeps the eval rows and near-miss bases of the file at --out and draws only the rows it lacks; a build to a new --out resamples",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does an offline rebuild do with a committed path-only check whose fact line was a front-matter line?",
+      "options": [
+        "It keeps the committed check and asks no model; a later paid call can redo them",
+        "It drops the committed check and asks the model again"
+      ],
+      "recommendation": "It keeps the committed check and asks no model; a later paid call can redo them",
+      "class": "design",
+      "answer": "It keeps the committed check and asks no model; a later paid call can redo them",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-hm4qgf3t review"
   ],

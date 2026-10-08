@@ -105,7 +105,13 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path):
     assert rows == bp.build_public(tmp_path, 3, ask, out) and len(calls) == 2  # same seed, same rows
     bp.write_csv(out, rows)
     assert rows == bp.build_public(tmp_path, 3, lambda items: pytest.fail("a rebuild asks again"), out)  # checks are reused
-    assert [r["id"] for r in bp.build_public(tmp_path, 4, ask, out)] != [r["id"] for r in rows]
+    assert [r["id"] for r in bp.build_public(tmp_path, 4, ask, tmp_path / "other.csv")] != [r["id"] for r in rows]  # a new file resamples
+    ev_file = tmp_path / bp.EVAL_FILE
+    ev_file.write_text(ev_file.read_text(encoding="utf-8") + "".join(
+        f"EV-new{d},What does setting alpha{d * 4 + 1} beta{d * 4 + 1} gamma{d * 4 + 1} equal case new?,d{d}/a1.md,good,\n"
+        for d in range(6)), encoding="utf-8")
+    assert rows == bp.build_public(tmp_path, 3, lambda items: pytest.fail("a new eval row moves a row or asks"), out)  # the committed sample stays
+    assert bp.fact_for(tmp_path, {"question": "which status is complete for the topic", "expect_paths": "d0/a0.md"}) is None  # no front-matter line
     held = [r for r in rows if r["kind"] == "heldout"]
     assert all(r["question"] == "" and json.loads(r["checks"]) for r in held)
     assert "HELDOUT TEXT" not in out.read_text(encoding="utf-8") and "HELDOUT TEXT" in bp.question_of(held[0], tmp_path)
