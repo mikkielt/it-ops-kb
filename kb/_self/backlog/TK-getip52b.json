@@ -2,7 +2,7 @@
   "id": "TK-getip52b",
   "kind": "task",
   "title": "bench_core.PRICE and ALIAS cite the kb lines that state each price and alias version",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-xy5kmisr",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "_tools/bench_core.py",
     "kb/_self/code.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
