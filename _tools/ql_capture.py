@@ -32,6 +32,7 @@ SAFE_SESSION = re.compile(r"[A-Za-z0-9_-]{1,80}")  # a session id that is safe a
 STATUS = re.compile(r"\b(?:HTTP(?:/[\d.]+)?|status(?: code)?)\D{0,3}([1-5]\d\d)\b", re.I)
 WORK_ACTIONS = ("claim", "done", "release")  # the backlog.py commands that open or end a window of work on an item
 LAND_ACTIONS = ("land", "merge")  # the commands that end the orchestrator's work on an item; a success is stored as `done`
+PENDING_ACTION = "done-pending"  # a closing work command launched in the background: its `done` waits (settle_pending)
 BRANCH_ACTION = "branch"  # the `work` row of a session's first prompt on a `work/<id>` branch (branch_row)
 OPEN_ACTIONS = ("claim", BRANCH_ACTION)  # the `work` rows that open an item's window (usage_targets, ql_distill.work_windows)
 AGENT_ACTIONS = ("agent-start", "agent-stop")  # the `work` rows of a subagent's start and stop (agent_row)
@@ -525,7 +526,8 @@ def work_action(command):
     read as `done`. A landing ends the orchestrator's work on the item as `done` does, but runs `done` as a process of
     its own, so no hook sees that one: the `land` or `merge` the session ran closes the session's window of the item
     (usage_targets, ql_distill.work_windows) and a session that never claimed or branched the item gets a `done` that
-    opens and closes nothing."""
+    opens and closes nothing. One launched in the background is stored as `done-pending` instead (capture,
+    settle_pending): its PostToolUse fires before it runs."""
     call = work_call(command)
     return (call[0], "done" if call[1] in LAND_ACTIONS else call[1]) if call else None
 
@@ -623,9 +625,9 @@ def agent_hash(agent_id):
     return hashlib.sha256(f"{salt}\0{agent_id}".encode("utf-8")).hexdigest()[:AGENT_HASH_CHARS]
 
 
-def work_branch(cwd):
-    """(checkout root, item id) of the `work/<id>` branch checked out at `cwd` (or above it), read from the
-    repository's HEAD file with no process started, else None. The root is the directory that holds the `.git` entry."""
+def git_head(cwd):
+    """(checkout root, HEAD file) of the checkout at `cwd` (or above it), found with no process started, else None.
+    The root is the directory that holds the `.git` entry."""
     if not (isinstance(cwd, str) and cwd):
         return None
     try:
@@ -646,11 +648,23 @@ def work_branch(cwd):
                 break
         else:
             return None
-        ref = head.read_text(encoding="utf-8").strip()
+    except (OSError, ValueError):
+        return None
+    return d, head
+
+
+def work_branch(cwd):
+    """(checkout root, item id) of the `work/<id>` branch checked out at `cwd` (or above it), read from the
+    repository's HEAD file with no process started, else None (git_head)."""
+    found = git_head(cwd)
+    if found is None:
+        return None
+    try:
+        ref = found[1].read_text(encoding="utf-8").strip()
     except (OSError, ValueError):
         return None
     tail = ref[len(WORK_BRANCH_REF):] if ref.startswith(WORK_BRANCH_REF) else ""
-    return (d, tail) if WORK_ITEM.fullmatch(tail) else None
+    return (found[0], tail) if WORK_ITEM.fullmatch(tail) else None
 
 
 def work_branch_item(cwd):
@@ -660,14 +674,51 @@ def work_branch_item(cwd):
     return found[1] if found else None
 
 
-def item_doing(root, item):
-    """Whether the item file `kb/_self/backlog/<item>.json` under `root` exists and says `"status": "doing"`: a file
-    read, never a process."""
+def item_status(root, item):
+    """The `status` of the item file `kb/_self/backlog/<item>.json` under `root`, else None: a file read, never a
+    process."""
     try:
         data = json.loads((root / "kb" / "_self" / "backlog" / f"{item}.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return False
-    return isinstance(data, dict) and data.get("status") == "doing"
+        return None
+    return data.get("status") if isinstance(data, dict) else None
+
+
+def item_doing(root, item):
+    """Whether the item file `kb/_self/backlog/<item>.json` under `root` exists and says `"status": "doing"`."""
+    return item_status(root, item) == "doing"
+
+
+def launched_in_background(args, resp):
+    """Whether a shell call returned at its launch, before the command ran to its end: `run_in_background` in its
+    input, or a `backgroundTaskId` in its result (a command that reached its timeout and moved to the background).
+    Its PostToolUse then carries no output or exit status of the command (claude/hooks.md)."""
+    return args.get("run_in_background") is True or (isinstance(resp, dict) and bool(resp.get("backgroundTaskId")))
+
+
+def settle_pending(spool, sid, event, pid):
+    """The `done` rows written for the session's background landings that have landed since: an item with a
+    `done-pending` row (a `land`, `merge` or `done` launched in the background, capture) and no `done` or `release`
+    row after it gets a `done` row on this event's prompt once its file in the checkout at the event's directory
+    (git_head) says `"status": "done"`, so the window closes at the first hook after the landing succeeded and a
+    landing that stopped or was refused leaves it open. The pending row's `agent_id` is kept; a file read, never a
+    process."""
+    if not (isinstance(sid, str) and SAFE_SESSION.fullmatch(sid)):
+        return []
+    pending = {}
+    for r in rows(spool / f"{sid}.jsonl", '"work"'):
+        item = r.get("item") if r.get("surface") == "work" else None
+        if not isinstance(item, str):
+            continue
+        if r.get("action") == PENDING_ACTION:
+            pending[item] = r.get("agent_id")
+        elif r.get("action") in ("done", "release"):
+            pending.pop(item, None)
+    found = git_head(event.get("cwd")) if pending else None
+    if found is None:
+        return []
+    return [record("work", sid, prompt_id=pid, agent_id=agent, item=item, action="done")
+            for item, agent in pending.items() if item_status(found[0], item) == "done"]
 
 
 def agent_row(event, sid):
@@ -782,6 +833,10 @@ def capture(event):
         except Exception:  # noqa: BLE001 - capture never fails for its log
             pass
         try:
+            settle_pending(spool, sid, event, pid)  # a background landing that succeeded closes its window
+        except Exception:  # noqa: BLE001
+            pass
+        try:
             add_usage(spool, sid, event.get("transcript_path"), skip=pid)
         except Exception:  # noqa: BLE001
             pass
@@ -794,6 +849,10 @@ def capture(event):
             call_row(event, ok)  # the census row, beside whatever row the call gives below
         except Exception:  # noqa: BLE001 - capture never fails for its log
             pass
+        try:
+            settle_pending(spool, sid, event, pid)  # before this call's own row: a launch below starts a new wait
+        except Exception:  # noqa: BLE001
+            pass
         if not ok and event.get("is_interrupt") is True:  # distill counts it on the item of the prompt's window
             record("work", sid, prompt_id=pid, action="interrupt")
         m = KB_TOOL.fullmatch(tool)
@@ -805,6 +864,8 @@ def capture(event):
         if tool in SHELL_TOOLS and isinstance(args.get("command"), str):
             if ok:
                 work = work_action(args["command"])
+                if work and work[1] == "done" and launched_in_background(args, event.get("tool_response")):
+                    work = (work[0], PENDING_ACTION)  # it has not run yet: its done waits for the item file (settle_pending)
             else:
                 item = refused_done(event, args["command"])
                 work = (item, "refused") if item else None
@@ -824,6 +885,10 @@ def capture(event):
     if name in ("PermissionRequest", "PermissionDenied", "PreCompact", "PostCompact", "StopFailure"):
         return hook_ops_row(event)
     if name == "Stop":
+        try:
+            settle_pending(spool, sid, event, pid)  # a background landing that succeeded closes its window
+        except Exception:  # noqa: BLE001
+            pass
         if not used_kb(spool, sid, pid):
             return None
         return record("stop", sid, prompt_id=pid, answer=str(event.get("last_assistant_message") or ""))
