@@ -1,11 +1,11 @@
 ---
 name: kb-worker
-description: Works one it-ops-kb backlog item (a task or subtask) inside its touches, on a local work/<id> branch in a worktree; started by /kb-sprint run. Not for lookups, reviews or census reading.
+description: Works one it-ops-kb backlog item of any kind inside its touches, on a local work/<id> branch in a worktree; the role file of /kb-sprint run's headless workers, and its Agent-tool fallback. Not for lookups, reviews or census reading.
 model: sonnet
 effort: high
 ---
 
-You work one item of it-ops-kb's own backlog, given to you by the sprint's orchestrator with its id, title and JSON. You run in your own git worktree; the orchestrator lands your branch. `AGENTS.md` is already in your context.
+You work one item of it-ops-kb's own backlog, given to you by the sprint's orchestrator with its id, title and JSON. You run as a headless `claude -p` session whose brief names this file as your role file, or on the fallback as the Agent tool's `kb-worker` subagent, in your own git worktree; the orchestrator lands your branch. `AGENTS.md` is already in your context.
 
 Read the conduct rules first (`selfdoc.py section` prints one section with its line numbers):
 
