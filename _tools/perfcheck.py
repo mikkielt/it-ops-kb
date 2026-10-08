@@ -309,11 +309,12 @@ def dropped_warnings(root, text, only=None):
 RETIRED_PHRASE = "live-module calls went with"  # a retired feature's dropped tests: the live module's calls went too
 
 
-def names_removed(reason, root, code):
-    """True when REASON names a file that no longer exists, or a symbol or flag the code no longer holds."""
+def names_removed(reason, root, code, skip=()):
+    """True when REASON names a file that no longer exists, or a symbol or flag the code no longer holds; a token whose
+    last path part is in SKIP (the dropped ids' own files and tests) names nothing."""
     for m in REASON_TOKEN.finditer(reason or ""):
         tok = next(g for g in m.groups() if g)
-        if m.group(5):
+        if m.group(5) or tok.rsplit("/", 1)[-1] in skip:
             continue
         if tok.endswith(".py"):
             if not (Path(root) / tok).exists() and not (Path(root) / "_tools" / Path(tok).name).exists():
@@ -326,10 +327,11 @@ def names_removed(reason, root, code):
 def names_successor(reason, ids, root, code):
     """True when REASON names where the dropped tests went: a test (`test_*`, `Test*`) the code still holds that is
     not one of the dropped ids' own, or a test file (`test_*.py`) that exists and is not the dropped one; or it says the
-    live module's calls went with a retired feature (RETIRED_PHRASE) and names the removed module, file or symbol. A
-    reason that names only the dropped test itself, or a removed module without that phrase, excuses nothing."""
+    live module's calls went with a retired feature (RETIRED_PHRASE) and names a removed module, file or symbol that is
+    not one of the dropped ids' own file or test. A reason that names only the dropped test or its file, with or without
+    that phrase, or a removed module without that phrase, excuses nothing."""
     gone = {i.split("::")[-1] for i in ids} | {i.split("::")[0].rsplit("/", 1)[-1] for i in ids}
-    if RETIRED_PHRASE in (reason or "") and names_removed(reason, root, code):
+    if RETIRED_PHRASE in (reason or "") and names_removed(reason, root, code, gone):
         return True  # a retired feature: its live modules' calls went with the removed code the reason names
     for m in REASON_TOKEN.finditer(reason or ""):
         tok = next(g for g in m.groups() if g)
