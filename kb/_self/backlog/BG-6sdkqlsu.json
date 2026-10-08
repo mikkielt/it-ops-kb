@@ -22,5 +22,6 @@
     "kb/_self/code.md",
     "kb/_self/tools.md"
   ],
+  "notes": "Fixed on the Windows host (2026-10-08, CPython 3.14.7, Git for Windows): git_env() adds core.longpaths=true to its GIT_CONFIG_KEY entries. Repro before (origin/main 9b1a1ccc, inside sync's whole-suite gate): test_land_content_item_then_planted_failure failed at git worktree add, 'Filename too long' for the disa STIG xml. Repro after: exit 0, '1 passed in 62.49s'.",
   "claimed_by": "worker-win"
 }
