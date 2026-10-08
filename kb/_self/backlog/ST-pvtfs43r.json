@@ -32,6 +32,19 @@
     "kb/_self/maintaining.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "test-file",
+      "kind": "blocking",
+      "question": "The planted failure must live in _tools/test_land_e2e.py (notes, precheck) but touches and the goal's file list leave it out, so done would refuse the test commit as outside touches: where does the planted failure go?",
+      "options": [
+        "add _tools/test_land_e2e.py to touches and put the test there",
+        "no test file: a done check tests.py -k zzz_no_such_test with exit 2 and match zzz_no_such_test"
+      ],
+      "recommendation": "add _tools/test_land_e2e.py to touches and put the test there",
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "kb/_self/tools.md tests.py (modes, test.run row)",
     "kb/_self/backlog.md Sprints (rerun of done items' checks at land)"

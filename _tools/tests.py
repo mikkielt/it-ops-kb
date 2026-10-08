@@ -17,6 +17,12 @@ _tools/*.py in-process from its source text, writing no .pyc, and exits 1 naming
 (compile_warnings), such as an invalid escape sequence: a SyntaxWarning, a DeprecationWarning before Python 3.12. A
 cached .pyc does not warn and pytest only prints a warning, so a file no test imports would otherwise pass.
 
+A run with arguments (-k, named files, a --changed run given more) first collects its selection in one pytest, with no
+workers (selected_ids); one that collects no test exits 2 (EMPTY_EXIT) before any worker starts, with one line naming
+the selection as given and the files it looked in (empty_selection_line, `collects no test`), and records its test.run
+row with exit 2, selected 0 and workers 0. pytest's exit 5 is never returned: a run that still ends with it is said
+the same way and exits 2.
+
 The ceiling (_tools/tests_ceiling.json: max_ids, max_files, max_seconds per sys.platform, decision) is the most the
 suite may hold and the longest a full run may take. Every run checks the file count and that `decision` names an active
 decision of kb/_self/_decisions.csv made by the operator whose text holds the file's own numbers (ceiling_token), so a
@@ -46,7 +52,7 @@ pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lo
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
 under test stay stdlib-only. Shared fixtures and helpers are in conftest.py.
 """
-import contextlib, csv, datetime, json, os, pathlib, re, shutil, signal, subprocess, sys, tempfile, time, warnings
+import contextlib, csv, datetime, json, os, pathlib, re, shlex, shutil, signal, subprocess, sys, tempfile, time, warnings
 import xml.etree.ElementTree as ET
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -259,8 +265,9 @@ def inside_test():
     return bool(os.environ.get("PYTEST_CURRENT_TEST"))
 
 
-def record_run(mode, entry, args):
-    """Append the `test.run` row of one tests.py run; best effort: it returns None and raises nothing when ops capture is
+def record_run(mode, entry, args, workers=None):
+    """Append the `test.run` row of one tests.py run (`workers`: the count to record, default the run's
+    worker_count); best effort: it returns None and raises nothing when ops capture is
     unavailable, when the run is inside a test (a scenario clone's run never writes into the real spool) or when the
     row breaks its shape. A run a backlog check makes (bl_base.check_env) has KB_TEST_RUN_HOME, the clone's real query
     log directory: the row goes to that spool, not to the check's isolated home."""
@@ -271,7 +278,8 @@ def record_run(mode, entry, args):
         home = os.environ.get("KB_TEST_RUN_HOME")
         if home:
             ql_capture.spool_dir = lambda: pathlib.Path(home) / "spool"
-        return ql_capture.record("ops", event="test.run", **run_fields(mode, entry, worker_count(args), mode == "full"))
+        return ql_capture.record("ops", event="test.run", **run_fields(
+            mode, entry, worker_count(args) if workers is None else workers, mode == "full"))
     except Exception:  # noqa: BLE001 - a run never fails for its log
         return None
 
@@ -294,6 +302,50 @@ def run_pytest(args):
     finally:
         with contextlib.suppress(OSError):
             os.unlink(xml)
+
+
+EMPTY_EXIT = 2  # a selection that collects no test: never pytest's own exit 5, which reads as "nothing to do"
+EMPTY_WORDS = "collects no test"  # the refusal line's words; bl_land.selected_nothing reads them
+
+
+def collect_args(args):
+    """The pytest arguments of a run without the ones that start workers or write a report (-n, --dist,
+    --junitxml): a collection runs in this process's one pytest, never in workers."""
+    out, skip = [], False
+    for a in args:
+        if skip:
+            skip = False
+            continue
+        if a in ("-n", "--dist", "--junitxml"):
+            skip = True
+            continue
+        if (a.startswith("-n") and len(a) > 2) or a.startswith(("--dist=", "--junitxml=", "--numprocesses")):
+            continue
+        out.append(a)
+    return out
+
+
+def selected_ids(pytest_args):
+    """How many test ids pytest collects for these arguments (nothing runs, no worker starts): 0 when it collects none
+    (pytest's exit 5), None when pytest is missing or the collection fails another way (the real run reports that)."""
+    cmd = pytest_cmd()
+    if cmd is None:
+        return None
+    p = subprocess.run(cmd + ["--collect-only", "-q", "-p", "no:cacheprovider"] + collect_args(pytest_args), cwd=KB,
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if p.returncode == 5:
+        return 0
+    if p.returncode:
+        return None
+    return sum(1 for ln in p.stdout.splitlines() if "::" in ln and not ln.startswith(" "))
+
+
+def empty_selection_line(argv, args):
+    """The one line a run whose selection collects no test prints: the selector as given and the files it looked in."""
+    looked = path_args(args)
+    where = ", ".join(looked) if looked else f"_tools/ ({len(test_files())} test files)"
+    return (f"tests.py: the selection `{shlex.join(argv)}` {EMPTY_WORDS} in {where}: exit {EMPTY_EXIT}, no test ran "
+            "(pytest's exit 5 is never returned); name a test that exists, or drop the selector")
 
 
 def write_lint_baseline():
@@ -625,9 +677,20 @@ def run_main(argv):
         print(f"tests.py --changed {rev or 'HEAD'}: " + ("kb content only, the suite without the git scenarios"
                                                           if fast else "the whole suite"))
     mode = run_scope(args, changed_run, fast)
-    entry = run_pytest(([] if path_args(args) else [TOOLS]) + ([] if "-m" in args or not fast else ["-m", FAST_M]) + args)
+    pytest_args = ([] if path_args(args) else [TOOLS]) + ([] if "-m" in args or not fast else ["-m", FAST_M]) + args
+    if args:  # a selection: collect it first, so one that matches nothing is refused before any worker starts
+        start = time.monotonic()
+        if selected_ids(pytest_args) == 0:
+            print(empty_selection_line(argv, args), file=sys.stderr, flush=True)
+            record_run(mode, {"exit": EMPTY_EXIT, "ms": int((time.monotonic() - start) * 1000), "files": {}}, args,
+                       workers=0)
+            return EMPTY_EXIT
+    entry = run_pytest(pytest_args)
     if entry is None:
         return 2
+    if entry["exit"] == 5:  # the collection above could not tell (or was not asked): the run's own exit 5 is refused too
+        print(empty_selection_line(argv, args), file=sys.stderr, flush=True)
+        entry["exit"] = EMPTY_EXIT
     record_run(mode, entry, args)
     whole = not path_args(args) and not keyword_run(args) and "-m" not in args
     ran = sum(v[1] + v[2] + v[3] for v in entry["files"].values())

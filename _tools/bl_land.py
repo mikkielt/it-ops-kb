@@ -140,9 +140,20 @@ def refuse_done(iid, t0, reasons, message, checks=()):
     raise Refused(message)
 
 
+EMPTY_SELECTION = re.compile(r"^tests\.py: the selection .* collects no test in ", re.M)  # tests.py's refusal, exit 2
+
+
 def selected_nothing(code, out):
-    """True when a pytest run selected no tests (exit 5 with everything deselected, or no tests ran)."""
-    return bool(re.search(r"\bno tests ran\b", out) or (code == 5 and re.search(r"\bdeselected\b", out)))
+    """True when a test run selected no tests: tests.py's refusal (exit 2 and its `collects no test` line), or a pytest
+    run's own (exit 5 with everything deselected, or no tests ran)."""
+    return bool((code == 2 and EMPTY_SELECTION.search(out)) or re.search(r"\bno tests ran\b", out)
+                or (code == 5 and re.search(r"\bdeselected\b", out)))
+
+
+def gone_checks(it):
+    """The commands (argument lists) of a done item's checks that an earlier rerun found gone: its evidence's `gone`."""
+    ev = it.get("evidence")
+    return [list(g) for g in ev.get("gone", []) if isinstance(g, list)] if isinstance(ev, dict) else []
 
 
 def rerun_done_checks(bl, sid):
@@ -151,16 +162,25 @@ def rerun_done_checks(bl, sid):
     was done and fails now (another item broke it, or it never passed on main) is named before the sprint closes. One
     whose test run selects no test (selected_nothing: a later change deleted the test it names) is said as `gone` and
     not counted, since a done item's check cannot be repointed to a run that passes; a new item's done still refuses
-    such a selection as malformed (land_checks)."""
+    such a selection as malformed (land_checks). A gone check is found once per sprint: it is recorded in its item's
+    evidence (`gone`, saved: the review's done commits it with its own record, close names it in its summary) and is
+    not run again at the sprint's next landing."""
     out = []
     for i in sorted(bl.sprint_items(sid)):
         it = bl.items[i]
         if it.get("status") != "done" or it.get("review"):
             continue
+        gone = gone_checks(it)
         for c in list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else []):
+            if [str(x) for x in c["run"]] in gone:
+                say(f"gone rerun {i}: {shlex.join(c['run'])} was found gone at an earlier landing; not run again")
+                continue
             ok, code, text = run_check(bl.root, c)
             if not ok and selected_nothing(code, text):
                 say(f"gone rerun {i}: {shlex.join(c['run'])} selects no test (a later change deleted it); not counted")
+                gone.append([str(x) for x in c["run"]])
+                it["evidence"] = {**(it["evidence"] if isinstance(it.get("evidence"), dict) else {}), "gone": gone}
+                bl.save(it)
                 continue
             say(f"{'ok  ' if ok else 'FAIL'} rerun {i}: {shlex.join(c['run'])}")
             if not ok:
@@ -281,7 +301,8 @@ def cmd_done(bl, a):
         refuse_done(iid, t0, ["no-op-proof"], str(e), [c["run"] for c, out in passed if noop_output(out)])
     if it.get("review"):  # every done item's proof, once more on the sprint's tip: one that fails here does not close
         stale = rerun_done_checks(bl, bl.sprint_of(iid))
-        if stale:
+        if stale:  # the gone checks it recorded are committed first, so the next landing does not run them again
+            commit_written(bl, a, "record gone checks for", iid)
             refuse_done(iid, t0, ["check-failed"], f"{bl.label(iid)} is not done: {len(stale)} check(s) of done items "
                         "fail on the sprint's tip:\n  " + "\n  ".join(f"{bl.label(i)}: `{shlex.join(c['run'])}` exits "
                                                                      f"{code}" for i, c, code in stale)
@@ -1322,12 +1343,14 @@ def summary_key(bl, iid):
 
 
 def summary_line(bl, iid, gone):
-    """One commit-body line for an item close deletes: its id, title, kind, status and the commit done recorded."""
+    """One commit-body line for an item close deletes: its id, title, kind, status and the commit done recorded, with
+    the checks the review's rerun found gone (gone_checks)."""
     it = bl.items[iid]
     depth = sum(1 for p in bl.ancestors(iid) if p in gone)
     ev = (it.get("evidence") or {}).get("commit") if isinstance(it.get("evidence"), dict) else None
     at = f" at {ev[:10]}" if ev else ", no evidence commit"
-    return f"{'  ' * depth}- {bl.label(iid)} ({it.get('kind', '')}): {it.get('status', '')}{at}"
+    dead = "".join(f"; gone check: {shlex.join(g)}" for g in gone_checks(it))
+    return f"{'  ' * depth}- {bl.label(iid)} ({it.get('kind', '')}): {it.get('status', '')}{at}{dead}"
 
 
 def refused_dones(root, ids):
