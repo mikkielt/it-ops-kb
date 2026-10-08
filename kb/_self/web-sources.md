@@ -22,7 +22,7 @@ How the kb reads web pages, which route each source family takes, and the runboo
 | PDF documents | WebSearch | download with `curl` into `_cache/`, read with the Read tool by page range | WebFetch (it returns little or nothing from a PDF) |
 | anything else | WebSearch | `curl` the page and find the sentence in its text; WebFetch only to locate the passage | a WebFetch summary as the quote |
 
-A staged family adds its row here. Every host of `_tools/providers.csv` has a row here, and the query log's `learn` reads this table for a host's staging level when the registry has no row for it (`kb/_self/querylog.md`, Learn).
+A staged family adds its row here. A WebFetch on a host whose row's avoid cell names WebFetch is denied by the PreToolUse hook `_tools/kb_hook.py`, its reason naming the row's find and read cells (`kb/_self/tools.md`). Every host of `_tools/providers.csv` has a row here, and the query log's `learn` reads this table for a host's staging level when the registry has no row for it (`kb/_self/querylog.md`, Learn).
 
 ## When a family needs staging
 

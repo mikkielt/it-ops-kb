@@ -255,6 +255,15 @@
         ]
       },
       {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kb_hook.py"
+          }
+        ]
+      },
+      {
         "matcher": "PowerShell",
         "hooks": [
           {
