@@ -2,7 +2,7 @@
   "id": "ST-w3ikanna",
   "kind": "story",
   "title": "Every revision read in the tools uses git cat-file blob, so a deep Windows checkout reads it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kyvu526t",
   "priority": "P1",
@@ -29,5 +29,6 @@
     "kb/_self/git.md",
     "kb/_self/content-rules.md"
   ],
-  "notes": "Premise (2026-10-07): the check exits 1 with every reader returning None, empty or an error once git show REV:PATH is refused; commits 8f89bb8f and 1d6abb8d converted the other readers. kbdecide.old_text is not exercised by the check (it needs a fact key) and follows deleted_version's pattern."
+  "notes": "Premise (2026-10-07): the check exits 1 with every reader returning None, empty or an error once git show REV:PATH is refused; commits 8f89bb8f and 1d6abb8d converted the other readers. kbdecide.old_text is not exercised by the check (it needs a fact key) and follows deleted_version's pattern.",
+  "claimed_by": "worker-w3ikanna"
 }
