@@ -2,7 +2,7 @@
   "id": "ST-gxpwsrhw",
   "kind": "story",
   "title": "tests.py fails on a compile warning in any tool or test file",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kyvu526t",
   "priority": "P2",

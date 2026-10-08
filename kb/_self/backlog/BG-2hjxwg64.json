@@ -2,7 +2,7 @@
   "id": "BG-2hjxwg64",
   "kind": "bug",
   "title": "kbfacts.content_key keeps an assume-unchanged or skip-worktree file's index blob after a local edit",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kyvu526t",
   "priority": "P3",

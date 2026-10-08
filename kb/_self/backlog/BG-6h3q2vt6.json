@@ -2,7 +2,7 @@
   "id": "BG-6h3q2vt6",
   "kind": "bug",
   "title": "The Defender section of test-suite-speed.md sums its groups to 84.0 s against a stated 84.2 s and names no duration unit",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kyvu526t",
   "priority": "P3",

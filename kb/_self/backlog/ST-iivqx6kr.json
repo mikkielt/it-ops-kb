@@ -2,7 +2,7 @@
   "id": "ST-iivqx6kr",
   "kind": "story",
   "title": "The kb states that Get-MpPerformanceReport -Raw durations are 100-nanosecond intervals",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kyvu526t",
   "priority": "P3",

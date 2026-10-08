@@ -2,7 +2,7 @@
   "id": "ST-w3ikanna",
   "kind": "story",
   "title": "Every revision read in the tools uses git cat-file blob, so a deep Windows checkout reads it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kyvu526t",
   "priority": "P1",
