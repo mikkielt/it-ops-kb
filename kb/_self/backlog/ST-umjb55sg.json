@@ -2,7 +2,7 @@
   "id": "ST-umjb55sg",
   "kind": "story",
   "title": "Research sprint goal: Tools read revisions, worktrees and the index key right on any host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kyvu526t",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "research-umjb55sg"
+  "evidence": {
+    "commit": "3712d263bbb3f08c3c2ac532a23870c279d83ad4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-umjb55sg"
+        ],
+        "exit": 0,
+        "sha256": "ed9b8341fb981b84"
+      }
+    ]
+  }
 }
