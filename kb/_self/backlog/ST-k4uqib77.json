@@ -51,7 +51,9 @@
         "Land the markers now and change this item's check (operator-only)"
       ],
       "recommendation": "Build the scenario, the bench_report.py tables and report --check's no-rows rule now (proved by a planted-marker test); the section of benchmarks.md gets its setup text and Counting method now and its bench: table markers land with ST-ji32ouga's record",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Build the scenario, the bench_report.py tables and report --check's no-rows rule now (proved by a planted-marker test); the section of benchmarks.md gets its setup text and Counting method now and its bench: table markers land with ST-ji32ouga's record",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -77,7 +79,7 @@
       "recommendation": "Web arms run the kinds fact, csv_fact, multi, synthesis, offkb, snippet and false_good (questions a web search can answer), at the model's default effort only; the kb arms run at both levels",
       "class": "design",
       "answer": "Web arms run the kinds fact, csv_fact, multi, synthesis, offkb, snippet and false_good (questions a web search can answer), at the model's default effort only; the kb arms run at both levels",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
