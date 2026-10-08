@@ -29,7 +29,11 @@
     "AGENTS.md",
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/bl_check.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_land.py",
+    "_tools/backlog.py"
   ],
   "depends_on": [
     "BG-jxyfzf6d",
