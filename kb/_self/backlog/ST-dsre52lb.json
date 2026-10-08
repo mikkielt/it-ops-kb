@@ -24,5 +24,33 @@
   "depends_on": [
     "BG-czj7oox2"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Are words shorter than three characters ever candidate words for pair_word?",
+      "options": [
+        "min-length-3",
+        "no-min-length"
+      ],
+      "recommendation": "min-length-3",
+      "class": "design",
+      "answer": "min-length-3",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which wording does querylog.md use for a line with two or more candidate words?",
+      "options": [
+        "word-pair-left-to-a-person",
+        "finding-stays-open-for-a-person"
+      ],
+      "recommendation": "word-pair-left-to-a-person",
+      "class": "querylog",
+      "answer": "word-pair-left-to-a-person",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-dsre"
 }
