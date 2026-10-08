@@ -2,7 +2,7 @@
   "id": "BG-dzbzskjq",
   "kind": "bug",
   "title": "clone_home and main_worktree resolve a relative gitdir against the working directory",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-kyvu526t",
   "priority": "P3",
@@ -29,5 +29,6 @@
   ],
   "depends_on": [
     "ST-w3ikanna"
-  ]
+  ],
+  "claimed_by": "worker-dzbzskjq"
 }
