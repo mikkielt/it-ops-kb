@@ -44,6 +44,75 @@
   "depends_on": [
     "ST-vua43tob"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does --sample N pick its rows?",
+      "options": [
+        "N rows of each kind, drawn per kind by a generator seeded from --seed and the kind, over the whole pool before any kind filter; the kept rows keep the pool's order",
+        "N rows of each kind, drawn after --kinds and --arm-kinds, so an arm's sample depends on its kinds"
+      ],
+      "recommendation": "N rows of each kind, drawn per kind by a generator seeded from --seed and the kind, over the whole pool before any kind filter; the kept rows keep the pool's order",
+      "class": "design",
+      "answer": "N rows of each kind, drawn per kind by a generator seeded from --seed and the kind, over the whole pool before any kind filter; the kept rows keep the pool's order",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does the session shape do with --arm-kinds and --arm-reps?",
+      "options": [
+        "A key ARM applies to both shapes, a key ARM/session overrides it in the session shape only, and each session arm's groups are built from its own kinds",
+        "Only ARM keys exist and they apply to both shapes; the session shape groups the same rows for every arm",
+        "The session shape ignores both flags and takes --kinds and --reps"
+      ],
+      "recommendation": "A key ARM applies to both shapes, a key ARM/session overrides it in the session shape only, and each session arm's groups are built from its own kinds",
+      "class": "design",
+      "answer": "A key ARM applies to both shapes, a key ARM/session overrides it in the session shape only, and each session arm's groups are built from its own kinds",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How is the one --max-usd shared between the shapes of a run, and what does a stop exit with?",
+      "options": [
+        "The shapes run in the order given; each starts runs only while the spend of the whole run so far is under the cap, so a shape after a spent cap starts none and records every unit as spend_stopped; exit 1 as with one shape",
+        "The cap is split between the shapes by their estimated spend",
+        "The cap applies to the first shape only"
+      ],
+      "recommendation": "The shapes run in the order given; each starts runs only while the spend of the whole run so far is under the cap, so a shape after a spent cap starts none and records every unit as spend_stopped; exit 1 as with one shape",
+      "class": "design",
+      "answer": "The shapes run in the order given; each starts runs only while the spend of the whole run so far is under the cap, so a shape after a spent cap starts none and records every unit as spend_stopped; exit 1 as with one shape",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "What is the syntax of --shape, --arm-reps and --arm-kinds, and how are bad values handled?",
+      "options": [
+        "--shape takes fresh, session or both comma separated; --arm-reps and --arm-kinds take ARM=VALUE pairs comma separated or by repeating the flag, kinds joined by +; an unknown shape, arm or kind, a repeated key, or an arm the run does not run (opus-5-5 without --arms, a session key without the session shape) exits 2 with a message, and --kinds is checked against the known kinds too",
+        "The same syntax, but a name the run does not run is a warning and is ignored"
+      ],
+      "recommendation": "--shape takes fresh, session or both comma separated; --arm-reps and --arm-kinds take ARM=VALUE pairs comma separated or by repeating the flag, kinds joined by +; an unknown shape, arm or kind, a repeated key, or an arm the run does not run (opus-5-5 without --arms, a session key without the session shape) exits 2 with a message, and --kinds is checked against the known kinds too",
+      "class": "design",
+      "answer": "--shape takes fresh, session or both comma separated; --arm-reps and --arm-kinds take ARM=VALUE pairs comma separated or by repeating the flag, kinds joined by +; an unknown shape, arm or kind, a repeated key, or an arm the run does not run (opus-5-5 without --arms, a session key without the session shape) exits 2 with a message, and --kinds is checked against the known kinds too",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "With --shape fresh,session and --arms, which arms does each shape run?",
+      "options": [
+        "fresh runs the arms named (default DEFAULT_ARMS); session runs those of them that are session arms, else all session arms; an arm named that no shape can run is an error only under --shape session alone",
+        "Both shapes run the arms named, and a non-session arm in the session shape is an error"
+      ],
+      "recommendation": "fresh runs the arms named (default DEFAULT_ARMS); session runs those of them that are session arms, else all session arms; an arm named that no shape can run is an error only under --shape session alone",
+      "class": "design",
+      "answer": "fresh runs the arms named (default DEFAULT_ARMS); session runs those of them that are session arms, else all session arms; an arm named that no shape can run is an error only under --shape session alone",
+      "by": "agent"
+    }
+  ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found in SP-hm4qgf3t: the 2026-10-08 record took six runs from a hand-written detached chain script with six caps, and a mid-run spend change needed the chain stopped by hand. Premise: the first check exits 2 today (--arm-reps unknown, --shape takes one value).",
   "claimed_by": "worker-ST-dku4a6ob"
 }

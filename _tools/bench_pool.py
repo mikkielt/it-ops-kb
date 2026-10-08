@@ -8,13 +8,15 @@ lookup_heldout.csv rows by id and hold no question text: `question_of` reads it 
 Sonnet call that writes the answer regexes of the eval rows, through bench_retrieval's blind-question call; a rebuild
 reuses the regexes of the file it replaces, so it asks nothing. `benchmarks.py run pool` is `s_pool` (the arms, the
 effort levels, the per-run record and the per-cell figures, described in kb/_self/reports/benchmarks.md); its
-`--shape session` runs the rows in groups of six, one `claude -p` session per group. This module
+`--shape session` runs the rows in groups of six, one `claude -p` session per group, and `--shape fresh,session` both in
+one run under one `--max-usd`; `--arm-reps`, `--arm-kinds` and `--sample` shape a whole record in one command. This module
 imports agent_bench, bench_core and bench_retrieval and no facade (kb/_self/code.md, Layout and Imports).
 """
 import csv, hashlib, json, os, random, re, shutil, subprocess, sys, tempfile, time, uuid
 from collections import Counter
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
+from typing import NamedTuple
 
 import agent_bench
 from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, Skip, est_cost, no_plugin_env, prompt_tokens, read_rows,
@@ -557,6 +559,96 @@ def accepts(arm, kind):
     return arm not in WEB_ARMS or kind in WEB_KINDS
 
 
+KINDS = tuple(dict.fromkeys((*EVAL_KINDS, *PLAN, "querylog")))  # every kind a pool row can have
+
+
+def shapes_of(text):
+    """The shapes of a `--shape` value (`fresh`, `session` or `fresh,session`), each once, in the order given."""
+    return list(dict.fromkeys(s for s in (text or "fresh").split(",") if s))
+
+
+def reps_value(text):
+    try:
+        n = int(text)
+    except ValueError:
+        raise ValueError("needs a whole number of reps") from None
+    if n < 1:
+        raise ValueError("needs 1 or more reps")
+    return n
+
+
+def kinds_value(text):
+    got = text.split("+")
+    bad = [k for k in got if k not in KINDS]
+    if bad:
+        raise ValueError(f"unknown kind {', '.join(repr(k) for k in bad)} (one of {', '.join(KINDS)})")
+    return got
+
+
+def parse_arm_map(texts, flag, convert):
+    """({key: value}, [problem]) of the values of a repeated `--arm-reps` or `--arm-kinds`: comma separated `KEY=VALUE`
+    pairs, a key an arm's name (both shapes) or `ARM/session` (the session shape only, over the arm's own key), the value
+    through `convert` (a ValueError is the problem's text). An unknown arm, a key twice and a pair with no value are problems."""
+    out, bad = {}, []
+    for pair in [p for t in texts or [] for p in t.split(",") if p]:
+        key, _, value = pair.partition("=")
+        arm = key.removesuffix(SESSION_SUFFIX)
+        if not value:
+            bad.append(f"{flag}: {pair!r} is not ARM=VALUE")
+        elif arm not in ARMS or (key != arm and arm not in SESSION_ARMS):
+            bad.append(f"{flag}: unknown arm {key} (one of {', '.join((*ARMS, *(a + SESSION_SUFFIX for a in SESSION_ARMS)))})")
+        elif key in out:
+            bad.append(f"{flag}: {key} twice")
+        else:
+            try:
+                out[key] = convert(value)
+            except ValueError as e:
+                bad.append(f"{flag}: {pair!r}: {e}")
+    return out, bad
+
+
+def arm_choice(spec, arm, session, default):
+    """What the `--arm-reps` or `--arm-kinds` map `spec` holds for `arm`: its `ARM/session` key in the session shape, else
+    its `ARM` key, else `default` (`--reps`, `--kinds`)."""
+    if session and arm + SESSION_SUFFIX in spec:
+        return spec[arm + SESSION_SUFFIX]
+    return spec.get(arm, default)
+
+
+def arms_by_shape(named, shapes):
+    """{shape: [the arms it runs]}: `fresh` runs the `named` arms (--arms), else DEFAULT_ARMS (opus-5-5 only when named);
+    `session` runs those of them in SESSION_ARMS, else all of SESSION_ARMS."""
+    return {s: ([a for a in named if a in SESSION_ARMS] if named else list(SESSION_ARMS)) if s == "session"
+            else list(named or DEFAULT_ARMS) for s in shapes}
+
+
+def unrun_problems(flag, spec, by_shape):
+    """One line per key of the `--arm-reps` or `--arm-kinds` map `spec` that names an arm (in a shape, for an `ARM/session`
+    key) this run does not run: an error, not an option left unused."""
+    out = []
+    for key in spec:
+        arm = key.removesuffix(SESSION_SUFFIX)
+        shapes = ["session"] if key != arm else list(by_shape)
+        if not any(arm in by_shape.get(s, ()) for s in shapes):
+            why = ("the --shape has no session" if key != arm and "session" not in by_shape else
+                   "opt-in: name it in --arms" if arm in OPT_IN else "not among the --arms of this run")
+            out.append(f"{flag}: {key} is not run by this command ({why})")
+    return out
+
+
+def sample_rows(rows, n, seed=SEED):
+    """`rows` with at most `n` of each kind kept (all when `n` is None), drawn per kind by that kind's own generator
+    (`rng_for` with seed and `sample:KIND`) from the kind's rows in id order, so one kind's rows move no other kind's and
+    the same seed keeps the same rows; the kept rows stay in `rows`' order."""
+    if not n:
+        return rows
+    keep = set()
+    for kind in sorted({r["kind"] for r in rows}):
+        mine = sorted((r for r in rows if r["kind"] == kind), key=lambda r: r["id"])
+        keep |= {id(r) for r in rng_for(seed, f"sample:{kind}").sample(mine, min(n, len(mine)))}
+    return [r for r in rows if id(r) in keep]
+
+
 def record_of(row, arm, label, r, cc=""):
     """One run's record: the pool row's id and kind, the arm and its label, the tokens (run_tokens, priced as the arm's
     alias resolves on Claude Code version `cc` when the transcript names no model), the kb results' tokens
@@ -637,13 +729,19 @@ def run_tasks(tasks, work, jobs=1, cap=None, emit=None):
     return [done[i] for i in range(nxt)], tasks[nxt:]
 
 
+def per_arm(spec, arm):
+    """What `spec` holds for `arm` when it is a dict by arm (the rows, the reps), else `spec` itself."""
+    return spec[arm] if isinstance(spec, dict) else spec
+
+
 def run_pool(rows, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc=""):
     """Every row on every cell (a web arm only on WEB_KINDS), `reps` times: the run records, in cell order whatever order
-    `jobs` parallel runs finish in. `runner(arm, effort, row)` is one run's result; `sink(record, result)` sees each as it
-    is made, in that order. With `cap` (run_tasks), `left` is extended with (label, "id#rep") of each run not started.
-    `cc` is the run's Claude Code version, which record_of prices an alias arm by."""
-    tasks = [(arm, effort, label, row, rep) for arm, effort, label in cells for row in rows if accepts(arm, row["kind"])
-             for rep in range(1, reps + 1)]
+    `jobs` parallel runs finish in. `rows` and `reps` are one value for every arm, or a dict by arm. `runner(arm, effort,
+    row)` is one run's result; `sink(record, result)` sees each as it is made, in that order. With `cap` (run_tasks),
+    `left` is extended with (label, "id#rep") of each run not started. `cc` is the run's Claude Code version, which
+    record_of prices an alias arm by."""
+    tasks = [(arm, effort, label, row, rep) for arm, effort, label in cells for row in per_arm(rows, arm)
+             if accepts(arm, row["kind"]) for rep in range(1, per_arm(reps, arm) + 1)]
     runs = []
 
     def emit(i, t, r):
@@ -694,14 +792,14 @@ def session_fields(r, before):
 
 
 def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc=""):
-    """Every group on every cell, `reps` times, each in one session of its own: the run records in cell order, with the
-    arm label `SESSION_SUFFIX` added, the group's number, the question's `position` and the `session_fields`.
+    """Every group on every cell, `reps` times, each in one session of its own (`groups` and `reps`, as the rows and reps of
+    run_pool, one value or a dict by arm): the run records in cell order, with the arm label `SESSION_SUFFIX` added, the group's number, the question's `position` and the `session_fields`.
     `runner(arm, effort, row, sid, position)` is one question's result: the first starts the session `sid`, each later
     one resumes it. A failed question ends its session: the questions after it are recorded as errors. Up to `jobs`
     sessions run at once (a session's questions stay in order inside it), the records come in the order `jobs` 1 gives,
     and `cap`, `left` and `cc` work as in run_pool, a session being the unit started or not (the name `group N#rep`)."""
     tasks = [(arm, effort, label + SESSION_SUFFIX, number, group, rep) for arm, effort, label in cells
-             for number, group in enumerate(groups, 1) for rep in range(1, reps + 1)]
+             for number, group in enumerate(per_arm(groups, arm), 1) for rep in range(1, per_arm(reps, arm) + 1)]
 
     def session(t):
         arm, effort, _, _, group, _ = t
@@ -730,7 +828,7 @@ def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=
     for _, _, label in cells:
         label += SESSION_SUFFIX
         n = sum(t[2] == label for t in tasks)
-        print(f"pool: {label}: {n * len(groups[0])} runs, {sum('error' in x for x in runs if x['label'] == label)} failed"
+        print(f"pool: {label}: {n * GROUP_SIZE} runs, {sum('error' in x for x in runs if x['label'] == label)} failed"
               + (f", {sum(t[2] == label for t in rest)} sessions not started" if rest else ""), flush=True)
     return runs
 
@@ -860,58 +958,108 @@ def live_session_runner(b):
     return run
 
 
+class Leg(NamedTuple):
+    """One shape of a run: its cells and, by arm, the rows, the session groups (and the rows they leave out) and the reps."""
+    shape: str
+    cells: list
+    rows: dict
+    groups: dict
+    left: dict
+    reps: dict
+
+    @property
+    def session(self):
+        return self.shape == "session"
+
+    @property
+    def suffix(self):
+        return SESSION_SUFFIX if self.session else ""
+
+    def runs(self, arm):
+        return (len(self.groups[arm]) * GROUP_SIZE if self.session else len(self.rows[arm])) * self.reps[arm]
+
+    def plan(self, arm):
+        if self.session:
+            return (f"{len(self.groups[arm])} groups x {self.reps[arm]} reps, {len(self.left[arm])} of {len(self.rows[arm])} "
+                    "rows left out")
+        return f"{len(self.rows[arm])} rows x {self.reps[arm]} reps"
+
+
+def plan_legs(b, pool, sh):
+    """[Leg] of the shapes of `b.shape`, in the order given. An arm's rows are the pool's rows of its kinds (`b.arm_kinds`
+    for its name, or for `ARM/session` in the session shape, else `b.kinds`, else all) and its reps `b.arm_reps` the same
+    way, else `b.reps`; a session leg groups an arm's rows with the seed `b.seed`. Without `sh` the hook arm is left out."""
+    shapes, seed = shapes_of(getattr(b, "shape", "fresh")), getattr(b, "seed", SEED)
+    kinds, efforts = getattr(b, "kinds", None), getattr(b, "efforts", None) or EFFORTS
+    arm_kinds, arm_reps = getattr(b, "arm_kinds", None) or {}, getattr(b, "arm_reps", None) or {}
+    legs = []
+    for shape, arms in arms_by_shape(getattr(b, "arms", None), shapes).items():
+        session = shape == "session"
+        if "hook" in arms and not sh:
+            print("pool: the hook arm needs sh on PATH (Windows: run it from Git Bash); left out")
+            arms.remove("hook")
+        want = {arm: arm_choice(arm_kinds, arm, session, kinds) for arm in arms}
+        rows = {arm: [r for r in pool if (not want[arm] or r["kind"] in want[arm]) and accepts(arm, r["kind"])] for arm in arms}
+        grouped = {arm: session_groups(rows[arm], seed) if session else ([], []) for arm in arms}
+        legs.append(Leg(shape, plan_cells(arms, efforts), rows, {a: g[0] for a, g in grouped.items()},
+                        {a: g[1] for a, g in grouped.items()}, {arm: arm_choice(arm_reps, arm, session, b.reps) for arm in arms}))
+    return legs
+
+
 def s_pool(b):
     """The question pool over the arms of `b.arms` (default DEFAULT_ARMS: ARMS less the opt-in ones) at the effort levels
-    of `b.efforts`, on the kinds of `b.kinds` (default all), `b.reps` runs of each row on each cell. Shape `fresh` (default) makes each run a fresh
-    session; shape `session` (`b.shape`) runs groups of six rows (`session_groups`, seed `b.seed`) each in one session on
-    the kb arms of SESSION_ARMS, and records per position (`session_rows`) beside the per-kind rows of its arm labels.
-    Rows per kind and arm label, and for all kinds (cell_rows); each run's record is appended to the scenario's runs
-    file. With `b.dry` it prints the plan and starts nothing."""
-    session = getattr(b, "shape", "fresh") == "session"
-    arms = list(getattr(b, "arms", None) or (SESSION_ARMS if session else DEFAULT_ARMS))
+    of `b.efforts`, on the kinds of `b.kinds` (default all), `b.reps` runs of each row on each cell, with `b.sample` rows
+    kept per kind when given (`sample_rows`, seed `b.seed`), and `b.arm_kinds` and `b.arm_reps` (`parse_arm_map`) over
+    `b.kinds` and `b.reps` for the arms they name. `b.shape` is one shape or several, comma separated, run in one go
+    (`plan_legs`): `fresh` (default) makes each run a fresh session; `session` runs groups of six rows
+    (`session_groups`) each in one session on the kb arms of SESSION_ARMS, and records per position (`session_rows`)
+    beside the per-kind rows of its arm labels. Rows per kind and arm label, and for all kinds (cell_rows); each run's
+    record is appended to the scenario's runs file. One `b.max_usd` covers every shape: each starts runs only while the
+    spend of the run so far is under it. With `b.dry` it prints the plan and starts nothing."""
     sh = shutil.which("sh")
-    if "hook" in arms and not sh:
-        print("pool: the hook arm needs sh on PATH (Windows: run it from Git Bash); left out")
-        arms.remove("hook")
-    cells = plan_cells(arms, getattr(b, "efforts", None) or EFFORTS)
-    rows = load_pool(HOME, getattr(b, "kinds", None))
-    if not rows:
-        raise Skip("no pool rows: python3 _tools/benchmarks.py pool build, or the --kinds list matches none")
-    groups, left = session_groups(rows, getattr(b, "seed", SEED)) if session else ([], [])
-    if session and not groups:
-        raise Skip(f"{len(rows)} rows make no group of {GROUP_SIZE}")
-    runs_of = (lambda arm: len(groups) * GROUP_SIZE * b.reps) if session else (  # noqa: E731
-        lambda arm: sum(accepts(arm, r["kind"]) for r in rows) * b.reps)
-    total = sum(runs_of(a) for a, _, _ in cells)
+    pool = sample_rows(load_pool(HOME), getattr(b, "sample", None), getattr(b, "seed", SEED))
+    if not pool:
+        raise Skip("no pool rows: python3 _tools/benchmarks.py pool build")
+    legs = plan_legs(b, pool, sh)
+    total = sum(leg.runs(arm) for leg in legs for arm, _, _ in leg.cells)
+    if not total:
+        raise Skip(f"the kinds chosen leave no run of the {len(pool)} pool rows (a session needs {GROUP_SIZE} rows of one arm)")
     jobs, cap, cc = max(1, getattr(b, "jobs", 1)), getattr(b, "max_usd", None), getattr(b, "cc", "")
     if getattr(b, "dry", False):
-        for arm, _, label in cells:
-            print(f"pool: {label}{SESSION_SUFFIX if session else ''}: {runs_of(arm)} runs")
-        what = (f"{len(groups)} groups of {GROUP_SIZE} ({len(left)} rows left out), {len(cells) * len(groups) * b.reps} sessions"
-                if session else f"{len(rows)} rows")
-        usd = estimate_lines(cells, runs_of, SESSION_SUFFIX if session else "", read_rows(RESULTS), jobs, cap)
-        raise Skip(f"dry run: {what}, {len(cells)} cells, {total} runs, no model started; estimated spend ${usd:.2f}")
+        for leg in legs:
+            for arm, _, label in leg.cells:
+                print(f"pool: {label}{leg.suffix}: {leg.runs(arm)} runs ({leg.plan(arm)})")
+        usd = estimate_lines(legs, read_rows(RESULTS), jobs, cap)
+        sampled = f" (--sample {b.sample} per kind)" if getattr(b, "sample", None) else ""
+        raise Skip(f"dry run: {len(pool)} pool rows{sampled}, shapes {'+'.join(leg.shape for leg in legs)}, "
+                   f"{sum(len(leg.cells) for leg in legs)} cells, {total} runs, no model started; estimated spend ${usd:.2f}")
 
     def sink(rec, r):
         if RAW.get("path"):
             with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
                 f.write(json.dumps({**rec, "answer": (r.get("answer") or "")[:2000]}) + "\n")
-    not_started = []
-    if session:
-        runs = run_sessions(groups, cells, b.reps, live_session_runner(b), sink, jobs, cap, not_started, cc)
-        for case, label, metric, value, n, model, note in session_rows(runs):
+    not_started, base = [], spent_usd()
+    for leg in legs:
+        if not any(leg.runs(arm) for arm, _, _ in leg.cells):
+            continue
+        left = None if cap is None else cap - (spent_usd() - base)  # what the shapes before this one left of the cap
+        if leg.session:
+            runs = run_sessions(leg.groups, leg.cells, leg.reps, live_session_runner(b), sink, jobs, left, not_started, cc)
+            for case, label, metric, value, n, model, note in session_rows(runs):
+                b.row("pool", case, label, metric, value, n, model, note)
+        else:
+            runs = run_pool(leg.rows, leg.cells, leg.reps, live_runner(b, sh), sink, jobs, left, not_started, cc)
+        for case, label, metric, value, n, model, note in cell_rows(runs):
             b.row("pool", case, label, metric, value, n, model, note)
-    else:
-        runs = run_pool(rows, cells, b.reps, live_runner(b, sh), sink, jobs, cap, not_started, cc)
-    for case, label, metric, value, n, model, note in cell_rows(runs):
-        b.row("pool", case, label, metric, value, n, model, note)
     for label in dict.fromkeys(label for label, _ in not_started):
         names = [name for lab, name in not_started if lab == label]
         b.row("pool", "not started", label, "spend_stopped", len(names), len(names), note=", ".join(names))
     if not_started:
         b.status = 1
-        print(f"pool: stopped at the --max-usd cap of ${cap:.2f} with {len(not_started)} runs "
-              f"({'sessions' if session else 'runs'}) not started; the rows `spend_stopped` name them", flush=True)
+        sessions = sum(name.startswith("group ") for _, name in not_started)
+        what = ", ".join(f"{n} {kind}" for n, kind in ((len(not_started) - sessions, "runs"), (sessions, "sessions")) if n)
+        print(f"pool: stopped at the --max-usd cap of ${cap:.2f} with {what} not started; the rows `spend_stopped` name them",
+              flush=True)
 
 
 # ------------------------------------------------------------------------------------------------ the spend estimate
@@ -948,18 +1096,20 @@ def run_usd(tokens, model):
     return est_cost(usage_sum([{"model": model, "usage": usage}], model))
 
 
-def estimate_lines(cells, runs_of, suffix, history, jobs, cap):
-    """Print one line per cell with its expected spend, then the total; return the total in US dollars. An estimate, not a
-    measurement: each run is priced (bench_core.PRICE, single request) at the tokens `assumed_run` states for its cell,
-    web searches are not included, and the real spend depends on the runs."""
+def estimate_lines(legs, history, jobs, cap):
+    """Print one line per cell of the `legs` with its expected spend, then the total; return the total in US dollars. An
+    estimate, not a measurement: each run is priced (bench_core.PRICE, single request) at the tokens `assumed_run` states
+    for its cell, web searches are not included, and the real spend depends on the runs."""
     total = 0.0
-    for arm, _, label in cells:
-        tokens, model, basis = assumed_run(label + suffix, arm, history)
-        usd = runs_of(arm) * run_usd(tokens, model)
-        total += usd
-        print(f"pool: {label}{suffix}: estimate ${usd:.2f} for {runs_of(arm)} runs at {"no model" if arm in NO_MODEL_ARMS else model}: per run uncached "
-              f"{tokens['uncached']:,.0f}, cache write {tokens['cache_write']:,.0f}, cache read {tokens['cache_read']:,.0f}, "
-              f"output {tokens['out']:,.0f} tokens ({basis})")
+    for leg in legs:
+        for arm, _, label in leg.cells:
+            tokens, model, basis = assumed_run(label + leg.suffix, arm, history)
+            usd = leg.runs(arm) * run_usd(tokens, model)
+            total += usd
+            print(f"pool: {label}{leg.suffix}: estimate ${usd:.2f} for {leg.runs(arm)} runs at "
+                  f"{'no model' if arm in NO_MODEL_ARMS else model}: per run uncached "
+                  f"{tokens['uncached']:,.0f}, cache write {tokens['cache_write']:,.0f}, cache read {tokens['cache_read']:,.0f}, "
+                  f"output {tokens['out']:,.0f} tokens ({basis})")
     print(f"pool: estimate ${total:.2f} in all at --jobs {jobs}: an estimate from the per-run token figures above and "
           "bench_core's list prices (web searches left out), not a measurement")
     if cap is not None and total > cap:
