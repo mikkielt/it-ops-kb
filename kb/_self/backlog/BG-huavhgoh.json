@@ -2,7 +2,7 @@
   "id": "BG-huavhgoh",
   "kind": "bug",
   "title": "claude/models.csv and the Sonnet 5.5 answer still give a 0.1x cache-read price",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   "depends_on": [
     "ST-zqxgo47z"
   ],
-  "notes": "Filed by the ST-5vtfd3y4 worker on 2026-10-08 and moved into SP-caqrexqw by the orchestrator: a wrong cache-read price the kb now contradicts itself on, inside the sprint goal (answers stay right). Ordered after ST-zqxgo47z and before ST-ctomsu4i, which share kb/public/_answers.md and _sources.csv; the _conflicts.md entry on the Sonnet 5.5 read price may close with it, since both Anthropic pages now agree."
+  "notes": "Filed by the ST-5vtfd3y4 worker on 2026-10-08 and moved into SP-caqrexqw by the orchestrator: a wrong cache-read price the kb now contradicts itself on, inside the sprint goal (answers stay right). Ordered after ST-zqxgo47z and before ST-ctomsu4i, which share kb/public/_answers.md and _sources.csv; the _conflicts.md entry on the Sonnet 5.5 read price may close with it, since both Anthropic pages now agree.",
+  "claimed_by": "worker-BG-huavhgoh"
 }
