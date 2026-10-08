@@ -21,5 +21,24 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "match",
+      "kind": "blocking",
+      "question": "How does a touch's path name a token file for the secrets class: the word token anywhere but in the file name of a Markdown doc (.md), or only token as a whole file-name word or extension (token, tokens, .token) wherever it stands?",
+      "options": [
+        "md-name-exempt",
+        "file-name-word"
+      ],
+      "recommendation": "md-name-exempt",
+      "class": "secrets",
+      "do": {
+        "md-name-exempt": "BG-zw5sxzkc",
+        "file-name-word": "BG-zw5sxzkc"
+      },
+      "answer": "md-name-exempt",
+      "by": "operator"
+    }
+  ],
   "claimed_by": "worker-BG-zw5sxzkc"
 }
