@@ -20,5 +20,20 @@
     "kb/_self/querylog.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Should Gate.alias_terms read kb/_self/_retrieval/aliases.csv by default, with an article's alias candidates (alias_fixes) opting out, or the other way round?",
+      "options": [
+        "default-rules: alias_terms(rules=True) by default; alias_fixes passes rules=False",
+        "opt-in: alias_terms() as before; rules_alias_rows passes rules=True"
+      ],
+      "recommendation": "default-rules: alias_terms(rules=True) by default; alias_fixes passes rules=False",
+      "class": "design",
+      "answer": "default-rules: alias_terms(rules=True) by default; alias_fixes passes rules=False",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-czj7"
 }

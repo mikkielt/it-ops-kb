@@ -108,11 +108,12 @@ class Gate:
         return {"root": r.name, "eval": data / "lookup_eval.csv", "expansions": data / "doc2query" / "expansions.csv",
                 "aliases": Path(kbfacts.ALIASES) if r.name == kbcommon.public().name else data / "aliases.csv"}
 
-    def alias_terms(self):
-        """{term: canonical} of every alias file."""
+    def alias_terms(self, rules=True):
+        """{term: canonical} of every alias file, kb/_self's rule vocabulary too unless `rules` is false (an article's
+        alias candidates: that file applies under `_self` only)."""
         import kbfacts
         out = {}
-        for p in kbfacts.alias_files():
+        for p in kbfacts.alias_files(rules=rules):
             with open(p, encoding="utf-8", newline="") as f:
                 for row in csv.DictReader(f):
                     t = " ".join((row.get("term") or "").lower().split())
@@ -239,7 +240,7 @@ def alias_fixes(finding, entry, gate, res):
     title, each mapped to its alias group when it is a term of one, else a new group of its own."""
     import kbfacts
     article = finding["article"]
-    existing = gate.alias_terms()
+    existing = gate.alias_terms(rules=False)
     unknown = unknown_words(entry["question"], res)
     stem = Path(kbfacts.bare(article)).stem
     words = []
