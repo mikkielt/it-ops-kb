@@ -2,7 +2,7 @@
   "id": "ST-lxldgx3x",
   "kind": "story",
   "title": "A test run with any untracked non-ignored file in the clone records no reuse key",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-vayhvwfy",
   "priority": "P3",
@@ -76,5 +76,6 @@
   "links": [
     "parked: SP-evkj4avq review"
   ],
-  "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the run_key probe (check 2: an untracked zz-reuse-probe-PID.txt at the clone's top, edited between two run_key calls) printed the same key 1419ab1524ee0be5 both times, exit 1: reproduces. Check 1 (tests.py _tools/test_sync_e2e.py) passes before the work: it pins the sync gate's reuse behaviour that must stay. Parked draft (parked: SP-evkj4avq review) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out. Gate untracked-key options: hash-untracked = run_key adds each untracked non-ignored file's path and content hash (the set conftest.seed_files copies) to the key, so a run with intake drafts in the checkout still records a correct reuse key and an edit to one changes it (recommended: matches the sprint goal's wording, and intake drafts sit untracked in this checkout most of the time); no-key = any untracked non-ignored file leaves the run without a key, as an untracked .py under _tools/ does now, so the gate never reuses while drafts sit there."
+  "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the run_key probe (check 2: an untracked zz-reuse-probe-PID.txt at the clone's top, edited between two run_key calls) printed the same key 1419ab1524ee0be5 both times, exit 1: reproduces. Check 1 (tests.py _tools/test_sync_e2e.py) passes before the work: it pins the sync gate's reuse behaviour that must stay. Parked draft (parked: SP-evkj4avq review) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out. Gate untracked-key options: hash-untracked = run_key adds each untracked non-ignored file's path and content hash (the set conftest.seed_files copies) to the key, so a run with intake drafts in the checkout still records a correct reuse key and an edit to one changes it (recommended: matches the sprint goal's wording, and intake drafts sit untracked in this checkout most of the time); no-key = any untracked non-ignored file leaves the run without a key, as an untracked .py under _tools/ does now, so the gate never reuses while drafts sit there.",
+  "claimed_by": "headless-sonnet"
 }
