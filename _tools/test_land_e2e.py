@@ -1,9 +1,10 @@
-"""`backlog.py land ID` end to end in a scenario clone: a content-only item lands on origin/main; an item whose check
-fails stops `land` at its step and leaves origin/main where it was. The first item's branch sits in a finished worker's
-worktree that holds an untracked intake draft: `land` moves the draft aside and says so, and still refuses any other
-untracked file. Before the second item lands, a commit of it that changes a mapped tool and no doc is refused at
-`done` with stale-docs, and a `Self-Reviewed:` trailer naming the docs clears that. A content landing that adds a CODE tag with no pointer to
-an article stops at step `lint`, which ran on that article's path alone."""
+"""`backlog.py land ID` end to end in a scenario clone, in two scenarios on two workers (a class each). One: an item whose
+branch sits in a finished worker's worktree that holds an untracked intake draft lands on origin/main: `land` moves the
+draft aside and says so, and still refuses any other untracked file; a research story's `done` needs its note on outside
+facts. Two: a commit of an item that changes a mapped tool and no doc is refused at `done` with stale-docs, and a
+`Self-Reviewed:` trailer naming the docs clears that; an item whose check fails stops `land` at its step and leaves
+origin/main where it was; a content landing that adds a CODE tag with no pointer to an article stops at step `lint`,
+which ran on that article's path alone."""
 import json
 import re
 from pathlib import Path
@@ -49,86 +50,95 @@ def work(repo, iid, rel):
     repo.git("commit", "-q", "-m", f"docs(kb): {iid} work", "-m", f"KB-Work: {iid}")
 
 
-def test_land_runs_lint_on_content_item_then_planted_failures(scenario):
+def planned(scenario, *stories):
+    """A clone whose started sprint has the stories ((name, kb path, check) each) claimed and pushed to origin/main:
+    (clone, sprint id, story ids)."""
     repo = scenario.clone()
     repo.git("config", "core.fileMode", "false")
     sp = new_id(ok(repo, "new", "sprint", "--title", "Landing sprint"))
-    article = "kb/public/agents/codebase-mapping.md"
-    good, bad, lint = (new_id(ok(repo, "new", "story", "--title", f"Landing {n}", "--sprint", sp, "--goal",
-                                 f"The doc {n}.md exists.", "--touch", rel, "--check", chk))
-                       for n, rel, chk in (("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"),
-                                           ("bad", "kb/_self/bad.md", "python3 _tools/backlog.py show ST-00000000"),
-                                           ("lint", article, "python3 _tools/backlog.py list --kind sprint")))
+    ids = [new_id(ok(repo, "new", "story", "--title", f"Landing {n}", "--sprint", sp, "--goal", f"The doc {n}.md exists.",
+                     "--touch", rel, "--check", chk)) for n, rel, chk in stories]
     ok(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")
     ok(repo, "start", sp)
-    ok(repo, "claim", good, "--by", "t", "--commit")
-    ok(repo, "claim", bad, "--by", "t", "--commit")
-    ok(repo, "claim", lint, "--by", "t", "--commit")
+    for iid in ids:
+        ok(repo, "claim", iid, "--by", "t", "--commit")
     repo.commit(f"chore(backlog): plan {sp}", PLAN)
     p = repo.kbgit("sync", "--push", env=NOSYNC)
     assert p.returncode == 0, p.stdout + p.stderr
-    before = origin_main(scenario)
+    return repo, sp, ids
 
-    work(repo, good, "kb/_self/good.md")
-    repo.git("checkout", "-q", "main")  # land runs on main, whose upstream is origin/main: it ends level with it
-    worker = Path(repo.file(f".claude/worktrees/agent-{good}"))
-    repo.git("worktree", "add", "-q", str(worker), f"work/{good}")
-    draft, stray = "kb/_self/backlog/ST-0d1e2f3a.json", "kb/_self/stray.md"
-    for rel in (draft, stray):  # an intake draft the worker's session filed, and a file that is no draft
-        (worker / rel).write_text("{}\n", encoding="utf-8", newline="\n")
-    code, out = bl(repo, "land", good)
-    assert code != 0 and "uncommitted changes" in out and (worker / draft).is_file(), out  # nothing moves on a refusal
-    (worker / stray).unlink()
-    code, out = bl(repo, "land", good)
-    assert code == 0 and "landed" in out and "fast-forwarded main" in out, out
-    kept = Path(repo.file("_cache/intake-drafts")) / worker.name / Path(draft).name
-    assert "moved the untracked intake draft ST-0d1e2f3a.json" in out and kept.is_file() and not worker.exists(), out
-    assert repo.rev("main") == origin_main(scenario) and repo.git("branch", "--show-current").strip() == "main"
-    assert item(scenario, good)["status"] == "done" and item(scenario, good).get("evidence"), item(scenario, good)
-    log = scenario.origin.git("log", "--format=%B", f"{before}..main")
-    assert f"KB-Work: {good}" in log and f"done {good}" in log, log
-    assert scenario.origin.git("show", "main:kb/_self/good.md").startswith(f"# {good}")
-    moved = origin_main(scenario)
-    assert moved != before
 
-    research = re.search(r"(ST-[a-z0-9]+)\s.*Research sprint goal", ok(repo, "list", "--sprint", sp)).group(1)
-    ok(repo, "claim", research, "--by", "t", "--commit")
-    for notes, accepted in ((None, False), ("No outside facts:", False), ("Other. No outside facts: the goal is internal.", True)):
-        if notes:
-            ok(repo, "set", research, "--notes", notes)
-        code, out = bl(repo, "done", research, "--dry-run")  # no commit changes a non-item file: only the note lets it pass
-        assert (code == 0 and "would be done" in out) == accepted and (accepted or "KB-Work" in out), out
-    repo.git("checkout", "--", PLAN)  # the notes were an experiment
+# One class each: tests.py hands pytest-xdist whole scopes (a file, or a class in it), so the two scenarios run on
+# two workers instead of one after the other.
+class TestLandedItem:
+    def test_land_moves_intake_draft_then_fast_forwards_and_done_checks_notes(self, scenario):
+        repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"))
+        before = origin_main(scenario)
 
-    repo.git("checkout", "-q", "main")
-    work(repo, bad, "kb/_self/bad.md")
-    # planted failure of done's docs check: a commit of the item changes a mapped tool and no doc
-    tool = "_tools/provider.py"
-    repo.write(tool, Path(repo.file(tool)).read_text(encoding="utf-8") + "# changed\n")
-    repo.git("commit", "-q", "-am", f"fix(kb): {bad} tool", "-m", f"KB-Work: {bad}")
-    code, out = bl(repo, "done", bad, "--dry-run")
-    assert code != 0 and "stale-docs:" in out and f"kb/_self/tools.md is older than {tool}" in out, out
-    reviewed = "kb/_self/tools.md, kb/_self/code.md, kb/_self/web-sources.md"  # read and still correct: not stale
-    repo.git("commit", "-q", "--allow-empty", "-m", f"docs(kb): {bad} review",
-             "-m", f"Self-Reviewed: {reviewed}\nKB-Work: {bad}")
-    code, out = bl(repo, "done", bad, "--dry-run")
-    assert "stale-docs" not in out and "outside touches" in out, out
-    repo.git("reset", "-q", "--hard", "HEAD~2")
-    code, out = bl(repo, "land", bad)
-    assert code != 0 and "land stopped at step done" in out and "check(s) failed" in out, out
-    assert origin_main(scenario) == moved
-    assert item(scenario, bad)["status"] == "doing"
+        work(repo, good, "kb/_self/good.md")
+        repo.git("checkout", "-q", "main")  # land runs on main, whose upstream is origin/main: it ends level with it
+        worker = Path(repo.file(f".claude/worktrees/agent-{good}"))
+        repo.git("worktree", "add", "-q", str(worker), f"work/{good}")
+        draft, stray = "kb/_self/backlog/ST-0d1e2f3a.json", "kb/_self/stray.md"
+        for rel in (draft, stray):  # an intake draft the worker's session filed, and a file that is no draft
+            (worker / rel).write_text("{}\n", encoding="utf-8", newline="\n")
+        code, out = bl(repo, "land", good)
+        assert code != 0 and "uncommitted changes" in out and (worker / draft).is_file(), out  # nothing moves on a refusal
+        (worker / stray).unlink()
+        code, out = bl(repo, "land", good)
+        assert code == 0 and "landed" in out and "fast-forwarded main" in out, out
+        kept = Path(repo.file("_cache/intake-drafts")) / worker.name / Path(draft).name
+        assert "moved the untracked intake draft ST-0d1e2f3a.json" in out and kept.is_file() and not worker.exists(), out
+        assert repo.rev("main") == origin_main(scenario) and repo.git("branch", "--show-current").strip() == "main"
+        assert item(scenario, good)["status"] == "done" and item(scenario, good).get("evidence"), item(scenario, good)
+        log = scenario.origin.git("log", "--format=%B", f"{before}..main")
+        assert f"KB-Work: {good}" in log and f"done {good}" in log, log
+        assert scenario.origin.git("show", "main:kb/_self/good.md").startswith(f"# {good}")
+        assert origin_main(scenario) != before
 
-    # planted failure of the lint step: a content landing (no _tools/) adds a CODE tag with no path#symbol pointer
-    repo.git("checkout", "-q", "main")
-    repo.git("checkout", "-q", "-b", f"work/{lint}", "main")
-    repo.write(article, Path(repo.file(article)).read_text(encoding="utf-8") + "\n- Planted fact. [CODE S0000001]\n")
-    repo.git("commit", "-q", "-am", f"docs(kb): {lint} work", "-m", f"KB-Work: {lint}")
-    repo.git("checkout", "-q", "main")
-    code, out = bl(repo, "land", lint)
-    assert code != 0 and "land stopped at step lint" in out, out
-    assert "CODE tag without a path#symbol pointer" in out and f"lint.py {article[3:]} exited 1" in out, out
-    assert origin_main(scenario) == moved and item(scenario, lint)["status"] == "doing"
+        research = re.search(r"(ST-[a-z0-9]+)\s.*Research sprint goal", ok(repo, "list", "--sprint", sp)).group(1)
+        ok(repo, "claim", research, "--by", "t", "--commit")
+        for notes, accepted in ((None, False), ("No outside facts:", False), ("Other. No outside facts: the goal is internal.", True)):
+            if notes:
+                ok(repo, "set", research, "--notes", notes)
+            code, out = bl(repo, "done", research, "--dry-run")  # no commit changes a non-item file: only the note lets it pass
+            assert (code == 0 and "would be done" in out) == accepted and (accepted or "KB-Work" in out), out
+
+
+class TestStoppedLand:
+    def test_land_runs_lint_on_content_item_then_planted_failures(self, scenario):
+        article = "kb/public/agents/codebase-mapping.md"
+        repo, sp, (bad, lint) = planned(scenario, ("bad", "kb/_self/bad.md", "python3 _tools/backlog.py show ST-00000000"),
+                                        ("lint", article, "python3 _tools/backlog.py list --kind sprint"))
+        moved = origin_main(scenario)
+
+        work(repo, bad, "kb/_self/bad.md")
+        # planted failure of done's docs check: a commit of the item changes a mapped tool and no doc
+        tool = "_tools/provider.py"
+        repo.write(tool, Path(repo.file(tool)).read_text(encoding="utf-8") + "# changed\n")
+        repo.git("commit", "-q", "-am", f"fix(kb): {bad} tool", "-m", f"KB-Work: {bad}")
+        code, out = bl(repo, "done", bad, "--dry-run")
+        assert code != 0 and "stale-docs:" in out and f"kb/_self/tools.md is older than {tool}" in out, out
+        reviewed = "kb/_self/tools.md, kb/_self/code.md, kb/_self/web-sources.md"  # read and still correct: not stale
+        repo.git("commit", "-q", "--allow-empty", "-m", f"docs(kb): {bad} review",
+                 "-m", f"Self-Reviewed: {reviewed}\nKB-Work: {bad}")
+        code, out = bl(repo, "done", bad, "--dry-run")
+        assert "stale-docs" not in out and "outside touches" in out, out
+        repo.git("reset", "-q", "--hard", "HEAD~2")
+        code, out = bl(repo, "land", bad)
+        assert code != 0 and "land stopped at step done" in out and "check(s) failed" in out, out
+        assert origin_main(scenario) == moved
+        assert item(scenario, bad)["status"] == "doing"
+
+        # planted failure of the lint step: a content landing (no _tools/) adds a CODE tag with no path#symbol pointer
+        repo.git("checkout", "-q", "-b", f"work/{lint}", "main")
+        repo.write(article, Path(repo.file(article)).read_text(encoding="utf-8") + "\n- Planted fact. [CODE S0000001]\n")
+        repo.git("commit", "-q", "-am", f"docs(kb): {lint} work", "-m", f"KB-Work: {lint}")
+        repo.git("checkout", "-q", "main")
+        code, out = bl(repo, "land", lint)
+        assert code != 0 and "land stopped at step lint" in out, out
+        assert "CODE tag without a path#symbol pointer" in out and f"lint.py {article[3:]} exited 1" in out, out
+        assert origin_main(scenario) == moved and item(scenario, lint)["status"] == "doing"
 
 
 def test_empty_selection_refused_and_gone_once(monkeypatch, capsys):
