@@ -25,7 +25,9 @@
   "touches": [
     "kb/public/claude/hooks.md",
     "kb/public/_gaps.md",
-    "kb/public/_sources.csv"
+    "kb/public/_sources.csv",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md"
   ],
   "depends_on": [
     "ST-kdw6dkyb"
