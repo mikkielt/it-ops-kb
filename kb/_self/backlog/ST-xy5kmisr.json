@@ -2,7 +2,7 @@
   "id": "ST-xy5kmisr",
   "kind": "story",
   "title": "benchmarks.py pool verify checks a record's consistency, and a capped smoke record passes it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -41,5 +41,6 @@
     "ST-lwmcmied",
     "ST-ly2p27q3"
   ],
-  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. The operator wants the record after this sprint to need no further fix sprint, so the smoke record runs the whole command once at a small cost inside this sprint. Premise: pool verify does not exist (the first check exits 2 today); on the 2026-10-08 record it must exit 0 only once that record's spend and session costs are corrected (BG-2tan24sm). --sample is added by the one-command story if it is not there yet; this story may add it. The smoke's paid runs are the orchestrator's (a worker's foreground command has a 10-minute limit): the brief names the command and the worker writes verify and the test."
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. The operator wants the record after this sprint to need no further fix sprint, so the smoke record runs the whole command once at a small cost inside this sprint. Premise: pool verify does not exist (the first check exits 2 today); on the 2026-10-08 record it must exit 0 only once that record's spend and session costs are corrected (BG-2tan24sm). --sample is added by the one-command story if it is not there yet; this story may add it. The smoke's paid runs are the orchestrator's (a worker's foreground command has a 10-minute limit): the brief names the command and the worker writes verify and the test.",
+  "claimed_by": "worker-ST-xy5kmisr"
 }
