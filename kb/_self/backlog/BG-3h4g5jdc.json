@@ -2,7 +2,7 @@
   "id": "BG-3h4g5jdc",
   "kind": "bug",
   "title": "bench_pool.record_of prices a run with no observed model without the run's Claude Code version",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P2",
@@ -17,6 +17,9 @@
     ]
   },
   "touches": [
-    "_tools/bench_pool.py"
-  ]
+    "_tools/bench_pool.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "worker-BG-3h4g5jdc"
 }
