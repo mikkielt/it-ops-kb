@@ -446,8 +446,8 @@ def unordered_overlap_warnings(bl):
                 if any(x in deps[c] for x in bl.ancestors(a)) or any(x in deps[a] for x in bl.ancestors(c)):
                     continue  # one depends on the other's ancestor (a story on the other's story): readiness orders them
                 out.append(f"{bl.label(a)} and {bl.label(c)} both touch {', '.join(sorted(shared))} and neither "
-                           "depends on the other: they could run at once on one file; order them (set ID --depends "
-                           "OTHER --add) before the start")
+                           "depends on the other: they could run at once on one file; order them (set ID "
+                           "--add-depends OTHER) before the start")
     return out
 
 

@@ -108,8 +108,8 @@ def noop_proof(bl, iid, passed):
         return
     c, why = noops[0]
     raise Refused(f"{bl.label(iid)} is not done: {shlex.join(c['run'])} passed without doing its work in this clone "
-                  f"({why}), and no check that runs tests proves the fix. Name one: backlog.py set {iid} --add "
-                  "a --check that does its work in this clone (a tool run on a planted input); or ask the operator to "
+                  f"({why}), and no check that runs tests proves the fix. Name one: backlog.py set {iid} "
+                  "--add-check CMD, a check that does its work in this clone (a tool run on a planted input); or ask the operator to "
                   f"accept the host-bound proof: backlog.py gate add {iid} --id {HOST_BOUND_GATE} --question "
                   "'Accept a proof that does nothing in this clone?' --option accept --option add-test "
                   f"--recommendation add-test, answered with backlog.py answer {iid} {HOST_BOUND_GATE} --answer "
@@ -169,7 +169,7 @@ def rerun_done_checks(bl, sid):
 
 
 # a goal research story that needs no outside facts is done with no work commit when its notes say why: the notes hold
-# `No outside facts: <reason>` at their start, on a line of its own or after a sentence's end (`set --notes --add` joins
+# `No outside facts: <reason>` at their start, on a line of its own or after a sentence's end (`set --add-notes` joins
 # notes with a space)
 NO_OUTSIDE_FACTS = re.compile(r"(?:^|(?<=[.;!?]) |\n)No outside facts:[ \t]*\S")
 
@@ -1204,7 +1204,7 @@ def land_once(bl, a):
                 raise land_stop("scope", f"{bl.label(iid)}'s commits change files outside its touches, so done would "
                                          "refuse it once the merge request merged; nothing was pushed: "
                                 + "; ".join(f"commit {sha[:10]} changed {p}" for sha, p in stray)
-                                + " (revert it, or widen touches: backlog.py set ID --touch PATH --add)")
+                                + " (revert it, or widen touches: backlog.py set ID --add-touch PATH)")
             land_checks(bl, iid)
         changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
