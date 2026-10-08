@@ -18,5 +18,8 @@
   "repro_reason": "The defect is the report's wording: the recording is a one-off .etl outside the repository, so the repro checks the two misleading phrases are gone.",
   "touches": [
     "kb/_self/reports/test-suite-speed.md"
+  ],
+  "links": [
+    "parked: SP-kyvu526t review"
   ]
 }
