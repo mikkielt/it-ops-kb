@@ -2,7 +2,7 @@
   "id": "ST-lxldgx3x",
   "kind": "story",
   "title": "A test run with any untracked non-ignored file in the clone records no reuse key",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-vayhvwfy",
   "priority": "P3",
@@ -77,5 +77,27 @@
     "parked: SP-evkj4avq review"
   ],
   "notes": "Premise (2026-10-08, plan of SP-vayhvwfy): the run_key probe (check 2: an untracked zz-reuse-probe-PID.txt at the clone's top, edited between two run_key calls) printed the same key 1419ab1524ee0be5 both times, exit 1: reproduces. Check 1 (tests.py _tools/test_sync_e2e.py) passes before the work: it pins the sync gate's reuse behaviour that must stay. Parked draft (parked: SP-evkj4avq review) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out. Gate untracked-key options: hash-untracked = run_key adds each untracked non-ignored file's path and content hash (the set conftest.seed_files copies) to the key, so a run with intake drafts in the checkout still records a correct reuse key and an edit to one changes it (recommended: matches the sprint goal's wording, and intake drafts sit untracked in this checkout most of the time); no-key = any untracked non-ignored file leaves the run without a key, as an untracked .py under _tools/ does now, so the gate never reuses while drafts sit there.",
-  "claimed_by": "headless-sonnet"
+  "evidence": {
+    "commit": "6ef083396bab8952be18851ba86957b3a3e5ab6d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_sync_e2e.py"
+        ],
+        "exit": 0,
+        "sha256": "b04549cfa3200e7b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,atexit;sys.path.insert(0,'_tools');import tests as t;p=os.path.join(t.KB,'zz-reuse-probe-%d.txt'%os.getpid());atexit.register(lambda:os.path.exists(p) and os.remove(p));f=lambda c:(open(p,'w').write(c),t.run_key(['-k','x']))[1];k1,w1=f('a');k2,w2=f('b');ok=k1 is None or k1!=k2;print('untracked file keyed: first',k1,w1,'after edit',k2,w2,'ok',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d1bce717ffafcbf0"
+      }
+    ]
+  }
 }
