@@ -15,6 +15,22 @@
       "import os,sys,json,subprocess,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import bl_cost as b;t=Path(tempfile.mkdtemp());g=lambda *a,**e:subprocess.run(['git','-C',str(t),*a],check=True,capture_output=True,env={**os.environ,**e});g('init','-q');g('config','user.email','a@example.com');g('config','user.name','a');f=t/b.REL_DIR/'ST-aaaaaaaa.json';f.parent.mkdir(parents=True);w=lambda s,d:(f.write_text(json.dumps({'id':'ST-aaaaaaaa','status':s},indent=2)),g('add','-A'),g('commit','-qm',s,GIT_AUTHOR_DATE=d,GIT_COMMITTER_DATE=d));w('doing','2026-01-01T00:00:00Z');w('done','2026-01-03T00:00:00Z');w('doing','2026-02-01T00:00:00Z');w('done','2026-03-01T00:00:00Z');r=b.item_done_time(t,'ST-aaaaaaaa');print('done time of a reopened item:',b.epoch_iso(r) if r else r);sys.exit(0 if r and b.epoch_iso(r).startswith('2026-03-01') else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_cost as b;b.item_done_time=lambda r,i:1767398400;b.store_runs=lambda r:[(1767225600,'R1'),(1767312000,'R2')];a=b.cost_no_line('.',None,'ST-aaaaaaaa',[],[]);b.store_runs=lambda r:[(1767484800,'R3')];c=b.cost_no_line('.',None,'ST-aaaaaaaa',[],[]);print(a['reason']);print(c['reason']);sys.exit(0 if a['kind']=='after-newest-run' and c['kind']=='before-first-sidecar' and all('likely' in x['reason'] and 'capture off' in x['reason'] for x in (a,c)) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys,json,subprocess,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import bl_cost as b;t=Path(tempfile.mkdtemp());g=lambda *a,**e:subprocess.run(['git','-C',str(t),*a],check=True,capture_output=True,env={**os.environ,**e});g('init','-q');g('config','user.email','a@example.com');g('config','user.name','a');f=t/b.REL_DIR/'ST-aaaaaaaa.json';f.parent.mkdir(parents=True);w=lambda s,d:(f.write_text(json.dumps({'id':'ST-aaaaaaaa','status':s},indent=2)),g('add','-A'),g('commit','-qm',s,GIT_AUTHOR_DATE=d,GIT_COMMITTER_DATE=d));w('doing','2026-01-01T00:00:00Z');w('done','2026-01-03T00:00:00Z');r=b.item_done_time(t,'ST-aaaaaaaa');print('done time of an item done once:',b.epoch_iso(r) if r else r);sys.exit(0 if r and b.epoch_iso(r).startswith('2026-01-03') else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_cost.py",
     "kb/_self/backlog.md",
