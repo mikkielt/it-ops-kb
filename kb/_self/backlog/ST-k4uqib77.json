@@ -66,7 +66,7 @@
       "recommendation": "A run whose checks all pass is one right answer; the cell figure is the effective input summed over its runs, divided by those runs; the passed and total checks stay as their own count",
       "class": "design",
       "answer": "A run whose checks all pass is one right answer; the cell figure is the effective input summed over its runs, divided by those runs; the passed and total checks stay as their own count",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",

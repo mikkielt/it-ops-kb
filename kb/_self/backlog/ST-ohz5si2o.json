@@ -52,7 +52,7 @@
       "recommendation": "session-id then resume",
       "class": "design",
       "answer": "session-id then resume",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -65,7 +65,7 @@
       "recommendation": "the pool's SEED, overridable with --seed on run",
       "class": "design",
       "answer": "the pool's SEED, overridable with --seed on run",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -78,7 +78,7 @@
       "recommendation": "haiku-5-5 and sonnet-5-5, each at low and default",
       "class": "design",
       "answer": "haiku-5-5 and sonnet-5-5, each at low and default",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

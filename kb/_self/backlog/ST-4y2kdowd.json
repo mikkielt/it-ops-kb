@@ -65,7 +65,7 @@
       "recommendation": "default seed 11, one generator per pool section, the variant facts drawn one per domain first",
       "class": "querylog",
       "answer": "default seed 11, one generator per pool section, the variant facts drawn one per domain first",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -91,7 +91,7 @@
       "recommendation": "good and weak verdict entries that cite an article, checked by that article's path; none-verdict entries left out, since the kb may answer them by now",
       "class": "querylog",
       "answer": "good and weak verdict entries that cite an article, checked by that article's path; none-verdict entries left out, since the kb may answer them by now",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

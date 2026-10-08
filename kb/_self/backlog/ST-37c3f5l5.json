@@ -47,7 +47,7 @@
       "recommendation": "transcript model first, version table fallback",
       "class": "design",
       "answer": "transcript model first, version table fallback",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -60,7 +60,7 @@
       "recommendation": "per request tier, the run's highest tier in the row note",
       "class": "design",
       "answer": "per request tier, the run's highest tier in the row note",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

@@ -56,7 +56,7 @@
       },
       "class": "design",
       "answer": "1 (one run at a time, as before)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -73,7 +73,7 @@
       },
       "class": "design",
       "answer": "0, with a line saying the estimate is over the cap",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Operator's choice 2026-10-08, over cutting the record or running it over two days: ST-ji32ouga's full set is about 2,700 paid runs, 20-30 h sequential, and a record is one date. report --check passes before the work and pins every existing table; the failing check is -k bench_pool_jobs, which collects no test until the work adds one. Today no spend cap is enforced: benchmarks.py only reports SPEND after a scenario.",
