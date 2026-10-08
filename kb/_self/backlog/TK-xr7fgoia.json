@@ -2,7 +2,7 @@
   "id": "TK-xr7fgoia",
   "kind": "task",
   "title": "Research queue gap F-68c59a20a679: does cargo metadata --no-deps invoke rustc, and does it honour .cargo/config.toml build.rustc",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-dfxpv6i7",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,18 @@
   "depends_on": [
     "ST-hcc7a3fd"
   ],
-  "claimed_by": "headless-sonnet"
+  "evidence": {
+    "commit": "bd7e53c5caf7d71c39f6343eef82611d78d82097",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','cargo metadata --no-deps invokes rustc .cargo/config.toml build.rustc','--budget','200'],capture_output=True,text=True);o=r.stdout;ls=o.splitlines();print(ls[0] if ls else r.stderr[:200]);sys.exit(r.returncode or int(not o.startswith('coverage: good') or any(l.startswith('check:') for l in ls)))"
+        ],
+        "exit": 0,
+        "sha256": "edcfcadc31af88b4"
+      }
+    ]
+  }
 }
