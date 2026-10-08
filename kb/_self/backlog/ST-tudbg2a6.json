@@ -2,12 +2,12 @@
   "id": "ST-tudbg2a6",
   "kind": "story",
   "title": "Research sprint goal: Query log learn and apply, eval and lint output",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-matmvkn6",
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "The sprint goal's open questions whose pack coverage is weak or none are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills: (1) how git update-ref -d deletes a ref (with and without an old value), and (2) how git for-each-ref lists the refs under a namespace such as refs/kb-reopened/ (format, pattern matching), both from the official git docs at a pinned version, for ST-ihtjygip (Sprint close and drop delete the refs/kb-reopened ref of each item they remove). Every other goal question (ql_apply alias files, ql_learn pairing, rag.py eval output, the contract lint, perfcheck) is about the kb's own code and needs no outside facts.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "worker-research"
 }
