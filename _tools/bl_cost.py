@@ -98,11 +98,14 @@ def open_lines(root, rework=True):
     runs for a closed session (`ql_distill.plan_work`, one session at a time), as report lines named `open-<session>`.
     Reads the clone's spool and the main worktree's when it is another directory (`bl_base.main_worktree_spool`), a
     session in both once: no sidecar, no marker, no row is written, and a session that opened no item's window (no
-    `claim` row and no `branch` row of a `work/<id>` branch) gives nothing. The prompts `worked.json` beside a spool
-    lists (what a sidecar already counted, distill's ledger) are left out, so a session distilled after an idle close
-    that then reopened adds only its later prompts. `worked` is the set of items whose window the session opened, by a
-    claim or by its `work/<id>` branch, and `missing` its window prompts with no usable
-    `usage` row (a prompt is counted once its Stop row has written its usage). No spool directory: nothing."""
+    `claim` row and no `branch` row of a `work/<id>` branch) gives nothing. Its windows are distill's once the session
+    closes (`ql_distill.item_finder` over root's backlog directory): a claim or branch row of an item with no item
+    file, or a branch row of a stale checkout of a done item, opens none unless a later done or release row of the
+    item closes it. The prompts `worked.json` beside a spool lists (what a sidecar already counted, distill's ledger)
+    are left out, so a session distilled after an idle close that then reopened adds only its later prompts. `worked`
+    is the set of items whose window the session opened, by a claim or by its `work/<id>` branch, and `missing` its
+    window prompts with no usable `usage` row (a prompt is counted once its Stop row has written its usage). No spool
+    directory: nothing."""
     import time
 
     import ql_base
@@ -126,13 +129,14 @@ def open_lines(root, rework=True):
     if not sessions:
         return [], []
     sprint_of = ql_distill.sprint_finder(Path(root) / REL_DIR)
+    known = ql_distill.item_finder(Path(root) / REL_DIR)  # the windows distill gives once the session closes
     out, info = [], []
     for sid in sorted(sessions):
         s = sessions[sid]
-        worked = ql_distill.work_windows(s["rows"])[1]
+        worked = ql_distill.work_windows(s["rows"], known)[1]
         if s["closed"] or not worked:
             continue
-        lines, missing, _ = ql_distill.plan_work({sid: {**s, "closed": True}}, ledger, sprint_of)
+        lines, missing, _ = ql_distill.plan_work({sid: {**s, "closed": True}}, ledger, sprint_of, known)
         run = OPEN_RUN + sid[:8]
         out += [r for r in (cost_row_of(run, w, None, rework) for w in lines) if r]
         info.append({"session": sid, "worked": worked, "missing": missing})
