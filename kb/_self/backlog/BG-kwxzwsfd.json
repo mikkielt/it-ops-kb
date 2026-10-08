@@ -1,0 +1,30 @@
+{
+  "id": "BG-kwxzwsfd",
+  "kind": "bug",
+  "title": "The pool dry run prices an arm with no earlier record at a default run half its real cost, and the spend cap starves the arms that run last",
+  "status": "todo",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "The 2026-10-08 smoke record (_cache/scratch/ST-xy5kmisr/smoke/pool-smoke.csv) estimated 23.37 USD and spent 26.62 before the cap stopped it: the opus-5-5 labels cost 15.7 USD against 7.84 estimated from DEFAULT_RUN, as the results file holds no earlier Opus record, and since the fresh arms run first and Opus among them, router, hook, the web arms and every session label never started. The dry run's estimate for an arm with no earlier record is within 25% of that arm's smoke cost (for example the newest record of an arm with the same tools, priced at the arm's own model), the estimate of the whole smoke command is within 25% of what a full run costs (the smoke's per-label costs, with the session and web labels taken from the 2026-10-08 record), and a run the cap stops leaves every planned arm label with runs, not the last labels with none (how the cap shares the runs out is a provisional gate); a test plans such a run with a fake runner and a cap below its cost and checks that every label ran",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,re; o=subprocess.run([sys.executable,'_tools/benchmarks.py','run','pool','--arms','opus-5-5','--sample','2','--reps','1','--dry-run'],capture_output=True,text=True).stdout; m=re.search(r'estimate \\$([0-9.]+) in all',o); assert m and float(m.group(1))>=12, o[-300:]"
+    ]
+  },
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "BG-rbokisbc"
+  ]
+}
