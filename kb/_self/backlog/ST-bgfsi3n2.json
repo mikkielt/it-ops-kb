@@ -2,7 +2,7 @@
   "id": "ST-bgfsi3n2",
   "kind": "story",
   "title": "The query log's SessionEnd launcher is proven on the Windows host",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P2",
@@ -53,5 +53,18 @@
     }
   ],
   "notes": "Its check passes before the work on macOS (2026-10-07: launch exit 0, a run file written): the proof is its run on the Windows host, where the detach flags (CREATE_BREAKAWAY_FROM_JOB) matter; the windows gate makes start refuse elsewhere. The 2026-09-30 probe (kb/public/_answers.md, a probe hook's detached child outlives the hook) predates the real launcher's change in a9fe54c6. SessionEnd does not always run in claude -p (usage.md), so the session half is interactive. Premise on the Windows host (2026-10-08, origin/main d5a26e12): the launch check passes there too (launch exit 0, one run file, distill log entries=1); the remaining proof is the interactive session half and the report. Proven on the Windows host (2026-10-08, commit fea71a1f, Claude Code 2.1.294, CPython 3.14.7): the check exits 0 (launch exit 0, run file 20261008T062911Z-8ea3627d, distill entries=1); launch returns in 0.098-0.143 s over five planted runs; one interactive session (Start-Process claude.exe from PowerShell 5.1, CLAUDE* variables removed, one prompt, /exit through its console input) left its .end marker and a held distill lock by 0.66 s, exited at 1.14 s, and its run file 20261008T062839Z-9e07b65a came at 14.16 s (distill work=1 ops=5). kb/_self/reports/windows-run.md, SessionEnd launcher, records both.",
-  "claimed_by": "worker-win"
+  "evidence": {
+    "commit": "4fb67c93e92965a21348faba238af486e33da8a8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,json,time,shutil,tempfile,subprocess as s;from pathlib import Path;sys.path.insert(0,'_tools');t=Path(tempfile.mkdtemp());d=t/'d';q=d/'querylog';q.mkdir(parents=True);(q/'config.json').write_text(json.dumps({'mode':'local'}));os.environ.update(CLAUDE_PLUGIN_DATA=str(d),CLAUDE_PLUGIN_ROOT=os.getcwd());import ql_capture as c;c.record('prompt','s1',prompt_id='p1',prompt='x');c.record('kb_hook','s1',prompt_id='p1');(t/'tr.jsonl').write_text('');ev=json.dumps({'hook_event_name':'SessionEnd','session_id':'s1','transcript_path':str(t/'tr.jsonl')});r=s.run([sys.executable,'_tools/querylog.py','launch'],input=ev,text=True,capture_output=True,timeout=30);ok=lambda:list((q/'store').glob('*/*.jsonl')) and not (q/'distill.lock').exists();[time.sleep(.5) for _ in range(60) if not ok()];runs=[p.name for p in (q/'store').glob('*/*.jsonl')];log=(q/'distill.log').read_text()[-200:] if (q/'distill.log').exists() else '';shutil.rmtree(t,ignore_errors=True);print('launch exit',r.returncode,r.stderr[-100:],'| run files',runs,'| log',log.strip());sys.exit(0 if r.returncode==0 and runs else 1)"
+        ],
+        "exit": 0,
+        "sha256": "bdd16ae5c1852300"
+      }
+    ]
+  }
 }
