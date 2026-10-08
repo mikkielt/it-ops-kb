@@ -284,3 +284,4 @@ SQ-operator-decision-recorded-decisions-csv-gate,how is an operator decision rec
 SQ-must-self-reviewed-trailer-go-commit,where must the Self-Reviewed trailer go in a commit message for selfdoc stale to read it,git.md,good,yes,in the last paragraph with the other trailers,
 SQ-who-runs-kbgit-py-publish-public,who runs kbgit.py publish to the public GitHub home and how is its state checked,git.md,good,yes,The project's settings deny `kbgit.py publish` to every agent's shell,
 SQ-import-direction-between-tool-modules-modules,import direction between tool modules: which modules may kbfacts import,code.md,good,yes,the lookup side reads `_decisions.csv` itself;A module imports the modules below it,
+SQ-host-bound-item-repro-another-host,host-bound item repro on another host,tools.md,good,yes,skipped) unless another passing,
