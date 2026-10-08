@@ -18,7 +18,7 @@ from bl_base import (
 from bl_check import (
     ITEM_FILES_ROUTE, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
 )
-from bl_land import cleanup_gate_do, run_check, own_failure
+from bl_land import REOPENED_REFS, cleanup_gate_do, prune_reopened_refs, run_check, own_failure
 from bl_view import (
     is_near, similar,
 )
@@ -573,7 +573,7 @@ def cmd_move(bl, a):
 
 
 def reopened_ref(iid):
-    return f"refs/kb-reopened/{iid}"
+    return f"{REOPENED_REFS}{iid}"
 
 
 def mark_reopened(bl, iid):
@@ -781,6 +781,7 @@ def cmd_drop(bl, a):
             bl.delete(d)
         bl.delete(iid)
         say(f"dropped and deleted {label} (not in a sprint; git keeps it): {a.why}")
+        prune_reopened_refs(bl)
         return 0
     it.update(status="dropped", notes=(it.get("notes", "") + " Dropped: " + a.why).strip()[:TEXT_MAX])
     it.pop("claimed_by", None)
