@@ -13,7 +13,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,glob,sys;ev=open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8').read()+open('kb/public/_gaps.md',encoding='utf-8').read()+open('kb/_self/backlog/ST-hcc7a3fd.json',encoding='utf-8').read();qs=set();[qs.add(e['question']) for f in glob.glob('kb/_querylog/2026-*/**/*.jsonl',recursive=True) for l in open(f,encoding='utf-8') for e in [json.loads(l) if l.startswith('{') else {}] if e.get('verdict')=='good' and e.get('judged')=='missed'];miss=sorted(q for q in qs if q not in ev and json.dumps(q)[1:-1] not in ev);print('false-good questions:',len(qs),'without an eval row, gap entry or triage line:',len(miss));[print(' -',q[:100]) for q in miss];sys.exit(1 if miss or len(qs)<23 else 0)"
+        "import json,glob,sys;ev=open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8').read()+open('kb/public/_retrieval/lookup_heldout.csv',encoding='utf-8').read()+open('kb/public/_gaps.md',encoding='utf-8').read()+open('kb/_self/backlog/ST-hcc7a3fd.json',encoding='utf-8').read();qs=set();[qs.add(e['question']) for f in glob.glob('kb/_querylog/2026-*/**/*.jsonl',recursive=True) for l in open(f,encoding='utf-8') for e in [json.loads(l) if l.startswith('{') else {}] if e.get('verdict')=='good' and e.get('judged')=='missed'];miss=sorted(q for q in qs if q not in ev and json.dumps(q)[1:-1] not in ev);print('false-good questions:',len(qs),'without an eval row, gap entry or triage line:',len(miss));[print(' -',q[:100]) for q in miss];sys.exit(1 if miss or len(qs)<23 else 0)"
       ]
     },
     {
