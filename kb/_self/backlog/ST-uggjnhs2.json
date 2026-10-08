@@ -32,7 +32,9 @@
         "exact: only a touch naming the same path or glob"
       ],
       "recommendation": "overlap: a file inside a touched directory glob, a touch inside a named directory, or the same path",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "overlap",
+      "by": "operator"
     },
     {
       "id": "research",
@@ -43,7 +45,9 @@
         "warn: judge it like any other item"
       ],
       "recommendation": "leave out: no warning for a goal research story",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "leave out",
+      "by": "operator"
     }
   ],
   "claimed_by": "worker-ST-uggjnhs2"
