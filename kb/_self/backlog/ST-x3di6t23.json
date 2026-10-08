@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the goal's three outside-fact questions (Dataverse MCP server, cargo metadata/rustc, os.link EXDEV/NTFS) are each researched by their own committed item (ST-aqjcisdi, TK-xr7fgoia, TK-6emrxewd); the false-good triage (ST-hcc7a3fd) reads the committed query log store; the code clauses are answered from kb/_self/git.md, tools.md, maintaining.md and the code. The pack results of 2026-10-08 recorded in the goal stand as this story's findings.",
   "claimed_by": "headless-sonnet"
 }
