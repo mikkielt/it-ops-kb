@@ -1,0 +1,13 @@
+{
+  "id": "ST-urfa4ntj",
+  "kind": "story",
+  "title": "A content landing runs the contract lint on the articles it changes, so a CODE tag without a pointer cannot reach main",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land runs .claude/skills/kb-verify/lint.py (or the same checks scoped to the changed articles) before sync --push when the landed range changes a kb root's articles, not only when it changes _tools/, so a lint error a worker's content commit adds stops that landing instead of the next code landing. Found by the SP-kyvu526t close: ST-umjb55sg's research landed three CODE tags with no path#symbol pointer (check.py and the content gate passed), and BG-2hjxwg64's landing stopped at its lint step until BG-oj3lixq2 fixed them.",
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ]
+}
