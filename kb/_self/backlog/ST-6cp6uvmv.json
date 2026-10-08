@@ -5,7 +5,7 @@
   "status": "draft",
   "priority": "P3",
   "rank": 0,
-  "goal": "Found by the fresh-context review of SP-matmvkn6, item ST-ihtjygip (Sprint close and drop delete the refs/kb-reopened ref of each item they remove): no test names kb-reopened or prune_reopened_refs, so removing the call in cmd_close (_tools/bl_land.py) or cmd_drop (_tools/bl_items.py) passes every gate; ST-ihtjygip's check read only the clone's ref state, which the worker pruned by calling the function by hand. One planted-failure test, within the ceiling in _tools/tests_ceiling.json, runs close or drop in an isolated git repo and asserts a removed item's ref is gone, a live item's ref kept, and a drop inside a sprint prunes nothing.",
+  "goal": "Found by the fresh-context review of SP-matmvkn6, item ST-ihtjygip (Sprint close and drop delete the refs/kb-reopened ref of each item they remove): no test names kb-reopened or prune_reopened_refs, so removing the call in cmd_close (_tools/bl_land.py) or cmd_drop (_tools/bl_items.py) passes every gate; ST-ihtjygip's check read only the clone's ref state, which the worker pruned by calling the function by hand. One planted-failure test in _tools/test_land_e2e.py, within the ceiling in _tools/tests_ceiling.json, runs close or drop in an isolated git repo and asserts a removed item's ref is gone, a live item's ref kept, and a drop inside a sprint prunes nothing.",
   "checks": [
     {
       "run": [
@@ -17,7 +17,7 @@
     }
   ],
   "touches": [
-    "_tools/test_bl_land.py",
+    "_tools/test_land_e2e.py",
     "_tools/tests_ceiling.json"
   ],
   "links": [
