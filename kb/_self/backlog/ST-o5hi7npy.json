@@ -2,7 +2,7 @@
   "id": "ST-o5hi7npy",
   "kind": "story",
   "title": "Review sprint: Work windows and cost figures are right",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wgx4pq4r",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-mac"
+  "evidence": {
+    "commit": "a87346afbb0e3ea90e9ff3037d7099137ddf5e13",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "68322d6521e9fbcb"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b62d77a163a15f7d"
+      }
+    ]
+  }
 }
