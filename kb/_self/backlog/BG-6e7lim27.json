@@ -34,7 +34,9 @@
         "API key: cache writes priced at the 5-minute rate"
       ],
       "recommendation": "subscription: cache writes priced at the 1-hour rate",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "subscription: cache writes priced at the 1-hour rate",
+      "by": "operator"
     }
   ],
   "claimed_by": "worker-BG-6e7lim27"
