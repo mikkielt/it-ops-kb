@@ -7,6 +7,15 @@
   "priority": "P3",
   "rank": 0,
   "goal": "kb/_self/reports/windows-run.md's SessionEnd launcher section records the interactive session's exit code and whether the launcher's child broke away from the job (CREATE_BREAKAWAY_FROM_JOB) or took the fallback, and states that LAUNCH_BUDGET_S bounds the launcher's return and the .end marker, not the run file; found by the SP-kjqdiudr review (ST-bgfsi3n2, whose goal asked for a run file within LAUNCH_BUDGET_S).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/reports/windows-run.md',encoding='utf-8').read();s=t.split('SessionEnd launcher',1)[-1];ok='fallback' in s and 'exit code' in s.lower() and 'BREAKAWAY' in s;print('launcher section names exit code, breakaway and fallback:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
   "touches": [
     "kb/_self/reports/windows-run.md",
     "kb/_self/querylog.md"

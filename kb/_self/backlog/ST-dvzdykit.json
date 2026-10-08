@@ -7,6 +7,16 @@
   "priority": "P3",
   "rank": 0,
   "goal": "Within the tests ceiling, a test shows that weighed() from the unit cache equals a fresh weighing, that a change to each _unit_key input re-weighs that unit, and that an edited fact is found by rag.py pack, so a regression of the cache shows in the suite on any host; found by the SP-kjqdiudr review (ST-akicahgy).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "unit_cache"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "kb/_self/tools.md",

@@ -7,6 +7,15 @@
   "priority": "P3",
   "rank": 0,
   "goal": "kb/_self/reports/windows-fresh-host.md records a cleanhost-run.ps1 run at the sprint's final origin/main with and without -Short, each step's literal last line and exit code, and whether it ran elevated; and the land e2e scenario's backlog check no longer fails when the host account's name has a piece in the kb's text; found by the SP-kjqdiudr review (ST-2ukv6ysc).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/reports/windows-fresh-host.md',encoding='utf-8').read();ok='-Short' in t and 'elevated' in t.lower() and 'without -Short' in t;print('report has both runs and elevation:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
   "touches": [
     "kb/_self/reports/windows-fresh-host.md",
     "_tools/cleanhost-run.ps1",
