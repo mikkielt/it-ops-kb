@@ -2,7 +2,7 @@
   "id": "ST-wkhxffun",
   "kind": "story",
   "title": "Review sprint: Wasted runs are refused: empty test runs, stale docs at done, reused gate tests, routed fetches, CLI usage errors",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-evkj4avq",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "d23ad03ae870388c87054d90ef4117fce77769f7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "7849996aaeb2e4b6"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "125f7192a013cdd8"
+      }
+    ]
+  }
 }
