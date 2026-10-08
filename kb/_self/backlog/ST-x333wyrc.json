@@ -2,7 +2,7 @@
   "id": "ST-x333wyrc",
   "kind": "story",
   "title": "bench_core.resolve_model prices a run with no observed model and an unknown Claude Code version without an IndexError",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -42,5 +42,18 @@
     "parked: SP-hm4qgf3t review"
   ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Premise run 2026-10-08: resolve_model('haiku', '', '?') raises IndexError at bench_core.py:405; the check fails until it returns a priced model.",
-  "claimed_by": "worker-ST-x333wyrc"
+  "evidence": {
+    "commit": "f3733830680abc45fc515035e9c397bc55a22e8a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bench_core; assert bench_core.resolve_model('haiku','','?') in bench_core.PRICE"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
