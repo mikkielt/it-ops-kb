@@ -14,6 +14,7 @@ The same code runs on Linux, macOS and Windows.
 - **Text is UTF-8.** Every `open`, `read_text` and `write_text` names `encoding="utf-8"`; a write adds `newline="\n"`, so a file has the same bytes on every host. A script that reads or prints text through a pipe (a hook, the MCP server) reconfigures its streams to UTF-8.
 - **Paths go through `pathlib`** in new and changed code (older modules still use `os.path`): no string joins with `/` or `\`, no shell syntax in a path. A path written into a doc or a ledger uses `/`.
 - **Subprocesses take an argument list**, never a string and never `shell=True`. A tool starts Python with `sys.executable`, not `python3`, which on Windows can be a Store alias.
+- **A file at a revision is read with `git cat-file blob REV:PATH`**, never `git show REV:PATH`: `show` also checks its argument as a file name, which fails as "Filename too long" in a deep Windows checkout.
 - **No Unix-only calls** (`fcntl`, signalling a PID to probe it, `os.fork`). A lock is an `O_EXCL` file; a detached child sets the creation flags of each OS.
 - **A test skips what a host lacks** (no `sh`, no `git`, no PowerShell) with a marker that names the missing part; it never passes without running.
 

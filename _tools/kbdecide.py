@@ -726,7 +726,8 @@ class Context:
     def deleted_version(rel):
         """The text of `rel` as it was just before the newest commit that deleted it, '' when git holds none."""
         last = git_out("log", "-1", "--diff-filter=D", "--format=%H", "--", rel).strip()
-        return git_out("show", f"{last}^:{rel}") if last else ""
+        # cat-file, not show: `git show REV:PATH` checks its argument as a file name ("Filename too long" on Windows)
+        return git_out("cat-file", "blob", f"{last}^:{rel}") if last else ""
 
     def superseded_by(self, store, sid):
         """What `superseded_by` says of source `sid` in the store's root (kb/_self: in any root), '' when nothing."""
@@ -839,7 +840,7 @@ def old_text(key, qpaths):
             continue
         repo = kbcommon.repo_rel(str(Path(root.path) / rel))
         for sha in git_out("log", f"-n{HISTORY}", "--format=%H", "--", repo).split():
-            text = git_out("show", f"{sha}:{repo}")
+            text = git_out("cat-file", "blob", f"{sha}:{repo}")  # not `git show` (see deleted_version)
             for u in (kbfacts.md_units(q, text) if rel.endswith(".md") else kbfacts.csv_units(q, text)):
                 if u.get("tags") and kbfacts.fact_key(u["text"]) == key:
                     return u["text"]

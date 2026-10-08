@@ -82,7 +82,8 @@ class KbAtHead:
             rel = path.resolve().relative_to(self.root).as_posix()
         except ValueError:
             return None
-        p = subprocess.run(["git", "-C", str(self.root), "show", f"HEAD:{rel}"], capture_output=True)
+        # cat-file, not show: `git show REV:PATH` checks its argument as a file name ("Filename too long" on Windows)
+        p = subprocess.run(["git", "-C", str(self.root), "cat-file", "blob", f"HEAD:{rel}"], capture_output=True)
         return p.stdout.decode("utf-8-sig", errors="replace") if p.returncode == 0 else None
 
     def split(self, qpath):
