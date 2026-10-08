@@ -59,7 +59,7 @@
       "recommendation": "--redo ID, repeatable: a pool row id (BP-xxxxxxxx) or an eval case id, with --dry-run listing the rows and the estimate",
       "class": "design",
       "answer": "--redo ID, repeatable: a pool row id (BP-xxxxxxxx) or an eval case id, with --dry-run listing the rows and the estimate",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -72,7 +72,7 @@
       "recommendation": "the committed check stays, and the build prints the row",
       "class": "design",
       "answer": "the committed check stays, and the build prints the row",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -85,7 +85,7 @@
       "recommendation": "the build refuses to call when more than 12 rows would be asked or the estimate is over 0.50 USD",
       "class": "design",
       "answer": "the build refuses to call when more than 12 rows would be asked or the estimate is over 0.50 USD",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -99,7 +99,7 @@
       "recommendation": "refuse a regex with a bare-word alternative found in more than 10 kb articles or matching more than 2 other eval rows' facts or questions; --replies FILE answers the redone rows from a pool csv, no model",
       "class": "design",
       "answer": "refuse a regex with a bare-word alternative found in more than 10 kb articles or matching more than 2 other eval rows' facts or questions; --replies FILE answers the redone rows from a pool csv, no model",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -112,7 +112,7 @@
       "recommendation": "a redone row's prompt adds the guard's limits (specific alternatives, no bare word common across the kb, a match on its own fact line), built from the guard's constants; the guard still judges the replies",
       "class": "design",
       "answer": "a redone row's prompt adds the guard's limits (specific alternatives, no bare word common across the kb, a match on its own fact line), built from the guard's constants; the guard still judges the replies",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Operator, 2026-10-08: approved one small paid Sonnet call for these rows in this sprint, after ST-yob4py65 kept the committed checks offline (its gate g2). Premise: ST-yob4py65's report counted 10 of 40 eval rows path-only on the committed csv, before and after its fix.",

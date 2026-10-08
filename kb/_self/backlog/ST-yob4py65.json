@@ -51,7 +51,7 @@
       "recommendation": "The build keeps the eval rows and near-miss bases of the file at --out and draws only the rows it lacks; a build to a new --out resamples",
       "class": "design",
       "answer": "The build keeps the eval rows and near-miss bases of the file at --out and draws only the rows it lacks; a build to a new --out resamples",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -64,7 +64,7 @@
       "recommendation": "It keeps the committed check and asks no model; a later paid call can redo them",
       "class": "design",
       "answer": "It keeps the committed check and asks no model; a later paid call can redo them",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

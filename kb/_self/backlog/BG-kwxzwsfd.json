@@ -39,7 +39,7 @@
       "recommendation": "the mean cost of the label's runs in its newest record (what they were billed, web searches and tool-side model calls included)",
       "class": "design",
       "answer": "the mean cost of the label's runs in its newest record (what they were billed, web searches and tool-side model calls included)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -52,7 +52,7 @@
       "recommendation": "the mean input and output counts of the same effort and shape label of another kb arm (the newest record, Sonnet 5.5 first), priced at the arm's own model",
       "class": "design",
       "answer": "the mean input and output counts of the same effort and shape label of another kb arm (the newest record, Sonnet 5.5 first), priced at the arm's own model",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -66,7 +66,7 @@
       "recommendation": "within a shape the labels' runs start one of each in turn, and the cap is shared between the shapes by their estimated spend over what is left",
       "class": "design",
       "answer": "within a shape the labels' runs start one of each in turn, and the cap is shared between the shapes by their estimated spend over what is left",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -79,7 +79,7 @@
       "recommendation": "the lowest tier, as each request of a run falls under its prompt limit",
       "class": "design",
       "answer": "the lowest tier, as each request of a run falls under its prompt limit",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

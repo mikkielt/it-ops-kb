@@ -38,7 +38,7 @@
       "recommendation": "Keep the pricing page's 0.10 (a Sonnet run's list cost reads about 8% under its reported cost, inside the 20% bound)",
       "class": "design",
       "answer": "Keep the pricing page's 0.10 (a Sonnet run's list cost reads about 8% under its reported cost, inside the 20% bound)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

@@ -49,7 +49,7 @@
       "recommendation": "like the other kb arms: --effort sets the levels (default low,default), one cell per level, labels opus-5-5:low and opus-5-5:default",
       "class": "design",
       "answer": "like the other kb arms: --effort sets the levels (default low,default), one cell per level, labels opus-5-5:low and opus-5-5:default",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -62,7 +62,7 @@
       "recommendation": "no: opus-5-5 runs only when --arms names it",
       "class": "design",
       "answer": "no: opus-5-5 runs only when --arms names it",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

@@ -56,7 +56,7 @@
       "recommendation": "N rows of each kind, drawn per kind by a generator seeded from --seed and the kind, over the whole pool before any kind filter; the kept rows keep the pool's order",
       "class": "design",
       "answer": "N rows of each kind, drawn per kind by a generator seeded from --seed and the kind, over the whole pool before any kind filter; the kept rows keep the pool's order",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -70,7 +70,7 @@
       "recommendation": "A key ARM applies to both shapes, a key ARM/session overrides it in the session shape only, and each session arm's groups are built from its own kinds",
       "class": "design",
       "answer": "A key ARM applies to both shapes, a key ARM/session overrides it in the session shape only, and each session arm's groups are built from its own kinds",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -83,8 +83,8 @@
       ],
       "recommendation": "The shapes run in the order given; each starts runs only while the spend of the whole run so far is under the cap, so a shape after a spent cap starts none and records every unit as spend_stopped; exit 1 as with one shape",
       "class": "design",
-      "answer": "The shapes run in the order given; each starts runs only while the spend of the whole run so far is under the cap, so a shape after a spent cap starts none and records every unit as spend_stopped; exit 1 as with one shape",
-      "by": "agent"
+      "answer": "within a shape the labels' runs start one of each in turn, and the cap is shared between the shapes by their estimated spend over what is left; a stop exits 1 (changed in the review: BG-kwxzwsfd implements it, its gate g3)",
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -97,7 +97,7 @@
       "recommendation": "--shape takes fresh, session or both comma separated; --arm-reps and --arm-kinds take ARM=VALUE pairs comma separated or by repeating the flag, kinds joined by +; an unknown shape, arm or kind, a repeated key, or an arm the run does not run (opus-5-5 without --arms, a session key without the session shape) exits 2 with a message, and --kinds is checked against the known kinds too",
       "class": "design",
       "answer": "--shape takes fresh, session or both comma separated; --arm-reps and --arm-kinds take ARM=VALUE pairs comma separated or by repeating the flag, kinds joined by +; an unknown shape, arm or kind, a repeated key, or an arm the run does not run (opus-5-5 without --arms, a session key without the session shape) exits 2 with a message, and --kinds is checked against the known kinds too",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -110,7 +110,7 @@
       "recommendation": "fresh runs the arms named (default DEFAULT_ARMS); session runs those of them that are session arms, else all session arms; an arm named that no shape can run is an error only under --shape session alone",
       "class": "design",
       "answer": "fresh runs the arms named (default DEFAULT_ARMS); session runs those of them that are session arms, else all session arms; an arm named that no shape can run is an error only under --shape session alone",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found in SP-hm4qgf3t: the 2026-10-08 record took six runs from a hand-written detached chain script with six caps, and a mid-run spend change needed the chain stopped by hand. Premise: the first check exits 2 today (--arm-reps unknown, --shape takes one value).",

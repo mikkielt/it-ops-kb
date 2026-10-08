@@ -41,7 +41,7 @@
       "recommendation": "1000 resamples",
       "class": "design",
       "answer": "1000 resamples",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -54,7 +54,7 @@
       "recommendation": "the pool's seed, in a generator labelled interval",
       "class": "design",
       "answer": "the pool's seed, in a generator labelled interval",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -67,7 +67,7 @@
       "recommendation": "the values at index 2.5% and 97.5% of their count (nearest rank, no interpolation)",
       "class": "design",
       "answer": "the values at index 2.5% and 97.5% of their count (nearest rank, no interpolation)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -80,7 +80,7 @@
       "recommendation": "leave the resample out of that interval, and give no pair for a cell with no right run",
       "class": "design",
       "answer": "leave the resample out of that interval, and give no pair for a cell with no right run",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Found by the SP-hm4qgf3t run: the results file keeps means only, so the report's intervals came from the runs file, which is not committed. Premise: the check fails today (cell_metrics has no interval metric).",

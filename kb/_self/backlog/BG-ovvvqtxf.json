@@ -35,7 +35,7 @@
       "recommendation": "Scale the partial counts of the main-session requests so they sum to the main-loop output count of the result event, and subtract the earlier request's scaled share",
       "class": "design",
       "answer": "Scale the partial counts of the main-session requests so they sum to the main-loop output count of the result event, and subtract the earlier request's scaled share",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

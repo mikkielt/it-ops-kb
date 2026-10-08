@@ -41,7 +41,7 @@
       "recommendation": "The reader's answer first, a blank line, then the researcher's; tool counts and searches summed, fetched urls concatenated",
       "class": "design",
       "answer": "The reader's answer first, a blank line, then the researcher's; tool counts and searches summed, fetched urls concatenated",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
