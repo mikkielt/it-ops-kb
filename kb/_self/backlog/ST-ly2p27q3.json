@@ -1,0 +1,41 @@
+{
+  "id": "ST-ly2p27q3",
+  "kind": "story",
+  "title": "The pool's eval rows with a path-only or front-matter check get a fact check from one paid Sonnet call",
+  "status": "todo",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The eval rows of kb/public/_retrieval/bench_pool.csv whose check is path-only or whose regex Sonnet wrote from a front-matter line (8 rows by ST-yob4py65's count: 5 path-only rows whose fact was front matter, 3 front-matter regexes) get their checks regenerated from their body-line fact by one paid Sonnet call through bench_pool's own ask (a pool build option that redoes named rows, not a hand edit), so fewer eval rows fall back to a path-only check; the call's spend is reported; the rebuilt csv passes benchmarks.py pool check, and a second offline build reproduces it with no call",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-yob4py65"
+  ]
+}
