@@ -2,7 +2,7 @@
   "id": "BG-a5kzmuns",
   "kind": "bug",
   "title": "kb_mcp.py --status does not say when the project's registered kb server runs another clone",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kyvu526t",
   "priority": "P2",
@@ -29,5 +29,6 @@
   ],
   "depends_on": [
     "BG-2hjxwg64"
-  ]
+  ],
+  "claimed_by": "worker-a5kzmuns"
 }
