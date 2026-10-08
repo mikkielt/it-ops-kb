@@ -2,7 +2,7 @@
   "id": "BG-jj2nc5ou",
   "kind": "bug",
   "title": "The pool scenario's out metric records 7-24 tokens per run, far below the output its cost implies",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -39,5 +39,6 @@
   "depends_on": [
     "ST-x333wyrc"
   ],
-  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. The old repro read the 2026-10-08 record, which no code fix changes; the repro now plants a stream (out 5 in the assistant message, 500 in the result event) and fails with 5. -k bench_pool passes before the work and pins the pool's tests; the repro is the failing proof."
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. The old repro read the 2026-10-08 record, which no code fix changes; the repro now plants a stream (out 5 in the assistant message, 500 in the result event) and fails with 5. -k bench_pool passes before the work and pins the pool's tests; the repro is the failing proof.",
+  "claimed_by": "worker-BG-jj2nc5ou"
 }
