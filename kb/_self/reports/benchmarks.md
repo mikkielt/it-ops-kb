@@ -522,6 +522,16 @@ What it shows (Sonnet 5.5 against Sonnet 5, Claude Code 2.1.284):
 - One batch of 2 runs per kb cell and 1 per host and web cell: the history's run-to-run spread (Opus `s1_fact`: $0.296 against $0.206) applies to any one cell. The means over the ten kb questions are steadier.
 
 ### A question pool over the kb, router, hook and web arms
+**In short** (the record of 2026-10-08, Claude Code 2.1.293, 150 pool rows, $120.83 of paid runs; the figures and their intervals are in "What it shows" below):
+- **Router:** 8,828 effective input tokens per right answer, about seven times fewer than the kb arms (50,665-64,928), right in 86.9% of runs against 88.4% for Haiku 5.5: within the spread. It answers no `decision` or `conflict` row, which a tool answers.
+- **Hook:** no model tokens, and its pack holds the checked text in 396 of 450 runs; it cannot count or join.
+- **Fixed context:** a kb run starts at about 33k tokens (Haiku 5.5, Sonnet 5.5), 21.7%-37.5% of its input.
+- **Effort `low`:** 9% (Haiku 5.5) and 19% (Sonnet 5.5, paired rows) fewer tokens per right answer, at the same rate of right answers.
+- **Haiku 5.5 against Haiku 4.5:** right in 91.4% of runs against 57.1% on the rows both ran, at $0.008 a run against $0.035; Haiku 4.5 reads half as much per run, so it spends fewer tokens per right answer.
+- **A session of six questions:** the first question adds 34.8k-38.1k tokens, each later one 3k-13k, and a session takes 19k-31k fewer tokens per right answer than fresh sessions on the same rows.
+- **Bare web sessions:** less input per run, far fewer right answers on this pool's checks, several of which name a kb article.
+- **Not supported:** rankings within kinds of 1-5 rows, Opus 5.5 (no arm), the `out` column, and Haiku 4.5 or Sonnet 5.5 at the default level on the 22 rows their cells lack.
+
 **Setup:** `python3 _tools/benchmarks.py run pool [--arms A,B] [--kinds K,K] [--effort low,default] [--reps N] [--shape fresh|session] [--seed N]` runs every row of the question pool (`kb/public/_retrieval/bench_pool.csv`, built by `pool build`, and the query-log file `kb/_querylog/bench/pool.csv` when this host has it) as a fresh `claude -p` per question (shape `fresh`, the default), hooks off, from the throwaway clone. The held-out rows' question text is read from `lookup_heldout.csv` at run time and is in no results file. The arms:
 - **`haiku-5-5`, `haiku-4-5`, `sonnet-5-5`:** the model pinned by id with the kb's tools and the docs servers, as the kb arm of "A new model against the one it replaces". Each runs at effort `low` (`--effort low`) and at `default` (no flag: the level the model starts with, `medium` on Haiku 5.5, Sonnet 5.5 and Opus 5.5 according to the Claude Code model configuration page, "Adjust effort level"). Haiku 4.5 has no effort level, so its arm runs once and the effort table marks it.
 - **`router`:** `kb_ask.py`'s routing with the routed models pinned (`router-pinned`: Haiku 4.5 reads, Sonnet 5.5 researches); its researcher always runs at effort `low`, so the router has one level.
