@@ -2,7 +2,7 @@
   "id": "ST-ly2p27q3",
   "kind": "story",
   "title": "The pool's eval rows with a path-only or front-matter check get a fact check from one paid Sonnet call",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -39,5 +39,6 @@
     "ST-yob4py65",
     "ST-fuflyzxc"
   ],
-  "notes": "Operator, 2026-10-08: approved one small paid Sonnet call for these rows in this sprint, after ST-yob4py65 kept the committed checks offline (its gate g2). Premise: ST-yob4py65's report counted 10 of 40 eval rows path-only on the committed csv, before and after its fix."
+  "notes": "Operator, 2026-10-08: approved one small paid Sonnet call for these rows in this sprint, after ST-yob4py65 kept the committed checks offline (its gate g2). Premise: ST-yob4py65's report counted 10 of 40 eval rows path-only on the committed csv, before and after its fix.",
+  "claimed_by": "worker-ST-ly2p27q3"
 }
