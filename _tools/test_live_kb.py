@@ -53,6 +53,22 @@ def test_check_py_names_an_article_citing_an_unknown_source(tmp_path):
     assert code == 1 and "print/queues.md" in out and f"cites unknown source {SID}" in out, out[-2000:]
 
 
+def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag(tmp_path):
+    root = tmp_path / "root"
+    fixture_root(root, SID)
+    art = root / "print" / "queues.md"
+    joined = f"- Held jobs stay until released. [DOC {SID}]- Paused queues keep their jobs. [DOC {SID}]"
+    write(art, art.read_text(encoding="utf-8").replace(
+        "## Reference", f"- Queues 1 - 3 are shared. [DOC {SID}]\n{joined}\n\n## Reference"))
+    at = art.read_text(encoding="utf-8").split("\n").index(joined) + 1
+    env = {**os.environ, "KB_ROOTS": str(root)}
+    code, out = tool("build_index.py", "--root", "fixture", env=env)
+    assert code == 0, out[-2000:]
+    code, out = tool(os.path.join("..", ".claude", "skills", "kb-verify", "lint.py"), "fixture/", env=env)
+    flagged = re.findall(r"^ERROR (\S+): Facts line holds a second bullet", out, re.M)
+    assert code == 1 and flagged == [f"fixture/print/queues.md:{at}"], out[-2000:]
+
+
 def test_build_index_check_passes_on_the_live_kb():
     code, out = tool("build_index.py", "--check")
     assert code == 0, out[-3000:]
