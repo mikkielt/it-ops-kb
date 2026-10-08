@@ -2,7 +2,7 @@
   "id": "ST-bn3h34wr",
   "kind": "story",
   "title": "The held-out answer-rate test refuses a held-out row that rewords a tuned eval row",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
@@ -87,5 +87,34 @@
     "parked: SP-4rq725fe close"
   ],
   "notes": "Blocks the held-out answer rate fitness test of EP-gzr4mmkm: without it a reworded tuned question can lift the measured rate (BG-4wqn6kog). Premise run 2026-10-08 at plan: BG-4wqn6kog's repro lists ['HO-session-id-bash-env'] (difflib 0.89 against EV-claude-code-expose-session-id-bash, same expected article) while rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 16 exits 0 (19 of 20), so nothing refuses the reworded row: reproduces. Check replaced: tests.py -k eval already selects passing tests; -k heldout_reword names the planted-failure test (collects none today). Depends on BG-4wqn6kog, which removes the row this refusal would fail on. Passes before the work (precheck 2026-10-08): the held-out eval check pins that the live held-out file still passes once the refusal lands (no false refusal, floor 16), so it must stay green; the planted-failure test -k heldout_reword is the check that fails until the work is done. Passes before the work: python3 _tools/rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 16 (pins no false refusal on the live file). (precheck note: the held-out eval check passes before the work, as above.)",
-  "claimed_by": "worker-ST-bn3h34wr"
+  "evidence": {
+    "commit": "b11990e4d3ffa8164989340ba7b02fa6db812c5c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "heldout_reword"
+        ],
+        "exit": 0,
+        "sha256": "d9d6fbbb1bdc7ab7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "16"
+        ],
+        "exit": 0,
+        "sha256": "98ec4cd55bbd94b3"
+      }
+    ]
+  }
 }
