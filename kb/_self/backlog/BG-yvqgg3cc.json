@@ -1,20 +1,37 @@
 {
   "id": "BG-yvqgg3cc",
   "kind": "bug",
-  "title": "The full tests.py run exceeds the 20 s darwin ceiling on origin/main under host load",
-  "status": "draft",
+  "title": "The full tests.py run exceeds the 20 s darwin ceiling since test_land_e2e grew to about 18.8 s",
+  "status": "todo",
+  "sprint": "SP-caqrexqw",
   "priority": "P2",
   "rank": 0,
-  "severity": "S3",
-  "goal": "A whole-suite tests.py run on a busy darwin host stays under the ceiling in _tools/tests_ceiling.json, or the ceiling reading discounts the wait for the host lock and the load of other sessions: origin/main e826b2fda ran 58 tests in 20.3 s (over the 20 s ceiling) while another session held the host test lock, the longest test (the land e2e) taking about 16 s.",
+  "severity": "S2",
+  "goal": "A whole-suite python3 _tools/tests.py run on darwin passes within the 20 s ceiling in _tools/tests_ceiling.json, unchanged: test_land_e2e, about 18.8 s since ST-urfa4ntj (87f04925a) added a planted content landing to test_land_runs_lint_on_content_item_then_planted_failures, is cut back (shared or slimmed scenarios, fewer git and sync round trips) without dropping any planted failure it proves: the lint stop on a pointerless CODE tag, and each planted failure the test held before; the suite then runs under 20 s on this host (the review of SP-caqrexqw measured 21.5-22 s with 61 tests passing). The ceiling is the operator's and is not raised.",
   "repro": {
     "run": [
       "python3",
       "_tools/tests.py"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_runs_lint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py",
+    "_tools/conftest.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
   "links": [
     "parked: SP-caqrexqw review"
   ],
-  "notes": "SP-caqrexqw review, 2026-10-08: whole-suite runs at 21-23 s on darwin across the sprint (61 tests); test_land_e2e takes about 18.8 s since 87f04925a (ST-urfa4ntj added a planted content landing). Landing gates still passed, so the overrun is load-dependent. Blocks the review story's own tests.py check on this host."
+  "notes": "SP-caqrexqw review, 2026-10-08: whole-suite runs at 21-23 s on darwin across the sprint (61 tests); test_land_e2e takes about 18.8 s since 87f04925a (ST-urfa4ntj added a planted content landing). Landing gates still passed, so the overrun is load-dependent. Blocks the review story's own tests.py check on this host. 2026-10-08: the operator chose to fix it in SP-caqrexqw, ceiling unchanged, since it blocks the review story's tests.py check."
 }
