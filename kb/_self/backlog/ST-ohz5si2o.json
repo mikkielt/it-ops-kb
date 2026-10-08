@@ -1,0 +1,45 @@
+{
+  "id": "ST-ohz5si2o",
+  "kind": "story",
+  "title": "Scenario pool's session shape runs six pool questions in one claude -p session and records the marginal input and cache-read share of each follow-up",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-hm4qgf3t",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py run pool --shape session runs groups of six pool rows (mixed kinds, a seed) in one claude -p session per group on the kb arms haiku-5-5 and sonnet-5-5, each follow-up sent with --resume (or the --session-id of the first run), and records per question its position in the session, marginal_input (the request's input beyond the one before it), cache_read_share (cache reads over input) and checks, beside the per-session rows of shape fresh; bench_report.py prints a marginal-input table by position and arm in the pool section; a test feeds a synthetic six-request transcript and checks the marginal and share values; kb/_self/tools.md names the shape",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/bench_report.py",
+    "_tools/bench_core.py",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/tools.md",
+    "_tools/test_bench.py"
+  ],
+  "depends_on": [
+    "ST-k4uqib77"
+  ],
+  "links": [
+    "_tools/bench_core.py",
+    "_tools/bench_lookup.py"
+  ],
+  "notes": "The shape closest to real use: an operator asks several lookups in one session, so the fixed context is paid once and cache reads carry the rest; today every paid scenario starts a fresh session per question, so marginal cost per follow-up is unmeasured. Mechanism: kb-lookup-agent and always-on already keep a session (--session-id, --no-session-persistence off) and read the transcript per request (bench_core); a follow-up is claude -p --resume SID or -c in the same cwd. Six questions per group, mixed kinds, no two variants of one fact in a group. kb/_self/reports/benchmarks.md Isolation already states the throwaway clone; the session's transcript stays under the scratch directory."
+}

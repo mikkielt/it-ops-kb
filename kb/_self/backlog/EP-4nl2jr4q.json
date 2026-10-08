@@ -1,0 +1,35 @@
+{
+  "id": "EP-4nl2jr4q",
+  "kind": "epic",
+  "title": "Token efficiency is measured on a wide question pool with Haiku 5.5",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb/_self/reports/benchmarks.md holds a scenario 'pool' whose record measures, on a pool of about 120 questions stratified by kind and domain (eval rows, held-out rows, redacted query-log phrasings, off-kb, false good and near-miss, tool-answerable, snippets, and phrasing variants), the tokens an agent spends per right answer on each arm (claude-haiku-5-5, claude-haiku-4-5, claude-sonnet-5-5 with the kb, the router, the kb: hook, and bare web on a subset), at two effort levels and in two session shapes (one question per session and six questions in one session), with effective input weighted by each pinned model's own cache prices; kb/_self/design.md states the conclusions those numbers support, each citing its report section.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pool"
+      ]
+    }
+  ],
+  "links": [
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/design.md",
+    "https://platform.claude.com/docs/en/about-claude/models/overview",
+    "https://code.claude.com/docs/en/model-config#adjust-effort-level"
+  ],
+  "notes": "Why: the last records (2026-09-28/30, kb/_self/reports/benchmarks.md) rest on 10 hand-written lookup questions at 1 run per cell with a 2-3x run-to-run spread, were tuned against by the verdict rules, and predate 4 sprints, 40 topics, Claude Code 2.1.283 to 2.1.290 and Claude Haiku 5.5 (claude-haiku-5-5: 1M context, adaptive thinking, default effort medium, from 0.10/0.50 USD per MTok, retirement not sooner than 2027-10-07; live docs, models overview 2026-10-08, not yet in the kb). The report's own findings frame the design: fixed context is most of a run's input (24k of 77k on T1-T3), the kb arm wins syntheses and loses single facts to bare web through that fixed context, the router and the kb: hook are the cheapest routes, delegation saves nothing. Kept in the epic for later refinement: Polish-language rows (declined for this sprint), session shapes C (kb-lookup subagent) and D (host --plugin-dir), a root-count axis (public + team root)."
+}
