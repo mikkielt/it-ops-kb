@@ -1,0 +1,26 @@
+{
+  "id": "ST-ctomsu4i",
+  "kind": "story",
+  "title": "check.py refuses a path:line citation in _answers.md or _gaps.md that points at a line with none of the cited sources",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-wgx4pq4r: ST-fxly2caj and BG-nozwqz2j inserted lines into claude/hooks.md and had to re-point the claude/hooks.md:N citations in _answers.md and _gaps.md by hand; one (hooks.md:133, now :160) had already been stale since an earlier change, and no gate noticed. check.py warns or fails when a (path:line) citation in a ledger names a line that is no fact or carries none of the bullet's source ids, the content rules say so, and check.py passes on the tree.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/check.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-wgx4pq4r close"
+  ]
+}

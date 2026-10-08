@@ -1,0 +1,28 @@
+{
+  "id": "ST-yn3fa5ts",
+  "kind": "story",
+  "title": "A gate whose question says rule is classed agents-rule only when it is about a rule-guarding file",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-wgx4pq4r: bl_authority's agents-rule pattern matches the bare word rule, so BG-47kw57ed's worker saw a design question about which distill rows count turn into a blocking operator gate, and reworded the question to get past it. A gate on an item whose touches name no rule-guarding path is not classed agents-rule for the word rule alone, a gate the pattern does class names the matched words, kb/_self/backlog.md says so, and the authority tests pass.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "authority"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-wgx4pq4r close"
+  ]
+}
