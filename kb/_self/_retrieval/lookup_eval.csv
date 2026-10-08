@@ -275,3 +275,6 @@ SS1-077,"before a sprint starts, which committed items get their open choices as
 SS1-078,"after copying a headless worker staging copies back, which checks does the orchestrator run before land",backlog.md,good,yes,"runs `python3 _tools/selfdoc.py check` and the item's own `checks` there",kb-sprint:run
 SS1-079,what happens to a gap the sprint review finds that is not S1 and when may it join a sprint,backlog.md,good,yes,every other gap is parked;names neither stays a draft in no sprint,kb-sprint:review;kb-sprint:plan;kb-backlog:triage
 SS1-080,what becomes of a retrospective finding the operator accepts at the close,backlog.md,good,yes,Each accepted change is parked,kb-sprint:close
+SQ-learn-derive-rules-finding-entry-fields,how does learn derive a rules finding and which entry fields does it read,querylog.md,good,yes,is a `rules` finding at stage `miss`,
+SQ-apply-anchor-gate-tested-row-rules,how does apply anchor and gate a tested row for a rules finding,querylog.md,good,yes,the mean pack does not grow,
+SQ-columns-lookup-eval-csv-row-have,which columns does a lookup_eval.csv row have,content-rules.md,good,yes,one row per tested question,
