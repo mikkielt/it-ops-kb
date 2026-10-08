@@ -33,9 +33,7 @@
     "kb/_self/maintaining.md"
   ],
   "depends_on": [
-    "ST-ihtjygip",
-    "ST-ylje2dxh",
-    "ST-iafyj5f5"
+    "ST-ylje2dxh"
   ],
   "gates": [
     {
