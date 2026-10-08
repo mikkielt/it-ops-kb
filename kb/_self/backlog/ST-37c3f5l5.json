@@ -2,7 +2,7 @@
   "id": "ST-37c3f5l5",
   "kind": "story",
   "title": "Benchmark cost and effective input use each pinned model's own prices, Haiku 5.5 included",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",
@@ -39,5 +39,6 @@
     "_tools/bench_core.py",
     "kb/public/claude/models.csv"
   ],
-  "notes": "Premise, run before the sprint commits it: python3 -c \"import sys; sys.path.insert(0,'_tools'); import bench_core; print(bench_core.PRICE)\" prints sonnet read 0.2 USD per MTok and bench_core.py:372 weights every cache read 0.1 regardless of model, while the pricing page (S2131, fixed in BG-huavhgoh for the kb's own row) gives Sonnet 5.5 and Opus 5.5 cache reads at 0.05x. The alias arms (haiku, sonnet, opus) resolve to whatever Claude Code's version names: record the resolved model per run from the result event, never assume. Haiku 5.5's price is stated as 'from' on the models overview: read the pricing page's tiers before writing the table and cite its source id (kbid.py add if it has none). Tests go in one new file _tools/test_bench.py (11 of 15 test files exist; the ceiling is in _tools/tests_ceiling.json): this story creates it, the pool stories add to it. The check -k bench_price collects no test until the work adds one, so it fails before the work, as it should. report --check passes before the work and must stay green: the historical rows of benchmarks.csv keep their stored values, so the new weights change no existing table; the failing check is -k bench_price. Premise run at planning (2026-10-08): PRICE prints {'haiku': (1.0, 5.0, 0.1), 'sonnet': (2.0, 10.0, 0.2), 'opus': (4.0, 20.0, 0.2)}: sonnet read 0.2 USD per MTok (Sonnet 5's; Sonnet 5.5 is 0.10 per agents/agent-caching.md:26), no Haiku 5.5 entry, alias keys only. Reproduces."
+  "notes": "Premise, run before the sprint commits it: python3 -c \"import sys; sys.path.insert(0,'_tools'); import bench_core; print(bench_core.PRICE)\" prints sonnet read 0.2 USD per MTok and bench_core.py:372 weights every cache read 0.1 regardless of model, while the pricing page (S2131, fixed in BG-huavhgoh for the kb's own row) gives Sonnet 5.5 and Opus 5.5 cache reads at 0.05x. The alias arms (haiku, sonnet, opus) resolve to whatever Claude Code's version names: record the resolved model per run from the result event, never assume. Haiku 5.5's price is stated as 'from' on the models overview: read the pricing page's tiers before writing the table and cite its source id (kbid.py add if it has none). Tests go in one new file _tools/test_bench.py (11 of 15 test files exist; the ceiling is in _tools/tests_ceiling.json): this story creates it, the pool stories add to it. The check -k bench_price collects no test until the work adds one, so it fails before the work, as it should. report --check passes before the work and must stay green: the historical rows of benchmarks.csv keep their stored values, so the new weights change no existing table; the failing check is -k bench_price. Premise run at planning (2026-10-08): PRICE prints {'haiku': (1.0, 5.0, 0.1), 'sonnet': (2.0, 10.0, 0.2), 'opus': (4.0, 20.0, 0.2)}: sonnet read 0.2 USD per MTok (Sonnet 5's; Sonnet 5.5 is 0.10 per agents/agent-caching.md:26), no Haiku 5.5 entry, alias keys only. Reproduces.",
+  "claimed_by": "worker-ST-37c3f5l5"
 }
