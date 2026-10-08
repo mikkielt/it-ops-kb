@@ -2,7 +2,7 @@
   "id": "ST-fsjwit6r",
   "kind": "story",
   "title": "The week's real kb/_self misses have tested rows: a sprint, the four test kinds, a recorded decision, the Self-Reviewed trailer, publish",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-6iiony54",
   "sprint": "SP-rvslem3h",
   "priority": "P2",
@@ -40,5 +40,6 @@
     "kb/_self/content-rules.md Ledgers (lookup_eval.csv row format)",
     "kb/_self/querylog.md Apply, Rules findings (anchor phrase rule)"
   ],
-  "notes": "Premise (2026-10-08, main 6be3dcd0): the open rules findings F-11529e5ccd23 and F-3f782b1db5f9 ('what is a sprint', weak, key_missing null), F-ec14666f1936 ('which four kinds of test may an item add', weak), F-d8ff98fc623c ('how is an operator decision recorded in _decisions.csv from a gate answer', weak), F-cd5fa1250653 ('where must the Self-Reviewed trailer go', weak), F-decfa7d6bc47 ('who runs kbgit.py publish', weak), F-7a03a2cea24d ('import direction between tool modules', weak); each has answer_lines null, so apply's rules_one cannot write the row (kb/_self/querylog.md, Apply, Rules findings). The second check passes once the row is in: today it prints coverage weak. Content-only item: rows only, kb/_self docs untouched; learn records each finding fixed-since when the file holds its question. Precheck 2026-10-08: rag.py eval passes before the work because the rows are not in the file yet; once added, each row is a question eval must answer with the anchor on its doc, so the check pins the rows and fails if a later edit of kb/_self drops the answering line. The earlier pack check was removed: pack exits 0 on any coverage, so it proved nothing; the worker reads coverage good in the pack's text and reports it."
+  "notes": "Premise (2026-10-08, main 6be3dcd0): the open rules findings F-11529e5ccd23 and F-3f782b1db5f9 ('what is a sprint', weak, key_missing null), F-ec14666f1936 ('which four kinds of test may an item add', weak), F-d8ff98fc623c ('how is an operator decision recorded in _decisions.csv from a gate answer', weak), F-cd5fa1250653 ('where must the Self-Reviewed trailer go', weak), F-decfa7d6bc47 ('who runs kbgit.py publish', weak), F-7a03a2cea24d ('import direction between tool modules', weak); each has answer_lines null, so apply's rules_one cannot write the row (kb/_self/querylog.md, Apply, Rules findings). The second check passes once the row is in: today it prints coverage weak. Content-only item: rows only, kb/_self docs untouched; learn records each finding fixed-since when the file holds its question. Precheck 2026-10-08: rag.py eval passes before the work because the rows are not in the file yet; once added, each row is a question eval must answer with the anchor on its doc, so the check pins the rows and fails if a later edit of kb/_self drops the answering line. The earlier pack check was removed: pack exits 0 on any coverage, so it proved nothing; the worker reads coverage good in the pack's text and reports it.",
+  "claimed_by": "orchestrator-mac"
 }
