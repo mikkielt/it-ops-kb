@@ -197,7 +197,7 @@ def records_table(rows, scenario):
         counts = [r["runs"] for r in mine if r["runs"] and r["case"] != "all paid runs"]
         runs = [max(sorted(set(counts), key=float), key=counts.count)] if counts else []  # the most common; ties: the smallest
         total = [float(r["value"]) for r in mine if r["metric"] == "spend_usd" and _isnum(r["value"])]
-        spend = total[0] if total else sum(float(r["value"]) * float(r["runs"] or 1) for r in mine
+        spend = sum(total) if total else sum(float(r["value"]) * float(r["runs"] or 1) for r in mine
                                            if r["metric"] in ("cost", "cost_est") and _isnum(r["value"]))
         label = f"{rec} ({first['arm']})" if scenario in ARMED and first["arm"] else rec
         out.append(f"| {label} | {first['date'] or '-'} | {first['commit'] or '-'} | {first['claude_code'] or '-'} | "

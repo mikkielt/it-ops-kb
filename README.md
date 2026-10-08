@@ -55,7 +55,7 @@ New since the first runs, a line each:
 - The `kb:` hook spends no model tokens and its pack held the checked text in 396 of 450 runs; neither it nor the router answers a question that needs a count or a join of records.
 - Effort `low` cut Haiku 5.5's tokens per right answer to 58,872 and Sonnet 5.5's to 50,665 at the same rate of right answers.
 - Haiku 5.5 against Haiku 4.5: right in 398 of 450 runs against 218 of 382, at $0.008 a run against $0.035.
-- Six questions in one session: the first adds about 35k-38k tokens to the prompt, the later ones 3k-13k each.
+- Six questions in one session: the first adds about 35k-39k tokens to the prompt, the later ones 3k-13k each.
 
 Setups, every run and the history: `kb/_self/reports/benchmarks.md`.
 
