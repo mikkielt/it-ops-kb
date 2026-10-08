@@ -32,7 +32,10 @@
     "_tools/bench_core.py",
     "kb/_self/reports/benchmarks.md",
     "kb/_self/tools.md",
-    "_tools/test_bench.py"
+    "_tools/test_bench.py",
+    "_tools/benchmarks.py",
+    "_tools/agent_bench.py",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-k4uqib77"
