@@ -2495,3 +2495,15 @@ _Agent: kb-research_
 - See agents/agent-evaluation.md, agents/agent-planning-and-done.md.
 
 _Agent: kb-research_
+
+## QK-tools-read-revisions-worktree-links-index. How do tools read a file at a revision, resolve a relative gitdir link and see index bits right on any host, and how does a check turn Python's compile-time SyntaxWarning into an error?
+- `git cat-file blob REV:PATH` prints the raw blob and resolves the name without any working-tree check, while `git show` runs `verify_non_filename`, an `lstat` of the whole `REV:PATH` argument that dies on any error but a missing file. (`gitlab/git-test-repositories.md:91`, `:98`, `:102`) [CODE S-tdddef3t, S-zwbgb73y, S-nxowyi4h]
+- Git for Windows' `core.longpaths` (off by default) enables paths over 260 characters for builtins; with it off, `lstat` of such a path fails with `ENAMETOOLONG`. (`gitlab/git-test-repositories.md:106`, `:109`) [DOC S-y5k6dlda]
+- A relative `gitdir:` in a `.git` file resolves against the directory holding that file; a relative path in `worktrees/<id>/gitdir` resolves against `worktrees/<id>/`; `commondir` is relative to `$GIT_DIR`. (`gitlab/git-test-repositories.md:123`, `:126`, `:135`) [CODE S-nxowyi4h, S-tx5lxmr3]
+- `--assume-unchanged` makes git skip checking the file and assume it unchanged, so a later edit may go unnoticed; `--skip-worktree` makes git avoid writing the file and treat its absence as unchanged; the docs say neither is a way to ignore changes to tracked files. (`gitlab/git-test-repositories.md:144`, `:147`, `:153`, `:160`) [DOC S-lr3jwdq2]
+- An invalid escape sequence gives a compile-time `SyntaxWarning` since 3.12, printed to stderr by default and not repeated when the `.pyc` is reused; `-W error::SyntaxWarning` or an `"error"` filter around `compile()` makes the parser raise `SyntaxError` instead. (`python/interpreter-startup.md:40`, `:45`, `:56`, `:59`) [CODE S-4yatj52m]
+- Conclusion: read a file at a revision with `git cat-file blob REV:PATH` so a deep Windows path without `core.longpaths` cannot fail the read, resolve relative gitdir links against the file that holds them or ask `git rev-parse`, list index bits with `git ls-files -v`, and fail a Python check on compile-time warnings by compiling from source with the `SyntaxWarning` filtered to `error`. (`gitlab/git-test-repositories.md:113`, `:138`, `:164`, `python/interpreter-startup.md:68`) [DER S-tdddef3t, S-nxowyi4h, S-slmllv74, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-nidh245i, S-4yatj52m]
+- Open: gitrepository-layout(5) at v2.55.0 still calls `worktrees/<id>/gitdir` an absolute path although relative links exist; Git for Windows' `ENAMETOOLONG` path is read from source, not run on a Windows host here. (`gitlab/git-test-repositories.md:128`) [UNK]
+- See gitlab/git-test-repositories.md, python/interpreter-startup.md.
+
+_Agent: kb-research_

@@ -141,7 +141,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 37 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 7 |
-| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 14 |
+| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 27 |
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 13 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
@@ -246,7 +246,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/uv-projects` | P2 | complete | `python/uv-projects.md` | 11 |
 | `python/version-lifecycle` | P2 | complete | `python/version-lifecycle.md`, `python/version-lifecycle.csv` | 8 |
 | `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 10 |
-| `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 3 |
+| `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 9 |
 | `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 9 |
 | `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 1 |
 | `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 14 |

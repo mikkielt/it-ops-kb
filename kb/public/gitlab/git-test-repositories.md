@@ -1,9 +1,9 @@
 ---
 topic: gitlab/git-test-repositories
 priority: P3
-applies_to: "Git 2.55.0 (documentation at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration)"
-retrieved_utc: 2026-10-07
-sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily]
+applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links and index bits; Git for Windows v2.56.0.windows.2 (core.longpaths)"
+retrieved_utc: 2026-10-08
+sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb]
 status: complete
 ---
 
@@ -17,6 +17,10 @@ clone of a repository built once (hard-linked objects, or `--shared` alternates)
 `maintenance.auto=false` to stop housekeeping in repositories that live for seconds, and `GIT_CONFIG_COUNT`
 to hand all of this to every git child process without a config file. `core.fsmonitor` is the opposite case:
 it starts a daemon per working directory, which helps a large long-lived checkout, not a throwaway one.
+Tools that read such repositories also meet three details: `git show REV:PATH` stats its argument in the working
+tree (which fails on a deep Windows path without `core.longpaths`) while `git cat-file blob REV:PATH` does not;
+a relative `gitdir:` path resolves against the directory of the file that holds it; and the assume-unchanged
+and skip-worktree index bits make git skip checks a tool might rely on.
 This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build such repositories; see
 `python/pytest.md` and `python/pytest-xdist.md` for the test runner side.
 
@@ -82,6 +86,85 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
 - So a union resolution of a source file keeps both sides' lines but not a working program: the two sides'
   definitions can still collide or break the syntax, and a resolved tool file needs a parse check that it
   keeps both sides' definitions. [DER S-lnlroicz]
+
+### Reading a file at a revision: `git cat-file blob` and `git show`
+- `git cat-file <type> <object>` prints the raw (uncompressed) contents of the object, and `<object>` takes any
+  revision spelling of gitrevisions(7), so `git cat-file blob REV:PATH` prints the file at PATH in REV;
+  `--textconv` and `--filters` (smudge filters, end-of-line conversion) apply only when given. [DOC S-b6uvvu45]
+- `git cat-file -e <object>` prints nothing and exits zero when the object exists and is valid, non-zero with
+  an error on stderr when it is malformed. [DOC S-b6uvvu45]
+- `git show` on a plain blob prints its plain contents; on a commit it prints the log message and diff, on a
+  tree the names in it. [DOC S-nftrmgem]
+- `git cat-file` resolves its object name with `get_oid_with_context` and makes no working-tree check of the
+  argument, while `git show` parses its arguments through `setup_revisions`, whose revision handling calls
+  `verify_non_filename` on each revision argument not marked as one (no `--` after it). [CODE S-tdddef3t,
+  S-xcnkwrn4, S-zwbgb73y]
+- Inside a working tree, `verify_non_filename` runs `lstat` on the whole argument (`HEAD:kb/x.md`, prefixed
+  with the current subdirectory) to refuse a revision that is also a file name; `check_filename` treats only
+  `ENOENT` and `ENOTDIR` as "no such file" and dies with `failed to stat '<arg>'` on any other error.
+  [CODE S-nxowyi4h, S-qovha7ae]
+- `core.longpaths` is a Git for Windows setting that enables long path (more than 260 characters) support for
+  builtin commands; it is off by default because Windows Explorer, `cmd.exe` and the Git for Windows tool chain
+  (msys, bash, tcl, perl) do not support long paths. [DOC S-y5k6dlda]
+- In Git for Windows, `lstat` converts its path with `xutftowcs_long_path`: a path whose length plus the
+  current directory's reaches `MAX_PATH` (260) is turned into a `\\?\` absolute path only when
+  `core.longpaths` is on, and fails with `ENAMETOOLONG` ("Filename too long") when it is off. [CODE
+  S-hnrqsiz4, S-slmllv74]
+- So in a deep Windows checkout without `core.longpaths`, `git show REV:PATH` can die before reading any
+  object, because its `lstat` of the argument fails with `ENAMETOOLONG`, while `git cat-file blob REV:PATH`
+  reads the same blob from the object database without touching the working tree; a tool that reads a file
+  at a revision uses `cat-file blob` (or puts `--` after the revision for commands that take one). [DER
+  S-tdddef3t, S-zwbgb73y, S-nxowyi4h, S-slmllv74: no filename check in cat-file; the lstat and its
+  long-path failure in show]
+
+### Worktree links: `gitdir:` files
+- A plain text `.git` file at the root of a working tree containing `gitdir: <path>` points at the real
+  repository directory (a "gitfile"), usually managed by `git submodule` and `git worktree`. [DOC S-6foknrbi]
+- When reading a `.git` file, git resolves a relative `gitdir:` path against the directory that holds the
+  `.git` file (the path up to its last `/`), checks that the result is a git directory, and then uses its
+  real path. [CODE S-nxowyi4h: setup.c#read_gitfile_gently]
+- `$GIT_DIR/commondir`, when present, sets `$GIT_COMMON_DIR` unless it is set explicitly, and a relative path
+  in it is relative to `$GIT_DIR`. [DOC S-6foknrbi]
+- `worktrees/<id>/gitdir` points back to the linked worktree's `.git` file and is used to tell whether the
+  worktree was removed by hand; gitrepository-layout(5) at v2.55.0 still describes it as an absolute path.
+  [DOC S-6foknrbi]
+- `git worktree add --relative-paths` (or `worktree.useRelativePaths=true`, default false) links worktrees
+  with relative paths, which implies `extensions.relativeWorktrees` and makes the repository unusable by older
+  Git versions; `git worktree repair` rewrites the links when they do not match the absolute/relative
+  setting. [DOC S-j4qkzgvv, S-3yfc6nj7]
+- When `worktrees/<id>/gitdir` holds a relative path, git resolves it against the `worktrees/<id>/`
+  directory that holds the file (not the current directory and not the worktree), then strips `/.git` to get
+  the worktree's path. [CODE S-tx5lxmr3: worktree.c#get_linked_worktree]
+- So a tool that reads these files itself resolves a relative `gitdir:` in a worktree's `.git` file against
+  that file's directory and a relative path in `worktrees/<id>/gitdir` against `worktrees/<id>/`; asking git
+  (`git rev-parse --absolute-git-dir`, `git worktree list --porcelain`) avoids both rules. [DER S-nxowyi4h,
+  S-tx5lxmr3, S-rscocily, S-wyfuoqs5]
+
+### Index bits: `--assume-unchanged` and `--skip-worktree`
+- `git update-index --assume-unchanged` leaves the paths' recorded object names alone and sets their "assume
+  unchanged" bit: the user promises not to change the file, and git may assume the working tree file matches
+  the index; changing the file needs the bit unset (`--no-assume-unchanged`). [DOC S-lr3jwdq2]
+- With the assume-unchanged bit set git omits checking the file and assumes it has not changed, so a later
+  edit can go unnoticed (it is free to record a change it can see without stat'ing the file); git fails
+  gracefully when it must change such a file in the index, as in a merge. [DOC S-lr3jwdq2]
+- `--really-refresh` checks stat information regardless of the assume-unchanged bit; `core.ignorestat=true`
+  sets the bit automatically on paths that `git update-index`, `git apply --index`, `git checkout-index -u`
+  or `git read-tree -u` update. [DOC S-lr3jwdq2]
+- `--skip-worktree` likewise leaves the object names alone and sets the skip-worktree bit: git avoids writing
+  the file to the working directory when reasonably possible and treats it as unchanged when it is absent, so
+  `git add -u` and `git commit -a` do not record its deletion; not all commands honour the bit, and merges or
+  rebases with conflicts may write the file anyway. [DOC S-lr3jwdq2]
+- The skip-worktree bit exists for sparse checkouts, for which `git sparse-checkout` is the recommended
+  interface; in a sparse checkout, a skip-worktree file found present in the working tree has its bit
+  cleared. [DOC S-lr3jwdq2]
+- The docs warn that neither bit is a way to ignore changes to tracked files, since git may still compare
+  working tree files with the index in some operations, and say git provides no such way. [DOC S-lr3jwdq2]
+- `git ls-files -t` tags a skip-worktree file `S` (a plain tracked file `H`), and `git ls-files -v` prints
+  lowercase tags for files marked assume unchanged. [DOC S-4h6wi6hb]
+- So a check that compares the working tree with the index or a revision cannot rely on `git status` or `git
+  diff` to report an edit to an assume-unchanged path or the absence of a skip-worktree path; it lists such
+  paths with `git ls-files -v` (lowercase or `S` tags) or compares content directly. [DER S-lr3jwdq2,
+  S-4h6wi6hb]
 
 ## Reference
 - Related: `python/pytest.md` (session fixtures, `tmp_path_factory`, `--durations`), `python/pytest-xdist.md` (a session fixture runs once per worker), `python/stdlib-windows-portability.md` (process start on Windows), `gitlab/git-trailers-and-hooks.md` (what `git commit` runs), `windows/dev-drive.md` (where the repositories live on Windows).
