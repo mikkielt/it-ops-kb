@@ -2,7 +2,7 @@
   "id": "ST-yob4py65",
   "kind": "story",
   "title": "benchmarks.py pool build rebuilds the committed pool without a paid call and picks a fact line, never front matter",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -41,5 +41,6 @@
   "links": [
     "parked: SP-hm4qgf3t review"
   ],
-  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Premise (SP-hm4qgf3t review, 2026-10-08): an offline build_public differs from the committed pool by one row (BP-c552cb0f replaced by BP-ae1e4987) and would ask Sonnet for claude/enterprise-admin.md:94; fact_for picks front-matter lines, and 10 of 40 eval rows have path-only checks. Both checks pass before the work and pin the pool; the work adds a rebuild-equality assertion to the existing bench_pool build test, its failing proof."
+  "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Premise (SP-hm4qgf3t review, 2026-10-08): an offline build_public differs from the committed pool by one row (BP-c552cb0f replaced by BP-ae1e4987) and would ask Sonnet for claude/enterprise-admin.md:94; fact_for picks front-matter lines, and 10 of 40 eval rows have path-only checks. Both checks pass before the work and pin the pool; the work adds a rebuild-equality assertion to the existing bench_pool build test, its failing proof.",
+  "claimed_by": "worker-ST-yob4py65"
 }
