@@ -2,7 +2,7 @@
   "id": "BG-oj3lixq2",
   "kind": "bug",
   "title": "Three CODE tags in git-test-repositories.md carry no path#symbol pointer, so the contract lint fails",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kyvu526t",
   "priority": "P1",
   "rank": 0,
@@ -16,5 +16,6 @@
   },
   "touches": [
     "kb/public/gitlab/git-test-repositories.md"
-  ]
+  ],
+  "claimed_by": "sprint-orchestrator"
 }
