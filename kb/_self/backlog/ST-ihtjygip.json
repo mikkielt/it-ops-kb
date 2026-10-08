@@ -2,7 +2,7 @@
   "id": "ST-ihtjygip",
   "kind": "story",
   "title": "Sprint close and drop delete the refs/kb-reopened ref of each item they remove",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,25 @@
   "depends_on": [
     "BG-5h2jpe3e"
   ],
-  "notes": "The check passes while the reopened items still have files; it fails from the moment SP-qzip6qar's close deletes them with their 11 refs still in the clone."
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The clone already holds 11 refs/kb-reopened refs of items deleted before this fix; how do they go?",
+      "options": [
+        "prune-orphans",
+        "one-time-by-hand"
+      ],
+      "recommendation": "prune-orphans",
+      "do": {
+        "prune-orphans": "ST-ihtjygip",
+        "one-time-by-hand": "ST-ihtjygip"
+      },
+      "class": "agents-rule",
+      "answer": "prune-orphans",
+      "by": "operator"
+    }
+  ],
+  "notes": "The check passes while the reopened items still have files; it fails from the moment SP-qzip6qar's close deletes them with their 11 refs still in the clone.",
+  "claimed_by": "worker-ihtj"
 }
