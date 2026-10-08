@@ -62,6 +62,23 @@
       "class": "agents-rule",
       "answer": "eval-difflib",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does rag.py eval --file tell the held-out file from the tuned file, so the reword refusal applies only to it?",
+      "options": [
+        "file-name",
+        "flag",
+        "path-only"
+      ],
+      "recommendation": "file-name",
+      "do": {
+        "file-name": "ST-bn3h34wr",
+        "flag": "ST-bn3h34wr",
+        "path-only": "ST-bn3h34wr"
+      },
+      "class": "agents-rule"
     }
   ],
   "links": [

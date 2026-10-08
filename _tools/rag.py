@@ -46,7 +46,7 @@ Add --json (before the command) for machine output. artifacts/ directories are n
 index files (README.md, each root's _answers.md, _gaps.md, _conflicts.md, _coverage.csv) and the kb's own docs
 (kb/_self/) unless --index; pack never sees them.
 """
-import argparse, csv, json, os, sys
+import argparse, csv, difflib, json, os, sys
 from collections import Counter, defaultdict
 import kbcommon, kbid, kbfacts
 
@@ -269,6 +269,45 @@ def eval_cases(path=None, root=None):
     return out
 
 
+HELDOUT_FILE = "lookup_heldout.csv"  # the file name of a held-out eval set: eval --file refuses a reworded tuned row in it
+REWORD_RATIO = 0.75  # a held-out question this similar to a tuned one (difflib, lower-cased) is a rewording of it
+
+
+def reworded_pairs(held, tuned):
+    """[(held id, tuned label, ratio)] of the held-out rows that reword a tuned row. `held` is [(id, expected paths,
+    question)] and `tuned` [(label, expected paths, question)] (a lookup_eval.csv row or a doc2query expansion of the
+    article); a pair shares an expected path and its lower-cased questions have a difflib ratio of REWORD_RATIO or more."""
+    out = []
+    for hid, hpaths, hq in held:
+        hq = hq.lower()
+        for label, tpaths, tq in tuned:
+            if hpaths & tpaths:
+                ratio = difflib.SequenceMatcher(None, hq, tq.lower()).ratio()
+                if ratio >= REWORD_RATIO:
+                    out.append((hid, label, ratio))
+    return out
+
+
+def heldout_rewordings(path, root=None):
+    """The reworded_pairs of the held-out file `path` against the lookup_eval.csv beside it and the doc2query expansions
+    of the facts of its rows' expected articles."""
+    owner = root or next((r.name for r in kbcommon.roots()
+                          if os.path.commonpath([os.path.abspath(path), r.path]) == r.path), kbcommon.public().name)
+    def rows(p):
+        return [(c["id"], {x.strip() for x in c["expect_paths"].split(";") if x.strip()}, c["question"])
+                for _, c in eval_cases(p, owner)]
+    held = rows(path)
+    beside = os.path.join(os.path.dirname(os.path.abspath(path)), "lookup_eval.csv")
+    tuned = rows(beside) if os.path.exists(beside) else []
+    wanted = {kbcommon.qualify(owner, p): p for _, ps, _ in held for p in ps}
+    exps = kbfacts.expansions() if wanted else {}
+    for u in kbfacts.units(owner) if exps else ():
+        if u["path"] in wanted:
+            tuned += [(f"doc2query:{kbfacts.fact_key(u['text'])}", {wanted[u["path"]]}, q)
+                      for q in exps.get(kbfacts.fact_key(u["text"]), ())]
+    return reworded_pairs(held, tuned)
+
+
 def run_eval(path=None, root=None, free=False):
     """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root, to
     kb/_self for SELF_ROOT) must be among the pack's articles, the verdict must equal the expected one (`none` rows
@@ -475,6 +514,11 @@ def main():
     elif a.cmd == "eval":
         if a.root and a.root not in {r.name for r in kbcommon.roots()} | {kbfacts.SELF_ROOT}:
             ap.error(f"no root {a.root!r}")
+        pairs = heldout_rewordings(a.file, a.root) if a.file and os.path.basename(a.file) == HELDOUT_FILE else []
+        if pairs:
+            for hid, label, ratio in pairs:
+                print(f"REWORD {hid} ~ {label} (ratio {ratio:.2f}): a held-out row rewords a tuned row; replace it")
+            sys.exit(1)
         res = run_eval(a.file, a.root, a.free)
         if a.json:
             return print(json.dumps(res, indent=1))

@@ -112,6 +112,19 @@ def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):
     assert code == 0 and "questions=2 passed=1" in out and f"ok   {row['id']} " in out, out[-1500:]
 
 
+def test_heldout_reword_of_a_tuned_row_is_refused_naming_the_pair(tmp_path):
+    cols = ["id", "question", "expect_paths", "expect_verdict", "allow_weak"]
+    head = ",".join(cols) + "\n"
+    write(tmp_path / "lookup_eval.csv", head + "EV-planted,How do I expose the session id to a Bash command?,x/a.md,good,\n")
+    write(tmp_path / "lookup_heldout.csv", head
+          + "HO-reworded,How do I expose the session id in a Bash command?,x/a.md,good,\n"
+          + "HO-other-question,What does the retention setting delete first?,x/a.md,good,\n"
+          + "HO-other-article,How do I expose the session id to a Bash command?,x/b.md,good,\n")
+    code, out = tool("rag.py", "eval", "--file", str(tmp_path / "lookup_heldout.csv"), "--min", "1")
+    assert code == 1 and "REWORD HO-reworded ~ EV-planted (ratio 0.9" in out, out[-1500:]  # --min does not excuse it
+    assert "HO-other" not in out and "questions=" not in out, out[-1500:]  # refused before any pack runs
+
+
 def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     with open(os.path.join(kbcommon.SELF, kbcommon.DATA_DIR, "lookup_eval.csv"), encoding="utf-8", newline="") as f:
         row = next(csv.DictReader(f))
