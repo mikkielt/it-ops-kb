@@ -1,0 +1,20 @@
+{
+  "id": "SP-2vhfsn4o",
+  "kind": "sprint",
+  "title": "The next pool benchmark record runs as one capped command on trustworthy measurements",
+  "status": "planned",
+  "goal": "Before the next pool record: one benchmarks.py run pool command runs a whole record (per-arm reps and kinds, an Opus arm) under one spend cap and survives a claude -p timeout; every recorded figure is right (output tokens, the router's split-route answers, a run with no observed model) and each cell keeps its spread in benchmarks.csv; the pool rebuilds without a paid call from fact lines only and its query-log rows' checks name the article that answers; the price and alias tables cite kb lines; selfdoc check passes for the sprint's workers",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
