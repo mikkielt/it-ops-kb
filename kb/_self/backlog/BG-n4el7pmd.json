@@ -1,0 +1,18 @@
+{
+  "id": "BG-n4el7pmd",
+  "kind": "bug",
+  "title": "factdiff anchors --stale lists 9 stale anchors in agent-caching, api-limits and messages-api",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/factdiff.py anchors --stale prints stale=0: the anchors of agents/agent-caching.md (S2130, S2131), claude/api-limits.csv (S-3pftmimx, S-5uxkh3j5) and claude/messages-api.md (S-3pftmimx, S-eu3n3hyf) are re-anchored with factdiff.py anchor --file",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/factdiff.py",
+      "anchors",
+      "--stale"
+    ]
+  }
+}
