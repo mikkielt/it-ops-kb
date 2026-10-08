@@ -397,12 +397,12 @@ def pinned(name):
 
 def resolve_model(name, observed="", cc=""):
     """The pinned id a run is priced at: the model its transcript reports, else what the alias `name` names on Claude
-    Code version `cc`, else `name` itself."""
+    Code version `cc`, else `name` itself. A version that is empty or unknown (`?`) names the alias's first model."""
     if observed:
         return pinned(observed)
     if name in ALIAS:
         ver = tuple(int(n) for n in re.findall(r"\d+", cc)[:3])
-        return [m for since, m in ALIAS[name] if since <= ver][-1]
+        return next(m for since, m in reversed(ALIAS[name]) if since <= ver) if ver else ALIAS[name][0][1]
     return pinned(name)
 
 
@@ -449,12 +449,12 @@ def prompt_tokens(usage):
     return sum(usage.get(k, 0) or 0 for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
 
 
-def run_tokens(r, name=""):
+def run_tokens(r, name="", cc=""):
     """The token fields of one run `r` (agent_bench.result_of's fields, or any run with a `requests` list of {model,
     usage}), from its own requests: input, its cache split, the effective input (each model's requests weighted by that
     model's own prices, usage_sum), output, the first request's prompt (`start_ctx`), the models and the highest price
     tier reached. A run with no requests (a tool's answer, a hook) is all zeros. `name` prices a request that reports
-    no model."""
+    no model, as the alias resolves on the run's Claude Code version `cc`."""
     reqs = r.get("requests") or []
     out = {"input": 0, "uncached": 0, "cache_read": 0, "cache_write": 0, "effective_input": 0.0, "out": 0, "start_ctx": 0,
            "models": [], "tier": ""}
@@ -462,7 +462,7 @@ def run_tokens(r, name=""):
     for q in reqs:
         groups.setdefault(q.get("model") or name, []).append(q)
     for model, rs in groups.items():
-        s = usage_sum(rs, model)
+        s = usage_sum(rs, model, cc)
         for k, f in (("input", "input"), ("uncached", "uncached"), ("cache_read", "cache_read"),
                      ("cache_write", "cache_write"), ("out", "out"), ("effective_input", "effective")):
             out[k] += s[f]

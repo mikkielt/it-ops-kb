@@ -23,6 +23,21 @@
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When an alias run reports no model and its Claude Code version is empty or '?', what does resolve_model return?",
+      "options": [
+        "the alias's first model",
+        "raise a named error and stop the scenario"
+      ],
+      "recommendation": "the alias's first model",
+      "class": "design",
+      "answer": "the alias's first model",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-hm4qgf3t review"
   ],
