@@ -2,7 +2,7 @@
   "id": "ST-iafyj5f5",
   "kind": "story",
   "title": "perfcheck.py time defaults to the platform's ceiling in tests_ceiling.json",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-matmvkn6",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-iafy"
+  "evidence": {
+    "commit": "20a4a8c010e045b0959d7b89751f33f56b753bd3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "time"
+        ],
+        "exit": 0,
+        "sha256": "00bc50c1de7b35d6"
+      }
+    ]
+  }
 }
