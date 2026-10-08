@@ -427,7 +427,9 @@ def test_bench_pool_jobs_parallel_rows_equal_one_job_cap_stops_and_the_record_da
         left = []
         got = bp.run_pool(rows[:4], cells, 2, slow_first([]), None, jobs=jobs, cap=0.045, left=left)
         assert got == one[:len(got)] and len(got) + len(left) == 24 and 5 <= len(got) <= 4 + jobs and spend()[1] == len(got)
-        assert (jobs > 1 or len(got) == 5) and left[0] == (one[len(got)]["label"], f"{one[len(got)]['id']}#{len(got) % 2 + 1}")
+        # the runs start one of each cell in turn: the next one is the cell len(got) % 3 at its turn len(got) // 3
+        assert (jobs > 1 or len(got) == 5) and left[0] == (one[len(got)]["label"], f"{one[len(got)]['id']}#{len(got) // 3 % 2 + 1}")
+        assert {r["label"] for r in got} == {label for _, _, label in cells}  # the cap left every cell some runs
     groups, _ = bp.session_groups(rows)  # a group's six questions stay in order inside one session, the records equal one job's
     cell, order = [("sonnet-5-5", "low", "sonnet-5-5:low")], {}
     fresh = slow_first([])
@@ -473,11 +475,33 @@ def test_bench_pool_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row_and_
         bp.s_pool(b)
     run = (2000 * 2.0 + 8000 * 4.0 + 80000 * 0.10 + 1200 * 10.0) / 1e6  # a cache write at the 1-hour price
     assert f"estimated spend ${12 * run:.2f}" in str(e.value) and "the default" in capsys.readouterr().out
-    hist = [{"scenario": "pool", "record": "2026-10-09", "case": "all", "arm": "x", "model": "claude-haiku-4-5", "metric": m,
-             "value": v} for m, v in (("input", "1000"), ("cache_read", "600"), ("cache_write", "100"), ("out", "50"))]
-    tokens, model, basis = bp.assumed_run("x", "haiku-4-5", hist)
-    assert (tokens, model, basis) == ({"uncached": 300, "cache_write": 100, "cache_read": 600, "out": 50}, "claude-haiku-4-5",
-                                      "the means of the record 2026-10-09")
+    cell = lambda record, label, model, **m: [{"scenario": "pool", "record": record, "case": "all", "arm": label, "model": model,  # noqa: E731
+                                              "metric": k, "value": str(v)} for k, v in m.items()]
+    tokens = dict(input=1000, cache_read=600, cache_write=100, out=50)
+    # a label with a record is priced at the mean cost of its runs, the newest record first
+    hist = cell("2026-10-08", "x", "claude-haiku-4-5", cost=0.09, **tokens) + cell("2026-10-09", "x", "claude-haiku-4-5", cost=0.05, **tokens)
+    assert bp.assumed_run("x", "haiku-4-5", hist) == (0.05, "claude-haiku-4-5", None, "the mean cost of the record 2026-10-09")
+    # a kb arm label with none is priced on the means of the same label of another kb arm at its own model's prices (Haiku 5.5's lowest tier)
+    twin = cell("2026-10-08", "sonnet-5-5:low", "claude-sonnet-5-5", cost=0.1, **tokens) + cell("2026-10-09", "haiku-5-5:low", "claude-haiku-5-5", cost=0.01, **tokens)
+    got = bp.assumed_run("opus-5-5:low", "opus-5-5", twin)
+    assert got[:3] == (bp.run_usd({"uncached": 300, "cache_write": 100, "cache_read": 600, "out": 50}, "claude-opus-5-5"), "claude-opus-5-5",
+                       {"uncached": 300, "cache_write": 100, "cache_read": 600, "out": 50}) and "haiku-5-5:low in the record 2026-10-09" in got[3]
+    assert bp.run_usd({"uncached": 0, "cache_write": 0, "cache_read": 150_000, "out": 0}, "claude-haiku-5-5") == 150_000 * 0.01 / 1e6
+    assert bp.assumed_run("web-haiku-5-5", "web-haiku-5-5", twin)[3] == "the default"
+    # the smoke command's dry run against the smoke record's costs (its 35 runs a label: the opus labels had no record, the Haiku 5.5 labels a
+    # price from a whole run counted as one request): each label within 25%, and the whole command within 25% of a full run's cost
+    smoke = {"haiku-5-5:low": 0.31, "haiku-5-5:default": 0.32, "haiku-4-5": 1.55, "sonnet-5-5:low": 3.79, "sonnet-5-5:default": 4.92,
+             "opus-5-5:low": 7.69, "opus-5-5:default": 8.02}
+    record = [r for r in bc.read_rows() if r["scenario"] == "pool" and r["record"] == "2026-10-08"]
+    arms, sessions = ["haiku-5-5", "haiku-4-5", "sonnet-5-5", "opus-5-5", "router", "hook", "web-haiku-5-5", "web-sonnet-5-5"], ["haiku-5-5", "sonnet-5-5"]
+    legs = [bp.Leg("fresh", bp.plan_cells(arms, bp.EFFORTS), {a: [0] * (13 if a.startswith("web-") else 35) for a in arms}, {}, {}, dict.fromkeys(arms, 1)),
+            bp.Leg("session", bp.plan_cells(sessions, bp.EFFORTS), {}, {a: [[0] * 6] * 5 for a in sessions}, {}, dict.fromkeys(sessions, 1))]
+    est = {label: runs * usd for _, _, label, runs, usd, *_ in bp.estimates(legs, record)}
+    assert all(abs(est[label] - usd) <= 0.25 * usd for label, usd in smoke.items()), {k: (est[k], v) for k, v in smoke.items()}
+    mean = lambda label: float(next(r["value"] for r in record if r["arm"] == label and r["case"] == "all" and r["metric"] == "cost"))  # noqa: E731
+    rest = {"web-haiku-5-5": 13, "web-sonnet-5-5": 13, **{f"{m}-5-5:{e}/session": 30 for m in ("haiku", "sonnet") for e in bp.EFFORTS}}
+    full = sum(smoke.values()) + 35 * 0.021 + sum(n * mean(label) for label, n in rest.items())  # the router's one smoke run cost 0.021
+    assert abs(sum(est.values()) - full) <= 0.25 * full and sum(est.values()) >= 12
 
 
 def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(monkeypatch, capsys):
@@ -538,17 +562,17 @@ def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(m
     assert seen["web-haiku-5-5"] == set(web.split("+")) and seen["haiku-5-5:low"] == set(kinds) and full.status == 0
     assert bc.SPEND["runs"] == 452 and not any(m == "spend_stopped" for _, _, m, *_ in full.rows)
     assert any(c == "position 6" and a == "sonnet-5-5:low/session" for c, a, *_ in full.rows)  # the session shape's rows beside
-    # one cap over both shapes: this one lets the fresh runs finish ($3.08 of $3.505) and stops the session runs
+    # one cap over both shapes: the fresh runs take their part of it by the estimates, the session runs the rest, and each shape
+    # starts one run of every label in turn, so a cap below the cost leaves every label of both shapes some runs
     late, _ = record(max_usd=3.505)
     stopped = {a: v for c, a, m, v, n, note in late.rows if m == "spend_stopped"}
-    assert late.status == 1 and stopped and all(a.endswith("/session") for a in stopped)
-    assert per_label(late)["haiku-5-5:low"] == 78 and 3.505 <= bc.SPEND["usd"] <= 3.505 + 0.06
-    assert sum(stopped.values()) == 24 - (bc.SPEND["runs"] - 308) // 6 and "sessions not started" in capsys.readouterr().out
-    # a cap the fresh runs reach first leaves every session unstarted
+    assert late.status == 1 and stopped and per_label(late).keys() == per_label(full).keys()
+    assert any(not a.endswith("/session") for a in stopped) and 3.505 <= bc.SPEND["usd"] <= 3.505 + 0.06
+    assert "sessions not started" in capsys.readouterr().out
     early, _ = record(max_usd=1.0)
-    assert early.status == 1 and bc.SPEND["runs"] <= 101 and not any(c.startswith("position") for c, *_ in early.rows)
-    assert {a: v for c, a, m, v, n, note in early.rows if m == "spend_stopped" and a.endswith("/session")} == {
-        f"{m}-5-5:{e}/session": 6 for m in ("haiku", "sonnet") for e in ("low", "default")}
+    stopped = {a: v for c, a, m, v, n, note in early.rows if m == "spend_stopped"}
+    assert early.status == 1 and per_label(early).keys() == per_label(full).keys() and stopped.keys() == per_label(full).keys()
+    assert 1.0 <= bc.SPEND["usd"] <= 1.0 + 0.06 and all(0 < n < per_label(full)[a] for a, n in per_label(early).items())
     # --dry-run: the plan per arm label and the estimate, no run
     capsys.readouterr()
     dry, msg = record(dry=True)

@@ -15,6 +15,7 @@ imports agent_bench, bench_core and bench_retrieval and no facade (kb/_self/code
 import csv, hashlib, json, os, random, re, shutil, subprocess, sys, tempfile, time, uuid
 from collections import Counter
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+from itertools import zip_longest
 from pathlib import Path
 from typing import NamedTuple
 
@@ -1018,14 +1019,20 @@ def per_arm(spec, arm):
     return spec[arm] if isinstance(spec, dict) else spec
 
 
+def interleaved(per_cell):
+    """The tasks of every cell in one list, a task of each cell in turn (a cell with fewer tasks drops out): a cap that
+    stops the run (run_tasks) then leaves each cell about the same number of runs, not the last cells none."""
+    return [t for turn in zip_longest(*per_cell) for t in turn if t is not None]
+
+
 def run_pool(rows, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc=""):
-    """Every row on every cell (a web arm only on WEB_KINDS), `reps` times: the run records, in cell order whatever order
-    `jobs` parallel runs finish in. `rows` and `reps` are one value for every arm, or a dict by arm. `runner(arm, effort,
-    row)` is one run's result; `sink(record, result)` sees each as it is made, in that order. With `cap` (run_tasks),
-    `left` is extended with (label, "id#rep") of each run not started. `cc` is the run's Claude Code version, which
-    record_of prices an alias arm by."""
-    tasks = [(arm, effort, label, row, rep) for arm, effort, label in cells for row in per_arm(rows, arm)
-             if accepts(arm, row["kind"]) for rep in range(1, per_arm(reps, arm) + 1)]
+    """Every row on every cell (a web arm only on WEB_KINDS), `reps` times: the run records, in the order the runs are
+    started, one of each cell in turn (`interleaved`), whatever order `jobs` parallel runs finish in. `rows` and `reps` are
+    one value for every arm, or a dict by arm. `runner(arm, effort, row)` is one run's result; `sink(record, result)` sees
+    each as it is made, in that order. With `cap` (run_tasks), `left` is extended with (label, "id#rep") of each run not
+    started. `cc` is the run's Claude Code version, which record_of prices an alias arm by."""
+    tasks = interleaved([[(arm, effort, label, row, rep) for row in per_arm(rows, arm) if accepts(arm, row["kind"])
+                          for rep in range(1, per_arm(reps, arm) + 1)] for arm, effort, label in cells])
     runs = []
 
     def emit(i, t, r):
@@ -1077,13 +1084,15 @@ def session_fields(r, before):
 
 def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc=""):
     """Every group on every cell, `reps` times, each in one session of its own (`groups` and `reps`, as the rows and reps of
-    run_pool, one value or a dict by arm): the run records in cell order, with the arm label `SESSION_SUFFIX` added, the group's number, the question's `position` and the `session_fields`.
+    run_pool, one value or a dict by arm): the run records in the order the sessions are started, one of each cell in turn
+    (`interleaved`), with the arm label `SESSION_SUFFIX` added, the group's number, the question's `position` and the `session_fields`.
     `runner(arm, effort, row, sid, position)` is one question's result: the first starts the session `sid`, each later
     one resumes it. A failed question ends its session: the questions after it are recorded as errors. Up to `jobs`
     sessions run at once (a session's questions stay in order inside it), the records come in the order `jobs` 1 gives,
     and `cap`, `left` and `cc` work as in run_pool, a session being the unit started or not (the name `group N#rep`)."""
-    tasks = [(arm, effort, label + SESSION_SUFFIX, number, group, rep) for arm, effort, label in cells
-             for number, group in enumerate(per_arm(groups, arm), 1) for rep in range(1, per_arm(reps, arm) + 1)]
+    tasks = interleaved([[(arm, effort, label + SESSION_SUFFIX, number, group, rep)
+                          for number, group in enumerate(per_arm(groups, arm), 1) for rep in range(1, per_arm(reps, arm) + 1)]
+                         for arm, effort, label in cells])
 
     def session(t):
         arm, effort, _, _, group, _ = t
@@ -1299,8 +1308,10 @@ def s_pool(b):
     (`plan_legs`): `fresh` (default) makes each run a fresh session; `session` runs groups of six rows
     (`session_groups`) each in one session on the kb arms of SESSION_ARMS, and records per position (`session_rows`)
     beside the per-kind rows of its arm labels. Rows per kind and arm label, and for all kinds (cell_rows); each run's
-    record is appended to the scenario's runs file. One `b.max_usd` covers every shape: each starts runs only while the
-    spend of the run so far is under it. With `b.dry` it prints the plan and starts nothing."""
+    record is appended to the scenario's runs file. One `b.max_usd` covers every shape: each shape starts runs only while
+    its part of what is left of it (`leg_cap`, by the estimates) is unspent, and within a shape the labels' runs start one
+    of each in turn (`interleaved`), so a run the cap stops leaves every arm label some runs. With `b.dry` it prints the
+    plan and starts nothing."""
     sh = shutil.which("sh")
     pool = sample_rows(load_pool(HOME), getattr(b, "sample", None), getattr(b, "seed", SEED))
     if not pool:
@@ -1329,16 +1340,17 @@ def s_pool(b):
                 kinds = {r["kind"] for g in leg.groups[arm] for r in g} if leg.session else {r["kind"] for r in leg.rows[arm]}
                 b.row("pool", "all", label + leg.suffix, "planned_kinds", "+".join(sorted(kinds)), leg.runs(arm))
     not_started, base = [], spent_usd()
-    for leg in legs:
+    want = [sum(runs * usd for _, _, _, runs, usd, *_ in estimates([leg], read_rows(RESULTS))) for leg in legs]
+    for i, leg in enumerate(legs):
         if not any(leg.runs(arm) for arm, _, _ in leg.cells):
             continue
-        left = None if cap is None else cap - (spent_usd() - base)  # what the shapes before this one left of the cap
+        share = leg_cap(cap, spent_usd() - base, want[i:])  # this shape's part of what is left of the cap
         if leg.session:
-            runs = run_sessions(leg.groups, leg.cells, leg.reps, live_session_runner(b), sink, jobs, left, not_started, cc)
+            runs = run_sessions(leg.groups, leg.cells, leg.reps, live_session_runner(b), sink, jobs, share, not_started, cc)
             for case, label, metric, value, n, model, note in session_rows(runs):
                 b.row("pool", case, label, metric, value, n, model, note)
         else:
-            runs = run_pool(leg.rows, leg.cells, leg.reps, live_runner(b, sh), sink, jobs, left, not_started, cc)
+            runs = run_pool(leg.rows, leg.cells, leg.reps, live_runner(b, sh), sink, jobs, share, not_started, cc)
         for case, label, metric, value, n, model, note in cell_rows(runs):
             b.row("pool", case, label, metric, value, n, model, note)
     for label in dict.fromkeys(label for label, _ in not_started):
@@ -1354,57 +1366,89 @@ def s_pool(b):
 
 # ------------------------------------------------------------------------------------------------ the spend estimate
 
-# one run when the results hold no earlier pool record of its arm: about the mean of a Sonnet 5.5 lookup with the kb tools
-# (the `new-model` record of 2026-09-28: 90,140 input, 1,161 output), the input split as a run mostly reads its cache
+# one run when the results hold no earlier pool record of its arm label, nor of a label with the same tools: about the mean
+# of a Sonnet 5.5 lookup with the kb tools (the `new-model` record of 2026-09-28: 90,140 input, 1,161 output), the input
+# split as a run mostly reads its cache
 DEFAULT_RUN = {"uncached": 2_000, "cache_write": 8_000, "cache_read": 80_000, "out": 1_200}
 NO_MODEL_ARMS = ("hook",)  # no model: costs nothing
+TWIN_ORDER = ("sonnet-5-5", "opus-5-5", "haiku-5-5", "haiku-4-5")  # the kb arm whose figures stand in for another's, nearest first
 
 
-def assumed_run(label, arm, history):
-    """(the figures of one run of arm label `label`, the pinned model that prices it, where they come from): the means of
-    the label's `all` cell in the newest earlier record of the results `history` when that record holds them, else
-    DEFAULT_RUN (none for the hook arm) priced as the arm's model (the router as sonnet-5-5)."""
+def newest_cell(history, label):
+    """(the record, {metric: row}) of the `all` cell of arm label `label` in the newest pool record of the results
+    `history` that holds one, else (None, {})."""
     mine = [r for r in history if r["scenario"] == "pool" and r["arm"] == label and r["case"] == "all"]
-    if mine:
-        record = max(r["record"] for r in mine)
-        got = {r["metric"]: r for r in mine if r["record"] == record}
-        if all(m in got for m in ("input", "cache_read", "cache_write", "out")):
-            v = {m: float(got[m]["value"]) for m in ("input", "cache_read", "cache_write", "out")}
-            model = got["input"]["model"]
-            return ({"uncached": v["input"] - v["cache_read"] - v["cache_write"], "cache_write": v["cache_write"],
-                     "cache_read": v["cache_read"], "out": v["out"]},
-                    model if model in PRICE else "claude-sonnet-5-5",
-                    f"the means of the record {record}")
-    model = resolve_model(agent_bench.MODEL.get(arm.removeprefix("web-"), "claude-sonnet-5-5"))
-    return ({k: 0 for k in DEFAULT_RUN} if arm in NO_MODEL_ARMS else dict(DEFAULT_RUN)), model, "the default"
+    if not mine:
+        return None, {}
+    record = max(r["record"] for r in mine)
+    return record, {r["metric"]: r for r in mine if r["record"] == record}
 
 
 def run_usd(tokens, model):
-    """The list-price cost of one run of `tokens` ({uncached, cache_write, cache_read, out}) as a single request of `model`."""
-    usage = {"input_tokens": tokens["uncached"], "cache_creation_input_tokens": tokens["cache_write"],
-             "cache_read_input_tokens": tokens["cache_read"], "output_tokens": tokens["out"]}
-    return est_cost(usage_sum([{"model": model, "usage": usage}], model))
+    """The list-price cost of one run of `tokens` ({uncached, cache_write, cache_read, out}) in the lowest price tier of
+    `model`: a run is many requests, each under the first tier's prompt limit, not one request of the run's whole input."""
+    p = PRICE[model][0]
+    return (tokens["uncached"] * p[1] + tokens["cache_write"] * write_rate(p) + tokens["cache_read"] * p[4]
+            + tokens["out"] * p[2]) / 1e6
+
+
+def assumed_run(label, arm, history):
+    """(the cost in US dollars of one run of arm label `label`, the pinned model that prices it, its figures, where they
+    come from), the first of: the mean `cost` of the label's `all` cell in its newest record of the results `history`
+    (what the runs were billed, web searches and the model a tool calls inside it included); the mean tokens of the
+    `all` cell of a kb arm's label with the same effort and shape in another kb arm, the newest record first, `TWIN_ORDER`
+    after, priced as the arm's own model (an arm that has no record yet: the same tools, so about the same tokens);
+    DEFAULT_RUN (none for the hook arm) priced as the arm's model (the router as sonnet-5-5)."""
+    record, got = newest_cell(history, label)
+    if "cost" in got and (float(got["cost"]["value"]) > 0 or arm in NO_MODEL_ARMS):
+        return (float(got["cost"]["value"]), got["cost"]["model"] if got["cost"]["model"] in PRICE else "claude-sonnet-5-5", None,
+                f"the mean cost of the record {record}")
+    model = resolve_model(agent_bench.MODEL.get(arm.removeprefix("web-"), "claude-sonnet-5-5"))
+    rest, twins = label.removeprefix(arm), []
+    for other in TWIN_ORDER if arm in KB_ARMS else ():
+        rec, cell = newest_cell(history, other + rest) if other != arm else (None, {})
+        if all(m in cell for m in ("input", "cache_read", "cache_write", "out")):
+            twins.append((rec, -TWIN_ORDER.index(other), cell, other))
+    if twins:
+        record, _, cell, other = max(twins, key=lambda t: t[:2])
+        v = {m: float(cell[m]["value"]) for m in ("input", "cache_read", "cache_write", "out")}
+        tokens = {"uncached": v["input"] - v["cache_read"] - v["cache_write"], "cache_write": v["cache_write"],
+                  "cache_read": v["cache_read"], "out": v["out"]}
+        return run_usd(tokens, model), model, tokens, f"the means of {other}{rest} in the record {record}, priced as {model}"
+    tokens = {k: 0 for k in DEFAULT_RUN} if arm in NO_MODEL_ARMS else dict(DEFAULT_RUN)
+    return run_usd(tokens, model), model, tokens, "the default"
+
+
+def estimates(legs, history):
+    """[(leg, arm, label, runs, per-run USD, model, tokens, basis)] of every cell of the `legs`, priced by `assumed_run`."""
+    return [(leg, arm, label + leg.suffix, leg.runs(arm), *assumed_run(label + leg.suffix, arm, history))
+            for leg in legs for arm, _, label in leg.cells]
 
 
 def estimate_lines(legs, history, jobs, cap):
     """Print one line per cell of the `legs` with its expected spend, then the total; return the total in US dollars. An
-    estimate, not a measurement: each run is priced (bench_core.PRICE, single request) at the tokens `assumed_run` states
-    for its cell, web searches are not included, and the real spend depends on the runs."""
+    estimate, not a measurement: each run is priced at `assumed_run`'s figure for its cell (a mean cost includes the web
+    searches its runs were billed; a price from tokens leaves them out), and the real spend depends on the runs."""
     total = 0.0
-    for leg in legs:
-        for arm, _, label in leg.cells:
-            tokens, model, basis = assumed_run(label + leg.suffix, arm, history)
-            usd = leg.runs(arm) * run_usd(tokens, model)
-            total += usd
-            print(f"pool: {label}{leg.suffix}: estimate ${usd:.2f} for {leg.runs(arm)} runs at "
-                  f"{'no model' if arm in NO_MODEL_ARMS else model}: per run uncached "
-                  f"{tokens['uncached']:,.0f}, cache write {tokens['cache_write']:,.0f}, cache read {tokens['cache_read']:,.0f}, "
-                  f"output {tokens['out']:,.0f} tokens ({basis})")
-    print(f"pool: estimate ${total:.2f} in all at --jobs {jobs}: an estimate from the per-run token figures above and "
-          "bench_core's list prices (web searches left out), not a measurement")
+    for _, arm, label, runs, usd, model, tokens, basis in estimates(legs, history):
+        total += runs * usd
+        print(f"pool: {label}: estimate ${runs * usd:.2f} for {runs} runs at {'no model' if arm in NO_MODEL_ARMS else model}: per run "
+              f"${usd:.4f}" + (f" (uncached {tokens['uncached']:,.0f}, cache write {tokens['cache_write']:,.0f}, cache read "
+                               f"{tokens['cache_read']:,.0f}, output {tokens['out']:,.0f} tokens)" if tokens else "") + f" ({basis})")
+    print(f"pool: estimate ${total:.2f} in all at --jobs {jobs}: an estimate from the per-run costs above (bench_core's list "
+          "prices where they come from tokens), not a measurement")
     if cap is not None and total > cap:
         print(f"pool: the estimate is over --max-usd ${cap:.2f}: a run would stop before the last runs start")
     return total
+
+
+def leg_cap(cap, spent, want):
+    """The `cap` (US dollars) the next leg runs under, for a run that has spent `spent` so far: what is left of `cap` shared
+    out by `want`, the estimated spend of this leg and of each leg after it, so a leg's overrun or saving moves the share
+    of the legs after it and the last leg gets all that is left. None when `cap` is None."""
+    if cap is None:
+        return None
+    return (cap - spent) * want[0] / sum(want) if sum(want) else cap - spent
 
 
 # ----------------------------------------------------------------------------------------------------- pool verify
