@@ -101,3 +101,46 @@ def test_land_content_item_then_planted_failure(scenario):
     assert code != 0 and "land stopped at step done" in out and "check(s) failed" in out, out
     assert origin_main(scenario) == moved
     assert item(scenario, bad)["status"] == "doing"
+
+
+def test_empty_selection_refused_and_gone_once(monkeypatch, capsys):
+    """Planted failure: tests.py -k zzz_no_such_test exits 2 before any worker starts, names its selector in one line
+    and records exit 2 with selected 0; a done item's check that collects nothing is found gone once, kept in its
+    evidence and named by close's summary, and the next rerun does not run it."""
+    import bl_land
+    import tests as kbtests
+    rows = []
+    monkeypatch.setattr(kbtests, "record_run", lambda mode, entry, args, workers=None: rows.append(
+        kbtests.run_fields(mode, entry, workers, False)))
+    monkeypatch.setattr(kbtests, "run_pytest", lambda args: pytest.fail("a worker run started"))
+    assert kbtests.run_main(["-k", "zzz_no_such_test"]) == 2
+    said = capsys.readouterr().err.strip().splitlines()
+    assert len(said) == 1 and "`-k zzz_no_such_test` collects no test in _tools/" in said[0], said
+    assert [(r["mode"], r["exit"], r["selected"], r["workers"]) for r in rows] == [("keyword", 2, 0, 0)], rows
+    assert bl_land.selected_nothing(2, said[0]) and not bl_land.selected_nothing(2, "usage: x\nx: error: y")
+
+    check = {"run": ["python3", "_tools/tests.py", "-k", "zzz_no_such_test"]}
+    done = {"id": "ST-00000001", "kind": "story", "title": "Done", "status": "done", "checks": [check],
+            "evidence": {"commit": "0" * 40, "checks": []}}
+
+    class FakeBacklog:
+        root, items, saved = Path("."), {done["id"]: done}, []
+
+        def sprint_items(self, sid):
+            return [done["id"]]
+
+        def save(self, it):
+            self.saved.append(it["id"])
+
+        def ancestors(self, iid):
+            return []
+
+        def label(self, iid):
+            return iid
+
+    runs = []
+    monkeypatch.setattr(bl_land, "run_check", lambda root, c: runs.append(c) or (False, 2, said[0]))
+    fake = FakeBacklog()
+    assert bl_land.rerun_done_checks(fake, "SP-00000001") == [] and len(runs) == 1 and fake.saved == [done["id"]]
+    assert bl_land.rerun_done_checks(fake, "SP-00000001") == [] and len(runs) == 1, runs  # not run again
+    assert "gone check: python3 _tools/tests.py -k zzz_no_such_test" in bl_land.summary_line(fake, done["id"], set())

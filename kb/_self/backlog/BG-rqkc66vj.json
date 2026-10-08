@@ -1,0 +1,18 @@
+{
+  "id": "BG-rqkc66vj",
+  "kind": "bug",
+  "title": "querylog.py digest counts an empty tests.py selection (exit 2, selected 0) as failed, not as selected nothing",
+  "status": "todo",
+  "sprint": "SP-evkj4avq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_report.ops_lines counts a test.run row with exit 2 and selected 0 (tests.py's refusal of a selection that collects nothing, ST-pvtfs43r) under selected nothing and not under failed, beside the exit 5 rows of older weeks, so the digest's selected nothing count stays the signal of wasted empty runs.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import ql_report; sys.exit(0 if ql_report.NOTHING_SELECTED == 2 else 1)"
+    ]
+  }
+}

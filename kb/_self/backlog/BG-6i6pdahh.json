@@ -1,0 +1,19 @@
+{
+  "id": "BG-6i6pdahh",
+  "kind": "bug",
+  "title": "backlog.py usage says a repro that runs no tests is pytest exit 5; tests.py now refuses it with exit 2",
+  "status": "todo",
+  "sprint": "SP-evkj4avq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "backlog.py's usage text for new names a repro whose test run selects nothing as tests.py's exit 2 refusal (collects no test) or pytest's exit 5, as kb/_self/backlog.md says.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import backlog; sys.exit(1 if '(pytest exit 5)' in (backlog.__doc__ or '') else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the usage text's wording: tests.py's empty selection exits 2 (ST-pvtfs43r) and own_failure already refuses it, so only the words are wrong"
+}
