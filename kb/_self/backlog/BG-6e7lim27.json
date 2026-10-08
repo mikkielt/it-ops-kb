@@ -1,0 +1,27 @@
+{
+  "id": "BG-6e7lim27",
+  "kind": "bug",
+  "title": "bench_core prices every cache write at the 5-minute rate, while claude -p on a subscription writes 1-hour cache",
+  "status": "todo",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-2vhfsn4o",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "bench_core.PRICE carries both cache write rates of each model (5-minute and 1-hour, the kb facts at kb/public/claude/ci-and-headless.md and kb/public/agents/agent-caching.md:23, cited as TK-getip52b cites the others), and usage_sum prices each request's cache writes at their own TTL: from the usage's per-TTL split of cache writes when the stream gives one, else at the rate of the run's billing surface (agent-caching.md:41: one hour on a Claude subscription, five minutes on an API key), named by a provisional gate; est_cost, effective_input, the dry-run estimate and bench_pool's list cost all read that one rule, and bench_pool keeps no cache price of its own (ST-xy5kmisr's gate g6 moved here by the operator on 2026-10-08); a planted stream with 1-hour writes prices within 20% of its reported cost",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import bench_core; assert all(len(t)>=6 for tiers in bench_core.PRICE.values() for t in tiers), 'PRICE has no 1-hour cache write rate'"
+    ]
+  },
+  "touches": [
+    "_tools/bench_core.py",
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ]
+}
