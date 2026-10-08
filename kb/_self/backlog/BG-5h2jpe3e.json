@@ -2,7 +2,7 @@
   "id": "BG-5h2jpe3e",
   "kind": "bug",
   "title": "perfcheck names_successor accepts the retired-feature phrase beside the dropped test file itself",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "ST-founcbvo"
-  ]
+  ],
+  "claimed_by": "worker-5h2j"
 }
