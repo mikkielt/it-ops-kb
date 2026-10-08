@@ -2,7 +2,7 @@
   "id": "BG-jxyfzf6d",
   "kind": "bug",
   "title": "backlog.md and tools.md say a --repro that passes now exits 1 on set, without the exception for a reopened bug",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ktup3cha",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
   "touches": [
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-mac"
 }
