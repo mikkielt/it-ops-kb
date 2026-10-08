@@ -1,0 +1,50 @@
+{
+  "id": "BG-2tan24sm",
+  "kind": "bug",
+  "title": "Pool session shape records each follow-up's cost as the session's running total, and same-day pool chunks overwrite each other's spend rows",
+  "status": "todo",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-hm4qgf3t",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "A --resume follow-up's result event reports the session's running total_cost_usd (kb/public/claude/ci-and-headless.md:78), so bench_pool's session runner records each question's cost as that total less the previous question's, and SPEND and --max-usd count the same; each run of a pool chunk writes its spend_usd, spend_input_tokens and spend_output_tokens rows under an arm naming the chunk's arm labels, so a same-day chunk no longer replaces another's, and bench_report's records table sums a record's spend rows; the 2026-10-08 pool record's spend rows are rebuilt per chunk from the runs file, the session shape is re-run the same UTC day on all four session labels, and kb/_self/reports/benchmarks.md's pool section, README.md, kb/_self/design.md and kb/_self/token-efficiency.md state the corrected totals and session costs; the report's router headline says tokens, not cost; tests.py -k bench_pool and benchmarks.py report --check exit 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types; sys.path.insert(0,'_tools'); import bench_pool, agent_bench; seq=iter([{'cost':0.1},{'cost':0.25}]); agent_bench.execute=lambda *a,**k: dict(next(seq)); bench_pool.spent_run=lambda r: None; run=bench_pool.live_session_runner(types.SimpleNamespace(lookup=lambda: '.')); run('haiku-5-5','default',{'question':'q'},'s',1); r=run('haiku-5-5','default',{'question':'q'},'s',2); assert abs(r['cost']-0.15)<1e-9, r['cost']"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_pool"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/benchmarks.py",
+    "_tools/bench_report.py",
+    "_tools/test_bench.py",
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "README.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}
