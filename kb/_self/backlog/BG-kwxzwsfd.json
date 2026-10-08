@@ -27,5 +27,60 @@
   "depends_on": [
     "BG-rbokisbc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What prices one run of an arm label that has an earlier record, in the dry run estimate?",
+      "options": [
+        "the mean cost of the label's runs in its newest record (what they were billed, web searches and tool-side model calls included)",
+        "the mean input and output counts of the label's newest record, priced at the list prices"
+      ],
+      "recommendation": "the mean cost of the label's runs in its newest record (what they were billed, web searches and tool-side model calls included)",
+      "class": "design",
+      "answer": "the mean cost of the label's runs in its newest record (what they were billed, web searches and tool-side model calls included)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What prices one run of a kb arm label that has no earlier record of its own?",
+      "options": [
+        "the mean input and output counts of the same effort and shape label of another kb arm (the newest record, Sonnet 5.5 first), priced at the arm's own model",
+        "the stated default run priced at the arm's own model"
+      ],
+      "recommendation": "the mean input and output counts of the same effort and shape label of another kb arm (the newest record, Sonnet 5.5 first), priced at the arm's own model",
+      "class": "design",
+      "answer": "the mean input and output counts of the same effort and shape label of another kb arm (the newest record, Sonnet 5.5 first), priced at the arm's own model",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does the spend cap share runs out between arm labels and between the fresh and the session shape?",
+      "options": [
+        "within a shape the labels' runs start one of each in turn, and the cap is shared between the shapes by their estimated spend over what is left",
+        "a fixed share of the cap for each label, in proportion to its estimate",
+        "the task order as it was, with the last part of the cap held back for the last labels"
+      ],
+      "recommendation": "within a shape the labels' runs start one of each in turn, and the cap is shared between the shapes by their estimated spend over what is left",
+      "class": "design",
+      "answer": "within a shape the labels' runs start one of each in turn, and the cap is shared between the shapes by their estimated spend over what is left",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "In which Haiku 5.5 price tier is a run priced when its price comes from counts and not from a billed cost?",
+      "options": [
+        "the lowest tier, as each request of a run falls under its prompt limit",
+        "the tier of the run's whole input counted as one request"
+      ],
+      "recommendation": "the lowest tier, as each request of a run falls under its prompt limit",
+      "class": "design",
+      "answer": "the lowest tier, as each request of a run falls under its prompt limit",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-BG-kwxzwsfd"
 }
