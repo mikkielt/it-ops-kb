@@ -2,7 +2,7 @@
   "id": "ST-b7ste3hx",
   "kind": "story",
   "title": "selfdoc.py and backlog.py usage errors are measured from this host's transcripts and the top ones fixed at the tool",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-6iiony54",
   "sprint": "SP-evkj4avq",
   "priority": "P2",
@@ -55,5 +55,6 @@
     "kb/_self/usage.md (kbusage reads transcripts)",
     "kb/_self/querylog.md Surfaces, ops call.tool"
   ],
-  "notes": "Premise (digest 2026-W41 and the ops sidecars since 2026-10-05): call.tool errors tools.selfdoc 70 of 369 calls (19 in 100), tools.backlog 133 of 1973 (7 in 100), python-c 50 of 428; call.tool rows hold the class and outcome only, never the message, so the message must be read from the transcripts on the host that made them (kbusage already reads a prompt's transcript; kb/_self/usage.md). The report is a local read like backlog.py cost --rework: nothing is written to the spool or the store, and a message is printed normalised, never a command line. One usage error seen in this session: 'selfdoc.py section maintaining' without a heading exits 2 with 'section takes DOC HEADING pairs'. The new read-only command gets its Bash(...) and PowerShell(...) allow rules in .claude/settings.json and a check that it refuses a transcript path outside the Claude config directory of this user, per the plan rule for read-only commands. The three backlog.py fixes are chosen from the report, not guessed: a fix the report does not rank in the top three is out of scope. Precheck 2026-10-08: selfdoc.py section maintaining exits 2 and kbusage.py errors --days 7 has no such command, so two of three checks fail until the work is done; test_check_programs.py passes before and pins the allow-rule check for the new read-only command."
+  "notes": "Premise (digest 2026-W41 and the ops sidecars since 2026-10-05): call.tool errors tools.selfdoc 70 of 369 calls (19 in 100), tools.backlog 133 of 1973 (7 in 100), python-c 50 of 428; call.tool rows hold the class and outcome only, never the message, so the message must be read from the transcripts on the host that made them (kbusage already reads a prompt's transcript; kb/_self/usage.md). The report is a local read like backlog.py cost --rework: nothing is written to the spool or the store, and a message is printed normalised, never a command line. One usage error seen in this session: 'selfdoc.py section maintaining' without a heading exits 2 with 'section takes DOC HEADING pairs'. The new read-only command gets its Bash(...) and PowerShell(...) allow rules in .claude/settings.json and a check that it refuses a transcript path outside the Claude config directory of this user, per the plan rule for read-only commands. The three backlog.py fixes are chosen from the report, not guessed: a fix the report does not rank in the top three is out of scope. Precheck 2026-10-08: selfdoc.py section maintaining exits 2 and kbusage.py errors --days 7 has no such command, so two of three checks fail until the work is done; test_check_programs.py passes before and pins the allow-rule check for the new read-only command.",
+  "claimed_by": "worker-b7ste3hx"
 }
