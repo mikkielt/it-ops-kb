@@ -2,7 +2,7 @@
   "id": "ST-xy5kmisr",
   "kind": "story",
   "title": "benchmarks.py pool verify checks a record's consistency, and a capped smoke record passes it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",

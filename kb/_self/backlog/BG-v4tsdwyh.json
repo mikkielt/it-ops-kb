@@ -2,7 +2,7 @@
   "id": "BG-v4tsdwyh",
   "kind": "bug",
   "title": "selfdoc.py check fails: tools.md names a Sources heading content-rules.md no longer has",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",

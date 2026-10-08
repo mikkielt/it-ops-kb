@@ -2,7 +2,7 @@
   "id": "SP-2vhfsn4o",
   "kind": "sprint",
   "title": "The next pool benchmark record runs as one capped command on trustworthy measurements",
-  "status": "planned",
+  "status": "active",
   "goal": "Before the next pool record: one benchmarks.py run pool command runs a whole record (per-arm reps and kinds, an Opus arm) under one spend cap and survives a claude -p timeout; every recorded figure is right (output tokens, the router's split-route answers, a run with no observed model) and each cell keeps its spread in benchmarks.csv; the pool rebuilds without a paid call from fact lines only and its query-log rows' checks name the article that answers; the price and alias tables cite kb lines; selfdoc check passes for the sprint's workers",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ],
   "notes": "Operator, 2026-10-08: after this sprint the next pool record must run with no further fix sprint; the sprint therefore also carries ST-xy5kmisr (benchmarks.py pool verify, and a 5 USD smoke record of the whole command that must pass it, any defect it shows fixed here as an S1 bug of this sprint) and the --sample flag of ST-dku4a6ob. Left for later, not needed for a trustworthy record: ST-unqfho3v, ST-z5uh6oj7, ST-asstsi7t, BG-35vyxnci. The record itself runs after the sprint closes, from the procedure ST-xy5kmisr writes into the pool section."

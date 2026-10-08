@@ -2,7 +2,7 @@
   "id": "BG-jj2nc5ou",
   "kind": "bug",
   "title": "The pool scenario's out metric records 7-24 tokens per run, far below the output its cost implies",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -33,7 +33,8 @@
     "_tools/test_bench.py",
     "kb/_self/code.md",
     "kb/_self/tools.md",
-    "kb/_self/reports/benchmarks.md"
+    "kb/_self/reports/benchmarks.md",
+    "kb/public/claude/ci-and-headless.md"
   ],
   "depends_on": [
     "ST-x333wyrc"

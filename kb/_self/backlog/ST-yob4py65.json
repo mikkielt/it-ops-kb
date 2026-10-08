@@ -2,7 +2,7 @@
   "id": "ST-yob4py65",
   "kind": "story",
   "title": "benchmarks.py pool build rebuilds the committed pool without a paid call and picks a fact line, never front matter",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",

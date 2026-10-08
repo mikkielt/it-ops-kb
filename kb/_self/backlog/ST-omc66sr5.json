@@ -2,7 +2,7 @@
   "id": "ST-omc66sr5",
   "kind": "story",
   "title": "A claude -p timeout in a pool kb or web run is one failed run, not a lost chunk",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",

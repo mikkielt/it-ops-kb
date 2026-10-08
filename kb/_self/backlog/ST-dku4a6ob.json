@@ -2,7 +2,7 @@
   "id": "ST-dku4a6ob",
   "kind": "story",
   "title": "benchmarks.py run pool runs a whole record in one command under one spend cap",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
