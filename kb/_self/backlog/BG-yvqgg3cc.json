@@ -1,0 +1,16 @@
+{
+  "id": "BG-yvqgg3cc",
+  "kind": "bug",
+  "title": "The full tests.py run exceeds the 20 s darwin ceiling on origin/main under host load",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A whole-suite tests.py run on a busy darwin host stays under the ceiling in _tools/tests_ceiling.json, or the ceiling reading discounts the wait for the host lock and the load of other sessions: origin/main e826b2fda ran 58 tests in 20.3 s (over the 20 s ceiling) while another session held the host test lock, the longest test (the land e2e) taking about 16 s.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  }
+}
