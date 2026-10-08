@@ -24,6 +24,13 @@
         "-k",
         "bench_pool"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,json,re,sys; rows=[r for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',encoding='utf-8')) if r['kind'] in ('fact','csv_fact','multi','synthesis')]; po=[r['id'] for r in rows if all('|' not in c and re.search(chr(92)+'.(md|csv)$',c) for c in json.loads(r['checks']))]; old={'BP-90da6231':'required status checks','BP-7b6373d5':'stdio|stdin','BP-df64045a':'APP|MAM'}; kept=[r['id'] for r in rows if r['id'] in old and json.loads(r['checks'])[0].startswith(old[r['id']])]; print(len(rows),'eval rows;',len(po),'path-only (was 10);','old regex kept:',kept); sys.exit(0 if len(rows)==40 and len(po)<10 and not kept else 1)"
+      ]
     }
   ],
   "touches": [
