@@ -1,0 +1,26 @@
+{
+  "id": "BG-mtyaxud3",
+  "kind": "bug",
+  "title": "Four eval rows ST-hcc7a3fd added copy or reword held-out questions, so the held-out answer-rate test fails",
+  "status": "todo",
+  "parent": "EP-gzr4mmkm",
+  "sprint": "SP-vayhvwfy",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "Found by the SP-vayhvwfy review: a821b9a5d added EV-streamable-http-origin-header-validation-dns, EV-kerberos-delegation-protected-users, EV-claude-code-opentelemetry-api-request-event and EV-claude-p-bare-default-headless-mode to kb/public/_retrieval/lookup_eval.csv, each identical to or a rewording of a lookup_heldout.csv row (HO-streamable-http-origin, HO-kerberos-protected-users, HO-otel-api-request-attributes, HO-bare-headless-default), against maintaining.md, Conduct for changes; rag.py eval --file lookup_heldout.csv prints four REWORD lines and exits 1. The four rows are removed from lookup_eval.csv, the held-out file is left as it is, and ST-hcc7a3fd's check 1 also reads lookup_heldout.csv, since a question already held out is triaged by being held out.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/rag.py",
+      "eval",
+      "--file",
+      "kb/public/_retrieval/lookup_heldout.csv",
+      "--min",
+      "1"
+    ]
+  },
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv"
+  ]
+}
