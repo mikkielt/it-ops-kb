@@ -2,7 +2,7 @@
   "id": "BG-ucnr4lo3",
   "kind": "bug",
   "title": "backlog.py cost: an open session's figures count windows of items with no item file, which distill no longer does",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wgx4pq4r",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,27 @@
     "BG-47kw57ed"
   ],
   "notes": "Its check passes before the work: it pins that a session working an item with an item file is still listed in the open session's figures; the repro is the failing proof.",
-  "claimed_by": "worker-BG-ucnr4lo3"
+  "evidence": {
+    "commit": "bed3c6f2bcf6c0d055f3b5cbf0555ea9f7d90ba1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,json,tempfile,shutil;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ['CLAUDE_PLUGIN_DATA']=str(t/'d');os.environ['CLAUDE_PLUGIN_ROOT']=str(Path.cwd());sys.path.insert(0,'_tools');import ql_capture as q,bl_cost as b,bl_base;f=t/bl_base.REL_DIR/'ST-aaaaaaaa.json';f.parent.mkdir(parents=True);f.write_text(json.dumps({'id':'ST-aaaaaaaa','kind':'story','status':'doing'}));q.record('prompt','s1',prompt_id='p1',prompt='x');q.record('work','s1',prompt_id='p1',action='branch',item='ST-aaaaaaaa');lines,info=b.open_lines(t);shutil.rmtree(t,ignore_errors=True);print('open session with an item file:',info);sys.exit(0 if [i['session'] for i in info]==['s1'] and 'ST-aaaaaaaa' in info[0]['worked'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "23713e0d5b2e75ea"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,tempfile;from pathlib import Path;t=Path(tempfile.mkdtemp());os.environ[\"CLAUDE_PLUGIN_DATA\"]=str(t/\"d\");os.environ[\"CLAUDE_PLUGIN_ROOT\"]=str(Path.cwd());sys.path.insert(0,\"_tools\");import ql_capture as q,bl_cost as b;q.record(\"prompt\",\"s1\",prompt_id=\"p1\",prompt=\"x\");q.record(\"work\",\"s1\",prompt_id=\"p1\",action=\"branch\",item=\"ST-aaaaaaaa\");lines,info=b.open_lines(t);print(info);sys.exit(1 if info else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
