@@ -430,30 +430,59 @@ def count_problems(rows):
     return [f"kind {k}: {got.get(k, 0)} rows, the plan has {n}" for k, n in want.items() if got.get(k, 0) != n]
 
 
-def build_querylog(home=HOME, seed=SEED):
-    """Redacted questions of the distilled store (redact.py over each, the leak scan clean), with the article a pack
-    cited as the check. A none verdict is left out: the kb may answer it by now, and no article can be named."""
+def current_articles(question):
+    """The articles (`domain/file`) a wide pack (eight articles) of the kb for `question` prints now, best first: local
+    retrieval, no model."""
+    import kbfacts
+    text = kbfacts.pack(question, budget=2400, max_articles=8, footer=False)["text"]
+    return re.findall(r"^## public/(\S+)", text, re.M)
+
+
+def check_article(stored, now):
+    """The article a query-log row's check names: the one the stored pack named while the kb's pack still prints it
+    (the kb may have gained the article that answers the question since), else the best article that pack prints now,
+    or None when it prints none."""
+    return stored if stored in now else now[0] if now else None
+
+
+def build_querylog(home=HOME, seed=SEED, out=None, now=None):
+    """Redacted questions of the distilled store (redact.py over each, the leak scan clean), with the article that
+    answers each as the check (check_article). A none verdict is left out: the kb may answer it by now, and no article
+    can be named; so is a question whose cited answer lies only outside the public kb (the project's own docs), which
+    no public article checks. The rows of the file at `out` that are still usable stay, so a store entry added or
+    dropped moves no other row; the seed draws only the rows the file lacks."""
     import redact
     import ql_store
+    now = now or current_articles
+    out = Path(out or Path(home) / QUERYLOG_FILE)
     k = redact.known(Path(home) / "kb" / "public")
-    seen, cand = set(), []
+    seen, cand = set(), {}
     for _, e in sorted(ql_store.store_entries(Path(home) / "kb" / "_querylog"), key=lambda x: x[1]["id"]):
         q = e.get("question")
         if not isinstance(q, str) or not 20 <= len(q) <= 300 or "\n" in q or q.startswith("Research queue gap"):
             continue
         verdict = e.get("verdict")
         arts = [a.split("/", 1)[1] for a in ([e["best"]] if e.get("best") else e.get("articles") or []) if "/" in a]
-        if verdict not in ("good", "weak") or not arts:
+        cited = [c.get("line", "") for c in e.get("citations") or []]
+        if verdict not in ("good", "weak") or not arts or (cited and not any(c.startswith("public/") for c in cited)):
             continue
-        checks, route, dom = [esc_path(arts[0])], "good" if verdict == "good" else "split", domain_of(arts[0])
         text = redact.finish(redact.redact(q, k), k)
         if text and text not in seen:
             seen.add(text)
-            cand.append(row("querylog", dom, "original", "querylog:" + e["id"][:8], text, checks, route))
-    picks = rng_for(seed, "querylog").sample(cand, min(QUERYLOG_ROWS, len(cand)))
-    if len(picks) != QUERYLOG_ROWS:
-        raise PoolError(f"the store holds {len(picks)} usable questions, the plan has {QUERYLOG_ROWS}")
-    return sorted(picks, key=lambda r: r["id"])
+            cand["querylog:" + e["id"][:8]] = (text, arts[0], "good" if verdict == "good" else "split")
+
+    def made(source):
+        text, stored, route = cand[source]
+        art = check_article(stored, now(text))
+        return row("querylog", domain_of(art), "original", source, text, [esc_path(art)], route) if art else None
+    rows = [r for r in (made(p["source"]) for p in committed_rows(out) if p["source"] in cand) if r][:QUERYLOG_ROWS]
+    left = [s for s in cand if s not in {r["source"] for r in rows}]
+    for s in rng_for(seed, "querylog").sample(left, len(left)):
+        if len(rows) < QUERYLOG_ROWS:
+            rows += [r for r in (made(s),) if r]
+    if len(rows) != QUERYLOG_ROWS:
+        raise PoolError(f"the store holds {len(rows)} usable questions, the plan has {QUERYLOG_ROWS}")
+    return sorted(rows, key=lambda r: r["id"])
 
 
 def question_of(r, home=HOME):
@@ -513,7 +542,7 @@ def cli(a, home=HOME):
     if a.pool_cmd == "build":
         out = Path(a.out) if a.out else Path(home) / (QUERYLOG_FILE if a.querylog else PUBLIC_FILE)
         try:
-            rows = build_querylog(home, a.seed) if a.querylog else build_public(home, a.seed, out=out)
+            rows = build_querylog(home, a.seed, out) if a.querylog else build_public(home, a.seed, out=out)
         except PoolError as e:
             print(f"pool build: {e}")
             return 1

@@ -78,12 +78,13 @@ def pool_home(tmp_path, ql_questions):
     run.mkdir(parents=True)
     head = '{"run":"20261008T000000Z-aaaaaaaa","pipeline":7,"retrieval":8,"counts":{"entries":%d,"dropped":0,"waiting":0}}\n'
     ents = "".join(json.dumps({"id": f"{i:08x}-0000-4000-8000-{i:012x}", "surface": "prompt", "day": "2026-10-08",
-                               "question": q, "verdict": "good", "articles": [f"public/d{i % 6}/a0.md"]}) + "\n"
+                               "question": q, "verdict": "good", "articles": [f"public/d{i % 6}/a0.md"],
+                               "citations": [{"line": "kb/_self/x.md:1" if i == 5 else f"public/d{i % 6}/a0.md:1"}]}) + "\n"
                    for i, q in enumerate(ql_questions))
     (run / "20261008T000000Z-aaaaaaaa.jsonl").write_text(head % len(ql_questions) + ents, encoding="utf-8")
 
 
-def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path):
+def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, monkeypatch):
     import argparse, re
     import bench_pool as bp
     ql = [f"fixture session question number {i} about topic {i} in detail" for i in range(26)]
@@ -118,11 +119,18 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path):
     assert bp.check_problems(rows, tmp_path) == []
     assert bp.check_problems([{**held[0], "question": bp.question_of(held[0], tmp_path)}], tmp_path)[0].endswith("names a case "
                                                                                                            "of lookup_heldout.csv")  # the planted failure
+    monkeypatch.setattr(bp, "current_articles", lambda q: [f"d{int((re.findall(r'number (\d+)', q) or ['0'])[0]) % 6}/a0.md"])
     ns = argparse.Namespace(pool_cmd="build", querylog=True, seed=3, out=None)
     assert bp.cli(ns, tmp_path) == 0
     qlfile = tmp_path / bp.QUERYLOG_FILE
     qlrows = bp.read_csv(qlfile)
     assert len(qlrows) == bp.QUERYLOG_ROWS and bp.cli(argparse.Namespace(pool_cmd="check", querylog=True, file=None), tmp_path) == 0
+    assert bp.cli(ns, tmp_path) == 0 and bp.read_csv(qlfile) == qlrows  # a rebuild keeps the rows it holds
+    assert not any("number 5 " in r["question"] for r in qlrows)  # an answer cited only outside kb/public is no public question
+    assert bp.check_article("d0/a0.md", ["d1/a1.md", "d0/a0.md"]) == "d0/a0.md" and bp.check_article("d0/a0.md", ["d1/a1.md"]) == "d1/a1.md"
+    assert bp.check_article("d0/a0.md", []) is None
+    monkeypatch.setattr(bp, "current_articles", lambda q: ["d9/now.md"])  # the kb's pack moved on: the kept rows follow it
+    assert {json.loads(r["checks"])[0] for r in bp.build_querylog(tmp_path, 3, qlfile)} == {r"d9/now\.md"}
     public = out.read_text(encoding="utf-8")
     assert not any(r["question"] in public for r in qlrows) and "fixture session question" not in public
     assert org not in qlfile.read_text(encoding="utf-8") and not any(r["kind"] == "querylog" for r in rows)
