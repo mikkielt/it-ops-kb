@@ -2,7 +2,7 @@
   "id": "ST-ls2ge3bz",
   "kind": "story",
   "title": "Research sprint goal: Rules findings converge: no item-text findings, tested rows for real misses, code-anchored rows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rvslem3h",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "notes": "No outside facts: every question of the goal is about the kb's own mechanics, answered by kb/_self/querylog.md Learn and Apply (Rules findings) and kb/_self/content-rules.md Ledgers; three tested rows SQ-learn-derive-rules-finding-entry-fields, SQ-apply-anchor-gate-tested-row-rules, SQ-columns-lookup-eval-csv-row-have pin them (rag.py eval --root _self 279/279).",
-  "claimed_by": "orchestrator-mac"
+  "evidence": {
+    "commit": "48ccb40d136be671a4630ae0738227787b310a0c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ls2ge3bz"
+        ],
+        "exit": 0,
+        "sha256": "2a52d0c07a8b59ec"
+      }
+    ]
+  }
 }
