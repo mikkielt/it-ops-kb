@@ -386,14 +386,15 @@ def refresh_trailers(r, up, host):
 
 def gate_paths(up):
     """The paths the gate judges: changed from UP's merge base to HEAD, plus the working tree (the pre-push hook
-    checks it too); None when there is no UP (a new branch), which runs every check."""
+    checks it too); None when there is no UP (a new branch), which runs every check. A rename lists its old and
+    its new path (--no-renames), so a test file renamed out of _tools/test_*.py still counts as a changed test."""
     if not up:
         return None
     base = (git("merge-base", up, "HEAD") or "").strip()
     if not base:
         return None
     staged, unstaged = dirty_paths()
-    return set(names("diff", "--name-only", base, "HEAD")) | set(staged) | set(unstaged)
+    return set(names("diff", "--name-only", "--no-renames", base, "HEAD")) | set(staged) | set(unstaged)
 
 
 def artifact_paths():
@@ -582,7 +583,7 @@ def gate(r, up, host, fix_check=False, since=None):
     paths = gate_paths(up)
     if since:
         staged, unstaged = dirty_paths()
-        paths = set(names("diff", "--name-only", since, "HEAD")) | set(staged) | set(unstaged)
+        paths = set(names("diff", "--name-only", "--no-renames", since, "HEAD")) | set(staged) | set(unstaged)
     r["gate_files"] = None if paths is None else len(paths)
     need = gate_needs(paths)
     if since:
