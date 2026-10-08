@@ -1,0 +1,28 @@
+{
+  "id": "ST-fumnrmll",
+  "kind": "story",
+  "title": "Planning maps each run figure a goal names to a flag of the command that runs it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The /kb-sprint plan step that maps goal clauses to checks maps each figure a committed goal names for a run (row counts, subsets, arms, reps, effort levels) to a flag of the command that runs it; a figure no flag can select gets a task that adds the flag, or the clause is rewritten, before the start gate; found by the SP-hm4qgf3t close: ST-ji32ouga's goal named a 20-row web subset and an opus-5-5 sanity subset that benchmarks.py run pool could not select (it selects by kind and has no opus arm), which surfaced as its gate g2 mid-work.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='a flag of the command that runs it' in t;print('plan step maps run figures to flags:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "ST-77goqrxz"
+  ],
+  "links": [
+    "parked: SP-hm4qgf3t close"
+  ]
+}

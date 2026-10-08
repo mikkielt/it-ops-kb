@@ -1,0 +1,28 @@
+{
+  "id": "ST-z3ii6bpy",
+  "kind": "story",
+  "title": "Planning gives a check of a per-call cost or token figure a stub that follows the source's documented totals",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The /kb-sprint plan step that maps goal clauses to checks asks, for a committed item whose goal records a per-call or per-question cost or token figure read from a tool's output, which kb fact states that output's semantics (per call or running total), cites it in the goal, and gives the item a check whose stub follows that semantics; found by the SP-hm4qgf3t close: ST-ohz5si2o's checks fed per-turn costs although a --resume result reports the session's running total_cost_usd (a fact the kb's Claude Code headless article already held), and ST-uxgaazfi had no check that two same-day pool chunks keep both spend rows, so BG-2tan24sm (S1) was found only by the review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='per call or running total' in t;print('plan step asks output semantics of cost figures:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "ST-a5q6vaji"
+  ],
+  "links": [
+    "parked: SP-hm4qgf3t close"
+  ]
+}
