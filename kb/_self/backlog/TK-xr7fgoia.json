@@ -29,6 +29,9 @@
   "depends_on": [
     "ST-hcc7a3fd"
   ],
+  "links": [
+    "F-68c59a20a679"
+  ],
   "evidence": {
     "commit": "bd7e53c5caf7d71c39f6343eef82611d78d82097",
     "checks": [
