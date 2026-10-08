@@ -34,9 +34,6 @@
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],
-  "depends_on": [
-    "ST-juoeq36g"
-  ],
   "gates": [
     {
       "id": "g1",
