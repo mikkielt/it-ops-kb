@@ -2,7 +2,7 @@
   "id": "BG-l34xg6jn",
   "kind": "bug",
   "title": "The pack index's unit cache reuses stale weights after a weighing change that keeps INDEX_VERSION",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-caqrexqw",
   "priority": "P2",
@@ -43,5 +43,18 @@
     "parked: SP-kjqdiudr review"
   ],
   "notes": "Premise (repro) run 2026-10-08 at plan: 'key changes with TITLE_WEIGHT: False', exit 1, reproduces. Blocks the held-out answer rate fitness test (kb/_self/tools.md): a rate measured on a kbunits.sqlite cache whose weights predate a weighting change is not the rate of the code under test, and the next ranking change would be measured on stale weights silently. Selected by the operator for SP-caqrexqw on 2026-10-08. Mechanism read 2026-10-08 at plan against rag.py pack --root _self: no rule forbids keying on the weighing constants or on the weighing functions' source; kb/_self/tools.md:144 states the key's inputs and changes with the fix. The goal leaves the choice between the two open for the worker (a provisional gate).",
-  "claimed_by": "worker-BG-l34xg6jn"
+  "evidence": {
+    "commit": "432f4dce0450ceb1fca2f953c6e6c9d159f8212f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts as k;u={'path':'a.md','title':'','section':'S','text':'x','tags':''};a=k._unit_key(u,'a.md',{},{},{});k.TITLE_WEIGHT+=5;b=k._unit_key(u,'a.md',{},{},{});print('key changes with TITLE_WEIGHT:',a!=b);sys.exit(0 if a!=b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "b6089d48b9195e40"
+      }
+    ]
+  }
 }
