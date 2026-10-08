@@ -57,7 +57,9 @@
         "bash-wildcard"
       ],
       "recommendation": "headless-bare",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "headless-bare",
+      "by": "operator"
     }
   ],
   "links": [
