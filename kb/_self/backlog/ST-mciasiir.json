@@ -2,7 +2,7 @@
   "id": "ST-mciasiir",
   "kind": "story",
   "title": "Review sprint: The Windows host proves land, index reuse, the launcher and a clean setup",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kjqdiudr",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-mac"
+  "evidence": {
+    "commit": "d8d63c156e7a19b893939811f69bbfb6dc722086",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "73c10df24de48fbb"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "291af849660c2504"
+      }
+    ]
+  }
 }
