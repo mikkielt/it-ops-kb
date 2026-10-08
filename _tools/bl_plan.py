@@ -264,7 +264,8 @@ TRIGGER_HOSTS = {"windows": "win32", "macos": "darwin", "linux": "linux"}
 def waiting_triggers(bl, sid):
     """(item id, trigger text, other host or None) for each open item of the sprint (a story, task or subtask) whose
     own trigger has not fired: the sprint's review waits on it unless the operator moves it out. The third part is
-    the host the trigger names when that is not the one starting the sprint (start warns; ST-qsppdmjv)."""
+    the host the trigger names when it names no host that is the one starting the sprint, so `on Windows or macOS`
+    started on macOS names none (start warns; ST-qsppdmjv, BG-mx4fggy4)."""
     out = []
     for i in bl.sprint_items(sid):
         it = bl.items[i]
@@ -272,8 +273,9 @@ def waiting_triggers(bl, sid):
         if it.get("status") in ("done", "dropped") or not isinstance(t, dict) or t.get("fired"):
             continue
         when = str(t.get("when", ""))
-        other = next((h for h, p in TRIGGER_HOSTS.items()
-                      if not sys.platform.startswith(p) and re.search(rf"\b{h}\b", when, re.I)), None)
+        named = [(h, p) for h, p in TRIGGER_HOSTS.items() if re.search(rf"\b{h}\b", when, re.I)]
+        here = any(sys.platform.startswith(p) for _, p in named)
+        other = None if here else next((h for h, _ in named), None)
         out.append((i, when, other))
     return out
 
