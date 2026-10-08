@@ -2,7 +2,7 @@
   "id": "ST-vua43tob",
   "kind": "story",
   "title": "The pool scenario has an Opus arm",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -69,5 +69,26 @@
     "parked: SP-hm4qgf3t review"
   ],
   "notes": "Blocks the next pool benchmark record: the operator asked on 2026-10-08 for the work needed before the next record to be staged as SP-2vhfsn4o. Premise run 2026-10-08: run pool --arms opus refuses with exit 2 (unknown opus); the check fails until an opus-5-5 arm exists. Opus 5.5's prices and effort come from the research story ST-lwmcmied.",
-  "claimed_by": "worker-ST-vua43tob"
+  "evidence": {
+    "commit": "553bf458e2faf0b3b09e7ef377dbffc2b1c552d9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "pool",
+          "--arms",
+          "opus-5-5",
+          "--kinds",
+          "multi",
+          "--reps",
+          "1",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "00577f58720e9b4f"
+      }
+    ]
+  }
 }
