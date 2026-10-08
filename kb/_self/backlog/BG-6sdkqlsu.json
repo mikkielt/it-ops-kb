@@ -2,7 +2,7 @@
   "id": "BG-6sdkqlsu",
   "kind": "bug",
   "title": "On Windows the land e2e test cannot add a worker worktree of its scenario clone: Filename too long",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-kjqdiudr",
   "priority": "P1",
@@ -16,5 +16,11 @@
       "-k",
       "test_land_content_item_then_planted_failure"
     ]
-  }
+  },
+  "touches": [
+    "_tools/conftest.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "worker-win"
 }
