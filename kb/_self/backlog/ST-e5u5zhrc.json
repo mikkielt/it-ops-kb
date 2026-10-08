@@ -2,7 +2,7 @@
   "id": "ST-e5u5zhrc",
   "kind": "story",
   "title": "rag.py eval prints its failing rows and totals, not every row",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-matmvkn6",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-e5u5"
+  "evidence": {
+    "commit": "24d4a32e890c43325312467e0eae2fca260aae51",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as sp,sys;o=sp.run([sys.executable,'_tools/rag.py','eval','--root','_self'],capture_output=True,text=True,check=True).stdout.splitlines();print(len(o),o[-1:] if o else o);sys.exit(0 if o and len(o)<20 and o[-1].startswith('questions=') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "fa0ec82b08a8b0ff"
+      }
+    ]
+  }
 }
