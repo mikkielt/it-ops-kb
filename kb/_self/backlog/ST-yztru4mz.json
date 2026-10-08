@@ -1,0 +1,25 @@
+{
+  "id": "ST-yztru4mz",
+  "kind": "story",
+  "title": "Worker briefs and kb-worker.md forbid making git worktrees outside the one the orchestrator gives",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-worker.md and the /kb-sprint run brief say a worker makes no git worktree of its own (a baseline run uses git stash or a scratch clone it can delete, never git worktree add), since git worktree remove is denied to agents and such a worktree is left for the operator. Answers the SP-caqrexqw close: ST-urfa4ntj's worker added _cache/scratch/ST-urfa4ntj/base for a baseline run and could not remove it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-caqrexqw close"
+  ]
+}

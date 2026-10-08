@@ -1,0 +1,25 @@
+{
+  "id": "ST-nu5b6zqm",
+  "kind": "story",
+  "title": "A refresh that changes a figure finds every place in the root that repeats the old one before done",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "/kb-refresh (and /kb-research when it corrects a fact) searches the root for the old figure it replaces (rag.py search on the old value, the answers and data tables included) and updates or files each other place that repeats it before the item is done. Answers the SP-caqrexqw close: ST-5vtfd3y4 corrected the Sonnet 5.5 cache-read price in agents/agent-caching.md while claude/models.csv, the Sonnet 5.5 answer and claude/ci-and-headless.md kept the old /bin/zsh.20, found only by its worker by chance (BG-huavhgoh).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-refresh/SKILL.md",
+    ".claude/skills/kb-research/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-caqrexqw close"
+  ]
+}

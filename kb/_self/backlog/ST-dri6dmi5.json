@@ -1,0 +1,28 @@
+{
+  "id": "ST-dri6dmi5",
+  "kind": "story",
+  "title": "The land e2e scenario uses a fixture backlog, so an invalid live backlog item cannot fail the suite",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "_tools/test_land_e2e.py's scenarios build their kb/_self/backlog/ from fixture items instead of copying the live backlog, so a planning slip in a live item (a story with no checks) no longer fails backlog.py check inside the scenario and the land e2e test with it. Answers the SP-caqrexqw close: the review story's tests.py check refused because three just-filed parked stories lacked checks.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_runs_lint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py",
+    "_tools/conftest.py",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-caqrexqw close"
+  ]
+}

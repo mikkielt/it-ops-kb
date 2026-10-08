@@ -1,0 +1,26 @@
+{
+  "id": "ST-twcrlq7n",
+  "kind": "story",
+  "title": "Planning puts doc2query expansions.csv in the touches of research and refresh items that may reword facts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "When /kb-sprint plan or /kb-backlog files or schedules a research or refresh item whose touches name a kb root's articles, its touches include that root's _retrieval/doc2query/expansions.csv, so a reworded fact's stale expansion rows can be pruned in the item. Answers the SP-caqrexqw close: ST-5vtfd3y4 reworded a fact, left three expansion rows stale, and stopped until the orchestrator widened its touches and pruned them by hand.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-caqrexqw close"
+  ]
+}
