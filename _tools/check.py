@@ -42,13 +42,15 @@
   only (a public root never cites one; files outside the roots may cite any root's or kb/_self's rows). A [DECISION <id>]
   tag is resolved the same way in a root's CSV data rows as in its Markdown files;
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
-- every `topic: <domain>/<slug>` marker in a root's _gaps.md and _conflicts.md names a topic of that root.
+- every `topic: <domain>/<slug>` marker in a root's _gaps.md and _conflicts.md names a topic of that root;
+- every `path:line` citation in a root's _answers.md and _gaps.md (and the `:N` shorthand after one) names a line of a
+  tagged fact of a file of that root: not a heading, a Reference row, a blank line or a line past the end.
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
 """
 import argparse, csv, datetime, os, re, sys
 from collections import Counter
 from pathlib import Path
-import kbcommon, kbid, selfdoc
+import kbcommon, kbfacts, kbid, selfdoc
 
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
 TAG = re.compile(r"\[(?:DOC|CODE|DER|COMMUNITY)\s([^\]]+)\]")  # \s: a tag may wrap after DOC
@@ -439,6 +441,57 @@ def ledger_cite_error(kind, token, root, held):
     return f"cites unknown {noun} {token}"
 
 
+LEDGER_CITE = re.compile(r"(?<![\w./:-])((?:[\w.-]+/)+[\w.-]+\.md):([1-9]\d*)\b|(?<![\w:])`?:([1-9]\d*)\b")  # path:line, `:N`
+
+
+def fact_lines(text):
+    """The line numbers of a topic file's tagged facts: every line of a bullet with its continuation lines (its tag line
+    too), a tagged table row or paragraph (kbfacts.md_units). A heading, an untagged Reference row or a blank line is none."""
+    lines, res = text.splitlines(), set()
+    for u in kbfacts.md_units("", text):
+        end = u["line"]
+        while not u["text"].startswith("|") and end < len(lines) and (s := lines[end].strip()) \
+                and not s.startswith(("#", "|", "```", "~~~")) and not re.match(r"[-*] ", s):
+            end += 1
+        res.update(range(u["line"], end + 1))
+    return res
+
+
+def ledger_citation_errors(root):
+    """The `path:line` citations (and the `:N` shorthand after one on the same line) in a root's _answers.md and
+    _gaps.md that name no line of a tagged fact: a heading, a table or Reference row, a blank line, a line past the
+    end, or a file that is not in the root. Each error names the ledger line and the citation."""
+    res, facts = [], {}
+    for name in (kbcommon.ANSWERS, kbcommon.GAPS):
+        try:
+            with open(os.path.join(root.path, name), encoding="utf-8") as f:
+                ledger = f.read().splitlines()
+        except (OSError, UnicodeDecodeError):
+            continue
+        for n, ln in enumerate(ledger, start=1):
+            path = None
+            for m in LEDGER_CITE.finditer(ln):
+                path = m.group(1) or path
+                if path is None:
+                    continue
+                line = int(m.group(2) or m.group(3))
+                if path not in facts:
+                    try:
+                        with open(os.path.join(root.path, path), encoding="utf-8") as f:
+                            text = f.read()
+                        facts[path] = (len(text.splitlines()), fact_lines(text))
+                    except (OSError, UnicodeDecodeError):
+                        facts[path] = None
+                where = f"{kbcommon.qualify(root, name)}:{n} cites {path}:{line}"
+                if facts[path] is None:
+                    res.append(f"{where}, a file that is not in root {root.name}")
+                elif line not in facts[path][1]:
+                    res.append(f"{where}, " + ("a line past the end of the file" if line > facts[path][0]
+                                               else "a line that is no line of a tagged fact (a heading, a table or "
+                                                    "Reference row, a blank or an untagged line)"))
+    return res
+
+
 def tag_errors(text, root, held):
     """The errors of every DECISION and LOG tag in `text`, a file of root (None: outside the roots); `held` is
     {kind: {root name or None: ids}}."""
@@ -599,6 +652,7 @@ def main():
                     topics.add(t.group(1) if t else os.path.relpath(p, root.path)[:-3].replace(os.sep, "/"))
         if root is None:
             continue
+        errors.extend(ledger_citation_errors(root))
         for name in (kbcommon.GAPS, kbcommon.CONFLICTS):
             try:
                 with open(os.path.join(root.path, name), encoding="utf-8") as f:
