@@ -149,6 +149,10 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
             for i, kind in enumerate(["fact", "fact", "count"])]
     cells = bp.plan_cells(["sonnet-5-5", "haiku-4-5", "hook", "web-sonnet-5-5"], bp.EFFORTS)
     assert [c[2] for c in cells] == ["sonnet-5-5:low", "sonnet-5-5:default", "haiku-4-5", "hook", "web-sonnet-5-5"]
+    assert [c[2] for c in bp.plan_cells(["opus-5-5"], bp.EFFORTS)] == ["opus-5-5:low", "opus-5-5:default"]
+    assert "opus-5-5" in bp.ARMS and "opus-5-5" not in bp.DEFAULT_ARMS  # named in --arms only
+    argv = bp.session_argv("opus-5-5", "low", "SID", 1)
+    assert argv[argv.index("--model") + 1] == "claude-opus-5-5"
 
     def runner(arm, effort, row):
         if arm == "hook":

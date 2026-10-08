@@ -515,10 +515,12 @@ def cli(a, home=HOME):
 
 # ------------------------------------------------------------------------------------------------------ the scenario
 
-KB_ARMS = ("haiku-5-5", "haiku-4-5", "sonnet-5-5")  # agent_bench configs: the models pinned by id, with the kb's tools
+KB_ARMS = ("haiku-5-5", "haiku-4-5", "sonnet-5-5", "opus-5-5")  # agent_bench configs: the models pinned by id, with the kb's tools
 NO_EFFORT = ("haiku-4-5",)  # Claude Code sets no effort level for Haiku 4.5: its arm runs once, at its only level
 WEB_ARMS = ("web-haiku-5-5", "web-sonnet-5-5")
 ARMS = (*KB_ARMS, "router", "hook", *WEB_ARMS)
+OPT_IN = ("opus-5-5",)  # named in --arms only: a run with no --arms leaves it out, so the record's spend stays what it was
+DEFAULT_ARMS = tuple(a for a in ARMS if a not in OPT_IN)
 EFFORTS = ("low", "default")  # `default` passes no --effort: the level the model starts with
 WEB_KINDS = (*EVAL_KINDS, "offkb", "snippet", "false_good")  # the kinds a web search can answer; the web arms run these
 WEB_ASK = " Cite the source urls."
@@ -859,14 +861,14 @@ def live_session_runner(b):
 
 
 def s_pool(b):
-    """The question pool over the arms of `b.arms` (default ARMS) at the effort levels of `b.efforts`, on the kinds of
-    `b.kinds` (default all), `b.reps` runs of each row on each cell. Shape `fresh` (default) makes each run a fresh
+    """The question pool over the arms of `b.arms` (default DEFAULT_ARMS: ARMS less the opt-in ones) at the effort levels
+    of `b.efforts`, on the kinds of `b.kinds` (default all), `b.reps` runs of each row on each cell. Shape `fresh` (default) makes each run a fresh
     session; shape `session` (`b.shape`) runs groups of six rows (`session_groups`, seed `b.seed`) each in one session on
     the kb arms of SESSION_ARMS, and records per position (`session_rows`) beside the per-kind rows of its arm labels.
     Rows per kind and arm label, and for all kinds (cell_rows); each run's record is appended to the scenario's runs
     file. With `b.dry` it prints the plan and starts nothing."""
     session = getattr(b, "shape", "fresh") == "session"
-    arms = list(getattr(b, "arms", None) or (SESSION_ARMS if session else ARMS))
+    arms = list(getattr(b, "arms", None) or (SESSION_ARMS if session else DEFAULT_ARMS))
     sh = shutil.which("sh")
     if "hook" in arms and not sh:
         print("pool: the hook arm needs sh on PATH (Windows: run it from Git Bash); left out")
