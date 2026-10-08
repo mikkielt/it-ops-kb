@@ -1,0 +1,15 @@
+{
+  "id": "ST-tjaxw22f",
+  "kind": "story",
+  "title": "The working-directory lock and launcher breakaway gaps are closed with the sprint's recorded Windows runs",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "/kb-refresh records, from the recorded Windows runs of SP-kjqdiudr (BG-nlp5aat5's notes: a rename of a process's working directory fails with WinError 32; kb/_self/reports/windows-run.md: the SessionEnd distill outlived the session), the facts the three UNK entries in kb/public/_gaps.md ask for, each tagged by what it rests on, and marks those gaps resolved or narrowed; found by the SP-kjqdiudr review (ST-yw3o73tm).",
+  "touches": [
+    "kb/public/**"
+  ],
+  "links": [
+    "parked: SP-kjqdiudr review"
+  ]
+}

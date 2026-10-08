@@ -1,0 +1,26 @@
+{
+  "id": "BG-l34xg6jn",
+  "kind": "bug",
+  "title": "The pack index's unit cache reuses stale weights after a weighing change that keeps INDEX_VERSION",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbfacts._unit_key covers the code that weighs a unit (terms, stem, STOP, kbid.STOP, TITLE_WEIGHT, SUMMARY_WEIGHT, EXPANSION_WEIGHT, or the source of the weighing functions), so an edit to any of them without an INDEX_VERSION bump re-weighs every unit instead of reusing stale kbunits.sqlite rows; found by the SP-kjqdiudr review (ST-akicahgy, _tools/kbfacts.py _unit_key).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts as k;u={'path':'a.md','title':'','section':'S','text':'x','tags':''};a=k._unit_key(u,'a.md',{},{},{});k.TITLE_WEIGHT+=5;b=k._unit_key(u,'a.md',{},{},{});print('key changes with TITLE_WEIGHT:',a!=b);sys.exit(0 if a!=b else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-kjqdiudr review"
+  ]
+}
