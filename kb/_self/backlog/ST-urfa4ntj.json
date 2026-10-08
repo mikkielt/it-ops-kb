@@ -2,7 +2,7 @@
   "id": "ST-urfa4ntj",
   "kind": "story",
   "title": "A content landing runs the contract lint on the articles it changes, so a CODE tag without a pointer cannot reach main",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-caqrexqw",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,6 @@
   "links": [
     "parked: SP-kyvu526t close"
   ],
-  "notes": "Planning note: the check is a text probe that fails today (land runs LAND_HEAVY, which holds the lint, only when the range changes _tools/, bl_land.py:1210); a plan should replace it with a planted content landing whose pointerless CODE tag stops land at its lint step. Premise: the story's check (bl_land.py names a lint step for kb article changes). Run 2026-10-08 at plan: False, exit 1, reproduces; bl_land.py:1308 runs LAND_HEAVY (rag.py eval and lint.py, bl_land.py:375) only when the range changes _tools/. Blocks the content sprint fitness test (EP-gzr4mmkm: a content sprint from the research queue lands on headless Sonnet with no operator step beyond its gates): a content landing whose lint error passes stops the next code landing and needs an operator fix, as BG-2hjxwg64 did. Selected by the operator for SP-caqrexqw on 2026-10-08."
+  "notes": "Planning note: the check is a text probe that fails today (land runs LAND_HEAVY, which holds the lint, only when the range changes _tools/, bl_land.py:1210); a plan should replace it with a planted content landing whose pointerless CODE tag stops land at its lint step. Premise: the story's check (bl_land.py names a lint step for kb article changes). Run 2026-10-08 at plan: False, exit 1, reproduces; bl_land.py:1308 runs LAND_HEAVY (rag.py eval and lint.py, bl_land.py:375) only when the range changes _tools/. Blocks the content sprint fitness test (EP-gzr4mmkm: a content sprint from the research queue lands on headless Sonnet with no operator step beyond its gates): a content landing whose lint error passes stops the next code landing and needs an operator fix, as BG-2hjxwg64 did. Selected by the operator for SP-caqrexqw on 2026-10-08.",
+  "claimed_by": "worker-ST-urfa4ntj"
 }
