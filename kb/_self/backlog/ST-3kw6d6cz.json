@@ -2,7 +2,7 @@
   "id": "ST-3kw6d6cz",
   "kind": "story",
   "title": "The benchmark report and README.md summarise the pool record of 2026-10-08",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-hm4qgf3t",
   "priority": "P1",
@@ -29,5 +29,28 @@
     "kb/_self/reports/benchmarks.md",
     "README.md"
   ],
-  "claimed_by": "orchestrator-SP-hm4qgf3t"
+  "evidence": {
+    "commit": "a8a663f3bb4209c0baadb34f48a8c369c4ae4641",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if 'question pool' in open('README.md',encoding='utf-8').read().lower() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
