@@ -2,7 +2,7 @@
   "id": "ST-r7cftjex",
   "kind": "story",
   "title": "The sync gate reuses a test run's result for the same selection on the same tree",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-evkj4avq",
   "priority": "P2",
@@ -43,5 +43,6 @@
     "kb/_self/git.md Workflow (the gate's tests.py --changed)",
     "kb/_self/tools.md tests.py"
   ],
-  "notes": "Premise (ops sidecars, all time to 2026-10-08): sync.gate rows where tests.py-changed ran: 733, mean 77.8 s, about 15.8 hours in all; the same selection on the same tree runs again whenever a landing retries (land.step kbgit.py-sync-push failed 256 times, rebase 231) or several items land from one tip. A reused flag on test.run is a new key of a closed event: ql_capture.OPS_EVENTS and the Surfaces paragraph of kb/_self/querylog.md change in the same commit. The key must be a tree the gate can trust: the index plus tracked working-tree changes, never a path list, so an edit to any tracked file after the run invalidates it; untracked files are what tests.py already refuses to scan (kb/_self/maintaining.md: stage new files first). Filed under EP-hlnsqx4f (the suite runs in minutes) as the gate-side half; ST-akicahgy is the index-side half. Precheck 2026-10-08: both checks pass before the work: the planted failure (an edit to a tracked test file after a passing run changes the key and pytest runs again; a reused run prints reused: and starts no pytest) is added to test_sync_e2e.py by the work, and --ceiling pins the suite size."
+  "notes": "Premise (ops sidecars, all time to 2026-10-08): sync.gate rows where tests.py-changed ran: 733, mean 77.8 s, about 15.8 hours in all; the same selection on the same tree runs again whenever a landing retries (land.step kbgit.py-sync-push failed 256 times, rebase 231) or several items land from one tip. A reused flag on test.run is a new key of a closed event: ql_capture.OPS_EVENTS and the Surfaces paragraph of kb/_self/querylog.md change in the same commit. The key must be a tree the gate can trust: the index plus tracked working-tree changes, never a path list, so an edit to any tracked file after the run invalidates it; untracked files are what tests.py already refuses to scan (kb/_self/maintaining.md: stage new files first). Filed under EP-hlnsqx4f (the suite runs in minutes) as the gate-side half; ST-akicahgy is the index-side half. Precheck 2026-10-08: both checks pass before the work: the planted failure (an edit to a tracked test file after a passing run changes the key and pytest runs again; a reused run prints reused: and starts no pytest) is added to test_sync_e2e.py by the work, and --ceiling pins the suite size.",
+  "claimed_by": "worker-r7cftjex"
 }
