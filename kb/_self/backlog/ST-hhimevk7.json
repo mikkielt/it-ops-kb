@@ -2,7 +2,7 @@
   "id": "ST-hhimevk7",
   "kind": "story",
   "title": "Research sprint goal: Answers stay right and correctly cited",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-caqrexqw",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
