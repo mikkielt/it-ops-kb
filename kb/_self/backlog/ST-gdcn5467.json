@@ -1,0 +1,30 @@
+{
+  "id": "ST-gdcn5467",
+  "kind": "story",
+  "title": "The SessionStart intake hook files a finding once, whatever checkout or session starts, and respects the open-draft cap",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py intake --file --hook writes no draft for a fingerprint that an untracked draft, a committed item or a draft set aside under _cache/intake-drafts/ already holds, and writes none while open drafts are over the cap the CLI form enforces; in SP-7y6dk257 the hook re-filed the same three findings 11 times and then 3 more after they were set aside, while intake --file refused them for the 60-draft cap. Retrospective of SP-7y6dk257.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_hook_no_refile"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_check_programs.py",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "ST-xdyk2ugr"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 close"
+  ]
+}

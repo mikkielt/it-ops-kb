@@ -1,0 +1,28 @@
+{
+  "id": "ST-2bly3tq5",
+  "kind": "story",
+  "title": "check.py validates the kb path:line citations in _tools comments, so a fact inserted above them cannot shift them silently",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A kb/public/<path>:<line> citation in a _tools/*.py comment points at a fact line that still holds what the citation needs (at least the model or term named beside it), and check.py or a test reports one that does not; in SP-7y6dk257 one new fact at ci-and-headless.md:87 shifted five PRICE citations in bench_core.py and nothing reported it. Retrospective of SP-7y6dk257.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "code_kb_citations"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/check.py",
+    "_tools/test_check_programs.py",
+    "kb/_self/tools.md",
+    "_tools/bench_core.py"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 close"
+  ]
+}

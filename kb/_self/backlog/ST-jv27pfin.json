@@ -1,0 +1,28 @@
+{
+  "id": "ST-jv27pfin",
+  "kind": "story",
+  "title": "precheck says which part of a check fails, and planning checks pool rows with bench_pool's own predicates",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py precheck prints, for a failing check, its output, so a planner sees a check that fails for the wrong reason (SP-7y6dk257: ST-2p5ywkam's hand regex failed on one of six path-only rows and passed with four still path-only after the work); and the sprint planning rules ask a check over pool rows to call the code's own predicate (bench_pool.path_only, too_broad) rather than a new regex. Retrospective of SP-7y6dk257.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_prints_failing_output"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_check_programs.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 close"
+  ]
+}

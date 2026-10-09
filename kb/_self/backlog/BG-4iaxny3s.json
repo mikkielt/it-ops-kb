@@ -1,0 +1,24 @@
+{
+  "id": "BG-4iaxny3s",
+  "kind": "bug",
+  "title": "gate add crashes with a shlex traceback on a --do command with an unclosed quote instead of a usage error",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py gate add with a --do value whose command has an unclosed quote (such as an apostrophe in a word) exits 2 with a usage error naming the option, and leaves the item unchanged, instead of a ValueError traceback from shlex.split in bl_items.parse_cmd. Found in the SP-7y6dk257 run.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,shutil,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+'/kb/_self/backlog'); shutil.copy('kb/_self/backlog/ST-dj2zgvh3.json', t+'/kb/_self/backlog/'); p=subprocess.run([sys.executable,'_tools/backlog.py','--root',t,'gate','add','ST-dj2zgvh3','--kind','provisional','--question','q?','--option','A','--do','A=it'+chr(39)+'s','--option','B','--do','B=true','--recommendation','A'],capture_output=True,text=True); sys.exit(1 if 'Traceback' in p.stderr or p.returncode != 2 else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_check_programs.py"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 close"
+  ]
+}

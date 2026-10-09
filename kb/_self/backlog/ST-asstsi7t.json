@@ -18,5 +18,6 @@
   ],
   "links": [
     "parked: SP-hm4qgf3t review"
-  ]
+  ],
+  "notes": "Evidence SP-7y6dk257 (2026-10-09): the three headless workers (claude -p from .claude/worktrees/agent-<id> on work/<id>) and the headless reviewer left no work rows; land warned 'landed with no work rows' for ST-2p5ywkam and ST-rt27cx3w, and cost --rework SP-7y6dk257 showed only the orchestrator's open session. The workers' own JSON reported 0.59, 0.99 and 1.72 USD list, the reviewer 1.37."
 }

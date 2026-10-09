@@ -1,0 +1,30 @@
+{
+  "id": "ST-calar7s7",
+  "kind": "story",
+  "title": "pool check reports an eval row whose committed check does not match the line fact_for picks now",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.py pool check reports (as a warning or an error) each eval and near-miss row whose committed check matches no line fact_for picks for it now, so a change to fact_for that moves picks (SP-7y6dk257: 85 of 204 cases moved, 10 committed rows to a line that does not answer) shows before landing, not in the review. Retrospective of SP-7y6dk257.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pool_check_reports_stale_pick"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "BG-wcdbq563"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 close"
+  ]
+}
