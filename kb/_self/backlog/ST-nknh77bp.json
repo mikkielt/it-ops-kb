@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "Research only what the goal's packs lack (rag.py pack, 2026-10-09): (1) what keeps a test suite small: which tests to delete, size limits and a test budget (query-log gap F-ae2f85ba904e; weak: kb/public/agents/test-suite-size-and-agent-overengineering.md is partial); (2) how a regression that only a slow full suite finds is caught when that suite runs less often than per merge: test selection, post-merge and nightly runs (F-6ac5244b1e3d; weak, the kb lacks selection, post-merge, nightly). Extend kb/public/agents/test-suite-size-and-agent-overengineering.md (or the topic that fits) from official sources through /kb-research, mark each answered _gaps.md entry Resolved, and log a gap entry for what the sources do not state. GitHub rulesets (F-fe10582bc61f), claude -p protected paths and Bash trailing-space rules already pack from the kb and need no research.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,14 @@
     }
   ],
   "touches": [
-    "kb/public/**"
-  ]
+    "kb/public/agents/**",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv",
+    "kb/public/_answers.md",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md",
+    "kb/public/_retrieval/signals.csv",
+    "kb/public/_retrieval/lookup_eval.csv"
+  ],
+  "notes": "Premise (2026-10-09, plan): Q1 packs weak (the article is partial), Q2 packs weak and lacks selection, post-merge, nightly, sprint."
 }

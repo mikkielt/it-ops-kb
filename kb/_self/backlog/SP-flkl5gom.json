@@ -16,5 +16,6 @@
       ],
       "recommendation": "approve"
     }
-  ]
+  ],
+  "notes": "Plan (2026-10-09): F-fe10582bc61f (GitHub rulesets), named among the research gaps in the goal, already packs good from kb/public/gitlab/github-branch-rules-and-auto-merge.md and is carried by ST-34m3yiyn (an eval row) and ST-7j6dm5wq (its close), not by research. Held-out probe at plan: lookup_heldout.csv 20 of 20."
 }

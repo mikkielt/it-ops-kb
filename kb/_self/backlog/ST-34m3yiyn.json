@@ -1,0 +1,37 @@
+{
+  "id": "ST-34m3yiyn",
+  "kind": "story",
+  "title": "The real lookup misses about claude -p protected paths, Bash trailing-space rules and GitHub rulesets have eval rows naming the article that answers them",
+  "status": "draft",
+  "sprint": "SP-flkl5gom",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each of three real misses the kb can answer gets a row in the public lookup eval set naming the article that answers it, and packs good with that article on HEAD (a doc2query expansion of the answering fact where it packs weak): 'claude -p headless mode: can it edit files under .claude/ directory, protected paths' (F-32e0e03abedf; answered by the settings-and-scopes article's protected-path fact, packs weak), 'Claude Code Bash permission rule wildcard trailing space star matches command without arguments' (F-b28d0d79b19b; answered by the powershell-tool article's Bash trailing-space fact), 'GitHub rulesets branch protection public repository' (F-fe10582bc61f; answered by the github-branch-rules-and-auto-merge article); rag.py eval passes with the rows added; the findings themselves are closed by ST-7j6dm5wq, so this item writes no query-log file.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;qs=[('claude -p headless mode: can it edit files under .claude/ directory, protected paths','settings-and-scopes.md'),('Claude Code Bash permission rule wildcard trailing space star matches command without arguments','powershell-tool.md'),('GitHub rulesets branch protection public repository','github-branch-rules-and-auto-merge.md')];rows=open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8').read();bad=[q for q,a in qs if q not in rows or 'coverage: good' not in (o:=subprocess.run(['python3','_tools/rag.py','pack',q],capture_output=True,text=True).stdout) or a not in o.split('##')[1]];print('not answered:',bad or 'none');sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/claude/powershell-tool.md",
+    "kb/public/gitlab/github-branch-rules-and-auto-merge.md"
+  ],
+  "depends_on": [
+    "ST-nknh77bp"
+  ],
+  "notes": "Premise (2026-10-09, plan): the protected-paths question packs weak (settings-and-scopes.md:65 in the lead); the Bash and GitHub questions pack good from powershell-tool.md and github-branch-rules-and-auto-merge.md while their findings expect permissions-mcp.md and detecting-mr-merges-in-ci.md; no lookup_eval.csv row holds any of the three questions, so check 2 fails. Ordered after ST-nknh77bp: both add lookup_eval.csv rows. rag.py eval passes before the work and pins that every existing row stays green with the new rows and expansions."
+}

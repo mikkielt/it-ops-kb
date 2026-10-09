@@ -1,0 +1,30 @@
+{
+  "id": "ST-uy4d752n",
+  "kind": "story",
+  "title": "The rules question 'what must a gate about AGENTS.md or README.md state in each option' packs good from backlog.md",
+  "status": "draft",
+  "sprint": "SP-flkl5gom",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/rag.py pack --root _self 'what must a gate about AGENTS.md or README.md state in each option' packs coverage good with the backlog runbook's gate rule (each option of such a gate states the file's measured size after it) as its answering line, through a tested question in the _self lookup eval set (the query-log rules misses F-80eef23e135d and F-cd5fa1250653, the same question asked twice on 2026-10-06, both weak); rag.py eval passes; the findings are closed by ST-7j6dm5wq, so this item writes no query-log file.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['python3','_tools/rag.py','pack','--root','_self','what must a gate about AGENTS.md or README.md state in each option'],capture_output=True,text=True);ok=r.returncode==0 and 'coverage: good' in r.stdout and 'backlog.md' in r.stdout;print('rules question packs good:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "notes": "Premise (2026-10-09, plan): the question packs weak (no tested question matches; backlog.md:127 is in the lead, the rule that each option of a gate about AGENTS.md or README.md states the file's measured size); check 2 fails. kb/_self/_retrieval/lookup_eval.csv is code lane: the item lands through a code/<id> merge request. rag.py eval passes before the work and pins that every existing tested question stays green with the new one."
+}
