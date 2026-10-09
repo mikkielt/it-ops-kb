@@ -2,7 +2,7 @@
   "id": "ST-uy4d752n",
   "kind": "story",
   "title": "The rules question 'what must a gate about AGENTS.md or README.md state in each option' packs good from backlog.md",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-flkl5gom",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   "touches": [
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
-  "notes": "Premise (2026-10-09, plan): the question packs weak (no tested question matches; backlog.md:127 is in the lead, the rule that each option of a gate about AGENTS.md or README.md states the file's measured size); check 2 fails. kb/_self/_retrieval/lookup_eval.csv is code lane: the item lands through a code/<id> merge request. rag.py eval passes before the work and pins that every existing tested question stays green with the new one."
+  "notes": "Premise (2026-10-09, plan): the question packs weak (no tested question matches; backlog.md:127 is in the lead, the rule that each option of a gate about AGENTS.md or README.md states the file's measured size); check 2 fails. kb/_self/_retrieval/lookup_eval.csv is code lane: the item lands through a code/<id> merge request. rag.py eval passes before the work and pins that every existing tested question stays green with the new one.",
+  "claimed_by": "worker-uy4d752n"
 }
