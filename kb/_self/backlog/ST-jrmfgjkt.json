@@ -1,0 +1,25 @@
+{
+  "id": "ST-jrmfgjkt",
+  "kind": "story",
+  "title": "A check that bounds a tool's git calls counts every git process, not one helper's calls",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A planned check or test that bounds the git calls of a tool (ST-nkg2ucxq's check counted only kg_merge.git, while the cat-file --batch reader and a git config read go around it, so its limit of 6 would pass 8 real processes) counts subprocess.Popen of git instead; kb/_self/backlog.md's rule for checks that measure a count says to measure the real thing (found by the SP-yzgetyu2 review)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-yzgetyu2 review"
+  ]
+}

@@ -52,7 +52,7 @@
       "recommendation": "Yes: prune_indexes removes them by mtime, and opening a unit cache marks it used",
       "class": "design",
       "answer": "Yes: prune_indexes removes them by mtime, and opening a unit cache marks it used",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -65,7 +65,7 @@
       "recommendation": "VACUUM after a prune that deleted rows, outside the transaction",
       "class": "delete",
       "answer": "VACUUM after a prune that deleted rows, outside the transaction",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Premise (2026-10-09, benchmark review): the check collects no test (exit 2). ls -la _cache/*.sqlite on this clone: 7 kbindex-<fp>.sqlite of the public root set at 42 MB each (6 written within one minute by a test run), kbindex-r3a5da8a5-...sqlite of another root set unused since 2026-10-05 (37 MB), kbunits.sqlite 192 MB; kbfacts.prune_indexes keeps KEEP_INDEXES=4 beyond the current file of the current root set only (_same_root), and the unit cache's slack prune (UNIT_CACHE_SLACK=2) deletes rows without reclaiming the file. Ordered after ST-a5hhfp3z, which keys the unit cache per root set in the same functions. Free: no model runs. Premise run at plan (2026-10-09): the planted prune check fails (prune_indexes leaves the other root set's 40-day-old file). tests.py -k unit_cache collects ST-dvzdykit's test, which the work extends with the slack prune's space reclaim; it passes before the work and pins that a cached weighing equals a fresh one.",

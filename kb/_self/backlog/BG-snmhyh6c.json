@@ -1,0 +1,27 @@
+{
+  "id": "BG-snmhyh6c",
+  "kind": "bug",
+  "title": "A root set's unit cache is marked used only when an index is built, so prune_indexes can remove one in daily use",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "_unit_cache_open sets the kbunits*.sqlite mtime only when weighed() runs (an index build); serving from an existing index (_mark_used, kbfacts.py near 2118) never touches it, so a root set used daily on an unchanged kb leaves its unit cache unmarked and another root set's build prunes it after PRUNE_OTHER_ROOTS (14 days), forcing a cold re-weigh (about 11 s on the Windows host; no wrong result); _mark_used also marks the root set's unit cache, or prune_indexes judges a kbunits-rX file by its set's newest kbindex-rX file, and prune_indexes' docstring stays true (found by the SP-yzgetyu2 review)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import inspect,sys;sys.path.insert(0,'_tools');import kbfacts as k;s=inspect.getsource(k._mark_used);sys.exit(0 if '_unit_cache_name' in s else 1)"
+    ]
+  },
+  "repro_reason": "the behaviour needs 14 days of file age; the repro reads whether _mark_used marks the unit cache",
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yzgetyu2 review"
+  ]
+}
