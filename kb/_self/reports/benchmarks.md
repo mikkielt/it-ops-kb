@@ -30,6 +30,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | new-model | 2026-09-28 | 60 | 6,125,840 | 59,832 | $6.62 |
 | partial | 2026-09-28 | 13 | 2,522,765 | 21,392 | $1.79 |
 | pool | 2026-10-08 | 2643 | 256,726,989 | 692,631 | $113.96 |
+| pool | 2026-10-09 | 1924 | 214,973,505 | 3,437,590 | $149.74 |
 | querylog-pipeline | 2026-09-28 | 1 | 7,250 | 2,608 | $0.03 |
 | research | 2026-09-28 | 1 | 112,904 | 2,809 | $0.21 |
 | retrieval | 2026-09-28 | 1 | 16,352 | 3,331 | $0.07 |
@@ -37,7 +38,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | route-by-verdict | 2026-09-29 | 36 | 2,723,008 | 57,099 | $3.73 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 3012 | 292,786,524 | 1,084,177 | $151.24 |
+| all | | 4936 | 507,760,029 | 4,521,767 | $300.98 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -522,15 +523,17 @@ What it shows (Sonnet 5.5 against Sonnet 5, Claude Code 2.1.284):
 - One batch of 2 runs per kb cell and 1 per host and web cell: the history's run-to-run spread (Opus `s1_fact`: $0.296 against $0.206) applies to any one cell. The means over the ten kb questions are steadier.
 
 ### A question pool over the kb, router, hook and web arms
-**In short** (the record of 2026-10-08, Claude Code 2.1.293, 150 pool rows, $114.05 of paid runs; the figures and their intervals are in "What it shows" below):
-- **Router:** 8,828 effective input tokens per right answer, about seven times fewer than the kb arms (50,665-64,928), right in 86.9% of runs against 88.4% for Haiku 5.5: within the spread. It answers no `decision` or `conflict` row, which a tool answers.
-- **Hook:** no model tokens, and its pack holds the checked text in 396 of 450 runs; it cannot count or join.
-- **Fixed context:** a kb run starts at about 33k tokens (Haiku 5.5, Sonnet 5.5), 21.7%-37.5% of its input.
-- **Effort `low`:** 9% (Haiku 5.5) and 19% (Sonnet 5.5, paired rows) fewer tokens per right answer, at the same rate of right answers.
-- **Haiku 5.5 against Haiku 4.5:** right in 91.4% of runs against 57.1% on the rows both ran, at $0.008 a run against $0.035; Haiku 4.5 reads half as much per run, so it spends fewer tokens per right answer.
-- **A session of six questions:** the first question adds 34.9k-38.6k tokens, each later one 4.3k-7.9k on average, and a session takes 18k-31k fewer tokens per right answer than fresh sessions on the same rows, at a lower cost per question.
-- **Bare web sessions:** less input per run, far fewer right answers on this pool's checks, several of which name a kb article.
-- **Not supported:** rankings within kinds of 1-5 rows, Opus 5.5 (no arm), the `out` column, and Haiku 4.5 or Sonnet 5.5 at the default level on the 22 rows their cells lack.
+**In short** (the record of 2026-10-09, Claude Code 2.1.293, 150 pool rows, every arm label complete at one rep, $149.74 of paid runs, `pool verify` passed; the figures and their intervals are in "What it shows" below):
+- **Opus 5.5:** right in 90.0% of runs at the default level, within the spread of Sonnet 5.5 (89.3%) and Haiku 5.5 (84.7%), with the fewest tokens per right answer of the kb arms (56,816, 15k-17k fewer than Sonnet 5.5 and Haiku 5.5 at the default level), at $0.232 a run: 1.5 times Sonnet 5.5 and 26 times Haiku 5.5.
+- **Router:** 14,632 effective input tokens per right answer, five times fewer than Haiku 5.5 (73,323), right in 82.7% of runs against 84.7%: within the spread. Opus 5.5 is right more often than the router (+7.3 points).
+- **Hook:** no model tokens, and its pack holds the checked text in 128 of 150 runs; it cannot count or join.
+- **Fixed context:** a kb run starts at about 32k-33k tokens, 22.8%-38.0% of its input.
+- **Effort `low`:** 17% fewer tokens per right answer and 26% cheaper for Sonnet 5.5; for Haiku 5.5 and Opus 5.5 the tokens are within the spread and the run 13% and 6% cheaper; the rate of right answers within the spread for all three.
+- **Haiku 5.5 against Haiku 4.5:** right in 84.7% of runs against 48.0%, at $0.009 a run against $0.034; Haiku 4.5 reads less per run, so it spends fewer tokens per right answer.
+- **A session of six questions:** the first question adds 34.6k-38.2k tokens, each later one 3.7k-10.1k, and a session takes 23k-34k fewer tokens per right answer than fresh sessions on the same 150 rows, at 30%-48% less per question.
+- **Bare web sessions:** right in 53.2% and 56.5% of runs against 88.7% for the kb arm on the same 62 rows, with fewer tokens per right answer.
+- **Against the record of 2026-10-08:** on the 130 rows whose checks did not change, every arm's rate of right answers and input per run are within the spread. The tables' higher tokens per right answer (+13% to +20% for the kb arms, +66% for the router) mix more cache writes per run (Haiku 5.5 +2.4k, the router +2.1k), the new weights of effective input (a one-hour cache write at twice an input token, a Sonnet 5.5 cache read at its billed price), the changed checks, and cells over other rows (Haiku 4.5 and Sonnet 5.5 at the default level lacked the 20 `querylog` rows then). The router run costs more, billed: $0.025 against $0.019 on those rows.
+- **Not supported:** rankings within kinds of 1-5 rows (one run per row and arm label), and the four rows on the Autopilot motherboard question, whose check names a line that does not answer it (BG-zcw5yqch).
 
 **Setup:** `python3 _tools/benchmarks.py run pool [--arms A,B] [--kinds K,K] [--effort low,default] [--reps N] [--shape fresh|session] [--seed N]` runs every row of the question pool (`kb/public/_retrieval/bench_pool.csv`, built by `pool build`, and the query-log file `kb/_querylog/bench/pool.csv` when this host has it) as a fresh `claude -p` per question (shape `fresh`, the default), hooks off, from the throwaway clone. The held-out rows' question text is read from `lookup_heldout.csv` at run time and is in no results file. The arms:
 - **`haiku-5-5`, `haiku-4-5`, `sonnet-5-5`, `opus-5-5`:** the model pinned by id with the kb's tools and the docs servers, as the kb arm of "A new model against the one it replaces". `opus-5-5` runs only when `--arms` names it (a run with no `--arms` leaves it out, so the spend of a full record stays the arms above's); the Opus sanity subset of a record is `run pool --arms opus-5-5 --kinds csv_fact,multi,synthesis,near_miss --reps 1 --effort default`, 10 rows at one rep, or without `--effort` at both levels. Each runs at effort `low` (`--effort low`) and at `default` (no flag: the level the model starts with, `medium` on Haiku 5.5, Sonnet 5.5 and Opus 5.5 according to the Claude Code model configuration page, "Adjust effort level"). Haiku 4.5 has no effort level, so its arm runs once and the effort table marks it.
@@ -557,7 +560,10 @@ The generated tables of this section: the records, `tokens_per_right` and `fully
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 2026-10-08 | 2026-10-08 | 19e0568 | 2.1.293 | 299 | 6 | $113.96 |
+| 2026-10-09 | 2026-10-09 | 0969f3c | 2.1.293 | 299 | 2 | $149.74 |
 <!-- /bench -->
+
+**The record of 2026-10-09** (Claude Code 2.1.293, 299 kb topics, the same 150 rows as the record before, 19 of them with a new check and one `querylog` row replaced) is the procedure above in one command: `run pool --arms haiku-5-5,haiku-4-5,sonnet-5-5,opus-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh,session --reps 1 --jobs 8 --max-usd 170`, after a smoke of the same arms that passed `pool verify`. The dry run estimated $142.24 for its 2,074 runs; all ran, none failed, and the paid ones (all but the hook's 150) cost $149.74: Opus 5.5 $67.43, Sonnet 5.5 fresh $39.16 and in sessions $24.41, the web arms $5.90, Haiku 4.5 $5.05, Haiku 5.5 fresh and in sessions $3.97, the router $3.83. Every arm label ran all its rows once (the web arms their 62 rows of the kinds a web search can answer), and each session label 25 sessions of six over the whole pool. No free scenario ran with it. Its counts differ from the record before in four ways: `out` is the output of every model of the run (it was a partial count), a split route of the router is scored on both answers (it was the researcher's alone), a cache write is weighted at its TTL's rate and a Sonnet 5.5 cache read at its billed price, and a session question holds its own share of the session's output and models.
 
 **The record of 2026-10-08** (Claude Code 2.1.293, 299 kb topics; the pool is 150 rows: 130 of the public pool and the 20 `querylog` rows of the host's query-log file) was run as six same-day chunks, each a `run` of its own (the pool ones with `--jobs 8` and a `--max-usd` cap); the arm labels each chunk did not run keep their rows:
 - **Free scenarios** (`always-on`, `retrieval`, `verdict`, `tool-speed`): $0.09.
@@ -570,106 +576,125 @@ The generated tables of this section: the records, `tokens_per_right` and `fully
 The pool chunks of the record cost $113.96 and the free scenarios $0.09: $114.05 in all, and $118.32 with the replaced first session run. Each chunk's spend rows carry an arm naming the labels it ran (`paid: ...`), so a same-day chunk keeps the others' and the records and spend tables sum them; the first chunks' rows were rebuilt from the runs file, since the runner then wrote them under one arm and each chunk replaced the one before. "Runs per cell" is the most common cell size, not the reps. No Opus subset ran: the pool scenario has no Opus arm. The results file holds means only; the spreads below were computed from the record's run records (3,033 from the first runs, the session shape's 240 from its re-run) that the scenario appends to its runs file (kept outside the repository, not committed).
 
 Tokens per right answer, by kind and arm (the effective input of all of a cell's runs over the runs that were right):
-<!-- bench:matrix pool metric=tokens_per_right arms=haiku-5-5:low,haiku-5-5:default,haiku-4-5,sonnet-5-5:low,sonnet-5-5:default,router,hook,web-haiku-5-5,web-sonnet-5-5 -->
-| case | haiku-5-5:low | haiku-5-5:default | haiku-4-5 | sonnet-5-5:low | sonnet-5-5:default | router | hook | web-haiku-5-5 | web-sonnet-5-5 |
-|---|---|---|---|---|---|---|---|---|---|
-| fact | 49,542 | 56,427 | 37,953 | 47,289 | 55,290 | 5,624 | 0 | - | - |
-| multi | 49,177 | 49,402 | 58,400 | 48,522 | 65,089 | 5,593 | 0 | - | - |
-| synthesis | 67,810 | 76,630 | 28,050 | 58,715 | 75,981 | 5,522 | 0 | 69,384 | 60,884 |
-| csv_fact | 61,215 | 63,999 | 33,031 | 47,032 | 49,445 | 10,789 | 0 | 79,523 | 39,199 |
-| heldout | 69,065 | 61,894 | 253,610 | 46,293 | 66,093 | 3,545 | 0 | - | - |
-| offkb | 71,901 | 95,807 | 78,676 | 61,531 | 75,559 | 21,097 | 0 | 200,365 | 362,921 |
-| false_good | 108,155 | 111,005 | 55,266 | 81,218 | 126,998 | 14,031 | 0 | 84,731 | 83,438 |
-| near_miss | 52,342 | 44,354 | 28,382 | 45,014 | 32,477 | 7,783 | 0 | - | - |
-| gap | 73,010 | 54,150 | 139,321 | 53,359 | 79,102 | 23,695 | 0 | - | - |
-| count | 48,372 | 47,979 | 32,534 | 43,727 | 38,638 | 0 | - | - | - |
-| cites | 33,543 | 46,771 | 29,582 | 31,235 | 44,629 | 0 | 0 | - | - |
-| decision | 45,663 | 56,125 | 91,532 | 93,218 | 46,909 | - | - | - | - |
-| conflict | 127,767 | 208,010 | 178,456 | 84,968 | 150,610 | - | - | - | - |
-| snippet | 72,344 | 81,679 | 52,876 | 52,745 | 98,377 | 14,363 | 0 | 60,866 | 31,659 |
-| variant_keyword | 48,904 | 54,960 | 32,612 | 38,147 | 46,531 | 3,656 | 0 | - | - |
-| variant_sentence | 50,978 | 52,008 | 48,576 | 46,607 | 48,667 | 9,822 | 0 | - | - |
-| variant_typo | 52,555 | 63,318 | 35,538 | 44,246 | 52,237 | 15,897 | 0 | - | - |
-| querylog | 66,828 | 81,135 | - | 67,843 | - | 7,407 | 0 | - | - |
-| all | 58,872 | 64,928 | 50,787 | 50,665 | 60,167 | 8,828 | 0 | 97,389 | 72,802 |
+<!-- bench:matrix pool metric=tokens_per_right arms=haiku-5-5:low,haiku-5-5:default,haiku-4-5,sonnet-5-5:low,sonnet-5-5:default,opus-5-5:low,opus-5-5:default,router,hook,web-haiku-5-5,web-sonnet-5-5 -->
+| case | haiku-5-5:low | haiku-5-5:default | haiku-4-5 | sonnet-5-5:low | sonnet-5-5:default | router | hook | web-haiku-5-5 | web-sonnet-5-5 | opus-5-5:low | opus-5-5:default |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| fact | 49,542 -> 62,434 (+26%) | 56,427 -> 63,929 (+13%) | 37,953 -> 39,150 (+3%) | 47,289 -> 59,035 (+25%) | 55,290 -> 67,847 (+23%) | 5,624 -> 9,832 (+75%) | 0 -> 0 | 37,873 | 26,249 | 55,654 | 62,481 |
+| multi | 49,177 -> 48,294 (-2%) | 49,402 -> 56,291 (+14%) | 58,400 -> 85,180 (+46%) | 48,522 -> 49,002 (+1%) | 65,089 -> 50,828 (-22%) | 5,593 -> 7,909 (+41%) | 0 -> 0 | - | - | 46,541 | 49,581 |
+| synthesis | 67,810 -> 79,308 (+17%) | 76,630 -> 90,908 (+19%) | 28,050 | 58,715 -> 48,171 (-18%) | 75,981 -> 87,563 (+15%) | 5,522 -> 7,825 (+42%) | 0 -> 0 | 69,384 -> 18,273 (-74%) | 60,884 -> 46,033 (-24%) | 59,416 | 64,830 |
+| csv_fact | 61,215 -> 62,716 (+2%) | 63,999 -> 69,675 (+9%) | 33,031 -> 57,472 (+74%) | 47,032 -> 53,670 (+14%) | 49,445 -> 60,083 (+22%) | 10,789 -> 14,500 (+34%) | 0 -> 0 | 79,523 -> 52,266 (-34%) | 39,199 -> 34,697 (-11%) | 54,679 | 49,492 |
+| heldout | 69,065 -> 67,547 (-2%) | 61,894 -> 66,245 (+7%) | 253,610 -> 165,213 (-35%) | 46,293 -> 56,510 (+22%) | 66,093 -> 69,607 (+5%) | 3,545 -> 12,370 (+249%) | 0 -> 0 | - | - | 49,422 | 52,396 |
+| offkb | 71,901 -> 68,744 (-4%) | 95,807 -> 81,580 (-15%) | 78,676 -> 61,841 (-21%) | 61,531 -> 61,521 (-0%) | 75,559 -> 82,705 (+9%) | 21,097 -> 30,765 (+46%) | 0 -> 0 | 200,365 | 362,921 -> 215,306 (-41%) | 60,050 | 65,522 |
+| false_good | 108,155 -> 83,690 (-23%) | 111,005 -> 81,438 (-27%) | 55,266 -> 45,623 (-17%) | 81,218 -> 126,143 (+55%) | 126,998 -> 81,773 (-36%) | 14,031 -> 32,649 (+133%) | 0 -> 0 | 84,731 -> 121,526 (+43%) | 83,438 -> 50,529 (-39%) | 128,345 | 63,935 |
+| near_miss | 52,342 -> 47,894 (-8%) | 44,354 -> 53,780 (+21%) | 28,382 -> 26,163 (-8%) | 45,014 -> 47,634 (+6%) | 32,477 -> 49,270 (+52%) | 7,783 -> 12,748 (+64%) | 0 -> 0 | - | - | 43,611 | 45,305 |
+| gap | 73,010 -> 54,090 (-26%) | 54,150 -> 58,553 (+8%) | 139,321 -> 69,315 (-50%) | 53,359 -> 60,939 (+14%) | 79,102 -> 89,328 (+13%) | 23,695 -> 20,769 (-12%) | 0 -> 0 | - | - | 58,282 | 54,528 |
+| count | 48,372 -> 48,141 (-0%) | 47,979 -> 52,954 (+10%) | 32,534 -> 48,976 (+51%) | 43,727 -> 47,870 (+9%) | 38,638 -> 47,964 (+24%) | 0 -> 0 | - | - | - | 42,793 | 44,262 |
+| cites | 33,543 -> 48,731 (+45%) | 46,771 -> 45,554 (-3%) | 29,582 -> 28,203 (-5%) | 31,235 -> 48,345 (+55%) | 44,629 -> 47,728 (+7%) | 0 -> 0 | 0 -> 0 | - | - | 42,765 | 44,180 |
+| decision | 45,663 -> 111,655 (+145%) | 56,125 -> 59,980 (+7%) | 91,532 | 93,218 | 46,909 -> 67,416 (+44%) | - | - | - | - | 48,449 | 49,476 |
+| conflict | 127,767 | 208,010 | 178,456 -> 107,000 (-40%) | 84,968 | 150,610 -> 220,196 (+46%) | - | - | - | - | 109,455 | 68,213 |
+| snippet | 72,344 -> 105,863 (+46%) | 81,679 -> 103,669 (+27%) | 52,876 -> 80,955 (+53%) | 52,745 -> 60,389 (+14%) | 98,377 -> 86,630 (-12%) | 14,363 -> 24,922 (+74%) | 0 -> 0 | 60,866 -> 59,264 (-3%) | 31,659 -> 32,282 (+2%) | 57,634 | 64,762 |
+| variant_keyword | 48,904 -> 64,280 (+31%) | 54,960 -> 79,573 (+45%) | 32,612 -> 35,369 (+8%) | 38,147 -> 51,541 (+35%) | 46,531 -> 75,502 (+62%) | 3,656 -> 7,663 (+110%) | 0 -> 0 | - | - | 58,364 | 59,125 |
+| variant_sentence | 50,978 -> 59,686 (+17%) | 52,008 -> 63,903 (+23%) | 48,576 -> 51,018 (+5%) | 46,607 -> 55,497 (+19%) | 48,667 -> 74,676 (+53%) | 9,822 -> 16,560 (+69%) | 0 -> 0 | - | - | 59,010 | 62,342 |
+| variant_typo | 52,555 -> 73,083 (+39%) | 63,318 -> 79,134 (+25%) | 35,538 -> 45,906 (+29%) | 44,246 -> 61,845 (+40%) | 52,237 -> 69,514 (+33%) | 15,897 -> 25,523 (+61%) | 0 -> 0 | - | - | 60,288 | 60,469 |
+| querylog | 66,828 -> 90,908 (+36%) | 81,135 -> 91,445 (+13%) | 447,615 | 67,843 -> 57,836 (-15%) | 71,430 | 7,407 -> 9,924 (+34%) | 0 -> 0 | - | - | 56,142 | 47,592 |
+| all | 58,872 -> 69,260 (+18%) | 64,928 -> 73,323 (+13%) | 50,787 -> 58,742 (+16%) | 50,665 -> 59,573 (+18%) | 60,167 -> 72,010 (+20%) | 8,828 -> 14,632 (+66%) | 0 -> 0 | 97,389 -> 54,988 (-44%) | 72,802 -> 36,122 (-50%) | 55,882 | 56,816 |
 <!-- /bench -->
 
 Runs that were right, by kind and arm:
-<!-- bench:matrix pool metric=fully_right arms=haiku-5-5:low,haiku-5-5:default,haiku-4-5,sonnet-5-5:low,sonnet-5-5:default,router,hook,web-haiku-5-5,web-sonnet-5-5 -->
-| case | haiku-5-5:low | haiku-5-5:default | haiku-4-5 | sonnet-5-5:low | sonnet-5-5:default | router | hook | web-haiku-5-5 | web-sonnet-5-5 |
-|---|---|---|---|---|---|---|---|---|---|
-| fact | 94 of 99 | 96 of 99 | 73 of 99 | 64 of 66 | 63 of 66 | 93 of 99 | 99 of 99 | - | - |
-| multi | 6 of 6 | 6 of 6 | 3 of 6 | 4 of 4 | 3 of 4 | 6 of 6 | 6 of 6 | 0 of 4 | 0 of 4 |
-| synthesis | 3 of 3 | 3 of 3 | 2 of 3 | 2 of 2 | 2 of 2 | 3 of 3 | 3 of 3 | 2 of 2 | 2 of 2 |
-| csv_fact | 12 of 12 | 12 of 12 | 10 of 12 | 8 of 8 | 8 of 8 | 12 of 12 | 12 of 12 | 4 of 8 | 3 of 8 |
-| heldout | 49 of 60 | 54 of 60 | 6 of 60 | 36 of 40 | 37 of 40 | 60 of 60 | 60 of 60 | - | - |
-| offkb | 41 of 45 | 32 of 45 | 16 of 45 | 26 of 30 | 27 of 30 | 43 of 45 | 39 of 45 | 3 of 30 | 1 of 30 |
-| false_good | 4 of 6 | 4 of 6 | 4 of 6 | 3 of 4 | 3 of 4 | 5 of 6 | 3 of 6 | 2 of 4 | 2 of 4 |
-| near_miss | 8 of 9 | 9 of 9 | 8 of 9 | 6 of 6 | 6 of 6 | 8 of 9 | 9 of 9 | - | - |
-| gap | 10 of 15 | 12 of 15 | 3 of 15 | 8 of 10 | 8 of 10 | 4 of 15 | 6 of 15 | - | - |
-| count | 9 of 9 | 9 of 9 | 9 of 9 | 6 of 6 | 6 of 6 | 9 of 9 | 0 of 9 | - | - |
-| cites | 9 of 9 | 9 of 9 | 9 of 9 | 6 of 6 | 6 of 6 | 9 of 9 | 9 of 9 | - | - |
-| decision | 6 of 6 | 6 of 6 | 2 of 6 | 2 of 4 | 4 of 4 | 0 of 6 | 0 of 6 | - | - |
-| conflict | 3 of 6 | 3 of 6 | 3 of 6 | 3 of 4 | 2 of 4 | 0 of 6 | 0 of 6 | - | - |
-| snippet | 11 of 15 | 12 of 15 | 10 of 15 | 8 of 10 | 6 of 10 | 11 of 15 | 15 of 15 | 8 of 10 | 8 of 10 |
-| variant_keyword | 30 of 30 | 30 of 30 | 23 of 28 | 20 of 20 | 19 of 19 | 30 of 30 | 30 of 30 | - | - |
-| variant_sentence | 30 of 30 | 30 of 30 | 17 of 27 | 20 of 20 | 18 of 18 | 27 of 30 | 30 of 30 | - | - |
-| variant_typo | 29 of 30 | 30 of 30 | 20 of 27 | 20 of 20 | 18 of 18 | 28 of 30 | 27 of 30 | - | - |
-| querylog | 41 of 60 | 41 of 60 | - | 26 of 40 | - | 43 of 60 | 48 of 60 | - | - |
-| all | 395 of 450 | 398 of 450 | 218 of 382 | 268 of 300 | 236 of 255 | 391 of 450 | 396 of 450 | 19 of 58 | 16 of 58 |
+<!-- bench:matrix pool metric=fully_right arms=haiku-5-5:low,haiku-5-5:default,haiku-4-5,sonnet-5-5:low,sonnet-5-5:default,opus-5-5:low,opus-5-5:default,router,hook,web-haiku-5-5,web-sonnet-5-5 -->
+| case | haiku-5-5:low | haiku-5-5:default | haiku-4-5 | sonnet-5-5:low | sonnet-5-5:default | router | hook | web-haiku-5-5 | web-sonnet-5-5 | opus-5-5:low | opus-5-5:default |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| fact | 94 of 99 -> 30 of 33 | 96 of 99 -> 29 of 33 | 73 of 99 -> 24 of 33 | 64 of 66 -> 28 of 33 | 63 of 66 -> 28 of 33 | 93 of 99 -> 25 of 33 | 99 of 99 -> 29 of 33 | 25 of 33 | 26 of 33 | 28 of 33 | 27 of 33 |
+| multi | 6 of 6 -> 2 of 2 | 6 of 6 -> 2 of 2 | 3 of 6 -> 1 of 2 | 4 of 4 -> 2 of 2 | 3 of 4 -> 2 of 2 | 6 of 6 -> 2 of 2 | 6 of 6 -> 2 of 2 | 0 of 4 -> 0 of 2 | 0 of 4 -> 0 of 2 | 2 of 2 | 2 of 2 |
+| synthesis | 3 of 3 -> 1 of 1 | 3 of 3 -> 1 of 1 | 2 of 3 -> 0 of 1 | 2 of 2 -> 1 of 1 | 2 of 2 -> 1 of 1 | 3 of 3 -> 1 of 1 | 3 of 3 -> 1 of 1 | 2 of 2 -> 1 of 1 | 2 of 2 -> 1 of 1 | 1 of 1 | 1 of 1 |
+| csv_fact | 12 of 12 -> 4 of 4 | 12 of 12 -> 4 of 4 | 10 of 12 -> 2 of 4 | 8 of 8 -> 4 of 4 | 8 of 8 -> 4 of 4 | 12 of 12 -> 4 of 4 | 12 of 12 -> 4 of 4 | 4 of 8 -> 2 of 4 | 3 of 8 -> 2 of 4 | 4 of 4 | 4 of 4 |
+| heldout | 49 of 60 -> 17 of 20 | 54 of 60 -> 18 of 20 | 6 of 60 -> 3 of 20 | 36 of 40 -> 19 of 20 | 37 of 40 -> 20 of 20 | 60 of 60 -> 19 of 20 | 60 of 60 -> 20 of 20 | - | - | 20 of 20 | 20 of 20 |
+| offkb | 41 of 45 -> 14 of 15 | 32 of 45 -> 13 of 15 | 16 of 45 -> 7 of 15 | 26 of 30 -> 14 of 15 | 27 of 30 -> 14 of 15 | 43 of 45 -> 13 of 15 | 39 of 45 -> 13 of 15 | 3 of 30 -> 0 of 15 | 1 of 30 -> 1 of 15 | 14 of 15 | 14 of 15 |
+| false_good | 4 of 6 -> 2 of 2 | 4 of 6 -> 2 of 2 | 4 of 6 -> 2 of 2 | 3 of 4 -> 1 of 2 | 3 of 4 -> 2 of 2 | 5 of 6 -> 1 of 2 | 3 of 6 -> 1 of 2 | 2 of 4 -> 1 of 2 | 2 of 4 -> 1 of 2 | 1 of 2 | 2 of 2 |
+| near_miss | 8 of 9 -> 3 of 3 | 9 of 9 -> 3 of 3 | 8 of 9 -> 3 of 3 | 6 of 6 -> 3 of 3 | 6 of 6 -> 3 of 3 | 8 of 9 -> 3 of 3 | 9 of 9 -> 3 of 3 | - | - | 3 of 3 | 3 of 3 |
+| gap | 10 of 15 -> 5 of 5 | 12 of 15 -> 5 of 5 | 3 of 15 -> 2 of 5 | 8 of 10 -> 4 of 5 | 8 of 10 -> 4 of 5 | 4 of 15 -> 3 of 5 | 6 of 15 -> 2 of 5 | - | - | 4 of 5 | 5 of 5 |
+| count | 9 of 9 -> 3 of 3 | 9 of 9 -> 3 of 3 | 9 of 9 -> 2 of 3 | 6 of 6 -> 3 of 3 | 6 of 6 -> 3 of 3 | 9 of 9 -> 3 of 3 | 0 of 9 -> 0 of 3 | - | - | 3 of 3 | 3 of 3 |
+| cites | 9 of 9 -> 3 of 3 | 9 of 9 -> 3 of 3 | 9 of 9 -> 3 of 3 | 6 of 6 -> 3 of 3 | 6 of 6 -> 3 of 3 | 9 of 9 -> 3 of 3 | 9 of 9 -> 3 of 3 | - | - | 3 of 3 | 3 of 3 |
+| decision | 6 of 6 -> 1 of 2 | 6 of 6 -> 2 of 2 | 2 of 6 -> 0 of 2 | 2 of 4 -> 0 of 2 | 4 of 4 -> 2 of 2 | 0 of 6 -> 0 of 2 | 0 of 6 -> 0 of 2 | - | - | 2 of 2 | 2 of 2 |
+| conflict | 3 of 6 -> 0 of 2 | 3 of 6 -> 0 of 2 | 3 of 6 -> 1 of 2 | 3 of 4 -> 0 of 2 | 2 of 4 -> 1 of 2 | 0 of 6 -> 0 of 2 | 0 of 6 -> 0 of 2 | - | - | 1 of 2 | 2 of 2 |
+| snippet | 11 of 15 -> 3 of 5 | 12 of 15 -> 4 of 5 | 10 of 15 -> 3 of 5 | 8 of 10 -> 4 of 5 | 6 of 10 -> 4 of 5 | 11 of 15 -> 3 of 5 | 15 of 15 -> 5 of 5 | 8 of 10 -> 4 of 5 | 8 of 10 -> 4 of 5 | 4 of 5 | 4 of 5 |
+| variant_keyword | 30 of 30 -> 8 of 10 | 30 of 30 -> 8 of 10 | 23 of 28 -> 6 of 10 | 20 of 20 -> 8 of 10 | 19 of 19 -> 8 of 10 | 30 of 30 -> 9 of 10 | 30 of 30 -> 9 of 10 | - | - | 8 of 10 | 8 of 10 |
+| variant_sentence | 30 of 30 -> 9 of 10 | 30 of 30 -> 9 of 10 | 17 of 27 -> 6 of 10 | 20 of 20 -> 9 of 10 | 18 of 18 -> 8 of 10 | 27 of 30 -> 9 of 10 | 30 of 30 -> 9 of 10 | - | - | 8 of 10 | 8 of 10 |
+| variant_typo | 29 of 30 -> 8 of 10 | 30 of 30 -> 8 of 10 | 20 of 27 -> 6 of 10 | 20 of 20 -> 8 of 10 | 18 of 18 -> 9 of 10 | 28 of 30 -> 8 of 10 | 27 of 30 -> 8 of 10 | - | - | 8 of 10 | 8 of 10 |
+| querylog | 41 of 60 -> 13 of 20 | 41 of 60 -> 13 of 20 | 1 of 20 | 26 of 40 -> 17 of 20 | 18 of 20 | 43 of 60 -> 18 of 20 | 48 of 60 -> 19 of 20 | - | - | 18 of 20 | 19 of 20 |
+| all | 395 of 450 -> 126 of 150 | 398 of 450 -> 127 of 150 | 218 of 382 -> 72 of 150 | 268 of 300 -> 128 of 150 | 236 of 255 -> 134 of 150 | 391 of 450 -> 124 of 150 | 396 of 450 -> 128 of 150 | 19 of 58 -> 33 of 62 | 16 of 58 -> 35 of 62 | 132 of 150 | 135 of 150 |
 <!-- /bench -->
 
 All kinds, by arm (the fixed share is the part of a run's input that is there before the question):
 <!-- bench:table pool metrics=start_ctx,input,fixed_share,tokens_per_right,fully_right,checks,cost,wall_s cases=all -->
 | case | arm | start_ctx | input | fixed_share | tokens_per_right | fully_right | checks | cost | wall_s |
 |---|---|---|---|---|---|---|---|---|---|
-| all | haiku-5-5:low | 33,027 | 106,653 | 31.0% | 58,872 | 395 of 450 | 432/492 | $0.007 | 14 s |
-| all | haiku-5-5:default | 33,065 | 125,329 | 26.4% | 64,928 | 398 of 450 | 436/492 | $0.008 | 16 s |
-| all | haiku-4-5 | 27,518 | 81,491 | 33.8% | 50,787 | 218 of 382 | 247/424 | $0.035 | 17 s |
-| all | sonnet-5-5:low | 32,324 | 86,237 | 37.5% | 50,665 | 268 of 300 | 292/328 | $0.106 | 17 s |
-| all | sonnet-5-5:default | 32,693 | 150,940 | 21.7% | 60,167 | 236 of 255 | 262/283 | $0.145 | 30 s |
-| all | router | 9,393 | 17,290 | 54.3% | 8,828 | 391 of 450 | 419/492 | $0.020 | 14 s |
-| all | hook | 0 | 0 | - | 0 | 396 of 450 | 429/492 | $0.000 | 0 s |
-| all | web-haiku-5-5 | 15,926 | 87,137 | 18.3% | 97,389 | 19 of 58 | 29/68 | $0.031 | 27 s |
-| all | web-sonnet-5-5 | 15,148 | 64,017 | 23.7% | 72,802 | 16 of 58 | 25/68 | $0.073 | 22 s |
-| all | haiku-5-5:low/session | 49,172 | 149,647 | 32.9% | 37,451 | 49 of 60 | 65/80 | $0.004 | 13 s |
-| all | haiku-5-5:default/session | 54,722 | 205,356 | 26.6% | 45,435 | 54 of 60 | 71/80 | $0.006 | 15 s |
-| all | sonnet-5-5:low/session | 43,224 | 113,193 | 38.2% | 21,568 | 55 of 60 | 73/80 | $0.058 | 15 s |
-| all | sonnet-5-5:default/session | 51,811 | 203,432 | 25.5% | 33,482 | 53 of 60 | 71/80 | $0.095 | 22 s |
+| all | haiku-5-5:low | 33,027 -> 32,800 (-1%) | 106,653 -> 109,415 (+3%) | 31.0% -> 30.0% (-3%) | 58,872 -> 69,260 (+18%) | 395 of 450 -> 126 of 150 | 432/492 -> 137/164 | $0.007 -> $0.008 (+8%) | 14 s -> 13 s (-6%) |
+| all | haiku-5-5:default | 33,065 -> 32,872 (-1%) | 125,329 -> 125,445 (+0%) | 26.4% -> 26.2% (-1%) | 64,928 -> 73,323 (+13%) | 398 of 450 -> 127 of 150 | 436/492 -> 139/164 | $0.008 -> $0.009 (+8%) | 16 s -> 16 s (-0%) |
+| all | haiku-4-5 | 27,518 -> 27,518 (-0%) | 81,491 -> 72,397 (-11%) | 33.8% -> 38.0% (+13%) | 50,787 -> 58,742 (+16%) | 218 of 382 -> 72 of 150 | 247/424 -> 81/164 | $0.035 -> $0.034 (-4%) | 17 s -> 17 s (-3%) |
+| all | sonnet-5-5:low | 32,324 -> 31,964 (-1%) | 86,237 -> 84,198 (-2%) | 37.5% -> 38.0% (+1%) | 50,665 -> 59,573 (+18%) | 268 of 300 -> 128 of 150 | 292/328 -> 138/164 | $0.106 -> $0.111 (+4%) | 17 s -> 14 s (-19%) |
+| all | sonnet-5-5:default | 32,693 -> 31,981 (-2%) | 150,940 -> 140,442 (-7%) | 21.7% -> 22.8% (+5%) | 60,167 -> 72,010 (+20%) | 236 of 255 -> 134 of 150 | 262/283 -> 147/164 | $0.145 -> $0.150 (+3%) | 30 s -> 25 s (-16%) |
+| all | router | 9,393 -> 9,455 (+1%) | 17,290 -> 17,814 (+3%) | 54.3% -> 53.1% (-2%) | 8,828 -> 14,632 (+66%) | 391 of 450 -> 124 of 150 | 419/492 -> 133/164 | $0.020 -> $0.026 (+26%) | 14 s -> 13 s (-7%) |
+| all | hook | 0 -> 0 | 0 -> 0 | - | 0 -> 0 | 396 of 450 -> 128 of 150 | 429/492 -> 139/164 | $0.000 -> $0.000 | 0 s -> 0 s (+6%) |
+| all | web-haiku-5-5 | 15,926 -> 15,924 (-0%) | 87,137 -> 78,915 (-9%) | 18.3% -> 20.2% (+10%) | 97,389 -> 54,988 (-44%) | 19 of 58 -> 33 of 62 | 29/68 -> 37/67 | $0.031 -> $0.029 (-7%) | 27 s -> 25 s (-8%) |
+| all | web-sonnet-5-5 | 15,148 -> 15,146 (-0%) | 64,017 -> 62,737 (-2%) | 23.7% -> 24.1% (+2%) | 72,802 -> 36,122 (-50%) | 16 of 58 -> 35 of 62 | 25/68 -> 39/67 | $0.073 -> $0.066 (-9%) | 22 s -> 21 s (-2%) |
+| all | haiku-5-5:low/session | 49,172 -> 47,823 (-3%) | 149,647 -> 137,855 (-8%) | 32.9% -> 34.7% (+6%) | 37,451 -> 35,330 (-6%) | 49 of 60 -> 128 of 150 | 65/80 -> 138/164 | $0.004 -> $0.004 (+13%) | 13 s -> 12 s (-5%) |
+| all | haiku-5-5:default/session | 54,722 -> 49,740 (-9%) | 205,356 -> 164,599 (-20%) | 26.6% -> 30.2% (+13%) | 45,435 -> 41,231 (-9%) | 54 of 60 -> 127 of 150 | 71/80 -> 139/164 | $0.006 -> $0.006 (-0%) | 15 s -> 14 s (-10%) |
+| all | sonnet-5-5:low/session | 43,224 -> 42,317 (-2%) | 113,193 -> 107,972 (-5%) | 38.2% -> 39.2% (+3%) | 21,568 -> 27,582 (+28%) | 55 of 60 -> 132 of 150 | 73/80 -> 144/164 | $0.058 -> $0.058 (-0%) | 15 s -> 13 s (-12%) |
+| all | sonnet-5-5:default/session | 51,811 -> 52,446 (+1%) | 203,432 -> 211,545 (+4%) | 25.5% -> 24.8% (-3%) | 33,482 -> 49,012 (+46%) | 53 of 60 -> 128 of 150 | 71/80 -> 141/164 | $0.095 -> $0.105 (+10%) | 22 s -> 25 s (+13%) |
+| all | opus-5-5:low | 32,154 | 91,950 | 35.0% | 55,882 | 132 of 150 | 144/164 | $0.217 | 18 s |
+| all | opus-5-5:default | 32,256 | 110,976 | 29.1% | 56,816 | 135 of 150 | 149/164 | $0.232 | 22 s |
 <!-- /bench -->
 
 The effort levels, `low` against `default` (the change of `low` from `default` in brackets):
 <!-- bench:effort pool metrics=tokens_per_right,fixed_share,fully_right,cost cases=all -->
 | case | model | tokens_per_right low | tokens_per_right default | fixed_share low | fixed_share default | fully_right low | fully_right default | cost low | cost default |
 |---|---|---|---|---|---|---|---|---|---|
-| all | haiku-5-5 | 58,872 (-9%) | 64,928 | 31.0% (+17%) | 26.4% | 395 of 450 | 398 of 450 | $0.007 (-13%) | $0.008 |
-| all | haiku-4-5 (no effort setting) | - | 50,787 | - | 33.8% | - | 218 of 382 | - | $0.035 |
-| all | sonnet-5-5 | 50,665 (-16%) | 60,167 | 37.5% (+73%) | 21.7% | 268 of 300 | 236 of 255 | $0.106 (-27%) | $0.145 |
+| all | haiku-5-5 | 69,260 (-6%) | 73,323 | 30.0% (+14%) | 26.2% | 126 of 150 | 127 of 150 | $0.008 (-13%) | $0.009 |
+| all | haiku-4-5 (no effort setting) | - | 58,742 | - | 38.0% | - | 72 of 150 | - | $0.034 |
+| all | sonnet-5-5 | 59,573 (-17%) | 72,010 | 38.0% (+67%) | 22.8% | 128 of 150 | 134 of 150 | $0.111 (-26%) | $0.150 |
+| all | opus-5-5 | 55,882 (-2%) | 56,816 | 35.0% (+20%) | 29.1% | 132 of 150 | 135 of 150 | $0.217 (-6%) | $0.232 |
 <!-- /bench -->
 
 Haiku 5.5 against Haiku 4.5 at the default level:
 <!-- bench:table pool metrics=cost,wall_s,input,out,tool_calls,checks,fully_right,tokens_per_right cases=all arms=haiku-5-5:default,haiku-4-5 -->
 | case | arm | cost | wall_s | input | out | tool_calls | checks | fully_right | tokens_per_right |
 |---|---|---|---|---|---|---|---|---|---|
-| all | haiku-5-5:default | $0.008 | 16 s | 125,329 | 24 | 2.7 | 436/492 | 398 of 450 | 64,928 |
-| all | haiku-4-5 | $0.035 | 17 s | 81,491 | 7 | 1.7 | 247/424 | 218 of 382 | 50,787 |
+| all | haiku-5-5:default | $0.008 -> $0.009 (+8%) | 16 s -> 16 s (-0%) | 125,329 -> 125,445 (+0%) | 24 -> 2,027 (+8436%) | 2.7 -> 2.7 (-2%) | 436/492 -> 139/164 | 398 of 450 -> 127 of 150 | 64,928 -> 73,323 (+13%) |
+| all | haiku-4-5 | $0.035 -> $0.034 (-4%) | 17 s -> 17 s (-3%) | 81,491 -> 72,397 (-11%) | 7 -> 1,050 (+15257%) | 1.7 -> 1.5 (-14%) | 247/424 -> 81/164 | 218 of 382 -> 72 of 150 | 50,787 -> 58,742 (+16%) |
 <!-- /bench -->
 
 The session shape, by position of the question in its session:
 <!-- bench:session pool -->
 | position | haiku-5-5:low/session marginal_input | haiku-5-5:low/session cache_read_share | haiku-5-5:default/session marginal_input | haiku-5-5:default/session cache_read_share | sonnet-5-5:low/session marginal_input | sonnet-5-5:low/session cache_read_share | sonnet-5-5:default/session marginal_input | sonnet-5-5:default/session cache_read_share |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 36,514 | 75.2% | 38,605 | 80.6% | 34,912 | 67.1% | 37,459 | 80.9% |
-| 2 | 11,668 | 92.3% | 12,919 | 93.1% | 5,492 | 94.8% | 11,292 | 94.4% |
-| 3 | 4,525 | 97.2% | 6,992 | 96.1% | 3,980 | 97.1% | 6,165 | 97.1% |
-| 4 | 4,022 | 96.9% | 8,122 | 96.3% | 4,556 | 95.2% | 7,100 | 96.2% |
-| 5 | 5,070 | 97.4% | 7,235 | 97.0% | 4,293 | 96.5% | 6,513 | 97.1% |
-| 6 | 3,227 | 98.2% | 4,128 | 98.5% | 3,128 | 98.0% | 5,876 | 97.9% |
+| 1 | 36,514 -> 36,049 (-1%) | 75.2% -> 74.5% (-1%) | 38,605 -> 36,745 (-5%) | 80.6% -> 76.9% (-5%) | 34,912 -> 34,552 (-1%) | 67.1% -> 71.6% (+7%) | 37,459 -> 38,182 (+2%) | 80.9% -> 78.5% (-3%) |
+| 2 | 11,668 -> 7,258 (-38%) | 92.3% -> 94.6% (+2%) | 12,919 -> 8,179 (-37%) | 93.1% -> 94.6% (+2%) | 5,492 -> 4,774 (-13%) | 94.8% -> 94.8% (-0%) | 11,292 -> 9,467 (-16%) | 94.4% -> 94.5% (+0%) |
+| 3 | 4,525 -> 7,018 (+55%) | 97.2% -> 95.3% (-2%) | 6,992 -> 7,594 (+9%) | 96.1% -> 95.3% (-1%) | 3,980 -> 3,657 (-8%) | 97.1% -> 96.3% (-1%) | 6,165 -> 7,444 (+21%) | 97.1% -> 96.3% (-1%) |
+| 4 | 4,022 -> 5,157 (+28%) | 96.9% -> 96.6% (-0%) | 8,122 -> 5,439 (-33%) | 96.3% -> 96.8% (+1%) | 4,556 -> 3,868 (-15%) | 95.2% -> 96.8% (+2%) | 7,100 -> 6,713 (-5%) | 96.2% -> 97.2% (+1%) |
+| 5 | 5,070 -> 6,448 (+27%) | 97.4% -> 96.1% (-1%) | 7,235 -> 8,473 (+17%) | 97.0% -> 95.5% (-2%) | 4,293 -> 5,487 (+28%) | 96.5% -> 95.9% (-1%) | 6,513 -> 10,129 (+56%) | 97.1% -> 96.2% (-1%) |
+| 6 | 3,227 -> 4,259 (+32%) | 98.2% -> 97.1% (-1%) | 4,128 -> 7,123 (+73%) | 98.5% -> 96.8% (-2%) | 3,128 -> 3,938 (+26%) | 98.0% -> 97.0% (-1%) | 5,876 -> 7,860 (+34%) | 97.9% -> 97.2% (-1%) |
 <!-- /bench -->
 
-What it shows (the record of 2026-10-08, Claude Code 2.1.293; a run is right when all its checks pass):
+What it shows (the record of 2026-10-09, Claude Code 2.1.293; a run is right when all its checks pass):
 
-*How the differences are judged.* Between two arms, over the rows both ran, a difference is a conclusion only when its 95% interval, from 2,000 resamples of the pool's rows (a row's runs of both arms stay together), excludes 0: its spread is below it. Otherwise it is written "within the spread". Intervals are in brackets. Reps of a row are not independent runs of a kind, so a kind of 1-5 rows (`multi`, `synthesis`, `csv_fact`, `near_miss`, `count`, `cites`, `decision`, `conflict`, `false_good`, `snippet`, `gap`) has no conclusion of its own beyond what is written below. The checks also count: those of `multi` and some of `csv_fact` and `fact` name a kb article, and those of `offkb` look for "the kb does not cover it" wording, which a bare web session cannot give.
+*How the differences are judged.* Between two arms, over the rows both ran, a difference is a conclusion only when its 95% interval, from 2,000 resamples of the pool's rows (a row's runs of both arms stay together), excludes 0: its spread is below it. Otherwise it is written "within the spread". Intervals are in brackets. Reps of a row are not independent runs of a kind, so a kind of 1-5 rows (`multi`, `synthesis`, `csv_fact`, `near_miss`, `count`, `cites`, `decision`, `conflict`, `false_good`, `snippet`, `gap`) has no conclusion of its own beyond what is written below. The checks also count: those of `multi` and some of `csv_fact` and `fact` name a kb article, and those of `offkb` look for "the kb does not cover it" wording, which a bare web session cannot give. Every pair below is over the rows both arm labels ran, all 150 unless stated.
+
+- **Opus 5.5 is right as often as Sonnet 5.5 and Haiku 5.5, with fewer tokens per right answer, at the highest cost.** At the default level it is right in 90.0% of runs against 89.3% for Sonnet 5.5 (+0.7 points [-4.0, +5.3]) and 84.7% for Haiku 5.5 (+5.3 [-0.7, +10.7]): both within the spread. It spends 56,816 tokens of effective input per right answer against 72,010 (-15,195 [-20,096, -10,625]) and 73,323 (-16,508 [-23,255, -10,557]), reading less per run (110,976 against 140,442 and 125,445). A run costs $0.232 against $0.150 and $0.009. At `low` against Sonnet 5.5 at `low`: right 88.0% against 85.3% (+2.7 [-1.3, +6.7], within the spread), 55,882 against 59,573 tokens per right answer (-3,692 [-7,386, -250]), $0.218 against $0.111.
+- **The router takes the fewest tokens to a right answer, five times fewer; in dollars it is not the cheapest.** 14,632 tokens of effective input per right answer against 73,323 for Haiku 5.5 at the default level (-58,691 [-65,802, -52,889]) and 56,816 for Opus 5.5 (-42,183 [-45,660, -38,869]), right in 82.7% of runs against 84.7% for Haiku 5.5 (-2.0 points [-8.7, +4.7], within the spread) and 90.0% for Opus 5.5 (-7.3 [-13.3, -1.3]: Opus is right more often). A router run costs $0.026 against $0.009 for Haiku 5.5 with the kb (+$0.017 [+0.012, +0.021]). It passed none of the `decision` and `conflict` runs, which a tool answers.
+- **The hook costs no tokens and its pack carries the checked text in 85.3% of runs** (128 of 150), against 84.7% for Haiku 5.5 at the default level (+0.7 points [-6.7, +8.0]: within the spread). It passed none of the `count`, `decision` and `conflict` runs.
+- **The kb arms spend 55,882-73,323 tokens per right answer, and 22.8%-38.0% of a run's input is there before the question.** A run starts at 31,964-32,872 tokens on Haiku 5.5, Sonnet 5.5 and Opus 5.5, 27,518 on Haiku 4.5, 9,455 for the router and 15,146-15,924 for the web sessions. Sonnet 5.5 and Haiku 5.5 at the default level differ by 1,313 tokens per right answer (Sonnet fewer, [-8,214, +5,180]) and 4.7 points of right runs (Sonnet more, [-0.7, +10.7]): both within the spread, at $0.150 a run against $0.009. `out`, now the output of every model of the run, is 960-2,966 tokens a run on the kb arms, 1,170 for the router and 2,901-5,654 for the web sessions.
+- **Effort `low` is cheaper at a rate of right answers within the spread.** Sonnet 5.5: 59,573 against 72,010 tokens per right answer (-12,437 [-17,167, -7,808], -17%), $0.111 against $0.150 a run (-26%), right 85.3% against 89.3% (-4.0 points [-9.3, +0.7]). Haiku 5.5: 69,260 against 73,323 (-4,063 [-8,928, +804], within the spread), $0.008 against $0.009 (-13%), right 84.0% against 84.7% (-0.7 [-5.3, +3.3]). Opus 5.5: 55,882 against 56,816 (-934 [-4,237, +2,280], within the spread), $0.218 against $0.232 (-6% [-$0.022, -$0.007]), right 88.0% against 90.0% (-2.0 [-6.0, +2.0]). The start of the run does not change with the level, so the fixed share rises as the rest of the run shrinks.
+- **Haiku 5.5 against Haiku 4.5 at the default level:** Haiku 5.5 is right in 84.7% of runs against 48.0% (+36.7 points [+28.7, +45.3]); on the 20 `heldout` rows 18 against 3, on the 20 `querylog` rows 13 against 1. Haiku 4.5 reads less per run (72,397 against 125,445), so it spends fewer tokens per right answer, 58,742 against 73,323 (Haiku 5.5 +14,581 [+4,040, +23,134]); at `low` the difference is within the spread (+10,518 [-221, +19,285]). In dollars Haiku 5.5 is the cheaper, $0.009 a run against $0.034.
+- **A bare web session is right far less often on this pool's checks, with fewer tokens per right answer.** On its 62 rows, web-haiku-5-5 is right in 53.2% of runs against 88.7% for Haiku 5.5 with the kb (-35.5 points [-48.4, -22.6]) and web-sonnet-5-5 in 56.5% against 88.7% for Sonnet 5.5 (-32.3 [-45.2, -19.4]), at 54,988 and 36,122 tokens per right answer against 72,259 and 72,676 (-17,271 [-29,843, -1,342], -36,555 [-47,089, -24,824]). On the `fact` rows they are right in 25 and 26 of 33 runs, against 29 and 28 for the kb arms; on `offkb`, which asks for "the kb does not cover it" wording, in 0 and 1 of 15, and on `multi`, whose checks name a kb article, in none. A web-sonnet-5-5 run costs $0.066 against $0.153 for the kb arm on these rows; a web-haiku-5-5 run $0.029 against $0.010.
+- **In a session the fixed context is paid once.** The first question adds 34,552-38,182 tokens to the prompt (`marginal_input`), the later ones 3,657-10,129 on average per position; the cache read share is 71.6%-78.5% at the first position and 94.5%-97.2% after it. Over the whole pool (25 sessions per label), a session takes fewer tokens per right answer than fresh sessions on the same rows: 35,330 against 69,260 for `haiku-5-5:low` (-33,930 [-40,130, -28,251]), 41,231 against 73,323 for `haiku-5-5:default` (-32,092 [-38,992, -25,928]), 27,582 against 59,573 for `sonnet-5-5:low` (-31,991 [-36,235, -27,989]) and 49,012 against 72,010 for `sonnet-5-5:default` (-22,998 [-27,713, -18,266]), at rates of right answers within the spread (85.3% against 84.0%, 84.7% against 84.7%, 88.0% against 85.3%, 85.3% against 89.3%, the last at its edge: -4.0 [-8.7, +0.0]). A question costs $0.004 against $0.008, $0.006 against $0.009, $0.058 against $0.111 and $0.105 against $0.150. Mean `cost` does not rise with the position (`pool verify` (d)).
+- **Against the record of 2026-10-08, on the 130 rows whose checks did not change** (111 for Haiku 4.5 and Sonnet 5.5 at the default level, whose cells then lacked rows; the fresh labels only, since the session labels then covered 30 rows): the rate of right answers is within the spread for every arm (Haiku 5.5 87.7% against 88.7% at `low` and 89.2% against 89.0% at the default level, Haiku 4.5 56.8% against 56.8%, Sonnet 5.5 90.0% against 90.0% and 94.6% against 91.9%, the router 86.9% against 87.7%; the hook, which starts no model, 88.5% both times), and so is the input per run. The billed cost per run moves by less than half a cent, except the router's, $0.025 against $0.019 (+$0.006 [+0.003, +0.009]), whose runs write more cache (5,424 against 3,295 tokens a run over all rows). The three `querylog` rows no arm passed then (`BP-9b5aab96`, `BP-ab7a8cc2`, and `BP-36864ffb`, replaced by `BP-b58a1dea`) now check the article that answers them, and 11 or 12 of the 15 arm labels pass each. The web arms' all-kinds rate rose (19 and 16 of 58 runs right then, 33 and 35 of 62 now) because their kinds now include `fact` and fewer of their checks name a kb path; on the rows both records ran it is within the spread.
+
+*Rows no arm passed (2026-10-09).* Four rows, all of one source: `BP-ff6bf9a2` (`fact`, "What happens to the Autopilot device record when the motherboard is replaced?") and its three variants. Their check, new in this record, names `autopilot/lifecycle.md:13`, a line on the two Entra device objects of a hybrid join, which does not answer the question; BG-zcw5yqch is to correct it. Three more rows were passed by no kb arm: `BP-0e42ddeb` (`fact`) and `BP-1e5f5182` (`querylog`) by the hook alone, `BP-97f8027d` (`variant_keyword`) by the hook, the router and the Haiku 5.5 sessions.
+
+*What the numbers of 2026-10-09 do not support.* A ranking of the arms on any kind of 1-5 rows, each of which has one run per row and arm label; a ranking of Opus 5.5, Sonnet 5.5 and Haiku 5.5 by their rate of right answers, all within the spread at both levels; the four rows of the Autopilot motherboard source (BG-zcw5yqch); and a cause for the router's dearer runs, which the record shows but does not explain.
+
+What the record of 2026-10-08 showed (by its own counts, which the record of 2026-10-09 changed: its `out` is a partial count, a split route of the router is scored on the researcher's answer alone, every cache write is weighted at the five-minute rate, and its Haiku 4.5 and Sonnet 5.5 default cells lack 22 rows):
 
 - **The router takes the fewest tokens to a right answer, seven times fewer; in dollars it is not the cheapest.** Its reader runs on Haiku 4.5, so a router run costs $0.020 against $0.008 for Haiku 5.5 with the kb, and the hook costs nothing. 8,828 tokens of effective input per right answer against 64,928 for Haiku 5.5 at the default level (-56,100 [-60,988, -51,867]) and 60,167 for Sonnet 5.5 at the default level (-51,056 [-56,137, -46,533], on the 128 rows both ran), at 86.9% of runs right against 88.4% (-1.6 points [-6.4, +3.3]) and, on those 128 rows, 89.1% against 92.5% (-3.5 points [-8.8, +1.7]): both within the spread. It is cheaper on every kind of 10 or more rows (`fact`, `heldout`, `offkb`, `querylog`, the three variants). On `gap` (5 rows) it passed 4 of 15 runs against 12 of 15 for Haiku 5.5, within the spread. It passed none of the 6 `decision` and 6 `conflict` runs, which ask for a record or a join that a tool answers.
 - **The hook costs no tokens and its pack carries the checked text in 88.0% of runs** (396 of 450), against 88.4% for Haiku 5.5 at the default level (-0.4 points [-5.8, +5.3]: within the spread). The pack is not an answer: the hook passed none of the 9 `count`, 6 `decision` and 6 `conflict` runs, which need a count or a join, and 6 of 15 of `gap`.
@@ -679,9 +704,9 @@ What it shows (the record of 2026-10-08, Claude Code 2.1.293; a run is right whe
 - **A bare web session answers with less input and far fewer right answers on this pool's checks.** On the 29 rows both ran, per run web-haiku-5-5 reads 31,903 tokens against 66,486 for the kb arm (-34,583 [-41,922, -27,088]) and web-sonnet-5-5 20,083 against 64,727 (-44,643 [-51,500, -37,370]); right in 32.8% and 27.6% of runs against 79.3% and 84.5% (-46.6 points [-60.3, -32.2], -56.9 points [-74.1, -37.9]), partly because the web sessions cannot name a kb article or say "the kb does not cover it" (`multi` 0 of 8, `offkb` 4 of 60). Their tokens per right answer, 97,389 and 72,802, are within the spread of the kb arms' on the same rows (+13,559 [-13,599, +83,804], -3,814 [-30,280, +70,637]); the kinds whose checks name content (`synthesis` 1 row, `snippet` 5, `false_good` 2) are too few to compare. The router on the same rows: 16,436 tokens per right answer, right 92.0%.
 - **In a session the fixed context is paid once, and the questions after the first cost a fraction of it.** The first question of a session adds 34,912-38,605 tokens to the prompt (`marginal_input`), the later ones 3,128-12,919 on average per position; pooled over positions 2-6 that is 5,702 (`haiku-5-5:low`), 7,879 (`haiku-5-5:default`), 4,290 (`sonnet-5-5:low`) and 7,389 (`sonnet-5-5:default`), 6.4, 4.9, 8.1 and 5.1 times less. The lowest first-question value of the four labels (33,053) is above the highest value at any later position (31,473), so the difference is larger than the spread; the position means of 2-6 vary less than the sessions do, so no order among them is concluded. The cache read share is 67.1%-80.9% at the first position and 92.3%-98.5% after it. Per right answer a session takes less than fresh sessions on the same 30 rows: 37,451 against 60,874 tokens for `haiku-5-5:low` ([-31,757, -13,972]), 45,435 against 63,838 for `haiku-5-5:default` ([-27,323, -9,374]), 21,568 against 53,038 for `sonnet-5-5:low` ([-39,291, -24,310]) and 33,482 against 63,796 for `sonnet-5-5:default` ([-39,636, -22,261]), at rates of right answers within the spread (81.7% against 86.7%, 90.0% against 91.1%, 91.7% against 88.3%, 88.3% against 86.7%). A question in a session costs less too: $0.004 against $0.006 (Haiku 5.5 at `low`), $0.006 against $0.007, $0.058 against $0.108 (Sonnet 5.5 at `low`) and $0.095 against $0.142. The table's `start_ctx` and fixed share for the session labels are not the fresh arms': each question's `start_ctx` there is the whole prompt of its first request, history included.
 
-*Rows no arm passed.* Of the 150 rows, three were not passed by any run of any arm at any rep: `BP-36864ffb`, `BP-9b5aab96` and `BP-ab7a8cc2`, all `querylog` rows (14 runs each: `haiku-5-5` at both levels, the router and the hook at 3 reps, `sonnet-5-5:low` at 2). The runs answered from another article than the one the row's check names: `BP-36864ffb` from `_self/backlog.md` (8 runs) and `agents/agent-planning-and-done.md` (4), `BP-9b5aab96` from `agents/test-suite-size-and-agent-overengineering.md` (12 runs), `BP-ab7a8cc2` from `claude/powershell-tool.md` (11) and `en/permissions.md` (7). Whether a check names the wrong article or the runs missed the right one is for a review of the rows; none was edited. Two more rows, a `fact` and a `querylog` row, were passed only by the router, the hook or a web arm, by none of the kb arms.
+*Rows no arm passed (2026-10-08).* Of the 150 rows, three were not passed by any run of any arm at any rep: `BP-36864ffb`, `BP-9b5aab96` and `BP-ab7a8cc2`, all `querylog` rows (14 runs each: `haiku-5-5` at both levels, the router and the hook at 3 reps, `sonnet-5-5:low` at 2). The runs answered from another article than the one the row's check names: `BP-36864ffb` from `_self/backlog.md` (8 runs) and `agents/agent-planning-and-done.md` (4), `BP-9b5aab96` from `agents/test-suite-size-and-agent-overengineering.md` (12 runs), `BP-ab7a8cc2` from `claude/powershell-tool.md` (11) and `en/permissions.md` (7). Whether a check names the wrong article or the runs missed the right one was for a review of the rows: before the next record, two of them got a check of the article that answers them and the third was replaced, and 11 or 12 of the 15 arm labels passed each then. Two more rows, a `fact` and a `querylog` row, were passed only by the router, the hook or a web arm, by none of the kb arms.
 
-*What the numbers do not support.* A ranking of the arms on any kind of 1-5 rows; the effort and arm figures of the kinds with a single row; Sonnet 5.5 at the default level and Haiku 4.5 on the 22 rows they lack (the 20 `querylog` rows among them); the web arms' right answers against the kb's, whose checks name kb articles; anything about Opus 5.5 (no arm), and about the output tokens: the pool's `out` column counts 7 to 24 tokens a run, far below what the cost implies, and is not used here.
+*What the numbers of 2026-10-08 do not support.* A ranking of the arms on any kind of 1-5 rows; the effort and arm figures of the kinds with a single row; Sonnet 5.5 at the default level and Haiku 4.5 on the 22 rows they lack (the 20 `querylog` rows among them); the web arms' right answers against the kb's, whose checks name kb articles; anything about Opus 5.5 (no arm), and about the output tokens: the pool's `out` column counts 7 to 24 tokens a run, far below what the cost implies, and is not used here. The record of 2026-10-09 has an Opus arm and counts `out` in full.
 
 ## Reading files, hosts and start contexts
 
