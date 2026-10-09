@@ -1,7 +1,7 @@
 """The checks the kb's content lives by, over the live kb: check.py (sources, citations, tags), build_index.py --check
 (the generated index), the lookup eval (rag.py eval), and the pack format. Each gate also fails on a planted input. The pack index's unit cache is pinned on
 a planted fixture root, not on the live kb."""
-import csv, os, re, sqlite3, subprocess, sys
+import csv, os, re, sqlite3, subprocess, sys, time
 
 
 import pytest
@@ -142,6 +142,38 @@ def test_pack_prints_coverage_and_fact_lines_with_path_line_and_tag():
     assert code == 0, out[-1500:]
     assert re.search(r"^coverage: good\b", out, re.M), out[:1500]
     assert re.search(r"\S+\.md:\d+.*\[(DOC|CODE|DER|COMMUNITY|UNK)\b", out), out[:1500]
+
+
+def test_unit_cache_prune_drops_old_files_of_other_root_sets_and_shrinks_the_slack_pruned_file(tmp_path, monkeypatch):
+    idx = tmp_path / "idx"
+    idx.mkdir()
+    monkeypatch.setenv("KB_INDEX", str(idx))
+    monkeypatch.setattr(kbfacts, "_root_key", lambda: "")  # this repository's roots alone
+    old = time.time() - kbfacts.PRUNE_OTHER_ROOTS - 86400
+    current = f"kbindex-{'0' * 16}.sqlite"
+    planted = {current: old, "kbunits.sqlite": old,  # this root set's: never pruned as another's
+               f"kbindex-r00c0ffee-{'a' * 16}.sqlite": old, "kbunits-r00c0ffee.sqlite": old,  # a set unused for long
+               f"kbindex-r00facade-{'b' * 16}.sqlite": old,  # a second one
+               f"kbindex-r00c0ffee-{'c' * 16}.sqlite": time.time()}  # a set in use
+    for name, mtime in planted.items():
+        (idx / name).write_bytes(b"")
+        os.utime(idx / name, (mtime, mtime))
+    kbfacts.prune_indexes(str(idx), current)
+    assert sorted(os.listdir(idx)) == sorted([current, "kbunits.sqlite", f"kbindex-r00c0ffee-{'c' * 16}.sqlite"])
+
+    # more rows than the slack allows: the prune keeps the keys of this weighing and gives the pages back
+    rows = {bytes([i // 256, i % 256]) * 8: os.urandom(2000) for i in range(300)}
+    keys = sorted(rows)[:10]
+    con = kbfacts._unit_cache_open()
+    kbfacts._unit_cache_save(con, rows, list(rows))  # 300 rows <= UNIT_CACHE_SLACK * 300: nothing dropped
+    con.close()
+    path = idx / "kbunits.sqlite"
+    full = path.stat().st_size
+    con = kbfacts._unit_cache_open()
+    kbfacts._unit_cache_save(con, {}, keys)  # 300 rows > UNIT_CACHE_SLACK * 10
+    kept = sorted(k for (k,) in con.execute("SELECT k FROM u"))
+    con.close()
+    assert kept == keys and path.stat().st_size < full // 10, (len(kept), full, path.stat().st_size)
 
 
 # rag.py pack on the fixture root alone (serve_only), so a cold index weighs one article and not the live kb

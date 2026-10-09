@@ -1709,36 +1709,53 @@ def _unit_key(u, art, meta, sums, exps):
     return hashlib.sha1(raw.encode()).digest()
 
 
+def _unit_cache_name():
+    """The unit cache file name of this root set, named as the index files are (_root_key): `kbunits.sqlite` for this
+    repository's roots alone, else `kbunits-r<hash>.sqlite`."""
+    key = _root_key()
+    return UNIT_CACHE.replace(".sqlite", f"-{key[:-1]}.sqlite") if key else UNIT_CACHE
+
+
 def _unit_cache_open():
     """A connection to the unit cache of this root set in index_dir() with its table, or None (KB_INDEX=0, or it
-    cannot be opened). One file per root set, named as the index files are (_root_key): `kbunits.sqlite` for this
-    repository's roots alone, else `kbunits-r<hash>.sqlite`, so a build over fewer roots never prunes the rows of
-    the full corpus."""
+    cannot be opened). One file per root set (_unit_cache_name), so a build over fewer roots never prunes the rows
+    of the full corpus. Opening marks the file used (its mtime), which prune_indexes() reads for a root set no
+    process has used for PRUNE_OTHER_ROOTS."""
     d = index_dir()
     if not d:
         return None
-    key = _root_key()
-    name = UNIT_CACHE.replace(".sqlite", f"-{key[:-1]}.sqlite") if key else UNIT_CACHE
+    path = os.path.join(d, _unit_cache_name())
     try:
         os.makedirs(d, exist_ok=True)
-        con = sqlite3.connect(os.path.join(d, name), timeout=10)
+        con = sqlite3.connect(path, timeout=10)
         con.execute("CREATE TABLE IF NOT EXISTS u(k BLOB PRIMARY KEY, v BLOB) WITHOUT ROWID")
-        return con
     except (OSError, sqlite3.Error):
         return None
+    try:
+        os.utime(path)
+    except OSError:
+        pass
+    return con
 
 
 def _unit_cache_save(con, new, keys):
     """Add the `new` {key: value} rows; when the cache holds more than UNIT_CACHE_SLACK times `keys` (the keys of this
-    weighing), drop every row not in `keys`. Best effort: another process may hold the file."""
+    weighing), drop every row not in `keys` and give the freed pages back with VACUUM, since a DELETE leaves the file
+    its size (kb/public/python/stdlib-sqlite3-csv.md:104). The prune runs only after the rows have doubled, so the
+    VACUUM's rewrite of the file is rare. It runs after the `with con` block has committed: the module's default
+    connection keeps a transaction open after the DELETE until then and a VACUUM inside one is refused
+    (kb/public/python/stdlib-sqlite3-csv.md:118). Best effort: another process may hold the file."""
+    pruned = False
     try:
         with con:
             con.executemany("INSERT OR IGNORE INTO u VALUES (?, ?)", sorted(new.items()))
             if con.execute("SELECT count(*) FROM u").fetchone()[0] > UNIT_CACHE_SLACK * max(len(keys), 1):
                 con.execute("CREATE TEMP TABLE keep(k BLOB PRIMARY KEY) WITHOUT ROWID")
                 con.executemany("INSERT OR IGNORE INTO keep VALUES (?)", ((k,) for k in sorted(keys)))
-                con.execute("DELETE FROM u WHERE k NOT IN (SELECT k FROM keep)")
+                pruned = con.execute("DELETE FROM u WHERE k NOT IN (SELECT k FROM keep)").rowcount > 0
                 con.execute("DROP TABLE keep")
+        if pruned:
+            con.execute("VACUUM")
     except sqlite3.Error:
         pass
 
@@ -2090,6 +2107,7 @@ _STORE = [None, None, 0.0]  # the store this process holds, its index file, when
 _STORE_LOCK = threading.Lock()
 KEEP_INDEXES = 4  # index files of the root set store() keeps besides the current one, the most recently used
 PRUNE_GRACE = 900  # seconds: an index file used this recently is never pruned, however many newer ones there are
+PRUNE_OTHER_ROOTS = 14 * 86400  # seconds: the files of another root set unused this long are pruned (prune_indexes)
 USED_EVERY = 60  # seconds: a process serving from an index file marks it used (its mtime) at most this often
 
 
@@ -2106,18 +2124,29 @@ def prune_indexes(d, keep):
     """Remove the index files of the current root set in directory `d` other than `keep` that are beyond the
     KEEP_INDEXES most recently used and unused for PRUNE_GRACE: the worktrees of one clone share the directory, so
     one checkout's new index never deletes another's current one, and a process holding a file open marks it used
-    (store()). A file that cannot be removed (open in another process on Windows) is left."""
+    (store()). The index files and the unit cache of any other root set (a name _same_root does not match, a
+    `kbunits*.sqlite` that is not this root set's) go once unused for PRUNE_OTHER_ROOTS, however many there are:
+    no process of a root set in use leaves its files that long unmarked. A file that cannot be removed (open in
+    another process on Windows) is left."""
     now, found = time.time(), []
     try:
         names = os.listdir(d)
     except OSError:
         return
     for f in names:
-        if _same_root(f) and f.endswith(".sqlite") and f != keep:
-            try:
-                found.append((os.stat(os.path.join(d, f)).st_mtime, f))
-            except OSError:
-                pass
+        if not f.endswith(".sqlite") or f == keep:
+            continue
+        own = _same_root(f)
+        if not own and not (f.startswith(("kbindex-", "kbunits")) and f != _unit_cache_name()):
+            continue
+        try:
+            mtime = os.stat(os.path.join(d, f)).st_mtime
+        except OSError:
+            continue
+        if own:
+            found.append((mtime, f))
+        elif now - mtime > PRUNE_OTHER_ROOTS:
+            _remove(os.path.join(d, f))
     found.sort(reverse=True)
     for mtime, f in found[KEEP_INDEXES:]:
         if now - mtime > PRUNE_GRACE:
