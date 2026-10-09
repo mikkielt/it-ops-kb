@@ -32,6 +32,41 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The paid redo of BP-ff6bf9a2 returned an unusable regex and kept the wrong check. Where does the new check come from: the check the pool already holds for BP-a74126ee (same lifecycle facts; matches lines 14, 21 and 22, not 13), or a second paid call that may fail the same way?",
+      "options": [
+        "Replies from BP-a74126ee",
+        "Second paid redo"
+      ],
+      "recommendation": "Replies from BP-a74126ee",
+      "do": {
+        "Replies from BP-a74126ee": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "build",
+          "--redo",
+          "BP-ff6bf9a2",
+          "--replies",
+          "../../../_cache/scratch/BG-zcw5yqch/replies.csv"
+        ],
+        "Second paid redo": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "build",
+          "--redo",
+          "BP-ff6bf9a2"
+        ]
+      },
+      "class": "design",
+      "answer": "Replies from BP-a74126ee",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-2vhfsn4o run"
   ],
