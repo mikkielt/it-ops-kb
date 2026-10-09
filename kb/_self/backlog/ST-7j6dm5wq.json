@@ -2,7 +2,7 @@
   "id": "ST-7j6dm5wq",
   "kind": "story",
   "title": "The stranded and queued query-log findings are closed with their reasons, and the queue's tool defect becomes a backlog bug",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-flkl5gom",
   "priority": "P2",
   "rank": 0,
