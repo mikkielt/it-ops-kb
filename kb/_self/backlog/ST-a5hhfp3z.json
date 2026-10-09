@@ -2,7 +2,7 @@
   "id": "ST-a5hhfp3z",
   "kind": "story",
   "title": "The unit cache is kept per root set and the docs carry no measured sizes of it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzgetyu2",
   "priority": "P3",
@@ -30,7 +30,8 @@
     "kb/_self/reports/test-suite-speed.md",
     "kb/_self/code.md",
     "kb/_self/content-rules.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/test_live_kb.py"
   ],
   "depends_on": [
     "ST-s6tqojsw"
@@ -64,5 +65,6 @@
   "links": [
     "parked: SP-kjqdiudr review"
   ],
-  "notes": "Cross-sprint dependency: BG-l34xg6jn and ST-dvzdykit of sprint 1 (SP-caqrexqw) change the same _tools/kbfacts.py unit cache (_unit_cache_open and its key); this item is ordered after both have landed. Premise (2026-10-08, plan of SP-vayhvwfy): check 1 fails (kbfacts._unit_cache_open has no _root_key: unit cache keyed by root set: False, exit 1), reproduces; check 2 fails on kb/_self/reports/test-suite-speed.md:142 ('kbunits.sqlite, about 65 MB for this kb'), reproduces. Parked draft (parked: SP-kjqdiudr review) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out. Selected by the operator for SP-yzgetyu2 on 2026-10-09 (the parked draft names no fitness test; the selection overrides the park rule as it did for SP-vayhvwfy). Ordered after ST-s6tqojsw and before ST-6vtifk2b: all three edit _tools/kbfacts.py, this one and ST-6vtifk2b the same unit-cache functions. Premise rerun at plan (2026-10-09): check 1 still fails (_unit_cache_open has no _root_key), check 2 still fails (test-suite-speed.md:142 states about 65 MB)."
+  "notes": "Cross-sprint dependency: BG-l34xg6jn and ST-dvzdykit of sprint 1 (SP-caqrexqw) change the same _tools/kbfacts.py unit cache (_unit_cache_open and its key); this item is ordered after both have landed. Premise (2026-10-08, plan of SP-vayhvwfy): check 1 fails (kbfacts._unit_cache_open has no _root_key: unit cache keyed by root set: False, exit 1), reproduces; check 2 fails on kb/_self/reports/test-suite-speed.md:142 ('kbunits.sqlite, about 65 MB for this kb'), reproduces. Parked draft (parked: SP-kjqdiudr review) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out. Selected by the operator for SP-yzgetyu2 on 2026-10-09 (the parked draft names no fitness test; the selection overrides the park rule as it did for SP-vayhvwfy). Ordered after ST-s6tqojsw and before ST-6vtifk2b: all three edit _tools/kbfacts.py, this one and ST-6vtifk2b the same unit-cache functions. Premise rerun at plan (2026-10-09): check 1 still fails (_unit_cache_open has no _root_key), check 2 still fails (test-suite-speed.md:142 states about 65 MB).",
+  "claimed_by": "worker-a5hhfp3z"
 }
