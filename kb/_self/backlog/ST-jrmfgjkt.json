@@ -20,6 +20,8 @@
     ".claude/skills/kb-sprint/SKILL.md"
   ],
   "links": [
-    "parked: SP-yzgetyu2 review"
-  ]
+    "parked: SP-yzgetyu2 review",
+    "parked: SP-yzgetyu2 close"
+  ],
+  "notes": "SP-yzgetyu2 close (2026-10-09), accepted by the operator: ST-a5hhfp3z's check read _unit_cache_open's source for _root_key; ST-6vtifk2b, later in the same sprint, moved the call into _unit_cache_name(), so the review's done refused on a working cache and the item was reopened for a behaviour check. The rule this story adds also says planned checks test behaviour (call the function, count real processes), never a function's source text."
 }
