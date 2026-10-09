@@ -30,7 +30,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | new-model | 2026-09-28 | 60 | 6,125,840 | 59,832 | $6.62 |
 | partial | 2026-09-28 | 13 | 2,522,765 | 21,392 | $1.79 |
 | pool | 2026-10-08 | 2643 | 256,726,989 | 692,631 | $113.96 |
-| pool | 2026-10-09 | 2074 | 217,937,601 | 3,717,220 | $153.37 |
+| pool | 2026-10-09 | 1924 | 215,265,541 | 3,541,683 | $149.54 |
 | querylog-pipeline | 2026-09-28 | 1 | 7,250 | 2,608 | $0.03 |
 | research | 2026-09-28 | 1 | 112,904 | 2,809 | $0.21 |
 | retrieval | 2026-09-28 | 1 | 16,352 | 3,331 | $0.07 |
@@ -38,7 +38,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | route-by-verdict | 2026-09-29 | 36 | 2,723,008 | 57,099 | $3.73 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 5086 | 510,724,125 | 4,801,397 | $304.60 |
+| all | | 4936 | 508,052,065 | 4,625,860 | $300.77 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -560,7 +560,7 @@ The generated tables of this section: the records, `tokens_per_right` and `fully
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 2026-10-08 | 2026-10-08 | 19e0568 | 2.1.293 | 299 | 6 | $113.96 |
-| 2026-10-09 | 2026-10-09 | 0969f3c | 2.1.293 | 299 | 2 | $153.37 |
+| 2026-10-09 | 2026-10-09 | 0969f3c | 2.1.293 | 299 | 2 | $149.54 |
 <!-- /bench -->
 
 **The record of 2026-10-09** (Claude Code 2.1.293, 299 kb topics, the same 150 rows as the record before, 19 of them with a new check and one `querylog` row replaced) is the procedure above in one command: `run pool --arms haiku-5-5,haiku-4-5,sonnet-5-5,opus-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh,session --reps 1 --jobs 8 --max-usd 170`, after a smoke of the same arms that passed `pool verify`. The dry run estimated $142.24 for its 2,074 runs; all ran, none failed, and the paid ones (all but the hook's 150) cost $149.74: Opus 5.5 $67.43, Sonnet 5.5 fresh $39.16 and in sessions $24.41, the web arms $5.90, Haiku 4.5 $5.05, Haiku 5.5 fresh and in sessions $3.97, the router $3.83 (its rows were replaced, see "The router arm's two readers"). Every arm label ran all its rows once (the web arms their 62 rows of the kinds a web search can answer), and each session label 25 sessions of six over the whole pool. No free scenario ran with it. Its counts differ from the record before in four ways: `out` is the output of every model of the run (it was a partial count), a split route of the router is scored on both answers (it was the researcher's alone), a cache write is weighted at its TTL's rate and a Sonnet 5.5 cache read at its billed price, and a session question holds its own share of the session's output and models.
