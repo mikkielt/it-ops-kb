@@ -123,7 +123,15 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
         for d in range(6)), encoding="utf-8")
     assert rows == bp.build_public(tmp_path, 3, lambda items: pytest.fail("a new eval row moves a row or asks"), out)  # the committed sample stays
     assert bp.fact_for(tmp_path, {"question": "which status is complete for the topic", "expect_paths": "d0/a0.md"}) is None  # no front-matter line
-    evrows = [r for r in rows if r["kind"] in bp.EVAL_KINDS]
+    plant = tmp_path / "kb/public/zz/plant.md"
+    plant.parent.mkdir(parents=True)
+    plant.write_text("---\ntopic: zz/plant\n---\n\n# Widget\n\n- The widget device joins a hybrid domain by design.\n"
+                     "- Board replacement breaks the registered hash.\n" + "".join(
+                         f"- The widget catalog lists item {i}.\n" for i in range(4)), encoding="utf-8")
+    # "widget device" shares two exact words with line 7, "board replaced" only one; stems and rarity put the answer first
+    assert bp.fact_for(tmp_path, {"question": "What happens to the widget device record when the board is replaced?",
+                                  "expect_paths": "zz/plant.md"})[1] == 8
+    evrows =[r for r in rows if r["kind"] in bp.EVAL_KINDS]
     asked, kept = [], []
 
     def redo_ask(items):

@@ -12,7 +12,7 @@ effort levels, the per-run record and the per-cell figures, described in kb/_sel
 one run under one `--max-usd`; `--arm-reps`, `--arm-kinds` and `--sample` shape a whole record in one command. This module
 imports agent_bench, bench_core and bench_retrieval and no facade (kb/_self/code.md, Layout and Imports).
 """
-import csv, hashlib, json, os, random, re, shutil, subprocess, sys, tempfile, time, uuid
+import csv, hashlib, json, math, os, random, re, shutil, subprocess, sys, tempfile, time, uuid
 from collections import Counter
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from itertools import zip_longest
@@ -113,10 +113,17 @@ def front_matter_end(lines):
     return 0
 
 
+def stems(text):
+    """The word stems of `text`: each word cut to its first five letters, so replaced and replacement meet."""
+    return {w[:5] for w in words(text)}
+
+
 def fact_for(home, case):
-    """(path, line number, text) of the body line of the case's expected articles that shares most words with its
-    question (never a heading or a front-matter line), or None under two shared words."""
-    q = set(words(case["question"]))
+    """(path, line number, text) of the body line of the case's expected articles that best matches its question
+    (never a heading or a front-matter line), or None under two shared stems. A line scores the rarity weight of each
+    stem it shares with the question: log of the article's body lines over those holding the stem, so the article's
+    own subject, on nearly every line, counts for little. Ties go to the first line."""
+    q = stems(case["question"])
     best = None
     for rel in [p for p in case["expect_paths"].split(";") if p][:2]:
         path = Path(home) / "kb" / "public" / rel
@@ -124,12 +131,14 @@ def fact_for(home, case):
             continue
         lines = path.read_text(encoding="utf-8").splitlines()
         head = front_matter_end(lines)
-        for n, ln in enumerate(lines, 1):
-            if n <= head or ln.startswith(("#", "---")) or not ln.strip():
-                continue
-            score = len(q & set(words(ln)))
-            if score >= 2 and (best is None or score > best[0]):
-                best = (score, rel, n, ln.strip())
+        body = [(n, ln.strip(), stems(ln)) for n, ln in enumerate(lines, 1)
+                if n > head and ln.strip() and not ln.startswith(("#", "---"))]
+        held = Counter(s for _, _, st in body for s in st)
+        for n, ln, st in body:
+            shared = q & st
+            score = sum(math.log(1 + len(body) / held[s]) for s in shared)
+            if len(shared) >= 2 and (best is None or score > best[0]):
+                best = (score, rel, n, ln)
     return best[1:] if best else None
 
 
