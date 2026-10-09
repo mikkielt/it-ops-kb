@@ -2,7 +2,7 @@
   "id": "ST-phfhnxlg",
   "kind": "story",
   "title": "Review sprint: Every pool eval row checks the fact that answers it, and every model alias cites the kb",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7y6dk257",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-7y6dk257"
 }
