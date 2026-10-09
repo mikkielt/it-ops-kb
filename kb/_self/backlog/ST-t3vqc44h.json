@@ -2,7 +2,7 @@
   "id": "ST-t3vqc44h",
   "kind": "story",
   "title": "Review sprint: Tool speed and cache hygiene: eval three times faster, check-trailers in one git log, _cache pruned",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yzgetyu2",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
