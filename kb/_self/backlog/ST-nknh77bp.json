@@ -2,7 +2,7 @@
   "id": "ST-nknh77bp",
   "kind": "story",
   "title": "Research sprint goal: Real lookup misses answered: the stranded query-log findings leave no-fix and the research queue empties",
-  "status": "doing",
+  "status": "todo",
   "sprint": "SP-flkl5gom",
   "goal_research": true,
   "priority": "P1",
@@ -28,6 +28,5 @@
     "kb/public/_retrieval/signals.csv",
     "kb/public/_retrieval/lookup_eval.csv"
   ],
-  "notes": "Premise (2026-10-09, plan): Q1 packs weak (the article is partial), Q2 packs weak and lacks selection, post-merge, nightly, sprint.",
-  "claimed_by": "worker-nknh77bp"
+  "notes": "Premise (2026-10-09, plan): Q1 packs weak (the article is partial), Q2 packs weak and lacks selection, post-merge, nightly, sprint."
 }
