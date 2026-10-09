@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "Four pool rows on the Autopilot motherboard question check the hybrid-join line of autopilot/lifecycle.md, so no arm passes them",
   "status": "draft",
+  "sprint": "SP-7y6dk257",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -15,10 +16,24 @@
     ]
   },
   "repro_reason": "the defect is the committed check text of a pool row; the behaviour (no arm passing) needs a paid pool run",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','build','--redo','EV-autopilot-device-record-motherboard-replaced','--dry-run'],capture_output=True,text=True).stdout; sys.exit(0 if 'lifecycle.md:' in o and 'lifecycle.md:13' not in o else 1)"
+      ]
+    }
+  ],
   "touches": [
-    "kb/public/_retrieval/bench_pool.csv"
+    "kb/public/_retrieval/bench_pool.csv",
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-2vhfsn4o run"
-  ]
+  ],
+  "notes": "Cause: bench_pool.fact_for scores body lines by exact shared words, so line 13 (autopilot, device: 2) beats the motherboard lines 14, 21 and 22 (motherboard only; replaced/replacement differ); pool build --redo --dry-run still names autopilot/lifecycle.md:13, so a redo alone repeats the wrong check. Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups): its rows are unscored in the pool record of 2026-10-09."
 }

@@ -4,6 +4,7 @@
   "title": "bench_core.ALIAS's opus row cites a kb line that states which model the opus alias names",
   "status": "draft",
   "parent": "EP-4nl2jr4q",
+  "sprint": "SP-7y6dk257",
   "priority": "P3",
   "rank": 0,
   "goal": "The kb states which model Claude Code's opus alias resolves to and from which version (research through /kb-research if it lacks it), and bench_core.ALIAS's opus row cites that line as the haiku and sonnet rows do; found by the SP-2vhfsn4o review (rag.py pack coverage none)",
@@ -13,14 +14,25 @@
         "python3",
         "_tools/check.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys; t=open('_tools/bench_core.py').read(); m=re.search(r'opus from [^#]*?(kb/public/[\\w/.-]+\\.md):(\\d+)', t); ok=bool(m) and 'opus' in open(m.group(1)).read().splitlines()[int(m.group(2))-1].lower(); sys.exit(0 if ok else 1)"
+      ]
     }
   ],
   "touches": [
     "_tools/bench_core.py",
-    "kb/public/**",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-6sp27okw"
   ],
   "links": [
     "parked: SP-2vhfsn4o review"
-  ]
+  ],
+  "notes": "Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups). check.py passes before the work: it pins that the kb stays valid after the fact lands. The second check fails until the ALIAS comment cites, as 'opus from VERSION PATH:LINE', a kb line that names opus."
 }

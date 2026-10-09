@@ -4,6 +4,7 @@
   "title": "fact_for skips a CSV header or a wrapped continuation line, so the last five path-only eval rows get a fact check",
   "status": "draft",
   "parent": "EP-4nl2jr4q",
+  "sprint": "SP-7y6dk257",
   "priority": "P2",
   "rank": 0,
   "goal": "fact_for (bench_pool.py near 127) never picks a CSV header line or a wrapped continuation line as a row's fact; the five eval rows of kb/public/_retrieval/bench_pool.csv still path-only after ST-ly2p27q3 (BP-90f14342, BP-2413ce41, BP-f454bc83, BP-005970a5, BP-9e209bb8) and their variants get a fact check through pool build --redo under its breadth guard; found by the SP-2vhfsn4o review",
@@ -15,15 +16,27 @@
         "pool",
         "check"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,json,re,sys; ids={'BP-90f14342','BP-2413ce41','BP-f454bc83','BP-005970a5','BP-9e209bb8'}; rows=[r for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv')) if r['id'] in ids]; bad=[r['id'] for r in rows if all(re.fullmatch(r'[\\w/\\.-]+\\\\.(md|csv)', c) for c in json.loads(r['checks']))]; print(bad); sys.exit(1 if bad or len(rows)!=5 else 0)"
+      ]
     }
   ],
   "touches": [
     "_tools/bench_pool.py",
     "_tools/test_bench.py",
     "kb/public/_retrieval/bench_pool.csv",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-zcw5yqch"
   ],
   "links": [
     "parked: SP-2vhfsn4o review"
-  ]
+  ],
+  "notes": "Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups): its five rows and their variants still pass on any answer naming the article. pool check passes before the work: it pins that the rebuilt pool stays well formed; the second check fails until the five rows hold a fact check."
 }

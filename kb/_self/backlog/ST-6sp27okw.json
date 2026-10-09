@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "Research the one goal question the kb lacks (rag.py pack: a false good, the cited lines of claude/skills-and-subagents.md never name the model): which model Claude Code's opus alias resolves to and from which Claude Code version, as kb/public/claude/ci-and-headless.md:85-86 state for the haiku and sonnet aliases. Write the fact, tagged DOC with its source row, beside those lines through /kb-research, or a _gaps.md entry when no official page states it. The other goal questions (which pool rows check a wrong line or only a path) are answered by the repo's own files and need no outside facts.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,10 @@
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/public/claude/ci-and-headless.md",
+    "kb/public/claude/models.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_answers.md"
   ]
 }
