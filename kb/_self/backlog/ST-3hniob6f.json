@@ -2,7 +2,7 @@
   "id": "ST-3hniob6f",
   "kind": "story",
   "title": "Review sprint: Benchmark fidelity and cost: the router reads on Haiku 5.5, Opus runs on its subset, the reviewer at effort low",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x7ger6vu",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "9a96087fbf32b53608905dd39ce7a1de90d0ba5a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "f4c2d2736308bc6a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "3d429e7d2ba3b1f1"
+      }
+    ]
+  }
 }
