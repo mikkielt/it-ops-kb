@@ -2,11 +2,12 @@
   "id": "ST-4w4yo6ca",
   "kind": "story",
   "title": "A same-day partial pool rerun replaces the earlier run's paid spend row, so pool verify (c) passes a correct record",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
+  "sprint": "SP-x7ger6vu",
   "priority": "P2",
   "rank": 0,
-  "goal": "A same-day run of arm labels that overlap an earlier same-day run's paid: spend row replaces or splits that row (bench_pool.py near 1525), so pool verify (c) reads spend rows that equal the runs' costs; found by the SP-2vhfsn4o review in a simulated rerun (spend row 2.5566 against runs 2.5834)",
+  "goal": "A same-day run of arm labels that overlap an earlier same-day run's paid: spend row replaces or splits that row (bench_pool.py near 1525), so pool verify (c) reads spend rows that equal the runs' costs; a record written before the fix (the 2026-10-09 record on work/ST-qiep6y7i, whose full spend row of 149.7418 USD still counts the 3.83 USD of the router runs the router-only rerun replaced) is repaired from its own rows by a benchmarks.py command, with no paid run, after which pool verify passes on it; tests.py -k bench_pool holds a test of the overlap that fails on today's code; found by the SP-2vhfsn4o review in a simulated rerun (spend row 2.5566 against runs 2.5834)",
   "checks": [
     {
       "run": [
@@ -20,9 +21,12 @@
   "touches": [
     "_tools/bench_pool.py",
     "_tools/test_bench.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/benchmarks.py",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-2vhfsn4o review"
-  ]
+  ],
+  "notes": "Added to SP-x7ger6vu by the operator on 2026-10-09: the router re-record of ST-qiep6y7i (run pool --arms router --reps 1, 3.62 USD) left pool verify failing (c), spend row 149.7418 against runs 149.5388; the operator chose the fix with an in-place repair of that record, no second paid run. The repair runs on work/ST-qiep6y7i after this item lands, so ST-qiep6y7i depends on it. tests.py -k bench_pool passes before the work: the overlap test the goal names is what makes it fail first."
 }
