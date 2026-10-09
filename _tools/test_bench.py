@@ -131,6 +131,22 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
     # "widget device" shares two exact words with line 7, "board replaced" only one; stems and rarity put the answer first
     assert bp.fact_for(tmp_path, {"question": "What happens to the widget device record when the board is replaced?",
                                   "expect_paths": "zz/plant.md"})[1] == 8
+    side = tmp_path / "side" / "kb/public/zz"  # a home of its own: more files in zz would move the count rows
+    side.mkdir(parents=True)
+    (side / "wrap.md").write_text(
+        "---\ntopic: zz/wrap\n---\n\n## Summary\nThe gadget exports its license state and reports the release channel on\n"
+        "demand, so the gadget license and release channel show in one view.\n\n"
+        "- The gadget license and release channel are listed in `zz/plant.md`.\n"
+        "- A gadget license is a signed file.\n", encoding="utf-8")
+    wrapped = {"question": "What is the gadget license and release channel?", "expect_paths": "zz/wrap.md"}
+    assert bp.fact_for(tmp_path / "side", wrapped)[1] == 6  # the paragraph's first line; its wrapped line 7 and the pointer line 9 are no facts
+    (side / "plant.csv").write_text(
+        'project,licence,latest_release\nalpha,MIT licence,v1\nbetamin,GPL licence,v2\nbetamax,Apache licence,v3\n'
+        '"gamma","BSD licence\nwrapped note",v4\n', encoding="utf-8")
+    pick = lambda q: bp.fact_for(tmp_path / "side", {"question": q, "expect_paths": "zz/plant.csv"})
+    assert pick("project licence latest_release") is None  # the header line shares every stem and is no fact
+    assert pick("betamax licence")[1:] == (4, "betamax,Apache licence,v3")  # a data row; the whole word breaks the tie of stems
+    assert pick("wrapped note licence")[1] == 5  # a row over two lines is one entry at its first line
     evrows =[r for r in rows if r["kind"] in bp.EVAL_KINDS]
     asked, kept = [], []
 

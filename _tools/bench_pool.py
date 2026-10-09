@@ -118,25 +118,60 @@ def stems(text):
     return {w[:5] for w in words(text)}
 
 
+BLOCK_START = re.compile(r"\s*(?:[-*+]\s|\d+[.)]\s|\||>|```|<)")  # a line that opens a block, not the middle of one
+POINTER = re.compile(r"`[\w./-]+\.(?:md|csv)`")  # a path of an article or data file
+
+
+def article_facts(lines):
+    """[(line number, text)] of the lines of an article that can state a fact: no front matter, heading or blank line, no
+    line that wraps the one before it (a paragraph or list item continues over lines) and no pointer line, which names
+    another article or data file in backticks, so says where the fact is and does not state it."""
+    head = front_matter_end(lines)
+    out = []
+    for n, ln in enumerate(lines, 1):
+        text = ln.strip()
+        if n <= head or not text or text.startswith(("#", "---")) or POINTER.search(text):
+            continue
+        before = lines[n - 2].strip() if n > 1 else ""
+        if before and n - 1 > head and not before.startswith(("#", "---")) and not BLOCK_START.match(ln):
+            continue
+        out.append((n, text))
+    return out
+
+
+def csv_facts(lines):
+    """[(line number, text)] of the data rows of a csv file: its header line is no fact, and a row that wraps over lines
+    (a quoted field with a line break) is one entry at its first line."""
+    out, last = [], 0
+    reader = csv.reader(lines)
+    for rec in reader:
+        first, last = last + 1, reader.line_num
+        if first > 1 and any(c.strip() for c in rec):
+            out.append((first, " ".join(ln.strip() for ln in lines[first - 1:last])))
+    return out
+
+
 def fact_for(home, case):
-    """(path, line number, text) of the body line of the case's expected articles that best matches its question
-    (never a heading or a front-matter line), or None under two shared stems. A line scores the rarity weight of each
-    stem it shares with the question: log of the article's body lines over those holding the stem, so the article's
-    own subject, on nearly every line, counts for little. Ties go to the first line."""
+    """(path, line number, text) of the line of the case's expected files that best matches its question, or None under
+    two shared stems. The lines are an article's body lines (`article_facts`) or a csv file's data rows (`csv_facts`),
+    never a heading, a front-matter line, a csv header, a wrapped continuation or a pointer to another file. A line
+    scores the rarity weight of each stem it shares with the question: log of the file's lines over those holding the
+    stem, so the file's own subject, on nearly every line, counts for little. Ties go to the line sharing more whole
+    words with the question (a stem cut at five letters joins `isManaged` and `isManagementRestricted`), then to the
+    first line."""
     q = stems(case["question"])
+    qwords = set(words(case["question"]))
     best = None
     for rel in [p for p in case["expect_paths"].split(";") if p][:2]:
         path = Path(home) / "kb" / "public" / rel
         if not path.is_file():
             continue
         lines = path.read_text(encoding="utf-8").splitlines()
-        head = front_matter_end(lines)
-        body = [(n, ln.strip(), stems(ln)) for n, ln in enumerate(lines, 1)
-                if n > head and ln.strip() and not ln.startswith(("#", "---"))]
+        body = [(n, ln, stems(ln)) for n, ln in (csv_facts(lines) if rel.endswith(".csv") else article_facts(lines))]
         held = Counter(s for _, _, st in body for s in st)
         for n, ln, st in body:
             shared = q & st
-            score = sum(math.log(1 + len(body) / held[s]) for s in shared)
+            score = (sum(math.log(1 + len(body) / held[s]) for s in shared), len(qwords & set(words(ln))))
             if len(shared) >= 2 and (best is None or score > best[0]):
                 best = (score, rel, n, ln)
     return best[1:] if best else None
