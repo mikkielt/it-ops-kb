@@ -21,6 +21,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | files-subagents | 2026-09-28 | 11 | 362,274 | 8,113 | $1.35 |
 | headless | 2026-09-28 | 67 | 5,782,044 | 85,290 | $8.10 |
 | host-lookups | 2026-09-28 | 16 | 1,304,536 | 14,136 | $1.50 |
+| host-lookups | 2026-10-09 | 16 | 847,989 | 16,522 | $0.86 |
 | host-roots | 2026-09-28 | 4 | 340,570 | 3,921 | $0.11 |
 | howto | 2026-09-28 | 6 | 690,606 | 6,422 | $0.50 |
 | ingest | 2026-09-28 | 1 | 6,947,437 | 26,909 | $2.06 |
@@ -38,7 +39,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | route-by-verdict | 2026-09-29 | 36 | 2,723,008 | 57,099 | $3.73 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 4936 | 508,052,065 | 4,625,860 | $300.77 |
+| all | | 4952 | 508,900,054 | 4,642,382 | $301.63 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -787,41 +788,48 @@ What it shows:
 
 **Setup:** `python3 _tools/benchmarks.py run host-lookups`: the six tasks in fresh Sonnet sessions (`--setting-sources project,local`, claude.ai connectors off) in a throwaway TypeScript MCP-server project with five planted problems (an NTLM fallback, a malformed SPN, a simple bind over `ldap://`, `console.log` on a stdio MCP server, broad Graph scopes) and the plugin loaded with `--plugin-dir`, against the same tasks in the clone; `/it-ops-kb:kb-review-workspace` in the host (its checks: the five problems named); the first request of a general-purpose Sonnet agent in the host.
 
+**The reviewer at both levels (2026-10-09):** the scenario has no effort setting: the host is a clone of `HEAD`, so the `kb-reviewer` agent runs at the `effort` its file holds there. The record of 2026-10-09 is therefore two runs of the whole scenario on the same day (Claude Code 2.1.293, 299 kb topics, one run per cell each, 16 paid runs each):
+- **`effort: medium`**, started from commit 1484912 (the file's level then) with `--out` to a scratch file, so its rows are not in the results file: $0.83 for the scenario, 234 s. The medium figures below are cited from that scratch file, which is not in the repository.
+- **`effort: low`**, started from commit 36a4550 (the file set to `low`) into the results file, which holds this record: $0.86, 222 s.
+
+A same-day run replaces the rows of its scenario and day, which is why the medium run went to the scratch file. One run each: a difference between the two levels is one pair of runs, not a measured spread.
+
 <!-- bench:records host-lookups -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 0659f83 | 2026-09-25 | 0659f83 | 2.1.282 | 188 | - | - |
 | 945fb09 | 2026-09-27 | 945fb09 | 2.1.282 | 188 | - | - |
 | 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 1 | $1.50 |
+| 2026-10-09 | 2026-10-09 | 36a4550 | 2.1.293 | 299 | 1 | $0.86 |
 <!-- /bench -->
 
 <!-- bench:table host-lookups metrics=turns,input,out,wall_s,tool_calls,checks,start_ctx -->
 | case | arm | turns | input | out | wall_s | tool_calls | checks | start_ctx |
 |---|---|---|---|---|---|---|---|---|
-| fixed context | host | 1 -> 1 (+0%) | 20.1k -> 30,278 (+51%) | 4 -> 4 (+0%) | 1 s -> 3 s (+210%) | 0 | 0/0 | - |
-| fixed context | clone | 1 -> 1 (+0%) | 22.3k -> 34,369 (+54%) | 4 -> 4 (+0%) | 1 s -> 4 s (+310%) | 0 | 0/0 | - |
-| T1 | host | 2 -> 2 (+0%) | 42.1k -> 61,792 (+47%) | 561 -> 681 (+21%) | 6 s -> 10 s (+67%) | 1 | 0/0 | - |
-| T1 | clone | 2 -> 2 (+0%) | 46.5k -> 70,928 (+53%) | 478 -> 504 (+5%) | 5 s -> 8 s (+50%) | 1 | 0/0 | - |
-| T2 | host | 3 -> 3 (+0%) | 62.9k -> 92,230 (+47%) | 589 -> 512 (-13%) | 6 s -> 8 s (+28%) | 2 | 0/0 | - |
-| T2 | clone | 3 -> 3 (+0%) | 68.0k -> 104,451 (+54%) | 558 -> 504 (-10%) | 6 s -> 9 s (+47%) | 2 | 0/0 | - |
-| T3 | host | 2 -> 2 (+0%) | 43.9k -> 63,263 (+44%) | 1,309 -> 874 (-33%) | 13 s -> 13 s (+0%) | 1 | 0/0 | - |
-| T3 | clone | 2 -> 3 (+50%) | 51.1k -> 109,848 (+115%) | 1,655 -> 1,112 (-33%) | 16 s -> 16 s (+1%) | 2 | 0/0 | - |
-| T4 | host | 2 -> 5 (+150%) | 48.9k -> 145,003 (+197%) | 1,597 -> 2,154 (+35%) | 15 s -> 22 s (+44%) | 4 | 0/0 | - |
-| T4 | clone | 2 -> 3 (+50%) | 52.9k -> 115,951 (+119%) | 1,777 -> 2,394 (+35%) | 15 s -> 22 s (+49%) | 2 | 0/0 | - |
-| T5 | host | 2 -> 2 (+0%) | 40.5k -> 61,226 (+51%) | 271 -> 277 (+2%) | 4 s -> 8 s (+112%) | 1 | 0/0 | - |
-| T5 | clone | 2 -> 2 (+0%) | 44.9k -> 69,366 (+54%) | 334 -> 236 (-29%) | 4 s -> 7 s (+77%) | 1 | 0/0 | - |
-| T6 | host | 3 -> 4 (+33%) | 67.2k -> 141,435 (+110%) | 3,071 -> 1,879 (-39%) | 21 s -> 22 s (+3%) | 3 | 0/0 | - |
-| T6 | clone | 2 -> 4 (+100%) | 49.0k -> 179,963 (+267%) | 2,666 -> 2,336 (-12%) | 21 s -> 30 s (+44%) | 3 | 0/0 | - |
-| T1-T6 | host | 14 -> 18 (+29%) | 306k -> 564,949 (+85%) | 7,398 -> 6,377 (-14%) | 65 s -> 82 s (+27%) | - | - | - |
-| T1-T6 | clone | 13 -> 17 (+31%) | 312k -> 650,507 (+108%) | 7,468 -> 7,086 (-5%) | 67 s -> 92 s (+38%) | - | - | - |
-| general-purpose agent | host | - | - | - | - | - | - | 13.5k -> 15,281 (+13%) |
-| kb-review-workspace | host | 0 | 73.1k -> 0 (-100%) | 3.9k -> 0 (-100%) | 32 s -> 45 s (+42%) | 9 -> 0 (-100%) | 5/5 -> 5/5 | - |
+| fixed context | host | 1 -> 1 -> 1 (+0%) | 20.1k -> 30,278 -> 18,675 (-38%) | 4 -> 4 -> 4 (+0%) | 1 s -> 3 s -> 3 s (-6%) | 0 -> 0 | 0/0 -> 0/0 | - |
+| fixed context | clone | 1 -> 1 -> 1 (+0%) | 22.3k -> 34,369 -> 22,876 (-33%) | 4 -> 4 -> 4 (+0%) | 1 s -> 4 s -> 5 s (+32%) | 0 -> 0 | 0/0 -> 0/0 | - |
+| T1 | host | 2 -> 2 -> 2 (+0%) | 42.1k -> 61,792 -> 39,505 (-36%) | 561 -> 681 -> 932 (+37%) | 6 s -> 10 s -> 11 s (+9%) | 1 -> 1 (+0%) | 0/0 -> 0/0 | - |
+| T1 | clone | 2 -> 2 -> 2 (+0%) | 46.5k -> 70,928 -> 48,611 (-31%) | 478 -> 504 -> 976 (+94%) | 5 s -> 8 s -> 14 s (+84%) | 1 -> 1 (+0%) | 0/0 -> 0/0 | - |
+| T2 | host | 3 -> 3 -> 3 (+0%) | 62.9k -> 92,230 -> 57,339 (-38%) | 589 -> 512 -> 549 (+7%) | 6 s -> 8 s -> 7 s (-5%) | 2 -> 2 (+0%) | 0/0 -> 0/0 | - |
+| T2 | clone | 3 -> 3 -> 3 (+0%) | 68.0k -> 104,451 -> 69,801 (-33%) | 558 -> 504 -> 518 (+3%) | 6 s -> 9 s -> 12 s (+33%) | 2 -> 2 (+0%) | 0/0 -> 0/0 | - |
+| T3 | host | 2 -> 2 -> 2 (+0%) | 43.9k -> 63,263 -> 43,563 (-31%) | 1,309 -> 874 -> 1,145 (+31%) | 13 s -> 13 s -> 15 s (+16%) | 1 -> 1 (+0%) | 0/0 -> 0/0 | - |
+| T3 | clone | 2 -> 3 -> 2 (-33%) | 51.1k -> 109,848 -> 48,092 (-56%) | 1,655 -> 1,112 -> 895 (-20%) | 16 s -> 16 s -> 12 s (-28%) | 2 -> 1 (-50%) | 0/0 -> 0/0 | - |
+| T4 | host | 2 -> 5 -> 3 (-40%) | 48.9k -> 145,003 -> 74,035 (-49%) | 1,597 -> 2,154 -> 2,016 (-6%) | 15 s -> 22 s -> 17 s (-23%) | 4 -> 2 (-50%) | 0/0 -> 0/0 | - |
+| T4 | clone | 2 -> 3 -> 4 (+33%) | 52.9k -> 115,951 -> 124,126 (+7%) | 1,777 -> 2,394 -> 2,709 (+13%) | 15 s -> 22 s -> 34 s (+52%) | 2 -> 3 (+50%) | 0/0 -> 0/0 | - |
+| T5 | host | 2 -> 2 -> 4 (+100%) | 40.5k -> 61,226 -> 78,103 (+28%) | 271 -> 277 -> 591 (+113%) | 4 s -> 8 s -> 9 s (+9%) | 1 -> 3 (+200%) | 0/0 -> 0/0 | - |
+| T5 | clone | 2 -> 2 -> 4 (+100%) | 44.9k -> 69,366 -> 94,780 (+37%) | 334 -> 236 -> 664 (+181%) | 4 s -> 7 s -> 11 s (+56%) | 1 -> 3 (+200%) | 0/0 -> 0/0 | - |
+| T6 | host | 3 -> 4 -> 3 (-25%) | 67.2k -> 141,435 -> 58,963 (-58%) | 3,071 -> 1,879 -> 1,193 (-37%) | 21 s -> 22 s -> 11 s (-47%) | 3 -> 2 (-33%) | 0/0 -> 0/0 | - |
+| T6 | clone | 2 -> 4 -> 2 (-50%) | 49.0k -> 179,963 -> 47,935 (-73%) | 2,666 -> 2,336 -> 1,079 (-54%) | 21 s -> 30 s -> 12 s (-60%) | 3 -> 1 (-67%) | 0/0 -> 0/0 | - |
+| T1-T6 | host | 14 -> 18 -> 17 (-6%) | 306k -> 564,949 -> 351,508 (-38%) | 7,398 -> 6,377 -> 6,426 (+1%) | 65 s -> 82 s -> 71 s (-14%) | - | - | - |
+| T1-T6 | clone | 13 -> 17 -> 17 (+0%) | 312k -> 650,507 -> 433,345 (-33%) | 7,468 -> 7,086 -> 6,841 (-3%) | 67 s -> 92 s -> 94 s (+2%) | - | - | - |
+| general-purpose agent | host | - | - | - | - | - | - | 13.5k -> 15,281 -> 10,228 (-33%) |
+| kb-review-workspace | host | 0 -> 0 | 73.1k -> 0 -> 0 | 3.9k -> 0 -> 2,305 | 32 s -> 45 s -> 22 s (-53%) | 9 -> 0 -> 0 | 5/5 -> 5/5 -> 5/5 | - |
 <!-- /bench -->
 
 What it shows:
-- **The host still costs less than the clone:** 18 turns and 565k input for the six tasks against 17 turns and 651k, at 30.3k and 34.4k of fixed context (the clone also loads `AGENTS.md` and the user's local-scope servers). Both are above the history (306k and 312k): the fixed context grew by 10-12k, and T4 and T6 took 1-3 more turns.
-- **`/kb-review-workspace`** named all five planted problems (5/5) in 45 s; it runs in the forked `kb-reviewer` agent, whose usage the result event does not carry (0 input and tool calls in the main session).
-- A general-purpose Sonnet agent in the host starts at 15.3k (13.5k in the history).
+- **The host still costs less than the clone:** 17 turns and 352k input for the six tasks against 17 turns and 433k, at 18.7k and 22.9k of fixed context (the clone also loads `AGENTS.md` and the user's local-scope servers). Both are above the history (306k and 312k) and below the record of 2026-09-28 (565k and 651k, 30.3k and 34.4k of fixed context); T5 took 4 turns where the two earlier records took 2. These cells are the low run's, one run each.
+- **`/kb-review-workspace` named all five planted problems (5/5) at both levels.** Medium (scratch file): $0.0927, 27.8 s, 3,403 output tokens, 10 tool calls in the `kb-reviewer` agent. Low (the results file): $0.0538, 21.5 s, 2,305 output tokens, 8 tool calls. Both rows read 0 input, turns and tool calls (the main session's: the agent runs forked) and carry output tokens and the agent's tool calls (`sub_tool_calls`), which the record of 2026-09-28 reads as 0 and 0 (5/5, $0.1318, 45.4 s at medium). One pair of runs: the lower cost and time at low are the pair's, and the finding is that low missed none of the five.
+- A general-purpose Sonnet agent in the host starts at 10.2k (15.3k on 2026-09-28, 13.5k in the history).
 
 ### Always-on cost
 
