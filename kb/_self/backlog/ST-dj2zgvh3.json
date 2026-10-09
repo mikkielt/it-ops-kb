@@ -1,0 +1,35 @@
+{
+  "id": "ST-dj2zgvh3",
+  "kind": "story",
+  "title": "too_broad judges every alternative of a regenerated check, not only bare words, so a phrase found across the kb is refused",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_pool.too_broad refuses a regenerated check any of whose alternatives matches more than COMMON_ARTICLES articles, a phrase or pattern as well as a bare word; BP-f454bc83 (AWX license and release) and its three variants hold Apache[-\\s]?2\\.0|24\\.6\\.1, whose first alternative matches 28 articles, so an answer about another Apache-2.0 project passes. Found by the SP-7y6dk257 review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,'_tools'); import bench_pool as bp; texts={'own': ('x', '')}; sys.exit(0 if bp.too_broad(r'Apache[-\\s]?2\\.0|24\\.6\\.1', 'own', texts, bp.article_texts('.')) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 review"
+  ]
+}

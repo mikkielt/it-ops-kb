@@ -1,0 +1,25 @@
+{
+  "id": "BG-wcdbq563",
+  "kind": "bug",
+  "title": "fact_for picks a line that does not answer for 10 committed eval rows, skips fact lines that name a backticked file, and still picks table header rows",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bench_pool.fact_for picks, for each committed eval and near-miss row, a line that answers its question (BP-4f71647e: ansible/dsc3-module.md:18, not :19; BP-d306eaa8: mecm/cmpivot.md:14, not the permission line :49; and BP-34d1ec62, BP-78d6bbfe, BP-c552cb0f, BP-df64045a, BP-9cdc47a9, BP-6b791ed3, BP-8f566d80, BP-70d0bf39); POINTER skips a line only when it does nothing but point to another file (mecm/cmpivot.md:14, claude/hooks.md:148, windows/windows-update-management.md:14 and intune/ios-android-management.md:13 state facts); a markdown table header row and lines inside a code block are never picked. A plain rebuild still moves no committed row; a later --redo then asks the model about the right line. Found by the SP-7y6dk257 review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','build','--redo','BP-4f71647e','--dry-run'],capture_output=True,text=True).stdout; print(o); sys.exit(0 if 'dsc3-module.md:18' in o else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 review"
+  ]
+}

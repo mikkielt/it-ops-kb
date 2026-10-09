@@ -1,0 +1,26 @@
+{
+  "id": "ST-2enqvs6u",
+  "kind": "story",
+  "title": "bench_core.ALIAS's opus row names Opus 5.5 for Claude Code versions before 2.1.280, which the kb says Opus 5.5 requires",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A run on the opus alias that reports no model and runs on a Claude Code version before 2.1.280 is priced at the model the kb states for that version, or stops with a named error, rather than at Opus 5.5, which kb/public/claude/ci-and-headless.md:87 says requires v2.1.280 or later; research the earlier model through /kb-research if the kb lacks it. Found by the SP-7y6dk257 review (plausible, not demonstrated: every pool run reports its model).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,'_tools'); import bench_core as bc; r=[since for since, m in bc.ALIAS['opus']]; sys.exit(0 if (0,) not in r or len(r) > 1 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_core.py",
+    "kb/_self/tools.md",
+    "kb/public/claude/ci-and-headless.md"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 review"
+  ]
+}
