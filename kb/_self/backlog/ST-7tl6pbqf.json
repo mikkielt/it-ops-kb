@@ -44,6 +44,21 @@
   "depends_on": [
     "ST-qiep6y7i"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a pool run ask for every Opus row instead of the sanity subset: a new flag, or the value all of the existing --arm-kinds (--arm-kinds opus-5-5=all)?",
+      "options": [
+        "arm-kinds-all",
+        "new-flag"
+      ],
+      "recommendation": "arm-kinds-all",
+      "class": "design",
+      "answer": "arm-kinds-all",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/public/claude/ci-and-headless.md:89"
   ],

@@ -10,7 +10,9 @@
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
                                             --arm names the arm of `navigation` (default `current`): a run replaces
                                             only its own arm's rows; `pool` runs the question pool (bench_pool.py)
-                                            on the --arms (default bench_pool.DEFAULT_ARMS, and opus-5-5 when named),
+                                            on the --arms (default bench_pool.DEFAULT_ARMS, and opus-5-5 when named, on
+                                            its sanity subset of four kinds unless --kinds or --arm-kinds name others;
+                                            --arm-kinds opus-5-5=all runs every row),
                                             the --kinds (default all) and the --effort levels (default low,default) and replaces the rows of the
                                             arms it ran; --dry-run prints its plan and starts no model; --shape
                                             session runs the pool in groups of six questions, each group in one
@@ -130,7 +132,8 @@ def main(argv=None):
     r.add_argument("--out")
     r.add_argument("--arms", help="the arms of `pool`, comma separated (default: " + ",".join(bench_pool.DEFAULT_ARMS) + "; also "
                    + ",".join(bench_pool.OPT_IN) + ", named here only)")
-    r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: all)")
+    r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: all; the opus-5-5 arm: its sanity subset, "
+                   + "+".join(bench_pool.SUBSET_KINDS["opus-5-5"]) + ")")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
                    + ",".join(bench_pool.EFFORTS) + ")")
     r.add_argument("--dry-run", action="store_true", help="print the plan of `pool` and start no model")
@@ -145,8 +148,8 @@ def main(argv=None):
                    help="`pool`: the reps of an arm (ARM/session: of the session shape), comma separated or repeated; the arms "
                    "not named take --reps")
     r.add_argument("--arm-kinds", action="append", metavar="ARM=K+K",
-                   help="`pool`: the kinds of an arm (ARM/session: of the session shape), K+K, comma separated or repeated; "
-                   "the arms not named take --kinds")
+                   help="`pool`: the kinds of an arm (ARM/session: of the session shape), K+K, or all for every kind, comma "
+                   "separated or repeated; the arms not named take --kinds")
     pool = sub.add_parser("pool").add_subparsers(dest="pool_cmd", required=True)
     pb = pool.add_parser("build")
     pb.add_argument("--querylog", action="store_true")

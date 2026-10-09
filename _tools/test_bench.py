@@ -624,6 +624,13 @@ def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(m
     assert not dry.rows and bc.SPEND["runs"] == 0 and "estimated spend $" in msg and "shapes fresh+session" in msg
     assert "pool: sonnet-5-5:low: 52 runs (26 rows x 2 reps)" in out and "pool: web-haiku-5-5: 24 runs (12 rows x 2 reps)" in out
     assert "pool: haiku-5-5:low/session: 36 runs (3 groups x 2 reps, 4 of 22 rows left out)" in out
+    # opus-5-5 named in --arms runs its sanity subset (16 of the 52 rows here), every row only for `--arm-kinds opus-5-5=all`
+    capsys.readouterr()
+    record(dry=True, arms=["opus-5-5"], shape="fresh", sample=None, reps=1, arm_reps={}, arm_kinds={})
+    assert "pool: opus-5-5:low: 16 runs (16 rows x 1 reps)" in capsys.readouterr().out
+    every, _ = bp.parse_arm_map(["opus-5-5=all"], "--arm-kinds", bp.kinds_value)
+    record(dry=True, arms=["opus-5-5"], shape="fresh", sample=None, reps=1, arm_reps={}, arm_kinds=every)
+    assert "pool: opus-5-5:low: 52 runs (52 rows x 1 reps)" in capsys.readouterr().out
     # an arm the flags name and the run does not run is an error, not an option left unused
     assert bm.main(["run", "pool", "--arm-reps", "opus-5-5=2", "--arm-kinds", "sonnet-5-5/session=fact", "--dry-run"]) == 2
     err = capsys.readouterr().err
@@ -652,8 +659,9 @@ def test_bench_pool_verify_exits_1_naming_each_planted_break_of_a_fake_record(mo
     monkeypatch.setattr(bp, "read_rows", lambda path: [] if path == bp.RESULTS else bc.read_rows(path))  # no earlier record
     monkeypatch.setitem(bc.SPEND, "usd", 0.0)
     monkeypatch.setitem(bc.SPEND, "runs", 0)
-    b = types.SimpleNamespace(arms=["sonnet-5-5", "web-sonnet-5-5"], efforts=["low"], kinds=None, shape="fresh,session", seed=11,
-                              dry=False, reps=1, jobs=1, max_usd=None, sample=2, arm_reps={}, arm_kinds={}, rows=[], status=0)
+    b = types.SimpleNamespace(arms=["opus-5-5", "sonnet-5-5", "web-sonnet-5-5"], efforts=["low"], kinds=None, shape="fresh,session",
+                              seed=11, dry=False, reps=1, jobs=1, max_usd=None, sample=2, arm_reps={}, arm_kinds={}, rows=[],
+                              status=0)
     b.row = lambda scenario, case, arm, metric, value, runs="", model="", note="": b.rows.append(
         {"scenario": scenario, "record": "2026-10-09", "case": case, "arm": arm, "model": model, "metric": metric,
          "value": str(value), "runs": str(runs), "note": note})
@@ -662,7 +670,9 @@ def test_bench_pool_verify_exits_1_naming_each_planted_break_of_a_fake_record(mo
     spend = {"scenario": "pool", "record": "2026-10-09", "case": "all paid runs", "arm": "paid: " + ",".join(labels),
              "metric": "spend_usd", "value": str(round(bc.SPEND["usd"], 6)), "runs": str(bc.SPEND["runs"]), "note": ""}
     record = b.rows + [spend]
-    assert labels == ["sonnet-5-5:low", "sonnet-5-5:low/session", "web-sonnet-5-5"]
+    assert labels == ["opus-5-5:low", "sonnet-5-5:low", "sonnet-5-5:low/session", "web-sonnet-5-5"]
+    assert next(r for r in record if r["metric"] == "planned_kinds" and r["arm"] == "opus-5-5:low")["value"] == (
+        "csv_fact+multi+near_miss+synthesis")  # a subset arm plans the subset's kinds, and (a) holds with rows for those only
     assert next(r for r in record if r["metric"] == "planned_kinds" and r["arm"] == "web-sonnet-5-5")["value"] == (
         "csv_fact+fact+false_good+multi+offkb+snippet+synthesis")  # a web arm plans the kinds a web search can answer
     assert bp.verify_problems(record, "2026-10-09") == ([], [])

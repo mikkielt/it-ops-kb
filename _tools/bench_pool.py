@@ -784,6 +784,10 @@ WEB_ARMS = ("web-haiku-5-5", "web-sonnet-5-5")
 ARMS = (*KB_ARMS, "router", "hook", *WEB_ARMS)
 OPT_IN = ("opus-5-5",)  # named in --arms only: a run with no --arms leaves it out, so the record's spend stays what it was
 DEFAULT_ARMS = tuple(a for a in ARMS if a not in OPT_IN)
+# the kinds an arm runs when neither `--kinds` nor `--arm-kinds` names any: the Opus sanity subset, so that a record's Opus
+# arm costs a fraction of a full one; `--arm-kinds opus-5-5=all` runs every row
+SUBSET_KINDS = {"opus-5-5": ("csv_fact", "multi", "synthesis", "near_miss")}
+ALL_KINDS = "all"
 EFFORTS = ("low", "default")  # `default` passes no --effort: the level the model starts with
 WEB_KINDS = (*EVAL_KINDS, "offkb", "snippet", "false_good")  # the kinds a web search can answer; the web arms run these
 WEB_ASK = " Cite the source urls."
@@ -841,6 +845,8 @@ def reps_value(text):
 
 
 def kinds_value(text):
+    if text == ALL_KINDS:
+        return []
     got = text.split("+")
     bad = [k for k in got if k not in KINDS]
     if bad:
@@ -1345,8 +1351,8 @@ class Leg(NamedTuple):
 
 def plan_legs(b, pool, sh):
     """[Leg] of the shapes of `b.shape`, in the order given. An arm's rows are the pool's rows of its kinds (`b.arm_kinds`
-    for its name, or for `ARM/session` in the session shape, else `b.kinds`, else all) and its reps `b.arm_reps` the same
-    way, else `b.reps`; a session leg groups an arm's rows with the seed `b.seed`. Without `sh` the hook arm is left out."""
+    for its name, or for `ARM/session` in the session shape, else `b.kinds`, else its SUBSET_KINDS, else all; the value
+    `all` is every row) and its reps `b.arm_reps` the same way, else `b.reps`; a session leg groups an arm's rows with the seed `b.seed`. Without `sh` the hook arm is left out."""
     shapes, seed = shapes_of(getattr(b, "shape", "fresh")), getattr(b, "seed", SEED)
     kinds, efforts = getattr(b, "kinds", None), getattr(b, "efforts", None) or EFFORTS
     arm_kinds, arm_reps = getattr(b, "arm_kinds", None) or {}, getattr(b, "arm_reps", None) or {}
@@ -1356,7 +1362,7 @@ def plan_legs(b, pool, sh):
         if "hook" in arms and not sh:
             print("pool: the hook arm needs sh on PATH (Windows: run it from Git Bash); left out")
             arms.remove("hook")
-        want = {arm: arm_choice(arm_kinds, arm, session, kinds) for arm in arms}
+        want = {arm: arm_choice(arm_kinds, arm, session, kinds or SUBSET_KINDS.get(arm)) for arm in arms}
         rows = {arm: [r for r in pool if (not want[arm] or r["kind"] in want[arm]) and accepts(arm, r["kind"])] for arm in arms}
         grouped = {arm: session_groups(rows[arm], seed) if session else ([], []) for arm in arms}
         legs.append(Leg(shape, plan_cells(arms, efforts), rows, {a: g[0] for a, g in grouped.items()},
@@ -1366,7 +1372,7 @@ def plan_legs(b, pool, sh):
 
 def s_pool(b):
     """The question pool over the arms of `b.arms` (default DEFAULT_ARMS: ARMS less the opt-in ones) at the effort levels
-    of `b.efforts`, on the kinds of `b.kinds` (default all), `b.reps` runs of each row on each cell, with `b.sample` rows
+    of `b.efforts`, on the kinds of `b.kinds` (default all, and for the opt-in `opus-5-5` its SUBSET_KINDS), `b.reps` runs of each row on each cell, with `b.sample` rows
     kept per kind when given (`sample_rows`, seed `b.seed`), and `b.arm_kinds` and `b.arm_reps` (`parse_arm_map`) over
     `b.kinds` and `b.reps` for the arms they name. `b.shape` is one shape or several, comma separated, run in one go
     (`plan_legs`): `fresh` (default) makes each run a fresh session; `session` runs groups of six rows
