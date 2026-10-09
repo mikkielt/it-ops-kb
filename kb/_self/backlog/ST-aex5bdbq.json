@@ -2,7 +2,7 @@
   "id": "ST-aex5bdbq",
   "kind": "story",
   "title": "Review sprint: The next pool benchmark record runs as one capped command on trustworthy measurements",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2vhfsn4o",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "e1ce11d1000dad05e35807564ba7f533055ff59e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "9df045712cf1dad3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b79ebb4f8a38698c"
+      }
+    ]
+  }
 }
