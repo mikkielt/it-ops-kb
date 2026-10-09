@@ -1003,31 +1003,32 @@ What it shows: as in round 2, expansion adds nothing measurable on fresh blind q
 | e397a24 | 2026-09-27 | e397a24 | - | 259 | - | - |
 | 2026-09-28 | 2026-09-28 | 287f380 | 2.1.283 | 271 | 5 | - |
 | 2026-10-08 | 2026-10-08 | 58ebb9c | 2.1.293 | 299 | 5 | - |
+| 2026-10-09 | 2026-10-09 | 33b10fc | 2.1.293 | 299 | 5 | - |
 <!-- /bench -->
 
 <!-- bench:table tool-speed metrics=time,median_ms,p95_ms,s,size_mb -->
 | case | arm | time | median_ms | p95_ms | s | size_mb |
 |---|---|---|---|---|---|---|
 | rag.py pack (CLI, cold) | before | 3.93 s | - | - | - | - |
-| rag.py pack (CLI, cold) | current | 0.06 s -> 0.04 s -> 0.05 s (+26%) | 43.6 ms -> 54.8 ms (+26%) | 50.4 ms -> 57.6 ms (+14%) | - | - |
+| rag.py pack (CLI, cold) | current | 0.06 s -> 0.04 s -> 0.05 s -> 0.05 s (-2%) | 43.6 ms -> 54.8 ms -> 53.5 ms (-2%) | 50.4 ms -> 57.6 ms -> 69.4 ms (+20%) | - | - |
 | kb: hook | before | 2.05-2.15 s | - | - | - | - |
-| kb: hook | current | 0.05-0.09 s -> 0.05 s -> 0.06 s (+16%) | 49.5 ms -> 57.4 ms (+16%) | 70.3 ms -> 62.1 ms (-12%) | - | - |
+| kb: hook | current | 0.05-0.09 s -> 0.05 s -> 0.06 s -> 0.06 s (-2%) | 49.5 ms -> 57.4 ms -> 56.1 ms (-2%) | 70.3 ms -> 62.1 ms -> 61.2 ms (-1%) | - | - |
 | rag.py eval | before | 8.63 s | - | - | - | - |
-| rag.py eval | current | 0.71 s -> 0.79 s -> 3.97 s (+405%) | 786.7 ms -> 3970.3 ms (+405%) | 788.7 ms -> 3987.3 ms (+406%) | - | - |
+| rag.py eval | current | 0.71 s -> 0.79 s -> 3.97 s -> 2.18 s (-45%) | 786.7 ms -> 3970.3 ms -> 2176.4 ms (-45%) | 788.7 ms -> 3987.3 ms -> 2203.7 ms (-45%) | - | - |
 | rag.py search | before | 0.29 s | - | - | - | - |
-| rag.py search | current | 0.05 s -> 0.04 s -> 0.05 s (+29%) | 39.3 ms -> 50.7 ms (+29%) | 40.2 ms -> 51.8 ms (+29%) | - | - |
+| rag.py search | current | 0.05 s -> 0.04 s -> 0.05 s -> 0.05 s (+6%) | 39.3 ms -> 50.7 ms -> 53.6 ms (+6%) | 40.2 ms -> 51.8 ms -> 55.0 ms (+6%) | - | - |
 | MCP session (12 calls) | before | 4.04 s | - | - | - | - |
-| MCP session (12 calls) | current | 1.63 s -> 2.06 s -> 2.76 s (+34%) | 2055.5 ms -> 2761.8 ms (+34%) | 2080.3 ms -> 2995.9 ms (+44%) | - | - |
+| MCP session (12 calls) | current | 1.63 s -> 2.06 s -> 2.76 s -> 2.79 s (+1%) | 2055.5 ms -> 2761.8 ms -> 2792.7 ms (+1%) | 2080.3 ms -> 2995.9 ms -> 2873.1 ms (-4%) | - | - |
 | kbgit.py check-trailers (30 commits) | before | 0.77-0.95 s | - | - | - | - |
-| kbgit.py check-trailers (30 commits) | current | 0.41 s -> 0.21 s -> 1.93 s (+811%) | 211.6 ms -> 1926.6 ms (+811%) | 235.0 ms -> 1963.5 ms (+735%) | - | - |
+| kbgit.py check-trailers (30 commits) | current | 0.41 s -> 0.21 s -> 1.93 s -> 1.94 s (+1%) | 211.6 ms -> 1926.6 ms -> 1944.5 ms (+1%) | 235.0 ms -> 1963.5 ms -> 2201.0 ms (+12%) | - | - |
 | index build | before | - | - | - | - | - |
-| index build | current | about 3 s, 24 MB -> 2.17 s -> 3.76 s (+73%) | - | - | - | 32.5 MB -> 108.0 MB (+232%) |
-| pack in-process, warm | current | - | 3.0 ms -> 2.9 ms -> 2.9 ms (-1%) | 4.5 ms -> 6.6 ms -> 5.8 ms (-12%) | - | - |
-| MCP server start (initialize reply) | current | - | 32.0 ms -> 29.7 ms -> 52.0 ms (+75%) | 30.2 ms -> 52.9 ms (+75%) | - | - |
-| 1,000 random packs | current | - | - | - | 3.30 s -> 2.47 s -> 2.69 s (+9%) | - |
+| index build | current | about 3 s, 24 MB -> 2.17 s -> 3.76 s -> 3.65 s (-3%) | - | - | - | 32.5 MB -> 108.0 MB -> 108.7 MB (+1%) |
+| pack in-process, warm | current | - | 3.0 ms -> 2.9 ms -> 2.9 ms -> 3.0 ms (+5%) | 4.5 ms -> 6.6 ms -> 5.8 ms -> 5.9 ms (+3%) | - | - |
+| MCP server start (initialize reply) | current | - | 32.0 ms -> 29.7 ms -> 52.0 ms -> 49.7 ms (-4%) | 30.2 ms -> 52.9 ms -> 50.3 ms (-5%) | - | - |
+| 1,000 random packs | current | - | - | - | 3.30 s -> 2.47 s -> 2.69 s -> 2.66 s (-1%) | - |
 <!-- /bench -->
 
-What it shows: with 271 topics on macOS, a cold `rag.py pack` takes 44 ms, the `kb:` hook 50 ms, `search` 39 ms and `eval` (250 questions) 0.79 s; an MCP session of 12 calls 2.06 s (1.63 s for the history's calls) and the server answers `initialize` in 30 ms; an index build takes 2.2 s and 32.5 MB. In process a warm `pack` takes 2.9 ms at the median and 6.6 ms at p95, and 1,000 random packs 2.5 s. The history's `before` column is the corpus rebuilt by every process; nothing measured here needs it again.
+What it shows: with 299 topics on macOS (2026-10-09), a cold `rag.py pack` takes 54 ms, the `kb:` hook 56 ms, `search` 54 ms and `eval` (574 questions) 2.2 s, where the run of 2026-10-08 took 3.97 s over the same 574 questions (0.79 s over 250 on 2026-09-28): the `_self` view now holds each anchored tested question's informative words once instead of reading the index for them on every pack; an MCP session of 12 calls takes 2.8 s and the server answers `initialize` in 50 ms; an index build takes 3.7 s and 108.7 MB. In process a warm `pack` takes 3.0 ms at the median and 5.9 ms at p95, and 1,000 random packs 2.7 s. The history's `before` column is the corpus rebuilt by every process; nothing measured here needs it again.
 
 ## The query log and the newer tools
 
