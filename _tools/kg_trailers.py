@@ -327,15 +327,16 @@ def cmd_trailers(a):
 
 
 
-def log_records(*args):
-    """[(sha, short, date, subject, trailers text)] of `git log ARGS`, newest first."""
-    out = git("log", "--format=%H%x1f%h%x1f%cs%x1f%s%x1f%(trailers:only,unfold)%x1e", *args)
+def log_records(*args, body=False):
+    """[(sha, short, date, subject, trailers text)] of `git log ARGS`, newest first; with `body`, each also ends in
+    the commit's whole message."""
+    out = git("log", "--format=%H%x1f%h%x1f%cs%x1f%s%x1f%(trailers:only,unfold)" + ("%x1f%B" if body else "") + "%x1e", *args)
     if out is None:
         return None
     recs = []
     for r in out.split("\x1e"):
         f = r.strip("\n").split("\x1f")
-        if len(f) == 5:
+        if len(f) == 5 + bool(body):
             recs.append(tuple(f))
     return recs
 
@@ -411,12 +412,12 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
         spec.append("^" + since)
     elif not quiet:
         print(f"note: exemption cutoff {TRAILERS_SINCE[:12]} is not in this clone; every commit in the range is checked")
-    recs = log_records("--no-merges", *spec)
+    recs = log_records("--no-merges", *spec, body=True)
     if recs is None:
         return None
     changes = commit_changes(spec) or {}
-    strays = stray_lines_of(spec)
     blobs = BlobReader()
+    pending = None  # the range's commits not on origin/main, read at the first KB-Work trailer that needs it
     bad, kb = [], 0
     try:
         for sha, *_ in recs:
@@ -427,42 +428,45 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
                 _WANT[sha] = trailers_from(paths, lambda rel: blobs(base, rel), lambda rel: blobs(sha, rel))
             else:
                 _WANT[sha] = compute(first_parent(sha), sha)
+        for sha, short, date, subject, trailers, message in recs:
+            want = _WANT[sha]
+            have = parse_trailers(trailers)
+            wrong = [k for k in KEYS if not values_match(have.get(k), want.get(k, []))]
+            v = have.get(VERIFIED)
+            if v and (len(v) > 1 or not valid_date(v[0])):
+                wrong.append(VERIFIED)
+            auto = have.get(AUTO)
+            if auto and (len(auto) > 1 or not all(x.strip() in AUTO_VALUES for x in auto[0].split(","))):
+                wrong.append(AUTO)
+            work = have.get(WORK)
+            state = []
+            paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
+            stray = stray_lines(message, trailers)
+            if not work and not auto and not any(WORK_LINE.match(ln) for ln in stray) and any(code_path(p) for p in paths):
+                state.append(MISSING_WORK)  # a stray KB-Work line says it already: move it into the trailer block
+            if work and not work_ok(sha, work, blobs):
+                wrong.append(WORK)
+            elif work and work_state_on:
+                if pending is None:
+                    pending = off_origin_main(spec, [r[0] for r in recs])
+                if sha in pending:
+                    state += work_state(work, paths, lambda rel: at_or_parent(sha, rel, blobs))
+            kb += bool(want)
+            if wrong or state or stray:
+                lines = [f"BAD {short} {date} {subject[:70]}"]
+                lines += [f"    not a trailer: {ln!r}" for ln in stray] + ([f"    {STRAY}"] if stray else [])
+                for k in wrong:
+                    exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES),
+                                                                                                     WORK: "once, backlog item ids that exist at the commit or its parent"}.get(k, f"(no {k})"))
+                    lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
+                for why in state:
+                    lines.append(f"    {WORK}: {why}" + ("" if why in FORM_ONLY else
+                                                         "; work lands only for a claimed item of a started sprint"))
+                if WORK in wrong or any(why not in FORM_ONLY for why in state):
+                    lines.append(f"    the rule: {WORK_RULE}")
+                bad.append((sha, lines))
     finally:
         blobs.close()
-    for sha, short, date, subject, trailers in recs:
-        want = _WANT[sha]
-        have = parse_trailers(trailers)
-        wrong = [k for k in KEYS if not values_match(have.get(k), want.get(k, []))]
-        v = have.get(VERIFIED)
-        if v and (len(v) > 1 or not valid_date(v[0])):
-            wrong.append(VERIFIED)
-        auto = have.get(AUTO)
-        if auto and (len(auto) > 1 or not all(x.strip() in AUTO_VALUES for x in auto[0].split(","))):
-            wrong.append(AUTO)
-        work = have.get(WORK)
-        state = []
-        paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
-        stray = strays.get(sha, [])
-        if not work and not auto and not any(WORK_LINE.match(ln) for ln in stray) and any(code_path(p) for p in paths):
-            state.append(MISSING_WORK)  # a stray KB-Work line says it already: move it into the trailer block
-        if work and not work_ok(sha, work):
-            wrong.append(WORK)
-        elif work and work_state_on and not on_origin_main(sha):
-            state += work_state(work, paths, lambda rel: at_or_parent(sha, rel))
-        kb += bool(want)
-        if wrong or state or stray:
-            lines = [f"BAD {short} {date} {subject[:70]}"]
-            lines += [f"    not a trailer: {ln!r}" for ln in stray] + ([f"    {STRAY}"] if stray else [])
-            for k in wrong:
-                exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES),
-                                                                                                 WORK: "once, backlog item ids that exist at the commit or its parent"}.get(k, f"(no {k})"))
-                lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
-            for why in state:
-                lines.append(f"    {WORK}: {why}" + ("" if why in FORM_ONLY else
-                                                     "; work lands only for a claimed item of a started sprint"))
-            if WORK in wrong or any(why not in FORM_ONLY for why in state):
-                lines.append(f"    the rule: {WORK_RULE}")
-            bad.append((sha, lines))
     return len(recs), kb, bad
 
 
@@ -500,19 +504,6 @@ def stray_lines(body, trailers):
     return out
 
 
-def stray_lines_of(spec):
-    """{sha: [stray lines]} (stray_lines) of the non-merge commits of `git log SPEC`, from one git call."""
-    out = git("log", "--no-merges", "--format=%x1e%H%x1f%(trailers:only,unfold)%x1f%B", *spec) or ""
-    res = {}
-    for rec in out.split("\x1e")[1:]:
-        sha, _, rest = rec.partition("\x1f")
-        trailers, _, body = rest.partition("\x1f")
-        lines = stray_lines(body, trailers)
-        if lines:
-            res[sha.strip()] = lines
-    return res
-
-
 def read_message(message):
     """(the message's lines as the commit will keep them: comment lines and anything below a scissors line left out,
     the trailers `git interpret-trailers --parse` reads in them, as text)."""
@@ -544,10 +535,10 @@ def stray_work(message):
     return bool(message_strays(message))
 
 
-def work_ok(sha, values):
+def work_ok(sha, values, read=blob):
     """A KB-Work trailer: one line of comma-separated backlog ids, each an item file at the commit or its parent (a
-    commit that closes a sprint deletes the files)."""
-    return work_ids_ok(values, lambda rel: blob(sha, rel) if blob(sha, rel) is not None else blob(sha + "^", rel))
+    commit that closes a sprint deletes the files). `read(rev, rel)` is a file's text at a commit, or None."""
+    return work_ids_ok(values, lambda rel: at_or_parent(sha, rel, read))
 
 
 def work_ids_ok(values, load):
@@ -621,20 +612,18 @@ def work_state(values, paths, load):
     return out
 
 
-def at_or_parent(sha, rel):
+def at_or_parent(sha, rel, read=blob):
     """A file's text at a commit, else at its first parent (a sprint close deletes the item files), else None."""
-    text = blob(sha, rel)
-    return text if text is not None else blob(sha + "^", rel)
+    text = read(sha, rel)
+    return text if text is not None else read(sha + "^", rel)
 
 
-def on_origin_main(sha):
-    """True when the commit is already on the integration remote's main: its KB-Work items are history, judged when
-    it landed."""
-    main = rev_parse(f"refs/remotes/{kbpublic.integration_remote(KB)}/main")
-    if not main:
-        return False
-    p = git_run("merge-base", "--is-ancestor", sha, main)
-    return p is not None and p.returncode == 0
+def off_origin_main(spec, shas):
+    """{sha} of SHAS, the non-merge commits of `git log SPEC`, that are not yet on the integration remote's main, from
+    one git call: the others are history, their KB-Work items judged when they landed. With no such main in this
+    clone (the call fails), every one of them."""
+    out = git("log", "--no-merges", "--format=%H", *spec, "^" + f"refs/remotes/{kbpublic.integration_remote(KB)}/main")
+    return set(shas) if out is None else set(out.split())
 
 
 def cmd_check_trailers(a):
