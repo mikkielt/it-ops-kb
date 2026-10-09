@@ -2,7 +2,7 @@
   "id": "ST-htlr2se2",
   "kind": "story",
   "title": "Research sprint goal: Benchmark fidelity and cost: the router reads on Haiku 5.5, Opus runs on its subset, the reviewer at effort low",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x7ger6vu",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
