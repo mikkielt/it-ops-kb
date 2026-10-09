@@ -1,0 +1,26 @@
+{
+  "id": "ST-nbkqwxnc",
+  "kind": "story",
+  "title": "An item that waits only on the orchestrator's paid run does not hold its touches against other claims",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A claimed item whose code is on main and that waits only on a run the orchestrator makes (a smoke record) is shown by held as waiting, not holding, so held --overlaps does not report its touches against a fix the run itself calls for; SP-2vhfsn4o: ST-xy5kmisr held bench_pool.py, test_bench.py and benchmarks.md through five S1 fixes its smoke records found, each claimed past an overlap exit 1",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "held"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_view.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o close"
+  ]
+}

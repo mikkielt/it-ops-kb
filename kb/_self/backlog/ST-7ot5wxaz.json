@@ -1,0 +1,26 @@
+{
+  "id": "ST-7ot5wxaz",
+  "kind": "story",
+  "title": "A headless worker's worktree has the commit hooks, so its commits get their KB trailers",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A worktree the orchestrator makes with git worktree add for a headless worker runs the clone's commit hooks (core.hooksPath or kbgit.py install-hooks reaching linked worktrees), so a worker's commit gets its KB-* trailers without typing them; SP-2vhfsn4o: workers of ST-vku6q3n7, ST-yob4py65, ST-ly2p27q3, BG-xbxtbqwd and BG-rbokisbc found the hook missing and added KB-Work by hand",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "selfcheck"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_hooks.py",
+    "kb/_self/git.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o close"
+  ]
+}

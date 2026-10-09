@@ -24,5 +24,8 @@
     "kb/_self/code.md",
     ".claude/skills/kb-sprint/SKILL.md"
   ],
-  "notes": "The check passes before the work on purpose: it is the land e2e test the work extends with a planted main-checkout draft; planning adds the failing assertion's selector or repoints the check before the sprint starts."
+  "links": [
+    "parked: SP-2vhfsn4o close"
+  ],
+  "notes": "The check passes before the work on purpose: it is the land e2e test the work extends with a planted main-checkout draft; planning adds the failing assertion's selector or repoints the check before the sprint starts. SP-2vhfsn4o evidence: the orchestrator moved intake drafts out of its checkout before each landing, and one landing (ST-dku4a6ob) stopped at clean tree on two drafts a session start filed meanwhile."
 }

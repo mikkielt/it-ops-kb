@@ -1,0 +1,25 @@
+{
+  "id": "ST-um56cyur",
+  "kind": "story",
+  "title": "Sprint planning dry-runs every paid run a goal names and sets its cap from the estimate before the start gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "When a committed item's goal names a paid run with a spend cap (a smoke record, a probe), plan step 6 runs its --dry-run on the planning host and records the estimate in the item's notes; a cap below the estimate is a gate asked before the start, not mid-run. SP-2vhfsn4o: ST-xy5kmisr's goal said --max-usd 5 for a command whose dry run estimated 23.37 USD; the gate came after the code, and the first smoke still spent 26.62 against a 23.37 estimate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o close"
+  ]
+}

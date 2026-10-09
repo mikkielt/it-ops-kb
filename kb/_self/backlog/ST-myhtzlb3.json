@@ -22,6 +22,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-matmvkn6 close"
-  ]
+    "parked: SP-matmvkn6 close",
+    "parked: SP-2vhfsn4o close"
+  ],
+  "notes": "SP-2vhfsn4o evidence: three workers added a gate the classifier made blocking with no command to remove it; one hand-edited the item JSON to drop it (BG-ovvvqtxf), one stopped with a stray g2 its repro added (BG-jj2nc5ou)."
 }

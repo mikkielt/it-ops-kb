@@ -37,7 +37,7 @@
       ],
       "recommendation": "Keep the pricing page's 0.10 (a Sonnet run's list cost reads about 8% under its reported cost, inside the 20% bound)",
       "class": "design",
-      "answer": "Keep the pricing page's 0.10 (a Sonnet run's list cost reads about 8% under its reported cost, inside the 20% bound)",
+      "answer": "Price Sonnet 5.5 cache reads at the billed 0.20 (changed: smoke 3 showed every cache-heavy Sonnet session run 20% over list at 0.10; BG-pv3hl6aa implements it and records the conflict with the page's 0.10; decided by the orchestrator under the operator's unattended approval of 2026-10-09)",
       "by": "operator"
     }
   ],
