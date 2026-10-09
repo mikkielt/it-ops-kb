@@ -2,7 +2,7 @@
   "id": "ST-htlr2se2",
   "kind": "story",
   "title": "Research sprint goal: Benchmark fidelity and cost: the router reads on Haiku 5.5, Opus runs on its subset, the reviewer at effort low",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x7ger6vu",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,20 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "orchestrator"
+  "notes": "No outside facts: every fact the goal needs is in kb/public/claude with a DOC tag: the haiku alias resolves to claude-haiku-5-5 from Claude Code v2.1.293 (ci-and-headless.md:85), Haiku 4.5 and Haiku 5.5 list prices with their 1-hour cache writes, 2 against 0.20 USD per million tokens (ci-and-headless.md:88, :91), effort levels and model defaults (ci-and-headless.md:81-83) and the effort frontmatter field (skills-and-subagents.csv:12). Re-packed at run (2026-10-09): effort and frontmatter questions good; the alias question packs none when the version is written 2.1.293 and good as v2.1.293, and the price question packs none when it says MTok, a pack wording miss reported to the operator.",
+  "evidence": {
+    "commit": "8b06fca1af2a5b2fdf9fb974db6c1ad2e02d2c24",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-htlr2se2"
+        ],
+        "exit": 0,
+        "sha256": "d4b0100ee31cc619"
+      }
+    ]
+  }
 }
