@@ -2,7 +2,7 @@
   "id": "ST-a5hhfp3z",
   "kind": "story",
   "title": "The unit cache is kept per root set and the docs carry no measured sizes of it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzgetyu2",
   "priority": "P3",
@@ -66,5 +66,27 @@
     "parked: SP-kjqdiudr review"
   ],
   "notes": "Cross-sprint dependency: BG-l34xg6jn and ST-dvzdykit of sprint 1 (SP-caqrexqw) change the same _tools/kbfacts.py unit cache (_unit_cache_open and its key); this item is ordered after both have landed. Premise (2026-10-08, plan of SP-vayhvwfy): check 1 fails (kbfacts._unit_cache_open has no _root_key: unit cache keyed by root set: False, exit 1), reproduces; check 2 fails on kb/_self/reports/test-suite-speed.md:142 ('kbunits.sqlite, about 65 MB for this kb'), reproduces. Parked draft (parked: SP-kjqdiudr review) with no line naming a fitness test or a real user's report: committed on the operator's selection for sprint 2 (2026-10-08), held by the blocking gate parked-rule until the operator confirms or moves it out. Selected by the operator for SP-yzgetyu2 on 2026-10-09 (the parked draft names no fitness test; the selection overrides the park rule as it did for SP-vayhvwfy). Ordered after ST-s6tqojsw and before ST-6vtifk2b: all three edit _tools/kbfacts.py, this one and ST-6vtifk2b the same unit-cache functions. Premise rerun at plan (2026-10-09): check 1 still fails (_unit_cache_open has no _root_key), check 2 still fails (test-suite-speed.md:142 states about 65 MB).",
-  "claimed_by": "worker-a5hhfp3z"
+  "evidence": {
+    "commit": "5af30eea667448fd60cda67f830eb2bfbca4709a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import inspect,sys;sys.path.insert(0,'_tools');import kbfacts as k;s=inspect.getsource(k._unit_cache_open);ok='_root_key' in s;print('unit cache keyed by root set:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "19df9d3211284747"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;hits=[(p,m.group(0)) for p in ('kb/_self/tools.md','kb/_self/reports/test-suite-speed.md') for m in re.finditer(r'(kbunits[^.]{0,80}?|unit cache[^.]{0,80}?)\\d[\\d,.]*\\s*(MB|KB|MiB|KiB|GB|bytes)|\\d[\\d,.]*\\s*(MB|KiB|MiB) for this kb',open(p,encoding='utf-8').read())];print('measured cache sizes in docs:',hits or 'none');sys.exit(1 if hits else 0)"
+        ],
+        "exit": 0,
+        "sha256": "1402cc1c8416f9e1"
+      }
+    ]
+  }
 }
