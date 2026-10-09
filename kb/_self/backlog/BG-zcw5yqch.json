@@ -2,7 +2,7 @@
   "id": "BG-zcw5yqch",
   "kind": "bug",
   "title": "Four pool rows on the Autopilot motherboard question check the hybrid-join line of autopilot/lifecycle.md, so no arm passes them",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7y6dk257",
   "priority": "P2",
   "rank": 0,
@@ -71,5 +71,27 @@
     "parked: SP-2vhfsn4o run"
   ],
   "notes": "Cause: bench_pool.fact_for scores body lines by exact shared words, so line 13 (autopilot, device: 2) beats the motherboard lines 14, 21 and 22 (motherboard only; replaced/replacement differ); pool build --redo --dry-run still names autopilot/lifecycle.md:13, so a redo alone repeats the wrong check. Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups): its rows are unscored in the pool record of 2026-10-09.",
-  "claimed_by": "worker-BG-zcw5yqch"
+  "evidence": {
+    "commit": "27b4774d187469cb39a4f51bc976a6bb71232c29",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','build','--redo','EV-autopilot-device-record-motherboard-replaced','--dry-run'],capture_output=True,text=True).stdout; sys.exit(0 if 'lifecycle.md:' in o and 'lifecycle.md:13' not in o else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,re,json; r=next(x for x in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv')) if x['id']=='BP-ff6bf9a2'); l=open('kb/public/autopilot/lifecycle.md').read().splitlines()[12]; assert not any(re.search(c,l) for c in json.loads(r['checks'])), 'the check matches the hybrid-join line'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
