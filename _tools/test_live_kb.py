@@ -226,8 +226,16 @@ def test_unit_cache_equals_a_fresh_weighing_re_weighs_on_each_key_input_and_find
                 kbfacts._weigh_code.cache_clear()
         assert keys() - before, f"a change to {name} reused the cached weighing"
 
+    # a smaller root set's build writes its own file and leaves this root set's rows alone, even when it prunes
+    whole = keys()
+    with monkeypatch.context() as m:
+        m.setattr(kbfacts, "_root_key", lambda: "r00c0ffee-")
+        m.setattr(kbfacts, "UNIT_CACHE_SLACK", 0)
+        weigh()
+    assert keys() == whole and (cache.parent / "kbunits-r00c0ffee.sqlite").is_file()
+
     # an edited fact is found by rag.py pack: the unit cache holds the unit weighed before the edit
-    root = tmp_path / "root"
+    root =tmp_path / "root"
     fixture_root(root, SID)
     art = root / "print" / "queues.md"
     env = {**os.environ, "KB_ROOTS": str(root), "KB_INDEX": str(tmp_path / "packidx")}

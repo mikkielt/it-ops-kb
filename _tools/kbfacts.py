@@ -1666,7 +1666,7 @@ def _corpus(domain):
     return weighed(us, articles(), expansions())
 
 
-UNIT_CACHE = "kbunits.sqlite"  # in index_dir(): weighed()'s result per unit, keyed by everything it reads
+UNIT_CACHE = "kbunits.sqlite"  # in index_dir(), one per root set: weighed()'s result per unit, keyed by everything it reads
 UNIT_CACHE_SLACK = 2  # the cache keeps up to this many times the units weighed; beyond, rows no unit used are dropped
 
 
@@ -1710,13 +1710,18 @@ def _unit_key(u, art, meta, sums, exps):
 
 
 def _unit_cache_open():
-    """A connection to the unit cache in index_dir() with its table, or None (KB_INDEX=0, or it cannot be opened)."""
+    """A connection to the unit cache of this root set in index_dir() with its table, or None (KB_INDEX=0, or it
+    cannot be opened). One file per root set, named as the index files are (_root_key): `kbunits.sqlite` for this
+    repository's roots alone, else `kbunits-r<hash>.sqlite`, so a build over fewer roots never prunes the rows of
+    the full corpus."""
     d = index_dir()
     if not d:
         return None
+    key = _root_key()
+    name = UNIT_CACHE.replace(".sqlite", f"-{key[:-1]}.sqlite") if key else UNIT_CACHE
     try:
         os.makedirs(d, exist_ok=True)
-        con = sqlite3.connect(os.path.join(d, UNIT_CACHE), timeout=10)
+        con = sqlite3.connect(os.path.join(d, name), timeout=10)
         con.execute("CREATE TABLE IF NOT EXISTS u(k BLOB PRIMARY KEY, v BLOB) WITHOUT ROWID")
         return con
     except (OSError, sqlite3.Error):
