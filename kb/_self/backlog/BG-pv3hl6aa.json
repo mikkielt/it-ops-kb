@@ -2,7 +2,7 @@
   "id": "BG-pv3hl6aa",
   "kind": "bug",
   "title": "Sonnet 5.5 runs are billed 0.20 USD per MTok for cache reads while PRICE and the kb say 0.10, so pool verify (b) fails every cache-heavy Sonnet run",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-2vhfsn4o",
   "priority": "P1",
@@ -23,5 +23,6 @@
     "kb/_self/code.md",
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md"
-  ]
+  ],
+  "claimed_by": "worker-BG-pv3hl6aa"
 }
