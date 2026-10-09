@@ -2,7 +2,7 @@
   "id": "ST-6sp27okw",
   "kind": "story",
   "title": "Research sprint goal: Every pool eval row checks the fact that answers it, and every model alias cites the kb",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7y6dk257",
   "goal_research": true,
   "priority": "P1",
@@ -25,5 +25,19 @@
     "kb/public/_gaps.md",
     "kb/public/_answers.md"
   ],
-  "claimed_by": "worker-ST-6sp27okw"
+  "evidence": {
+    "commit": "3ceb9f68b618425544f6bfff05789c17dfe7e2fb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-6sp27okw"
+        ],
+        "exit": 0,
+        "sha256": "3730d8a689e5df97"
+      }
+    ]
+  }
 }
