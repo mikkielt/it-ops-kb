@@ -2,7 +2,7 @@
   "id": "ST-rt27cx3w",
   "kind": "story",
   "title": "bench_core.ALIAS's opus row cites a kb line that states which model the opus alias names",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-7y6dk257",
   "priority": "P3",
@@ -35,5 +35,26 @@
     "parked: SP-2vhfsn4o review"
   ],
   "notes": "Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups). check.py passes before the work: it pins that the kb stays valid after the fact lands. The second check fails until the ALIAS comment cites, as 'opus from VERSION PATH:LINE', a kb line that names opus.",
-  "claimed_by": "orchestrator-SP-7y6dk257"
+  "evidence": {
+    "commit": "d385c9fba32629769554d87e4fbd07ea5a0bd245",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "1e66a7fe48b98e36"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys; t=open('_tools/bench_core.py').read(); m=re.search(r'opus from [^#]*?(kb/public/[\\w/.-]+\\.md):(\\d+)', t); ok=bool(m) and 'opus' in open(m.group(1)).read().splitlines()[int(m.group(2))-1].lower(); sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
