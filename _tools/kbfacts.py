@@ -1814,7 +1814,8 @@ class Store:
         self.n, self.lensum = len(lens), sum(lens)
         self.n_main = next((i for i, r in enumerate(self.root) if r), len(lens))
         self.n_index = next((i for i, p in enumerate(self.passage) if p), len(lens))
-        self._own, self._tf, self._main, self._index = {}, {}, None, None
+        self._own, self._tf, self._main, self._index, self._rules = {}, {}, None, None, None
+        self._anchor_words = None  # tested_matches: each anchored question's informative words, per anchor
 
     def own(self, t):
         if t not in self._own:
@@ -1831,7 +1832,9 @@ class Store:
         roots' ledgers too; else every unit but the index files'; with `index`, every unit but the rule passages.
         The domain SELF_ROOT is the rule passages alone."""
         if domain == SELF_ROOT:
-            return Subset(self, domain, rules=True)
+            if self._rules is None:
+                self._rules = Subset(self, domain, rules=True)
+            return self._rules
         if domain:
             return Subset(self, domain, index)
         if index:
@@ -1980,8 +1983,10 @@ class Subset(Store):
         self.rules = rules
         self.n, self.lensum = len(ids), sum(base.lens[i] for i in ids)
 
-    def _load_own(self, t):
-        return self.base.own(t) & self.keep
+    def own(self, t):  # a filter of the base's list, no read of the index file
+        if t not in self._own:
+            self._own[t] = self.base.own(t) & self.keep
+        return self._own[t]
 
     def _load_tf(self, t):
         return [(i, v) for i, v in self.base.tf(t) if i in self.keep]
@@ -1998,8 +2003,10 @@ class Prefix(Store):
                          base.passage, base.anchors)
         self.base, self.n, self.lensum = base, n, sum(base.lens[:n])
 
-    def _load_own(self, t):
-        return {i for i in self.base.own(t) if i < self.n}
+    def own(self, t):  # a filter of the base's list, no read of the index file
+        if t not in self._own:
+            self._own[t] = {i for i in self.base.own(t) if i < self.n}
+        return self._own[t]
 
     def _load_tf(self, t):
         lst = self.base.tf(t)
@@ -2289,9 +2296,14 @@ def tested_matches(st, informative):
     tested question and at least half of its informative key words in the question. The best match first, then
     store order."""
     asked, found = {w for w in informative if len(w) >= 3}, []
+    if asked and st._anchor_words is None:  # the words depend on the view's counts alone: computed once per view
+        st._anchor_words = []
+        for rid, text, i in st.anchors:
+            keys = sorted(set(key_terms(text)))
+            st._anchor_words.append({w for w in informative_words(keys, {t: len(st.own(t)) for t in keys}, st.n)
+                                     if len(w) >= 3})
     for n, (rid, text, i) in enumerate(st.anchors if asked else ()):
-        keys = sorted(set(key_terms(text)))
-        theirs = {w for w in informative_words(keys, {t: len(st.own(t)) for t in keys}, st.n) if len(w) >= 3}
+        theirs = st._anchor_words[n]
         both = asked & theirs
         if theirs and len(both) >= TESTED_SHARE * len(asked) and len(both) * 2 >= len(theirs):
             found.append((-len(both), n, (rid, text, i)))
