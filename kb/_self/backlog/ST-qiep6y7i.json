@@ -1,0 +1,58 @@
+{
+  "id": "ST-qiep6y7i",
+  "kind": "story",
+  "title": "The router-pinned arm reads on claude-haiku-5-5, the model the haiku alias resolves to, and the pool's router record is re-run on it",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-x7ger6vu",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "_tools/agent_bench.py's PIN names for haiku the model bench_core.ALIAS gives the haiku alias at the run's Claude Code version (claude-haiku-5-5 from 2.1.293), so the router-pinned arm reads on the model kb_ask.py's READER_MODEL alias runs on in use (claude -p --model haiku on this host reports modelUsage claude-haiku-5-5); one pool record of the router arm alone (run pool --arms router --reps 1, its --max-usd at 1.5x the dry run's estimate, about 6 USD) replaces the 2026-10-09 router rows and passes pool verify; benchmarks.md's pool setup text and 'What it shows', token-efficiency.md's router lines and design.md's router conclusion state the reader's model, the re-recorded cost per run and tokens per right answer, and that the earlier router rows' Haiku 4.5 reader (its 1-hour cache write at 2 USD per MTok against 0.20) is why their cost does not compare; the route-by-verdict section's setup names the reader its record ran on.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import agent_bench as a,bench_core as c;want=[m for v,m in c.ALIAS[\"haiku\"] if v<=(2,1,293)][-1];print(a.PIN[\"haiku\"],want);sys.exit(0 if a.PIN[\"haiku\"]==want==\"claude-haiku-5-5\" else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "verify"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/_self/reports/benchmarks.md\",encoding=\"utf-8\").read();bad=\"Haiku 4.5 reads\" in t;print(\"Haiku 4.5 reads in benchmarks.md:\",bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/agent_bench.py",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/design.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "kb/public/claude/ci-and-headless.md:88",
+    "kb/public/claude/ci-and-headless.md:91",
+    "kb/public/claude/skills-and-subagents.md:103"
+  ],
+  "notes": "Premise (2026-10-09, benchmark review): check 1 fails now: agent_bench.PIN is {haiku: claude-haiku-4-5, sonnet: claude-sonnet-5-5} while bench_core.ALIAS resolves haiku to claude-haiku-5-5 from Claude Code 2.1.293 and a claude -p --model haiku run on this host (2.1.293) reports modelUsage claude-haiku-5-5. The 2026-10-09 pool record's router cell: 0.026 USD a run, 14,632 effective input per right answer, 5,424 cache-write per run, right 82.7 percent; benchmarks.md line 695 leaves the router's dearer runs unexplained. Paid run: run pool --arms router --reps 1, dry-run estimate 3.83 USD at the old reader; cap at 6 USD. Premise run at plan (2026-10-09): check 1 fails (PIN haiku claude-haiku-4-5 against claude-haiku-5-5) and the benchmarks.md text check fails (line 540 says Haiku 4.5 reads); pool verify and report --check pass before the work and pin behaviour that must stay: the re-recorded router rows must still verify and the report's tables must still agree with the results file."
+}

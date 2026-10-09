@@ -1,0 +1,20 @@
+{
+  "id": "SP-yzgetyu2",
+  "kind": "sprint",
+  "title": "Tool speed and cache hygiene: eval three times faster, check-trailers in one git log, _cache pruned",
+  "status": "planned",
+  "goal": "rag.py eval over its 574 rows makes under 2,000 _load_own calls and prints the same results, so the run takes about a third of today's 6.3 s; check-trailers over a range of N commits makes at most 6 git calls, not three per commit; a clone's _cache keeps only live pack index files (other root sets' pruned after a stated period) and a unit cache that reclaims its pruned rows' space, proven by a test within the ceiling; the tool-speed rows for rag.py eval and check-trailers in benchmarks.md are re-recorded.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

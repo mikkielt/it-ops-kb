@@ -1,0 +1,26 @@
+{
+  "id": "ST-t3vqc44h",
+  "kind": "story",
+  "title": "Review sprint: Tool speed and cache hygiene: eval three times faster, check-trailers in one git log, _cache pruned",
+  "status": "draft",
+  "sprint": "SP-yzgetyu2",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

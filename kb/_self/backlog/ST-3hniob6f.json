@@ -1,0 +1,26 @@
+{
+  "id": "ST-3hniob6f",
+  "kind": "story",
+  "title": "Review sprint: Benchmark fidelity and cost: the router reads on Haiku 5.5, Opus runs on its subset, the reviewer at effort low",
+  "status": "draft",
+  "sprint": "SP-x7ger6vu",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

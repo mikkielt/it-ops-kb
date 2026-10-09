@@ -1,0 +1,45 @@
+{
+  "id": "ST-s6tqojsw",
+  "kind": "story",
+  "title": "rag.py eval over the 574 rows takes a third of today's time: the _self view holds each tested anchor's informative words once",
+  "status": "draft",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-yzgetyu2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbfacts.tested_matches reads each anchored tested question's informative-word set from its store view, computed once per view, instead of key_terms and st.own() lookups for every anchor on every pack, so python3 _tools/rag.py eval prints the same 574 passed and the same pack text for every row (rag.py eval --all before and after agree byte for byte) with under 2,000 _load_own calls over the run, where today's cProfile of the run shows 138,740 calls (1.26 s) and tested_matches at 1.87 s of 6.3 s (the tool-speed record: 0.79 s over 250 rows on 2026-09-28, 3.97 s over 574 on 2026-10-08); the tool-speed scenario's rag.py eval row is re-recorded (a free run) and kb/_self/tools.md says where a pack's time goes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import cProfile,pstats,runpy,sys;sys.argv=[\"_tools/rag.py\",\"eval\"];p=cProfile.Profile();p.enable();exec(\"try: runpy.run_path(sys.argv[0],run_name=\\\"__main__\\\")\\nexcept SystemExit: pass\");p.disable();n=sum(v[1] for k,v in pstats.Stats(p).stats.items() if k[2]==\"_load_own\");print(\"_load_own calls\",n);sys.exit(0 if n<2000 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv"
+  ],
+  "notes": "Premise (2026-10-09, benchmark review): python3 -m cProfile -s cumtime _tools/rag.py eval: 6.28 s in all, pack 5.83 s over 574 calls (10 ms each against 2.9 ms for a warm pack in the tool-speed record), tested_matches 1.87 s over 288 calls, _load_own 138,740 calls 1.26 s, rank 1.93 s, specific 0.40 s; check 1 fails now. Free: no model runs. Premise run at plan (2026-10-09): the _load_own count check fails (138,740 calls). rag.py eval and report --check pass before the work and pin behaviour that must stay: the pack text and the 574 passes must not change, and the re-recorded tool-speed row must keep the tables in agreement."
+}
