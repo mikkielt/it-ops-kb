@@ -2,7 +2,7 @@
   "id": "BG-zcw5yqch",
   "kind": "bug",
   "title": "Four pool rows on the Autopilot motherboard question check the hybrid-join line of autopilot/lifecycle.md, so no arm passes them",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7y6dk257",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,6 @@
   "links": [
     "parked: SP-2vhfsn4o run"
   ],
-  "notes": "Cause: bench_pool.fact_for scores body lines by exact shared words, so line 13 (autopilot, device: 2) beats the motherboard lines 14, 21 and 22 (motherboard only; replaced/replacement differ); pool build --redo --dry-run still names autopilot/lifecycle.md:13, so a redo alone repeats the wrong check. Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups): its rows are unscored in the pool record of 2026-10-09."
+  "notes": "Cause: bench_pool.fact_for scores body lines by exact shared words, so line 13 (autopilot, device: 2) beats the motherboard lines 14, 21 and 22 (motherboard only; replaced/replacement differ); pool build --redo --dry-run still names autopilot/lifecycle.md:13, so a redo alone repeats the wrong check. Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups): its rows are unscored in the pool record of 2026-10-09.",
+  "claimed_by": "worker-BG-zcw5yqch"
 }
