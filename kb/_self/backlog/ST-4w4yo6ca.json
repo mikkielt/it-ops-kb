@@ -2,7 +2,7 @@
   "id": "ST-4w4yo6ca",
   "kind": "story",
   "title": "A same-day partial pool rerun replaces the earlier run's paid spend row, so pool verify (c) passes a correct record",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-x7ger6vu",
   "priority": "P2",
@@ -44,5 +44,19 @@
     "parked: SP-2vhfsn4o review"
   ],
   "notes": "Added to SP-x7ger6vu by the operator on 2026-10-09: the router re-record of ST-qiep6y7i (run pool --arms router --reps 1, 3.62 USD) left pool verify failing (c), spend row 149.7418 against runs 149.5388; the operator chose the fix with an in-place repair of that record, no second paid run. The repair runs on work/ST-qiep6y7i after this item lands, so ST-qiep6y7i depends on it. tests.py -k bench_pool passes before the work: the overlap test the goal names is what makes it fail first.",
-  "claimed_by": "worker-4w4yo6ca"
+  "evidence": {
+    "commit": "eb74433c89bd0089a57b6053cf17b6c906ec3ed1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bench_pool"
+        ],
+        "exit": 0,
+        "sha256": "ce7819fe306d15d6"
+      }
+    ]
+  }
 }
