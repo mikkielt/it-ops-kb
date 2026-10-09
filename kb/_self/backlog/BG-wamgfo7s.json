@@ -1,0 +1,26 @@
+{
+  "id": "BG-wamgfo7s",
+  "kind": "bug",
+  "title": "Two pool eval rows stay path-only: BP-005970a5's fact line answers neither part, and BP-2413ce41 needs a check no single regex gives",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "BP-005970a5 (which ASR rules support Warn mode, and the LSASS rule's GUID) and BP-2413ce41 (the type of the Graph beta device property isManagementRestricted) hold a check of the fact that answers them, not only an article path. BP-005970a5: fact_for picks defender/asr-and-antivirus.md:38 (rule groups), while :35 names the two rules without Warn mode and defender/asr-rules.csv:3 holds the GUID. BP-2413ce41: the answer is Edm.Boolean (graph/csdl-device.properties.csv:59); the model's bare Boolean is too broad for the guard, and pool build --replies reads only a row's first check, so a two-part check (the property and its type) cannot be given. Found in SP-7y6dk257 by ST-2p5ywkam's paid redo.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,json,sys; sys.path.insert(0,'_tools'); import bench_pool as bp; r={x['id']:x for x in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv'))}; bad=[i for i in ('BP-005970a5','BP-2413ce41') if bp.path_only(json.loads(r[i]['checks']))]; sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7y6dk257 run"
+  ]
+}
