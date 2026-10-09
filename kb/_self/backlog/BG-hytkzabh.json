@@ -1,0 +1,21 @@
+{
+  "id": "BG-hytkzabh",
+  "kind": "bug",
+  "title": "pool build keeps a redone regex whose alternatives match nothing in the kb: BP-9e209bb8 holds Assert-M365DSCTenantDrift and Test-M365DSCDrift, two cmdlet names microsoft365dsc.md never states",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A redone eval regex is kept only when each of its alternatives matches a line of the kb, so a name the model made up never passes an answer",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, \"_tools\"); import bench_pool as bp; sys.exit(1 if bp.too_broad(\"Export-Cmd|Invented-Cmd\", \"a\", {\"a\": (\"p\", \"Export-Cmd is real\")}, [\"Export-Cmd is real\"]) == \"\" else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a guard that is missing and the fix adds a rule to usable; a planted regex in a test would show it, and no command runs the guard today",
+  "links": [
+    "parked: SP-7y6dk257 run"
+  ]
+}
