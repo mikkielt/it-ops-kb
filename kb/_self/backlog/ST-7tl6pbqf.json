@@ -2,7 +2,7 @@
   "id": "ST-7tl6pbqf",
   "kind": "story",
   "title": "A default pool record runs Opus 5.5 on its sanity subset; the full Opus arm runs only when named",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-x7ger6vu",
   "priority": "P2",
@@ -38,7 +38,8 @@
     "_tools/benchmarks.py",
     "kb/_self/reports/benchmarks.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_bench.py"
   ],
   "depends_on": [
     "ST-qiep6y7i"
@@ -46,5 +47,6 @@
   "links": [
     "kb/public/claude/ci-and-headless.md:89"
   ],
-  "notes": "Premise (2026-10-09, benchmark review): the record command's --dry-run plans opus-5-5:low 150 runs (32.62 USD) and opus-5-5:default 150 runs (34.81 USD) of 149.74 USD in all; check 1 fails now (300 runs). The subset is already named by the pool setup (benchmarks.md, the Opus sanity subset: --arms opus-5-5 --kinds csv_fact,multi,synthesis,near_miss --reps 1). No paid run. Premise run at plan (2026-10-09): the dry-run check fails (300 Opus runs planned). report --check and tests.py -k pool pass before the work and pin behaviour that must stay: the subset's cells must keep the report's tables in agreement with the results file and the pool tests green. Ordered after ST-qiep6y7i: both edit the pool section of benchmarks.md."
+  "notes": "Premise (2026-10-09, benchmark review): the record command's --dry-run plans opus-5-5:low 150 runs (32.62 USD) and opus-5-5:default 150 runs (34.81 USD) of 149.74 USD in all; check 1 fails now (300 runs). The subset is already named by the pool setup (benchmarks.md, the Opus sanity subset: --arms opus-5-5 --kinds csv_fact,multi,synthesis,near_miss --reps 1). No paid run. Premise run at plan (2026-10-09): the dry-run check fails (300 Opus runs planned). report --check and tests.py -k pool pass before the work and pin behaviour that must stay: the subset's cells must keep the report's tables in agreement with the results file and the pool tests green. Ordered after ST-qiep6y7i: both edit the pool section of benchmarks.md.",
+  "claimed_by": "worker-7tl6pbqf"
 }
