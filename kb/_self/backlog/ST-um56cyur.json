@@ -20,6 +20,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-2vhfsn4o close"
-  ]
+    "parked: SP-2vhfsn4o close",
+    "parked: SP-x7ger6vu close"
+  ],
+  "notes": "SP-x7ger6vu close (2026-10-09), accepted by the operator: three mid-run surprises a planning run of the goal's paid commands would have shown: the router-only re-record left pool verify (c) failing on the full record's spend row (ST-4w4yo6ca joined the sprint mid-run); host-lookups has no effort setting, so ST-fbp5pm6k's 'both levels in one batch' needed gate g2 mid-run; and benchmarks.py run SCENARIO --dry-run starts paid runs outside pool (BG-wapzksub), so the plan's estimate must come from a scenario that honours it. The planning run uses each paid command's real flags and simulates a partial re-record against pool verify."
 }

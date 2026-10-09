@@ -1,0 +1,25 @@
+{
+  "id": "ST-rcfxvexc",
+  "kind": "story",
+  "title": "A planned check that asserts a phrase is absent pins the line or section it is about, not the whole file",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Sprint planning (/kb-sprint plan step 6 and kb/_self/backlog.md, Sprints) states that a check asserting a phrase's absence reads only the line or section the goal names, so a worker does not reword correct text elsewhere to pass it; SP-x7ger6vu: ST-qiep6y7i's check 4 (no 'Haiku 4.5 reads' in benchmarks.md) led the worker to reword two correct comparisons at lines 532 and 690 (accepted at the SP-x7ger6vu close)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-x7ger6vu close"
+  ]
+}
