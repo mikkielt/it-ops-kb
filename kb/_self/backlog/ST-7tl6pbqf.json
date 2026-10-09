@@ -2,7 +2,7 @@
   "id": "ST-7tl6pbqf",
   "kind": "story",
   "title": "A default pool record runs Opus 5.5 on its sanity subset; the full Opus arm runs only when named",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-x7ger6vu",
   "priority": "P2",

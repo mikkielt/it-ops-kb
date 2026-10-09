@@ -2,7 +2,7 @@
   "id": "ST-fbp5pm6k",
   "kind": "story",
   "title": "kb-reviewer runs at effort low, proven on the host's planted problems at both levels",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-x7ger6vu",
   "priority": "P2",
   "rank": 0,
@@ -70,7 +70,9 @@
           "the operator keeps the reviewer at effort medium"
         ]
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "adopt-if-5-of-5",
+      "by": "operator"
     }
   ],
   "links": [

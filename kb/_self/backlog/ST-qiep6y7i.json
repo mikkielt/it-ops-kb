@@ -2,7 +2,7 @@
   "id": "ST-qiep6y7i",
   "kind": "story",
   "title": "The router-pinned arm reads on claude-haiku-5-5, the model the haiku alias resolves to, and the pool's router record is re-run on it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-x7ger6vu",
   "priority": "P1",
