@@ -17,18 +17,18 @@ def req(model, uncached, write, read, out):
 def test_bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio():
     s = bc.usage_sum([req("claude-sonnet-5-5", 100, 1000, 10000, 500)], "sonnet", "2.1.284")
     assert s["model"] == "claude-sonnet-5-5" and s["tier"] == ""
-    assert s["effective"] == 100 + 2 * 1000 + 0.05 * 10000  # the old fixed 0.1 gives 3100
+    assert s["effective"] == 100 + 2 * 1000 + 0.1 * 10000  # the read price over the input price: 0.20 / 2.0
     # no per-TTL split in the usage: the writes are priced at the billing surface's TTL, one hour on a subscription
-    assert round(bc.est_cost(s), 6) == round((100 * 2 + 1000 * 4.0 + 10000 * 0.10 + 500 * 10) / 1e6, 6)
+    assert round(bc.est_cost(s), 6) == round((100 * 2 + 1000 * 4.0 + 10000 * 0.20 + 500 * 10) / 1e6, 6)
     api = bc.usage_sum([req("claude-sonnet-5-5", 100, 1000, 10000, 500)], "sonnet", "2.1.284", surface="api")
-    assert api["effective"] == 100 + 1.25 * 1000 + 0.05 * 10000
-    assert round(bc.est_cost(api), 6) == round((100 * 2 + 1000 * 2.5 + 10000 * 0.10 + 500 * 10) / 1e6, 6)
+    assert api["effective"] == 100 + 1.25 * 1000 + 0.1 * 10000
+    assert round(bc.est_cost(api), 6) == round((100 * 2 + 1000 * 2.5 + 10000 * 0.20 + 500 * 10) / 1e6, 6)
     # a split in the usage wins over the surface: 400 of the 1000 written tokens for one hour, 600 for five minutes
     mixed = req("claude-sonnet-5-5", 100, 1000, 10000, 500)
     mixed["usage"]["cache_creation"] = {"ephemeral_5m_input_tokens": 600, "ephemeral_1h_input_tokens": 400}
     for surface in ("subscription", "api"):
         m = bc.usage_sum([mixed], "sonnet", surface=surface)
-        assert round(bc.est_cost(m), 6) == round((100 * 2 + 600 * 2.5 + 400 * 4.0 + 10000 * 0.10 + 500 * 10) / 1e6, 6)
+        assert round(bc.est_cost(m), 6) == round((100 * 2 + 600 * 2.5 + 400 * 4.0 + 10000 * 0.20 + 500 * 10) / 1e6, 6)
     opus = bc.usage_sum([req("claude-opus-5-5", 0, 0, 10000, 0)], "opus")
     haiku = bc.usage_sum([req("claude-haiku-4-5-20251001", 0, 0, 10000, 0)], "haiku")
     assert (opus["effective"], haiku["effective"]) == (500, 1000)
@@ -232,7 +232,7 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     got = {(c, label, m): (v, n, note) for c, label, m, v, n, model, note in bp.cell_rows(runs)}
     cell = lambda case, label, m: got[(case, label, m)][0]  # noqa: E731
     assert cell("fact", "sonnet-5-5:low", "input") == 180 + 2000 + 2010 and cell("fact", "sonnet-5-5:low", "start_ctx") == 2010
-    assert cell("fact", "sonnet-5-5:low", "effective_input") == 180 + 2 * 2000 + 0.05 * 2010  # Sonnet 5.5 reads at 0.05x
+    assert cell("fact", "sonnet-5-5:low", "effective_input") == 180 + 2 * 2000 + 0.1 * 2010  # Sonnet 5.5 reads at 0.20 over its $2 input
     assert cell("fact", "sonnet-5-5:low", "pack_tokens") == 120  # the prompt's growth less the request's output, not 480 / 4
     # the output is the sum of the result event's modelUsage counts (500: the main loop's 200 and a subagent's), not the
     # messages' partial ones (50 + 30) nor the event's usage; the stream writes its cache for one hour (its usage splits
@@ -257,7 +257,7 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     assert abs(bp.list_usd(kb_search, "haiku") - kb_search["cost"]) <= 0.2 * kb_search["cost"]
     assert cell("fact", "sonnet-5-5:low", "checks") == "1/2" and cell("fact", "sonnet-5-5:low", "fully_right") == "1 of 2"
     assert round(cell("fact", "sonnet-5-5:low", "fixed_share"), 4) == round(2010 / 4190, 4)
-    assert cell("fact", "sonnet-5-5:low", "tokens_per_right") == 2 * 4280.5  # two runs' effective input over the one right
+    assert cell("fact", "sonnet-5-5:low", "tokens_per_right") == 2 * 4381  # two runs' effective input over the one right
     # the 95% interval over the cell's rows (a row's reps kept together), fixed seed: the same runs give the same bounds
     lo, hi, tpr = (cell("fact", "sonnet-5-5:low", m) for m in ("right_share_lo", "right_share_hi", "tokens_per_right"))
     assert 0 <= lo <= 0.5 <= hi <= 1 and cell("fact", "sonnet-5-5:low", "tokens_per_right_lo") <= tpr
@@ -276,10 +276,10 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
             "<!-- bench:table pool metrics=fixed_share,start_ctx cases=all -->\n<!-- /bench -->\n"
             "<!-- bench:effort pool metrics=tokens_per_right cases=all -->\n<!-- /bench -->\n")
     shown = br.render(text, out)
-    assert "| fact | 8,561 | 8,561 | 8,561 | 0 | 8,561 |" in shown and "| count | 4,280 | 4,280 | 4,280 | 0 | - |" in shown  # kind by arm
+    assert "| fact | 8,762 | 8,762 | 8,762 | 0 | 8,762 |" in shown and "| count | 4,381 | 4,381 | 4,381 | 0 | - |" in shown  # kind by arm
     assert "| all | sonnet-5-5:low | 48.0% | 2,010 |" in shown  # the fixed share by arm
-    assert "| all | sonnet-5-5 | 6,421 (+0%) | 6,421 |" in shown  # low against default
-    assert "| all | haiku-4-5 (no effort setting) | - | 6,421 |" in shown and "| hook" not in shown.split("bench:effort")[1]
+    assert "| all | sonnet-5-5 | 6,572 (+0%) | 6,572 |" in shown  # low against default
+    assert "| all | haiku-4-5 (no effort setting) | - | 6,572 |" in shown and "| hook" not in shown.split("bench:effort")[1]
     assert br.empty_markers(text, out) == []
     # a `claude -p` timeout in a kb or web run is one error run: the other runs of the chunk still come back
     import subprocess
@@ -493,7 +493,7 @@ def test_bench_pool_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row_and_
     b.dry, b.rows = True, []
     with pytest.raises(bp.Skip) as e:  # the estimate prices the stated default tokens at bench_core's prices
         bp.s_pool(b)
-    run = (2000 * 2.0 + 8000 * 4.0 + 80000 * 0.10 + 1200 * 10.0) / 1e6  # a cache write at the 1-hour price
+    run = (2000 * 2.0 + 8000 * 4.0 + 80000 * 0.20 + 1200 * 10.0) / 1e6  # a cache write at the 1-hour price
     assert f"estimated spend ${12 * run:.2f}" in str(e.value) and "the default" in capsys.readouterr().out
     cell = lambda record, label, model, **m: [{"scenario": "pool", "record": record, "case": "all", "arm": label, "model": model,  # noqa: E731
                                               "metric": k, "value": str(v)} for k, v in m.items()]
