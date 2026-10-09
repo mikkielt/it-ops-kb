@@ -285,7 +285,7 @@ def add(a, b, sep="escalate"):
     return out
 
 
-PIN = {"haiku": MODEL["haiku-4-5"], "sonnet": MODEL["sonnet-5-5"]}  # the routed aliases as full names (`router-pinned`)
+PIN = {"haiku": MODEL["haiku-5-5"], "sonnet": MODEL["sonnet-5-5"]}  # the routed aliases as full names (`router-pinned`)
 
 
 def _stream_argv(model, tools, system):
