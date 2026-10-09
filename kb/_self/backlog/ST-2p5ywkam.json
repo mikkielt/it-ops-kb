@@ -7,7 +7,7 @@
   "sprint": "SP-7y6dk257",
   "priority": "P2",
   "rank": 0,
-  "goal": "fact_for (bench_pool.py near 127) never picks a CSV header line or a wrapped continuation line as a row's fact; the five eval rows of kb/public/_retrieval/bench_pool.csv still path-only after ST-ly2p27q3 (BP-90f14342, BP-2413ce41, BP-f454bc83, BP-005970a5, BP-9e209bb8) and their variants get a fact check through pool build --redo under its breadth guard; found by the SP-2vhfsn4o review",
+  "goal": "fact_for never picks a CSV header line, a wrapped continuation line or a line that only points to another file, and reads a CSV data row as it reads an article line; three of the five eval rows left path-only after ST-ly2p27q3 (BP-90f14342, BP-f454bc83, BP-9e209bb8) and their variants get a fact check through pool build --redo under its breadth guard. The other two (BP-005970a5, BP-2413ce41) are parked as BG-wamgfo7s at the operator's choice of 2026-10-09.",
   "checks": [
     {
       "run": [
@@ -21,7 +21,7 @@
       "run": [
         "python3",
         "-c",
-        "import csv,json,re,sys; ids={'BP-90f14342','BP-2413ce41','BP-f454bc83','BP-005970a5','BP-9e209bb8'}; rows=[r for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv')) if r['id'] in ids]; bad=[r['id'] for r in rows if all(re.fullmatch(r'[\\w/\\.-]+\\\\.(md|csv)', c) for c in json.loads(r['checks']))]; print(bad); sys.exit(1 if bad or len(rows)!=5 else 0)"
+        "import csv,json,sys; sys.path.insert(0,'_tools'); import bench_pool as bp; r={x['id']:x for x in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv'))}; bad=[i for i in ('BP-90f14342','BP-f454bc83','BP-9e209bb8','BP-d8203cfb','BP-fcb42c1f','BP-8bacbb0e') if bp.path_only(json.loads(r[i]['checks']))]; print(bad); sys.exit(1 if bad else 0)"
       ]
     }
   ],
