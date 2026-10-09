@@ -2,8 +2,8 @@
 topic: python/stdlib-sqlite3-csv
 priority: P2
 applies_to: [python, csv, sqlite3]
-retrieved_utc: 2026-09-29
-sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn, S-xq53ipsf]
+retrieved_utc: 2026-10-09
+sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn, S-xq53ipsf, S-vc2lihhb, S-nnljaqtm]
 status: complete
 ---
 
@@ -14,7 +14,9 @@ status: complete
 module and persists the pack/search index with `sqlite3` (`_self/tools.md`: "postings lists in a
 stdlib `sqlite3` file"). Both modules have version-dependent behaviour a maintaining agent should
 know: `csv`'s quoting constants gained two new members in 3.12, and `sqlite3`'s transaction-control
-defaults changed in 3.12 (opt-in) with a documented future default change.
+defaults changed in 3.12 (opt-in) with a documented future default change. `VACUUM` and `auto_vacuum`
+decide how a cache file shrinks after a `DELETE`, and `VACUUM` is refused inside a transaction, which the
+module's implicit `BEGIN` before a `DELETE` opens.
 
 ## Facts
 - Files used with the `csv` module should be opened with `newline=''` (both for `csv.reader`/`writer`
@@ -84,6 +86,54 @@ defaults changed in 3.12 (opt-in) with a documented future default change.
   `autocommit` is set to `True` or `False`. The docs record that the current
   `LEGACY_TRANSACTION_CONTROL` default for `autocommit` is expected to change to `False` in a future
   Python release. [DOC S-rle6nqpc]
+- Under the default `autocommit=LEGACY_TRANSACTION_CONTROL` and an `isolation_level` that is not `None`,
+  `execute` and `executemany` open a transaction implicitly before an `INSERT`, `UPDATE`, `DELETE` or
+  `REPLACE` when none is open; other statements get no implicit transaction handling.
+  `isolation_level=None` never opens one implicitly (SQLite's autocommit mode, queried with
+  `Connection.in_transaction`), and `executescript` first commits any pending transaction. [DOC S-rle6nqpc]
+- With `autocommit=False` the module keeps a transaction always open (`connect`, `commit` and `rollback`
+  each open the next one with `BEGIN DEFERRED`); with `autocommit=True` SQLite's autocommit mode is used and
+  `commit`/`rollback` do nothing. The `sqlite3` docs do not mention `VACUUM` or `auto_vacuum` anywhere. [DOC S-rle6nqpc]
+- `VACUUM` rebuilds the database file into the least space: it copies the content into a temporary
+  database and overwrites the original through the normal journal or WAL, so up to twice the original file
+  size is needed as free disk space. It may change the `ROWID` of rows in tables without an explicit
+  `INTEGER PRIMARY KEY`. [DOC S-vc2lihhb]
+- `VACUUM` fails if the connection running it has an open transaction; unfinalized statements usually hold a
+  read transaction open, so they can make it fail too, and another connection's lock that blocks writes
+  fails it as well (`VACUUM INTO` is not a write to the source, so only the first two apply). [DOC S-vc2lihhb]
+- After a large `DELETE` the file keeps its size unless `auto_vacuum=FULL`: the emptied pages go on a
+  freelist for reuse and `VACUUM` is what shrinks the file; `VACUUM` also makes each table and index
+  contiguous and can cut partially filled pages, which `auto_vacuum` never does. [DOC S-vc2lihhb]
+- `PRAGMA auto_vacuum` is `0`/`NONE` by default (unless `SQLITE_DEFAULT_AUTOVACUUM` was compiled in):
+  deleted pages stay in the file, are reused by later inserts, and only `VACUUM` shrinks it. [DOC S-nnljaqtm]
+- `auto_vacuum=FULL` (`1`) moves freelist pages to the end of the file and truncates it at every
+  transaction commit; it does not defragment or repack pages and can make fragmentation worse. [DOC S-nnljaqtm]
+- `auto_vacuum=INCREMENTAL` (`2`) stores the bookkeeping but reclaims nothing at commit: `PRAGMA
+  incremental_vacuum(N)` removes up to N freelist pages and truncates the file by as many; with no argument,
+  N below 1 or N above the freelist length it clears the whole freelist, and it does nothing outside
+  incremental mode or with an empty freelist. [DOC S-nnljaqtm]
+- `auto_vacuum` must be set before the first table is created: `NONE` to `FULL`/`INCREMENTAL` on an existing
+  database needs the pragma followed by `VACUUM`, `FULL` and `INCREMENTAL` can be switched at any time, and
+  going back to `NONE` always needs `VACUUM`, even on an empty database. [DOC S-nnljaqtm]
+- A `VACUUM` refused with `sqlite3.OperationalError` ("cannot VACUUM from within a transaction") is the
+  usual result of a connection in the default legacy mode running `VACUUM` after a `DELETE` it has not
+  committed, since `execute` opened a transaction for the `DELETE`; `commit()` first, or open the
+  connection with `isolation_level=None` or `autocommit=True`. `autocommit=False` always has a transaction
+  open, so it refuses `VACUUM` until the code leaves that mode. [DER S-rle6nqpc, S-vc2lihhb: the module opens a
+  transaction before `DELETE`, and `VACUUM` fails inside an open transaction; the probe fact below confirms it]
+- One probe (Python 3.13.2 with SQLite 3.45.3, macOS, 2026-10-09, a table of 2000 rows of 500 characters, `DELETE FROM t`
+  without a `WHERE`): on a default `sqlite3.connect`, `in_transaction` was `True` after the `DELETE` and `execute("VACUUM")`
+  raised `OperationalError: cannot VACUUM from within a transaction`; after `commit()` it ran; with
+  `isolation_level=None` or `autocommit=True` it ran straight after the `DELETE`; with `autocommit=False` it was refused
+  right after `commit()`; `executescript("DELETE FROM t; VACUUM;")` ran. A `VACUUM` straight after `CREATE TABLE` ran in
+  legacy mode (`in_transaction` was `False`). Other Python or SQLite versions were not run. [DER S-rle6nqpc, S-vc2lihhb: probe run and read against the documented transaction rules]
+- The same probe, file sizes after the `DELETE` and `commit()`: `NONE` stayed at its full-table size and `VACUUM` cut it
+  to a page or two; `FULL` had already shrunk to a few pages at the commit; `INCREMENTAL` stayed at full size until
+  `PRAGMA incremental_vacuum` ran. Python 3.13.2, SQLite 3.45.3, macOS; other versions not run. [DER S-nnljaqtm, S-vc2lihhb: probe read against the documented modes]
+- The same probe: `con.execute("PRAGMA incremental_vacuum")` on its own freed one page of 250 on the freelist, and so did
+  left the file almost unchanged; `.fetchall()` on it, or `executescript("PRAGMA incremental_vacuum;")`, cleared the whole
+  freelist, and `incremental_vacuum(10)` with `.fetchall()` freed 10. Fetch the result of the pragma, or run it with
+  `executescript`, when the whole freelist should go. Python 3.13.2, SQLite 3.45.3; other versions not run. [DER S-nnljaqtm, S-rle6nqpc: probe read against the documented pragma, whose pages say nothing of how a driver must step it]
 
 ## Reference
 - SNIPPET: write a CSV with `newline=''` (correct on every platform) and open a shared sqlite3 cache from multiple threads; context: Python 3.11+ stdlib `csv`/`sqlite3`; checked: syntax [DOC S-utoe3wfw: `newline=''` and `QUOTE_MINIMAL` default; DOC S-rle6nqpc: `check_same_thread=False` and `sqlite3.sqlite_version`]
@@ -98,6 +148,14 @@ import sqlite3
 
 con = sqlite3.connect("cache.db", check_same_thread=False)  # e.g. a shared read-only index
 print(sqlite3.sqlite_version)  # the actually-linked SQLite version, not a fixed constant
+```
+- SNIPPET: shrink a cache file after a bulk delete; context: Python 3.12+ stdlib `sqlite3`, any SQLite; checked: syntax [DER S-rle6nqpc, S-vc2lihhb: `isolation_level=None` opens no implicit transaction, and `VACUUM` needs none open]
+```python
+import sqlite3
+
+con = sqlite3.connect("cache.db", isolation_level=None)  # autocommit mode: no implicit BEGIN
+con.execute("DELETE FROM postings WHERE stale = 1")
+con.execute("VACUUM")  # refused with OperationalError if a transaction were open
 ```
 
 ## Examples

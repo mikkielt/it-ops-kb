@@ -425,3 +425,8 @@ isocalendar,python/stdlib-datetime-iso-week
 fromisocalendar,python/stdlib-datetime-iso-week
 isoweekday,python/stdlib-datetime-iso-week
 %G-W%V,python/stdlib-datetime-iso-week
+cProfile,python/stdlib-cprofile-pstats
+pstats,python/stdlib-cprofile-pstats
+pstats.Stats,python/stdlib-cprofile-pstats
+auto_vacuum,python/stdlib-sqlite3-csv
+incremental_vacuum,python/stdlib-sqlite3-csv

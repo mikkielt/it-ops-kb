@@ -2594,3 +2594,23 @@ _Agent: kb-research_
 - See python/stdlib-windows-portability.md.
 
 _Agent: kb-research_
+
+## QK-sqlite3-vacuum-refused-transaction-auto-vacuum. When does the stdlib sqlite3 module refuse VACUUM, and what do auto_vacuum FULL and INCREMENTAL reclaim after a DELETE?
+- `VACUUM` fails while the connection running it has an open transaction, and unfinalized statements can hold a read transaction open. [DOC S-vc2lihhb]
+- With the default `autocommit=LEGACY_TRANSACTION_CONTROL` and an `isolation_level` that is not `None`, `execute` opens a transaction before an `INSERT`, `UPDATE`, `DELETE` or `REPLACE`; `isolation_level=None` and `autocommit=True` open none, `autocommit=False` always keeps one open. [DOC S-rle6nqpc]
+- `auto_vacuum=FULL` truncates the freelist at every commit, `INCREMENTAL` only when `PRAGMA incremental_vacuum` runs, `NONE` never (only `VACUUM` shrinks the file); `auto_vacuum` does not compact partly filled pages. [DOC S-nnljaqtm, S-vc2lihhb]
+- Conclusion: a default connection that `DELETE`s and then runs `VACUUM` before `commit()` gets `OperationalError: cannot VACUUM from within a transaction`; one probe (Python 3.13.2, SQLite 3.45.3, macOS) showed exactly this and that the other three modes ran. [DER S-rle6nqpc, S-vc2lihhb, S-nnljaqtm]
+- Open: the `sqlite3` docs never mention `VACUUM`, and no source states how `PRAGMA incremental_vacuum` must be stepped by a driver. [UNK]
+- See python/stdlib-sqlite3-csv.md.
+
+_Agent: kb-research_
+
+## QK-cprofile-pstats-stats-entry-fields-runpy. What are the fields of a pstats.Stats().stats entry, and how is code run through runpy or exec under cProfile counted?
+- A `Stats.stats` entry maps `(filename, lineno, funcname)` to `(cc, nc, tt, ct, callers)`: primitive calls, total calls, time in the function, cumulative time and a callers dict; under `cProfile` a callers value is `(nc, cc, tt, ct)`. [CODE S-tkdyngyx, S-vydvtba3]
+- The printed `ncalls` is `nc/cc` for a recursive function, and the report's first line gives total and primitive calls. [DOC S-5y7wwygh]
+- `runpy` runs the target's code through `_run_code`, which calls the built-in `exec`. [CODE S-4ydukkiy]
+- Conclusion: the target's top level is a `<module>` entry called from `builtins.exec`, called from `runpy._run_code`; a profiled string run by `Profile.runctx` adds a second `exec` and a `<string>:1(<module>)` entry. One probe (Python 3.13.2, macOS) confirmed this. [DER S-tkdyngyx, S-vydvtba3, S-4ydukkiy, S-5y7wwygh]
+- Open: the docs state no layout for `Stats.stats`. [UNK]
+- See python/stdlib-cprofile-pstats.md.
+
+_Agent: kb-research_
