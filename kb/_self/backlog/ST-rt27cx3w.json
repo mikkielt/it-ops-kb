@@ -2,7 +2,7 @@
   "id": "ST-rt27cx3w",
   "kind": "story",
   "title": "bench_core.ALIAS's opus row cites a kb line that states which model the opus alias names",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-7y6dk257",
   "priority": "P3",
@@ -34,5 +34,6 @@
   "links": [
     "parked: SP-2vhfsn4o review"
   ],
-  "notes": "Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups). check.py passes before the work: it pins that the kb stays valid after the fact lands. The second check fails until the ALIAS comment cites, as 'opus from VERSION PATH:LINE', a kb line that names opus."
+  "notes": "Committed to SP-7y6dk257 at the operator's request of 2026-10-09 (benchmark follow-ups). check.py passes before the work: it pins that the kb stays valid after the fact lands. The second check fails until the ALIAS comment cites, as 'opus from VERSION PATH:LINE', a kb line that names opus.",
+  "claimed_by": "orchestrator-SP-7y6dk257"
 }
