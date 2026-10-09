@@ -2,7 +2,7 @@
   "id": "ST-6vtifk2b",
   "kind": "story",
   "title": "_cache keeps only live pack indexes and a unit cache that shrinks when pruned",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzgetyu2",
   "priority": "P3",

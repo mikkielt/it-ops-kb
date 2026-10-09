@@ -2,7 +2,7 @@
   "id": "ST-nkg2ucxq",
   "kind": "story",
   "title": "check-trailers reads a commit range in a handful of git calls, not three per commit",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yzgetyu2",
   "priority": "P3",
   "rank": 0,

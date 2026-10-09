@@ -2,7 +2,7 @@
   "id": "ST-s6tqojsw",
   "kind": "story",
   "title": "rag.py eval over the 574 rows takes a third of today's time: the _self view holds each tested anchor's informative words once",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzgetyu2",
   "priority": "P2",

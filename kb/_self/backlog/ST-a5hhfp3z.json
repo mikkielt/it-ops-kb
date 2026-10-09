@@ -2,7 +2,7 @@
   "id": "ST-a5hhfp3z",
   "kind": "story",
   "title": "The unit cache is kept per root set and the docs carry no measured sizes of it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzgetyu2",
   "priority": "P3",
@@ -57,7 +57,7 @@
         ]
       },
       "class": "design",
-      "answer": "move-out",
+      "answer": "keep",
       "by": "operator"
     }
   ],

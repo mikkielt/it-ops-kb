@@ -2,7 +2,7 @@
   "id": "ST-d6pooprz",
   "kind": "story",
   "title": "Research sprint goal: Tool speed and cache hygiene: eval three times faster, check-trailers in one git log, _cache pruned",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yzgetyu2",
   "goal_research": true,
   "priority": "P1",
