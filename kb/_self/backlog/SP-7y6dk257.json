@@ -2,7 +2,7 @@
   "id": "SP-7y6dk257",
   "kind": "sprint",
   "title": "Every pool eval row checks the fact that answers it, and every model alias cites the kb",
-  "status": "planned",
+  "status": "active",
   "goal": "Every eval row of the question pool (kb/public/_retrieval/bench_pool.csv) and its variants checks a fact line that answers its question: none is checked against a line about something else (the Autopilot motherboard rows) or holds only an article path (the five rows left path-only); and bench_core.ALIAS's opus row cites the kb line that states which model the opus alias names, as the haiku and sonnet rows do.",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

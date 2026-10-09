@@ -2,7 +2,7 @@
   "id": "BG-zcw5yqch",
   "kind": "bug",
   "title": "Four pool rows on the Autopilot motherboard question check the hybrid-join line of autopilot/lifecycle.md, so no arm passes them",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7y6dk257",
   "priority": "P2",
   "rank": 0,

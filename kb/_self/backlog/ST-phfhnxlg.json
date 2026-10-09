@@ -2,7 +2,7 @@
   "id": "ST-phfhnxlg",
   "kind": "story",
   "title": "Review sprint: Every pool eval row checks the fact that answers it, and every model alias cites the kb",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7y6dk257",
   "review": true,
   "priority": "P1",

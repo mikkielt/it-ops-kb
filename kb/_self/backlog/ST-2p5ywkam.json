@@ -2,7 +2,7 @@
   "id": "ST-2p5ywkam",
   "kind": "story",
   "title": "fact_for skips a CSV header or a wrapped continuation line, so the last five path-only eval rows get a fact check",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-7y6dk257",
   "priority": "P2",

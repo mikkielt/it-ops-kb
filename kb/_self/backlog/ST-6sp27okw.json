@@ -2,7 +2,7 @@
   "id": "ST-6sp27okw",
   "kind": "story",
   "title": "Research sprint goal: Every pool eval row checks the fact that answers it, and every model alias cites the kb",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7y6dk257",
   "goal_research": true,
   "priority": "P1",
