@@ -2,7 +2,7 @@
   "id": "ST-qiep6y7i",
   "kind": "story",
   "title": "The router-pinned arm reads on claude-haiku-5-5, the model the haiku alias resolves to, and the pool's router record is re-run on it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-x7ger6vu",
   "priority": "P1",
@@ -47,12 +47,14 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/design.md",
     "kb/_self/tools.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/bench_lookup.py"
   ],
   "links": [
     "kb/public/claude/ci-and-headless.md:88",
     "kb/public/claude/ci-and-headless.md:91",
     "kb/public/claude/skills-and-subagents.md:103"
   ],
-  "notes": "Premise (2026-10-09, benchmark review): check 1 fails now: agent_bench.PIN is {haiku: claude-haiku-4-5, sonnet: claude-sonnet-5-5} while bench_core.ALIAS resolves haiku to claude-haiku-5-5 from Claude Code 2.1.293 and a claude -p --model haiku run on this host (2.1.293) reports modelUsage claude-haiku-5-5. The 2026-10-09 pool record's router cell: 0.026 USD a run, 14,632 effective input per right answer, 5,424 cache-write per run, right 82.7 percent; benchmarks.md line 695 leaves the router's dearer runs unexplained. Paid run: run pool --arms router --reps 1, dry-run estimate 3.83 USD at the old reader; cap at 6 USD. Premise run at plan (2026-10-09): check 1 fails (PIN haiku claude-haiku-4-5 against claude-haiku-5-5) and the benchmarks.md text check fails (line 540 says Haiku 4.5 reads); pool verify and report --check pass before the work and pin behaviour that must stay: the re-recorded router rows must still verify and the report's tables must still agree with the results file."
+  "notes": "Premise (2026-10-09, benchmark review): check 1 fails now: agent_bench.PIN is {haiku: claude-haiku-4-5, sonnet: claude-sonnet-5-5} while bench_core.ALIAS resolves haiku to claude-haiku-5-5 from Claude Code 2.1.293 and a claude -p --model haiku run on this host (2.1.293) reports modelUsage claude-haiku-5-5. The 2026-10-09 pool record's router cell: 0.026 USD a run, 14,632 effective input per right answer, 5,424 cache-write per run, right 82.7 percent; benchmarks.md line 695 leaves the router's dearer runs unexplained. Paid run: run pool --arms router --reps 1, dry-run estimate 3.83 USD at the old reader; cap at 6 USD. Premise run at plan (2026-10-09): check 1 fails (PIN haiku claude-haiku-4-5 against claude-haiku-5-5) and the benchmarks.md text check fails (line 540 says Haiku 4.5 reads); pool verify and report --check pass before the work and pin behaviour that must stay: the re-recorded router rows must still verify and the report's tables must still agree with the results file.",
+  "claimed_by": "worker-qiep6y7i"
 }
