@@ -708,3 +708,43 @@ def test_bench_pool_verify_exits_1_naming_each_planted_break_of_a_fake_record(mo
     assert problems == [] and [n[:3] for n in notes] == ["(a)", "(b)", "(d)"]
     newer = [{**r, "record": "2026-10-20"} for r in old]
     assert any(p.startswith("(a) sonnet-5-5:low: rows, and no `planned_kinds` row") for p in bp.verify_problems(newer, "2026-10-20")[0])
+
+
+def test_bench_pool_rerun_of_one_label_narrows_the_earlier_spend_row_and_respend_repairs_a_record(monkeypatch, tmp_path, capsys):
+    import agent_bench
+    import benchmarks as bm
+    import bench_pool as bp
+    kinds = ["fact", "csv_fact", "multi", "synthesis", "false_good", "near_miss", "offkb", "snippet", "count", "cites",
+             "decision", "conflict", "gap"]
+    pool = [{**bp.row(k, "d0", "original", f"fixture:{k}", f"Question {k}?", [r"value1"], "good"), "question": f"Question {k}?"} for k in kinds]
+
+    def live(b, sh):
+        def fresh(arm, effort, row):
+            r = agent_bench.result_of(pool_stream("value1", cost=0.0094), "", 5.0)
+            bc.spent_run(r)
+            return r
+        return fresh
+    monkeypatch.setattr(bp, "load_pool", lambda home, kinds=None: pool)
+    monkeypatch.setattr(bp, "live_runner", live)
+    monkeypatch.setattr(bp, "read_rows", lambda path: [] if path == bp.RESULTS else bc.read_rows(path))
+    monkeypatch.setenv("BENCH_SCRATCH", str(tmp_path / "scratch"))
+    out = tmp_path / "results.csv"
+    run = lambda effort: bm.main(["run", "pool", "--arms", "sonnet-5-5", "--effort", effort, "--out", str(out)])  # noqa: E731
+    verify = lambda *extra: bm.main(["pool", "verify", "--file", str(out), *extra])  # noqa: E731
+    assert run("low,default") == 0 and verify() == 0
+    full = {r["arm"]: r for r in bc.read_rows(out) if r["metric"] == "spend_usd"}
+    assert set(full) == {"paid: sonnet-5-5:default,sonnet-5-5:low"}
+    assert run("default") == 0  # a same-day rerun of one label: its old runs leave the earlier spend row
+    capsys.readouterr()
+    spend = {r["arm"]: (float(r["value"]), r["runs"]) for r in bc.read_rows(out) if r["metric"] == "spend_usd"}
+    assert spend == {"paid: sonnet-5-5:low": (round(13 * 0.0094, 4), "13"), "paid: sonnet-5-5:default": (round(13 * 0.0094, 4), "13")}, spend
+    assert verify() == 0, capsys.readouterr().out
+    # a record written before the fix: the earlier row still counts the replaced runs (dearer ones), `pool respend` repairs it from the rows
+    rows = [r for r in bc.read_rows(out) if r["arm"] != "paid: sonnet-5-5:low" or r["metric"] not in bp.SPEND_METRICS]
+    old = [{**r, "arm": "paid: sonnet-5-5:default,sonnet-5-5:low", "value": str(float(r["value"]) * (1.5 if r["metric"] == "spend_usd" else 2)), "runs": "26"}
+           for r in bc.read_rows(out) if r["arm"] == "paid: sonnet-5-5:low" and r["metric"] in bp.SPEND_METRICS]
+    bc.write_rows(old + rows, out)
+    capsys.readouterr()
+    assert verify() == 1 and "(c) spend of sonnet-5-5:default, sonnet-5-5:low" in capsys.readouterr().out
+    assert bm.main(["pool", "respend", "--file", str(out)]) == 0 and "sonnet-5-5:default left the spend row of 2 labels" in capsys.readouterr().out
+    assert verify() == 0 and bm.main(["pool", "respend", "--file", str(out)]) == 0 and "overlaps another" in capsys.readouterr().out

@@ -42,6 +42,11 @@
                                             exit 1, naming each, when the pool record R (default the newest) of the results
                                             file F breaks one of the record's consistency properties (bench_pool.py,
                                             verify_problems); the rows it reads are the record's own
+  benchmarks.py pool respend [--file F] [--record R]
+                                            narrow the spend rows of the pool record R (default the newest) of the results
+                                            file F that name an arm label a later spend row of the record also names (a
+                                            same-day rerun replaced that label's runs), totalling each from the record's
+                                            own rows; no paid run (bench_pool.py, settle_spend); a run does this itself
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file, or a `bench:` marker names a scenario with no rows in it
@@ -157,6 +162,9 @@ def main(argv=None):
     pv = pool.add_parser("verify")
     pv.add_argument("--file", help="the results file (default: kb/_self/reports/benchmarks.csv)")
     pv.add_argument("--record", help="the pool record to check (default: the newest of the file)")
+    ps = pool.add_parser("respend")
+    ps.add_argument("--file", help="the results file (default: kb/_self/reports/benchmarks.csv)")
+    ps.add_argument("--record", help="the pool record to repair (default: the newest of the file)")
     rep = sub.add_parser("report")
     rep.add_argument("--check", action="store_true")
     a = ap.parse_args(argv)
@@ -245,7 +253,13 @@ def main(argv=None):
             print(f"{n}: {len(mine)} rows, ${SPEND['usd']:.2f} in {SPEND['runs']} paid runs, "
                   f"{time.time() - t:.0f} s", flush=True)
             SPEND.update(usd=0.0, input=0, out=0, runs=0)
-            write_rows(merge_rows(read_rows(out), mine), out)
+            merged = merge_rows(read_rows(out), mine)
+            if n == "pool":  # a same-day run of arm labels takes their runs out of an earlier spend row that counted them
+                for record in dict.fromkeys(r["record"] for r in mine):
+                    merged, lines = bench_pool.settle_spend(merged, record)
+                    for line in lines:
+                        print(f"{n}: {line}", flush=True)
+            write_rows(merged, out)
     finally:
         b.close()
     return b.status
