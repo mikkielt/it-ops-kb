@@ -2,7 +2,7 @@
   "id": "ST-fbp5pm6k",
   "kind": "story",
   "title": "kb-reviewer runs at effort low, proven on the host's planted problems at both levels",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x7ger6vu",
   "priority": "P2",
   "rank": 0,
@@ -98,5 +98,46 @@
     "https://code.claude.com/docs/en/model-config#adjust-effort-level"
   ],
   "notes": "Premise (2026-10-09, benchmark review): a quality claim, probed on the pool record of 2026-10-09 (held-out and query-log rows included): Sonnet 5.5 at low 59,573 against 72,010 effective input per right answer (-17 percent), 0.111 against 0.150 USD a run (-26 percent), right 85.3 against 89.3 percent (within the spread, -4.0 points [-9.3, +0.7]); the reviewer's own measure is the host-lookups kb-review-workspace cell, 5/5 at medium on 2026-09-28. Check 1 fails now (effort: medium). Paid run: benchmarks.py run host-lookups at both levels, about 3 USD. If low misses a planted problem the item is dropped with its record kept, since the end state would be the present one. Premise run at plan (2026-10-09): the effort check fails (medium) and the design.md text check fails (no effort low statement). report --check and selfdoc.py check pass before the work and pin behaviour that must stay: the host-lookups rows added must keep the tables in agreement and the docs consistent. Ordered after ST-7tl6pbqf: both edit benchmarks.md. The design.md clause check requires a sentence that names reviews together with effort low: design.md:36 already reports the pool's low-against-default figures in its table, so a bare effort low match passed before the work (precheck, 2026-10-09). Run (2026-10-09): host-lookups has no effort setting (bench_lookup.s_host_lookups reads the reviewer's level from the clone of HEAD) and a same-day rerun replaces its rows; the operator chose g2 both-medium-to-scratch. A run host-lookups --dry-run by the orchestrator started paid runs (dry-run is read only by pool) and was stopped after about two minutes, no rows written: BG-wapzksub.",
-  "claimed_by": "worker-fbp5pm6k"
+  "evidence": {
+    "commit": "3ce7d39e495cc529d644787f4630559cbdbd9384",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open(\".claude/agents/kb-reviewer.md\",encoding=\"utf-8\").read();m=re.search(r\"^effort:\\s*(\\S+)\",t,re.M);print(\"effort\",m and m.group(1));sys.exit(0 if m and m.group(1)==\"low\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5f583bbf748c2922"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open(\"kb/_self/design.md\",encoding=\"utf-8\").read().replace(chr(96),\"\");ok=bool(re.search(r\"review[^.]*effort low|effort low[^.]*review\",t,re.I));print(\"design.md states reviews run at effort low:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "37f5af899a537cd8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
