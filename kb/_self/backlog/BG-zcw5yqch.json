@@ -1,0 +1,24 @@
+{
+  "id": "BG-zcw5yqch",
+  "kind": "bug",
+  "title": "Four pool rows on the Autopilot motherboard question check the hybrid-join line of autopilot/lifecycle.md, so no arm passes them",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The rows BP-ff6bf9a2, BP-8be31bb6, BP-82c356ad and BP-e64bdaf9 check a fact line that answers what happens to the Autopilot device record when the motherboard is replaced, so an arm that answers it passes; in the pool record of 2026-10-09 no arm (the hook included) passed any of the four, and their check names autopilot/lifecycle.md:13, a line about the two Entra device objects of a hybrid join.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,re,json; r=next(x for x in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv')) if x['id']=='BP-ff6bf9a2'); l=open('kb/public/autopilot/lifecycle.md').read().splitlines()[12]; assert not any(re.search(c,l) for c in json.loads(r['checks'])), 'the check matches the hybrid-join line'"
+    ]
+  },
+  "repro_reason": "the defect is the committed check text of a pool row; the behaviour (no arm passing) needs a paid pool run",
+  "touches": [
+    "kb/public/_retrieval/bench_pool.csv"
+  ],
+  "links": [
+    "parked: SP-2vhfsn4o run"
+  ]
+}

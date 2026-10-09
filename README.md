@@ -50,12 +50,12 @@ New since the first runs, a line each:
 - **Host plugin with a team root:** both roots in one pack; Haiku missed the team's part in 1 of 4 runs per mode.
 - **Hook launcher:** `sh _tools/kbpy` adds 3.5 ms on macOS; Linux and Windows are not measured.
 
-**On a wide question pool** (2026-10-08, Claude Code 2.1.293, 299 kb topics; fact, table, held-out, off-kb, gap, count, citation, decision, conflict, snippet, phrasing-variant and query-log questions, each with its checks), effective input tokens per right answer:
-- The router: 8,828, right in 391 of 450 runs. Haiku 5.5 with the kb: 64,928, right in 398 of 450. Sonnet 5.5 with the kb: 60,167, right in 236 of 255.
-- The `kb:` hook spends no model tokens and its pack held the checked text in 396 of 450 runs; neither it nor the router answers a question that needs a count or a join of records.
-- Effort `low` cut Haiku 5.5's tokens per right answer to 58,872 and Sonnet 5.5's to 50,665 at the same rate of right answers.
-- Haiku 5.5 against Haiku 4.5: right in 398 of 450 runs against 218 of 382, at $0.008 a run against $0.035.
-- Six questions in one session: the first adds about 35k-39k tokens to the prompt, the later ones 3k-13k each.
+**On a wide question pool** (2026-10-09, Claude Code 2.1.293, 299 kb topics; fact, table, held-out, off-kb, gap, count, citation, decision, conflict, snippet, phrasing-variant and query-log questions, each with its checks), effective input tokens per right answer:
+- The router: 14,632, right in 124 of 150 runs. Haiku 5.5 with the kb: 73,323, right in 127 of 150. Sonnet 5.5 with the kb: 72,010, right in 134 of 150. Opus 5.5 with the kb: 56,816, right in 135 of 150, at $0.232 a run against $0.150 for Sonnet 5.5 and $0.009 for Haiku 5.5.
+- The `kb:` hook spends no model tokens and its pack held the checked text in 128 of 150 runs; neither it nor the router answers a question that needs a count or a join of records.
+- Effort `low` cut Sonnet 5.5's tokens per right answer to 59,573 at a rate of right answers within the spread; on Haiku 5.5 and Opus 5.5 the change is within the spread.
+- Haiku 5.5 against Haiku 4.5: right in 127 of 150 runs against 72 of 150, at $0.009 a run against $0.034.
+- Six questions in one session: the first adds about 35k-38k tokens to the prompt, the later ones 4k-10k each.
 
 Setups, every run and the history: `kb/_self/reports/benchmarks.md`.
 
