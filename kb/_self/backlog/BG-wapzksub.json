@@ -1,0 +1,27 @@
+{
+  "id": "BG-wapzksub",
+  "kind": "bug",
+  "title": "benchmarks.py run SCENARIO --dry-run starts paid runs for every scenario but pool",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "benchmarks.py run with --dry-run and a scenario other than pool (host-lookups, say) refuses with exit 2 naming the scenarios that have a plan, or prints that scenario's plan, and starts no claude -p run; today --dry-run is read only by bench_pool (b.dry), so run host-lookups --dry-run ran paid Sonnet sessions from the main checkout until the orchestrator of SP-x7ger6vu stopped it on 2026-10-09 (about 2 minutes of runs, no rows written)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/benchmarks.py',encoding='utf-8').read();sys.exit(0 if 'dry-run' in t and 'only pool' in t else 1)"
+    ]
+  },
+  "repro_reason": "running the behaviour starts paid claude -p sessions; the repro reads the refusal text the fix adds",
+  "touches": [
+    "_tools/benchmarks.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-x7ger6vu run"
+  ]
+}
