@@ -2,7 +2,7 @@
   "id": "ST-nkg2ucxq",
   "kind": "story",
   "title": "check-trailers reads a commit range in a handful of git calls, not three per commit",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yzgetyu2",
   "priority": "P3",
   "rank": 0,
@@ -43,5 +43,38 @@
     "ST-s6tqojsw"
   ],
   "notes": "Premise (2026-10-09, benchmark review): check 1 prints git calls 92 for HEAD~30..HEAD (34 commits, 1 kb commit) and fails; /usr/bin/time: real 1.66 s, user 0.74 s, sys 0.73 s. Free: no model runs. Premise run at plan (2026-10-09): the git-call count check fails (92 calls for 34 commits). tests.py -k sync_e2e (the sync scenario, whose gate runs check-trailers over a pushed range with a planted bad commit) and report --check pass before the work and pin behaviour that must stay: the same verdicts over the same ranges, and the re-recorded tool-speed row in agreement with the tables. Ordered after ST-s6tqojsw: both re-record tool-speed rows in benchmarks.md and benchmarks.csv.",
-  "claimed_by": "worker-nkg2ucxq"
+  "evidence": {
+    "commit": "370f7afa81cc1997f9144a75aa9905799b700abe",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,\"_tools\");import kg_merge,kg_trailers;n=[0];real=kg_merge.git;kg_merge.git=lambda *a,**k:(n.__setitem__(0,n[0]+1),real(*a,**k))[1];rng=\"HEAD~30..HEAD\";exec(\"try: kg_trailers.cmd_check_trailers(types.SimpleNamespace(range=rng))\\nexcept SystemExit: pass\");print(\"git calls\",n[0]);sys.exit(0 if n[0]<=6 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "1b3296e0897dc543"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "sync_e2e"
+        ],
+        "exit": 0,
+        "sha256": "4ae1e5dc19842350"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
