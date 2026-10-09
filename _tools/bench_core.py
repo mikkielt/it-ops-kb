@@ -30,7 +30,8 @@ PRICE = {
     "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01, 0.20),  # kb/public/claude/ci-and-headless.md:90
                          (None, 0.50, 2.50, 0.625, 0.05, 1.0)),
     "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:89
-    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10, 4.0),),  # kb/public/claude/ci-and-headless.md:87
+    # the page states a 0.10 read; runs are billed 0.20, as the open conflict at kb/public/_conflicts.md:745 records
+    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:87
     "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20, 8.0),),  # kb/public/claude/ci-and-headless.md:88
 }
 # the TTL a request's cache writes are priced at when its usage carries no per-TTL split (`cache_creation`), by the
