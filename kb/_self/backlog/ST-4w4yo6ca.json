@@ -25,6 +25,21 @@
     "_tools/benchmarks.py",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When a same-day pool run's labels overlap an earlier same-day spend row, does the write path split the earlier row (drop the replaced labels from it, recomputed from the record's own rows, the new run's spend row beside it) or replace it (one row of the union of labels)?",
+      "options": [
+        "split: the earlier row keeps its remaining labels, the new row stays beside it",
+        "replace: one combined row for the union of labels"
+      ],
+      "recommendation": "split: the earlier row keeps its remaining labels, the new row stays beside it",
+      "class": "design",
+      "answer": "split: the earlier row keeps its remaining labels, the new row stays beside it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-2vhfsn4o review"
   ],

@@ -21,7 +21,7 @@ from typing import NamedTuple
 
 import agent_bench
 from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, WEB_SEARCH_USD, Skip, est_cost, no_plugin_env, prompt_tokens,
-                        read_rows, resolve_model, run_tokens, spent_run, spent_usd, usage_sum, write_rate)
+                        read_rows, resolve_model, run_tokens, spent_run, spent_usd, usage_sum, write_rate, write_rows)
 from bench_retrieval import numbered, sonnet_json
 
 SEED = 11
@@ -716,14 +716,21 @@ def listed_ask(ask, dry_run, limits):
 
 
 def cli(a, home=HOME):
-    """`pool build`, `pool check` and `pool verify`; the argparse namespace comes from benchmarks.py."""
-    if a.pool_cmd == "verify":
+    """`pool build`, `pool check`, `pool verify` and `pool respend`; the argparse namespace comes from benchmarks.py."""
+    if a.pool_cmd in ("verify", "respend"):
+        name = a.pool_cmd
         path = Path(a.file) if a.file else RESULTS
         if not path.is_file():
-            print(f"pool verify: {path} does not exist")
+            print(f"pool {name}: {path} does not exist")
             return 1
         rows = read_rows(path)
         record = a.record or max((r["record"] for r in rows if r["scenario"] == "pool"), default="")
+        if name == "respend":
+            rows, lines = settle_spend(rows, record)
+            if lines:
+                write_rows(rows, path)
+            print("\n".join(f"pool respend: {line}" for line in lines) or f"pool respend: no spend row of the record {record} overlaps another")
+            return 0
         problems, notes = verify_problems(rows, record)
         for line in notes + problems:
             print(f"pool verify: {line}")
@@ -1518,6 +1525,47 @@ LEGACY_RECORDS = {"2026-10-08": {
     "a": "its rows do not name the kinds each arm label was to run",
     "b": "its `out` is the stream's partial count (7 to 24 tokens a run) and its rows hold no list cost of a run",
     "d": "its session rows hold no cost per position"}}
+
+
+SPEND_METRICS = {"spend_usd": "cost", "spend_input_tokens": "input", "spend_output_tokens": "out"}  # spend row: the per-run mean it totals
+
+
+def settle_spend(rows, record):
+    """([row], [line]) of the results `rows` with the pool record `record`'s spend rows split: a spend row (`paid: LABELS`)
+    keeps only the labels no later spend row of the record names, as a same-day run of a label replaces that label's
+    rows (`merge_rows`) and with them its runs, which the earlier row still counted. The narrowed row's figures (spend,
+    input and output tokens, runs) are totalled from the record's own rows, each label's mean times its runs (the runs of
+    a label with no model are not counted), so `pool verify` (c) holds with no paid run; a row left with no label is
+    dropped. A line names each row changed."""
+    groups = {}  # arm of a spend row: the labels it names, in the order the rows stand
+    for r in rows:
+        if r["scenario"] == "pool" and r["record"] == record and r["metric"] in SPEND_METRICS:
+            groups.setdefault(r["arm"], r["arm"].removeprefix("paid: ").split(","))
+    arms, later, owned = list(groups), set(), {}
+    for arm in reversed(arms):
+        owned[arm] = [label for label in groups[arm] if label not in later]
+        later |= set(groups[arm])
+    mean = {(r["arm"], r["metric"]): r for r in rows if r["scenario"] == "pool" and r["record"] == record and r["case"] == "all"}
+    total = lambda labels, metric: sum(float(mean[(label, metric)]["value"]) * float(mean[(label, "cost")]["runs"])  # noqa: E731
+                                       for label in labels if (label, "cost") in mean)
+    out, lines = [], []
+    for r in rows:
+        arm = r["arm"]
+        if (r["scenario"], r["record"]) != ("pool", record) or r["metric"] not in SPEND_METRICS or owned[arm] == groups[arm]:
+            out.append(r)
+            continue
+        metric = SPEND_METRICS[r["metric"]]
+        value = total(owned[arm], metric)
+        runs = sum(float(mean[(label, "cost")]["runs"]) for label in owned[arm] if (label, "cost") in mean
+                   and label.split(":")[0].removesuffix(SESSION_SUFFIX) not in NO_MODEL_ARMS)
+        if owned[arm]:
+            out.append({**r, "arm": "paid: " + ",".join(owned[arm]),
+                        "value": f"{value:.4f}" if metric == "cost" else str(round(value)), "runs": str(round(runs))})
+        if metric == "cost":
+            gone = ", ".join(label for label in groups[arm] if label not in owned[arm])
+            lines.append(f"{gone} left the spend row of {len(groups[arm])} labels: ${float(r['value']):.4f} in {r['runs']} runs, "
+                         + (f"now ${value:.4f} in {round(runs)} runs" if owned[arm] else "dropped"))
+    return out, lines
 
 
 def verify_problems(rows, record):
