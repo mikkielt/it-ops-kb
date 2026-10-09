@@ -2,7 +2,7 @@
   "id": "ST-phfhnxlg",
   "kind": "story",
   "title": "Review sprint: Every pool eval row checks the fact that answers it, and every model alias cites the kb",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7y6dk257",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,27 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-SP-7y6dk257"
+  "notes": "Review: g1 of BG-zcw5yqch confirmed by the operator. The fresh-context reviewer found no S1 gap; parked BG-wcdbq563 (S2, fact_for picks), ST-dj2zgvh3 (breadth guard), ST-2enqvs6u (opus alias before 2.1.280); BP-9e209bb8's absent alternatives are BG-hytkzabh already; a negated answer can pass any regex check (BP-ff6bf9a2 'no need to re-register'), a limit of the check form, not filed. Worker cost not captured (ST-asstsi7t); the workers' JSON reported 0.59, 0.99 and 1.72 USD list, the reviewer 1.37; paid pool calls 0.02 USD.",
+  "evidence": {
+    "commit": "27d9d58caee467360f10589f76a793cee544c99f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "466d43c21e87ab1a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a851f6ac1ece0056"
+      }
+    ]
+  }
 }
