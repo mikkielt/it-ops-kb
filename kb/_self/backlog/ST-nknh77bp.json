@@ -1,0 +1,24 @@
+{
+  "id": "ST-nknh77bp",
+  "kind": "story",
+  "title": "Research sprint goal: Real lookup misses answered: the stranded query-log findings leave no-fix and the research queue empties",
+  "status": "draft",
+  "sprint": "SP-flkl5gom",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-nknh77bp"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}
