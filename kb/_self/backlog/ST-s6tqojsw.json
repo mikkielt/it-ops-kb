@@ -2,7 +2,7 @@
   "id": "ST-s6tqojsw",
   "kind": "story",
   "title": "rag.py eval over the 574 rows takes a third of today's time: the _self view holds each tested anchor's informative words once",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzgetyu2",
   "priority": "P2",
@@ -41,5 +41,6 @@
     "kb/_self/reports/benchmarks.md",
     "kb/_self/reports/benchmarks.csv"
   ],
-  "notes": "Premise (2026-10-09, benchmark review): python3 -m cProfile -s cumtime _tools/rag.py eval: 6.28 s in all, pack 5.83 s over 574 calls (10 ms each against 2.9 ms for a warm pack in the tool-speed record), tested_matches 1.87 s over 288 calls, _load_own 138,740 calls 1.26 s, rank 1.93 s, specific 0.40 s; check 1 fails now. Free: no model runs. Premise run at plan (2026-10-09): the _load_own count check fails (138,740 calls). rag.py eval and report --check pass before the work and pin behaviour that must stay: the pack text and the 574 passes must not change, and the re-recorded tool-speed row must keep the tables in agreement."
+  "notes": "Premise (2026-10-09, benchmark review): python3 -m cProfile -s cumtime _tools/rag.py eval: 6.28 s in all, pack 5.83 s over 574 calls (10 ms each against 2.9 ms for a warm pack in the tool-speed record), tested_matches 1.87 s over 288 calls, _load_own 138,740 calls 1.26 s, rank 1.93 s, specific 0.40 s; check 1 fails now. Free: no model runs. Premise run at plan (2026-10-09): the _load_own count check fails (138,740 calls). rag.py eval and report --check pass before the work and pin behaviour that must stay: the pack text and the 574 passes must not change, and the re-recorded tool-speed row must keep the tables in agreement.",
+  "claimed_by": "worker-s6tqojsw"
 }
