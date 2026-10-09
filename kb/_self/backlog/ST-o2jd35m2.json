@@ -1,0 +1,31 @@
+{
+  "id": "ST-o2jd35m2",
+  "kind": "story",
+  "title": "The pool report marks an Opus cell that ran only the sanity subset, read from its planned_kinds row",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_report.py marks in the pool tables each cell of an arm label whose planned_kinds row names fewer kinds than the pool (the opus-5-5 sanity subset of ST-7tl6pbqf), for example with its row count, so a future subset record is told apart from a full one without the prose note; and the --kinds help text of benchmarks.py no longer says default all where --kinds all is refused as an unknown kind (found by the SP-x7ger6vu review: ST-7tl6pbqf's table-marking clause was met by a prose note, as bench_report.py was outside its touches)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_report.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-x7ger6vu review"
+  ]
+}

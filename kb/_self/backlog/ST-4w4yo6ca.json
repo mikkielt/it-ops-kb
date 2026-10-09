@@ -37,7 +37,7 @@
       "recommendation": "split: the earlier row keeps its remaining labels, the new row stays beside it",
       "class": "design",
       "answer": "split: the earlier row keeps its remaining labels, the new row stays beside it",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

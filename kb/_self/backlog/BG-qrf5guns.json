@@ -1,0 +1,25 @@
+{
+  "id": "BG-qrf5guns",
+  "kind": "bug",
+  "title": "benchmarks.md's router-readers paragraph says the spend row still counts the first router rows, and blames the cache-write price for the tokens-per-right gap",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb/_self/reports/benchmarks.md, 'The router arm's two readers': the closing sentence says the record's spend row still counts the first router rows until pool verify (c) is repaired (ST-4w4yo6ca), which pool respend did in 7fa126e97 (149.7418 to 145.9141 USD, 1774 runs), and it names a backlog id in a kb/_self doc; it states the narrowed row instead, with no item id; and the sentence that the cache-write price is why the two tokens-per-right-answer figures (14,632, 17,544) do not compare is cut or given its own reason, since effective input weights a 1-hour write the same on both readers (found by the SP-x7ger6vu review)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read();sys.exit(1 if 'still counts the first rows until' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is wording in a report; the repro reads the stale sentence",
+  "touches": [
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "links": [
+    "parked: SP-x7ger6vu review"
+  ]
+}
