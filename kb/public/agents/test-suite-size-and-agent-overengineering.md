@@ -1,16 +1,16 @@
 ---
 topic: agents/test-suite-size-and-agent-overengineering
 priority: P3
-applies_to: "keeping a test suite small and fast, and keeping a coding agent from over-engineering it: GitLab testing guide (master), Software Engineering at Google (2020), Google SRE book (2017), Bazel test encyclopedia, Microsoft Learn DevOps (2022), Anthropic prompting guidance for Claude Opus 4.5 to Opus 5 and Sonnet 5.5, Claude Code best practices (retrieved 2026-10-06)"
-retrieved_utc: 2026-10-06
-sources: [S-zec4acor, S-pf2bzwco, S-xpnhjuy4, S-topmk5kh, S-3dlofilm, S-wxn7kar4, S-claarsij, S-flv3lmzn, S-3jc54vsg, S-xxsfmdk5, S-krlfjqxg, S-o3v6ozch]
+applies_to: "keeping a test suite small and fast, deciding which tests to delete, running a slow full suite less often than per merge, and keeping a coding agent from over-engineering it: GitLab testing guide, pipelines page and quarantine handbook (master), Software Engineering at Google (2020), Google SRE book (2017), Bazel test encyclopedia, Microsoft Learn DevOps (2022), Anthropic prompting guidance for Claude Opus 4.5 to Opus 5 and Sonnet 5.5, Claude Code best practices (retrieved 2026-10-10)"
+retrieved_utc: 2026-10-10
+sources: [S-zec4acor, S-pf2bzwco, S-xpnhjuy4, S-topmk5kh, S-3dlofilm, S-wxn7kar4, S-claarsij, S-flv3lmzn, S-3jc54vsg, S-xxsfmdk5, S-krlfjqxg, S-o3v6ozch, S-bmz46flb, S-ocdzembr, S-nxhqpwaf, S-f65kifg4, S-jg2qnt5d]
 status: partial
 ---
 
 # What keeps a test suite small, and a coding agent from over-engineering it
 
 ## Summary
-Tests are cheap to add and costly to keep: every one is run, read and repaired for as long as it exists. The engineering guides of GitLab, Google and Microsoft answer with a shape (most tests small and low-level, few end to end), with numeric budgets per test, and with deleting tests that do not earn their cost. For an AI coding agent, Anthropic's prompting guidance says its models add tests, files and abstractions nobody asked for unless told not to, and gives the wording that stops it. None of these sources says monitoring can take the place of regression tests; they treat tests before release and checks in production as two halves.
+Tests are cheap to add and costly to keep: every one is run, read and repaired for as long as it exists. The engineering guides of GitLab, Google and Microsoft answer with a shape (most tests small and low-level, few end to end), with numeric budgets per test, with deleting tests that do not earn their cost (GitLab sets a deadline after which a quarantined test is deleted), and with running only a fast, reliable subset per merge while the slow full suite runs after the merge or on a schedule. For an AI coding agent, Anthropic's prompting guidance says its models add tests, files and abstractions nobody asked for unless told not to, and gives the wording that stops it. None of these sources says monitoring can take the place of regression tests; they treat tests before release and checks in production as two halves.
 
 ## Facts
 
@@ -39,6 +39,35 @@ Tests are cheap to add and costly to keep: every one is run, read and repaired f
 - Google's SRE book: "Instead of repeating the ambiguous refrain \"We need more tests,\" set explicit goals and deadlines." [DOC S-flv3lmzn]
 - Google's SRE book: with a build system that knows dependencies, tests run only for changed code instead of at every submit, which makes them cheaper and faster. [DOC S-flv3lmzn]
 
+### Which tests to delete
+- GitLab's quarantine handbook treats a quarantine as temporary: "tests must be fixed, removed, or moved to a lower test level." [DOC S-jg2qnt5d]
+- For a flaky or broken test, GitLab's handbook gives the owner four choices: fix it at once if the cause is clear, delete it "if it's low-value or redundant", convert it to a lower level if it can be tested more reliably there, or quarantine it when the fix will take longer than the response time. [DOC S-jg2qnt5d]
+- GitLab's quarantine marks a test to be skipped in CI while it stays in the codebase; the quarantine types include `:stale`, a test outdated by feature changes, and `:broken`, a test failing through test code or framework changes. [DOC S-f65kifg4]
+- GitLab's handbook gives a quarantine a deadline: fast quarantine 3 days at most, long-term quarantine 3 months at most, a deletion merge request a week before the end, and the test removed from the codebase after 3 months. [DOC S-jg2qnt5d]
+- The same handbook says the deletion merge request "requires manual approval by the owning team", described as a semi-automatic process, not a fully automatic one, although its lifecycle table says the test is automatically deleted after 3 months. [DOC S-jg2qnt5d]
+- GitLab's handbook: a test quarantined 3 or more times is a candidate for permanent removal, and its owning team considers alternative testing approaches. [DOC S-jg2qnt5d]
+- GitLab's handbook allows a test back out of quarantine only when it passed more than 100 local runs with the root cause fixed, or when it was removed or replaced by better coverage. [DOC S-jg2qnt5d]
+- Software Engineering at Google on a test nobody understands: removing it has no effect but a possible hole in coverage, and in the worst case such obscure tests "just end up getting deleted"; that deletion "indicates that the test has been providing zero value" for perhaps its whole life. [DOC S-ocdzembr]
+
+### Running the full suite less often than per merge
+- Software Engineering at Google asks why not run every test on presubmit and answers "it's too expensive"; removing the demand that presubmit be exhaustive lets the tests be restricted to certain scopes or selected by a model that predicts their likelihood of detecting a failure. [DOC S-bmz46flb]
+- Its rule for presubmit: "only fast, reliable ones"; some loss of coverage is accepted, so issues that slip by must be caught on post-submit, with some rollbacks accepted, and on post-submit longer times and some instability are acceptable. [DOC S-bmz46flb]
+- Google limits presubmit tests typically to those of the project where the change is made, runs small tests (unit tests) on presubmit in most teams, and keeps unreliable tests off it. [DOC S-bmz46flb]
+- Google's test platform asks each team for a fast subset of tests, often the project's unit tests, as the presubmit; the book says a change that passes it has "a very high likelihood (95%+)" of passing the rest of the tests. [DOC S-bmz46flb]
+- After submission Google runs "all potentially affected tests, including larger and slower tests" asynchronously; a team's Build Cop finds the offending change and prefers a rollback to a fix going forward, and the average wait to submit is around 11 minutes. [DOC S-bmz46flb]
+- Google's Takeout team moved end-to-end tests that could not run on presubmit from "after nightly deploy" to a post-submit CI that runs every two hours, which cut the set of changes to search for a culprit 12 times. [DOC S-bmz46flb]
+- Software Engineering at Google: some teams remove flaky tests from presubmit temporarily while the flakiness is investigated; it also says a CI should keep quick, reliable tests on presubmit and slower, less deterministic ones on post-submit. [DOC S-bmz46flb]
+- GitLab's own project runs three pipeline tiers on a merge request by approval state: the lower the tier, the faster the pipeline, and the higher, "the more confidence the pipeline should give us by running more tests". [DOC S-nxhqpwaf]
+- GitLab: before a merge request is approved its pipeline runs a predictive set of RSpec and Jest tests "that are likely to fail for the merge request changes"; once approved the pipeline holds the full suites, "to ensure that all tests have been run before a merge request is merged". [DOC S-nxhqpwaf]
+- GitLab selects those tests from the changed files: a `detect-tests` job in the prepare stage writes the test files to run, using dynamic mappings and a static mapping file for cases that cannot be mapped dynamically. [DOC S-nxhqpwaf]
+- GitLab runs the full RSpec suite regardless of the prediction when a label asks for it, when the merge request is approved with backend changes, or is created by automation or in a security mirror, or changes a CI configuration file. [DOC S-nxhqpwaf]
+- GitLab adds an `rspec fail-fast` job in parallel for the tests directly related to the change; it is a no-op over 10 related test files, so that it does not run as long as the ordinary jobs. [DOC S-nxhqpwaf]
+- GitLab's merge train runs no tests: its `pre-merge-checks` job requires the latest pipeline to be a merged results pipeline, a tier-3 (full) pipeline and at most 16 hours old (72 for stable branches). [DOC S-nxhqpwaf]
+- GitLab runs the suite beyond merge requests on `master` commits and on scheduled `maintenance` (every even-numbered hour), `nightly` and `weekly` pipelines; nightly runs add other PostgreSQL versions, and its guideline is that one back-compatible and one forward-compatible version of a dependency "should be running in nightly scheduled pipelines". [DOC S-nxhqpwaf]
+- GitLab: tests with a single database run in nightly scheduled pipelines and in merge requests that touch database-related files. [DOC S-nxhqpwaf]
+- GitLab's nightly pipeline has a job ceiling: the page notes 1946 out of 2000 jobs per pipeline used, and that new job families could make it fail. [DOC S-nxhqpwaf]
+- How often a full suite should run when it is not run per merge (every few hours, nightly, weekly), and how a nightly failure is traced to one merge, is not stated as a rule by any source read here: Google gives its own cadences (a two-hour post-submit CI for one team), GitLab its own schedule (every second hour, nightly, weekly). [UNK]
+
 ### What tests before release do not show
 - Microsoft's shift-right guidance: "Regardless of pre-production test coverage, it's necessary to test compatibility in production." [DOC S-claarsij]
 - Whether a defect that logs or monitoring would show needs a regression test as well is not answered by any source read here: they describe checks in production as an addition to tests before release, not as a replacement for them. [UNK]
@@ -59,6 +88,11 @@ Tests are cheap to add and costly to keep: every one is run, read and repaired f
 - The agent still needs a check it can run, and that check need not be a large suite: a few tests of the main paths give the verification signal, while tests written to make an agent's own change look done are the failure Anthropic describes as focusing on passing tests. [DER S-o3v6ozch, S-3jc54vsg: a runnable check as the signal, tests as verification and not the goal]
 - The guides agree on fewer tests at the top, not on a count: the 80/15/5 and 70/20/10 mixes are ratios for large products, and the SRE book makes the amount depend on what a failure costs. A small internal tool sits at the low end of that scale. [DER S-xpnhjuy4, S-topmk5kh, S-flv3lmzn: ratios versus requirements-driven amount]
 
+- What keeps a test suite small is three things stated by the sources, each with its limit: a size limit and a time budget per test (Bazel's timeouts, Microsoft's per-level times), a test to delete when it is flaky past a deadline, redundant or unexplained (GitLab's quarantine ends in deletion after 3 months), and a runner that refuses growth. No source read states a budget for the number of tests in a suite; a count ceiling is a design choice of the team that sets it. [DER S-3dlofilm, S-wxn7kar4, S-jg2qnt5d: per-test limits and deadline deletion are stated; a cap on test count is not]
+- A test is a candidate for deletion by what it costs and what it still shows: GitLab asks of a failing test whether it is low-value or redundant, or whether a lower level tests it more reliably, and Google treats a test nobody can explain as one that may never have provided value. A suite held under a ceiling can use those questions as its rule: each test that keeps failing or cannot be explained is fixed, moved down a level or deleted within a stated time, never left skipped. [DER S-jg2qnt5d, S-ocdzembr: the delete, convert and fix choices, applied to a ceiling]
+- A regression that only a slow full suite finds is caught by four layers kept together: a fast subset that gates the merge (Google's presubmit, GitLab's predictive tier), a selection that adds the tests the change can affect (GitLab's `detect-tests`, Google's affected-test calculation), a full run after the merge that is allowed to be slow and flaky (post-submit, `master` commits, scheduled `maintenance` runs) with a named person who rolls back the culprit, and a periodic broader run (nightly or weekly) for combinations too many for each merge. The sources show each layer at their scale; none states a cadence for a small repository, so the interval is the operator's choice. [DER S-bmz46flb, S-nxhqpwaf: presubmit, selection, post-submit and scheduled runs as the same pattern in two organisations]
+- The price of the pattern is stated by Google and GitLab alike: a failure found after the merge costs a rollback, and a merge train that runs no tests must still check that a full pipeline of recent age exists. A repository that skips the full suite per merge therefore needs the post-merge run to name its culprit (the commit range since the last green run) before it can be trusted. [DER S-bmz46flb, S-nxhqpwaf: rollbacks accepted, the 16-hour freshness check]
+
 ## Reference
 | Limit | Value | Enforced by | Source |
 |---|---|---|---|
@@ -67,6 +101,10 @@ Tests are cheap to add and costly to keep: every one is run, read and repaired f
 | Microsoft L1 unit test, average per assembly; any single L1 test | under 400 ms; at most 2 s | team rule | S-wxn7kar4 |
 | Google Testing Blog: a slow unit test | a tenth of a second | guidance | S-topmk5kh |
 | Mix of unit / integration / end-to-end tests | 80 / 15 / 5 (book), 70 / 20 / 10 (blog) | guidance | S-xpnhjuy4, S-topmk5kh |
+| GitLab fast quarantine / long-term quarantine of a test | 3 days / 3 months at most, then deletion | process (a deletion merge request needs the owning team's approval) | S-jg2qnt5d |
+| GitLab test quarantined this many times | 3 or more: candidate for permanent removal | process | S-jg2qnt5d |
+| GitLab `rspec fail-fast` job | no-op over 10 related test files | CI variable `RSPEC_FAIL_FAST_TEST_FILE_COUNT_THRESHOLD` | S-nxhqpwaf |
+| GitLab merge train: age of the full pipeline | at most 16 hours (72 for stable branches) | `pre-merge-checks` job | S-nxhqpwaf |
 
 Related topics: `agents/agent-planning-and-done.md` (definition of done, end-to-end checks before a task counts as done), `agents/agent-evaluation.md` (regression suites for agents), `gitlab/git-test-repositories.md` (cheap throwaway repositories in tests).
 

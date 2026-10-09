@@ -285,3 +285,5 @@ EV-posttooluse-hook-input-fields-duration-ms,PostToolUse hook input fields durat
 EV-ci-job-token-rest-api-endpoints,"CI_JOB_TOKEN which REST API endpoints can a job token access, repository commits merge_requests",gitlab/detecting-mr-merges-in-ci.md,good,
 EV-claude-code-expose-session-id-bash,Claude Code expose session id to Bash commands environment variable,claude/hooks.md,good,
 EV-claude-haiku-5-5-model-id,"Claude Haiku 5.5 model id price context window",claude/models.csv,good,
+EV-what-keeps-test-suite-small-which-tests-delete,"what keeps a test suite small: which tests to delete, test suite size limits and test budget",agents/test-suite-size-and-agent-overengineering.md,good,
+EV-catch-regression-that-only-slow-full,"How do you catch a regression that only a slow full test suite finds when that suite runs once per sprint instead of per merge? test selection, post-merge, nightly suites",agents/test-suite-size-and-agent-overengineering.md,good,

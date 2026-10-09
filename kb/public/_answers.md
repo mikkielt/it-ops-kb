@@ -2365,6 +2365,18 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-keeps-test-suite-small-regression-caught. What keeps a test suite small (which tests to delete, size limits, a test budget), and how is a regression caught that only a slow full suite finds when it runs less often than per merge?
+- Which tests to delete: GitLab's handbook says a quarantine is temporary and "tests must be fixed, removed, or moved to a lower test level"; it names deleting a test that is low-value or redundant, quarantines end after 3 months in a deletion merge request, and a test quarantined 3 or more times is a candidate for permanent removal. [DOC S-jg2qnt5d]
+- Software Engineering at Google adds that a test nobody can explain may never have provided value, and deleting it opens a hole in coverage. [DOC S-ocdzembr]
+- Size limits and budgets: per-test size and time limits are stated (Bazel's 60, 300, 900 and 3600 seconds; Microsoft's 60 and 400 millisecond averages and 2-second maximum); the sources read state no budget for the number of tests. [DOC S-3dlofilm, S-wxn7kar4]
+- Running the full suite less often: Google runs only "fast, reliable" tests on presubmit, accepts rollbacks for what slips by, and runs all potentially affected tests after submission with a Build Cop who rolls back the culprit; one team's post-submit CI runs every two hours. [DOC S-bmz46flb]
+- GitLab selects tests from the changed files before approval, runs the full RSpec and Jest suites after approval, and runs `master` commits and scheduled `maintenance`, `nightly` and `weekly` pipelines for the rest (other dependency versions run nightly). [DOC S-nxhqpwaf]
+- Conclusion: a suite stays small when each test has a limit, a flaky or unexplained test has a deadline that ends in deletion, and the runner refuses growth; a regression only the slow suite finds is caught by a fast gating subset, test selection from the change, a post-merge full run that names its culprit and a scheduled broader run. [DER S-3dlofilm, S-wxn7kar4, S-jg2qnt5d, S-bmz46flb, S-nxhqpwaf]
+- Open: no source gives a cadence for a full run outside per merge, or how a nightly failure is traced to one merge; a count ceiling for tests is not stated. [UNK]
+- See agents/test-suite-size-and-agent-overengineering.md, gitlab/automated-merge-requests.md.
+
+_Agent: kb-research_
+
 ## QK-retrieving-project-s-own-rule-docs. For retrieving a project's own rule docs: does splitting long paragraphs into sentence-level passages help retrieval, what keeps a passage understandable out of context, and how is such a retriever judged?
 - The Dense X Retrieval paper reports that indexing by fine-grained units such as propositions significantly outperforms passage-level units, and defines a proposition as an atomic, self-contained expression of one factoid. [DOC S-bfjgfchf]
 - Small units lose context: Microsoft and Anthropic both warn that chunks too small to carry enough context give poor results, and the remedies named are the document title appended to mid-document chunks and a prepended chunk-specific context string (failure rate 5.7% to 3.7%). [DOC S-adb2hv5q, S-idqwhfg2, S-4hditql5]

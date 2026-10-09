@@ -50,7 +50,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 36 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
-| `agents/test-suite-size-and-agent-overengineering` | P3 | partial | `agents/test-suite-size-and-agent-overengineering.md` | 12 |
+| `agents/test-suite-size-and-agent-overengineering` | P3 | partial | `agents/test-suite-size-and-agent-overengineering.md` | 17 |
 | `ansible/dsc3-module` | P3 | complete | `ansible/dsc3-module.md` | 6 |
 | `ansible/windows-ssh` | P3 | complete | `ansible/windows-ssh.md` | 1 |
 | `arch/docs-home-options` | P1 | complete | `arch/docs-home-options.md` | 4 |
