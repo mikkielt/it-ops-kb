@@ -2,7 +2,7 @@
   "id": "ST-34m3yiyn",
   "kind": "story",
   "title": "The real lookup misses about claude -p protected paths, Bash trailing-space rules and GitHub rulesets have eval rows naming the article that answers them",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-flkl5gom",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,27 @@
     }
   ],
   "notes": "Premise (2026-10-09, plan): the protected-paths question packs weak (settings-and-scopes.md:65 in the lead); the Bash and GitHub questions pack good from powershell-tool.md and github-branch-rules-and-auto-merge.md while their findings expect permissions-mcp.md and detecting-mr-merges-in-ci.md; no lookup_eval.csv row holds any of the three questions, so check 2 fails. Ordered after ST-nknh77bp: both add lookup_eval.csv rows. rag.py eval passes before the work and pins that every existing row stays green with the new rows and expansions.",
-  "claimed_by": "worker-34m3yiyn"
+  "evidence": {
+    "commit": "479edd3afab2249ca6dea15d904071b6f2598ccd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "991e7e5dd6a784aa"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;qs=[('claude -p headless mode: can it edit files under .claude/ directory, protected paths','settings-and-scopes.md'),('Claude Code Bash permission rule wildcard trailing space star matches command without arguments','powershell-tool.md'),('GitHub rulesets branch protection public repository','github-branch-rules-and-auto-merge.md')];rows=open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8').read();bad=[q for q,a in qs if q not in rows or 'coverage: good' not in (o:=subprocess.run(['python3','_tools/rag.py','pack',q],capture_output=True,text=True).stdout) or a not in o.split('##')[1]];print('not answered:',bad or 'none');sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "be99775f09a1593e"
+      }
+    ]
+  }
 }
