@@ -287,3 +287,5 @@ EV-claude-code-expose-session-id-bash,Claude Code expose session id to Bash comm
 EV-claude-haiku-5-5-model-id,"Claude Haiku 5.5 model id price context window",claude/models.csv,good,
 EV-what-keeps-test-suite-small-which-tests-delete,"what keeps a test suite small: which tests to delete, test suite size limits and test budget",agents/test-suite-size-and-agent-overengineering.md,good,
 EV-catch-regression-that-only-slow-full,"How do you catch a regression that only a slow full test suite finds when that suite runs once per sprint instead of per merge? test selection, post-merge, nightly suites",agents/test-suite-size-and-agent-overengineering.md,good,
+EV-claude-p-headless-mode-edit-files,"claude -p headless mode: can it edit files under .claude/ directory, protected paths",claude/settings-and-scopes.md,good,
+EV-claude-code-bash-permission-rule-wildcard,Claude Code Bash permission rule wildcard trailing space star matches command without arguments,claude/powershell-tool.md,good,
