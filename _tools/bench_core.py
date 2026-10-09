@@ -26,13 +26,13 @@ FIELDS = ["scenario", "record", "date", "commit", "claude_code", "kb_topics", "c
 # kb/public/agents/agent-caching.md:23 (2x the input price) and :27 (Haiku 5.5's per-tier 5-minute and 1-hour writes):
 PRICE_SOURCE = "S2131"
 PRICE = {
-    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10, 2.0),),  # kb/public/claude/ci-and-headless.md:87
-    "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01, 0.20),  # kb/public/claude/ci-and-headless.md:90
+    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10, 2.0),),  # kb/public/claude/ci-and-headless.md:88
+    "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01, 0.20),  # kb/public/claude/ci-and-headless.md:91
                          (None, 0.50, 2.50, 0.625, 0.05, 1.0)),
-    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:89
+    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:90
     # the page states a 0.10 read; runs are billed 0.20, as the open conflict at kb/public/_conflicts.md:745 records
-    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:87
-    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20, 8.0),),  # kb/public/claude/ci-and-headless.md:88
+    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:88
+    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20, 8.0),),  # kb/public/claude/ci-and-headless.md:89
 }
 # the TTL a request's cache writes are priced at when its usage carries no per-TTL split (`cache_creation`), by the
 # billing surface of the run (kb/public/agents/agent-caching.md:41): one hour on a Claude subscription, five minutes on
@@ -42,7 +42,8 @@ BILLING_SURFACE = "subscription"
 # the alias arms of a run and the model each names from a Claude Code version on; a run's own transcript names the model
 # it used, and that wins: this table only prices a run that reports none. The versions' kb facts: haiku from 2.1.293
 # kb/public/claude/ci-and-headless.md:85 [DOC S-ezqg74ki], sonnet from 2.1.284 kb/public/claude/ci-and-headless.md:86
-# [DOC S1864]
+# [DOC S1864], opus from 2.1.280 kb/public/claude/ci-and-headless.md:87 [DOC S-ezqg74ki, S1864] (no earlier model is
+# stated for opus, so its one row covers every version)
 ARMS = ("haiku", "sonnet", "opus")
 ALIAS = {"haiku": (((0,), "claude-haiku-4-5"), ((2, 1, 293), "claude-haiku-5-5")),
          "sonnet": (((0,), "claude-sonnet-5"), ((2, 1, 284), "claude-sonnet-5-5")),
