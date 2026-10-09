@@ -1,0 +1,17 @@
+{
+  "id": "BG-ix3yxgca",
+  "kind": "bug",
+  "title": "querylog.py close --reject refuses a no-fix eval finding, so an off-domain miss apply found no fix for has no tool route out of no-fix",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "close --reject takes only an open gap finding and --tried keeps an eval finding no-fix, so an eval finding apply left no-fix for a question off the kb's domains (an expected article Haiku guessed, no knowledge gap) stays in show --findings --state no-fix for good: learn leaves it no-fix while the question misses its stored best article, and the stranded detector lists it again once its tried note is QUEUE_TRIED_DAYS old. close --reject also records a finding whose newest record is no-fix and kind eval as rejected, stage kept, with the off-domain reason in observed, exit 0, as it does an open gap finding whose entry is gone; the same finding then leaves show --state no-fix, and a second learn writes nothing for it. A no-fix eval or rules finding that the kb now answers from another article (an eval row or a tested question answers it, while the finding's stored best article is not in the pack) has no tool route to fixed-since either: the fix names how it is recorded. ST-7j6dm5wq recorded such findings with ql_store.write_findings, the function close writes through.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import shutil,subprocess,sys,tempfile;from pathlib import Path;sys.path.insert(0,'_tools');import ql_store as s;t=Path(tempfile.mkdtemp())/'store';shutil.copytree('kb/_querylog',t);last=s.finding_states(t);g=next(r for k,r in sorted(last.items()) if r['kind']=='eval' and r.get('stage')=='candidate-gap');rec={k:v for k,v in g.items() if k not in ('observed','tried')};rec['state']='no-fix';s.write_findings(t,s.store_entries(t),[rec],('no-fix',));r=subprocess.run([sys.executable,'_tools/querylog.py','close',g['id'],'--reject','--store',str(t)],capture_output=True,text=True);print(r.stdout.strip() or r.stderr.strip());sys.exit(r.returncode)"
+    ]
+  }
+}
