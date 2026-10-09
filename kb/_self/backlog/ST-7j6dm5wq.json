@@ -33,5 +33,21 @@
     "ST-34m3yiyn",
     "ST-uy4d752n"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is a no-fix eval finding closed whose expected article was wrong or whose question is off the kb's domains, when querylog.py close --reject takes only open gap findings and --tried keeps the finding no-fix?",
+      "options": [
+        "record-direct",
+        "tried-only",
+        "learn-rerun-only"
+      ],
+      "recommendation": "record-direct",
+      "class": "querylog",
+      "answer": "record-direct",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-7j6dm5wq"
 }
