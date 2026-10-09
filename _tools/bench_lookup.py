@@ -177,7 +177,7 @@ def verdict_bar(kind, router, web, kb, escalated=False):
 
 def s_route_by_verdict(b):
     """Routing by verdict against the bare web arm and the kb arm, all pinned by full model name: kb_ask.py's routing
-    (agent_bench.route, `router-pinned`: Haiku 4.5 reads, Sonnet 5.5 researches), `web-sonnet-5-5` (WebSearch and
+    (agent_bench.route, `router-pinned`: Haiku 5.5 reads, Sonnet 5.5 researches), `web-sonnet-5-5` (WebSearch and
     WebFetch only) and `sonnet-5-5` (the kb and docs servers), on six questions. Per case it records the route the pack
     took on this commit (`pack_route`: web, split or good), each arm's cost, time and checks, and whether the
     operator's bar holds for the router (`bar` and `limit_ratio`, verdict_bar)."""
