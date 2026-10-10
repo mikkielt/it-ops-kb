@@ -1,7 +1,8 @@
 """The shared ground of backlog.py's modules (kb/_self/backlog.md): the project settings (`SETTINGS`, read once from
 backlog.json by `read_settings`, with the kb's current values as the defaults, for the root the process runs on:
 `load_settings`) and the accessors that give them at call time (`setting`, `rel_dir`, `kinds`, `id_re`, ...), the
-two refusals, the Backlog class that reads and writes the item files, git and the command runner, the scope helpers,
+two refusals, the Backlog class that reads and writes the item files, git, the claims ledger's path (`claims_ledger`)
+and the command runner, the scope helpers,
 the host and user name guard behind everything the tool prints, the external tracker id helpers (`external_problems`,
 `external_refs`, `external_lines`, `external_trailers`, `external_description`), the helpers that commit the item files a
 command wrote, and what an item waits on (`waits`, `open_gates`) with the one-line `line` that names it. Standard library only;
@@ -34,6 +35,7 @@ SETTINGS = {
     "land_lint": ("argv", [".claude/skills/kb-verify/lint.py"]),
     "lane_module": ("module", "kblane"),  # the module that says which lane a path belongs to
     "worktree_dir": ("path", ".claude/worktrees"),  # a worker's worktrees, under the clone's main checkout
+    "scratch_dir": ("path", "_cache/scratch"),  # + /<id>/: a worker's throwaway files and staging copies, under the clone's top
     "forge_project": ("str", ""),  # the forge project of the integration remote; "" = read from the remote's URL
     # the external trackers an item's `external` ids may name: tracker -> {pattern, url, ref?}; {} = none accepted
     "trackers": ("trackers", {}),
@@ -187,6 +189,11 @@ def always_in_scope():
 def worker_dir():
     """The worker worktrees' directory under the clone's main checkout (`worktree_dir`), as path parts."""
     return tuple(setting("worktree_dir").split("/"))
+
+
+def scratch_dir():
+    """The workers' scratch directory under the clone's top (`scratch_dir`), as path parts."""
+    return tuple(setting("scratch_dir").split("/"))
 
 
 def review_checks():
@@ -501,6 +508,21 @@ def git(root, *args):
     if p.returncode != 0:
         raise Refused(f"git {' '.join(args)}: {(p.stderr or p.stdout).strip()}")
     return p.stdout
+
+
+CLAIMS_LEDGER = "kb-backlog-claims.json"  # in the git dir: the claims made in this working tree
+
+
+def claims_ledger(root):
+    """(top, ledger) of the working tree at ROOT: its git toplevel and the path of its claims ledger, a file in its own
+    git dir, which git never commits (`claim` writes it, `dispatch` adds the worker's pid and session to a record).
+    Where git cannot say (no repository): (str(root), None)."""
+    p = subprocess.run(["git", "-C", str(root), "rev-parse", "--show-toplevel", "--absolute-git-dir"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    rev = p.stdout.split("\n")
+    if len(rev) < 2 or not rev[1]:
+        return str(root), None
+    return rev[0], Path(rev[1]) / CLAIMS_LEDGER
 
 
 def main_worktree_spool(root):

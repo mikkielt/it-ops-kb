@@ -24,19 +24,17 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
-from bl_base import (RESEARCH_KINDS, Refused, Rejected, canonical, external_lines, git, id_re, need,
-                     research_touches, say, scope, setting, touches_overlap, withhold, worker_dir)
+from bl_base import (RESEARCH_KINDS, Refused, Rejected, canonical, claims_ledger, external_lines, git, id_re, need,
+                     research_touches, say, scope, scratch_dir, setting, touches_overlap, withhold, worker_dir)
 from bl_land import WORK_PREFIX, WORKER_NAME
 
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
-SCRATCH_REL = "_cache/scratch"  # + /<id>/: outside the worktree, for the worker's throwaway files and staging copies
 BRIEF_NAME = "brief.md"
 RESULT_NAME = "result.json"  # the session's --output-format json output
 STDERR_NAME = "stderr.log"
 STAGING = "staging"  # under the scratch directory: copies of the `.claude/` files the item's touches name
 DEFAULT_MODEL = "sonnet"
 EFFORT = "high"
-CLAIMS_LEDGER = "kb-backlog-claims.json"  # in the git dir: the claims made in this working tree (bl_items.cmd_claim)
 # --max-turns by item kind (kb/public/claude/ci-and-headless.md: print mode only, an error at the limit, no default)
 TURNS = {"task": 60, "subtask": 60, "bug": 100, "story": 100, "epic": 100, "sprint": 100}
 RESEARCH_TURNS = 200  # a research story, task or subtask or an investigation bug
@@ -99,7 +97,8 @@ def worktree_path(root, iid):
 
 
 def scratch_path(root, iid):
-    return clone_top(root).joinpath(*SCRATCH_REL.split("/"), iid)
+    """The worker's scratch directory, outside its worktree: `scratch_dir` of the clone's top, + /<id>/."""
+    return clone_top(root).joinpath(*scratch_dir(), iid)
 
 
 def worker_branch(iid):
@@ -315,8 +314,10 @@ def write_text(path, text):
 
 
 def ledger_path(root):
-    gitdir = git(root, "rev-parse", "--absolute-git-dir").strip()
-    return Path(gitdir) / CLAIMS_LEDGER
+    ledger = claims_ledger(root)[1]
+    if ledger is None:
+        raise Refused(f"git rev-parse --absolute-git-dir: no git directory at {root}")
+    return ledger
 
 
 def record_worker(root, iid, **fields):
