@@ -2,7 +2,7 @@
   "id": "BG-hytkzabh",
   "kind": "bug",
   "title": "pool build keeps a redone regex whose alternatives match nothing in the kb: BP-9e209bb8 holds Assert-M365DSCTenantDrift and Test-M365DSCDrift, two cmdlet names microsoft365dsc.md never states",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,18 @@
     "parked: SP-7y6dk257 run"
   ],
   "notes": "Premise: run at planning (SP-5i4itd2d): the repro fails (too_broad('Export-Cmd|Invented-Cmd', ...) returns '' for an alternative no kb text holds): reproduces. The repro calls too_broad, which has the articles' texts, so the guard sits there (usable holds only the model's own fact line). Order: after ST-dj2zgvh3, which edits the same function. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
-  "claimed_by": "worker-BG-hytkzabh"
+  "evidence": {
+    "commit": "b5cec03c0f890dec793a5139945835a01326500e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import bench_pool as bp; sys.exit(1 if bp.too_broad(\"Export-Cmd|Invented-Cmd\", \"a\", {\"a\": (\"p\", \"Export-Cmd is real\")}, [\"Export-Cmd is real\"]) == \"\" else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
