@@ -2,7 +2,7 @@
   "id": "ST-q5r6e3nu",
   "kind": "story",
   "title": "Sprint planning probes a query-log finding with pack --root _self before naming it off the kb's domains",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,18 @@
     "gap F-071ee8797647"
   ],
   "notes": "Checks are planned when a sprint commits it (a tested _self question that packs good from the plan rule). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: kb/_self/_retrieval/lookup_eval.csv has no row with 'query-log finding' in a kb-sprint:plan set and the plan step names no probe of a finding (the item's check). Run at plan 2026-10-10: exit 1, False on the base, so the premise reproduces. The row lands through land --wait-merge, since that file is code lane (_tools/kblane.py), not done --commit.",
-  "claimed_by": "worker-ST-q5r6e3nu"
+  "evidence": {
+    "commit": "06a38679fcb06533e96ffb4dd2ac8db80a6876b4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,subprocess,sys;rows=[r for r in csv.DictReader(open('kb/_self/_retrieval/lookup_eval.csv',encoding='utf-8')) if 'query-log finding' in r['question'] and 'kb-sprint:plan' in r['sets'].split(';')];q=rows[0]['question'] if rows else '';p=subprocess.run(['python3','_tools/rag.py','pack','--root','_self',q],capture_output=True,text=True) if q else None;s=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read().split('## start SP')[0].split('## plan')[1];ok=bool(rows) and p.returncode==0 and 'coverage: good' in p.stdout and 'query-log finding' in s;print('tested plan-set question packs good and plan step names the probe:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ee3a75b48f9d6769"
+      }
+    ]
+  }
 }
