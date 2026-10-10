@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import subprocess as s,sys,tempfile,os,json,shutil;from pathlib import Path;live=os.getcwd();t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,live+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S').stdout.split()[2];st=run('new','story','--title','T','--sprint',sp,'--goal','the alpha reader works; the beta writer works','--check','python3 -c 1/0').stdout.split()[2];p=Path(t,'kb','_self','backlog',st+'.json');d=json.loads(p.read_text());d['clauses']=[{'clause':'the alpha reader works','check':0}];p.write_text(json.dumps(d,indent=2));out=run('precheck',sp).stdout.splitlines();w=[l for l in out if 'warning' in l];ok=any(st in l and 'beta writer' in l for l in w) and not any('alpha reader' in l for l in w);shutil.rmtree(t,ignore_errors=True);print(sp,st,out);sys.exit(0 if ok else 1)"
+        "import subprocess as s,sys,tempfile,os,json,shutil;from pathlib import Path;live=os.getcwd();t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,live+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S').stdout.split()[2];st=run('new','story','--title','T','--sprint',sp,'--goal','the alpha reader works; the beta writer works','--check','python3 -c 1/0').stdout.split()[2];p=Path(t,'_backlog',st+'.json');d=json.loads(p.read_text());d['clauses']=[{'clause':'the alpha reader works','check':0}];p.write_text(json.dumps(d,indent=2));out=run('precheck',sp).stdout.splitlines();w=[l for l in out if 'warning' in l];ok=any(st in l and 'beta writer' in l for l in w) and not any('alpha reader' in l for l in w);shutil.rmtree(t,ignore_errors=True);print(sp,st,out);sys.exit(0 if ok else 1)"
       ]
     },
     {
@@ -26,7 +26,7 @@
       "run": [
         "python3",
         "-c",
-        "import subprocess as s,sys,tempfile,os,json,shutil\nfrom pathlib import Path\nt=tempfile.mkdtemp()\ns.run([\"git\",\"init\",\"-q\",t],check=True)\nos.makedirs(t+\"/kb/_self/backlog\")\nb=[sys.executable,os.getcwd()+\"/_tools/backlog.py\",\"--root\",t]\nrun=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t)\nsp=run(\"new\",\"sprint\",\"--title\",\"S\").stdout.split()[2]\nst=run(\"new\",\"story\",\"--title\",\"T\",\"--sprint\",sp,\"--goal\",\"the alpha reader works; the beta writer works\",\"--check\",\"python3 -c 1/0\").stdout.split()[2]\nok=run(\"set\",st,\"--add-clause\",\"the alpha reader works=0\")\nbad=run(\"set\",st,\"--add-clause\",\"the beta writer works=7\")\nd=json.loads(Path(t,\"kb\",\"_self\",\"backlog\",st+\".json\").read_text(encoding=\"utf-8\"))\nshutil.rmtree(t,ignore_errors=True)\nprint(\"add-clause exit\",ok.returncode,\"| index 7 exit\",bad.returncode,\"| clauses\",d.get(\"clauses\"),(ok.stderr or \"\").strip()[-80:])\nsys.exit(0 if ok.returncode==0 and bad.returncode!=0 and d.get(\"clauses\")==[{\"clause\":\"the alpha reader works\",\"check\":0}] else 1)"
+        "import subprocess as s,sys,tempfile,os,json,shutil\nfrom pathlib import Path\nt=tempfile.mkdtemp()\ns.run([\"git\",\"init\",\"-q\",t],check=True)\nos.makedirs(t+\"/kb/_self/backlog\")\nb=[sys.executable,os.getcwd()+\"/_tools/backlog.py\",\"--root\",t]\nrun=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t)\nsp=run(\"new\",\"sprint\",\"--title\",\"S\").stdout.split()[2]\nst=run(\"new\",\"story\",\"--title\",\"T\",\"--sprint\",sp,\"--goal\",\"the alpha reader works; the beta writer works\",\"--check\",\"python3 -c 1/0\").stdout.split()[2]\nok=run(\"set\",st,\"--add-clause\",\"the alpha reader works=0\")\nbad=run(\"set\",st,\"--add-clause\",\"the beta writer works=7\")\nd=json.loads(Path(t,\"_backlog\",st+\".json\").read_text(encoding=\"utf-8\"))\nshutil.rmtree(t,ignore_errors=True)\nprint(\"add-clause exit\",ok.returncode,\"| index 7 exit\",bad.returncode,\"| clauses\",d.get(\"clauses\"),(ok.stderr or \"\").strip()[-80:])\nsys.exit(0 if ok.returncode==0 and bad.returncode!=0 and d.get(\"clauses\")==[{\"clause\":\"the alpha reader works\",\"check\":0}] else 1)"
       ]
     }
   ],
@@ -41,7 +41,8 @@
     "kb/_self/code.md",
     "AGENTS.md",
     "kb/_self/maintaining.md",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "skills/sprint/SKILL.md"
   ],
   "gates": [
     {
@@ -89,7 +90,9 @@
         "only --add-clause exists, and the count line is unchanged"
       ],
       "recommendation": "--clause replaces the whole clauses list, as --check does for --add-check, and the count line ends with unread=N",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "--clause replaces the whole clauses list, as --check does for --add-check, and the count line ends with unread=N",
+      "by": "operator"
     }
   ],
   "notes": "Gate g1 picks the clauses field: the first check plants a --root repo with a two-clause goal and a clauses entry for clause one written into the planted item file (the set flag does not exist yet), and passes only when precheck warns of clause two alone; rename its keys if the field is named otherwise. The second check (gate g2) keeps a one-clause goal free of warnings and passes before the work. CLAUSE_SPLIT (bl_land.py) splits only at '; ' and ', and ', as close --summary does. Premise (2026-10-10, run): backlog.py set ST --add-clause is 'unrecognized arguments' (exit 2) and precheck on a sprint whose story has a two-clause goal and one check prints no clause warning; the first and third checks print both. The third check reads the flag name --add-clause CLAUSE=N and the item field clauses [{clause, check}]: rename in the check if the work names them otherwise.",
