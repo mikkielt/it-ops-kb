@@ -113,27 +113,50 @@ def front_matter_end(lines):
     return 0
 
 
-def stems(text):
-    """The word stems of `text`: each word cut to its first five letters, so replaced and replacement meet."""
-    return {w[:5] for w in words(text)}
-
-
+TERM = re.compile(r"[a-z0-9_]{3,}")  # a word, an identifier with underscores one term: `win_dsc` is no `win` and `dsc`
 BLOCK_START = re.compile(r"\s*(?:[-*+]\s|\d+[.)]\s|\||>|```|<)")  # a line that opens a block, not the middle of one
 POINTER = re.compile(r"`[\w./-]+\.(?:md|csv)`")  # a path of an article or data file
+CLAUSE = re.compile(r"(?<=[.;:])\s+|\s+[\u2014\u2013]\s+|\s*\|\s*")  # where a sentence, clause or table cell ends
+FENCE = re.compile(r"\s*(?:```|~~~)")
+SNIPPET = re.compile(r"\s*[-*+]\s+SNIPPET:")  # a tagged code example
+TABLE_ROW = re.compile(r"\s*\|")
+TABLE_RULE = re.compile(r"\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)*\|?\s*$")
+INFLECTED = 0.5  # the weight of a stem the question shares only through another form of the word (`checks` for `check`)
+SNIPPET_WEIGHT = 0.9  # a code example shows a command more than it states a fact: a prose line of the same score wins
+
+
+def terms(text):
+    """The terms of `text` in order, lower case, no stop word."""
+    return [w for w in TERM.findall(text.lower()) if w not in STOP]
+
+
+def stated(text):
+    """What a line states of its own: the text with each clause that names an article or data file in backticks left
+    out, so a line that does nothing but point to another file states nothing ("") and a fact that ends in a pointer
+    keeps its facts."""
+    return " ".join(c for c in CLAUSE.split(text) if not POINTER.search(c))
 
 
 def article_facts(lines):
-    """[(line number, text)] of the lines of an article that can state a fact: no front matter, heading or blank line, no
-    line that wraps the one before it (a paragraph or list item continues over lines) and no pointer line, which names
-    another article or data file in backticks, so says where the fact is and does not state it."""
+    """[(line number, text)] of the lines of an article that can state a fact: no front matter, heading, blank line,
+    fenced code line, table header or ruler row, no line that wraps the one before it (a paragraph or list item
+    continues over lines) and no line that does nothing but point to another article or data file (`stated`)."""
     head = front_matter_end(lines)
-    out = []
+    out, code = [], False
     for n, ln in enumerate(lines, 1):
         text = ln.strip()
-        if n <= head or not text or text.startswith(("#", "---")) or POINTER.search(text):
+        if FENCE.match(ln):
+            code = not code
+            continue
+        if code or n <= head or not text or text.startswith(("#", "---")) or TABLE_RULE.match(ln):
+            continue
+        if TABLE_ROW.match(ln) and n < len(lines) and TABLE_RULE.match(lines[n]):
+            continue
+        if not stated(text).strip():
             continue
         before = lines[n - 2].strip() if n > 1 else ""
-        if before and n - 1 > head and not before.startswith(("#", "---")) and not BLOCK_START.match(ln):
+        if before and n - 1 > head and not before.startswith(("#", "---")) and not FENCE.match(lines[n - 2]) \
+                and not TABLE_RULE.match(lines[n - 2]) and not BLOCK_START.match(ln):
             continue
         out.append((n, text))
     return out
@@ -154,24 +177,27 @@ def csv_facts(lines):
 def fact_for(home, case):
     """(path, line number, text) of the line of the case's expected files that best matches its question, or None under
     two shared stems. The lines are an article's body lines (`article_facts`) or a csv file's data rows (`csv_facts`),
-    never a heading, a front-matter line, a csv header, a wrapped continuation or a pointer to another file. A line
-    scores the rarity weight of each stem it shares with the question: log of the file's lines over those holding the
-    stem, so the file's own subject, on nearly every line, counts for little. Ties go to the line sharing more whole
-    words with the question (a stem cut at five letters joins `isManaged` and `isManagementRestricted`), then to the
-    first line."""
-    q = stems(case["question"])
-    qwords = set(words(case["question"]))
+    never a heading, a front-matter line, a csv header, a table header, a line of a code block, a wrapped continuation
+    or a line that only points to another file; a pointer clause of a fact line is not read. A line scores the rarity
+    weight of each stem (a term cut at five letters) it shares with the question: log of the file's lines over those
+    holding the stem, so the file's own subject, on nearly every line, counts for little, and INFLECTED of it when
+    the line has the stem only in another form of the word, and SNIPPET_WEIGHT of its score for a `SNIPPET:` line.
+    Ties go to the line sharing more whole words with the question, then to the first line."""
+    qterms = terms(case["question"])
+    q, qwords = {w[:5] for w in qterms}, set(qterms)
     best = None
     for rel in [p for p in case["expect_paths"].split(";") if p][:2]:
         path = Path(home) / "kb" / "public" / rel
         if not path.is_file():
             continue
         lines = path.read_text(encoding="utf-8").splitlines()
-        body = [(n, ln, stems(ln)) for n, ln in (csv_facts(lines) if rel.endswith(".csv") else article_facts(lines))]
-        held = Counter(s for _, _, st in body for s in st)
-        for n, ln, st in body:
-            shared = q & st
-            score = (sum(math.log(1 + len(body) / held[s]) for s in shared), len(qwords & set(words(ln))))
+        csv_file = rel.endswith(".csv")
+        body = [(n, ln, set(terms(ln if csv_file else stated(ln)))) for n, ln in (csv_facts(lines) if csv_file else article_facts(lines))]
+        held = Counter(s for _, _, ws in body for s in {w[:5] for w in ws})
+        for n, ln, ws in body:
+            shared, whole = q & {w[:5] for w in ws}, {w[:5] for w in ws & qwords}
+            score = sum(math.log(1 + len(body) / held[s]) * (1 if s in whole else INFLECTED) for s in shared)
+            score = (score * (SNIPPET_WEIGHT if SNIPPET.match(ln) else 1), len(qwords & ws))
             if len(shared) >= 2 and (best is None or score > best[0]):
                 best = (score, rel, n, ln)
     return best[1:] if best else None
@@ -674,6 +700,30 @@ def check_problems(rows, home=HOME, querylog=False):
     return out
 
 
+def stale_picks(rows, home=HOME):
+    """One line per eval and near-miss row of a pool file whose committed check matches no line `fact_for` picks for its
+    case now: the check was written for another line, so `pool build --redo ID` asks the model about the picked one.
+    A warning, not a defect: the row's check still holds until it is redone."""
+    eval_file = Path(home) / EVAL_FILE
+    cases = {f"lookup_eval.csv:{c['id']}": c for c in read_csv(eval_file)} if eval_file.is_file() else {}
+    out = []
+    for r in rows:
+        case = cases.get(r.get("source"))
+        if r.get("kind") not in (*EVAL_KINDS, "near_miss") or case is None:
+            continue
+        try:
+            checks = [re.compile(c, re.I) for c in json.loads(r["checks"])]
+        except (ValueError, TypeError, re.error):
+            continue  # check_problems names a check that is no regex
+        fact = fact_for(home, case)
+        if fact is None:
+            out.append(f"{r['id']}: warning: fact_for picks no line of {case['expect_paths']} for {r['source']}")
+        elif not any(c.search(fact[2]) for c in checks):
+            out.append(f"{r['id']}: warning: no check matches {fact[0]}:{fact[1]}, the line fact_for picks now; "
+                       f"`pool build --redo {r['id']}` asks the model about it")
+    return out
+
+
 ASK_OVERHEAD = 12_000  # input tokens a tool-less `claude -p` call carries before the prompt, priced as a cache write
 ASK_OUT = 80  # output tokens assumed per regex
 ASK_MAX_ROWS = 12  # a --redo build asks no more rows than this, nor spends more than ASK_MAX_USD (estimated)
@@ -770,8 +820,9 @@ def cli(a, home=HOME):
     if not path.is_file():
         print(f"pool check: {path} does not exist")
         return 1
-    problems = check_problems(read_csv(path), home, a.querylog)
-    for p in problems:
+    rows = read_csv(path)
+    problems = check_problems(rows, home, a.querylog)
+    for p in problems + ([] if a.querylog else stale_picks(rows, home)):
         print(f"pool check: {p}")
     return 1 if problems else 0
 

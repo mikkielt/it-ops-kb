@@ -48,6 +48,43 @@
   "depends_on": [
     "ST-fx5hi2hu"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Four committed eval rows (BP-34d1ec62, BP-6b791ed3, BP-c552cb0f, BP-df64045a) keep a lexical fact_for pick that their model-written check does not match, and no further scoring signal moved them without breaking another committed row: extend each row's committed check by hand (one regex alternative that matches the picked line, as for the two absorbed rows), or leave the check and let pool check warn until a paid --redo rewrites it?",
+      "options": [
+        "extend-by-hand",
+        "warn-until-redo"
+      ],
+      "recommendation": "extend-by-hand",
+      "do": {
+        "extend-by-hand": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "warn-until-redo": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "build",
+          "--redo",
+          "BP-34d1ec62",
+          "--redo",
+          "BP-6b791ed3",
+          "--redo",
+          "BP-c552cb0f",
+          "--redo",
+          "BP-df64045a"
+        ]
+      },
+      "class": "design",
+      "answer": "extend-by-hand",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-7y6dk257 review",
     "merged: BG-wamgfo7s",
