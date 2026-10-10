@@ -63,10 +63,13 @@ def work(repo, iid, rel):
 
 
 def planned(scenario, *stories):
-    """A clone whose started sprint has the stories ((name, kb path, check) each) claimed and pushed to origin/main:
-    (clone, sprint id, story ids)."""
+    """A clone whose backlog is the fixture one (the live items removed, so a planning slip in one of them cannot fail
+    `backlog.py check` inside a scenario) and whose started sprint has the stories ((name, kb path, check) each)
+    claimed and pushed to origin/main: (clone, sprint id, story ids)."""
     repo = scenario.clone()
     repo.git("config", "core.fileMode", "false")
+    repo.git("rm", "-q", "-r", "--ignore-unmatch", PLAN)
+    repo.git("commit", "-q", "--no-verify", "-m", "test: fixture backlog without the live items")
     sp = new_id(ok(repo, "new", "sprint", "--title", "Landing sprint"))
     ids = [new_id(ok(repo, "new", "story", "--title", f"Landing {n}", "--sprint", sp, "--goal", f"The doc {n}.md exists.",
                      "--touch", rel, "--check", chk)) for n, rel, chk in stories]
