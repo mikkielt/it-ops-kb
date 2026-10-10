@@ -33,7 +33,8 @@ document (WINDOW_COST less per extra unit, half when the fact's number is on the
 backing passage when it covers at least MIN_COVER of the weight and holds at least MIN_SHARED terms. Otherwise the fact is listed as unlocated, never guessed.
 
 Cache: documents fetched here are kept in _cache/factdiff/<root>/<id>.json (never committed) and reused for
---max-age days (default 7); --refetch ignores them.
+--max-age days (default 7); --refetch ignores them. census.py confirm takes a source's detection baseline from
+such a document when the source holds none.
 detect, apply and review (apply --dry-run: no row) each append one ops row `census.phase` to the query log (phase, date,
 ms, exit and the counts per verdict, fact outcome or review outcome; kb/_self/querylog.md): the census's own phases write
 the same.
@@ -436,6 +437,37 @@ def baseline(sid, url, d, rows):
             "doc_sha256": hashlib.sha256(d["text"].encode()).hexdigest(),
             "final_url": d["final"] if (d.get("final") or "").split("?")[0] != provider.raw_url(url, row)[0].split("?")[0] else "",
             "http_status": "200", "simhash": simhash(d["text"]), "detected_utc": (stamp + "Z") if stamp else ""}
+
+
+BASELINE_KEYS = ("etag", "last_modified", "version", "doc_sha256")  # what detect compares a fetched page with
+
+
+def has_baseline(row):
+    """Whether a _fetch_state.csv row holds a detection baseline: a validator, a version id or a text hash."""
+    return any((row or {}).get(k) for k in BASELINE_KEYS)
+
+
+def live_unpinned(srcs):
+    """{id: row} of the sources that are not superseded and whose url can change (no commit sha or release tag in it)."""
+    return {sid: s for sid, s in srcs.items() if not (s.get("superseded_by") or "").strip() and not provider.is_pinned(s["url"])}
+
+
+def baseline_gap(srcs, state):
+    """The ids, in id order, of the live unpinned sources of `srcs` whose `state` row holds no detection baseline:
+    detect has nothing to compare their next fetch with, so a page with no date goes to a reader."""
+    return sorted((sid for sid in live_unpinned(srcs) if not has_baseline(state.get(sid))), key=kbid.sort_key)
+
+
+def census_baseline(sid, url, since, until, rows):
+    """The detection columns for a source a census confirmed, from the document factdiff fetched and kept in the cache,
+    or {} when it holds none a census compared: the document is a 200 with text, of this url, fetched from `since` (the
+    census log's date) to `until` (the confirmation date). A text fetched before the census or after its confirmation is
+    one nobody compared with the facts, so it is no baseline (the next detect takes one and census confirms the source)."""
+    d = load_json(cache_path(sid, shared=True))
+    if not d or d.get("status") != 200 or not d.get("text") or d.get("url") != url:
+        return {}
+    day = (d.get("fetched_utc") or "")[:10]
+    return baseline(sid, url, d, rows) if since <= day <= until else {}
 
 
 # ---------------------------------------------------------------- snapshots of copy sources

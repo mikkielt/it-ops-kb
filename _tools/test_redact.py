@@ -1,7 +1,7 @@
 """Redaction and the query log's privacy guards: redact.py's rules, what distill stores of a captured prompt, the closed
 shape of an ops row, the store check that blocks a leak, and apply's rule for a weak rules miss over the fixture store.
 Planted values are assembled at run time."""
-import argparse, csv, json, os, re, shutil, socket, subprocess, sys, types, urllib.error
+import argparse, csv, hashlib, json, os, re, shutil, socket, subprocess, sys, types, urllib.error
 from collections import Counter
 from pathlib import Path
 
@@ -654,10 +654,86 @@ def census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_a
     assert "HTTP errors (a status other than 200 that left the source to read): 1\n" in out
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once(tmp_path, monkeypatch, capsys):
+def census_baseline_is_written_from_a_compared_document_and_decides_a_page_with_no_date_at_the_next_census(tmp_path, monkeypatch, capsys):
+    with monkeypatch.context() as m:
+        root = tmp_path / "public"
+        root.mkdir(parents=True)
+        cols = ["id", "url", "title", "publisher", "licence", "reuse", "retrieved_utc", "version_or_date", "artifact_sha256",
+                "used_in", "superseded_by"]
+        pin = "https://raw.githubusercontent.com/Org/Repo/" + "a" * 40 + "/f.md"
+        page = lambda n: f"https://docs.example.com/p{n}"  # noqa: E731
+        urls = {1: page(1), 2: page(2), 3: page(3), 4: page(4), 5: pin, 6: page(6), 7: page(7), 8: page(8)}
+        kbcommon.write_csv(str(root / "_sources.csv"), cols, [
+            {c: "" for c in cols} | {"id": f"S999000{n}", "url": u, "reuse": "copy", "retrieved_utc": "2099-01-01",
+                                      "superseded_by": "S9990001" if n == 8 else ""} for n, u in urls.items()])
+        kbcommon.write_csv(str(root / "_fetch_state.csv"), kbcommon.STATE_COLS,
+                           [{c: "" for c in kbcommon.STATE_COLS} | {"id": "S9990007", "url": page(7), "etag": '"v1"'}])
+        cache = tmp_path / "cache" / "public"
+        cache.mkdir(parents=True)
+        text = "A page with no last-updated date. It states one fact."
+
+        def fetched(n, when, status=200):
+            (cache / f"S999000{n}.json").write_text(json.dumps({"id": f"S999000{n}", "url": urls[n], "status": status, "text": text,
+                                                                "final": urls[n], "version": {}, "fetched_utc": when}), encoding="utf-8")
+
+        fetched(1, "2099-01-03T10:00:00+00:00")  # inside the census: its log's date to the confirmation date
+        fetched(2, "2099-01-05T10:00:00+00:00")  # after the confirmation: no step compared it
+        fetched(3, "2099-01-01T10:00:00+00:00")  # before the census began
+        fetched(4, "2099-01-03T10:00:00+00:00", status=429)  # an error page is no document
+        fetched(5, "2099-01-03T10:00:00+00:00")  # a pinned url needs no baseline
+        fetched(6, "2099-01-03T10:00:00+00:00")  # not confirmed by this census
+        fetched(7, "2099-01-03T10:00:00+00:00")  # already holds one: left as it is
+        log = tmp_path / "2099-01-02.csv"
+        rows = [census_row(f"S999000{n}", url=u, bucket="OK") for n, u in urls.items() if n in (1, 2, 3, 4, 5, 7)]
+        rows.append(census_row("S9990006", url=urls[6], bucket="NEEDS-READING"))
+        kbcommon.write_csv(str(log), census.COLS, rows)
+        for mod, name, value in ((census, "KB", str(root)), (kbcommon, "KB", str(root)), (factdiff, "CACHE", str(tmp_path / "cache")),
+                                 (factdiff, "ROOT", types.SimpleNamespace(path=str(root), name="public", id_prefix="S")),
+                                 (kbfacts, "clone_home", lambda: str(tmp_path / "no-clone"))):
+            m.setattr(mod, name, value)
+        # the gap before the census: live (S9990008 is superseded) and unpinned (S9990005 is) with no baseline (S9990007 has one)
+        assert census.cmd_baselines(argparse.Namespace(list=False), Counter()) == 1
+        out = capsys.readouterr().out
+        assert out.startswith("baselines: 5 of 6 live unpinned source(s) hold no detection baseline") and "  docs.example.com: 5\n" in out
+        assert census.cmd_baselines(argparse.Namespace(list=True), Counter()) == 1
+        assert f"    S9990001 {page(1)}\n" in capsys.readouterr().out
+        # confirm writes it from the one document inside the census, and from no other
+        assert census.cmd_confirm(argparse.Namespace(log=str(log), date="2099-01-04", dry_run=False), Counter()) == 0
+        assert "1 detection baseline(s) written" in capsys.readouterr().out
+        state = {r["id"]: r for r in csv.DictReader(open(root / "_fetch_state.csv", encoding="utf-8", newline=""))}
+        assert state["S9990001"]["doc_sha256"] == hashlib.sha256(text.encode()).hexdigest()
+        assert state["S9990001"]["detected_utc"] == "2099-01-03T10:00:00Z" and state["S9990001"]["checked_utc"] == "2099-01-04T00:00:00Z"
+        assert [n for n in (2, 3, 4, 5, 6) if state.get(f"S999000{n}", {}).get("doc_sha256")] == []
+        assert state["S9990007"]["etag"] == '"v1"' and state["S9990007"]["doc_sha256"] == ""
+        assert census.cmd_baselines(argparse.Namespace(list=False), Counter()) == 1
+        assert capsys.readouterr().out.startswith("baselines: 4 of 6 ")
+        # the next census: factdiff's unchanged verdict (baseline taken inside the last confirmation) decides the page with no
+        # date; a source with no baseline in the log (planted failure) is checked here and goes to a reader
+        flog = tmp_path / "factdiff-2099-02-01.csv"
+        head = {c: "" for c in factdiff.LOG_COLS} | {"verdict": "unchanged", "signal": "hash", "evidence": "document text identical"}
+        kbcommon.write_csv(str(flog), factdiff.LOG_COLS, [
+            head | {"source_id": "S9990001", "url": page(1), "baseline_utc": state["S9990001"]["detected_utc"]},
+            head | {"source_id": "S9990002", "url": page(2), "baseline_utc": "2099-01-05T10:00:00Z"}])
+        asked = []
+
+        def check_one(r, c):
+            asked.append(r["id"])
+            return "200", census.verdict("NEEDS-READING", "HTTP 200, no last-updated date")
+
+        m.setattr(census, "check_one", check_one)
+        out_log = tmp_path / "2099-02-01.csv"
+        a = argparse.Namespace(date="2099-02-01", out=str(out_log), jobs=1, source=["S9990001", "S9990002"], factdiff=str(flog))
+        assert census.cmd_check(a, Counter()) == 0
+        got = {r["id"]: r for r in csv.DictReader(open(out_log, encoding="utf-8", newline=""))}
+        assert asked == ["S9990002"] and got["S9990001"]["bucket"] == "OK" and got["S9990001"]["evidence"].startswith("fact diff: unchanged")
+        assert got["S9990002"]["bucket"] == "NEEDS-READING"
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date(tmp_path, monkeypatch, capsys):
     census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_apart_from_blocked(tmp_path, monkeypatch, capsys)
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
     census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_path, monkeypatch, capsys)
     census_phases_write_one_ops_row_each(tmp_path)
     census_apply_refuses_a_bad_result_and_writes_a_good_one_through_kbid(tmp_path / "apply", monkeypatch, capsys)
+    census_baseline_is_written_from_a_compared_document_and_decides_a_page_with_no_date_at_the_next_census(tmp_path / "baseline", monkeypatch, capsys)
     census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)
