@@ -2,7 +2,7 @@
   "id": "ST-qiccl2qm",
   "kind": "story",
   "title": "Research sprint goal: Sprint tooling 1: config layer, external ids, brief and dispatch, rules in the brief, cost without capture",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-befc6yqr",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "kb-worker-qiccl2qm"
 }
