@@ -1,0 +1,26 @@
+{
+  "id": "ST-tvnxvfjp",
+  "kind": "story",
+  "title": "Skills and backlog.md say when an operator's relayed gate answer needs answer --free",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the SP-qxcj7fgy review: ST-zvpffogs made answer refuse a text that is none of the gate's options unless --free is passed, but kb/_self/backlog.md Running a sprint (the orchestrator records an operator's relayed answer on a worker branch) and the kb-sprint skill (that line, and review step 1's new answer plus a task or bug) give answer ID GATE --answer TEXT --by operator with no word on --free; a relayed free-text answer exits 2 first. Each says an answer outside the options takes --free.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if all('--free' in open(f,encoding='utf-8').read() for f in ('.claude/skills/kb-sprint/SKILL.md','skills/sprint/SKILL.md')) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-qxcj7fgy review"
+  ]
+}

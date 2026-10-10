@@ -1,0 +1,26 @@
+{
+  "id": "ST-4yv2thhh",
+  "kind": "story",
+  "title": "start's host-setup warning names the gate host-unchecked command",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the SP-qxcj7fgy review: ST-7avb5uo6 added backlog.py gate host-unchecked ID GATE --reason TEXT, but the start warning for a gate that names a host setup (bl_plan.py) still says only 'or the reason it cannot be checked as the gate's host_unchecked', never the command that sets it. The warning names gate host-unchecked ID GATE --reason TEXT.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'gate host-unchecked' in open('_tools/bl_plan.py',encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-qxcj7fgy review"
+  ]
+}

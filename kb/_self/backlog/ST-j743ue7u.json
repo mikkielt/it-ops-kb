@@ -1,0 +1,30 @@
+{
+  "id": "ST-j743ue7u",
+  "kind": "story",
+  "title": "Skills and backlog.md tell a session filing a bug into an active sprint to pass --touch",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the SP-qxcj7fgy review: ST-dt6xl537 made new --sprint of an active sprint refuse without --touch, but the consumers that file an S1 bug or a landing bug into the active sprint still name only --sprint (skills/backlog/SKILL.md and .claude/skills/kb-backlog/SKILL.md S1 lines and new bug synopsis, skills/item/SKILL.md and .claude/skills/kb-item/SKILL.md bug filed while landing, skills/sprint/SKILL.md and .claude/skills/kb-sprint/SKILL.md review step 5, kb/_self/backlog.md Priority and severity and Sprints review lines), so each flow meets a refusal first. Each names --touch beside --sprint for a bug filed into an active sprint.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; ok=all('--touch' in l for f in ('.claude/skills/kb-item/SKILL.md','skills/item/SKILL.md') for l in open(f,encoding='utf-8') if 'filed while landing' in l) and all('--touch' in l for f in ('.claude/skills/kb-sprint/SKILL.md','skills/sprint/SKILL.md') for l in open(f,encoding='utf-8') if 'gap as a bug' in l); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/backlog/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    "skills/item/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    "skills/sprint/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qxcj7fgy review"
+  ]
+}
