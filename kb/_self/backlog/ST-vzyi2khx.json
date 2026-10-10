@@ -2,7 +2,7 @@
   "id": "ST-vzyi2khx",
   "kind": "story",
   "title": "Review sprint: Benchmarks: no unplanned paid run, dated model keys, report wording",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-55ddkrrx",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-SP-55ddkrrx"
+  "evidence": {
+    "commit": "07b2af85a0727aab738ab63fd667fb3e11bdf7a0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "83b6248e6802229a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "9c75b4e19cbf4c56"
+      }
+    ]
+  }
 }
