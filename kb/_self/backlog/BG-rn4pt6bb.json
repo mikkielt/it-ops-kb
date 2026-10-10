@@ -2,7 +2,7 @@
   "id": "BG-rn4pt6bb",
   "kind": "bug",
   "title": "precheck names the trailers detector's first passing date from the wall clock, but its window follows main's tip time",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,6 @@
   "depends_on": [
     "BG-cb4wcm2m"
   ],
-  "notes": "Premise: its repro, tightened at planning to look for \"main's tip\" in windowed_detector. Run on 2026-10-10: exit 1, False. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13)."
+  "notes": "Premise: its repro, tightened at planning to look for \"main's tip\" in windowed_detector. Run on 2026-10-10: exit 1, False. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13).",
+  "claimed_by": "kb-worker-rn4pt6bb"
 }
