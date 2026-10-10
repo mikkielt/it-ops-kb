@@ -24,5 +24,21 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does land treat a worker row in the spool, given the goal says both 'tell rows late' and 'not printed when a worker row exists'?",
+      "options": [
+        "a land: note, no warning (warning only for missing and undelivered)",
+        "a warning line too",
+        "nothing printed"
+      ],
+      "recommendation": "a land: note, no warning (warning only for missing and undelivered)",
+      "class": "agents-rule",
+      "answer": "a land: note, no warning (warning only for missing and undelivered)",
+      "by": "operator"
+    }
+  ],
   "claimed_by": "kb-worker-ye4msgps"
 }

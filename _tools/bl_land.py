@@ -397,8 +397,8 @@ LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is sho
 
 
 # land's ops rows (kb/_self/querylog.md, ops events): a `land.step` row per step, a `land.end` row at every end, and
-# a warning when the item's work left no `work` row in this host's spool or the committed work sidecars. Best effort: nothing here changes land's
-# exit or output beyond the warning line.
+# after a landing that exited 0 the line `ops_work_rows` gives when the item's work rows are not in the committed work
+# sidecars (late, undelivered or missing). Best effort: nothing here changes land's exit or output beyond that line.
 LAND_OPS = {"step": None, "t": 0.0, "exit": 0, "lane": None, "item": None}
 
 
@@ -431,51 +431,87 @@ def ops_mark(label):
     LAND_OPS.update(step=ops_token(label), t=time.monotonic(), exit=1)
 
 
-def ops_no_work_rows(root, iid):
-    """Whether neither this host's spool, the spool of the main worktree of the clone's git common dir (read only,
-    and only when it is another directory than this one: a session started in the main checkout that orchestrates a
-    clone writes its rows there) holds a worker's row of the item or of a descendant of it, nor the committed work
-    sidecars a line of it. A worker's row is a `branch` row (the row that opens a headless worker's window,
-    `ql_capture.BRANCH_ACTION`) or an `agent-start` or `agent-stop` row (`ql_capture.AGENT_ACTIONS`: a worker started
-    with the Agent tool runs inside the orchestrator's session and writes those, never a `branch` row). The
-    orchestrator's own `claim`, `done` and `release` rows are no worker's capture: it claims every item it delegates,
-    so its row would always be met. Distill moves the spool's work rows into the sidecars (an item line, or a shared
-    line naming the item), so a consumed spool is not an item that was worked without the capture hooks; a line names
-    no session, so the windows of an earlier orchestrator session count there. False when capture is off, no spool
-    directory exists or anything cannot be read."""
+def ops_work_rows(root, iid):
+    """[line] the landing of IID says about its work rows, none when nothing is amiss. A line of the committed work
+    sidecars (`bl_cost.cost_lines`) that names the item or a descendant of it ends it: the rows are delivered. Else
+    the clone's spool and the main worktree's (`bl_cost.spool_dirs`; read only: a session started in the main checkout
+    that orchestrates a clone writes its rows there) and the local store beside each (`<spool>/../store`, where distill
+    writes the sidecars before `querylog.py apply --push` delivers them) are read:
+    - a work sidecar of a local store that names the item and that neither the checkout's `kb/_querylog` nor the
+      integration main holds: `warning: ... undelivered`, naming the store and its count of sidecars (a session end
+      left it unpushed), and nothing more;
+    - a worker's row of the item in a spool, a `branch` row (the row that opens a headless worker's window,
+      `ql_capture.BRANCH_ACTION`) or an `agent-start` or `agent-stop` row (`ql_capture.AGENT_ACTIONS`: a worker
+      started with the Agent tool runs inside the orchestrator's session and writes those, never a `branch` row), is
+      no warning: its session is open or not distilled yet, so its rows are late, said as a `land:` line naming the
+      session and its state;
+    - none of these: `warning: ... missing`, the line a worker that ran without the capture hooks leaves. The
+      orchestrator's own `claim`, `done` and `release` rows are no worker's: it claims every item it delegates, so its
+      row would always be met.
+    [] too when capture is off, no spool directory exists (and no store holds an undelivered sidecar) or
+    anything cannot be read."""
     try:
-        import bl_cost, ql_capture, ql_distill
-        own = ql_capture.spool_dir()
-        if own is None:
-            return False
-        spools = [Path(own)]
-        main = main_worktree_spool(root)
-        if main is not None and not (spools[0].exists() and main.exists() and os.path.samefile(spools[0], main)):
-            spools.append(main)
-        spools = [d for d in spools if d.is_dir()]
-        if not spools:
-            return False
+        import bl_cost, kbpublic, ql_capture, ql_distill, ql_store
+        dirs = bl_cost.spool_dirs(root)
+        if not dirs:
+            return []
         ids = {iid, *Backlog(root).descendants(iid)}
+        if bl_cost.cost_lines(root, ids)[0]:
+            return []
+        remote = kbpublic.integration_remote(root)
+        main_ref = f"refs/remotes/{remote}/main:kb/_querylog"
+        stores = [d.parent / "store" for d in dirs]
+        late = []
+        for store in stores:
+            held = []
+            for p in ql_store.work_files(store):
+                rel = p.relative_to(store).as_posix()
+                if (Path(root) / "kb" / "_querylog" / rel).is_file() or subprocess.run(
+                        ["git", "cat-file", "-e", f"{main_ref}/{rel}"], cwd=root, capture_output=True).returncode == 0:
+                    continue
+                try:
+                    named = any(bl_cost.cost_row_of(p.stem, w, ids, False) for _, w in ql_store.load_run(p)[1:])
+                except (OSError, ValueError):
+                    continue
+                if named:
+                    held.append(p.name)
+            if held:
+                return [f"warning: {iid} landed with no work rows on {remote}/main (undelivered): {store} holds "
+                        f"{len(held)} work sidecar(s) naming it that {remote}/main lacks, a session end left the "
+                        f"store unpushed (`python3 _tools/querylog.py apply --push` delivers it)"]
+        spools = [d for d in dirs if d.is_dir()]
+        if not spools:
+            return []
         worker_actions = (ql_capture.BRANCH_ACTION, *ql_capture.AGENT_ACTIONS)
-        if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in worker_actions
-               for d in spools for p in sorted(d.glob("*.jsonl")) for r in ql_distill.spool_rows(p)[0]):
-            return False
-        return not bl_cost.cost_lines(root, ids)[0]
+        for d in spools:
+            for sid, s in sorted(ql_distill.read_spool(d, time.time())[0].items()):
+                if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in worker_actions
+                       for r in s["rows"]):
+                    late.append(f"session {sid[:8]} of it is {'closed and not distilled' if s['closed'] else 'still open'}"
+                                f" in {d}")
+        if late:
+            return [f"land: {iid}'s work rows are late: {'; '.join(late)}; `backlog.py cost` shows its figures once "
+                    "the session has ended and distill has run"]
+        where = ", ".join(str(d) for d in spools)
+        return [f"warning: {iid} landed with no work rows (missing): no worker session of it left a branch, "
+                f"agent-start or agent-stop row in {where} and no committed work sidecar names it (a worker started "
+                "without the capture hooks?)"]
     except Exception:  # noqa: BLE001
-        return False
+        return []
 
 
 def ops_land(handler):
-    """Wrap `cmd_land`: the open step's row and the `land.end` row at every end, and the warning after a run that
-    returned 0 for an item with no work rows."""
+    """Wrap `cmd_land`: the open step's row and the `land.end` row at every end, and the lines `ops_work_rows` gives
+    after a run that returned 0."""
     def wrapped(bl, a):
         LAND_OPS.update(step=None, exit=1, lane=None, item=getattr(a, "id", None))
         t0, done = time.monotonic(), False
         try:
             code = handler(bl, a)
             done = code == 0
-            if done and ops_no_work_rows(bl.root, a.id):
-                say(f"warning: {a.id} landed with no work rows (a worker started without the capture hooks?)")
+            if done:
+                for text in ops_work_rows(bl.root, a.id):
+                    say(text)
             return code
         finally:
             ops_close(0 if done else LAND_OPS["exit"])

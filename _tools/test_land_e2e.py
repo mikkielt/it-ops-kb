@@ -229,6 +229,67 @@ def test_empty_selection_refused_and_gone_once(monkeypatch, capsys):
     assert "gone check: python3 _tools/tests.py -k zzz_no_such_test" in bl_land.summary_line(fake, done["id"], set())
 
 
+def test_land_no_work_rows_late_undelivered_or_missing(tmp_path, monkeypatch, capsys):
+    """A landing that exits 0 with no line of the item in the committed work sidecars says which of three it is: a
+    worker's row in the spool (rows late, a `land:` line naming the session and its state, no warning), a work sidecar
+    naming the item that sits in a local store the integration main lacks (undelivered, the store named), or no worker's
+    row anywhere (missing, the claim of the orchestrator's own session not counting); a sidecar the checkout holds says
+    nothing, and the exit is 0 in each."""
+    import types
+
+    import bl_base
+    import bl_land
+    import kbpublic
+    import ql_capture
+    iid, other, sid = "TK-aaaaaaaa", "TK-bbbbbbbb", "c0ffee11-worker-session"
+    spool, store, root = tmp_path / "home" / "spool", tmp_path / "home" / "store", tmp_path / "clone"
+    spool.mkdir(parents=True)
+    (root / "kb" / "_querylog" / "work" / "2026-10").mkdir(parents=True)
+    monkeypatch.setattr(ql_capture, "spool_dir", lambda: spool)
+    monkeypatch.setattr(bl_base, "main_worktree_spool", lambda r: None)
+    monkeypatch.setattr(kbpublic, "integration_remote", lambda r: "origin")
+    monkeypatch.setattr(bl_land, "Backlog", lambda r: types.SimpleNamespace(descendants=lambda i: []))
+
+    def rows(item, action):
+        return json.dumps({"id": f"{item}-{action}", "ts": "2026-10-10T10:00:00Z", "surface": "work",
+                           "session_id": sid, "prompt_id": "p1", "action": action, "item": item}) + "\n"
+
+    def landed():
+        code = bl_land.ops_land(lambda bl, a: 0)(types.SimpleNamespace(root=root), types.SimpleNamespace(id=iid))
+        assert code == 0
+        return capsys.readouterr().out.strip().splitlines()
+
+    session = spool / f"{sid}.jsonl"
+    session.write_text(rows(iid, "branch"), encoding="utf-8")
+    out = landed()
+    assert len(out) == 1 and out[0].startswith(f"land: {iid}'s work rows are late: session {sid[:8]}"), out
+    assert "still open" in out[0] and "landed with no work rows" not in out[0], out
+    session.with_suffix(".end").write_text("", encoding="utf-8")
+    assert "closed and not distilled" in landed()[0]
+    session.with_suffix(".end").unlink()
+
+    session.write_text(rows(iid, "agent-stop"), encoding="utf-8")  # a worker started with the Agent tool
+    assert landed()[0].startswith(f"land: {iid}'s work rows are late")
+    session.write_text(rows(iid, "claim") + rows(other, "branch"), encoding="utf-8")  # the orchestrator's own claim
+    out = landed()
+    assert len(out) == 1 and out[0].startswith(f"warning: {iid} landed with no work rows (missing)"), out
+
+    sidecar = store / "work" / "2026-10" / "20261010T100000Z-0a1b2c3d.jsonl"
+    sidecar.parent.mkdir(parents=True)
+    counts = {"requests": 1, "in": 1, "cw": 0, "cw1h": 0, "cr": 0, "out": 1}
+    sidecar.write_text(json.dumps({"run": sidecar.stem, "reader": 1, "counts": {"items": 1}}) + "\n" + json.dumps(
+        {"item": iid, "prompts": 0, "main": {}, "sub": {"kb-worker": {"claude-sonnet-5-5": counts}}}) + "\n",
+        encoding="utf-8")
+    out = landed()
+    assert len(out) == 1 and out[0].startswith(f"warning: {iid} landed with no work rows on origin/main (undelivered)")
+    assert f"{store.parent.name}/store holds 1 work sidecar(s) naming it" in out[0], out  # say() redacts the user name
+    assert "origin/main lacks" in out[0] and "apply --push" in out[0], out
+
+    (root / "kb" / "_querylog" / "work" / "2026-10" / sidecar.name).write_text(sidecar.read_text(encoding="utf-8"),
+                                                                              encoding="utf-8")
+    assert landed() == []
+
+
 def orphan_in(cwd, log, seconds):
     """The pid of a python process that sleeps SECONDS in the directory CWD, its standard output appended to LOG and its
     parent (the launcher that started it) already gone: what a session-end hook's distill is for a few seconds."""
