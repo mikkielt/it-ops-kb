@@ -2,7 +2,7 @@
   "id": "ST-mbqowj5u",
   "kind": "story",
   "title": "Research sprint goal: Orchestration features: ops rows, goal clause map, rescope, query log apply",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x5gjv4r7",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Planned 2026-10-10: public pack coverage Q1 weak, Q2 weak, Q3 good, Q4 good, Q5 weak; pack --root _self answers all five.\nFinding 2026-10-10 (rag.py pack --root _self, then the code each doc names). Q1: four closed ops events per item in the ops sidecar (kb/_self/querylog.md:53,102): land.step (item, step, exit, ms), land.end (item, exit, ms, lane), done.refused (item, reasons, ms; checks), agent.run (group, ms; agent, item only for a work/<id> branch). Q2: precheck SP does not split a goal: it runs the open items' checks once and warns of one that passes (kb/_self/tools.md:82); the only split is close --summary's, at '; ' and ', and ', a list clause further at ', ' and ' and ' (tools.md:84, backlog.md:242; bl_land.py:2150); precheck naming clauses is in-flight ST-ylje2dxh. Q3: nobody today: set refuses --goal on a sprint (bl_items.py:484, exit 2) and on a done item; the docs (tools.md:75, backlog.md:30) omit the sprint refusal; ST-ifljijni makes it operator only (--by operator). Q4: close --summary names each clause with the sprint's done item whose title and goal hold half its words, else its parts, else 'unmet' (backlog.md:242). Q5: a weak finding with no answer line and no key_missing takes the first pack --root _self passage (ql_apply.lead_passage) as its answer, gets an anchor phrase and the eval-row gates; the row stays only if they hold, else no-fix (querylog.md:169).\nNo outside facts: all five questions are about this kb's own tools, documented only by kb/_self and the code; no outside source covers them.",
-  "claimed_by": "kb-worker-mbqowj5u"
+  "evidence": {
+    "commit": "1a4da064fc5647bb9ea059021d174c79f9ec8893",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-mbqowj5u"
+        ],
+        "exit": 0,
+        "sha256": "b35c8d3401408883"
+      }
+    ]
+  }
 }
