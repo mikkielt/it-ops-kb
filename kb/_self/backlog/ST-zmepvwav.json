@@ -2,7 +2,7 @@
   "id": "ST-zmepvwav",
   "kind": "story",
   "title": "dispatch's scratch directory is a backlog.json setting and the claims ledger has one shared helper",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-dqkf3i42",
   "priority": "P3",
@@ -65,5 +65,38 @@
     "parked: SP-befc6yqr review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 6 of 13, \"Sprint tooling 2: one forge module, dispatch scratch setting, multi-repository items\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: bl_dispatch.py:32 holds SCRATCH_REL as a constant and bl_dispatch.py:39 and bl_items.py:183 each carry the ledger file name; the check on SETTINGS fails until the setting exists. The -k brief_dispatch check passes before the work and must keep passing: the behaviour on the kb is unchanged. Premise run at planning (2026-10-10): python3 -c \"import sys; sys.path.insert(0,'_tools'); import bl_base; print('scratch_dir' in bl_base.SETTINGS)\" printed False; bl_dispatch.py:32 holds SCRATCH_REL and bl_dispatch.py:310 and bl_items.py:183 each build the claims ledger path, so it reproduces.",
-  "claimed_by": "orch-dqkf3i42"
+  "evidence": {
+    "commit": "5e02b11e8ae9b1775db1273f0357ad79442814a3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "brief_dispatch"
+        ],
+        "exit": 0,
+        "sha256": "b528ae789c63f625"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "scratch_setting"
+        ],
+        "exit": 0,
+        "sha256": "a1947802bad20420"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import bl_base; sys.exit(0 if 'scratch_dir' in bl_base.SETTINGS else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
