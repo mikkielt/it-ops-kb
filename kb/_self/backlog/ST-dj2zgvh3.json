@@ -2,7 +2,7 @@
   "id": "ST-dj2zgvh3",
   "kind": "story",
   "title": "too_broad judges every alternative of a regenerated check, not only bare words, so a phrase found across the kb is refused",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,28 @@
     "parked: SP-7y6dk257 review"
   ],
   "notes": "Premise: run at planning (SP-5i4itd2d): the first check fails (too_broad('Apache[-\\s]?2\\.0|24\\.6\\.1') returns '' against the kb's articles): reproduces. pool check passes before the work and stays in as a guard that the committed rows stay valid (the stricter judge applies to regenerated checks only). Order: after BG-wcdbq563 (same bench_pool.py, test_bench.py and bench_pool.csv). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
-  "claimed_by": "worker-ST-dj2zgvh3"
+  "evidence": {
+    "commit": "c0e4cfda1605f1619a530f5d20c182fc9240f587",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bench_pool as bp; texts={'own': ('x', '')}; sys.exit(0 if bp.too_broad(r'Apache[-\\s]?2\\.0|24\\.6\\.1', 'own', texts, bp.article_texts('.')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
