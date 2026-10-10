@@ -2,7 +2,7 @@
   "id": "TK-p7ajxp72",
   "kind": "task",
   "title": "skills/sprint, item and backlog and agents/worker.md exist at the plugin root, parameterised by ${CLAUDE_PLUGIN_ROOT}, and plugin.json lists them",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-wrsuz64a",
   "priority": "P1",
   "rank": 0,
@@ -58,5 +58,7 @@
       "answer": "settings-guarded: the text says each such step runs when the project's backlog.json names it (land_stale, land_eval, land_lint, lane_module, kb_root, docs_map) and is skipped, said so, when it does not; one text for every project",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Research ST-m6uyo6rw (landed c8d551aac): ${CLAUDE_PLUGIN_ROOT} is substituted anywhere in the Markdown body of a plugin skill, command and agent and in a skill allowed-tools Bash rule, but is not in the environment of commands run through the Bash tool (kb/public/claude/plugins.md:41-42, skills-and-subagents.md:60-62); whether agent frontmatter is substituted is a gap. A worktree session loads project-scope plugins from the main checkout (plugins.md:44).",
+  "claimed_by": "worker-TK-p7ajxp72"
 }
