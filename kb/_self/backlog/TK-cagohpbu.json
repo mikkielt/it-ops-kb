@@ -60,7 +60,9 @@
         "ignore: the flag is read only with --hook and the command runs as without it"
       ],
       "recommendation": "refuse: exit 1 naming that --opt-in goes with --hook",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "refuse: exit 1 naming that --opt-in goes with --hook",
+      "by": "operator"
     }
   ],
   "notes": "Orchestrator at dispatch: the suite is at 100 of 100 test ids (_tools/tests_ceiling.json) and near the 20 s darwin ceiling: plugin_sprint_hooks_opt_in replaces or extends an existing test (e.g. a plugin_sprint_* test of test_backlog_portable.py renamed to cover both), adding no id.",
