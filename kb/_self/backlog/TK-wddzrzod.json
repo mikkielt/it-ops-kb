@@ -2,7 +2,7 @@
   "id": "TK-wddzrzod",
   "kind": "task",
   "title": "selfcheck's checkout check passes a linked worktree whose workers land, naming where they land",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-koznprpg",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
   ],
   "depends_on": [
     "TK-lwihhcmj"
-  ]
+  ],
+  "claimed_by": "worker-TK-wddzrzod"
 }
