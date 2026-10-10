@@ -39,7 +39,8 @@
     "_tools/bl_base.py",
     "backlog.json",
     "kb/_self/tools.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "_tools/test_backlog_portable.py"
   ],
   "gates": [
     {
