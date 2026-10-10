@@ -23,7 +23,9 @@
     "_tools/bl_items.py",
     "_tools/test_backlog_portable.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "backlog.json"
   ],
-  "notes": "Test ceiling at dispatch (orchestrator, 2026-10-10): 97 of 100 ids used and nine new -k selectors still to collect (forge_land, forge_pipeline, forge_stalled, forge_one_project, multirepo_fields, multirepo_held, multirepo_dispatch, multirepo_land, multirepo_default). Add no new test function unless the ceiling still has room after the ones planned; prefer extending an existing test in the same file and renaming it so its name carries your selector beside the ones it already carries (every older selector must still collect it). Raising max_ids is the operator decision D-776rvpx2 and not this item's. The parent story ST-ik5xhaix checks -k multirepo_default, which no task names: this task sets the fields and their defaults, so its test name carries multirepo_default too (a single-repository workspace behaves as before)."
+  "notes": "Test ceiling at dispatch (orchestrator, 2026-10-10): 97 of 100 ids used and nine new -k selectors still to collect (forge_land, forge_pipeline, forge_stalled, forge_one_project, multirepo_fields, multirepo_held, multirepo_dispatch, multirepo_land, multirepo_default). Add no new test function unless the ceiling still has room after the ones planned; prefer extending an existing test in the same file and renaming it so its name carries your selector beside the ones it already carries (every older selector must still collect it). Raising max_ids is the operator decision D-776rvpx2 and not this item's. The parent story ST-ik5xhaix checks -k multirepo_default, which no task names: this task sets the fields and their defaults, so its test name carries multirepo_default too (a single-repository workspace behaves as before). Orchestrator at dispatch: kb/_self/code.md (mapped to the changed bl_ modules) joins the touches; a new backlog.json setting needs its key in the committed backlog.json, which test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults requires of every setting (TK-g4c5kxsc met the same)."
 }
