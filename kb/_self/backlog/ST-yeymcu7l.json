@@ -2,7 +2,7 @@
   "id": "ST-yeymcu7l",
   "kind": "story",
   "title": "pair_word's docstring and querylog.md give an example the one-candidate rule does not pair",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x5gjv4r7",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,6 @@
   "links": [
     "parked: SP-matmvkn6 review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 13 of 13, \"Orchestration features: ops rows, goal clause map, rescope, query log apply\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: pair_word('unsaved', 'land: uncommitted changes', 'unsaved changes') is None, so the docstring's and querylog.md's example is wrong as worded (2026-10-10: reproduces; land is a second candidate). The check reads the example's parenthesis: asked about ... land ... in the docstring, and 'asked ... land' inside the (`pair_word`: ...) parenthesis of querylog.md's learn paragraph; with the question 'land unsaved changes' the pair is uncommitted. The old pinning check (the one-candidate rule gives no pair for the two-word question) is its last assertion."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 13 of 13, \"Orchestration features: ops rows, goal clause map, rescope, query log apply\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: pair_word('unsaved', 'land: uncommitted changes', 'unsaved changes') is None, so the docstring's and querylog.md's example is wrong as worded (2026-10-10: reproduces; land is a second candidate). The check reads the example's parenthesis: asked about ... land ... in the docstring, and 'asked ... land' inside the (`pair_word`: ...) parenthesis of querylog.md's learn paragraph; with the question 'land unsaved changes' the pair is uncommitted. The old pinning check (the one-candidate rule gives no pair for the two-word question) is its last assertion.",
+  "claimed_by": "orchestrator-x5gjv4r7"
 }
