@@ -259,6 +259,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           runs unless backlog.json's `hooks` names intake
   backlog.py stalled [--json]               each claimed or ready item with its stall signals (bl_stall.py), read
                                           only
+  backlog.py ops SP                         the ops rows that name one of the sprint's items (bl_ops.py): land.step,
+                                          land.end, done.refused with its reasons and agent.run, from the spool and
+                                          the committed ops sidecars, read only; an id with no item file or that is
+                                          no sprint is refused, exit 2
   backlog.py config                         the project settings (backlog.json at the root, or the file
                                           KB_BACKLOG_CONFIG names) with each value's source, file or default; a
                                           file with an unknown key or a wrong type is refused naming it, exit 2
@@ -318,6 +322,7 @@ import bl_cost  # noqa: F401 - registers `cost`
 import bl_dispatch  # noqa: F401 - registers `brief` and `dispatch`
 import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
+import bl_ops  # noqa: F401 - registers `ops`
 import bl_selfcheck  # noqa: F401 - registers `selfcheck`
 
 # `config` reads the settings bl_base holds, which imports no bl_cli: the handler is bl_base's, registered here
@@ -326,7 +331,7 @@ bl_cli.register("config", cmd_config, help="print the project settings with each
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
-         "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
+         "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
          "selfcheck", "config")
 bl_cli.order(USAGE)
 
