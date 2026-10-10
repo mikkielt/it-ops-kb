@@ -2,7 +2,7 @@
   "id": "TK-cagohpbu",
   "kind": "task",
   "title": "The plugin's horizon --hook and intake hook entries run only when the host project's backlog.json key turns them on",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-wrsuz64a",
   "priority": "P1",
   "rank": 0,
@@ -51,5 +51,7 @@
       "answer": "flag: the plugin's two entries run horizon --hook and intake --file --hook with an --opt-in flag, which makes the command do nothing unless backlog.json's hooks setting (default []) names horizon or intake; the kb's .claude/settings.json entries run without the flag and are unchanged",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Orchestrator at dispatch: the suite is at 100 of 100 test ids (_tools/tests_ceiling.json) and near the 20 s darwin ceiling: plugin_sprint_hooks_opt_in replaces or extends an existing test (e.g. a plugin_sprint_* test of test_backlog_portable.py renamed to cover both), adding no id.",
+  "claimed_by": "worker-TK-cagohpbu"
 }
