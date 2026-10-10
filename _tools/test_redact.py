@@ -464,7 +464,7 @@ def census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp
     assert seen == ["confirm", "sweep", "index", "commit"]
 
 
-def test_census_groups_and_queue_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step(tmp_path, monkeypatch, capsys):
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step(tmp_path, monkeypatch, capsys):
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
     census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_path, monkeypatch, capsys)
     census_phases_write_one_ops_row_each(tmp_path)
