@@ -863,6 +863,26 @@ def cmd_fire(bl, a):
     return 0
 
 
+def sprint_leftovers(bl, sid):
+    """The items a drop of sprint SID deletes with it: its goal research story, its review story, its dropped items and
+    the descendants of each, since each names the sprint and `check` reports one whose sprint does not exist. Any other
+    item of the sprint, or one of these that is claimed, refuses the drop, naming each."""
+    top = [i for i, x in bl.items.items() if x.get("sprint") == sid]
+    held = [i for i in top if bl.items[i].get("status") != "dropped"
+            and not (bl.items[i].get("review") or bl.items[i].get("goal_research"))]
+    if held:
+        raise Refused(f"{bl.label(sid)} holds " + ", ".join(bl.label(i) for i in held[:5])
+                      + ": drop each or move it out of the sprint first")
+    out = set(top)
+    for i in top:
+        out.update(bl.descendants(i))
+    busy = [i for i in out if bl.items[i].get("status") == "doing"]
+    if busy:
+        raise Refused(f"{bl.label(sid)} holds " + ", ".join(bl.label(i) for i in sorted(busy)[:5])
+                      + ", claimed: release each first")
+    return sorted(out)
+
+
 def cmd_drop(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -873,13 +893,15 @@ def cmd_drop(bl, a):
     if users:
         raise Refused(f"{bl.label(iid)} is a dependency of " + ", ".join(bl.label(u) for u in users[:5]))
     gone = {iid} if bl.sprint_of(iid) else {iid, *bl.descendants(iid)}  # a drop outside a sprint deletes the descendants too
+    owned = sprint_leftovers(bl, iid) if it.get("kind") == "sprint" else []  # a sprint's own stories go with it
+    gone |= set(owned)
     inner = gone - {iid}
     users = [i for i, x in bl.items.items() if i not in gone and inner & set(x.get("depends_on", [])) and x.get("status") != "dropped"]
     if users:
         raise Refused(f"{bl.label(iid)} would delete items that " + ", ".join(bl.label(u) for u in users[:5]) + " depend on")
     # a dropped item that depended on this one keeps no link to it: check reports a dependency on a dropped item
     for i, x in bl.items.items():
-        if x.get("status") == "dropped" and gone & set(x.get("depends_on", [])):
+        if i not in gone and x.get("status") == "dropped" and gone & set(x.get("depends_on", [])):
             left = [d for d in x["depends_on"] if d not in gone]
             if left:
                 x["depends_on"] = left
@@ -901,10 +923,14 @@ def cmd_drop(bl, a):
             say(f"dropped relates_to {', '.join(cut)} from {bl.label(i)}")
         for i, gate, opt, target in cleanup_gate_do(bl, gone):  # a gate's do names an item by id too
             say(f"dropped gate {gate} do {opt!r} (item {target}) from {bl.label(i)}")
-        for d in bl.descendants(iid):
+        named = ", ".join(bl.label(c) for c in sorted(owned))
+        for d in sorted(gone - {iid}):
             bl.delete(d)
         bl.delete(iid)
-        say(f"dropped and deleted {label} (not in a sprint; git keeps it): {a.why}")
+        if owned:
+            say(f"dropped and deleted {label} with its {named} (git keeps them): {a.why}")
+        else:
+            say(f"dropped and deleted {label} (not in a sprint; git keeps it): {a.why}")
         prune_reopened_refs(bl)
         return 0
     it.update(status="dropped", notes=(it.get("notes", "") + " Dropped: " + a.why).strip()[:TEXT_MAX])
