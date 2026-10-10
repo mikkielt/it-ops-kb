@@ -1,11 +1,15 @@
-"""The one place `backlog.py` reads a forge (kb/_self/backlog.md, Project settings; kb/_self/tools.md): a merge request
-by branch or title prefix (merged, opened with its pipeline status and detailed merge status, closed), the newest
-pipeline of a ref, the merge of the item's own `code/<id>` request and the description it carries. The forge is the `forge` setting of
-backlog.json (`gitlab`, read, merged and described through glab; `github`, read through gh, whose merge and
-description verbs refuse, so no agent writes on the public home) and the project is `forge_project`, else the integration remote's URL. Both arms answer in
-GitLab's words (`opened`, `merged`, `closed`; a pipeline `success`, `failed`, `canceled`, `skipped`, `manual`,
-`running`, `pending`), so a caller reads one vocabulary. A read that cannot be made raises `ForgeError`; no such
-request or pipeline is None. Standard library only; imports `bl_base` at load, and `ql_deliver` (the remote url's
+"""The one place the tools read a forge (kb/_self/backlog.md, Project settings; kb/_self/tools.md): a merge request
+by branch or title prefix (merged, opened with its pipeline status and detailed merge status, closed), the pipelines
+of a ref or a commit, the jobs of a pipeline and the log of a job (`red-pipeline`, the intake `ci` detector, the
+query log's delivery and the publish bridge read those), the merge of the item's own `code/<id>` request and the
+description it carries. The forge is the `forge` setting of backlog.json (`gitlab`, read, merged and described
+through glab; `github`, read through gh, whose merge and description verbs refuse, so no agent writes on the public
+home) and the project is `forge_project`, else the remote's URL; a caller that has only a remote's url (the query
+log's delivery, the CI detector) gets the arm of `url_arm`, which reads the url's forge when the setting names none.
+Both arms answer in GitLab's words (`opened`, `merged`, `closed`; a pipeline or job `success`, `failed`, `canceled`,
+`skipped`, `manual`, `running`, `pending`), so a caller reads one vocabulary. A read that cannot be made raises
+`ForgeError`; no such request or pipeline is None; a job list or a log that cannot be read is None or "", which its
+callers take as no verdict. Standard library only; imports `bl_base` at load, and `ql_deliver` (the remote url's
 parser), `kbpublic` and `kg_lane` where it reads them, never `backlog`.
 """
 import json, re, urllib.parse
@@ -64,12 +68,14 @@ def newest_request(found, key):
 
 class Glab:
     """GitLab, through `glab api` for reads and the description and `glab mr merge` for the merge."""
+    cli = "glab"
     merge_refusal = None
     write_refusal = None
 
     def __init__(self, target, run, cwd=None):
         self.target, self.run, self.cwd = target, run, cwd
         self.quoted = urllib.parse.quote(target.project, safe="")
+        self.job_calls = 0  # the job-list reads this arm made: the `calls` of a `ci.pipeline` ops row
 
     def api(self, path, kind):
         code, out, err = self.run(["glab", "api", "--hostname", self.target.host, path], cwd=self.cwd)
@@ -97,11 +103,30 @@ class Glab:
             auto_merge=mr.get("merge_when_pipeline_succeeds") is True, merged_at=mr.get("merged_at"),
             description=mr.get("description") or "")
 
+    def pipelines(self, ref=None, sha=None, limit=1):
+        """The Pipelines of REF or of commit SHA, newest first, at most LIMIT."""
+        q = f"ref={urllib.parse.quote(ref, safe='')}" if ref else f"sha={urllib.parse.quote(sha, safe='')}"
+        listed = self.api(f"projects/{self.quoted}/pipelines?{q}&order_by=id&sort=desc&per_page={limit}", list)
+        return [Pipeline(p.get("id"), p.get("sha"), p.get("status"), p.get("web_url"), ref)
+                for p in listed if isinstance(p, dict)]
+
     def pipeline(self, ref):
-        listed = self.api(f"projects/{self.quoted}/pipelines?ref={urllib.parse.quote(ref, safe='')}"
-                          f"&order_by=id&sort=desc&per_page=1", list)
-        p = next((p for p in listed if isinstance(p, dict)), None)
-        return None if p is None else Pipeline(p.get("id"), p.get("sha"), p.get("status"), p.get("web_url"), ref)
+        return next(iter(self.pipelines(ref=ref, limit=1)), None)
+
+    def jobs(self, pipeline_id):
+        """The jobs of a pipeline as `glab api` answers them (dicts, newest first, a retried job's attempts all in it),
+        or None when the call fails or answers no JSON list."""
+        self.job_calls += 1
+        try:
+            return self.api(f"projects/{self.quoted}/pipelines/{pipeline_id}/jobs?per_page=100", list)
+        except ForgeError:
+            return None
+
+    def trace(self, job_id):
+        """The log of a job, "" when it cannot be read."""
+        code, out, _ = self.run(["glab", "api", "--hostname", self.target.host,
+                                 f"projects/{self.quoted}/jobs/{job_id}/trace"], cwd=self.cwd)
+        return (out or "") if code == 0 else ""
 
     def set_description(self, request, text):
         """(ok, output) of the PUT of TEXT as the description of REQUEST."""
@@ -152,14 +177,29 @@ def rollup_status(checks):
     return "skipped" if all(w == "skipped" for w in words) else "success"
 
 
+def gh_job(job):
+    """One job of `gh run view --json jobs` as a GitLab job dict (id, name, status, failure_reason, started_at): a
+    failed job's step ran, so its failure_reason is `script_failure` (`job_execution_timeout` for a timed out one)."""
+    unfinished, word = check_state(job)
+    status = gh_status(unfinished, word)
+    started = job.get("startedAt")
+    return {"id": job.get("databaseId"), "name": job.get("name"), "status": status,
+            "failure_reason": (("job_execution_timeout" if word == "timed_out" else "script_failure")
+                               if status == "failed" else None),
+            "started_at": started if isinstance(started, str) and not started.startswith("0001") else None}
+
+
 class Gh:
-    """GitHub, through `gh pr list` and `gh run list`; it reads, and its merge and description verbs refuse."""
+    """GitHub, through `gh pr list`, `gh run list` and `gh run view`; it reads, and its merge and description verbs
+    refuse."""
+    cli = "gh"
     merge_refusal = "the gh arm only reads state: no agent merges on the public home, merge the pull request by hand"
     write_refusal = "the gh arm only reads state: no agent writes on the public home, edit the pull request by hand"
 
     def __init__(self, target, run, cwd=None):
         self.target, self.run, self.cwd = target, run, cwd
         self.repo = f"{target.host}/{target.project}"
+        self.job_calls = 0
 
     def request(self, branch=None, title_prefix=None):
         argv = ["gh", "pr", "list", "--state", "all", "-L", str(LIST_LIMIT), "-R", self.repo, "--json",
@@ -181,13 +221,33 @@ class Gh:
             auto_merge=bool(pr.get("autoMergeRequest")), merged_at=pr.get("mergedAt"),
             description=pr.get("body") or "")
 
-    def pipeline(self, ref):
-        code, out, err = self.run(["gh", "run", "list", "--branch", ref, "-L", "1", "-R", self.repo, "--json",
+    def pipelines(self, ref=None, sha=None, limit=1):
+        """The Pipelines (workflow runs) of REF or of commit SHA, newest first, at most LIMIT."""
+        code, out, err = self.run(["gh", "run", "list", *(["--branch", ref] if ref else ["--commit", sha]),
+                                   "-L", str(limit), "-R", self.repo, "--json",
                                    "databaseId,headSha,status,conclusion,url"], cwd=self.cwd)
-        r = next((r for r in as_json(code, out, err, "gh run list", list) if isinstance(r, dict)), None)
-        if r is None:
+        return [Pipeline(r.get("databaseId"), r.get("headSha"), gh_status(*check_state(r)), r.get("url"), ref)
+                for r in as_json(code, out, err, "gh run list", list) if isinstance(r, dict)]
+
+    def pipeline(self, ref):
+        return next(iter(self.pipelines(ref=ref, limit=1)), None)
+
+    def jobs(self, pipeline_id):
+        """The jobs of a run as GitLab job dicts (`gh_job`), or None when the call fails or answers no job list."""
+        self.job_calls += 1
+        code, out, err = self.run(["gh", "run", "view", str(pipeline_id), "-R", self.repo, "--json", "jobs"],
+                                  cwd=self.cwd)
+        try:
+            data = as_json(code, out, err, "gh run view", dict).get("jobs")
+        except ForgeError:
             return None
-        return Pipeline(r.get("databaseId"), r.get("headSha"), gh_status(*check_state(r)), r.get("url"), ref)
+        return [gh_job(j) for j in data if isinstance(j, dict)] if isinstance(data, list) else None
+
+    def trace(self, job_id):
+        """The log of a job, "" when it cannot be read."""
+        code, out, _ = self.run(["gh", "api", "--hostname", self.target.host,
+                                 f"repos/{self.target.project}/actions/jobs/{job_id}/logs"], cwd=self.cwd)
+        return (out or "") if code == 0 else ""
 
     def set_description(self, request, text):
         raise Refused(self.write_refusal)
@@ -220,6 +280,50 @@ def arm(root, run=None):
     run = run or bl_base.run
     t = target(root, run)
     return (Gh if t.forge == "github" else Glab)(t, run, cwd=root)
+
+
+def url_target(url):
+    """The Target of a remote's URL for a read: `forge_project`, else the project the url names; the forge is the
+    `forge` setting, except that a github.com url is GitHub while the setting is its default, so a project with no
+    setting reads the url's forge as the tools did before the settings."""
+    from ql_deliver import origin_forge
+    named, host, project = origin_forge(url)
+    return Target("github" if "github" in (named, setting("forge")) else "gitlab", host,
+                  setting("forge_project") or project)
+
+
+def url_arm(url, run):
+    """The arm of remote URL's forge for the callers that have a url and a command runner, not a root (the query
+    log's delivery, the publish bridge's CI check, the CI detector): RUN is called as `run(argv)`."""
+    t = url_target(url)
+    return (Gh if t.forge == "github" else Glab)(t, lambda argv, cwd=None: run(argv))
+
+
+def read_list(url, run, github_argv, gitlab_api, named=2):
+    """(the JSON list remote URL's forge answers, the CLI's name, a note) for a `gh` argument list (its first `named`
+    words name it in a note) or a `glab api` path, which the callers build for the one list the verbs above do not
+    cover (the query log's open conflict merge requests): `glab auth status` or `gh auth status` for the host first.
+    The list is None, and the note says why, when the CLI is not signed in or the call fails."""
+    t = url_target(url)
+    arm = url_arm(url, run)
+    code, _, err = run([arm.cli, "auth", "status", "--hostname", t.host])
+    if code:
+        return None, arm.cli, (f"{arm.cli} is not signed in to {t.host} "
+                               f"({last_line(err, 'not installed')})")
+    if t.forge == "github":
+        argv = github_argv(arm.repo)
+        name = " ".join(argv[:named])
+    else:
+        argv = ["glab", "api", "--hostname", t.host, gitlab_api(arm.quoted)]
+        name = "glab api"
+    code, out, err = run(argv)
+    try:
+        data = json.loads(out) if code == 0 else None
+    except ValueError:
+        data = None
+    if not isinstance(data, list):
+        return None, arm.cli, f"{name} failed ({last_line(err, 'no JSON list')})"
+    return data, arm.cli, f"{arm.cli} on {t.host}"
 
 
 def read_request(root, branch=None, title_prefix=None, run=None):

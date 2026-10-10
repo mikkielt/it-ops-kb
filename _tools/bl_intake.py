@@ -47,14 +47,15 @@ the detectors and the filing of their candidates:
   STRANDED_DAYS on HEAD's commit day (`kb/_self/querylog.md`, Store and Learn). It reads the findings files at HEAD
   directly, with no ql_ module;
 - the `ci` detector (`latest_pipeline`, `pipeline_candidate`, `ci_detector`, at the end): the newest pipeline of the
-  integration main in which a job ran, as `backlog.py red-pipeline` reads it (glab, gh), and the bug a red one files,
+  integration main in which a job ran, as `backlog.py red-pipeline` reads it (through `bl_forge`), and the bug a red one files,
   with red-pipeline's fingerprint, links and repro. It is the one detector that uses the network, so it is in
   NETWORK_DETECTORS and `collect` runs it only when asked (`intake --network`); red-pipeline calls the same reader and
   candidate with its own `run`.
 
 This module imports no tool module but `bl_base` (the backlog's constants, and its refusal in the filing) and `kbpublic` (the integration remote's
-name) and, in the functions that read a pipeline, `ql_base` (the command runner) and `ql_deliver` (the forge calls),
-inside the function that needs them; it is below backlog.py, which passes its own `run` to the readers.
+name) and, in the functions that read a pipeline, `ql_base` (the command runner), `ql_deliver` (the job rules) and
+`bl_forge` (every call to the forge, whose `forge` and `forge_project` settings aim it), inside the function that
+needs them; it is below backlog.py, which passes its own `run` to the readers.
 """
 import atexit
 import datetime
@@ -1201,17 +1202,6 @@ def failure_fingerprint(job, failure=""):
     return hashlib.sha256(f"{job}\n{failure}".encode("utf-8")).hexdigest()[:12]
 
 
-def github_jobs(host, project, rid, run):
-    """The jobs of GitHub Actions run `rid`, as `gh run view --json jobs` answers them, or None."""
-    code, o, _ = run(["gh", "run", "view", str(rid), "-R", f"{host}/{project}", "--json", "jobs"])
-    try:
-        js = json.loads(o) if code == 0 else None
-    except ValueError:
-        js = None
-    js = js.get("jobs") if isinstance(js, dict) else None
-    return js if isinstance(js, list) else None
-
-
 def latest_pipeline(root, job=None, run=None):
     """(pipeline, note): a finished pipeline of origin's main as {id, sha, url, red, jobs, unverified, how}, a red
     one with `failure` and `fingerprint` read from the log of its first failed job by name, and `first` (that job's
@@ -1229,117 +1219,89 @@ def latest_pipeline(root, job=None, run=None):
     On GitLab a pipeline waiting on manual jobs counts as finished, and one whose status is no failure is read by its
     jobs (`ql_deliver.job_verdict`): red when a job someone started failed, else `unverified` says how each gate job
     did not succeed. `how` names the choice for the message."""
-    from ql_deliver import (GITHUB_RED, RAN_AND_FAILED, any_ran, counting, forge_list, gitlab_jobs, job_decided,
-                            job_verdict, latest_jobs, origin_forge)
-    run, calls = counting(run or run_argv)  # `calls` is the pipeline's `calls`: the job-list calls this read made
-    import kbpublic
+    from ql_deliver import any_ran, job_decided, job_verdict, latest_jobs
+    import bl_forge, kbpublic
+    run = run or run_argv
     remote = kbpublic.integration_remote(root)
     code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
     if code:
         return None, f"no {remote} remote"
-    url = url.strip()
-    forge, host, project = origin_forge(url)
-    quoted = project.replace("/", "%2F")
-    data, cli, note = forge_list(
-        url, run, lambda repo: ["gh", "run", "list", "--branch", "main", "-R", repo, "--json",
-                                "databaseId,headSha,status,conclusion,url", "-L", str(MAIN_PIPELINES)],
-        lambda p: f"projects/{p}/pipelines?ref=main&per_page={MAIN_PIPELINES}", named=3)
-    if data is None:
-        return None, note
+    arm = bl_forge.url_arm(url.strip(), run)  # the forge setting and forge_project, else the url's own
+    forge, host = arm.target.forge, arm.target.host
+    try:
+        data = arm.pipelines(ref="main", limit=MAIN_PIPELINES)
+    except bl_forge.ForgeError as e:
+        return None, str(e)
+    note = f"{arm.cli} on {host}"
     newest = None  # GitLab without `job`: the newest finished pipeline, read when no job ran in any
     idle = read = 0  # GitLab: the pipelines read in a row in which no job ran, and the pipelines read
     for r in data:
         if idle >= IDLE_PIPELINES:  # an older job, red or not, is out of reach: no verdict
             return None, (f"no job ran in the last {idle} pipelines of main read on {host}, where the read "
-                          f"stops (IDLE_PIPELINES), so a job that ran before them is out of reach ({cli})")
-        if not isinstance(r, dict):
+                          f"stops (IDLE_PIPELINES), so a job that ran before them is out of reach ({arm.cli})")
+        if r.status not in GITLAB_FINISHED:  # a GitHub run is in the same words
             continue
-        jobs = None
+        p = {"id": r.id, "sha": r.sha, "url": r.url, "red": r.status == "failed", "unverified": [],
+             "how": "the newest completed" if forge == "github" else "the newest started"}
         if forge == "github":
-            if r.get("status") != "completed":
-                continue
-            p = {"id": r.get("databaseId"), "sha": r.get("headSha"), "url": r.get("url"),
-                 "red": r.get("conclusion") in GITHUB_RED, "unverified": [], "how": "the newest completed"}
-            if job:
-                jobs = github_jobs(host, project, p["id"], run)
-                mine = [j for j in jobs or [] if isinstance(j, dict) and j.get("name") == job
-                        and j.get("conclusion") in ("success",) + GITHUB_RED]
-                if jobs is None:  # as on GitLab: an unreadable job list is no verdict, and no reason to read an older run
-                    p["red"], p["unverified"] = False, ["the pipeline's jobs could not be read"]
-                elif not mine:
-                    continue
-                else:
-                    p["red"] = mine[0].get("conclusion") in GITHUB_RED
-                p["how"] = f"the newest {job}"
+            jobs = arm.jobs(p["id"]) if job else None  # a GitHub run's jobs are read for `job` only
         else:
-            if r.get("status") not in GITLAB_FINISHED:
-                continue
-            p = {"id": r.get("id"), "sha": r.get("sha"), "url": r.get("web_url"), "red": r.get("status") == "failed",
-                 "unverified": [], "how": "the newest started"}
-            jobs = gitlab_jobs(host, quoted, p["id"], run)
+            jobs = arm.jobs(p["id"])
             read += 1
             idle = idle + 1 if jobs is not None and not any_ran(jobs) else 0
-            if job:
-                mine = latest_jobs(jobs).get(job)
-                if jobs is None:
-                    p["red"], p["unverified"] = False, ["the pipeline's jobs could not be read"]
-                elif mine is None or not job_decided(mine):
-                    continue  # canceled, manual, skipped or failed without its script: no verdict on the job
-                else:
-                    p["red"] = mine.get("status") == "failed"
-                p["how"] = f"the newest {job}"
-            elif not p["red"]:
-                if jobs is not None and not any_ran(jobs):
-                    newest = newest or (p, jobs)
-                    continue
-                verdict, _, unpassed = job_verdict(jobs)
-                p["red"] = verdict == "red"
-                p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
-        return dict(red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run, job), calls=calls[0]), note
+        if job:
+            mine = latest_jobs(jobs).get(job)
+            if jobs is None:  # an unreadable job list is no verdict, and no reason to read an older pipeline
+                p["red"], p["unverified"] = False, ["the pipeline's jobs could not be read"]
+            elif mine is None or not job_decided(mine):
+                continue  # canceled, manual, skipped or failed without its script: no verdict on the job
+            else:
+                p["red"] = mine.get("status") == "failed"
+            p["how"] = f"the newest {job}"
+        elif forge != "github" and not p["red"]:
+            if jobs is not None and not any_ran(jobs):
+                newest = newest or (p, jobs)
+                continue
+            verdict, _, unpassed = job_verdict(jobs)
+            p["red"] = verdict == "red"
+            p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
+        return dict(red_detail(p, jobs, arm, job), calls=arm.job_calls), note
     if newest:
         p, jobs = newest
         verdict, _, unpassed = job_verdict(jobs)
         p["red"] = verdict == "red"
         p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
         p["how"] = f"no job ran in the last {read}; the newest finished"
-        return dict(red_detail(p, jobs, forge, host, project, quoted, RAN_AND_FAILED, run), calls=calls[0]), note
+        return dict(red_detail(p, jobs, arm), calls=arm.job_calls), note
     which = f"in which {job} ran" if job else "finished"
-    return None, f"no pipeline of main {which} among the last {read or MAIN_PIPELINES} on {host} ({cli})"
+    return None, f"no pipeline of main {which} among the last {read or MAIN_PIPELINES} on {host} ({arm.cli})"
 
 
-def red_detail(p, jobs, forge, host, project, quoted, ran_and_failed, run, job=None):
+def red_detail(p, jobs, arm, job=None):
     """`p` with `jobs` (the failed jobs' names) and, when it is red, `failure` and `fingerprint` read from the log of
     its first failed job by name (among the jobs whose script ran, when there are any; `job` when given), and `first`,
     that job's name, only when its script ran and failed (on GitHub, any failed job): the bug's repro names it with
     `--job`, which reads only a pipeline where the job reached a verdict, so a job that failed without running (such as
-    ci_quota_exceeded or runner_system_failure) gets plain `--status`, which reads the red pipeline itself. On GitLab a
-    job counts by its newest attempt (`ql_deliver.latest_jobs`): one that failed and was retried to success is no
-    failed job."""
-    from ql_deliver import latest_jobs
+    ci_quota_exceeded or runner_system_failure) gets plain `--status`, which reads the red pipeline itself. A job
+    counts by its newest attempt (`ql_deliver.latest_jobs`): one that failed and was retried to success is no failed
+    job. `arm` is the `bl_forge` arm that read the pipeline: it reads the log and, on GitHub, the jobs of a run read
+    without them."""
+    from ql_deliver import RAN_AND_FAILED, latest_jobs
     p["jobs"] = []
     if not p["red"]:
         return p
-    if forge == "github":
-        js = jobs if jobs is not None else github_jobs(host, project, p["id"], run) or []
-        bad, field = ("failure", "timed_out", "startup_failure"), "conclusion"
-    else:
-        js, bad, field = list(latest_jobs(jobs).values()), ("failed",), "status"  # a retried job's newest attempt
-    failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
-    failed = [j for j in failed if j.get("failure_reason") in ran_and_failed] or failed  # scripts that ran
+    if jobs is None and arm.target.forge == "github":
+        jobs = arm.jobs(p["id"])
+    failed = [j for j in latest_jobs(jobs).values() if j.get("status") == "failed" and j.get("name")]
+    failed = [j for j in failed if j.get("failure_reason") in RAN_AND_FAILED] or failed  # scripts that ran
     if job:
         failed = [j for j in failed if j["name"] == job][:1] or failed
     p["jobs"] = [j["name"] for j in failed]
     if failed:
         first = min(failed, key=lambda j: str(j["name"]))  # the failed job the fingerprint names
-        jid = first.get("databaseId" if forge == "github" else "id")
-        log = ""
-        if jid is not None:
-            argv = (["gh", "api", "--hostname", host, f"repos/{project}/actions/jobs/{jid}/logs"]
-                    if forge == "github" else
-                    ["glab", "api", "--hostname", host, f"projects/{quoted}/jobs/{jid}/trace"])
-            code, o, _ = run(argv)
-            log = o if code == 0 else ""
-        if forge == "github" or first.get("failure_reason") in ran_and_failed:
+        jid = first.get("id")
+        log = arm.trace(jid) if jid is not None else ""
+        if first.get("failure_reason") in RAN_AND_FAILED:
             p["first"] = str(first["name"])
         p["failure"] = first_failure(log)
         p["fingerprint"] = failure_fingerprint(first["name"], p["failure"])

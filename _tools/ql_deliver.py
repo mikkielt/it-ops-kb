@@ -5,7 +5,7 @@ commit of all of them and one `kbgit.py sync --push` to origin only. A conflict 
 `querylog/<run-id>` branch with the merge-request push options. Plugin hosts push from a managed clone of their install source; cloud
 sessions push to the branch they have checked out.
 """
-import json, os, re, shutil, sys, urllib.parse
+import json, os, re, shutil, sys
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -71,38 +71,16 @@ def origin_forge(url):
 
 
 def forge_list(url, run, github_argv, gitlab_api, named=2):
-    """(the JSON list origin's forge answers, the CLI's name, a note) for a `gh` argument list (its first `named`
-    words name it in a note) or a `glab api` path: `glab auth status` or `gh auth status` for origin's host first. The
-    list is None, and the note says why, when the CLI is not signed in or the call fails."""
-    forge, host, project = origin_forge(url)
-    cli = "gh" if forge == "github" else "glab"
-    code, _, err = run([cli, "auth", "status", "--hostname", host])
-    if code:
-        return None, cli, f"{cli} is not signed in to {host} ({(err.strip().splitlines() or ['not installed'])[-1][:80]})"
-    if forge == "github":
-        argv = github_argv(f"{host}/{project}")
-        name = " ".join(argv[:named])
-    else:
-        argv = ["glab", "api", "--hostname", host, gitlab_api(urllib.parse.quote(project, safe=""))]
-        name = "glab api"
-    code, o, err = run(argv)
-    try:
-        data = json.loads(o) if code == 0 else None
-    except ValueError:
-        data = None
-    if not isinstance(data, list):
-        return None, cli, f"{name} failed ({(err.strip().splitlines() or ['no JSON list'])[-1][:80]})"
-    return data, cli, f"{cli} on {host}"
+    """(the JSON list origin's forge answers, the CLI's name, a note) for a `gh` argument list or a `glab api` path:
+    `bl_forge.read_list`, which aims it at `forge_project` when the setting names one, else at the url's project."""
+    import bl_forge
+    return bl_forge.read_list(url, run, github_argv, gitlab_api, named)
 
 
-def pipeline_verdict(forge, statuses):
-    """`red`, `pending` or `ok` from the CI states of one commit: only a finished failure is red (`failed` on
-    GitLab; a completed run concluded failure, timed_out or startup_failure on GitHub); an unfinished state is
-    pending; manual, skipped, canceled and success are ok. GitHub: `statuses` are (status, conclusion) pairs."""
-    if forge == "github":
-        if any(s == "completed" and c in GITHUB_RED for s, c in statuses):
-            return "red"
-        return "pending" if any(s != "completed" for s, _ in statuses) else "ok"
+def pipeline_verdict(statuses):
+    """`red`, `pending` or `ok` from the CI states of one commit, in GitLab's words (`bl_forge` answers a GitHub run
+    in them): only a finished failure is red (`failed`); an unfinished state is pending; manual, skipped, canceled and
+    success are ok."""
     if any(s in GITLAB_RED for s in statuses):
         return "red"
     return "pending" if any(s in GITLAB_UNFINISHED for s in statuses) else "ok"
@@ -178,17 +156,6 @@ def job_verdict(jobs, gate=None):
     return ("unverified" if unpassed else "ok"), [], unpassed
 
 
-def gitlab_jobs(host, quoted, pid, run):
-    """The jobs of GitLab pipeline `pid` in project `quoted` (URL-encoded path), as `glab api` answers them, or None
-    when the call fails or answers no JSON list."""
-    code, o, _ = run(["glab", "api", "--hostname", host, f"projects/{quoted}/pipelines/{pid}/jobs?per_page=100"])
-    try:
-        data = json.loads(o) if code == 0 else None
-    except ValueError:
-        data = None
-    return data if isinstance(data, list) else None
-
-
 # ---------------------------------------------------------------- ops rows of the CI reads and the other tools
 
 CI_STATE_FILE = "ci-state.json"  # beside the spool: the last state each pipeline was recorded in, so only a change is a row
@@ -232,25 +199,6 @@ def ops_row(event, **fields):
         return None
 
 
-def is_job_list(argv):
-    """Whether a forge call reads one pipeline's job list (`glab api projects/<p>/pipelines/<id>/jobs`, `gh run view
-    <id> --json jobs`), not a job's log or the pipeline list."""
-    a = [str(x) for x in argv]
-    return (a[:2] == ["glab", "api"] and any("/pipelines/" in x and "/jobs" in x for x in a)) or (
-        a[:3] == ["gh", "run", "view"] and "jobs" in a)
-
-
-def counting(run):
-    """(run2, calls): `run2` is `run` and adds one to `calls[0]` for each job-list call (`is_job_list`) it makes."""
-    calls = [0]
-
-    def counted(argv, *args, **kw):
-        if is_job_list(argv):
-            calls[0] += 1
-        return run(argv, *args, **kw)
-    return counted, calls
-
-
 def record_pipeline(pid, state, calls, sha=None):
     """Append the `ci.pipeline` ops row of pipeline `pid` read in `state` (`red`, `pending`, `green` or `unverified`; `ok`
     is `green`) with the `calls` it made for job lists, only when `pid` was last recorded in another state or never
@@ -280,106 +228,84 @@ def record_pipeline(pid, state, calls, sha=None):
 
 
 def ci_pipeline(url, sha, run):
-    """(verdict, detail, pipeline) of the CI of commit `sha` on origin's forge: verdict `red`, `pending`, `ok`,
-    `unverified` (GitLab: a gate job did not succeed, `job_verdict`), `none` (no pipeline) or `skip` (no signed-in
-    glab or gh, or the call failed: the check is skipped). On GitLab it reads the commit's newest pipeline that failed,
-    is unfinished or in which a job ran (`job_ran`), else its newest one: every job is manual, so a newer pipeline no
-    one started hides nothing. One whose status is no failure and not unfinished is read by its jobs. `pipeline` is
-    {id, url, status} of the pipeline read (GitHub: the first red run), or None."""
-    forge = origin_forge(url)[0]
-    run, calls = counting(run)
-    data, cli, note = forge_list(
-        url, run, lambda repo: ["gh", "run", "list", "--commit", sha, "-R", repo, "--json",
-                                "status,conclusion,databaseId,url", "-L", "100"],
-        lambda project: f"projects/{project}/pipelines?sha={sha}&per_page={SHA_PIPELINES}")
-    if data is None:
-        return "skip", note, None
+    """(verdict, detail, pipeline) of the CI of commit `sha` on origin's forge, read through `bl_forge`: verdict `red`,
+    `pending`, `ok`, `unverified` (GitLab: a gate job did not succeed, `job_verdict`), `none` (no pipeline) or `skip`
+    (the forge could not be read: glab or gh not signed in, or the call failed: the check is skipped). On GitLab it
+    reads the commit's newest pipeline that failed, is unfinished or in which a job ran (`job_ran`), else its newest
+    one: every job is manual, so a newer pipeline no one started hides nothing. One whose status is no failure and not
+    unfinished is read by its jobs. `pipeline` is {id, url, status} of the pipeline read (GitHub: the first red
+    run), or None."""
+    import bl_forge
+    arm = bl_forge.url_arm(url, run)
+    github = arm.target.forge == "github"
+    try:
+        data = arm.pipelines(sha=sha, limit=100 if github else SHA_PIPELINES)  # newest first
+    except bl_forge.ForgeError as e:
+        return "skip", str(e), None
     jobs = None
-    if forge == "github":
-        runs = [r for r in data if isinstance(r, dict)]
-        states = [(r.get("status"), r.get("conclusion")) for r in runs]
-        shown = ", ".join(f"{s}/{c}" if c else str(s) for s, c in states)
-        pick = next((r for r in runs if r.get("conclusion") in GITHUB_RED), runs[0] if runs else {})
-        pipe = {"id": pick.get("databaseId"), "url": pick.get("url"),
-                "status": f"{pick.get('status')}/{pick.get('conclusion')}"}
+    if github:
+        runs = data
+        pick = next((r for r in runs if r.status == "failed"), runs[0] if runs else None)
+        states = [r.status for r in runs]
+        shown = ", ".join(map(str, states))
+        pipe = {"id": pick.id, "url": pick.url, "status": pick.status} if pick else {}
     else:
-        _, host, project = origin_forge(url)
-        quoted = urllib.parse.quote(project, safe="")
         runs, newest = [], None
-        for r in (r for r in data if isinstance(r, dict)):  # newest first
-            if r.get("status") in GITLAB_RED + GITLAB_UNFINISHED:  # decided by its status, no job list needed
+        for r in data:
+            if r.status in GITLAB_RED + GITLAB_UNFINISHED:  # decided by its status, no job list needed
                 runs, jobs = [r], None
                 break
-            js = gitlab_jobs(host, quoted, r.get("id"), run)
+            js = arm.jobs(r.id)
             newest = newest or (r, js)
             if js is None or any_ran(js):  # an unreadable list is no proof that nothing ran
                 runs, jobs = [r], js
                 break
         if not runs and newest:
             runs, jobs = [newest[0]], newest[1]
-        states = [r.get("status") for r in runs]
+        states = [r.status for r in runs]
         shown = ", ".join(map(str, states))
-        pipe = {"id": runs[0].get("id"), "url": runs[0].get("web_url"), "status": runs[0].get("status")} if runs else {}
-        first = next((r for r in data if isinstance(r, dict)), None)
-        if runs and first is not None and first is not runs[0]:
+        pipe = {"id": runs[0].id, "url": runs[0].url, "status": runs[0].status} if runs else {}
+        if runs and data[0] is not runs[0]:
             shown = f"pipeline {pipe['id']}, the newest where a job ran: {shown}"
     if not states:
-        return "none", f"no pipeline for {sha[:9]} on {origin_forge(url)[1]}", None
-    verdict = pipeline_verdict(forge, states)
-    if forge == "gitlab" and verdict == "ok":  # a status that is no failure is read by the pipeline's jobs
+        return "none", f"no pipeline for {sha[:9]} on {arm.target.host}", None
+    verdict = pipeline_verdict(states)
+    if not github and verdict == "ok":  # a status that is no failure is read by the pipeline's jobs
         verdict, failed, unpassed = job_verdict(jobs)
         if failed:
             shown += f"; script failed in {', '.join(failed)}"
         elif unpassed:
             shown += f"; {', '.join(unpassed)}"
-    record_pipeline(pipe.get("id"), verdict, calls[0], sha)  # a row only when this pipeline's state changed
-    return verdict, f"{note}: {shown}", pipe
+    record_pipeline(pipe.get("id"), verdict, arm.job_calls, sha)  # a row only when this pipeline's state changed
+    return verdict, f"{arm.cli} on {arm.target.host}: {shown}", pipe
 
 
 def pipeline_failure(url, pipe, run):
     """(failure, fingerprint) of the red pipeline `pipe` ({id, ...}) on origin's forge, computed as backlog.py does
     for main's pipeline: the first failed job by name (among the jobs whose script ran and failed, when there are
     any), what failed first in its log (`bl_ci.first_failure`), and
-    `bl_ci.failure_fingerprint` of the two. ('', None) when no failed job can be read (no id, a failed call).
-    The first failed job's name goes into `pipe["job"]`, which the bug's repro names with `--job`, only when its
-    script ran and failed (`job_decided`; on GitHub, any failed job): `--job` reads only a pipeline where the job
-    reached a verdict, so a job that failed without running (ci_quota_exceeded, runner_system_failure) leaves the
-    repro plain `--status`, which reads the red pipeline itself. On GitLab a job counts by its newest attempt
-    (`latest_jobs`): one that failed and was retried to success is no failed job."""
+    `bl_ci.failure_fingerprint` of the two; the jobs and the log are read through `bl_forge`. ('', None) when no
+    failed job can be read (no id, a failed call). The first failed job's name goes into `pipe["job"]`, which the
+    bug's repro names with `--job`, only when its script ran and failed (`job_decided`; on GitHub, any failed job):
+    `--job` reads only a pipeline where the job reached a verdict, so a job that failed without running
+    (ci_quota_exceeded, runner_system_failure) leaves the repro plain `--status`, which reads the red pipeline
+    itself. A job counts by its newest attempt (`latest_jobs`): one that failed and was retried to success is no
+    failed job."""
     import bl_ci  # the red-pipeline rules themselves, not the backlog facade, which reaches every bl_ module
+    import bl_forge
     pid = pipe.get("id")
     if pid is None:
         return "", None
-    forge, host, project = origin_forge(url)
-    if forge == "github":
-        code, o, _ = run(["gh", "run", "view", str(pid), "-R", f"{host}/{project}", "--json", "jobs"])
-        key, bad, field, idkey = "jobs", ("failure", "timed_out", "startup_failure"), "conclusion", "databaseId"
-    else:
-        quoted = urllib.parse.quote(project, safe="")
-        code, o, _ = run(["glab", "api", "--hostname", host,
-                          f"projects/{quoted}/pipelines/{pid}/jobs?per_page=100"])  # all jobs: a retry is in it
-        key, bad, field, idkey = None, ("failed",), "status", "id"
-    try:
-        js = json.loads(o) if code == 0 else []
-        js = js.get(key, []) if key and isinstance(js, dict) else js
-        if forge != "github":
-            js = list(latest_jobs(js).values())  # a job that failed and was retried to success is not failed
-        failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
-    except (ValueError, AttributeError, TypeError):
-        failed = []
+    arm = bl_forge.url_arm(url, run)
+    failed = [j for j in latest_jobs(arm.jobs(pid)).values() if j.get("status") == "failed" and j.get("name")]
     failed = [j for j in failed if j.get("failure_reason") in RAN_AND_FAILED] or failed  # a script that ran first
     if not failed:
         return "", None
     first = min(failed, key=lambda j: str(j["name"]))
-    if forge == "github" or job_decided(first):
+    if job_decided(first):
         pipe["job"] = str(first["name"])
-    log, jid = "", first.get(idkey)
-    if jid is not None:
-        argv = (["gh", "api", "--hostname", host, f"repos/{project}/actions/jobs/{jid}/logs"] if forge == "github" else
-                ["glab", "api", "--hostname", host, f"projects/{quoted}/jobs/{jid}/trace"])
-        code, o, _ = run(argv)
-        log = o if code == 0 else ""
-    failure = bl_ci.first_failure(log)
+    jid = first.get("id")
+    failure = bl_ci.first_failure(arm.trace(jid) if jid is not None else "")
     return failure, bl_ci.failure_fingerprint(first["name"], failure)
 
 
