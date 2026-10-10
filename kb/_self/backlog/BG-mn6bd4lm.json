@@ -2,7 +2,7 @@
   "id": "BG-mn6bd4lm",
   "kind": "bug",
   "title": "tools.md's intake row does not say a drift check's tests.py run writes its test.run row to the clone's spool",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yzs3bj6f",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "a doc gap: the repro reads the intake row of tools.md",
   "touches": [
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "kb-worker-mn6bd4lm"
 }
