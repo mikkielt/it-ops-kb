@@ -2,7 +2,7 @@
   "id": "ST-iltxwoty",
   "kind": "story",
   "title": "land waits for a finished headless worker's SessionEnd hook before refusing a live process in its worktree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lyfnpu37",
   "priority": "P3",
   "rank": 0,
@@ -91,5 +91,29 @@
     "merged: ST-5oruclxm"
   ],
   "notes": "Merged from ST-5oruclxm (the bl_procs and bl_selfcheck half and its planted test) at the 2026-10-10 backlog triage; no premise change: grep distill in bl_procs.py and bl_selfcheck.py finds no match, and bl_land.release_worker_worktree refuses on any live_processes entry. Both -k selectors name tests yet to write: tests.py exits 2 until the work adds them (land_waits_hook in test_land_e2e.py, selfcheck_young_distill in test_backlog_portable.py). Orders after ST-xdyk2ugr, which edits land's start in the same file. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise run at planning (2026-10-10): grep -c distill in _tools/bl_procs.py and _tools/bl_selfcheck.py prints 0 and 0, and release_worker_worktree returns its refusal on any live_processes entry with no wait: reproduces.",
-  "claimed_by": "kb-worker-iltxwoty"
+  "evidence": {
+    "commit": "481c11174af5b45f13712b48d3647df0124f1379",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_waits_hook"
+        ],
+        "exit": 0,
+        "sha256": "8ebee621e925f710"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfcheck_young_distill"
+        ],
+        "exit": 0,
+        "sha256": "87ee9184ede06a73"
+      }
+    ]
+  }
 }
