@@ -32,6 +32,47 @@
   "depends_on": [
     "ST-wfvkk6jn"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does a repository home's signal hold beyond its README blob at the default branch? A README-only signal would confirm unchanged a repository whose licence, release or archived state changed (the 2026-09-26 reading updated S1976, S2156, S2012 and S1892 for such facts).",
+      "options": [
+        "README blob only",
+        "README blob, licence blob, version-like release tags created since retrieval, and the page's archived banner"
+      ],
+      "recommendation": "README blob, licence blob, version-like release tags created since retrieval, and the page's archived banner",
+      "class": "push",
+      "answer": "README blob, licence blob, version-like release tags created since retrieval, and the page's archived banner",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the provider registry give one host's page kinds (a repository home, a wiki page, an issue, a discussion) their own rows and signals?",
+      "options": [
+        "match takes * for a path segment and a trailing $ for the url's end; one row for each page kind; a new signal name git (a file in a repository of the clone cache) and a version key timeline (the page's latest timestamp)",
+        "one row for the host with a per-kind column the fetch tools read"
+      ],
+      "recommendation": "match takes * for a path segment and a trailing $ for the url's end; one row for each page kind; a new signal name git (a file in a repository of the clone cache) and a version key timeline (the page's latest timestamp)",
+      "class": "design",
+      "answer": "match takes * for a path segment and a trailing $ for the url's end; one row for each page kind; a new signal name git (a file in a repository of the clone cache) and a version key timeline (the page's latest timestamp)",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which pages does a signal leave out, and how is the retrieval day itself read? A wiki's own git url, a releases list and a pull request have no signal here; activity on the retrieval day is ambiguous because retrieved_utc holds a day.",
+      "options": [
+        "a wiki's own git url is decided by the census check only (its newest commit) and fact diff keeps its path; a releases list and a pull request stay in the reading queue; a commit on the retrieval day is CHANGED and a timeline timestamp on it is OK, as check_ref and check_live already read it",
+        "every page kind with a signal is decided by both tools, and the retrieval day is CHANGED for every signal"
+      ],
+      "recommendation": "a wiki's own git url is decided by the census check only (its newest commit) and fact diff keeps its path; a releases list and a pull request stay in the reading queue; a commit on the retrieval day is CHANGED and a timeline timestamp on it is OK, as check_ref and check_live already read it",
+      "class": "push",
+      "answer": "a wiki's own git url is decided by the census check only (its newest commit) and fact diff keeps its path; a releases list and a pull request stay in the reading queue; a commit on the retrieval day is CHANGED and a timeline timestamp on it is OK, as check_ref and check_live already read it",
+      "by": "operator"
+    }
+  ],
   "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 50 rows of kind gh-page or api-other with note 'github page' went to phase 2: 32 confirmed, 16 updated, 2 superseded. 85 live github.com non-raw sources on 2026-10-10. The signals are measured through /kb-probe before code uses them; a page kind no signal fits stays in the queue. Fact for the no-api rule: census.py's docstring says api.github.com is never called.",
   "claimed_by": "worker-ST-ai2xlm7x"
 }

@@ -36,6 +36,12 @@ bucket:
                 same run, and the note is set only when the second try fails too), or MicrosoftDocs/memdocs (archived:
                 re-source to the live Learn page)
 Git work uses bare blobless clones in _cache/census/repos/ (git over https; api.github.com is never called).
+A github.com page that is a file of a repository (provider.github_page) is decided by its provider's signal, with the one
+GET of the page that names a 404, a redirect (the repository moved) and the archived banner: a wiki page by the commits
+of its file in the wiki's own repository (`<repo>.wiki`), a repository home by its README blob at the default branch, its
+licence blob, a version-like release tag after retrieval and the archived banner, an issue or a discussion by the latest
+timestamp of its timeline; a wiki's own git url by its newest commit. The page's About text, topics and counters are no
+part of the signal. api.github.com urls and a page no signal fits (a releases list, a pull request) go to reading.
 --factdiff LOG takes the verdicts of the census's first stage (factdiff.py detect, _census/factdiff-<date>.csv) for the
 sources it covers: unchanged, or every fact found word for word, against a text no newer than retrieved_utc -> OK; gone or soft 404 with nothing moved -> GONE;
 facts to review -> CHANGED, the evidence naming `factdiff.py review`. Pinned and errored sources are checked here.
@@ -633,6 +639,164 @@ def check_live(url, since, rec):
     return st, verdict("OK", f"{how} {date}, not after retrieval {since}{moved}", f"{how} {date}")
 
 
+# ---------------------------------------------------------------- github.com pages
+
+README_FILE = re.compile(r"(?i)readme(\.[a-z]+)?")
+LICENCE_FILE = re.compile(r"(?i)(licen[sc]e|copying)(\.[a-z]+)?")
+ARCHIVED = re.compile(r"archived by the owner(?: on ([A-Z][a-z]{2} \d{1,2}, \d{4}))?")
+RELEASE_TAG = re.compile(r"\d+\.\d+")
+
+
+def tree_files(d, directory=""):
+    """{path: blob id} of the files directly in `directory` of the default branch (the clone holds trees: no blob is fetched)."""
+    out = g(d, "ls-tree", "-z", "HEAD", *([directory + "/"] if directory else []))[1]
+    files = {}
+    for ent in out.split("\0"):
+        meta, _, path = ent.partition("\t")
+        parts = meta.split()
+        if len(parts) == 3 and parts[1] == "blob":
+            files[path] = parts[2]
+    return files
+
+
+def named_file(d, rx, directories=("",)):
+    """(path, blob id) of the first file whose name `rx` matches in the first of `directories` that has one (a Markdown file
+    before the others), else ("", "")."""
+    for sub in directories:
+        files = tree_files(d, sub)
+        found = sorted((p for p in files if rx.fullmatch(p.rpartition("/")[2])), key=lambda p: (not p.lower().endswith(".md"), p))
+        if found:
+            return found[0], files[found[0]]
+    return "", ""
+
+
+def wiki_file(d, title):
+    """(path, blob id) of the wiki page `title` (`Some-Page`; the file has an extension) in the wiki's repository, else ("", "")."""
+    out = g(d, "ls-tree", "-r", "-z", "HEAD")[1]
+    want = unquote(title).lower().replace(" ", "-")
+    for ent in out.split("\0"):
+        meta, _, path = ent.partition("\t")
+        parts = meta.split()
+        if len(parts) == 3 and parts[1] == "blob" and os.path.splitext(path)[0].lower().replace(" ", "-") == want:
+            return path, parts[2]
+    return "", ""
+
+
+def release_tags(d, since=""):
+    """The version-like tag names of the clone (those created on or after `since`, when given), sorted."""
+    out = g(d, "for-each-ref", "--format=%(refname:short) %(creatordate:short)", "refs/tags")[1]
+    return sorted(t for t, _, day in (ln.partition(" ") for ln in out.splitlines())
+                  if RELEASE_TAG.search(t) and (not since or day >= since))
+
+
+def gh_page_id(url, text=""):
+    """The version id of a github.com page that is a file of a git repository, from the bare clone cache, or '' when its
+    kind has none or the repository cannot be cloned (factdiff.py detect's `git` signal): a wiki page's blob id in the
+    wiki's repository; a repository home's README blob at the default branch with its licence blob, its version-like
+    tags and whether `text` (the page) carries the archived banner."""
+    kind, repo, name = provider.github_page(url)
+    if kind not in ("home", "wiki"):
+        return ""
+    d, _ = repo_dir(repo)
+    if not d:
+        return ""
+    if kind == "wiki":
+        return wiki_file(d, name)[1][:16]
+    readme = named_file(d, README_FILE, (".github", "", "docs"))
+    licence = named_file(d, LICENCE_FILE)
+    if not readme[1]:
+        return ""
+    parts = ["readme " + readme[1], "licence " + licence[1], "tags " + " ".join(release_tags(d)),
+             "archived " + ("yes" if ARCHIVED.search(text or "") else "no")]
+    return hashlib.sha1("\n".join(parts).encode()).hexdigest()[:16]
+
+
+def gh_page_quiet_since(url, text, since):
+    """Whether the repository of a github.com wiki page or repository home holds no commit for it, no release tag and no
+    archiving on or after `since` (a day): the same finding as check_gh_page's, for a page whose text was compared
+    with a baseline taken on that day (factdiff.py detect)."""
+    kind, repo, name = provider.github_page(url)
+    if kind not in ("home", "wiki"):
+        return False
+    d, _ = repo_dir(repo)
+    return bool(d) and check_gh_git(d, kind, name, text, since)["bucket"] == "OK"
+
+
+def commits_since(d, since, *paths):
+    """[(sha, date)] of the commits on the default branch from `since` (a day) on that touch `paths`, newest first."""
+    out = g(d, "log", "--format=%H %cs", f"--since={since}T00:00:00Z", "HEAD", "--", *paths)[1]
+    return [tuple(ln.split()) for ln in out.splitlines() if ln.strip()]
+
+
+def check_gh_git(d, kind, name, body, since):
+    """The verdict of a repository home or a wiki page from the clone `d` of its repository (the page body: `body`)."""
+    h = head(d)[:12]
+    if kind == "wiki":
+        path, blob = wiki_file(d, name)
+        if not blob:
+            return verdict("NEEDS-READING", f"page {name} is not a file of the wiki's repository (HEAD {h})")
+        commits = commits_since(d, since, path)
+        if commits:
+            return verdict("CHANGED", f"wiki file {path}: {len(commits)} commit(s) since {since}, latest {commits[0][0][:12]} "
+                           f"{commits[0][1]}", f"wiki {h} {path}")
+        return verdict("OK", f"wiki file {path} has no commit since {since}; HEAD {h}", f"wiki {h} {path}")
+    m = ARCHIVED.search(body)
+    if m:
+        try:
+            day = datetime.datetime.strptime(m.group(1) or "", "%b %d, %Y").date().isoformat()
+        except ValueError:
+            return verdict("NEEDS-READING", "the page carries the archived banner with no date")
+        if day >= since:
+            return verdict("CHANGED", f"archived by the owner on {day}, on or after retrieval {since}", f"archived {day}")
+    readme, licence = named_file(d, README_FILE, (".github", "", "docs")), named_file(d, LICENCE_FILE)
+    if not readme[0]:
+        return verdict("NEEDS-READING", f"no README in the default branch (HEAD {h})")
+    for label, path in (("README", readme[0]), ("licence", licence[0])):
+        commits = commits_since(d, since, path) if path else []
+        if commits:
+            return verdict("CHANGED", f"{label} {path}: {len(commits)} commit(s) since {since}, latest {commits[0][0][:12]} "
+                           f"{commits[0][1]}", f"README {readme[1][:12]}")
+    tags = release_tags(d, since)
+    if tags:
+        return verdict("CHANGED", f"release tag(s) created on or after retrieval {since}: {', '.join(tags[-3:])}", f"HEAD {h}")
+    return verdict("OK", f"README {readme[0]} and the licence have no commit since {since}, no release tag after it, not "
+                   f"archived since; HEAD {h}", f"README {readme[1][:12]} HEAD {h}")
+
+
+def check_gh_page(url, kind, repo, name, since):
+    """(http status, verdict) of a github.com page the provider registry gives a signal (provider.github_page)."""
+    if kind == "wiki-repo":
+        d, err = repo_dir(repo)
+        if not d:
+            return "", verdict("NEEDS-READING", err)
+        commits = commits_since(d, since)
+        h = head(d)[:12]
+        if commits:
+            return "", verdict("CHANGED", f"{len(commits)} commit(s) on the wiki's repository since {since}, latest "
+                               f"{commits[0][0][:12]} {commits[0][1]}", f"wiki {h}")
+        return "", verdict("OK", f"no commit on the wiki's repository since {since}; HEAD {h}", f"wiki {h}")
+    st, body, final = fetch(url)
+    if res := unreached(st):
+        return st, res
+    if st in (404, 410):
+        return st, verdict("GONE", f"HTTP {st}")
+    if st != 200:
+        return st, verdict("NEEDS-READING", f"HTTP {st}")
+    if unquote(urlparse(final).path).rstrip("/").lower() != unquote(urlparse(url).path).rstrip("/").lower():
+        return st, verdict("CHANGED", f"redirected to {final}", f"redirect {final}")
+    if kind in ("issue", "discussion"):
+        stamp = provider.version_of(body, [provider.TIMELINE]).get(provider.TIMELINE, "")
+        if not stamp:
+            return st, verdict("NEEDS-READING", "HTTP 200, no timestamp in the page's markup")
+        if stamp[:10] > since:
+            return st, verdict("CHANGED", f"the timeline's latest event {stamp} is after retrieval {since}", f"timeline {stamp}")
+        return st, verdict("OK", f"the timeline's latest event {stamp} is not after retrieval {since}", f"timeline {stamp}")
+    d, err = repo_dir(repo)
+    if not d:
+        return st, verdict("NEEDS-READING", err)
+    return st, check_gh_git(d, kind, name, body, since)
+
+
 # ---------------------------------------------------------------- check (phases 0-1)
 
 def factdiff_verdicts(path, retrieved=None):
@@ -673,6 +837,10 @@ def factdiff_verdicts(path, retrieved=None):
 def check_one(r, c):
     since = (r.get("retrieved_utc") or today())[:10]
     kind = c["kind"]
+    if kind == "gh-page":
+        page, repo, name = provider.github_page(r["url"])
+        if page:
+            return check_gh_page(r["url"], page, repo, name, since)
     if kind == "gh-page" or kind == "api-other":
         return "", verdict("NEEDS-READING", "a github.com page (issues, wiki, home) or API call; read it", "", "github page")
     if c["repo"]:

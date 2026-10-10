@@ -673,7 +673,7 @@ def cmd_calibrate(a):
 
 LOG_COLS = ["source_id", "url", "verdict", "signal", "evidence", "baseline_utc", "content_date", "fact", "path", "line", "outcome",
             "target", "note"]
-DATE_KEYS = ("updated_at", "dateModified", "article:modified_time")  # a version key that is the content's own date
+DATE_KEYS = ("updated_at", "dateModified", "article:modified_time", "timeline")  # a version key that is the content's own date
 
 
 def content_date(doc):
@@ -749,6 +749,19 @@ def page_doc(url, rows):
     return _pages[url]
 
 
+def gh_page_id(url, text):
+    """census.gh_page_id: the version id of a github.com page held in a git repository, or '' (census imports this module,
+    so the import waits for the call)."""
+    import census
+    return census.gh_page_id(url, text)
+
+
+def gh_page_quiet_since(url, text, day):
+    """census.gh_page_quiet_since: whether the page's repository holds nothing newer than `day` for it."""
+    import census
+    return census.gh_page_quiet_since(url, text, day)
+
+
 def detect_source(sid, src, st, rows):
     """(verdict, signal, evidence, new state, doc, prev doc) of one source against its stored state."""
     url, row = src["url"], provider.for_url(src["url"], rows) or {}
@@ -772,6 +785,9 @@ def detect_source(sid, src, st, rows):
     save_doc(sid, {**d, "id": sid, "url": url, "fetched_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()})
     keys = [k for k in (row.get("version_meta") or "").split(",") if k.strip() and k != "-"]
     version = d["version"].get(keys[0], "") if keys else ""
+    gid = gh_page_id(url, d.get("raw") or "") if "git" in sig else ""
+    if gid:  # a wiki page or a repository home: its file's blob ids in the clone cache are its version id
+        keys, version = ["git"], gid
     d["sha"] = hashlib.sha256((d["text"] or "").encode()).hexdigest()
     new.update(etag=d["etag"], last_modified=d["lastmod"], version=version, doc_sha256=d["sha"], error="",
                final_url=d["final"] if d["hops"] else "", simhash=simhash(d["text"] or ""))
@@ -789,6 +805,12 @@ def detect_source(sid, src, st, rows):
         return "new", "", "no earlier detection: anchors decide", new, d, prev
     if version and st.get("version") == version:
         return "unchanged", "version", f"{keys[0]} {version[:40]}", new, d, prev
+    since = st.get("detected_utc") or ""
+    if version and not st.get("version") and st.get("doc_sha256") and since:  # a baseline of the text only: date it against the signal
+        if keys == ["timeline"] and version <= since:
+            return "unchanged", "version", f"timeline {version} is not after the baseline {since}", new, d, prev
+        if keys == ["git"] and gh_page_quiet_since(url, d.get("raw") or "", since[:10]):
+            return "unchanged", "git", f"no commit of the page's file, licence or release since the baseline {since[:10]}", new, d, prev
     if st.get("doc_sha256") == d["sha"]:
         return "unchanged", "hash", "document text identical", new, d, prev
     if st.get("simhash") and simhash_sim(st["simhash"], new["simhash"]) <= ZOMBIE_MAX:

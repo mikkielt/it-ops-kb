@@ -10,7 +10,9 @@
 Registry. _tools/providers.csv holds the public providers, shared by every root; a root may add its own
 <root>/_providers.csv for internal providers (a team wiki, an internal git host). They are merged at read time: a root
 row with the name of a shared row replaces it. A url is served by the row whose `match` prefix is the longest one
-that starts the url (scheme dropped); the row with match `*` serves the rest.
+that starts the url (scheme dropped); the row with match `*` serves the rest. In a prefix `*` stands for one or more
+characters but `/` (a path segment, or part of one) and a trailing `$` ends the match at the url's end, so a row can
+serve one page kind of a host (`github.com/*/*/issues/*$`: an issue, not the pages under it).
 
 Columns (one row per provider):
   provider        name (lowercase)
@@ -21,12 +23,18 @@ Columns (one row per provider):
                     etag    a conditional GET with the stored ETag; 304 = unchanged
                     lastmod a conditional GET with the stored Last-Modified; 304 = unchanged
                     version the page's own version id (`version_meta`); the same id = unchanged
+                    git     the page is a file of a git repository the census's bare clone cache holds (a wiki page in
+                            `<repo>.wiki`, a repository's README at its default branch): the blob ids there, with the
+                            licence blob, the release tags and the archived banner for a repository home, are its version
+                            id (census.gh_page_id); census.py check asks git for a commit since retrieval instead
                     hash    sha256 of the normalized document text (always last)
   etag            none | stable | per-request (changes on every request) | weak (W/ prefix; stable)
   lastmod         none | stable (If-Modified-Since answers 304) | stable-no-304 | request-time (the header is the
                   time of the request: useless)
   version_meta    comma-separated keys read from the raw form's front matter or the HTML <meta> tags, first = the
-                  content version (`git_commit_id,updated_at,document_id`), or `-`
+                  content version (`git_commit_id,updated_at,document_id`), or `-`; the key `timeline` is the latest
+                  timestamp (`2026-04-21T14:53:50Z`) in the page's markup, a `datetime` attribute or a `...At` value of
+                  its embedded data: an issue or a discussion carries one for each event of its timeline
   stable_id       the key of an id that survives moves and renames (`document_id`), or `-`
   raw_form        how the text is fetched: `-` (the url itself), `query:accept=text/markdown` (added query),
                   `suffix:.md` (added to the path), `header:text/markdown` (Accept header), `blob-to-raw` (a GitHub
@@ -46,14 +54,15 @@ Columns (one row per provider):
 
 probe measures signals, etag, lastmod, version_meta, raw_form, sitemap and not_found on one sample url (the first
 source of the root that the provider serves, or --url): the page twice (ETag stability), a conditional GET with the
-ETag and one with Last-Modified (304?), each raw form (text/markdown answer?), the version keys in the text, robots.txt
-Sitemap lines, a made-up sibling url, and search_api with the page's title when the row has one. The other columns are
+ETag and one with Last-Modified (304?), each raw form (text/markdown answer?), the version keys in the text (`timeline`
+only for a row that names it), robots.txt Sitemap lines, a made-up sibling url, `git ls-remote` of the repository a
+row with the `git` signal names, and search_api with the page's title when the row has one. The other columns are
 curated from the provider's documentation and kept. The `*` row serves many hosts: its probe records only probed_utc
 and a note naming the sample host. Exit: 0 ok, 1 the sample could not be fetched, 2 bad arguments.
 
 Library use (factdiff.py, census.py): providers(), for_url(), document() and doc_text().
 """
-import argparse, datetime, email.utils, hashlib, json, os, random, re, ssl, string, sys, time, urllib.error
+import argparse, datetime, email.utils, hashlib, json, os, random, re, ssl, string, subprocess, sys, time, urllib.error
 import urllib.parse, urllib.request, zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -65,11 +74,13 @@ COLS = ["provider", "match", "signals", "etag", "lastmod", "version_meta", "stab
         "sitemap_lastmod", "redirects", "history", "search_api", "mcp_freshness", "not_found", "rate_limit", "reuse",
         "probed_utc", "notes"]
 MEASURED = ("signals", "etag", "lastmod", "version_meta", "raw_form", "sitemap", "not_found", "probed_utc")
-SIGNALS = ("pin", "etag", "lastmod", "version", "hash")
+SIGNALS = ("pin", "etag", "lastmod", "version", "git", "hash")
 UA = "it-ops-kb-fetch/1.0 (read-only change check)"
 DELAY, TIMEOUT = 1.1, 30
 VERSION_KEYS = ("git_commit_id", "updated_at", "document_id", "ms.date", "dateModified", "article:modified_time",
                 "last-modified", "revised")
+TIMELINE = "timeline"  # a version key that is no meta tag: the latest ISO timestamp in the page (version_of)
+STAMP = re.compile(r"\b\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ")
 PINNED = re.compile(r"(?:^|/)(?:[0-9a-f]{40})(?:/|$)|/-/raw/v?\d+\.\d+|/releases/download/|raw\.githubusercontent\.com/[^/]+/[^/]+/"
                     r"(?:refs/tags/)?v?\d+\.\d+[^/]*/")
 _last, _ctx = {}, [None]
@@ -101,6 +112,15 @@ def _bare(url):
     return (u.netloc.lower() + u.path) if u.netloc else url
 
 
+def _served(pattern, bare):
+    """Whether the `match` prefix `pattern` starts `bare` (`*`: one or more characters but `/`; a trailing `$`: ends it)."""
+    if "*" not in pattern and not pattern.endswith("$"):
+        return bare.startswith(pattern)
+    end = pattern.endswith("$")
+    rx = re.escape(pattern[:-1] if end else pattern).replace(r"\*", "[^/]+")
+    return re.match(rx + (r"/?\Z" if end else ""), bare) is not None
+
+
 def for_url(url, rows=None):
     """The provider row serving `url`: the longest matching prefix, else the `*` row, else None."""
     rows = providers() if rows is None else rows
@@ -109,7 +129,7 @@ def for_url(url, rows=None):
         for m in (r.get("match") or "").split():
             if m == "*":
                 fallback = fallback or r
-            elif b.startswith(m) and (best is None or len(m) > best[0]):
+            elif _served(m, b) and (best is None or len(m) > best[0]):
                 best = (len(m), r)
     return best[1] if best else fallback
 
@@ -117,6 +137,35 @@ def for_url(url, rows=None):
 def is_pinned(url):
     """A url whose text cannot change: a commit sha or a release tag in its path."""
     return bool(PINNED.search(url))
+
+
+GH_NOT_OWNER = ("orgs", "topics", "sponsors", "marketplace", "settings", "features", "collections", "users", "apps", "enterprise",
+                "search", "explore", "trending", "notifications", "login", "about", "pricing", "readme", "security")
+
+
+def github_page(url):
+    """(kind, repo, name) of a github.com page whose signal is not its text, else ("", "", ""). `home`: a repository's
+    front page (repo `github.com/OWNER/REPO`); `wiki`: a page of its wiki (repo `github.com/OWNER/REPO.wiki`, name the
+    page's title, `Home` for the wiki's front page); `wiki-repo`: the wiki's own git url (name ""); `issue`: an issue
+    and `discussion`: a discussion, of a repository or of an organisation (repo "", name the number)."""
+    u = urllib.parse.urlsplit(url.split("#")[0])
+    p = [urllib.parse.unquote(x) for x in u.path.split("/") if x]
+    if u.netloc.lower() != "github.com" or len(p) < 2:
+        return "", "", ""
+    if p[0] == "orgs":
+        return ("discussion", "", p[3]) if len(p) == 4 and p[2] == "discussions" and p[3].isdigit() else ("", "", "")
+    if p[0] in GH_NOT_OWNER:
+        return "", "", ""
+    repo = f"github.com/{p[0]}/{p[1]}"
+    if len(p) == 2 and p[1].endswith((".wiki.git", ".wiki")):
+        return "wiki-repo", repo[:-4] if repo.endswith(".git") else repo, ""
+    if len(p) == 2:
+        return "home", repo[:-4] if repo.endswith(".git") else repo, ""
+    if p[2] == "wiki" and len(p) <= 4:
+        return "wiki", repo + ".wiki", p[3] if len(p) == 4 else "Home"
+    if p[2] in ("issues", "discussions") and len(p) == 4 and p[3].isdigit():
+        return p[2][:-1], repo, p[3]
+    return "", "", ""
 
 
 def signals(row, url=""):
@@ -238,10 +287,17 @@ def front_matter(text):
 
 
 def version_of(text, keys):
-    """{key: value} of the version keys found in a raw form's front matter or an HTML page's <meta> tags."""
+    """{key: value} of the version keys found in a raw form's front matter or an HTML page's <meta> tags; `timeline` is
+    the latest ISO timestamp anywhere in the text (an issue's events carry theirs in `datetime` attributes and in its
+    embedded data)."""
     fm = front_matter(text)
     out = {}
     for k in keys:
+        if k == TIMELINE:
+            stamps = STAMP.findall(text)
+            if stamps:
+                out[k] = max(stamps)
+            continue
         if fm.get(k):
             out[k] = fm[k]
             continue
@@ -323,7 +379,19 @@ def _sibling(url):
     parent = u.path.rstrip("/").rsplit("/", 1)[0]
     rng = random.Random(url)  # the same made-up path for the same url: a probe is repeatable
     junk = "".join(rng.choice(string.ascii_lowercase + string.digits) for _ in range(25))
+    if u.path.rstrip("/").rsplit("/", 1)[-1].isdigit():  # a numbered page (an issue): a made-up word is a search, a number is a miss
+        junk = "".join(rng.choice(string.digits) for _ in range(12))
     return urllib.parse.urlunsplit((u.scheme, u.netloc, f"{parent}/{junk}", "", ""))
+
+
+def _git_answers(url):
+    """Whether `git ls-remote` of a repository url answers (no prompt for credentials)."""
+    try:
+        p = subprocess.run(["git", "ls-remote", "--exit-code", url, "HEAD"], capture_output=True, text=True, encoding="utf-8",
+                           timeout=60, env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
+    except (subprocess.TimeoutExpired, OSError):
+        return False
+    return p.returncode == 0
 
 
 def probe(row, url):
@@ -391,9 +459,10 @@ def probe(row, url):
     else:
         found["lastmod"] = "none"
     raw = rr["body"].decode("utf-8", "replace")
-    keys = version_of(raw, VERSION_KEYS)
+    named = [TIMELINE] if TIMELINE in (row.get("version_meta") or "").split(",") else []  # a page-wide scan: only where curated
+    keys = version_of(raw, VERSION_KEYS + tuple(named))
     order = [k for k in ("git_commit_id", "updated_at", "document_id", "dateModified", "article:modified_time", "ms.date",
-                         "last-modified", "revised") if k in keys]
+                         "last-modified", "revised", TIMELINE) if k in keys]
     found["version_meta"] = ",".join(order) or "-"
     ev.append("version keys: " + (", ".join(f"{k}={keys[k][:24]}" for k in order) or "none"))
     # robots.txt sitemap
@@ -418,8 +487,14 @@ def probe(row, url):
         if not ok:
             found["notes_search"] = f"search_api answered {s['status']}"
     pin = is_pinned(url) or "pin" in (row.get("signals") or "").split(";")  # pin is a url pattern, kept from the row
+    git_ok = False
+    if "git" in (row.get("signals") or "").split(";"):  # kept only where the page's repository answers
+        kind, repo, _ = github_page(url)
+        git_ok = bool(repo) and _git_answers(f"https://{repo}")
+        ev.append(f"git ls-remote https://{repo or '-'}: {'answers' if git_ok else 'no answer'} ({kind or 'not a github page'})")
     sig = (["pin"] if pin else []) + (["etag"] if etag_ok else []) + (["lastmod"] if lm_ok else []) \
-        + (["version"] if order and order[0] in ("git_commit_id", "updated_at", "dateModified", "article:modified_time") else []) + ["hash"]
+        + (["version"] if order and order[0] in ("git_commit_id", "updated_at", "dateModified", "article:modified_time", TIMELINE) else []) \
+        + (["git"] if git_ok else []) + ["hash"]
     found["signals"] = ";".join(sig)
     found["probed_utc"] = datetime.date.today().isoformat()
     return found, ev
