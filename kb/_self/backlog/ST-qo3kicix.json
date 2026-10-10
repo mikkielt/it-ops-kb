@@ -2,7 +2,7 @@
   "id": "ST-qo3kicix",
   "kind": "story",
   "title": "census.py apply takes a group's phase-2 JSON result and does the bookkeeping the orchestrator now does by hand",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",
@@ -60,5 +60,19 @@
     }
   ],
   "notes": "Premise run 2026-10-10: census.py has no apply command (census.py groups, the same parser, exits 2 with invalid choice), and phase 2 step 3 of .claude/skills/kb-census/SKILL.md has the orchestrator run kbid.py add once per new row, set superseded_by, edit _gaps.md and _conflicts.md, run census.py record, factdiff.py anchor, build_index.py and doc2query.py stale by hand; the 2026-09-26 census superseded 144 sources, so 144 kbid.py add calls were model turns. kb/_self/map.csv gains the schema file's row. The work keeps kbid.py the only writer of _sources.csv rows. Test ceiling (2026-10-10, ST-w3jhowin gate ceiling, answered replace-two-ids-and-a-file by operator): the suite is at max_ids 100 and max_files 15 of _tools/tests_ceiling.json, which stays as it is. Add no new test file; a new test id goes into an existing test file and replaces one (merge two tests of the same unit into one id keeping every assertion), so tests.py stays within the ceiling. Test selectors (2026-10-10): the census assertions share one test id in _tools/test_redact.py whose name holds census_queue, census_groups and census_run, the selectors of the done items ST-w3jhowin, ST-6ljkrwt2 and ST-ywxl7ulm; a rename that drops any of them makes backlog.py selectors refuse the landing, so keep all three and add census_apply.",
-  "claimed_by": "kb-worker-ST-qo3kicix"
+  "evidence": {
+    "commit": "3847d684e5714a1f3fed3f40471e3b89370f0a5e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "census_apply"
+        ],
+        "exit": 0,
+        "sha256": "eaac0fd14d3fa716"
+      }
+    ]
+  }
 }
