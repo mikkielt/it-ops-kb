@@ -2,7 +2,7 @@
   "id": "ST-gdcn5467",
   "kind": "story",
   "title": "The SessionStart intake hook files a finding once, whatever checkout or session starts, and respects the open-draft cap",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lyfnpu37",
   "priority": "P2",
   "rank": 0,
@@ -76,5 +76,6 @@
     "parked: SP-7y6dk257 close",
     "merged: BG-eam5x2q7"
   ],
-  "notes": "Merged from BG-eam5x2q7 (the stderr line names the worktree; its repro is the second check) at the 2026-10-10 backlog triage. The hook is hook_intake in _tools/bl_ci.py: it skips only a fingerprint an open item of this checkout holds (open_with_fingerprint) and never counts the cap that bl_intake.file_draft enforces. INTAKE_ASIDE lives in bl_land.py and bl_ci.py must not import bl_land (layer rule), so the constant moves to bl_intake.py and bl_land.py imports it. The -k selector names a test yet to write: tests.py exits 2 until the work adds it. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run at planning (2026-10-10): grep -c for OPEN_DRAFTS_MAX, INTAKE_ASIDE, intake-drafts and open_drafts in _tools/bl_ci.py prints 0, so hook_intake neither counts the cap nor reads the aside directory; the second check's repro exits 1 (stderr is a fixed string): reproduces."
+  "notes": "Merged from BG-eam5x2q7 (the stderr line names the worktree; its repro is the second check) at the 2026-10-10 backlog triage. The hook is hook_intake in _tools/bl_ci.py: it skips only a fingerprint an open item of this checkout holds (open_with_fingerprint) and never counts the cap that bl_intake.file_draft enforces. INTAKE_ASIDE lives in bl_land.py and bl_ci.py must not import bl_land (layer rule), so the constant moves to bl_intake.py and bl_land.py imports it. The -k selector names a test yet to write: tests.py exits 2 until the work adds it. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run at planning (2026-10-10): grep -c for OPEN_DRAFTS_MAX, INTAKE_ASIDE, intake-drafts and open_drafts in _tools/bl_ci.py prints 0, so hook_intake neither counts the cap nor reads the aside directory; the second check's repro exits 1 (stderr is a fixed string): reproduces.",
+  "claimed_by": "kb-worker-gdcn5467"
 }
