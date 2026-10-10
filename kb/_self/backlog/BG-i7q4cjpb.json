@@ -1,0 +1,26 @@
+{
+  "id": "BG-i7q4cjpb",
+  "kind": "bug",
+  "title": "fact_for still picks a non-answer for BP-df64045a and the three cmpivot timeout rows, and gate g1's hand extension of BP-df64045a accepts the wipe line",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bench_pool.fact_for picks the defining line for BP-df64045a (intune/app-protection-mam.md:13, not the selective wipe bullet :60) and a line stating the CMPivot timeout for BP-d306eaa8, BP-8f566d80 and BP-70d0bf39 (mecm/cmpivot.md:17 or :43, not :14, which states none; article_facts scores only a wrapped paragraph's first line); BP-df64045a's committed check drops the 'selective \\(MAM\\) wipe' alternative, and BP-c552cb0f's names the asked 1.5 s budget, not 'up to 60 seconds'. Found by the SP-5i4itd2d review of BG-wcdbq563 (gate g1, extend-by-hand).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import bench_pool as bp; c={x['id']:x for x in bp.read_csv('kb/public/_retrieval/lookup_eval.csv')}; a=bp.fact_for('.',c['EV-intune-app-protection-policies-mam-ios']); b=bp.fact_for('.',c['EV-cmpivot-query-timeout']); print(a[:2],b[:2]); sys.exit(0 if a[1]==13 and b[1] in (17,43) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d review"
+  ]
+}

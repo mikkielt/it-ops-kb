@@ -1,0 +1,24 @@
+{
+  "id": "BG-bvyblfnp",
+  "kind": "bug",
+  "title": "kbfacts.terms reads any hyphenated single-digit pair as a dotted version, so a SID such as S-1-5-18 packs as 1.5",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "terms() maps a hyphenated version to a dotted one only inside a model id (claude-opus-5-5 to 5.5), never inside a SID or another hyphenated token: terms('S-1-5-18') holds no '1.5', and pack 'default value 1.5' no longer leads with a settings-crosswalk.csv SID row. Introduced by ST-z5uh6oj7's VERSION_ID; found by the SP-5i4itd2d review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import kbfacts; t=kbfacts.terms('S-1-5-18'); print(t); sys.exit(1 if '1.5' in t else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d review"
+  ]
+}

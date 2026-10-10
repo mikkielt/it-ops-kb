@@ -1,0 +1,24 @@
+{
+  "id": "BG-676tplds",
+  "kind": "bug",
+  "title": "check.py no longer refuses a ledger citation more than one line past the end of its article: the range clamp gives an empty range",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "ledger_citation_errors refuses a path:line or path:line-end citation whose line lies past the end of the cited file, at any distance, as it did before ST-vlkxprhy (check.py clamps the range to range(line, min(end, total+1)+1), so a:100 or a:100-120 on a 7-line article passes). Found by the SP-5i4itd2d review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,tempfile,types; sys.path.insert(0,'_tools'); import check; d=tempfile.mkdtemp(); os.mkdir(d+'/a'); n=chr(10); open(d+'/a/x.md','w').write(n.join(['# T','','- Fact one. [DOC S1]','','## Reference','','| a | b |',''])); open(d+'/_answers.md','w').write(n.join(['# A','','- see a/x.md:100',''])); e=check.ledger_citation_errors(types.SimpleNamespace(path=d,name='fx')); print(e); sys.exit(0 if e else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/check.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d review"
+  ]
+}

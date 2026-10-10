@@ -1,0 +1,27 @@
+{
+  "id": "ST-g6yhdxkt",
+  "kind": "story",
+  "title": "check.py reads a _tools comment citation's term across a wrapped comment line and cites without the kb/public prefix",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "code_citation_errors reads the quoted term of a kb citation in a _tools comment when the quote closes on the next comment line (bench_core.py:26 and :36-37 parse with term None today), checks a citation written root-relative without kb/public/ (redact.py:20, reuse/pseudonymization-tokenization.md:43-48), and the two untermed kbfacts.py docstring citations (:1746, :1749) carry their term. Found by the SP-5i4itd2d review of ST-2bly3tq5.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/check.py",
+    "_tools/bench_core.py",
+    "_tools/redact.py",
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d review"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-fl4sg2py",
+  "kind": "bug",
+  "title": "pool check does not flag a committed check alternative that no line of the kb states: BP-9e209bb8 keeps two invented Microsoft365DSC cmdlet names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "benchmarks.py pool check warns for each committed eval and near-miss row whose check holds an alternative found in no kb article or data file (the too_broad no-kb-line rule BG-hytkzabh added for redone regexes), and BP-9e209bb8's check no longer names Assert-M365DSCTenantDrift or Test-M365DSCDrift, which only bench_pool.csv holds. Found by the SP-5i4itd2d review (BG-hytkzabh left the row, outside its touches).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','check'],capture_output=True,text=True); t=o.stdout+o.stderr; print(t[-400:]); sys.exit(0 if 'BP-9e209bb8' in t else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_pool.py",
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d review"
+  ]
+}
