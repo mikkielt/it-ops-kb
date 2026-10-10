@@ -727,6 +727,21 @@ def worker_dirs(root):
     return {top.joinpath(*worker_dir()).resolve()}
 
 
+def main_worker_dir(root):
+    """The .claude/worktrees/ directory of the main checkout the clone land runs in ROOT is a linked worktree of (the
+    Agent tool makes its workers there, whichever worktree its session runs in), or None when ROOT is the main
+    checkout itself or the repository has no working tree. worker_dirs, which tidy and close read, never holds it."""
+    code, out, _ = run(["git", "rev-parse", "--git-common-dir"], cwd=root)
+    if code or not out.strip():
+        return None
+    common = Path(root, out.strip()).resolve()
+    if common.name != ".git":
+        return None
+    main = common.parent
+    top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    return None if main == top else main.joinpath(*worker_dir()).resolve()
+
+
 def detached_workers(root, branch):
     """[(path, lock reason or None)] of the worktrees named as the Agent tool names a worker's (WORKER_NAME) that
     are detached at the tip of BRANCH, other than the one land runs in: a worker that detached to free the branch."""
@@ -809,7 +824,9 @@ def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only
     --force), unlocking it first when Claude Code locked it: agents' shells may not remove a worktree
     (.claude/settings.json denies it), so land, a process of its own, does. Only a worktree under the clone's
     .claude/worktrees/ of the clone land runs in (`git rev-parse --show-toplevel` there: a linked worktree is its own
-    clone, its workers sit under its own directory) that is not the one land runs in, has no uncommitted changes
+    clone, its workers sit under its own directory; with BRANCH given, also that of the main checkout it is a linked
+    worktree of, `main_worker_dir`: the Agent tool made the worker there) that is not the one land runs in, has no
+    uncommitted changes
     (except untracked intake drafts that no commit of BRANCH names: moved to INTAKE_ASIDE of ROOT, and said) and no
     live process (one whose parent has exited, a session-end hook's, is waited for, at most
     `bl_procs.HOOK_GRACE_S`: wait_for_hooks; where live_processes cannot list them, Windows, one the worktree cannot be
@@ -836,12 +853,16 @@ def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only
         return f"it is locked ({lock or 'no reason given'})" + ("" if repo is not None else
                                                                 ", not by a Claude Code agent")
     parent = path.resolve().parent
+    expected = set(worker_dirs(root))
+    main_dir = main_worker_dir(root) if branch and repo is None else None
+    if main_dir is not None:  # land of one item's branch from a linked worktree: the main checkout's workers too
+        expected.add(main_dir)
     if repo is not None:  # <worker dir>/<id>/<repository>
-        outside = parent.parent not in worker_dirs(root) or parent.name != item_id
+        outside = parent.parent not in expected or parent.name != item_id
     else:
-        outside = parent not in worker_dirs(root)
+        outside = parent not in expected
     if outside:
-        return f"it is {state} but not under {'/'.join(worker_dir())}/ of the clone"
+        return f"it is {state} but not under {' or '.join(str(d) for d in sorted(expected))}"
     if path.resolve() == Path(root).resolve():
         return f"it is {state} and is the worktree land runs in"
     if repo is None and lock is None and not path.name.startswith(WORKER_NAME) and path.name != item_id:
