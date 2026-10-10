@@ -2,7 +2,7 @@
   "id": "ST-fs74yjdg",
   "kind": "story",
   "title": "Review sprint: backlog.py fixes: land, drop, precheck and usage text",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m3azo2y7",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-m3azo2y7"
 }
