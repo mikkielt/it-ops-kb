@@ -30,7 +30,11 @@
     "kb/_self/backlog.md",
     "AGENTS.md",
     "kb/_self/maintaining.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_land.py"
+  ],
+  "depends_on": [
+    "TK-lwihhcmj"
   ],
   "gates": [
     {
@@ -55,6 +59,6 @@
     "parked: SP-7y6dk257 close",
     "parked: SP-yzgetyu2 close"
   ],
-  "notes": "SP-yzgetyu2 close (2026-10-09), accepted by the operator: ST-s6tqojsw's planned call-count check failed at plan on ModuleNotFoundError (runpy.run_path puts no _tools on sys.path), and precheck counted it as failing before the work, so the premise proved nothing and the check was fixed mid-run; a check that fails on an exception or traceback at plan is a broken check, not a failing premise, and precheck says so. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: backlog.py precheck SP prints nothing for a failing check (the item's first check, which runs a throwaway sprint whose story's check prints 1234567 and exits 1). Run at plan 2026-10-10: exit 1, 1234567 is absent from precheck's output on the base, so the premise reproduces; the second check reads the plan section for bench_pool and path_only and fails on the base too. Selector: no test is named, so the check is a behavioural probe and a worker may add a test.",
+  "notes": "SP-yzgetyu2 close (2026-10-09), accepted by the operator: ST-s6tqojsw's planned call-count check failed at plan on ModuleNotFoundError (runpy.run_path puts no _tools on sys.path), and precheck counted it as failing before the work, so the premise proved nothing and the check was fixed mid-run; a check that fails on an exception or traceback at plan is a broken check, not a failing premise, and precheck says so. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: backlog.py precheck SP prints nothing for a failing check (the item's first check, which runs a throwaway sprint whose story's check prints 1234567 and exits 1). Run at plan 2026-10-10: exit 1, 1234567 is absent from precheck's output on the base, so the premise reproduces; the second check reads the plan section for bench_pool and path_only and fails on the base too. Selector: no test is named, so the check is a behavioural probe and a worker may add a test. 2026-10-10 run: the worker found precheck's code in _tools/bl_land.py (cmd_precheck, precheck_rows), not bl_items.py; bl_land.py added to touches. It waits for TK-lwihhcmj (same file) to land, then the same worker resumes.",
   "claimed_by": "worker-ST-jv27pfin"
 }
