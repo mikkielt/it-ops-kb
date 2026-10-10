@@ -2,11 +2,11 @@
   "id": "ST-yn3fa5ts",
   "kind": "story",
   "title": "A gate whose question says rule is classed agents-rule only when it is about a rule-guarding file",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qxcj7fgy",
   "priority": "P3",
   "rank": 0,
-  "goal": "Retrospective of SP-wgx4pq4r: bl_authority's agents-rule pattern matches the bare word rule, so BG-47kw57ed's worker saw a design question about which distill rows count turn into a blocking operator gate, and reworded the question to get past it; likewise a question about the Sonnet 5.5 model release was classed push and answer --provisional was refused (ST-hcc7a3fd, SP-vayhvwfy). A gate on an item whose touches name no rule-guarding path is not classed agents-rule for the word rule alone, only when its touches or text name a rule-guarding path or file (gate g1); the word release classes push only beside another push or kb word in the gate's text (gate g2), the other push words as they are; a gate the pattern does class names the matched words, kb/_self/backlog.md says so, and the authority tests pass.",
+  "goal": "Retrospective of SP-wgx4pq4r: bl_authority's agents-rule pattern matches the bare word rule, so BG-47kw57ed's worker saw a design question about which distill rows count turn into a blocking operator gate, and reworded the question to get past it; likewise a question about the Sonnet 5.5 model release was classed push and answer --provisional was refused (ST-hcc7a3fd, SP-vayhvwfy). A gate on an item whose touches name no rule-guarding path is not classed agents-rule for the word rule alone, only when its touches or text name a rule-guarding path or file (gate g1); the word release keeps classing push wherever it appears (gate g2, re-answered by the operator at the sprint start: an operator-only class is never weakened); a gate the pattern does class names the matched words, kb/_self/backlog.md says so, and the authority tests pass.",
   "checks": [
     {
       "run": [
@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as a; c=lambda q,t=[]: a.class_reasons({\"touches\":t},{\"id\":\"g1\",\"question\":q,\"options\":[\"yes\",\"no\"]})[0]; assert c(\"Which distill rows count by rule?\",[\"kb/public/x.md\"])!=\"agents-rule\"; assert c(\"How is the Sonnet 5.5 release question dispositioned?\")!=\"push\"; assert c(\"Do we push to origin?\")==\"push\"; assert c(\"Which rule does AGENTS.md carry?\")==\"agents-rule\"; assert c(\"Which rule?\",[\".claude/skills/kb-sprint/SKILL.md\"])==\"agents-rule\""
+        "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as a; c=lambda q,t=[]: a.class_reasons({\"touches\":t},{\"id\":\"g1\",\"question\":q,\"options\":[\"yes\",\"no\"]})[0]; assert c(\"Which distill rows count by rule?\",[\"kb/public/x.md\"])!=\"agents-rule\"; assert c(\"How is the Sonnet 5.5 release question dispositioned?\")==\"push\"; assert c(\"Do we push to origin?\")==\"push\"; assert c(\"Which rule does AGENTS.md carry?\")==\"agents-rule\"; assert c(\"Which rule?\",[\".claude/skills/kb-sprint/SKILL.md\"])==\"agents-rule\""
       ]
     }
   ],
@@ -66,7 +66,7 @@
         "release keeps classing push whenever the word appears, and only rule is narrowed": "ST-yn3fa5ts"
       },
       "class": "push",
-      "answer": "release classes push only beside another push or kb word in the gate's text (push, publish, tag, branch, remote, origin, github, gitlab, mirror, upload, deploy, merge request, kb, note)",
+      "answer": "release keeps classing push whenever the word appears, and only rule is narrowed",
       "by": "operator"
     }
   ],

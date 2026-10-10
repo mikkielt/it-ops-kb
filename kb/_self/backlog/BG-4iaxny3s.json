@@ -2,7 +2,7 @@
   "id": "BG-4iaxny3s",
   "kind": "bug",
   "title": "gate add crashes with a shlex traceback on a --do command with an unclosed quote instead of a usage error",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qxcj7fgy",
   "priority": "P2",
   "rank": 0,
@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import os,shutil,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+'/kb/_self/backlog'); shutil.copy('kb/_self/backlog/ST-dj2zgvh3.json', t+'/kb/_self/backlog/'); p=subprocess.run([sys.executable,'_tools/backlog.py','--root',t,'gate','add','ST-dj2zgvh3','--kind','provisional','--question','q?','--option','A','--do','A=it'+chr(39)+'s','--option','B','--do','B=true','--recommendation','A'],capture_output=True,text=True); sys.exit(1 if 'Traceback' in p.stderr or p.returncode != 2 else 0)"
+      "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); open(t+\"/_backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"gate\",\"add\",\"ST-testtest\",\"--kind\",\"provisional\",\"--question\",\"q?\",\"--option\",\"A\",\"--do\",\"A=it\"+chr(39)+\"s\",\"--option\",\"B\",\"--do\",\"B=true\",\"--recommendation\",\"A\"],capture_output=True,text=True); sys.exit(1 if \"Traceback\" in p.stderr or p.returncode != 2 else 0)"
     ]
   },
   "checks": [
@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/kb/_self/backlog\"); open(t+\"/kb/_self/backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); add=lambda g,q: r(\"gate\",\"add\",\"ST-testtest\",\"--id\",g,\"--kind\",\"provisional\",\"--question\",q,\"--option\",\"alpha\",\"--option\",\"beta\",\"--recommendation\",\"alpha\"); gates=lambda: json.loads(open(t+\"/kb/_self/backlog/ST-testtest.json\").read()).get(\"gates\",[]); p=r(\"gate\",\"add\",\"ST-testtest\",\"--kind\",\"provisional\",\"--question\",\"q?\",\"--option\",\"A\",\"--do\",\"A=it's\",\"--option\",\"B\",\"--do\",\"B=true\",\"--recommendation\",\"A\"); sys.exit(0 if p.returncode==2 and \"Traceback\" not in p.stderr and \"--do\" in p.stderr+p.stdout and not gates() else 1)"
+        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); open(t+\"/_backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); add=lambda g,q: r(\"gate\",\"add\",\"ST-testtest\",\"--id\",g,\"--kind\",\"provisional\",\"--question\",q,\"--option\",\"alpha\",\"--option\",\"beta\",\"--recommendation\",\"alpha\"); gates=lambda: json.loads(open(t+\"/_backlog/ST-testtest.json\").read()).get(\"gates\",[]); p=r(\"gate\",\"add\",\"ST-testtest\",\"--kind\",\"provisional\",\"--question\",\"q?\",\"--option\",\"A\",\"--do\",\"A=it's\",\"--option\",\"B\",\"--do\",\"B=true\",\"--recommendation\",\"A\"); sys.exit(0 if p.returncode==2 and \"Traceback\" not in p.stderr and \"--do\" in p.stderr+p.stdout and not gates() else 1)"
       ]
     }
   ],

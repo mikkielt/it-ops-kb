@@ -2,7 +2,7 @@
   "id": "BG-rbpzf6cj",
   "kind": "bug",
   "title": "gate add classes a gate as secrets when its text says output tokens",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qxcj7fgy",
   "priority": "P2",
   "rank": 0,

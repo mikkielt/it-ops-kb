@@ -2,7 +2,7 @@
   "id": "SP-qxcj7fgy",
   "kind": "sprint",
   "title": "Gates: commands, classing and host checks",
-  "status": "planned",
+  "status": "active",
   "goal": "gate add classes secrets only for a credential-sense token, not output tokens or a token-named doc; a bare rule or release no longer classes a gate agents-rule or push, and the class names its matched words; gate add with an unclosed quote in --do exits 2 with a usage error; answer refuses a text that is none of the gate's options, naming them; an unanswered gate can be removed or reworded with backlog.py; a gate's host_unchecked reason is set with backlog.py and a url's host does not fire the start host warning; new bug into an active sprint without touches is refused or warned",
   "gates": [
     {
@@ -18,5 +18,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "2026-10-10 sprint start: the operator re-answered ST-yn3fa5ts gate g2 conservatively, so the goal's clause on release narrows rule only; release keeps classing push (operator-only classes are never weakened)."
 }

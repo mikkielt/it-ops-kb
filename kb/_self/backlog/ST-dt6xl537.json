@@ -2,7 +2,7 @@
   "id": "ST-dt6xl537",
   "kind": "story",
   "title": "A bug filed into an active sprint without touches is refused or warned at new",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-6iiony54",
   "sprint": "SP-qxcj7fgy",
   "priority": "P2",
@@ -13,7 +13,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/kb/_self/backlog\"); open(t+\"/kb/_self/backlog/SP-testtest.json\",\"w\").write(json.dumps({\"id\":\"SP-testtest\",\"kind\":\"sprint\",\"title\":\"t\",\"status\":\"active\",\"goal\":\"g\"})); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"new\",\"bug\",\"--title\",\"b\",\"--severity\",\"S3\",\"--repro\",\"python3 -c \\\"import sys; sys.exit(1)\\\"\",\"--sprint\",\"SP-testtest\"],capture_output=True,text=True); sys.exit(0 if p.returncode==2 and \"--touch\" in p.stderr+p.stdout and os.listdir(t+\"/kb/_self/backlog\")==[\"SP-testtest.json\"] else 1)"
+        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); open(t+\"/_backlog/SP-testtest.json\",\"w\").write(json.dumps({\"id\":\"SP-testtest\",\"kind\":\"sprint\",\"title\":\"t\",\"status\":\"active\",\"goal\":\"g\"})); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"new\",\"bug\",\"--title\",\"b\",\"--severity\",\"S3\",\"--repro\",\"python3 -c \\\"import sys; sys.exit(1)\\\"\",\"--sprint\",\"SP-testtest\"],capture_output=True,text=True); sys.exit(0 if p.returncode==2 and \"--touch\" in p.stderr+p.stdout and os.listdir(t+\"/_backlog\")==[\"SP-testtest.json\"] else 1)"
       ]
     }
   ],

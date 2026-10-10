@@ -2,7 +2,7 @@
   "id": "ST-7avb5uo6",
   "kind": "story",
   "title": "A gate's host_unchecked reason can be set with backlog.py, and the host word check skips 'host-bound' wording",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qxcj7fgy",
   "priority": "P3",
   "rank": 0,
@@ -19,7 +19,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/kb/_self/backlog\"); open(t+\"/kb/_self/backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); add=lambda g,q: r(\"gate\",\"add\",\"ST-testtest\",\"--id\",g,\"--kind\",\"provisional\",\"--question\",q,\"--option\",\"alpha\",\"--option\",\"beta\",\"--recommendation\",\"alpha\"); gates=lambda: json.loads(open(t+\"/kb/_self/backlog/ST-testtest.json\").read()).get(\"gates\",[]); add(\"g9\",\"Is the daemon enabled on this host?\"); p=r(\"gate\",\"host-unchecked\",\"ST-testtest\",\"g9\",\"--reason\",\"needs a Windows host\"); sys.exit(0 if p.returncode==0 and gates()[0].get(\"host_unchecked\")==\"needs a Windows host\" else 1)"
+        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); open(t+\"/_backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); add=lambda g,q: r(\"gate\",\"add\",\"ST-testtest\",\"--id\",g,\"--kind\",\"provisional\",\"--question\",q,\"--option\",\"alpha\",\"--option\",\"beta\",\"--recommendation\",\"alpha\"); gates=lambda: json.loads(open(t+\"/_backlog/ST-testtest.json\").read()).get(\"gates\",[]); add(\"g9\",\"Is the daemon enabled on this host?\"); p=r(\"gate\",\"host-unchecked\",\"ST-testtest\",\"g9\",\"--reason\",\"needs a Windows host\"); sys.exit(0 if p.returncode==0 and gates()[0].get(\"host_unchecked\")==\"needs a Windows host\" else 1)"
       ]
     }
   ],

@@ -2,7 +2,7 @@
   "id": "ST-zvpffogs",
   "kind": "story",
   "title": "backlog.py answer refuses an answer that is none of the gate's options, naming them",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-6iiony54",
   "sprint": "SP-qxcj7fgy",
   "priority": "P3",
@@ -13,7 +13,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/kb/_self/backlog\"); open(t+\"/kb/_self/backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); add=lambda g,q: r(\"gate\",\"add\",\"ST-testtest\",\"--id\",g,\"--kind\",\"provisional\",\"--question\",q,\"--option\",\"alpha\",\"--option\",\"beta\",\"--recommendation\",\"alpha\"); gates=lambda: json.loads(open(t+\"/kb/_self/backlog/ST-testtest.json\").read()).get(\"gates\",[]); add(\"g9\",\"which one?\"); p=r(\"answer\",\"ST-testtest\",\"g9\",\"--answer\",\"gamma\",\"--by\",\"agent\"); o=p.stderr+p.stdout; sys.exit(0 if p.returncode==2 and \"alpha\" in o and \"beta\" in o and \"answer\" not in gates()[0] else 1)"
+        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); open(t+\"/_backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); add=lambda g,q: r(\"gate\",\"add\",\"ST-testtest\",\"--id\",g,\"--kind\",\"provisional\",\"--question\",q,\"--option\",\"alpha\",\"--option\",\"beta\",\"--recommendation\",\"alpha\"); gates=lambda: json.loads(open(t+\"/_backlog/ST-testtest.json\").read()).get(\"gates\",[]); add(\"g9\",\"which one?\"); p=r(\"answer\",\"ST-testtest\",\"g9\",\"--answer\",\"gamma\",\"--by\",\"agent\"); o=p.stderr+p.stdout; sys.exit(0 if p.returncode==2 and \"alpha\" in o and \"beta\" in o and \"answer\" not in gates()[0] else 1)"
       ]
     }
   ],
