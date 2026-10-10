@@ -2,7 +2,7 @@
   "id": "ST-um56cyur",
   "kind": "story",
   "title": "Sprint planning dry-runs every paid run a goal names and sets its cap from the estimate before the start gate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-55ddkrrx",
   "priority": "P2",
   "rank": 0,
@@ -74,5 +74,27 @@
     "merged: ST-tqmayy2h"
   ],
   "notes": "SP-x7ger6vu close (2026-10-09), accepted by the operator: three mid-run surprises a planning run of the goal's paid commands would have shown: the router-only re-record left pool verify (c) failing on the full record's spend row (ST-4w4yo6ca joined mid-sprint); host-lookups has no effort setting, so ST-fbp5pm6k's 'both levels in one batch' needed a gate mid-run; and benchmarks.py run SCENARIO --dry-run starts paid runs outside pool (BG-wapzksub), so the estimate must come from a scenario that honours it. The planning run uses each paid command's real flags and simulates a partial re-record against pool verify. Merged from ST-tqmayy2h (SP-hm4qgf3t close): ST-ji32ouga's record was sized only during the run (3,150 runs, 20-30 h sequential), so ST-uxgaazfi was filed mid-sprint and its gate g3 (about 140 USD against the 120 USD cap at Sonnet 5.5's price) was asked mid-work. Premise: neither the plan step of .claude/skills/kb-sprint/SKILL.md nor the Plan rule of kb/_self/backlog.md names a dry run of a paid command or claude/models.csv prices (run 2026-10-10: grep finds none; both checks fail). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Gate g2 (answered): AGENTS.md stays unchanged (4069 bytes, 4096 cap); it is in touches only because map.csv maps the skill to it and check warns otherwise.",
-  "claimed_by": "worker-ST-um56cyur"
+  "evidence": {
+    "commit": "5b1df7f04435acc8b8892ad7417a4ef3e3566d9e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read().split('## plan')[1].split('## start')[0];ok=all(w in t for w in ('--dry-run','models.csv','spend cap'));print('plan step sizes paid runs:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7a99e3a82eeac085"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();ok='models.csv' in t and 'spend cap' in t;print('Plan rule sizes paid runs:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8ad23589273ec03e"
+      }
+    ]
+  }
 }
