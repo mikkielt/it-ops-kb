@@ -221,12 +221,17 @@ class TestOwnCheckoutDrafts:
         assert repo.rev("main") == origin_main(scenario) != before
 
 
-def test_empty_selection_refused_gone_once_and_done_dry_run_gone(monkeypatch, capsys, scenario):
+def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(monkeypatch, capsys, scenario):
     """Planted failure: tests.py -k zzz_no_such_test exits 2 before any worker starts, names its selector in one line
     and records exit 2 with selected 0; a done item's check that collects nothing is found gone once, kept in its
     evidence and named by close's summary, and the next rerun does not run it. Then, in a scenario, a review's
     `done --dry-run` records no gone evidence and leaves the tree clean, and its `done --commit` commits that record
-    with the review's own, so the tree is clean again."""
+    with the review's own, so the tree is clean again. On the same finished sprint, the reopen refs
+    (`refs/kb-reopened/ID`, shared by every worktree of the clone): a drop inside a sprint prunes nothing; a drop
+    outside one in a worktree that branched before an item was filed on main deletes the ref of the item it
+    removes and of one already gone, and keeps that of an item the checkout holds and of the one filed on main
+    since; with no origin/main it prunes nothing; `close` deletes the refs of the items it removes and keeps a
+    live item's."""
     import bl_land
     import tests as kbtests
     rows = []
@@ -295,6 +300,48 @@ def test_empty_selection_refused_gone_once_and_done_dry_run_gone(monkeypatch, ca
     evidence = json.loads(repo.read(f"{PLAN}/{good}.json"))["evidence"]
     assert evidence["gone"] == [["python3", "-c", gone.split('"')[1]]], evidence
     assert json.loads(repo.read(f"{PLAN}/{review}.json"))["status"] == "done"
+
+    def story(*more):
+        return new_id(ok(repo, "new", "story", "--title", "Reopen refs", "--goal", "The doc.", "--touch",
+                         "kb/_self/good.md", *more))
+
+    def marks():
+        return set(repo.git("for-each-ref", "--format=%(refname:strip=2)", "refs/kb-reopened/").split())
+
+    def mark(*ids):
+        blob = repo.git("hash-object", "-w", f"{PLAN}/{good}.json").strip()
+        for i in ids:
+            repo.git("update-ref", f"refs/kb-reopened/{i}", blob)
+
+    first, second = story(), story()
+    repo.commit("test: two stories outside a sprint", PLAN)
+    old = Repo(Path(repo.path).parent / "older", repo.env)
+    repo.git("worktree", "add", "-q", "-b", "older", old.path, "main")  # branched before `late` is filed
+    late = story("--sprint", sp)
+    repo.commit("test: a story filed on main after the worktree branched", PLAN)
+    repo.git("push", "-q", "--no-verify", "origin", "main")
+    earlier = "ST-0e1f2a3b"  # a removal an earlier command left a mark of: no file anywhere
+    mark(earlier, first, second, late, good)
+    every = {earlier, first, second, late, good}
+
+    code, out = bl(repo, "drop", late, "--why", "a story of the sprint")
+    assert code == 0 and "reopen mark" not in out and marks() == every, out  # inside a sprint: nothing pruned
+    repo.commit("test: the dropped story stays in its sprint", PLAN)
+
+    main = repo.rev("origin/main")
+    repo.git("update-ref", "-d", "refs/remotes/origin/main")
+    code, out = bl(old, "drop", first, "--why", "no origin/main to judge by")
+    assert code == 0 and "reopen mark" not in out and marks() == every, out
+    repo.git("update-ref", "refs/remotes/origin/main", main)
+
+    code, out = bl(old, "drop", second, "--why", "outside a sprint, in the older worktree")
+    assert code == 0 and "deleted 3 reopen mark(s) of removed items" in out, out
+    assert marks() == {late, good}, out  # `late` is filed on main since the worktree branched: kept
+
+    mark(first)  # the main checkout still holds it
+    code, out = bl(repo, "close", sp, "--commit")
+    assert code == 0 and "deleted 2 reopen mark(s) of removed items" in out, out
+    assert marks() == {first}, out  # `good` and `late` went with the sprint
 
 
 def test_land_no_work_rows_late_undelivered_or_missing(tmp_path, monkeypatch, capsys):
