@@ -1,6 +1,6 @@
 """`backlog.py procs`: the processes whose working directory lies in a checkout of this clone (the main checkout or any
-worktree `git worktree list` names), each as an orphan or foreign (kb/_self/backlog.md, Processes left running;
-kb/_self/tools.md).
+worktree `git worktree list` names, and, in a workspace whose backlog.json declares `repositories`, each repository's
+checkout and worktrees), each as an orphan or foreign (kb/_self/backlog.md, Processes left running; kb/_self/tools.md).
 
   procs                 list them (read only): pid, parent, age, class, command name, and where it runs
 
@@ -177,14 +177,23 @@ def hook_pids(root, pids, bases=None):
 
 # ---------------------------------------------------------------- the clone's checkouts
 
-def checkouts(root):
-    """The real paths of the main checkout and each worktree of the clone at ROOT; [ROOT] when git cannot say."""
+def worktrees(path):
+    """The real paths of the checkout at PATH and its worktrees (`git worktree list`); [] when git cannot say."""
     try:
-        text = bl_base.git(root, "worktree", "list", "--porcelain")
+        text = bl_base.git(path, "worktree", "list", "--porcelain")
     except (Refused, OSError):
-        return [os.path.realpath(root)]
-    found = [os.path.realpath(ln[len("worktree "):]) for ln in text.splitlines() if ln.startswith("worktree ")]
-    return found or [os.path.realpath(root)]
+        return []
+    return [os.path.realpath(ln[len("worktree "):]) for ln in text.splitlines() if ln.startswith("worktree ")]
+
+
+def checkouts(root):
+    """The real paths of the main checkout and each worktree of the clone at ROOT; [ROOT] when git cannot say. With a
+    `repositories` map, each repository's checkout and worktrees (the ones `dispatch` makes of a multi-repository
+    item's repositories) are listed too: a process in one holds it as it holds a workspace worktree."""
+    found = worktrees(root) or [os.path.realpath(root)]
+    for sub in bl_base.repositories().values():
+        found += [p for p in worktrees(Path(root) / sub) if p not in found]
+    return found
 
 
 def inside(cwd, base):
