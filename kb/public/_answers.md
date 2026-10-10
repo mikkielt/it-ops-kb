@@ -2662,3 +2662,14 @@ _Agent: kb-research_
 - See python/stdlib-windows-portability.md.
 
 _Agent: kb-research_
+
+## QK-modelusage-key-claude-code-result-event. Does the `modelUsage` key of a Claude Code result event name a model by its dated id or its alias, and which ids do the kb-lookup agent's Haiku calls use?
+- The docs call the keys "model names" and say an entry's `canonicalModel` "may differ from the raw model string the entry is keyed by, such as a provider-specific ID or alias"; they state no rule for a family alias such as `haiku`. [DOC S-fksbud2r]
+- The docs tell a reader of `--output-format json` or `stream-json` output to take the actual model from `modelUsage`, since the stderr retirement and remap warning is suppressed there. [DOC S-ezqg74ki]
+- One recorded observation: on Claude Code 2.1.283, headless `claude -p --model haiku` runs keyed the Haiku entry `claude-haiku-4-5-20251001`, the dated id of the `claude-haiku-4-5` alias; `--model sonnet` and `--model opus` runs keyed `claude-sonnet-5` and `claude-opus-5-5`. [DER S-fksbud2r, S-eu3n3hyf: result-event keys of the benchmark runs read against the models table]
+- A subagent definition with `model: haiku`, which the `kb-lookup` agent has, takes the main conversation's exact model when that is a Haiku model, else the version the alias names: `claude-haiku-4-5-20251001` on 2.1.283 and `claude-haiku-5-5` from v2.1.293. [DER S2157, S-ezqg74ki: the frontmatter alias rule applied to the alias's documented version]
+- Conclusion: on the one version observed, the key is the dated id, so a price table keyed by the alias `claude-haiku-4-5` misses it; a reader should price a key through a table that holds the dated id as well, or fail with a named error, and must not assume the form holds for later versions. [DER S-fksbud2r, S-eu3n3hyf]
+- Open: the key form on Claude Code v2.1.293 or later, for a subagent's own entry, for a pinned undated `--model claude-haiku-4-5` and for another provider was not observed. [UNK]
+- See claude/ci-and-headless.md, claude/skills-and-subagents.md, claude/models.csv.
+
+_Agent: kb-research_

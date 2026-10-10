@@ -2,8 +2,8 @@
 topic: claude/ci-and-headless
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
-retrieved_utc: 2026-10-09
-sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864]
+retrieved_utc: 2026-10-10
+sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864, S2157]
 status: complete
 ---
 
@@ -91,6 +91,12 @@ article's `claude -p` exit-code/`--output-format` summary or its runtime-compari
 - Haiku 5.5 list prices depend on prompt length: a prompt of up to 100,000 tokens pays $0.10 input, $0.50 output, $0.125 (5-minute) or $0.20 (1-hour) cache write and $0.01 cache read per million tokens; a longer prompt pays $0.50, $2.50, $0.625 or $1, and $0.05. [DOC S2131]
 - Web search on the Claude API costs $10 per 1,000 searches on top of token costs; results retrieved in a conversation count as input tokens; a search that errors is not billed. [DOC S2131, S-ehhvgjky]
 - A cached prefix must reach the model's minimum: 512 tokens for Sonnet 5.5, 4,096 for Haiku 4.5 (see `agents/agent-caching`), so a lean reader prompt under 4,096 tokens cannot be cached on Haiku 4.5 at all. [DER S2130: minimums compared with a prompt size chosen by the caller]
+- A `modelUsage` entry is keyed by the "raw model string" of the calls it counts: the docs say its `canonicalModel`, the id used for the pricing lookup, "may differ from the raw model string the entry is keyed by, such as a provider-specific ID or alias". [DOC S-fksbud2r]
+- Under `--output-format json` and `stream-json` Claude Code writes no stderr warning when the requested model is scheduled for retirement or remapped to a newer version; the docs tell the reader to read the actual model from the result message's `modelUsage` field instead. [DOC S-ezqg74ki]
+- The docs do not state whether a family alias such as `haiku` appears as a `modelUsage` key in its dated form (`claude-haiku-4-5-20251001`) or undated (`claude-haiku-4-5`); only the entry's `canonicalModel` is described as an id, and it may be absent. [UNK: key form for an alias not stated in the docs]
+- Observed on Claude Code 2.1.283, in headless `claude -p` runs of 2026-09-26 and 2026-09-28 with `--model haiku`, `--model sonnet` and `--model opus`: the `modelUsage` entry that cost most was keyed `claude-haiku-4-5-20251001`, `claude-sonnet-5` and `claude-opus-5-5`; so the Haiku entry carried the dated id of the `claude-haiku-4-5` alias (see `claude/models.csv`), not the alias, and the Sonnet and Opus ids have no date part. The runs say nothing about other versions, a pinned undated `--model claude-haiku-4-5`, or a provider other than the one those runs used. [DER S-fksbud2r, S-eu3n3hyf: the keys of the result events of the benchmark runs read against the models table's ids]
+- A subagent definition with `model: haiku` (the kb's `kb-lookup` agent is one) runs its Haiku calls on the main conversation's exact model when that is a Haiku model, else on the version the alias names: Haiku 4.5 on 2.1.283 (key observed there for a session's own `haiku` alias, `claude-haiku-4-5-20251001`), and `claude-haiku-5-5` from v2.1.293, where the docs state the alias resolves to Haiku 5.5. [DER S2157, S-ezqg74ki: the frontmatter alias rule applied to the alias's documented version, the dated key read from a 2.1.283 run]
+- No `modelUsage` key was observed for Haiku 5.5 (Claude Code v2.1.293 or later), for a subagent's own entry or for a pinned undated `--model claude-haiku-4-5`, so whether a subagent's Haiku call is keyed like the session's own, and in which form, is not confirmed; a capped real run of a Haiku subagent would show it. [UNK: not observed after 2.1.283]
 
 ## Reference
 

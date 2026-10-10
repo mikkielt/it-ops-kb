@@ -100,7 +100,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/permissions-mcp` | P1 | complete | `claude/permissions-mcp.md` | 5 |
 | `claude/tool-output-limits` | P1 | complete | `claude/tool-output-limits.md` | 3 |
 | `claude/agent-sdk` | P2 | complete | `claude/agent-sdk.md`, `claude/agent-sdk-options.csv` | 10 |
-| `claude/ci-and-headless` | P2 | complete | `claude/ci-and-headless.md` | 16 |
+| `claude/ci-and-headless` | P2 | complete | `claude/ci-and-headless.md` | 17 |
 | `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 8 |
 | `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 14 |
 | `claude/settings-and-scopes` | P2 | complete | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 14 |
