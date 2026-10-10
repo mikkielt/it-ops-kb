@@ -2,7 +2,7 @@
   "id": "ST-7mhi2xbq",
   "kind": "story",
   "title": "Review sprint: Test suite and tools docs fixes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yzs3bj6f",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-yzs3bj6f"
 }
