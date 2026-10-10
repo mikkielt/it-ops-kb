@@ -2,7 +2,7 @@
   "id": "ST-rtmwsqgj",
   "kind": "story",
   "title": "list_usd prices a dated modelUsage key such as claude-haiku-4-5-20251001 at its pinned model instead of raising KeyError",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-55ddkrrx",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "BG-wapzksub",
   "kind": "bug",
   "title": "benchmarks.py run SCENARIO --dry-run starts paid runs for every scenario but pool",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-55ddkrrx",
   "priority": "P2",

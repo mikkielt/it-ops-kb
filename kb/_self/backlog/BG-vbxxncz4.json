@@ -2,7 +2,7 @@
   "id": "BG-vbxxncz4",
   "kind": "bug",
   "title": "The Defender section of test-suite-speed.md ties its figures to -Raw output the run never used and backs its derived third row with an unrelated remainder",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-55ddkrrx",
   "priority": "P3",

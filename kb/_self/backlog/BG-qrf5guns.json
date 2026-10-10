@@ -2,7 +2,7 @@
   "id": "BG-qrf5guns",
   "kind": "bug",
   "title": "benchmarks.md's router-readers paragraph says the spend row still counts the first router rows, and blames the cache-write price for the tokens-per-right gap",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-55ddkrrx",
   "priority": "P2",
