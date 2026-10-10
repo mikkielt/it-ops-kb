@@ -2,7 +2,7 @@
   "id": "ST-php5itob",
   "kind": "story",
   "title": "A headless research task or subtask gets --max-turns 200, as a research story does",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
@@ -59,5 +59,27 @@
     "parked: SP-vayhvwfy close"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: bl_dispatch.max_turns gives a task whose touches are kb content only 60, not 200 (the item's first check prints the three values). Ran on the base at planning, 2026-10-10: a research task and a code task both printed 60, so the premise reproduces; the item is a code item (bl_dispatch.py), so the docs alone would contradict the tool.",
-  "claimed_by": "worker-ST-php5itob"
+  "evidence": {
+    "commit": "726b4e0ca7436a1dfc2967a6d908695a60334d9d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,\"_tools\");import bl_dispatch as d;t=[\"kb/public/windows/x.md\"];B=types.SimpleNamespace(items=dict(T=dict(kind=\"task\",touches=t),S=dict(kind=\"subtask\",touches=t),N=dict(kind=\"task\",touches=[\"_tools/x.py\"])),descendants=lambda i:[]);r=(d.max_turns(B,\"T\"),d.max_turns(B,\"S\"),d.max_turns(B,\"N\"));print(\"research task, research subtask, code task turns:\",r);sys.exit(0 if r==(200,200,60) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "89088eb478f598c0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ok=all(\"subtask\" in (lambda t:t[t.find(\"200 for a research\"):][:70])(open(p,encoding=\"utf-8\").read()) for p in (\".claude/skills/kb-sprint/SKILL.md\",\"kb/_self/backlog.md\"));print(\"docs give a research task or subtask 200:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2833ade7a4e7b9d9"
+      }
+    ]
+  }
 }
