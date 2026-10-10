@@ -47,6 +47,26 @@ def names_secret(touch):
     head, _, name = touch.strip().replace("\\", "/").rstrip("/").rpartition("/")
     return bool(TOKEN_WORD.search(head) or TOKEN_WORD.search(name) and not name.lower().endswith(".md"))
 
+
+# In a gate's text `token` is a secret word, but not in the sense of a model's token counts (`output tokens`, `token
+# counts`, `usage.output_tokens`) nor in the file name of a Markdown doc (`kb/_self/token-efficiency.md`, as for a
+# touch). A bare `token`, one qualified as a credential (`API token counts` is a count of API tokens) and a token file
+# keep the class: the classifier fails closed.
+TOKEN_DOC = re.compile(r"[\w./\\-]*token[\w./\\-]*\.md\b", re.I)
+TOKEN_COUNT = re.compile(
+    r"(?P<cred>\b(?:api|access|auth|bearer|refresh|session|personal|oauth|csrf|jwt|id)[-_ ])?"
+    r"(?:\b(?:output|input|prompt|completion|cached?|total|max|context|reasoning)[-_ ]tokens?\b|"
+    r"\btokens?[-_ ](?:counts?|usage|budgets?|limits?|costs?|efficiency|estimates?)\b|"
+    r"\b(?:counts?|number|numbers) of tokens\b|\btokens per (?:second|minute|request|run)\b)", re.I)
+
+
+def without_token_counts(text):
+    """The text with each token-count phrase and each Markdown doc name that holds `token` replaced by a space: what the
+    `secrets` words are searched in, so a model's token counts and a doc such as `token-efficiency.md` are no secret."""
+    text = TOKEN_DOC.sub(lambda m: m.group(0) if names_secret(m.group(0)) else " ", text)
+    return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") else " ", text)
+
+
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
 # `release` are word-bounded (`original` is not `origin`) and take their endings (`releases`, `released`, `mirrored`),
 # so a gate about a release note is `push` too: the classifier fails closed.
@@ -113,7 +133,7 @@ def class_reasons(item, gate):
             found.setdefault("secrets", []).append(f"touch '{t}'")
     text = f"{gate.get('question', '')} {' '.join(map(str, gate.get('options', []) or []))} {command_words(gate)}"
     for cls, rx in QUESTION_WORDS.items():
-        m = rx.search(text)
+        m = rx.search(without_token_counts(text) if cls == "secrets" else text)
         if m:
             found.setdefault(cls, []).append(f"matched '{m.group(0)}'")
     m = re.search(r"sprint'?s? start|start (?:the )?sprint", text, re.I)
