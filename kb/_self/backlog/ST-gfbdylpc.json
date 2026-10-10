@@ -26,5 +26,5 @@
   "links": [
     "parked: SP-5x5ut5ko close"
   ],
-  "notes": "SP-5i4itd2d close (2026-10-10): after ST-2bly3tq5 added a test id (87 ids) the whole suite ran 19.97 s once (over the 20 s darwin ceiling, refused) and 18.89 s once; each landing's gate passed."
+  "notes": "SP-5i4itd2d close (2026-10-10): after ST-2bly3tq5 added a test id (87 ids) the whole suite ran 19.97 s once (over the 20 s darwin ceiling, refused) and 18.89 s once; each landing's gate passed. SP-55ddkrrx close (2026-10-10): with four headless workers running, workers' whole-suite tests.py runs took 21.78 s, 20.21 s, 30.5 s and 31 s against the 20 s darwin ceiling (exit 1, all 87 tests passing), and 19.36-19.38 s once the load fell; no worker filed it (backlog.py new bug refuses a repro that passes)."
 }

@@ -1,0 +1,27 @@
+{
+  "id": "ST-vstnme2z",
+  "kind": "story",
+  "title": "A sprint worker never commits with the git hooks bypassed, and land names a work commit that lacks the hook's trailers",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-worker's commit rule says the commit hooks run (no --no-verify, no core.hooksPath override), and backlog.py land names a work commit whose message lacks the trailers the commit-msg hook appends, before it pushes. SP-55ddkrrx: the ST-rtmwsqgj worker reported it committed with git hooks bypassed, so its commit had no Session trailer, and land accepted it; the same worker left a lost space ('search ={') that no gate read.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();sys.exit(0 if 'no-verify' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-55ddkrrx close"
+  ]
+}

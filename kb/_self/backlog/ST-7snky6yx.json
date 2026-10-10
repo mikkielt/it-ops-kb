@@ -1,0 +1,27 @@
+{
+  "id": "ST-7snky6yx",
+  "kind": "story",
+  "title": "A research worker checks the repo's own records before it records a fact as not observed, and stops at its brief's turn budget",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A goal research worker (kb-worker, research story) searches the repository's own measured records (kb/_self/reports/benchmarks.csv, the reports, the query log digests) for an observation before writing a fact or gap entry that says it was not observed, and reports when it passes the turn budget its goal names. SP-55ddkrrx: ST-a5f7dxbx ran 125 turns against its goal's 60-turn hint and wrote an UNK fact (ci-and-headless.md:99) that benchmarks.csv's router-pinned rows contradict (BG-wl36adcq).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();sys.exit(0 if 'not observed' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-55ddkrrx close"
+  ]
+}

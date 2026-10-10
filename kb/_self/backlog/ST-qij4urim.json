@@ -1,0 +1,27 @@
+{
+  "id": "ST-qij4urim",
+  "kind": "story",
+  "title": "Sprint planning orders an item that adds a landing rule before the sprint items that rule governs, or names how the rule applies to them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When a committed item adds or changes a rule that governs how other items land (a probe, a check, a gate), the plan step lists the sprint's items the rule would govern and either orders the rule item first (depends) or records in each governed item's notes whether the rule applies to it, before the start gate. SP-55ddkrrx: ST-hl734bxk's real-probe rule landed while ST-rtmwsqgj (a pricing change it governs) was in flight, and the orchestrator added and answered a probe gate on ST-rtmwsqgj after its code was written.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sys.exit(0 if 'rule governs' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-55ddkrrx close"
+  ]
+}
