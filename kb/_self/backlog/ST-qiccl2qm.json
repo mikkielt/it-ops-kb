@@ -32,7 +32,9 @@
         "a new top-level domain for Jira"
       ],
       "recommendation": "two new topics in public/gitlab/ (gitlab/issue-closing-patterns, gitlab/jira-issue-keys-in-commits)",
-      "class": "push"
+      "class": "push",
+      "answer": "two new topics in public/gitlab/ (gitlab/issue-closing-patterns, gitlab/jira-issue-keys-in-commits)",
+      "by": "operator"
     }
   ],
   "claimed_by": "kb-worker-qiccl2qm"
