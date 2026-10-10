@@ -1,0 +1,35 @@
+{
+  "id": "TK-whcuxqdu",
+  "kind": "task",
+  "title": "A planted headless worker session's rows reach its item's cost, an orchestrator session's stay out",
+  "status": "draft",
+  "parent": "ST-bhkdqaku",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A test plants a spool with a headless worker session (a branch row of work/<id>, then usage rows) and an orchestrator session of the same item (claim, done rows only on prompts outside the worker): backlog.py cost ID and cost --rework SP count the worker's runs and tokens on the item and leave the orchestrator's prompts outside the item's window, and usage.md says how a worker in an orchestrator-made worktree is attributed.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "headless_worker_cost"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "orchestrator_cost_not_attributed"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_backlog_portable.py",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "BG-a3zs7s2y"
+  ]
+}

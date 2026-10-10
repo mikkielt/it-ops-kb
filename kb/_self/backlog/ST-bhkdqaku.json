@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "Headless Sonnet workers' tokens reach backlog.py cost for the item they worked",
   "status": "draft",
+  "sprint": "SP-lyfnpu37",
   "priority": "P2",
   "rank": 0,
-  "goal": "Found in the SP-d3hybrlv review: ST-7yahfn3j and ST-pjkmiyqe were worked by headless claude -p --model sonnet sessions launched with the project settings, in a subshell whose cwd was their .claude/worktrees/agent-<id> worktree on work/<id>, yet land warned 'landed with no work rows' and backlog.py cost showed 0 runs for them (the orchestrator's own Opus rows did show). Find why (delivery timing, the branch row of a hand-made worktree, or the session's attribution) and make a headless worker's usage count as that item's work, with a check that a planted headless worker session's rows land in its item's cost and an orchestrator session's do not.",
+  "goal": "Found in the SP-d3hybrlv review: ST-7yahfn3j and ST-pjkmiyqe were worked by headless claude -p --model sonnet sessions launched with the project settings, in a subshell whose cwd was their .claude/worktrees/agent-<id> worktree on work/<id>, yet land warned 'landed with no work rows' and backlog.py cost showed 0 runs for them; the rows arrived late (the 2026-10-08 close rerun), and the SP-flkl5gom and SP-hm4qgf3t closes showed zero runs and zero tokens for headless Sonnet workers again. A headless worker's usage counts as its item's work, so cost ID and cost --rework SP show it, whether its worktree is orchestrator-made on work/<id> or an Agent-tool subagent's; usage.md says how a headless worker in an orchestrator-made worktree is attributed; land's 'landed with no work rows' warning tells a late row (the worker's session still open or its sidecar undistilled) from a missing one, stops for a worker whose rows exist, and names a store a session end left undelivered (unpushed). A check proves a planted headless worker session's rows land in its item's cost and an orchestrator session's do not.",
   "checks": [
     {
       "run": [
@@ -17,8 +18,16 @@
   ],
   "touches": [
     "kb/_self/usage.md",
-    ".claude/agents/kb-worker.md",
-    "_tools/bl_land.py"
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-iltxwoty",
+    "BG-a3zs7s2y"
   ],
   "links": [
     "parked: SP-d3hybrlv review",
@@ -26,5 +35,5 @@
     "merged: ST-rtraso4c",
     "merged: ST-asstsi7t"
   ],
-  "notes": "Lead: kb/_self/usage.md:76 says background headless workers with the prompt on stdin end with no SessionEnd marker, closed by the next launch, so their rows may arrive late; the close rerun of backlog.py cost SP-d3hybrlv shows whether they did. The work: say in usage.md how a headless worker in an orchestrator-made worktree is attributed, and make land's 'no work rows' warning tell a late row from a missing one. Close rerun 2026-10-08: the rows did arrive late (ST-7yahfn3j and ST-pjkmiyqe show Sonnet work lines), so the attribution works; what is left is land's 'landed with no work rows' warning, which cannot tell a late row from a missing one, and the usage.md wording. Seen again at the SP-flkl5gom close (2026-10-10): cost --rework SP-flkl5gom showed 0 runs and 0 attributed tokens for the four headless Sonnet workers (ST-uy4d752n, ST-nknh77bp, ST-34m3yiyn, ST-7j6dm5wq), only the orchestrator's open-session Opus figures; whether their rows arrive late again is unverified. Merged from ST-asstsi7t “A headless sprint worker's tokens reach backlog.py cost for its item” at the 2026-10-10 backlog triage: Same goal as ST-bhkdqaku, which holds the diagnosis (rows arrive late, attribution works) and the newer 2026-10-10 evidence; this check's -k item_cost collects no test (tests.py exit 2). Its goal: A worker that /kb-sprint run starts with claude -p in .claude/worktrees/agent-<id> on work/<id>, with the project settings, has its usage attributed to its item, so backlog.py cost ID and cost --rework SP show it; in SP-hm4qgf3t every item's cost read zero apart from the orchestrator's own prompts and land warned 'landed with no work rows' for ST-ji32ouga and ST-3kw6d6cz, while the workers' own result events counted about 45M tokens. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"item_cost\"]}"
+  "notes": "Lead: kb/_self/usage.md:76 says background headless workers with the prompt on stdin end with no SessionEnd marker, closed by the next launch, so their rows arrive late; the 2026-10-08 close rerun showed them, so attribution works and the work is land's warning, the wording and a test that pins attribution. Absorbed at the 2026-10-10 triage: ST-asstsi7t (its -k item_cost check collected no test), ST-rtraso4c (orchestrator-made work/<id> worktrees and Agent-tool subagents count; land's warning stops for them, bl_land.py ops_land), ST-7vhaotxb ('undelivered' is absent from bl_land.py; chosen: land names the undelivered store, not a hunt for the SessionEnd push). Rows by kind and session: branch (headless worker on work/<id>) and agent-start/stop (Agent-tool subagent) are the worker's, claim/done/release the orchestrator's, done-pending BG-45zpw2go's. Tasks: the land warning, the attribution tests with the orchestrator row kept out. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run at planning (2026-10-10): grep for undelivered in _tools/bl_land.py finds none, and ops_no_work_rows returns a bool that ops_land turns into the one fixed warning line: a late row and a missing one read the same; the story's usage.md check exits 1: reproduces."
 }

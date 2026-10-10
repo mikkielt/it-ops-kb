@@ -4,6 +4,7 @@
   "title": "cost --rework drops the no-capture or no-item line whenever an open session is in scope, so the review still prints zero tables",
   "status": "draft",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-lyfnpu37",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -19,7 +20,9 @@
   "touches": [
     "_tools/bl_cost.py",
     "_tools/test_backlog_portable.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-befc6yqr review"

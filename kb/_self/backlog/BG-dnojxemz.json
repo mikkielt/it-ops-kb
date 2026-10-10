@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb-sprint and backlog.md say land moves intake drafts aside from a worktree made outside .claude/worktrees/, which land refuses to release",
   "status": "draft",
+  "sprint": "SP-lyfnpu37",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -17,6 +18,12 @@
   "repro_reason": "The defect is the docs' wording: release_worker_worktree correctly refuses a worktree not under .claude/worktrees/, so no tool run shows the false sentence; the repro reads the sentence.",
   "touches": [
     "kb/_self/backlog.md",
-    ".claude/skills/kb-sprint/SKILL.md"
-  ]
+    ".claude/skills/kb-sprint/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-xdyk2ugr"
+  ],
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Orders after ST-xdyk2ugr, which changes what land does with drafts in the checkout it runs in: the wording describes the behaviour after that change."
 }

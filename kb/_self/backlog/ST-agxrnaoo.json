@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "One question of the sprint goal is weak: whether the SessionEnd hooks of a claude -p run run when the run ends normally after its result (kb/public/claude/hooks.md:94 says the pages do not state it, tagged UNK; kb/_self/usage.md:76 records what 2.1.283 and 2.1.291 did). Answer it with the live docs (claude-code-docs), labelled as live docs, and write the fact or a dated gap note through the kb skills so ST-iltxwoty can name what land waits for. The goal's other questions pack good (SessionStart hooks, git worktree remove and untracked files, a headless session's SessionEnd at SIGTERM) or are answered by kb/_self/usage.md lines 11, 75, 77 and 80 to 81 (headless attribution and when distill delivers).",
   "checks": [
     {
       "run": [

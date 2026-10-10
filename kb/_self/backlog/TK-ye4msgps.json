@@ -1,0 +1,27 @@
+{
+  "id": "TK-ye4msgps",
+  "kind": "task",
+  "title": "land's no-work-rows warning tells a late row from a missing one and names an undelivered store",
+  "status": "draft",
+  "parent": "ST-bhkdqaku",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py land's warning after a landing with no work rows says whether a worker session of the item is still open or undistilled in the spool (rows late) or none exists (missing), names a store a session end left unpushed, and is not printed when a worker row of the item (branch, agent-start or agent-stop) exists.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_no_work_rows_late"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}

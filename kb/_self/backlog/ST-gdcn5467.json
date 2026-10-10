@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The SessionStart intake hook files a finding once, whatever checkout or session starts, and respects the open-draft cap",
   "status": "draft",
+  "sprint": "SP-lyfnpu37",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py intake --file --hook writes no draft for a fingerprint that an untracked draft, a committed item or a draft set aside under _cache/intake-drafts/ already holds, and writes none while open drafts are over the cap the CLI form enforces; in SP-7y6dk257 the hook re-filed the same three findings 11 times and then 3 more after they were set aside, while intake --file refused them for the 60-draft cap. Retrospective of SP-7y6dk257.",
+  "goal": "backlog.py intake --file --hook writes no draft for a fingerprint that an untracked draft, a committed item or a draft set aside under _cache/intake-drafts/ of the clone's main worktree already holds, and writes none while open drafts are at the cap (bl_intake.OPEN_DRAFTS_MAX) the CLI form enforces, with no near-duplicate merge; in SP-7y6dk257 the hook re-filed the same three findings 11 times and then 3 more after they were set aside, while intake --file refused them for the 60-draft cap. In a linked worktree under .claude/worktrees/ its one stderr line names the worktree (its directory name) as the reason it files nothing, where _tools/bl_ci.py prints a fixed string (found by the SP-gkbtjjce review). Retrospective of SP-7y6dk257.",
   "checks": [
     {
       "run": [
@@ -14,19 +15,66 @@
         "-k",
         "intake_hook_no_refile"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import tempfile,subprocess,sys,os;d=tempfile.mkdtemp();g=lambda *a,c=d:subprocess.run(['git','-c','user.name=t','-c','user.email=t@t','-C',c,*a],capture_output=True,text=True);g('init','-q');g('commit','-q','--allow-empty','-m','x');w=d+'/.claude/worktrees/w1';g('worktree','add','-q','-b','b1',w);os.makedirs(w+'/kb/_self/backlog',exist_ok=True);p=subprocess.run([sys.executable,os.getcwd()+'/_tools/backlog.py','--root',w,'intake','--file','--hook'],capture_output=True,text=True);ok=p.returncode==0 and 'w1' in p.stderr;print('intake exit',p.returncode,'stderr:',p.stderr.strip() or 'empty','| names the worktree:',ok);sys.exit(0 if ok else 1)"
+      ]
     }
   ],
   "touches": [
     "_tools/bl_intake.py",
     "_tools/test_check_programs.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "_tools/bl_ci.py",
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "relates_to": [
     "ST-xdyk2ugr"
+  ],
+  "gates": [
+    {
+      "id": "cap",
+      "kind": "blocking",
+      "question": "What does the SessionStart intake hook enforce before it files a draft: only the open-draft cap, or also the near-duplicate merge intake --file runs?",
+      "options": [
+        "cap only",
+        "cap and near-duplicate merge"
+      ],
+      "recommendation": "cap only",
+      "do": {
+        "cap only": "ST-gdcn5467",
+        "cap and near-duplicate merge": "ST-gdcn5467"
+      },
+      "class": "agents-rule",
+      "answer": "cap only",
+      "by": "operator"
+    },
+    {
+      "id": "where",
+      "kind": "blocking",
+      "question": "Where does the hook look for a draft that already holds a fingerprint: this checkout's items and the set-aside directory of the clone's main worktree, or also the untracked drafts of every linked worktree?",
+      "options": [
+        "items and set-aside directory",
+        "also every linked worktree"
+      ],
+      "recommendation": "items and set-aside directory",
+      "do": {
+        "items and set-aside directory": "ST-gdcn5467",
+        "also every linked worktree": "ST-gdcn5467"
+      },
+      "class": "agents-rule",
+      "answer": "items and set-aside directory",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-7y6dk257 close",
     "merged: BG-eam5x2q7"
   ],
-  "notes": "Merged from BG-eam5x2q7 “intake --file --hook's stderr line in a worker worktree does not name the worktree” at the 2026-10-10 backlog triage: Repro still fails: bl_ci.py:183 prints the fixed string 'files nothing in a worker's worktree (a linked worktree under the worktree directory)' with no worktree name; a one-line fix in the same hook_intake function ST-gdcn5467 must edit, too small for its own sprint slot. Its goal: In a linked worktree under .claude/worktrees/, backlog.py intake --file --hook prints one stderr line that names the worktree (its directory name or path) as the reason it files nothing, as ST-ocfkanth's goal and kb/_self/backlog.md (Running a sprint; The hook) say; today _tools/bl_ci.py prints a fixed string. Found by the SP-gkbtjjce review. Its touches: _tools/bl_ci.py, kb/_self/backlog.md, kb/_self/tools.md, kb/_self/code.md Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
+  "notes": "Merged from BG-eam5x2q7 (the stderr line names the worktree; its repro is the second check) at the 2026-10-10 backlog triage. The hook is hook_intake in _tools/bl_ci.py: it skips only a fingerprint an open item of this checkout holds (open_with_fingerprint) and never counts the cap that bl_intake.file_draft enforces. INTAKE_ASIDE lives in bl_land.py and bl_ci.py must not import bl_land (layer rule), so the constant moves to bl_intake.py and bl_land.py imports it. The -k selector names a test yet to write: tests.py exits 2 until the work adds it. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run at planning (2026-10-10): grep -c for OPEN_DRAFTS_MAX, INTAKE_ASIDE, intake-drafts and open_drafts in _tools/bl_ci.py prints 0, so hook_intake neither counts the cap nor reads the aside directory; the second check's repro exits 1 (stderr is a fixed string): reproduces."
 }
