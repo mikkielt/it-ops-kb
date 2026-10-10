@@ -2,7 +2,7 @@
   "id": "ST-dt6xl537",
   "kind": "story",
   "title": "A bug filed into an active sprint without touches is refused or warned at new",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-6iiony54",
   "sprint": "SP-qxcj7fgy",
   "priority": "P2",
@@ -47,5 +47,6 @@
   "links": [
     "parked: SP-evkj4avq close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): new bug --sprint of an active sprint with no --touch files the bug, exit 0: reproduces."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): new bug --sprint of an active sprint with no --touch files the bug, exit 0: reproduces.",
+  "claimed_by": "worker-ST-dt6xl537"
 }
