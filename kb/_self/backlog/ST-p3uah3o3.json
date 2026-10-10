@@ -3,21 +3,49 @@
   "kind": "story",
   "title": "kb-worker names the open choices that need a gate and lists every consumer of a changed function before it changes it",
   "status": "draft",
+  "sprint": "SP-qg7ncs6d",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb-worker.md tells a worker that a default, a width, an opt-in, a limit or a price it picks is a choice the goal leaves open (a provisional gate), and that a change to what a function returns or takes runs backlog.py referrers on it and covers every consumer in the same item; SP-2vhfsn4o: the orchestrator recorded three ungated choices (ST-vua43tob opt-in, ST-fuflyzxc pack width, BG-jj2nc5ou output count), and two consumers were missed and filed as bugs (BG-3h4g5jdc after ST-x333wyrc, BG-ovvvqtxf after BG-jj2nc5ou)",
+  "goal": "kb-worker.md tells a worker that a default, a width, an opt-in, a limit or a price it picks is a choice the goal leaves open (a provisional gate), and that a change to what a function returns or takes runs backlog.py referrers on it and covers every consumer in the same item; SP-2vhfsn4o: the orchestrator recorded three ungated choices (ST-vua43tob opt-in, ST-fuflyzxc pack width, BG-jj2nc5ou output count), and two consumers were missed and filed as bugs (BG-3h4g5jdc after ST-x333wyrc, BG-ovvvqtxf after BG-jj2nc5ou). Rule 6 and the brief's matching rule (bl_dispatch.py WORKER_RULES) also say: a choice named in the report and recorded as no gate on work/<id> sends the item back; an item whose touches are rule-guarding gets its choice as a blocking gate, and a worker whose gate add prints 'made blocking' commits it and stops with a report.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/selfdoc.py",
-        "check"
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;w=open(\".claude/agents/kb-worker.md\",encoding=\"utf-8\").read();a=\"backlog.py referrers\" in w and \"made blocking\" in w;b=any(\"referrers\" in r for r in d.WORKER_RULES);print(\"kb-worker names referrers and made blocking:\",a,\"; brief rule names referrers:\",b);sys.exit(0 if a and b else 1)"
       ]
     }
   ],
   "touches": [
     ".claude/agents/kb-worker.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "_tools/bl_dispatch.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-yztru4mz"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the dispatch brief relax stop on a blocking gate, so an operator pre-asks the rule-guarding choices and a worker records any further choice as a gate with its recommendation applied and goes on?",
+      "options": [
+        "keep: a blocking gate stops the worker, which reports",
+        "relax: a further choice is a gate with its recommendation applied and the work goes on"
+      ],
+      "recommendation": "keep: a blocking gate stops the worker, which reports",
+      "do": {
+        "keep: a blocking gate stops the worker, which reports": "ST-p3uah3o3",
+        "relax: a further choice is a gate with its recommendation applied and the work goes on": "ST-p3uah3o3"
+      },
+      "class": "agents-rule",
+      "answer": "keep: a blocking gate stops the worker, which reports",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-2vhfsn4o close",
@@ -26,5 +54,5 @@
     "merged: ST-mef3bcl6",
     "merged: ST-yrroabww"
   ],
-  "notes": "Merged from ST-cwy6sojk “A worker's brief says every choice its report names is a gate on its branch before it returns” at the 2026-10-10 backlog triage: kb-worker.md rule 6 already says 'never leave a choice in your report's prose only' (b8c57310f, 2026-10-01). Only the 'item sent back' phrasing remains, which the ST-p3uah3o3 rule-6 rewrite carries. Its goal: From the SP-matmvkn6 close retrospective: the ST-dsre52lb worker named two open choices in its report (a minimum word length, a doc wording) and recorded no gate, so the orchestrator sent it back to record two provisional gates before landing. The brief and kb-worker.md say a choice named in the report and not recorded as a gate on work/<id> sends the item back, so the worker records it before returning. Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, .claude/agents/kb-worker.md, kb/_self/backlog.md Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
+  "notes": "Merged from ST-cwy6sojk “A worker's brief says every choice its report names is a gate on its branch before it returns” at the 2026-10-10 backlog triage: kb-worker.md rule 6 already says 'never leave a choice in your report's prose only' (b8c57310f, 2026-10-01). Only the 'item sent back' phrasing remains, which the ST-p3uah3o3 rule-6 rewrite carries. Its goal: From the SP-matmvkn6 close retrospective: the ST-dsre52lb worker named two open choices in its report (a minimum word length, a doc wording) and recorded no gate, so the orchestrator sent it back to record two provisional gates before landing. The brief and kb-worker.md say a choice named in the report and not recorded as a gate on work/<id> sends the item back, so the worker records it before returning. Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, .claude/agents/kb-worker.md, kb/_self/backlog.md Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: kb-worker.md says nothing of backlog.py referrers or of 'made blocking' and the brief's WORKER_RULES name no referrers (ran at planning, 2026-10-10: grep of kb-worker.md finds none; the item's check exits 1): reproduces. Gate g1 asks whether the dispatch brief's 'stop on a blocking gate' is relaxed (the ST-dbbsdq5b wording); the check reads only referrers and made blocking. Gate g1 answered keep at planning (2026-10-10): the brief's stop on a blocking gate is not relaxed, so the ST-dbbsdq5b relaxed wording is not adopted; the brief rule gains only the referrers and made blocking sentences."
 }

@@ -3,26 +3,51 @@
   "kind": "story",
   "title": "Worker briefs and gate questions give measured figures with the command that measured them, and the sprint reviewer runs in a worktree of its own",
   "status": "draft",
+  "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
-  "goal": "Retrospective of SP-vayhvwfy: ST-icgtdnuf's worker modelled the worker worktree name on the brief's example agent-ST-xxxxxxxx, and the operator confirmed gate g1 (limit 179) on it, while Agent-tool worktrees here are agent-<17 hex>, 6 characters longer (parked ST-6xdymgtg); and the fresh-context reviewer, started in the orchestrator's checkout, had its SessionStart intake hook file drafts there, which made one landing refuse a dirty tree. The kb-sprint skill's brief parts say a figure a worker or a gate relies on is measured (with its command) rather than given as an example, and the review step starts the reviewer in a worktree or scratch checkout of its own.",
+  "goal": "Retrospective of SP-vayhvwfy: ST-icgtdnuf's worker modelled the worker worktree name on the brief's example agent-ST-xxxxxxxx, and the operator confirmed gate g1 (limit 179) on it, while Agent-tool worktrees here are agent-<17 hex>, 6 characters longer (parked ST-6xdymgtg); and the fresh-context reviewer, started in the orchestrator's checkout, had its SessionStart intake hook file drafts there, which made one landing refuse a dirty tree. The kb-sprint skill's brief parts say a figure a worker or a gate relies on is measured (with its command) rather than given as an example, and the review step starts the reviewer in a worktree or scratch checkout of its own, names its launch (--max-turns, its cwd and scratch directory, read-only) and runs the whole tests.py only after the reviewer has returned, since a concurrent run took 21 s against the 20 s darwin ceiling (SP-rvslem3h).",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='measured' in t and 'reviewer' in t and 'worktree of its own' in t;print('kb-sprint asks for measured figures and a reviewer worktree:',ok);sys.exit(0 if ok else 1)"
+        "import sys;t=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read();r=t.split(\"## review SP\")[1].split(\"## close SP\")[0];a=\"worktree of its own\" in r and \"--max-turns\" in r and \"read-only\" in r;b=\"measured\" in t and \"command\" in t;print(\"review step 4 names the reviewer launch:\",a,\"; briefs ask for measured figures:\",b);sys.exit(0 if a and b else 1)"
       ]
     }
   ],
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-mxuwtgqx"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the sprint's fresh-context reviewer run?",
+      "options": [
+        "a git worktree of its own under .claude/worktrees, as a worker's",
+        "a scratch checkout under _cache/scratch"
+      ],
+      "recommendation": "a git worktree of its own under .claude/worktrees, as a worker's",
+      "do": {
+        "a git worktree of its own under .claude/worktrees, as a worker's": "ST-2ldhug4l",
+        "a scratch checkout under _cache/scratch": "ST-2ldhug4l"
+      },
+      "class": "agents-rule",
+      "answer": "a git worktree of its own under .claude/worktrees, as a worker's",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-vayhvwfy close",
     "merged: ST-4hwqtzjy",
     "merged: ST-mylfhlhj"
   ],
-  "notes": "Merged from ST-4hwqtzjy “kb-sprint review names the headless reviewer's launch: cwd, scratch dir, --max-turns, stdin brief, read-only” at the 2026-10-10 backlog triage: Premise holds: SKILL.md review step 4 (line 90) names no --max-turns, cwd, scratch dir or read-only rule, and the item's check exits 1. It is the same review-step-4 reviewer launch as ST-2ldhug4l (reviewer in a worktree of its own), so one commit carries both. Its goal: Found in the SP-d3hybrlv review: review step 4 starts the fresh-context reviewer as a headless session 'as run step 3 starts a worker', but run step 3's fixed brief parts are by item kind, so the reviewer has no --max-turns, no named cwd (the intake hook may leave drafts in the main clone), no scratch dir and no read-only rule. SKILL.md review step 4 and backlog.md name them. Its checks: {\"run\": [\"python3\", \"-c\", \"import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();r=t.split('## review SP')[1].split('## close SP')[0];ok='--max-turns' in r and 'read-only' in r;print('reviewer launch:',ok);sys.exit(0 if ok else 1)\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md Merged from ST-mylfhlhj “The review runs tests.py only after the fresh-context reviewer has returned, so its load does not push the suite over the ceiling” at the 2026-10-10 backlog triage: One-sentence wording fix in review step 4 (tests.py whole run only after the reviewer returns); item's check is selfdoc check only. Same step and files as ST-2ldhug4l's reviewer-worktree clause, so it rides there. Its goal: Review step 4 and the review story's checks order the whole tests.py run after the reviewer subagent or headless session returns (it loads the host), since a concurrent run took 21 s against the 20 s darwin ceiling and failed while the same suite took 19.1 s on an idle host (SP-rvslem3h). Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md"
+  "notes": "Merged from ST-4hwqtzjy (reviewer launch named in review step 4) and ST-mylfhlhj (tests.py whole run only after the reviewer returns) at the 2026-10-10 backlog triage; their full text is in git (git show <commit>^:kb/_self/backlog/<id>.json). Premise: SKILL.md review step 4 names no --max-turns, cwd, scratch dir or read-only rule and the skill has no 'measured' rule; the item's check exits 1 on the base. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts."
 }

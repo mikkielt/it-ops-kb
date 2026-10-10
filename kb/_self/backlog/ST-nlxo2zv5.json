@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A sprint worker's /kb-verify run does not run tests.py --changed, which its brief forbids",
   "status": "draft",
+  "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
   "goal": "/kb-verify and the kb-worker role agree on the suite a sprint worker runs: a worker following .claude/agents/kb-worker.md and /kb-verify never runs tests.py --changed (the landing's sync gate runs it), so the brief's rule and the skill no longer contradict (SP-flkl5gom close: workers of ST-uy4d752n and ST-34m3yiyn ran tests.py --changed through /kb-verify although the brief forbade it, since parallel runs load the host into false timeouts).",
@@ -11,7 +12,14 @@
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys;r=subprocess.run(['python3','_tools/rag.py','pack','--root','_self','does a sprint worker running kb-verify run tests.py --changed'],capture_output=True,text=True);ok=r.returncode==0 and 'coverage: good' in r.stdout;print('packs good:',ok);sys.exit(0 if ok else 1)"
+        "import sys;v=open(\".claude/skills/kb-verify/SKILL.md\",encoding=\"utf-8\").read();w=open(\".claude/agents/kb-worker.md\",encoding=\"utf-8\").read();a=\"sprint worker\" in v or \"kb-worker\" in v;b=\"kb-verify\" in w and \"--changed\" in w;print(\"kb-verify names the sprint worker:\",a,\"; kb-worker names kb-verify and --changed:\",b);sys.exit(0 if a and b else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([\"python3\",\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",\"does a sprint worker running kb-verify run tests.py --changed\"],capture_output=True,text=True);o=r.stdout;ok=r.returncode==0 and \"coverage: good\" in o and \"kb-verify\" in o and \"worker\" in o;print(\"packs good with the worker rule:\",ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
@@ -20,10 +28,36 @@
     ".claude/agents/kb-worker.md",
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "AGENTS.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-php5itob"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a sprint worker's kb-verify run skip tests.py --changed?",
+      "options": [
+        "kb-verify step 5 names the sprint worker's exception and kb-worker.md points to it",
+        "a new kb-verify argument that skips the test step"
+      ],
+      "recommendation": "kb-verify step 5 names the sprint worker's exception and kb-worker.md points to it",
+      "do": {
+        "kb-verify step 5 names the sprint worker's exception and kb-worker.md points to it": "ST-nlxo2zv5",
+        "a new kb-verify argument that skips the test step": "ST-nlxo2zv5"
+      },
+      "class": "agents-rule",
+      "answer": "kb-verify step 5 names the sprint worker's exception and kb-worker.md points to it",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-flkl5gom close"
   ],
-  "notes": "Checks are planned when a sprint commits it. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
+  "notes": "Checks are planned when a sprint commits it. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: kb-verify step 5 runs tests.py --changed with no exception for a sprint worker, and kb-worker.md names neither kb-verify nor --changed (ran at planning, 2026-10-10: the pack of the question is weak, kb lacks kb-verify; grep of kb-worker.md finds none): reproduces. The first check wants kb-verify to name the sprint worker (or kb-worker) and kb-worker.md to name kb-verify and --changed."
 }
