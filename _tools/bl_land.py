@@ -2251,15 +2251,16 @@ PRECHECK_NOTE = "passes before the work"  # an item's notes saying so keep its p
 
 
 def precheck_rows(bl, sid):
-    """[(item id, check, exit code, passed)] of each check of the sprint's open committed items, run once on the checkout as
-    it is (before any work commit); the review and research stories are left out: the review's checks pass by design,
-    and the research story's (`researched`) fails until its research is written."""
+    """[(item id, check, exit code, passed)] of each check, and of a bug its repro after them, of the sprint's open
+    committed items, run once on the checkout as it is (before any work commit), as `done` runs them; the review and
+    research stories are left out: the review's checks pass by design, and the research story's (`researched`) fails
+    until its research is written."""
     rows = []
     for iid in sorted(bl.sprint_items(sid)):
         it = bl.items[iid]
         if it.get("status") not in ("draft", "todo", "doing") or it.get("review") or it.get("goal_research"):
             continue
-        for c in it.get("checks", []) or []:
+        for c in list(it.get("checks", []) or []) + ([it["repro"]] if it.get("repro") else []):
             ok, code, _ = run_check(bl.root, c)
             rows.append((iid, c, code if code is not None else -1, ok))
     return rows
@@ -2311,11 +2312,11 @@ def windowed_detector(root, fp, calls):
 
 
 def cmd_precheck(bl, a):
-    """precheck SP: run each committed item's checks once before any work and warn (exit 0) of each that passes
-    already: it proves nothing yet, unless the item's notes say the check passes before the work (one that pins
-    behaviour that must stay). It also warns, whether the check passes or not, of one that is the `intake --status` of
-    a time-windowed detector (repeats, trailers), naming when it can first pass, so the item is moved or gated before
-    the start. kb-sprint plan runs it before the start gate is asked, so start stays fast."""
+    """precheck SP: run each committed item's checks, and a bug's repro, once before any work and warn (exit 0) of each
+    that passes already: it proves nothing yet, unless the item's notes say the check passes before the work (one that
+    pins behaviour that must stay). It also warns, whether the check or repro passes or not, of one that is the
+    `intake --status` of a time-windowed detector (repeats, trailers), naming when it can first pass, so the item is
+    moved or gated before the start. kb-sprint plan runs it before the start gate is asked, so start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
         raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
