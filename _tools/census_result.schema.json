@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Result of one census phase-2 group",
+  "description": "What a phase-2 reader returns for its owner group: census.py apply LOG --group G --from RESULTS.json validates it against this schema, then does the bookkeeping. `claude -p --json-schema` takes the same file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outcomes", "new_rows", "superseded", "gaps", "conflicts", "foreign_edits", "edited_files"],
+  "properties": {
+    "outcomes": {
+      "description": "One entry per source the group read: the outcome census.py record writes to the log.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "outcome", "note"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "outcome": {"type": "string", "enum": ["confirmed", "updated", "superseded", "gone", "unconfirmed"]},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "new_rows": {
+      "description": "Rows for new pinned urls, written with kbid.py add; url, title, publisher, licence and reuse are what it takes, version_or_date and artifact_sha256 its optional values.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "title", "publisher", "licence", "reuse"],
+        "properties": {
+          "id": {"type": "string"},
+          "url": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "publisher": {"type": "string", "minLength": 1},
+          "licence": {"type": "string", "minLength": 1},
+          "reuse": {"type": "string", "minLength": 1},
+          "retrieved_utc": {"type": "string"},
+          "version_or_date": {"type": "string"},
+          "artifact_sha256": {"type": "string"},
+          "used_in": {"type": "string"},
+          "superseded_by": {"type": "string"}
+        }
+      }
+    },
+    "superseded": {
+      "description": "Old source id to the id of the row that replaced it (set as the old row's superseded_by).",
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "gaps": {
+      "description": "Bullets for _gaps.md, each under the heading of its topic.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["topic", "text"],
+        "properties": {
+          "topic": {"type": "string", "pattern": "^[a-z0-9-]+/[a-z0-9./-]+$"},
+          "text": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "conflicts": {
+      "description": "Bullets for _conflicts.md, each under the heading of its topic.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["topic", "text"],
+        "properties": {
+          "topic": {"type": "string", "pattern": "^[a-z0-9-]+/[a-z0-9./-]+$"},
+          "text": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "foreign_edits": {
+      "description": "Facts in files the group does not own that need an edit; printed for the orchestrator, never applied.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "line", "change"],
+        "properties": {
+          "file": {"type": "string", "minLength": 1},
+          "line": {"type": "integer", "minimum": 0},
+          "change": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "edited_files": {
+      "description": "The files of the group's own list that it edited; each is re-anchored.",
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}
