@@ -1009,8 +1009,74 @@ def census_github_page_signals_decide_a_page_without_a_reader(tmp_path, monkeypa
         assert factdiff.content_date({"version": {"timeline": "2026-05-01T10:00:00Z"}}) == "2026-05-01"
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_github_page_signals_decide_a_page_without_a_reader(tmp_path, monkeypatch, capsys):
+def factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_asks_learn_for_the_rest(tmp_path, monkeypatch):
+    def git(cwd, *args, when=""):
+        env = git_env(**({"GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when} if when else {}))
+        return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", env=env, check=True).stdout.strip()
+
+    docs = tmp_path / "docs"
+    (docs / "docs" / "identity").mkdir(parents=True)
+    git(docs, "init", "-q", "-b", "main")
+    for name in ("quiet", "busy", "same-day"):
+        (docs / "docs" / "identity" / f"{name}.md").write_text(f"# {name}\n", encoding="utf-8")
+    git(docs, "add", ".")
+    git(docs, "commit", "-q", "-m", "one", when="2026-01-01T10:00:00Z")
+    (docs / "docs" / "identity" / "busy.md").write_text("# busy, edited\n", encoding="utf-8")
+    (docs / "docs" / "identity" / "same-day.md").write_text("# same-day, edited\n", encoding="utf-8")
+    git(docs, "commit", "-q", "-am", "two", when="2026-09-01T10:00:00Z")
+    bare = tmp_path / "entra-docs.git"
+    git(tmp_path, "clone", "-q", "--bare", str(docs), str(bare))
+    cloned = []
+
+    def repo_dir(repo, base=None):
+        cloned.append(repo)
+        return (str(bare), "") if repo == "github.com/MicrosoftDocs/entra-docs" else (None, f"clone failed: {repo}")
+
+    asked = []
+
+    def document(url, row=None, etag="", lastmod=""):
+        asked.append(url)
+        return {"status": 304, "error": "", "final": url, "hops": []}
+
+    monkeypatch.setattr(census, "repo_dir", repo_dir)
+    monkeypatch.setattr(provider, "document", document)
+    monkeypatch.setattr(factdiff, "ROOT", kbcommon.root("public"))
+    monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
+    rows = provider.providers()
+    page = lambda name, docset="entra/identity": f"https://learn.microsoft.com/en-us/{docset}/{name}"  # noqa: E731
+    old = {"doc_sha256": "x", "detected_utc": "2026-06-01T00:00:00Z", "http_status": "200"}
+
+    def detect(url, **state):
+        asked.clear()
+        v, signal, ev, new, _, _ = factdiff.detect_source("S9990002", {"url": url}, state, rows)
+        return v, signal, ev, new, list(asked)
+
+    # the map is census's: classify and learn_source answer alike, and factdiff holds no copy of it
+    c = census.classify(page("quiet"))
+    assert (c["repo"], c["path"]) == census.learn_source(page("quiet")) == ("github.com/MicrosoftDocs/entra-docs", "docs/identity/quiet")
+    assert census.learn_source("https://example.com/en-us/entra/x") == ("", "") and not hasattr(factdiff, "LEARN_MAP")
+    # a file with no commit since the baseline is unchanged with no request to Learn, and the baseline moves up
+    v, signal, ev, new, got = detect(page("quiet"), **old)
+    assert (v, signal, got) == ("unchanged", "git", []) and ev.startswith("source file docs/identity/quiet.md has no commit since 2026-06-01")
+    assert new["detected_utc"] > old["detected_utc"] and new["doc_sha256"] == "x" and new["http_status"] == "200"
+    # a planted failure for each way to the HTTP route: a commit since, a commit on the baseline's day, no baseline, no file,
+    # no repository to clone, a page no map covers
+    v, signal, _, _, got = detect(page("busy"), **old)
+    assert (v, signal, got) == ("unchanged", "lastmod", [page("busy")])
+    assert detect(page("same-day"), **{**old, "detected_utc": "2026-09-01T12:00:00Z"})[4] == [page("same-day")]
+    assert detect(page("quiet"))[4] == [page("quiet")]
+    assert detect(page("quiet", "entra/missing"), **old)[4] == [page("quiet", "entra/missing")]
+    assert detect(page("quiet", "sql/t-sql"), **old)[4] == [page("quiet", "sql/t-sql")]
+    assert detect(page("quiet", "intune/mem"), **old)[4] == [page("quiet", "intune/mem")]
+    # each repository is fetched once, in parallel, before the per-host jobs
+    cloned.clear()
+    assert census.learn_repos([page("quiet"), page("busy"), page("x", "intune/mem")]) == ["github.com/MicrosoftDocs/entra-docs"]
+    assert cloned == ["github.com/MicrosoftDocs/entra-docs"]
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history(tmp_path, monkeypatch, capsys):
     census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
+    factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_asks_learn_for_the_rest(tmp_path / "learngit", monkeypatch)
     census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit(tmp_path / "repin", monkeypatch, capsys)
     census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_apart_from_blocked(tmp_path, monkeypatch, capsys)
     census_queue_is_sized_without_network(tmp_path, monkeypatch)

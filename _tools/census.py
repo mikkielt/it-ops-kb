@@ -240,12 +240,24 @@ def classify(url):
             d.update(kind="api-other", repo="")
     elif host == "learn.microsoft.com":
         d["kind"] = "learn"
-        rest = "/".join(parts[2:])
-        for pre, repo, rpre in LEARN_MAP:
-            if rest.startswith(pre):
-                d.update(repo="github.com/" + repo, path=rpre + rest[len(pre):].rstrip("/"))
-                break
+        repo, path = learn_source(url)
+        if repo:
+            d.update(repo=repo, path=path)
     return d
+
+
+def learn_source(url):
+    """(repo, path) of the public docs repository (LEARN_MAP) and the file path, without its `.md` or `/index.md`, that a
+    learn.microsoft.com page is built from; ("", "") for a page that maps to none. census.py's classify and factdiff.py
+    detect both read the map through it."""
+    u = urlparse(url)
+    if u.netloc.lower() != "learn.microsoft.com":
+        return "", ""
+    rest = "/".join(unquote(p) for p in u.path.split("/")[2:])
+    for pre, repo, rpre in LEARN_MAP:
+        if rest.startswith(pre):
+            return "github.com/" + repo, rpre + rest[len(pre):].rstrip("/")
+    return "", ""
 
 
 # ---------------------------------------------------------------- git checks
@@ -454,6 +466,26 @@ def check_learn(d, path, since):
             return verdict("CHANGED", f"source file {cand}: {len(commits)} commit(s) since {since}, latest "
                                       f"{commits[0][0][:12]} {commits[0][1]}", f"git_commit_id {commits[0][0][:12]}")
     return None
+
+
+def learn_repos(urls):
+    """The repositories (LEARN_MAP) that the learn.microsoft.com `urls` map to, each cloned or fetched once, in parallel,
+    into the shared clone cache (factdiff.py detect warms them before its per-host jobs)."""
+    repos = sorted({repo for repo, _ in map(learn_source, urls) if repo})
+    with cf.ThreadPoolExecutor(max(1, len(repos))) as ex:
+        list(ex.map(repo_dir, repos))
+    return repos
+
+
+def learn_git_verdict(url, since):
+    """check_learn's verdict (OK, or CHANGED with its commits) of a learn.microsoft.com page from the commits of its source
+    file since `since` (a day) in the shared clone, with no request to Learn; None for a page that maps to no repository,
+    whose repository cannot be cloned or whose file is not at its HEAD (the caller asks Learn instead)."""
+    repo, path = learn_source(url)
+    if not repo:
+        return None
+    d, _ = repo_dir(repo)
+    return check_learn(d, path, since) if d else None
 
 
 # ---------------------------------------------------------------- http checks

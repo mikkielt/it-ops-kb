@@ -762,6 +762,32 @@ def gh_page_quiet_since(url, text, day):
     return census.gh_page_quiet_since(url, text, day)
 
 
+def learn_git_verdict(url, since):
+    """census.learn_git_verdict: the verdict of a Learn page that maps to a file of a public docs repository, from that
+    file's commits since `since` in the shared clone, or None (census imports this module, so the import waits for the call)."""
+    import census
+    return census.learn_git_verdict(url, since)
+
+
+def learn_repos(urls):
+    """census.learn_repos: the docs repositories the Learn urls map to, cloned or fetched once, in parallel."""
+    import census
+    return census.learn_repos(urls)
+
+
+def git_quiet(sid, url, st, stamp):
+    """(evidence, new state) of a Learn page whose source file in its public docs repository (census.LEARN_MAP) has no
+    commit since the day of the stored baseline, so it is `unchanged` with no request to Learn; None when the page maps to
+    no repository, the state holds no baseline or a commit is there (the page is then asked, as every other source)."""
+    since = (st.get("detected_utc") or "")[:10]
+    if not since or not has_baseline(st) or not url.startswith("https://learn.microsoft.com/"):
+        return None
+    res = learn_git_verdict(url, since)
+    if not res or res["bucket"] != "OK":
+        return None
+    return res["evidence"], {**st, "id": sid, "url": url, "checked_utc": stamp, "detected_utc": stamp, "error": ""}
+
+
 def detect_source(sid, src, st, rows):
     """(verdict, signal, evidence, new state, doc, prev doc) of one source against its stored state."""
     url, row = src["url"], provider.for_url(src["url"], rows) or {}
@@ -770,6 +796,9 @@ def detect_source(sid, src, st, rows):
     if "pin" in sig:
         return "pinned", "pin", "pinned url: its text cannot change (census.py compares the pin with upstream)", None, None, None
     prev = load_json(cache_path(sid))
+    quiet = git_quiet(sid, url, st, stamp)
+    if quiet:
+        return "unchanged", "git", quiet[0], quiet[1], prev, prev
     d = provider.document(url, row, etag=st.get("etag", ""), lastmod=st.get("last_modified", ""))
     new = {**st, "id": sid, "url": url, "checked_utc": stamp, "detected_utc": stamp, "http_status": str(d["status"] or "")}
     if d["status"] == 304:
@@ -979,6 +1008,10 @@ def cmd_detect(a, tally):
     for sid in ids:
         by_host[urllib.parse.urlsplit(srcs[sid]["url"]).netloc].append(sid)
     print(f"detect: {len(ids)} source(s) on {len(by_host)} host(s)", file=sys.stderr, flush=True)
+    learn = learn_repos([srcs[i]["url"] for i in ids if has_baseline(state.get(i)) and state[i].get("detected_utc")])
+    if learn:
+        print(f"detect: {len(learn)} docs repositor{'y' if len(learn) == 1 else 'ies'} of Learn pages fetched into the clone cache",
+              file=sys.stderr, flush=True)
 
     def host_job(host):
         res = []
