@@ -1,0 +1,27 @@
+{
+  "id": "BG-adgc5qf2",
+  "kind": "bug",
+  "title": "kb-sprint run puts the move to an own worktree in landing step 4.2, after the claims it must precede",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the SP-avwlotax review (TK-tbbknjul): the plugin skill's text that an orchestrator finding another session's files in its checkout moves to its own worktree (git worktree add) before its first claim sits in run step 4.2, reached only after run step 2 has claimed and pushed; selfcheck's checkout check passes a main checkout another session uses, so nothing warns first; and the Self-check checkout bullet names 'a checkout another session works in', a case check_checkout never reports. The move is named in the run intro or step 1/2, before the claim command, and the checkout bullet names only what selfcheck reports (or selfcheck learns to report it).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "t=open('skills/sprint/SKILL.md',encoding='utf-8').read().split('## run [SP]')[1].split('## review SP')[0];a=t.find('git worktree add');b=t.find('claim ID --by');print(a,b);raise SystemExit(0 if 0<=a<b else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the order of two instructions in a skill an agent reads; no tool runs the skill's steps, so the order of the text is the behaviour",
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-avwlotax review"
+  ]
+}
