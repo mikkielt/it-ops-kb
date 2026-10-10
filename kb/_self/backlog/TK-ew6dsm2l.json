@@ -29,7 +29,6 @@
     "kb/_self/reports/plugin-sprint-second-project.md"
   ],
   "depends_on": [
-    "ST-wrsuz64a",
-    "ST-ik5xhaix"
+    "ST-wrsuz64a"
   ]
 }

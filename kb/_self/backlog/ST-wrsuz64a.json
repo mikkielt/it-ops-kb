@@ -18,9 +18,6 @@
       ]
     }
   ],
-  "depends_on": [
-    "ST-4jjz3vxs"
-  ],
   "gates": [
     {
       "id": "g1",
