@@ -1,0 +1,21 @@
+{
+  "id": "BG-5orqmy7i",
+  "kind": "bug",
+  "title": "backlog.py's module usage text for answer omits --free, which says a free answer is meant",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The usage text at the top of _tools/backlog.py names --free in its answer line (a text that is none of the gate's options is meant), as args_answer in bl_items.py defines it.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if '--free' in open('_tools/backlog.py', encoding='utf-8').read() else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a line of the module's own usage docstring, which no command prints (answer --help already shows --free from args_answer)",
+  "touches": [
+    "_tools/backlog.py"
+  ]
+}
