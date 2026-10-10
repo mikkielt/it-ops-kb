@@ -2,7 +2,7 @@
   "id": "ST-tyzcqzfo",
   "kind": "story",
   "title": "A second project runs one item end to end on the plugin's /sprint, and its retrospective findings are kb items",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ciqk6gt6",
   "priority": "P1",
@@ -29,5 +29,28 @@
     "ST-wrsuz64a"
   ],
   "notes": "Planned 2026-10-10 in SP-ciqk6gt6. Premise: none claimed (the epic fitness test); both checks fail now (no item title holds the marker in parentheses, no report file). The old check backlog.py find plugin sprint run passed before the work only because this story own goal holds those words, so the check names the marker the findings titles will carry. Needs a second git project and the operator present: the run is the operator, the findings are filed after it. Closes by done on the report commit of TK-ew6dsm2l, no drop --why.",
-  "claimed_by": "orchestrator-SP-ciqk6gt6"
+  "evidence": {
+    "commit": "598e37fd531d5e629ab0ff157d9c9c71b6432dce",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "find",
+          "(second-project run)"
+        ],
+        "exit": 0,
+        "sha256": "25b4f8b81f73b3ff"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; sys.exit(0 if pathlib.Path(\"kb/_self/reports/plugin-sprint-second-project.md\").is_file() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
