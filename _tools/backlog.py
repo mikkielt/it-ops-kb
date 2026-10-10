@@ -79,13 +79,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                  [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID]
                  [--delegate NAME --by operator] [--add-notes T]... [--add-link T]... [--add-touch GLOB]...
                  [--add-check CMD]... [--add-depends ID]... [--add-relates ID]... [--external TRACKER=ID]...
-                 [--add-external TRACKER=ID]... [--clear FIELD]...
+                 [--add-external TRACKER=ID]... [--clause CLAUSE=N]... [--add-clause CLAUSE=N]... [--clear FIELD]...
                                           change an item after new: each list option replaces its list, and its
                                           --add-<option> twin appends what is missing to it, so a second run changes
                                           nothing (--add-notes appends the text unless the notes hold it); a call
                                           that names both for one field is refused, naming it. --clear FIELD
                                           removes one. --external replaces the external ids whole, and only a
                                           tracker backlog.json's trackers names takes an id its pattern matches.
+                                          --clause maps a goal clause to the index N of the check, then the repro,
+                                          that reads it (the clauses precheck prints).
                                           The result is validated as check does and written only when it adds no
                                           error; title, goal and parent, and a bug's repro (one that fails now, as
                                           new bug's), repro_reason and severity are replaced whole; status,
@@ -159,7 +161,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           work and warn (exit 0) of each that passes already, unless the item's
                                           notes say it passes before the work, and of an item whose check or
                                           repro is the intake --status of a time-windowed detector (repeats,
-                                          trailers), passing or not, naming when it can first pass
+                                          trailers), passing or not, naming when it can first pass; it lists
+                                          each item's goal clauses with the check or repro its clauses mapping
+                                          names and warns of a clause no check reads
   backlog.py close SPRINT [--summary]     delete a finished sprint, its items and the epics they finished
                                           (--summary: only list each of them with its status and the commit done
                                           recorded, the close commit's body, and change nothing; with --commit
