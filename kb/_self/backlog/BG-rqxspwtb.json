@@ -2,7 +2,7 @@
   "id": "BG-rqxspwtb",
   "kind": "bug",
   "title": "land pushes only through the kb's kbgit.py sync and lanes every project by kblane, so a host project of the plugin cannot land an item (second-project run)",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ciqk6gt6",
   "priority": "P1",
@@ -26,5 +26,43 @@
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does land push in a project with no _tools/kbgit.py?",
+      "options": [
+        "setting: a backlog.json land_push argv list, run from the project root like land_stale (a .py first element runs under python3), default [\"_tools/kbgit.py\", \"sync\", \"--push\"] so the kb is unchanged; a host names its own push, e.g. [\"git\", \"push\", \"origin\", \"HEAD:main\"]",
+        "detect: land runs kbgit.py sync --push when the project has _tools/kbgit.py, else a plain git push of HEAD to the integration remote's main"
+      ],
+      "recommendation": "setting: a backlog.json land_push argv list, run from the project root like land_stale (a .py first element runs under python3), default [\"_tools/kbgit.py\", \"sync\", \"--push\"] so the kb is unchanged; a host names its own push, e.g. [\"git\", \"push\", \"origin\", \"HEAD:main\"]",
+      "do": {
+        "setting: a backlog.json land_push argv list, run from the project root like land_stale (a .py first element runs under python3), default [\"_tools/kbgit.py\", \"sync\", \"--push\"] so the kb is unchanged; a host names its own push, e.g. [\"git\", \"push\", \"origin\", \"HEAD:main\"]": "BG-rqxspwtb",
+        "detect: land runs kbgit.py sync --push when the project has _tools/kbgit.py, else a plain git push of HEAD to the integration remote's main": "BG-rqxspwtb"
+      },
+      "class": "push",
+      "answer": "setting: a backlog.json land_push argv list, run from the project root like land_stale (a .py first element runs under python3), default [\"_tools/kbgit.py\", \"sync\", \"--push\"] so the kb is unchanged; a host names its own push, e.g. [\"git\", \"push\", \"origin\", \"HEAD:main\"]",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a project say it has no code lane?",
+      "options": [
+        "empty: lane_module accepts an empty string, meaning no code lane: every commit lands as content (done --commit, then land_push), and unlanded_code reads nothing",
+        "module: the plugin ships a nolane module whose paths_lane calls every path content, and a host names it in lane_module"
+      ],
+      "recommendation": "empty: lane_module accepts an empty string, meaning no code lane: every commit lands as content (done --commit, then land_push), and unlanded_code reads nothing",
+      "do": {
+        "empty: lane_module accepts an empty string, meaning no code lane: every commit lands as content (done --commit, then land_push), and unlanded_code reads nothing": "BG-rqxspwtb",
+        "module: the plugin ships a nolane module whose paths_lane calls every path content, and a host names it in lane_module": "BG-rqxspwtb"
+      },
+      "class": "agents-rule",
+      "answer": "empty: lane_module accepts an empty string, meaning no code lane: every commit lands as content (done --commit, then land_push), and unlanded_code reads nothing",
+      "by": "operator"
+    }
+  ],
+  "notes": "Found by the second-project run of TK-ew6dsm2l (findings 16 and 17): land stopped at step kbgit.py sync --push: python3 _tools/kbgit.py sync --push exited 2 (can't open file .../project/_tools/kbgit.py), after land: checks ran because kblane classed src/greet.py as code. The suite is at the 100-id ceiling and the 20 s darwin ceiling (BG-ucwq6kga): extend an existing land or portable test, add no id. The rerun of the second project's land after this lands is TK-ew6dsm2l's.",
+  "claimed_by": "worker-BG-rqxspwtb"
 }
