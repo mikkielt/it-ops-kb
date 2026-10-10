@@ -2,7 +2,7 @@
   "id": "ST-vkqndn5e",
   "kind": "story",
   "title": "An item carries typed external tracker ids that backlog.json validates, commits and merge requests carry, and brief and find print",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-befc6yqr",
   "priority": "P2",
@@ -38,5 +38,6 @@
   "depends_on": [
     "ST-qgnjxiol"
   ],
-  "notes": "Order in SP-befc6yqr: second, after ST-qgnjxiol, which creates _tools/test_backlog_portable.py (the one new test file of the epic, within the 15-file ceiling); its -k external_ids test goes into that file. Its selector collects no test until the work adds it. 2026-10-10 orchestrator (operator-delegated): the clause 'brief prints them' moved to ST-nq5z6whn, since brief is created there, after this story; this story prints them in show through one helper the brief will call."
+  "notes": "Order in SP-befc6yqr: second, after ST-qgnjxiol, which creates _tools/test_backlog_portable.py (the one new test file of the epic, within the 15-file ceiling); its -k external_ids test goes into that file. Its selector collects no test until the work adds it. 2026-10-10 orchestrator (operator-delegated): the clause 'brief prints them' moved to ST-nq5z6whn, since brief is created there, after this story; this story prints them in show through one helper the brief will call.",
+  "claimed_by": "kb-worker-vkqndn5e"
 }
