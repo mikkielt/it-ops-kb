@@ -29,7 +29,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           file (a grep of _tools/ source among them) with no repro_reason; exit 1
                                           on errors
   backlog.py fmt                          rewrite every item in canonical form
-  backlog.py selectors                    one line per `tests.py -k` selector in the checks of open items: how many
+  backlog.py selectors                    one line per `tests.py -k` selector in the checks and bug repros of open
+                                          items and of the done items of an active sprint: how many
                                           tests pytest --collect-only finds for it now (NONE marks zero, error a
                                           collection that failed), the item's id and title; exit 0 whatever the
                                           counts (a selector often names a test its item has yet to write), 1
