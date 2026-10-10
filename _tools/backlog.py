@@ -308,7 +308,6 @@ from bl_ci import (  # noqa: F401 - the CI readers and red-pipeline: bl_ci holds
 from bl_view import (  # noqa: F401 - the read-only views: bl_view holds them; main uses cmd_horizon, tests ready
     cmd_horizon, is_near, ready, similar,
 )
-from bl_base import touches_overlap  # noqa: F401 - tests read it as backlog.touches_overlap; bl_view's held uses it
 from bl_plan import has_scope, stale_touches  # noqa: F401 - tests read them as backlog.NAME
 from bl_plan import start_approved  # noqa: F401 - test_layout reads it as backlog.start_approved
 
