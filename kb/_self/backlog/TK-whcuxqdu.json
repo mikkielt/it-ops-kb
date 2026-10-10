@@ -2,7 +2,7 @@
   "id": "TK-whcuxqdu",
   "kind": "task",
   "title": "A planted headless worker session's rows reach its item's cost, an orchestrator session's stay out",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-bhkdqaku",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,6 @@
   "depends_on": [
     "BG-a3zs7s2y"
   ],
-  "notes": "SP-qg7ncs6d close, 2026-10-10: seven dispatched headless workers (worktrees under the orchestrator's linked worktree, .claude/worktrees/orch-qg7ncs6d/.claude/worktrees/agent-<id>) reported 0.59M to 2.28M tokens each in result.json; backlog.py cost --rework at the review showed a figure only for ST-yztru4mz (3 prompts, 1686376 tokens), 'no figure yet' for the other six, and land printed no 'landed with no work rows' warning."
+  "notes": "SP-qg7ncs6d close, 2026-10-10: seven dispatched headless workers (worktrees under the orchestrator's linked worktree, .claude/worktrees/orch-qg7ncs6d/.claude/worktrees/agent-<id>) reported 0.59M to 2.28M tokens each in result.json; backlog.py cost --rework at the review showed a figure only for ST-yztru4mz (3 prompts, 1686376 tokens), 'no figure yet' for the other six, and land printed no 'landed with no work rows' warning.",
+  "claimed_by": "kb-worker-whcuxqdu"
 }
