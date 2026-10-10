@@ -70,7 +70,7 @@
       "recommendation": "its standard output is the clone's _cache/querylog/distill.log (read from /proc fd 1 or lsof -d 1)",
       "class": "querylog",
       "answer": "its standard output is the clone's _cache/querylog/distill.log (read from /proc fd 1 or lsof -d 1)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -81,7 +81,9 @@
         "every 5 seconds"
       ],
       "recommendation": "every second",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "every second",
+      "by": "operator"
     }
   ],
   "links": [
