@@ -2,7 +2,7 @@
   "id": "ST-habqocav",
   "kind": "story",
   "title": "Research sprint goal: Headless sprint loop 1: worker brief and role file",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qg7ncs6d",
   "goal_research": true,
   "priority": "P1",
@@ -21,6 +21,20 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Planning ran the goal's questions through rag.py pack -q (resume of a headless session by id, --max-turns in print mode, worktree isolation and cleanup, SessionStart hooks in a -p run): all four coverage good (public/claude/cli-flags.csv:16, :5; ci-and-headless.md:39; skills-and-subagents.md:76; hooks.md:89,108). Its done needs 'No outside facts: the pack answers each goal question good, the sprint edits project rules and tool wording only' as a note; no gap entry or kb fact is needed.",
-  "claimed_by": "orch-qg7ncs6d"
+  "notes": "Planning ran the goal's questions through rag.py pack -q (resume of a headless session by id, --max-turns in print mode, worktree isolation and cleanup, SessionStart hooks in a -p run): all four coverage good (public/claude/cli-flags.csv:16, :5; ci-and-headless.md:39; skills-and-subagents.md:76; hooks.md:89,108). Its done needs 'No outside facts: the pack answers each goal question good, the sprint edits project rules and tool wording only' as a note; no gap entry or kb fact is needed. No outside facts: the pack answers each goal question good (rerun 2026-10-10: resume by id and --max-turns at public/claude/cli-flags.csv and ci-and-headless.md, SessionStart in -p at public/claude/hooks.md; worktree isolation and cleanup came back weak as reworded, and public/claude/skills-and-subagents.md:76 answers it), the sprint edits project rules and tool wording only",
+  "evidence": {
+    "commit": "9aa544109e8e20b4f1c6dfbcef8838c3eb7d2da3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-habqocav"
+        ],
+        "exit": 0,
+        "sha256": "0207ff6a4f52fae0"
+      }
+    ]
+  }
 }
