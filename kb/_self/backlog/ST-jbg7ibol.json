@@ -1,0 +1,27 @@
+{
+  "id": "ST-jbg7ibol",
+  "kind": "story",
+  "title": "A bug whose goal names several input forms carries a repro case for each form it names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-yzs3bj6f: BG-fiwxnug3's goal named the class, the full id and the bare parametrized name, but its repro planted only the class, so the done check passed while the review still found near forms (the module stem, a call form) excused, parked as BG-5cdf56a6. backlog.py check warns of a bug whose goal lists several forms, cases or inputs and whose repro exercises fewer of them, so planning adds a case per named form.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'per named form' in open('_tools/bl_check.py',encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "relates: ST-ylje2dxh",
+    "parked: SP-yzs3bj6f close"
+  ]
+}

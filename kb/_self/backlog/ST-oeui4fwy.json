@@ -1,0 +1,26 @@
+{
+  "id": "ST-oeui4fwy",
+  "kind": "story",
+  "title": "selfdoc.py stale names the rows of a doc that cite a changed symbol, so Self-Reviewed cannot pass a stale row in a reviewed doc",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-yzs3bj6f: ST-d35ns45r made bl_base.check_env set KB_TEST_RUN_HOME and updated backlog.md and maintaining.md, but kb/_self/tools.md's intake row kept saying drift checks run with the isolated home (fixed by BG-mn6bd4lm); selfdoc.py stale listed tools.md as a whole, and a Self-Reviewed trailer naming it cleared it. selfdoc.py stale names, for each stale doc, the lines that mention a changed function or constant, so the reviewer reads those rows.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'def stale_lines' in open('_tools/selfdoc.py',encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-yzs3bj6f close"
+  ]
+}

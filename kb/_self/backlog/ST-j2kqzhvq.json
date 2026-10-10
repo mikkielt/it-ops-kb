@@ -1,0 +1,26 @@
+{
+  "id": "ST-j2kqzhvq",
+  "kind": "story",
+  "title": "The sync gate runs perfcheck ids --against the test id baseline when a test file changes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-yzs3bj6f: ST-urfa4ntj renamed a land e2e test and left _tools/test_ids_baseline.txt naming the old id, which only a manual perfcheck.py ids --against run showed (BG-mxptguxo, found by a later review); the sync gate runs perfcheck.py dropped but not ids --against. When a landing changes a _tools/test_*.py file, kbgit.py sync --push runs perfcheck.py ids --against _tools/test_ids_baseline.txt and fails on a MISSING id, naming the baseline line to update.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'ids --against' in open('_tools/kg_sync.py',encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yzs3bj6f close"
+  ]
+}

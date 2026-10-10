@@ -1,0 +1,26 @@
+{
+  "id": "ST-7jfs5exa",
+  "kind": "story",
+  "title": "backlog.py check warns of an item whose goal leaves a choice to the operator with no gate recorded",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-yzs3bj6f: BG-dpw7o726's goal said the claimed tests could instead exist 'by the operator's choice', but planning recorded no gate, so the worker took the removal path and recorded none either, and the orchestrator added the provisional gate on its branch before landing. backlog.py check warns of a committed item whose goal names an operator's choice (or another open alternative) and has no gate, so the gate is asked before the start.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if \"operator's choice\" in open('_tools/bl_check.py',encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yzs3bj6f close"
+  ]
+}
