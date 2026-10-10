@@ -267,7 +267,7 @@ IN_SPRINT = ("story", "bug")  # the kinds a sprint commits to; their tasks and s
 NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
 ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "goal_research", "priority", "rank", "severity", "goal",
-         "repro", "repro_reason", "checks", "touches", "repos", "repos_if_needed", "depends_on", "relates_to", "gates", "trigger", "knowledge",
+         "repro", "repro_reason", "checks", "clauses", "touches", "repos", "repos_if_needed", "depends_on", "relates_to", "gates", "trigger", "knowledge",
          "links", "external", "notes", "delegates", "recurs", "claimed_by", "evidence")
 FIELDS = set(ORDER)
 CHECK_TIMEOUT_S = 1800
@@ -290,6 +290,18 @@ RECURRING_MIN = 2  # start: an open P1 item with this many sprint ids in its rec
 # the goal research story's checks (setting research_checks): its research is written (a work commit naming it, or its
 # notes' `No outside facts:`), so it fails until then; `new sprint` fills RESEARCH_ID with the story's id
 RESEARCH_ID = "{id}"
+CLAUSE_SPLIT = re.compile(r";\s+|,\s+and\s+")  # a goal's clauses: split at '; ' and ', and '
+
+
+def goal_clauses(goal):
+    """The clauses of a goal text, split at '; ' and ', and ' as `close --summary` splits a sprint goal, each without
+    the spaces and full stops around it, none empty."""
+    return [c.strip(" .") for c in CLAUSE_SPLIT.split(str(goal or "")) if c.strip(" .")]
+
+
+def clause_commands(item):
+    """The commands a `clauses` entry's `check` indexes: the item's checks in order, then a bug's repro."""
+    return list(item.get("checks") or []) + ([item["repro"]] if item.get("repro") else [])
 
 
 class Refused(Exception):

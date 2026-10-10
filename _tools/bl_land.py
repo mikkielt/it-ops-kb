@@ -18,8 +18,8 @@ import bl_cli
 import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written, external_description,
-    git, id_re, in_scope, item_file, item_repos, line, main_worktree_spool, need, rel_dir, repositories, run, say,
-    scope, setting, split_touch, waits, worker_dir,
+    clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line, main_worktree_spool, need, rel_dir,
+    repositories, run, say, scope, setting, split_touch, waits, worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 
@@ -2147,7 +2147,6 @@ def cleanup_gate_do(bl, dead):
     return out
 
 
-CLAUSE_SPLIT = re.compile(r";\s+|,\s+and\s+")  # a sprint goal's clauses: split at '; ' and ', and '
 PART_SPLIT = re.compile(r",\s+(?:and\s+)?|\s+and\s+")  # a list clause's parts: split at ', ' and ' and '
 CLAUSE_COVER = 0.5 # the share of a clause's words an item's title and goal must hold to carry it
 
@@ -2165,7 +2164,7 @@ def goal_clause_lines(bl, sid, items):
     """close --summary's clause lines: the sprint's goal split into its clauses, each with the done item of the sprint
     whose title and goal hold at least CLAUSE_COVER of its words, or `unmet` and the open item outside the sprint that
     carries it now (moved out mid-sprint), or none."""
-    clauses = [c.strip(" .") for c in CLAUSE_SPLIT.split(str(bl.items[sid].get("goal", ""))) if c.strip(" .")]
+    clauses = goal_clauses(bl.items[sid].get("goal", ""))
     if len(clauses) < 2 and not (clauses and len(clause_parts(clauses[0])) > 1):
         return []
 
@@ -2273,20 +2272,62 @@ PRECHECK_TAIL = 20  # lines of a failing check's output that precheck prints und
 TRACEBACK = "Traceback (most recent call last)"
 
 
+def precheck_items(bl, sid):
+    """The ids of the sprint's open committed items precheck reads, in order: the review and research stories are left
+    out, since the review's checks pass by design and the research story's (`researched`) fails until its research is
+    written."""
+    return [iid for iid in sorted(bl.sprint_items(sid))
+            if bl.items[iid].get("status") in ("draft", "todo", "doing")
+            and not bl.items[iid].get("review") and not bl.items[iid].get("goal_research")]
+
+
 def precheck_rows(bl, sid):
     """[(item id, check, exit code, passed, output)] of each check, and of a bug its repro after them, of the sprint's
-    open committed items, run once on the checkout as it is (before any work commit), as `done` runs them; the review
-    and research stories are left out: the review's checks pass by design, and the research story's (`researched`)
-    fails until its research is written."""
+    open committed items (`precheck_items`), run once on the checkout as it is (before any work commit), as `done`
+    runs them."""
     rows = []
-    for iid in sorted(bl.sprint_items(sid)):
-        it = bl.items[iid]
-        if it.get("status") not in ("draft", "todo", "doing") or it.get("review") or it.get("goal_research"):
-            continue
-        for c in list(it.get("checks", []) or []) + ([it["repro"]] if it.get("repro") else []):
+    for iid in precheck_items(bl, sid):
+        for c in clause_commands(bl.items[iid]):
             ok, code, out = run_check(bl.root, c)
             rows.append((iid, c, code if code is not None else -1, ok, out))
     return rows
+
+
+def clause_map(bl, iid):
+    """(lines, warnings, unread) of an item's goal clauses and the check or repro that reads each, from its `clauses`
+    mapping ({clause, check} entries, the check an index into `clause_commands`): a line for each clause and a warning
+    for each that no check reads (the mapping names it with no index in range, or has no entry for it), and for an
+    entry that names no clause of the goal. An item whose goal is one clause with no mapping has nothing to say; one
+    of several clauses with no mapping gets one warning, so the planner records which check reads each."""
+    it = bl.items[iid]
+    clauses = goal_clauses(it.get("goal"))
+    cmds = clause_commands(it)
+    entries = [e for e in it.get("clauses") or [] if isinstance(e, dict)]
+    if len(clauses) < 2 and not entries:
+        return [], [], 0
+    label = bl.label(iid)
+    if not entries:
+        lines = [f"  {n}. {c[:120]}: no check recorded" for n, c in enumerate(clauses, 1)]
+        return lines, [f"warning: {label}: its goal has {len(clauses)} clauses and the item records no clauses mapping: "
+                       f"say which check or repro reads each (set {iid} --add-clause CLAUSE=N, N the index of the "
+                       "check, the repro after them)"], len(clauses)
+    lines, warns, unread = [], [], 0
+    for n, c in enumerate(clauses, 1):
+        at = sorted({e.get("check") for e in entries if e.get("clause") == c
+                     and isinstance(e.get("check"), int) and 0 <= e["check"] < len(cmds)})
+        if at:
+            lines.append(f"  {n}. {c[:120]}: "
+                         + "; ".join(f"check {i} `{shlex.join(map(str, cmds[i].get('run') or []))}`" for i in at))
+            continue
+        unread += 1
+        lines.append(f"  {n}. {c[:120]}: no check reads it")
+        warns.append(f"warning: {label}: goal clause {n} ({c[:80]}) is read by no check or repro: add one that proves "
+                     f"it, then map it (set {iid} --add-clause CLAUSE=N), or reword the goal")
+    for e in entries:
+        if e.get("clause") not in clauses:
+            warns.append(f"warning: {label}: its clauses mapping names {str(e.get('clause'))[:80]!r}, which is no "
+                         "clause of its goal: reword the entry to a clause as the goal spells it")
+    return lines, warns, unread
 
 
 def intake_fingerprint(c):
@@ -2344,8 +2385,11 @@ def cmd_precheck(bl, a):
     `intake --status` of a time-windowed detector (repeats, trailers), naming when it can first pass, so the item is
     moved or gated before the start. A check that fails prints its line and the last PRECHECK_TAIL lines of its output
     (stdout and stderr together) under it, so a planner sees whether it fails for the premise or for another reason; a
-    traceback in that output is said to be a broken check, not a failing premise. kb-sprint plan runs it before the
-    start gate is asked, so start stays fast."""
+    traceback in that output is said to be a broken check, not a failing premise. After the checks it prints each
+    committed item's goal clauses (split as close --summary splits a sprint goal) with the check or repro that reads each,
+    from the item's `clauses` mapping (`set ID --add-clause CLAUSE=N`), and warns of a clause no check reads and of a
+    goal of several clauses with no mapping (`clause_map`). kb-sprint plan runs it before the start gate is asked, so
+    start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
         raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
@@ -2377,7 +2421,17 @@ def cmd_precheck(bl, a):
         say(f"warning: {bl.label(iid)}: `{shlex.join(c['run'])}` already exits {code} before the work: it proves "
             f"nothing yet; make it fail until the work is done, or say in the item's notes that it {PRECHECK_NOTE} "
             "and why (a check that pins behaviour that must stay)")
-    say(f"precheck {bl.label(sid)}: checks={len(rows)} passing={passing}")
+    unread = 0
+    for iid in precheck_items(bl, sid):
+        lines, warns, n = clause_map(bl, iid)
+        unread += n
+        if lines:
+            say(f"goal clauses of {bl.label(iid)}, and the check or repro that reads each:")
+            for text in lines:
+                say(text)
+        for text in warns:
+            say(text)
+    say(f"precheck {bl.label(sid)}: checks={len(rows)} passing={passing} unread={unread}")
     return 0
 
 

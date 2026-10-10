@@ -19,7 +19,7 @@ import bl_intake
 from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, IN_SPRINT, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
     PRIORITIES, Refused, SEVERITIES, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
-    always_in_scope, canonical, external_problems, glob_re, id_re, kinds, prefix_kind, rel_dir, repositories, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
+    always_in_scope, canonical, clause_commands, external_problems, glob_re, goal_clauses, id_re, kinds, prefix_kind, rel_dir, repositories, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
     touches_overlap, withhold_names,
 )
 from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches, unordered_overlap_warnings
@@ -557,6 +557,30 @@ def repos_problems(it, kind, declared):
     return out
 
 
+def clauses_problems(it, kind):
+    """What is wrong with an item's `clauses` mapping (precheck prints it): a work item's non-empty list of `{clause,
+    check}` entries, each `clause` one clause of the goal as `goal_clauses` splits it and each `check` an index into the
+    item's checks, then its repro (`clause_commands`). [] = nothing wrong."""
+    if kind == "sprint":
+        return ["clauses are a work item's, not a sprint's"]
+    mapped = it["clauses"]
+    if not (isinstance(mapped, list) and mapped and all(
+            isinstance(m, dict) and set(m) == {"clause", "check"} and _text_ok(m["clause"])
+            and isinstance(m["check"], int) and not isinstance(m["check"], bool) for m in mapped)):
+        return ["clauses must be a non-empty list of {clause: a clause of the goal, check: the index of the check or "
+                "repro that reads it} (set ID --add-clause CLAUSE=N)"]
+    out, goal, n = [], goal_clauses(it.get("goal")), len(clause_commands(it))
+    for i, m in enumerate(mapped):
+        if not 0 <= m["check"] < n:
+            out.append(f"clauses[{i}] names check {m['check']}, and the item has {n} check or repro (indexes 0 to "
+                       f"{n - 1})" if n else f"clauses[{i}] names check {m['check']}, and the item has no check or repro")
+        if m["clause"] not in goal:
+            out.append(f"clauses[{i}] names {m['clause'][:80]!r}, which is no clause of the goal (split at '; ' and "
+                       "', and ', as close --summary splits one): write the clause as the goal spells it, or --clear "
+                       "clauses after a reworded goal")
+    return out
+
+
 def validate(bl, pieces=None):
     errs = list(bl.load_errors)
     errs += leak_errors(bl)
@@ -660,6 +684,9 @@ def validate(bl, pieces=None):
                     re.compile(c["match"])
                 except re.error as x:
                     e(f"check match is not a regex: {x}")
+        if "clauses" in it:
+            for why in clauses_problems(it, kind):
+                e(why)
         touches = it.get("touches", [])
         if not isinstance(touches, list) or not all(isinstance(t, str) and t for t in touches):
             e("touches must be a list of path globs")

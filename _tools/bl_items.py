@@ -47,6 +47,23 @@ def parse_external(values, flag="--external"):
     return out
 
 
+def parse_clauses(values, flag="--clause"):
+    """[{clause, check}] of `CLAUSE=N` values: the goal clause as written (spaces and full stops around it dropped, as
+    `goal_clauses` drops them) and N, after the last `=`, the index of the check or repro that reads it; Rejected for a
+    value that is not one."""
+    out = []
+    for v in values:
+        text, sep, n = v.rpartition("=")
+        text = text.strip(" .")
+        if not sep or not text or not re.fullmatch(r"[0-9]+", n.strip()):
+            raise Rejected(f"{flag} {v!r} is not CLAUSE=N (a clause of the goal, N the index, from 0, of the check or "
+                           "repro that reads it)")
+        pair = {"clause": text, "check": int(n.strip())}
+        if pair not in out:
+            out.append(pair)
+    return out
+
+
 def merged_external(old, added):
     """The `external` map OLD (any shape) with the ids of ADDED appended per tracker, repeats dropped."""
     out = {t: list(ids) if isinstance(ids, list) else [ids] for t, ids in (old if isinstance(old, dict) else {}).items()}
@@ -397,6 +414,7 @@ SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to", "repos", 
 SET_APPEND = {"notes": ("--add-notes", "TEXT"), "links": ("--add-link", "TEXT"), "touches": ("--add-touch", "GLOB"),
               "checks": ("--add-check", "CMD"), "depends_on": ("--add-depends", "ID"),
               "relates_to": ("--add-relates", "ID"), "external": ("--add-external", "TRACKER=ID"),
+              "clauses": ("--add-clause", "CLAUSE=N"),
               "repos": ("--add-repos", "NAME"), "repos_if_needed": ("--add-repos-if-needed", "NAME")}
 
 
@@ -404,7 +422,7 @@ def replace_flag(field):
     """The flag that replaces `field`, the twin of its append flag (--check for --add-check)."""
     return "--" + SET_APPEND[field][0].removeprefix("--add-")
 SET_FIELDS = ("notes", "priority", "rank", "sprint", "title", "goal", "repro", "repro_reason", "severity",
-              "parent", "delegates", "external") + SET_LISTS  # what set changes; the others are refused
+              "parent", "delegates", "external", "clauses") + SET_LISTS  # what set changes; the others are refused
 SET_REFUSED = {  # a field set refuses, with the rule it states
     "status": "changes only through claim, release, start, close, drop and done",
     "claimed_by": "changes only through claim and release",
@@ -471,6 +489,10 @@ def cmd_set(bl, a):
     adds = {f: getattr(a, "add_" + f) for f in SET_APPEND if getattr(a, "add_" + f, None) is not None}
     if "external" in adds:
         adds["external"] = parse_external(adds["external"], "--add-external")
+    if a.clauses is not None:  # {clause, check} pairs: --clause replaces the whole mapping
+        given["clauses"] = parse_clauses(a.clauses)
+    if "clauses" in adds:
+        adds["clauses"] = parse_clauses(adds["clauses"], "--add-clause")
     mixed = sorted(set(given) & set(adds))
     if mixed:
         raise Rejected("set: " + ", ".join(f"{replace_flag(f)} and {SET_APPEND[f][0]}" for f in mixed) + " together: "
@@ -484,8 +506,9 @@ def cmd_set(bl, a):
     if it.get("kind") == "sprint" and set(named) - {"notes", "links", "delegates"}:
         raise Rejected(f"set refuses {', '.join(sorted(set(named) - {'notes', 'links', 'delegates'}))} on a sprint: "
                        "a sprint takes notes, links and delegates only")
-    if it.get("status") == "done" and {"checks", "touches", "goal", "repro", "repro_reason"} & set(named):
-        raise Rejected(f"set refuses {', '.join(sorted({'checks', 'touches', 'goal', 'repro', 'repro_reason'} & set(named)))} "
+    frozen = {"checks", "clauses", "touches", "goal", "repro", "repro_reason"}  # what a done item's evidence proved
+    if it.get("status") == "done" and frozen & set(named):
+        raise Rejected(f"set refuses {', '.join(sorted(frozen & set(named)))} "
                        f"on {bl.label(iid)}: it is done, and its evidence proves the goal, repro, checks and touches it had")
     if "external" in given or "external" in adds:  # the result must hold as `check` reads it: say why, naming the flag
         problems = external_problems(given["external"] if "external" in given
@@ -546,6 +569,8 @@ def cmd_set(bl, a):
                     new[f] = old if note in old else f"{old} {note}".strip()
             elif f == "external":
                 new[f] = merged_external(new.get(f), v)
+            elif f == "clauses":
+                new[f] = appended([m for m in new.get(f) or [] if isinstance(m, dict)], v)
             else:
                 new[f] = appended(new.get(f, []) if isinstance(new.get(f, []), list) else [], v)
         for f in a.clear:
@@ -1069,6 +1094,10 @@ def args_set(p):
                    help="replace the repositories the item may change with these (a name is in one of the two lists)")
     p.add_argument("--external", action="append", metavar="TRACKER=ID",
                    help="replace the external ids with these (repeatable; --add-external appends)")
+    p.add_argument("--clause", dest="clauses", action="append", metavar="CLAUSE=N",
+                   help="replace the goal clauses' mapping with these: a clause of the goal and N, the index of the "
+                        "check (then the repro) that reads it; precheck warns of a clause no check reads "
+                        "(--add-clause appends)")
     p.add_argument("--priority")
     p.add_argument("--rank", type=int)
     p.add_argument("--sprint")
