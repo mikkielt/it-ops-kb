@@ -1,0 +1,23 @@
+{
+  "id": "ST-blb47z6e",
+  "kind": "story",
+  "title": "A docs-only change to README.md or kb/_self/reports/ says up front that it takes the code lane and which docs its map makes stale",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The orchestrator learns before its commit that a README.md or kb/_self/reports/*.md change goes through a code/<id> merge request and which kb/_self docs selfdoc maps it to, so done is not refused for an unmerged lane commit or a stale doc it could have named",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "docs_only_lane_notice"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 close"
+  ],
+  "notes": "SP-ciqk6gt6 close: done ST-wrsuz64a was refused once (README.md commit not on origin/main, alternatives.md stale) and done TK-ew6dsm2l once (the report commit not on origin/main; design.md and token-efficiency.md stale through the kb/_self/reports/*.md map rows)."
+}

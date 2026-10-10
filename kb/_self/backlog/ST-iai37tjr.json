@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-dqkf3i42 close"
-  ]
+  ],
+  "notes": "SP-ciqk6gt6 close: the suite reached the 100-id ceiling at TK-7nnd2bdm; the later items (TK-cagohpbu, TK-j5rcgylo, BG-axfywrrd, BG-rqxspwtb, BG-na2uirn5) each had to extend or rename an existing test, told only through notes the orchestrator added at dispatch."
 }

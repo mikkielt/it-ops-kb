@@ -1,0 +1,24 @@
+{
+  "id": "ST-faro6bww",
+  "kind": "story",
+  "title": "A change that links or moves a rule file checks the open items whose touches name the old path",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check warns of an open item whose touches name a path that is now a symlink or gone, naming the path it resolves to, so a link made by one item does not leave other sprints' items unable to land",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_touch_names_link"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 close"
+  ],
+  "notes": "SP-ciqk6gt6 close: TK-7nnd2bdm's checks passed, and only the fresh-context review found 37 open items whose touches name the new .claude links (BG-wfz6veim); backlog.check printed stale=0."
+}

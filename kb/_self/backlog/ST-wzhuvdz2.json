@@ -1,0 +1,24 @@
+{
+  "id": "ST-wzhuvdz2",
+  "kind": "story",
+  "title": "Planning runs a fitness-test story's premise on a throwaway host project before the start gate",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A committed story whose goal runs the plugin in a project other than the kb has its premise run before start: plan, claim and land --dry-run of one item on a scratch host project, so each blocker it shows is a planned item, not one filed mid-sprint",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "fitness_premise_host_dry_run"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 close"
+  ],
+  "notes": "SP-ciqk6gt6 close: ST-tyzcqzfo noted 'Premise: none claimed'; BG-axfywrrd (brief paths), BG-na2uirn5 (agents-rule guard of the moved files) and BG-rqxspwtb (land's push and lane) were filed mid-sprint, and the second-project orchestrator needed four passes."
+}

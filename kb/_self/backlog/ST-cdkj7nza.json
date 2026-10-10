@@ -1,0 +1,23 @@
+{
+  "id": "ST-cdkj7nza",
+  "kind": "story",
+  "title": "A worker's brief lets it edit a kb/_self doc in its touches that an in-flight sibling also touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "dispatch's in-flight siblings list does not tell a worker to leave a kb/_self/*.md doc of its own touches to a sibling, since docs shared by items are no overlap and the landing's rebase merges their hunks",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_siblings_shared_doc"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 close"
+  ],
+  "notes": "SP-ciqk6gt6 close: TK-cagohpbu left its kb/_self/backlog.md edit undone because the brief named BG-na2uirn5 in flight on it, and was resumed to make it after BG-na2uirn5 landed."
+}
