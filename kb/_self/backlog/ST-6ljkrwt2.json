@@ -2,7 +2,7 @@
   "id": "ST-6ljkrwt2",
   "kind": "story",
   "title": "census.py groups and brief split the phase-2 rows into owner groups and print each group's filled brief with its review passages and cited facts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",
@@ -110,5 +110,29 @@
     }
   ],
   "notes": "Premise run 2026-10-10: python3 _tools/census.py groups kb/public/_census/2026-09-26.csv exits 2 with invalid choice. Today phase 2 steps 1 and 2 of .claude/skills/kb-census/SKILL.md have the orchestrator group the rows by hand and fill the brief by hand, and each subagent then calls rag.py src --cited and factdiff.py review itself; the brief carries them instead. The size bound keeps a brief inside one reader's context; fact-diff.md's entra dry run gives the scale: 43 review items came to 24,212 characters. Test ceiling (2026-10-10, ST-w3jhowin gate ceiling, answered replace-two-ids-and-a-file by operator): the suite is at max_ids 100 and max_files 15 of _tools/tests_ceiling.json, which stays as it is. Add no new test file; a new test id goes into an existing test file and replaces one (merge two tests of the same unit into one id keeping every assertion), so tests.py stays within the ceiling.",
-  "claimed_by": "kb-worker-ST-6ljkrwt2"
+  "evidence": {
+    "commit": "6780b4538a0b4c908aafec79251efbc1599bbcf8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "census_groups"
+        ],
+        "exit": 0,
+        "sha256": "6dfd7f8b1670234f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/census.py",
+          "groups",
+          "kb/public/_census/2026-09-26.csv"
+        ],
+        "exit": 0,
+        "sha256": "e77b12abb52fe089"
+      }
+    ]
+  }
 }
