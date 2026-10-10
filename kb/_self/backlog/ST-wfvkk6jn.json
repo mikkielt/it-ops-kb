@@ -2,7 +2,7 @@
   "id": "ST-wfvkk6jn",
   "kind": "story",
   "title": "A pinned file whose cited passages are word for word at the newer commit or release is re-pinned and its facts re-pointed with no model",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ilje65fa",
   "priority": "P2",
@@ -99,5 +99,19 @@
     }
   ],
   "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 13 NEWER-VERSION rows (9 raw-ref at newer=2.2.364, 4 api-repo) and 7 CHANGED raw-pin or raw-ref rows went to phase 2, and all but two came back confirmed, so the model read whole files to find the cited lines unchanged. factdiff.py detect marks pinned sources 'pinned url: its text cannot change' and leaves them to census.py check, so neither tool compares the citing facts against the newer file today.",
-  "claimed_by": "worker-ST-wfvkk6jn"
+  "evidence": {
+    "commit": "a48ecfcba1e7481c68540b345d8d2198371b38ac",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "census_repin"
+        ],
+        "exit": 0,
+        "sha256": "30d348046f3898ce"
+      }
+    ]
+  }
 }
