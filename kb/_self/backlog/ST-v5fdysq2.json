@@ -1,0 +1,31 @@
+{
+  "id": "ST-v5fdysq2",
+  "kind": "story",
+  "title": "A headless worker checks its .claude/ staging copies with selfdoc.py check before it returns",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A headless worker edits .claude/ files only as staging copies under its _cache/scratch/<id>/staging/, and selfdoc.py check in its worktree reads the unchanged originals, so a dead heading reference in a staged copy reaches the orchestrator: in SP-qg7ncs6d the ST-nlxo2zv5 worker's staged kb-verify step 5 cited (kb/_self/backlog.md, Working on items, One suite), a heading that does not exist, and only the orchestrator's copy-back check caught it (SP-pbekfhaz had the same). The worker can run the docs check over its staging copies (a selfdoc.py check option that reads the staged files in place of the worktree's, or the brief's command for it), so its report names problems=0 for what it staged. Found at the SP-qg7ncs6d close.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['python3','_tools/selfdoc.py','check','--help'],capture_output=True,text=True);ok=r.returncode==0 and 'staging' in r.stdout;print('selfdoc check reads staging copies:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/bl_dispatch.py",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-qg7ncs6d close"
+  ]
+}

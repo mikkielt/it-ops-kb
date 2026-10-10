@@ -1,0 +1,30 @@
+{
+  "id": "ST-zg2jgfpf",
+  "kind": "story",
+  "title": "A sprint whose items mostly edit one skill is split by section at planning, not run one after another",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-qg7ncs6d had kb-sprint/SKILL.md and AGENTS.md in the touches of 6 of its 8 items; start warned that they run one after another, and all seven stories ran serially, one headless worker at a time, though most edited separate sections. Planning step 5 says to split such edits by section or order them; the triage that planned the sprint did neither. Plan names, for a file in more than half of a sprint's items, the section each item edits, so items on separate sections of a skill can run in parallel (a section-level touch, or items merged into one), or records why they stay serial. Found at the SP-qg7ncs6d close.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();ok='stay serial' in t;print('plan records why same-file items stay serial:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-qg7ncs6d close"
+  ]
+}
