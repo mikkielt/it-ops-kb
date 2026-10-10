@@ -2,7 +2,7 @@
   "id": "TK-g4c5kxsc",
   "kind": "task",
   "title": "bl_forge.py reads merge request and pipeline state and merges, through a glab arm and a gh arm, from the configured forge and project",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-4jjz3vxs",
   "priority": "P2",
   "rank": 0,
@@ -97,5 +97,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-dqkf3i42"
+  "evidence": {
+    "commit": "7d66dd4367377c7bb9b36cf6e02dcc55d5fe7ab7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "forge_arms"
+        ],
+        "exit": 0,
+        "sha256": "12a9cf3efb99b1cb"
+      }
+    ]
+  }
 }
