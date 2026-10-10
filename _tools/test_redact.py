@@ -1,7 +1,8 @@
 """Redaction and the query log's privacy guards: redact.py's rules, what distill stores of a captured prompt, the closed
 shape of an ops row, the store check that blocks a leak, and apply's rule for a weak rules miss over the fixture store.
 Planted values are assembled at run time."""
-import csv, json, os, shutil, socket, subprocess, sys
+import argparse, csv, json, os, re, shutil, socket, subprocess, sys
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -290,6 +291,75 @@ def census_queue_is_sized_without_network(tmp_path, monkeypatch):
     assert lines[3].startswith("  docs.example.com: rows=3 ") and "not cached=1" in lines[3]
 
 
+def census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_path, monkeypatch, capsys):
+    pin, tip = "a" * 40, "0123456789ab"
+    cited = {"S9990001": [("public/auth/a.md", 3), ("public/auth/a.md", 5), ("public/mecm/b.md", 7)],  # most lines in auth
+             "S9990002": [("public/mecm/b.md", 9), ("public/auth/a.md", 8)],  # a tie: the first domain by name
+             "S9990003": [("public/_gaps.md", 4)],  # a ledger names it: the log's used_in decides
+             "S9990004": [], "S9990005": [("public/dsc/d.md", 2)], "S9990006": [("public/dsc/d.md", 6)],
+             "S9990007": [("public/dsc/d.md", 10)], "S9990008": [("public/dsc/d.md", 12)]}
+    page = {"public/auth/a.md": ["", "", "- A fact. [DOC S9990001]", "", "- Another. [DOC S9990001]", "", "", "- Both. [DOC S9990002]"],
+            "public/mecm/b.md": ["", "", "", "", "", "", "- Foreign fact. [DOC S9990001]", "", "- Cited once. [DOC S9990002]"],
+            "public/dsc/d.md": ["", "sources: [S9990005, S9990006]", "", "", "", "- Pinned. [CODE S9990006]", "", "", "",
+                                "- Learn. [DOC S9990007]", "", "- Docs. [DOC S9990008]"]}
+    item = {"outcome": "modified", "source_id": "S9990005", "url": "https://docs.example.com/S9990005", "verdict": "changed",
+            "note": "n", "fact": "- Fact text. [DOC S9990005]", "where": "public/dsc/d.md:2", "key": "k", "path": "dsc/d.md",
+            "old": "the old passage", "old_from": "snapshot at HEAD", "new": "the new passage", "new_from": "https://docs.example.com/"}
+    rows = [census_row("S9990001", used_in="auth/a.md;mecm/b.md"), census_row("S9990002", used_in="auth/a.md;mecm/b.md"),
+            census_row("S9990003", used_in="windows/w.md", bucket="NEEDS-READING"),
+            census_row("S9990004", bucket="GONE"),
+            census_row("S9990005", evidence="fact diff: changed; review modified=1 (factdiff.py review factdiff-2099-01-02.csv)"),
+            census_row("S9990006", kind="raw-pin", repo="github.com/Org/Repo", pin=pin, path="src/f.rs",
+                       evidence=f"file differs at main@{tip}; latest change", proof=f"main@{tip}"),
+            census_row("S9990007", url="https://learn.microsoft.com/en-us/entra/x"),
+            census_row("S9990008", url="https://code.claude.com/docs/en/hooks"),
+            census_row("S9990009", bucket="OK"), census_row("S9990010", outcome="confirmed"),
+            census_row("S9990011", bucket="NEEDS-READING", note="blocked")]  # the last three are no phase-2 rows
+    log = tmp_path / "2099-01-02.csv"
+    kbcommon.write_csv(str(log), census.COLS, rows)
+    with monkeypatch.context() as m:
+        m.setattr(socket.socket, "connect", lambda *a, **k: (_ for _ in ()).throw(AssertionError("groups used the network")))
+        m.setattr(factdiff, "ROOT", kbcommon.root("public"))
+        m.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
+        m.setattr(kbfacts, "clone_home", lambda: str(tmp_path / "no-clone"))
+        m.setattr(kbfacts, "cited_lines", lambda ids: {i: cited[i] for i in ids if i in cited})
+        m.setattr(kbfacts, "read", lambda qpath: "\n".join(page.get(qpath, [])))
+        m.setattr(census, "review_by_source", lambda ids, fd: {"S9990005": [item]})
+        ctx = census.phase2_context(rows, str(log))
+        groups = {g["group"]: g for g in census.group_records(ctx)}
+        assert list(groups) == ["_uncited", "auth", "dsc", "windows"]  # sorted; a ledger's lines count for no domain
+        assert [r["id"] for r in groups["auth"]["rows"]] == ["S9990001", "S9990002"]  # a tie goes to the first by name
+        assert groups["auth"]["files"] == ["auth/a.md"]
+        assert groups["auth"]["foreign"] == [{"file": "mecm/b.md", "domain": "mecm", "rows": ["S9990001", "S9990002"]}]
+        assert groups["windows"]["files"] == ["windows/w.md"] and groups["_uncited"]["rows"][0]["id"] == "S9990004"
+        assert groups["dsc"]["queue"]["rows"] == 4 and groups["dsc"]["queue"]["items"] == 1
+        assert [r["mode"] for r in groups["dsc"]["rows"]] == ["review", "document", "document", "document"]
+        assert census.group_records(census.phase2_context(rows, str(log))) == list(groups.values())  # same log and tree
+        text = census.brief_parts("dsc", ctx["members"]["dsc"], ctx)[0]
+        assert "census of 2099-01-02" in text and "Your files (edit only these): kb/public/dsc/d.md" in text
+        assert "- kb/public/dsc/d.md:2 (front matter `sources:`" in text and "kb/public/dsc/d.md:6 - Pinned." in text
+        assert "old (snapshot at HEAD): the old passage" in text and "new (https://docs.example.com/): the new passage" in text
+        assert f"git -C _cache/census/repos/github.com__Org__Repo.git show {tip}:src/f.rs" in text
+        assert f"git -C _cache/census/repos/github.com__Org__Repo.git diff {pin} {tip} -- src/f.rs" in text
+        assert "microsoft_docs_fetch https://learn.microsoft.com/en-us/entra/x" in text
+        assert "fetch https://code.claude.com/docs/en/hooks.md" in text and 'Return JSON only: {"outcomes"' in text
+        assert "kb/public/mecm/b.md:7 (foreign) - Foreign fact." in census.brief_parts("auth", ctx["members"]["auth"], ctx)[0]
+        # a group over the bound is split by whole rows into numbered parts, each within the bound
+        m.setattr(census, "BRIEF_CHARS", len(text) - 200)
+        parts = census.brief_parts("dsc", ctx["members"]["dsc"], ctx)
+        assert len(parts) == 2 and all(len(p) <= len(text) - 200 for p in parts)
+        assert "part 1 of 2" in parts[0] and "part 2 of 2" in parts[1]
+        assert [i for p in parts for i in re.findall(r"### (S\d+)", p)] == ["S9990005", "S9990006", "S9990007", "S9990008"]
+        # planted failures: an unknown group and a part out of range exit 2 and name what exists
+        for group, part, said in (("nope", 1, "groups: "), ("dsc", 3, "has 2 part(s)")):
+            code = census.cmd_brief(argparse.Namespace(log=str(log), group=group, part=part, factdiff=None), Counter())
+            assert code == 2 and said in capsys.readouterr().out
+        assert census.cmd_groups(argparse.Namespace(log=str(tmp_path / "none.csv"), factdiff=None), Counter()) == 2
+        capsys.readouterr()
+        assert census.cmd_groups(argparse.Namespace(log=str(log), factdiff=None), Counter()) == 0
+        assert [g["group"] for g in json.loads(capsys.readouterr().out)["groups"]] == list(groups)
+
+
 def census_phases_write_one_ops_row_each(tmp_path):
     data = tmp_path / "data"
     (data / "querylog").mkdir(parents=True)
@@ -394,7 +464,8 @@ def census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp
     assert seen == ["confirm", "sweep", "index", "commit"]
 
 
-def test_census_queue_is_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step(tmp_path, monkeypatch, capsys):
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step(tmp_path, monkeypatch, capsys):
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
+    census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_path, monkeypatch, capsys)
     census_phases_write_one_ops_row_each(tmp_path)
     census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)

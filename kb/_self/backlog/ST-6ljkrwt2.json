@@ -37,6 +37,78 @@
     "ST-w3jhowin",
     "ST-ywxl7ulm"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What size bound does one brief part keep, and what happens to a source whose own block is over it? (recommended: 30000 characters, 7500 tokens at 4 characters a token, so the entra dry run's 43 review items, 24212 characters, fit one part; a source is one outcome, so it is never split)",
+      "options": [
+        "30000 characters a part; a source alone over it is a part of its own",
+        "30000 characters a part; a source over it has its citing lines split across parts",
+        "10000 characters a part; a source alone over it is a part of its own"
+      ],
+      "recommendation": "30000 characters a part; a source alone over it is a part of its own",
+      "class": "secrets",
+      "answer": "30000 characters a part; a source alone over it is a part of its own",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does groups count a source's citations to find its owner group, break a tie and place a row no file names? (recommended: citing lines in the tree, a ledger or root-level file counting for no domain; a tie to the first domain by name; a row no line names falls back to the files of its log used_in, else the group _uncited)",
+      "options": [
+        "citing lines in the tree; tie to the first domain by name; fall back to used_in, else _uncited",
+        "citing files, not lines; tie to the first domain by name; fall back to used_in, else _uncited",
+        "citing lines in the tree; tie to the domain with most rows already; no used_in fallback"
+      ],
+      "recommendation": "citing lines in the tree; tie to the first domain by name; fall back to used_in, else _uncited",
+      "class": "design",
+      "answer": "citing lines in the tree; tie to the first domain by name; fall back to used_in, else _uncited",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Does brief read the fact diff review passages offline (cache, snapshot, anchor quote; no Wayback capture, no page fetch) like the queue summary, or online like factdiff.py review? (recommended: offline, so the brief holds what the summary's reading cost counted and the command stays free of the network)",
+      "options": [
+        "offline: the passages the queue summary counts; a passage only the network could give prints as -",
+        "online by default, as factdiff.py review does",
+        "offline by default, an --online flag adds Wayback captures and page fetches"
+      ],
+      "recommendation": "offline: the passages the queue summary counts; a passage only the network could give prints as -",
+      "class": "design",
+      "answer": "offline: the passages the queue summary counts; a passage only the network could give prints as -",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which citing lines does a row's brief block list? (recommended: the lines of the domain files, a front matter sources: line named without its id list, and no line of a ledger such as _answers.md, _gaps.md or _conflicts.md, which the orchestrator handles)",
+      "options": [
+        "domain files' lines with their text; a front matter sources: line named without its list; no ledger lines",
+        "every line rag.py src --cited gives, ledger lines and front matter lists included",
+        "domain files' lines only, front matter lines left out too"
+      ],
+      "recommendation": "domain files' lines with their text; a front matter sources: line named without its list; no ledger lines",
+      "class": "design",
+      "answer": "domain files' lines with their text; a front matter sources: line named without its list; no ledger lines",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "How does the caller pick one numbered part of a group's brief? (recommended: brief LOG --group G --part N, N from 1, default 1, and groups prints each group's number of parts)",
+      "options": [
+        "--part N on brief, default 1; parts count in the groups output",
+        "each part its own group name such as agents-2, no --part flag",
+        "brief prints every part in one output, separated by a marker line"
+      ],
+      "recommendation": "--part N on brief, default 1; parts count in the groups output",
+      "class": "design",
+      "answer": "--part N on brief, default 1; parts count in the groups output",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run 2026-10-10: python3 _tools/census.py groups kb/public/_census/2026-09-26.csv exits 2 with invalid choice. Today phase 2 steps 1 and 2 of .claude/skills/kb-census/SKILL.md have the orchestrator group the rows by hand and fill the brief by hand, and each subagent then calls rag.py src --cited and factdiff.py review itself; the brief carries them instead. The size bound keeps a brief inside one reader's context; fact-diff.md's entra dry run gives the scale: 43 review items came to 24,212 characters. Test ceiling (2026-10-10, ST-w3jhowin gate ceiling, answered replace-two-ids-and-a-file by operator): the suite is at max_ids 100 and max_files 15 of _tools/tests_ceiling.json, which stays as it is. Add no new test file; a new test id goes into an existing test file and replaces one (merge two tests of the same unit into one id keeping every assertion), so tests.py stays within the ceiling.",
   "claimed_by": "kb-worker-ST-6ljkrwt2"
 }
