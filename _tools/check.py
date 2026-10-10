@@ -447,7 +447,8 @@ def ledger_cite_error(kind, token, root, held):
     return f"cites unknown {noun} {token}"
 
 
-LEDGER_CITE = re.compile(r"(?<![\w./:-])((?:[\w.-]+/)+[\w.-]+\.md):([1-9]\d*)\b|(?<![\w:])`?:([1-9]\d*)\b")  # path:line, `:N`
+LEDGER_CITE = re.compile(r"(?<![\w./:-])((?:[\w.-]+/)+[\w.-]+\.md):([1-9]\d*)(?:[-–]([1-9]\d*))?\b"
+                         r"|(?<![\w:])`?:([1-9]\d*)(?:[-–]([1-9]\d*))?\b")  # path:line[-end], `:N[-end]`
 
 
 def fact_lines(text):
@@ -480,7 +481,8 @@ def ledger_citation_errors(root):
                 path = m.group(1) or path
                 if path is None:
                     continue
-                line = int(m.group(2) or m.group(3))
+                line = int(m.group(2) or m.group(4))
+                end = int(m.group(3) or m.group(5) or line)
                 if path not in facts:
                     try:
                         with open(os.path.join(root.path, path), encoding="utf-8") as f:
@@ -488,13 +490,21 @@ def ledger_citation_errors(root):
                         facts[path] = (len(text.splitlines()), fact_lines(text))
                     except (OSError, UnicodeDecodeError):
                         facts[path] = None
-                where = f"{kbcommon.qualify(root, name)}:{n} cites {path}:{line}"
+                span = f"{line}-{end}" if end != line else str(line)
+                where = f"{kbcommon.qualify(root, name)}:{n} cites {path}:{span}"
                 if facts[path] is None:
                     res.append(f"{where}, a file that is not in root {root.name}")
-                elif line not in facts[path][1]:
-                    res.append(f"{where}, " + ("a line past the end of the file" if line > facts[path][0]
-                                               else "a line that is no line of a tagged fact (a heading, a table or "
-                                                    "Reference row, a blank or an untagged line)"))
+                    continue
+                total, tagged = facts[path]
+                if end < line:
+                    res.append(f"{where}, a range that ends before it starts")
+                    continue
+                bad = next((x for x in range(line, min(end, total + 1) + 1) if x not in tagged), None)
+                if bad is not None:
+                    of = "" if bad == line and end == line else f"its line {bad}, "
+                    res.append(f"{where}, {of}" + ("a line past the end of the file" if bad > total
+                                                   else "a line that is no line of a tagged fact (a heading, a table or "
+                                                        "Reference row, a blank or an untagged line)"))
     return res
 
 
