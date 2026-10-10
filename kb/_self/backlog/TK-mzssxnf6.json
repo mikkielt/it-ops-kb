@@ -45,7 +45,9 @@
         "compared whole as written, like a project with no map (a wildcard first segment still meets every repository)": "TK-mzssxnf6",
         "never overlaps a touch of another repository, as if it had a repository of its own": "TK-mzssxnf6"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "compared whole as written, like a project with no map (a wildcard first segment still meets every repository)",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -60,7 +62,9 @@
         "no: held --overlaps, compared by repository and glob, stays the one pre-claim guard and claim is unchanged": "TK-mzssxnf6",
         "yes: claim refuses an item whose touches meet a held one in the same repository": "TK-mzssxnf6"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "no: held --overlaps, compared by repository and glob, stays the one pre-claim guard and claim is unchanged",
+      "by": "operator"
     }
   ],
   "notes": "Test ceiling at dispatch (orchestrator, 2026-10-10): 97 of 100 ids used and nine new -k selectors still to collect (forge_land, forge_pipeline, forge_stalled, forge_one_project, multirepo_fields, multirepo_held, multirepo_dispatch, multirepo_land, multirepo_default). Add no new test function unless the ceiling still has room after the ones planned; prefer extending an existing test in the same file and renaming it so its name carries your selector beside the ones it already carries (every older selector must still collect it). Raising max_ids is the operator decision D-776rvpx2 and not this item's. Orchestrator at dispatch: _tools/bl_check.py (it calls touches_overlap at bl_check.py:1098) joins the touches; bl_dispatch.py:226 and backlog.py:303 also use touches_overlap and stay outside: keep its call shape working for them.",
