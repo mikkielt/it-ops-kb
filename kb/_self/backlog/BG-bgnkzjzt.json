@@ -1,0 +1,30 @@
+{
+  "id": "BG-bgnkzjzt",
+  "kind": "bug",
+  "title": "backlog.py's usage text for set omits --clause and --add-clause, and for precheck omits the goal clause map",
+  "status": "todo",
+  "sprint": "SP-x5gjv4r7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "backlog.py's usage text names set's --clause and --add-clause CLAUSE=N flags and says precheck prints each committed item's goal clauses with the check that reads each and warns of an unread one, as bl_items.args_set and bl_land.cmd_precheck do (ST-ylje2dxh)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import backlog;sys.exit(0 if '--add-clause' in backlog.__doc__ else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import backlog;sys.exit(0 if '--add-clause' in backlog.__doc__ and 'goal clauses' in backlog.__doc__ else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py"
+  ]
+}
