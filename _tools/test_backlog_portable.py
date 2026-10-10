@@ -46,11 +46,42 @@ def test_backlog_config_prints_each_setting_with_its_source(tmp_path):
     assert [line.split(" = ")[0] for line in lines[1:]] == list(bl_base.SETTINGS)
 
 
-def test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults():
+def test_backlog_config_of_the_kb_is_its_committed_file_and_plugin_sprint_item_dir_default_is_backlog_at_the_root(tmp_path):
     values, sources, path, problems = bl_base.read_settings(bl_base.ROOT, env={})
     assert path.name == "backlog.json" and problems == []
     assert {k for k, s in sources.items() if s == "default"} == {"hooks"}  # the kb's own hook entries take no setting
-    assert values =={k: d for k, (_, d) in bl_base.SETTINGS.items()}
+    defaults = {k: d for k, (_, d) in bl_base.SETTINGS.items()}
+    # the file names the two settings whose default is no longer the kb's value; every other value is the default
+    assert values == {**defaults, "item_dir": "kb/_self/backlog",
+                      "always_in_scope": ["kb/_self/backlog/**", *defaults["always_in_scope"][1:]]}
+    # a project with no backlog.json, or one that names no item_dir, keeps its item files in _backlog/ at its root
+    # (outside .claude/, which a headless worker cannot write): the item is created there, listed, and a git worktree
+    # of the project can write a file at the same path
+    assert defaults["item_dir"] == "_backlog" and defaults["always_in_scope"][0] == "_backlog/**"
+    (tmp_path / "project").mkdir()
+    root = Repo(tmp_path / "project")
+    root.git("init", "-q", "-b", "main")
+    cfg = Path(root.path) / "backlog.json"
+    cfg.write_text(json.dumps({"lane_module": "mylane"}), encoding="utf-8")
+    for missing in (False, True):  # a file without item_dir, then no file
+        if missing:
+            cfg.unlink()
+        values, sources, _, problems = bl_base.read_settings(root.path, env={})
+        assert problems == [] and values["item_dir"] == "_backlog" and sources["item_dir"] == "default"
+    code, out, _ = config(root.path)
+    assert code == 0 and 'item_dir = "_backlog"  (default)' in out.splitlines()
+    made = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", root.path, "new", "story",
+                           "--title", "Default directory story", "--goal", "Goal"],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert made.returncode == 0, made.stdout + made.stderr
+    iid = re.search(r"ST-[a-z2-7]{8}", made.stdout).group(0)
+    assert [p.name for p in (Path(root.path) / "_backlog").glob("*.json")] == [f"{iid}.json"]
+    assert not (Path(root.path) / "kb" / "_self" / "backlog").exists()
+    root.git("add", "-A")
+    root.git("commit", "-q", "-m", "plan")
+    work = tmp_path / "worktree"
+    root.git("worktree", "add", "-q", "-b", "work/x", str(work))
+    (work / "_backlog" / f"{iid}.json").write_text("{}\n", encoding="utf-8")  # a worktree writes at the item path
 
 
 def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees_and_multirepo_fields_and_multirepo_default_and_multirepo_held(
@@ -182,7 +213,7 @@ def test_backlog_external_ids_are_validated_shown_found_and_carried_by_claim_com
         return p.returncode, p.stdout + p.stderr
 
     def item_files():
-        return sorted(Path(root.file("kb/_self/backlog")).glob("*.json"))
+        return sorted(Path(root.file("_backlog")).glob("*.json"))  # the default item_dir: the config names none
 
     code, out = bl("new", "story", "--title", "Parent story", "--goal", "A parent story")
     parent = re.search(r"ST-[a-z2-7]{8}", out).group(0)
@@ -196,10 +227,10 @@ def test_backlog_external_ids_are_validated_shown_found_and_carried_by_claim_com
 
     code, out = bl("set", tid, "--add-external", "jira=PROJ-124")
     assert code == 0
-    before = Path(root.file(f"kb/_self/backlog/{tid}.json")).read_text(encoding="utf-8")
+    before = Path(root.file(f"_backlog/{tid}.json")).read_text(encoding="utf-8")
     code, out = bl("set", tid, "--add-external", "jira=proj-bad")  # an id its tracker's pattern does not match
     assert code == 2 and "proj-bad" in out and "pattern" in out
-    assert Path(root.file(f"kb/_self/backlog/{tid}.json")).read_text(encoding="utf-8") == before
+    assert Path(root.file(f"_backlog/{tid}.json")).read_text(encoding="utf-8") == before
 
     code, out = bl("show", tid)
     shown = [ln for ln in out.splitlines() if ln.startswith("external ")]
@@ -215,7 +246,7 @@ def test_backlog_external_ids_are_validated_shown_found_and_carried_by_claim_com
     assert refs == "#12,PROJ-123,PROJ-124"
     assert root.git("log", "-1", "--format=%(trailers:key=KB-Work,valueonly)").strip() == tid
 
-    path = Path(root.file(f"kb/_self/backlog/{tid}.json"))  # an id written by hand, as no command writes it
+    path = Path(root.file(f"_backlog/{tid}.json"))  # an id written by hand, as no command writes it
     planted = json.loads(path.read_text(encoding="utf-8"))
     planted["external"]["jira"].append("NOT AN ID")
     path.write_text(json.dumps(planted, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -511,6 +542,8 @@ def test_backlog_headless_worker_cost_is_its_items_and_orchestrator_cost_not_att
     (tmp_path / "repo").mkdir()
     root = Repo(tmp_path / "repo")
     root.git("init", "-q", "-b", "main")
+    # distill finds an item's sprint in the kb's item directory (ql_distill.BACKLOG_REL), so this root names it
+    (Path(root.path) / "backlog.json").write_text(json.dumps({"item_dir": "kb/_self/backlog"}), encoding="utf-8")
     data = tmp_path / "data"
     qdir = data / "querylog"
     spool = qdir / "spool"

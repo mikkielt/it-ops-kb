@@ -11,7 +11,7 @@ import bl_authority as ba
 from conftest import TOOLS
 
 BACKLOG = os.path.join(TOOLS, "backlog.py")
-ITEMS = Path("kb") / "_self" / "backlog"
+ITEMS = Path("_backlog")  # the default item_dir: the throwaway roots have no backlog.json
 REPRO = shlex.join(["python3", "-c", "import sys; sys.exit(1)"])  # fails: the bug stays open
 
 

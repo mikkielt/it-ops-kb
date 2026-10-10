@@ -1,0 +1,17 @@
+{
+  "id": "BG-h7t2ez7n",
+  "kind": "bug",
+  "title": "The query log's distill finds an item's sprint in kb/_self/backlog, not in the project's item_dir",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_distill reads the item files that name each item's sprint from the project's item_dir (bl_base.rel_dir()), not from the constant kb/_self/backlog, so a project whose item files are in _backlog/ gets its sprint figures in cost; the repro exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_base, ql_distill; bl_base._LOADED[:] = [({'item_dir': '_backlog'}, {}, None, [])]; sys.exit(0 if ql_distill.BACKLOG_REL == bl_base.rel_dir() else 1)"
+    ]
+  }
+}

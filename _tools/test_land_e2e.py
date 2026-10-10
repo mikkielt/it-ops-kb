@@ -359,7 +359,7 @@ class TestHookWait:
         ws.git("add", "-A")
         ws.git("commit", "-q", "-m", "plan")
         config = base / "config.json"
-        config.write_text(json.dumps({"repositories": names}), encoding="utf-8")
+        config.write_text(json.dumps({"repositories": names, "item_dir": PLAN}), encoding="utf-8")
         monkeypatch.setattr(bl_base, "_LOADED", [])  # this workspace's settings, for this test only
         bl_base.load_settings(Path(ws.path), env={"KB_BACKLOG_CONFIG": str(config)})
         checkouts, trees = {}, {}

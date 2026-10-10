@@ -1,5 +1,5 @@
 """The shared ground of backlog.py's modules (kb/_self/backlog.md): the project settings (`SETTINGS`, read once from
-backlog.json by `read_settings`, with the kb's current values as the defaults, for the root the process runs on:
+backlog.json by `read_settings`, with `SETTINGS`' defaults for the keys it leaves out, for the root the process runs on:
 `load_settings`) and the accessors that give them at call time (`setting`, `rel_dir`, `kinds`, `id_re`, ...), the
 two refusals, the Backlog class that reads and writes the item files, git, the claims ledger's path (`claims_ledger`)
 and the command runner, the scope helpers,
@@ -21,13 +21,14 @@ CONFIG_ENV = "KB_BACKLOG_CONFIG"  # a path in the environment: read from there i
 KIND_NAMES = ("epic", "story", "task", "subtask", "bug", "sprint")
 TRACKER_NAME_RE = re.compile(r"[a-z][a-z0-9_-]*")  # a tracker's name in backlog.json's trackers and an item's external
 HOOK_NAMES = ("horizon", "intake")  # the SessionStart hooks of the plugin that a project's `hooks` setting turns on
-# One place lists the settings: key -> (type, the kb's current value). A type is a TYPES name; a key not here is refused
-# in backlog.json, and a key the file leaves out takes its value from here.
+# One place lists the settings: key -> (type, the default). A type is a TYPES name; a key not here is refused in
+# backlog.json, and a key the file leaves out takes its value from here (the kb's own file names the keys whose value
+# differs from the default: item_dir and always_in_scope).
 SETTINGS = {
-    "item_dir": ("path", "kb/_self/backlog"),  # the item files, under the root
+    "item_dir": ("path", "_backlog"),  # the item files, under the root; outside .claude/, which a headless worker cannot write
     "id_prefixes": ("prefixes", {"epic": "EP", "story": "ST", "task": "TK", "subtask": "SB", "bug": "BG",
                                  "sprint": "SP"}),
-    "always_in_scope": ("strs", ["kb/_self/backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.md"]),  # any item's
+    "always_in_scope": ("strs", ["_backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.md"]),  # any item's
     "review_checks": ("checks", [{"run": ["python3", "_tools/backlog.py", "check"]},
                                  {"run": ["python3", "_tools/tests.py"]}]),  # the review story's, once
     "research_checks": ("checks", [{"run": ["python3", "_tools/backlog.py", "researched", "{id}"]}]),  # `{id}`: the story
@@ -130,7 +131,7 @@ def config_path(root, env=None):
 
 def read_settings(root, env=None):
     """(values, sources, path, problems): the effective project settings of the repository at ROOT. Each key of
-    SETTINGS takes the file's value (source "file") or the kb's own (source "default"); a key the file holds wrongly
+    SETTINGS takes the file's value (source "file") or its default (source "default"); a key the file holds wrongly
     keeps its default and gives a problem naming it. No file at the root is no problem (all defaults); a
     KB_BACKLOG_CONFIG that names no file is."""
     env = os.environ if env is None else env
@@ -831,7 +832,7 @@ def need(bl, iid):
 
 def cmd_config(bl, a):
     """`config`: the effective project settings of the repository, one line each with its value and where it came
-    from (file: backlog.json or the KB_BACKLOG_CONFIG file; default: the kb's own value). A file with a problem is
+    from (file: backlog.json or the KB_BACKLOG_CONFIG file; default: `SETTINGS`' value). A file with a problem is
     refused, each problem naming its key (exit 2), and nothing is printed of the settings."""
     values, sources, path, problems = read_settings(bl.root)
     if problems:
