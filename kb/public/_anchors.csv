@@ -577,7 +577,10 @@ effc1ed7dd0d,agents/azure-openai-deployments.md,S-pntdruql,located,Provisioned t
 fcbc59a4a249,agents/azure-openai-deployments.md,S-uk5qyhwi,located,Indirect attacks > Apply a content filter,resourc;associat;one;configuration;deployment;creat;level;content,cfabe71d24718e2b,"Content filters can be configured at the resource level. Once a new configuration is created, it can be associated with one or more deployments.",2026-09-28
 fca2957f5e7e,agents/codebase-mapping.csv,S-3yod3u7q,unlocated:no-match,,,,,2026-10-08
 731cfe7a7735,agents/codebase-mapping.md,S-3yod3u7q,located,Tools reference,intelligenc;warn;definition;lsp;referenc;type;each;server,034dc7aa511f7598,"LSP | Code intelligence via language servers: jump to definitions, find references, report type errors and warnings. See LSP tool behavior | No Monitor |",2026-10-08
+7dcad054d124,agents/codebase-mapping.md,S-trq5hdxv,unlocated:no-match,,,,,2026-10-10
 b326cef8d7ae,agents/codebase-mapping.md,S-3yod3u7q,located,Tools reference > LSP tool behavior,inactiv;intelligenc;lsp;plugin;languag;stay;until;install,f051cbc4c7a81592,"Claude Code keeps the tool inactive until you install a code intelligence plugin for your language. In cloud sessions, Claude Code doesn't start plugin language",2026-10-08
+c888f2fe3428,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-10
+c888f2fe3428,agents/codebase-mapping.md,S-trq5hdxv,unlocated:no-match,,,,,2026-10-10
 0ff99a63f713,agents/coding-agents-mcp.md,S-udcaydkb,unlocated:no-match,,,,,2026-09-28
 236aa9a63257,agents/coding-agents-mcp.md,S-2q2hcluk,unlocated:no-match,,,,,2026-09-28
 2b0a291aef7b,agents/coding-agents-mcp.md,S-4fmcb5i2,unlocated:no-match,,,,,2026-09-28
