@@ -2,7 +2,7 @@
   "id": "TK-lwihhcmj",
   "kind": "task",
   "title": "land accepts worker worktrees under the main checkout's .claude/worktrees when it runs in a linked worktree",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-koznprpg",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "worker-TK-lwihhcmj"
 }
