@@ -2,7 +2,7 @@
   "id": "ST-fravxf4v",
   "kind": "story",
   "title": "The unit cache test isolates the path key input, so dropping u['path'] from _unit_key fails it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzs3bj6f",
   "priority": "P2",
@@ -33,5 +33,28 @@
     "parked: SP-caqrexqw review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: dropping u['path'] from _unit_key keeps python3 _tools/tests.py -k unit_cache green. Planned run 2026-10-10: reproduces for path; dropping u['text'] fails the test at its edited-fact pack step, so the text clause is already met and the goal is narrowed to the path case. Precheck: the tests.py -k unit_cache check passes before the work by design: it pins that the test still passes on the unmutated _unit_key. The path-case metas check is the one that fails until the work is done.",
-  "claimed_by": "kb-worker-fravxf4v"
+  "evidence": {
+    "commit": "8754bc5fe6dd34ffdf9f8a78deb8d6d302ff047e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "unit_cache"
+        ],
+        "exit": 0,
+        "sha256": "583a3cc4e8a17f63"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open('_tools/test_live_kb.py',encoding='utf-8').read();sys.exit(0 if re.search(r'\"path\":\\s*\\{(?:(?!\"title\").)*\"metas\"',t,re.S) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
