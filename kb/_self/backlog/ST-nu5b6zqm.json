@@ -2,7 +2,7 @@
   "id": "ST-nu5b6zqm",
   "kind": "story",
   "title": "A refresh that changes a figure finds every place in the root that repeats the old one before done",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-avwlotax",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,18 @@
     "parked: SP-caqrexqw close"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: neither kb-refresh nor kb-research SKILL.md has a step that searches the root for a place that repeats the old figure (the item's check). Run at plan 2026-10-10: exit 1 on the base, so the premise reproduces. The earlier check, selfdoc.py check, passed on the base and proved nothing, so it was replaced.",
-  "claimed_by": "worker-ST-nu5b6zqm"
+  "evidence": {
+    "commit": "ece5bd63aee61b8f6d0a0dfac3e395ef691cea25",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ok=all('repeats the old' in open(f'.claude/skills/{s}/SKILL.md',encoding='utf-8').read() for s in ('kb-refresh','kb-research'));print('refresh and research name the places that repeat the old figure:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "bb8ee10c95beea0c"
+      }
+    ]
+  }
 }
