@@ -2,7 +2,7 @@
   "id": "ST-owblgazg",
   "kind": "story",
   "title": "agents/dataverse-mcp-server.md cites each fact to the page that states it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,6 @@
   "links": [
     "parked: SP-vayhvwfy review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise (2026-10-10, base origin/main): both checks exit 1 now: dataverse-mcp-server.md:21 cites only S-f6atlxlo, :14 gives the allowed-client list without S-lv2haaxp, :25 says 'must be updated'. A fact reworded gets a new key: re-anchor the file (factdiff.py anchor --file) and prune the doc2query rows (doc2query.py prune)."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise (2026-10-10, base origin/main): both checks exit 1 now: dataverse-mcp-server.md:21 cites only S-f6atlxlo, :14 gives the allowed-client list without S-lv2haaxp, :25 says 'must be updated'. A fact reworded gets a new key: re-anchor the file (factdiff.py anchor --file) and prune the doc2query rows (doc2query.py prune). Orchestrator 2026-10-10 (from the BG-qbkqreaq worker): factdiff.py anchor --file also rewrites verified_utc on unrelated _anchors.csv rows and touches _fetch_state.csv, which is outside the touches: keep only the anchor rows of the facts you changed and restore _fetch_state.csv.",
+  "claimed_by": "kb-worker-owblgazg"
 }
