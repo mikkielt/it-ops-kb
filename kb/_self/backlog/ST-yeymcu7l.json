@@ -2,7 +2,7 @@
   "id": "ST-yeymcu7l",
   "kind": "story",
   "title": "pair_word's docstring and querylog.md give an example the one-candidate rule does not pair",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x5gjv4r7",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,18 @@
     "parked: SP-matmvkn6 review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 13 of 13, \"Orchestration features: ops rows, goal clause map, rescope, query log apply\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: pair_word('unsaved', 'land: uncommitted changes', 'unsaved changes') is None, so the docstring's and querylog.md's example is wrong as worded (2026-10-10: reproduces; land is a second candidate). The check reads the example's parenthesis: asked about ... land ... in the docstring, and 'asked ... land' inside the (`pair_word`: ...) parenthesis of querylog.md's learn paragraph; with the question 'land unsaved changes' the pair is uncommitted. The old pinning check (the one-candidate rule gives no pair for the two-word question) is its last assertion.",
-  "claimed_by": "orchestrator-x5gjv4r7"
+  "evidence": {
+    "commit": "3ab6f8680e66bb8e095ae15f4c052457e6420619",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;sys.path.insert(0,\"_tools\");import ql_learn as l;q=open(\"kb/_self/querylog.md\",encoding=\"utf-8\").read();d=bool(re.search(r\"asked about[^:\\x60]*\\bland\\b\",l.pair_word.__doc__));k=bool(re.search(r\"\\x60pair_word\\x60:[^)]*asked[^)]*\\bland\\b\",q));print(\"example names land in its question: docstring\",d,\"querylog.md\",k);sys.exit(0 if d and k and l.pair_word(\"unsaved\",\"land: uncommitted changes\",\"land unsaved changes\")==\"uncommitted\" and l.pair_word(\"unsaved\",\"land: uncommitted changes\",\"unsaved changes\") is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "677ed20466cc58f1"
+      }
+    ]
+  }
 }
