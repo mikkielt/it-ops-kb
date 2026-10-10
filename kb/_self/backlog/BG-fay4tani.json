@@ -1,16 +1,22 @@
 {
   "id": "BG-fay4tani",
   "kind": "bug",
-  "title": "A full tests.py run takes 22 to 24 s on this darwin host, over the 20 s ceiling, with the suite at 83 tests",
-  "status": "draft",
+  "title": "test_heldout_reword_is_refused_at_the_gate adds about 8.5 s to the full tests.py run, over the 20 s darwin ceiling",
+  "status": "todo",
+  "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
-  "severity": "S3",
-  "goal": "A whole-suite python3 _tools/tests.py run on the darwin host finishes within the seconds ceiling of _tools/tests_ceiling.json (20 s), or the ceiling is raised by the operator's recorded answer; measured 2026-10-10 on a worker's worktree: 23 s and 22 s with 85 tests, 24 s with 83 (-k not heldout_reword), host load unknown.",
+  "severity": "S2",
+  "goal": "A whole-suite python3 _tools/tests.py run on the darwin host finishes within the 20 s ceiling of _tools/tests_ceiling.json, the ceiling unchanged (operator decision D-7zbgyagn). Cause, measured 2026-10-10 on an idle host at origin/main: the suite takes 14.3 s with -k 'not heldout_reword' (83 tests) and 22.8 s whole (85 tests); _tools/test_sync_e2e.py::test_heldout_reword_is_refused_at_the_gate, added by ST-wjm2ipaf, takes 8.9 s alone, since it runs the whole sync gate twice (a refused push, then a landing push after the row is replaced). Make that test cheaper while it still proves the sync gate refuses a reworded held-out row with exit 1, a REWORD line and origin/main unmoved, and keep its name, which ST-wjm2ipaf's check selects with -k heldout_reword.",
   "repro": {
     "run": [
       "python3",
       "_tools/tests.py"
     ]
-  }
+  },
+  "touches": [
+    "_tools/test_sync_e2e.py",
+    "kb/_self/code.md"
+  ],
+  "notes": "Moved into SP-5x5ut5ko by the orchestrator at the sprint review (2026-10-10): the review story's tests.py check fails on it, so the sprint cannot close without it. The worker that filed it measured under parallel-worker load and named host load; the idle-host runs above show the cause. Raising the ceiling is an operator decision and was not taken (conservative choice under the operator's delegated policy)."
 }
