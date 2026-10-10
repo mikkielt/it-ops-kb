@@ -15,7 +15,7 @@ from pathlib import Path
 
 import bl_cli
 import bl_base
-from bl_base import ID_RE, REL_DIR, RESEARCH_KINDS, Rejected, research_touches, say, scope
+from bl_base import RESEARCH_KINDS, Rejected, id_re, rel_dir, research_touches, say, scope
 
 
 # `cost ID`: what the query log's work sidecars (kb/_querylog/work/<yyyy-mm>/<run-id>.jsonl, written by distill) hold
@@ -119,7 +119,7 @@ def spool_state(root, scope):
     dirs = spool_dirs(root)
     if dirs is None:
         return {"off": True, "paths": [], "usage_rows": 0, "windowed": False}
-    known = ql_distill.item_finder(Path(root) / REL_DIR)
+    known = ql_distill.item_finder(Path(root) / rel_dir())
     seen, rows, windowed = set(), 0, False
     for d in dirs:
         for sid, s in ql_distill.read_spool(d, time.time())[0].items():
@@ -162,8 +162,8 @@ def open_lines(root, rework=True):
                 ledger.setdefault(sid, set()).update(i for i in ids if isinstance(i, str))
     if not sessions:
         return [], []
-    sprint_of = ql_distill.sprint_finder(Path(root) / REL_DIR)
-    known = ql_distill.item_finder(Path(root) / REL_DIR)  # the windows distill gives once the session closes
+    sprint_of = ql_distill.sprint_finder(Path(root) / rel_dir())
+    known = ql_distill.item_finder(Path(root) / rel_dir())  # the windows distill gives once the session closes
     out, info = [], []
     for sid in sorted(sessions):
         s = sessions[sid]
@@ -222,9 +222,9 @@ def history_items(root, ids):
     this clone holds (never committed, or a shallow clone cut it) is absent; git missing, failing or timing out
     leaves the chunk's ids absent, never an error."""
     found = {}
-    ids = sorted({i for i in ids if ID_RE.fullmatch(i)})
+    ids = sorted({i for i in ids if id_re().fullmatch(i)})
     for n in range(0, len(ids), HISTORY_CHUNK):
-        paths = [f"{REL_DIR}/{i}.json" for i in ids[n:n + HISTORY_CHUNK]]
+        paths = [f"{rel_dir()}/{i}.json" for i in ids[n:n + HISTORY_CHUNK]]
         argv = ["git", "--literal-pathspecs", "-C", str(root), "log", "--all", "--diff-filter=D", "--no-renames",
                 "--no-ext-diff", "--no-textconv", "--format=", "-p", "--", *paths]
         try:
@@ -412,7 +412,7 @@ def sprint_window(root, sid):
         return None, None, "git history is unavailable"
     if shallow.stdout.strip() == "true":
         return None, None, "shallow clone: the sprint's start commit may be cut from history"
-    path = f"{REL_DIR}/{sid}.json"
+    path = f"{rel_dir()}/{sid}.json"
     starts = git_times(root, "--diff-filter=AM", "-S", '"status": "active"', "--", path)
     if not starts:
         return None, None, "no commit in history sets the sprint active"
@@ -507,7 +507,7 @@ def item_done_time(root, iid):
     if shallow is None or shallow.strip() == "true":
         return None
     out = git_text(root, "--literal-pathspecs", "log", "--all", "-p", "-U0", "--format=%x00%ct", "--diff-filter=AM",
-                   "-S", DONE_STATUS, "--", f"{REL_DIR}/{iid}.json")
+                   "-S", DONE_STATUS, "--", f"{rel_dir()}/{iid}.json")
     if out is None:
         return None
     times = []

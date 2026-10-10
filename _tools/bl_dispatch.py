@@ -24,9 +24,9 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
-from bl_base import (ID_RE, Refused, Rejected, canonical, external_lines, git, need, research_touches, say, scope,
-                     setting, touches_overlap, withhold)
-from bl_land import WORK_PREFIX, WORKER_DIR, WORKER_NAME
+from bl_base import (Refused, Rejected, canonical, external_lines, git, id_re, need, research_touches, say, scope,
+                     setting, touches_overlap, withhold, worker_dir)
+from bl_land import WORK_PREFIX, WORKER_NAME
 
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
 SCRATCH_REL = "_cache/scratch"  # + /<id>/: outside the worktree, for the worker's throwaway files and staging copies
@@ -87,7 +87,7 @@ def clone_top(root):
 
 
 def worktree_path(root, iid):
-    return clone_top(root).joinpath(*WORKER_DIR, WORKER_NAME + iid)
+    return clone_top(root).joinpath(*worker_dir(), WORKER_NAME + iid)
 
 
 def scratch_path(root, iid):
@@ -127,7 +127,7 @@ def known_failures(bl, known):
     out = []
     for k in known:
         test, _, bug = k.rpartition("=")
-        if not test or not ID_RE.fullmatch(bug):
+        if not test or not id_re().fullmatch(bug):
             raise Rejected(f"--known {k!r}: expected TEST=BUG, BUG a backlog id")
         out.append(f"- `{test}`: {bl.label(bug)}" if bug in bl.items else f"- `{test}`: {bug}")
     return out

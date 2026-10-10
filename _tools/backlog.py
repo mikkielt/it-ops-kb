@@ -261,7 +261,9 @@ refused). close's commit body is its --summary list.
 Several ids after one --depends, --add-depends, --relates or --add-relates are taken as if each had its own flag
 (bl_cli.parse).
 
---root DIR (before the command) runs against another clone. Exit: 0 ok, 1 a refused command or check errors,
+--root DIR (before the command) runs against another clone or project, with that root's backlog.json settings (item
+directory, id prefixes, trackers, worktree directory); without it the tool's own checkout, or, for a tool installed as a
+plugin, the working directory's git root. Exit: 0 ok, 1 a refused command or check errors,
 2 bad arguments, an unknown id, or a refused `set` or `gate add`.
 
 Knowledge state (show, next, horizon): one line `knowledge <state> ask|ref: <text>` per ask and per ref of an item's
@@ -284,7 +286,8 @@ import bl_items  # noqa: F401 - registers the item writers (new, fmt, claim, ...
 import bl_land  # noqa: F401 - registers its commands
 import bl_plan  # noqa: F401 - registers its commands
 import bl_view  # noqa: F401 - registers its commands
-from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, cmd_config, trailer_problem, withhold
+from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, cmd_config, load_settings, rel_dir
+from bl_base import trailer_problem, withhold
 from bl_base import canonical, in_scope, waits  # noqa: F401 - tests read them as backlog.NAME
 from bl_check import item_files_only, validate  # noqa: F401 - tests read them as backlog.NAME
 from bl_land import run_check, own_failure  # noqa: F401 - tests read them as backlog.NAME
@@ -299,7 +302,6 @@ from bl_view import (  # noqa: F401 - the read-only views: bl_view holds them; m
 )
 from bl_base import touches_overlap  # noqa: F401 - tests read it as backlog.touches_overlap; bl_view's held uses it
 from bl_plan import has_scope, stale_touches  # noqa: F401 - tests read them as backlog.NAME
-from bl_base import REL_DIR  # noqa: F401 - tests read it as backlog.REL_DIR
 from bl_plan import start_approved  # noqa: F401 - test_layout reads it as backlog.start_approved
 
 import bl_cost  # noqa: F401 - registers `cost`
@@ -320,8 +322,13 @@ bl_cli.order(USAGE)
 
 
 def main(argv=None):
-    ap = bl_cli.build_parser(__doc__.split("\n\n")[0], str(ROOT))
+    argv = sys.argv[1:] if argv is None else list(argv)
+    root = bl_cli.root_of(argv, bl_cli.default_root(ROOT))
+    load_settings(root)  # the project's settings, before a parser offers its kinds: every reader follows this root
+    ap = bl_cli.build_parser(__doc__.split("\n\n")[0], root)
     a = bl_cli.parse(ap, argv)
+    if a.root != root:  # an abbreviated --root the pre-scan did not read
+        load_settings(a.root)
     OUTPUT_ROOT[0] = a.root
     for s in (sys.stdout, sys.stderr):  # refusals go to stderr; on Windows a pipe defaults to the ANSI code page
         s.reconfigure(encoding="utf-8")
@@ -360,7 +367,7 @@ def main(argv=None):
             return 0
         print(withhold(f"no item {iid}: its file was deleted (a closed sprint's item); `backlog.py show {iid}` prints "
                        "its last version" if old is not None else
-                       f"no item {iid} in {REL_DIR}/ or its git history (`backlog.py find WORD` or `list` names the "
+                       f"no item {iid} in {rel_dir()}/ or its git history (`backlog.py find WORD` or `list` names the "
                        "items)"), file=sys.stderr)
         return 2
     except Rejected as e:

@@ -10,8 +10,8 @@ import json, re, subprocess
 
 import bl_cli
 from bl_base import (
-    IN_SPRINT, OPEN, REL_DIR, SIMILAR_MIN, SIMILAR_SHOWN, SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, Backlog,
-    KINDS, Refused, Rejected, canonical, external_lines, external_refs, git, line, need, open_gates, say, scope,
+    IN_SPRINT, OPEN, SIMILAR_MIN, SIMILAR_SHOWN, SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, Backlog,
+    Refused, Rejected, canonical, external_lines, external_refs, git, kinds, line, need, open_gates, rel_dir, say, scope,
     waits, withhold,
 )
 from bl_check import knowledge_lines
@@ -150,11 +150,11 @@ def items_at(root, ref):
     """{id: item} of the item files as git REF has them (a fetched origin/main holds every pushed claim); a file
     that is not a JSON object is left out. Exit 2 (Rejected) for a ref git cannot read."""
     try:
-        names = [n for n in git(root, "ls-tree", "--name-only", f"{ref}:{REL_DIR}").splitlines() if n.endswith(".json")]
+        names = [n for n in git(root, "ls-tree", "--name-only", f"{ref}:{rel_dir()}").splitlines() if n.endswith(".json")]
     except Refused as e:
         raise Rejected(f"held --ref {ref}: {e}") from e
     p = subprocess.run(["git", "cat-file", "--batch"], cwd=root, capture_output=True,
-                       input="".join(f"{ref}:{REL_DIR}/{n}\n" for n in names).encode("utf-8"))
+                       input="".join(f"{ref}:{rel_dir()}/{n}\n" for n in names).encode("utf-8"))
     data, out, at = p.stdout, {}, 0
     for n in names:
         nl = data.find(b"\n", at)
@@ -395,7 +395,7 @@ def args_similar(p):
 
 
 def args_list(p):
-    p.add_argument("--kind", choices=list(KINDS))
+    p.add_argument("--kind", choices=list(kinds()))
     p.add_argument("--status")
     p.add_argument("--sprint")
 

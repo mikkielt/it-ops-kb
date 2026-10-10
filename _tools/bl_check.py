@@ -17,9 +17,9 @@ import bl_cli
 import bl_authority
 import bl_intake
 from bl_base import (
-    ALWAYS_IN_SCOPE, APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
-    PREFIX_KIND, PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
-    canonical, REL_DIR, external_problems, glob_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
+    APPROVALS, FIELDS, GATE_KINDS, IN_SPRINT, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
+    PRIORITIES, Refused, SEVERITIES, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
+    always_in_scope, canonical, external_problems, glob_re, id_re, kinds, prefix_kind, rel_dir, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
     touches_overlap, withhold_names,
 )
 from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches, unordered_overlap_warnings
@@ -535,12 +535,13 @@ def validate(bl, pieces=None):
             errs.append(f"{bl.label(iid)}: field {path} holds a piece of this host's "
                         f"{'computer' if kind == 'host' else 'user'} name (read from the environment, not printed); "
                         f"write a placeholder instead")
+    ID_RE, KINDS, PREFIX_KIND = id_re(), kinds(), prefix_kind()
     for iid, it in bl.items.items():
         e = lambda msg, iid=iid: errs.append(f"{bl.label(iid)}: {msg}")  # noqa: E731
         if it.get("id") != iid:
             e(f"id {it.get('id')!r} does not match its file name")
         if not ID_RE.fullmatch(iid):
-            e("id is not <EP|ST|TK|SB|BG|SP>-<8 base32 characters>")
+            e(f"id is not <{'|'.join(KINDS.values())}>-<8 base32 characters>")
         kind = it.get("kind")
         if kind not in KINDS:
             e(f"kind {kind!r} is not one of {', '.join(KINDS)}")
@@ -687,7 +688,7 @@ def validate(bl, pieces=None):
                 e(f"gate {g['id']}: host_checked needs ok: true or false")
         if "recurs" in it:
             rc = it["recurs"]
-            if not isinstance(rc, list) or not all(isinstance(r, str) and SPRINT_ID_RE.fullmatch(r) for r in rc):
+            if not isinstance(rc, list) or not all(isinstance(r, str) and sprint_id_re().fullmatch(r) for r in rc):
                 e("recurs must be a list of sprint ids (SP-...): the sprints the work came back in")
             elif len(set(rc)) != len(rc):
                 e("recurs names a sprint twice")
@@ -991,7 +992,7 @@ def item_files_only(touches):
     """True when every touches glob, of at least one, names backlog item files only (inside kb/_self/backlog/): done
     can never close such an item, since it needs a KB-Work commit that changes a file other than item files."""
     globs = [t for t in touches or [] if isinstance(t, str) and t]
-    return bool(globs) and all(t.startswith(REL_DIR + "/") for t in globs)
+    return bool(globs) and all(t.startswith(rel_dir() + "/") for t in globs)
 
 
 ITEM_FILES_ROUTE = ("its touches are item files only, which done can never close (done needs a KB-Work commit that "
@@ -1058,7 +1059,7 @@ def goal_path_covered(tok, touches):
     cands = [tok + "**"] if tok.endswith("/") else [tok]
     if not tok.endswith("/") and "." not in tok.rsplit("/", 1)[-1] and "*" not in tok:
         cands.append(tok + "/**")
-    globs = [t for t in touches if isinstance(t, str) and t] + list(ALWAYS_IN_SCOPE)
+    globs = [t for t in touches if isinstance(t, str) and t] + list(always_in_scope())
     return any(touches_overlap(c, t, ()) for c in cands for t in globs)
 
 

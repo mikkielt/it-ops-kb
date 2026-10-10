@@ -46,6 +46,28 @@ def test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults():
     assert values == {k: d for k, (_, d) in bl_base.SETTINGS.items()}
 
 
+def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees(tmp_path):
+    prefixes = {"epic": "AA", "story": "BB", "task": "CC", "subtask": "DD", "bug": "EE", "sprint": "FF"}
+    (tmp_path / "backlog.json").write_text(json.dumps({"item_dir": "work/items", "id_prefixes": prefixes,
+                                                       "worktree_dir": "wt/agents", "trackers": TRACKERS}),
+                                           encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+
+    def bl(*args):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", str(tmp_path), *args],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
+        assert "Traceback" not in p.stderr, p.stderr
+        return p.returncode, p.stdout + p.stderr
+
+    code, out = bl("new", "story", "--title", "Probe", "--goal", "Probe goal", "--external", "jira=PROJ-1")
+    assert code == 0, out
+    iid = re.search(r"\bBB-[a-z2-7]{8}\b", out).group(0)
+    assert (tmp_path / "work" / "items" / f"{iid}.json").is_file()
+    assert "id is not" not in bl("check")[1] and "items=1 " in bl("check")[1]
+    code, out = bl("dispatch", iid, "--dry-run")
+    assert code == 0 and f"/wt/agents/agent-{iid} " in out.replace("\\", "/")  # the path's head may be withheld
+
+
 @pytest.mark.parametrize("data, key", [({"item_dri": "x"}, "item_dri"), ({"always_in_scope": "kb/**"}, "always_in_scope")])
 def test_backlog_config_refuses_an_unknown_key_and_a_wrong_type_naming_the_key(tmp_path, data, key):
     (tmp_path / "backlog.json").write_text(json.dumps(data), encoding="utf-8")
