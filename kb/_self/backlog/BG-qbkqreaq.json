@@ -2,7 +2,7 @@
   "id": "BG-qbkqreaq",
   "kind": "bug",
   "title": "agent-caching.md gives the OpenAI write-plus-one-reuse cost as 1.35x beside GPT-6.1 Sol's 0.05x read, though S2133 gives 1.35x at the 0.1x read rate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,18 @@
     "parked: SP-caqrexqw review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F1: the held-out answer rate (lookup_heldout.csv). Premise (2026-10-10, base origin/main): the repro exits 1: agent-caching.md:50 gives 1.35x in one line with the 0.05x read of GPT-6.1 Sol and no 'at the 0.1x' qualifier. Ordered after the sprint's research story and before the other items that re-anchor or prune doc2query rows.",
-  "claimed_by": "kb-worker-qbkqreaq"
+  "evidence": {
+    "commit": "ddfe40a37b329a94ffaa8618ba82cddc14b80c99",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;l=[x for x in open('kb/public/agents/agent-caching.md',encoding='utf-8') if '1.35x' in x];sys.exit(int(any('0.05x' in x and 'at the 0.1x' not in x for x in l)))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
