@@ -2,7 +2,7 @@
   "id": "ST-koznprpg",
   "kind": "story",
   "title": "An orchestrator whose main checkout another session uses moves to its own worktree before its first claim, and land and dispatch accept worker worktrees under it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,
@@ -39,5 +39,18 @@
     "parked: SP-befc6yqr close"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: for a clone that is a linked worktree, bl_land.worker_dirs names only its own .claude/worktrees, selfcheck's checkout check fails it, and the run step 2 does not name the move (the story's check and its tasks' checks). Run at plan 2026-10-10: all four exit 1 on the base, so the premise reproduces. Split into tasks TK-lwihhcmj (land), TK-wddzrzod (selfcheck) and TK-tbbknjul (the skill), run in that order. dispatch makes its worktree under the toplevel of the clone it runs in, which land accepts, so the story's check pins that and no dispatch task is planned. The earlier check, backlog.py check, passed on the base and proved nothing, so it was replaced.",
-  "claimed_by": "orch-avwlotax"
+  "evidence": {
+    "commit": "8f3115bb7494b92f35f272c064f2dc9509e33469",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,pathlib,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bl_land,bl_dispatch;d=os.path.realpath(tempfile.mkdtemp());m=d+'/main';g=lambda*a:subprocess.run(['git','-C',m,*a],check=True,capture_output=True);subprocess.run(['git','init','-q',m],check=True);g('-c','user.name=t','-c','user.email=t@e','commit','-q','--allow-empty','-m','x');g('worktree','add','-q',d+'/linked','-b','l');w=m+'/.claude/worktrees/agent-ST-aaaaaaaa';g('worktree','add','-q',w,'-b','work/ST-aaaaaaaa');r=bl_land.release_worker_worktree(d+'/linked',pathlib.Path(w),None,branch='work/ST-aaaaaaaa');t={str(p) for p in bl_land.worker_dirs(d+'/linked')};p=str(bl_dispatch.worktree_path(d+'/linked','ST-aaaaaaaa').parent);ok=r is None and p in t;print('land releases a main checkout worker and dispatch workers of a linked worktree stay accepted:',ok,r);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f8a2d050bbbdde12"
+      }
+    ]
+  }
 }
