@@ -670,9 +670,31 @@ def intake_drafts(path, status_lines, branch=None):
     return found
 
 
+def own_checkout_drafts(root, status_lines):
+    """[relative path] of the intake drafts of the checkout ROOT that land runs in, when `git status --porcelain -uall`
+    STATUS_LINES hold nothing else: each an untracked kb/_self/backlog/*.json that no commit of HEAD names and whose
+    links carry a `fingerprint` and a `detector` (a filed intake candidate, not a hand-filed item). One other line,
+    or one untracked item file that is no such draft, makes it [], so nothing is moved and `clean tree` refuses."""
+    drafts = intake_drafts(root, status_lines)
+    if len(drafts) < len(status_lines):
+        return []
+    for rel in drafts:
+        try:
+            links = json.loads((Path(root) / rel).read_text(encoding="utf-8")).get("links")
+        except (OSError, ValueError, AttributeError):
+            return []
+        links = [x for x in links if isinstance(x, str)] if isinstance(links, list) else []
+        if not (bl_intake.detector_of({"links": links}) and any(
+                x.startswith(bl_intake.FP_LINK) and bl_intake.FP_RE.fullmatch(x[len(bl_intake.FP_LINK):])
+                for x in links)):
+            return []
+    return drafts
+
+
 def set_aside_drafts(root, path, drafts):
-    """Move the DRAFTS (relative paths) of the worker's worktree PATH to `bl_intake.INTAKE_ASIDE` of ROOT, under the
-    worktree's name, never over a file there. Returns [(source, destination)] of those moved."""
+    """Move the DRAFTS (relative paths) of the worktree PATH, a worker's or the checkout land runs in, to
+    `bl_intake.INTAKE_ASIDE` of ROOT, under the worktree's name, never over a file there. Returns [(source,
+    destination)] of those moved."""
     moved = []
     for rel in drafts:
         src = Path(path) / rel
@@ -1297,6 +1319,10 @@ def land_once(bl, a):
     upstream = f"refs/remotes/{remote}/main"
     landed = False  # set once the item is done on the integration main: then its work/<id> branch is deleted
     pushed = False  # set once this run's push went through (a landing or a code item's merge request)
+    drafts = own_checkout_drafts(root, git(root, "status", "--porcelain", "-uall").splitlines())
+    for _, dest in set_aside_drafts(root, root, drafts):  # the checkout's own SessionStart hook filed them
+        say(f"land: moved the untracked intake draft {dest.name} out of this checkout to {dest.parent} "
+            "(copy it back to kb/_self/backlog/ to triage it)")
     if git(root, "status", "--porcelain").strip():
         raise land_stop("clean tree", "uncommitted changes: commit or stash them first (git status --short)")
     if not has_ref(root, f"refs/heads/{branch}"):

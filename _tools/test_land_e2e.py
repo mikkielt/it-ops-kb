@@ -1,10 +1,12 @@
-"""`backlog.py land ID` end to end in a scenario clone, in two scenarios on two workers (a class each). One: an item whose
-branch sits in a finished worker's worktree that holds an untracked intake draft lands on origin/main: `land` moves the
-draft aside and says so, and still refuses any other untracked file; a research story's `done` needs its note on outside
-facts. Two: a commit of an item that changes a mapped tool and no doc is refused at `done` with stale-docs, and a
+"""`backlog.py land ID` end to end in a scenario clone, in three scenarios on three workers (a class each). One: an item
+whose branch sits in a finished worker's worktree that holds an untracked intake draft lands on origin/main: `land` moves
+the draft aside and says so, and still refuses any other untracked file; a research story's `done` needs its note on
+outside facts. Two: a commit of an item that changes a mapped tool and no doc is refused at `done` with stale-docs, and a
 `Self-Reviewed:` trailer naming the docs clears that; an item whose check fails stops `land` at its step and leaves
 origin/main where it was; a content landing that adds a CODE tag with no pointer to an article stops at step `lint`,
-which ran on that article's path alone."""
+which ran on that article's path alone. Three: the checkout `land` runs in holds untracked intake drafts and nothing else:
+`land` moves them aside and says so before its clean tree step, keeps them there when it stops at a later step, and
+refuses at clean tree, moving nothing, when another file or an item that is no filed draft is there."""
 import json
 import re
 from pathlib import Path
@@ -139,6 +141,43 @@ class TestStoppedLand:
         assert code != 0 and "land stopped at step lint" in out, out
         assert "CODE tag without a path#symbol pointer" in out and f"lint.py {article[3:]} exited 1" in out, out
         assert origin_main(scenario) == moved and item(scenario, lint)["status"] == "doing"
+
+
+class TestOwnCheckoutDrafts:
+    def test_land_moves_own_checkout_drafts_then_refuses_other_files(self, scenario):
+        repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"))
+        before = origin_main(scenario)
+        work(repo, good, "kb/_self/good.md")
+        repo.git("checkout", "-q", "main")  # land runs on main in this checkout, which holds the hook's drafts
+        aside = Path(repo.file("_cache/intake-drafts")) / Path(repo.path).name
+
+        def plant(name, links):
+            doc = {"id": name, "kind": "bug", "title": "A finding", "status": "draft", "links": links}
+            repo.write(f"{PLAN}/{name}.json", json.dumps(doc) + "\n")
+            return f"{PLAN}/{name}.json"
+
+        filed = ["fingerprint 0123456789ab", "detector drift"]
+        draft, handmade, stray = plant("BG-0a1b2c3d", filed), plant("BG-0e1f2a3b", ["parked: later"]), "kb/_self/stray.md"
+        repo.write(stray, "# stray\n")
+        for other in (stray, handmade):  # one file that is no filed draft keeps every draft where it is
+            code, out = bl(repo, "land", good)
+            assert code != 0 and "land stopped at step clean tree" in out and "moved the untracked" not in out, out
+            assert Path(repo.file(draft)).is_file() and not aside.exists(), out
+            (Path(repo.file(other))).unlink()
+
+        code, out = bl(repo, "land", good, "--branch", "work/ST-00000000")  # a later step stops it: drafts stay aside
+        assert code != 0 and "land stopped at step branch" in out, out
+        assert "moved the untracked intake draft BG-0a1b2c3d.json out of this checkout" in out, out
+        assert (aside / "BG-0a1b2c3d.json").is_file() and not Path(repo.file(draft)).exists(), out
+        assert origin_main(scenario) == before and repo.git("status", "--porcelain").strip() == ""
+
+        second = plant("BG-4c5d6e7f", ["fingerprint ba9876543210", "detector trailers"])
+        code, out = bl(repo, "land", good)
+        assert code == 0 and "landed" in out, out
+        assert "moved the untracked intake draft BG-4c5d6e7f.json out of this checkout" in out, out
+        assert (aside / "BG-4c5d6e7f.json").is_file() and (aside / "BG-0a1b2c3d.json").is_file(), out
+        assert not Path(repo.file(second)).exists() and item(scenario, good)["status"] == "done"
+        assert repo.rev("main") == origin_main(scenario) != before
 
 
 def test_empty_selection_refused_and_gone_once(monkeypatch, capsys):
