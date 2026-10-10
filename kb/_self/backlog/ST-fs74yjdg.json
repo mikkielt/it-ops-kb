@@ -2,7 +2,7 @@
   "id": "ST-fs74yjdg",
   "kind": "story",
   "title": "Review sprint: backlog.py fixes: land, drop, precheck and usage text",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-m3azo2y7",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-m3azo2y7"
+  "evidence": {
+    "commit": "79f6368c8b17eb62ea55ea6c4c4e7a09ef615070",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "4e1ae5f68ceaab4e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "ef38eae112643c46"
+      }
+    ]
+  }
 }
