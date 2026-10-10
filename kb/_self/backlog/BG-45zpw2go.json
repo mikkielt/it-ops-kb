@@ -2,7 +2,7 @@
   "id": "BG-45zpw2go",
   "kind": "bug",
   "title": "A background land closes its window once land's own checkout holds the done commit, though the landing may still fail",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lyfnpu37",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,6 @@
     "parked: SP-wgx4pq4r review",
     "merged: BG-p7bp24ee"
   ],
-  "notes": "Merged from BG-p7bp24ee at the 2026-10-10 backlog triage: its repro (done only on origin/main, the checkout lags) is the second check and still exits 1; it is the other side of this bug in the same function, settle_pending, which should read done from origin/main, not the checkout file. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Merged from BG-p7bp24ee at the 2026-10-10 backlog triage: its repro (done only on origin/main, the checkout lags) is the second check and still exits 1; it is the other side of this bug in the same function, settle_pending, which should read done from origin/main, not the checkout file. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
+  "claimed_by": "kb-worker-45zpw2go"
 }
