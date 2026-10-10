@@ -53,6 +53,19 @@
       "class": "agents-rule",
       "answer": "last 20 lines of the check's stdout and stderr together, under the check's own line",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Does precheck also say a failing check is broken, not a failing premise, when its output holds a traceback?",
+      "options": [
+        "yes: one clause on the check's line when the output holds Traceback (most recent call last)",
+        "no: print only the last 20 lines"
+      ],
+      "recommendation": "yes: one clause on the check's line when the output holds Traceback (most recent call last)",
+      "class": "agents-rule",
+      "answer": "yes: one clause on the check's line when the output holds Traceback (most recent call last)",
+      "by": "operator"
     }
   ],
   "links": [

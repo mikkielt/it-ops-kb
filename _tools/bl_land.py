@@ -2269,21 +2269,23 @@ def cmd_close(bl, a):
 
 
 PRECHECK_NOTE = "passes before the work"  # an item's notes saying so keep its passing checks out of precheck's warnings
+PRECHECK_TAIL = 20  # lines of a failing check's output that precheck prints under the check's line
+TRACEBACK = "Traceback (most recent call last)"
 
 
 def precheck_rows(bl, sid):
-    """[(item id, check, exit code, passed)] of each check, and of a bug its repro after them, of the sprint's open
-    committed items, run once on the checkout as it is (before any work commit), as `done` runs them; the review and
-    research stories are left out: the review's checks pass by design, and the research story's (`researched`) fails
-    until its research is written."""
+    """[(item id, check, exit code, passed, output)] of each check, and of a bug its repro after them, of the sprint's
+    open committed items, run once on the checkout as it is (before any work commit), as `done` runs them; the review
+    and research stories are left out: the review's checks pass by design, and the research story's (`researched`)
+    fails until its research is written."""
     rows = []
     for iid in sorted(bl.sprint_items(sid)):
         it = bl.items[iid]
         if it.get("status") not in ("draft", "todo", "doing") or it.get("review") or it.get("goal_research"):
             continue
         for c in list(it.get("checks", []) or []) + ([it["repro"]] if it.get("repro") else []):
-            ok, code, _ = run_check(bl.root, c)
-            rows.append((iid, c, code if code is not None else -1, ok))
+            ok, code, out = run_check(bl.root, c)
+            rows.append((iid, c, code if code is not None else -1, ok, out))
     return rows
 
 
@@ -2340,14 +2342,17 @@ def cmd_precheck(bl, a):
     that passes already: it proves nothing yet, unless the item's notes say the check passes before the work (one that
     pins behaviour that must stay). It also warns, whether the check or repro passes or not, of one that is the
     `intake --status` of a time-windowed detector (repeats, trailers), naming when it can first pass, so the item is
-    moved or gated before the start. kb-sprint plan runs it before the start gate is asked, so start stays fast."""
+    moved or gated before the start. A check that fails prints its line and the last PRECHECK_TAIL lines of its output
+    (stdout and stderr together) under it, so a planner sees whether it fails for the premise or for another reason; a
+    traceback in that output is said to be a broken check, not a failing premise. kb-sprint plan runs it before the
+    start gate is asked, so start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
         raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
     rows = precheck_rows(bl, sid)
     passing = 0
     calls = {}
-    for iid, c, code, ok in rows:
+    for iid, c, code, ok, out in rows:
         fp = intake_fingerprint(c)
         win = windowed_detector(bl.root, fp, calls) if fp else None
         if win:
@@ -2356,7 +2361,17 @@ def cmd_precheck(bl, a):
                     f"it can first pass {when}; move the item to a sprint that starts after that, or gate it, before the start")
             say(f"warning: {bl.label(iid)}: `{shlex.join(c['run'])}` is the intake --status of the time-windowed "
                 f"detector {name}: it judges {judges}; {tail}")
-        if not ok or PRECHECK_NOTE in (bl.items[iid].get("notes") or ""):
+        if not ok:
+            lines = out.strip().splitlines()
+            broken = ("; the output holds a traceback: the check is broken (an exception), not a failing premise"
+                      if TRACEBACK in out else "")
+            say(f"{bl.label(iid)}: `{shlex.join(c['run'])}` fails before the work (exit {code}){broken}; "
+                + (f"the last {min(len(lines), PRECHECK_TAIL)} of {len(lines)} lines of its output:" if lines
+                   else "it printed nothing"))
+            for line in lines[-PRECHECK_TAIL:]:
+                say(f"    {line}")
+            continue
+        if PRECHECK_NOTE in (bl.items[iid].get("notes") or ""):
             continue
         passing += 1
         say(f"warning: {bl.label(iid)}: `{shlex.join(c['run'])}` already exits {code} before the work: it proves "
