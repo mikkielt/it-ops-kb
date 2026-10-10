@@ -311,7 +311,13 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
     assert f"- {ids['sibling']} \u201csibling item\u201d: b.txt" in out  # the in-flight sibling and its files
     assert f"- {ids['work']} \u201cwork item\u201d" not in out
     assert "- `tests/test_x.py::test_y`: BG-aaaaaaaa" in out
-    assert f"KB-Work: {ids['work']}" in out and "never `tests.py --changed`" in out
+    plugin_backlog = bl_base.withhold(f"python3 {Path(TOOLS).parent.as_posix()}/_tools/backlog.py")  # no _tools/ here:
+    # the plugin's, by its full path (the printed brief withholds the user's name in it, as the line above does)
+    assert f"KB-Work: {ids['work']}" in out and f"`{plugin_backlog} gate add {ids['work']} --kind provisional" in out
+    assert "python3 _tools/backlog.py" not in out and f"(`{plugin_backlog} goal {ids['work']}`)" in out
+    assert f"`{plugin_backlog} done {ids['work']}` exits 0" in out  # the goal text's own `done` command too
+    assert "this project has no `_tools/tests.py`" in out and "never `tests.py --changed`" not in out  # its own checks
+    assert "`tests.py` result" not in out and "the result of the project's own checks" in out
     assert "No docs map is set for this project" in out  # the throwaway repository has no docs map and no _tools/rag.py
 
     def dry(item, *more):
@@ -742,3 +748,20 @@ def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugin
     own.write_text("# the project's own role file\n", encoding="utf-8", newline="\n")
     line = bl_dispatch.role_file_line(tmp_path)  # a project with its own keeps it
     assert "Your role file is `.claude/agents/kb-worker.md`" in line and "plugin" not in line.split("backlog. ")[1], line
+    # the fixed rules and report: the kb's own wording where the project has the tool, else the project's own checks
+    full = f"python3 {plugin.as_posix()}/_tools/backlog.py"
+    assert bl_dispatch.backlog_cmd(tmp_path) == full  # no `_tools/backlog.py` under the project: the plugin's, by path
+    host = "\n".join(bl_dispatch.worker_rules(tmp_path, "TK-aaaaaaaa", "work/TK-aaaaaaaa")) + bl_dispatch.report_line(tmp_path)
+    assert f"`{full} gate add TK-aaaaaaaa --kind" in host and f"`{full} referrers SYMBOL --item TK-aaaaaaaa`" in host
+    assert "python3 _tools/" not in host and "tests --changed" not in host and "test lock and waits" not in host
+    assert "no `_tools/tests.py`" in host and "no `_tools/tests_ceiling.json`" in host and "selfdoc.py" not in host
+    tools = tmp_path / "_tools"
+    tools.mkdir()
+    for name in ("backlog.py", "tests.py", "tests_ceiling.json", "selfdoc.py"):  # a project that has the kb's tools
+        (tools / name).write_text("", encoding="utf-8", newline="\n")
+    assert bl_dispatch.backlog_cmd(tmp_path) == "python3 _tools/backlog.py"
+    kb = "\n".join(bl_dispatch.worker_rules(tmp_path, "TK-aaaaaaaa", "work/TK-aaaaaaaa")) + bl_dispatch.report_line(tmp_path)
+    assert "`python3 _tools/backlog.py gate add TK-aaaaaaaa --kind" in kb and "never `tests.py --changed`" in kb
+    assert "`_tools/tests_ceiling.json`" in kb and "`selfdoc.py stale --since <the item's base>`" in kb
+    assert "`tests.py` result, `selfdoc.py stale --since origin/main` result, the staging" in kb
+    assert "the project's own checks" not in kb and str(plugin.as_posix()) not in kb
