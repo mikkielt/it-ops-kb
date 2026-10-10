@@ -2,7 +2,7 @@
   "id": "ST-ifljijni",
   "kind": "story",
   "title": "An operator can rescope a sprint's goal, and close --summary maps clauses to the sprint's own items",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x5gjv4r7",
   "priority": "P3",
   "rank": 0,
@@ -94,5 +94,6 @@
   "links": [
     "merged: ST-27vxkvm6"
   ],
-  "notes": "Premise (2026-10-10, run): goal_clause_lines for the sprint goal 'the alpha reader works; passing' prints '2. passing: unmet, carried by ST-2' for an open item elsewhere (the second check prints it), and bl_items.py:472 refuses set --goal on a sprint ('a sprint takes notes, links and delegates only'); move --sprint none prints only 'moved ... to no sprint' (the fourth check prints it). The first check plants a --root repo, so it does not break when a live sprint closes. The third and fourth checks read the wording 'similar open item outside the sprint' and 'set SP-... --goal ... --by operator': rename in the check if the work words them otherwise. Merged from ST-27vxkvm6 at the 2026-10-10 backlog triage (its goal is folded into this goal): move --sprint none out of a planned sprint prints the clause left behind and names set SP --goal G --by operator."
+  "notes": "Premise (2026-10-10, run): goal_clause_lines for the sprint goal 'the alpha reader works; passing' prints '2. passing: unmet, carried by ST-2' for an open item elsewhere (the second check prints it), and bl_items.py:472 refuses set --goal on a sprint ('a sprint takes notes, links and delegates only'); move --sprint none prints only 'moved ... to no sprint' (the fourth check prints it). The first check plants a --root repo, so it does not break when a live sprint closes. The third and fourth checks read the wording 'similar open item outside the sprint' and 'set SP-... --goal ... --by operator': rename in the check if the work words them otherwise. Merged from ST-27vxkvm6 at the 2026-10-10 backlog triage (its goal is folded into this goal): move --sprint none out of a planned sprint prints the clause left behind and names set SP --goal G --by operator.",
+  "claimed_by": "kb-worker-ifljijni"
 }
