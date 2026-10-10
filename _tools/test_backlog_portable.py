@@ -333,3 +333,53 @@ def test_backlog_cost_no_capture_names_the_spool_and_prints_no_table_of_zeros(tm
     assert "no item line" not in out and "no capture" not in out
     assert "direct (main):" in out and "session total (direct + attributed + shared):" in out
     assert "claude-sonnet-5-5  requests 2  in 10  cr 5  out 7 | cw 0" in out
+
+
+def orphan_in(cwd, log, seconds=60):
+    """The pid of a python process that sleeps in the directory CWD, its standard output appended to LOG and its
+    parent (the launcher that started it) already gone: what a session-end hook's distill is for a few seconds."""
+    launcher = ("import subprocess, sys; log = open(sys.argv[2], 'ab'); p = subprocess.Popen([sys.executable, '-c', "
+                "'import time; time.sleep(' + sys.argv[3] + ')'], cwd=sys.argv[1], stdin=subprocess.DEVNULL, "
+                "stdout=log, stderr=log, start_new_session=True); print(p.pid)")
+    started = subprocess.run([sys.executable, "-c", launcher, str(cwd), str(log), str(seconds)], capture_output=True,
+                             text=True)
+    return int(started.stdout.strip())
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows exposes no process's working directory")
+def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stray_process_still_fails(tmp_path,
+                                                                                                    monkeypatch):
+    """A run whose standard output is the clone's distill.log and whose parent has exited, younger than
+    bl_procs.HOOK_GRACE_S, is a `hook` that the orphans check names with its age and passes; the same run once it is
+    older, and a stray process with another standard output, fail it."""
+    import bl_procs
+    import bl_selfcheck
+    log = tmp_path / "_cache" / "querylog" / "distill.log"
+    log.parent.mkdir(parents=True)
+    pids = []
+    try:
+        hook = orphan_in(tmp_path, log)
+        pids.append(hook)
+        procs, _, why = bl_procs.snapshot(str(tmp_path))
+        if procs is None:
+            pytest.skip(why)
+        assert {p["pid"]: p["kind"] for p in procs} == {hook: bl_procs.HOOK}, procs
+        check = bl_selfcheck.check_orphans(str(tmp_path))
+        assert check["state"] == "ok" and f"hook(s) in flight: pid {hook} " in check["detail"], check
+        assert "orphan(s)" not in check["detail"] and "age " in check["detail"], check
+
+        stray = orphan_in(tmp_path, tmp_path / "stray.log")
+        pids.append(stray)
+        check = bl_selfcheck.check_orphans(str(tmp_path))
+        assert check["state"] == "fail" and f"pid {stray} " in check["detail"], check
+        assert f"pid {hook} " not in check["detail"], check  # the young hook is no orphan beside it
+
+        monkeypatch.setattr(bl_procs, "HOOK_GRACE_S", 0)  # the same run, no longer younger than the grace
+        check = bl_selfcheck.check_orphans(str(tmp_path))
+        assert check["state"] == "fail" and f"pid {hook} " in check["detail"] and "2 orphan(s)" in check["detail"], check
+    finally:
+        for pid in pids:
+            try:
+                os.kill(pid, 15)
+            except OSError:
+                pass

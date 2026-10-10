@@ -58,6 +58,30 @@
       "class": "agents-rule",
       "answer": "60 seconds",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How do procs, selfcheck and land tell a session-end hook's querylog.py distill run from an orphan a worker left, given that they never read a command line?",
+      "options": [
+        "its standard output is the clone's _cache/querylog/distill.log (read from /proc fd 1 or lsof -d 1)",
+        "its command line names querylog.py distill (reads each orphan's command line)"
+      ],
+      "recommendation": "its standard output is the clone's _cache/querylog/distill.log (read from /proc fd 1 or lsof -d 1)",
+      "class": "querylog",
+      "answer": "its standard output is the clone's _cache/querylog/distill.log (read from /proc fd 1 or lsof -d 1)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How often does land look at a worktree's processes while it waits for a session-end hook?",
+      "options": [
+        "every second",
+        "every 5 seconds"
+      ],
+      "recommendation": "every second",
+      "class": "agents-rule"
     }
   ],
   "links": [

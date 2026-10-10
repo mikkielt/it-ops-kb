@@ -1,19 +1,25 @@
-"""`backlog.py land ID` end to end in a scenario clone, in three scenarios on three workers (a class each). One: an item
-whose branch sits in a finished worker's worktree that holds an untracked intake draft lands on origin/main: `land` moves
+"""`backlog.py land ID` end to end in a scenario clone, in three scenarios on three workers (a class each), and the step
+that frees a worker's worktree in a fourth class. One: an item whose branch sits in a finished worker's worktree that holds an untracked intake draft lands on origin/main: `land` moves
 the draft aside and says so, and still refuses any other untracked file; a research story's `done` needs its note on
 outside facts. Two: a commit of an item that changes a mapped tool and no doc is refused at `done` with stale-docs, and a
 `Self-Reviewed:` trailer naming the docs clears that; an item whose check fails stops `land` at its step and leaves
 origin/main where it was; a content landing that adds a CODE tag with no pointer to an article stops at step `lint`,
 which ran on that article's path alone. Three: the checkout `land` runs in holds untracked intake drafts and nothing else:
 `land` moves them aside and says so before its clean tree step, keeps them there when it stops at a later step, and
-refuses at clean tree, moving nothing, when another file or an item that is no filed draft is there."""
+refuses at clean tree, moving nothing, when another file or an item that is no filed draft is there. The fourth class,
+on a throwaway repository: a finished worker's worktree that a session-end hook's run (its parent gone, its standard
+output the clone's distill.log) still holds is waited for and then removed; the wait is bounded by
+`bl_procs.HOOK_GRACE_S` and skipped for a process whose parent lives."""
 import json
+import os
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-from conftest import requires_git
+from conftest import Repo, requires_git
 
 pytestmark = [pytest.mark.git, requires_git]
 
@@ -221,3 +227,67 @@ def test_empty_selection_refused_and_gone_once(monkeypatch, capsys):
     assert bl_land.rerun_done_checks(fake, "SP-00000001") == [] and len(runs) == 1 and fake.saved == [done["id"]]
     assert bl_land.rerun_done_checks(fake, "SP-00000001") == [] and len(runs) == 1, runs  # not run again
     assert "gone check: python3 _tools/tests.py -k zzz_no_such_test" in bl_land.summary_line(fake, done["id"], set())
+
+
+def orphan_in(cwd, log, seconds):
+    """The pid of a python process that sleeps SECONDS in the directory CWD, its standard output appended to LOG and its
+    parent (the launcher that started it) already gone: what a session-end hook's distill is for a few seconds."""
+    launcher = ("import subprocess, sys; log = open(sys.argv[2], 'ab'); p = subprocess.Popen([sys.executable, '-c', "
+                "'import time; time.sleep(' + sys.argv[3] + ')'], cwd=sys.argv[1], stdin=subprocess.DEVNULL, "
+                "stdout=log, stderr=log, start_new_session=True); print(p.pid)")
+    started = subprocess.run([sys.executable, "-c", launcher, str(cwd), str(log), str(seconds)], capture_output=True,
+                             text=True)
+    return int(started.stdout.strip())
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows exposes no process's working directory")
+class TestHookWait:
+    def test_land_waits_hook_of_a_finished_session_then_removes_its_worktree(self, tmp_path, capsys):
+        """The step of `land` that frees a finished worker's worktree, on a real worktree whose only process is a run
+        its session's end hook started: it waits for it, removes the worktree, and says so."""
+        import bl_land
+        repo = Repo(tmp_path / "clone")
+        os.makedirs(repo.path)
+        repo.git("init", "-q", "-b", "main")
+        repo.write("a.txt", "a\n")
+        repo.commit("base")
+        worker = Path(repo.file(".claude/worktrees/agent-ST-00000001"))
+        repo.git("worktree", "add", "-q", "-b", "work/ST-00000001", str(worker))
+        log = Path(repo.file("_cache/querylog/distill.log"))  # the standard output of the run a SessionEnd starts
+        log.parent.mkdir(parents=True)
+        pid = orphan_in(worker, log, 3)
+        try:
+            why = bl_land.release_worker_worktree(Path(repo.path), worker, None, "work/ST-00000001")
+        finally:
+            try:
+                os.kill(pid, 15)
+            except OSError:
+                pass
+        said = capsys.readouterr().out
+        assert why is None and not worker.exists(), (why, said)
+        assert "land: waited " in said and "for the session-end hook to end" in said, said
+
+    def test_land_waits_hook_at_most_the_bound_and_not_for_a_process_whose_parent_lives(self, monkeypatch):
+        import bl_land
+        import bl_procs
+        now = [0.0]
+        looks = []
+        monkeypatch.setattr(bl_land, "live_processes", lambda path: looks.append(now[0]) or ([(4242, "python3")], None))
+        monkeypatch.setattr(bl_procs, "hook_pids", lambda root, pids: {4242})
+
+        def table(parent):
+            return {4242: (parent, 0, "python3"), 1: (0, 0, "launchd"), 77: (1, 0, "claude")}
+
+        monkeypatch.setattr(bl_procs, "process_table", lambda: table(1))  # its parent is gone: a hook in flight
+        sleeps = []
+        procs, waited, hooks = bl_land.wait_for_hooks(
+            Path("w"), [(4242, "python3")], clock=lambda: now[0], sleep=lambda s: (sleeps.append(s), now.__setitem__(
+                0, now[0] + s)))
+        assert procs == [(4242, "python3")] and waited == bl_procs.HOOK_GRACE_S == 60 and hooks == {4242}, procs
+        assert len(sleeps) == 60 and looks[-1] == 60.0, (len(sleeps), looks[-1])  # it looked each second, then gave up
+
+        monkeypatch.setattr(bl_procs, "process_table", lambda: table(77))  # a live session's own process: no wait
+        now[0], sleeps[:] = 0.0, []
+        procs, waited, _ = bl_land.wait_for_hooks(Path("w"), [(4242, "python3")], clock=lambda: now[0],
+                                                  sleep=lambda s: sleeps.append(s))
+        assert procs == [(4242, "python3")] and waited == 0 and sleeps == []

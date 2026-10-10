@@ -24,7 +24,9 @@ The seven checks, each independent and each a result {name, state, detail, remed
                signals, read from the claims, git and the worktrees' processes)
   orphans      no process in a checkout of the clone runs on after its parent is gone (`bl_procs.snapshot`'s
                `orphan`: a background run a session left behind, named, never signaled; a foreign process is a live
-               session's and no failure); `unknown` on a host that cannot list working directories
+               session's and no failure, nor is a `hook`, a session-end run of the query log's distill younger than
+               `bl_procs.HOOK_GRACE_S`, named with its age in the result's detail); `unknown` on a host that cannot
+               list working directories
   main         the newest `ci.pipeline` row (`bl_stall.main_state`, the row `red-pipeline` writes) is not red;
                `unknown` with no row, which `backlog.py red-pipeline --status` reads from the forge (the one network
                call, never made here, so the check is offline and fast)
@@ -296,6 +298,11 @@ def check_orphans(root, snapshot=bl_procs.snapshot):
     if orphans:
         return result("orphans", "fail", f"{len(orphans)} orphan(s): "
                       + listing(f"pid {p['pid']} {p['comm']} in {p['where']}" for p in orphans), REMEDY["orphans"])
+    hooks = [p for p in procs if p["kind"] == bl_procs.HOOK]
+    if hooks:  # a session-end hook delivering, its parent gone for a few seconds: in flight, not left behind
+        now = time.time()
+        return result("orphans", "ok", "no orphan runs in a checkout of this clone; hook(s) in flight: " + listing(
+            f"pid {p['pid']} {p['comm']} age {bl_procs.age_text(now - p['start'])}" for p in hooks))
     return result("orphans", "ok", "no orphan runs in a checkout of this clone")
 
 
