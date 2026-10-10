@@ -2,7 +2,7 @@
   "id": "ST-skly3kh3",
   "kind": "story",
   "title": "A review's parked draft is filed with a check, so backlog.py check has no error and the land e2e test stays green",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,

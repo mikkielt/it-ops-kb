@@ -2,7 +2,7 @@
   "id": "ST-jv27pfin",
   "kind": "story",
   "title": "precheck says which part of a check fails, and planning checks pool rows with bench_pool's own predicates",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-avwlotax",
   "priority": "P2",
   "rank": 0,

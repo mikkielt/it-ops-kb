@@ -2,7 +2,7 @@
   "id": "ST-koznprpg",
   "kind": "story",
   "title": "An orchestrator whose main checkout another session uses moves to its own worktree before its first claim, and land and dispatch accept worker worktrees under it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,

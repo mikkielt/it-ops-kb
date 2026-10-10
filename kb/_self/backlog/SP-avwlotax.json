@@ -2,7 +2,7 @@
   "id": "SP-avwlotax",
   "kind": "sprint",
   "title": "Planning rules 2: plan-time warnings and probes",
-  "status": "planned",
+  "status": "active",
   "goal": "backlog.py check warns when an item's goal names an F-<12 hex> gap finding its links lack; precheck prints a failing check's output and planning checks pool rows with bench_pool's own predicates; planning probes a query-log finding with pack --root _self before naming it off-domain; a research story's rows in lookup_eval.csv land with land, not done; a review's parked draft is filed with a check; a refresh that changes a figure finds every place in the root repeating the old one before done; an orchestrator whose main checkout another session uses moves to its own worktree, and land and dispatch accept its workers' worktrees",
   "gates": [
     {
