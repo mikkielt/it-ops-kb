@@ -2,7 +2,7 @@
   "id": "ST-7j6dm5wq",
   "kind": "story",
   "title": "The stranded and queued query-log findings are closed with their reasons, and the queue's tool defect becomes a backlog bug",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-flkl5gom",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,27 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-7j6dm5wq"
+  "evidence": {
+    "commit": "7a8d64b106279be58df4bb1a34408057452122d2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;ids=['F-071ee8797647','F-6f7e881cdca1','F-740275aab993','F-32e0e03abedf','F-b28d0d79b19b','F-fe10582bc61f','F-80eef23e135d','F-cd5fa1250653','F-6ac5244b1e3d'];r=subprocess.run(['python3','_tools/querylog.py','show','--findings','--state','no-fix','--limit','0'],capture_output=True,text=True);left=[i for i in ids if i in r.stdout];print('still no-fix:',left or 'none');sys.exit(0 if r.returncode==0 and not left else 1)"
+        ],
+        "exit": 0,
+        "sha256": "cf5cd2634ec28ebb"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run(['python3','_tools/querylog.py','queue','20'],capture_output=True,text=True);ok=r.returncode==0 and 'queued=0' in r.stdout;print(r.stdout.splitlines()[0] if r.stdout else r.stderr);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "6acd66cf04e169b0"
+      }
+    ]
+  }
 }
