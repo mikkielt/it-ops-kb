@@ -377,12 +377,13 @@ def changed_items(bl, edits, reveal=()):
     return True
 
 
-SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to")
+SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to", "repos", "repos_if_needed")
 # the fields set appends to, each by its own flag (with its value's name), the twin of the flag that replaces it
 # (--add-check of --check), so an append names its field and never reaches another one in the same call
 SET_APPEND = {"notes": ("--add-notes", "TEXT"), "links": ("--add-link", "TEXT"), "touches": ("--add-touch", "GLOB"),
               "checks": ("--add-check", "CMD"), "depends_on": ("--add-depends", "ID"),
-              "relates_to": ("--add-relates", "ID"), "external": ("--add-external", "TRACKER=ID")}
+              "relates_to": ("--add-relates", "ID"), "external": ("--add-external", "TRACKER=ID"),
+              "repos": ("--add-repos", "NAME"), "repos_if_needed": ("--add-repos-if-needed", "NAME")}
 
 
 def replace_flag(field):
@@ -948,6 +949,10 @@ def args_set(p):
     p.add_argument("--check", dest="checks", action="append")
     p.add_argument("--depends", dest="depends_on", action="append")
     p.add_argument("--relates", dest="relates_to", action="append")
+    p.add_argument("--repos", action="append", metavar="NAME",
+                   help="replace the repositories the item changes with these (names from backlog.json's repositories)")
+    p.add_argument("--repos-if-needed", dest="repos_if_needed", action="append", metavar="NAME",
+                   help="replace the repositories the item may change with these (a name is in one of the two lists)")
     p.add_argument("--external", action="append", metavar="TRACKER=ID",
                    help="replace the external ids with these (repeatable; --add-external appends)")
     p.add_argument("--priority")

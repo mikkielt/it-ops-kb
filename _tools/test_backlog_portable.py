@@ -50,7 +50,7 @@ def test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults():
     assert values == {k: d for k, (_, d) in bl_base.SETTINGS.items()}
 
 
-def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees(tmp_path):
+def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees_and_multirepo_fields_and_multirepo_default(tmp_path):
     prefixes = {"epic": "AA", "story": "BB", "task": "CC", "subtask": "DD", "bug": "EE", "sprint": "FF"}
     (tmp_path / "backlog.json").write_text(json.dumps({"item_dir": "work/items", "id_prefixes": prefixes,
                                                        "worktree_dir": "wt/agents", "trackers": TRACKERS}),
@@ -67,9 +67,35 @@ def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_t
     assert code == 0, out
     iid = re.search(r"\bBB-[a-z2-7]{8}\b", out).group(0)
     assert (tmp_path / "work" / "items" / f"{iid}.json").is_file()
-    assert "id is not" not in bl("check")[1] and "items=1 " in bl("check")[1]
+    checked = bl("check")[1]
+    assert "id is not" not in checked and "items=1 " in checked
     code, out = bl("dispatch", iid, "--dry-run")
     assert code == 0 and f"/wt/agents/agent-{iid} " in out.replace("\\", "/")  # the path's head may be withheld
+
+    # multirepo_default: no repositories map, a task with touches and no repos is as valid as it was
+    code, out = bl("new", "task", "--title", "Probe task", "--parent", iid, "--goal", "Probe task goal",
+                   "--touch", "x.txt", "--check", "python3 -c 'import os; os.getcwd()'")
+    tid = re.search(r"\bCC-[a-z2-7]{8}\b", out).group(0)
+    assert code == 0 and "to fill in" not in out, out
+    item_file = tmp_path / "work" / "items" / f"{tid}.json"
+
+    # multirepo_fields: with the map declared, set writes the fields and check validates them
+    (tmp_path / "backlog.json").write_text(json.dumps({"item_dir": "work/items", "id_prefixes": prefixes,
+                                                       "repositories": {"api": "repos/api", "web": "repos/web"}}),
+                                           encoding="utf-8")
+    code, out = bl("check")
+    assert code == 1 and "touches without repos: backlog.json declares repositories (api, web)" in out
+    assert bl("set", tid, "--repos", "api", "--add-repos-if-needed", "web")[0] == 0
+    for flags, why in ((("--repos", "nosuch"), "'nosuch', which backlog.json's repositories does not declare"),
+                       (("--add-repos-if-needed", "api"), "'api' is in both repos and repos_if_needed")):
+        code, out = bl("set", tid, *flags)
+        assert code == 2 and why in out, out
+    item = json.loads(item_file.read_text(encoding="utf-8"))
+    assert item["repos"] == ["api"] and item["repos_if_needed"] == ["web"]
+    for bad in ({"workspace": "x"}, {"a": "/abs"}, {"a": "p", "b": "p"}, ["a"]):  # a map the setting refuses
+        (tmp_path / "backlog.json").write_text(json.dumps({"repositories": bad}), encoding="utf-8")
+        values, _, _, problems = bl_base.read_settings(tmp_path, env={})
+        assert values["repositories"] == {} and any("'repositories'" in p for p in problems)
 
 
 def test_backlog_scratch_setting_places_the_workers_scratch_and_refuses_an_absolute_or_dotdot_path(tmp_path,
