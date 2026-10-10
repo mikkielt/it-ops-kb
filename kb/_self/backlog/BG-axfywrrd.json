@@ -1,0 +1,29 @@
+{
+  "id": "BG-axfywrrd",
+  "kind": "bug",
+  "title": "dispatch's brief names python3 _tools/backlog.py and the kb's tests.py rules, which a host project of the plugin does not have",
+  "status": "todo",
+  "parent": "ST-wrsuz64a",
+  "sprint": "SP-ciqk6gt6",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A worker brief that dispatch writes for a project whose backlog.py is the plugin's (its root holds no _tools/backlog.py) names every backlog.py command as python3 ${CLAUDE_PLUGIN_ROOT}-resolved full path of the plugin's _tools/backlog.py, and names the kb-only rules (tests.py and its host lock, _tools/tests_ceiling.json, rag.py packs) only when the project has them, saying the project's own checks run instead; the kb's own briefs are unchanged",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('_tools/bl_dispatch.py').read(); sys.exit(1 if 'python3 _tools/backlog.py gate add' in t else 0)"
+    ]
+  },
+  "repro_reason": "the brief's fixed rules are string constants; running dispatch for a host project needs a second project with the plugin installed, which ST-tyzcqzfo builds",
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-p7ajxp72"
+  ]
+}
