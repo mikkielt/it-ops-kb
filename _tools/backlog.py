@@ -155,9 +155,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo;
                                           a warning (exit 0) for each open P1 item whose `recurs` names 2 or more
                                           sprint ids and that is not in the sprint
-  backlog.py precheck SPRINT              run each committed item's checks once before any work and warn (exit
-                                          0) of each that passes already, unless the item's notes say it
-                                          passes before the work
+  backlog.py precheck SPRINT              run each committed item's checks, and a bug's repro, once before any
+                                          work and warn (exit 0) of each that passes already, unless the item's
+                                          notes say it passes before the work, and of an item whose check or
+                                          repro is the intake --status of a time-windowed detector (repeats,
+                                          trailers), passing or not, naming when it can first pass
   backlog.py close SPRINT [--summary]     delete a finished sprint, its items and the epics they finished
                                           (--summary: only list each of them with its status and the commit done
                                           recorded, the close commit's body, and change nothing; with --commit
