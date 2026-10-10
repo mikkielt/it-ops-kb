@@ -66,10 +66,11 @@ Setups, every run and the history: `kb/_self/reports/benchmarks.md`.
 - `kb/_self/`: everything agents read to run, change and ship the kb: rules, tool reference, design notes, the coverage table, open work. Start at `kb/_self/README.md`.
 - `AGENTS.md`: the short lookup rules every agent session loads.
 - `.claude/` and `.claude-plugin/`: the skills, subagents and hooks, and the plugin that other projects install.
+- `skills/` and `agents/`: the plugin's sprint, item and backlog skills and its worker agent, which run a host project's backlog from its `backlog.json`; the kb's own `kb-sprint`, `kb-item`, `kb-backlog` and `kb-worker` link to them.
 
 ## Using it
 
-- **From another project:** ask Claude Code to set up the `it-ops-kb` plugin by following `kb/_self/plugin.md`, then ask your questions. Pin a census tag for a confirmed copy.
+- **From another project:** ask Claude Code to set up the `it-ops-kb` plugin by following `kb/_self/plugin.md`, then ask your questions. Pin a census tag for a confirmed copy. A project that writes a `backlog.json` at its root also gets `/it-ops-kb:sprint`, `/it-ops-kb:item` and `/it-ops-kb:backlog` for its own backlog (`kb/_self/plugin.md`).
 - **Changing the kb:** open a clone in Claude Code and ask for the change in plain words. Claude routes it to the skill that does it (`/kb-research`, `/kb-add-topic`, `/kb-refresh`, `/kb-census`, `/kb-verify`, `/kb-git-sync`, and `/kb-self` for the kb's own documentation), and a hook names the likely skill. You can also type a skill yourself.
 
 ## What to trust
