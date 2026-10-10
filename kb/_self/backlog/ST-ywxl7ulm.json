@@ -2,7 +2,7 @@
   "id": "ST-ywxl7ulm",
   "kind": "story",
   "title": "census.py run carries phases 0 and 1 and census.py finish carries phase 3, each as one command that stops only where a model or the operator is needed",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",
@@ -80,5 +80,31 @@
     }
   ],
   "notes": "Premise run 2026-10-10: python3 _tools/census.py groups kb/public/_census/2026-09-26.csv exits 2 with invalid choice (check, record, confirm, sample, summary only); run and finish are missing the same way. Today the kb-census skill has the orchestrator run phases 0, 1 and 3 as about a dozen separate commands, each a model turn on the orchestrator's model. The second check runs the dry run, which writes nothing. Whether run commits by itself or prints the commit for the orchestrator is left to the work, within kb/_self/git.md's commit rules (KB-Verified trailer, never a push). Test ceiling (2026-10-10, ST-w3jhowin gate ceiling, answered replace-two-ids-and-a-file by operator): the suite is at max_ids 100 and max_files 15 of _tools/tests_ceiling.json, which stays as it is. Add no new test file; a new test id goes into an existing test file and replaces one (merge two tests of the same unit into one id keeping every assertion), so tests.py stays within the ceiling.",
-  "claimed_by": "kb-worker-ST-ywxl7ulm"
+  "evidence": {
+    "commit": "8783c13f17332db72191d91781faa13694a5f8fd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "census_run"
+        ],
+        "exit": 0,
+        "sha256": "18c829377f59c3db"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/census.py",
+          "run",
+          "--date",
+          "2026-09-26",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "02da7b23d9a2bbca"
+      }
+    ]
+  }
 }
