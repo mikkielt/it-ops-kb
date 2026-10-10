@@ -1,0 +1,17 @@
+{
+  "id": "BG-rwx7oh5s",
+  "kind": "bug",
+  "title": "A gate question that only names a remote ref is classed push and made blocking though nothing is pushed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority.class_reasons gives a gate the class push only for a question about pushing, publishing or changing a remote, not for one that mentions a remote ref it reads; a worker's gate on a read-only choice stays provisional. Seen in BG-45zpw2go gate g2: 'matched remote' made a fall-back choice blocking.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.derived_class({}, {'question':'A clone with no integration-remote main ref: does the hook fall back to the local main or settle nothing?','options':['fall back','settle nothing']});print(c);sys.exit(1 if c=='push' else 0)"
+    ]
+  }
+}
