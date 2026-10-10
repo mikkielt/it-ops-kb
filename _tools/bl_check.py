@@ -1176,6 +1176,26 @@ def named_test_file_warnings(bl):
     return out
 
 
+GOAL_FINDING = re.compile(r"\bF-[0-9a-f]{12}\b")  # the finding id `bl_cost.GAP_ID_RE` reads in a link
+
+
+def unlinked_finding_warnings(bl):
+    """check's warnings: an open item whose goal names a finding id (`F-<12 hex>`) that none of its `links` names,
+    naming the item and each id: `cost --research` selects an item by a link to a gap finding, so an item filed
+    without one is left out of its report (SP-vayhvwfy, where two tasks named F-68c59a20a679 and F-114b1ea76574 in
+    their goals and linked neither)."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        if it.get("status") not in OPEN_STATUSES or not isinstance(it.get("goal"), str):
+            continue
+        linked = {m for x in it.get("links") or [] if isinstance(x, str) for m in GOAL_FINDING.findall(x)}
+        for fid in dict.fromkeys(GOAL_FINDING.findall(it["goal"])):
+            if fid not in linked:
+                out.append(f"{bl.label(iid)}: its goal names {fid} and no link does: add the gap finding as a link "
+                           f"(set {iid} --add-link \"gap {fid}\"), or reword the goal when it is not the item's gap")
+    return out
+
+
 def is_test_run(argv):
     """True when a check runs tests: tests.py or pytest, so it exercises the code it proves."""
     return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
@@ -1261,7 +1281,7 @@ def cmd_check(bl, a):
     warns = docs_warnings(bl) + repro_text_warnings(bl) \
         + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl) + item_files_warnings(bl) \
         + facade_touch_warnings(bl) + gone_path_warnings(bl) + unordered_overlap_warnings(bl) + goal_path_warnings(bl) \
-        + read_only_check_warnings(bl) + named_test_file_warnings(bl)
+        + read_only_check_warnings(bl) + named_test_file_warnings(bl) + unlinked_finding_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
