@@ -24,8 +24,8 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
-from bl_base import (Refused, Rejected, canonical, external_lines, git, id_re, need, research_touches, say, scope,
-                     setting, touches_overlap, withhold, worker_dir)
+from bl_base import (RESEARCH_KINDS, Refused, Rejected, canonical, external_lines, git, id_re, need,
+                     research_touches, say, scope, setting, touches_overlap, withhold, worker_dir)
 from bl_land import WORK_PREFIX, WORKER_NAME
 
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
@@ -39,7 +39,7 @@ EFFORT = "high"
 CLAIMS_LEDGER = "kb-backlog-claims.json"  # in the git dir: the claims made in this working tree (bl_items.cmd_claim)
 # --max-turns by item kind (kb/public/claude/ci-and-headless.md: print mode only, an error at the limit, no default)
 TURNS = {"task": 60, "subtask": 60, "bug": 100, "story": 100, "epic": 100, "sprint": 100}
-RESEARCH_TURNS = 200  # a research story or an investigation bug
+RESEARCH_TURNS = 200  # a research story, task or subtask or an investigation bug
 INVESTIGATION_RE = re.compile(r"investigat", re.I)  # a bug whose title or goal says so is an investigation bug
 PACK_TIMEOUT_S = 120
 SELF_ROOT = "_self"  # the kb root of the kb's own rule docs: the one `rag.py pack --item` serves
@@ -107,11 +107,12 @@ def worker_branch(iid):
 
 
 def max_turns(bl, iid):
-    """The `--max-turns` of an item's worker: 200 for a research story (the goal research story, or a story whose
-    scope is kb content only) or an investigation bug (its title or goal says investigat...), else by kind."""
+    """The `--max-turns` of an item's worker: 200 for a research item (the goal research story, or a story, task or
+    subtask whose scope is kb content only) or an investigation bug (its title or goal says investigat...), else by
+    kind."""
     it = bl.items[iid]
     kind = it.get("kind")
-    if kind == "story" and (it.get("goal_research") or research_touches(scope(bl, iid))):
+    if kind in RESEARCH_KINDS and (it.get("goal_research") or research_touches(scope(bl, iid))):
         return RESEARCH_TURNS
     if kind == "bug" and INVESTIGATION_RE.search(f"{it.get('title', '')} {it.get('goal', '')}"):
         return RESEARCH_TURNS
