@@ -92,9 +92,15 @@ def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_ope
         code, out = bl(tmp_path, "answer", iid, "g", *args)
         assert code in (1, 2) and "push" in out, (args, out)
         assert path(tmp_path, iid).read_bytes() == before, args
+    code, out = bl(tmp_path, "answer", iid, "g", "--answer", "c", "--by", "operator")  # none of the options a, b
+    assert code == 2 and "'a'" in out and "'b'" in out and "--free" in out, out
+    assert path(tmp_path, iid).read_bytes() == before
     code, out = bl(tmp_path, "answer", iid, "g", "--answer", "a", "--by", "operator")
     assert code == 0, out
     assert (gate(tmp_path, iid)["answer"], gate(tmp_path, iid)["by"]) == ("a", "operator")
+    code, out = bl(tmp_path, "answer", iid, "g", "--answer", "c", "--free", "--by", "operator")
+    assert code == 0, out
+    assert gate(tmp_path, iid)["answer"] == "c"
 
 
 def test_an_agent_cannot_confirm_an_operator_gate(tmp_path):
