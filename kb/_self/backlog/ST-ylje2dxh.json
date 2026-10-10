@@ -2,7 +2,7 @@
   "id": "ST-ylje2dxh",
   "kind": "story",
   "title": "precheck names each committed item's goal clauses with the check that reads each, and warns of a clause no check reads",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-x5gjv4r7",
   "priority": "P2",
   "rank": 0,
@@ -40,7 +40,8 @@
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "AGENTS.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "kb/_self/querylog.md"
   ],
   "gates": [
     {
