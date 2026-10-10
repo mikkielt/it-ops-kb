@@ -2,7 +2,7 @@
   "id": "ST-vodknj3g",
   "kind": "story",
   "title": "python/stdlib-windows-portability.md states os.copy_file_range's EXDEV with its kernel condition and POSIX link's cross-filesystem rule as permissive",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,6 @@
   "links": [
     "parked: SP-vayhvwfy review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise (2026-10-10, base origin/main): both checks exit 1 now: stdlib-windows-portability.md:84 gives the copy_file_range EXDEV mapping with no 5.3 kernel condition, and :90 states 'one mounted filesystem on POSIX' and 'same-volume rule on both platforms' as rules though POSIX link() lets an implementation allow cross-filesystem links (:83 already says so). The _gaps.md entry at :1062 carries the same unconditional wording."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise (2026-10-10, base origin/main): both checks exit 1 now: stdlib-windows-portability.md:84 gives the copy_file_range EXDEV mapping with no 5.3 kernel condition, and :90 states 'one mounted filesystem on POSIX' and 'same-volume rule on both platforms' as rules though POSIX link() lets an implementation allow cross-filesystem links (:83 already says so). The _gaps.md entry at :1062 carries the same unconditional wording. Orchestrator 2026-10-10 (from this sprint's workers): factdiff.py anchor --file also rewrites verified_utc on unrelated _anchors.csv rows and touches _fetch_state.csv (outside the touches): keep only the anchor rows of the facts you changed and restore _fetch_state.csv. A tag citing two sources of one kind gives each its own kind ([DOC S-a; DOC S-b]); [DOC S-a; S-b] parses only S-a. Line numbers moved: ST-24m3pttf added a rename fact in the working-directory section.",
+  "claimed_by": "kb-worker-vodknj3g"
 }
