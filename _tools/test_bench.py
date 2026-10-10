@@ -174,6 +174,9 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
     assert bp.too_broad(r"value\d+", "own", rows_of, []) == "it matches 3 other eval rows"  # the row on the fact line of its own is not another
     assert bp.too_broad(r"value\d+|Setting", "own", {"own": ("a", "q")}, ["value1 Setting"] * 11).startswith("`value\\d+` is in 11 ")  # the phrase or pattern is judged too
     assert bp.too_broad(r"value\d+|(", "own", {"own": ("a", "q")}, ["value1"] * 10) == ""  # ten articles are not common; an alternative that does not compile is skipped
+    own = {"own": ("a", "q")}
+    assert bp.too_broad("Export-Cmd|Invented-Cmd", "own", own, ["Export-Cmd is real"]) == "`Invented-Cmd` is in no line of the kb"  # a name no line states
+    assert bp.too_broad("Export-Cmd|Row-Cmd", "own", own, ["Export-Cmd is real"], ["id,Row-Cmd\n"]) == ""  # a data file's line is a line of the kb
     with pytest.raises(bp.PoolError):
         bp.build_public(tmp_path, 3, redo_ask, out, ["EV-nope"])
     replies = tmp_path / "replies.csv"

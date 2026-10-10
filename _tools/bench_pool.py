@@ -55,7 +55,8 @@ REDO_ASK = ("These items are asked a second time because an earlier regex was re
             "phrase. An alternative that is common across the kb is refused, a bare single word or a phrase alike (one "
             "found in more than {articles} of its articles, such as other, timeout, clear, outbound, duplicate or a "
             "licence name), and so is a regex that also matches the fact or question of more than {rows} other items. "
-            "The regex must match its own fact line as written.\n\n")
+            "An alternative that no line of the kb states is refused too: write only names and values you read in the "
+            "fact line. The regex must match its own fact line as written.\n\n")
 
 
 class PoolError(Exception):
@@ -306,11 +307,13 @@ def alternatives(rx):
     return out + [cur]
 
 
-def too_broad(rx, own, texts, articles):
-    """Why a regenerated regex would pass almost any answer, else "": one alternative, a bare word (letters, digits,
-    `-`, `_`) or a phrase or pattern, is found in more than COMMON_ARTICLES articles of the kb (`articles`: their
-    texts), or the regex matches the fact or question of more than BREADTH other eval rows (`texts`: {source: (fact
-    place, text)}; a row on the same fact line as `own` is not another)."""
+def too_broad(rx, own, texts, articles, data=()):
+    """Why a regenerated regex is refused, else "": one alternative, a bare word (letters, digits, `-`, `_`) or a phrase
+    or pattern, is found in more than COMMON_ARTICLES articles of the kb (`articles`: their texts), or is found in no
+    article and no data file (`data`: their texts), a name the model made up, so it would pass an answer for nothing
+    the kb states (judged only when some text of the kb is given); or the regex matches the fact or question of more
+    than BREADTH other eval rows (`texts`: {source: (fact place, text)}; a row on the same fact line as `own` is not
+    another)."""
     for alt in alternatives(rx):
         if BARE.fullmatch(alt):
             word = re.compile(r"\b" + re.escape(alt.replace("\\b", "")) + r"\b", re.I)
@@ -322,12 +325,15 @@ def too_broad(rx, own, texts, articles):
         n = sum(1 for a in articles if word.search(a))
         if n > COMMON_ARTICLES:
             return f"`{alt}` is in {n} articles"
+        if not n and (articles or data) and not any(word.search(d) for d in data):
+            return f"`{alt}` is in no line of the kb"
     hit = [src for src, (place, text) in texts.items() if src != own and place != texts[own][0] and re.search(rx, text, re.I)]
     return f"it matches {len(hit)} other eval rows" if len(hit) > BREADTH else ""
 
 
-def article_texts(home):
-    return [p.read_text(encoding="utf-8") for p in sorted((Path(home) / "kb" / "public").glob("*/*.md"))
+def article_texts(home, suffix="md"):
+    """The texts of the public root's articles (`suffix` csv: its data files)."""
+    return [p.read_text(encoding="utf-8") for p in sorted((Path(home) / "kb" / "public").glob(f"*/*.{suffix}"))
             if not p.parent.name.startswith("_")]
 
 
@@ -343,7 +349,7 @@ def eval_section(home, seed, ask, out, redo=(), kept=None):
     rows the file at `out` lacks. The eval rows and near-miss bases that file holds stay, so a case added to
     lookup_eval.csv moves no row; the seed draws only the rows it lacks (a build to a new `out` draws all). The rows
     `redo` names (see redo_sources) are asked again too, and keep their committed check, appended to `kept` with the
-    reason, when the new regex is unusable, only an article path or too broad (too_broad); a name that is no row of the
+    reason, when the new regex is unusable, only an article path or refused by too_broad; a name that is no row of the
     pool is a PoolError."""
     prior = committed_rows(out)
     cases = []
@@ -373,6 +379,7 @@ def eval_section(home, seed, ask, out, redo=(), kept=None):
     if todo:
         texts = {f"lookup_eval.csv:{c['id']}": (c["fact"][:2], c["question"] + "\n" + c["fact"][2]) for c in ask_for}
         articles = article_texts(home) if again else []
+        data = article_texts(home, "csv") if again else []
         regexes = ask([{"row": f"lookup_eval.csv:{c['id']}", "question": c["question"],
                         "where": f"{c['fact'][0]}:{c['fact'][1]}", "fact": c["fact"][2],
                         "redo": f"lookup_eval.csv:{c['id']}" in again} for c in todo])
@@ -381,7 +388,7 @@ def eval_section(home, seed, ask, out, redo=(), kept=None):
             why = ""
             if src in again and src in have:
                 why = ("unusable" if not usable(rx, c["fact"][2]) else "an article path" if path_only([rx])
-                       else too_broad(rx, src, texts, articles))
+                       else too_broad(rx, src, texts, articles, data))
             if why:
                 if kept is not None:
                     kept.append((src, why))
