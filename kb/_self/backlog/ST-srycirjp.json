@@ -2,7 +2,7 @@
   "id": "ST-srycirjp",
   "kind": "story",
   "title": "Review sprint: Fitness 1: kb content fixes and the held-out guard",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5x5ut5ko",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-5x5ut5ko"
 }
