@@ -2,7 +2,7 @@
   "id": "TK-7k2p3vif",
   "kind": "task",
   "title": "red-pipeline, the intake ci detector and ql_deliver read pipelines through bl_forge with the configured project",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-4jjz3vxs",
   "priority": "P2",
   "rank": 0,
@@ -66,5 +66,28 @@
     }
   ],
   "notes": "Test ceiling at dispatch (orchestrator, 2026-10-10): 97 of 100 ids used and nine new -k selectors still to collect (forge_land, forge_pipeline, forge_stalled, forge_one_project, multirepo_fields, multirepo_held, multirepo_dispatch, multirepo_land, multirepo_default). Add no new test function unless the ceiling still has room after the ones planned; prefer extending an existing test in the same file and renaming it so its name carries your selector beside the ones it already carries (every older selector must still collect it). Raising max_ids is the operator decision D-776rvpx2 and not this item's. Orchestrator at dispatch: _tools/bl_forge.py joins the touches up front, since the job-list and job-trace reads ql_deliver and bl_intake make (ql_deliver.py:184, :359, :379, bl_intake.py:1339) have no bl_forge verb yet; check kb/_self/code.md import direction before ql_deliver imports a bl_ module, and gate it if the rule refuses.",
-  "claimed_by": "orch-dqkf3i42"
+  "evidence": {
+    "commit": "86eceeeba9f23fc2df07717302d9707da4b6c86e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "forge_pipeline"
+        ],
+        "exit": 0,
+        "sha256": "0be6160463f70923"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(1 if any('\"glab\"' in open(f, encoding='utf-8').read() for f in ('_tools/bl_intake.py', '_tools/ql_deliver.py')) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
