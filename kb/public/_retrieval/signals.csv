@@ -430,3 +430,8 @@ pstats,python/stdlib-cprofile-pstats
 pstats.Stats,python/stdlib-cprofile-pstats
 auto_vacuum,python/stdlib-sqlite3-csv
 incremental_vacuum,python/stdlib-sqlite3-csv
+URLError,python/stdlib-urllib-errors
+HTTPError,python/stdlib-urllib-errors
+socket.gaierror,python/stdlib-urllib-errors
+urllib.request.urlopen,python/stdlib-urllib-errors
+EAI_NONAME,python/stdlib-urllib-errors

@@ -41,7 +41,7 @@ agents/agent-planning-and-done,P3,complete,agents/agent-planning-and-done.md,7
 agents/codebase-mapping,P3,complete,agents/codebase-mapping.md;agents/codebase-mapping.csv,107
 agents/coding-agent-codebase-context,P3,complete,agents/coding-agent-codebase-context.md,20
 agents/decision-records,P3,partial,agents/decision-records.md;agents/decision-records.csv,10
-agents/doc-change-detection,P3,complete,agents/doc-change-detection.md,36
+agents/doc-change-detection,P3,complete,agents/doc-change-detection.md,53
 agents/langgraph,P3,complete,agents/langgraph.md,11
 agents/repository-ingestion,P3,complete,agents/repository-ingestion.md,4
 agents/test-suite-size-and-agent-overengineering,P3,partial,agents/test-suite-size-and-agent-overengineering.md,17
@@ -249,6 +249,7 @@ python/interpreter-startup,P3,partial,python/interpreter-startup.md,9
 python/stdlib-argparse-json,P3,complete,python/stdlib-argparse-json.md,9
 python/stdlib-cprofile-pstats,P3,partial,python/stdlib-cprofile-pstats.md,4
 python/stdlib-datetime-iso-week,P3,complete,python/stdlib-datetime-iso-week.md,1
+python/stdlib-urllib-errors,P3,partial,python/stdlib-urllib-errors.md,4
 python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,22
 python/uv-windows-install,P3,partial,python/uv-windows-install.md,3
 python/windows-python-install,P3,partial,python/windows-python-install.md,6
