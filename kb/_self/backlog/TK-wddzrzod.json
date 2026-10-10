@@ -2,7 +2,7 @@
   "id": "TK-wddzrzod",
   "kind": "task",
   "title": "selfcheck's checkout check passes a linked worktree whose workers land, naming where they land",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-koznprpg",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,18 @@
   "depends_on": [
     "TK-lwihhcmj"
   ],
-  "claimed_by": "worker-TK-wddzrzod"
+  "evidence": {
+    "commit": "1f2d349ef635b10cd7a557a11668f50d7c8b436a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bl_selfcheck;d=os.path.realpath(tempfile.mkdtemp());m=d+'/main';g=lambda*a:subprocess.run(['git','-C',m,*a],check=True,capture_output=True);subprocess.run(['git','init','-q',m],check=True);g('-c','user.name=t','-c','user.email=t@e','commit','-q','--allow-empty','-m','x');g('worktree','add','-q',d+'/linked','-b','l');r=bl_selfcheck.check_checkout(d+'/linked');ok=r['state']=='ok' and '.claude/worktrees' in r['detail'];print('selfcheck passes a linked worktree and names the worker directories:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "31cebd09116c84dd"
+      }
+    ]
+  }
 }
