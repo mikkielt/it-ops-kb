@@ -1,0 +1,20 @@
+{
+  "id": "SP-x5gjv4r7",
+  "kind": "sprint",
+  "title": "Orchestration features: ops rows, goal clause map, rescope, query log apply",
+  "status": "planned",
+  "goal": "backlog.py ops SP prints a sprint's own operational rows; kb-sprint review and close show that output; precheck maps each goal clause to the check that reads it and warns of an unread clause; an operator rescopes a sprint goal and close --summary maps clauses to the sprint's own items; apply refuses a lead-passage row whose lead does not answer; pair_word's docstring and querylog.md give an example the one-candidate rule pairs",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
