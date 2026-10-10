@@ -245,8 +245,9 @@ def test_unit_cache_equals_a_fresh_weighing_re_weighs_on_each_key_input_and_find
         cases[name] = lambda m, name=name: m.setattr(kbfacts, name, re.compile(getattr(kbfacts, name).pattern + "|zz"))
     for name in ("_weigh", "terms", "stem", "bare"):
         cases[name + " code"] = lambda m, name=name: m.setattr(kbfacts, name, variant(getattr(kbfacts, name)))
-    inputs = {
-        "path": {"unit": {"path": "public/print/other.md"}},
+    other = "public/print/other.md"
+    inputs = {  # each case changes its one input: the new path's meta keeps the title, so only the path differs
+        "path": {"unit": {"path": other}, "metas": {other: metas[base["path"]]}},
         "title": {"metas": {base["path"]: {"title": "Print queue"}}},
         "lead": {"unit": {"lead": "Jobs"}},
         "section": {"unit": {"section": "Reference"}},
