@@ -3,16 +3,23 @@
   "kind": "story",
   "title": "precheck says which part of a check fails, and planning checks pool rows with bench_pool's own predicates",
   "status": "draft",
+  "sprint": "SP-avwlotax",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py precheck prints, for a failing check, its output, so a planner sees a check that fails for the wrong reason (SP-7y6dk257: ST-2p5ywkam's hand regex failed on one of six path-only rows and passed with four still path-only after the work); and the sprint planning rules ask a check over pool rows to call the code's own predicate (bench_pool.path_only, too_broad) rather than a new regex. Retrospective of SP-7y6dk257.",
+  "goal": "backlog.py precheck prints, for a failing check, the last 20 lines of its output under the check's line, so a planner sees a check that fails for the wrong reason (SP-7y6dk257: ST-2p5ywkam's hand regex failed on one of six path-only rows and passed with four still path-only after the work); and the sprint planning rules ask a check over pool rows to call the code's own predicate (bench_pool.path_only, too_broad) rather than a new regex. Retrospective of SP-7y6dk257.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_prints_failing_output"
+        "-c",
+        "import re,subprocess,sys,tempfile;d=tempfile.mkdtemp();R=lambda*a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);subprocess.run(['git','init','-q',d],check=True);s=re.search(r'SP-\\w{8}',R('new','sprint','--title','T','--goal','G').stdout).group(0);R('new','story','--title','P','--goal','G','--sprint',s,'--touch','x.txt','--check','python3 -c \"import sys;print(1234567);sys.exit(1)\"');p=R('precheck',s);ok='1234567' in p.stdout+p.stderr;print('precheck prints the output of a failing check:',ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();p=t.split('## plan')[1].split('## start SP')[0];ok='bench_pool' in p and 'path_only' in p;print('plan step names the pool predicates:',ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
@@ -20,11 +27,33 @@
     "_tools/bl_items.py",
     "_tools/test_check_programs.py",
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How much of a failing check's output does backlog.py precheck print: all of it, or its last lines?",
+      "options": [
+        "last 20 lines of the check's stdout and stderr together, under the check's own line",
+        "all of the output"
+      ],
+      "recommendation": "last 20 lines of the check's stdout and stderr together, under the check's own line",
+      "do": {
+        "last 20 lines of the check's stdout and stderr together, under the check's own line": "ST-jv27pfin",
+        "all of the output": "ST-jv27pfin"
+      },
+      "class": "agents-rule",
+      "answer": "last 20 lines of the check's stdout and stderr together, under the check's own line",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-7y6dk257 close",
     "parked: SP-yzgetyu2 close"
   ],
-  "notes": "SP-yzgetyu2 close (2026-10-09), accepted by the operator: ST-s6tqojsw's planned call-count check failed at plan on ModuleNotFoundError (runpy.run_path puts no _tools on sys.path), and precheck counted it as failing before the work, so the premise proved nothing and the check was fixed mid-run; a check that fails on an exception or traceback at plan is a broken check, not a failing premise, and precheck says so. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "SP-yzgetyu2 close (2026-10-09), accepted by the operator: ST-s6tqojsw's planned call-count check failed at plan on ModuleNotFoundError (runpy.run_path puts no _tools on sys.path), and precheck counted it as failing before the work, so the premise proved nothing and the check was fixed mid-run; a check that fails on an exception or traceback at plan is a broken check, not a failing premise, and precheck says so. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: backlog.py precheck SP prints nothing for a failing check (the item's first check, which runs a throwaway sprint whose story's check prints 1234567 and exits 1). Run at plan 2026-10-10: exit 1, 1234567 is absent from precheck's output on the base, so the premise reproduces; the second check reads the plan section for bench_pool and path_only and fails on the base too. Selector: no test is named, so the check is a behavioural probe and a worker may add a test."
 }

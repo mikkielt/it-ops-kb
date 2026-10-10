@@ -1,0 +1,28 @@
+{
+  "id": "TK-wddzrzod",
+  "kind": "task",
+  "title": "selfcheck's checkout check passes a linked worktree whose workers land, naming where they land",
+  "status": "draft",
+  "parent": "ST-koznprpg",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_selfcheck.check_checkout reports ok for a clone that is a linked worktree of another checkout once land accepts the workers under that checkout, and its detail names the .claude/worktrees directories land expects; it stays a fail only for a linked worktree whose workers land refuses.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bl_selfcheck;d=os.path.realpath(tempfile.mkdtemp());m=d+'/main';g=lambda*a:subprocess.run(['git','-C',m,*a],check=True,capture_output=True);subprocess.run(['git','init','-q',m],check=True);g('-c','user.name=t','-c','user.email=t@e','commit','-q','--allow-empty','-m','x');g('worktree','add','-q',d+'/linked','-b','l');r=bl_selfcheck.check_checkout(d+'/linked');ok=r['state']=='ok' and '.claude/worktrees' in r['detail'];print('selfcheck passes a linked worktree and names the worker directories:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_selfcheck.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "TK-lwihhcmj"
+  ]
+}

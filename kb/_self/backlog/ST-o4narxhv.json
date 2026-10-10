@@ -3,24 +3,32 @@
   "kind": "story",
   "title": "A goal research story whose rows land in kb/_self/_retrieval/lookup_eval.csv is landed with land, not done, since that file is code lane",
   "status": "draft",
+  "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,
-  "goal": "The kb-sprint skill's plan step 1 and the research story's goal text say that a goal research story finished with tested rows in kb/_self/_retrieval/lookup_eval.csv (a code-lane path, _tools/kblane.py) lands through backlog.py land --wait-merge, not done --commit, so no orchestrator meets the refusal 'code commit(s) ... are not on origin/main' (SP-rvslem3h: done of ST-ls2ge3bz refused once for this).",
+  "goal": "The kb-sprint skill's plan step 1 and the research story's goal text (the string bl_items.py writes) say that a goal research story finished with tested rows in the _self eval file lookup_eval.csv (a code-lane path, _tools/kblane.py) lands through backlog.py land --wait-merge, not done --commit, so no orchestrator meets the refusal 'code commit(s) ... are not on origin/main' (SP-rvslem3h: done of ST-ls2ge3bz refused once for this).",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/selfdoc.py",
-        "check"
+        "-c",
+        "import glob,json,subprocess,sys,tempfile;d=tempfile.mkdtemp();subprocess.run(['git','init','-q',d],check=True);subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'new','sprint','--title','T','--goal','G'],capture_output=True);g=[x['goal'] for x in (json.load(open(f,encoding='utf-8')) for f in glob.glob(d+'/**/*.json',recursive=True)) if x.get('goal_research')];s=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read().split('## start SP')[0].split('## plan')[1];ok=bool(g) and 'lookup_eval.csv' in g[0] and 'backlog.py land' in g[0] and 'lookup_eval.csv' in s;print('research goal text and plan step name land for lookup_eval rows:',ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "_tools/bl_items.py",
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-jv27pfin"
   ],
   "links": [
     "parked: SP-rvslem3h close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: python3 _tools/backlog.py new sprint writes a research story goal with no mention of lookup_eval.csv or backlog.py land, and the plan step names neither (the item's check, a throwaway store). Run at plan 2026-10-10: exit 1, False on the base, so the premise reproduces. The earlier check, selfdoc.py check, passed on the base and proved nothing, so it was replaced."
 }
