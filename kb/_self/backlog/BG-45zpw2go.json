@@ -30,6 +30,33 @@
     "kb/_self/usage.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How many seconds may each git process of ql_capture.pushed_status take inside a capture hook before the settle gives up (the row then waits for a later hook)?",
+      "options": [
+        "10 seconds",
+        "3 seconds",
+        "30 seconds"
+      ],
+      "recommendation": "10 seconds",
+      "class": "design",
+      "answer": "10 seconds",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "A clone with no integration-remote main ref: does pushed_status fall back to the local main, as bl_land.integration_main does, or settle nothing?",
+      "options": [
+        "fall back to the local main",
+        "settle nothing without the remote ref"
+      ],
+      "recommendation": "fall back to the local main",
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-wgx4pq4r review",
     "merged: BG-p7bp24ee"
