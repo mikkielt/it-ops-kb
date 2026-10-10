@@ -705,11 +705,17 @@ def cmd_gate(bl, a):
             opt, how = opt.strip(), how.strip()
             if not sep or opt not in options or not how:
                 raise Rejected("gate add: --do OPTION=COMMAND, OPTION one of the --option values")
-            gate["do"][opt] = how if how in bl.items else parse_cmd(how)
+            try:
+                gate["do"][opt] = how if how in bl.items else parse_cmd(how)
+            except ValueError as e:
+                raise Rejected(f"gate add: --do {d!r} is not a command line ({e})") from e
             if not gate["do"][opt]:
                 raise Rejected("gate add: --do needs a command or an item id after the =")
     if a.host_check:
-        gate["host_check"] = {"run": parse_cmd(a.host_check)}
+        try:
+            gate["host_check"] = {"run": parse_cmd(a.host_check)}
+        except ValueError as e:
+            raise Rejected(f"gate add: --host-check is not a command line ({e})") from e
         if not gate["host_check"]["run"]:
             raise Rejected("gate add: --host-check needs a command")
     # classed over the whole gate, `do` and `host_check` words too, as gate_class reads it; the reasons name what set it
