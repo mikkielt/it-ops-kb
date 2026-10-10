@@ -185,8 +185,8 @@ def default_rules_pack(question):
 def pair_word(word, line, question):
     """The word of `line` that stands for the key word `word` no passage holds, else None: the line's only word that
     is not in the question, not a stop word, not a number, not shorter than three characters and not `word` itself
-    (`unsaved` in `land: uncommitted changes`, asked about unsaved changes: `uncommitted`). With two or more such
-    words the line names no pair."""
+    (`unsaved` in `land: uncommitted changes`, asked about land with unsaved changes: `uncommitted`; asked about
+    unsaved changes alone, `land` is a second such word). With two or more such words the line names no pair."""
     import kbfacts
     asked = {w.lower() for w in kbfacts.WORD.findall(question)}
     words = {w for w in (w.lower() for w in kbfacts.WORD.findall(line))
