@@ -2,7 +2,7 @@
   "id": "BG-dpw7o726",
   "kind": "bug",
   "title": "tools.md says perfcheck.py has tests that plant a dropped id, a moved id and an over-bound run, but no test exercises it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yzs3bj6f",
   "priority": "P3",
   "rank": 0,
@@ -18,5 +18,6 @@
   "repro_reason": "a doc's wording: the defect is a claim in kb/_self/tools.md that perfcheck.py's tests exist, while no _tools/test_*.py names perfcheck since commit 4d70166fe deleted the old suite",
   "touches": [
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "kb-worker-dpw7o726"
 }
