@@ -38,7 +38,8 @@
     "kb/_self/content-rules.md",
     "kb/_self/querylog.md",
     "kb/_self/usage.md",
-    "kb/_self/reports/fact-diff.md"
+    "kb/_self/reports/fact-diff.md",
+    "_tools/test_redact.py"
   ],
   "gates": [
     {
@@ -50,7 +51,9 @@
         "flat-keys-and-dry-run-rows"
       ],
       "recommendation": "table-rows",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "table-rows",
+      "by": "operator"
     },
     {
       "id": "sizing",
@@ -87,7 +90,9 @@
         "replace-two-ids-and-a-file"
       ],
       "recommendation": "replace-two-ids-and-a-file",
-      "class": "design"
+      "class": "design",
+      "answer": "replace-two-ids-and-a-file",
+      "by": "operator"
     }
   ],
   "notes": "Premise run 2026-10-10: python3 _tools/census.py summary kb/public/_census/2026-09-26.csv printed bucket, outcome and needs-reading-by-note counts and the confirmed count, and nothing about the size of what phase 2 reads (no facts, characters or tokens); no census.phase ops row exists (git grep census.phase in _tools finds nothing). This story sets the baseline the epic's later stories are measured against, so it lands first. Its test selector collects no test until the work adds _tools/test_census.py. The tokens estimate follows kb/_self/usage.md's characters/4 convention.",
