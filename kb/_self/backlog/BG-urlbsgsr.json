@@ -15,5 +15,5 @@
       "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,os.path.abspath('_tools/backlog.py'),'config'],cwd=d,capture_output=True,text=True).stdout; sys.exit(1 if 'kb/_self/backlog' in o else 0)"
     ]
   },
-  "notes": "Run finding 1: python3 <plugin>/_tools/backlog.py config in the host printed item_dir = \"kb/_self/backlog\"  (file); the orchestrator and the reviewer added --root to every command; the reviewer without it got no item ST-... A host worker's gate add without --root would write into the kb's backlog."
+  "notes": "Run finding 1: python3 <plugin>/_tools/backlog.py config in the host printed item_dir = \"kb/_self/backlog\"  (file); the orchestrator and the reviewer added --root to every command; the reviewer without it got no item ST-... A host worker's gate add without --root would write into the kb's backlog. Review gap 6 of SP-ciqk6gt6 (same cause): with no --root, a tool root that holds .git is its own root (bl_cli.default_root), so with --plugin-dir <kb clone> a host's backlog.json hooks key is never read and the plugin's horizon --hook --opt-in stays silent in the host."
 }

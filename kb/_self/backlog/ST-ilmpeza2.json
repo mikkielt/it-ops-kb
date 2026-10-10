@@ -1,0 +1,24 @@
+{
+  "id": "ST-ilmpeza2",
+  "kind": "story",
+  "title": "A second-project run of the plugin sprint with the operator present interactively",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "One item of a project other than the kb runs from plan to close on /it-ops-kb:sprint with a person answering the start gate and the review's confirmations through AskUserQuestion, and its findings about the interactive steps are kb items",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_interactive_run"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 review"
+  ],
+  "notes": "Review gap 4: the SP-ciqk6gt6 run's orchestrator was headless under a written delegation, so the interactive steps (AskUserQuestion approval, relayed answers --by operator, review confirmation) were never exercised; docs_map and kb_root were empty, so a docs map was not exercised either."
+}

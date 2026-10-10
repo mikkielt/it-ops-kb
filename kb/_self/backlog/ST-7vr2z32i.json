@@ -1,0 +1,23 @@
+{
+  "id": "ST-7vr2z32i",
+  "kind": "story",
+  "title": "The plugin's install steps for a host project's sprint list __pycache__ and other run output in .gitignore",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/plugin.md's host setup for the sprint skills says to ignore the bytecode and scratch output a premise or check run leaves (__pycache__/, the scratch_dir and worktree_dir), since land stops at its clean-tree step on an untracked file",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('kb/_self/plugin.md').read(); sys.exit(0 if '__pycache__' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 review"
+  ],
+  "notes": "Review gap 5: run finding 14 (land stopped at step clean tree: untracked src/__pycache__/ and tests/__pycache__/ from the orchestrator's premise run) had no item; the run's findings 3 and 5 are 'no change' in the report, 8 is ST-hs26y4qr and 19 was gone once BG-rqxspwtb landed."
+}

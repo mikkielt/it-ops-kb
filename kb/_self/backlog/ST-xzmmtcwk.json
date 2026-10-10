@@ -1,0 +1,24 @@
+{
+  "id": "ST-xzmmtcwk",
+  "kind": "story",
+  "title": "The kb's linked sprint skills work in a Windows clone without core.symlinks",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A Windows clone of the kb with core.symlinks off still loads kb-sprint, kb-item, kb-backlog and kb-worker with their text (a probe on Windows records it, or setup enables symlinks, or the links are replaced by another form the gate allows)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_one_set"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 review"
+  ],
+  "notes": "Review gap 8: git checks a symlink out as a one-line text file holding its target path when core.symlinks is off, so the skill would hold only that path; TK-7nnd2bdm recorded no Windows probe."
+}

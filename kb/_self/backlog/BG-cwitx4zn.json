@@ -1,0 +1,33 @@
+{
+  "id": "BG-cwitx4zn",
+  "kind": "bug",
+  "title": "The kb's own clone reads ${CLAUDE_PLUGIN_ROOT} unsubstituted in its linked sprint skills and worker file, and the absolute commands it then writes match no allow rule",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "In a kb clone without the plugin, the sprint, item and backlog skills and the worker role file give commands its .claude/settings.json allow rules match (the relative python3 _tools/... form where the variable is not substituted), and selfcheck allow-rules reads the text the skills hold",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('agents/worker.md').read(); sys.exit(1 if 'python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py' in t and 'python3 _tools/backlog.py' not in t else 0)"
+    ]
+  },
+  "repro_reason": "the substitution happens only in a Claude Code session; the review read the skill and settings text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_clone_commands"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 review"
+  ],
+  "notes": "Review gaps 2 and 3: skills/*/SKILL.md line 8 says to write the clone's top directory where the variable shows; .claude/settings.json allows Bash(python3 _tools/backlog.py *), which an absolute path does not match; bl_selfcheck.SKILL_COMMANDS holds only the relative form; agents/worker.md:10 defines the variable only where the brief names the directory, and the kb's brief names none."
+}

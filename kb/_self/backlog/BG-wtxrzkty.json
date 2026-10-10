@@ -1,0 +1,33 @@
+{
+  "id": "BG-wtxrzkty",
+  "kind": "bug",
+  "title": "The plugin's item skill says check-trailers refuses the push, a guard a host project's land_push does not have",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "skills/item/SKILL.md names check-trailers and its refusal only for a project whose push is the kb's sync (land_push names kbgit.py), and says what a host's own push checks otherwise",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('skills/item/SKILL.md').read(); sys.exit(1 if 'check-trailers' in t and 'land_push' not in t else 0)"
+    ]
+  },
+  "repro_reason": "the claim is text in the skill; no host run reaches the trailer check",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_ships"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 review"
+  ],
+  "notes": "Review gap 7: skills/item/SKILL.md:18 and :42 say check-trailers refuses the push; a host whose land_push is git push has no such guard."
+}

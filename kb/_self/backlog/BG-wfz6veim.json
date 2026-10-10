@@ -1,0 +1,32 @@
+{
+  "id": "BG-wfz6veim",
+  "kind": "bug",
+  "title": "An item whose touches name a .claude link to the plugin's sprint files cannot land its change, which git records at the plugin path",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "done, held and the plan's overlap warnings treat a touch of .claude/skills/kb-sprint/SKILL.md, kb-item, kb-backlog or .claude/agents/kb-worker.md as a touch of the plugin file the link resolves to (or check rewrites such touches), so the open items that name the link paths land",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import bl_base; sys.exit(0 if bl_base.in_scope('skills/sprint/SKILL.md', ['.claude/skills/kb-sprint/SKILL.md']) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "linked_touch_in_scope"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ciqk6gt6 review"
+  ],
+  "notes": "Review gap 1: 37 open items (e.g. ST-77goqrxz, ST-a5q6vaji, ST-jv27pfin, ST-ifljijni) name the link paths in touches; an edit through the link shows in git as skills/sprint/SKILL.md, and in_scope('skills/sprint/SKILL.md', ['.claude/skills/kb-sprint/SKILL.md']) is False, so done refuses it as outside the touches. Workaround until fixed: set ID --add-touch skills/sprint/SKILL.md (or the matching plugin file)."
+}
