@@ -46,7 +46,7 @@
       "recommendation": "record-direct",
       "class": "querylog",
       "answer": "record-direct",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {
