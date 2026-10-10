@@ -2,7 +2,7 @@
   "id": "ST-mti4zrzz",
   "kind": "story",
   "title": "kb-sprint review and close read backlog.py ops",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-x5gjv4r7",
   "priority": "P2",
@@ -48,5 +48,18 @@
     }
   ],
   "notes": "Premise (2026-10-10, run): the review and close sections of .claude/skills/kb-sprint/SKILL.md name no backlog.py ops, and backlog.py ops is not a command yet (ST-xuhig3u6 adds it, which this item waits on); the check prints both sections as missing. It also reads one close line naming refused dones and land steps beside backlog.py ops, and backlog.md naming it. Gate g1: AGENTS.md stays unchanged.",
-  "claimed_by": "orchestrator-x5gjv4r7"
+  "evidence": {
+    "commit": "933c209161d6dd9f0b72962eefd3150eb29dc4b9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys\nt=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read()\nsec={s.split(\"\\n\",1)[0].split()[0]:s for s in re.split(r\"(?m)^## \",t)[1:]}\nmiss=[n for n in (\"review\",\"close\") if not re.search(r\"backlog\\.py ops\\b\",sec.get(n,\"\"))]\nline=[l for l in sec.get(\"close\",\"\").splitlines() if re.search(r\"backlog\\.py ops\\b\",l)]\nby_hand=\"refused\" in \" \".join(line) and \"land\" in \" \".join(line)\ndoc=bool(re.search(r\"backlog\\.py ops\\b\",open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read()))\nprint(\"kb-sprint sections without backlog.py ops:\",miss,\"| close line names refused dones and land steps:\",by_hand,\"| backlog.md names it:\",doc)\nsys.exit(0 if not miss and by_hand and doc else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2b4162b4708a98fd"
+      }
+    ]
+  }
 }
