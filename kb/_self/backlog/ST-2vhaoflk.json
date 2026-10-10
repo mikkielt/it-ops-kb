@@ -1,0 +1,30 @@
+{
+  "id": "ST-2vhaoflk",
+  "kind": "story",
+  "title": "A worker's gate that the class rule makes blocking can get its do entries after it is added",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-avwlotax: ST-jv27pfin's worker added g2 as provisional; gate add printed 'made blocking' (class agents-rule) and backlog.py check then warned that g2 has no do for either option, which the worker could not repair: gate add takes --do only at creation and gate remove is operator-only. A gate's do entries can be added to an existing gate by its item's worker (or gate add's made-blocking message tells it to pass --do up front), so check has no such warning after a worker's gate.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "gate",
+        "do",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-avwlotax close"
+  ]
+}

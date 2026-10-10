@@ -1,0 +1,28 @@
+{
+  "id": "ST-w73hk57t",
+  "kind": "story",
+  "title": "Planning gives a skill-text check that reads the step its goal names, not a line found by its prefix in another step",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-avwlotax: TK-tbbknjul's goal put the worktree move in kb-sprint run step 2, but its check found the line starting '2. git status --short', which is landing step 4.2; the worker wrote the text there, the check passed, and the review found the move arrives after the claims it must precede (BG-adgc5qf2). kb-sprint plan step 6 and kb/_self/backlog.md Sprints say a check over a skill's text splits the section the goal names (its heading, then its numbered step) before it reads a phrase, and precheck or check warns of a check that selects a line by a numbered prefix the section holds more than once.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "skill_text_check_reads_named_step"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-avwlotax close"
+  ]
+}

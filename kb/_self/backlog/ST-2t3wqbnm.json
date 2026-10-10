@@ -1,0 +1,26 @@
+{
+  "id": "ST-2t3wqbnm",
+  "kind": "story",
+  "title": "backlog.py check warns of an item whose goal names a backlog.py command whose handler module is not in its touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-avwlotax: ST-jv27pfin's goal named backlog.py precheck, but its touches named _tools/bl_items.py, while cmd_precheck and precheck_rows live in _tools/bl_land.py; its worker stopped after 13 turns, the item was re-ordered behind TK-lwihhcmj (same file) and resumed. backlog.py check warns for an open item whose goal names a backlog.py command (backlog.py <verb>) whose handler module (bl_cli's registry) is not in its touches, naming the module to add.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys,tempfile;d=tempfile.mkdtemp();R=lambda*a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);subprocess.run(['git','init','-q',d],check=True);R('new','story','--title','P','--goal','backlog.py precheck prints more','--touch','_tools/bl_items.py','--check','true');o=R('check');t=o.stdout+o.stderr;ok='bl_land.py' in t;print('check names the handler module of a goal command:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-avwlotax close"
+  ]
+}

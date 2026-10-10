@@ -24,5 +24,6 @@
   ],
   "links": [
     "parked: SP-4jfepy6u run"
-  ]
+  ],
+  "notes": "Recurred in SP-avwlotax (2026-10-10): five items named .claude/skills/kb-sprint/SKILL.md (a symlink to skills/sprint/SKILL.md) in their touches; the orchestrator repointed them to the plugin file before the first claim."
 }

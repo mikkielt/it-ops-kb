@@ -1,0 +1,28 @@
+{
+  "id": "ST-22oykpr5",
+  "kind": "story",
+  "title": "land fast-forwards an orchestrator checkout that holds only unpushed item-file commits by rebasing them onto origin/main",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-avwlotax: the orchestrator committed an item-file edit (links on ST-q5r6e3nu) between landings; the next land (ST-jv27pfin) pushed and then left orch/s-avwlotax 5 commits behind origin/main ('Not possible to fast-forward'), so the orchestrator rebased and pushed by hand before the next claim. land rebases a clean checkout whose only commits beyond origin/main change item files onto origin/main after its push (or names the one command to run), so the next claim starts from the pushed main.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_rebases_local_item_commits"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-avwlotax close"
+  ]
+}
