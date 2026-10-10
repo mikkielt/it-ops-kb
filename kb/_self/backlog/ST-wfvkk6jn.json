@@ -28,7 +28,6 @@
     "kb/_self/content-rules.md"
   ],
   "depends_on": [
-    "ST-qo3kicix",
     "ST-ylxsns5t"
   ],
   "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 13 NEWER-VERSION rows (9 raw-ref at newer=2.2.364, 4 api-repo) and 7 CHANGED raw-pin or raw-ref rows went to phase 2, and all but two came back confirmed, so the model read whole files to find the cited lines unchanged. factdiff.py detect marks pinned sources 'pinned url: its text cannot change' and leaves them to census.py check, so neither tool compares the citing facts against the newer file today."

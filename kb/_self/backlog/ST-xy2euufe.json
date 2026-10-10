@@ -30,8 +30,6 @@
     "kb/_self/token-efficiency.md"
   ],
   "depends_on": [
-    "ST-qo3kicix",
-    "ST-w3jhowin",
     "ST-kbrsd24q"
   ],
   "notes": "Evidence: kb/_self/reports/fact-diff.md's entra dry run gave 43 review items in 24,212 characters (about 6k tokens) against 750,943 characters (about 190k tokens) for the changed pages, and each item is self-contained (fact, old passage, new passage), so it needs no tools and no agent loop. Product facts: claude -p --json-schema with --output-format json validates the result into structured_output, and the JSON names total_cost_usd (public/claude/ci-and-headless.md:34, :72, S1800); --max-budget-usd caps print-mode spend (public/agents/headless-agent-runtimes.md:52, S1824); Message Batches cost 50% of standard pricing, most finish within 1 hour, 24-hour expiry (public/claude/messages-api.md:88, :91, S-3pftmimx), but need an API key the clone may not hold, which the research story settles. Open for the research story (no operator gate, per the session that filed this): the model (Haiku or Sonnet), the batch size, and the agreement bar against a held-out set of review items judged by the current route. A paid run is dry-run first and its cap set from the estimate. Its default model is provisional: ST-jkehwsu4 measures Haiku 5.5 against it on held-out items and switches the default when Haiku holds the bars."
