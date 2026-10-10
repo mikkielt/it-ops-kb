@@ -1,0 +1,16 @@
+{
+  "id": "BG-ucwq6kga",
+  "kind": "bug",
+  "title": "tests.py fails its seconds ceiling on a darwin host that sprint workers share, though every test passes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A full tests.py run on a darwin host that several sprint workers queue on exits 0 when all tests pass: the seconds ceiling (darwin 20) is measured on the suite's own run time, not on a wall time that the host's other sessions inflate; seen 2026-10-10 in BG-45zpw2go: 87 passed, 21 s, 32 s and 30 s against 20 s, with six other clones waiting on the host lock and a load average near 4.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  }
+}
