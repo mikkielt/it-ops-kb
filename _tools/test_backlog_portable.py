@@ -1,7 +1,8 @@
 """backlog.py's project settings (kb/_self/backlog.md, Project settings): `config` prints the effective settings with
 each value's source, the kb's committed backlog.json holds the kb's own values, and a file with an unknown key or a
 wrong type is refused naming the key; `brief` prints the worker's brief, with the rules of the project's own docs
-(`docs_map`, `kb_root`), and `dispatch --dry-run` its argv without starting a session.
+(`docs_map`, `kb_root`), and `dispatch --dry-run` its argv without starting a session; `cost` on an item no capture
+names says so and prints no table of zeros.
 
 The settings files are throwaway directories under tmp_path; the one real file read is the repository's backlog.json."""
 import json
@@ -241,3 +242,57 @@ def test_backlog_brief_rules_are_the_mapped_docs_headings_or_the_kb_roots_fact_l
     assert rules(docs_map="", kb_root="").strip().splitlines() == [
         "No docs map is set for this project (docs_map and kb_root are empty in backlog.json): follow the role file "
         "and the item's touches."]
+
+
+def test_backlog_cost_no_capture_names_the_spool_and_prints_no_table_of_zeros(tmp_path):
+    (tmp_path / "repo").mkdir()
+    root = Repo(tmp_path / "repo")
+    root.git("init", "-q", "-b", "main")
+    data = tmp_path / "data"
+    spool = data / "querylog" / "spool"
+    env = {**root.env, "CLAUDE_PLUGIN_DATA": str(data), "CLAUDE_PLUGIN_ROOT": str(bl_base.ROOT)}
+
+    def bl(*args):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", root.path, *args],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+        assert "Traceback" not in p.stderr, p.stderr
+        return p.returncode, p.stdout
+
+    code, out = bl("new", "story", "--title", "Unworked story", "--goal", "A story no session worked")
+    assert code == 0, out
+    sid = re.search(r"ST-[a-z2-7]{8}", out).group(0)
+
+    def worked(*args):
+        code, out = bl("cost", sid, *args)
+        assert code == 0, out
+        return out
+
+    # no spool at all: the header and the one line, no table, and json keeps its keys with the kind
+    lines = worked().splitlines()
+    assert len(lines) == 2 and lines[0].startswith(f"cost {sid} ")
+    assert lines[1].startswith("no capture: ") and "spool" in lines[1] and lines[1].endswith(" no usage rows on this clone")
+    shown = json.loads(worked("--format", "json"))
+    assert shown["no_line"]["kind"] == "no-capture" and shown["no_line"]["spool"]["usage_rows"] == 0
+    assert {"direct", "attributed", "shared", "session_total"} <= set(shown) and shown["session_total"] == {}
+
+    # a spool with usage rows that name no window of the item: the existing line, saying so
+    spool.mkdir(parents=True)
+    row = {"id": "r1", "ts": "2026-10-10T10:00:00.000Z", "surface": "usage", "session_id": "s1", "prompt_id": "p1",
+           "usage": {}}
+    (spool / "s1.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+    lines = worked().splitlines()
+    assert len(lines) == 2 and lines[1].startswith("no item line: because no work sidecar names it")
+    assert " usage rows but none in a window of the item" in lines[1]
+    assert json.loads(worked("--format", "json"))["no_line"]["kind"] == "unnamed"
+
+    # a sidecar line of the item: the tables, as before
+    models = {"claude-sonnet-5-5": {"requests": 2, "in": 10, "cw": 0, "cw1h": 0, "cr": 5, "out": 7}}
+    sidecar = root.file("kb/_querylog/work/2026-10/20261010T100000Z-abcdef01.jsonl")
+    os.makedirs(os.path.dirname(sidecar))
+    lines = [{"run": "20261010T100000Z-abcdef01", "reader": 1, "counts": {"items": 1, "shared": 0, "missing": 0}},
+             {"item": sid, "prompts": 1, "main": models}]
+    Path(sidecar).write_text("".join(json.dumps(x) + "\n" for x in lines), encoding="utf-8")
+    out = worked()
+    assert "no item line" not in out and "no capture" not in out
+    assert "direct (main):" in out and "session total (direct + attributed + shared):" in out
+    assert "claude-sonnet-5-5  requests 2  in 10  cr 5  out 7 | cw 0" in out
