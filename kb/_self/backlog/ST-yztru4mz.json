@@ -2,7 +2,7 @@
   "id": "ST-yztru4mz",
   "kind": "story",
   "title": "Worker briefs and kb-worker.md forbid making git worktrees outside the one the orchestrator gives",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qg7ncs6d",
   "priority": "P2",
   "rank": 0,
@@ -51,5 +51,6 @@
     "parked: SP-caqrexqw close",
     "merged: ST-xpursuq4"
   ],
-  "notes": "Merged from ST-xpursuq4 “kb-worker.md names the worker's _cache/scratch/<id>/ as the staging-copy directory” at the 2026-10-10 backlog triage: Valid (kb-worker.md:22 says 'the orchestrator's scratch directory' and has no _cache/scratch/; its check fails) but a one-sentence edit to the same file as ST-yztru4mz. Its goal: Found in the SP-d3hybrlv review: .claude/agents/kb-worker.md says the .claude/ staging copies sit in 'the orchestrator's scratch directory', while kb-sprint run step 3 and backlog.md now name the worker's _cache/scratch/<id>/ for both throwaway files and staging copies. kb-worker.md says the same. Its checks: {\"run\": [\"python3\", \"-c\", \"import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();ok='_cache/scratch/' in t;print('kb-worker scratch:',ok);sys.exit(0 if ok else 1)\"]} Its touches: .claude/agents/kb-worker.md Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: kb-worker.md has no git worktree add prohibition and its rule 1 names no _cache/scratch/ (the item's check fails on the base; ran at planning, 2026-10-10: exit 1, both false). Gate g1 records where the brief rule goes."
+  "notes": "Merged from ST-xpursuq4 “kb-worker.md names the worker's _cache/scratch/<id>/ as the staging-copy directory” at the 2026-10-10 backlog triage: Valid (kb-worker.md:22 says 'the orchestrator's scratch directory' and has no _cache/scratch/; its check fails) but a one-sentence edit to the same file as ST-yztru4mz. Its goal: Found in the SP-d3hybrlv review: .claude/agents/kb-worker.md says the .claude/ staging copies sit in 'the orchestrator's scratch directory', while kb-sprint run step 3 and backlog.md now name the worker's _cache/scratch/<id>/ for both throwaway files and staging copies. kb-worker.md says the same. Its checks: {\"run\": [\"python3\", \"-c\", \"import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();ok='_cache/scratch/' in t;print('kb-worker scratch:',ok);sys.exit(0 if ok else 1)\"]} Its touches: .claude/agents/kb-worker.md Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: kb-worker.md has no git worktree add prohibition and its rule 1 names no _cache/scratch/ (the item's check fails on the base; ran at planning, 2026-10-10: exit 1, both false). Gate g1 records where the brief rule goes.",
+  "claimed_by": "worker-ST-yztru4mz"
 }
