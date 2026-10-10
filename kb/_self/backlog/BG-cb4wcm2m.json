@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "precheck skips a bug's repro, so a bug whose repro is the intake --status of a time-windowed detector gets no warning",
   "status": "draft",
+  "sprint": "SP-m3azo2y7",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -16,8 +17,11 @@
   },
   "touches": [
     "_tools/bl_land.py",
-    "kb/_self/tools.md",
     "kb/_self/backlog.md",
-    "kb/_self/code.md"
-  ]
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-vblulwrc"
+  ],
+  "notes": "Premise: its repro. Run at planning on 2026-10-10: exit 1, precheck prints 'checks=0 passing=0' for a bug whose repro is the trailers intake --status. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13)."
 }

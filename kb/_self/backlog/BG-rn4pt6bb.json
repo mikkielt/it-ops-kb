@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "precheck names the trailers detector's first passing date from the wall clock, but its window follows main's tip time",
   "status": "draft",
+  "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -11,13 +12,17 @@
     "run": [
       "python3",
       "-c",
-      "import pathlib,sys;t=pathlib.Path('_tools/bl_land.py').read_text(encoding='utf-8');ok='tip' in t[t.index('def windowed_detector'):t.index('def cmd_precheck')];print('precheck names main tip in the trailers window:',ok);sys.exit(0 if ok else 1)"
+      "import pathlib,sys;t=pathlib.Path('_tools/bl_land.py').read_text(encoding='utf-8');ok=\"main's tip\" in t[t.index('def windowed_detector'):t.index('def cmd_precheck')];print('precheck names main tip in the trailers window:',ok);sys.exit(0 if ok else 1)"
     ]
   },
   "repro_reason": "the wrong date shows only against a real main whose tip lags the clock; the repro reads whether the warning names main's tip",
   "touches": [
     "_tools/bl_land.py",
-    "kb/_self/tools.md",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-cb4wcm2m"
+  ],
+  "notes": "Premise: its repro, tightened at planning to look for \"main's tip\" in windowed_detector. Run on 2026-10-10: exit 1, False. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13)."
 }

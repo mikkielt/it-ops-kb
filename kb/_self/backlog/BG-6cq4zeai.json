@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "backlog.py's touches_overlap re-export says bl_view's held and tests use it; neither does",
   "status": "draft",
+  "sprint": "SP-m3azo2y7",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "_tools/backlog.py's re-export of bl_base.touches_overlap carries no comment naming users it does not have: drop the re-export if nothing reads it, else name its real readers.",
+  "goal": "_tools/backlog.py drops its re-export of bl_base.touches_overlap, which no test, no bl_view held and no other module reads through the facade, so no comment names users it does not have.",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +17,9 @@
   },
   "repro_reason": "The defect is a code comment's wording: bl_view's held now calls bl_plan.touches_meet and no test reads backlog.touches_overlap, so no behaviour runs.",
   "touches": [
-    "_tools/backlog.py"
-  ]
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Premise: its repro. Run at planning on 2026-10-10: exit 1 (the comment still says 'held uses it'). Grep of _tools and the repo finds no reader of backlog.touches_overlap. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13)."
 }

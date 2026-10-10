@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: the goal's questions are about this repo's own tools, read from _tools and kb/_self; the one outside fact (refs are shared by every worktree of a clone, git-test-repositories.md:70, git-refs.md) came back coverage good in the pack run at planning on 2026-10-10, and the precheck-calendar question is internal to bl_land and bl_intake."
 }

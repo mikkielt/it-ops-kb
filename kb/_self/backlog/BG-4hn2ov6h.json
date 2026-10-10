@@ -3,20 +3,26 @@
   "kind": "bug",
   "title": "backlog.py's usage text says selectors reads only the checks of open items",
   "status": "draft",
+  "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "Found in the SP-vmxdxtru review: BG-n54k5zud made selectors read the done items of an active sprint (a done task or subtask through its story) and a bug's repro, and tools.md and backlog.md say so, but backlog.USAGE (_tools/backlog.py, the selectors line) still says 'in the checks of open items'. The usage line names the checks and bug repros of open items and of the done items of an active sprint.",
+  "goal": "Found in the SP-vmxdxtru review: BG-n54k5zud made selectors read the done items of an active sprint (a done task or subtask through its story) and a bug's repro, and tools.md and backlog.md say so, but the usage text (the module docstring of _tools/backlog.py, its selectors entry) still says 'in the checks of open items'. The entry names the checks and bug repros of open items and of the done items of an active sprint.",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import backlog;t=backlog.USAGE;i=t.index('backlog.py selectors');s=t[i:i+500];print(s);sys.exit(0 if 'done' in s and 'repro' in s else 1)"
+      "import sys;sys.path.insert(0,'_tools');import backlog;t=backlog.__doc__;i=t.index('backlog.py selectors');s=t[i:t.index('backlog.py list',i)];print(s);sys.exit(0 if 'done' in s and 'repro' in s else 1)"
     ]
   },
-  "repro_reason": "the defect is the usage text itself; the repro reads the selectors entry of backlog.USAGE",
+  "repro_reason": "the defect is the usage text itself: the repro reads the selectors entry of backlog's module docstring, the text its usage prints",
   "touches": [
     "_tools/backlog.py",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-6cq4zeai"
+  ],
+  "notes": "Premise: its repro, repointed at planning from backlog.USAGE (a tuple of command names, so the first repro raised ValueError) to backlog.__doc__, the usage text. Run on 2026-10-10: exit 1, the selectors entry still says 'in the checks of open items'. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13)."
 }
