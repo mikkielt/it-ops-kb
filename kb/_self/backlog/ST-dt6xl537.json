@@ -2,7 +2,7 @@
   "id": "ST-dt6xl537",
   "kind": "story",
   "title": "A bug filed into an active sprint without touches is refused or warned at new",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-6iiony54",
   "sprint": "SP-qxcj7fgy",
   "priority": "P2",
@@ -48,5 +48,18 @@
     "parked: SP-evkj4avq close"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): new bug --sprint of an active sprint with no --touch files the bug, exit 0: reproduces.",
-  "claimed_by": "worker-ST-dt6xl537"
+  "evidence": {
+    "commit": "86f87a54841c2de958c9c9c8ad6664e6913454ea",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); open(t+\"/_backlog/SP-testtest.json\",\"w\").write(json.dumps({\"id\":\"SP-testtest\",\"kind\":\"sprint\",\"title\":\"t\",\"status\":\"active\",\"goal\":\"g\"})); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"new\",\"bug\",\"--title\",\"b\",\"--severity\",\"S3\",\"--repro\",\"python3 -c \\\"import sys; sys.exit(1)\\\"\",\"--sprint\",\"SP-testtest\"],capture_output=True,text=True); sys.exit(0 if p.returncode==2 and \"--touch\" in p.stderr+p.stdout and os.listdir(t+\"/_backlog\")==[\"SP-testtest.json\"] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
