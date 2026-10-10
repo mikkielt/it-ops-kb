@@ -1,0 +1,26 @@
+{
+  "id": "ST-firgvwq5",
+  "kind": "story",
+  "title": "The unit cache test's text case changes only the text, so dropping u['text'] from _unit_key fails the loop assertion",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the SP-yzs3bj6f review of ST-fravxf4v: in the unit-cache test of _tools/test_live_kb.py the text case changes two key inputs, since the expansions are keyed by fact_key(text) and the new text loses them, so a _unit_key that drops u['text'] still fails the loop's cache-reuse assertion through the expansions and is caught only at the later pack step. The text case keeps the expansions for the new text, so the loop assertion alone fails when u['text'] is dropped.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "unit_cache"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_live_kb.py",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-yzs3bj6f review"
+  ]
+}

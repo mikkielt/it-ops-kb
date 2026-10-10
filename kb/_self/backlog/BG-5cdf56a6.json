@@ -1,0 +1,25 @@
+{
+  "id": "BG-5cdf56a6",
+  "kind": "bug",
+  "title": "perfcheck names_successor still lets a dropped test excuse itself by its module stem or a call form of its name",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found by the SP-yzs3bj6f review of BG-fiwxnug3: is_own (_tools/perfcheck.py) matches a reason token against the dropped ids' own names by exact string, so the test module's stem (test_audit for _tools/test_audit.py), or the test name written as a call (test_x()) or with trailing space inside the backticks, beside the live-module-calls-went-with phrase still counts as a successor. names_successor skips these forms of the dropped ids' own names too, and a genuine successor (a removed module's name) still counts.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile; sys.path.insert(0,'_tools'); import perfcheck; d=tempfile.mkdtemp(); r=perfcheck.names_successor('live-module calls went with `test_audit`', ['_tools/test_audit.py::test_x'], d, ''); print(r); sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/perfcheck.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-yzs3bj6f review"
+  ]
+}

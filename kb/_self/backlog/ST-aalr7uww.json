@@ -1,0 +1,33 @@
+{
+  "id": "ST-aalr7uww",
+  "kind": "story",
+  "title": "The land e2e scenario's planned() commit succeeds when the clone has no live backlog items",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the SP-yzs3bj6f review of ST-dri6dmi5: planned() in _tools/test_land_e2e.py removes the live kb/_self/backlog/ items with git rm --ignore-unmatch and commits with a plain commit, so in a clone whose kb/_self/backlog/ is empty or absent (a project that starts with no items) the commit fails with nothing to commit and every land e2e scenario fails with it. The removal commit succeeds when there is nothing to remove (such as --allow-empty), and the scenarios still pass.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_runs_lint"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/test_land_e2e.py',encoding='utf-8').read();sys.exit(0 if '--allow-empty' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-yzs3bj6f review"
+  ]
+}
