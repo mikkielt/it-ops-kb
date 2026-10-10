@@ -26,6 +26,19 @@
   "depends_on": [
     "ST-a5q6vaji"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The item's check needs the literal 'adding a new `_tools/` module' in skills/backlog/SKILL.md, which test_plugin_sprint_ships forbids (bare _tools/ in a plugin skill). How does the item pass both?",
+      "options": [
+        "Change the check's kb-backlog clause to the plugin-safe phrase 'adding a new tool module'; backlog.md keeps the _tools/ wording",
+        "Keep the check and exempt the phrase in the portability test"
+      ],
+      "recommendation": "Change the check's kb-backlog clause to the plugin-safe phrase 'adding a new tool module'; backlog.md keeps the _tools/ wording",
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-befc6yqr close",
     "merged: ST-yjq7extd",
