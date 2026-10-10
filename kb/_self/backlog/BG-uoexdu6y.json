@@ -1,0 +1,60 @@
+{
+  "id": "BG-uoexdu6y",
+  "kind": "bug",
+  "title": "backlog.py reads backlog.json from the tool's own root at import, so with --root another project only config and check use that project's settings",
+  "status": "todo",
+  "parent": "EP-4fawjprq",
+  "sprint": "SP-befc6yqr",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "Every backlog.py command run with --root PROJECT (or from a project whose root differs from the tool's) reads PROJECT's backlog.json (or KB_BACKLOG_CONFIG) for every setting: bl_base's import-time read (_LOADED = read_settings(ROOT)) and the module constants made from it (REL_DIR, KINDS, ID_RE, ALWAYS_IN_SCOPE, the land steps, WORKER_DIR, ID_SHAPE) follow the root the command runs on, so new, set, check, land, brief and dispatch use the project's item_dir, id prefixes, trackers and worktree_dir; bl_ci.in_worker_worktree reads worktree_dir instead of a literal; the kb's own behaviour is unchanged; no bl_ module imports backlog or kbgit. Found by the SP-befc6yqr review (gap S1 of ST-qgnjxiol).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,subprocess,sys,tempfile,pathlib;d=pathlib.Path(tempfile.mkdtemp());subprocess.run(['git','init','-q',str(d)]);(d/'backlog.json').write_text(json.dumps({'item_dir':'work/items'}));subprocess.run([sys.executable,'_tools/backlog.py','--root',str(d),'new','story','--title','probe','--goal','probe'],capture_output=True);sys.exit(0 if (d/'work/items').is_dir() else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_config"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/bl_cli.py",
+    "_tools/backlog.py",
+    "_tools/bl_land.py",
+    "_tools/bl_ci.py",
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "mechanism",
+      "kind": "blocking",
+      "question": "How do the commands follow the project root's settings instead of the tool root's import-time read?",
+      "options": [
+        "settings are loaded once per process for the root the command runs on (bl_cli's main, from --root or the working tree's git root, before any command), and every reader takes them at call time through bl_base accessors, never through a constant copied at import",
+        "keep the import-time constants and rebind them in every loaded bl_ module after --root is parsed"
+      ],
+      "recommendation": "settings are loaded once per process for the root the command runs on (bl_cli's main, from --root or the working tree's git root, before any command), and every reader takes them at call time through bl_base accessors, never through a constant copied at import",
+      "do": {
+        "settings are loaded once per process for the root the command runs on (bl_cli's main, from --root or the working tree's git root, before any command), and every reader takes them at call time through bl_base accessors, never through a constant copied at import": "BG-uoexdu6y",
+        "keep the import-time constants and rebind them in every loaded bl_ module after --root is parsed": "BG-uoexdu6y"
+      },
+      "class": "agents-rule",
+      "answer": "settings are loaded once per process for the root the command runs on (bl_cli's main, from --root or the working tree's git root, before any command), and every reader takes them at call time through bl_base accessors, never through a constant copied at import",
+      "by": "operator"
+    }
+  ]
+}
