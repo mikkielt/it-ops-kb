@@ -2,7 +2,7 @@
   "id": "ST-ggikupyg",
   "kind": "story",
   "title": "Review sprint: Headless sprint loop 1: worker brief and role file",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qg7ncs6d",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-qg7ncs6d"
+  "evidence": {
+    "commit": "32733bd27400016d81fb7fd54faf65a5d06b9a93",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "5fb3569ffea20e3f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f52610970786237a"
+      }
+    ]
+  }
 }
