@@ -13,5 +13,8 @@
       "-c",
       "import subprocess, sys; p = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', 'public', '--item', 'BG-aaaaaaaa'], capture_output=True, text=True); sys.exit(1 if 'needs --root' in p.stderr else 0)"
     ]
-  }
+  },
+  "links": [
+    "parked: SP-befc6yqr review"
+  ]
 }

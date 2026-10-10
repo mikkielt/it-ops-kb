@@ -1,0 +1,26 @@
+{
+  "id": "BG-o3bnptuv",
+  "kind": "bug",
+  "title": "kb-sprint review step 2 says zeros beside open session figures mean no usage rows yet, while the rows exist and only their sidecars are undistilled",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb-sprint SKILL.md review step 2 words the provisional zeros by their cause: usage rows exist in the spool but their sessions are not distilled into sidecars yet, as cost --rework's open-session block shows. Found by the SP-befc6yqr review (S3 of ST-izba5564).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit('zeros then mean no usage rows yet' in open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read())"
+    ]
+  },
+  "repro_reason": "the defect is the skill's wording",
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-befc6yqr review"
+  ]
+}

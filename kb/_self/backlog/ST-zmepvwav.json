@@ -1,0 +1,30 @@
+{
+  "id": "ST-zmepvwav",
+  "kind": "story",
+  "title": "dispatch's scratch directory is a backlog.json setting and the claims ledger has one shared helper",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_dispatch's SCRATCH_REL (_cache/scratch) becomes a backlog.json setting with the kb's value as default, and the claims-ledger path and git-dir lookup duplicated between bl_items.cmd_claim and bl_dispatch become one bl_base helper; behaviour unchanged on the kb. From the ST-nq5z6whn worker's notes in sprint SP-befc6yqr.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_dispatch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bl_items.py",
+    "_tools/bl_base.py",
+    "backlog.json",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-befc6yqr review"
+  ]
+}
