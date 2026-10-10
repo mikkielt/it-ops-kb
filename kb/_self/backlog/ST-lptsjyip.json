@@ -1,0 +1,21 @@
+{
+  "id": "ST-lptsjyip",
+  "kind": "story",
+  "title": "The plugin's review step starts a read-only reviewer, not a worker brief (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The review step of the plugin's sprint skill starts its fresh-context reviewer with a reviewer brief (read-only, report gaps) and no work branch, instead of dispatching the review story as a worker",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_reviewer_brief"
+      ]
+    }
+  ],
+  "notes": "Run finding 26: dispatch ST-... (review story) made a worker worktree on work/ST-... with the worker's brief and write access; it found no gap and committed nothing."
+}

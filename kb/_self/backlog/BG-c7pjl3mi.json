@@ -1,0 +1,19 @@
+{
+  "id": "BG-c7pjl3mi",
+  "kind": "bug",
+  "title": "forge cannot be left unset, so a project with no forge gets unknown:forge from stalled (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.json accepts an empty forge, meaning the project has no forge: stalled, land and red-pipeline skip the merge request and pipeline reads and say so, with no unknown:forge signal",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); open(os.path.join(d,'backlog.json'),'w').write('{\"forge\": \"\"}'); r=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'config'],capture_output=True,text=True); sys.exit(1 if r.returncode==2 else 0)"
+    ]
+  },
+  "notes": "Run setup: backlog.json key 'forge' must be \"gitlab\" or \"github\"; run finding 15: stalled printed ST-... doing by orchestrator  unknown:forge."
+}

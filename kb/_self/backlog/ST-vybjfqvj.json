@@ -1,0 +1,21 @@
+{
+  "id": "ST-vybjfqvj",
+  "kind": "story",
+  "title": "land leaves a host's local main in step with origin/main after it pushes (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "After land pushes in a project whose local main holds commits not yet on origin, local main is fast-forwarded or land names the divergence before its push, never after",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_fast_forwards_host_main"
+      ]
+    }
+  ],
+  "notes": "Run finding 22: land: left main 2 commit(s) behind origin/main: it cannot fast-forward (fatal: Not possible to fast-forward, aborting.); finding 23: the push sent the whole local history of HEAD."
+}

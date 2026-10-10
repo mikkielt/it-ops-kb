@@ -1,0 +1,19 @@
+{
+  "id": "BG-cmvwrpbr",
+  "kind": "bug",
+  "title": "backlog.json defaults are the kb's own values, so a host project must override review_checks, research_checks, the land steps, docs_map and kb_root (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A project with no backlog.json, or one naming none of these keys, gets defaults that name no kb file: review_checks, research_checks, land_stale, land_eval, land_lint, docs_map and kb_root default to empty, and the kb's backlog.json names its own values, so its behaviour is unchanged",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'config'],capture_output=True,text=True).stdout; sys.exit(1 if 'kb_root = \"_self\"  (default)' in o else 0)"
+    ]
+  },
+  "notes": "Run setup: backlog.py --root <empty project> config printed review_checks = [... _tools/backlog.py check ... _tools/tests.py], land_eval = [\"_tools/rag.py\", \"eval\"], docs_map = \"kb/_self/map.csv\", kb_root = \"_self\", all (default); the host's backlog.json had to set each to [] or \"\"."
+}

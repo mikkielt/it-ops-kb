@@ -1,0 +1,21 @@
+{
+  "id": "ST-2yxoml3e",
+  "kind": "story",
+  "title": "The plugin sprint's plan and start steps commit the item files they change (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Every plan and start step of the plugin's sprint skill that edits item files leaves them committed (set and start take --commit, or the skill names the commit), so the tree is clean before the first claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_plan_commits"
+      ]
+    }
+  ],
+  "notes": "Run finding 4: after start, git status showed  M _backlog/SP-....json plus three story files; set has no --commit; the orchestrator committed them with plain git."
+}

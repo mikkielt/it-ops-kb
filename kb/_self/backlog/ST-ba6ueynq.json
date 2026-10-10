@@ -1,0 +1,20 @@
+{
+  "id": "ST-ba6ueynq",
+  "kind": "story",
+  "title": "plugin.md's install steps for the sprint skills say to trust the project once and name the plugin root in additionalDirectories (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/plugin.md's steps for a host that runs the sprint skills headless say the workspace must be trusted once in an interactive session (else project allow rules are ignored) and the plugin root named in permissions.additionalDirectories",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('kb/_self/plugin.md').read(); sys.exit(0 if 'additionalDirectories' in t and 'trust' in t else 1)"
+      ]
+    }
+  ],
+  "notes": "Run start: stderr: Ignoring 14 permissions.allow entries from .claude/settings.json: this workspace has not been trusted; every python3 <plugin>/_tools/backlog.py call was held for approval; ls of the plugin's _tools was blocked outside the allowed working directories."
+}

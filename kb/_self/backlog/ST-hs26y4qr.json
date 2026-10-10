@@ -1,0 +1,21 @@
+{
+  "id": "ST-hs26y4qr",
+  "kind": "story",
+  "title": "The claim sync and the close commit of a host project are pushed by a backlog.py command, not by hand (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A host project pushes its claim commits and its close commit with a backlog.py command that runs land_push (the skill names it), since close deletes the items land needs and a hand push is denied to agents",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_push_command"
+      ]
+    }
+  ],
+  "notes": "Run findings 21 and 27: the skill tells the orchestrator to push the claims with land_push's argv by hand (git push denied); land ST-... --branch main after close --commit: no item ST-...: its file was deleted (a closed sprint's item); the close commit stayed local."
+}

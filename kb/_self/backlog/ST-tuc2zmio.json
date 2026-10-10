@@ -1,0 +1,21 @@
+{
+  "id": "ST-tuc2zmio",
+  "kind": "story",
+  "title": "A host orchestrator can resume a returned worker without a cd its permission rules refuse (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The plugin's sprint skill gives a way to resume a worker's headless session in its worktree that a host's permission rules allow (a backlog.py command that runs claude -p --resume in the worktree, or a documented allow rule)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_resume_worker"
+      ]
+    }
+  ],
+  "notes": "Run finding 11: ( cd <worktree> && claude -p --resume ... ) was refused: This command uses shell operators that require approval for safety."
+}

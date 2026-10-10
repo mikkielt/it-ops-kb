@@ -1,0 +1,20 @@
+{
+  "id": "BG-duzrzr2d",
+  "kind": "bug",
+  "title": "dispatch gives a host worker only the scratch directory, so it cannot read the plugin's role file its brief names (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A worker dispatch starts for a project whose role file is the plugin's agents/worker.md can read that file: dispatch adds the plugin root to the session's --add-dir when the brief names the plugin's role file, with no setting the host must add",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import inspect, bl_dispatch as d; sys.exit(0 if 'PLUGIN_ROOT' in inspect.getsource(d.claude_argv) else 1)"
+    ]
+  },
+  "repro_reason": "the read is refused only in a host project's headless session; the run's result.json holds the denial",
+  "notes": "Run finding 10: the worker exited 0 with no commit, result.json permission_denials: [{tool_name: Read, file_path: <plugin>/agents/worker.md}]; fixed for the run only by the host's .claude/settings.json permissions.additionalDirectories naming the plugin root."
+}

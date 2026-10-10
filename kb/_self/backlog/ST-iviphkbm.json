@@ -1,0 +1,21 @@
+{
+  "id": "ST-iviphkbm",
+  "kind": "story",
+  "title": "land keeps the worker's worktree until its push has succeeded (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "land removes a finished worker's worktree only after the push step exits 0, so a failed push leaves the worktree to resume in",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_keeps_worktree_until_push"
+      ]
+    }
+  ],
+  "notes": "Run finding 18: land: removed the finished worker's worktree ... then land stopped at step kbgit.py sync --push; only the branch was left."
+}

@@ -1,0 +1,21 @@
+{
+  "id": "ST-uvtnm3kj",
+  "kind": "story",
+  "title": "held --ref origin/main reads a host project whose origin has no item directory yet (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "held --ref REF on a project whose REF has no item directory yet lists no claim and exits 0, naming that the ref has no items",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "held_ref_without_item_dir"
+      ]
+    }
+  ],
+  "notes": "Run finding 7: held --ref origin/main: git ls-tree --name-only origin/main:_backlog: fatal: Not a valid object name origin/main:_backlog."
+}

@@ -1,0 +1,21 @@
+{
+  "id": "ST-bl7kxfh6",
+  "kind": "story",
+  "title": "A sprint's goal research story in a project with no research_checks gets a check and a touch in that project (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "new sprint in a project whose research_checks is [] and which has no kb root gives the research story a check that passes on a No outside facts note and no kb/public/** touch, so check does not refuse it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_research_no_kb"
+      ]
+    }
+  ],
+  "notes": "Run finding 2: check: ST-... Research sprint goal ...: checks missing: the commands that prove the end state; the story carried touches kb/public/**; set --add-check of python3 <plugin>/_tools/backlog.py --root <project> researched ID was refused (leak-scan hit (home), and its program is not python3 on a _tools/ script)."
+}

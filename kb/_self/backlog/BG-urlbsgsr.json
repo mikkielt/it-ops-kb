@@ -1,0 +1,19 @@
+{
+  "id": "BG-urlbsgsr",
+  "kind": "bug",
+  "title": "backlog.py run by its full path from a host project reads the plugin's own backlog.json, and the plugin's skills and brief show no --root (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A backlog.py command a host project's session runs by the plugin's full path, from the host's working tree, reads the host's backlog.json and item directory (the root is the working tree's repository, or the skills and the brief pass --root), so no host command reads or writes the kb's own backlog",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,os.path.abspath('_tools/backlog.py'),'config'],cwd=d,capture_output=True,text=True).stdout; sys.exit(1 if 'kb/_self/backlog' in o else 0)"
+    ]
+  },
+  "notes": "Run finding 1: python3 <plugin>/_tools/backlog.py config in the host printed item_dir = \"kb/_self/backlog\"  (file); the orchestrator and the reviewer added --root to every command; the reviewer without it got no item ST-... A host worker's gate add without --root would write into the kb's backlog."
+}
