@@ -140,6 +140,13 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
         "- A gadget license is a signed file.\n", encoding="utf-8")
     wrapped = {"question": "What is the gadget license and release channel?", "expect_paths": "zz/wrap.md"}
     assert bp.fact_for(tmp_path / "side", wrapped)[1] == 6  # the paragraph's first line; its wrapped line 7 and the pointer line 9 are no facts
+    (side / "mixed.md").write_text(
+        "---\ntopic: zz/mixed\n---\n\n- Sprocket timeout is 30 seconds; the full table is in `zz/plant.csv`.\n"
+        "- See `zz/plant.csv` for the sprocket timeout.\n\n```\nsprocket timeout seconds\n```\n\n"
+        "| Sprocket timeout seconds | Sprocket value |\n|---|---|\n| Sprocket cog | teeth |\n", encoding="utf-8")
+    mixed = bp.article_facts((side / "mixed.md").read_text(encoding="utf-8").splitlines())
+    assert [n for n, _ in mixed] == [5, 14]  # a fact keeps its pointer clause; a pure pointer, a code line and a table header are none
+    assert bp.fact_for(tmp_path / "side", {"question": "sprocket timeout seconds", "expect_paths": "zz/mixed.md"})[1] == 5
     (side / "plant.csv").write_text(
         'project,licence,latest_release\nalpha,MIT licence,v1\nbetamin,GPL licence,v2\nbetamax,Apache licence,v3\n'
         '"gamma","BSD licence\nwrapped note",v4\n', encoding="utf-8")
@@ -230,6 +237,24 @@ def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost
          "modelUsage": {m: {**({"costUSD": cost, "outputTokens": final_out} if m == model else {}), **(billed or {}).get(m, {})}
                         for m in {model, *(billed or {})}}}]
     return "\n".join(json.dumps(e) for e in events)
+
+
+def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_picked_line(tmp_path, capsys):
+    import argparse
+    import bench_pool as bp
+    pool_home(tmp_path, [f"fixture session question number {i} about topic {i} in detail" for i in range(26)])
+    out = tmp_path / "pool.csv"
+    rows = bp.build_public(tmp_path, 3, lambda items: [r"value\d+"] * len(items), out)
+    bp.write_csv(out, rows)
+    check = argparse.Namespace(pool_cmd="check", file=str(out), querylog=False)
+    assert bp.cli(check, tmp_path) == 0 and capsys.readouterr().out == ""  # every committed check matches the line picked
+    stale = next(r for r in rows if r["kind"] == "fact")
+    stale["checks"] = json.dumps(["no such answer"])
+    bp.write_csv(out, rows)
+    assert bp.cli(check, tmp_path) == 0  # a warning: the row's check still holds until it is redone
+    seen = capsys.readouterr().out
+    assert seen.count("warning") == 1 and f"{stale['id']}: warning: no check matches" in seen
+    assert f"`pool build --redo {stale['id']}`" in seen
 
 
 def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
