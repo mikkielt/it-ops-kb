@@ -2,7 +2,7 @@
   "id": "BG-7cd3hvi6",
   "kind": "bug",
   "title": "backlog.py's usage text for precheck omits a bug's repro and the time-windowed detector warning",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-m3azo2y7",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,18 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "kb-worker-7cd3hvi6"
+  "evidence": {
+    "commit": "8d4c33bc0cab77224d9f86cdf506213f6f8c4498",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import backlog;d=backlog.__doc__;i=d.index('backlog.py precheck');e=d[i:d.index('backlog.py close SPRINT')];sys.exit(0 if 'repro' in e and 'time-windowed' in e else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
