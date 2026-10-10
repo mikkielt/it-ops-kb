@@ -35,7 +35,9 @@
         "nothing printed"
       ],
       "recommendation": "a land: note, no warning (warning only for missing and undelivered)",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a land: note, no warning (warning only for missing and undelivered)",
+      "by": "operator"
     }
   ],
   "claimed_by": "kb-worker-ye4msgps"
