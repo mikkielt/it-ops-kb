@@ -2,7 +2,7 @@
   "id": "ST-ik5xhaix",
   "kind": "story",
   "title": "An item names the repositories it changes, and claim, held, land and close work per repository of a multi-repository workspace",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-dqkf3i42",
   "priority": "P2",
@@ -30,5 +30,6 @@
     "ST-zmepvwav",
     "ST-4jjz3vxs"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage (sprint 6 of 13, \"Sprint tooling 2: one forge module, dispatch scratch setting, multi-repository items\"). Premise: bl_base.SETTINGS has no repositories key and no item field repos; run at planning (2026-10-10): python3 -c \"import sys; sys.path.insert(0,'_tools'); import bl_base; print('repositories' in bl_base.SETTINGS)\" printed False, so it reproduces. Land's per-repository read goes through bl_forge, so this story depends on ST-4jjz3vxs. Its tests: -k multirepo_land in test_land_e2e.py, the rest in test_backlog_portable.py; every -k selector collects NONE on the base (tests yet to write)."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage (sprint 6 of 13, \"Sprint tooling 2: one forge module, dispatch scratch setting, multi-repository items\"). Premise: bl_base.SETTINGS has no repositories key and no item field repos; run at planning (2026-10-10): python3 -c \"import sys; sys.path.insert(0,'_tools'); import bl_base; print('repositories' in bl_base.SETTINGS)\" printed False, so it reproduces. Land's per-repository read goes through bl_forge, so this story depends on ST-4jjz3vxs. Its tests: -k multirepo_land in test_land_e2e.py, the rest in test_backlog_portable.py; every -k selector collects NONE on the base (tests yet to write).",
+  "claimed_by": "orch-dqkf3i42"
 }
