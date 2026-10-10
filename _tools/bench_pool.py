@@ -20,8 +20,9 @@ from pathlib import Path
 from typing import NamedTuple
 
 import agent_bench
-from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, WEB_SEARCH_USD, Skip, est_cost, no_plugin_env, prompt_tokens,
-                        read_rows, resolve_model, run_tokens, spent_run, spent_usd, usage_sum, write_rate, write_rows)
+from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, WEB_SEARCH_USD, Skip, est_cost, no_plugin_env, pinned,
+                        prompt_tokens, read_rows, resolve_model, run_tokens, spent_run, spent_usd, usage_sum, write_rate,
+                        write_rows)
 from bench_retrieval import numbered, sonnet_json
 
 SEED = 11
@@ -1003,7 +1004,8 @@ def record_of(row, arm, label, r, cc=""):
 
 def list_usd(r, name="", cc=""):
     """The list-price cost (`est_cost`) of everything run `r` bills: its requests priced per model, and, from the
-    run's `model_usage` (what `modelUsage` bills each model), the output and the uncached input a request does not
+    run's `model_usage` (what `modelUsage` bills each model, a dated key such as `claude-haiku-4-5-20251001` summed
+    into its pinned model's), the output and the uncached input a request does not
     show (the difference put in the lowest price tier for the input, the highest the requests reached for the output)
     and a model that has no request of the main session at all (the model a WebFetch or WebSearch call runs inside the
     tool, billed in the lowest tier), each at its own model's prices; a run with no `model_usage` takes its own `out`
@@ -1013,7 +1015,11 @@ def list_usd(r, name="", cc=""):
     for q in r.get("requests") or []:
         groups.setdefault(q.get("model") or name, []).append(q)
     sums = [usage_sum(rs, m, cc) for m, rs in groups.items()]
-    billed = r.get("model_usage") or {}
+    billed = {}
+    for m, u in (r.get("model_usage") or {}).items():
+        into = billed.setdefault(pinned(m), {})
+        for k, v in u.items():
+            into[k] = into.get(k, 0) + (v or 0)
     partial = sum(s["out"] for s in sums)
     extra = r["out"] - partial if sums and r.get("out") is not None and not billed else 0
     total = 0.0
