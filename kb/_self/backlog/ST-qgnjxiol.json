@@ -2,7 +2,7 @@
   "id": "ST-qgnjxiol",
   "kind": "story",
   "title": "backlog.py reads its project settings from a backlog.json at the repository root, with the kb's current values as the default",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-befc6yqr",
   "priority": "P1",
@@ -73,5 +73,6 @@
   "links": [
     "kb/_self/code.md: standard library, flat prefixed modules behind a CLI facade, import direction"
   ],
-  "notes": "Order in SP-befc6yqr: first. Creates _tools/test_backlog_portable.py, the epic's one new test file (13 of 15 files used before it); its -k backlog_config test collects nothing until the work adds it. Premise: python3 _tools/backlog.py config exits 2 today (no such command), and bl_base.py:12,20,37,56,60 hold the constants as literals."
+  "notes": "Order in SP-befc6yqr: first. Creates _tools/test_backlog_portable.py, the epic's one new test file (13 of 15 files used before it); its -k backlog_config test collects nothing until the work adds it. Premise: python3 _tools/backlog.py config exits 2 today (no such command), and bl_base.py:12,20,37,56,60 hold the constants as literals.",
+  "claimed_by": "kb-worker-qgnjxiol"
 }
