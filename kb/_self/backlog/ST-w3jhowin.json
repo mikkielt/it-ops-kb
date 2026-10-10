@@ -40,6 +40,56 @@
     "kb/_self/usage.md",
     "kb/_self/reports/fact-diff.md"
   ],
+  "gates": [
+    {
+      "id": "rowshape",
+      "kind": "blocking",
+      "question": "What shape does the ops row census.phase take, and when is it written? Recommended: keys phase, date (a new closed date shape), ms, exit and optional rows, a table of name and n (a lower-case token per bucket, verdict or outcome, zero counts left out); no row for a --dry-run; the digest's ops block gives the event's count, failures and median ms beside land.end, sync.gate and test.run.",
+      "options": [
+        "table-rows",
+        "flat-keys-and-dry-run-rows"
+      ],
+      "recommendation": "table-rows",
+      "class": "secrets"
+    },
+    {
+      "id": "sizing",
+      "kind": "provisional",
+      "question": "How does the queue size one row phase 2 reads, and how is it split? Recommended: the passages of its fact diff review items (fact, old passage, new passage) when the fact diff log holds items for it, else its whole document in _cache/factdiff (the clone's main worktree cache when this worktree has none; not cached counts 0 characters and is counted); the split is by the host of the source url, naming the 15 hosts of most characters and one line for the rest.",
+      "options": [
+        "passages-else-cached-document",
+        "whole-documents-only"
+      ],
+      "recommendation": "passages-else-cached-document",
+      "class": "design",
+      "answer": "passages-else-cached-document",
+      "by": "agent"
+    },
+    {
+      "id": "flogfind",
+      "kind": "provisional",
+      "question": "How does census.py summary find the fact diff log whose review items it sizes? Recommended: an optional --factdiff FLOG, else the log the rows' evidence names (factdiff.py review NAME, beside LOG), else factdiff-<date of LOG>.csv beside LOG, else none (every row is sized as a whole document).",
+      "options": [
+        "flag-then-evidence-then-same-date",
+        "flag-only"
+      ],
+      "recommendation": "flag-then-evidence-then-same-date",
+      "class": "design",
+      "answer": "flag-then-evidence-then-same-date",
+      "by": "agent"
+    },
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at the ceiling: 100 of 100 test ids, and its scenario of tests.py's reuse (test_sync_e2e.py) adds a stray test file to a clone, so a 15th tracked test file makes that scenario see 16 files and fail; a full run takes about 21 s against the darwin ceiling of 22 s. This story's checks need two test ids in one new file, _tools/test_census_route.py (the queue's sizing; the phases' ops rows with the digest line), so tests.py exits 1 with 102 ids and 15 files. Which makes room?",
+      "options": [
+        "raise-ids-and-files",
+        "replace-two-ids-and-a-file"
+      ],
+      "recommendation": "replace-two-ids-and-a-file",
+      "class": "design"
+    }
+  ],
   "notes": "Premise run 2026-10-10: python3 _tools/census.py summary kb/public/_census/2026-09-26.csv printed bucket, outcome and needs-reading-by-note counts and the confirmed count, and nothing about the size of what phase 2 reads (no facts, characters or tokens); no census.phase ops row exists (git grep census.phase in _tools finds nothing). This story sets the baseline the epic's later stories are measured against, so it lands first. Its test selector collects no test until the work adds _tools/test_census.py. The tokens estimate follows kb/_self/usage.md's characters/4 convention.",
   "claimed_by": "kb-worker-ST-w3jhowin"
 }

@@ -5,7 +5,7 @@
   census.py record LOG --from RESULTS.json | --id ID --outcome O [--note T]   phase 2: what reading decided
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
-  census.py summary LOG                            counts per bucket and outcome
+  census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, and the size of phase 2's reading queue
 
 census.py --root NAME <command> works on that root of this repository's kb/ (default public): its _sources.csv,
 _fetch_state.csv, articles and _census/ log. The clone cache (_cache/census/repos) is shared: a repository at a
@@ -45,6 +45,16 @@ Superseded, gone, unconfirmed and unread sources keep their dates: a date is onl
 sample (phase 4) prints a CSV of ids for the independent re-check: a fraction of the sources whose facts phase 2
 changed (updated/superseded/gone) and of the confirmed ones (bucket OK or outcome confirmed), seeded, at least one each.
 
+summary also prints the queue phase 2 must read, with no network and no model: the rows whose bucket is not OK, whose
+note is not `blocked` and that have no outcome yet, the lines of the kb naming them (`rag.py src --cited`), and what a
+model would read, in characters and in tokens (characters / 4, kb/_self/usage.md), by host: the fact diff review items'
+passages (fact, old and new passage) of a row the fact diff log holds items for (FLOG; else the log its evidence names,
+else _census/factdiff-<date>.csv beside LOG), and else the whole document held in _cache/factdiff, counted `not cached`
+when the cache holds none (a linked worktree reads the clone's main worktree's cache).
+
+check, record and confirm (not confirm --dry-run) each append one ops row `census.phase` to the query log (phase, date,
+ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
+
 Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 bad arguments.
 """
 import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, ssl, subprocess, sys, threading
@@ -53,7 +63,7 @@ from collections import Counter, defaultdict
 from urllib.parse import unquote, urlparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import build_index, kbcommon, kbid, ql_capture  # noqa: E402
+import build_index, factdiff, kbcommon, kbfacts, kbid, kbusage, ql_capture  # noqa: E402
 
 KB = kbcommon.PUBLIC  # the root under census (--root; public by default); the cache stays in the repository
 
@@ -587,7 +597,7 @@ def article_files():
     return sorted(out)
 
 
-def cmd_check(a):
+def cmd_check(a, tally):
     date = a.date or today()
     out = a.out or os.path.join(KB, "_census", f"{date}.csv")
     rows = [r for r in read_sources() if not a.source or r["id"] in a.source]
@@ -628,6 +638,7 @@ def cmd_check(a):
                         "retrieved_utc": r["retrieved_utc"], "http_status": st, **res, "used_in": r.get("used_in", ""),
                         "outcome": "", "outcome_note": ""})
     counts = Counter(res["bucket"] for _, _, _, res in results)
+    tally.update(counts)
     print("phase 1: " + ", ".join(f"{b}={counts[b]}" for b in BUCKETS) + f"; wrote {os.path.relpath(out, kbcommon.HOME)}")
     return 0
 
@@ -643,7 +654,7 @@ def write_log(path, rows):
     kbcommon.write_csv(path, COLS, rows, atomic=True)
 
 
-def cmd_record(a):
+def cmd_record(a, tally):
     rows = read_log(a.log)
     by_id = {r["id"]: r for r in rows}
     if a.from_json:
@@ -656,8 +667,10 @@ def cmd_record(a):
         if it.get("id") not in by_id or it.get("outcome") not in OUTCOMES:
             print(f"skipped {it!r}: unknown id or outcome (outcomes: {', '.join(OUTCOMES)})")
             bad += 1
+            tally["skipped"] += 1
             continue
         by_id[it["id"]]["outcome"] = it["outcome"]
+        tally[it["outcome"]] += 1
         by_id[it["id"]]["outcome_note"] = (it.get("note") or "").replace("\n", " ")[:300]
     write_log(a.log, rows)
     print(f"recorded {len(items) - bad} outcome(s)" + (f", skipped {bad}" if bad else ""))
@@ -671,7 +684,7 @@ def confirmed(r):
 SUFFIX = re.compile(r"(?:;\s*)?confirmed \d{4}-\d{2}-\d{2}: [^;]*$")
 
 
-def cmd_confirm(a):
+def cmd_confirm(a, tally):
     date = a.date or today()
     log = {r["id"]: r for r in read_log(a.log)}
     srcs_text = kbcommon.read(os.path.join(KB, "_sources.csv"), newline="", strict=True)
@@ -717,6 +730,7 @@ def cmd_confirm(a):
     for sid, lr in log.items():
         if confirmed(lr):
             state[sid] = {**state.get(sid, {"id": sid}), "id": sid, "url": urls[sid], "checked_utc": stamp, "error": ""}
+    tally.update(confirmed=n_src, added=len(fresh) - n_src, articles=len(articles))
     print(f"confirm {date}: {n_src} source(s) confirmed, {len(fresh) - n_src} row(s) added by the census, {len(articles)} article(s) re-dated")
     if a.dry_run:
         print("dry run: nothing written")
@@ -729,7 +743,7 @@ def cmd_confirm(a):
     return 0
 
 
-def cmd_sample(a):
+def cmd_sample(a, tally):
     rows = read_log(a.log)
     rnd = random.Random(a.seed)
     changed = [r for r in rows if r["outcome"] in ("updated", "superseded", "gone")]
@@ -743,8 +757,81 @@ def cmd_sample(a):
     return 0
 
 
-def cmd_summary(a):
+QUEUE_HOSTS = 15  # the hosts the summary's queue block names, most characters first; the rest are one line
+FACTDIFF_REVIEW = re.compile(r"factdiff\.py review (factdiff-[\w.-]+\.csv)")
+
+
+def factdiff_log_rows(rows, log, given=None):
+    """The rows of the fact diff log the census used: `given`, else the logs the evidence of `rows` names
+    (`factdiff.py review NAME`) beside `log`, else _census/factdiff-<date of log>.csv beside it; [] when none exists."""
+    here = os.path.dirname(os.path.abspath(log))
+    paths = ([given] if given else [os.path.join(here, n) for n in sorted({m for r in rows for m in FACTDIFF_REVIEW.findall(r["evidence"])})]
+             or [os.path.join(here, f"factdiff-{ql_capture.phase_date(path=log)}.csv")])
+    return [r for p in paths if os.path.isfile(p) for r in factdiff.read_log(p)]
+
+
+def reading_queue(rows, fd_rows):
+    """What phase 2 must read, measured with no network and no model: one record per row whose bucket is not OK, whose
+    note is not `blocked` and that has no outcome yet: id, host, `facts` (the kb lines naming it, `rag.py src --cited`),
+    `mode` (`review`: the fact diff items of `fd_rows` with their passages; `document`: the whole document of
+    _cache/factdiff), `chars` read, `items` and `partial` (review items with no old or no new passage), `cached`."""
+    todo = [r for r in rows if r["bucket"] != "OK" and r["note"] != BLOCKED and not r["outcome"]]
+    if not todo:
+        return []
+    ids = {r["id"] for r in todo}
+    cited = kbfacts.cited_lines(ids)
+    items = defaultdict(list)
+    for it in factdiff.review_items(fd_rows, factdiff.sources(), ids, offline=True):
+        items[it["source_id"]].append(it)
+    out = []
+    for r in todo:
+        got, rec = items.get(r["id"]), {"id": r["id"], "host": urlparse(r["url"]).netloc.lower() or "-",
+                                         "facts": len(cited.get(r["id"], [])), "items": 0, "partial": 0, "cached": True}
+        if got:
+            rec.update(mode="review", items=len(got), partial=sum(1 for i in got if i["old"] is None or i["new"] is None),
+                       chars=sum(len(factdiff.fact_text(i["fact"])) + len(i["old"] or "") + len(i["new"] or "") for i in got))
+        else:
+            text = (factdiff.load_json(factdiff.cache_path(r["id"], shared=True)) or {}).get("text") or ""
+            rec.update(mode="document", chars=len(text), cached=bool(text))
+        out.append(rec)
+    return out
+
+
+def queue_lines(queue):
+    """The summary's queue block: totals, then one line per host (most characters first)."""
+    tok = lambda n: n // kbusage.CHARS_PER_TOKEN  # noqa: E731
+    by = defaultdict(lambda: Counter())
+    for q in queue:
+        c = by[q["host"]]
+        c.update(rows=1, facts=q["facts"], chars=q["chars"], missing=0 if q["cached"] else 1)
+    total = sum(q["chars"] for q in queue)
+    rev = [q for q in queue if q["mode"] == "review"]
+    doc = [q for q in queue if q["mode"] == "document"]
+    out = [f"queue (phase 2 reads; no network, no model): rows={len(queue)} facts={sum(q['facts'] for q in queue)} "
+           f"chars={total} tokens={tok(total)}",
+           f"  review passages: rows={len(rev)} items={sum(q['items'] for q in rev)} "
+           f"without a passage={sum(q['partial'] for q in rev)} chars={sum(q['chars'] for q in rev)}",
+           f"  whole documents: rows={len(doc)} not cached={sum(1 for q in doc if not q['cached'])} "
+           f"chars={sum(q['chars'] for q in doc)}"]
+    hosts = sorted(by, key=lambda h: (-by[h]["chars"], h))
+    rest = Counter()
+    for host in hosts[QUEUE_HOSTS:]:
+        rest.update(by[host])
+    for host in hosts[:QUEUE_HOSTS]:
+        c = by[host]
+        out.append(f"  {host}: rows={c['rows']} facts={c['facts']} chars={c['chars']} tokens={tok(c['chars'])} "
+                   f"not cached={c['missing']}")
+    if rest:
+        out.append(f"  {len(hosts) - QUEUE_HOSTS} more hosts: rows={rest['rows']} facts={rest['facts']} chars={rest['chars']} "
+                   f"tokens={tok(rest['chars'])} not cached={rest['missing']}")
+    return out
+
+
+def cmd_summary(a, tally):
     rows = read_log(a.log)
+    if a.factdiff and not os.path.isfile(a.factdiff):
+        print(f"no fact diff log {a.factdiff}")
+        return 2
     b = Counter(r["bucket"] for r in rows)
     o = Counter(r["outcome"] or "-" for r in rows)
     nr = Counter(r["note"] or "-" for r in rows if r["bucket"] == "NEEDS-READING")
@@ -752,7 +839,11 @@ def cmd_summary(a):
     print("outcomes: " + " ".join(f"{k}={v}" for k, v in sorted(o.items())))
     print("needs-reading by note: " + " ".join(f"{k}={v}" for k, v in sorted(nr.items())))
     print(f"confirmed (phase 3 would date): {sum(1 for r in rows if confirmed(r))}")
+    print("\n".join(queue_lines(reading_queue(rows, factdiff_log_rows(rows, a.log, a.factdiff)))))
     return 0
+
+
+PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm}  # each writes a census.phase ops row
 
 
 def main():
@@ -782,8 +873,10 @@ def main():
     s.add_argument("--changed", type=float, default=0.10, help="fraction of the changed sources (default 0.10)")
     s.add_argument("--ok", type=float, default=0.05, help="fraction of the confirmed sources (default 0.05)")
     s.add_argument("--seed", type=int, default=1)
-    m = sub.add_parser("summary", help="counts per bucket and outcome")
+    m = sub.add_parser("summary", help="counts per bucket and outcome, and the size of phase 2's reading queue")
     m.add_argument("log")
+    m.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the queue sizes (default: the "
+                                                      "log the census's evidence names, else factdiff-<date>.csv beside LOG)")
     a = ap.parse_args()
     kbd = os.path.realpath(kbcommon.KB_DIR)
     try:
@@ -792,10 +885,15 @@ def main():
         sys.exit(str(e))
     if not here:
         ap.error(f"--root {a.root}: no such root in {kbcommon.repo_rel(kbcommon.KB_DIR)}/")
-    KB = here[0].path
+    KB = kbcommon.KB = here[0].path
+    factdiff.ROOT = here[0]
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):
         ap.error("record needs --from FILE, or --id and --outcome")
-    sys.exit({"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "sample": cmd_sample, "summary": cmd_summary}[a.cmd](a))
+    cmds = {**PHASES, "sample": cmd_sample, "summary": cmd_summary}
+    run = lambda tally: cmds[a.cmd](a, tally)  # noqa: E731
+    if a.cmd in PHASES and not getattr(a, "dry_run", False):
+        sys.exit(ql_capture.census_phase(a.cmd, run, ql_capture.phase_date(getattr(a, "date", None), getattr(a, "log", None))))
+    sys.exit(run(Counter()))
 
 
 if __name__ == "__main__":

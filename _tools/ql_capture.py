@@ -10,7 +10,7 @@ that event has, each a name, an exit code, a count, milliseconds, an item id, a 
 closed reason class, never free text. `record` writes none that breaks that shape (ops_problems), and the store
 gates the written lines by the same function.
 """
-import datetime, functools, hashlib, json, re, secrets, sys, threading, time, uuid
+import collections, datetime, functools, hashlib, json, re, secrets, sys, threading, time, uuid
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -68,10 +68,19 @@ OPS_TEST_FILE = re.compile(r"(?:test_[a-z0-9_]{1,60}|conftest)\.py")  # a test f
 OPS_REFUSED = ("children-open", "not-ready", "status", "provisional-answer", "uncommitted", "no-work-commit",
                "unlanded-code", "outside-touches", "stale-docs", "check-failed", "no-op-proof")  # why a `done` was refused
 OPS_TEST_MODES = ("full", "changed", "fast", "files", "keyword", "stress")
+OPS_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
 def _number(v, high, low=0):
     return type(v) is int and low <= v <= high
+
+
+def _is_date(v):
+    try:
+        datetime.date.fromisoformat(v)
+    except ValueError:
+        return False
+    return True
 
 
 OPS_KINDS = {  # the value shapes an ops key may have
@@ -83,6 +92,7 @@ OPS_KINDS = {  # the value shapes an ops key may have
     "test_file": lambda v: isinstance(v, str) and OPS_TEST_FILE.fullmatch(v) is not None,
     "reason": lambda v: v in OPS_REFUSED,
     "mode": lambda v: v in OPS_TEST_MODES,
+    "date": lambda v: isinstance(v, str) and OPS_DATE.fullmatch(v) is not None and _is_date(v),
     "ms": lambda v: _number(v, OPS_MS_MAX),
     "count": lambda v: _number(v, OPS_COUNT_MAX),
     "exit": lambda v: _number(v, 2 ** 32, -2 ** 31),  # a Windows status code is above 255
@@ -98,6 +108,7 @@ def _spec(required, optional=None):
 
 
 _CHECK_ROW = ("rows", 40, {"name": "token", "ran": "flag", "why": "token", "exit": "exit", "ms": "ms"})
+_COUNT_ROW = ("rows", 40, {"name": "token", "n": "count"})
 _FILE_MS = {"file": "test_file", "ms": "ms"}
 OPS_EVENTS = {  # the closed set of events, each with its closed keys
     "land.step": _spec({"item": "item", "step": "token", "exit": "exit", "ms": "ms"}),
@@ -116,6 +127,7 @@ OPS_EVENTS = {  # the closed set of events, each with its closed keys
                        "files": ("rows", OPS_LIST_MAX, _FILE_MS),
                        "failed_files": ("list", OPS_LIST_MAX, "test_file"), "reused": "flag"}),
     "agent.run": _spec({"group": "token", "ms": "ms"}, {"agent": "agent", "item": "item"}),
+    "census.phase": _spec({"phase": "token", "date": "date", "ms": "ms", "exit": "exit"}, {"rows": _COUNT_ROW}),
     "stall.remedy": _spec({"item": "item", "signal": "token", "remedy": "token", "count": "count"}),
     "call.tool": _spec({"tool": "token", "group": "token", "outcome": "token", "size": "token"},
                        {"class": "token", "purpose": "token", "ms": "ms"}),
@@ -286,6 +298,31 @@ def record(surface, session_id=None, **fields):
         return row
     except Exception:  # noqa: BLE001 - see the docstring
         return None
+
+
+def phase_date(date=None, path=None):
+    """The census date a phase's row names: `date`, else the first day in the file name of `path` (_census/<D>.csv,
+    factdiff-<D>.csv), else today (UTC)."""
+    if date:
+        return date
+    found = OPS_DATE.search(Path(str(path)).name) if path else None
+    return found.group(0) if found else datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+
+
+def census_phase(phase, run, date):
+    """Run one census phase and append its ops row `census.phase` (phase, date, wall time in ms, exit and `rows`: the
+    counts per bucket, verdict or outcome the phase tallied, nothing for a count of 0). `run(tally)` is the phase's
+    command: it adds to the Counter it is given and returns its exit code (None is 0). The row is written whatever
+    the run does, with exit 1 when it raised; the exception is the caller's. Best effort, as `record` is."""
+    tally, code, began = collections.Counter(), 1, time.monotonic()
+    try:
+        code = run(tally) or 0
+        return code
+    finally:
+        named = ((re.sub(r"[^a-z0-9_.-]+", "-", str(k).lower()).strip("-")[:40], n) for k, n in sorted(tally.items()))
+        rows = [{"name": k, "n": n} for k, n in named if n and OPS_TOKEN.fullmatch(k)]
+        record("ops", event="census.phase", phase=phase, date=date, ms=int((time.monotonic() - began) * 1000),
+               exit=code, rows=rows or None)
 
 
 def host_path(url):
