@@ -2,7 +2,7 @@
   "id": "BG-a3zs7s2y",
   "kind": "bug",
   "title": "cost --rework drops the no-capture or no-item line whenever an open session is in scope, so the review still prints zero tables",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-lyfnpu37",
   "priority": "P2",
@@ -28,5 +28,18 @@
     "parked: SP-befc6yqr review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
-  "claimed_by": "kb-worker-a3zs7s2y"
+  "evidence": {
+    "commit": "fd6fe014434b848c7b85df75784e668c803f6773",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit('if not lines and not (rework and rep' in open('_tools/bl_cost.py', encoding='utf-8').read())"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
