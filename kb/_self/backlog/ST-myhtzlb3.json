@@ -2,7 +2,7 @@
   "id": "ST-myhtzlb3",
   "kind": "story",
   "title": "An unanswered gate its session just added can be reworded or removed with a backlog.py command",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qxcj7fgy",
   "priority": "P3",
   "rank": 0,
@@ -67,5 +67,18 @@
     "parked: SP-2vhfsn4o close"
   ],
   "notes": "SP-2vhfsn4o evidence: three workers added a gate the classifier made blocking with no command to remove it; one hand-edited the item JSON to drop it (BG-ovvvqtxf), one stopped with a stray g2 its repro added (BG-jj2nc5ou). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): backlog.py gate offers only add; gate remove exits 2 'invalid choice': reproduces.",
-  "claimed_by": "worker-ST-myhtzlb3"
+  "evidence": {
+    "commit": "786483136be638a794498e24032c6e78606ae121",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); open(t+\"/_backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); add=lambda g,q: r(\"gate\",\"add\",\"ST-testtest\",\"--id\",g,\"--kind\",\"provisional\",\"--question\",q,\"--option\",\"alpha\",\"--option\",\"beta\",\"--recommendation\",\"alpha\"); gates=lambda: json.loads(open(t+\"/_backlog/ST-testtest.json\").read()).get(\"gates\",[]); add(\"g8\",\"one?\"); add(\"g9\",\"two?\"); r(\"answer\",\"ST-testtest\",\"g9\",\"--answer\",\"alpha\",\"--by\",\"agent\"); open(t+\"/_backlog/SP-testtest.json\",\"w\").write(json.dumps({\"id\":\"SP-testtest\",\"kind\":\"sprint\",\"title\":\"t\",\"status\":\"planned\",\"goal\":\"g\",\"gates\":[{\"id\":\"start\",\"kind\":\"blocking\",\"question\":\"q?\",\"options\":[\"approve\",\"change\"],\"recommendation\":\"approve\"}]})); x=r(\"gate\",\"remove\",\"ST-testtest\",\"g8\"); y=r(\"gate\",\"remove\",\"ST-testtest\",\"g9\"); z=r(\"gate\",\"remove\",\"SP-testtest\",\"start\"); add(\"g7\",\"Should the kb be pushed to origin?\"); u=r(\"gate\",\"remove\",\"ST-testtest\",\"g7\"); kept=[g[\"id\"] for g in gates()]; v=r(\"gate\",\"remove\",\"ST-testtest\",\"g7\",\"--by\",\"operator\"); sys.exit(0 if x.returncode==0 and y.returncode!=0 and z.returncode!=0 and u.returncode!=0 and \"g7\" in kept and v.returncode==0 and [g[\"id\"] for g in gates()]==[\"g9\"] and \"start\" in open(t+\"/_backlog/SP-testtest.json\").read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
