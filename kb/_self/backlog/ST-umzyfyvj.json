@@ -6,10 +6,22 @@
   "parent": "EP-4fawjprq",
   "priority": "P3",
   "rank": 0,
-  "goal": "Before the start gate, a committed item whose touches name a plugin skill or agent (skills/*/SKILL.md, agents/worker.md, or a .claude/ link to one) has no check that requires a phrase test_backlog_portable's unparameterised() refuses there (a _tools/, kb/, .claude/, AGENTS.md or _cache/ path, a bare name.py), and its brief names that test as one the worker runs (backlog.py check warns of such a check, or plan step 6 says so). Answers the SP-4jfepy6u close: ST-pogg4knc's check required 'adding a new  module' in skills/backlog/SKILL.md, which the portability test forbids, so its worker stopped on gate g1 mid-work; and ST-a5q6vaji's copied-back plugin text failed the landing gate on the same test, which its worker's tests.py run never saw.",
+  "goal": "Before the start gate, a committed item whose touches name a plugin skill or agent (skills/*/SKILL.md, agents/worker.md, or a .claude/ link to one) has no check that requires a phrase test_backlog_portable's unparameterised() refuses there (a _tools/, kb/, .claude/, AGENTS.md or _cache/ path, a bare name.py), and its brief names that test as one the worker runs (backlog.py check warns of such a check, or plan step 6 says so). Answers the SP-4jfepy6u close: ST-pogg4knc's check required the phrase \"adding a new _tools/ module\" in skills/backlog/SKILL.md, which the portability test forbids, so its worker stopped on gate g1 mid-work; and ST-a5q6vaji's copied-back plugin text failed the landing gate on the same test, which its worker's tests.py run never saw.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=[open(p,encoding='utf-8').read() for p in ('skills/sprint/SKILL.md','kb/_self/backlog.md')];ok=all('portability test' in x for x in t);print('plan step and Sprints name the plugin portability test for a check of a plugin skill:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
     "_tools/bl_dispatch.py"
+  ],
+  "links": [
+    "parked: SP-4jfepy6u close"
   ]
 }

@@ -6,8 +6,20 @@
   "priority": "P3",
   "rank": 0,
   "goal": "kb-sprint plan step 6 and kb/_self/backlog.md Sprints say: an item whose goal adds a rule that tells an agent to run a command (a backlog.py subcommand with a term or flag) carries one check that runs the command form the rule's text gives, on a planted input or this clone, beside its doc-text check. Answers the SP-4jfepy6u close: ST-pogg4knc's check read only the phrase 'removed or renamed flag', and the rule's command, backlog.py referrers --add-touch, exits 2 (BG-sq2qycqc, found by the review).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=[open(p,encoding='utf-8').read() for p in ('skills/sprint/SKILL.md','kb/_self/backlog.md')];ok=all('runs the command form' in x for x in t);print('plan step and Sprints say a rule naming a command gets a check that runs the command form:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-4jfepy6u close"
   ]
 }
