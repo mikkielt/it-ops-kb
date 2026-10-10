@@ -2,7 +2,7 @@
   "id": "ST-wrsuz64a",
   "kind": "story",
   "title": "The plugin ships /sprint, /item and /backlog and a worker agent that run backlog.py from the plugin root against the host project's backlog.json",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ciqk6gt6",
   "priority": "P1",
@@ -17,6 +17,9 @@
         "plugin_sprint"
       ]
     }
+  ],
+  "touches": [
+    "README.md"
   ],
   "gates": [
     {
@@ -72,5 +75,6 @@
     "public/claude/plugins.md:29 manifest skills adds to the skills/ scan; agents replaces its default location; hooks and mcpServers merge [DOC S-3xyywfcr]",
     "public/claude/settings-and-scopes.md:71 an Edit(.claude/**) allow rule does not pre-approve protected-path writes [DOC S-zcuxapgb]"
   ],
-  "notes": "Planned 2026-10-10 in SP-ciqk6gt6. Premise: none claimed (a new capability, not a bug); the story check tests.py -k plugin_sprint ran at planning and exited 2 (collects no test yet), so it fails until TK-p7ajxp72, TK-7nnd2bdm, TK-cagohpbu and TK-j5rcgylo add their plugin_sprint_* tests. Split in four tasks, ordered because they share plugin.json, bl_base.py and test_backlog_portable.py: ships, links (gate g3), hooks opt-in, item_dir default (gate g2). A plugin agent ignores hooks, mcpServers and permissionMode (public/claude/skills-and-subagents.md:86), so the worker permission mode comes from the dispatch command, not the role file."
+  "notes": "Planned 2026-10-10 in SP-ciqk6gt6. Premise: none claimed (a new capability, not a bug); the story check tests.py -k plugin_sprint ran at planning and exited 2 (collects no test yet), so it fails until TK-p7ajxp72, TK-7nnd2bdm, TK-cagohpbu and TK-j5rcgylo add their plugin_sprint_* tests. Split in four tasks, ordered because they share plugin.json, bl_base.py and test_backlog_portable.py: ships, links (gate g3), hooks opt-in, item_dir default (gate g2). A plugin agent ignores hooks, mcpServers and permissionMode (public/claude/skills-and-subagents.md:86), so the worker permission mode comes from the dispatch command, not the role file. Orchestrator: its four tasks and BG-na2uirn5 landed; the README clause was left open (README.md named neither skills/ nor agents/), so the story itself edits README.md.",
+  "claimed_by": "orchestrator-SP-ciqk6gt6"
 }
