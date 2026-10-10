@@ -2,7 +2,7 @@
   "id": "TK-g4c5kxsc",
   "kind": "task",
   "title": "bl_forge.py reads merge request and pipeline state and merges, through a glab arm and a gh arm, from the configured forge and project",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-4jjz3vxs",
   "priority": "P2",
   "rank": 0,
@@ -23,7 +23,8 @@
     "_tools/test_forge.py",
     "kb/_self/code.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/map.csv"
   ],
   "gates": [
     {
@@ -43,5 +44,6 @@
       "answer": "read only: the gh arm reads state and the merge verb refuses on github, so no agent merges on the public home",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "orch-dqkf3i42"
 }
