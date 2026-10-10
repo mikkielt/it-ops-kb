@@ -2,7 +2,7 @@
   "id": "ST-mbqowj5u",
   "kind": "story",
   "title": "Research sprint goal: Orchestration features: ops rows, goal clause map, rescope, query log apply",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x5gjv4r7",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Planned 2026-10-10: public pack coverage Q1 weak, Q2 weak, Q3 good, Q4 good, Q5 weak; pack --root _self answers all five from kb/_self/querylog.md, tools.md and backlog.md (weak by tested-question match, each passage names the rule). Its done needs No outside facts: the questions are about the kb's own tools, which no outside source documents."
+  "notes": "Planned 2026-10-10: public pack coverage Q1 weak, Q2 weak, Q3 good, Q4 good, Q5 weak; pack --root _self answers all five from kb/_self/querylog.md, tools.md and backlog.md (weak by tested-question match, each passage names the rule). Its done needs No outside facts: the questions are about the kb's own tools, which no outside source documents.",
+  "claimed_by": "kb-worker-mbqowj5u"
 }
