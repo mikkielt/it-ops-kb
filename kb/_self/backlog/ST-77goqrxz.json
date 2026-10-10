@@ -2,7 +2,7 @@
   "id": "ST-77goqrxz",
   "kind": "story",
   "title": "Planning reads a goal clause that names a constant against what the constant bounds",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4jfepy6u",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,6 @@
     "merged: ST-dufjnho5",
     "merged: ST-fumnrmll"
   ],
-  "notes": "Merged at the 2026-10-10 backlog triage (full text in git history): ST-dufjnho5 (a goal figure names its run) and ST-fumnrmll (a run figure maps to a flag); their scope is in the goal. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the plan step and backlog.md Sprints lack the three wordings the goal adds; the item's check reads them and fails now. Docs-only item, so its check reads doc text by nature. Premise run on the base 2026-10-10: all three wording tests False, exit 1."
+  "notes": "Merged at the 2026-10-10 backlog triage (full text in git history): ST-dufjnho5 (a goal figure names its run) and ST-fumnrmll (a run figure maps to a flag); their scope is in the goal. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the plan step and backlog.md Sprints lack the three wordings the goal adds; the item's check reads them and fails now. Docs-only item, so its check reads doc text by nature. Premise run on the base 2026-10-10: all three wording tests False, exit 1.",
+  "claimed_by": "kb-worker-77goqrxz"
 }
