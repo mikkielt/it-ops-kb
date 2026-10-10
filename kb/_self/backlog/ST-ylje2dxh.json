@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "precheck names each committed item's goal clauses with the check that reads each, and warns of a clause no check reads",
   "status": "draft",
+  "sprint": "SP-x5gjv4r7",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answers the SP-s5fdczv7 retrospective: all three code items (BG-m6fknqr5, BG-tyuwiin7, ST-dets7lkp) carried a check that read one clause of a several-clause goal (a source-order read, one command mapping, one cost header line), so the other clauses were proved only by the orchestrator and the reviewer, and BG-ese7wmz3 and BG-47kw57ed got through. backlog.py precheck SP prints, for each committed item, its goal's clauses (split as close --summary splits a sprint goal) and the check or repro that reads each, from a mapping the planner records on the item, and warns of a clause no check reads, so kb-sprint plan step 6 is a tool output, not a reading; kb-sprint plan step 6, backlog.md and tools.md say so.",
+  "goal": "Answers the SP-s5fdczv7 retrospective: all three code items (BG-m6fknqr5, BG-tyuwiin7, ST-dets7lkp) carried a check that read one clause of a several-clause goal (a source-order read, one command mapping, one cost header line), so the other clauses were proved only by the orchestrator and the reviewer, and BG-ese7wmz3 and BG-47kw57ed got through. backlog.py precheck SP prints, for each committed item, its goal's clauses (split as close --summary splits a sprint goal) and the check or repro that reads each, from a clauses mapping the planner records on the item (set ID --add-clause CLAUSE=N, N the index of the check or repro that reads it, validated by backlog.py check), and warns of a clause no check reads, so kb-sprint plan step 6 is a tool output, not a reading; kb-sprint plan step 6, backlog.md and tools.md say so.",
   "checks": [
     {
       "run": [
@@ -19,6 +20,13 @@
         "python3",
         "-c",
         "import subprocess as s,sys,tempfile,os,shutil;live=os.getcwd();t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,live+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S').stdout.split()[2];st=run('new','story','--title','T','--sprint',sp,'--goal','the alpha reader works','--check','python3 -c 1/0').stdout.split()[2];out=run('precheck',sp).stdout.splitlines();shutil.rmtree(t,ignore_errors=True);print(out);sys.exit(0 if out and not any('warning' in l and st in l for l in out) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile,os,json,shutil\nfrom pathlib import Path\nt=tempfile.mkdtemp()\ns.run([\"git\",\"init\",\"-q\",t],check=True)\nos.makedirs(t+\"/kb/_self/backlog\")\nb=[sys.executable,os.getcwd()+\"/_tools/backlog.py\",\"--root\",t]\nrun=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t)\nsp=run(\"new\",\"sprint\",\"--title\",\"S\").stdout.split()[2]\nst=run(\"new\",\"story\",\"--title\",\"T\",\"--sprint\",sp,\"--goal\",\"the alpha reader works; the beta writer works\",\"--check\",\"python3 -c 1/0\").stdout.split()[2]\nok=run(\"set\",st,\"--add-clause\",\"the alpha reader works=0\")\nbad=run(\"set\",st,\"--add-clause\",\"the beta writer works=7\")\nd=json.loads(Path(t,\"kb\",\"_self\",\"backlog\",st+\".json\").read_text(encoding=\"utf-8\"))\nshutil.rmtree(t,ignore_errors=True)\nprint(\"add-clause exit\",ok.returncode,\"| index 7 exit\",bad.returncode,\"| clauses\",d.get(\"clauses\"),(ok.stderr or \"\").strip()[-80:])\nsys.exit(0 if ok.returncode==0 and bad.returncode!=0 and d.get(\"clauses\")==[{\"clause\":\"the alpha reader works\",\"check\":0}] else 1)"
       ]
     }
   ],
@@ -72,5 +80,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Gate g1 picks the clauses field: the first check plants a --root repo with a two-clause goal and a clauses entry for clause one written into the planted item file (the set flag does not exist yet), and passes only when precheck warns of clause two alone; rename its keys if the field is named otherwise. The second check (gate g2) keeps a one-clause goal free of warnings and passes before the work. CLAUSE_SPLIT (bl_land.py) splits only at '; ' and ', and ', as close --summary does."
+  "notes": "Gate g1 picks the clauses field: the first check plants a --root repo with a two-clause goal and a clauses entry for clause one written into the planted item file (the set flag does not exist yet), and passes only when precheck warns of clause two alone; rename its keys if the field is named otherwise. The second check (gate g2) keeps a one-clause goal free of warnings and passes before the work. CLAUSE_SPLIT (bl_land.py) splits only at '; ' and ', and ', as close --summary does. Premise (2026-10-10, run): backlog.py set ST --add-clause is 'unrecognized arguments' (exit 2) and precheck on a sprint whose story has a two-clause goal and one check prints no clause warning; the first and third checks print both. The third check reads the flag name --add-clause CLAUSE=N and the item field clauses [{clause, check}]: rename in the check if the work names them otherwise."
 }

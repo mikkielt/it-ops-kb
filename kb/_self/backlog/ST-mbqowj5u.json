@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "Answer the sprint goal's questions that the public pack covers weakly, with the kb tools first and the live docs for gaps: Q1 which operational rows (land.end, land.step, done.refused, agent.run) the query log stores per item; Q2 how backlog.py precheck splits a sprint goal into clauses; Q5 how query log apply chooses the lead passage for a rules finding. Q3 (who may change a sprint's goal with backlog.py set) and Q4 (how close --summary maps goal clauses to items) are good. All five are about the kb's own tools, which kb/_self answers (pack --root _self cites its passages), so the finding is expected to end with a No outside facts: note.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-10: public pack coverage Q1 weak, Q2 weak, Q3 good, Q4 good, Q5 weak; pack --root _self answers all five from kb/_self/querylog.md, tools.md and backlog.md (weak by tested-question match, each passage names the rule). Its done needs No outside facts: the questions are about the kb's own tools, which no outside source documents."
 }

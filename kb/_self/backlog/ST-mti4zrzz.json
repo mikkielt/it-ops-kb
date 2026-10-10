@@ -4,15 +4,16 @@
   "title": "kb-sprint review and close read backlog.py ops",
   "status": "draft",
   "parent": "EP-ajw3oywi",
+  "sprint": "SP-x5gjv4r7",
   "priority": "P2",
   "rank": 0,
-  "goal": "The review and close sections of .claude/skills/kb-sprint/SKILL.md each run python3 _tools/backlog.py ops SP and show its output to the operator; the close retrospective takes its refused dones and failed land steps from it instead of by hand.",
+  "goal": "The review and close sections of .claude/skills/kb-sprint/SKILL.md each run python3 _tools/backlog.py ops SP and show its output to the operator; the close retrospective takes its refused dones and failed land steps from it instead of by hand; backlog.md says so, and AGENTS.md stays unchanged.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import re,sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sec={s.split(chr(10),1)[0].split()[0]:s for s in re.split(r'(?m)^## ',t)[1:]};miss=[n for n in ('review','close') if not re.search(r'backlog\\.py ops\\b',sec.get(n,''))];print('kb-sprint sections without backlog.py ops:',miss);sys.exit(1 if miss else 0)"
+        "import re,sys\nt=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read()\nsec={s.split(\"\\n\",1)[0].split()[0]:s for s in re.split(r\"(?m)^## \",t)[1:]}\nmiss=[n for n in (\"review\",\"close\") if not re.search(r\"backlog\\.py ops\\b\",sec.get(n,\"\"))]\nline=[l for l in sec.get(\"close\",\"\").splitlines() if re.search(r\"backlog\\.py ops\\b\",l)]\nby_hand=\"refused\" in \" \".join(line) and \"land\" in \" \".join(line)\ndoc=bool(re.search(r\"backlog\\.py ops\\b\",open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read()))\nprint(\"kb-sprint sections without backlog.py ops:\",miss,\"| close line names refused dones and land steps:\",by_hand,\"| backlog.md names it:\",doc)\nsys.exit(0 if not miss and by_hand and doc else 1)"
       ]
     }
   ],
@@ -23,6 +24,27 @@
     "AGENTS.md"
   ],
   "depends_on": [
-    "ST-xuhig3u6"
-  ]
+    "ST-xuhig3u6",
+    "ST-ifljijni"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does AGENTS.md name backlog.py ops, or only the kb-sprint skill and backlog.md?",
+      "options": [
+        "the skill and backlog.md only; AGENTS.md stays unchanged at 4069 bytes",
+        "AGENTS.md names it too, with a cut elsewhere to stay at or under 4096 bytes"
+      ],
+      "recommendation": "the skill and backlog.md only; AGENTS.md stays unchanged at 4069 bytes",
+      "do": {
+        "the skill and backlog.md only; AGENTS.md stays unchanged at 4069 bytes": "ST-mti4zrzz",
+        "AGENTS.md names it too, with a cut elsewhere to stay at or under 4096 bytes": "ST-mti4zrzz"
+      },
+      "class": "agents-rule",
+      "answer": "the skill and backlog.md only; AGENTS.md stays unchanged at 4069 bytes",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise (2026-10-10, run): the review and close sections of .claude/skills/kb-sprint/SKILL.md name no backlog.py ops, and backlog.py ops is not a command yet (ST-xuhig3u6 adds it, which this item waits on); the check prints both sections as missing. It also reads one close line naming refused dones and land steps beside backlog.py ops, and backlog.md naming it. Gate g1: AGENTS.md stays unchanged."
 }
