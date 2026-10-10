@@ -15,7 +15,7 @@ from bl_base import (
     waits, withhold,
 )
 from bl_check import knowledge_lines
-from bl_plan import start_approved, touches_meet, tracked_files, where_outside
+from bl_plan import start_approved, touch_files, touches_meet, where_outside
 
 
 def ready(bl, sprint=None, any_sprint=False):
@@ -185,7 +185,8 @@ def cmd_held(bl, a):
     """The touches of every claimed (doing) item, one line per glob: the glob, the item, its claimer and its sprint.
     --overlaps ID: only the claimed items outside ID's own chain whose touches overlap ID's scope (its touches and
     its descendants'), each line naming the glob of ID's it meets; exit 1 when there is one. A kb/_self doc meets
-    nothing (bl_plan.touches_meet): items that share only docs run at once."""
+    nothing (bl_plan.touches_meet): items that share only docs run at once. Under a repositories map the touches are
+    `<repository>/<glob>` and meet only inside one repository."""
     mine = bl
     if a.ref:
         bl = Backlog(bl.root)
@@ -203,7 +204,7 @@ def cmd_held(bl, a):
     iid = need(src, a.overlaps)
     chain = {iid, *src.ancestors(iid), *src.descendants(iid)}
     own = [t for t in scope(src, iid) if isinstance(t, str) and t]
-    files = tracked_files(bl.root)
+    files = touch_files(bl.root)
     hits = []
     for i in doing:
         if i in chain:
