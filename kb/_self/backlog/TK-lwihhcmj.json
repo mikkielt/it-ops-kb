@@ -2,7 +2,7 @@
   "id": "TK-lwihhcmj",
   "kind": "task",
   "title": "land accepts worker worktrees under the main checkout's .claude/worktrees when it runs in a linked worktree",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-koznprpg",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,18 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "claimed_by": "worker-TK-lwihhcmj"
+  "evidence": {
+    "commit": "3b5df2646f0d7cdc7d9206030e8f330dee432232",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,pathlib,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bl_land;d=os.path.realpath(tempfile.mkdtemp());m=d+'/main';g=lambda*a:subprocess.run(['git','-C',m,*a],check=True,capture_output=True);subprocess.run(['git','init','-q',m],check=True);g('-c','user.name=t','-c','user.email=t@e','commit','-q','--allow-empty','-m','x');g('worktree','add','-q',d+'/linked','-b','l');w=m+'/.claude/worktrees/agent-ST-aaaaaaaa';g('worktree','add','-q',w,'-b','work/ST-aaaaaaaa');r=bl_land.release_worker_worktree(d+'/linked',pathlib.Path(w),None,branch='work/ST-aaaaaaaa');t={str(p) for p in bl_land.worker_dirs(d+'/linked')};ok=r is None and m+'/.claude/worktrees' not in t;print('land releases a main checkout worker from a linked worktree, tidy keeps its own directory:',ok,r);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "76b0f35c555ae401"
+      }
+    ]
+  }
 }
