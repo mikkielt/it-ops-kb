@@ -2,7 +2,7 @@
   "id": "ST-fravxf4v",
   "kind": "story",
   "title": "The unit cache test isolates the path key input, so dropping u['path'] from _unit_key fails it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzs3bj6f",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "BG-mxptguxo",
   "kind": "bug",
   "title": "_tools/test_ids_baseline.txt still lists the land e2e test ST-urfa4ntj renamed, so perfcheck ids --against reports it MISSING",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yzs3bj6f",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-dri6dmi5",
   "kind": "story",
   "title": "The land e2e scenario uses a fixture backlog, so an invalid live backlog item cannot fail the suite",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzs3bj6f",
   "priority": "P2",

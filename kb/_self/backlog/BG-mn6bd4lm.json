@@ -2,7 +2,7 @@
   "id": "BG-mn6bd4lm",
   "kind": "bug",
   "title": "tools.md's intake row does not say a drift check's tests.py run writes its test.run row to the clone's spool",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yzs3bj6f",
   "priority": "P3",
   "rank": 0,

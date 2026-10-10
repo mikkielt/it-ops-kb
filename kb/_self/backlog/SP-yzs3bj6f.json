@@ -2,7 +2,7 @@
   "id": "SP-yzs3bj6f",
   "kind": "sprint",
   "title": "Test suite and tools docs fixes",
-  "status": "planned",
+  "status": "active",
   "goal": "The ids baseline names the renamed land e2e test, so perfcheck ids --against reports no MISSING for it; perfcheck names_successor refuses a dropped test's class, full id or bare parametrized name as its own successor; the land e2e scenario builds its backlog from fixture items, so a live item cannot fail it; the unit cache test fails when _unit_key drops path or text; tools.md claims no perfcheck tests that do not exist; tools.md's intake row names the test.run row a drift check's tests.py run writes to the clone's spool; committed_calls keeps the newest call rows within its read budget.",
   "gates": [
     {

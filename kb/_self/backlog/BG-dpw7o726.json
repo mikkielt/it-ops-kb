@@ -2,7 +2,7 @@
   "id": "BG-dpw7o726",
   "kind": "bug",
   "title": "tools.md says perfcheck.py has tests that plant a dropped id, a moved id and an over-bound run, but no test exercises it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yzs3bj6f",
   "priority": "P3",
   "rank": 0,
