@@ -1,12 +1,12 @@
 """Redaction and the query log's privacy guards: redact.py's rules, what distill stores of a captured prompt, the closed
 shape of an ops row, the store check that blocks a leak, and apply's rule for a weak rules miss over the fixture store.
 Planted values are assembled at run time."""
-import csv, json, os, shutil, subprocess, sys
+import csv, json, os, shutil, socket, subprocess, sys
 from pathlib import Path
 
 import pytest
 
-import ql_apply, ql_capture, ql_distill, ql_learn, ql_store, redact
+import census, factdiff, kbcommon, kbfacts, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_store, redact
 from conftest import KB, TOOLS
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
@@ -40,7 +40,7 @@ def small_known(monkeypatch):
     return k
 
 
-def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_pass_changes_nothing():
+def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_pass_changes_nothing_and_scan_exits_1_on_a_leak(tmp_path, capsys):
     assert redact.redact(ORDINARY) == ORDINARY
     out = redact.redact(TEXT)
     for kind, value in PLANTED.items():
@@ -50,9 +50,6 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
         assert placeholder in out, placeholder
     assert redact.redact(out) == out
     assert redact.scan(out) == []
-
-
-def test_redact_scan_exits_1_on_a_leak_and_0_on_ordinary_text(tmp_path, capsys):
     f = tmp_path / "in.txt"
     f.write_text(TEXT, encoding="utf-8", newline="\n")
     assert redact.main(["--scan", str(f)]) == 1
@@ -245,3 +242,89 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from
     gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["SQ-x"], "why": {"SQ-x": ["text"]}, "chars": {"EV-x": 100}, "offkb_good": 0}
     rec, _ = ql_apply.rules_one(weak, {"question": asked}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
     assert rec["state"] == "no-fix" and rec["observed"] == {"gate": ["eval fails: SQ-x (text)"]}
+
+
+def census_row(sid, **kw):
+    return {**{c: "" for c in census.COLS}, "id": sid, "url": f"https://docs.example.com/{sid}", "bucket": "CHANGED", **kw}
+
+
+def cached_doc(cache, sid, text):
+    path = cache / "public" / f"{sid}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"id": sid, "url": "https://docs.example.com/", "text": text}), encoding="utf-8")
+
+
+def census_queue_is_sized_without_network(tmp_path, monkeypatch):
+    def refuse(*a, **k):
+        raise AssertionError("the queue touched the network")
+
+    with monkeypatch.context() as m:
+        m.setattr(socket.socket, "connect", refuse)
+        m.setattr(factdiff, "ROOT", kbcommon.root("public"))
+        m.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
+        m.setattr(kbfacts, "clone_home", lambda: str(tmp_path / "no-clone"))
+        facts = factdiff.cited_facts()
+        ids = sorted(facts)[:6]
+        key, rel, line, text = facts[ids[5]][0]
+        claim = factdiff.fact_text(text)
+        cached_doc(tmp_path / "cache", ids[3], "x" * 400)
+        cached_doc(tmp_path / "cache", ids[5], claim + " A second sentence the fact does not rest on.")
+        rows = [census_row(ids[0], bucket="OK"),  # nothing to read
+                census_row(ids[1], bucket="NEEDS-READING", note="blocked"),  # no model reads a denied host
+                census_row(ids[2], outcome="confirmed"),  # already read
+                census_row(ids[3]),  # a whole document, cached
+                census_row(ids[4], bucket="GONE"),  # a whole document, not cached
+                census_row(ids[5])]  # a review item
+        review = [{**{c: "" for c in factdiff.LOG_COLS}, "source_id": ids[5], "url": rows[5]["url"], "verdict": "changed",
+                   "fact": key, "path": rel, "line": str(line), "outcome": "modified"}]
+        queue = {q["id"]: q for q in census.reading_queue(rows, review)}
+        assert sorted(queue) == sorted(ids[3:])
+        assert (queue[ids[3]]["mode"], queue[ids[3]]["chars"], queue[ids[3]]["cached"]) == ("document", 400, True)
+        assert (queue[ids[4]]["mode"], queue[ids[4]]["chars"], queue[ids[4]]["cached"]) == ("document", 0, False)
+        assert (queue[ids[5]]["mode"], queue[ids[5]]["items"]) == ("review", 1) and queue[ids[5]]["chars"] >= len(claim)
+        assert all(q["facts"] >= 1 for q in queue.values())
+        lines = census.queue_lines(list(queue.values()))
+    assert lines[0].startswith("queue (phase 2 reads; no network, no model): rows=3 ")
+    assert f"chars={400 + queue[ids[5]]['chars']} tokens={(400 + queue[ids[5]]['chars']) // 4}" in lines[0]
+    assert "whole documents: rows=2 not cached=1 chars=400" in lines[2]
+    assert lines[3].startswith("  docs.example.com: rows=3 ") and "not cached=1" in lines[3]
+
+
+def census_phases_write_one_ops_row_each(tmp_path):
+    data = tmp_path / "data"
+    (data / "querylog").mkdir(parents=True)
+    (data / "querylog" / "config.json").write_text('{"mode": "local"}', encoding="utf-8")
+    env = {**os.environ, "CLAUDE_PLUGIN_DATA": str(data), "CLAUDE_PLUGIN_ROOT": KB}
+    log = tmp_path / "2026-10-10.csv"
+    with open(log, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, census.COLS, lineterminator="\n")
+        w.writeheader()
+        w.writerow(census_row("S9990001"))
+    flog = tmp_path / "factdiff-2026-10-10.csv"
+    flog.write_text(",".join(factdiff.LOG_COLS) + "\n", encoding="utf-8")
+
+    def run(tool, *args):
+        return subprocess.run([sys.executable, os.path.join(TOOLS, tool), *args], capture_output=True, text=True, encoding="utf-8",
+                              env=env).returncode
+
+    assert run("census.py", "record", str(log), "--id", "S9990001", "--outcome", "updated") == 0
+    assert run("census.py", "record", str(log), "--id", "S9990002", "--outcome", "gone") == 1
+    assert run("factdiff.py", "review", str(flog)) == 0
+    spool = [json.loads(ln) for p in sorted((data / "querylog" / "spool").glob("*.jsonl"))
+             for ln in p.read_text(encoding="utf-8").splitlines()]
+    assert [(r["event"], r["phase"], r["date"], r["exit"]) for r in spool] == [
+        ("census.phase", "record", "2026-10-10", 0), ("census.phase", "record", "2026-10-10", 1),
+        ("census.phase", "review", "2026-10-10", 0)]
+    assert spool[0]["rows"] == [{"name": "updated", "n": 1}] and spool[1]["rows"] == [{"name": "skipped", "n": 1}]
+    assert "rows" not in spool[2] and all(isinstance(r["ms"], int) for r in spool)
+    assert not any(ql_capture.ops_problems({k: v for k, v in r.items() if k not in ("id", "ts", "surface", "v")}) for r in spool)
+    bad = {**{k: v for k, v in spool[0].items() if k not in ("id", "ts", "surface", "v")}, "rows": [{"name": "Needs Reading", "n": 1}]}
+    assert ql_capture.ops_problems(bad)  # a row whose name is no closed token is refused, not written
+    path = ql_store.write_ops(tmp_path / "store", "20261010T000000Z-aaaaaaaa", [ql_store.ops_line(r) for r in spool])
+    out = ql_report.ops_lines([path], lambda day: True)
+    assert out[0] == "ops: 3 rows (census.phase 3)" and out[1].startswith("  census.phase: 3, failed 1, median ")
+
+
+def test_census_queue_is_sized_without_network_and_each_phase_writes_one_ops_row_the_digest_counts(tmp_path, monkeypatch):
+    census_queue_is_sized_without_network(tmp_path, monkeypatch)
+    census_phases_write_one_ops_row_each(tmp_path)

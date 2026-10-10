@@ -75,3 +75,17 @@ The `entra` domain: 86 cited sources (69 Learn pages, 17 raw files pinned at a c
 | unanchored: no passage located in the February text (most facts were written from later text) | 31 | reads the fact and the best new passage |
 
 117 of 160 facts (73%) were settled with no model. The 43 review items, each the fact with its old and new passage, came to 24,212 characters, about 6k tokens; reading the changed pages instead (old and new version) would be 750,943 characters, about 190k tokens: 31 times more. The not-found items were real changes: an agent-identity licensing sentence that moved from "included with P2 while in preview" to "will require a Microsoft Agent 365 license", and a Conditional Access template list reworded.
+
+## Census baseline: what phase 2 had to read, 2026-09-26
+
+The census's reading cost was never stated before it read. `census.py summary LOG` now prints the queue block (`census.reading_queue`, no network and no model: the rows whose bucket is not `OK`, whose note is not `blocked` and that have no outcome yet, the kb lines naming them as `rag.py src --cited` lists them, the characters a model would read and the tokens at characters / 4). The committed log of the 2026-09-26 census holds its phase-2 outcomes, so its queue is empty; the baseline is that log as phase 1 left it (the commit `df9030ac7`, "census 2026-09-26 phase 1 verdicts", `git cat-file blob df9030ac7:_census/2026-09-26.csv`), measured on 2026-10-10 against the kb's sources and the document cache of that day:
+
+| measure | 2026-09-26 census, phase 2 queue |
+|---|---|
+| rows to read | 367 (the phase-2 commit names the same count of undecided sources) |
+| kb lines naming them | 3273 |
+| read as fact diff review passages | 0 rows (the census ran no fact diff first, so no review item existed) |
+| read as whole documents | 367 rows, 9,739,477 characters, 2,434,869 tokens |
+| of those, not cached | 84 rows, counted as 0 characters: the figure is a lower bound |
+
+The five hosts with most characters: `graph.microsoft.com` 1 row, 1,838,888 characters; `code.claude.com` 16 rows, 1,314,200; `raw.githubusercontent.com` 26 rows, 941,298; `www.gnu.org` 1 row, 776,035; `api.github.com` 9 rows, 496,047. Later census work is measured against this: the same command on a later census log reads the same queue with review passages in place of whole documents where a fact diff ran first.

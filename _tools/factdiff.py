@@ -34,12 +34,15 @@ backing passage when it covers at least MIN_COVER of the weight and holds at lea
 
 Cache: documents fetched here are kept in _cache/factdiff/<root>/<id>.json (never committed) and reused for
 --max-age days (default 7); --refetch ignores them.
+detect, apply and review (apply --dry-run: no row) each append one ops row `census.phase` to the query log (phase, date,
+ms, exit and the counts per verdict, fact outcome or review outcome; kb/_self/querylog.md): the census's own phases write
+the same.
 Exit: 0 ok; 1 anchors --stale found stale anchors; 2 bad arguments.
 """
 import argparse, collections, concurrent.futures as cf, datetime, hashlib, json, math, os, re, sys, unicodedata, urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import kbcommon, kbfacts, kbid, provider  # noqa: E402
+import kbcommon, kbfacts, kbid, provider, ql_capture  # noqa: E402
 
 ANCHORS, COLS, REASONS, QUOTE_WORDS = kbcommon.ANCHORS, kbcommon.ANCHOR_COLS, kbcommon.ANCHOR_REASONS, kbcommon.QUOTE_WORDS
 CACHE = os.path.join(kbcommon.HOME, "_cache", "factdiff")
@@ -278,8 +281,16 @@ def cited_facts(prefix=None):
     return out
 
 
-def cache_path(sid):
-    return os.path.join(CACHE, ROOT.name, re.sub(r"[^\w.-]", "_", sid) + ".json")
+def cache_path(sid, shared=False):
+    """The cache file of a source's document. `shared` (a read with no network: queue and review --offline) falls back to
+    the cache of the clone's main worktree when this worktree holds none, as the query index is shared."""
+    name = os.path.join(ROOT.name, re.sub(r"[^\w.-]", "_", sid) + ".json")
+    path = os.path.join(CACHE, name)
+    if shared and not os.path.exists(path):
+        other = os.path.join(kbfacts.clone_home(), "_cache", "factdiff", name)
+        if os.path.exists(other):
+            return other
+    return path
 
 
 def cached_doc(sid, max_age):
@@ -662,8 +673,8 @@ def write_state(state):
     kbcommon.write_csv(root_path(kbcommon.STATE), kbcommon.STATE_COLS, sorted(state.values(), key=key), atomic=True)
 
 
-def prev_path(sid):
-    return cache_path(sid)[:-5] + ".prev.json"
+def prev_path(sid, shared=False):
+    return cache_path(sid, shared)[:-5] + ".prev.json"
 
 
 def load_json(path):
@@ -904,7 +915,7 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows):
     return out, found
 
 
-def cmd_detect(a):
+def cmd_detect(a, tally):
     """Detection for the selected sources, then resolution per fact; the log goes to _census/factdiff-<date>.csv."""
     srcs, facts, anchors, state = sources(), cited_facts(), read_anchors(), read_state()
     rows = provider.providers(ROOT)
@@ -964,6 +975,8 @@ def cmd_detect(a):
         os.makedirs(os.path.dirname(out), exist_ok=True)
         kbcommon.write_csv(out, LOG_COLS, log, atomic=True)
         write_state(state)
+    tally.update(counts)
+    tally.update({f"fact-{k}": n for k, n in outc.items()})
     print("detect: " + " ".join(f"{k}={counts[k]}" for k in VERDICTS if counts[k]) + "; facts: "
           + " ".join(f"{k}={outc[k]}" for k in OUTCOMES if outc[k]) + ("" if a.no_save else f"; wrote {os.path.relpath(out, kbcommon.HOME)}"))
     return 1 if any(outc[k] for k in REVIEW) else 0
@@ -995,22 +1008,23 @@ def _wayback_text(url, before):
     return provider.doc_text(c["body"], c["headers"].get("content-type", ""), url), f"https://web.archive.org/web/{ts}/{url}"
 
 
-def old_passage(sid, anchor, fact, src):
+def old_passage(sid, anchor, fact, src, offline=False):
     """(passage, where) the fact rested on before the change: the snapshot at HEAD (copy sources), the previous
-    cached document, a Wayback capture from the anchor's date, or the anchor's quote; (None, why) when none has it."""
+    cached document, a Wayback capture from the anchor's date, or the anchor's quote; (None, why) when none has it.
+    `offline`: no Wayback capture is asked for, and the cache of the clone's main worktree is read too."""
     rel = os.path.relpath(snapshot_path(sid), kbcommon.HOME).replace(os.sep, "/")  # git matches tree paths with /
     head = _git(kbcommon.HOME, "cat-file", "blob", f"HEAD:{rel}")  # not `git show` (see calibrate_history)
     tries = []
     if head:
         tries.append((head.partition("\n---\n")[2], "snapshot at HEAD"))
-    prev = load_json(prev_path(sid))
+    prev = load_json(prev_path(sid, offline))
     if prev and prev.get("text"):
         tries.append((prev["text"], "previous fetch (_cache)"))
     for text, where in tries:
         d = Doc(text)
         if anchor and anchor.get("sha") in d.shas:
             return d.window(*d.shas[anchor["sha"]]), where
-    if anchor and anchor.get("verified_utc"):
+    if anchor and anchor.get("verified_utc") and not offline:
         text, cap = _wayback_text(src["url"], anchor["verified_utc"])
         if text:
             d = Doc(text)
@@ -1024,7 +1038,9 @@ def old_passage(sid, anchor, fact, src):
     return None, "no old text: not a copy source, no cached or archived version"
 
 
-def review_items(log, srcs, only=None):
+def review_items(log, srcs, only=None, offline=False):
+    """The items of `log` a model must read, each with its old and new passage. `offline`: no request is made (no
+    Wayback capture, no page fetch): a passage only the network could give is None."""
     facts = {(k, rel, sid): (line, t) for sid, fs in cited_facts().items() for k, rel, line, t in fs}
     anchors = read_anchors()
     rows = provider.providers(ROOT)
@@ -1035,12 +1051,12 @@ def review_items(log, srcs, only=None):
         line, text = facts.get(k, (r["line"], ""))
         a = anchors.get(k)
         src = srcs.get(r["source_id"], {"url": r["url"]})
-        old, where = old_passage(r["source_id"], a, text, src)
+        old, where = old_passage(r["source_id"], a, text, src, offline)
         new, new_where = None, ""
         url = r["target"] or (src["url"] if r["verdict"] in ("changed", "new", "moved") else "")
         if url:
-            cur = load_json(cache_path(r["source_id"])) if url == src["url"] else None
-            d = Doc(cur["text"]) if cur and cur.get("text") else page_doc(url, rows)[0]
+            cur = load_json(cache_path(r["source_id"], offline)) if url == src["url"] else None
+            d = Doc(cur["text"]) if cur and cur.get("text") else None if offline else page_doc(url, rows)[0]
             if d is not None:
                 win, cover, _ = d.locate(fact_text(text)) if text else (None, 0, [])
                 if win is None and text:
@@ -1051,8 +1067,9 @@ def review_items(log, srcs, only=None):
                "old": old, "old_from": where, "new": new, "new_from": new_where}
 
 
-def cmd_review(a):
+def cmd_review(a, tally):
     items = list(review_items(read_log(a.log), sources(), set(a.source) or None))
+    tally.update(it["outcome"] for it in items)
     if a.json:
         print(json.dumps(items, indent=1))
         return 0
@@ -1095,7 +1112,7 @@ def repoint(path, key, old_id, new_id):
     return False
 
 
-def cmd_apply(a):
+def cmd_apply(a, tally):
     """Apply what needs no model: sources whose facts were all found word for word (or that did not change) are
     confirmed and re-dated, their anchors dated; a fact found word for word on another page is re-pointed to a new
     source row for that page. The rest waits for review (factdiff.py review). A confirmation needs the compared text
@@ -1173,6 +1190,8 @@ def cmd_apply(a):
             if ids and "retrieved_utc" in fm and all(i in dated for i in ids) and str(fm["retrieved_utc"])[:10] != date \
                     and any(i in confirmed for i in ids):
                 articles.append((full, re.sub(r"(?m)^retrieved_utc:.*$", f"retrieved_utc: {date}", text, count=1)))
+    tally.update({"confirmed": len(confirmed), "held-back": held, "verbatim": n_verbatim, "moved": n_moved,
+                  "new-rows": len(new_rows), "articles": len(articles)})
     print(f"apply {date}: sources confirmed={len(confirmed)} held back={held} facts verbatim={n_verbatim} facts moved={n_moved} "
           f"new source rows={len(new_rows)} articles re-dated={len(articles)}" + (" (dry run: nothing written)" if a.dry_run else ""))
     if a.dry_run:
@@ -1323,6 +1342,9 @@ def cmd_anchors(a):
     return 0
 
 
+PHASES = {"detect": cmd_detect, "review": cmd_review, "apply": cmd_apply}  # each writes a census.phase ops row
+
+
 def main():
     global ROOT
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1390,8 +1412,13 @@ def main():
     kbcommon.KB = ROOT.path
     if a.cmd == "calibrate" and a.what == "history" and not a.repo:
         ap.error("calibrate history needs --repo")
+    if a.cmd in PHASES:
+        run = lambda tally: PHASES[a.cmd](a, tally)  # noqa: E731
+        if getattr(a, "dry_run", False):
+            return run(collections.Counter())
+        return ql_capture.census_phase(a.cmd, run, ql_capture.phase_date(getattr(a, "date", None), getattr(a, "log", None)))
     return {"anchor": cmd_anchor, "anchors": cmd_anchors, "snapshot": cmd_snapshot, "calibrate": cmd_calibrate,
-            "detect": cmd_detect, "review": cmd_review, "apply": cmd_apply, "dead": cmd_dead}[a.cmd](a)
+            "dead": cmd_dead}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -143,7 +143,7 @@ def work_lines(files, week_run):
 OPS_TOP = 5  # the command classes the ops block names, most calls first
 NOTHING_SELECTED = 2  # tests.py's exit, with selected 0, for a selection that collects no test: no failure
 PYTEST_NOTHING = 5  # pytest's own exit for it, which test.run rows held before tests.py refused such a run
-OPS_TIMED = ("land.end", "sync.gate", "test.run")  # the events whose count, failures and median ms the block gives
+OPS_TIMED = ("land.end", "sync.gate", "test.run", "census.phase")  # the events whose count, failures and median ms the block gives
 
 
 def row_day(row, run_id):
@@ -157,7 +157,7 @@ def row_day(row, run_id):
 def ops_lines(files, in_week):
     """The digest's ops block for the rows of the ops sidecars `files` whose own day (`ts`, else the sidecar's run
     day) `in_week` accepts, so a Monday distill does not move the last week's rows: `ops: N rows (event n,
-    ...)`, then `  land.end|sync.gate|test.run: N, failed F, median M ms`, `  done.refused: N`, `  agent.run: N (group
+    ...)`, then `  land.end|sync.gate|test.run|census.phase: N, failed F, median M ms`, `  done.refused: N`, `  agent.run: N (group
     n, ...)`, `  call.tool: N calls, errors E, interrupts I; top classes: class n, ...` and one line per hook event
     kind present; [] when the week's sidecars hold no row. A sidecar that breaks the ops gates is left out whole, as
     work_lines does. Only event names, classes and counts go in."""

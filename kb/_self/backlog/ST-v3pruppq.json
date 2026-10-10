@@ -22,7 +22,7 @@
     "_tools/factdiff.py",
     "_tools/census.py",
     "_tools/provider.py",
-    "_tools/test_census_route.py",
+    "_tools/test_redact.py",
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "kb/_self/web-sources.md",
