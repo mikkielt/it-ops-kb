@@ -13,5 +13,8 @@
       "-c",
       "import json,os,sys,tempfile; sys.path.insert(0,\"_tools\"); c=os.path.join(tempfile.mkdtemp(),\"backlog.json\"); json.dump({\"forge\":\"github\"},open(c,\"w\")); os.environ[\"KB_BACKLOG_CONFIG\"]=c; import ql_report; run=lambda a,cwd=None:(0,json.dumps([{\"number\":3,\"title\":\"t\",\"headRefName\":\"querylog/r1\",\"url\":\"u\"}]),\"\"); d,_=ql_report.conflict_mrs(\"https://ghe.corp.example.com/group/kb.git\",run); sys.exit(0 if d and d[0][0]==\"#3\" else 1)"
     ]
-  }
+  },
+  "links": [
+    "parked: SP-dqkf3i42 run"
+  ]
 }
