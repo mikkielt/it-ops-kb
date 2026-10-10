@@ -57,5 +57,6 @@
   "forge_project": "",
   "trackers": {},
   "docs_map": "kb/_self/map.csv",
-  "kb_root": "_self"
+  "kb_root": "_self",
+  "repositories": {}
 }

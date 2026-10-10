@@ -42,7 +42,11 @@ SETTINGS = {
     "trackers": ("trackers", {}),
     "docs_map": ("optpath", "kb/_self/map.csv"),  # a doc,pattern CSV: the docs a brief lists for an item's touches; "" = none
     "kb_root": ("rootname", "_self"),  # the kb root whose cited fact lines a brief carries; "" = the project is no root
+    # the repositories of a multi-repository workspace: name -> checkout path under the workspace, which an item's
+    # `repos` and `repos_if_needed` name; {} = the project is the one repository the root is
+    "repositories": ("repositories", {}),
 }
+WORKSPACE_NAME = "workspace"  # the name the workspace's own files take in a touch, so no repository's
 
 
 class ConfigError(Exception):
@@ -83,6 +87,14 @@ def _type_problem(kind, v):
               and len(set(v.values())) == len(v))
         return None if ok else ("an object with one distinct two-capital-letter prefix for each of "
                                 + ", ".join(KIND_NAMES))
+    if kind == "repositories":
+        ok = (isinstance(v, dict) and all(isinstance(n, str) and re.fullmatch(r"[a-z][a-z0-9_-]*", n)
+                                          and n != WORKSPACE_NAME and _type_problem("path", p) is None
+                                          for n, p in v.items())
+              and len(set(v.values())) == len(v))
+        return None if ok else ("an object of repository name (lower case letters, digits, hyphens and underscores, "
+                                f"not {WORKSPACE_NAME!r}) to a distinct checkout path with forward slashes, relative "
+                                "to the workspace, with no `..`")
     if kind == "trackers":
         def tracker_ok(name, t):
             if not (isinstance(name, str) and TRACKER_NAME_RE.fullmatch(name) and isinstance(t, dict)):
@@ -199,6 +211,11 @@ def scratch_dir():
     return tuple(setting("scratch_dir").split("/"))
 
 
+def repositories():
+    """{name: checkout path} of the workspace's repositories (`repositories`); {} = the root is the one repository."""
+    return setting("repositories")
+
+
 def review_checks():
     """The review story's checks, run once before review."""
     return setting("review_checks")
@@ -225,7 +242,7 @@ IN_SPRINT = ("story", "bug")  # the kinds a sprint commits to; their tasks and s
 NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
 ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "goal_research", "priority", "rank", "severity", "goal",
-         "repro", "repro_reason", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "knowledge",
+         "repro", "repro_reason", "checks", "touches", "repos", "repos_if_needed", "depends_on", "relates_to", "gates", "trigger", "knowledge",
          "links", "external", "notes", "delegates", "recurs", "claimed_by", "evidence")
 FIELDS = set(ORDER)
 CHECK_TIMEOUT_S = 1800

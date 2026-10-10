@@ -19,7 +19,7 @@ import bl_intake
 from bl_base import (
     APPROVALS, FIELDS, GATE_KINDS, IN_SPRINT, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
     PRIORITIES, Refused, SEVERITIES, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
-    always_in_scope, canonical, external_problems, glob_re, id_re, kinds, prefix_kind, rel_dir, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
+    always_in_scope, canonical, external_problems, glob_re, id_re, kinds, prefix_kind, rel_dir, repositories, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
     touches_overlap, withhold_names,
 )
 from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches, unordered_overlap_warnings
@@ -525,6 +525,38 @@ def leak_errors(bl):
     return errs
 
 
+def repos_problems(it, kind, declared):
+    """What is wrong with the repositories an item names against backlog.json's `repositories` map (DECLARED, name to
+    path): `repos` and `repos_if_needed` are lists of declared names, no name is in both, and while the map is declared
+    an open item with touches names at least one repository in `repos`. [] = nothing wrong."""
+    out, named = [], {}
+    for f in ("repos", "repos_if_needed"):
+        if f not in it:
+            continue
+        v = it[f]
+        if not (isinstance(v, list) and v and all(isinstance(n, str) and n for n in v)):
+            out.append(f"{f} must be a non-empty list of repository names")
+            continue
+        named[f] = v
+        if kind == "sprint":
+            out.append(f"{f} is a work item's, not a sprint's")
+        unknown = [n for n in dict.fromkeys(v) if n not in declared]
+        if unknown:
+            out.append(f"{f} names {', '.join(map(repr, unknown))}, which backlog.json's repositories does not declare "
+                       f"({', '.join(declared) or 'it declares none'})")
+        if len(set(v)) != len(v):
+            out.append(f"{f} names a repository twice")
+    both = sorted(set(named.get("repos", [])) & set(named.get("repos_if_needed", [])))
+    if both:
+        out.append(f"{', '.join(map(repr, both))} is in both repos and repos_if_needed: name it in one")
+    touches = it.get("touches")
+    if declared and isinstance(touches, list) and touches and "repos" not in named \
+            and it.get("status") not in CLOSED_STATUSES:
+        out.append("touches without repos: backlog.json declares repositories "
+                   f"({', '.join(declared)}), so the item names the ones it changes (set ID --repos NAME)")
+    return out
+
+
 def validate(bl, pieces=None):
     errs = list(bl.load_errors)
     errs += leak_errors(bl)
@@ -536,6 +568,7 @@ def validate(bl, pieces=None):
                         f"{'computer' if kind == 'host' else 'user'} name (read from the environment, not printed); "
                         f"write a placeholder instead")
     ID_RE, KINDS, PREFIX_KIND = id_re(), kinds(), prefix_kind()
+    declared = repositories()
     for iid, it in bl.items.items():
         e = lambda msg, iid=iid: errs.append(f"{bl.label(iid)}: {msg}")  # noqa: E731
         if it.get("id") != iid:
@@ -632,6 +665,8 @@ def validate(bl, pieces=None):
             e("touches must be a list of path globs")
         elif kind in NEEDS_TOUCHES and not touches:
             e("touches missing: the path globs this item may change")
+        for why in repos_problems(it, kind, declared):
+            e(why)
         for f in ("depends_on", "relates_to"):
             for d in it.get(f, []):
                 if d not in bl.items:
