@@ -1,0 +1,29 @@
+{
+  "id": "ST-nlxo2zv5",
+  "kind": "story",
+  "title": "A sprint worker's /kb-verify run does not run tests.py --changed, which its brief forbids",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "/kb-verify and the kb-worker role agree on the suite a sprint worker runs: a worker following .claude/agents/kb-worker.md and /kb-verify never runs tests.py --changed (the landing's sync gate runs it), so the brief's rule and the skill no longer contradict (SP-flkl5gom close: workers of ST-uy4d752n and ST-34m3yiyn ran tests.py --changed through /kb-verify although the brief forbade it, since parallel runs load the host into false timeouts).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['python3','_tools/rag.py','pack','--root','_self','does a sprint worker running kb-verify run tests.py --changed'],capture_output=True,text=True);ok=r.returncode==0 and 'coverage: good' in r.stdout;print('packs good:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-verify/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-flkl5gom close"
+  ],
+  "notes": "Checks are planned when a sprint commits it."
+}

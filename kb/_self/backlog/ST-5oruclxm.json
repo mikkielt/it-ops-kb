@@ -1,0 +1,29 @@
+{
+  "id": "ST-5oruclxm",
+  "kind": "story",
+  "title": "selfcheck's orphans check names a session-end query-log distill hook as such instead of failing on it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py selfcheck and procs tell a session-end hook's querylog.py distill (reparented to pid 1 while it delivers, seconds old) from an orphan a worker left: such a process is named as a hook in flight, with its age, and does not fail the orphans check while younger than a named limit (SP-flkl5gom close: the first run pass's selfcheck FAILed orphans on three 12-second-old distill processes from the operator's /clear, which finished on their own). A planted test proves a young distill process does not fail the check and an old stray process still does.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['python3','_tools/rag.py','pack','--root','_self','does selfcheck fail its orphans check on a session-end querylog distill hook'],capture_output=True,text=True);ok=r.returncode==0 and 'coverage: good' in r.stdout;print('packs good:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_procs.py",
+    "_tools/bl_selfcheck.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-flkl5gom close"
+  ],
+  "notes": "Checks are planned when a sprint commits it (the planted test the goal names)."
+}

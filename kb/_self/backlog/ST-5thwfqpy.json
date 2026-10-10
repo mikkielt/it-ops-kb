@@ -1,0 +1,29 @@
+{
+  "id": "ST-5thwfqpy",
+  "kind": "story",
+  "title": "backlog.py find also names closed items from KB-Work history, so 'file a bug if no item covers it' can be decided by the tool",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py find WORDS also lists items whose files a sprint close deleted, read from git history (the item file at its last commit and the KB-Work commit that did it), marked as closed with their done commit, so a goal clause 'file a bug if no item covers it' finds a defect an earlier sprint already fixed (SP-flkl5gom close: find said no open item held ops_no_work_rows, while BG-ese7wmz3 had fixed it in 9ba285039; the worker found it only by searching git history). A planted test proves a closed item is listed and an unrelated one is not.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['python3','_tools/rag.py','pack','--root','_self','does backlog.py find list items a sprint close deleted'],capture_output=True,text=True);ok=r.returncode==0 and 'coverage: good' in r.stdout;print('packs good:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_view.py",
+    "_tools/backlog.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-flkl5gom close"
+  ],
+  "notes": "Checks are planned when a sprint commits it (the planted test the goal names)."
+}
