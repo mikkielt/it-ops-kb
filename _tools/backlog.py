@@ -163,6 +163,31 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           knowledge state of the next item's asks and refs (--hook runs no pack)
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope; then
                                           the answered gates of its parent chain, which its work keeps to
+  backlog.py brief ID [--known TEST=BUG]... [--probe TEXT]
+                                          the brief a sprint worker is given, printed: the item's JSON and goal
+                                          text, its external tracker ids with their urls, the role file, the
+                                          worker's worktree and scratch directory (_cache/scratch/ID/), the
+                                          in-flight sibling items with the files their touches change, the known
+                                          failing tests (--known TEST=BUG, repeatable; BUG a backlog id), the fixed
+                                          worker rules and the rules of the docs the item's touches map to
+                                          (`rag.py pack --root _self --item ID`, or a line saying it is absent);
+                                          writes nothing, starts nothing, exit 0
+  backlog.py dispatch ID [--dry-run] [--model NAME] [--max-turns N] [--known TEST=BUG]... [--probe TEXT]
+                                          start the item's headless worker: make its worktree
+                                          (<worktree_dir>/agent-ID on work/ID from this checkout's HEAD) and the
+                                          scratch directory, write the brief there (brief.md) and run `claude -p
+                                          --model sonnet --effort high --output-format json --add-dir SCRATCH
+                                          --max-turns N` in the worktree with the brief on stdin (never a prompt
+                                          argument), in the foreground until the session exits: N by kind, 60 task
+                                          or subtask, 100 bug or story with no tasks (and epic or sprint), 200
+                                          research story or investigation bug (a bug whose title or goal says
+                                          investigat...). The pid is recorded in the claims ledger of the git dir
+                                          (worker_pid) when the session starts and its session_id (worker_session)
+                                          when it exits; output goes to SCRATCH/result.json and SCRATCH/stderr.log.
+                                          Refuses an item that is not doing (exit 1), a missing `claude` (exit 2);
+                                          exit 1 when the session exits non-zero or reports is_error. --dry-run
+                                          prints the worktree, scratch, brief path and argv and makes, writes and
+                                          starts nothing; --model names another model than sonnet only when given
   backlog.py cost ID [--runs] [--rework] [--format text|json]
                                           the tokens the query log's work sidecars (kb/_querylog/work/) hold for the
                                           item and its descendants (for a sprint, its items too; a sprint's own line
@@ -278,6 +303,7 @@ from bl_base import REL_DIR  # noqa: F401 - tests read it as backlog.REL_DIR
 from bl_plan import start_approved  # noqa: F401 - test_layout reads it as backlog.start_approved
 
 import bl_cost  # noqa: F401 - registers `cost`
+import bl_dispatch  # noqa: F401 - registers `brief` and `dispatch`
 import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
 import bl_selfcheck  # noqa: F401 - registers `selfcheck`
@@ -288,7 +314,7 @@ bl_cli.register("config", cmd_config, help="print the project settings with each
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
-         "host-check", "close", "tidy", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
+         "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
          "selfcheck", "config")
 bl_cli.order(USAGE)
 

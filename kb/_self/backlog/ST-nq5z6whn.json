@@ -44,6 +44,131 @@
     "ST-qgnjxiol",
     "ST-vkqndn5e"
   ],
+  "gates": [
+    {
+      "id": "worktree",
+      "kind": "blocking",
+      "question": "Does dispatch make the worker's worktree, or require that the orchestrator made it?",
+      "options": [
+        "dispatch makes it when absent: git worktree add <worktree_dir>/agent-ID -b work/ID from this checkout's HEAD (a branch that exists is checked out instead), and reuses one that is there",
+        "dispatch requires it: it refuses an absent worktree (exit 2) naming the git worktree add command, and the orchestrator keeps making it by hand"
+      ],
+      "recommendation": "dispatch makes it when absent: git worktree add <worktree_dir>/agent-ID -b work/ID from this checkout's HEAD (a branch that exists is checked out instead), and reuses one that is there",
+      "do": {
+        "dispatch makes it when absent: git worktree add <worktree_dir>/agent-ID -b work/ID from this checkout's HEAD (a branch that exists is checked out instead), and reuses one that is there": "ST-nq5z6whn",
+        "dispatch requires it: it refuses an absent worktree (exit 2) naming the git worktree add command, and the orchestrator keeps making it by hand": "ST-nq5z6whn"
+      },
+      "class": "agents-rule",
+      "answer": "dispatch makes it when absent: git worktree add <worktree_dir>/agent-ID -b work/ID from this checkout's HEAD (a branch that exists is checked out instead), and reuses one that is there",
+      "by": "operator"
+    },
+    {
+      "id": "session",
+      "kind": "blocking",
+      "question": "Does dispatch run the session in the foreground or detached, and where does its JSON output go?",
+      "options": [
+        "foreground: dispatch waits until the session exits, writes its --output-format json output to SCRATCH/result.json and stderr to SCRATCH/stderr.log, and exits 0 only when the session exited 0 without is_error; the orchestrator starts dispatch as a background command and is told at its exit",
+        "detached: dispatch starts the session as a child that outlives it, same output files, and returns at once; the orchestrator polls the recorded pid"
+      ],
+      "recommendation": "foreground: dispatch waits until the session exits, writes its --output-format json output to SCRATCH/result.json and stderr to SCRATCH/stderr.log, and exits 0 only when the session exited 0 without is_error; the orchestrator starts dispatch as a background command and is told at its exit",
+      "do": {
+        "foreground: dispatch waits until the session exits, writes its --output-format json output to SCRATCH/result.json and stderr to SCRATCH/stderr.log, and exits 0 only when the session exited 0 without is_error; the orchestrator starts dispatch as a background command and is told at its exit": "ST-nq5z6whn",
+        "detached: dispatch starts the session as a child that outlives it, same output files, and returns at once; the orchestrator polls the recorded pid": "ST-nq5z6whn"
+      },
+      "class": "agents-rule",
+      "answer": "foreground: dispatch waits until the session exits, writes its --output-format json output to SCRATCH/result.json and stderr to SCRATCH/stderr.log, and exits 0 only when the session exited 0 without is_error; the orchestrator starts dispatch as a background command and is told at its exit",
+      "by": "operator"
+    },
+    {
+      "id": "claimrecord",
+      "kind": "blocking",
+      "question": "Where are the session id and the pid recorded on the item's claim, and under which field names? The kb names no flag that fixes the session id up front (public/claude/cli-flags.csv lists --output-format json, --resume and --max-turns only; ci-and-headless.md:74 DOC S-fmj24q2u: session_id is a field of the result message), and a search of the live Claude Code docs on 2026-10-10 found none either, so the id is known when the session ends",
+      "options": [
+        "the clone's claims ledger in the git dir (kb-backlog-claims.json, which claim writes and git never commits), on the item's record: worker_pid when the session starts, worker_session when it exits",
+        "item-file fields beside claimed_by, committed with the item: needs bl_base ORDER, bl_check, bl_items and bl_land, outside this item's touches, and puts a GUID-shaped session id into published item files",
+        "a dispatch.json in the scratch directory, apart from the claim"
+      ],
+      "recommendation": "the clone's claims ledger in the git dir (kb-backlog-claims.json, which claim writes and git never commits), on the item's record: worker_pid when the session starts, worker_session when it exits",
+      "do": {
+        "the clone's claims ledger in the git dir (kb-backlog-claims.json, which claim writes and git never commits), on the item's record: worker_pid when the session starts, worker_session when it exits": "ST-nq5z6whn",
+        "item-file fields beside claimed_by, committed with the item: needs bl_base ORDER, bl_check, bl_items and bl_land, outside this item's touches, and puts a GUID-shaped session id into published item files": "ST-nq5z6whn",
+        "a dispatch.json in the scratch directory, apart from the claim": "ST-nq5z6whn"
+      },
+      "class": "push",
+      "answer": "the clone's claims ledger in the git dir (kb-backlog-claims.json, which claim writes and git never commits), on the item's record: worker_pid when the session starts, worker_session when it exits",
+      "by": "operator"
+    },
+    {
+      "id": "turns-epic",
+      "kind": "blocking",
+      "question": "What --max-turns does dispatch give an epic or a sprint, kinds the goal names no cap for?",
+      "options": [
+        "100, the cap of a bug or an untasked story: an epic's worker breaks it down into stories as an untasked story's does",
+        "200, the cap of a research story or an investigation bug",
+        "60, the cap of a task"
+      ],
+      "recommendation": "100, the cap of a bug or an untasked story: an epic's worker breaks it down into stories as an untasked story's does",
+      "do": {
+        "100, the cap of a bug or an untasked story: an epic's worker breaks it down into stories as an untasked story's does": "ST-nq5z6whn",
+        "200, the cap of a research story or an investigation bug": "ST-nq5z6whn",
+        "60, the cap of a task": "ST-nq5z6whn"
+      },
+      "class": "agents-rule",
+      "answer": "100, the cap of a bug or an untasked story: an epic's worker breaks it down into stories as an untasked story's does",
+      "by": "operator"
+    },
+    {
+      "id": "investigation",
+      "kind": "blocking",
+      "question": "How does dispatch know a bug is an investigation bug (200 turns) and a story a research story, given no item field marks either?",
+      "options": [
+        "a story is a research story when it is the goal research story or its scope is kb content only (bl_base.research_touches); a bug is an investigation bug when its title or goal holds the word investigat; dispatch --max-turns N overrides the cap for any other",
+        "dispatch --max-turns N only: the orchestrator names 200 itself and the kind gives 60 or 100"
+      ],
+      "recommendation": "a story is a research story when it is the goal research story or its scope is kb content only (bl_base.research_touches); a bug is an investigation bug when its title or goal holds the word investigat; dispatch --max-turns N overrides the cap for any other",
+      "do": {
+        "a story is a research story when it is the goal research story or its scope is kb content only (bl_base.research_touches); a bug is an investigation bug when its title or goal holds the word investigat; dispatch --max-turns N overrides the cap for any other": "ST-nq5z6whn",
+        "dispatch --max-turns N only: the orchestrator names 200 itself and the kind gives 60 or 100": "ST-nq5z6whn"
+      },
+      "class": "agents-rule",
+      "answer": "a story is a research story when it is the goal research story or its scope is kb content only (bl_base.research_touches); a bug is an investigation bug when its title or goal holds the word investigat; dispatch --max-turns N overrides the cap for any other",
+      "by": "operator"
+    },
+    {
+      "id": "format",
+      "kind": "blocking",
+      "question": "What format is the brief, and how is it printed and written?",
+      "options": [
+        "Markdown text in sections (item with its JSON and goal text, external ids, staging copies, in-flight siblings, known failing tests, fixed rules, rules of the docs, report); brief prints it through the name guard, dispatch writes it unguarded to SCRATCH/brief.md so the paths stay usable; --probe TEXT adds an unproven bug's probe result",
+        "a JSON object with one key per part, which the session reads as data"
+      ],
+      "recommendation": "Markdown text in sections (item with its JSON and goal text, external ids, staging copies, in-flight siblings, known failing tests, fixed rules, rules of the docs, report); brief prints it through the name guard, dispatch writes it unguarded to SCRATCH/brief.md so the paths stay usable; --probe TEXT adds an unproven bug's probe result",
+      "do": {
+        "Markdown text in sections (item with its JSON and goal text, external ids, staging copies, in-flight siblings, known failing tests, fixed rules, rules of the docs, report); brief prints it through the name guard, dispatch writes it unguarded to SCRATCH/brief.md so the paths stay usable; --probe TEXT adds an unproven bug's probe result": "ST-nq5z6whn",
+        "a JSON object with one key per part, which the session reads as data": "ST-nq5z6whn"
+      },
+      "class": "agents-rule",
+      "answer": "Markdown text in sections (item with its JSON and goal text, external ids, staging copies, in-flight siblings, known failing tests, fixed rules, rules of the docs, report); brief prints it through the name guard, dispatch writes it unguarded to SCRATCH/brief.md so the paths stay usable; --probe TEXT adds an unproven bug's probe result",
+      "by": "operator"
+    },
+    {
+      "id": "dryrun",
+      "kind": "blocking",
+      "question": "Does dispatch --dry-run write the brief and make the scratch directory, or only print?",
+      "options": [
+        "it only prints the worktree, scratch, brief path and argv, and makes and writes nothing (brief prints the text)",
+        "it writes SCRATCH/brief.md and makes the scratch directory so the brief can be read at the printed path, and makes no worktree and starts nothing"
+      ],
+      "recommendation": "it only prints the worktree, scratch, brief path and argv, and makes and writes nothing (brief prints the text)",
+      "do": {
+        "it only prints the worktree, scratch, brief path and argv, and makes and writes nothing (brief prints the text)": "ST-nq5z6whn",
+        "it writes SCRATCH/brief.md and makes the scratch directory so the brief can be read at the printed path, and makes no worktree and starts nothing": "ST-nq5z6whn"
+      },
+      "class": "agents-rule",
+      "answer": "it only prints the worktree, scratch, brief path and argv, and makes and writes nothing (brief prints the text)",
+      "by": "operator"
+    }
+  ],
   "links": [
     "public/claude/ci-and-headless.md:39 --max-turns exits with an error at the limit, no default [DOC S1824]",
     "public/claude/settings-and-scopes.md:68 --add-dir extends access, same permission rules as the launch directory [DOC S-pmhgjvef]",
