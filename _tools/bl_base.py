@@ -1,5 +1,6 @@
 """The shared ground of backlog.py's modules (kb/_self/backlog.md): the project settings (`SETTINGS`, read once from
-backlog.json by `read_settings`, with the kb's current values as the defaults) and the constants made from them, the
+backlog.json by `read_settings`, with the kb's current values as the defaults, for the root the process runs on:
+`load_settings`) and the accessors that give them at call time (`setting`, `rel_dir`, `kinds`, `id_re`, ...), the
 two refusals, the Backlog class that reads and writes the item files, git and the command runner, the scope helpers,
 the host and user name guard behind everything the tool prints, the external tracker id helpers (`external_problems`,
 `external_refs`, `external_lines`, `external_trailers`, `external_description`), the helpers that commit the item files a
@@ -134,17 +135,68 @@ def read_settings(root, env=None):
     return values, sources, path, problems
 
 
+_LOADED = []  # [read_settings(root)] of the root this process runs on; empty until load_settings or a first read
+
+
+def load_settings(root, env=None):
+    """Read the project settings of the repository at ROOT (its backlog.json, or KB_BACKLOG_CONFIG's file) for the
+    rest of this process: `backlog.main` calls it once, with the root the command runs on, before it builds the
+    parser, so every reader below follows that root and not the tool's own clone. Returns read_settings' tuple."""
+    _LOADED[:] = [read_settings(root, env)]
+    return _LOADED[0]
+
+
 def setting(name):
-    """The effective value of one project setting, as read when this module loaded (the repository root's, or
-    KB_BACKLOG_CONFIG's, backlog.json): the one function the other modules read a setting through."""
-    return copy.deepcopy(_LOADED[0][name])
+    """The effective value of one project setting of the root the process runs on (load_settings; the tool's own
+    root's until then): the one function the other modules read a setting through, at call time, never at import."""
+    if not _LOADED:
+        load_settings(ROOT)
+    return copy.deepcopy(_LOADED[0][0][name])
 
 
-_LOADED = read_settings(ROOT)
-REL_DIR = setting("item_dir")
-KINDS = {k: setting("id_prefixes")[k] for k in KIND_NAMES}
-PREFIX_KIND = {v: k for k, v in KINDS.items()}
-ID_RE = re.compile(r"\b(?:" + "|".join(KINDS.values()) + r")-[a-z2-7]{8}\b")
+def rel_dir():
+    """The item files' directory under the root (`item_dir`)."""
+    return setting("item_dir")
+
+
+def kinds():
+    """{kind: two-letter id prefix} of the project, in KIND_NAMES order."""
+    prefixes = setting("id_prefixes")
+    return {k: prefixes[k] for k in KIND_NAMES}
+
+
+def prefix_kind():
+    return {v: k for k, v in kinds().items()}
+
+
+def id_re():
+    """The pattern an item id of this project matches, word-bounded."""
+    return re.compile(r"\b(?:" + "|".join(kinds().values()) + r")-[a-z2-7]{8}\b")
+
+
+def sprint_id_re():
+    return re.compile(kinds()["sprint"] + r"-[a-z2-7]{8}")
+
+
+def always_in_scope():
+    """The globs any item's commits may change besides its `touches`: the tracker itself and what build_index.py
+    regenerates."""
+    return tuple(setting("always_in_scope"))
+
+
+def worker_dir():
+    """The worker worktrees' directory under the clone's main checkout (`worktree_dir`), as path parts."""
+    return tuple(setting("worktree_dir").split("/"))
+
+
+def review_checks():
+    """The review story's checks, run once before review."""
+    return setting("review_checks")
+
+
+def research_checks():
+    """The goal research story's checks, with RESEARCH_ID in place of its id (`new sprint` fills it)."""
+    return setting("research_checks")
 
 STATUSES = ("draft", "todo", "doing", "done", "dropped")
 WORKED = ("todo", "doing", "done")  # statuses an item of a planned sprint cannot have: it stays draft until start
@@ -166,8 +218,6 @@ ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "goal_re
          "repro", "repro_reason", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "knowledge",
          "links", "external", "notes", "delegates", "recurs", "claimed_by", "evidence")
 FIELDS = set(ORDER)
-# files any item's commits may change besides its `touches`: the tracker itself and what build_index.py regenerates
-ALWAYS_IN_SCOPE = tuple(setting("always_in_scope"))
 CHECK_TIMEOUT_S = 1800
 ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")  # colour and title codes a check prints
 TEXT_MAX = 2000  # one field's text; a longer one is an essay, not a work item
@@ -176,7 +226,6 @@ APPROVALS = ("approve", "approved", "yes")  # the start gate's answers that let 
 # horizon's cause for the items of a sprint the operator approved but nobody started: backlog.py start is what remains,
 # not a question for the operator (a "change" or "cancel" answer is no approval and stays the operator's question)
 STARTS = "the sprint's start: approved, not started; run python3 _tools/backlog.py start "
-SPRINT_ID_RE = re.compile(KINDS["sprint"] + r"-[a-z2-7]{8}")
 OPEN = ("draft", "todo", "doing")
 # similar and new: an open item whose title and goal hold at least SIMILAR_MIN of the query's words, and at least
 # SIMILAR_WORDS of them, is a near-duplicate; words are lowercased runs of letters and digits, stop words left out
@@ -186,11 +235,9 @@ SIMILAR_SHOWN = 10
 STOP_WORDS = frozenset("""a an and are as at be by for from has have in into is it its of on or that the their them
     then there these this those to was were what when which with without""".split())
 RECURRING_MIN = 2  # start: an open P1 item with this many sprint ids in its recurs list belongs in the sprint
-REVIEW_CHECKS = setting("review_checks")  # once, before review
-# the goal research story's: its research is written (a work commit naming it, or its notes' `No outside facts:`), so
-# it fails until then; `new sprint` fills RESEARCH_ID with the story's id
+# the goal research story's checks (setting research_checks): its research is written (a work commit naming it, or its
+# notes' `No outside facts:`), so it fails until then; `new sprint` fills RESEARCH_ID with the story's id
 RESEARCH_ID = "{id}"
-RESEARCH_CHECKS = setting("research_checks")
 
 
 class Refused(Exception):
@@ -205,7 +252,7 @@ class Rejected(Refused):
 # ------------------------------------------------------------------ storage
 
 def new_id(kind):
-    return KINDS[kind] + "-" + base64.b32encode(secrets.token_bytes(5)).decode().lower()
+    return kinds()[kind] + "-" + base64.b32encode(secrets.token_bytes(5)).decode().lower()
 
 
 def canonical(item):
@@ -216,7 +263,7 @@ def canonical(item):
 class Backlog:
     def __init__(self, root):
         self.root = Path(root)
-        self.dir = self.root / REL_DIR
+        self.dir = self.root / rel_dir()
         self.items, self.raw, self.load_errors = {}, {}, []
         self.withheld = set()  # items holding a piece of a host or user name: label() never prints their title
         self.written = []  # repository paths of the item files this run wrote or deleted, first first (--commit)
@@ -250,7 +297,7 @@ class Backlog:
         self.wrote(iid)
 
     def wrote(self, iid):
-        rel = f"{REL_DIR}/{iid}.json"
+        rel = f"{rel_dir()}/{iid}.json"
         if rel not in self.written:
             self.written.append(rel)
 
@@ -483,7 +530,7 @@ def glob_re(pattern):
 
 
 def in_scope(path, globs):
-    return any(glob_re(g).match(path) for g in list(globs) + list(ALWAYS_IN_SCOPE))
+    return any(glob_re(g).match(path) for g in list(globs) + list(always_in_scope()))
 
 
 def scope(bl, iid):
@@ -517,7 +564,8 @@ def research_in_planned(bl, iid):
 
 def item_file(path):
     """True for a backlog item file (kb/_self/backlog/<id>.json): what a planning commit changes."""
-    return path.startswith(REL_DIR + "/") and path.endswith(".json") and "/" not in path[len(REL_DIR) + 1:]
+    base = rel_dir()
+    return path.startswith(base + "/") and path.endswith(".json") and "/" not in path[len(base) + 1:]
 
 
 def touches_overlap(a, b, files):

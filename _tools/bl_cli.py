@@ -3,12 +3,14 @@ owns a command registers its parser and its handler here when it is imported, `b
 usage order (`order`), and `backlog.main` builds the parser from the registry and dispatches, so a new subcommand
 adds a `register` call in its module, its name in backlog.py's USAGE and no line to `main`.
 
-Standard library only; imports `bl_base` (for `COMMITS`) and never `backlog`."""
+Standard library only; imports `bl_base` (for `COMMITS` and the project settings) and never `backlog`."""
 import argparse
 import re
+import subprocess
 import sys
+from pathlib import Path
 
-from bl_base import COMMITS, KINDS
+from bl_base import COMMITS, kinds
 
 COMMANDS = {}  # subcommand name -> (handler, add_arguments, help), in registration order
 
@@ -54,7 +56,11 @@ def build_parser(description, root, registry=None):
     return ap
 
 
-ID_SHAPE = re.compile("(?:" + "|".join(KINDS.values()) + r")-[a-z2-7]{8}")  # the project's id prefixes
+def id_shape():
+    """The project's id prefixes (the settings of the root the command runs on) with the id's 8 characters."""
+    return re.compile("(?:" + "|".join(kinds().values()) + r")-[a-z2-7]{8}")
+
+
 ID_LIST_OPTIONS = ("--depends", "--add-depends", "--relates", "--add-relates")  # one id per flag in the parsers
 # A command agents reach for that the backlog does not have: what to run instead.
 NO_COMMAND = {
@@ -84,6 +90,7 @@ def spread_ids(argv):
     """`--depends A B C` as `--depends A --depends B --depends C`: the ids that follow an id-list option's value, each
     given its own flag; any other word ends the run."""
     out, opt, after_value = [], None, False
+    shape = id_shape()
     for w in argv:
         if w in ID_LIST_OPTIONS:
             out.append(w)
@@ -91,12 +98,44 @@ def spread_ids(argv):
         elif opt and not after_value:
             out.append(w)
             after_value = True
-        elif opt and ID_SHAPE.fullmatch(w):
+        elif opt and shape.fullmatch(w):
             out += [opt, w]
         else:
             out.append(w)
             opt = None
     return out
+
+
+def root_of(argv, default):
+    """The root a command line runs on: the value of `--root` (before the command, as the parser takes it, in either
+    spelling) or DEFAULT. Read before the parser is built, since the project's settings (the kinds the parsers
+    offer) are those of that root."""
+    skip = False
+    for w in argv:
+        if skip:
+            return w
+        if w == "--root":
+            skip = True
+        elif w.startswith("--root="):
+            return w[len("--root="):]
+        elif not w.startswith("-"):
+            break
+    return default
+
+
+def default_root(tool_root, cwd=None):
+    """The root a command runs on when `--root` is not given: the tool's own checkout when it is a git working tree
+    (the kb's clone, or a worktree of it), else, for a tool installed as a plugin, the git toplevel of the working
+    directory, which is the project; TOOL_ROOT when the working directory is no repository."""
+    if (Path(tool_root) / ".git").exists():
+        return str(tool_root)
+    try:
+        p = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return str(tool_root)
+    top = p.stdout.strip()
+    return top if p.returncode == 0 and top else str(tool_root)
 
 
 def parse(ap, argv=None):
@@ -110,7 +149,7 @@ def parse(ap, argv=None):
     a, extra = ap.parse_known_args(argv)
     if not extra:
         return a
-    if all(ID_SHAPE.fullmatch(w) for w in extra) and any(w in ID_LIST_OPTIONS for w in argv):
+    if all(id_shape().fullmatch(w) for w in extra) and any(w in ID_LIST_OPTIONS for w in argv):
         spread = spread_ids(argv)
         if spread != argv:
             b, rest = ap.parse_known_args(spread)

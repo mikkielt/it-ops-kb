@@ -16,8 +16,9 @@ from pathlib import Path
 import bl_cli
 import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
-    ANSI_RE, Backlog, ID_RE, REF_HEADER, REL_DIR, colourless_env, run_check, Refused, commit_written, external_description,
-    git, in_scope, item_file, line, main_worktree_spool, need, run, say, scope, setting, waits,
+    ANSI_RE, Backlog, REF_HEADER, colourless_env, run_check, Refused, commit_written, external_description,
+    git, id_re, in_scope, item_file, line, main_worktree_spool, need, rel_dir, run, say, scope, setting, waits,
+    worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 
@@ -30,7 +31,7 @@ def item_commits(root, ids):
     out = {}
     for rec in log.split("\x1e"):
         sha, _, vals = rec.strip().partition("\x00")
-        if sha and set(ID_RE.findall(vals)) & set(ids):
+        if sha and set(id_re().findall(vals)) & set(ids):
             paths = [p for p in git(root, "show", "--no-renames", "--name-only", "--format=", sha).splitlines() if p]
             if any(not item_file(p) for p in paths):
                 out[sha] = paths
@@ -61,7 +62,7 @@ def unlanded_code(root, ids):
                               capture_output=True).returncode]
     owners = []
     for sha in late:
-        named = ID_RE.findall(git(root, "log", "-1", "--format=%(trailers:key=KB-Work,valueonly,separator=%x2C)", sha))
+        named = id_re().findall(git(root, "log", "-1", "--format=%(trailers:key=KB-Work,valueonly,separator=%x2C)", sha))
         owners += [i for i in named if i in ids and i not in owners][:1]
     return [sha[:10] for sha in late], remote, owners
 
@@ -372,11 +373,25 @@ def cmd_done(bl, a):
 
 # land: the steps after a worker's branch comes back, each a command run from the clone's root with this interpreter
 # each step's command is a project setting (backlog.json); an empty one is a step the project does not have
-LAND_STALE = ("stale", setting("land_stale"))  # + the integration main; seconds, so it runs first
-LAND_EVAL = ("rag.py eval", setting("land_eval"))
-LAND_LINT = ("lint", setting("land_lint"))  # a landing that changes articles and not _tools/ runs it on those articles' paths only
-# run once, when the landing changes _tools/; the full tests.py is no step here: it runs once at the sprint's review story
-LAND_HEAVY = tuple(step for step in (LAND_EVAL, LAND_LINT) if step[1])
+def land_stale():
+    return ("stale", setting("land_stale"))  # + the integration main; seconds, so it runs first
+
+
+def land_eval():
+    return ("rag.py eval", setting("land_eval"))
+
+
+def land_lint():
+    """A landing that changes articles and not _tools/ runs it on those articles' paths only."""
+    return ("lint", setting("land_lint"))
+
+
+def land_heavy():
+    """The steps run once, when the landing changes _tools/; the full tests.py is no step here: it runs once at the
+    sprint's review story."""
+    return tuple(step for step in (land_eval(), land_lint()) if step[1])
+
+
 LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])
 LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
 
@@ -534,7 +549,6 @@ def checked_out_elsewhere(root, branch):
 
 # the lock Claude Code puts on a subagent's worktree, which outlives the agent when it left background work running
 WORKER_LOCK = "claude agent"
-WORKER_DIR = tuple(setting("worktree_dir").split("/"))  # under the clone's main checkout
 WORKER_NAME = "agent-"  # how the Agent tool names a worker's isolation worktree: an unlocked one is removed only so
 WORK_PREFIX = "work/"  # the local branch a worker commits on: land deletes it once it has landed
 AGENT_BRANCH = "worktree-"  # + the worktree's name: the branch the Agent tool made the worker's worktree on
@@ -613,7 +627,7 @@ def worker_dirs(root):
     """The .claude/worktrees/ directory whose worktrees are the workers of the clone land runs in ROOT, as a set: the
     one of the toplevel there (`git rev-parse --show-toplevel`: a linked worktree is its own clone)."""
     top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
-    return {top.joinpath(*WORKER_DIR).resolve()}
+    return {top.joinpath(*worker_dir()).resolve()}
 
 
 def detached_workers(root, branch):
@@ -635,7 +649,11 @@ def detached_workers(root, branch):
     return out
 
 
-INTAKE_DRAFT = re.compile(r"\?\? (kb/_self/backlog/[^/\"]+\.json)")  # an untracked item file of the intake
+def intake_draft_re():
+    """An untracked item file of the intake, in `git status --porcelain` form."""
+    return re.compile(r"\?\? (" + re.escape(rel_dir()) + r"/[^/\"]+\.json)")
+
+
 INTAKE_ASIDE = ("_cache", "intake-drafts")  # under the clone land runs in (gitignored): <worktree name>/<draft file>
 
 
@@ -645,7 +663,7 @@ def intake_drafts(path, status_lines, branch=None):
     hook files (`backlog.py intake --file --hook`); any other line (modified, staged, another untracked file) is not one."""
     found = []
     for line in status_lines:
-        m = INTAKE_DRAFT.fullmatch(line)
+        m = intake_draft_re().fullmatch(line)
         if not m:
             continue
         named = subprocess.run(["git", "log", "-1", "--format=%H", branch or "HEAD", "--", m.group(1)], cwd=path,
@@ -691,7 +709,7 @@ def release_worker_worktree(root, path, lock, branch=None):
     if lock is not None and not lock.startswith(WORKER_LOCK):
         return f"it is locked ({lock or 'no reason given'}), not by a Claude Code agent"
     if path.resolve().parent not in worker_dirs(root):
-        return f"it is {state} but not under {'/'.join(WORKER_DIR)}/ of the clone"
+        return f"it is {state} but not under {'/'.join(worker_dir())}/ of the clone"
     if path.resolve() == Path(root).resolve():
         return f"it is {state} and is the worktree land runs in"
     item_id = branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None
@@ -889,7 +907,7 @@ def missing_claims(root, family, start, upstream, branch):
     for sha in unpicked(root, upstream, start, branch):
         subject, _, vals = git(root, "log", "-1", "--format=%s%x00%(trailers:key=KB-Work,valueonly,separator=%x2C)",
                                sha).partition("\x00")
-        if subject.startswith("chore(backlog): claim ") and set(ID_RE.findall(vals)) & set(family):
+        if subject.startswith("chore(backlog): claim ") and set(id_re().findall(vals)) & set(family):
             out.append(sha)
     return out
 
@@ -915,7 +933,7 @@ def carry_claims(root, claims, upstream, branch):
 
 def item_state(root, rev, iid):
     """The status the item's file has at REV, None when it has none there."""
-    blob = blob_id(root, rev, f"{REL_DIR}/{iid}.json")
+    blob = blob_id(root, rev, f"{rel_dir()}/{iid}.json")
     if not blob:
         return None
     try:
@@ -929,7 +947,7 @@ def verify_landed(root, remote, upstream, iid):
     last commit on HEAD that wrote its file) is on it and that its file reads done there. Stops, naming the step,
     when it is not: a sync that gave up quietly must never end in `landed`."""
     land_git(root, "verify", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
-    done = git(root, "log", "-1", "--format=%H", "HEAD", "--", f"{REL_DIR}/{iid}.json").strip()
+    done = git(root, "log", "-1", "--format=%H", "HEAD", "--", f"{rel_dir()}/{iid}.json").strip()
     on_main = bool(done) and subprocess.run(["git", "merge-base", "--is-ancestor", done, upstream], cwd=root,
                                             capture_output=True).returncode == 0
     if not on_main:
@@ -1368,14 +1386,16 @@ def land_once(bl, a):
             land_checks(bl, iid)
         changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
-            if LAND_STALE[1]:
-                land_run(root, LAND_STALE[0], [*LAND_STALE[1], upstream])  # a missing Self-Reviewed fails in seconds
-            for step, argv in LAND_HEAVY:
+            stale = land_stale()
+            if stale[1]:
+                land_run(root, stale[0], [*stale[1], upstream])  # a missing Self-Reviewed fails in seconds
+            for step, argv in land_heavy():
                 land_run(root, step, argv)
         else:  # lint.py takes qualified article paths: the changed articles only, before sync --push
             articles = changed_articles(changed)
-            if articles and LAND_LINT[1]:
-                land_run(root, LAND_LINT[0], [*LAND_LINT[1], *articles])
+            lint = land_lint()
+            if articles and lint[1]:
+                land_run(root, lint[0], [*lint[1], *articles])
         land_run(root, *LAND_SYNC, whole=True)
         if late:
             describe_merge_request(bl, iid, remote, code_branch)  # the request sync opened by push options
@@ -1524,7 +1544,7 @@ def close_row(bl, sid, items):
     its = [bl.items[i] for i in items]
     gates = [g for it in its + [bl.items[sid]] for g in it.get("gates", [])]
     added = [int(x) for x in git(bl.root, "log", "--diff-filter=A", "--format=%ct", "--",
-                                 f"{REL_DIR}/{sid}.json").split()]
+                                 f"{rel_dir()}/{sid}.json").split()]
     if not added:
         return None
     return {"sprint": sid,
@@ -1610,7 +1630,7 @@ def clean_worker_leftovers(root, sid, ids):
         kept += 1
         say(f"close: kept {what}: {why}")
 
-    if not ID_RE.fullmatch(sid):
+    if not id_re().fullmatch(sid):
         keep(sid, "not a sprint id")
         return kept
     remote = kbpublic.integration_remote(root)

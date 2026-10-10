@@ -12,7 +12,7 @@ import sys
 
 import bl_cli
 from bl_base import (
-    APPROVALS, CHECK_TIMEOUT_S, ID_RE, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, in_scope, need, say, scope,
+    APPROVALS, CHECK_TIMEOUT_S, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, id_re, in_scope, need, say, scope,
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
@@ -82,7 +82,7 @@ def stale_touches(bl):
                 history[t] = bool((_git_out(bl.root, "log", "-1", "--format=%H", "HEAD", "--", t) or "").strip())
                 gone = _git_out(bl.root, "log", "-1", "--no-renames", "--diff-filter=D",
                                 "--format=%(trailers:key=KB-Work,valueonly,separator=%x2C)", "HEAD", "--", t)
-                removers[t] = set(ID_RE.findall(gone or ""))
+                removers[t] = set(id_re().findall(gone or ""))
             if history[t] and removers[t] & ({iid} | set(bl.descendants(iid))):
                 continue
             if history[t]:

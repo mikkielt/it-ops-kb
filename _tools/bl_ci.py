@@ -12,7 +12,7 @@ from pathlib import Path
 
 import bl_cli
 import bl_intake
-from bl_base import new_id, run, say, withhold
+from bl_base import new_id, run, say, withhold, worker_dir
 from bl_base import run_check
 
 
@@ -164,10 +164,11 @@ INTAKE_HOOK_SLOW = {"drift"}  # intake --hook runs these after the other offline
 
 
 def in_worker_worktree(root):
-    """True when ROOT is a linked git worktree directly under a `.claude/worktrees/` directory (a headless worker's):
-    its `.git` is a file, not a directory."""
+    """True when ROOT is a linked git worktree directly under the project's worktree directory (`worktree_dir`, by
+    default `.claude/worktrees/`: a headless worker's): its `.git` is a file, not a directory."""
     p = Path(root).resolve()
-    return p.parent.name == "worktrees" and p.parent.parent.name == ".claude" and (p / ".git").is_file()
+    parts = worker_dir()
+    return p.parent.parts[-len(parts):] == parts and (p / ".git").is_file()
 
 
 def hook_intake(bl, a, budget=None):
@@ -179,7 +180,7 @@ def hook_intake(bl, a, budget=None):
     worker's linked worktree (in_worker_worktree) it files nothing and prints one line on stderr saying so: the
     drafts would be untracked files there that `land` refuses."""
     if a.file and in_worker_worktree(bl.root):
-        print("intake: files nothing in a worker's worktree (a linked worktree under .claude/worktrees/)", file=sys.stderr)
+        print("intake: files nothing in a worker's worktree (a linked worktree under the worktree directory)", file=sys.stderr)
         return 0
     budget = INTAKE_HOOK_BUDGET_S if budget is None else budget
     names = sorted(bl_intake.DETECTORS, key=lambda n: (n in bl_intake.NETWORK_DETECTORS, n in INTAKE_HOOK_SLOW, n))

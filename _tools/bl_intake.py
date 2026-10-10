@@ -70,7 +70,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import bl_base
-from bl_base import REL_DIR, TEXT_MAX, Refused
+from bl_base import TEXT_MAX, Refused, rel_dir
 
 DETECTORS = {}  # name -> fn(root) -> iterable of Candidate; the registry
 NETWORK_DETECTORS = {"ci"}  # detectors that call the network: `collect` runs them only with network=True
@@ -350,7 +350,6 @@ def file_found(bl, found, failures, say, new_id, withhold=str):
 
 # ------------------------------------------------------------------ the drift detector
 
-BACKLOG_DIR = REL_DIR  # the item files, one `<id>.json` each
 DRIFT_HOURS = 24  # a doing item whose newest work commit is older than this drifted
 CHECK_TIMEOUT_S = 15  # one check run by the detector; a check that exceeds it is counted and says nothing
 DRIFT_BUDGET_S = 30  # all the checks of one scan; once spent, no further check starts and the rest are counted
@@ -397,7 +396,7 @@ def ref_exists(root, ref):
 def load_items(root):
     """{id: item} of the item files under `root`; a file that is not a JSON object is left out."""
     out = {}
-    d = Path(root) / BACKLOG_DIR
+    d = Path(root) / rel_dir()  # the item files, one `<id>.json` each
     for p in sorted(d.glob("*.json")) if d.is_dir() else []:
         try:
             item = json.loads(p.read_text(encoding="utf-8"))
@@ -421,7 +420,7 @@ def family(items, iid):
 
 
 def is_item_file(path):
-    return path.startswith(BACKLOG_DIR + "/") and path.endswith(".json")
+    return path.startswith(rel_dir() + "/") and path.endswith(".json")
 
 
 def main_ref(root):
@@ -468,7 +467,7 @@ def stale_doing(root, items, hours):
 
 def touches_changed_since_file(root, iid, touches):
     """True when a commit on HEAD after the one that last changed the item's file changed a file `touches` matches."""
-    last = git_out(root, "log", "-1", "--format=%H", "--", f"{BACKLOG_DIR}/{iid}.json").strip()
+    last = git_out(root, "log", "-1", "--format=%H", "--", f"{rel_dir()}/{iid}.json").strip()
     if not last or not touches:
         return False
     specs = [f":(glob){g}" for g in touches]

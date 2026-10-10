@@ -11,9 +11,9 @@ from pathlib import Path
 import bl_authority
 import bl_cli
 from bl_base import (
-    IN_SPRINT, KINDS, PRIORITIES, REL_DIR, RESEARCH_CHECKS, RESEARCH_ID, REVIEW_CHECKS, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
-    commit_message, commit_written, external_problems, git, in_scope, item_file, need, new_id, research_in_planned, say,
-    scope, trailer_problem, waits, withhold,
+    IN_SPRINT, PRIORITIES, RESEARCH_ID, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
+    commit_message, commit_written, external_problems, git, in_scope, item_file, kinds, need, new_id, rel_dir,
+    research_checks, research_in_planned, review_checks, say, scope, trailer_problem, waits, withhold,
 )
 from bl_check import (
     ITEM_FILES_ROUTE, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
@@ -77,7 +77,7 @@ def cmd_new(bl, a):
               "status": "draft", "sprint": it["id"], "review": True, "priority": "P1", "rank": 999999,
               "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, "
                       "and a fresh-context review of the sprint's diff found no unfiled defect.",
-              "checks": REVIEW_CHECKS}
+              "checks": review_checks()}
         bl.save(rv)
         rid = new_id("story")
         rs = {"id": rid, "kind": "story", "title": f"Research sprint goal: {it['title']}"[:TEXT_MAX],
@@ -85,7 +85,7 @@ def cmd_new(bl, a):
               "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for "
                       "the gaps, and the findings are written as kb facts and gap entries through the kb skills, so "
                       "each committed item can name the knowledge it needs.",
-              "checks": [{**c, "run": [rid if w == RESEARCH_ID else w for w in c["run"]]} for c in RESEARCH_CHECKS],
+              "checks": [{**c, "run": [rid if w == RESEARCH_ID else w for w in c["run"]]} for c in research_checks()],
               "touches": ["kb/public/**"]}
         bl.save(rs)
         say(f"new sprint {bl.label(it['id'])}, review story {bl.label(rv['id'])}, "
@@ -634,7 +634,7 @@ def was_done(bl, iid):
                       capture_output=True).returncode == 0:
         return True
     p = subprocess.run(["git", "-C", root, "log", "-1", "--format=%H", "-S", '"evidence"', "HEAD", "--",
-                        f"{REL_DIR}/{iid}.json"],
+                        f"{rel_dir()}/{iid}.json"],
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
     return p.returncode == 0 and bool(p.stdout.strip())
 
@@ -904,7 +904,7 @@ def cmd_goal(bl, a):
 
 
 def args_new(p):
-    p.add_argument("kind", choices=list(KINDS))
+    p.add_argument("kind", choices=list(kinds()))
     p.add_argument("--title", required=True)
     p.add_argument("--parent")
     p.add_argument("--sprint")
