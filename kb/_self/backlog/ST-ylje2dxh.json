@@ -2,7 +2,7 @@
   "id": "ST-ylje2dxh",
   "kind": "story",
   "title": "precheck names each committed item's goal clauses with the check that reads each, and warns of a clause no check reads",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x5gjv4r7",
   "priority": "P2",
   "rank": 0,
@@ -81,5 +81,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Gate g1 picks the clauses field: the first check plants a --root repo with a two-clause goal and a clauses entry for clause one written into the planted item file (the set flag does not exist yet), and passes only when precheck warns of clause two alone; rename its keys if the field is named otherwise. The second check (gate g2) keeps a one-clause goal free of warnings and passes before the work. CLAUSE_SPLIT (bl_land.py) splits only at '; ' and ', and ', as close --summary does. Premise (2026-10-10, run): backlog.py set ST --add-clause is 'unrecognized arguments' (exit 2) and precheck on a sprint whose story has a two-clause goal and one check prints no clause warning; the first and third checks print both. The third check reads the flag name --add-clause CLAUSE=N and the item field clauses [{clause, check}]: rename in the check if the work names them otherwise."
+  "notes": "Gate g1 picks the clauses field: the first check plants a --root repo with a two-clause goal and a clauses entry for clause one written into the planted item file (the set flag does not exist yet), and passes only when precheck warns of clause two alone; rename its keys if the field is named otherwise. The second check (gate g2) keeps a one-clause goal free of warnings and passes before the work. CLAUSE_SPLIT (bl_land.py) splits only at '; ' and ', and ', as close --summary does. Premise (2026-10-10, run): backlog.py set ST --add-clause is 'unrecognized arguments' (exit 2) and precheck on a sprint whose story has a two-clause goal and one check prints no clause warning; the first and third checks print both. The third check reads the flag name --add-clause CLAUSE=N and the item field clauses [{clause, check}]: rename in the check if the work names them otherwise.",
+  "claimed_by": "kb-worker-ylje2dxh"
 }
