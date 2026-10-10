@@ -20,7 +20,7 @@
   ],
   "touches": [
     "_tools/census.py",
-    "_tools/test_census_route.py",
+    "_tools/test_redact.py",
     ".claude/skills/kb-census/SKILL.md",
     ".claude/settings.json",
     "AGENTS.md",

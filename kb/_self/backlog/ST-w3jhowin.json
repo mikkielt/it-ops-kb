@@ -31,15 +31,14 @@
     "_tools/factdiff.py",
     "_tools/ql_capture.py",
     "_tools/ql_report.py",
-    "_tools/test_census_route.py",
+    "_tools/test_redact.py",
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "kb/_self/web-sources.md",
     "kb/_self/content-rules.md",
     "kb/_self/querylog.md",
     "kb/_self/usage.md",
-    "kb/_self/reports/fact-diff.md",
-    "_tools/test_redact.py"
+    "kb/_self/reports/fact-diff.md"
   ],
   "gates": [
     {

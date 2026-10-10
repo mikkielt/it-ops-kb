@@ -28,7 +28,7 @@
   "touches": [
     "_tools/factdiff.py",
     "_tools/factdiff.toml",
-    "_tools/test_census_route.py",
+    "_tools/test_redact.py",
     "kb/public/_anchors.csv",
     "kb/_self/tools.md",
     "kb/_self/code.md",
