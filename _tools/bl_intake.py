@@ -58,6 +58,7 @@ name) and, in the functions that read a pipeline, `ql_base` (the command runner)
 needs them; it is below backlog.py, which passes its own `run` to the readers.
 """
 import atexit
+import collections
 import datetime
 import hashlib
 import json
@@ -1036,7 +1037,7 @@ def stranded_detector(root):
 # ------------------------------------------------------------------ the repeats detector
 
 REPEAT_THRESHOLD = 300  # calls of one command class or tool group in one ISO week above which it is a finding
-REPEAT_ROWS_MAX = 200000  # the count budget: the committed call rows one scan reads; the rest are counted, not read
+REPEAT_ROWS_MAX = 200000  # the count budget: the newest committed call rows one scan keeps; the older ones are counted, not kept
 REPEAT_MAX = 5  # the findings one scan reports, most calls first
 INSTEAD = {  # the section-sized command to use instead of a class read again and again, when one exists
     "cat": "python3 _tools/rag.py show PATH:LINE -n 30 (a kb article's lines around a fact) or selfdoc.py section",
@@ -1052,13 +1053,14 @@ INSTEAD = {  # the section-sized command to use instead of a class read again an
 
 
 def committed_calls(root, budget=None):
-    """([(ISO week, class or tool group)] of the call.tool rows of the ops sidecars at HEAD, at most `budget` (default
-    REPEAT_ROWS_MAX) of them, and how many more there were). `git grep` reads HEAD's tree: a working tree edit changes
-    nothing, and no spool is read."""
+    """([(ISO week, class or tool group)] of the call.tool rows of the ops sidecars at HEAD, the newest `budget`
+    (default REPEAT_ROWS_MAX) of them in `git grep`'s path order, which is chronological, and how many older ones were
+    left out). The repeats detector judges the latest closed week, the newest rows, so a budget never cuts them.
+    `git grep` reads HEAD's tree: a working tree edit changes nothing, and no spool is read."""
     budget = REPEAT_ROWS_MAX if budget is None else budget
     p = subprocess.run(["git", "grep", "-I", "-h", "-e", '"call.tool"', "HEAD", "--", f"{STORE_REL}/ops/"], cwd=root,
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    out, over = [], 0
+    out, total = collections.deque(maxlen=max(budget, 0)), 0
     for line in p.stdout.splitlines():
         _, sep, text = line.partition(".jsonl:")
         try:
@@ -1067,9 +1069,6 @@ def committed_calls(root, budget=None):
             continue
         if not (isinstance(rec, dict) and rec.get("event") == "call.tool" and isinstance(rec.get("ts"), str)):
             continue
-        if len(out) >= budget:
-            over += 1
-            continue
         try:
             y, w, _ = datetime.date.fromisoformat(rec["ts"][:10]).isocalendar()
         except ValueError:
@@ -1077,7 +1076,8 @@ def committed_calls(root, budget=None):
         key = rec.get("class") or rec.get("tool")
         if isinstance(key, str) and key:
             out.append((f"{y}-W{w:02d}", key))
-    return out, over
+            total += 1
+    return list(out), total - len(out)
 
 
 @detector("repeats")
@@ -1101,7 +1101,7 @@ def repeats_detector(root):
     for n, key in found:
         instead = INSTEAD.get(key)
         notes = (f"{n} calls of {key} in {week}; the threshold is {REPEAT_THRESHOLD} a week (bl_intake.REPEAT_THRESHOLD)"
-                 + (f"; {over} call rows past the read budget were not counted" if over else ""))
+                 + (f"; the {over} oldest call rows past the read budget were not counted" if over else ""))
         out.append(Candidate(
             kind="story", title=f"Calls of {key} repeat {n} times in {week}",
             goal=(f"Sessions call {key} at most {REPEAT_THRESHOLD} times a week"
