@@ -2,7 +2,7 @@
   "id": "ST-ai2xlm7x",
   "kind": "story",
   "title": "github.com issue, discussion, wiki and repository pages get a provider signal, so the census decides them without reading",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ilje65fa",
   "priority": "P2",
@@ -32,5 +32,6 @@
   "depends_on": [
     "ST-wfvkk6jn"
   ],
-  "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 50 rows of kind gh-page or api-other with note 'github page' went to phase 2: 32 confirmed, 16 updated, 2 superseded. 85 live github.com non-raw sources on 2026-10-10. The signals are measured through /kb-probe before code uses them; a page kind no signal fits stays in the queue. Fact for the no-api rule: census.py's docstring says api.github.com is never called."
+  "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 50 rows of kind gh-page or api-other with note 'github page' went to phase 2: 32 confirmed, 16 updated, 2 superseded. 85 live github.com non-raw sources on 2026-10-10. The signals are measured through /kb-probe before code uses them; a page kind no signal fits stays in the queue. Fact for the no-api rule: census.py's docstring says api.github.com is never called.",
+  "claimed_by": "worker-ST-ai2xlm7x"
 }
