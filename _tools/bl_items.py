@@ -18,7 +18,7 @@ from bl_base import (
 from bl_check import (
     ITEM_FILES_ROUTE, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
 )
-from bl_land import REOPENED_REFS, cleanup_gate_do, prune_reopened_refs, run_check, own_failure
+from bl_land import REOPENED_REFS, cleanup_gate_do, clauses_left_behind, prune_reopened_refs, run_check, own_failure
 from bl_view import (
     is_near, similar,
 )
@@ -503,9 +503,18 @@ def cmd_set(bl, a):
     if not given and not adds and not a.clear:
         raise Rejected("set: nothing to change: name a field (" + ", ".join(SET_FIELDS) + ")")
     named = sorted(set(given) | set(adds) | set(a.clear))
-    if it.get("kind") == "sprint" and set(named) - {"notes", "links", "delegates"}:
-        raise Rejected(f"set refuses {', '.join(sorted(set(named) - {'notes', 'links', 'delegates'}))} on a sprint: "
-                       "a sprint takes notes, links and delegates only")
+    if it.get("kind") == "sprint":
+        takes = {"notes", "links", "delegates"}
+        if "goal" in given and "goal" not in a.clear:
+            if a.set_by != "operator":  # a rescope a gate answers lands in the goal close --summary reads: the operator's
+                raise Rejected(f"set refuses goal on {bl.label(iid)} without --by operator: a sprint's goal changes "
+                               "only by the operator")
+            if not given["goal"].strip():
+                raise Rejected("set: --goal is empty")
+            takes.add("goal")
+        if set(named) - takes:
+            raise Rejected(f"set refuses {', '.join(sorted(set(named) - takes))} on a sprint: "
+                           "a sprint takes notes, links, delegates and, with --by operator, its goal only")
     frozen = {"checks", "clauses", "touches", "goal", "repro", "repro_reason"}  # what a done item's evidence proved
     if it.get("status") == "done" and frozen & set(named):
         raise Rejected(f"set refuses {', '.join(sorted(frozen & set(named)))} "
@@ -643,9 +652,14 @@ def cmd_move(bl, a):
 
     edits = {iid: edit_story}
     edits.update({c: edit_child for c in kids if bl.items[c].get("status") in ("draft", "todo")})
+    old = it.get("sprint")
+    left = clauses_left_behind(bl, old, iid) if old in bl.items and old != target else []  # read before the edit
     if changed_items(bl, edits):
         say(f"moved {label} to {bl.label(target) if target else 'no sprint'}: status {state}"
             + (f", {len(edits) - 1} task(s) and subtask(s) follow" if len(edits) > 1 else ""))
+        for clause in left:
+            say(f"goal clause left in {bl.label(old)}: {clause[:120]!r}: no other item of the sprint carries it, and "
+                f"close --summary would list it unmet; rescope the goal: set {old} --goal G --by operator")
     else:
         say(f"move {label}: unchanged")
     return 0
@@ -1102,14 +1116,15 @@ def args_set(p):
     p.add_argument("--rank", type=int)
     p.add_argument("--sprint")
     p.add_argument("--title", help="the item's title")
-    p.add_argument("--goal", help="the goal, replaced whole (refused on a done item)")
+    p.add_argument("--goal", help="the goal, replaced whole (refused on a done item; on a sprint only with --by operator)")
     p.add_argument("--repro", help="a bug's repro command, which must fail now as new bug's does (refused on a done item)")
     p.add_argument("--repro-reason", dest="repro_reason", help="why a bug's repro can only match text in a file")
     p.add_argument("--severity", choices=SEVERITIES, help="a bug's severity")
     p.add_argument("--parent", help="the item's parent, by the same kind rules check applies")
     p.add_argument("--delegate", action="append", metavar="NAME",
                    help="on a sprint, with --by operator: grant NAME the confirming of its provisional answers")
-    p.add_argument("--by", dest="set_by", metavar="operator", help="who writes a --delegate grant: the operator only")
+    p.add_argument("--by", dest="set_by", metavar="operator",
+                   help="who writes a --delegate grant or a sprint's --goal: the operator only")
     for f, (flag, value) in SET_APPEND.items():  # each appends to its own field; the plain flag replaces it
         p.add_argument(flag, dest="add_" + f, action="append", metavar=value,
                        help=f"append to {f} (repeatable; refused beside {replace_flag(f)})")

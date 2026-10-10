@@ -2149,6 +2149,7 @@ def cleanup_gate_do(bl, dead):
 
 PART_SPLIT = re.compile(r",\s+(?:and\s+)?|\s+and\s+")  # a list clause's parts: split at ', ' and ' and '
 CLAUSE_COVER = 0.5 # the share of a clause's words an item's title and goal must hold to carry it
+CLAUSE_SIMILAR = 2  # the words an open item outside the sprint shares with an unmet clause to be named beside it
 
 
 def clause_words(text):
@@ -2160,19 +2161,28 @@ def clause_parts(clause):
     return [p for p in (x.strip(" .") for x in PART_SPLIT.split(clause)) if clause_words(p)]
 
 
+def item_words(bl, iid):
+    """The words of an item's title and goal that `goal_clause_lines` matches a clause against."""
+    return clause_words(f"{bl.items[iid].get('title', '')} {bl.items[iid].get('goal', '')}")
+
+
 def goal_clause_lines(bl, sid, items):
     """close --summary's clause lines: the sprint's goal split into its clauses, each with the done item of the sprint
-    whose title and goal hold at least CLAUSE_COVER of its words, or `unmet` and the open item outside the sprint that
-    carries it now (moved out mid-sprint), or none."""
+    whose title and goal hold at least CLAUSE_COVER of its words, or `unmet` and, beside it, the open item outside the
+    sprint that shares at least CLAUSE_SIMILAR words with it (named as similar, never as the clause's carrier)."""
     clauses = goal_clauses(bl.items[sid].get("goal", ""))
     if len(clauses) < 2 and not (clauses and len(clause_parts(clauses[0])) > 1):
         return []
 
     def best(cw, ids):
-        scored = [(len(cw & clause_words(f"{bl.items[i].get('title', '')} {bl.items[i].get('goal', '')}")) / len(cw), i)
-                  for i in ids]
+        scored = [(len(cw & item_words(bl, i)) / len(cw), i) for i in ids]
         top = max(scored, default=(0, None))
         return top[1] if top[0] >= CLAUSE_COVER else None
+
+    def similar(cw, ids):
+        scored = [(-len(cw & item_words(bl, i)), i) for i in sorted(ids)]
+        top = min(scored, default=(0, None))
+        return top[1] if -top[0] >= CLAUSE_SIMILAR else None
     done = [i for i in items if bl.items[i].get("status") == "done" and not bl.items[i].get("review")
             and not bl.items[i].get("goal_research")]
     elsewhere = [i for i, it in bl.items.items() if i not in items and it.get("kind") not in ("sprint", "epic")
@@ -2182,8 +2192,8 @@ def goal_clause_lines(bl, sid, items):
         by = best(cw, done) if cw else None
         if by:
             return bl.label(by)
-        now = best(cw, elsewhere) if cw else None
-        return f"unmet, carried by {bl.label(now) if now else 'no item'}"
+        now = similar(cw, elsewhere) if cw else None
+        return f"unmet; similar open item outside the sprint: {bl.label(now)}" if now else "unmet"
     for n, c in enumerate(clauses, 1):
         cw = clause_words(c)
         parts = clause_parts(c)
@@ -2193,6 +2203,23 @@ def goal_clause_lines(bl, sid, items):
         else:
             out.append(f"  {n}. {c[:120]}: {verdict(cw)}")
     return out
+
+
+def clauses_left_behind(bl, sid, iid):
+    """The goal clauses of sprint `sid` that item `iid` carries (its title and goal hold at least CLAUSE_COVER of the
+    clause's words) and no other item of the sprint that is not dropped does: what moving `iid` out leaves in the goal.
+    Its tasks and subtasks go with it."""
+    moving = {iid, *bl.descendants(iid)}  # its tasks and subtasks leave with it
+    others = [i for i in bl.sprint_items(sid) if i not in moving and bl.items[i].get("status") != "dropped"]
+
+    def carries(cw, i):
+        return bool(cw) and len(cw & item_words(bl, i)) / len(cw) >= CLAUSE_COVER
+    left = []
+    for c in goal_clauses(bl.items[sid].get("goal", "")):
+        cw = clause_words(c)
+        if carries(cw, iid) and not any(carries(cw, i) for i in others):
+            left.append(c)
+    return left
 
 
 def cmd_close(bl, a):
