@@ -1,0 +1,22 @@
+{
+  "id": "BG-na2uirn5",
+  "kind": "bug",
+  "title": "A touch of the plugin's skills/ or agents/ files is not class agents-rule, so a gate on an item that edits the sprint skills' text is not operator-only",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority derives the class agents-rule for a touch of skills/<name>/SKILL.md or agents/<name>.md at the plugin root, as it does for .claude/skills/ and .claude/agents/, because those files are now the one set of the rules the sprint runs under (the kb's .claude entries link to them), the repro exits 0, and the planted failure of _tools/test_authority.py names them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_authority as a; sys.exit(0 if a.derived_class({'touches': ['skills/sprint/SKILL.md', 'agents/worker.md']}, {'id': 'g1', 'question': 'which name', 'options': []}) == 'agents-rule' else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md"
+  ]
+}
