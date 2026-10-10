@@ -64,6 +64,23 @@
       "class": "agents-rule",
       "answer": "each doc the item's touches map to (by the map's patterns), with its path and its ## headings, so the worker reads only those sections; when kb_root is set, the rag.py pack --root ROOT --item ID output instead",
       "by": "operator"
+    },
+    {
+      "id": "otherroot",
+      "kind": "blocking",
+      "question": "rag.py pack --item serves only --root _self (BG-s4fah7jp): what does the brief print for a kb root other than _self?",
+      "options": [
+        "for _self, rag.py pack --root _self --item ID; for any other root, rag.py pack --root ROOT --budget 600 with the item's title and goal as the question (what --item does inside _self), until BG-s4fah7jp lets --item serve any root",
+        "widen rag.py so --item serves any root, in this item (touches widened)"
+      ],
+      "recommendation": "for _self, rag.py pack --root _self --item ID; for any other root, rag.py pack --root ROOT --budget 600 with the item's title and goal as the question (what --item does inside _self), until BG-s4fah7jp lets --item serve any root",
+      "do": {
+        "for _self, rag.py pack --root _self --item ID; for any other root, rag.py pack --root ROOT --budget 600 with the item's title and goal as the question (what --item does inside _self), until BG-s4fah7jp lets --item serve any root": "ST-zt4fdewi",
+        "widen rag.py so --item serves any root, in this item (touches widened)": "BG-s4fah7jp"
+      },
+      "class": "agents-rule",
+      "answer": "for _self, rag.py pack --root _self --item ID; for any other root, rag.py pack --root ROOT --budget 600 with the item's title and goal as the question (what --item does inside _self), until BG-s4fah7jp lets --item serve any root",
+      "by": "operator"
     }
   ],
   "links": [
