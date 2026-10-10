@@ -2,7 +2,7 @@
   "id": "ST-3nzrmjkh",
   "kind": "story",
   "title": "Research sprint goal: Planning rules 2: plan-time warnings and probes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-avwlotax",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the sprint changes _tools, skills and kb/_self rules; the two outside questions pack good. Pack run 2026-10-10: Q1 (git rev-parse --git-common-dir in a linked worktree) good, public/gitlab/git-test-repositories.md; Q2 (where Claude Code creates a subagent's isolation worktree) good, public/claude/skills-and-subagents.md.",
-  "claimed_by": "orch-avwlotax"
+  "evidence": {
+    "commit": "c657473d0c09bdb58c4c79bf6c5c63d76a9e2273",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-3nzrmjkh"
+        ],
+        "exit": 0,
+        "sha256": "37f9e75dc4e76a80"
+      }
+    ]
+  }
 }
