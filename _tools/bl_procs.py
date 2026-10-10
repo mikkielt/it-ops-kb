@@ -4,11 +4,14 @@ kb/_self/tools.md).
 
   procs                 list them (read only): pid, parent, age, class, command name, and where it runs
 
-Classes: `orphan` (its parent is gone: a background run a session left behind) and `foreign` (anything else: a live
-session's own work). Nothing is ever signaled: an orphan is named for the operator, who ends it when it is theirs, and
-`backlog.py selfcheck` fails while one runs. A process's command line and environment are never read: only its command
-name is printed. Where a host cannot list working directories (Windows) it says so. Exit codes: 0 listed (also on a host
-that cannot check), 2 a bad request.
+Classes: `orphan` (its parent is gone: a background run a session left behind), `hook` (an orphan younger than
+HOOK_GRACE_S whose standard output is the query log's distill.log: the run a session's end hook started, which delivers
+for a few seconds with its parent gone, and ends on its own) and `foreign` (anything else: a live session's own work).
+Nothing is ever signaled: an orphan is named for the operator, who ends it when it is theirs, and `backlog.py selfcheck`
+fails while one runs; a hook in flight is named with its age and fails nothing until it is older than HOOK_GRACE_S. A
+process's command line and environment are never read: only its command name is printed, and a hook is told by the file
+its standard output is. Where a host cannot list working directories (Windows) it says so. Exit codes: 0 listed (also on
+a host that cannot check), 2 a bad request.
 
 Standard library only; imports `bl_base` and `bl_cli`, never `backlog` (a layer rule). It registers its own subcommand
 when imported, so `backlog.py` carries only the import.
@@ -25,7 +28,10 @@ import bl_cli
 from bl_base import Refused, say
 
 REAPERS = ("init", "systemd", "launchd")  # a parent with one of these names has adopted an orphan
-ORPHAN, FOREIGN = "orphan", "foreign"
+ORPHAN, HOOK, FOREIGN = "orphan", "hook", "foreign"
+HOOK_GRACE_S = 60  # how long a session-end hook's run is no orphan, and how long `land` waits for one to end
+HOOK_LOG = ("_cache", "querylog")  # under a checkout: the directory ql_base.places() gives a clone, whose distill.log is
+#                                    the standard output of every run `ql_distill.detach` starts
 
 
 # ---------------------------------------------------------------- the host's process table
@@ -131,6 +137,44 @@ def cwd_map():
     return out, None
 
 
+def stdout_map(pids):
+    """{pid: real path of the file its standard output is} for the PIDS that have one this host lets us read: /proc's
+    fd 1 (Linux) or `lsof -d 1` (macOS). A pid it cannot read is left out. Never reads a command line."""
+    out = {}
+    pids = sorted(set(pids))
+    if not pids or os.name == "nt":
+        return out
+    if Path("/proc/self/cwd").exists():
+        for pid in pids:
+            try:
+                out[pid] = os.path.realpath(os.readlink(f"/proc/{pid}/fd/1"))
+            except OSError:  # gone, or another user's
+                continue
+        return out
+    if not shutil.which("lsof"):
+        return out
+    pid = None
+    for ln in (run_quiet(["lsof", "-n", "-P", "-w", "-a", "-d", "1", "-p", ",".join(map(str, pids)), "-Fpn"]) or
+               "").splitlines():
+        if ln.startswith("p") and ln[1:].isdigit():
+            pid = int(ln[1:])
+        elif ln.startswith("n") and pid is not None:
+            out[pid] = os.path.realpath(ln[1:])
+    return out
+
+
+def hook_logs(bases):
+    """The real paths of the files a session-end hook's run has as its standard output, for the checkouts BASES."""
+    import ql_distill
+    return {os.path.realpath(os.path.join(b, *HOOK_LOG, ql_distill.LOG_NAME)) for b in bases}
+
+
+def hook_pids(root, pids, bases=None):
+    """The subset of PIDS whose standard output is the query log's distill.log of a checkout of the clone at ROOT."""
+    logs = hook_logs(checkouts(root) if bases is None else bases)
+    return {pid for pid, path in stdout_map(pids).items() if path in logs}
+
+
 # ---------------------------------------------------------------- the clone's checkouts
 
 def checkouts(root):
@@ -175,9 +219,20 @@ def inventory(root, tab, cwds, bases=None):
     return out
 
 
-def classify(procs, tab):
-    """Each process of PROCS with its `kind`: orphan when its parent is gone, foreign otherwise."""
-    return [dict(p, kind=ORPHAN if orphaned(tab, p["pid"]) else FOREIGN) for p in procs]
+def classify(procs, tab, hooks=(), now=None):
+    """Each process of PROCS with its `kind`: foreign while its parent lives, else hook when its pid is in HOOKS (the
+    runs whose standard output is a distill.log) and it started less than HOOK_GRACE_S before NOW, else orphan."""
+    now = time.time() if now is None else now
+    out = []
+    for p in procs:
+        if not orphaned(tab, p["pid"]):
+            kind = FOREIGN
+        elif p["pid"] in hooks and now - p["start"] < HOOK_GRACE_S:
+            kind = HOOK
+        else:
+            kind = ORPHAN
+        out.append(dict(p, kind=kind))
+    return out
 
 
 def age_text(seconds):
@@ -202,7 +257,9 @@ def snapshot(root):
     tab = process_table() if cwds is not None else None
     if cwds is None or tab is None:
         return None, None, why or "the process table could not be read"
-    return classify(inventory(root, tab, cwds), tab), tab, None
+    procs = inventory(root, tab, cwds)
+    hooks = hook_pids(root, [p["pid"] for p in procs if orphaned(tab, p["pid"])])
+    return classify(procs, tab, hooks), tab, None
 
 
 # ---------------------------------------------------------------- the command
@@ -220,9 +277,10 @@ def cmd_procs(bl, a):
     say(f"procs: {len(procs)} process(es) with a working directory in a checkout of this clone")
     for p in procs:
         say(line(p, now))
-    counts = {k: sum(p["kind"] == k for p in procs) for k in (ORPHAN, FOREIGN)}
+    counts = {k: sum(p["kind"] == k for p in procs) for k in (ORPHAN, HOOK, FOREIGN)}
     say("procs: " + ", ".join(f"{n} {k}" for k, n in counts.items()) + "; nothing is signaled: an orphan is named for "
-        "the operator, who ends it when it is theirs")
+        f"the operator, who ends it when it is theirs, and a hook is a session's end run, in flight for under "
+        f"{HOOK_GRACE_S}s")
     return 0
 
 

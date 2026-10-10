@@ -601,6 +601,34 @@ def live_processes(path):
     return sorted(set(out)), None
 
 
+HOOK_POLL_S = 1  # seconds between two looks at a worktree's processes while land waits for a session's end hook
+
+
+def wait_for_hooks(path, procs, root=None, wait=None, poll=HOOK_POLL_S, clock=time.monotonic, sleep=time.sleep):
+    """([(pid, command)] still there, seconds waited, pids of the session-end hooks seen): of the processes
+    live_processes found in the worktree PATH (PROCS), once none is left or after at most WAIT seconds (default
+    `bl_procs.HOOK_GRACE_S`). A finished worker's session-end hook (the querylog.py distill its SessionEnd starts
+    detached, its parent gone from the start) runs for seconds after the session exits, so only a process whose parent
+    is gone is waited for; one whose parent lives is a session's own work, and a host that cannot read the process
+    table is not waited on. A hook is told by the file its standard output is (`bl_procs.hook_pids`), never by a
+    command line. Never signals a process."""
+    import bl_procs
+    wait = bl_procs.HOOK_GRACE_S if wait is None else wait
+    start = clock()
+    hooks = set()
+    while procs:
+        tab = bl_procs.process_table()
+        if tab is None or any(pid in tab and not bl_procs.orphaned(tab, pid) for pid, _ in procs):
+            break
+        hooks |= bl_procs.hook_pids(root or path, [pid for pid, _ in procs])
+        if clock() - start >= wait:
+            break
+        sleep(poll)
+        again, _ = live_processes(path)
+        procs = again or []
+    return procs, max(0, int(clock() - start)), hooks
+
+
 PROBE_SUFFIX = ".land-probe"  # + pid: the sibling name held_by_process renames a worktree to and back
 
 
@@ -714,7 +742,9 @@ def release_worker_worktree(root, path, lock, branch=None):
     .claude/worktrees/ of the clone land runs in (`git rev-parse --show-toplevel` there: a linked worktree is its own
     clone, its workers sit under its own directory) that is not the one land runs in, has no uncommitted changes
     (except untracked intake drafts that no commit of BRANCH names: moved to INTAKE_ASIDE of ROOT, and said) and no
-    live process (where live_processes cannot list them, Windows, one the worktree cannot be renamed and back past:
+    live process (one whose parent has exited, a session-end hook's, is waited for, at most
+    `bl_procs.HOOK_GRACE_S`: wait_for_hooks; where live_processes cannot list them, Windows, one the worktree cannot be
+    renamed and back past:
     held_by_process), is on BRANCH when that is given, and is either locked by a Claude Code agent (WORKER_LOCK) or,
     unlocked, named as the Agent tool names a worker's (WORKER_NAME, `agent-*`; the test
     land_removes_clean_unlocked_worker_worktree) or by the item id of BRANCH (`work/<id>`; the test
@@ -748,10 +778,16 @@ def release_worker_worktree(root, path, lock, branch=None):
     if code or len(drafts) < len(dirty):
         return f"it is {state} and has uncommitted changes: commit or discard them there, then run land again"
     procs, unchecked = live_processes(path)
-    if procs:  # the worker left background work running there: removing the worktree would pull it from under it
-        named = ", ".join(f"pid {pid} ({comm or '?'})" for pid, comm in procs)
-        return (f"it is {state} and a process still runs there: {named}; end it (the worker ends every "
-                f"background command and monitor it started), then run land again")
+    if procs:  # a finished session's end hook runs on for seconds: wait for it, then refuse what is still there
+        procs, waited, hooks = wait_for_hooks(path, procs, root)
+        if procs:  # the worker left background work running there: removing the worktree would pull it from under it
+            named = ", ".join(f"pid {pid} ({comm or '?'}{', a session-end hook' if pid in hooks else ''})"
+                              for pid, comm in procs)
+            return (f"it is {state} and a process still runs there{f' after {waited}s' if waited else ''}: {named}; "
+                    f"end it (the worker ends every background command and monitor it started), then run land again")
+        if waited:
+            say(f"land: waited {waited}s in {path.name} for the session-end hook to end"
+                if hooks else f"land: waited {waited}s in {path.name} for a process whose parent had exited to end")
     if unchecked:  # Windows: a rename to a sibling and back fails while a process has it as its working directory
         held = held_by_process(path)
         if held:
