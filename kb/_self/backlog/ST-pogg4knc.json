@@ -2,7 +2,7 @@
   "id": "ST-pogg4knc",
   "kind": "story",
   "title": "Planning puts every reader of a symbol a goal changes into the item's touches, so workers do not stop or widen touches themselves",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4jfepy6u",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,6 @@
     "merged: ST-4is62mak",
     "merged: ST-qhb46g6a"
   ],
-  "notes": "Merged at the 2026-10-10 backlog triage (full text in git history): ST-yjq7extd (a one-clause planning touches rule, not new code: map.csv has no bench_report.py or benchmarks.csv row and bl_check.py never reads map.csv), ST-4is62mak, ST-qhb46g6a; their scope is in the goal. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the three planning docs (kb-sprint and kb-backlog SKILL.md, backlog.md Sprints) lack the wording the goal adds; the item's check reads them for it and fails now. Docs-only item, so its check reads doc text by nature. Premise run on the base 2026-10-10: its check prints all five wording tests False, exit 1."
+  "notes": "Merged at the 2026-10-10 backlog triage (full text in git history): ST-yjq7extd (a one-clause planning touches rule, not new code: map.csv has no bench_report.py or benchmarks.csv row and bl_check.py never reads map.csv), ST-4is62mak, ST-qhb46g6a; their scope is in the goal. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the three planning docs (kb-sprint and kb-backlog SKILL.md, backlog.md Sprints) lack the wording the goal adds; the item's check reads them for it and fails now. Docs-only item, so its check reads doc text by nature. Premise run on the base 2026-10-10: its check prints all five wording tests False, exit 1.",
+  "claimed_by": "kb-worker-pogg4knc"
 }
