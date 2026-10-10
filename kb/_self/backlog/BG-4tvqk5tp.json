@@ -2,7 +2,7 @@
   "id": "BG-4tvqk5tp",
   "kind": "bug",
   "title": "committed_calls keeps the oldest call rows within its read budget, so the repeats detector's latest closed week is the first cut",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yzs3bj6f",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "kb-worker-4tvqk5tp"
+  "evidence": {
+    "commit": "7de3247af5df93d14ee876eb5973ec5c032e578f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_intake as b;rows,over=b.committed_calls('.',budget=10);allr,_=b.committed_calls('.');print(rows[-1],allr[-1],over);sys.exit(0 if over==0 or rows[-1]==allr[-1] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "65d034ab21a75864"
+      }
+    ]
+  }
 }
