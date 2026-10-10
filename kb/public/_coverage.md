@@ -139,11 +139,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/pipelines-rules` | P0 | complete | `gitlab/pipelines-rules.md` | 6 |
 | `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 7 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
-| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 37 |
+| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 51 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 7 |
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 3 |
-| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 30 |
+| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 35 |
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 13 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |

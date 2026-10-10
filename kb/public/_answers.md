@@ -2673,3 +2673,15 @@ _Agent: kb-research_
 - See claude/ci-and-headless.md, claude/skills-and-subagents.md, claude/models.csv.
 
 _Agent: kb-research_
+
+## QK-merge-state-values-worktree-start-point. Which GitLab `detailed_merge_status` values never become mergeable by waiting, which fields do `gh pr view` and `gh run list --json` give for a pull request's merge state and checks, and how does `git worktree add` branch from a remote's default branch fetched in another repository?
+- The API returns 24 `detailed_merge_status` values, of which only `mergeable` is a go; the page marks none as final and names no rule for which clear alone. [DOC S-4abgkvor]
+- In the code, `preparing`, `checking` and `unchecked` are set from the merge status before any merge check; `merge_time` fails only while its `merge_after` lies ahead; `ci_still_running` holds while a pipeline is created or active, and with **Pipelines must succeed** on also for a pipeline held at a `manual`, `scheduled` or `canceling` state. [CODE S-3dktkos7, S-onak4imw, S-ydwwcn45, S-qjtuh6hs]
+- `gh pr view --json` has `mergeable`, `mergeStateStatus`, `isDraft`, `reviewDecision`, `statusCheckRollup` and `autoMergeRequest`; `gh run list --json` has run fields only (`status`, `conclusion`, `headSha`, `databaseId`), no merge state. [DOC S-k53wkeos, S-zg5iu4oe]
+- The values are the GraphQL enums, uppercase (`CLEAN`, `BEHIND`, `DIRTY`, `UNSTABLE`, `BLOCKED`, `HAS_HOOKS`, `DRAFT`, `UNKNOWN`; `MERGEABLE`, `CONFLICTING`, `UNKNOWN`), while a run's `status` and `conclusion` are lowercase; `statusCheckRollup` is a flat array of the last commit's contexts with no overall state. [DOC S-qoxgdoqb; CODE S-lpepysja, S-oil5cwkh, S-flvtoheq]
+- `git worktree add -b <branch> <path> <remote>/<default>`, run with `git -C <repo>`, branches from a ref already in that repository, tracks the remote branch by default and sees the remote-tracking branches any worktree of the repository fetched; the default name comes from `git ls-remote --symref <remote> HEAD` or `git remote set-head <remote> -a`, and `git fetch` never updates an existing `refs/remotes/<remote>/HEAD` under the default `followRemoteHEAD`. [DOC S-j4qkzgvv, S-j3galfta, S-2u6tfn4r, S-rzi7mtmw]
+- Conclusion: a poller waits out only `preparing`, `unchecked`, `checking`, `approvals_syncing`, `merge_time` and a running pipeline (and `security_policy_pipeline_check` while a pipeline is active); every other value needs an action, and `gh pr view` gives the pull request's verdict as `mergeStateStatus` plus the contexts, which the caller reads itself. [DER S-4abgkvor, S-3dktkos7, S-qoxgdoqb, S-lpepysja]
+- Open: eight Enterprise-only statuses are classed from the page's descriptions, not their checks' code; what makes GitHub's `BLOCKED` or `UNSTABLE` is not documented; whether `gh` pages past 100 contexts was not read. [UNK]
+- See gitlab/automated-merge-requests.md, gitlab/git-test-repositories.md.
+
+_Agent: kb-research_

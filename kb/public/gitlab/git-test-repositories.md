@@ -2,8 +2,8 @@
 topic: gitlab/git-test-repositories
 priority: P3
 applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links, index bits and a temporary index (`GIT_INDEX_FILE`, `git write-tree`); Git for Windows v2.56.0.windows.2 (core.longpaths)"
-retrieved_utc: 2026-10-08
-sources: [S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z]
+retrieved_utc: 2026-10-10
+sources: [S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2, S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z]
 status: complete
 ---
 
@@ -189,6 +189,40 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
   adds no new files), an unmerged index makes `write-tree` fail, and the run still writes objects to the
   repository's object database: only the index is spared. [DER S-vif3vb3s, S-dcbs6vpj, S-3iovxrkf,
   S-q2ovao5z: the five facts above; copying the index file is not a documented interface]
+
+### A new worktree branched from a remote's default branch, in another repository
+- `git worktree add -b <new-branch> <path> [<commit-ish>]` creates `<new-branch>` starting at `<commit-ish>`,
+  which is `HEAD` when omitted, and checks it out in the new worktree; `-b` refuses a branch that already
+  exists and `-B` resets it. [DOC S-j4qkzgvv]
+- The new worktree is linked to the repository the command runs in and shares everything but per-worktree
+  files such as `HEAD` and `index`; refs under `refs/` are shared by all worktrees (except `refs/bisect`,
+  `refs/worktree` and `refs/rewritten`), so a fetch in any one of them updates the remote-tracking branches all
+  of them see. [DOC S-j4qkzgvv]
+- When `<commit-ish>` is a remote-tracking branch such as `origin/main`, the new branch is marked as its
+  upstream by default (`--track`; `--no-track` leaves it unset). [DOC S-j4qkzgvv]
+- `git worktree add <path> <branch>` with a `<branch>` that does not exist locally, and a tracking branch of
+  that name in exactly one remote, acts as `git worktree add --track -b <branch> <path> <remote>/<branch>`;
+  `checkout.defaultRemote` breaks a tie between remotes. [DOC S-j4qkzgvv]
+- `git worktree add` takes its start point from refs already in the repository and the page describes no
+  fetch; with `--guess-remote` and no local or remote-tracking branch to use, it fails with a warning to fetch
+  from the remote first (or to override with `-f`). [DOC S-j4qkzgvv]
+- `remote.<name>.followRemoteHEAD` governs what `git fetch` does to `refs/remotes/<name>/HEAD`: the default
+  `create` makes it when the remote has a `HEAD` and the local ref is missing and never touches an existing
+  one; `warn` also reports a difference, `always` silently follows the remote, `never` leaves it alone.
+  [DOC S-j3galfta]
+- `git remote set-head <name> -a` queries the remote for its `HEAD` and points `refs/remotes/<name>/HEAD` at the
+  same branch, which must already be fetched; `<branch>` sets it explicitly and `-d` deletes it. With it set,
+  the remote's name alone may stand where `<name>/<branch>` would. [DOC S-2u6tfn4r]
+- `git ls-remote --symref <repository>` also shows the ref a symbolic ref points to; as upload-pack shows only
+  `HEAD` as a symref, `HEAD` is the only one printed. [DOC S-rzi7mtmw]
+- So a tool that makes a worktree in a repository other than its own, from that remote's default branch, runs
+  git against that repository (`git -C <repo>`): it fetches the remote there and checks the fetch's exit
+  status, reads the default branch (`git -C <repo> ls-remote --symref <remote> HEAD`, which asks the remote
+  and needs no local ref) and runs `git -C <repo> worktree add -b <branch> <path> <remote>/<default>`; the
+  start point is always named, since an omitted one is that repository's `HEAD`, and a local
+  `refs/remotes/<remote>/HEAD` can be stale because `create` never updates an existing one. [DER S-j4qkzgvv,
+  S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2: the facts above and the failed-fetch fact in
+  `gitlab/git-trailers-and-hooks.md`]
 
 ## Reference
 - Related: `python/pytest.md` (session fixtures, `tmp_path_factory`, `--durations`), `python/pytest-xdist.md` (a session fixture runs once per worker), `python/stdlib-windows-portability.md` (process start on Windows), `gitlab/git-trailers-and-hooks.md` (what `git commit` runs), `windows/dev-drive.md` (where the repositories live on Windows).

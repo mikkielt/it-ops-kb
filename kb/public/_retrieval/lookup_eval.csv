@@ -289,3 +289,6 @@ EV-what-keeps-test-suite-small-which-tests-delete,"what keeps a test suite small
 EV-catch-regression-that-only-slow-full,"How do you catch a regression that only a slow full test suite finds when that suite runs once per sprint instead of per merge? test selection, post-merge, nightly suites",agents/test-suite-size-and-agent-overengineering.md,good,
 EV-claude-p-headless-mode-edit-files,"claude -p headless mode: can it edit files under .claude/ directory, protected paths",claude/settings-and-scopes.md,good,
 EV-claude-code-bash-permission-rule-wildcard,Claude Code Bash permission rule wildcard trailing space star matches command without arguments,claude/powershell-tool.md,good,
+EV-detailed-merge-status-values-never-mergeable,Which GitLab merge request detailed_merge_status values never become mergeable by waiting?,gitlab/automated-merge-requests.md,good,
+EV-gh-pr-view-json-mergestatestatus-statuscheckrollup,"Which fields does gh pr view --json give for a pull request merge state and checks: mergeStateStatus, statusCheckRollup",gitlab/automated-merge-requests.md,good,
+EV-git-worktree-add-remote-default-branch-fetched,"How does git worktree add branch a new worktree from a remote default branch fetched in another repository, origin/HEAD",gitlab/git-test-repositories.md,good,
