@@ -2,7 +2,7 @@
   "id": "ST-pq7bln4v",
   "kind": "story",
   "title": "Research sprint goal: Census deterministic 2: fewer sources need reading",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ilje65fa",
   "goal_research": true,
   "priority": "P1",
@@ -37,5 +37,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-ST-pq7bln4v"
+  "evidence": {
+    "commit": "a7762313a10db322fc4cbad42b4e22b4b429e9d2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-pq7bln4v"
+        ],
+        "exit": 0,
+        "sha256": "25448d2c7249e759"
+      }
+    ]
+  }
 }
