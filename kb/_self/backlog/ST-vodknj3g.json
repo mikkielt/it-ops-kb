@@ -2,7 +2,7 @@
   "id": "ST-vodknj3g",
   "kind": "story",
   "title": "python/stdlib-windows-portability.md states os.copy_file_range's EXDEV with its kernel condition and POSIX link's cross-filesystem rule as permissive",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,27 @@
     "parked: SP-vayhvwfy review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise (2026-10-10, base origin/main): both checks exit 1 now: stdlib-windows-portability.md:84 gives the copy_file_range EXDEV mapping with no 5.3 kernel condition, and :90 states 'one mounted filesystem on POSIX' and 'same-volume rule on both platforms' as rules though POSIX link() lets an implementation allow cross-filesystem links (:83 already says so). The _gaps.md entry at :1062 carries the same unconditional wording. Orchestrator 2026-10-10 (from this sprint's workers): factdiff.py anchor --file also rewrites verified_utc on unrelated _anchors.csv rows and touches _fetch_state.csv (outside the touches): keep only the anchor rows of the facts you changed and restore _fetch_state.csv. A tag citing two sources of one kind gives each its own kind ([DOC S-a; DOC S-b]); [DOC S-a; S-b] parses only S-a. Line numbers moved: ST-24m3pttf added a rename fact in the working-directory section.",
-  "claimed_by": "kb-worker-vodknj3g"
+  "evidence": {
+    "commit": "2508f8bea3fd2c17dddb0afa256c79df6584460a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[l for l in open('kb/public/python/stdlib-windows-portability.md',encoding='utf-8') if 'copy_file_range' in l and 'EXDEV' in l];bad=[l[:80] for l in ls if '5.3' not in l];print('copy_file_range EXDEV lines without the 5.3 condition:',bad or 'none');sys.exit(1 if bad or not ls else 0)"
+        ],
+        "exit": 0,
+        "sha256": "ebb64128049e0ac3"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=open(\"kb/public/python/stdlib-windows-portability.md\",encoding=\"utf-8\").read().splitlines();bad=[l[:60] for l in ls if \"one mounted filesystem on POSIX\" in l or \"same-volume rule on both platforms\" in l];print(\"POSIX link lines stated as a rule:\",bad or \"none\");sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "3b876a37dec7bf5d"
+      }
+    ]
+  }
 }
