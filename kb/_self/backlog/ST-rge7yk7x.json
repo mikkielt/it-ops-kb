@@ -2,7 +2,7 @@
   "id": "ST-rge7yk7x",
   "kind": "story",
   "title": "Research sprint goal: Planning rules 1: checks that run behaviour, touches that hold every reader",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4jfepy6u",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: both open questions are about this repository's own planning rules and tools, which the kb/_self docs and the code state; no outside source or live doc holds them. Pack run 2026-10-10: Q1 weak, Q2 weak on kb/public (and on _self: the rule is what this sprint's items write), Q3 good (SS2-044, kb/_self/content-rules.md:72).",
-  "claimed_by": "orch-4jfepy6u"
+  "evidence": {
+    "commit": "27f75cc15faa8cdb82ccb021c43022d76be201ed",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-rge7yk7x"
+        ],
+        "exit": 0,
+        "sha256": "6dd68a7723f4fe1b"
+      }
+    ]
+  }
 }
