@@ -29,8 +29,7 @@
   ],
   "depends_on": [
     "ST-xy2euufe",
-    "ST-yiq2heb5",
-    "ST-kbrsd24q"
+    "ST-yiq2heb5"
   ],
   "notes": "Why: the census's model-run steps run on the orchestrator's model today (Agent-tool subagents inherit it), and list prices per million tokens are Opus 5.5  in /  out, Sonnet 5.5  / , Haiku 4.5  /  (public/claude/ci-and-headless.md:88-89, S2131); Haiku 5.5's price is not in the kb on 2026-10-10 (rag.py pack 'Haiku 5.5 list price per million tokens' gives only its effort and id lines, ci-and-headless.md:83, :85), so the sprint's research story fills it before the comparison is priced. The haiku alias resolves to Haiku 5.5 from Claude Code v2.1.293 and moves over time, so runs pin claude-haiku-5-5 (ci-and-headless.md:85, S-ezqg74ki). Haiku 5.5's default effort is medium and thinking cannot be turned off (ci-and-headless.md:83-84): the comparison holds effort equal across models and records it. Reuse the benchmark tooling's pricing (bench_core list_usd; ST-rtmwsqgj fixes its dated-key KeyError) rather than a second price table. Quality premise: the held-out half is judged once, after the prompt is fixed on the tuning half, as the planning rules ask of a goal that names a quality of answers. The 5-point bar and the false-confirm rule are the session's proposal for 'no meaningful loss', open to change at the start gate."
 }
