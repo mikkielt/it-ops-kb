@@ -2,7 +2,7 @@
   "id": "ST-php5itob",
   "kind": "story",
   "title": "A headless research task or subtask gets --max-turns 200, as a research story does",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
@@ -58,5 +58,6 @@
   "links": [
     "parked: SP-vayhvwfy close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: bl_dispatch.max_turns gives a task whose touches are kb content only 60, not 200 (the item's first check prints the three values). Ran on the base at planning, 2026-10-10: a research task and a code task both printed 60, so the premise reproduces; the item is a code item (bl_dispatch.py), so the docs alone would contradict the tool."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: bl_dispatch.max_turns gives a task whose touches are kb content only 60, not 200 (the item's first check prints the three values). Ran on the base at planning, 2026-10-10: a research task and a code task both printed 60, so the premise reproduces; the item is a code item (bl_dispatch.py), so the docs alone would contradict the tool.",
+  "claimed_by": "worker-ST-php5itob"
 }
