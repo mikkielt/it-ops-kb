@@ -440,6 +440,24 @@ def gate_needs(paths):
             "selectors": why({p for p in tools if TEST_FILE.fullmatch(p)}, "a test file")}  # a deleted or renamed one too
 
 
+EVAL_SETS = ("lookup_eval.csv", "lookup_heldout.csv")  # the tuned eval set and the held-out one beside it
+HELDOUT_SET = EVAL_SETS[1]
+
+
+def heldout_checks(paths):
+    """[(repository path of a lookup_heldout.csv, why its reword check runs)]: the held-out file beside each changed
+    eval set (PATHS None: the held-out file of every root). `rag.py eval --file` on it prints a REWORD line, and exits
+    1, for a held-out row that rewords a tuned row, which nothing else in a landing reads."""
+    if paths is None:
+        found = {kbcommon.repo_rel(os.path.join(kbcommon.DATA_DIR, HELDOUT_SET), r.path): "no base to compare with"
+                 for r in kbcommon.roots()}
+    else:
+        changed = [p.replace("\\", "/") for p in paths]
+        found = {p.rpartition("/")[0] + "/" + HELDOUT_SET: f"an eval set changed: {p}"
+                 for p in sorted(changed) if p.rpartition("/")[2] in EVAL_SETS and "/" in p}
+    return [(p, why) for p, why in sorted(found.items()) if Path(KB, p).is_file()]
+
+
 GATE_NOTE = re.compile(r"tests\.py --changed \S+: (no test can be affected by the changed paths"
                        r"|kb content only, the suite without the git scenarios|the whole suite)")
 
@@ -571,7 +589,8 @@ def gate(r, up, host, fix_check=False, since=None):
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
     clears a doc), backlog.py check for backlog items, backlog.py selectors for a changed, deleted or renamed
     _tools/test_*.py file (selector_gate: refused for a done item whose check selects no test), querylog.py check for the
-    query log store, and tests.py
+    query log store, rag.py eval --file on the lookup_heldout.csv beside a changed lookup_eval.csv or
+    lookup_heldout.csv (heldout_checks: refused for a REWORD line), and tests.py
     --changed UP (KB_TESTS_FAST=1: nothing for backlog items and the query log store, the suite without the git
     scenarios for kb content only, the whole suite for any other path).
     `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
@@ -596,6 +615,10 @@ def gate(r, up, host, fix_check=False, since=None):
                ("backlog.py check", "backlog.py", ["check"], None, need["backlog"]),
                ("backlog.py selectors", "backlog.py", ["selectors"], None, need["selectors"]),
                ("querylog.py check", "querylog.py", ["check"], None, need["querylog"])]
+    heldout = heldout_checks(paths)
+    for rel, why in heldout or [(None, None)]:  # --min 1: a held-out row that fails to answer is the measurement, not a refusal
+        checks.append((f"rag.py eval --file {rel}" if rel else "rag.py eval (held-out reword check)", "rag.py",
+                       ["eval", "--file", rel, "--min", "1"] if rel else [], None, why))
     if up:
         checks.append((f"selfdoc.py stale --since {short(up)}", "selfdoc.py", ["stale", "--since", up], None, need["selfdoc"]))
         checks.append((f"perfcheck.py dropped --since {short(up)}", "perfcheck.py", ["dropped", "--since", up], None,
