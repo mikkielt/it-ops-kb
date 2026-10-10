@@ -2,7 +2,7 @@
   "id": "ST-a5q6vaji",
   "kind": "story",
   "title": "Sprint planning gives a code item a check that runs its behaviour, with the test it extends in touches",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4jfepy6u",
   "priority": "P2",
   "rank": 0,
@@ -71,5 +71,18 @@
     "merged: ST-42nkqcpd"
   ],
   "notes": "Merged at the 2026-10-10 backlog triage (full text in git history): ST-6rgawaxs, ST-k3ehh2py, ST-jrmfgjkt, ST-pafsvtfs, ST-rcfxvexc, ST-42nkqcpd; their scope is in the goal. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"). Premise: backlog.py check on a planted clone, with a story of a planned sprint whose touches name _tools/bl_check.py and whose only check reads that file's text, prints no warning of it, and none for a _tools/test_*.py file its notes name. Run on the base 2026-10-10: no warning for either, so the item's check, which plants that clone and runs backlog.py check, exits 1 now. The check runs the tool, not source text.",
-  "claimed_by": "kb-worker-a5q6vaji"
+  "evidence": {
+    "commit": "3343c943a529664a3c1988615d24dc4c5060a4c8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, subprocess, sys, tempfile\nT = os.path.abspath('_tools/backlog.py')\nr = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', r], check=True)\ndef b(*a):\n    p = subprocess.run([sys.executable, T, '--root', r, *a], cwd=r, capture_output=True, text=True)\n    return p.stdout + p.stderr\ndef pid(p, out):\n    return re.search(p + r'-\\w{8}', out).group(0)\ne = pid('EP', b('new', 'epic', '--title', 'E', '--goal', 'g'))\ns = pid('SP', b('new', 'sprint', '--title', 'S', '--goal', 'g'))\ndef story(t, chk, *more):\n    return pid('ST', b('new', 'story', '--title', t, '--parent', e, '--sprint', s, '--goal', 'g', '--touch', '_tools/bl_check.py', '--check', chk, *more))\nrd = story('reads', \"python3 -c \\\"import sys;sys.exit(0 if 'def' in open('_tools/bl_check.py').read() else 1)\\\"\")\nrn = story('runs', 'python3 _tools/tests.py -k backlog')\nnt = story('names', 'python3 _tools/tests.py -k backlog')\nb('set', nt, '--notes', 'the work adds its test to _tools/test_zzz.py')\nout = b('check').splitlines()\nwarn = lambda i, w: any(i in l and w in l for l in out)\nok = warn(rd, 'only read') and not warn(rn, 'only read') and warn(nt, '_tools/test_zzz.py')\nprint('reads-only code item warned, running item not, named test file warned:', ok)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "d55b4334f7259dfe"
+      }
+    ]
+  }
 }
