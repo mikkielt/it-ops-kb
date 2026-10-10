@@ -2278,14 +2278,16 @@ def intake_fingerprint(c):
 
 def windowed_detector(root, fp, calls):
     """(detector, what it judges, when the check can first pass) when the fingerprint `fp` is a finding of a detector
-    that judges a window of time, so the check follows the calendar and no work: `trailers` (the last
-    bl_intake.TRAILER_WINDOW_DAYS days of main) and `repeats` (the latest closed ISO week, so it can first pass once
-    the running week has closed); else None. `calls` is a dict that holds the command classes of the committed ops
+    that judges a window of time, so the check follows time and no work: `trailers` (the commits within
+    bl_intake.TRAILER_WINDOW_DAYS days of main's tip, so it passes once main has moved that far past the newest
+    flagged commit, whatever the clock says) and `repeats` (the latest closed ISO week, so it can first pass once the
+    running week has closed); else None. `calls` is a dict that holds the command classes of the committed ops
     sidecars once read, for the first repeats fingerprint that INSTEAD's keys do not name."""
     today = datetime.datetime.now(datetime.timezone.utc).date()
     days = bl_intake.TRAILER_WINDOW_DAYS
     if fp == bl_intake.fingerprint("trailers", bl_intake.WHOLE_KEY):
-        when = f"once the commits it names are older than {days} days"
+        when = (f"once main's tip is more than {days} days past the commits it names: the window follows main's tip, "
+                "not the calendar")
         try:
             found = bl_intake.trailer_findings(root)
             times = git(root, "log", "--no-walk=unsorted", "--format=%ct", *[s for s, _ in found]).split() if found else []
@@ -2294,8 +2296,9 @@ def windowed_detector(root, fp, calls):
         if found and len(times) == len(found):
             newest = max(zip((int(t) for t in times), (s for s, _ in found)))
             day = datetime.datetime.fromtimestamp(newest[0], datetime.timezone.utc).date() + datetime.timedelta(days=days)
-            when = f"on {day}, once the newest commit it names ({newest[1]}) is older than {days} days"
-        return "trailers", f"the commits of the last {days} days on main", when
+            when = (f"no earlier than {day}, and only once main's tip is more than {days} days past the newest commit it "
+                    f"names ({newest[1]}): the window follows main's tip, not the calendar")
+        return "trailers", f"the commits within {days} days of main's tip", when
     classes = set(bl_intake.INSTEAD)
     if not any(fp == bl_intake.fingerprint("repeats", k) for k in classes):
         if "classes" not in calls:
@@ -2328,7 +2331,7 @@ def cmd_precheck(bl, a):
         win = windowed_detector(bl.root, fp, calls) if fp else None
         if win:
             name, judges, when = win
-            tail = (f"it passes now, but its result follows the calendar, not the work: it can change {when}" if ok else
+            tail = (f"it passes now, but its result follows time, not the work: it can change {when}" if ok else
                     f"it can first pass {when}; move the item to a sprint that starts after that, or gate it, before the start")
             say(f"warning: {bl.label(iid)}: `{shlex.join(c['run'])}` is the intake --status of the time-windowed "
                 f"detector {name}: it judges {judges}; {tail}")
