@@ -69,7 +69,9 @@ def without_token_counts(text):
 
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
 # `release` are word-bounded (`original` is not `origin`) and take their endings (`releases`, `released`, `mirrored`),
-# so a gate about a release note is `push` too: the classifier fails closed.
+# so a gate about a release note is `push` too, wherever the word stands: the classifier fails closed. The word `rule`
+# is no `agents-rule` word of its own (a design question about which rows count by rule is no rule-guarding work): it
+# classes only where the item's touches or the gate's text name a rule-guarding path or file (`rule_paths`).
 QUESTION_WORDS = {
     "secrets": re.compile(r"secret|credential|password|passphrase|token|\bPATs?\b|\bbearer\b|\bssh\b|api[- ]key|"
                           r"private key|\.env\b|rotat\w*\s+(?:\w+\s+){0,2}keys?\b", re.I),
@@ -77,9 +79,14 @@ QUESTION_WORDS = {
                        r"\bmirror(?:s|ed|ing)?\b|\breleas(?:e|es|ed|ing)\b|public[- ]repositor(?:y|ies)|"
                        r"\buploa(?:d|ds|ded|ding)\b|\bdeploy(?:s|ed|ing|ment)?\b|merge[- ]requests?\b", re.I),
     "querylog": re.compile(r"query[- ]?log|querylog|redact", re.I),
-    "agents-rule": re.compile(r"AGENTS\.md|CLAUDE\.md|\brule\b|\bskill\b|\bagent definition", re.I),
+    "agents-rule": re.compile(r"AGENTS\.md|CLAUDE\.md|\bskill\b|\bagent definition", re.I),
     "delete": re.compile(r"\bdelet|\bremov(?:e|ing) .*(?:kb|content|history)|purge|erase", re.I),
 }
+RULE_WORD = re.compile(r"\brule\b", re.I)
+# The file names of the `agents-rule` paths that are no directory (`settings.json`, `backlog.py`, `bl_` for each
+# `bl_*` module): a bare one in a gate's text names its file, while a directory (`skills/`) needs a path with a `/`,
+# since `agents` and `skills` alone are prose.
+RULE_FILES = tuple(posixpath.basename(p).lower() for p in PATHS["agents-rule"] if not p.endswith("/"))
 
 
 def norm(touch):
@@ -102,6 +109,23 @@ def touch_names(touch, path):
     return under or t == path or fnmatch.fnmatchcase(path, t)
 
 
+def rule_paths(text):
+    """The words of a gate's text that name a rule-guarding path or file: a word with a `/` that a path of
+    PATHS['agents-rule'] names (`.claude/skills/kb-sprint/SKILL.md`, `_tools/bl_items.py`), or a bare file name of one
+    (`settings.json`, `bl_authority.py`)."""
+    out = []
+    for word in re.findall(r"[\w.*\\/-]+", text):
+        word = word.rstrip(".")
+        low = word.lower()
+        if "/" in low or "\\" in low:
+            named = any(touch_names(low, p) for p in PATHS["agents-rule"])
+        else:
+            named = any(low == f or f.endswith("_") and low.startswith(f) for f in RULE_FILES)
+        if named:
+            out.append(word)
+    return out
+
+
 def command_words(gate):
     """The words of a gate's `do` and `host_check` commands (argv lists, or a string)."""
     out = []
@@ -119,7 +143,8 @@ def rank(cls):
 def class_reasons(item, gate):
     """The strictest class the item's touches and the gate's id and question name (`design` when none), with what set
     it: each touch (`touch '_tools/bl_items.py'`) and each word of the gate's text (`matched 'rule'`) that names that
-    class, in that order; no reason for `design`. `derived_class` reads its class here, so the two never diverge."""
+    class, in that order; no reason for `design`. The word `rule` is a reason for `agents-rule` only beside a touch or a
+    path in the text that names a rule-guarding file. `derived_class` reads its class here, so the two never diverge."""
     found = {}
     if gate.get("id") == START_GATE:
         found.setdefault("start", []).append(f"gate id '{START_GATE}'")
@@ -136,6 +161,12 @@ def class_reasons(item, gate):
         m = rx.search(without_token_counts(text) if cls == "secrets" else text)
         if m:
             found.setdefault(cls, []).append(f"matched '{m.group(0)}'")
+    m = RULE_WORD.search(text)
+    if m:  # the word `rule` classes only beside a rule-guarding path: a touch of the item or a path in the text
+        paths = rule_paths(text)
+        if paths or found.get("agents-rule"):
+            found.setdefault("agents-rule", []).append(f"matched '{m.group(0)}'" + (
+                f" with '{paths[0]}' in the text" if paths else ""))
     m = re.search(r"sprint'?s? start|start (?:the )?sprint", text, re.I)
     if m:
         found.setdefault("start", []).append(f"matched '{m.group(0)}'")
