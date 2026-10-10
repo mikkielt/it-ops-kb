@@ -221,10 +221,12 @@ class TestOwnCheckoutDrafts:
         assert repo.rev("main") == origin_main(scenario) != before
 
 
-def test_empty_selection_refused_and_gone_once(monkeypatch, capsys):
+def test_empty_selection_refused_gone_once_and_done_dry_run_gone(monkeypatch, capsys, scenario):
     """Planted failure: tests.py -k zzz_no_such_test exits 2 before any worker starts, names its selector in one line
     and records exit 2 with selected 0; a done item's check that collects nothing is found gone once, kept in its
-    evidence and named by close's summary, and the next rerun does not run it."""
+    evidence and named by close's summary, and the next rerun does not run it. Then, in a scenario, a review's
+    `done --dry-run` records no gone evidence and leaves the tree clean, and its `done --commit` commits that record
+    with the review's own, so the tree is clean again."""
     import bl_land
     import tests as kbtests
     rows = []
@@ -262,6 +264,37 @@ def test_empty_selection_refused_and_gone_once(monkeypatch, capsys):
     assert bl_land.rerun_done_checks(fake, "SP-00000001") == [] and len(runs) == 1 and fake.saved == [done["id"]]
     assert bl_land.rerun_done_checks(fake, "SP-00000001") == [] and len(runs) == 1, runs  # not run again
     assert "gone check: python3 _tools/tests.py -k zzz_no_such_test" in bl_land.summary_line(fake, done["id"], set())
+
+    # the check passes while the doc exists and prints pytest's `no tests ran` once a later commit deletes it
+    gone = ("python3 -c \"import pathlib, sys; ok = pathlib.Path('kb/_self/good.md').is_file(); "
+            "ok or print('no tests ran'); sys.exit(not ok)\"")
+    repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", gone))
+    work(repo, good, "kb/_self/good.md")
+    repo.git("checkout", "-q", "main")
+    repo.git("merge", "-q", "--ff-only", f"work/{good}")
+    ok(repo, "done", good, "--commit")
+    repo.git("rm", "-q", "kb/_self/good.md")
+    repo.git("commit", "-q", "--no-verify", "-m", "test: the doc the check reads is deleted")
+    stories = ok(repo, "list", "--sprint", sp)
+    research = re.search(r"(ST-[a-z0-9]+)\s.*Research sprint goal", stories).group(1)
+    review = re.search(r"(ST-[a-z0-9]+)\s.*Review sprint", stories).group(1)
+    ok(repo, "claim", research, "--by", "t", "--commit")
+    ok(repo, "set", research, "--notes", "No outside facts: the goal is internal.")
+    ok(repo, "done", research, "--commit")
+    ok(repo, "set", review, "--check", "python3 _tools/backlog.py list --kind sprint")  # not the whole suite
+    repo.git("add", "-A")
+    repo.git("commit", "-q", "--no-verify", "-m", "test: a cheap review check")
+    assert repo.git("status", "--porcelain").strip() == ""
+
+    code, out = bl(repo, "done", review, "--dry-run")
+    assert code == 0 and "would be done" in out and f"gone rerun {good}" in out, out
+    assert repo.git("status", "--porcelain").strip() == "", out  # the dry run wrote no evidence
+    code, out = bl(repo, "done", review, "--commit")
+    assert code == 0 and f"gone rerun {good}" in out, out
+    assert repo.git("status", "--porcelain").strip() == "", out  # the evidence went into the commit of the done
+    evidence = json.loads(repo.read(f"{PLAN}/{good}.json"))["evidence"]
+    assert evidence["gone"] == [["python3", "-c", gone.split('"')[1]]], evidence
+    assert json.loads(repo.read(f"{PLAN}/{review}.json"))["status"] == "done"
 
 
 def test_land_no_work_rows_late_undelivered_or_missing(tmp_path, monkeypatch, capsys):
