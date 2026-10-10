@@ -2,7 +2,7 @@
   "id": "BG-mn6bd4lm",
   "kind": "bug",
   "title": "tools.md's intake row does not say a drift check's tests.py run writes its test.run row to the clone's spool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yzs3bj6f",
   "priority": "P3",
   "rank": 0,
@@ -19,5 +19,18 @@
   "touches": [
     "kb/_self/tools.md"
   ],
-  "claimed_by": "kb-worker-mn6bd4lm"
+  "evidence": {
+    "commit": "b52549e921cba6eb4c166f612401dc7add658bc7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;t=pathlib.Path('kb/_self/tools.md').read_text(encoding='utf-8');r=[l for l in t.splitlines() if l.startswith('| `python3 _tools/backlog.py intake`')][0];ok='test.run' in r;print('intake row names the test.run exception:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4b38e9b57e2dfcf9"
+      }
+    ]
+  }
 }
