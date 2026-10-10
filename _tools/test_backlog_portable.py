@@ -72,6 +72,20 @@ def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_t
     assert code == 0 and f"/wt/agents/agent-{iid} " in out.replace("\\", "/")  # the path's head may be withheld
 
 
+def test_backlog_scratch_setting_places_the_workers_scratch_and_refuses_an_absolute_or_dotdot_path(tmp_path,
+                                                                                                   monkeypatch):
+    import bl_dispatch
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    monkeypatch.setattr(bl_base, "_LOADED", [])  # the settings of this throwaway root, for this test only
+    (tmp_path / "backlog.json").write_text(json.dumps({"scratch_dir": "wt/scratch"}), encoding="utf-8")
+    bl_base.load_settings(tmp_path, env={})
+    assert bl_dispatch.scratch_path(tmp_path, "ST-aaaaaaaa") == tmp_path.resolve() / "wt" / "scratch" / "ST-aaaaaaaa"
+    for bad in ("/abs/scratch", "../scratch"):  # one planted failure for the setting's gate
+        (tmp_path / "backlog.json").write_text(json.dumps({"scratch_dir": bad}), encoding="utf-8")
+        values, _, _, problems = bl_base.read_settings(tmp_path, env={})
+        assert values["scratch_dir"] == "_cache/scratch" and any("'scratch_dir'" in p for p in problems)
+
+
 @pytest.mark.parametrize("data, key", [({"item_dri": "x"}, "item_dri"), ({"always_in_scope": "kb/**"}, "always_in_scope")])
 def test_backlog_config_refuses_an_unknown_key_and_a_wrong_type_naming_the_key(tmp_path, data, key):
     (tmp_path / "backlog.json").write_text(json.dumps(data), encoding="utf-8")

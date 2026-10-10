@@ -12,7 +12,7 @@ import bl_authority
 import bl_cli
 from bl_base import (
     IN_SPRINT, PRIORITIES, RESEARCH_ID, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
-    commit_message, commit_written, external_problems, git, in_scope, item_file, kinds, need, new_id, rel_dir,
+    claims_ledger, commit_message, commit_written, external_problems, git, in_scope, item_file, kinds, need, new_id, rel_dir,
     research_checks, research_in_planned, review_checks, say, scope, trailer_problem, waits, withhold,
 )
 from bl_check import (
@@ -177,10 +177,7 @@ def cmd_claim(bl, a):
     import json
     import os
     session = os.environ.get("CLAUDE_CODE_SESSION_ID") or f"by:{a.by}"
-    rev = subprocess.run(["git", "-C", str(bl.root), "rev-parse", "--show-toplevel", "--absolute-git-dir"],
-                         capture_output=True, text=True, encoding="utf-8", errors="replace").stdout.split("\n")
-    top, gitdir = (rev + ["", ""])[:2] if len(rev) >= 2 and rev[1] else (str(bl.root), "")
-    ledger = Path(gitdir) / "kb-backlog-claims.json" if gitdir else None
+    top, ledger = claims_ledger(bl.root)
     try:
         here = json.loads(ledger.read_text(encoding="utf-8")) if ledger else {}
     except (OSError, ValueError):
