@@ -21,5 +21,21 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the urllib failure facts go: a new topic python/stdlib-urllib-errors, or a section of an existing article?",
+      "options": [
+        "new topic python/stdlib-urllib-errors",
+        "extend python/stdlib-windows-portability",
+        "extend agents/doc-change-detection"
+      ],
+      "recommendation": "new topic python/stdlib-urllib-errors",
+      "class": "design",
+      "answer": "new topic python/stdlib-urllib-errors",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-ST-pq7bln4v"
 }
