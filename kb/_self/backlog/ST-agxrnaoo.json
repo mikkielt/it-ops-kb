@@ -2,7 +2,7 @@
   "id": "ST-agxrnaoo",
   "kind": "story",
   "title": "Research sprint goal: Headless sprint loop 2: intake drafts, land windows and worker cost",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lyfnpu37",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "kb-worker-agxrnaoo"
 }
