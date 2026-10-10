@@ -51,12 +51,22 @@ PACK_BUDGET = "600"
 RULES_DOCS_MAX = 12  # a mapped project's rules section names this many docs, then counts the rest
 RULES_HEADINGS_MAX = 30  # ... and this many `##` headings of one doc
 
+# A rule that names a tool only the kb has is (file under `_tools/`, the rule as the kb's own brief has it, the rule a
+# project without that file gets); `worker_rules` picks by the project's root. A plain string is the same everywhere.
+# `{backlog}` is `backlog_cmd`: `python3 _tools/backlog.py`, or the plugin's by its full path.
 WORKER_RULES = (
-    "Run the item's own checks; you may run `python3 _tools/tests.py`, which takes the host test lock and waits its "
-    "turn; never `tests.py --changed` (parallel runs load the host into false timeouts).",
-    "Add a test only within the ceiling in `_tools/tests_ceiling.json` and only of the four kinds "
-    "`kb/_self/backlog.md` names; a bug you fix gets its fix and a retrospective finding, not a regression test, "
-    "unless no log or gate output can show it again.",
+    ("tests.py",
+     "Run the item's own checks; you may run `python3 _tools/tests.py`, which takes the host test lock and waits its "
+     "turn; never `tests.py --changed` (parallel runs load the host into false timeouts).",
+     "Run the item's own checks, then the project's own checks its documents name: this project has no "
+     "`_tools/tests.py`, so the kb's test runner and its host test lock do not apply."),
+    ("tests_ceiling.json",
+     "Add a test only within the ceiling in `_tools/tests_ceiling.json` and only of the four kinds "
+     "`kb/_self/backlog.md` names; a bug you fix gets its fix and a retrospective finding, not a regression test, "
+     "unless no log or gate output can show it again.",
+     "Add a test only where the project's own rules allow it: this project has no `_tools/tests_ceiling.json`; a bug "
+     "you fix gets its fix and a retrospective finding, not a regression test, unless no log or gate output can show "
+     "it again."),
     "Commit on the local branch `{branch}` with `KB-Work: {id}` in the message's last paragraph, with "
     "`Co-Authored-By` and the other trailers; never push.",
     "Run tests in the foreground, and end every background command and monitor you started before you return: "
@@ -65,17 +75,20 @@ WORKER_RULES = (
     "own on `{branch}` whose `KB-Work` names the new bug, and name the bug in your report.",
     "A doc that needs an edit outside the touches stops the work with a report; `Self-Reviewed:` names only docs "
     "read and found still correct.",
-    "A stacked item (its base holds another item's commits not yet landed): each commit names in its own "
-    "`Self-Reviewed` trailer every doc `selfdoc.py stale --since <the item's base>` lists for its change, not the "
-    "stack's.",
+    ("selfdoc.py",
+     "A stacked item (its base holds another item's commits not yet landed): each commit names in its own "
+     "`Self-Reviewed` trailer every doc `selfdoc.py stale --since <the item's base>` lists for its change, not the "
+     "stack's.",
+     "A stacked item (its base holds another item's commits not yet landed): each commit names in its own "
+     "`Self-Reviewed` trailer the docs read for its change, not the stack's."),
     "A choice the goal leaves open (a name, a default, a width, an opt-in, a limit, a price): record a provisional "
-    "gate with your recommendation (`python3 _tools/backlog.py gate add {id} --kind provisional ...`), answer it "
+    "gate with your recommendation (`{backlog} gate add {id} --kind provisional ...`), answer it "
     "`--provisional` and commit it with the work, never prose in the report only: a choice your report names and no "
     "gate on `{branch}` records sends the item back. A choice only the operator can make, or any choice on an item "
     "whose touches are rule-guarding: a blocking gate with its options and your recommendation, commit it, and "
     "stop. `gate add` prints the class it gives the gate; never reword a gate to change its class; one that prints "
     "`made blocking` is committed as printed, and you stop with a report.",
-    "A change to what a function returns or takes runs `python3 _tools/backlog.py referrers SYMBOL --item {id}` "
+    "A change to what a function returns or takes runs `{backlog} referrers SYMBOL --item {id}` "
     "first and covers every consumer it lists in the same item; a consumer outside the touches stops the work with "
     "a report.",
     "Never write the operator's decisions into docs or code.",
@@ -86,9 +99,47 @@ WORKER_RULES = (
     "`backlog.py done`, `land` or `dispatch`: the orchestrator lands.",
 )
 REPORT = ("End with: branch, commits (hash + subject + KB-Work), each goal clause with the check or test assertion "
-          "that proves it, each check's exit code and last lines, `tests.py` result, `selfdoc.py stale --since "
-          "origin/main` result, the staging-copy changes, any bug filed (id and title), each gate recorded (id, "
-          "question, kind, recommendation).")
+          "that proves it, each check's exit code and last lines, {results}, the staging-copy changes, any bug filed "
+          "(id and title), each gate recorded (id, question, kind, recommendation).")
+REPORT_RESULTS = (("tests.py", "`tests.py` result", "the result of the project's own checks"),
+                  ("selfdoc.py", "`selfdoc.py stale --since origin/main` result", None))
+
+
+def has_tool(root, name):
+    """Whether the project at ROOT has `_tools/NAME`: the kb's own tool the fixed rules name only then."""
+    return (Path(root) / "_tools" / name).is_file()
+
+
+def backlog_cmd(root):
+    """How the brief writes a backlog.py command for the project at ROOT: `python3 _tools/backlog.py` when its root
+    holds the script (the kb, or a project that vendors it), else the plugin's by its full path, since a worker's
+    shell has no `${CLAUDE_PLUGIN_ROOT}` and the script is not under the project."""
+    if has_tool(root, "backlog.py"):
+        return "python3 _tools/backlog.py"
+    return f"python3 {PLUGIN_ROOT.as_posix()}/_tools/backlog.py"
+
+
+def worker_rules(root, iid, branch):
+    """The brief's fixed rules for the project at ROOT, as lines: the kb-only ones (its test runner and ceiling, its
+    stale-doc check) as the kb's own brief has them where the project has the tool, else the project-neutral wording."""
+    out = []
+    for rule in WORKER_RULES:
+        if not isinstance(rule, str):
+            tool, kb, host = rule
+            rule = kb if has_tool(root, tool) else host
+        out.append(rule.format(id=iid, branch=branch, backlog=backlog_cmd(root)))
+    return out
+
+
+def report_line(root):
+    """The brief's report instruction for the project at ROOT: `tests.py` and `selfdoc.py` results only where it has
+    those tools, else the project's own checks' result."""
+    parts = []
+    for tool, kb, host in REPORT_RESULTS:
+        text = kb if has_tool(root, tool) else host
+        if text and text not in parts:
+            parts.append(text)
+    return REPORT.format(results=", ".join(parts) or "the result of the project's own checks")
 
 
 # ------------------------------------------------------------------ paths and the turn cap
@@ -178,11 +229,13 @@ def siblings(bl, iid):
 
 
 def goal_text(bl, iid):
-    """What `backlog.py goal ID` prints: the item's /goal condition and the answered gates above it."""
+    """What `backlog.py goal ID` prints: the item's /goal condition and the answered gates above it, its `done`
+    command written as `backlog_cmd` writes the project's backlog.py."""
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
         bl_items.cmd_goal(bl, argparse.Namespace(id=iid))
-    return buf.getvalue().rstrip("\n")
+    own = "python3 _tools/backlog.py"
+    return buf.getvalue().rstrip("\n").replace(f"`{own} done ", f"`{backlog_cmd(bl.root)} done ")
 
 
 def rag_tool(root, kb_root):
@@ -325,7 +378,7 @@ def compose_brief(bl, iid, known=(), probe=None):
            *repo_lines(bl, iid, branch),
            f"Scratch directory for throwaway files: {scratch}/ (never /tmp, never the worktree).", "",
            "## Item", head, "", "```json", canonical(it).rstrip("\n"), "```", "",
-           "Its goal text (`python3 _tools/backlog.py goal " + iid + "`):", goal_text(bl, iid), ""]
+           f"Its goal text (`{backlog_cmd(bl.root)} goal {iid}`):", goal_text(bl, iid), ""]
     ext = external_lines(it)
     if ext:
         out += ["External tracker ids:", *[f"- {line}" for line in ext], ""]
@@ -336,8 +389,9 @@ def compose_brief(bl, iid, known=(), probe=None):
         out += ["## Staging copies",
                 "`.claude/` is protected for you (a headless session in permission mode `default`): do NOT edit "
                 "these files in the worktree. Edit the staging copy instead, never commit it and never copy it "
-                "into the worktree; the orchestrator copies it back, runs `selfdoc.py check` and the item's "
-                "checks, and commits it on your branch. In your report, say what you changed in each and which "
+                "into the worktree; the orchestrator copies it back, runs "
+                + ("`selfdoc.py check` and the item's checks" if has_tool(bl.root, "selfdoc.py") else "the item's checks")
+                + ", and commits it on your branch. In your report, say what you changed in each and which "
                 "headings or anchors other docs point at that you touched.",
                 *[f"- {p} -> {scratch / STAGING / p}" for p in staged], ""]
     out += ["## In-flight siblings"]
@@ -347,9 +401,9 @@ def compose_brief(bl, iid, known=(), probe=None):
     kf = known_failures(bl, known)
     out += (kf + ["A failure not named here is yours to file as a bug."]) if kf else \
         ["None known to the orchestrator. A failure you meet is yours to file as a bug."]
-    out += ["", "## Fixed rules", *[f"- {r.format(id=iid, branch=branch)}" for r in WORKER_RULES], "",
+    out += ["", "## Fixed rules", *[f"- {r}" for r in worker_rules(bl.root, iid, branch)], "",
             "## Rules of the docs your touches map to", *rules_section(bl, iid), "",
-            "## Report", REPORT]
+            "## Report", report_line(bl.root)]
     return "\n".join(out) + "\n"
 
 
