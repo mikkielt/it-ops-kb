@@ -2,7 +2,7 @@
   "id": "ST-zvpffogs",
   "kind": "story",
   "title": "backlog.py answer refuses an answer that is none of the gate's options, naming them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-6iiony54",
   "sprint": "SP-qxcj7fgy",
   "priority": "P3",
@@ -49,5 +49,6 @@
   "links": [
     "parked: SP-evkj4avq close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): answer ID g9 --answer gamma --by agent on a gate with options alpha and beta records gamma, exit 0: reproduces. (--provisional ignores --answer and takes the recommendation, so it is unaffected.) Consumers of the answer route read 2026-10-10: .claude/agents/kb-worker.md and .claude/skills/kb-item and kb-sprint use --provisional, --confirm or --answer approve (an option of the start gate) only: unchanged, in no touches. The exact-option rule is the story's; tests that answer a gate with another text (test_authority.py) are fixed in the story."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): answer ID g9 --answer gamma --by agent on a gate with options alpha and beta records gamma, exit 0: reproduces. (--provisional ignores --answer and takes the recommendation, so it is unaffected.) Consumers of the answer route read 2026-10-10: .claude/agents/kb-worker.md and .claude/skills/kb-item and kb-sprint use --provisional, --confirm or --answer approve (an option of the start gate) only: unchanged, in no touches. The exact-option rule is the story's; tests that answer a gate with another text (test_authority.py) are fixed in the story.",
+  "claimed_by": "worker-ST-zvpffogs"
 }
