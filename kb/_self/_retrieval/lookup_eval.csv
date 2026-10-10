@@ -288,3 +288,7 @@ SQ-import-direction-between-tool-modules-modules,import direction between tool m
 SQ-host-bound-item-repro-another-host,host-bound item repro on another host,tools.md,good,yes,skipped) unless another passing,
 SQ-test-ids-baseline-txt-perfcheck-ids,what is test_ids_baseline.txt and when is perfcheck ids against it run,tools.md,good,yes,retired feature's group says `live-module,
 SQ-must-gate-about-agents-md-readme,what must a gate about AGENTS.md or README.md state in each option,backlog.md,good,yes,refused unless each option states,
+SQ-planned-sprint-starts-next-several-approved,which planned sprint starts next when several are approved,backlog.md,good,yes,Several approved sprints have no order between them,
+SQ-logs-kb-tooling-keep,what logs does the kb tooling keep,querylog.md;content-rules.md,good,yes,"leaves a redacted, judged record in the repository;may keep one private CSV of observed signals",
+SQ-rule-questions-tested,how are the _self rule questions tested,content-rules.md,good,yes,a row passes when its anchor exists,
+SQ-researched-check-goal-research-story-outside-facts,what does backlog.py researched check for a goal research story with no outside facts,tools.md,good,yes,exit 0 once the research is written by `done`'s own rules,
