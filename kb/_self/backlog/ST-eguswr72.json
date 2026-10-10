@@ -2,7 +2,7 @@
   "id": "ST-eguswr72",
   "kind": "story",
   "title": "Review sprint: Sprint tooling 1: config layer, external ids, brief and dispatch, rules in the brief, cost without capture",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-befc6yqr",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-s1"
+  "evidence": {
+    "commit": "c5bed6e08e32491e0b6938522863e5bd277ffa9a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "fe69313dd3831d5d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "7ae2491f414e8b45"
+      }
+    ]
+  }
 }
