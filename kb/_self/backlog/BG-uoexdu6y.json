@@ -2,7 +2,7 @@
   "id": "BG-uoexdu6y",
   "kind": "bug",
   "title": "backlog.py reads backlog.json from the tool's own root at import, so with --root another project only config and check use that project's settings",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-befc6yqr",
   "priority": "P1",
@@ -56,5 +56,6 @@
       "answer": "settings are loaded once per process for the root the command runs on (bl_cli's main, from --root or the working tree's git root, before any command), and every reader takes them at call time through bl_base accessors, never through a constant copied at import",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "kb-worker-uoexdu6y"
 }
