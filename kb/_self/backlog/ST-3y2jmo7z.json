@@ -2,7 +2,7 @@
   "id": "ST-3y2jmo7z",
   "kind": "story",
   "title": "Research sprint goal: Gates: commands, classing and host checks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qxcj7fgy",
   "goal_research": true,
   "priority": "P1",
@@ -21,6 +21,20 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan run 2026-10-10: rag.py pack -q x5 on the public roots gave coverage weak for all five (the questions are about this repo's own backlog tooling); pack --root _self answers them from kb/_self/backlog.md:132, :177, :219, :251 and tools.md:76-83. Its done needs 'No outside facts: the questions are about the repo's own backlog tooling, answered by kb/_self docs' unless the live docs add a fact.",
-  "claimed_by": "orch-qxcj7fgy"
+  "notes": "Plan run 2026-10-10: rag.py pack -q x5 on the public roots gave coverage weak for all five (the questions are about this repo's own backlog tooling); pack --root _self answers them from kb/_self/backlog.md:132, :177, :219, :251 and tools.md:76-83. Its done needs 'No outside facts: the questions are about the repo's own backlog tooling, answered by kb/_self docs' unless the live docs add a fact. No outside facts: the five questions are about this repo's own backlog tooling, answered by kb/_self docs (pack --root _self 2026-10-10): gate classes from question words and touches, backlog.md:133 and tools.md:100 (bl_authority.class_reasons); answer of a text outside the options, no rule yet (ST-zvpffogs adds it); host_unchecked and start's host warning, backlog.md:222 and tools.md:81; a bug filed with --sprint into an active sprint is todo at once without touches and done refuses it, backlog.md:178 and :255 (ST-dt6xl537 adds the refusal at new); removing or rewording an unanswered gate has no command yet (ST-myhtzlb3 adds it). The live docs add no fact to these.",
+  "evidence": {
+    "commit": "032027fcb25d24e46b8927a2d5bed3b1fff8d330",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-3y2jmo7z"
+        ],
+        "exit": 0,
+        "sha256": "811c680962b59fcc"
+      }
+    ]
+  }
 }
