@@ -2,7 +2,7 @@
   "id": "BG-qrf5guns",
   "kind": "bug",
   "title": "benchmarks.md's router-readers paragraph says the spend row still counts the first router rows, and blames the cache-write price for the tokens-per-right gap",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-55ddkrrx",
   "priority": "P2",
@@ -33,5 +33,27 @@
     "parked: SP-x7ger6vu review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: kb/_self/reports/benchmarks.md's paragraph 'The router arm's two readers' still has 'still counts the first rows until', 'ST-4w4yo6ca' and 'nor do the two figures' (grep 2026-10-10: reproduces; the repro and the added check both fail now). Edits kb/_self/reports/benchmarks.md only, so it runs ahead of ST-hl734bxk, which touches that report too.",
-  "claimed_by": "worker-BG-qrf5guns"
+  "evidence": {
+    "commit": "15111c15adeb38cc2d04b5d4261e3e1994a37c35",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;p=[l for l in open('kb/_self/reports/benchmarks.md',encoding='utf-8') if l.startswith('**The router arm')][0];bad=('ST-4w4yo6ca' in p) or ('nor do the two figures' in p);print('stale wording in the router-readers paragraph:',bad);sys.exit(int(bad))"
+        ],
+        "exit": 0,
+        "sha256": "d038118c4fb715ee"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read();sys.exit(1 if 'still counts the first rows until' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
