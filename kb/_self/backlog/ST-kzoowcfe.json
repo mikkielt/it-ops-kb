@@ -1,0 +1,27 @@
+{
+  "id": "ST-kzoowcfe",
+  "kind": "story",
+  "title": "The public eval row for 'what keeps a test suite small: which tests to delete' anchors the deletion facts of the test-suite-size article",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/_retrieval/lookup_eval.csv row EV-what-keeps-test-suite-small-which-tests-delete carries an answer anchor from the 'Which tests to delete' facts of kb/public/agents/test-suite-size-and-agent-overengineering.md (S-jg2qnt5d quarantine deadlines), and rag.py pack on its question shows those facts, not only the time-limit facts and the DER line (SP-flkl5gom review G2); expand only that article through doc2query if the pack misses them; rag.py eval passes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/agents/test-suite-size-and-agent-overengineering.md"
+  ],
+  "links": [
+    "parked: SP-flkl5gom review"
+  ],
+  "notes": "Review gap G2 (S3): the pack shows lines 34-39 and the DER line 91, not the deletion facts at about lines 44-51; the row has no anchor, so good proves only key words."
+}

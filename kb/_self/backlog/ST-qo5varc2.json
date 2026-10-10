@@ -1,0 +1,24 @@
+{
+  "id": "ST-qo5varc2",
+  "kind": "story",
+  "title": "The open test-suite gap entry in kb/public/_gaps.md no longer lists quarantine deadlines the article now states",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The open _gaps.md entry (about kb/public/_gaps.md:1233, dated 2026-10-06) that says 'Also not found: ... quarantine deadlines in GitLab's testing guide' is updated with a dated note that the GitLab handbook (S-jg2qnt5d) states the deadlines the agents test-suite-size article now carries, keeping only what is still not found (SP-flkl5gom review G3); check.py and lint pass.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_gaps.md"
+  ],
+  "links": [
+    "parked: SP-flkl5gom review"
+  ],
+  "notes": "Review gap G3 (S3): stale, not false; the entry names GitLab's testing guide, the deadlines came from the handbook."
+}
