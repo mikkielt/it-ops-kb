@@ -2,7 +2,7 @@
   "id": "ST-bi5q3jux",
   "kind": "story",
   "title": "The kb-census skill drives a census through census.py run, groups, brief, apply and finish instead of step-by-step commands",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",
@@ -40,5 +40,6 @@
     "ST-ywxl7ulm",
     "ST-qo3kicix"
   ],
-  "notes": "Consumers of census.py (git grep -ln census.py over .claude, AGENTS.md, .claude-plugin and _tools on 2026-10-10): .claude/skills/kb-census/SKILL.md (this story) and the kb-census rule sets in kb/_self/_retrieval/lookup_eval.csv (this story); _tools/factdiff.py, provider.py, providers.csv (ST-v3pruppq, ST-ai2xlm7x); _tools/ql_capture.py (ST-w3jhowin), ql_distill.py and querylog.py name it in command classification and need an edit only if a new subcommand must be classed apart, which ST-w3jhowin's work checks. AGENTS.md maps to the skill but names no census command, so it is reviewed, not edited (its 4 KB cap). The rule questions of the sets are reworded only where a rule moved into a command, never to make a row pass."
+  "notes": "Consumers of census.py (git grep -ln census.py over .claude, AGENTS.md, .claude-plugin and _tools on 2026-10-10): .claude/skills/kb-census/SKILL.md (this story) and the kb-census rule sets in kb/_self/_retrieval/lookup_eval.csv (this story); _tools/factdiff.py, provider.py, providers.csv (ST-v3pruppq, ST-ai2xlm7x); _tools/ql_capture.py (ST-w3jhowin), ql_distill.py and querylog.py name it in command classification and need an edit only if a new subcommand must be classed apart, which ST-w3jhowin's work checks. AGENTS.md maps to the skill but names no census command, so it is reviewed, not edited (its 4 KB cap). The rule questions of the sets are reworded only where a rule moved into a command, never to make a row pass.",
+  "claimed_by": "kb-worker-ST-bi5q3jux"
 }
