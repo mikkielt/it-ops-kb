@@ -1,6 +1,7 @@
 """The check-program allowlist: an item's checks and a bug's repro are data an agent or a merge can write, so only
 python3 on a _tools/ script (or inline code) may run, and drift's detector runs only its read-only scripts. A refused
-command is reported and never started."""
+command is reported and never started. Also here: check.py's refusal of a kb citation in a tool's comment that a
+fact inserted above has moved."""
 import shlex
 import subprocess
 import sys
@@ -10,6 +11,7 @@ import pytest
 
 import bl_base
 import bl_intake
+import check
 from conftest import requires_git
 
 pytestmark = [pytest.mark.git, requires_git]
@@ -61,6 +63,35 @@ def test_backlog_check_refuses_programs_outside_the_allowlist(tmp_path):
     assert code == 1 and f"errors={len(refused)} " in out
     assert out.count("is refused") == len(refused)
     assert not marker.exists()
+
+
+def test_check_names_code_kb_citations_that_a_fact_inserted_above_has_moved(tmp_path):
+    kb = tmp_path / "kb"
+    (kb / "fx" / "api").mkdir(parents=True)
+    (kb / "fx" / "_root.md").write_text("---\nroot: fx\n---\n", encoding="utf-8")
+    (kb / "_self").mkdir()
+    (kb / "_self" / "rules.md").write_text("Rule one.\n\nRule two.\n", encoding="utf-8")
+    article = ["---", "topic: api/prices", "---", "", "## Facts",
+               "- Sonnet 5.5 costs $2 per MTok of input. [DOC S1]", "- Haiku 4.5 costs $1 per MTok of input. [DOC S1]"]
+    art = kb / "fx" / "api" / "prices.md"
+    art.write_text("\n".join(article) + "\n", encoding="utf-8")
+    tools = tmp_path / "_tools"
+    tools.mkdir()
+    cite = "kb/fx/api/prices.md"
+    (tools / "price.py").write_text(
+        f'"""Prices ({cite}:7 "Haiku 4.5")."""\n'
+        f'PRICE = {{"sonnet": 2.0}}  # {cite}:6 "Sonnet 5.5 costs $2"\n'
+        f'# {cite}:6-7 "Haiku 4.5 costs" and :7 "Haiku 4.5", but {cite}:5 "Facts" is a heading\n'
+        f'FIXTURE = "{cite}:99 \\"nothing\\""\n'
+        f'# {cite}:6 "Sonnet 5" is not Sonnet 5.5; kb/fx/gone.md:1 is no file; kb/_self/rules.md:2 is blank\n',
+        encoding="utf-8")
+    got = check.code_citation_errors(tmp_path)
+    assert [e.split(" cites ")[1].split(",")[0] for e in got] == [
+        f'{cite}:5 "Facts"', f'{cite}:6 "Sonnet 5"', "kb/fx/gone.md:1", "kb/_self/rules.md:2"], got
+    assert all(e.startswith("_tools/price.py:") for e in got)
+    art.write_text("\n".join([*article[:5], "- A fact inserted above. [DOC S1]", *article[5:]]) + "\n", encoding="utf-8")
+    moved = [e.split(" cites ")[1].split(",")[0] for e in check.code_citation_errors(tmp_path)]  # :6 holds the new fact
+    assert f'{cite}:6 "Sonnet 5.5 costs $2"' in moved and moved.count(f'{cite}:7 "Haiku 4.5"') == 2, moved
 
 
 def drift_run(monkeypatch, tmp_path, runs):

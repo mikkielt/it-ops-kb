@@ -44,12 +44,15 @@
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
 - every `topic: <domain>/<slug>` marker in a root's _gaps.md and _conflicts.md names a topic of that root;
 - every `path:line` citation in a root's _answers.md and _gaps.md (and the `:N` shorthand after one) names a line of a
-  tagged fact of a file of that root: not a heading, a Reference row, a blank line or a line past the end.
+  tagged fact of a file of that root: not a heading, a Reference row, a blank line or a line past the end;
+- every `kb/...md:line` citation in a comment or docstring of _tools/*.py (a full run only) names a line of a tagged fact
+  when the file is an article of a root, else a non-blank line, and holds the term a double-quoted string right after
+  the citation gives (any case, whole words), so a fact inserted above it cannot shift the citation unseen.
 - no path git tracks in this repository is longer than TRACKED_PATH_MAX (a Windows clone's worker worktree prefix and the
   260-character MAX_PATH leave that many characters; git for Windows without core.longpaths fails past it).
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
 """
-import argparse, csv, datetime, os, re, subprocess, sys
+import argparse, ast, csv, datetime, io, os, re, subprocess, sys, tokenize
 from collections import Counter
 from pathlib import Path
 import kbcommon, kbfacts, kbid, selfdoc
@@ -452,15 +455,16 @@ LEDGER_CITE = re.compile(r"(?<![\w./:-])((?:[\w.-]+/)+[\w.-]+\.md):([1-9]\d*)(?:
 
 
 def fact_lines(text):
-    """The line numbers of a topic file's tagged facts: every line of a bullet with its continuation lines (its tag line
-    too), a tagged table row or paragraph (kbfacts.md_units). A heading, an untagged Reference row or a blank line is none."""
-    lines, res = text.splitlines(), set()
+    """The tagged facts of a topic file by line number: every line of a bullet with its continuation lines (its tag line
+    too), a tagged table row or paragraph (kbfacts.md_units), each mapped to the text of its fact. A heading, an
+    untagged Reference row or a blank line is none."""
+    lines, res = text.splitlines(), {}
     for u in kbfacts.md_units("", text):
         end = u["line"]
         while not u["text"].startswith("|") and end < len(lines) and (s := lines[end].strip()) \
                 and not s.startswith(("#", "|", "```", "~~~")) and not re.match(r"[-*] ", s):
             end += 1
-        res.update(range(u["line"], end + 1))
+        res.update(dict.fromkeys(range(u["line"], end + 1), u["text"]))
     return res
 
 
@@ -505,6 +509,88 @@ def ledger_citation_errors(root):
                     res.append(f"{where}, {of}" + ("a line past the end of the file" if bad > total
                                                    else "a line that is no line of a tagged fact (a heading, a table or "
                                                         "Reference row, a blank or an untagged line)"))
+    return res
+
+
+CITE_TERM = re.compile(r'\s*"([^"\n]+)"')  # the term a citation may carry: `path.md:88 "Haiku 4.5"`
+
+
+def code_comment_lines(path):
+    """(line number, text) of every comment line and docstring line of a Python file, sorted; none when it is
+    unreadable or does not parse (a string literal that is no docstring, a test fixture, is no citation)."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        tree = ast.parse(text)
+        res = {t.start[0]: t.string for t in tokenize.generate_tokens(io.StringIO(text).readline)
+               if t.type == tokenize.COMMENT}
+    except (OSError, UnicodeDecodeError, SyntaxError, ValueError, tokenize.TokenError):
+        return []
+    lines = text.splitlines()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            doc = node.body[0]
+            if isinstance(doc, ast.Expr) and isinstance(doc.value, ast.Constant) and isinstance(doc.value.value, str):
+                res.update((n, lines[n - 1]) for n in range(doc.lineno, doc.end_lineno + 1))
+    return sorted(res.items())
+
+
+def holds_term(term, text):
+    """Whether `text` holds `term` as whole words, in any case and with any run of blanks: `Sonnet 5` is not in
+    `Sonnet 5.5`."""
+    def norm(x):
+        return " ".join(x.split())
+    return re.search(r"(?<![\w.-])" + re.escape(norm(term)) + r"(?![\w-]|\.\w)", norm(text), re.I) is not None
+
+
+def code_citation_errors(home=None):
+    """The `kb/...md:line[-end]` citations in a comment or docstring of `home`'s _tools/*.py (and the `:N` shorthand
+    after one on the same line) that no longer hold: a file that is gone, a line past the end, a line that is no
+    tagged fact (an article of a root) or is blank (any other file, such as a kb/_self doc), and a line, or a range,
+    that does not hold the term a double-quoted string right after the citation gives. Each error names the code line
+    and the citation."""
+    home, res, files = Path(home or kbcommon.HOME), [], {}
+    for py in sorted((home / "_tools").glob("*.py")):
+        for n, ln in code_comment_lines(py):
+            path = None
+            for m in LEDGER_CITE.finditer(ln):
+                path = m.group(1) or path
+                if path is None or not path.startswith("kb/"):
+                    continue
+                line = int(m.group(2) or m.group(4))
+                end = int(m.group(3) or m.group(5) or line)
+                t = CITE_TERM.match(ln, m.end())
+                term = t.group(1) if t else None
+                if path not in files:
+                    try:
+                        text = (home / path).read_text(encoding="utf-8")
+                        article = (home / "kb" / path.split("/")[1] / kbcommon.ROOT_FILE).is_file()
+                        files[path] = (text.splitlines(), fact_lines(text) if article else None)
+                    except (OSError, UnicodeDecodeError):
+                        files[path] = None
+                span = f"{line}-{end}" if end != line else str(line)
+                where = f"{py.relative_to(home).as_posix()}:{n} cites {path}:{span}" + (f' "{term}"' if term else "")
+                if files[path] is None:
+                    res.append(f"{where}, a file that does not exist")
+                    continue
+                lines, facts = files[path]
+                if end < line:
+                    res.append(f"{where}, a range that ends before it starts")
+                    continue
+                cited = range(line, end + 1)
+                bad = next((x for x in cited if x > len(lines) or (x not in facts if facts is not None
+                                                                    else not lines[x - 1].strip())), None)
+                if bad is not None:
+                    of = "" if bad == line and end == line else f"its line {bad}, "
+                    res.append(f"{where}, {of}" + ("a line past the end of the file" if bad > len(lines) else
+                                                   "a line that is no line of a tagged fact (a heading, a table or "
+                                                   "Reference row, a blank or an untagged line)" if facts is not None
+                                                   else "a blank line"))
+                    continue
+                held = " ".join(facts[x] if facts is not None else lines[x - 1] for x in cited)
+                if term and not holds_term(term, held):
+                    res.append(f"{where}, a line that does not hold that term: re-point the citation at the fact "
+                               f"that does")
     return res
 
 
@@ -696,6 +782,7 @@ def main():
                                       f"{root.name} (topic: <domain>/<slug>)")
     if not a.root:
         errors.extend(long_tracked_paths())
+        errors.extend(code_citation_errors())
     n_sources = sum(len(v) for k, v in known.items() if k != "*" and (not a.root or k == a.root))
     print(f"sources={n_sources} citations={cited} errors={len(errors)}")
     for e in errors:
