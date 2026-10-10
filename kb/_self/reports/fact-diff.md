@@ -89,3 +89,24 @@ The census's reading cost was never stated before it read. `census.py summary LO
 | of those, not cached | 84 rows, counted as 0 characters: the figure is a lower bound |
 
 The five hosts with most characters: `graph.microsoft.com` 1 row, 1,838,888 characters; `code.claude.com` 16 rows, 1,314,200; `raw.githubusercontent.com` 26 rows, 941,298; `www.gnu.org` 1 row, 776,035; `api.github.com` 9 rows, 496,047. Later census work is measured against this: the same command on a later census log reads the same queue with review passages in place of whole documents where a fact diff ran first.
+
+## Detect wall time: Learn pages decided by git history, 2026-10-10
+
+`factdiff.py detect` decides a `learn.microsoft.com` page that `census.learn_source` maps (`census.LEARN_MAP`) to a file of a public docs repository by that file's commits since the stored baseline day, with no request to Learn, and asks Learn for every other source. Two full runs of the same command on the same day, each from a fresh clone of the repository in a scratch directory with a cold `_cache` (no clone cache, no document cache) and the committed `_fetch_state.csv` as the baseline:
+
+```
+python3 _tools/factdiff.py detect --sitemaps
+```
+
+| run | tree | started (UTC) | wall time | exit | result line |
+|---|---|---|---|---|---|
+| before | commit before the change | 19:08:33 | 31 min 21 s | 1 | `unchanged=819 changed=320 new=222 moved=796 gone=8 soft-404=19 replaced=12 error=34 pinned=783`; facts `verbatim=3080 modified=117 not-found=18 unanchored=3465 dead=1742` |
+| after | the change | 19:41:27 | 32 min 29 s | 1 | `unchanged=819 changed=325 new=222 moved=797 gone=8 soft-404=20 replaced=12 error=27 pinned=783`; facts `verbatim=3077 modified=109 not-found=18 unanchored=3464 dead=1744` |
+
+Both runs read 3,013 sources on 191 hosts. Exit 1 is facts to review, no failure. The difference of 68 s is inside the run-to-run spread: 16 sources outside Learn (github.com, platform.claude.com and others) differ between the logs, 15 by an error in one of the runs and 1 by a soft 404, which is the network, not the change.
+
+**Why the wall time did not fall.** 1,388 of the sources are on `learn.microsoft.com`, at one request per 1.1 s per host about 25 minutes of the run. `LEARN_MAP` has five entries, and 140 of those sources map to one (entra-docs 55, windowsserverdocs 37, microsoft-graph-docs-contrib 30, sql-docs 16, PowerShell-Docs-DSC 2). Of the 140, 98 were decided by git history in the after run (signal `git`), 108 s of requests; of the other 42, 31 have no file at the mapped path at the repository's HEAD (23 answered `unchanged` by version id, 8 a redirect: for example `entra/msal/...` pages are not files of entra-docs), 10 had a commit since their baseline day and 1 had no baseline. The five repositories were cloned in about 25 s (the two large ones, shallow since 2026-01-01, 22 s and 24 s), once and in parallel. The other 1,248 Learn sources have no map entry: the most common first path segments are `intune` 134, `api` 80, `windows` 75, `azure` 70, `identity` 36, `configmgr` 35, `security` 32 and `powershell` 31. 729 of the Learn sources answer a redirect at every run (`moved`, signal `redirect`), each one request.
+
+**Verdicts agree.** Of the 98 decided by git, 97 were `unchanged` (version id) before and 1 was `changed` (version id) with no commit of its file since the baseline day; the log's other differences are the 16 above, none a Learn source. The 24 github.com pages with signal `git` in both logs are the clone-cache signal of the github.com wiki and repository-home rows, unchanged by this work.
+
+**What a request costs now.** The per-source cost of the git route is one `ls-tree` and one `git log --since` in the clone: the verdicts of all 140 mapped sources took 3.3 s in the warm clones, against about 154 s of requests at one per 1.1 s. The route's reach is the map's: more entries in `LEARN_MAP` move more sources off the 1.1 s per request path, and a docset with no public repository (intune: `MicrosoftDocs/memdocs` is archived) stays on it.

@@ -32,6 +32,34 @@
   "depends_on": [
     "ST-ai2xlm7x"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When detect decides a mapped Learn page unchanged by its file's git history, does the stored detected_utc move up to the run time (as a 304 does), or stay at the older baseline day?",
+      "options": [
+        "Move detected_utc up to the run time (as a 304 does): the file had no commit since the old day, so the text equals the baseline text and the next history read stays short",
+        "Keep the older detected_utc: history is read from the day of the last fetched text"
+      ],
+      "recommendation": "Move detected_utc up to the run time (as a 304 does): the file had no commit since the old day, so the text equals the baseline text and the next history read stays short",
+      "class": "design",
+      "answer": "Move detected_utc up to the run time (as a 304 does): the file had no commit since the old day, so the text equals the baseline text and the next history read stays short",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does the fact diff log's signal column say for a Learn page decided by its file's git history: git (as for a wiki page) or a new name?",
+      "options": [
+        "git: the same value a github.com wiki page or repository home gets when its clone decides it, so the log and census confirm text name one signal for history in a clone",
+        "learn-git: a value of its own that tells the Learn route from the github.com one"
+      ],
+      "recommendation": "git: the same value a github.com wiki page or repository home gets when its clone decides it, so the log and census confirm text name one signal for history in a clone",
+      "class": "push",
+      "answer": "git: the same value a github.com wiki page or repository home gets when its clone decides it, so the log and census confirm text name one signal for history in a clone",
+      "by": "operator"
+    }
+  ],
   "notes": "Premise: .claude/skills/kb-census/SKILL.md phase 0 gives factdiff.py detect --sitemaps about 45 minutes at one request per 1.1 s per host, Learn being most of it; 1395 of 2990 live sources are learn.microsoft.com on 2026-10-10. census.py check already decides a mapped Learn page by commits in its MicrosoftDocs repository (LEARN_MAP, _tools/census.py:69), so the map exists and the clone cache is shared; factdiff.py does not use it. The before figure is measured at the start of the work on the same day as the after figure, not taken from the skill's estimate. A request against a public repository by git over https stays read-only and pins nothing. Orchestrator note 2026-10-10: a full detect --sitemaps run takes about 45 minutes, longer than one foreground command may run (10 minutes); start it with nohup writing its output to the scratch directory, wait on its pid with foreground loops of under 10 minutes each, and end it before you return. A live detect run rewrites kb/public/_fetch_state.csv and snapshots: restore them from HEAD before committing (the measurement goes to kb/_self/reports/fact-diff.md only). ST-pq7bln4v research found original_content_git_url names the private -pr repository and github_feedback_content_git_url the public one (kb/public/agents/doc-change-detection.md).",
   "claimed_by": "worker-ST-v3pruppq"
 }
